@@ -43,7 +43,15 @@ class AdminSecurityPasswordController extends AdminLoggedInController
     public function index()
     {
         $settings = [
+            // 共通設定
             'pwned_password_check_enabled' => filter_var($this->securitySettingRepository->get('pwned_password_check_enabled', false), FILTER_VALIDATE_BOOLEAN),
+            
+            // デフォルトパスワードポリシー
+            'password_min_length_default' => (int) $this->securitySettingRepository->get('password_min_length_default', 8),
+            'password_require_uppercase_default' => filter_var($this->securitySettingRepository->get('password_require_uppercase_default', true), FILTER_VALIDATE_BOOLEAN),
+            'password_require_number_default' => filter_var($this->securitySettingRepository->get('password_require_number_default', true), FILTER_VALIDATE_BOOLEAN),
+            'password_require_symbol_default' => filter_var($this->securitySettingRepository->get('password_require_symbol_default', false), FILTER_VALIDATE_BOOLEAN),
+            'password_reset_enabled_default' => filter_var($this->securitySettingRepository->get('password_reset_enabled_default', true), FILTER_VALIDATE_BOOLEAN),
         ];
 
         $this->viewParams['settings'] = $settings;
@@ -58,8 +66,27 @@ class AdminSecurityPasswordController extends AdminLoggedInController
     {
         $validated = $request->validated();
 
-        // パスワードセキュリティ設定を更新
-        $this->securitySettingRepository->set('pwned_password_check_enabled', $validated['pwned_password_check_enabled'] ?? false);
+        // 共通設定
+        if (array_key_exists('pwned_password_check_enabled', $validated)) {
+            $this->securitySettingRepository->set('pwned_password_check_enabled', $validated['pwned_password_check_enabled'] ?? false);
+        }
+
+        // デフォルトパスワードポリシー
+        if (array_key_exists('password_min_length_default', $validated)) {
+            $this->securitySettingRepository->set('password_min_length_default', (int) $validated['password_min_length_default']);
+        }
+        if (array_key_exists('password_require_uppercase_default', $validated)) {
+            $this->securitySettingRepository->set('password_require_uppercase_default', $validated['password_require_uppercase_default'] ?? false);
+        }
+        if (array_key_exists('password_require_number_default', $validated)) {
+            $this->securitySettingRepository->set('password_require_number_default', $validated['password_require_number_default'] ?? false);
+        }
+        if (array_key_exists('password_require_symbol_default', $validated)) {
+            $this->securitySettingRepository->set('password_require_symbol_default', $validated['password_require_symbol_default'] ?? false);
+        }
+        if (array_key_exists('password_reset_enabled_default', $validated)) {
+            $this->securitySettingRepository->set('password_reset_enabled_default', $validated['password_reset_enabled_default'] ?? false);
+        }
 
         return redirect()->route('admin.settings.security.password')
             ->with('success', __('admin/settings/security/password.settings_updated'));
