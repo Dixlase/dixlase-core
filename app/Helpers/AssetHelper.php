@@ -531,6 +531,20 @@ if (!function_exists('load_auth_assets')) {
         // 共通アセット（Alpine.js、Tailwind CSS等）のみを読み込み
         $output .= load_assets('common', null, ['js/app.js', 'scss/style.scss']);
 
+        // ダークモードスクリプトを読み込み（CSP対応）
+        if (is_vite_dev_server()) {
+            $output .= render_vite_assets(['resources/src/auth/js/dark-mode.js'], false, false);
+        } else {
+            $manifestPath = public_path('assets/build/manifest.json');
+            $assetBasePath = 'assets/build/';
+            $output .= load_assets_from_manifest(
+                $manifestPath,
+                $assetBasePath,
+                ['js/dark-mode.js'],
+                'resources/src/auth'
+            );
+        }
+
         // x-cloak用スタイルを追加
         $output .= render_x_cloak_style();
 

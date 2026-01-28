@@ -5,25 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title') | {{ config('app.name') }}</title>
 
-    <!-- Dark Mode Detection Script -->
-    <script @cspNonce>
-        // デバイスの外観モードを検出してHTMLクラスに適用
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-        
-        // 外観モード変更の監視
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
-            if (e.matches) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-        });
-    </script>
-
     <!-- Scripts -->
     {!! load_auth_assets() !!}
 </head>

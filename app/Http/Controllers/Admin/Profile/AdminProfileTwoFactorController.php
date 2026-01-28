@@ -91,7 +91,7 @@ class AdminProfileTwoFactorController extends AdminLoggedInController
         // 保存後の2FA状態を取得（保存後の値を使用）
         $member->refresh();
         $twoFaNewMode = is_int($member->two_fa_mode) ? $member->two_fa_mode : $member->two_fa_mode->value;
-        $isTwoFaEnabled = ($twoFaNewMode === AuthenticationMode::Always->value || $twoFaNewMode === AuthenticationMode::Optional->value);
+        $isTwoFaEnabled = ($twoFaNewMode === AuthenticationMode::Always->value || $twoFaNewMode === AuthenticationMode::DifferentDevice->value);
         
         // 回復コードとパスキーの状態をチェック
         $shouldGenerateRecoveryCodes = false;
