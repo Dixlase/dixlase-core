@@ -308,6 +308,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
         @endif
         
+        @if(!$canEnableTwoFa)
+            <x-message
+                type="warning"
+                :message="__('admin/members/form.two_fa_cannot_enable_warning')"
+            />
+        @endif
+        
         @php
             $currentTwoFaMode = $member->two_fa_mode ?? \App\Enums\AuthenticationMode::Always->value;
             if ($currentTwoFaMode instanceof \App\Enums\AuthenticationMode) {

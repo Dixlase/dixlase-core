@@ -51,6 +51,10 @@ class AdminProfileTwoFactorController extends AdminLoggedInController
         
         $this->loadTwoFactorSettings($member);
         
+        // 2FA有効化可能かをチェック
+        $this->viewParams['canEnableTwoFa'] = $member->canEnableTwoFa();
+        $this->viewParams['twoFaEnableBlockReasons'] = $member->getTwoFaEnableBlockReasons();
+        
         return view('admin.profile.two-factor', $this->viewParams);
     }
 

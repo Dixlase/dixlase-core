@@ -24,4 +24,5 @@ return [
     'heading' => 'Two-Factor Authentication Settings',
     'description' => 'Configure two-factor authentication mode and authentication methods.',
     'two_fa_settings' => 'Two-Factor Authentication Settings',
+    'two_fa_cannot_enable_warning' => 'Cannot enable two-factor authentication. A mail server configuration, passkey registration, or recovery code generation is required.',
 ];

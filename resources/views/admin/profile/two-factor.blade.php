@@ -39,6 +39,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 $isTwoFaEditable = $twoFaForceMode === \App\Enums\AuthenticationMode::UseProfileSetting->value;
             @endphp
             
+            @if(!$canEnableTwoFa)
+                <div class="mb-6">
+                    <x-message 
+                        type="warning" 
+                        :message="__('admin/profile/two-factor.two_fa_cannot_enable_warning')"
+                    />
+                </div>
+            @endif
+            
             <div x-data="{
                 twoFaMode: '{{ old('two_fa_mode', (string) ($twoFaMode?->value ?? 0)) }}',
                 passkeyEnabled: {{ $currentPasskeyEnabled ? 'true' : 'false' }},

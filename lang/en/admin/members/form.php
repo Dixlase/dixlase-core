@@ -58,6 +58,7 @@ return [
     'default_two_factor_method_help' => 'Select the authentication method to be displayed first during two-factor authentication.',
     'passkey_disabled_default_email_only' => 'Passkey authentication is disabled, so the default authentication method is automatically set to email authentication.',
     'two_fa_management_admin_note' => 'Administrators cannot add Passkey devices or generate recovery codes. Only deletion is allowed. Addition and generation can only be performed by the member themselves.',
+    'two_fa_cannot_enable_warning' => 'Cannot enable two-factor authentication. A mail server configuration, passkey registration, or recovery code generation is required.',
     
     // Role permission descriptions
     'role_permissions_info' => 'Permission Scope by Role',
