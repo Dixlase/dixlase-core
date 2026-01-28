@@ -312,31 +312,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     
     {{-- パスキー登録促進モーダル --}}
     @if(isset($prompt_passkey_registration) && $prompt_passkey_registration)
-        <x-ui.modal 
-            id="dashboardPasskeyPromptModal"
-            :title="__('admin/profile/two-factor.passkey_prompt_title')"
-            icon-type="info"
-            :dismissible="true"
-            data-passkey-prompt="true"
-            data-has-recovery-modal="{{ isset($auto_generated_recovery_codes) ? 'true' : 'false' }}">
-            
-            <p class="mb-4">{{ __('admin/profile/two-factor.passkey_prompt_message') }}</p>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-                {{ __('admin/profile/two-factor.passkey_prompt_description') }}
-            </p>
-            
-            <x-slot name="footer">
-                <a href="{{ route('admin.profile.two-factor-management') }}" 
-                   class="inline-flex items-center justify-center font-semibold rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 px-4 py-2 text-sm">
-                    <i class="fas fa-key mr-2"></i>
-                    {{ __('admin/profile/two-factor.go_to_passkey_registration') }}
-                </a>
-                <button type="button" 
-                        @click="close()"
-                        class="inline-flex items-center justify-center font-semibold rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 bg-gray-200 dark:bg-gray-500 text-gray-900 dark:text-white hover:bg-gray-700 focus:ring-gray-500 px-4 py-2 text-sm">
-                    {{ __('common.close') }}
-                </button>
-            </x-slot>
-        </x-ui.modal>
+        @include('two-fa.partials.passkey-prompt-modal', [
+            'modalId' => 'dashboardPasskeyPromptModal',
+            'hasRecoveryModal' => isset($auto_generated_recovery_codes) && $auto_generated_recovery_codes ? true : false
+        ])
     @endif
 @endsection

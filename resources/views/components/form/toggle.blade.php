@@ -50,7 +50,7 @@
                id="{{ $id }}"
                name="{{ $name }}"
                value="1"
-               @if($xModel) x-model="{{ $xModel }}" @else {{ $checked ? 'checked' : '' }} @endif
+               @if($xModel) :checked="{{ $xModel }} == '1'" @change="{{ $xModel }} = $event.target.checked ? '1' : '0'" @else {{ $checked ? 'checked' : '' }} @endif
                @if($xBind) :disabled="!{{ $xBind }}" @elseif($disabled) disabled @endif
                class="sr-only peer">
         <div class="w-11 h-6 rounded-full transition-colors peer-focus:outline-none

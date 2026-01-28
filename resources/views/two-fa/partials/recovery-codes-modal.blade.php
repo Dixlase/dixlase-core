@@ -32,7 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 <x-ui.modal :id="$modalId" :title="$error ? __('common.error') : ($title ?? __('two_fa.recovery_codes.title'))" :icon_type="$error ? 'danger' : 'warning'" :dismissible="false">
-    <div class="space-y-4" x-data="recoveryCodesModal('{{ $modalId }}', @json($codes), {{ $autoOpen ? 'true' : 'false' }}, {{ $clearSessionRoute ? "'$clearSessionRoute'" : 'null' }}, {{ $nextModal ? "'$nextModal'" : 'null' }})">
+    <div class="space-y-4" x-data="recoveryCodesModal(@js($modalId), @js($codes), @js($autoOpen), @js($clearSessionRoute), @js($nextModal))">
         @if($error)
             {{-- エラー表示モード --}}
             <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
