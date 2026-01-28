@@ -18,6 +18,9 @@ export default defineConfig(({ command }) => ({
                 'resources/src/components/mail-server/js/dark-mode.js',
                 'resources/src/components/mail-server/js/verification-success.js',
                 'resources/src/components/mail-server/js/verification-error.js',
+                'resources/src/components/two-fa/js/email-challenge.js',
+                'resources/src/components/two-fa/js/passkey-challenge.js',
+                'resources/src/components/two-fa/js/recovery-code-challenge.js',
             ],
             refresh: [
                 // デフォルトのBladeテンプレート
@@ -76,6 +79,9 @@ export default defineConfig(({ command }) => ({
                 'mail-server-dark-mode': path.resolve(__dirname, 'resources/src/components/mail-server/js/dark-mode.js'),
                 'mail-server-verification-success': path.resolve(__dirname, 'resources/src/components/mail-server/js/verification-success.js'),
                 'mail-server-verification-error': path.resolve(__dirname, 'resources/src/components/mail-server/js/verification-error.js'),
+                'components/two-fa/js/email-challenge': path.resolve(__dirname, 'resources/src/components/two-fa/js/email-challenge.js'),
+                'components/two-fa/js/passkey-challenge': path.resolve(__dirname, 'resources/src/components/two-fa/js/passkey-challenge.js'),
+                'components/two-fa/js/recovery-code-challenge': path.resolve(__dirname, 'resources/src/components/two-fa/js/recovery-code-challenge.js'),
             },
             output: {
                 // JavaScriptファイルの名前を指定

@@ -112,6 +112,13 @@ TEXT,
         'retry' => '再試行',
         'unsupported_title' => 'Passkey未対応',
         'unsupported_message' => 'お使いのデバイスまたはブラウザはPasskeyに対応していません。',
+        'challenge_failed' => 'チャレンジの開始に失敗しました',
+        'network_error' => 'ネットワークエラーが発生しました',
+        'no_challenge_data' => 'チャレンジデータがありません',
+        'verification_failed' => '認証の検証に失敗しました',
+        'auth_cancelled' => '認証がキャンセルされました',
+        'invalid_state' => '認証の状態が無効です',
+        'auth_failed' => '生体認証に失敗しました',
     ],
     
     // 認証方法切り替え

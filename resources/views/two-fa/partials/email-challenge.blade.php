@@ -84,6 +84,8 @@
     </form>
 </div>
 
+@push('scripts')
+<script src="{{ asset('build/assets/components/two-fa/js/email-challenge.js') }}" @cspNonce></script>
 <script @cspNonce>
 document.addEventListener('DOMContentLoaded', function() {
     const inputs = document.querySelectorAll('#code-inputs input');
@@ -285,3 +287,4 @@ document.addEventListener('DOMContentLoaded', function() {
     @endif
 });
 </script>
+@endpush
