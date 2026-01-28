@@ -24,6 +24,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Member;
 use App\Models\AuditLog;
+use App\Repositories\MemberSettingRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
@@ -37,6 +38,14 @@ use Illuminate\Validation\ValidationException;
  */
 class AdminLoginIdentifierCheckController extends AdminController
 {
+    protected MemberSettingRepository $memberSettingRepository;
+
+    public function __construct(MemberSettingRepository $memberSettingRepository)
+    {
+        parent::__construct();
+        $this->memberSettingRepository = $memberSettingRepository;
+    }
+
     /**
      * メンバー存在確認
      * 
@@ -52,11 +61,21 @@ class AdminLoginIdentifierCheckController extends AdminController
         $login = $request->input('login');
         $ipAddress = $request->ip();
         
+        // ログイン試行制限設定を取得
+        $lockoutEnabled = (bool) $this->memberSettingRepository->get('login_attempt_limit_enabled', false);
+        $maxAttempts = (int) $this->memberSettingRepository->get('login_attempt_max_attempts', 5);
+        $timeWindow = (int) $this->memberSettingRepository->get('login_attempt_time_window', 15);
+        
+        // レート制限が無効の場合はスキップ
+        if (!$lockoutEnabled) {
+            return $this->performIdentifierCheck($login, $ipAddress);
+        }
+        
         // レート制限キー（IP + identifier）
         $rateLimitKey = 'login-identifier-check:' . $ipAddress . ':' . md5($login);
         
-        // レート制限チェック（5回/5分）
-        if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
+        // レート制限チェック（設定値を使用）
+        if (RateLimiter::tooManyAttempts($rateLimitKey, $maxAttempts)) {
             $seconds = RateLimiter::availableIn($rateLimitKey);
             
             // ロックアウトログ記録
@@ -67,6 +86,8 @@ class AdminLoginIdentifierCheckController extends AdminController
                     'reason' => 'login_identifier_check_rate_limit',
                     'login_identifier' => $login,
                     'available_in_seconds' => $seconds,
+                    'max_attempts' => $maxAttempts,
+                    'time_window_minutes' => $timeWindow,
                 ],
             ]);
             
@@ -75,6 +96,7 @@ class AdminLoginIdentifierCheckController extends AdminController
                 'ip' => $ipAddress,
                 'login' => $login,
                 'available_in' => $seconds,
+                'max_attempts' => $maxAttempts,
             ]);
             
             throw ValidationException::withMessages([
@@ -82,6 +104,21 @@ class AdminLoginIdentifierCheckController extends AdminController
             ]);
         }
 
+        // レート制限カウンターを増やす（時間窓を設定値に合わせる）
+        RateLimiter::hit($rateLimitKey, $timeWindow * 60); // 分を秒に変換
+        
+        return $this->performIdentifierCheck($login, $ipAddress);
+    }
+
+    /**
+     * 識別子確認の実行
+     * 
+     * @param string $login
+     * @param string $ipAddress
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function performIdentifierCheck(string $login, string $ipAddress)
+    {
         // タイミング攻撃対策：常に一定時間待機（100-300ms）
         $delayMs = random_int(100, 300);
         usleep($delayMs * 1000);
@@ -90,9 +127,6 @@ class AdminLoginIdentifierCheckController extends AdminController
         $member = Member::where('email', $login)
             ->orWhere('account_name', $login)
             ->first();
-        
-        // レート制限カウンターを増やす
-        RateLimiter::hit($rateLimitKey, 300); // 5分間保持
         
         if ($member) {
             // メンバー存在確認成功
