@@ -24,5 +24,9 @@ return [
     'heading' => 'Two-Factor Authentication Settings',
     'description' => 'Configure two-factor authentication mode and authentication methods.',
     'two_fa_settings' => 'Two-Factor Authentication Settings',
-    'two_fa_cannot_enable_warning' => 'Cannot enable two-factor authentication. A mail server configuration, passkey registration, or recovery code generation is required.',
+    'two_fa_cannot_enable_warning' => 'Cannot enable two-factor authentication. Mail server configuration is required.',
+    'passkey_prompt_title' => 'Register Passkey Device',
+    'passkey_prompt_message' => 'We recommend registering a passkey device to make two-factor authentication more secure.',
+    'passkey_prompt_description' => 'By registering a passkey, you can log in more easily and securely using biometric authentication such as fingerprint or face recognition.',
+    'go_to_passkey_registration' => 'Go to Passkey Registration',
 ];

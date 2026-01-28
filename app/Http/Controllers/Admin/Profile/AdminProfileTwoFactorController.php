@@ -51,9 +51,9 @@ class AdminProfileTwoFactorController extends AdminLoggedInController
         
         $this->loadTwoFactorSettings($member);
         
-        // 2FA有効化可能かをチェック
-        $this->viewParams['canEnableTwoFa'] = $member->canEnableTwoFa();
-        $this->viewParams['twoFaEnableBlockReasons'] = $member->getTwoFaEnableBlockReasons();
+        // 2FA有効化可能かをチェック（プロフィール画面ではメールサーバーテスト済みかチェック）
+        $this->viewParams['canEnableTwoFa'] = $this->viewParams['isMailServerTested'];
+        $this->viewParams['twoFaEnableBlockReasons'] = $this->viewParams['canEnableTwoFa'] ? [] : ['no_mail_server'];
         
         return view('admin.profile.two-factor', $this->viewParams);
     }
@@ -88,30 +88,41 @@ class AdminProfileTwoFactorController extends AdminLoggedInController
         
         $member->save();
         
-        // 二段階認証が有効化された場合、回復コードを自動生成
-        $shouldGenerateRecoveryCodes = false;
+        // 保存後の2FA状態を取得（保存後の値を使用）
+        $member->refresh();
+        $twoFaNewMode = is_int($member->two_fa_mode) ? $member->two_fa_mode : $member->two_fa_mode->value;
+        $isTwoFaEnabled = ($twoFaNewMode === AuthenticationMode::Always->value || $twoFaNewMode === AuthenticationMode::Optional->value);
         
-        if ($twoFaForceMode === AuthenticationMode::UseProfileSetting->value && array_key_exists('two_fa_mode', $validated)) {
-            $twoFaNewMode = (int) $validated['two_fa_mode'];
+        // 回復コードとパスキーの状態をチェック
+        $shouldGenerateRecoveryCodes = false;
+        $shouldPromptPasskey = false;
+        
+        if ($isTwoFaEnabled) {
+            $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
+            $hasRecoveryCodes = $twoFaRecoveryCodeService->hasRecoveryCodes($member);
             
-            // 無効→有効に変更された場合
-            if ($twoFaOldMode === AuthenticationMode::Disabled->value && 
-                $twoFaNewMode === AuthenticationMode::Always->value) {
+            // 回復コードが存在しない場合は自動生成
+            if (!$hasRecoveryCodes) {
+                try {
+                    $recoveryCodeService = app(\App\Services\TwoFa\TwoFaRecoveryCodeService::class);
+                    $codes = $recoveryCodeService->generate($member);
+                    $shouldGenerateRecoveryCodes = true;
+                } catch (\Exception $e) {
+                    \Log::error('[Profile] Failed to auto-generate recovery codes', [
+                        'member_id' => $member->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+            
+            // パスキーが有効かつデバイス未登録の場合、促進モーダルを表示
+            $passkeyEnabled = $member->two_fa_passkey_enabled ?? true;
+            if ($passkeyEnabled) {
+                $twoFaPasskeyService = new TwoFaPasskeyService();
+                $passkeyDevices = $twoFaPasskeyService->getDevices($member);
                 
-                $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
-                
-                // 回復コードが存在しない場合は生成
-                if (!$twoFaRecoveryCodeService->hasRecoveryCodes($member)) {
-                    try {
-                        $recoveryCodeService = app(\App\Services\TwoFa\TwoFaRecoveryCodeService::class);
-                        $codes = $recoveryCodeService->generate($member);
-                        $shouldGenerateRecoveryCodes = true;
-                    } catch (\Exception $e) {
-                        \Log::error('[Profile] Failed to auto-generate recovery codes', [
-                            'member_id' => $member->id,
-                            'error' => $e->getMessage()
-                        ]);
-                    }
+                if ($passkeyDevices->isEmpty()) {
+                    $shouldPromptPasskey = true;
                 }
             }
         }
@@ -121,6 +132,11 @@ class AdminProfileTwoFactorController extends AdminLoggedInController
         // 回復コードが生成された場合はセッションに保存
         if ($shouldGenerateRecoveryCodes && isset($codes)) {
             $redirect->with('auto_generated_recovery_codes', $codes);
+        }
+        
+        // パスキー促進フラグをセッションに保存
+        if ($shouldPromptPasskey) {
+            $redirect->with('prompt_passkey_registration', true);
         }
         
         return $redirect;

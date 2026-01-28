@@ -9,12 +9,13 @@
  */
 
 // Alpine.js component for recovery codes modal
-window.recoveryCodesModal = function (modalId, codes = [], autoOpen = false, clearSessionRoute = null) {
+window.recoveryCodesModal = function (modalId, codes = [], autoOpen = false, clearSessionRoute = null, nextModal = null) {
     return {
         modalId: modalId,
         codes: codes,
         isSaved: false,
         clearSessionRoute: clearSessionRoute,
+        nextModal: nextModal,
 
         init() {
             // 回復コードデータをグローバルに保存（後方互換性）
@@ -109,6 +110,23 @@ window.recoveryCodesModal = function (modalId, codes = [], autoOpen = false, cle
                 const modalData = modalElement._x_dataStack[0];
                 if (modalData && typeof modalData.close === 'function') {
                     modalData.close();
+
+                    // 次のモーダルがある場合は開く
+                    if (this.nextModal) {
+                        setTimeout(() => {
+                            if (typeof window.openModal === 'function') {
+                                window.openModal(this.nextModal);
+                            } else {
+                                const nextModalElement = document.getElementById(this.nextModal);
+                                if (nextModalElement && nextModalElement._x_dataStack) {
+                                    const nextModalData = nextModalElement._x_dataStack[0];
+                                    if (nextModalData && typeof nextModalData.open === 'function') {
+                                        nextModalData.open();
+                                    }
+                                }
+                            }
+                        }, 300); // モーダルが閉じるアニメーション後に開く
+                    }
                 }
             }
         },

@@ -24,5 +24,9 @@ return [
     'heading' => '二段階認証設定',
     'description' => '二段階認証のモードと認証方法を設定します。',
     'two_fa_settings' => '二段階認証設定',
-    'two_fa_cannot_enable_warning' => '二段階認証を有効化できません。メールサーバーの設定、パスキーの登録、または回復コードの生成のいずれかが必要です。',
+    'two_fa_cannot_enable_warning' => '二段階認証を有効化できません。メールサーバーの設定が必要です。',
+    'passkey_prompt_title' => 'パスキーデバイスの登録',
+    'passkey_prompt_message' => '二段階認証をより安全にするため、パスキーデバイスの登録をおすすめします。',
+    'passkey_prompt_description' => 'パスキーを登録すると、指紋認証や顔認証などの生体認証を使用して、より簡単かつ安全にログインできます。',
+    'go_to_passkey_registration' => 'パスキー登録ページへ',
 ];
