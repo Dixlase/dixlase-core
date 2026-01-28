@@ -126,6 +126,10 @@ class AuditLog extends Model
     public const ACTION_LOGIN = 'login';
     public const ACTION_LOGOUT = 'logout';
     public const ACTION_LOGIN_FAILED = 'login_failed';
+    public const ACTION_LOGIN_IDENTIFIER_CHECK = 'login_identifier_check';
+    public const ACTION_LOGIN_IDENTIFIER_NOT_FOUND = 'login_identifier_not_found';
+    public const ACTION_PASSKEY_AUTH_SUCCESS = 'passkey_auth_success';
+    public const ACTION_PASSKEY_AUTH_FAILED = 'passkey_auth_failed';
     public const ACTION_NEW_DEVICE_LOGIN = 'new_device_login';
     public const ACTION_PASSWORD_CHANGED = 'password_changed';
     public const ACTION_PASSWORD_RESET = 'password_reset';
@@ -453,8 +457,10 @@ class AuditLog extends Model
     {
         $authActions = [
             self::ACTION_LOGIN, self::ACTION_LOGOUT, self::ACTION_LOGIN_FAILED,
-            self::ACTION_NEW_DEVICE_LOGIN, self::ACTION_2FA_CODE_SENT,
-            self::ACTION_2FA_CODE_VERIFIED, self::ACTION_2FA_CODE_FAILED,
+            self::ACTION_LOGIN_IDENTIFIER_CHECK, self::ACTION_PASSKEY_AUTH_SUCCESS,
+            self::ACTION_PASSKEY_AUTH_FAILED, self::ACTION_NEW_DEVICE_LOGIN,
+            self::ACTION_2FA_CODE_SENT, self::ACTION_2FA_CODE_VERIFIED,
+            self::ACTION_2FA_CODE_FAILED,
         ];
 
         $accountActions = [
@@ -472,9 +478,10 @@ class AuditLog extends Model
         ];
 
         $securityActions = [
-            self::ACTION_IP_BLOCKED, self::ACTION_IP_ALLOWED,
-            self::ACTION_LOCKOUT_TRIGGERED, self::ACTION_LOCKOUT_RELEASED,
-            self::ACTION_STEP_UP_AUTH_REQUIRED, self::ACTION_STEP_UP_AUTH_COMPLETED,
+            self::ACTION_LOGIN_IDENTIFIER_NOT_FOUND, self::ACTION_IP_BLOCKED,
+            self::ACTION_IP_ALLOWED, self::ACTION_LOCKOUT_TRIGGERED,
+            self::ACTION_LOCKOUT_RELEASED, self::ACTION_STEP_UP_AUTH_REQUIRED,
+            self::ACTION_STEP_UP_AUTH_COMPLETED,
         ];
 
         $sessionActions = [
@@ -510,7 +517,8 @@ class AuditLog extends Model
         ];
 
         $warningActions = [
-            self::ACTION_LOGIN_FAILED, self::ACTION_NEW_DEVICE_LOGIN,
+            self::ACTION_LOGIN_FAILED, self::ACTION_LOGIN_IDENTIFIER_NOT_FOUND,
+            self::ACTION_PASSKEY_AUTH_FAILED, self::ACTION_NEW_DEVICE_LOGIN,
             self::ACTION_PASSWORD_CHANGED, self::ACTION_EMAIL_CHANGED,
             self::ACTION_2FA_DISABLED, self::ACTION_IP_BLOCKED,
             self::ACTION_FORCED_LOGOUT, self::ACTION_DEVICE_BLOCKED,
@@ -518,13 +526,13 @@ class AuditLog extends Model
         ];
 
         $noticeActions = [
-            self::ACTION_2FA_ENABLED, self::ACTION_RECOVERY_CODE_USED,
-            self::ACTION_PASSKEY_REGISTERED, self::ACTION_PASSKEY_REVOKED,
-            self::ACTION_PLUGIN_INSTALLED, self::ACTION_PLUGIN_ENABLED,
-            self::ACTION_PLUGIN_DISABLED, self::ACTION_THEME_INSTALLED,
-            self::ACTION_THEME_ENABLED, self::ACTION_STEP_UP_AUTH_REQUIRED,
-            self::ACTION_SETTINGS_UPDATED, self::ACTION_MEMBER_CREATED,
-            self::ACTION_ROLE_CHANGED,
+            self::ACTION_PASSKEY_AUTH_SUCCESS, self::ACTION_2FA_ENABLED,
+            self::ACTION_RECOVERY_CODE_USED, self::ACTION_PASSKEY_REGISTERED,
+            self::ACTION_PASSKEY_REVOKED, self::ACTION_PLUGIN_INSTALLED,
+            self::ACTION_PLUGIN_ENABLED, self::ACTION_PLUGIN_DISABLED,
+            self::ACTION_THEME_INSTALLED, self::ACTION_THEME_ENABLED,
+            self::ACTION_STEP_UP_AUTH_REQUIRED, self::ACTION_SETTINGS_UPDATED,
+            self::ACTION_MEMBER_CREATED, self::ACTION_ROLE_CHANGED,
         ];
 
         if (in_array($action, $criticalActions)) return self::SEVERITY_CRITICAL;
