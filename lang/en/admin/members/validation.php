@@ -28,4 +28,6 @@ return [
     'appearance_invalid' => 'Invalid appearance mode selected.',
     'status_required' => 'Please select a status.',
     'status_invalid' => 'Invalid status selected.',
+    'two_fa_cannot_enable' => 'Cannot enable two-factor authentication. A mail server configuration, passkey registration, or recovery code generation is required.',
+    'two_fa_cannot_enable_new_member' => 'To enable two-factor authentication for a new member, a mail server must be configured.',
 ];
