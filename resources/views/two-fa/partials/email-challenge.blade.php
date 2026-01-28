@@ -84,207 +84,22 @@
     </form>
 </div>
 
-@push('scripts')
-<script src="{{ asset('build/assets/components/two-fa/js/email-challenge.js') }}" @cspNonce></script>
-<script @cspNonce>
-document.addEventListener('DOMContentLoaded', function() {
-    const inputs = document.querySelectorAll('#code-inputs input');
-    const hiddenInput = document.getElementById('hidden-code');
-    const submitButton = document.getElementById('submit-button');
-    const resendButton = document.getElementById('resend-button');
-    const form = document.getElementById('two-factor-form');
-    
-    let resendCountdown = 0;
-    let countdownInterval = null;
-    let expireInterval = null;
-
-    // フラッシュメッセージ表示関数（既存のflash-messageコンポーネントと同じスタイル）
-    function showFlashMessage(message, type = 'success') {
-        // 既存のメッセージを削除
-        const existingMessage = document.querySelector('.flash-message-dynamic');
-        if (existingMessage) {
-            existingMessage.remove();
-        }
-
-        // メッセージ要素を作成
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `flash-message-dynamic mb-6 p-4 font-semibold rounded-xl ${
-            type === 'success' 
-                ? 'text-green-800 bg-green-100 border border-green-200 dark:text-green-200 dark:bg-green-900 dark:border-green-700' 
-                : 'text-red-800 bg-red-100 border border-red-200 dark:text-red-200 dark:bg-red-900 dark:border-red-700'
-        }`;
-        messageDiv.textContent = message;
-
-        // フォームの前に挿入
-        form.parentNode.insertBefore(messageDiv, form);
-
-        // 5秒後に自動削除
-        setTimeout(() => {
-            messageDiv.style.transition = 'opacity 0.5s';
-            messageDiv.style.opacity = '0';
-            setTimeout(() => messageDiv.remove(), 500);
-        }, 5000);
+<script type="application/json" id="email-challenge-config">
+{
+    "resendAction": "{{ $resendAction }}",
+    "csrfToken": "{{ csrf_token() }}",
+    "codeLength": {{ $codeLength }},
+    "expireMinutes": {{ $expireMinutes }},
+    "resendIntervalSeconds": {{ $resendIntervalSeconds }},
+    "autoSubmit": {{ $autoSubmit ? 'true' : 'false' }},
+    "showExpireTime": {{ $showExpireTime ? 'true' : 'false' }},
+    "showResend": {{ $showResend ? 'true' : 'false' }},
+    "translations": {
+        "minutes_suffix": "{{ __('two_fa.email.minutes_suffix') }}",
+        "seconds_suffix": "{{ __('two_fa.email.seconds_suffix') }}",
+        "expired": "{{ __('two_fa.email.expired') }}",
+        "resend_failed": "{{ __('two_fa.email.resend_failed') }}",
+        "network_error": "{{ __('two_fa.email.network_error') }}"
     }
-
-    // コード入力処理
-    inputs.forEach((input, index) => {
-        input.addEventListener('input', function(e) {
-            const value = e.target.value.replace(/[^0-9]/g, '');
-            e.target.value = value;
-
-            if (value && index < inputs.length - 1) {
-                inputs[index + 1].focus();
-            }
-
-            updateHiddenInput();
-            updateSubmitButton();
-
-            // 自動送信
-            @if($autoSubmit)
-            if (getCodeValue().length === {{ $codeLength }}) {
-                setTimeout(() => form.submit(), 100);
-            }
-            @endif
-        });
-
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Backspace' && !e.target.value && index > 0) {
-                inputs[index - 1].focus();
-                inputs[index - 1].value = '';
-                updateHiddenInput();
-                updateSubmitButton();
-            }
-        });
-
-        input.addEventListener('paste', function(e) {
-            e.preventDefault();
-            const paste = (e.clipboardData || window.clipboardData).getData('text');
-            const numbers = paste.replace(/[^0-9]/g, '').slice(0, {{ $codeLength }});
-            
-            for (let i = 0; i < numbers.length && i < inputs.length; i++) {
-                inputs[i].value = numbers[i];
-            }
-            
-            updateHiddenInput();
-            updateSubmitButton();
-
-            // 自動送信
-            @if($autoSubmit)
-            if (numbers.length === {{ $codeLength }}) {
-                setTimeout(() => form.submit(), 100);
-            }
-            @endif
-        });
-    });
-
-    function getCodeValue() {
-        return Array.from(inputs).map(input => input.value).join('');
-    }
-
-    function updateHiddenInput() {
-        hiddenInput.value = getCodeValue();
-    }
-
-    function updateSubmitButton() {
-        const code = getCodeValue();
-        submitButton.disabled = code.length !== {{ $codeLength }};
-    }
-
-    // 有効期限タイマーを開始する関数
-    @if($showExpireTime)
-    function startExpireTimer() {
-        // 既存のタイマーをクリア
-        if (expireInterval) {
-            clearInterval(expireInterval);
-        }
-        
-        let expireTime = {{ $expireMinutes }} * 60; // 秒に変換
-        const expireElement = document.getElementById('expire-time');
-        
-        expireInterval = setInterval(() => {
-            expireTime--;
-            const minutes = Math.floor(expireTime / 60);
-            const seconds = expireTime % 60;
-            expireElement.textContent = `${minutes}分${seconds.toString().padStart(2, '0')}{{ __('two_fa.email.seconds_suffix') }}`;
-            
-            if (expireTime <= 0) {
-                clearInterval(expireInterval);
-                expireElement.textContent = '{{ __('two_fa.email.expired') }}';
-                inputs.forEach(input => input.disabled = true);
-                submitButton.disabled = true;
-            }
-        }, 1000);
-    }
-    @endif
-
-    // 再送信機能
-    @if($showResend && $resendAction)
-    window.resendCode = function() {
-        if (resendCountdown > 0) return;
-
-        fetch('{{ $resendAction }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // 成功メッセージを表示
-                showFlashMessage(data.message, 'success');
-                
-                startResendCountdown({{ $resendIntervalSeconds }}); // 設定値の秒数間再送信を無効化
-                
-                // 有効期限タイマーをリセット
-                @if($showExpireTime)
-                startExpireTimer();
-                @endif
-                
-                // 入力フィールドをクリアして有効化
-                inputs.forEach(input => {
-                    input.value = '';
-                    input.disabled = false;
-                });
-                inputs[0].focus();
-                updateHiddenInput();
-                updateSubmitButton();
-            } else {
-                showFlashMessage(data.message || '{{ __('two_fa.email.resend_failed') }}', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Resend error:', error);
-            showFlashMessage('{{ __('two_fa.email.network_error') }}', 'error');
-        });
-    };
-
-    function startResendCountdown(seconds) {
-        resendCountdown = seconds;
-        resendButton.disabled = true;
-        document.getElementById('resend-countdown').classList.remove('hidden');
-        
-        countdownInterval = setInterval(() => {
-            resendCountdown--;
-            document.getElementById('resend-countdown').textContent = `(${resendCountdown}{{ __('two_fa.email.seconds_suffix') }})`;
-            
-            if (resendCountdown <= 0) {
-                clearInterval(countdownInterval);
-                resendButton.disabled = false;
-                document.getElementById('resend-countdown').classList.add('hidden');
-            }
-        }, 1000);
-    }
-    @endif
-
-    // 最初の入力フィールドにフォーカス
-    inputs[0].focus();
-
-    // 有効期限カウントダウンを開始
-    @if($showExpireTime)
-    startExpireTimer();
-    @endif
-});
+}
 </script>
-@endpush

@@ -82,25 +82,20 @@
     </div>
 </div>
 
-@push('scripts')
-<script src="{{ asset('build/assets/components/two-fa/js/passkey-challenge.js') }}" type="module" @cspNonce></script>
-<script @cspNonce>
-document.addEventListener('DOMContentLoaded', function() {
-    window.initPasskeyChallenge({
-        challengeAction: '{{ $challengeAction }}',
-        verifyAction: '{{ $verifyAction }}',
-        csrfToken: '{{ csrf_token() }}',
-        dashboardRoute: '{{ $dashboardRoute ? route($dashboardRoute) : '#' }}',
-        translations: {
-            challenge_failed: '{{ __('two_fa.passkey.challenge_failed') }}',
-            network_error: '{{ __('two_fa.passkey.network_error') }}',
-            no_challenge_data: '{{ __('two_fa.passkey.no_challenge_data') }}',
-            verification_failed: '{{ __('two_fa.passkey.verification_failed') }}',
-            auth_cancelled: '{{ __('two_fa.passkey.auth_cancelled') }}',
-            invalid_state: '{{ __('two_fa.passkey.invalid_state') }}',
-            auth_failed: '{{ __('two_fa.passkey.auth_failed') }}'
-        }
-    });
-});
+<script type="application/json" id="passkey-challenge-config">
+{
+    "challengeAction": "{{ $challengeAction }}",
+    "verifyAction": "{{ $verifyAction }}",
+    "csrfToken": "{{ csrf_token() }}",
+    "dashboardRoute": "{{ $dashboardRoute ? route($dashboardRoute) : '#' }}",
+    "translations": {
+        "challenge_failed": "{{ __('two_fa.passkey.challenge_failed') }}",
+        "network_error": "{{ __('two_fa.passkey.network_error') }}",
+        "no_challenge_data": "{{ __('two_fa.passkey.no_challenge_data') }}",
+        "verification_failed": "{{ __('two_fa.passkey.verification_failed') }}",
+        "auth_cancelled": "{{ __('two_fa.passkey.auth_cancelled') }}",
+        "invalid_state": "{{ __('two_fa.passkey.invalid_state') }}",
+        "auth_failed": "{{ __('two_fa.passkey.auth_failed') }}"
+    }
+}
 </script>
-@endpush
