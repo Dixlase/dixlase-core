@@ -82,178 +82,25 @@
     </div>
 </div>
 
+@push('scripts')
+<script src="{{ asset('build/assets/components/two-fa/js/passkey-challenge.js') }}" type="module" @cspNonce></script>
 <script @cspNonce>
 document.addEventListener('DOMContentLoaded', function() {
-    let challengeData = null;
-
-    // WebAuthn対応チェック
-    function checkWebAuthnSupport() {
-        if (!window.PublicKeyCredential) {
-            showUnsupported();
-            return false;
+    window.initPasskeyChallenge({
+        challengeAction: '{{ $challengeAction }}',
+        verifyAction: '{{ $verifyAction }}',
+        csrfToken: '{{ csrf_token() }}',
+        dashboardRoute: '{{ $dashboardRoute ? route($dashboardRoute) : '#' }}',
+        translations: {
+            challenge_failed: '{{ __('two_fa.passkey.challenge_failed') }}',
+            network_error: '{{ __('two_fa.passkey.network_error') }}',
+            no_challenge_data: '{{ __('two_fa.passkey.no_challenge_data') }}',
+            verification_failed: '{{ __('two_fa.passkey.verification_failed') }}',
+            auth_cancelled: '{{ __('two_fa.passkey.auth_cancelled') }}',
+            invalid_state: '{{ __('two_fa.passkey.invalid_state') }}',
+            auth_failed: '{{ __('two_fa.passkey.auth_failed') }}'
         }
-        return true;
-    }
-
-    // Passkeyチャレンジを開始
-    function startPasskeyChallenge() {
-        if (!checkWebAuthnSupport()) {
-            return;
-        }
-
-        showProcessing();
-
-        fetch('{{ $challengeAction }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                challengeData = data.challenge;
-                performPasskeyAuth();
-            } else {
-                showError(data.message || 'チャレンジの開始に失敗しました');
-            }
-        })
-        .catch(error => {
-            console.error('Passkey challenge error:', error);
-            showError('ネットワークエラーが発生しました');
-        });
-    }
-
-    // WebAuthn認証を実行
-    function performPasskeyAuth() {
-        if (!challengeData) {
-            showError('チャレンジデータがありません');
-            return;
-        }
-
-        // Base64URLデコード
-        const challenge = Uint8Array.from(atob(challengeData.challenge.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
-        
-        const allowCredentials = challengeData.allowCredentials.map(cred => ({
-            id: Uint8Array.from(atob(cred.id.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)),
-            type: cred.type,
-            transports: cred.transports
-        }));
-
-        const publicKeyCredentialRequestOptions = {
-            challenge: challenge,
-            allowCredentials: allowCredentials,
-            timeout: challengeData.timeout || 60000,
-            userVerification: challengeData.userVerification || 'preferred'
-        };
-
-        navigator.credentials.get({
-            publicKey: publicKeyCredentialRequestOptions
-        })
-        .then(credential => {
-            // 認証結果をサーバーに送信
-            const response = {
-                id: credential.id,
-                rawId: btoa(String.fromCharCode(...new Uint8Array(credential.rawId))),
-                response: {
-                    authenticatorData: btoa(String.fromCharCode(...new Uint8Array(credential.response.authenticatorData))),
-                    clientDataJSON: btoa(String.fromCharCode(...new Uint8Array(credential.response.clientDataJSON))),
-                    signature: btoa(String.fromCharCode(...new Uint8Array(credential.response.signature))),
-                    userHandle: credential.response.userHandle ? btoa(String.fromCharCode(...new Uint8Array(credential.response.userHandle))) : null
-                },
-                type: credential.type
-            };
-
-            return fetch('{{ $verifyAction }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    challenge_id: challengeData.id,
-                    response: response
-                })
-            });
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showSuccess();
-                // 認証成功後、サーバーから返されたURLにリダイレクト
-                setTimeout(() => {
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
-                    } else {
-                        window.location.href = '{{ $dashboardRoute ? route($dashboardRoute) : '#' }}';
-                    }
-                }, 2000);
-            } else {
-                showError(data.message || '認証の検証に失敗しました');
-            }
-        })
-        .catch(error => {
-            console.error('Passkey authentication error:', error);
-            if (error.name === 'NotAllowedError') {
-                showError('認証がキャンセルされました');
-            } else if (error.name === 'InvalidStateError') {
-                showError('認証の状態が無効です');
-            } else if (error.name === 'NotSupportedError') {
-                showUnsupported();
-            } else {
-                showError('生体認証に失敗しました');
-            }
-        });
-    }
-
-    // 各状態表示関数
-    function showWaiting() {
-        hideAllStates();
-        document.getElementById('passkey-waiting').classList.remove('hidden');
-    }
-
-    function showProcessing() {
-        hideAllStates();
-        document.getElementById('passkey-processing').classList.remove('hidden');
-    }
-
-    function showSuccess() {
-        hideAllStates();
-        document.getElementById('passkey-success').classList.remove('hidden');
-    }
-
-    function showError(message) {
-        hideAllStates();
-        document.getElementById('passkey-error').classList.remove('hidden');
-        document.getElementById('passkey-error-message').textContent = message;
-    }
-
-    function showUnsupported() {
-        hideAllStates();
-        document.getElementById('passkey-unsupported').classList.remove('hidden');
-    }
-
-    function hideAllStates() {
-        document.getElementById('passkey-waiting').classList.add('hidden');
-        document.getElementById('passkey-processing').classList.add('hidden');
-        document.getElementById('passkey-success').classList.add('hidden');
-        document.getElementById('passkey-error').classList.add('hidden');
-        document.getElementById('passkey-unsupported').classList.add('hidden');
-    }
-
-    // イベントリスナー
-    document.getElementById('start-passkey-auth').addEventListener('click', startPasskeyChallenge);
-    document.getElementById('retry-passkey-auth').addEventListener('click', function() {
-        showWaiting();
-        startPasskeyChallenge();
     });
-
-    // 初期化
-    if (!checkWebAuthnSupport()) {
-        showUnsupported();
-    } else {
-        showWaiting();
-    }
 });
 </script>
+@endpush

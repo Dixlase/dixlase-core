@@ -712,6 +712,41 @@ php artisan csp:disable --force
 3. onclick等を `data-dix-action` に置き換え
 4. plugin.jsonに `requires_inline_js: false` を明示
 
+**実装例：認証画面のCSP対応**
+
+Dixlaseの二段階認証画面は、CSP厳格モード対応の参考実装として以下のように外部スクリプト化されています：
+
+```html
+<!-- Before: インラインスクリプト -->
+<script @cspNonce>
+document.addEventListener('DOMContentLoaded', function() {
+    // 200行以上のインラインコード...
+});
+</script>
+
+<!-- After: 外部スクリプト化 -->
+@push('scripts')
+<script src="{{ asset('build/assets/components/two-fa/js/email-challenge.js') }}" @cspNonce></script>
+<script @cspNonce>
+document.addEventListener('DOMContentLoaded', function() {
+    window.initEmailChallenge({
+        resendAction: '{{ $resendAction }}',
+        csrfToken: '{{ csrf_token() }}',
+        codeLength: {{ $codeLength }},
+        translations: { /* ... */ }
+    });
+});
+</script>
+@endpush
+```
+
+**対応ファイル：**
+- `resources/src/components/two-fa/js/email-challenge.js` - メール認証
+- `resources/src/components/two-fa/js/passkey-challenge.js` - パスキー認証
+- `resources/src/components/two-fa/js/recovery-code-challenge.js` - 回復コード認証
+
+これらのファイルは`vite.config.js`でビルド対象に含まれ、CSP厳格モードでも動作します。
+
 ### Q5. セーフモードとは何ですか？
 **A:** CSP設定を変更して管理画面にアクセスできなくなった場合の救済措置です。セーフモード中はCSPが一時的に無効化され、安全に設定を修正できます。ただし、セキュリティリスクがあるため、設定を修正したら必ず解除してください。
 

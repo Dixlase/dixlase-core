@@ -112,6 +112,13 @@ TEXT,
         'retry' => 'Retry',
         'unsupported_title' => 'Passkey Not Supported',
         'unsupported_message' => 'Your device or browser does not support Passkey authentication.',
+        'challenge_failed' => 'Failed to start challenge',
+        'network_error' => 'Network error occurred',
+        'no_challenge_data' => 'No challenge data available',
+        'verification_failed' => 'Authentication verification failed',
+        'auth_cancelled' => 'Authentication was cancelled',
+        'invalid_state' => 'Authentication state is invalid',
+        'auth_failed' => 'Biometric authentication failed',
     ],
     
     // Authentication Method Switching

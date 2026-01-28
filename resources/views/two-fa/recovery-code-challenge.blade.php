@@ -123,92 +123,13 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('build/assets/components/two-fa/js/recovery-code-challenge.js') }}" @cspNonce></script>
 <script @cspNonce>
 document.addEventListener('DOMContentLoaded', function() {
-    const inputs = ['code1', 'code2', 'code3', 'code4'];
-    const form = document.getElementById('recoveryCodeForm');
-    
-    // 各入力フィールドにイベントリスナーを設定
-    inputs.forEach((id, index) => {
-        const input = document.getElementById(id);
-        
-        // 入力時の処理
-        input.addEventListener('input', function(e) {
-            // 数字のみ許可
-            this.value = this.value.replace(/[^0-9]/g, '');
-            
-            // 5桁入力したら次のフィールドに移動
-            if (this.value.length === 5 && index < inputs.length - 1) {
-                document.getElementById(inputs[index + 1]).focus();
-            }
-        });
-        
-        // キー入力時の処理
-        input.addEventListener('keydown', function(e) {
-            // Backspaceで前のフィールドに戻る
-            if (e.key === 'Backspace' && this.value.length === 0 && index > 0) {
-                document.getElementById(inputs[index - 1]).focus();
-            }
-            
-            // 左矢印キーで前のフィールドに移動
-            if (e.key === 'ArrowLeft' && this.selectionStart === 0 && index > 0) {
-                const prevInput = document.getElementById(inputs[index - 1]);
-                prevInput.focus();
-                prevInput.setSelectionRange(prevInput.value.length, prevInput.value.length);
-            }
-            
-            // 右矢印キーで次のフィールドに移動
-            if (e.key === 'ArrowRight' && this.selectionStart === this.value.length && index < inputs.length - 1) {
-                const nextInput = document.getElementById(inputs[index + 1]);
-                nextInput.focus();
-                nextInput.setSelectionRange(0, 0);
-            }
-        });
-        
-        // ペースト処理
-        input.addEventListener('paste', function(e) {
-            e.preventDefault();
-            const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '');
-            
-            if (pastedData.length >= 20) {
-                // 20桁以上の場合、各フィールドに5桁ずつ分配
-                document.getElementById('code1').value = pastedData.substring(0, 5);
-                document.getElementById('code2').value = pastedData.substring(5, 10);
-                document.getElementById('code3').value = pastedData.substring(10, 15);
-                document.getElementById('code4').value = pastedData.substring(15, 20);
-                document.getElementById('code4').focus();
-            } else {
-                // 短い場合は現在のフィールドから順に入力
-                let remaining = pastedData;
-                for (let i = index; i < inputs.length && remaining.length > 0; i++) {
-                    const field = document.getElementById(inputs[i]);
-                    const chunk = remaining.substring(0, 5);
-                    field.value = chunk;
-                    remaining = remaining.substring(5);
-                    if (remaining.length > 0 && i < inputs.length - 1) {
-                        document.getElementById(inputs[i + 1]).focus();
-                    }
-                }
-            }
-        });
-    });
-    
-    // フォーム送信時に隠しフィールドに値を結合
-    form.addEventListener('submit', function(e) {
-        const code1 = document.getElementById('code1').value;
-        const code2 = document.getElementById('code2').value;
-        const code3 = document.getElementById('code3').value;
-        const code4 = document.getElementById('code4').value;
-        
-        // 全て5桁入力されているかチェック
-        if (code1.length !== 5 || code2.length !== 5 || code3.length !== 5 || code4.length !== 5) {
-            e.preventDefault();
-            alert('{{ __("two_fa.recovery_code.format_hint") }}');
-            return false;
+    window.initRecoveryCodeChallenge({
+        translations: {
+            format_hint: '{{ __("two_fa.recovery_code.format_hint") }}'
         }
-        
-        // 隠しフィールドに結合した値を設定
-        document.getElementById('recovery_code').value = code1 + code2 + code3 + code4;
     });
 });
 </script>
