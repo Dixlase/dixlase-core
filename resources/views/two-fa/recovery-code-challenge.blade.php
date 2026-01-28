@@ -122,15 +122,10 @@
     </a>
 @endsection
 
-@push('scripts')
-<script src="{{ asset('build/assets/components/two-fa/js/recovery-code-challenge.js') }}" @cspNonce></script>
-<script @cspNonce>
-document.addEventListener('DOMContentLoaded', function() {
-    window.initRecoveryCodeChallenge({
-        translations: {
-            format_hint: '{{ __("two_fa.recovery_code.format_hint") }}'
-        }
-    });
-});
+<script type="application/json" id="recovery-code-challenge-config">
+{
+    "translations": {
+        "format_hint": "{{ __('two_fa.recovery_code.format_hint') }}"
+    }
+}
 </script>
-@endpush
