@@ -154,6 +154,11 @@ class AdminMemberController extends AdminLoggedInController
 
         $this->loadMemberFormParams();
 
+        // 新規作成時は、メールサーバーが設定されていれば2FA有効化可能
+        $member = new Member();
+        $this->viewParams['canEnableTwoFa'] = $member->isMailServerConfigured();
+        $this->viewParams['twoFaEnableBlockReasons'] = $this->viewParams['canEnableTwoFa'] ? [] : ['no_mail_server'];
+
         return view('admin.members.create', $this->viewParams);
     }
 
@@ -243,6 +248,10 @@ class AdminMemberController extends AdminLoggedInController
         $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
         $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodeService->getRemainingCount($member);
         $this->viewParams['twoFaHasRecoveryCodes'] = $twoFaRecoveryCodeService->hasRecoveryCodes($member);
+
+        // 2FA有効化可能かをチェック
+        $this->viewParams['canEnableTwoFa'] = $member->canEnableTwoFa();
+        $this->viewParams['twoFaEnableBlockReasons'] = $member->getTwoFaEnableBlockReasons();
 
         return view('admin.members.edit', $this->viewParams);
     }
