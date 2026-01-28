@@ -51,6 +51,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </div>
 
 <style>
+    /* セーフモードバナー内のフォームのmarginをリセット */
+    #csp-safe-mode-banner form {
+        margin-block-end: 0 !important;
+        margin-block-start: 0 !important;
+    }
+    
     /* セーフモードバナーが表示されている場合、サイドバー非表示ボタンの位置を調整 */
     body:has(#csp-safe-mode-banner) button[aria-label="Toggle sidebar menu"] {
         top: calc(5.25rem + var(--csp-banner-height, 0px)) !important;
