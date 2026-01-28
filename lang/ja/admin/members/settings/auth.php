@@ -68,4 +68,16 @@ return [
     'captcha_admin_login_help' => '有効にすると、管理画面ログイン時にCAPTCHA認証が要求されます。',
     'captcha_not_enabled' => 'CAPTCHAが有効になっていません。<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">セキュリティ設定</a>でCAPTCHAを有効にしてください。',
     'captcha_not_authenticated' => 'CAPTCHAの認証テストが完了していません。<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">セキュリティ設定</a>で認証テストを行ってください。',
+    
+    // Phase 2: セキュリティ設定統合
+    'login_attempt_limit_description' => 'ログイン試行制限は全体設定で管理されています。',
+    'managed_in_security_settings' => 'ログイン試行制限は全体設定 > セキュリティ設定で管理されています。',
+    'go_to_security_settings' => 'セキュリティ設定を開く',
+    'current_settings' => '現在の設定',
+    'status' => '状態',
+    'max_attempts' => '最大試行回数',
+    'time_window' => '時間窓',
+    'lockout_duration' => 'ロックアウト時間',
+    'times' => '回',
+    'minutes' => '分',
 ];

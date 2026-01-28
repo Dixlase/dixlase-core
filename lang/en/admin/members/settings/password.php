@@ -34,4 +34,12 @@ return [
     'pwned_check_enabled' => 'Dictionary Attack Protection',
     'pwned_help' => 'When enabled, password safety is checked using the Have I Been Pwned API during member creation, editing, and password changes.<br>Prevents use of passwords found in breach databases.',
     'pwned_api_info' => 'This check uses the Have I Been Pwned API. The password itself is not sent; only hashed information is used, making it safe.',
+    
+    // Phase 2: Security Settings Integration
+    'password_policy' => 'Password Policy',
+    'password_policy_description' => 'Member password policy is managed in global settings.',
+    'managed_in_security_settings' => 'Password policy is managed in Global Settings > Security Settings.',
+    'go_to_security_settings' => 'Open Security Settings',
+    'current_policy' => 'Current Policy',
+    'characters' => ' characters',
 ];

@@ -34,4 +34,12 @@ return [
     'pwned_check_enabled' => '辞書攻撃対策',
     'pwned_help' => '有効にすると、メンバー作成・編集・パスワード変更時にHave I Been Pwned APIを使用してパスワードの安全性をチェックします。<br>漏洩データベースに含まれているパスワードの使用を防ぎます。',
     'pwned_api_info' => 'このチェックはHave I Been Pwned APIを使用します。パスワード自体は送信されず、ハッシュ化された情報のみが使用されるため安全です。',
+    
+    // Phase 2: セキュリティ設定統合
+    'password_policy' => 'パスワードポリシー',
+    'password_policy_description' => 'メンバーのパスワードポリシーは全体設定で管理されています。',
+    'managed_in_security_settings' => 'パスワードポリシーは全体設定 > セキュリティ設定で管理されています。',
+    'go_to_security_settings' => 'セキュリティ設定を開く',
+    'current_policy' => '現在のポリシー',
+    'characters' => '文字',
 ];

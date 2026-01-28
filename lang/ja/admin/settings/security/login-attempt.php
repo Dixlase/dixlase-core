@@ -1,0 +1,41 @@
+<?php
+
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * Website: https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
+return [
+    'heading' => 'ログイン試行制限設定',
+    'description' => 'ログイン試行回数の制限とロックアウトに関する設定を管理します。',
+    
+    // デフォルトログイン試行制限設定
+    'default_login_attempt_settings' => 'デフォルトログイン試行制限設定',
+    'default_login_attempt_description' => 'メンバーおよびプラグインでカスタム設定が無効な場合に適用されるデフォルトのログイン試行制限です。',
+    
+    // 基本設定
+    'basic_settings' => '基本設定',
+    'enabled' => 'ログイン試行制限を有効化',
+    'max_attempts' => '最大試行回数',
+    'max_attempts_help' => '同一アカウントに対する最大ログイン試行回数（1-100回）',
+    'max_attempts_ip' => 'IP最大試行回数',
+    'max_attempts_ip_help' => '同一IPアドレスからの最大ログイン試行回数（1-200回）',
+    'time_window' => '時間窓',
+    'time_window_help' => 'ログイン試行回数をカウントする時間窓（1-1440分）',
+    'lockout_duration' => 'ロックアウト時間',
+    'lockout_duration_help' => 'ロックアウト時の待機時間（1-10080分）',
+    'lockout_notification_enabled' => 'ロックアウト通知を有効化',
+    'lockout_notification_help' => '有効にすると、ロックアウト発生時に管理者にメール通知を送信します',
+    
+    // ヒント
+    'plugin_custom_hint' => 'プラグイン（DixlaseUsersなど）で独自のログイン試行制限を設定できます。プラグインでカスタム設定が有効な場合、そちらが優先されます。',
+    
+    'settings_updated' => 'ログイン試行制限設定が更新されました。',
+];
