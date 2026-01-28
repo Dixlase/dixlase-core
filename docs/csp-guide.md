@@ -4,11 +4,13 @@
 
 1. [概要](#概要)
 2. [CSPモード仕様](#cspモード仕様)
-3. [基本的な使い方](#基本的な使い方)
-4. [プラグイン・テーマ開発](#プラグインテーマ開発)
-5. [Dixlase初期化規約](#dixlase初期化規約)
-6. [トラブルシューティング](#トラブルシューティング)
-7. [FAQ](#faq)
+3. [セーフモード](#セーフモード)
+4. [基本的な使い方](#基本的な使い方)
+5. [コマンドラインツール](#コマンドラインツール)
+6. [プラグイン・テーマ開発](#プラグインテーマ開発)
+7. [Dixlase初期化規約](#dixlase初期化規約)
+8. [トラブルシューティング](#トラブルシューティング)
+9. [FAQ](#faq)
 
 ---
 
@@ -187,6 +189,65 @@ CSP Readyなテーマ/プラグインのみで、最大限の防御を実現。
 
 ---
 
+## セーフモード
+
+### 概要
+
+CSP設定を変更して管理画面にアクセスできなくなった場合に備えて、**セーフモード**機能を提供しています。セーフモードでは、CSPヘッダーが一時的に無効化され、管理画面に安全にアクセスできます。
+
+### セーフモードの発動条件
+
+以下のいずれかの条件でセーフモードが自動的に有効になります：
+
+1. **CSP設定保存後の確認タイムアウト**
+   - CSP設定を保存すると、10秒間の確認モーダルが表示されます
+   - 10秒以内に「この設定を使う」ボタンを押さないと、自動的に前の設定にロールバックされます
+   - ロールバック後、セーフモードが有効になります
+
+2. **手動でのロールバック**
+   - 確認モーダルで「元に戻す」ボタンを押すと、前の設定にロールバックされ、セーフモードが有効になります
+
+### セーフモードバナー
+
+セーフモードが有効な場合、管理画面の上部に**赤いバナー**が表示されます：
+
+```
+⚠️ CSPセーフモードが有効です
+CSP設定で問題が発生したため、一時的にCSPを無効化しています。
+セキュリティリスクがあるため、設定を完了するか必ずセーフモードを解除してください。
+
+[CSP設定へ]  [セーフモード解除]
+```
+
+### セーフモードの解除方法
+
+#### 方法1: 管理画面から解除
+
+1. バナーの「セーフモード解除」ボタンをクリック
+2. または、「CSP設定へ」から設定を修正して保存
+
+#### 方法2: コマンドラインから解除
+
+```bash
+php artisan csp:disable-safe-mode
+```
+
+### セーフモードの仕組み
+
+- セーフモードはセッションベースで動作します
+- ログインユーザーごとに独立して管理されます
+- セーフモード中は、`CspBuilder`がCSPヘッダーの出力をスキップします
+- セーフモードを解除するまで、CSPは無効のままです
+
+### 注意事項
+
+⚠️ **セーフモードは一時的な救済措置です**
+- セーフモード中はCSPが無効化されており、XSS攻撃のリスクが高まります
+- 設定を修正したら、必ずセーフモードを解除してください
+- セーフモードは管理画面のみで有効です（フロントエンドには影響しません）
+
+---
+
 ## 基本的な使い方
 
 ### Bladeテンプレートでの使用
@@ -314,6 +375,112 @@ const config = Dixlase.config.load('app-config');
 
 ```javascript
 const theme = Dixlase.config.get(element, 'theme');
+```
+
+---
+
+## コマンドラインツール
+
+### CSP設定の確認
+
+現在のCSP設定を確認します：
+
+```bash
+php artisan csp:status
+```
+
+**出力例：**
+```
+CSP Status
+==========
+Enabled: Yes
+Mode: Standard (1)
+Log Violations: Yes
+Exclude Dev Tools: Yes
+Safe Mode: No
+
+Trusted Domains:
+  - https://cdn.example.com
+  - https://fonts.googleapis.com
+
+Blocklist Categories:
+  - tracking (15 domains)
+  - ads (23 domains)
+```
+
+### CSPモードの変更
+
+コマンドラインからCSPモードを変更できます：
+
+```bash
+# 開発モードに変更
+php artisan csp:mode development
+
+# 標準モードに変更
+php artisan csp:mode standard
+
+# 厳格モードに変更
+php artisan csp:mode strict
+```
+
+### CSPの有効化/無効化
+
+```bash
+# CSPを有効化
+php artisan csp:enable
+
+# CSPを無効化
+php artisan csp:disable
+```
+
+### セーフモードの管理
+
+```bash
+# セーフモードを有効化
+php artisan csp:enable-safe-mode
+
+# セーフモードを無効化
+php artisan csp:disable-safe-mode
+
+# セーフモードの状態を確認
+php artisan csp:status
+```
+
+### CSP違反ログの確認
+
+CSP違反ログを表示します：
+
+```bash
+# 最新の違反ログを表示
+php artisan csp:violations
+
+# 最新10件を表示
+php artisan csp:violations --limit=10
+
+# 特定のディレクティブのみ表示
+php artisan csp:violations --directive=script-src
+```
+
+### CSPキャッシュのクリア
+
+CSP設定のキャッシュをクリアします：
+
+```bash
+php artisan csp:clear
+```
+
+### 緊急時のCSP無効化
+
+管理画面にアクセスできない場合、`.env`ファイルで直接無効化できます：
+
+```env
+CSP_ENABLED=false
+```
+
+または、コマンドラインから：
+
+```bash
+php artisan csp:disable --force
 ```
 
 ---
@@ -486,10 +653,36 @@ CSP違反ログは「全体設定 > システム > ログ」の「CSP違反」�
 
 ### CSPを一時的に無効にする
 
-管理画面の「セキュリティ設定」でCSPを無効にするか、`.env`ファイルで設定できます。
+#### 方法1: セーフモードを使用（推奨）
+
+CSP設定を変更して問題が発生した場合、セーフモードが自動的に有効になります。手動で有効化する場合：
+
+```bash
+php artisan csp:enable-safe-mode
+```
+
+#### 方法2: 管理画面から無効化
+
+管理画面の「全体設定 > セキュリティ設定 > CSP設定」で「CSPを有効にする」をオフにします。
+
+#### 方法3: コマンドラインから無効化
+
+```bash
+php artisan csp:disable
+```
+
+#### 方法4: .envファイルで無効化
 
 ```env
 CSP_ENABLED=false
+```
+
+#### 方法5: 緊急時の強制無効化
+
+管理画面にアクセスできない場合：
+
+```bash
+php artisan csp:disable --force
 ```
 
 ---
@@ -518,6 +711,15 @@ CSP_ENABLED=false
 2. `Dixlase.widgets.register()` で初期化関数を登録
 3. onclick等を `data-dix-action` に置き換え
 4. plugin.jsonに `requires_inline_js: false` を明示
+
+### Q5. セーフモードとは何ですか？
+**A:** CSP設定を変更して管理画面にアクセスできなくなった場合の救済措置です。セーフモード中はCSPが一時的に無効化され、安全に設定を修正できます。ただし、セキュリティリスクがあるため、設定を修正したら必ず解除してください。
+
+### Q6. CSP設定を保存後、10秒以内に確認しないとどうなる？
+**A:** 自動的に前の設定にロールバックされ、セーフモードが有効になります。これにより、誤った設定で管理画面にアクセスできなくなることを防ぎます。
+
+### Q7. コマンドラインからCSP設定を変更できますか？
+**A:** はい、`php artisan csp:mode [development|standard|strict]` コマンドでモードを変更できます。また、`php artisan csp:enable` / `php artisan csp:disable` でCSPの有効/無効を切り替えられます。
 
 ---
 
