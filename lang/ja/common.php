@@ -64,6 +64,7 @@ return [
     'back' => '戻る',
     'next' => '次へ',
     'close' => '閉じる',
+    'later' => '後で',
     'index' => '一覧',
     'select' => '選択',
     'please_select' => '選択してください',

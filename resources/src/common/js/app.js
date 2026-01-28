@@ -38,6 +38,7 @@ import '../../components/two-fa/js/recovery-code-challenge';
 import '../../components/two-fa/js/passkey-result';
 import '../../components/two-fa/js/recovery-codes';
 import '../../components/two-fa/js/passkey-prompt';
+import '../../components/two-fa/js/two-fa-profile-settings';
 import '../../components/two-fa/js/webauthn-utils';
 import '../../components/two-fa/js/two-fa-management';
 import '../../components/content-editor/js/alpine-translations';

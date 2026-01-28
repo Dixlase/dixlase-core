@@ -65,6 +65,7 @@ return [
     'back' => 'Back',
     'next' => 'Next',
     'close' => 'Close',
+    'later' => 'Later',
     'finish' => 'Finish',
     'index' => 'Index',
     'select' => 'Select',

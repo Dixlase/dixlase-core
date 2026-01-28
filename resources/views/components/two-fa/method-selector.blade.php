@@ -78,7 +78,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <x-form.toggle
                 name="two_fa_passkey_enabled"
                 :label="__('common.passkey_mode.options.enabled')"
-                :checked="old('two_fa_passkey_enabled', $currentPasskeyEnabled)"
+                :checked="old('two_fa_passkey_enabled', $currentPasskeyEnabled ? '1' : '0') == '1'"
                 :xModel="$xModel"
             />
         @elseif($forcedPasskeyValue !== null)
