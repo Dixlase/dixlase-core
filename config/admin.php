@@ -205,45 +205,45 @@ return [
                             'route' => 'admin.settings.security.authentication',
                             'icon' => 'fas fa-fw fa-user-shield',
                         ],
-                        'session' => [
-                            'text' => 'admin/nav.settings.security.session',
-                            'route' => 'admin.settings.security.session',
-                            'icon' => 'fas fa-fw fa-clock',
-                        ],
                         'captcha' => [
                             'text' => 'admin/nav.settings.security.captcha',
                             'route' => 'admin.settings.security.captcha',
                             'icon' => 'fas fa-fw fa-robot',
                         ],
-                        'ip' => [
-                            'text' => 'admin/nav.settings.security.ip',
-                            'route' => 'admin.settings.security.ip',
-                            'icon' => 'fas fa-fw fa-network-wired',
-                        ],
-                        'extensions' => [
-                            'text' => 'admin/nav.settings.security.extensions',
-                            'route' => 'admin.settings.security.extensions',
-                            'icon' => 'fas fa-fw fa-puzzle-piece',
-                        ],
-                        'csp' => [
-                            'text' => 'admin/nav.settings.security.csp',
-                            'route' => 'admin.settings.security.csp',
-                            'icon' => 'fas fa-fw fa-code',
+                        'session' => [
+                            'text' => 'admin/nav.settings.security.session',
+                            'route' => 'admin.settings.security.session',
+                            'icon' => 'fas fa-fw fa-clock',
                         ],
                         'notifications' => [
                             'text' => 'admin/nav.settings.security.notifications',
                             'route' => 'admin.settings.security.notifications',
                             'icon' => 'fas fa-fw fa-bell',
                         ],
-                        'environment' => [
-                            'text' => 'admin/nav.settings.security.environment',
-                            'route' => 'admin.settings.security.environment',
-                            'icon' => 'fas fa-fw fa-cog',
+                        'csp' => [
+                            'text' => 'admin/nav.settings.security.csp',
+                            'route' => 'admin.settings.security.csp',
+                            'icon' => 'fas fa-fw fa-code',
+                        ],
+                        'extensions' => [
+                            'text' => 'admin/nav.settings.security.extensions',
+                            'route' => 'admin.settings.security.extensions',
+                            'icon' => 'fas fa-fw fa-puzzle-piece',
+                        ],
+                        'ip' => [
+                            'text' => 'admin/nav.settings.security.ip',
+                            'route' => 'admin.settings.security.ip',
+                            'icon' => 'fas fa-fw fa-network-wired',
                         ],
                         'integrity' => [
                             'text' => 'admin/nav.settings.security.integrity',
                             'route' => 'admin.settings.security.integrity',
                             'icon' => 'fas fa-fw fa-file-shield',
+                        ],
+                        'environment' => [
+                            'text' => 'admin/nav.settings.security.environment',
+                            'route' => 'admin.settings.security.environment',
+                            'icon' => 'fas fa-fw fa-cog',
                         ],
                     ]
                 ],
