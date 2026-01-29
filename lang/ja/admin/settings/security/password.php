@@ -13,8 +13,8 @@
  */
 
 return [
-    'heading' => '認証・セッション設定',
-    'description' => 'セッション管理、パスワードセキュリティの設定を行います。',
+    'heading' => 'パスワード設定',
+    'description' => 'パスワードセキュリティの設定を行います。',
     'session_management' => 'セッション管理設定',
     'session_management_description' => 'システム全体のセッション設定を管理します。Dixlaseはガード別セッション管理（Guard-Aware Database）を使用しています。',
     'session_encrypt' => 'セッション暗号化',
@@ -23,17 +23,16 @@ return [
     'session_lifetime_help' => 'セッションの有効時間を分単位で設定してください（1-43200分）。',
     'password_security_settings' => 'パスワードセキュリティ設定',
     'password_security_description' => 'パスワードに関するセキュリティ設定を管理します。',
+
+    // パスワード漏洩チェック
     'pwned_password_check' => 'パスワード漏洩チェック',
-    'pwned_password_check_help' => 'パスワード設定時に漏洩データベースとの照合を行います。',
+    'pwned_password_check_description' => 'パスワード設定時に漏洩データベースとの照合を行います。',
     'pwned_password_api_info' => 'このチェックはHave I Been Pwned APIを使用します。パスワード自体は送信されず、SHA-1ハッシュの先頭5文字のみが使用されるため安全です。',
     'pwned_password_settings' => 'パスワード辞書攻撃対策設定',
     'pwned_password_description' => 'パスワードが漏洩データベースに含まれていないかをチェックし、安全でないパスワードの使用を防ぎます。',
     'pwned_password_check_enabled' => '辞書攻撃対策',
     'pwned_password_help' => '有効にすると、メンバー作成・編集・パスワード変更時にHave I Been Pwned APIを使用してパスワードの安全性をチェックします。',
     
-    // 共通設定
-    'common_settings' => '共通設定',
-    'common_settings_description' => 'すべてのユーザータイプに適用される共通のパスワードセキュリティ設定です。',
     
     // デフォルトパスワードポリシー
     'default_password_policy' => 'デフォルトパスワードポリシー',
@@ -43,8 +42,13 @@ return [
     'require_uppercase' => '大文字を含める',
     'require_number' => '数字を含める',
     'require_symbol' => '記号を含める',
+    'security_warning' => 'セキュリティ強化のため、より厳しい条件を設定することを推奨します。',
     'reset_enabled' => 'パスワードリセット機能を有効化',
     'plugin_custom_hint' => 'プラグイン（DixlaseUsersなど）で独自のパスワードポリシーを設定できます。プラグインでカスタム設定が有効な場合、そちらが優先されます。',
+    
+    // パスワードリセット機能
+    'password_reset_feature' => 'パスワードリセット機能',
+    'password_reset_feature_description' => 'メンバーがパスワードを忘れた場合のリセット機能の有効/無効を設定します。',
     
     'settings_updated' => 'パスワードセキュリティ設定が更新されました。',
 ];

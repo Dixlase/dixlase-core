@@ -1,4 +1,4 @@
-<?php
+  <?php
 
 /**
  * This file is part of Dixlase.
@@ -23,7 +23,8 @@ return [
     // Basic Settings
     'basic_settings' => 'Basic Settings',
     'enabled' => 'Enable Login Attempt Limits',
-    'max_attempts' => 'Max Attempts',
+    'enabled_help' => 'When enabled, accounts or IP addresses will be temporarily locked out after the specified number of failed login attempts.',
+    'max_attempts' => 'Maximum Attempts',
     'max_attempts_help' => 'Maximum login attempts per account (1-100)',
     'max_attempts_ip' => 'Max Attempts per IP',
     'max_attempts_ip_help' => 'Maximum login attempts per IP address (1-200)',
@@ -35,7 +36,11 @@ return [
     'lockout_notification_help' => 'When enabled, administrators will receive email notifications when lockouts occur',
     
     // Hint
-    'plugin_custom_hint' => 'Plugins (such as DixlaseUsers) can set their own login attempt limits. When plugin custom settings are enabled, they take priority.',
+    'plugin_custom_hint' => 'Plugins (such as DixlaseUsers) can set their own login attempt limits. If a plugin has custom settings enabled, those will take precedence.',
     
-    'settings_updated' => 'Login attempt limit settings have been updated.',
+    // Two-Factor Authentication Detailed Settings
+    'two_fa_detailed_settings' => 'Two-Factor Authentication Detailed Settings',
+    'two_fa_detailed_settings_description' => 'Manage detailed settings for two-factor authentication including code expiration, resend interval, attempt limits, and recovery codes.',
+    
+    'settings_updated' => 'Login settings have been updated.',
 ];

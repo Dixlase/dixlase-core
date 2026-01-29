@@ -54,7 +54,13 @@ class AdminSecurityPasswordController extends AdminLoggedInController
             'password_reset_enabled_default' => filter_var($this->securitySettingRepository->get('password_reset_enabled_default', true), FILTER_VALIDATE_BOOLEAN),
         ];
 
+        $minLengthOptions = collect(__('passwords.requirements.password_min_length_options'))
+            ->map(fn($label, $key) => ['value' => (string) $key, 'label' => $label])
+            ->values()
+            ->toArray();
+
         $this->viewParams['settings'] = $settings;
+        $this->viewParams['minLengthOptions'] = $minLengthOptions;
 
         return view('admin.settings.security.password', $this->viewParams);
     }

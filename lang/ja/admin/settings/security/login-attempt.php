@@ -1,4 +1,4 @@
-<?php
+    <?php
 
 /**
  * This file is part of Dixlase.
@@ -23,6 +23,7 @@ return [
     // 基本設定
     'basic_settings' => '基本設定',
     'enabled' => 'ログイン試行制限を有効化',
+    'enabled_help' => '有効にすると、指定回数以上のログイン失敗でアカウントまたはIPアドレスを一時的にロックアウトします。',
     'max_attempts' => '最大試行回数',
     'max_attempts_help' => '同一アカウントに対する最大ログイン試行回数（1-100回）',
     'max_attempts_ip' => 'IP最大試行回数',
@@ -37,5 +38,9 @@ return [
     // ヒント
     'plugin_custom_hint' => 'プラグイン（DixlaseUsersなど）で独自のログイン試行制限を設定できます。プラグインでカスタム設定が有効な場合、そちらが優先されます。',
     
-    'settings_updated' => 'ログイン試行制限設定が更新されました。',
+    // 二段階認証の詳細設定
+    'two_fa_detailed_settings' => '二段階認証の詳細設定',
+    'two_fa_detailed_settings_description' => '二段階認証のコード有効期限、再送信間隔、試行制限、リカバリーコードなどの詳細設定を管理します。',
+    
+    'settings_updated' => 'ログイン設定が更新されました。',
 ];

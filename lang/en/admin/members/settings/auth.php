@@ -52,15 +52,16 @@ return [
     'captcha_not_enabled' => 'CAPTCHA is not enabled. Please enable CAPTCHA in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">Security Settings</a>.',
     'captcha_not_authenticated' => 'CAPTCHA authentication test is not complete. Please perform authentication test in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">Security Settings</a>.',
     
-    // Phase 2: Security Settings Integration
+    // Phase 2: Security settings integration
     'login_attempt_limit_description' => 'Login attempt limits are managed in global settings.',
     'managed_in_security_settings' => 'Login attempt limits are managed in Global Settings > Security Settings.',
+    'two_fa_detailed_settings_in_security' => 'Two-factor authentication detailed settings (code expiration, resend interval, attempt limits, etc.) are managed in Global Settings > Security Settings > Login.',
     'go_to_security_settings' => 'Open Security Settings',
     'current_settings' => 'Current Settings',
     'status' => 'Status',
     'max_attempts' => 'Max Attempts',
     'time_window' => 'Time Window',
     'lockout_duration' => 'Lockout Duration',
-    'times' => ' times',
-    'minutes' => ' minutes',
+    'times' => 'times',
+    'minutes' => 'minutes',
 ];

@@ -55,6 +55,7 @@ return [
     // Phase 2: セキュリティ設定統合
     'login_attempt_limit_description' => 'ログイン試行制限は全体設定で管理されています。',
     'managed_in_security_settings' => 'ログイン試行制限は全体設定 > セキュリティ設定で管理されています。',
+    'two_fa_detailed_settings_in_security' => '二段階認証の詳細設定（コード有効期限、再送信間隔、試行制限など）は、全体設定 > セキュリティ設定 > ログインで管理されています。',
     'go_to_security_settings' => 'セキュリティ設定を開く',
     'current_settings' => '現在の設定',
     'status' => '状態',

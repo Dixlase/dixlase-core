@@ -50,7 +50,7 @@ return [
             'text' => 'Security Settings',
             'index' => 'Overview',
             'password' => 'Password',
-            'login_attempt' => 'Login Attempt Limits',
+            'login_attempt' => 'Login',
             'session' => 'Session',
             'captcha' => 'CAPTCHA',
             'ip' => 'IP Access Control',
