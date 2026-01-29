@@ -106,6 +106,20 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '1']
         );
 
+        // Login notification settings (moved from MembersSettingsSeeder)
+        SecuritySetting::updateOrCreate(
+            ['name' => 'login_notification_mode'],
+            ['value' => '3']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'login_notification_send_to_system'],
+            ['value' => '0']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'login_notification_system_email'],
+            ['value' => '']
+        );
+
         // Two-factor authentication detailed settings (moved from MembersSettingsSeeder)
         SecuritySetting::updateOrCreate(
             ['name' => 'two_fa_expire_minutes'],

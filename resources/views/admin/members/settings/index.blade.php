@@ -25,51 +25,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 設定カード -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
-        <!-- パスワード設定 -->
-        <a href="{{ route('admin.members.settings.password') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+        <!-- パスワード設定（セキュリティ設定に移動） -->
+        <a href="{{ route('admin.settings.security.password') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-key text-blue-500 text-xl mr-3"></i>
                     <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/members/settings/index.nav.password') }}</h3>
                 </div>
-                <i class="fas fa-chevron-right text-gray-400"></i>
+                <i class="fas fa-external-link-alt text-gray-400"></i>
             </div>
             <div class="text-sm text-gray-600 dark:text-gray-400">
-                <p>{{ __('admin/members/settings/index.password_min_length') }}: {{ $passwordMinLength }}{{ __('admin/members/settings/index.characters') }}</p>
-                <p class="text-xs mt-1">
-                    @if($passwordRequireUppercase || $passwordRequireNumber || $passwordRequireSymbol)
-                        {{ __('admin/members/settings/index.requirements') }}:
-                        @if($passwordRequireUppercase)<span class="text-green-600 dark:text-green-400">{{ __('admin/members/settings/index.uppercase') }}</span>@endif
-                        @if($passwordRequireNumber)<span class="text-green-600 dark:text-green-400 ml-1">{{ __('admin/members/settings/index.number') }}</span>@endif
-                        @if($passwordRequireSymbol)<span class="text-green-600 dark:text-green-400 ml-1">{{ __('admin/members/settings/index.symbol') }}</span>@endif
-                    @else
-                        <span class="text-gray-500">{{ __('admin/members/settings/index.no_requirements') }}</span>
-                    @endif
+                <p class="text-blue-600 dark:text-blue-400">
+                    <i class="fas fa-arrow-right mr-1"></i>{{ __('admin/members/settings/index.managed_in_security_settings') }}
                 </p>
-            </div>
-        </a>
-
-        <!-- セッション設定 -->
-        <a href="{{ route('admin.members.settings.session') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center">
-                    <i class="fas fa-clock text-purple-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/members/settings/index.nav.session') }}</h3>
-                </div>
-                <i class="fas fa-chevron-right text-gray-400"></i>
-            </div>
-            <div class="text-sm text-gray-600 dark:text-gray-400">
-                @if($membersSessionLifetimeEnabled)
-                    <p>{{ __('admin/members/settings/index.session_lifetime') }}: {{ $membersSessionLifetime }}{{ __('admin/members/settings.minutes') }}</p>
-                    <span class="inline-flex items-center text-green-600 dark:text-green-400 text-xs mt-1">
-                        <i class="fas fa-check-circle mr-1"></i>{{ __('admin/members/settings/index.custom_session_enabled') }}
-                    </span>
-                @else
-                    <p>{{ __('admin/members/settings/index.session_lifetime') }}: {{ __('admin/members/settings/index.system_default') }}</p>
-                    <span class="inline-flex items-center text-gray-500 text-xs mt-1">
-                        <i class="fas fa-minus-circle mr-1"></i>{{ __('admin/members/settings/index.custom_session_disabled') }}
-                    </span>
-                @endif
             </div>
         </a>
 
@@ -91,14 +59,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <span class="text-blue-600 dark:text-blue-400">{{ __('admin/members/settings/index.optional') }}</span>
                     @else
                         <span class="text-green-600 dark:text-green-400">{{ __('admin/members/settings/index.required') }}</span>
-                    @endif
-                </p>
-                <p class="text-xs mt-1">
-                    {{ __('admin/members/settings/index.login_attempt_limit') }}:
-                    @if($loginAttemptLimitEnabled)
-                        <span class="text-green-600 dark:text-green-400">{{ __('common.enabled') }}</span>
-                    @else
-                        <span class="text-gray-500">{{ __('common.disabled') }}</span>
                     @endif
                 </p>
             </div>

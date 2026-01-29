@@ -64,4 +64,7 @@ return [
     'lockout_duration' => 'Lockout Duration',
     'times' => 'times',
     'minutes' => 'minutes',
+    
+    'login_notification_description' => 'Manage notification settings when members log in.',
+    'login_notification_in_security' => 'Login notification settings are managed in Global Settings > Security Settings > Login.',
 ];

@@ -26,61 +26,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
         <input type="hidden" name="settings_section" value="auth">
 
-        <!-- ログイン通知設定 -->
-        <section>
-            <h2>{{ __('common.login_notification_mode.label') }}</h2>
-            @if(!$isMailServerTested)
-                <x-message
-                    type="warning"
-                    :message="__('admin/members/settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
-                />
-            @endif
-            <fieldset>
-                <legend>{{ __('admin/members/settings/auth.login_notification_global_setting') }}</legend>
-                <x-login-notification-selector
-                    name="login_notification_mode"
-                    :value="old('login_notification_mode', (string) $loginNotification)"
-                    :globalSetting="null"
-                    :excludeUseProfileSetting="false"
-                    :columns="4"
-                />
-            </fieldset>
-        </section>
 
-        <!-- ログイン試行制限設定 -->
-        <section>
-            <h2>{{ __('admin/members/settings/auth.login_attempt_limit_settings') }}</h2>
-            <p>{{ __('admin/members/settings/auth.login_attempt_limit_description') }}</p>
-            
-            <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <div class="flex items-start gap-3">
-                    <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
-                    <div>
-                        <p class="text-sm text-blue-700 dark:text-blue-300 mb-2">
-                            {{ __('admin/members/settings/auth.managed_in_security_settings') }}
-                        </p>
-                        <a href="{{ route('admin.settings.security.login-attempt') }}" class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
-                            <i class="fas fa-external-link-alt"></i>
-                            {{ __('admin/members/settings/auth.go_to_security_settings') }}
-                        </a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="mt-4 p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-                <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {{ __('admin/members/settings/auth.current_settings') }}
-                </h3>
-                <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                    <li>• {{ __('admin/members/settings/auth.status') }}: {{ $loginAttemptLimitEnabled ? __('common.enabled') : __('common.disabled') }}</li>
-                    @if($loginAttemptLimitEnabled)
-                        <li>• {{ __('admin/members/settings/auth.max_attempts') }}: {{ $loginAttemptMaxAttempts }}{{ __('admin/members/settings/auth.times') }}</li>
-                        <li>• {{ __('admin/members/settings/auth.time_window') }}: {{ $loginAttemptTimeWindow }}{{ __('admin/members/settings/auth.minutes') }}</li>
-                        <li>• {{ __('admin/members/settings/auth.lockout_duration') }}: {{ $loginAttemptLockoutDuration }}{{ __('admin/members/settings/auth.minutes') }}</li>
-                    @endif
-                </ul>
-            </div>
-        </section>
+
 
         <!-- 二段階認証設定 -->
         <section>
@@ -129,7 +76,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <p class="text-sm text-blue-700 dark:text-blue-300 mb-2">
                             {{ __('admin/members/settings/auth.two_fa_detailed_settings_in_security') }}
                         </p>
-                        <a href="{{ route('admin.settings.security.login-attempt') }}" class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+                        <a href="{{ route('admin.settings.security.login') }}" class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
                             <i class="fas fa-external-link-alt"></i>
                             {{ __('admin/members/settings/auth.go_to_security_settings') }}
                         </a>

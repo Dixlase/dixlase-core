@@ -17,10 +17,8 @@ class MembersSettingsSeeder extends Seeder
     public function run(): void
     {
         $settings = [
-            // ログイン通知設定
-            ['key' => 'login_notification_mode', 'value' => '3'], // 0=無効, 1=異なるデバイス, 2=常に有効, 3=プロフィール設定に従う
-            ['key' => 'login_notification_send_to_system', 'value' => '0'], // デフォルト: システム通知無効
-            ['key' => 'login_notification_system_email', 'value' => ''], // デフォルト: 空（管理者メールアドレス）
+            // ログイン通知設定（SecuritySettingsTableSeederに移動）
+            // login_notification_mode, login_notification_send_to_system, login_notification_system_email
 
             // 二段階認証設定（基本設定のみ）
             ['key' => 'two_fa_mode', 'value' => '3'], // 0=無効, 1=異なるデバイス, 2=常に有効, 3=プロフィール設定に従う

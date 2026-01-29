@@ -41,27 +41,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
         </div>
-        
-        <div class="mt-4 p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {{ __('admin/members/settings/password.current_policy') }}
-            </h3>
-            <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                <li>• {{ __('admin/members/settings/password.min_length') }}: {{ $passwordMinLength }}{{ __('admin/members/settings/password.characters') }}</li>
-                @if($passwordRequireUppercase)
-                    <li>• {{ __('admin/members/settings/password.require_uppercase') }}</li>
-                @endif
-                @if($passwordRequireNumber)
-                    <li>• {{ __('admin/members/settings/password.require_number') }}</li>
-                @endif
-                @if($passwordRequireSymbol)
-                    <li>• {{ __('admin/members/settings/password.require_symbol') }}</li>
-                @endif
-                @if($passwordResetEnabled)
-                    <li>• {{ __('admin/members/settings/password.reset_enabled') }}</li>
-                @endif
-            </ul>
-        </div>
     </section>
 </div>
 @endsection

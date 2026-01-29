@@ -84,18 +84,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
     protected function loadViewParams(): void
     {
         // パスワード設定はセキュリティ設定に移動
-
-        $loginNotification = (int) $this->memberSettingRepository->get('login_notification_mode', AuthenticationMode::UseProfileSetting->value);
-        $loginNotificationGlobalOptions = collect(config('admin.global_login_notification_mail_mode'))
-            ->map(function ($value) {
-                $mode = AuthenticationMode::tryFrom($value);
-                return [
-                    'value' => (string) $value,
-                    'label' => $mode ? $mode->notificationLabel() : '',
-                ];
-            })
-            ->values()
-            ->toArray();
+        // ログイン通知設定はセキュリティ設定に移動
 
         $twoFaForceMode = (int) $this->memberSettingRepository->get('two_fa_mode', AuthenticationMode::Disabled->value);
         
@@ -137,10 +126,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $mailConnectionTestDate = BaseSetting::getValue('mail_connection_test_date');
 
         // パスワード設定はセキュリティ設定に移動
-
-        // ログイン通知設定
-        $this->viewParams['loginNotification'] = $loginNotification;
-        $this->viewParams['loginNotificationGlobalOptions'] = $loginNotificationGlobalOptions;
+        // ログイン通知設定はセキュリティ設定に移動
 
         // ログイン試行制限設定はセキュリティ設定に移動
 

@@ -56,7 +56,7 @@ return [
             'ip' => 'IP Access Control',
             'extensions' => 'Extensions',
             'csp' => 'CSP',
-            'notifications' => 'Notifications',
+            'notifications' => 'Error Notifications',
             'environment' => 'Environment',
             'integrity' => 'File Integrity',
         ],
