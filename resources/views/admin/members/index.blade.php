@@ -22,13 +22,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="max-w-7xl mx-auto">
-    <div class="flex justify-start mb-4">
+    <div class="flex justify-between items-center mb-4">
         <x-form.button
             type="link"
             :href="route('admin.members.create')"
             :label="__('common.create')"
             variant="primary"
             icon="fas fa-plus"
+        />
+        
+        <x-form.button
+            type="button"
+            :label="__('admin/members/index.force_logout_all')"
+            variant="danger"
+            icon="fas fa-sign-out-alt"
+            onclick="openModal('forceLogoutAllModal')"
         />
     </div>
 
@@ -199,4 +207,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
     </section>
 </div>
+@endsection
+
+@section('modals')
+    <!-- 全メンバー強制ログアウト確認モーダル -->
+    <x-ui.modal
+        id="forceLogoutAllModal"
+        :title="__('admin/members/index.force_logout_all_confirmation_title')"
+        :message="__('admin/members/index.force_logout_all_confirmation_message')"
+        :confirm_label="__('admin/members/index.force_logout_all')"
+        :cancel_label="__('common.cancel')"
+        form="forceLogoutAllForm"
+    />
+    
+    <form id="forceLogoutAllForm" method="POST" action="{{ route('admin.members.force-logout-all') }}" style="display: none;">
+        @csrf
+    </form>
 @endsection

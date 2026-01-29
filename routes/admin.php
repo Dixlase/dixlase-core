@@ -249,25 +249,11 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:members.index')
                     ->name('send-verification-email');
 
-                // メンバー設定
-                Route::get('/settings', [Members\AdminMemberSettingsController::class, 'index'])->name('settings.index');
-                Route::get('/settings/password', [Members\AdminMemberPasswordController::class, 'index'])->name('settings.password');
-                Route::get('/settings/session', [Members\AdminMemberSessionController::class, 'index'])->name('settings.session');
-                Route::get('/settings/auth', [Members\AdminMemberAuthController::class, 'index'])->name('settings.auth');
-                Route::get('/settings/roles', [Members\AdminMemberRolesController::class, 'index'])->name('settings.roles');
-
-                Route::post('/settings/password', [Members\AdminMemberPasswordController::class, 'update'])
-                    ->middleware('check.menu.edit:members.settings')
-                    ->name('settings.password.update');
-                Route::post('/settings/session', [Members\AdminMemberSessionController::class, 'update'])
-                    ->middleware('check.menu.edit:members.settings')
-                    ->name('settings.session.update');
-                Route::post('/settings/auth', [Members\AdminMemberAuthController::class, 'update'])
-                    ->middleware('check.menu.edit:members.settings')
-                    ->name('settings.auth.update');
-                Route::post('/settings/roles', [Members\AdminMemberRolesController::class, 'update'])
+                // 権限設定
+                Route::get('/roles', [Members\AdminMemberRolesController::class, 'index'])->name('roles');
+                Route::post('/roles', [Members\AdminMemberRolesController::class, 'update'])
                     ->middleware('check.menu.edit:members.roles')
-                    ->name('settings.roles.update');
+                    ->name('roles.update');
             });
             
             // 全体設定
@@ -329,6 +315,12 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/session', [Security\AdminSecuritySessionController::class, 'update'])
                     ->middleware('check.menu.edit:settings.security')
                     ->name('session.update');
+                
+                // 認証設定
+                Route::get('/authentication', [Security\AdminSecurityAuthenticationController::class, 'index'])->name('authentication');
+                Route::post('/authentication', [Security\AdminSecurityAuthenticationController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.security')
+                    ->name('authentication.update');
                 
                 // CAPTCHA
                 Route::get('/captcha', [Security\AdminSecurityCaptchaController::class, 'index'])->name('captcha');

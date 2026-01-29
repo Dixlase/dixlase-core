@@ -139,31 +139,10 @@ return [
                     'route' => 'admin.members.create',
                     'icon' => 'fas fa-fw fa-user-plus',
                 ],
-                'settings' => [
-                    'text' => 'admin/nav.settings.members.settings',
-                    'icon' => 'fas fa-fw fa-user-cog',
-                    'children' => [
-                        'overview' => [
-                            'text' => 'admin/nav.settings.members.overview',
-                            'route' => 'admin.members.settings.index',
-                            'icon' => 'fas fa-fw fa-list-alt',
-                        ],
-                        'password' => [
-                            'text' => 'admin/nav.settings.members.settings_nav.password',
-                            'route' => 'admin.members.settings.password',
-                            'icon' => 'fas fa-fw fa-key',
-                        ],
-                        'auth' => [
-                            'text' => 'admin/nav.settings.members.settings_nav.auth',
-                            'route' => 'admin.members.settings.auth',
-                            'icon' => 'fas fa-fw fa-shield-alt',
-                        ],
-                        'roles' => [
-                            'text' => 'admin/nav.settings.members.roles_short',
-                            'route' => 'admin.members.settings.roles',
-                            'icon' => 'fas fa-fw fa-user-shield',
-                        ],
-                    ]
+                'roles' => [
+                    'text' => 'admin/nav.settings.members.roles',
+                    'route' => 'admin.members.roles',
+                    'icon' => 'fas fa-fw fa-user-shield',
                 ],
             ]
         ],
@@ -220,6 +199,11 @@ return [
                             'text' => 'admin/nav.settings.security.login_attempt',
                             'route' => 'admin.settings.security.login',
                             'icon' => 'fas fa-fw fa-sign-in-alt',
+                        ],
+                        'authentication' => [
+                            'text' => 'admin/nav.settings.security.authentication',
+                            'route' => 'admin.settings.security.authentication',
+                            'icon' => 'fas fa-fw fa-user-shield',
                         ],
                         'session' => [
                             'text' => 'admin/nav.settings.security.session',
