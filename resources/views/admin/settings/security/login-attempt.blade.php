@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
                 
                 <!-- 最大試行回数 -->
-                <x-form.input
+                <x-form.text
                     :label="__('admin/settings/security/login-attempt.max_attempts')"
                     type="number"
                     id="login_attempt_max_attempts_default"
@@ -55,7 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
                 
                 <!-- IP最大試行回数 -->
-                <x-form.input
+                <x-form.text
                     :label="__('admin/settings/security/login-attempt.max_attempts_ip')"
                     type="number"
                     id="login_attempt_max_attempts_ip_default"
@@ -68,7 +68,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
                 
                 <!-- 時間窓 -->
-                <x-form.input
+                <x-form.text
                     :label="__('admin/settings/security/login-attempt.time_window')"
                     type="number"
                     id="login_attempt_time_window_default"
@@ -81,7 +81,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
                 
                 <!-- ロックアウト時間 -->
-                <x-form.input
+                <x-form.text
                     :label="__('admin/settings/security/login-attempt.lockout_duration')"
                     type="number"
                     id="login_attempt_lockout_duration_default"
