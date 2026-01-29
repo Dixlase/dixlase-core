@@ -67,4 +67,8 @@ return [
     
     'login_notification_description' => 'メンバーがログインした際の通知設定を管理します。',
     'login_notification_in_security' => 'ログイン通知設定は全体設定 > セキュリティ設定 > ログインで管理されています。',
+    
+    'captcha_settings' => 'CAPTCHA設定',
+    'captcha_settings_description' => 'フォームごとのCAPTCHA設定を管理します。',
+    'captcha_in_security' => 'CAPTCHA設定は全体設定 > セキュリティ設定 > CAPTCHAで管理されています。',
 ];

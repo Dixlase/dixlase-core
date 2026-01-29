@@ -127,4 +127,26 @@ return [
     'settings_updated' => 'CAPTCHA設定が更新されました。',
     'token_required' => 'CAPTCHAトークンが必要です',
     'secret_key_required' => 'シークレットキーが必要です',
+    
+    // フォーム設定
+    'form_settings_title' => 'フォームごとのCAPTCHA設定',
+    'form_settings_description' => 'CAPTCHAを適用するフォームを選択してください。コアとプラグインで定義されたすべてのフォームが表示されます。',
+    'route' => 'ルート',
+    'plugin' => 'プラグイン',
+    'no_forms_available' => '利用可能なフォームがありません。',
+    
+    // カテゴリ
+    'categories' => [
+        'admin' => '管理画面',
+        'users' => 'ユーザー',
+        'contact' => 'お問い合わせ',
+        'comment' => 'コメント',
+    ],
+    
+    // フォーム名
+    'forms' => [
+        'admin_login' => '管理画面ログイン',
+        'admin_password_reset' => '管理画面パスワードリセット',
+        'admin_two_factor' => '管理画面二段階認証',
+    ],
 ];

@@ -67,4 +67,8 @@ return [
     
     'login_notification_description' => 'Manage notification settings when members log in.',
     'login_notification_in_security' => 'Login notification settings are managed in Global Settings > Security Settings > Login.',
+    
+    'captcha_settings' => 'CAPTCHA Settings',
+    'captcha_settings_description' => 'Manage CAPTCHA settings for each form.',
+    'captcha_in_security' => 'CAPTCHA settings are managed in Global Settings > Security Settings > CAPTCHA.',
 ];

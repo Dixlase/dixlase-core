@@ -81,17 +81,40 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Form-specific Settings
+    | Form Definitions
     |--------------------------------------------------------------------------
     |
-    | Configure which forms should use captcha verification.
+    | Define all forms that can use CAPTCHA verification.
+    | Each form has:
+    | - name: Translation key for display name
+    | - route: Route name where the form is submitted
+    | - category: Category for grouping in UI
+    | - default_enabled: Default state when first registered
+    | - priority: Display order (lower = higher priority)
     |
     */
 
     'forms' => [
-        'contact' => env('CAPTCHA_CONTACT_FORM', true),
-        'registration' => env('CAPTCHA_REGISTRATION_FORM', true),
-        'login' => env('CAPTCHA_LOGIN_FORM', false),
-        'comment' => env('CAPTCHA_COMMENT_FORM', true),
+        'admin_login' => [
+            'name' => 'admin/settings/security/captcha.forms.admin_login',
+            'route' => 'admin.login',
+            'category' => 'admin',
+            'default_enabled' => false,
+            'priority' => 10,
+        ],
+        'admin_password_reset' => [
+            'name' => 'admin/settings/security/captcha.forms.admin_password_reset',
+            'route' => 'admin.password.request',
+            'category' => 'admin',
+            'default_enabled' => false,
+            'priority' => 20,
+        ],
+        'admin_two_factor' => [
+            'name' => 'admin/settings/security/captcha.forms.admin_two_factor',
+            'route' => 'admin.two-factor.verify',
+            'category' => 'admin',
+            'default_enabled' => false,
+            'priority' => 30,
+        ],
     ],
 ];
