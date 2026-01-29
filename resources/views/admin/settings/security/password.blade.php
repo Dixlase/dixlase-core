@@ -62,7 +62,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <legend>{{ __('admin/settings/security/password.password_requirements') }}</legend>
                 
                 <!-- 最小文字数 -->
-                <x-form.input
+                <x-form.text
                     :label="__('admin/settings/security/password.min_length')"
                     type="number"
                     id="password_min_length_default"

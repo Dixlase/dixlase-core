@@ -221,6 +221,11 @@ return [
                             'route' => 'admin.settings.security.password',
                             'icon' => 'fas fa-fw fa-key',
                         ],
+                        'login-attempt' => [
+                            'text' => 'admin/nav.settings.security.login_attempt',
+                            'route' => 'admin.settings.security.login-attempt',
+                            'icon' => 'fas fa-fw fa-user-lock',
+                        ],
                         'session' => [
                             'text' => 'admin/nav.settings.security.session',
                             'route' => 'admin.settings.security.session',
