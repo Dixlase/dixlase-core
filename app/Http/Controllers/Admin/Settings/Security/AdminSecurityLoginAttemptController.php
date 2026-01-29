@@ -52,6 +52,11 @@ class AdminSecurityLoginAttemptController extends AdminLoggedInController
             'login_attempt_lockout_notification_enabled_default' => filter_var($this->securitySettingRepository->get('login_attempt_lockout_notification_enabled_default', true), FILTER_VALIDATE_BOOLEAN),
         ];
 
+        // ログイン通知設定
+        $loginNotificationMode = (int) $this->securitySettingRepository->get('login_notification_mode', 3);
+        $loginNotificationSendToSystem = (bool) $this->securitySettingRepository->get('login_notification_send_to_system', false);
+        $loginNotificationSystemEmail = (string) $this->securitySettingRepository->get('login_notification_system_email', '');
+
         // 二段階認証の詳細設定
         $twoFaExpireMinutes = (int) $this->securitySettingRepository->get('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
         $twoFaResendIntervalSeconds = (int) $this->securitySettingRepository->get('two_fa_resend_interval_seconds', config('two-fa.resend_interval', 60));
@@ -63,6 +68,9 @@ class AdminSecurityLoginAttemptController extends AdminLoggedInController
         $twoFaRecoveryCodeRegenerateInterval = (int) $this->securitySettingRepository->get('two_fa_recovery_code_regenerate_interval', 24);
 
         $this->viewParams['settings'] = $settings;
+        $this->viewParams['loginNotificationMode'] = $loginNotificationMode;
+        $this->viewParams['loginNotificationSendToSystem'] = $loginNotificationSendToSystem;
+        $this->viewParams['loginNotificationSystemEmail'] = $loginNotificationSystemEmail;
         $this->viewParams['twoFaExpireMinutes'] = $twoFaExpireMinutes;
         $this->viewParams['twoFaResendIntervalSeconds'] = $twoFaResendIntervalSeconds;
         $this->viewParams['twoFaMaxAttempts'] = $twoFaMaxAttempts;
@@ -72,7 +80,7 @@ class AdminSecurityLoginAttemptController extends AdminLoggedInController
         $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodesCount;
         $this->viewParams['twoFaRecoveryCodeRegenerateInterval'] = $twoFaRecoveryCodeRegenerateInterval;
 
-        return view('admin.settings.security.login-attempt', $this->viewParams);
+        return view('admin.settings.security.login', $this->viewParams);
     }
 
     /**
@@ -99,6 +107,17 @@ class AdminSecurityLoginAttemptController extends AdminLoggedInController
         }
         if (array_key_exists('login_attempt_lockout_notification_enabled_default', $validated)) {
             $this->securitySettingRepository->set('login_attempt_lockout_notification_enabled_default', $validated['login_attempt_lockout_notification_enabled_default'] ?? false);
+        }
+
+        // ログイン通知設定
+        if (array_key_exists('login_notification_mode', $validated)) {
+            $this->securitySettingRepository->set('login_notification_mode', (int) $validated['login_notification_mode']);
+        }
+        if (array_key_exists('login_notification_send_to_system', $validated)) {
+            $this->securitySettingRepository->set('login_notification_send_to_system', $validated['login_notification_send_to_system'] ?? false);
+        }
+        if (array_key_exists('login_notification_system_email', $validated)) {
+            $this->securitySettingRepository->set('login_notification_system_email', (string) $validated['login_notification_system_email']);
         }
 
         // 二段階認証の詳細設定

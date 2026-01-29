@@ -56,7 +56,7 @@ return [
             'ip' => 'IPアクセス制御',
             'extensions' => '拡張機能',
             'csp' => 'CSP',
-            'notifications' => '通知',
+            'notifications' => 'エラー通知',
             'environment' => '環境設定',
             'integrity' => 'ファイル整合性',
         ],

@@ -216,10 +216,10 @@ return [
                             'route' => 'admin.settings.security.password',
                             'icon' => 'fas fa-fw fa-key',
                         ],
-                        'login-attempt' => [
+                        'login' => [
                             'text' => 'admin/nav.settings.security.login_attempt',
-                            'route' => 'admin.settings.security.login-attempt',
-                            'icon' => 'fas fa-fw fa-user-lock',
+                            'route' => 'admin.settings.security.login',
+                            'icon' => 'fas fa-fw fa-sign-in-alt',
                         ],
                         'session' => [
                             'text' => 'admin/nav.settings.security.session',

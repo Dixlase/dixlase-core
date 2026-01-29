@@ -42,10 +42,11 @@ return [
     'force_logout_description' => 'Force logout all admin members. Sessions of all currently logged-in members will be deleted.',
     'force_logout_all_button' => 'Force Logout All Members',
     'force_logout_all_modal' => [
-        'title' => 'Force Logout All Members Confirmation',
-        'message' => 'Are you sure you want to force logout all members? This will delete sessions of all currently logged-in members.',
-        'confirm_label' => 'Execute Force Logout',
+        'title' => 'Force Logout All Members',
+        'message' => 'Are you sure you want to force logout all members? This action cannot be undone.',
+        'confirm_label' => 'Force Logout',
     ],
+    'managed_in_security_settings' => 'Managed in Security Settings',
     
     // Messages
     'updated' => 'Member settings have been updated.',

@@ -64,4 +64,7 @@ return [
     'lockout_duration' => 'ロックアウト時間',
     'times' => '回',
     'minutes' => '分',
+    
+    'login_notification_description' => 'メンバーがログインした際の通知設定を管理します。',
+    'login_notification_in_security' => 'ログイン通知設定は全体設定 > セキュリティ設定 > ログインで管理されています。',
 ];
