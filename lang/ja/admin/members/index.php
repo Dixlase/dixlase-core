@@ -15,6 +15,9 @@
 return [
     'heading' => 'メンバー管理',
     'description' => '登録されているメンバーの一覧表示、検索、編集、削除を行います。',
+    'force_logout_all' => '全メンバー強制ログアウト',
+    'force_logout_all_confirmation_title' => '全メンバー強制ログアウトの確認',
+    'force_logout_all_confirmation_message' => '自分以外の全メンバーを強制的にログアウトさせますか？この操作は取り消せません。',
     'search_title' => 'メンバー検索',
     'search_placeholder' => 'メンバー名またはメールアドレスで検索',
     'table' => [
