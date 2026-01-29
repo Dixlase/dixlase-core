@@ -14,6 +14,9 @@
 
 return [
     'heading' => 'Member Management',
+    'force_logout_all' => 'Force Logout All Members',
+    'force_logout_all_confirmation_title' => 'Confirm Force Logout All',
+    'force_logout_all_confirmation_message' => 'Are you sure you want to force logout all members except yourself? This action cannot be undone.',
     'search_title' => 'Member Search',
     'search_placeholder' => 'Search by member name or email address',
     'table' => [

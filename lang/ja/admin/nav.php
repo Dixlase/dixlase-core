@@ -52,6 +52,7 @@ return [
             'password' => 'パスワード',
             'login_attempt' => 'ログイン',
             'session' => 'セッション',
+            'authentication' => '認証設定',
             'captcha' => 'CAPTCHA',
             'ip' => 'IPアクセス制御',
             'extensions' => '拡張機能',
