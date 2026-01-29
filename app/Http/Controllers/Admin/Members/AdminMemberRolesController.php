@@ -59,7 +59,7 @@ class AdminMemberRolesController extends AdminLoggedInController
         $this->viewParams['menuList'] = $menuList;
         $this->viewParams['pluginPermissionGroups'] = $pluginPermissionGroups;
 
-        return view('admin.members.settings.roles', $this->viewParams);
+        return view('admin.members.roles', $this->viewParams);
     }
 
     /**

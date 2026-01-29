@@ -105,29 +105,9 @@ return [
                     'access_roles' => MemberRole::ADMIN->value,
                     'view_roles' => MemberRole::ADMIN->value,
                 ],
-                'settings' => [
-                    'children' => [
-                        'overview' => [
-                            'access_roles' => MemberRole::SUPER_ADMIN->value,
-                            'view_roles' => MemberRole::SUPER_ADMIN->value,
-                        ],
-                        'password' => [
-                            'access_roles' => MemberRole::SUPER_ADMIN->value,
-                            'view_roles' => MemberRole::SUPER_ADMIN->value,
-                        ],
-                        'session' => [
-                            'access_roles' => MemberRole::SUPER_ADMIN->value,
-                            'view_roles' => MemberRole::SUPER_ADMIN->value,
-                        ],
-                        'auth' => [
-                            'access_roles' => MemberRole::SUPER_ADMIN->value,
-                            'view_roles' => MemberRole::SUPER_ADMIN->value,
-                        ],
-                        'roles' => [
-                            'access_roles' => MemberRole::SUPER_ADMIN->value,
-                            'view_roles' => MemberRole::SUPER_ADMIN->value,
-                        ],
-                    ],
+                'roles' => [
+                    'access_roles' => MemberRole::SUPER_ADMIN->value,
+                    'view_roles' => MemberRole::SUPER_ADMIN->value,
                 ],
             ],
         ],
@@ -172,7 +152,11 @@ return [
                             'access_roles' => MemberRole::SUPER_ADMIN->value,
                             'view_roles' => MemberRole::SUPER_ADMIN->value,
                         ],
-                        'session' => [
+                        'login' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'authentication' => [
                             'access_roles' => MemberRole::SUPER_ADMIN->value,
                             'view_roles' => MemberRole::SUPER_ADMIN->value,
                         ],
@@ -180,15 +164,7 @@ return [
                             'access_roles' => MemberRole::SUPER_ADMIN->value,
                             'view_roles' => MemberRole::SUPER_ADMIN->value,
                         ],
-                        'ip' => [
-                            'access_roles' => MemberRole::SUPER_ADMIN->value,
-                            'view_roles' => MemberRole::SUPER_ADMIN->value,
-                        ],
-                        'extensions' => [
-                            'access_roles' => MemberRole::SUPER_ADMIN->value,
-                            'view_roles' => MemberRole::SUPER_ADMIN->value,
-                        ],
-                        'csp' => [
+                        'session' => [
                             'access_roles' => MemberRole::SUPER_ADMIN->value,
                             'view_roles' => MemberRole::SUPER_ADMIN->value,
                         ],
@@ -196,11 +172,23 @@ return [
                             'access_roles' => MemberRole::SUPER_ADMIN->value,
                             'view_roles' => MemberRole::SUPER_ADMIN->value,
                         ],
-                        'environment' => [
+                        'csp' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'extensions' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'ip' => [
                             'access_roles' => MemberRole::SUPER_ADMIN->value,
                             'view_roles' => MemberRole::SUPER_ADMIN->value,
                         ],
                         'integrity' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'environment' => [
                             'access_roles' => MemberRole::SUPER_ADMIN->value,
                             'view_roles' => MemberRole::SUPER_ADMIN->value,
                         ],

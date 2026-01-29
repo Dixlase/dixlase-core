@@ -145,24 +145,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
         </section>
-
-        <!-- 二段階認証の詳細設定 -->
-        <section>
-            <h2>{{ __('admin/settings/security/login.two_fa_detailed_settings') }}</h2>
-            <p>{{ __('admin/settings/security/login.two_fa_detailed_settings_description') }}</p>
-
-            <x-two-fa.detailed-settings
-                :expireMinutes="$twoFaExpireMinutes"
-                :resendIntervalSeconds="$twoFaResendIntervalSeconds"
-                :maxAttempts="$twoFaMaxAttempts"
-                :attemptWindow="$twoFaAttemptWindow"
-                :lockoutDuration="$twoFaLockoutDuration"
-                :lockoutNotificationEnabled="$twoFaLockoutNotificationEnabled"
-                :recoveryCodesCount="$twoFaRecoveryCodesCount ?? 5"
-                :recoveryCodeRegenerateInterval="$twoFaRecoveryCodeRegenerateInterval ?? 24"
-            />
-        </section>
-
     </form>
 </div>
 @endsection

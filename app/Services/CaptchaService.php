@@ -58,10 +58,22 @@ class CaptchaService
             return $pluginForms;
         }
         
+        // Get only installed and enabled plugins
+        $enabledPlugins = \App\Models\Plugin::whereNotNull('installed_at')
+            ->whereNotNull('enabled_at')
+            ->pluck('slug')
+            ->toArray();
+        
         $pluginDirs = File::directories($pluginsPath);
         
         foreach ($pluginDirs as $pluginDir) {
             $pluginName = basename($pluginDir);
+            
+            // Skip if plugin is not installed or not enabled
+            if (!in_array($pluginName, $enabledPlugins)) {
+                continue;
+            }
+            
             $captchaConfigPath = $pluginDir . '/config/captcha.php';
             
             if (File::exists($captchaConfigPath)) {
