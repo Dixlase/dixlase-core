@@ -31,8 +31,9 @@ class AdminSecurityLoginAttemptController extends AdminLoggedInController
 {
     protected SecuritySettingRepositoryInterface $securitySettingRepository;
 
-    public function __construct(SecuritySettingRepositoryInterface $securitySettingRepository)
-    {
+    public function __construct(
+        SecuritySettingRepositoryInterface $securitySettingRepository
+    ) {
         parent::__construct();
         $this->securitySettingRepository = $securitySettingRepository;
     }
@@ -51,7 +52,25 @@ class AdminSecurityLoginAttemptController extends AdminLoggedInController
             'login_attempt_lockout_notification_enabled_default' => filter_var($this->securitySettingRepository->get('login_attempt_lockout_notification_enabled_default', true), FILTER_VALIDATE_BOOLEAN),
         ];
 
+        // 二段階認証の詳細設定
+        $twoFaExpireMinutes = (int) $this->securitySettingRepository->get('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
+        $twoFaResendIntervalSeconds = (int) $this->securitySettingRepository->get('two_fa_resend_interval_seconds', config('two-fa.resend_interval', 60));
+        $twoFaMaxAttempts = (int) $this->securitySettingRepository->get('two_fa_max_attempts', 5);
+        $twoFaAttemptWindow = (int) $this->securitySettingRepository->get('two_fa_attempt_window', 15);
+        $twoFaLockoutDuration = (int) $this->securitySettingRepository->get('two_fa_lockout_duration', 30);
+        $twoFaLockoutNotificationEnabled = (bool) $this->securitySettingRepository->get('two_fa_lockout_notification_enabled', true);
+        $twoFaRecoveryCodesCount = (int) $this->securitySettingRepository->get('two_fa_recovery_codes_count', 5);
+        $twoFaRecoveryCodeRegenerateInterval = (int) $this->securitySettingRepository->get('two_fa_recovery_code_regenerate_interval', 24);
+
         $this->viewParams['settings'] = $settings;
+        $this->viewParams['twoFaExpireMinutes'] = $twoFaExpireMinutes;
+        $this->viewParams['twoFaResendIntervalSeconds'] = $twoFaResendIntervalSeconds;
+        $this->viewParams['twoFaMaxAttempts'] = $twoFaMaxAttempts;
+        $this->viewParams['twoFaAttemptWindow'] = $twoFaAttemptWindow;
+        $this->viewParams['twoFaLockoutDuration'] = $twoFaLockoutDuration;
+        $this->viewParams['twoFaLockoutNotificationEnabled'] = $twoFaLockoutNotificationEnabled;
+        $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodesCount;
+        $this->viewParams['twoFaRecoveryCodeRegenerateInterval'] = $twoFaRecoveryCodeRegenerateInterval;
 
         return view('admin.settings.security.login-attempt', $this->viewParams);
     }
@@ -80,6 +99,32 @@ class AdminSecurityLoginAttemptController extends AdminLoggedInController
         }
         if (array_key_exists('login_attempt_lockout_notification_enabled_default', $validated)) {
             $this->securitySettingRepository->set('login_attempt_lockout_notification_enabled_default', $validated['login_attempt_lockout_notification_enabled_default'] ?? false);
+        }
+
+        // 二段階認証の詳細設定
+        if (array_key_exists('two_fa_expire_minutes', $validated)) {
+            $this->securitySettingRepository->set('two_fa_expire_minutes', (int) $validated['two_fa_expire_minutes']);
+        }
+        if (array_key_exists('two_fa_resend_interval_seconds', $validated)) {
+            $this->securitySettingRepository->set('two_fa_resend_interval_seconds', (int) $validated['two_fa_resend_interval_seconds']);
+        }
+        if (array_key_exists('two_fa_max_attempts', $validated)) {
+            $this->securitySettingRepository->set('two_fa_max_attempts', (int) $validated['two_fa_max_attempts']);
+        }
+        if (array_key_exists('two_fa_attempt_window', $validated)) {
+            $this->securitySettingRepository->set('two_fa_attempt_window', (int) $validated['two_fa_attempt_window']);
+        }
+        if (array_key_exists('two_fa_lockout_duration', $validated)) {
+            $this->securitySettingRepository->set('two_fa_lockout_duration', (int) $validated['two_fa_lockout_duration']);
+        }
+        if (array_key_exists('two_fa_lockout_notification_enabled', $validated)) {
+            $this->securitySettingRepository->set('two_fa_lockout_notification_enabled', $validated['two_fa_lockout_notification_enabled'] ?? false);
+        }
+        if (array_key_exists('two_fa_recovery_codes_count', $validated)) {
+            $this->securitySettingRepository->set('two_fa_recovery_codes_count', (int) $validated['two_fa_recovery_codes_count']);
+        }
+        if (array_key_exists('two_fa_recovery_code_regenerate_interval', $validated)) {
+            $this->securitySettingRepository->set('two_fa_recovery_code_regenerate_interval', (int) $validated['two_fa_recovery_code_regenerate_interval']);
         }
 
         return redirect()->route('admin.settings.security.login-attempt')

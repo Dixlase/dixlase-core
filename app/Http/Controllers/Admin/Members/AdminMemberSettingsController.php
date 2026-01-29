@@ -83,16 +83,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
      */
     protected function loadViewParams(): void
     {
-        $passwordMinLength = (int) $this->memberSettingRepository->get('password_min_length', 8);
-        $passwordRequireUppercase = (bool) $this->memberSettingRepository->get('password_require_uppercase', true);
-        $passwordRequireLowercase = (bool) $this->memberSettingRepository->get('password_require_lowercase', true);
-        $passwordRequireNumber = (bool) $this->memberSettingRepository->get('password_require_number', true);
-        $passwordRequireSymbol = (bool) $this->memberSettingRepository->get('password_require_symbol', true);
-        
-        $minLengthOptions = collect(__('admin/members/settings/password.min_length_options'))
-            ->map(fn($label, $key) => ['value' => (string) $key, 'label' => $label])
-            ->values()
-            ->toArray();
+        // パスワード設定はセキュリティ設定に移動
 
         $loginNotification = (int) $this->memberSettingRepository->get('login_notification_mode', AuthenticationMode::UseProfileSetting->value);
         $loginNotificationGlobalOptions = collect(config('admin.global_login_notification_mail_mode'))
@@ -137,71 +128,27 @@ class AdminMemberSettingsController extends AdminLoggedInController
             $twoFaDefaultMethod = (int) old('two_fa_default_method');
         }
 
-        $passwordResetEnabled = (bool) $this->memberSettingRepository->get('password_reset_enabled', true);
-        $pwnedPasswordCheckEnabled = (bool) $this->memberSettingRepository->get('pwned_password_check_enabled', false);
-        $loginAttemptLimitEnabled = (bool) $this->memberSettingRepository->get('login_attempt_limit_enabled', false);
-        $loginAttemptMaxAttempts = (int) $this->memberSettingRepository->get('login_attempt_max_attempts', 5);
-        $loginAttemptMaxAttemptsIp = (int) $this->memberSettingRepository->get('login_attempt_max_attempts_ip', $loginAttemptMaxAttempts * 2);
-        $loginAttemptTimeWindow = (int) $this->memberSettingRepository->get('login_attempt_time_window', 15);
-        $loginAttemptLockoutDuration = (int) $this->memberSettingRepository->get('login_attempt_lockout_duration', 30);
-        $lockoutNotificationEnabled = (bool) $this->memberSettingRepository->get('login_attempt_lockout_notification_enabled', true);
+        // ログイン試行制限設定はセキュリティ設定に移動
+        // セッション設定は廃止（セキュリティ設定のセッション設定を使用）
 
-        $membersSessionLifetimeEnabled = (bool) $this->memberSettingRepository->get('members_session_lifetime_enabled', false);
-        $membersSessionLifetime = (int) $this->memberSettingRepository->get('members_session_lifetime', 120);
-
-        $twoFaExpireMinutes = (int) $this->memberSettingRepository->get('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
-        $twoFaResendIntervalSeconds = (int) $this->memberSettingRepository->get('two_fa_resend_interval_seconds', config('two-fa.resend_interval', 60));
-
-        $twoFaMaxAttempts = (int) $this->memberSettingRepository->get('two_fa_max_attempts', 5);
-        $twoFaAttemptWindow = (int) $this->memberSettingRepository->get('two_fa_attempt_window', 15);
-        $twoFaLockoutDuration = (int) $this->memberSettingRepository->get('two_fa_lockout_duration', 30);
-        $twoFaLockoutNotificationEnabled = (bool) $this->memberSettingRepository->get('two_fa_lockout_notification_enabled', true);
-
-        $twoFaRecoveryCodesCount = (int) $this->memberSettingRepository->get('two_fa_recovery_codes_count', 5);
-        $twoFaRecoveryCodeRegenerateInterval = (int) $this->memberSettingRepository->get('two_fa_recovery_code_regenerate_interval', 24);
+        // 二段階認証の詳細設定はセキュリティ設定に移動
 
         $isMailServerTested = $this->isMailServerTested();
         $mailConnectionTestDate = BaseSetting::getValue('mail_connection_test_date');
 
-        // パスワード設定
-        $this->viewParams['passwordMinLength'] = $passwordMinLength;
-        $this->viewParams['passwordRequireUppercase'] = $passwordRequireUppercase;
-        $this->viewParams['passwordRequireLowercase'] = $passwordRequireLowercase;
-        $this->viewParams['passwordRequireNumber'] = $passwordRequireNumber;
-        $this->viewParams['passwordRequireSymbol'] = $passwordRequireSymbol;
-        $this->viewParams['minLengthOptions'] = $minLengthOptions;
-        $this->viewParams['passwordResetEnabled'] = $passwordResetEnabled;
-        $this->viewParams['pwnedPasswordCheckEnabled'] = $pwnedPasswordCheckEnabled;
+        // パスワード設定はセキュリティ設定に移動
 
         // ログイン通知設定
         $this->viewParams['loginNotification'] = $loginNotification;
         $this->viewParams['loginNotificationGlobalOptions'] = $loginNotificationGlobalOptions;
 
-        // ログイン試行制限設定
-        $this->viewParams['loginAttemptLimitEnabled'] = $loginAttemptLimitEnabled;
-        $this->viewParams['loginAttemptMaxAttempts'] = $loginAttemptMaxAttempts;
-        $this->viewParams['loginAttemptMaxAttemptsIp'] = $loginAttemptMaxAttemptsIp;
-        $this->viewParams['loginAttemptTimeWindow'] = $loginAttemptTimeWindow;
-        $this->viewParams['loginAttemptLockoutDuration'] = $loginAttemptLockoutDuration;
-        $this->viewParams['lockoutNotificationEnabled'] = $lockoutNotificationEnabled;
+        // ログイン試行制限設定はセキュリティ設定に移動
 
         // 二段階認証設定
         $this->viewParams['twoFaForceMode'] = $twoFaForceMode;
         $this->viewParams['twoFaGlobalOptions'] = $twoFactorGlobalOptions;
         $this->viewParams['twoFaPasskeyMode'] = $twoFaPasskeyMode;
         $this->viewParams['twoFaDefaultMethod'] = $twoFaDefaultMethod;
-        $this->viewParams['twoFaExpireMinutes'] = $twoFaExpireMinutes;
-        $this->viewParams['twoFaResendIntervalSeconds'] = $twoFaResendIntervalSeconds;
-        $this->viewParams['twoFaMaxAttempts'] = $twoFaMaxAttempts;
-        $this->viewParams['twoFaAttemptWindow'] = $twoFaAttemptWindow;
-        $this->viewParams['twoFaLockoutDuration'] = $twoFaLockoutDuration;
-        $this->viewParams['twoFaLockoutNotificationEnabled'] = $twoFaLockoutNotificationEnabled;
-        $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodesCount;
-        $this->viewParams['twoFaRecoveryCodeRegenerateInterval'] = $twoFaRecoveryCodeRegenerateInterval;
-
-        // セッション設定
-        $this->viewParams['membersSessionLifetimeEnabled'] = $membersSessionLifetimeEnabled;
-        $this->viewParams['membersSessionLifetime'] = $membersSessionLifetime;
 
         // メールサーバー設定状態
         $this->viewParams['isMailServerTested'] = $isMailServerTested;

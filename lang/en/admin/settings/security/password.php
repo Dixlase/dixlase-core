@@ -13,9 +13,9 @@
  */
 
 return [
-    'heading' => 'Authentication & Session Settings',
+    'heading' => 'Password Settings',
     'session_management' => 'Session Management Settings',
-    'session_management_description' => 'Manage system-wide session settings. Dixlase uses Guard-Aware Database session management.',
+    'session_management_description' => 'Manage password settings.',
     'session_encrypt' => 'Session Encryption',
     'session_encrypt_help' => 'Encrypt session data before storing.',
     'session_lifetime' => 'Default Session Lifetime',
@@ -41,9 +41,14 @@ return [
     'min_length' => 'Minimum Length',
     'require_uppercase' => 'Require Uppercase',
     'require_number' => 'Require Number',
-    'require_symbol' => 'Require Symbol',
-    'reset_enabled' => 'Enable Password Reset',
-    'plugin_custom_hint' => 'Plugins (such as DixlaseUsers) can set their own password policies. When plugin custom settings are enabled, they take priority.',
+    'require_symbol' => 'Require symbols',
+    'security_warning' => 'For enhanced security, we recommend setting stricter requirements.',
+    'reset_enabled' => 'Enable password reset feature',
+    'plugin_custom_hint' => 'Plugins (such as DixlaseUsers) can set their own password policies. If a plugin has custom settings enabled, those will take precedence.',
+    
+    // Password reset feature
+    'password_reset_feature' => 'Password Reset Feature',
+    'password_reset_feature_description' => 'Enable or disable the password reset feature for members who have forgotten their passwords.',
     
     'settings_updated' => 'Password security settings have been updated.',
 ];

@@ -153,11 +153,6 @@ return [
                             'route' => 'admin.members.settings.password',
                             'icon' => 'fas fa-fw fa-key',
                         ],
-                        'session' => [
-                            'text' => 'admin/nav.settings.members.settings_nav.session',
-                            'route' => 'admin.members.settings.session',
-                            'icon' => 'fas fa-fw fa-clock',
-                        ],
                         'auth' => [
                             'text' => 'admin/nav.settings.members.settings_nav.auth',
                             'route' => 'admin.members.settings.auth',

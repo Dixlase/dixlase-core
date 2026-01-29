@@ -58,6 +58,92 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '1']
         );
 
+        // Default password policy settings (moved from MembersSettingsSeeder)
+        SecuritySetting::updateOrCreate(
+            ['name' => 'password_min_length_default'],
+            ['value' => '8']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'password_require_uppercase_default'],
+            ['value' => '1']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'password_require_number_default'],
+            ['value' => '1']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'password_require_symbol_default'],
+            ['value' => '0']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'password_reset_enabled_default'],
+            ['value' => '1']
+        );
+
+        // Default login attempt limit settings (moved from MembersSettingsSeeder)
+        SecuritySetting::updateOrCreate(
+            ['name' => 'login_attempt_limit_enabled_default'],
+            ['value' => '0']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'login_attempt_max_attempts_default'],
+            ['value' => '5']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'login_attempt_max_attempts_ip_default'],
+            ['value' => '10']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'login_attempt_time_window_default'],
+            ['value' => '15']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'login_attempt_lockout_duration_default'],
+            ['value' => '30']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'login_attempt_lockout_notification_enabled_default'],
+            ['value' => '1']
+        );
+
+        // Two-factor authentication detailed settings (moved from MembersSettingsSeeder)
+        SecuritySetting::updateOrCreate(
+            ['name' => 'two_fa_expire_minutes'],
+            ['value' => '5']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'two_fa_resend_interval_seconds'],
+            ['value' => '60']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'two_fa_max_attempts'],
+            ['value' => '5']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'two_fa_attempt_window'],
+            ['value' => '15']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'two_fa_lockout_duration'],
+            ['value' => '30']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'two_fa_lockout_notification_enabled'],
+            ['value' => '1']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'two_fa_recovery_codes_count'],
+            ['value' => '5']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'two_fa_recovery_code_regenerate_interval'],
+            ['value' => '24']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'two_fa_verification_timeout'],
+            ['value' => '10']
+        );
+
         // reCAPTCHA settings
         SecuritySetting::updateOrCreate(
             ['name' => 'captcha_enabled'],

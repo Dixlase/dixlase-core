@@ -120,17 +120,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :twoFaDefaultMethodValue="(string) $twoFaDefaultMethod"
                     :columns="4"
                 />
-
-                <x-two-fa.detailed-settings
-                    :expireMinutes="$twoFaExpireMinutes"
-                    :resendIntervalSeconds="$twoFaResendIntervalSeconds"
-                    :maxAttempts="$twoFaMaxAttempts"
-                    :attemptWindow="$twoFaAttemptWindow"
-                    :lockoutDuration="$twoFaLockoutDuration"
-                    :lockoutNotificationEnabled="$twoFaLockoutNotificationEnabled"
-                    :recoveryCodesCount="$twoFaRecoveryCodesCount ?? 5"
-                    :recoveryCodeRegenerateInterval="$twoFaRecoveryCodeRegenerateInterval ?? 24"
-                />
+            </div>
+            
+            <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                    <div>
+                        <p class="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                            {{ __('admin/members/settings/auth.two_fa_detailed_settings_in_security') }}
+                        </p>
+                        <a href="{{ route('admin.settings.security.login-attempt') }}" class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+                            <i class="fas fa-external-link-alt"></i>
+                            {{ __('admin/members/settings/auth.go_to_security_settings') }}
+                        </a>
+                    </div>
+                </div>
             </div>
         </section>
 
