@@ -43,6 +43,14 @@ class AdminSecurityLoginAttemptController extends AdminLoggedInController
      */
     public function index()
     {
+        \Log::info('=== ログイン設定ページ表示開始 ===');
+        \Log::info('リクエストURL: ' . request()->fullUrl());
+        \Log::info('リクエストメソッド: ' . request()->method());
+        \Log::info('セッションにsuccessメッセージがあるか: ' . (session()->has('success') ? 'はい' : 'いいえ'));
+        if (session()->has('success')) {
+            \Log::info('successメッセージ内容: ' . session()->get('success'));
+        }
+        
         $settings = [
             'login_attempt_limit_enabled_default' => filter_var($this->securitySettingRepository->get('login_attempt_limit_enabled_default', false), FILTER_VALIDATE_BOOLEAN),
             'login_attempt_max_attempts_default' => (int) $this->securitySettingRepository->get('login_attempt_max_attempts_default', 5),
@@ -80,6 +88,9 @@ class AdminSecurityLoginAttemptController extends AdminLoggedInController
         $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodesCount;
         $this->viewParams['twoFaRecoveryCodeRegenerateInterval'] = $twoFaRecoveryCodeRegenerateInterval;
 
+        \Log::info('ビューパラメータ準備完了');
+        \Log::info('=== ログイン設定ページ表示終了 ===');
+        
         return view('admin.settings.security.login', $this->viewParams);
     }
 
@@ -88,7 +99,11 @@ class AdminSecurityLoginAttemptController extends AdminLoggedInController
      */
     public function update(AdminSecurityLoginAttemptUpdateRequest $request)
     {
+        \Log::info('=== ログイン設定保存開始 ===');
+        \Log::info('リクエストデータ: ', $request->all());
+        
         $validated = $request->validated();
+        \Log::info('バリデーション済みデータ: ', $validated);
 
         if (array_key_exists('login_attempt_limit_enabled_default', $validated)) {
             $this->securitySettingRepository->set('login_attempt_limit_enabled_default', $validated['login_attempt_limit_enabled_default'] ?? false);
@@ -146,7 +161,18 @@ class AdminSecurityLoginAttemptController extends AdminLoggedInController
             $this->securitySettingRepository->set('two_fa_recovery_code_regenerate_interval', (int) $validated['two_fa_recovery_code_regenerate_interval']);
         }
 
-        return redirect()->route('admin.settings.security.login-attempt')
-            ->with('success', __('admin/settings/security/login-attempt.settings_updated'));
+        \Log::info('=== 設定保存完了 ===');
+        \Log::info('リダイレクト先: admin.settings.security.login-settings');
+        \Log::info('リダイレクト先URL: ' . route('admin.settings.security.login-settings'));
+        \Log::info('セッションメッセージ: ' . __('admin/settings/security/login.settings_updated'));
+        
+        $response = redirect()->route('admin.settings.security.login-settings')
+            ->with('success', __('admin/settings/security/login.settings_updated'));
+        
+        \Log::info('リダイレクトレスポンス作成完了');
+        \Log::info('レスポンスステータス: ' . $response->getStatusCode());
+        \Log::info('=== ログイン設定保存終了 ===');
+        
+        return $response;
     }
 }

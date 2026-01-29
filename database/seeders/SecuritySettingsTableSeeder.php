@@ -52,11 +52,7 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => implode(',', LogLevel::getDefaultNotificationLevels())]
         );
 
-        // Password security settings
-        SecuritySetting::updateOrCreate(
-            ['name' => 'pwned_password_check_enabled'],
-            ['value' => '1']
-        );
+
 
         // Default password policy settings (moved from MembersSettingsSeeder)
         SecuritySetting::updateOrCreate(
@@ -73,17 +69,22 @@ class SecuritySettingsTableSeeder extends Seeder
         );
         SecuritySetting::updateOrCreate(
             ['name' => 'password_require_symbol_default'],
-            ['value' => '0']
+            ['value' => '1']
         );
         SecuritySetting::updateOrCreate(
             ['name' => 'password_reset_enabled_default'],
+            ['value' => '0']
+        );
+        // Password security settings
+        SecuritySetting::updateOrCreate(
+            ['name' => 'pwned_password_check_enabled'],
             ['value' => '1']
         );
 
         // Default login attempt limit settings (moved from MembersSettingsSeeder)
         SecuritySetting::updateOrCreate(
             ['name' => 'login_attempt_limit_enabled_default'],
-            ['value' => '0']
+            ['value' => '1']
         );
         SecuritySetting::updateOrCreate(
             ['name' => 'login_attempt_max_attempts_default'],
