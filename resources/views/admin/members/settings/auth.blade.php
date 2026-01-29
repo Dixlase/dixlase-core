@@ -85,28 +85,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </section>
 
-        <!-- CAPTCHA設定（管理画面ログイン用） -->
+        <!-- CAPTCHA設定 -->
         <section>
-            <h2>{{ __('admin/members/settings/auth.captcha_admin_login_settings') }}</h2>
-            <p class="mb-2">{{ __('admin/members/settings/auth.captcha_admin_login_settings_description') }}</p>
-
-            <x-captcha-settings
-                :captchaEnabled="$captchaEnabled"
-                :captchaAuthenticationResult="$captchaAuthenticationResult"
-                :settingsUrl="route('admin.settings.security.captcha')"
-                :screens="[
-                    [
-                        'name' => 'captcha_admin_login_enabled',
-                        'label' => __('admin/members/settings/auth.captcha_admin_login_enabled'),
-                        'value' => $captchaAdminLoginEnabled,
-                    ],
-                    [
-                        'name' => 'captcha_password_reset_enabled',
-                        'label' => __('admin/members/settings/auth.captcha_password_reset_enabled'),
-                        'value' => $captchaPasswordResetEnabled,
-                    ],
-                ]"
-            />
+            <h2>{{ __('admin/members/settings/auth.captcha_settings') }}</h2>
+            <p>{{ __('admin/members/settings/auth.captcha_settings_description') }}</p>
+            
+            <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                    <div>
+                        <p class="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                            {{ __('admin/members/settings/auth.captcha_in_security') }}
+                        </p>
+                        <a href="{{ route('admin.settings.security.captcha') }}" class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+                            <i class="fas fa-external-link-alt"></i>
+                            {{ __('admin/members/settings/auth.go_to_security_settings') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
         </section>
     </form>
 </div>

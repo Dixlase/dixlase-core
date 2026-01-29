@@ -277,6 +277,50 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </section>
 
+        <!-- フォームごとのCAPTCHA設定 -->
+        <section class="mt-8">
+            <h2>{{ __('admin/settings/security/captcha.form_settings_title') }}</h2>
+            <p>{{ __('admin/settings/security/captcha.form_settings_description') }}</p>
+
+            @foreach($formsByCategory as $category => $forms)
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-4">{{ __("admin/settings/security/captcha.categories.$category") }}</h3>
+                    
+                    @foreach($forms as $formKey => $form)
+                        <fieldset class="mb-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <x-form.toggle
+                                        name="forms[{{ $formKey }}]"
+                                        :label="__($form['name'])"
+                                        :checked="old('forms.' . $formKey, $enabledForms[$formKey] ?? false)"
+                                        x-bind:disabled="!captchaEnabled"
+                                    />
+                                    <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                        <span class="font-medium">{{ __('admin/settings/security/captcha.route') }}:</span> 
+                                        <code class="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded">{{ $form['route'] }}</code>
+                                        @if(isset($form['plugin']))
+                                            <span class="ml-3 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs">
+                                                {{ __('admin/settings/security/captcha.plugin') }}: {{ $form['plugin'] }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    @endforeach
+                </div>
+            @endforeach
+
+            @if($formsByCategory->isEmpty())
+                <div class="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                    <p class="text-gray-600 dark:text-gray-400">
+                        {{ __('admin/settings/security/captcha.no_forms_available') }}
+                    </p>
+                </div>
+            @endif
+        </section>
+
     </form>
 </div>
 </div>

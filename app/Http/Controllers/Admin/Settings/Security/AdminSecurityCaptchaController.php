@@ -25,6 +25,7 @@ namespace App\Http\Controllers\Admin\Settings\Security;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Services\CaptchaTestService;
+use App\Services\CaptchaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -33,11 +34,15 @@ use App\Http\Requests\Admin\Settings\Security\AdminSecurityCaptchaUpdateRequest;
 class AdminSecurityCaptchaController extends AdminLoggedInController
 {
     protected SecuritySettingRepositoryInterface $securitySettingRepository;
+    protected CaptchaService $captchaService;
 
-    public function __construct(SecuritySettingRepositoryInterface $securitySettingRepository)
-    {
+    public function __construct(
+        SecuritySettingRepositoryInterface $securitySettingRepository,
+        CaptchaService $captchaService
+    ) {
         parent::__construct();
         $this->securitySettingRepository = $securitySettingRepository;
+        $this->captchaService = $captchaService;
     }
 
     /**
@@ -75,9 +80,21 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         $captchaTestResult = $captchaTestService->getTestResult();
         $captchaTestDetails = $captchaTestService->getCaptchaTestResult($settings['captcha_driver']);
 
+        // フォーム設定を取得
+        $formsByCategory = $this->captchaService->getFormsByCategory();
+        $enabledForms = [];
+        
+        foreach ($formsByCategory as $category => $forms) {
+            foreach ($forms as $formKey => $form) {
+                $enabledForms[$formKey] = $this->captchaService->isEnabled($formKey);
+            }
+        }
+
         $this->viewParams['settings'] = $settings;
         $this->viewParams['captchaTestResult'] = $captchaTestResult;
         $this->viewParams['captchaTestDetails'] = $captchaTestDetails;
+        $this->viewParams['formsByCategory'] = $formsByCategory;
+        $this->viewParams['enabledForms'] = $enabledForms;
 
         return view('admin.settings.security.captcha', $this->viewParams);
     }
@@ -137,6 +154,11 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         $this->securitySettingRepository->set('captcha_google_version', $validated['captcha_google_version'] ?? 'v3');
         $this->securitySettingRepository->set('captcha_google_min_score', $validated['captcha_google_min_score'] ?? '0.5');
         $this->securitySettingRepository->set('captcha_google_project_id', $validated['captcha_google_project_id'] ?? '');
+
+        // フォーム設定を更新
+        if (isset($validated['forms']) && is_array($validated['forms'])) {
+            $this->captchaService->bulkUpdateFormSettings($validated['forms']);
+        }
 
         return redirect()->route('admin.settings.security.captcha')
             ->with('success', __('admin/settings/security/captcha.settings_updated'));

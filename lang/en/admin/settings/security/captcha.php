@@ -127,4 +127,26 @@ return [
     'settings_updated' => 'CAPTCHA settings have been updated.',
     'token_required' => 'CAPTCHA token is required',
     'secret_key_required' => 'Secret key is required',
+    
+    // Form settings
+    'form_settings_title' => 'CAPTCHA Settings by Form',
+    'form_settings_description' => 'Select which forms should use CAPTCHA verification. All forms defined in core and plugins are displayed here.',
+    'route' => 'Route',
+    'plugin' => 'Plugin',
+    'no_forms_available' => 'No forms available.',
+    
+    // Categories
+    'categories' => [
+        'admin' => 'Admin Panel',
+        'users' => 'Users',
+        'contact' => 'Contact',
+        'comment' => 'Comments',
+    ],
+    
+    // Form names
+    'forms' => [
+        'admin_login' => 'Admin Login',
+        'admin_password_reset' => 'Admin Password Reset',
+        'admin_two_factor' => 'Admin Two-Factor Authentication',
+    ],
 ];
