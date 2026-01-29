@@ -22,7 +22,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-    <form id="security-login-form" method="POST" action="{{ route('admin.settings.security.login.update') }}">
+    <form id="security-login-form" method="POST" action="{{ route('admin.settings.security.login-settings.update') }}">
         @csrf
         
         <!-- ログイン通知設定 -->
@@ -157,6 +157,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :message="__('common.save_confirmation_message')"
         :confirm_label="__('common.save')"
         :cancel_label="__('common.cancel')"
-        form="security-login-attempt-form"
+        form="security-login-form"
     />
 @endsection

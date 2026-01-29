@@ -53,7 +53,7 @@ class AdminSecurityAuthenticationUpdateRequest extends FormRequest
             'two_fa_lockout_duration' => ['nullable', 'integer', 'min:5', 'max:1440'],
             'two_fa_lockout_notification_enabled' => ['nullable', 'boolean'],
             'two_fa_recovery_codes_count' => ['nullable', 'integer', 'min:5', 'max:20'],
-            'two_fa_recovery_code_regenerate_interval' => ['nullable', 'integer', 'min:30', 'max:365'],
+            'two_fa_recovery_code_regenerate_interval' => ['nullable', 'integer', 'min:1', 'max:365'],
         ];
     }
 

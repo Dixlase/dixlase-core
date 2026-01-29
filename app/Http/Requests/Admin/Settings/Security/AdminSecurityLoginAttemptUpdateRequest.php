@@ -42,12 +42,19 @@ class AdminSecurityLoginAttemptUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // ログイン通知設定
+            'login_notification_mode' => 'nullable|integer|in:0,1,2,3',
+            'login_notification_send_to_system' => 'nullable|boolean',
+            'login_notification_system_email' => 'nullable|email|max:255',
+
+            // ログイン試行制限設定
             'login_attempt_limit_enabled_default' => 'boolean',
             'login_attempt_max_attempts_default' => 'required|integer|min:1|max:100',
             'login_attempt_max_attempts_ip_default' => 'required|integer|min:1|max:200',
             'login_attempt_time_window_default' => 'required|integer|min:1|max:1440',
             'login_attempt_lockout_duration_default' => 'required|integer|min:1|max:10080',
             'login_attempt_lockout_notification_enabled_default' => 'boolean',
+
         ];
     }
 }
