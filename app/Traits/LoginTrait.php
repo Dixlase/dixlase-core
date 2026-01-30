@@ -248,6 +248,7 @@ trait LoginTrait
             session([
                 $this->getSessionPrefix() . '.id' => $user->getAuthIdentifier(),
                 $this->getSessionPrefix() . '.remember' => $request->boolean('remember'),
+                $this->getSessionPrefix() . '.auth_method' => 'password', // パスワード認証を記録
             ]);
 
             // 有効な認証方法を取得

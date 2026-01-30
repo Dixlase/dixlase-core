@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\Front\AdminFrontController;
 use App\Http\Controllers\Admin\Media\AdminMediaController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\AdminLoginIdentifierCheckController;
+use App\Http\Controllers\Admin\AdminPasskeyLoginController;
 use App\Http\Controllers\Admin\AdminTwoFaController;
 use App\Http\Controllers\Admin\Auth\AdminConfirmablePasswordController;
 use App\Http\Controllers\Admin\Auth\AdminEmailVerificationNotificationController;
@@ -77,6 +78,10 @@ Route::prefix($adminUrl)->name('admin.')
         
         // ログイン識別子確認（メールアドレス/アカウント名の存在確認）
         Route::post('/login/check-identifier', [AdminLoginIdentifierCheckController::class, 'check'])->name('login.check-identifier');
+        
+        // パスキーログイン
+        Route::post('/login/passkey/challenge', [AdminPasskeyLoginController::class, 'getChallenge'])->name('login.passkey.challenge');
+        Route::post('/login/passkey/verify', [AdminPasskeyLoginController::class, 'verify'])->name('login.passkey.verify');
 
         // 二段階認証（メール）
         Route::get('/two-fa-email', [AdminTwoFaController::class, 'showEmailChallenge'])->name('two-fa.email.show');

@@ -137,8 +137,17 @@ class TwoFaService
     {
         $systemSettings = $this->getSystemSettings();
         $methods = [];
+        
+        // パスワードログイン後はパスキーを除外
+        $authMethod = session('login.auth_method');
+        $isPasswordLogin = $authMethod === 'password';
 
         foreach ($systemSettings['enabled_methods'] as $method) {
+            // パスワードログイン後はパスキーを使用不可
+            if ($isPasswordLogin && $method === TwoFaMethod::PASSKEY->value) {
+                continue;
+            }
+            
             $available = match ($method) {
                 TwoFaMethod::EMAIL->value => true,
                 TwoFaMethod::PASSKEY->value => $this->passkeyAuth->isAvailable(),

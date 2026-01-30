@@ -23,12 +23,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Member;
-use App\Models\AuditLog;
-use App\Repositories\MemberSettingRepository;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Validation\ValidationException;
+use App\Helpers\IdentifierCheckHelper;
+use App\Http\Requests\Admin\AdminLoginIdentifierCheckRequest;
 
 /**
  * ログイン識別子確認コントローラー
@@ -38,140 +34,37 @@ use Illuminate\Validation\ValidationException;
  */
 class AdminLoginIdentifierCheckController extends AdminController
 {
-    protected MemberSettingRepository $memberSettingRepository;
-
-    public function __construct(MemberSettingRepository $memberSettingRepository)
+    public function __construct()
     {
         parent::__construct();
-        $this->memberSettingRepository = $memberSettingRepository;
     }
 
     /**
      * メンバー存在確認
      * 
-     * @param Request $request
+     * @param AdminLoginIdentifierCheckRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function check(Request $request)
+    public function check(AdminLoginIdentifierCheckRequest $request)
     {
-        $request->validate([
-            'login' => 'required|string|max:255',
-        ]);
-
         $login = $request->input('login');
         $ipAddress = $request->ip();
         
-        // ログイン試行制限設定を取得
-        $lockoutEnabled = (bool) $this->memberSettingRepository->get('login_attempt_limit_enabled', false);
-        $maxAttempts = (int) $this->memberSettingRepository->get('login_attempt_max_attempts', 5);
-        $timeWindow = (int) $this->memberSettingRepository->get('login_attempt_time_window', 15);
+        // ロックアウト設定を取得
+        $settings = IdentifierCheckHelper::getLockoutSettings(\App\Models\MemberSetting::class);
         
-        // レート制限が無効の場合はスキップ
-        if (!$lockoutEnabled) {
-            return $this->performIdentifierCheck($login, $ipAddress);
-        }
+        // 識別子確認を実行（レート制限付き）
+        $result = IdentifierCheckHelper::checkWithRateLimit(
+            $login,
+            $ipAddress,
+            Member::class,
+            $settings,
+            'admin'
+        );
         
-        // レート制限キー（IP + identifier）
-        $rateLimitKey = 'login-identifier-check:' . $ipAddress . ':' . md5($login);
-        
-        // レート制限チェック（設定値を使用）
-        if (RateLimiter::tooManyAttempts($rateLimitKey, $maxAttempts)) {
-            $seconds = RateLimiter::availableIn($rateLimitKey);
-            
-            // ロックアウトログ記録
-            AuditLog::logSecurity(AuditLog::ACTION_LOCKOUT_TRIGGERED, [
-                'severity' => AuditLog::SEVERITY_CRITICAL,
-                'outcome' => AuditLog::OUTCOME_DENIED,
-                'context' => [
-                    'reason' => 'login_identifier_check_rate_limit',
-                    'login_identifier' => $login,
-                    'available_in_seconds' => $seconds,
-                    'max_attempts' => $maxAttempts,
-                    'time_window_minutes' => $timeWindow,
-                ],
-            ]);
-            
-            // ファイルログにも記録
-            Log::warning('Login identifier check rate limit exceeded', [
-                'ip' => $ipAddress,
-                'login' => $login,
-                'available_in' => $seconds,
-                'max_attempts' => $maxAttempts,
-            ]);
-            
-            throw ValidationException::withMessages([
-                'login' => __('auth.throttle', ['seconds' => $seconds]),
-            ]);
-        }
-
-        // レート制限カウンターを増やす（時間窓を設定値に合わせる）
-        RateLimiter::hit($rateLimitKey, $timeWindow * 60); // 分を秒に変換
-        
-        return $this->performIdentifierCheck($login, $ipAddress);
-    }
-
-    /**
-     * 識別子確認の実行
-     * 
-     * @param string $login
-     * @param string $ipAddress
-     * @return \Illuminate\Http\JsonResponse
-     */
-    protected function performIdentifierCheck(string $login, string $ipAddress)
-    {
-        // タイミング攻撃対策：常に一定時間待機（100-300ms）
-        $delayMs = random_int(100, 300);
-        usleep($delayMs * 1000);
-        
-        // メンバー検索（メールアドレスまたはアカウント名）
-        $member = Member::where('email', $login)
-            ->orWhere('account_name', $login)
-            ->first();
-        
-        if ($member) {
-            // メンバー存在確認成功
-            AuditLog::logAuth(AuditLog::ACTION_LOGIN_IDENTIFIER_CHECK, [
-                'severity' => AuditLog::SEVERITY_INFO,
-                'outcome' => AuditLog::OUTCOME_SUCCESS,
-                'actor' => $member,
-                'context' => [
-                    'login_identifier' => $login,
-                    'identifier_type' => filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'account_name',
-                ],
-            ]);
-            
-            // ファイルログにも記録
-            Log::info('Login identifier check successful', [
-                'member_id' => $member->id,
-                'login' => $login,
-                'ip' => $ipAddress,
-            ]);
-            
-            return response()->json([
-                'exists' => true,
-                'has_passkey' => $member->passkeys()->count() > 0,
-            ]);
-        } else {
-            // メンバー存在確認失敗（セキュリティログ）
-            AuditLog::logSecurity(AuditLog::ACTION_LOGIN_IDENTIFIER_NOT_FOUND, [
-                'severity' => AuditLog::SEVERITY_WARNING,
-                'outcome' => AuditLog::OUTCOME_FAILURE,
-                'context' => [
-                    'login_identifier' => $login,
-                    'identifier_type' => filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'account_name',
-                ],
-            ]);
-            
-            // ファイルログにも記録
-            Log::warning('Login identifier not found', [
-                'login' => $login,
-                'ip' => $ipAddress,
-            ]);
-            
-            // エラーメッセージは統一（ユーザー列挙攻撃対策）
-            throw ValidationException::withMessages([
-                'login' => __('auth.failed'),
-            ]);
-        }
+        return response()->json([
+            'exists' => $result['exists'],
+            'has_passkey' => $result['has_passkey'],
+        ]);
     }
 }
