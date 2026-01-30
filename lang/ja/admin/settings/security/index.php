@@ -16,6 +16,8 @@ return [
     'heading' => 'セキュリティ設定',
     'description' => 'セキュリティ設定の概要と各機能の状態を確認できます。',
     'password_security' => 'パスワード漏洩チェック',
+    'login_attempt_desc' => 'ログイン試行制限とログイン通知',
+    'authentication_desc' => '二段階認証とパスキー設定',
     'session_driver' => 'セッションドライバー',
     'captcha_active' => 'CAPTCHA有効',
     'captcha_test_required' => 'テスト未完了',

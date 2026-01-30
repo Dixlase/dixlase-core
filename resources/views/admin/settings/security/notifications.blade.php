@@ -22,7 +22,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-<div x-data="{ notificationEnabled: {{ ($settings['notification_enabled'] ?? 0) ? 'true' : 'false' }} }">
+<div x-data="{ notificationEnabled: '{{ ($settings['notification_enabled'] ?? 0) ? '1' : '0' }}' }">
     <form id="security-notifications-form" method="POST" action="{{ route('admin.settings.security.notifications.update') }}">
         @csrf
         
@@ -70,7 +70,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin/settings/security/notifications.log_levels') }}</legend>
                 
-                <div class="my-3" :class="{ 'opacity-50': !notificationEnabled }">
+                <div class="my-3" :class="{ 'opacity-50 pointer-events-none': notificationEnabled === '0' }">
+                    <input type="hidden" name="notification_log_levels" :value="notificationEnabled === '1' ? null : '{{ implode(',', $settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels()) }}'" x-show="notificationEnabled === '0'">
+                    
                     @php
                         $logLevelOptions = [];
                         foreach (\App\Enums\LogLevel::getNotificationLevels() as $level) {
@@ -83,7 +85,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         name="notification_log_levels"
                         :options="$logLevelOptions"
                         :values="$settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels()"
-                        xBindDisabled="!notificationEnabled"
+                        xBindDisabled="notificationEnabled === '0'"
                         flexDirection="col"
                     />
                 </div>

@@ -1,4 +1,4 @@
-    <?php
+<?php
 
 /**
  * This file is part of Dixlase.
@@ -43,6 +43,7 @@ return [
     'two_fa_detailed_settings_description' => '二段階認証のコード有効期限、再送信間隔、試行制限、リカバリーコードなどの詳細設定を管理します。',
     
     'settings_updated' => 'ログイン関連設定を更新しました。',
+    'updated' => 'ログイン関連設定を更新しました。',
 
     // ログイン通知設定
     'login_notification_settings' => 'ログイン通知設定',

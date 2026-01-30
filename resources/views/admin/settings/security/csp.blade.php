@@ -23,7 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto">
 <div x-data="cspSettings()"
-     data-csp-enabled="{{ old('csp_enabled', $settings['csp_enabled']) ? 'true' : 'false' }}"
+     data-csp-enabled="{{ old('csp_enabled', $settings['csp_enabled']) ? '1' : '0' }}"
      data-csp-mode="{{ old('csp_mode', $settings['csp_mode'] ?? \App\Enums\CspMode::default()->value) }}"
      data-app-env="{{ config('app.env') }}">
     <form id="security-csp-form" method="POST" action="{{ route('admin.settings.security.csp.update') }}">
@@ -49,15 +49,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
 
             <!-- CSP詳細設定（CSP有効時のみ操作可能） -->
-            <div :class="{ 'opacity-50 pointer-events-none': !cspEnabled }">
+            <div :class="{ 'opacity-50 pointer-events-none': cspEnabled === '0' }">
+                <!-- Hidden inputs to preserve settings when disabled -->
+                <template x-if="cspEnabled === '0'">
+                    <div>
+                        <input type="hidden" name="csp_mode" :value="'{{ old('csp_mode', $settings['csp_mode'] ?? \App\Enums\CspMode::default()->value) }}'">
+                        <input type="hidden" name="csp_log_violations" :value="'{{ old('csp_log_violations', $settings['csp_log_violations'] ?? true) ? '1' : '0' }}'">
+                        <input type="hidden" name="csp_exclude_dev_tools" :value="'{{ old('csp_exclude_dev_tools', $settings['csp_exclude_dev_tools'] ?? true) ? '1' : '0' }}'">
+                        <input type="hidden" name="csp_trusted_domains" :value="'{{ old('csp_trusted_domains', $settings['csp_trusted_domains'] ?? '') }}'">
+                        <input type="hidden" name="csp_denied_domains" :value="'{{ old('csp_denied_domains', $settings['csp_denied_domains'] ?? '') }}'">
+                        <input type="hidden" name="csp_blocklist_check_enabled" :value="'{{ old('csp_blocklist_check_enabled', $settings['csp_blocklist_check_enabled'] ?? false) ? '1' : '0' }}'">
+                        <input type="hidden" name="csp_custom_directives" :value="'{{ old('csp_custom_directives', $settings['csp_custom_directives'] ?? '') }}'">
+                    </div>
+                </template>
+                
                 <!-- CSPモード -->
                 <fieldset class="mb-4">
                     <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.mode') }}</legend>
-                    
-                    <!-- CSP無効時のデフォルト値 -->
-                    <template x-if="!cspEnabled">
-                        <input type="hidden" name="csp_mode" value="{{ \App\Enums\CspMode::default()->value }}">
-                    </template>
                     
                     <x-form.radio-card-group
                         name="csp_mode"
@@ -137,7 +145,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- ブロックリスト照合設定 -->
                 <fieldset class="mb-4" 
                           x-data="cspBlocklistSettings()"
-                          data-blocklist-enabled="{{ old('csp_blocklist_check_enabled', $settings['csp_blocklist_check_enabled'] ?? false) ? 'true' : 'false' }}">
+                          data-blocklist-enabled="{{ old('csp_blocklist_check_enabled', $settings['csp_blocklist_check_enabled'] ?? false) ? '1' : '0' }}">
                     <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.blocklist_check_title') }}</legend>
                     
                     <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">{!! __('admin/settings/security/csp.blocklist_check_description') !!}</p>
@@ -154,12 +162,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
 
                     <!-- 検出時のアクション -->
-                    <div class="mb-4 pl-6" :class="{ 'opacity-50 pointer-events-none': !blocklistEnabled }">
+                    <div class="mb-4 pl-6" :class="{ 'opacity-50 pointer-events-none': blocklistEnabled === '0' }">
                         <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ __('admin/settings/security/csp.blocklist_action_label') }}</p>
                         
                         <!-- ブロックリスト無効時のデフォルト値 -->
-                        <template x-if="!blocklistEnabled">
-                            <input type="hidden" name="csp_blocklist_action" value="{{ \App\Enums\CspBlocklistAction::default()->value }}">
+                        <template x-if="blocklistEnabled === '0'">
+                            <input type="hidden" name="csp_blocklist_action" value="{{ old('csp_blocklist_action', $settings['csp_blocklist_action'] ?? \App\Enums\CspBlocklistAction::default()->value) }}">
                         </template>
                         
                         <x-form.radio-card-group
@@ -186,8 +194,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
 
                     <!-- カテゴリ選択 -->
-                    <div class="space-y-3 pl-6 mb-4" :class="{ 'opacity-50 pointer-events-none': !blocklistEnabled }">
+                    <div class="space-y-3 pl-6 mb-4" :class="{ 'opacity-50 pointer-events-none': blocklistEnabled === '0' }">
                         <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ __('admin/settings/security/csp.blocklist_check_categories') }}</p>
+                        
+                        <!-- ブロックリスト無効時のデフォルト値 -->
+                        <template x-if="blocklistEnabled === '0'">
+                            <input type="hidden" name="csp_blocklist_enabled_categories" value="{{ old('csp_blocklist_enabled_categories', $settings['csp_blocklist_enabled_categories'] ?? '') }}">
+                        </template>
                         @php
                             $enabledCategories = explode(',', old('csp_blocklist_enabled_categories', $settings['csp_blocklist_enabled_categories'] ?? ''));
                             $blocklistSources = config('csp.blocklist_sources', []);
