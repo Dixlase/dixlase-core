@@ -23,7 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'variant' => 'primary',  // ボタンの色バリエーション (primary, secondary, success, warning, danger)
     'size' => 'md',          // ボタンのサイズ (xs, sm, md, lg)
     'class' => '',           // カスタムクラス
-    'label' => 'Button',     // ボタンのテキスト
+    'label' => null,         // ボタンのテキスト（nullの場合はスロットを使用）
     'icon' => null,          // アイコンクラス (例: 'fas fa-save')
     'iconPosition' => 'left', // アイコンの位置 (left, right)
     'onclick' => null,       // onclick属性を追加
@@ -31,6 +31,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'form' => null,          // フォームのID
     'id' => null,            // ボタンのID
     'href' => null,          // リンク先URL (type='link'の時に使用)
+    'xClick' => null,        // Alpine.js @click
+    'xDisabled' => null,     // Alpine.js :disabled
+    'xShow' => null,         // Alpine.js x-show
 ])
 
 @php
@@ -71,39 +74,47 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <a href="{{ $href }}"
     @if ($id) id="{{ $id }}" @endif
     @if ($onclick) onclick="{{ $onclick }}" @endif
+    @if ($xShow) x-show="{{ $xShow }}" @endif
     class="{{ implode(' ', $buttonClasses) }} {{ $disabled ? 'pointer-events-none' : '' }}"
     >
     @if ($icon && $iconPosition === 'left')
-        <i class="{{ $icon }} {{ $label ? 'mr-2' : '' }}"></i>
+        <i class="{{ $icon }} {{ ($label || $slot->isNotEmpty()) ? 'mr-2' : '' }}"></i>
     @endif
     
     @if ($label)
         {{ $label }}
+    @else
+        {{ $slot }}
     @endif
     
     @if ($icon && $iconPosition === 'right')
-        <i class="{{ $icon }} {{ $label ? 'ml-2' : '' }}"></i>
+        <i class="{{ $icon }} {{ ($label || $slot->isNotEmpty()) ? 'ml-2' : '' }}"></i>
     @endif
 </a>
 @else
 <button type="{{ $type }}"
     @if ($id) id="{{ $id }}" @endif
     @if ($onclick) onclick="{{ $onclick }}" @endif
+    @if ($xClick) @click="{{ $xClick }}" @endif
+    @if ($xDisabled) :disabled="{{ $xDisabled }}" @endif
+    @if ($xShow) x-show="{{ $xShow }}" @endif
     @if ($form) form="{{ $form }}" @endif
     class="{{ implode(' ', $buttonClasses) }}"
     @if ($disabled) disabled @endif
-    {{ $attributes->except(['type', 'variant', 'size', 'class', 'label', 'icon', 'iconPosition', 'onclick', 'disabled', 'form', 'id', 'href']) }}
+    {{ $attributes->except(['type', 'variant', 'size', 'class', 'label', 'icon', 'iconPosition', 'onclick', 'disabled', 'form', 'id', 'href', 'xClick', 'xDisabled', 'xShow']) }}
     >
     @if ($icon && $iconPosition === 'left')
-        <i class="{{ $icon }} {{ $label ? 'mr-2' : '' }}"></i>
+        <i class="{{ $icon }} {{ ($label || $slot->isNotEmpty()) ? 'mr-2' : '' }}"></i>
     @endif
     
     @if ($label)
         {{ $label }}
+    @else
+        {{ $slot }}
     @endif
     
     @if ($icon && $iconPosition === 'right')
-        <i class="{{ $icon }} {{ $label ? 'ml-2' : '' }}"></i>
+        <i class="{{ $icon }} {{ ($label || $slot->isNotEmpty()) ? 'ml-2' : '' }}"></i>
     @endif
 </button>
 @endif
