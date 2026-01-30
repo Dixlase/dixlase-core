@@ -305,10 +305,10 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('password.update');
                 
                 // ログイン試行制限
-                Route::get('/login-settings', [Security\AdminSecurityLoginAttemptController::class, 'index'])->name('login-settings');
-                Route::post('/login-settings', [Security\AdminSecurityLoginAttemptController::class, 'update'])
+                Route::get('/login', [Security\AdminSecurityLoginController::class, 'index'])->name('login');
+                Route::post('/login', [Security\AdminSecurityLoginController::class, 'update'])
                     ->middleware('check.menu.edit:settings.security')
-                    ->name('login-settings.update');
+                    ->name('login.update');
                 
                 // セッション管理
                 Route::get('/session', [Security\AdminSecuritySessionController::class, 'index'])->name('session');

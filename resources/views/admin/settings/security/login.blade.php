@@ -22,7 +22,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-    <form id="security-login-form" method="POST" action="{{ route('admin.settings.security.login-settings.update') }}">
+    <form id="security-login-form" method="POST" action="{{ route('admin.settings.security.login.update') }}">
         @csrf
         
         <!-- ログイン通知設定 -->
@@ -47,7 +47,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('admin/settings/security/login.default_login_attempt_settings') }}</h2>
             <p>{{ __('admin/settings/security/login.default_login_attempt_description') }}</p>
 
-            <div x-data="{ enabled: {{ old('login_attempt_limit_enabled_default', $settings['login_attempt_limit_enabled_default']) ? 'true' : 'false' }} }">
+            <div x-data="{ enabled: '{{ old('login_attempt_limit_enabled_default', $settings['login_attempt_limit_enabled_default']) ? '1' : '0' }}' }">
                 <fieldset>
                     <x-form.toggle
                         name="login_attempt_limit_enabled_default"
@@ -60,12 +60,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </p>
                 </fieldset>
 
-                <div :class="{ 'opacity-50 pointer-events-none': !enabled }">
-                    <input type="hidden" name="login_attempt_max_attempts_default" :value="enabled ? null : '{{ $settings['login_attempt_max_attempts_default'] }}'" x-show="!enabled">
-                    <input type="hidden" name="login_attempt_max_attempts_ip_default" :value="enabled ? null : '{{ $settings['login_attempt_max_attempts_ip_default'] }}'" x-show="!enabled">
-                    <input type="hidden" name="login_attempt_time_window_default" :value="enabled ? null : '{{ $settings['login_attempt_time_window_default'] }}'" x-show="!enabled">
-                    <input type="hidden" name="login_attempt_lockout_duration_default" :value="enabled ? null : '{{ $settings['login_attempt_lockout_duration_default'] }}'" x-show="!enabled">
-                    <input type="hidden" name="login_attempt_lockout_notification_enabled_default" :value="enabled ? null : '{{ $settings['login_attempt_lockout_notification_enabled_default'] ? '1' : '0' }}'" x-show="!enabled">
+                <div :class="{ 'opacity-50 pointer-events-none': enabled === '0' }">
+                    <input type="hidden" name="login_attempt_max_attempts_default" :value="enabled === '1' ? null : '{{ $settings['login_attempt_max_attempts_default'] }}'" x-show="enabled === '0'">
+                    <input type="hidden" name="login_attempt_max_attempts_ip_default" :value="enabled === '1' ? null : '{{ $settings['login_attempt_max_attempts_ip_default'] }}'" x-show="enabled === '0'">
+                    <input type="hidden" name="login_attempt_time_window_default" :value="enabled === '1' ? null : '{{ $settings['login_attempt_time_window_default'] }}'" x-show="enabled === '0'">
+                    <input type="hidden" name="login_attempt_lockout_duration_default" :value="enabled === '1' ? null : '{{ $settings['login_attempt_lockout_duration_default'] }}'" x-show="enabled === '0'">
+                    <input type="hidden" name="login_attempt_lockout_notification_enabled_default" :value="enabled === '1' ? null : '{{ $settings['login_attempt_lockout_notification_enabled_default'] ? '1' : '0' }}'" x-show="enabled === '0'">
 
                     <fieldset>
                         <legend>{{ __('admin/settings/security/login.max_attempts') }}</legend>
@@ -76,7 +76,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :min="1"
                             :max="100"
                             class="input-common input-sm"
-                            ::disabled="!enabled"
+                            ::disabled="enabled === '0'"
                         />
                         <p>
                             {{ __('admin/settings/security/login.max_attempts_help') }}
@@ -92,7 +92,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :min="1"
                             :max="200"
                             class="input-common input-sm"
-                            ::disabled="!enabled"
+                            ::disabled="enabled === '0'"
                         />
                         <p>
                             {{ __('admin/settings/security/login.max_attempts_ip_help') }}
@@ -108,7 +108,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :min="1"
                             :max="1440"
                             class="input-common input-sm"
-                            ::disabled="!enabled"
+                            ::disabled="enabled === '0'"
                         />
                         <p>
                             {{ __('admin/settings/security/login.time_window_help') }}
@@ -124,7 +124,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :min="1"
                             :max="10080"
                             class="input-common input-sm"
-                            ::disabled="!enabled"
+                            ::disabled="enabled === '0'"
                         />
                         <p>
                             {{ __('admin/settings/security/login.lockout_duration_help') }}
@@ -136,7 +136,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             name="login_attempt_lockout_notification_enabled_default"
                             :label="__('admin/settings/security/login.lockout_notification_enabled')"
                             :checked="old('login_attempt_lockout_notification_enabled_default', $settings['login_attempt_lockout_notification_enabled_default'])"
-                            ::disabled="!enabled"
+                            ::disabled="enabled === '0'"
                         />
                         <p class="mt-2">
                             {!! __('admin/settings/security/login.lockout_notification_help') !!}

@@ -25,13 +25,13 @@
  */
 window.cspSettings = function () {
     return {
-        cspEnabled: false,
+        cspEnabled: '0',
         cspMode: 'development',
         appEnv: 'local',
 
         init() {
-            // data-*属性から初期値を取得
-            this.cspEnabled = this.$el.dataset.cspEnabled === 'true';
+            // data-*属性から初期値を取得（文字列として扱う）
+            this.cspEnabled = this.$el.dataset.cspEnabled || '0';
             this.cspMode = this.$el.dataset.cspMode || 'development';
             this.appEnv = this.$el.dataset.appEnv || 'local';
         }
@@ -45,11 +45,11 @@ window.cspSettings = function () {
  */
 window.cspBlocklistSettings = function () {
     return {
-        blocklistEnabled: false,
+        blocklistEnabled: '0',
 
         init() {
-            // data-*属性から初期値を取得
-            this.blocklistEnabled = this.$el.dataset.blocklistEnabled === 'true';
+            // data-*属性から初期値を取得（文字列として扱う）
+            this.blocklistEnabled = this.$el.dataset.blocklistEnabled || '0';
         }
     };
 };

@@ -39,10 +39,11 @@ return [
     'plugin_custom_hint' => 'Plugins (such as DixlaseUsers) can set their own login attempt limits. If a plugin has custom settings enabled, those will take precedence.',
     
     // Two-Factor Authentication Detailed Settings
-    'two_fa_detailed_settings' => 'Two-Factor Authentication Detailed Settings',
+    'two_fa_detailed_settings' => 'Two-Factor Authentication Details',
     'two_fa_detailed_settings_description' => 'Manage detailed settings for two-factor authentication including code expiration, resend interval, attempt limits, and recovery codes.',
     
-    'settings_updated' => 'Login-related settings have been updated.',
+    'settings_updated' => 'Login settings have been updated.',
+    'updated' => 'Login settings have been updated.',
 
     // Login notification settings
     'login_notification_settings' => 'Login Notification Settings',

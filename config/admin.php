@@ -197,7 +197,7 @@ return [
                         ],
                         'login' => [
                             'text' => 'admin/nav.settings.security.login_attempt',
-                            'route' => 'admin.settings.security.login-settings',
+                            'route' => 'admin.settings.security.login',
                             'icon' => 'fas fa-fw fa-sign-in-alt',
                         ],
                         'authentication' => [

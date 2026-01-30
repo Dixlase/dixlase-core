@@ -39,17 +39,31 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </a>
 
-        <!-- セッション -->
-        <a href="{{ route('admin.settings.security.session') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+        <!-- ログイン試行制限 -->
+        <a href="{{ route('admin.settings.security.login') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
-                    <i class="fas fa-clock text-green-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.session') }}</h3>
+                    <i class="fas fa-sign-in-alt text-indigo-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.login_attempt') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
             <div class="text-sm text-gray-600 dark:text-gray-400">
-                <p>{{ __('admin/settings/security/index.session_driver') }}: <span class="font-medium">{{ $sessionDriver }}</span></p>
+                <p>{{ __('admin/settings/security/index.login_attempt_desc') }}</p>
+            </div>
+        </a>
+
+        <!-- 認証設定 -->
+        <a href="{{ route('admin.settings.security.authentication') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <i class="fas fa-user-shield text-teal-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.authentication') }}</h3>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                <p>{{ __('admin/settings/security/index.authentication_desc') }}</p>
             </div>
         </a>
 
@@ -81,64 +95,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </a>
 
-        <!-- IPアクセス制御 -->
-        <a href="{{ route('admin.settings.security.ip') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+        <!-- セッション -->
+        <a href="{{ route('admin.settings.security.session') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
-                    <i class="fas fa-network-wired text-green-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.ip') }}</h3>
+                    <i class="fas fa-clock text-green-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.session') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
             <div class="text-sm text-gray-600 dark:text-gray-400">
-                @if($enableAllowedAdminIps || $enableBlockedAdminIps)
-                    <span class="inline-flex items-center text-green-600 dark:text-green-400">
-                        <i class="fas fa-check-circle mr-1"></i>{{ __('admin/settings/security/index.ip_active') }}
-                    </span>
-                @else
-                    <span class="inline-flex items-center text-gray-500">
-                        <i class="fas fa-minus-circle mr-1"></i>{{ __('admin/settings/security/index.ip_inactive') }}
-                    </span>
-                @endif
-            </div>
-        </a>
-
-        <!-- CSP -->
-        <a href="{{ route('admin.settings.security.csp') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center">
-                    <i class="fas fa-code text-orange-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.csp') }}</h3>
-                </div>
-                <i class="fas fa-chevron-right text-gray-400"></i>
-            </div>
-            <div class="text-sm">
-                @if($cspEnabled)
-                    <span class="inline-flex items-center text-green-600 dark:text-green-400">
-                        <i class="fas fa-check-circle mr-1"></i>{{ __('admin/settings/security/index.csp_mode') }}: {{ $cspMode }}
-                    </span>
-                @else
-                    <span class="inline-flex items-center text-gray-500">
-                        <i class="fas fa-times-circle mr-1"></i>{{ __('admin/settings/security/index.csp_disabled') }}
-                    </span>
-                @endif
-            </div>
-        </a>
-    </div>
-
-    <!-- 追加のセキュリティ機能 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-        <!-- 拡張機能 -->
-        <a href="{{ route('admin.settings.security.extensions') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center">
-                    <i class="fas fa-puzzle-piece text-indigo-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.extensions') }}</h3>
-                </div>
-                <i class="fas fa-chevron-right text-gray-400"></i>
-            </div>
-            <div class="text-sm text-gray-600 dark:text-gray-400">
-                {{ __('admin/settings/security/index.extensions_desc') }}
+                <p>{{ __('admin/settings/security/index.session_driver') }}: <span class="font-medium">{{ $sessionDriver }}</span></p>
             </div>
         </a>
 
@@ -170,34 +137,59 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </a>
 
-        <!-- 環境設定 -->
-        <a href="{{ route('admin.settings.security.environment') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+        <!-- CSP -->
+        <a href="{{ route('admin.settings.security.csp') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
-                    <i class="fas fa-cog text-cyan-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.environment') }}</h3>
+                    <i class="fas fa-code text-orange-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.csp') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
             <div class="text-sm">
-                @php
-                    $envColors = [
-                        'local' => 'text-blue-600 dark:text-blue-400',
-                        'staging' => 'text-yellow-600 dark:text-yellow-400',
-                        'production' => 'text-green-600 dark:text-green-400',
-                    ];
-                    $envIcons = [
-                        'local' => 'fa-laptop-code',
-                        'staging' => 'fa-flask',
-                        'production' => 'fa-server',
-                    ];
-                @endphp
-                <span class="inline-flex items-center {{ $envColors[$appEnv] ?? $envColors['local'] }}">
-                    <i class="fas {{ $envIcons[$appEnv] ?? $envIcons['local'] }} mr-1"></i>{{ __('admin/settings/security/environment.env_options.' . $appEnv) }}
-                </span>
-                @if($appDebug)
-                    <span class="inline-flex items-center text-red-600 dark:text-red-400 ml-2">
-                        <i class="fas fa-bug mr-1"></i>{{ __('admin/settings/security/index.debug_enabled') }}
+                @if($cspEnabled)
+                    <span class="inline-flex items-center text-green-600 dark:text-green-400">
+                        <i class="fas fa-check-circle mr-1"></i>{{ __('admin/settings/security/index.csp_mode') }}: {{ $cspMode }}
+                    </span>
+                @else
+                    <span class="inline-flex items-center text-gray-500">
+                        <i class="fas fa-times-circle mr-1"></i>{{ __('admin/settings/security/index.csp_disabled') }}
+                    </span>
+                @endif
+            </div>
+        </a>
+
+        <!-- 拡張機能 -->
+        <a href="{{ route('admin.settings.security.extensions') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <i class="fas fa-puzzle-piece text-pink-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.extensions') }}</h3>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                {{ __('admin/settings/security/index.extensions_desc') }}
+            </div>
+        </a>
+
+        <!-- IPアクセス制御 -->
+        <a href="{{ route('admin.settings.security.ip') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <i class="fas fa-network-wired text-cyan-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.ip') }}</h3>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                @if($enableAllowedAdminIps || $enableBlockedAdminIps)
+                    <span class="inline-flex items-center text-green-600 dark:text-green-400">
+                        <i class="fas fa-check-circle mr-1"></i>{{ __('admin/settings/security/index.ip_active') }}
+                    </span>
+                @else
+                    <span class="inline-flex items-center text-gray-500">
+                        <i class="fas fa-minus-circle mr-1"></i>{{ __('admin/settings/security/index.ip_inactive') }}
                     </span>
                 @endif
             </div>
@@ -234,6 +226,39 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @else
                     <span class="inline-flex items-center text-gray-500">
                         <i class="fas fa-minus-circle mr-1"></i>{{ __('admin/settings/security/index.integrity_not_scanned') }}
+                    </span>
+                @endif
+            </div>
+        </a>
+
+        <!-- 環境設定 -->
+        <a href="{{ route('admin.settings.security.environment') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <i class="fas fa-cog text-gray-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.environment') }}</h3>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            <div class="text-sm">
+                @php
+                    $envColors = [
+                        'local' => 'text-blue-600 dark:text-blue-400',
+                        'staging' => 'text-yellow-600 dark:text-yellow-400',
+                        'production' => 'text-green-600 dark:text-green-400',
+                    ];
+                    $envIcons = [
+                        'local' => 'fa-laptop-code',
+                        'staging' => 'fa-flask',
+                        'production' => 'fa-server',
+                    ];
+                @endphp
+                <span class="inline-flex items-center {{ $envColors[$appEnv] ?? $envColors['local'] }}">
+                    <i class="fas {{ $envIcons[$appEnv] ?? $envIcons['local'] }} mr-1"></i>{{ __('admin/settings/security/environment.env_options.' . $appEnv) }}
+                </span>
+                @if($appDebug)
+                    <span class="inline-flex items-center text-red-600 dark:text-red-400 ml-2">
+                        <i class="fas fa-bug mr-1"></i>{{ __('admin/settings/security/index.debug_enabled') }}
                     </span>
                 @endif
             </div>

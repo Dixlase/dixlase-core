@@ -24,7 +24,7 @@ namespace App\Http\Requests\Admin\Settings\Security;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AdminSecurityLoginAttemptUpdateRequest extends FormRequest
+class AdminSecurityLoginUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
