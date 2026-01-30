@@ -35,6 +35,7 @@ return [
     'copied' => 'Copied',
     'all' => 'All',
     'none' => 'None',
+    'or' => 'or',
     
     // Labels
     'required' => 'Required',

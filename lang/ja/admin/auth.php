@@ -22,6 +22,11 @@ return [
         'forgot_password' => 'パスワードをお忘れですか？',
         'captcha' => 'セキュリティ認証',
         'back_to_welcome' => 'サイトに戻る',
+        'continue' => '続ける',
+        'change_account' => 'アカウントを変更',
+        'login_with_passkey' => 'パスキーでログイン',
+        'no_passkey_registered' => 'パスキーが登録されていません',
+        'passkey_cancelled' => 'パスキー認証がキャンセルされました',
     ],
     'forgot_password' => [
         'title' => 'パスワードリセット',

@@ -22,6 +22,11 @@ return [
         'forgot_password' => 'Forgot your password?',
         'captcha' => 'Security Verification',
         'back_to_welcome' => 'Back to Site',
+        'continue' => 'Continue',
+        'change_account' => 'Change Account',
+        'login_with_passkey' => 'Sign in with Passkey',
+        'no_passkey_registered' => 'No passkey registered',
+        'passkey_cancelled' => 'Passkey authentication cancelled',
     ],
     'forgot_password' => [
         'title' => 'Password Reset',
