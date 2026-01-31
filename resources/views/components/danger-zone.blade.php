@@ -40,7 +40,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 variant="info"
                 icon="fas fa-unlock"
                 :label="__('components.danger_zone.unlock_lockout_button')"
-                onclick="window.ModalManager.open('unlockLockoutModal')"
+                @click="openModal('unlockLockoutModal')"
             />
         </fieldset>
     @endif
@@ -53,7 +53,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 variant="warning"
                 icon="fas fa-sign-out-alt"
                 :label="__('components.danger_zone.force_logout_button')"
-                onclick="window.ModalManager.open('forceLogoutModal')"
+                @click="openModal('forceLogoutModal')"
             />
         </fieldset>
     @endif
@@ -66,7 +66,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 variant="danger"
                 icon="fas fa-trash"
                 :label="__('components.danger_zone.delete_' . $entityType . '_button')"
-                onclick="window.ModalManager.open('delete{{ ucfirst($entityType) }}Modal')"
+                @click="openModal('delete{{ ucfirst($entityType) }}Modal')"
             />
         </fieldset>
     @endif

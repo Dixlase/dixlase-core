@@ -47,7 +47,7 @@ class AdminSecurityAuthenticationUpdateRequest extends FormRequest
 
             // 二段階認証詳細設定
             'two_fa_expire_minutes' => ['nullable', 'integer', 'min:1', 'max:60'],
-            'two_fa_resend_interval_seconds' => ['nullable', 'integer', 'min:30', 'max:300'],
+            'two_fa_resend_interval_seconds' => ['nullable', 'integer', 'min:60', 'max:300'],
             'two_fa_max_attempts' => ['nullable', 'integer', 'min:3', 'max:10'],
             'two_fa_attempt_window' => ['nullable', 'integer', 'min:5', 'max:60'],
             'two_fa_lockout_duration' => ['nullable', 'integer', 'min:5', 'max:1440'],

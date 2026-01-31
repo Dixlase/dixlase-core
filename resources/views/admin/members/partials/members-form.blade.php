@@ -334,7 +334,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :twoFaPasskeyMode="(string)($twoFaPasskeyMode ?? '2')"
             :twoFaDefaultMethod="(string)($member->default_two_fa_method ?? $twoFaDefaultMethod)"
             :columns="3"
-            :globalSettingsUrl="route('admin.members.settings.auth')"
+            :globalSettingsUrl="route('admin.settings.security.authentication')"
         />
     </section>
 
