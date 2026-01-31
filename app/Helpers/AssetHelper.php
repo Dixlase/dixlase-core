@@ -528,8 +528,11 @@ if (!function_exists('load_auth_assets')) {
     {
         $output = '';
 
-        // 共通アセット（Alpine.js、Tailwind CSS等）のみを読み込み
+        // 共通アセット（Alpine.js、Tailwind CSS等）を読み込み
         $output .= load_assets('common', null, ['js/app.js', 'scss/style.scss']);
+
+        // 管理画面アセット（ログインフロー等）を読み込み
+        $output .= load_assets('admin', null, ['js/app.js']);
 
         // ダークモードスクリプトを読み込み（CSP対応）
         if (is_vite_dev_server()) {

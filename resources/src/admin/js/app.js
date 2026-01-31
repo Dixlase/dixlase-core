@@ -20,7 +20,6 @@
 
 import '../scss/style.scss';
 import './layout';
-import './login-flow';
 import '../media/js/index';
 import '../media/js/preview';
 import '../profile/js/appearance-mode';

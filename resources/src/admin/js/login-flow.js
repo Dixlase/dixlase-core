@@ -14,7 +14,7 @@
  * ログインフローの管理
  * 2段階ログイン（識別子入力 → 認証方法選択）を実装
  */
-function createLoginFlow() {
+export function createLoginFlow() {
     return {
         // data属性から値を取得
         init() {
@@ -41,11 +41,12 @@ function createLoginFlow() {
             this.errors = {};
 
             try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
                 const response = await fetch(this.routes.checkIdentifier, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-CSRF-TOKEN': csrfToken,
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
@@ -78,12 +79,13 @@ function createLoginFlow() {
             this.errors = {};
 
             try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
                 // チャレンジを取得
                 const challengeResponse = await fetch(this.routes.passkeyChallenge, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-CSRF-TOKEN': csrfToken,
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
@@ -115,7 +117,7 @@ function createLoginFlow() {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-CSRF-TOKEN': csrfToken,
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
@@ -171,6 +173,3 @@ function createLoginFlow() {
         }
     }
 }
-
-// Alpine.jsのグローバルスコープに登録
-window.loginFlow = createLoginFlow;
