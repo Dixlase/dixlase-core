@@ -10,7 +10,7 @@ class TwoFaAttemptService
 {
     protected string $settingModelClass;
 
-    public function __construct(string $settingModelClass = \App\Models\MemberSetting::class)
+    public function __construct(string $settingModelClass = \App\Models\SecuritySetting::class)
     {
         $this->settingModelClass = $settingModelClass;
     }
@@ -79,12 +79,6 @@ class TwoFaAttemptService
             ->where('successful', false)
             ->where('created_at', '>=', Carbon::now()->subMinutes($timeWindow))
             ->count();
-
-        Log::info('[2FA Attempt] Check max attempts', [
-            'user_id' => $user->getId(),
-            'failed_attempts' => $failedAttempts,
-            'max_attempts' => $maxAttempts,
-        ]);
 
         return $failedAttempts >= $maxAttempts;
     }

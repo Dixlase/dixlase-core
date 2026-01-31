@@ -44,12 +44,12 @@ class AdminSecurityLoginController extends AdminLoggedInController
     public function index()
     {
         $settings = [
-            'login_attempt_limit_enabled_default' => filter_var($this->securitySettingRepository->get('login_attempt_limit_enabled_default', false), FILTER_VALIDATE_BOOLEAN),
-            'login_attempt_max_attempts_default' => (int) $this->securitySettingRepository->get('login_attempt_max_attempts_default', 5),
-            'login_attempt_max_attempts_ip_default' => (int) $this->securitySettingRepository->get('login_attempt_max_attempts_ip_default', 10),
-            'login_attempt_time_window_default' => (int) $this->securitySettingRepository->get('login_attempt_time_window_default', 15),
-            'login_attempt_lockout_duration_default' => (int) $this->securitySettingRepository->get('login_attempt_lockout_duration_default', 30),
-            'login_attempt_lockout_notification_enabled_default' => filter_var($this->securitySettingRepository->get('login_attempt_lockout_notification_enabled_default', true), FILTER_VALIDATE_BOOLEAN),
+            'login_attempt_limit_enabled' => filter_var($this->securitySettingRepository->get('login_attempt_limit_enabled', false), FILTER_VALIDATE_BOOLEAN),
+            'login_attempt_max_attempts' => (int) $this->securitySettingRepository->get('login_attempt_max_attempts', 5),
+            'login_attempt_max_attempts_ip' => (int) $this->securitySettingRepository->get('login_attempt_max_attempts_ip', 10),
+            'login_attempt_time_window' => (int) $this->securitySettingRepository->get('login_attempt_time_window', 15),
+            'login_attempt_lockout_duration' => (int) $this->securitySettingRepository->get('login_attempt_lockout_duration', 30),
+            'login_attempt_lockout_notification_enabled' => filter_var($this->securitySettingRepository->get('login_attempt_lockout_notification_enabled', true), FILTER_VALIDATE_BOOLEAN),
         ];
 
         // ログイン通知設定
@@ -90,23 +90,23 @@ class AdminSecurityLoginController extends AdminLoggedInController
     {
         $validated = $request->validated();
 
-        if (array_key_exists('login_attempt_limit_enabled_default', $validated)) {
-            $this->securitySettingRepository->set('login_attempt_limit_enabled_default', $validated['login_attempt_limit_enabled_default'] ?? false);
+        if (array_key_exists('login_attempt_limit_enabled', $validated)) {
+            $this->securitySettingRepository->set('login_attempt_limit_enabled', $validated['login_attempt_limit_enabled'] ?? false);
         }
-        if (array_key_exists('login_attempt_max_attempts_default', $validated)) {
-            $this->securitySettingRepository->set('login_attempt_max_attempts_default', (int) $validated['login_attempt_max_attempts_default']);
+        if (array_key_exists('login_attempt_max_attempts', $validated)) {
+            $this->securitySettingRepository->set('login_attempt_max_attempts', (int) $validated['login_attempt_max_attempts']);
         }
-        if (array_key_exists('login_attempt_max_attempts_ip_default', $validated)) {
-            $this->securitySettingRepository->set('login_attempt_max_attempts_ip_default', (int) $validated['login_attempt_max_attempts_ip_default']);
+        if (array_key_exists('login_attempt_max_attempts_ip', $validated)) {
+            $this->securitySettingRepository->set('login_attempt_max_attempts_ip', (int) $validated['login_attempt_max_attempts_ip']);
         }
-        if (array_key_exists('login_attempt_time_window_default', $validated)) {
-            $this->securitySettingRepository->set('login_attempt_time_window_default', (int) $validated['login_attempt_time_window_default']);
+        if (array_key_exists('login_attempt_time_window', $validated)) {
+            $this->securitySettingRepository->set('login_attempt_time_window', (int) $validated['login_attempt_time_window']);
         }
-        if (array_key_exists('login_attempt_lockout_duration_default', $validated)) {
-            $this->securitySettingRepository->set('login_attempt_lockout_duration_default', (int) $validated['login_attempt_lockout_duration_default']);
+        if (array_key_exists('login_attempt_lockout_duration', $validated)) {
+            $this->securitySettingRepository->set('login_attempt_lockout_duration', (int) $validated['login_attempt_lockout_duration']);
         }
-        if (array_key_exists('login_attempt_lockout_notification_enabled_default', $validated)) {
-            $this->securitySettingRepository->set('login_attempt_lockout_notification_enabled_default', $validated['login_attempt_lockout_notification_enabled_default'] ?? false);
+        if (array_key_exists('login_attempt_lockout_notification_enabled', $validated)) {
+            $this->securitySettingRepository->set('login_attempt_lockout_notification_enabled', $validated['login_attempt_lockout_notification_enabled'] ?? false);
         }
 
         // ログイン通知設定

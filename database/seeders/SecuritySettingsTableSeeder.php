@@ -83,27 +83,27 @@ class SecuritySettingsTableSeeder extends Seeder
 
         // Default login attempt limit settings (moved from MembersSettingsSeeder)
         SecuritySetting::updateOrCreate(
-            ['name' => 'login_attempt_limit_enabled_default'],
+            ['name' => 'login_attempt_limit_enabled'],
             ['value' => '1']
         );
         SecuritySetting::updateOrCreate(
-            ['name' => 'login_attempt_max_attempts_default'],
+            ['name' => 'login_attempt_max_attempts'],
             ['value' => '5']
         );
         SecuritySetting::updateOrCreate(
-            ['name' => 'login_attempt_max_attempts_ip_default'],
+            ['name' => 'login_attempt_max_attempts_ip'],
             ['value' => '10']
         );
         SecuritySetting::updateOrCreate(
-            ['name' => 'login_attempt_time_window_default'],
+            ['name' => 'login_attempt_time_window'],
             ['value' => '15']
         );
         SecuritySetting::updateOrCreate(
-            ['name' => 'login_attempt_lockout_duration_default'],
+            ['name' => 'login_attempt_lockout_duration'],
             ['value' => '30']
         );
         SecuritySetting::updateOrCreate(
-            ['name' => 'login_attempt_lockout_notification_enabled_default'],
+            ['name' => 'login_attempt_lockout_notification_enabled'],
             ['value' => '1']
         );
 

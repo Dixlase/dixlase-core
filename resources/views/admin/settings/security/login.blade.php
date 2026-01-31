@@ -47,12 +47,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('admin/settings/security/login.default_login_attempt_settings') }}</h2>
             <p>{{ __('admin/settings/security/login.default_login_attempt_description') }}</p>
 
-            <div x-data="{ enabled: '{{ old('login_attempt_limit_enabled_default', $settings['login_attempt_limit_enabled_default']) ? '1' : '0' }}' }">
+            <div x-data="{ enabled: '{{ old('login_attempt_limit_enabled', $settings['login_attempt_limit_enabled']) ? '1' : '0' }}' }">
                 <fieldset>
                     <x-form.toggle
-                        name="login_attempt_limit_enabled_default"
+                        name="login_attempt_limit_enabled"
                         :label="__('admin/settings/security/login.enabled')"
-                        :checked="old('login_attempt_limit_enabled_default', $settings['login_attempt_limit_enabled_default'])"
+                        :checked="old('login_attempt_limit_enabled', $settings['login_attempt_limit_enabled'])"
                         x-model="enabled"
                     />
                     <p class="mt-2">
@@ -61,18 +61,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </fieldset>
 
                 <div :class="{ 'opacity-50 pointer-events-none': enabled === '0' }">
-                    <input type="hidden" name="login_attempt_max_attempts_default" :value="enabled === '1' ? null : '{{ $settings['login_attempt_max_attempts_default'] }}'" x-show="enabled === '0'">
-                    <input type="hidden" name="login_attempt_max_attempts_ip_default" :value="enabled === '1' ? null : '{{ $settings['login_attempt_max_attempts_ip_default'] }}'" x-show="enabled === '0'">
-                    <input type="hidden" name="login_attempt_time_window_default" :value="enabled === '1' ? null : '{{ $settings['login_attempt_time_window_default'] }}'" x-show="enabled === '0'">
-                    <input type="hidden" name="login_attempt_lockout_duration_default" :value="enabled === '1' ? null : '{{ $settings['login_attempt_lockout_duration_default'] }}'" x-show="enabled === '0'">
-                    <input type="hidden" name="login_attempt_lockout_notification_enabled_default" :value="enabled === '1' ? null : '{{ $settings['login_attempt_lockout_notification_enabled_default'] ? '1' : '0' }}'" x-show="enabled === '0'">
+                    <input type="hidden" name="login_attempt_max_attempts" :value="enabled === '1' ? null : '{{ $settings['login_attempt_max_attempts'] }}'" x-show="enabled === '0'">
+                    <input type="hidden" name="login_attempt_max_attempts_ip" :value="enabled === '1' ? null : '{{ $settings['login_attempt_max_attempts_ip'] }}'" x-show="enabled === '0'">
+                    <input type="hidden" name="login_attempt_time_window" :value="enabled === '1' ? null : '{{ $settings['login_attempt_time_window'] }}'" x-show="enabled === '0'">
+                    <input type="hidden" name="login_attempt_lockout_duration" :value="enabled === '1' ? null : '{{ $settings['login_attempt_lockout_duration'] }}'" x-show="enabled === '0'">
+                    <input type="hidden" name="login_attempt_lockout_notification_enabled" :value="enabled === '1' ? null : '{{ $settings['login_attempt_lockout_notification_enabled'] ? '1' : '0' }}'" x-show="enabled === '0'">
 
                     <fieldset>
                         <legend>{{ __('admin/settings/security/login.max_attempts') }}</legend>
                         <x-form.text
                             type="number"
-                            name="login_attempt_max_attempts_default"
-                            :value="old('login_attempt_max_attempts_default', $settings['login_attempt_max_attempts_default'])"
+                            name="login_attempt_max_attempts"
+                            :value="old('login_attempt_max_attempts', $settings['login_attempt_max_attempts'])"
                             :min="1"
                             :max="100"
                             class="input-common input-sm"
@@ -87,8 +87,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <legend>{{ __('admin/settings/security/login.max_attempts_ip') }}</legend>
                         <x-form.text
                             type="number"
-                            name="login_attempt_max_attempts_ip_default"
-                            :value="old('login_attempt_max_attempts_ip_default', $settings['login_attempt_max_attempts_ip_default'])"
+                            name="login_attempt_max_attempts_ip"
+                            :value="old('login_attempt_max_attempts_ip', $settings['login_attempt_max_attempts_ip'])"
                             :min="1"
                             :max="200"
                             class="input-common input-sm"
@@ -103,8 +103,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <legend>{{ __('admin/settings/security/login.time_window') }}</legend>
                         <x-form.text
                             type="number"
-                            name="login_attempt_time_window_default"
-                            :value="old('login_attempt_time_window_default', $settings['login_attempt_time_window_default'])"
+                            name="login_attempt_time_window"
+                            :value="old('login_attempt_time_window', $settings['login_attempt_time_window'])"
                             :min="1"
                             :max="1440"
                             class="input-common input-sm"
@@ -119,8 +119,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <legend>{{ __('admin/settings/security/login.lockout_duration') }}</legend>
                         <x-form.text
                             type="number"
-                            name="login_attempt_lockout_duration_default"
-                            :value="old('login_attempt_lockout_duration_default', $settings['login_attempt_lockout_duration_default'])"
+                            name="login_attempt_lockout_duration"
+                            :value="old('login_attempt_lockout_duration', $settings['login_attempt_lockout_duration'])"
                             :min="1"
                             :max="10080"
                             class="input-common input-sm"
@@ -133,9 +133,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <fieldset>
                         <x-form.toggle
-                            name="login_attempt_lockout_notification_enabled_default"
+                            name="login_attempt_lockout_notification_enabled"
                             :label="__('admin/settings/security/login.lockout_notification_enabled')"
-                            :checked="old('login_attempt_lockout_notification_enabled_default', $settings['login_attempt_lockout_notification_enabled_default'])"
+                            :checked="old('login_attempt_lockout_notification_enabled', $settings['login_attempt_lockout_notification_enabled'])"
                             ::disabled="enabled === '0'"
                         />
                         <p class="mt-2">

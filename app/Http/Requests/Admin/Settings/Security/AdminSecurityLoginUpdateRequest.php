@@ -48,12 +48,12 @@ class AdminSecurityLoginUpdateRequest extends FormRequest
             'login_notification_system_email' => 'nullable|email|max:255',
 
             // ログイン試行制限設定
-            'login_attempt_limit_enabled_default' => 'boolean',
-            'login_attempt_max_attempts_default' => 'required|integer|min:1|max:100',
-            'login_attempt_max_attempts_ip_default' => 'required|integer|min:1|max:200',
-            'login_attempt_time_window_default' => 'required|integer|min:1|max:1440',
-            'login_attempt_lockout_duration_default' => 'required|integer|min:1|max:10080',
-            'login_attempt_lockout_notification_enabled_default' => 'boolean',
+            'login_attempt_limit_enabled' => 'boolean',
+            'login_attempt_max_attempts' => 'required|integer|min:1|max:100',
+            'login_attempt_max_attempts_ip' => 'required|integer|min:1|max:200',
+            'login_attempt_time_window' => 'required|integer|min:1|max:1440',
+            'login_attempt_lockout_duration' => 'required|integer|min:1|max:10080',
+            'login_attempt_lockout_notification_enabled' => 'boolean',
 
         ];
     }

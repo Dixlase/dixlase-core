@@ -203,6 +203,15 @@ class TwoFaService
      */
     private function validateEmailCode($user, string $inputCode): bool
     {
+        // ロックアウトチェック
+        if ($this->attemptService->isLockedOut($user)) {
+            Log::warning('[2FA] Email code validation blocked - locked out', [
+                'user_id' => $user->id,
+                'context' => $this->context,
+            ]);
+            return false;
+        }
+
         $result = $this->emailAuth->validateCode($user, $inputCode);
         
         // 試行を記録
@@ -216,6 +225,15 @@ class TwoFaService
      */
     private function validatePasskeyAuth($user, $input): bool
     {
+        // ロックアウトチェック
+        if ($this->attemptService->isLockedOut($user)) {
+            Log::warning('[2FA] Passkey validation blocked - locked out', [
+                'user_id' => $user->id,
+                'context' => $this->context,
+            ]);
+            return false;
+        }
+
         $result = $this->passkeyAuth->validatePasskeyAuth($user, $input);
         
         // 試行を記録
