@@ -1,6 +1,6 @@
---- a/vendor/laragear/webauthn/src/Models/WebAuthnCredential.php
-+++ b/vendor/laragear/webauthn/src/Models/WebAuthnCredential.php
-@@ -95,7 +95,7 @@ class WebAuthnCredential extends Model
+--- a/src/Models/WebAuthnCredential.php
++++ b/src/Models/WebAuthnCredential.php
+@@ -100,7 +100,7 @@ class WebAuthnCredential extends Model
      protected $casts = [
          'counter' => 'int',
          'transports' => 'array',
