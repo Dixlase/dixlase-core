@@ -113,31 +113,34 @@ function initEmailChallenge(config) {
         submitButton.disabled = code.length !== config.codeLength;
     }
 
-    // Expiration timer
-    if (config.showExpireTime) {
-        function startExpireTimer() {
-            if (expireInterval) {
-                clearInterval(expireInterval);
-            }
+    // Expiration timer function (defined outside to be accessible in resend)
+    function startExpireTimer() {
+        if (!config.showExpireTime) return;
 
-            let expireTime = config.expireMinutes * 60;
-            const expireElement = document.getElementById('expire-time');
-
-            expireInterval = setInterval(() => {
-                expireTime--;
-                const minutes = Math.floor(expireTime / 60);
-                const seconds = expireTime % 60;
-                expireElement.textContent = `${minutes}${config.translations.minutes_suffix}${seconds.toString().padStart(2, '0')}${config.translations.seconds_suffix}`;
-
-                if (expireTime <= 0) {
-                    clearInterval(expireInterval);
-                    expireElement.textContent = config.translations.expired;
-                    inputs.forEach(input => input.disabled = true);
-                    submitButton.disabled = true;
-                }
-            }, 1000);
+        if (expireInterval) {
+            clearInterval(expireInterval);
         }
 
+        let expireTime = config.expireMinutes * 60;
+        const expireElement = document.getElementById('expire-time');
+
+        expireInterval = setInterval(() => {
+            expireTime--;
+            const minutes = Math.floor(expireTime / 60);
+            const seconds = expireTime % 60;
+            expireElement.textContent = `${minutes}${config.translations.minutes_suffix}${seconds.toString().padStart(2, '0')}${config.translations.seconds_suffix}`;
+
+            if (expireTime <= 0) {
+                clearInterval(expireInterval);
+                expireElement.textContent = config.translations.expired;
+                inputs.forEach(input => input.disabled = true);
+                submitButton.disabled = true;
+            }
+        }, 1000);
+    }
+
+    // Start expiration timer if enabled
+    if (config.showExpireTime) {
         startExpireTimer();
     }
 

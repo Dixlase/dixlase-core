@@ -94,9 +94,9 @@ trait TwoFaAuthenticationTrait
         $passkeyAvailableForMember = in_array(TwoFaMethod::PASSKEY->value, $enabledMethods);
         $showPasskeyDeviceWarning = $passkeyGloballyEnabled && !$passkeyAvailableForMember;
 
-        // 二段階認証の設定値を取得（メンバー設定 > コンフィグ）
-        $twoFaExpireMinutes = (int) $settingModelClass::getValue('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
-        $twoFaResendIntervalSeconds = (int) $settingModelClass::getValue('two_fa_resend_interval_seconds', config('two-fa.resend_interval', 60));
+        // 二段階認証の設定値を取得（セキュリティ設定 > コンフィグ）
+        $twoFaExpireMinutes = (int) \App\Models\SecuritySetting::getValue('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
+        $twoFaResendIntervalSeconds = (int) \App\Models\SecuritySetting::getValue('two_fa_resend_interval_seconds', config('two-fa.resend_interval', 60));
 
         return view('two-fa.email-challenge', [
             'availableMethods' => $availableMethods,

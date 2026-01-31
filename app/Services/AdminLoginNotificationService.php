@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\MemberSetting;
+use App\Models\SecuritySetting;
 use App\Notifications\AdminLoginNotification;
 use App\Traits\LoginNotificationTrait;
 
@@ -24,11 +24,11 @@ class AdminLoginNotificationService
     }
 
     /**
-     * 設定値を取得する関数を取得
+     * 設定値を取得する関数を取得（セキュリティ設定から）
      */
     protected function getSettingGetter(): callable
     {
-        return fn() => MemberSetting::getValue($this->getGlobalSettingKey(), '0');
+        return fn() => SecuritySetting::getValue($this->getGlobalSettingKey(), '0');
     }
 
     /**

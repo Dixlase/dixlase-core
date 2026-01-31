@@ -25,7 +25,7 @@ namespace App\Http\Requests\Admin\Settings\Members;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Enums\MemberRole;
-use App\Models\MemberSetting;
+use App\Models\SecuritySetting;
 use App\Services\PasswordService;
 use App\Traits\TwoFa\TwoFactorEnableCheck;
 
@@ -54,12 +54,12 @@ class AdminSettingsMemberStoreRequest extends FormRequest
         // 初期メンバー（ID=1）かどうか
         $isInitialAdmin = $member && $member->id === 1;
 
-        // パスワード設定を取得
-        $passwordMinLength = (int) MemberSetting::getValue('password_min_length', 8);
-        $passwordRequireUppercase = (bool) MemberSetting::getValue('password_require_uppercase', true);
-        $passwordRequireLowercase = (bool) MemberSetting::getValue('password_require_lowercase', true);
-        $passwordRequireNumber = (bool) MemberSetting::getValue('password_require_number', true);
-        $passwordRequireSymbol = (bool) MemberSetting::getValue('password_require_symbol', false);
+        // パスワード設定を取得（セキュリティ設定から）
+        $passwordMinLength = (int) SecuritySetting::getValue('password_min_length', 8);
+        $passwordRequireUppercase = (bool) SecuritySetting::getValue('password_require_uppercase', true);
+        $passwordRequireLowercase = (bool) SecuritySetting::getValue('password_require_lowercase', true);
+        $passwordRequireNumber = (bool) SecuritySetting::getValue('password_require_number', true);
+        $passwordRequireSymbol = (bool) SecuritySetting::getValue('password_require_symbol', false);
 
         // パスワードバリデーションルールを構築
         $passwordRules = PasswordService::buildPasswordRules(
@@ -115,7 +115,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
     protected function passedValidation()
     {
         // 全体設定で二段階認証が強制されている場合、個別設定を上書き
-        $globalTwoFaMode = (int) MemberSetting::getValue('force_two_fa', 3); // 3 = プロフィール設定に従う
+        $globalTwoFaMode = (int) SecuritySetting::getValue('two_fa_mode', 3); // 3 = プロフィール設定に従う
         
         if ($globalTwoFaMode !== 3) {
             // 全体設定が「プロフィール設定に従う」以外の場合、全体設定を強制

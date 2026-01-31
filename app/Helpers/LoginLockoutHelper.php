@@ -3,7 +3,7 @@
 namespace App\Helpers;
 
 use App\Models\MemberLoginAttempt;
-use App\Models\MemberSetting;
+use App\Models\SecuritySetting;
 use App\Services\SystemNotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -15,7 +15,7 @@ class LoginLockoutHelper
      * ログイン試行制限が有効かどうかを確認
      *
      * @param string $settingKey
-     * @param mixed $settingSource 設定ソース（MemberSetting::class など）
+     * @param mixed $settingSource 設定ソース（SecuritySetting::class など）
      * @return bool
      */
     public static function isLockoutEnabled(string $settingKey = 'login_attempt_limit_enabled', $settingSource = null): bool
@@ -23,14 +23,14 @@ class LoginLockoutHelper
         if ($settingSource) {
             return (bool) $settingSource::getValue($settingKey, false);
         }
-        return (bool) MemberSetting::getValue($settingKey, false);
+        return (bool) SecuritySetting::getValue($settingKey, false);
     }
 
     /**
      * ロックアウト通知が有効かどうかを確認
      *
      * @param string $settingKey
-     * @param mixed $settingSource 設定ソース（MemberSetting::class など）
+     * @param mixed $settingSource 設定ソース（SecuritySetting::class など）
      * @return bool
      */
     public static function isNotificationEnabled(string $settingKey = 'lockout_notification_enabled', $settingSource = null): bool
@@ -46,8 +46,8 @@ class LoginLockoutHelper
             return (bool) $value;
         }
         
-        $value = MemberSetting::getValue($settingKey, true);
-        Log::info('LoginLockoutHelper::isNotificationEnabled (MemberSetting)', [
+        $value = SecuritySetting::getValue($settingKey, true);
+        Log::info('LoginLockoutHelper::isNotificationEnabled (SecuritySetting)', [
             'setting_key' => $settingKey,
             'raw_value' => $value,
             'boolean_value' => (bool) $value
@@ -59,7 +59,7 @@ class LoginLockoutHelper
      * ログイン試行制限の設定を取得
      *
      * @param array $settingKeys 設定キーの配列
-     * @param mixed $settingSource 設定ソース（MemberSetting::class など）
+     * @param mixed $settingSource 設定ソース（SecuritySetting::class など）
      * @return array
      */
     public static function getLockoutSettings(array $settingKeys = [], $settingSource = null): array
@@ -73,7 +73,7 @@ class LoginLockoutHelper
         ];
 
         $keys = array_merge($defaultKeys, $settingKeys);
-        $source = $settingSource ?: MemberSetting::class;
+        $source = $settingSource ?: SecuritySetting::class;
 
         return [
             'enabled' => (bool) $source::getValue($keys['enabled_key'], false),

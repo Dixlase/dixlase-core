@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Helpers\LoginLockoutHelper;
-use App\Models\MemberSetting;
+use App\Models\SecuritySetting;
 use Illuminate\Http\Request;
 
 class AdminLoginLockoutService
@@ -68,8 +68,8 @@ class AdminLoginLockoutService
             $settings['time_window']
         );
 
-        // IP用の最大試行回数を取得（設定がない場合は識別子の2倍をデフォルトとする）
-        $maxAttemptsForIp = MemberSetting::get('login_attempt_max_attempts_ip', $settings['max_attempts'] * 2);
+        // IP用の最大試行回数を取得（セキュリティ設定から）
+        $maxAttemptsForIp = SecuritySetting::get('login_attempt_max_attempts_ip', $settings['max_attempts'] * 2);
         return $failedAttempts >= $maxAttemptsForIp;
     }
 
