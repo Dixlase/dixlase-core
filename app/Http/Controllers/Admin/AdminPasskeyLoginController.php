@@ -24,10 +24,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Member;
 use App\Models\AuditLog;
+use App\Services\TwoFa\TwoFaPasskeyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Laragear\WebAuthn\WebAuthn;
 
 /**
  * パスキーログインコントローラー
@@ -36,6 +36,12 @@ use Laragear\WebAuthn\WebAuthn;
  */
 class AdminPasskeyLoginController extends AdminController
 {
+    protected $passkeyService;
+
+    public function __construct(TwoFaPasskeyService $passkeyService)
+    {
+        $this->passkeyService = $passkeyService;
+    }
     /**
      * パスキー認証のチャレンジを取得
      * 
@@ -61,8 +67,8 @@ class AdminPasskeyLoginController extends AdminController
             ], 422);
         }
 
-        // パスキーが登録されているか確認
-        if ($member->webauthnCredentials()->count() === 0) {
+        // パスキーが登録されているか確認（Laragear WebAuthn）
+        if (!$member->webauthnCredentials()->exists()) {
             return response()->json([
                 'error' => __('admin/auth.login.no_passkey_registered'),
             ], 422);
@@ -70,23 +76,28 @@ class AdminPasskeyLoginController extends AdminController
 
         try {
             // WebAuthnチャレンジを生成
-            $publicKey = WebAuthn::generateAssertion($member);
+            $challengeData = $this->passkeyService->generateLoginChallenge($member);
             
-            // セッションにメンバーIDを保存（認証後に使用）
-            session(['passkey_login_member_id' => $member->id]);
+            // セッションにメンバーIDとチャレンジIDを保存（認証後に使用）
+            session([
+                'passkey_login_member_id' => $member->id,
+                'passkey_challenge_id' => $challengeData['id'] ?? null,
+            ]);
             
             // 監査ログ記録
-            AuditLog::logAuth(AuditLog::ACTION_LOGIN_PASSKEY_CHALLENGE, [
+            AuditLog::logAuth(AuditLog::ACTION_LOGIN_IDENTIFIER_CHECK, [
                 'severity' => AuditLog::SEVERITY_INFO,
                 'outcome' => AuditLog::OUTCOME_SUCCESS,
                 'actor' => $member,
                 'context' => [
                     'login_identifier' => $login,
+                    'authentication_method' => 'passkey_challenge',
                 ],
             ]);
             
             return response()->json([
-                'publicKey' => $publicKey,
+                'success' => true,
+                'challenge' => $challengeData['publicKey'],
             ]);
         } catch (\Exception $e) {
             Log::error('Passkey challenge generation failed', [
@@ -127,9 +138,10 @@ class AdminPasskeyLoginController extends AdminController
 
         try {
             // WebAuthn認証を検証
-            $credential = WebAuthn::validateAssertion($member, $request);
+            $challengeId = session('passkey_challenge_id');
+            $verified = $this->passkeyService->verifyLoginChallenge($member, $request->all(), $challengeId);
             
-            if (!$credential) {
+            if (!$verified) {
                 // 認証失敗ログ
                 AuditLog::logAuth(AuditLog::ACTION_LOGIN_FAILED, [
                     'severity' => AuditLog::SEVERITY_WARNING,
@@ -148,7 +160,7 @@ class AdminPasskeyLoginController extends AdminController
 
             // ログイン成功
             Auth::guard('member')->login($member, true);
-            session()->forget('passkey_login_member_id');
+            session()->forget(['passkey_login_member_id', 'passkey_challenge_id']);
             
             // パスキー認証を記録（2FA制限のため）
             session(['login.auth_method' => 'passkey']);
@@ -160,14 +172,12 @@ class AdminPasskeyLoginController extends AdminController
                 'actor' => $member,
                 'context' => [
                     'authentication_method' => 'passkey',
-                    'credential_id' => $credential->id,
                 ],
             ]);
             
             // ファイルログにも記録
             Log::info('Passkey login successful', [
                 'member_id' => $member->id,
-                'credential_id' => $credential->id,
                 'ip' => $request->ip(),
             ]);
             

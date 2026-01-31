@@ -21,6 +21,8 @@ class MemberTwoFaPasskey extends BaseWebAuthnCredential
      */
     protected $fillable = [
         'id',
+        'authenticatable_type',
+        'authenticatable_id',
         'member_id',
         'alias',
         'counter',
@@ -37,12 +39,34 @@ class MemberTwoFaPasskey extends BaseWebAuthnCredential
 
     /**
      * Get the name of the user ID column.
+     * 
+     * Laragearのuser_idの代わりにmember_idを使用
      *
      * @return string
      */
     public function getUserIdColumn(): string
     {
         return 'member_id';
+    }
+    
+    /**
+     * user_idアクセサー: member_idを返す
+     * 
+     * Laragearがuser_idを参照する際にmember_idを返す
+     */
+    public function getUserIdAttribute()
+    {
+        return $this->member_id;
+    }
+    
+    /**
+     * user_idミューテーター: member_idに設定
+     * 
+     * Laragearがuser_idを設定する際にmember_idに保存
+     */
+    public function setUserIdAttribute($value)
+    {
+        $this->attributes['member_id'] = $value;
     }
 
     /**

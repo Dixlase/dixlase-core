@@ -36,9 +36,13 @@ use App\Enums\Locale;
 use App\Traits\HasPermissions;
 use App\Traits\TwoFa\TwoFactorEnableCheck;
 use App\Contracts\TwoFaInterface;
+use Laragear\WebAuthn\Contracts\WebAuthnAuthenticatable;
+use Laragear\WebAuthn\WebAuthnData;
+use Laragear\WebAuthn\Models\WebAuthnCredential;
+use Ramsey\Uuid\Uuid;
 
 
-class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface
+class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface, WebAuthnAuthenticatable
 {
     use HasFactory, Notifiable, SoftDeletes, TwoFactorAuthenticatable, HasPermissions, TwoFactorEnableCheck;
 
@@ -95,14 +99,6 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface
     public function trustedDevices()
     {
         return $this->hasMany(TrustedDevice::class);
-    }
-
-    /**
-     * WebAuthn認証情報とのリレーション
-     */
-    public function webauthnCredentials()
-    {
-        return $this->hasMany(MemberTwoFaPasskey::class);
     }
 
     /**
@@ -245,5 +241,66 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface
     public function twoFaTokens(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(\App\Models\MemberTwoFaToken::class, 'member_id');
+    }
+
+    // ========================================
+    // WebAuthn (Laragear) インターフェース実装
+    // ========================================
+
+    /**
+     * WebAuthn用の表示データを返す
+     */
+    public function webAuthnData(): WebAuthnData
+    {
+        return new WebAuthnData(
+            name: $this->email,
+            displayName: $this->name ?? $this->account_name,
+        );
+    }
+
+    /**
+     * WebAuthn用の匿名化されたユーザーID（UUID）を返す
+     */
+    public function webAuthnId(): \Ramsey\Uuid\UuidInterface
+    {
+        return Uuid::uuid4();
+    }
+
+    /**
+     * WebAuthn認証情報のリレーション
+     * 
+     * 既存のmembers_two_fa_passkeysテーブルを使用
+     */
+    public function webAuthnCredentials(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(MemberTwoFaPasskey::class, 'authenticatable');
+    }
+
+    /**
+     * すべてのWebAuthn認証情報を削除
+     */
+    public function flushCredentials(string ...$except): void
+    {
+        $this->webAuthnCredentials()
+            ->when($except, fn($query) => $query->whereNotIn('id', $except))
+            ->delete();
+    }
+
+    /**
+     * すべてのWebAuthn認証情報を無効化
+     */
+    public function disableAllCredentials(string ...$except): void
+    {
+        $this->webAuthnCredentials()
+            ->when($except, fn($query) => $query->whereNotIn('id', $except))
+            ->update(['disabled_at' => now()]);
+    }
+
+    /**
+     * WebAuthn認証情報のインスタンスを作成
+     */
+    public function makeWebAuthnCredential(array $properties): WebAuthnCredential
+    {
+        return $this->webAuthnCredentials()->make($properties);
     }
 }
