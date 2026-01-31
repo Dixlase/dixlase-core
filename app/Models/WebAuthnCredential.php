@@ -5,14 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Laragear\WebAuthn\Models\WebAuthnCredential as BaseWebAuthnCredential;
 
-class MemberTwoFaPasskey extends BaseWebAuthnCredential
+class WebAuthnCredential extends BaseWebAuthnCredential
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'members_two_fa_passkeys';
+    protected $table = 'webauthn_credentials';
 
     /**
      * モデルの初期化

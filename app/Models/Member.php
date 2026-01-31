@@ -212,11 +212,11 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     }
 
     /**
-     * パスキーデバイスのリレーション
+     * パスキー認証情報とのリレーション
      */
     public function twoFaPasskeys(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(\App\Models\MemberTwoFaPasskey::class, 'member_id');
+        return $this->hasMany(\App\Models\WebAuthnCredential::class, 'member_id');
     }
 
     /**
@@ -269,11 +269,11 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     /**
      * WebAuthn認証情報のリレーション
      * 
-     * 既存のmembers_two_fa_passkeysテーブルを使用
+     * webauthn_credentialsテーブルを使用
      */
     public function webAuthnCredentials(): \Illuminate\Database\Eloquent\Relations\MorphMany
     {
-        return $this->morphMany(MemberTwoFaPasskey::class, 'authenticatable');
+        return $this->morphMany(WebAuthnCredential::class, 'authenticatable');
     }
 
     /**

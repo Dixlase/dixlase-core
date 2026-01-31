@@ -79,6 +79,12 @@ class AppServiceProvider extends ServiceProvider
         
         // CSP Nonce Generatorをシングルトンとして登録（リクエストごとに同じnonce値を使用）
         $this->app->singleton(\App\Services\Csp\CspNonceGenerator::class);
+        
+        // Laragear WebAuthnのWebAuthnCredentialモデルをカスタムモデルにバインド
+        $this->app->bind(
+            \Laragear\WebAuthn\Models\WebAuthnCredential::class,
+            \App\Models\WebAuthnCredential::class
+        );
     }
 
     /**
