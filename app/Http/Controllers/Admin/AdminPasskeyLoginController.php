@@ -166,7 +166,7 @@ class AdminPasskeyLoginController extends AdminController
             session(['login.auth_method' => 'passkey']);
             
             // 認証成功ログ
-            AuditLog::logAuth(AuditLog::ACTION_LOGIN_SUCCESS, [
+            AuditLog::logAuth(AuditLog::ACTION_LOGIN, [
                 'severity' => AuditLog::SEVERITY_INFO,
                 'outcome' => AuditLog::OUTCOME_SUCCESS,
                 'actor' => $member,
@@ -185,7 +185,7 @@ class AdminPasskeyLoginController extends AdminController
             if ($member->login_notification_mode !== 0) {
                 try {
                     $notificationService = app(\App\Services\AdminLoginNotificationService::class);
-                    $notificationService->sendLoginNotification($member, $request, 'passkey');
+                    $notificationService->handle($member, $request);
                 } catch (\Exception $e) {
                     Log::warning('Login notification failed', [
                         'member_id' => $member->id,
