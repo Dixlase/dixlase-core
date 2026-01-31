@@ -26,14 +26,16 @@ class TwoFaPasskeyService
 
     /**
      * ユーザーがPasskey認証情報を持っているか
+     * 
+     * LaragearのwebauthnCredentials()リレーションを使用
      */
     public function hasCredentials(TwoFaInterface $user): bool
     {
-        return $user->twoFaPasskeys()->exists();
+        return $user->webauthnCredentials()->exists();
     }
 
     /**
-     * Passkeyチャレンジを生成
+     * Passkeyチャレンジを生成（2FA用）
      */
     public function generatePasskeyChallenge($user): array
     {
@@ -46,6 +48,70 @@ class TwoFaPasskeyService
             'challenge' => 'placeholder_challenge',
             'message' => 'Passkey authentication will be implemented in Phase 3',
         ];
+    }
+
+    /**
+     * ログイン用のパスキーチャレンジを生成
+     * 
+     * Laragear\WebAuthnを使用して安全なチャレンジを生成
+     */
+    public function generateLoginChallenge(TwoFaInterface $user): array
+    {
+        try {
+            // Laragear WebAuthnでチャレンジを生成
+            $publicKey = \Laragear\WebAuthn\WebAuthn::generateAssertion($user);
+            
+            Log::info('[Passkey] Login challenge generated (Laragear)', [
+                'member_id' => $user->getId(),
+                'credentials_count' => $user->webauthnCredentials()->count(),
+            ]);
+            
+            return [
+                'id' => Str::random(32),
+                'publicKey' => $publicKey,
+            ];
+        } catch (\Exception $e) {
+            Log::error('[Passkey] Challenge generation failed', [
+                'member_id' => $user->getId(),
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * ログイン用のパスキー認証を検証
+     * 
+     * Laragear\WebAuthnを使用して暗号署名を検証
+     */
+    public function verifyLoginChallenge(TwoFaInterface $user, array $data, ?string $challengeId = null): bool
+    {
+        try {
+            // Laragear WebAuthnで署名検証
+            $credential = \Laragear\WebAuthn\WebAuthn::validateAssertion($user, request());
+            
+            if ($credential) {
+                Log::info('[Passkey] Login verification successful (Laragear)', [
+                    'member_id' => $user->getId(),
+                    'credential_id' => $credential->id,
+                ]);
+                
+                return true;
+            }
+            
+            Log::warning('[Passkey] Login verification failed', [
+                'member_id' => $user->getId(),
+            ]);
+            
+            return false;
+        } catch (\Exception $e) {
+            Log::error('[Passkey] Verification error', [
+                'member_id' => $user->getId(),
+                'error' => $e->getMessage(),
+            ]);
+            
+            return false;
+        }
     }
 
     /**

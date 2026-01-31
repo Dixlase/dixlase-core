@@ -38,7 +38,15 @@ return new class extends Migration
         Schema::create($this->table, function (Blueprint $table) {
             // WebAuthn標準フィールド
             $table->string('id', 510)->primary(); // credential_id
+            
+            // Laragear\WebAuthn用ポリモーフィックリレーション
+            $table->string('authenticatable_type')->default('App\\Models\\Member');
+            $table->unsignedBigInteger('authenticatable_id');
+            
+            // Dixlase用メンバーID（既存互換性のため）
             $table->unsignedBigInteger('member_id');
+            
+            // WebAuthn標準フィールド
             $table->string('alias')->nullable();
             $table->unsignedBigInteger('counter')->nullable();
             $table->string('rp_id');
@@ -51,13 +59,14 @@ return new class extends Migration
             $table->timestamp('disabled_at')->nullable();
             $table->timestamps();
             
-            // カスタムフィールド
+            // Dixlaseカスタムフィールド
             $table->string('name'); // デバイス名（必須）
             
             // 外部キー制約
             $table->foreign('member_id')->references('id')->on('members')->onDelete('cascade');
             
-            // インデックス
+            // インデックス（名前を短く指定）
+            $table->index(['authenticatable_type', 'authenticatable_id'], 'passkeys_authenticatable_index');
             $table->index('member_id');
         });
     }

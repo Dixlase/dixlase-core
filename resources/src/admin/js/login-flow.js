@@ -95,15 +95,18 @@ export function createLoginFlow() {
 
                 const challengeData = await challengeResponse.json();
 
-                if (!challengeResponse.ok) {
-                    this.errors.login = challengeData.error || this.translations.errorOccurred;
+                if (!challengeResponse.ok || !challengeData.success) {
+                    this.errors.login = challengeData.error || challengeData.message || this.translations.errorOccurred;
                     this.loading = false;
                     return;
                 }
 
+                // チャレンジをデコード
+                const publicKeyOptions = this.decodePublicKeyOptions(challengeData.challenge);
+
                 // WebAuthn認証を実行
                 const credential = await navigator.credentials.get({
-                    publicKey: challengeData.publicKey
+                    publicKey: publicKeyOptions
                 });
 
                 if (!credential) {
@@ -122,13 +125,13 @@ export function createLoginFlow() {
                     },
                     body: JSON.stringify({
                         id: credential.id,
-                        rawId: this.arrayBufferToBase64(credential.rawId),
+                        rawId: btoa(String.fromCharCode(...new Uint8Array(credential.rawId))),
                         type: credential.type,
                         response: {
-                            authenticatorData: this.arrayBufferToBase64(credential.response.authenticatorData),
-                            clientDataJSON: this.arrayBufferToBase64(credential.response.clientDataJSON),
-                            signature: this.arrayBufferToBase64(credential.response.signature),
-                            userHandle: credential.response.userHandle ? this.arrayBufferToBase64(credential.response.userHandle) : null
+                            authenticatorData: btoa(String.fromCharCode(...new Uint8Array(credential.response.authenticatorData))),
+                            clientDataJSON: btoa(String.fromCharCode(...new Uint8Array(credential.response.clientDataJSON))),
+                            signature: btoa(String.fromCharCode(...new Uint8Array(credential.response.signature))),
+                            userHandle: credential.response.userHandle ? btoa(String.fromCharCode(...new Uint8Array(credential.response.userHandle))) : null
                         }
                     })
                 });
@@ -170,6 +173,42 @@ export function createLoginFlow() {
             this.identifier = '';
             this.hasPasskey = false;
             this.errors = {};
+        },
+
+        // Base64URLデコードヘルパー
+        base64urlDecode(str) {
+            // Base64URL to Base64
+            str = str.replace(/-/g, '+').replace(/_/g, '/');
+            // パディング追加
+            const pad = str.length % 4;
+            if (pad) {
+                if (pad === 1) {
+                    throw new Error('Invalid base64url string');
+                }
+                str += new Array(5 - pad).join('=');
+            }
+            // Base64デコード
+            const binary = atob(str);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            return bytes;
+        },
+
+        // PublicKeyCredentialRequestOptionsをデコード
+        decodePublicKeyOptions(options) {
+            return {
+                challenge: this.base64urlDecode(options.challenge),
+                timeout: options.timeout,
+                rpId: options.rpId,
+                allowCredentials: options.allowCredentials.map(cred => ({
+                    id: this.base64urlDecode(cred.id),
+                    type: cred.type,
+                    transports: cred.transports
+                })),
+                userVerification: options.userVerification
+            };
         }
     }
 }
