@@ -47,8 +47,12 @@ import '../../components/mail-server/js/test';
 import '../../components/mail-server/js/verification';
 import '../../admin/js/layout';
 import '../../admin/settings/security/js/csp';
+import { createLoginFlow } from '../../admin/js/login-flow';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
+
+// Alpine.jsのグローバルスコープに登録（Alpine起動前に実行）
+window.loginFlow = createLoginFlow;
 
 Alpine.plugin(collapse)
 window.Alpine = Alpine;
