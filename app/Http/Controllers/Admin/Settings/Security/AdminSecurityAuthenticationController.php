@@ -28,15 +28,20 @@ use App\Models\BaseSetting;
 use App\Models\SecuritySetting;
 use App\Enums\AuthenticationMode;
 use App\Contracts\Repositories\MemberSettingRepositoryInterface;
+use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 
 class AdminSecurityAuthenticationController extends AdminLoggedInController
 {
     protected MemberSettingRepositoryInterface $memberSettingRepository;
+    protected SecuritySettingRepositoryInterface $securitySettingRepository;
 
-    public function __construct(MemberSettingRepositoryInterface $memberSettingRepository)
-    {
+    public function __construct(
+        MemberSettingRepositoryInterface $memberSettingRepository,
+        SecuritySettingRepositoryInterface $securitySettingRepository
+    ) {
         parent::__construct();
         $this->memberSettingRepository = $memberSettingRepository;
+        $this->securitySettingRepository = $securitySettingRepository;
     }
 
     /**
@@ -73,15 +78,15 @@ class AdminSecurityAuthenticationController extends AdminLoggedInController
             $twoFaDefaultMethod = (int) old('two_fa_default_method');
         }
 
-        // 二段階認証詳細設定
-        $twoFaExpireMinutes = (int) $this->memberSettingRepository->get('two_fa_expire_minutes', '10');
-        $twoFaResendIntervalSeconds = (int) $this->memberSettingRepository->get('two_fa_resend_interval_seconds', '60');
-        $twoFaMaxAttempts = (int) $this->memberSettingRepository->get('two_fa_max_attempts', '5');
-        $twoFaAttemptWindow = (int) $this->memberSettingRepository->get('two_fa_attempt_window', '15');
-        $twoFaLockoutDuration = (int) $this->memberSettingRepository->get('two_fa_lockout_duration', '30');
-        $twoFaLockoutNotificationEnabled = (bool) $this->memberSettingRepository->get('two_fa_lockout_notification_enabled', '1');
-        $twoFaRecoveryCodesCount = (int) $this->memberSettingRepository->get('two_fa_recovery_codes_count', '10');
-        $twoFaRecoveryCodeRegenerateInterval = (int) $this->memberSettingRepository->get('two_fa_recovery_code_regenerate_interval', '90');
+        // 二段階認証詳細設定（セキュリティ設定から取得）
+        $twoFaExpireMinutes = (int) $this->securitySettingRepository->get('two_fa_expire_minutes', '5');
+        $twoFaResendIntervalSeconds = (int) $this->securitySettingRepository->get('two_fa_resend_interval_seconds', '60');
+        $twoFaMaxAttempts = (int) $this->securitySettingRepository->get('two_fa_max_attempts', '5');
+        $twoFaAttemptWindow = (int) $this->securitySettingRepository->get('two_fa_attempt_window', '15');
+        $twoFaLockoutDuration = (int) $this->securitySettingRepository->get('two_fa_lockout_duration', '30');
+        $twoFaLockoutNotificationEnabled = (bool) $this->securitySettingRepository->get('two_fa_lockout_notification_enabled', '1');
+        $twoFaRecoveryCodesCount = (int) $this->securitySettingRepository->get('two_fa_recovery_codes_count', '10');
+        $twoFaRecoveryCodeRegenerateInterval = (int) $this->securitySettingRepository->get('two_fa_recovery_code_regenerate_interval', '90');
 
         // メールサーバー設定状態
         $isMailServerTested = $this->isMailServerTested();
@@ -123,30 +128,30 @@ class AdminSecurityAuthenticationController extends AdminLoggedInController
             $this->memberSettingRepository->set('two_fa_default_method', (string) $validated['two_fa_default_method']);
         }
 
-        // 二段階認証詳細設定
+        // 二段階認証詳細設定（セキュリティ設定に保存）
         if (array_key_exists('two_fa_expire_minutes', $validated)) {
-            $this->memberSettingRepository->set('two_fa_expire_minutes', (string) $validated['two_fa_expire_minutes']);
+            $this->securitySettingRepository->set('two_fa_expire_minutes', (string) $validated['two_fa_expire_minutes']);
         }
         if (array_key_exists('two_fa_resend_interval_seconds', $validated)) {
-            $this->memberSettingRepository->set('two_fa_resend_interval_seconds', (string) $validated['two_fa_resend_interval_seconds']);
+            $this->securitySettingRepository->set('two_fa_resend_interval_seconds', (string) $validated['two_fa_resend_interval_seconds']);
         }
         if (array_key_exists('two_fa_max_attempts', $validated)) {
-            $this->memberSettingRepository->set('two_fa_max_attempts', (string) $validated['two_fa_max_attempts']);
+            $this->securitySettingRepository->set('two_fa_max_attempts', (string) $validated['two_fa_max_attempts']);
         }
         if (array_key_exists('two_fa_attempt_window', $validated)) {
-            $this->memberSettingRepository->set('two_fa_attempt_window', (string) $validated['two_fa_attempt_window']);
+            $this->securitySettingRepository->set('two_fa_attempt_window', (string) $validated['two_fa_attempt_window']);
         }
         if (array_key_exists('two_fa_lockout_duration', $validated)) {
-            $this->memberSettingRepository->set('two_fa_lockout_duration', (string) $validated['two_fa_lockout_duration']);
+            $this->securitySettingRepository->set('two_fa_lockout_duration', (string) $validated['two_fa_lockout_duration']);
         }
         if (array_key_exists('two_fa_lockout_notification_enabled', $validated)) {
-            $this->memberSettingRepository->set('two_fa_lockout_notification_enabled', $validated['two_fa_lockout_notification_enabled'] ? '1' : '0');
+            $this->securitySettingRepository->set('two_fa_lockout_notification_enabled', $validated['two_fa_lockout_notification_enabled'] ? '1' : '0');
         }
         if (array_key_exists('two_fa_recovery_codes_count', $validated)) {
-            $this->memberSettingRepository->set('two_fa_recovery_codes_count', (string) $validated['two_fa_recovery_codes_count']);
+            $this->securitySettingRepository->set('two_fa_recovery_codes_count', (string) $validated['two_fa_recovery_codes_count']);
         }
         if (array_key_exists('two_fa_recovery_code_regenerate_interval', $validated)) {
-            $this->memberSettingRepository->set('two_fa_recovery_code_regenerate_interval', (string) $validated['two_fa_recovery_code_regenerate_interval']);
+            $this->securitySettingRepository->set('two_fa_recovery_code_regenerate_interval', (string) $validated['two_fa_recovery_code_regenerate_interval']);
         }
 
         return redirect()->back()

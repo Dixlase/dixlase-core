@@ -36,6 +36,7 @@ use App\Services\PasswordService;
 use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use App\Contracts\Repositories\MemberSettingRepositoryInterface;
+use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use App\Traits\ManagesAccountTrait;
 use App\Traits\ManagesTwoFaTrait;
@@ -45,11 +46,15 @@ class AdminMemberController extends AdminLoggedInController
     use ManagesAccountTrait, ManagesTwoFaTrait;
 
     protected MemberSettingRepositoryInterface $memberSettingRepository;
+    protected SecuritySettingRepositoryInterface $securitySettingRepository;
 
-    public function __construct(MemberSettingRepositoryInterface $memberSettingRepository)
-    {
+    public function __construct(
+        MemberSettingRepositoryInterface $memberSettingRepository,
+        SecuritySettingRepositoryInterface $securitySettingRepository
+    ) {
         parent::__construct();
         $this->memberSettingRepository = $memberSettingRepository;
+        $this->securitySettingRepository = $securitySettingRepository;
     }
 
     /**
@@ -309,13 +314,15 @@ class AdminMemberController extends AdminLoggedInController
      */
     private function loadMemberFormParams(): void
     {
-        $this->viewParams['passwordMinLength'] = (int) $this->memberSettingRepository->get('password_min_length', 8);
-        $this->viewParams['passwordRequireUppercase'] = (bool) $this->memberSettingRepository->get('password_require_uppercase', true);
-        $this->viewParams['passwordRequireLowercase'] = (bool) $this->memberSettingRepository->get('password_require_lowercase', true);
-        $this->viewParams['passwordRequireNumber'] = (bool) $this->memberSettingRepository->get('password_require_number', true);
-        $this->viewParams['passwordRequireSymbol'] = (bool) $this->memberSettingRepository->get('password_require_symbol', true);
+        // パスワード設定（セキュリティ設定から）
+        $this->viewParams['passwordMinLength'] = (int) $this->securitySettingRepository->get('password_min_length', 8);
+        $this->viewParams['passwordRequireUppercase'] = (bool) $this->securitySettingRepository->get('password_require_uppercase', true);
+        $this->viewParams['passwordRequireLowercase'] = (bool) $this->securitySettingRepository->get('password_require_lowercase', true);
+        $this->viewParams['passwordRequireNumber'] = (bool) $this->securitySettingRepository->get('password_require_number', true);
+        $this->viewParams['passwordRequireSymbol'] = (bool) $this->securitySettingRepository->get('password_require_symbol', true);
 
-        $loginNotificationMode = (int) $this->memberSettingRepository->get('login_notification_mode', AuthenticationMode::UseProfileSetting->value);
+        // ログイン通知設定（セキュリティ設定から）
+        $loginNotificationMode = (int) $this->securitySettingRepository->get('login_notification_mode', AuthenticationMode::UseProfileSetting->value);
         $this->viewParams['loginNotificationMode'] = $loginNotificationMode;
         $loginNotificationEnum = AuthenticationMode::tryFrom($loginNotificationMode);
         $this->viewParams['loginNotificationModeLabel'] = $loginNotificationEnum ? $loginNotificationEnum->notificationLabel() : '';

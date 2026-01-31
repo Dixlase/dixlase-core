@@ -193,7 +193,7 @@ class LoginHelper
      */
     public function isPasswordResetEnabled(string $settingKey = 'password_reset_enabled'): bool
     {
-        $enabled = (bool) \App\Models\MemberSetting::getValue($settingKey, true);
+        $enabled = (bool) \App\Models\SecuritySetting::getValue($settingKey, true);
         $mailServerReady = \App\Services\MailServerValidatorService::canSendMail();
 
         return $enabled && $mailServerReady;

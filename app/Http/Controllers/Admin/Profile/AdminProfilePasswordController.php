@@ -24,7 +24,7 @@ namespace App\Http\Controllers\Admin\Profile;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Profile\ProfilePasswordUpdateRequest;
-use App\Models\MemberSetting;
+use App\Models\SecuritySetting;
 use App\Services\PasswordService;
 use Illuminate\Support\Facades\Auth;
 
@@ -40,10 +40,10 @@ class AdminProfilePasswordController extends AdminLoggedInController
      */
     public function index()
     {
-        // パスワード条件の取得
-        $this->viewParams['passwordMinLength'] = (int) MemberSetting::getValue('password_min_length', 8);
-        $this->viewParams['passwordRequireUppercase'] = (bool) MemberSetting::getValue('password_require_uppercase', true);
-        $this->viewParams['passwordRequireSymbol'] = (bool) MemberSetting::getValue('password_require_symbol', false);
+        // パスワード条件の取得（セキュリティ設定から）
+        $this->viewParams['passwordMinLength'] = (int) SecuritySetting::getValue('password_min_length', 8);
+        $this->viewParams['passwordRequireUppercase'] = (bool) SecuritySetting::getValue('password_require_uppercase', true);
+        $this->viewParams['passwordRequireSymbol'] = (bool) SecuritySetting::getValue('password_require_symbol', false);
         
         return view('admin.profile.password', $this->viewParams);
     }

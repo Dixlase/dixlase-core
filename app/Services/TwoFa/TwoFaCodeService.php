@@ -21,9 +21,9 @@ class TwoFaCodeService
     {
         $code = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         
-        // デフォルトの有効期限設定
+        // デフォルトの有効期限設定（セキュリティ設定から）
         if ($expireMinutes === null) {
-            $expireMinutes = (int) \App\Models\MemberSetting::getValue('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
+            $expireMinutes = (int) \App\Models\SecuritySetting::getValue('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
         }
 
         // 古いコードを削除

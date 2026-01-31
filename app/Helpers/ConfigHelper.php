@@ -23,7 +23,6 @@
 namespace App\Helpers;
 
 use App\Models\SecuritySetting;
-use App\Models\MemberSetting;
 use App\Models\BaseSetting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
@@ -80,11 +79,6 @@ class ConfigHelper
                         return BaseSetting::get($key, null);
                     }
                     break;
-                case 'MemberSetting':
-                    if (Schema::hasTable('members_settings')) {
-                        return MemberSetting::getValue($key, null);
-                    }
-                    break;
                 case 'SecuritySetting':
                 default:
                     if (Schema::hasTable('security_settings')) {
@@ -114,11 +108,6 @@ class ConfigHelper
                 case 'BaseSetting':
                     if (Schema::hasTable('base_settings')) {
                         BaseSetting::setValue($key, $value);
-                    }
-                    break;
-                case 'MemberSetting':
-                    if (Schema::hasTable('members_settings')) {
-                        MemberSetting::setValue($key, $value);
                     }
                     break;
                 case 'SecuritySetting':
@@ -173,17 +162,15 @@ class ConfigHelper
         // For admin members, check if custom session lifetime is enabled
         if ($guard === 'member') {
             try {
-                // Check if the members_settings table exists before querying
-                if (Schema::hasTable('members_settings')) {
-                    $membersSessionEnabled = (bool) MemberSetting::getValue('members_session_lifetime_enabled', false);
-                    
-                    if ($membersSessionEnabled) {
-                        $membersSessionLifetime = (int) MemberSetting::getValue('members_session_lifetime', 120);
-                        return $membersSessionLifetime;
+                // セキュリティ設定からセッション設定を取得
+                if (Schema::hasTable('security_settings')) {
+                    $sessionLifetime = (int) SecuritySetting::getValue('session_member_lifetime', 120);
+                    if ($sessionLifetime > 0) {
+                        return $sessionLifetime;
                     }
                 }
             } catch (\Exception $e) {
-                // If there's any database error (e.g., during installation), fall back to security settings
+                // If there's any database error (e.g., during installation), fall back to config
             }
         }
 
@@ -440,10 +427,9 @@ class ConfigHelper
         
         if ($guard === 'member') {
             try {
-                // Check if the members_settings table exists before querying
-                if (Schema::hasTable('members_settings')) {
-                    $membersSessionEnabled = (bool) MemberSetting::getValue('members_session_lifetime_enabled', false);
-                    $membersSessionLifetime = (int) MemberSetting::getValue('members_session_lifetime', 120);
+                // セキュリティ設定からセッション設定を取得
+                if (Schema::hasTable('security_settings')) {
+                    $membersSessionLifetime = (int) SecuritySetting::getValue('session_member_lifetime', 120);
                 }
             } catch (\Exception $e) {
                 // If there's any database error (e.g., during installation), use default values

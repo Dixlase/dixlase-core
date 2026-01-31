@@ -487,8 +487,8 @@ class TwoFaPasskeyService
             return false;
         }
         
-        // 有効期限チェック
-        $expirationDays = (int) \App\Models\MemberSetting::getValue(
+        // 有効期限チェック（セキュリティ設定から）
+        $expirationDays = (int) \App\Models\SecuritySetting::getValue(
             'trusted_device_expire_days',
             config('two-fa.device_expiration_days', 30)
         );
