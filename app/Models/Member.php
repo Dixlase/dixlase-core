@@ -38,7 +38,6 @@ use App\Traits\TwoFa\TwoFactorEnableCheck;
 use App\Contracts\TwoFaInterface;
 use Laragear\WebAuthn\Contracts\WebAuthnAuthenticatable;
 use Laragear\WebAuthn\WebAuthnData;
-use Laragear\WebAuthn\Models\WebAuthnCredential;
 use Ramsey\Uuid\Uuid;
 
 
@@ -248,7 +247,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     // ========================================
 
     /**
-     * WebAuthn用の表示データを返す
+     * WebAuthn用のユーザーデータを返す
      */
     public function webAuthnData(): WebAuthnData
     {
@@ -260,10 +259,14 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
 
     /**
      * WebAuthn用の匿名化されたユーザーID（UUID）を返す
+     * 
+     * ユーザーIDから一貫したUUIDを生成（UUID v5を使用）
      */
     public function webAuthnId(): \Ramsey\Uuid\UuidInterface
     {
-        return Uuid::uuid4();
+        // ユーザーIDから一貫したUUIDを生成
+        // 名前空間にDNS名前空間を使用し、ユーザーIDを名前として使用
+        return Uuid::uuid5(Uuid::NAMESPACE_DNS, 'dixlase.member.' . $this->id);
     }
 
     /**
