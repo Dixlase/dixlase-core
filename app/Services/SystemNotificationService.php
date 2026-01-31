@@ -56,7 +56,7 @@ class SystemNotificationService
             }
 
             // メールサーバーが設定済みかチェック
-            if (!$this->isMailServerConfigured()) {
+            if (!MailServerValidatorService::isMailServerTested()) {
                 Log::warning('Mail server is not properly configured for system notifications');
                 return false;
             }
@@ -106,7 +106,7 @@ class SystemNotificationService
             }
 
             // メールサーバーが設定済みかチェック
-            if (!$this->isMailServerConfigured()) {
+            if (!MailServerValidatorService::isMailServerTested()) {
                 Log::warning('Mail server is not properly configured for system notifications');
                 return false;
             }
@@ -212,19 +212,6 @@ class SystemNotificationService
         return BaseSetting::getValue('notification_email', '');
     }
 
-    /**
-     * メールサーバーが設定済みかチェック
-     *
-     * @return bool
-     */
-    public function isMailServerConfigured(): bool
-    {
-        $mailConnectionTested = (bool) BaseSetting::getValue('mail_connection_tested', false);
-        $mailSendTested = (bool) BaseSetting::getValue('mail_send_tested', false);
-        $mailReceiveTested = (bool) BaseSetting::getValue('mail_receive_tested', false);
-
-        return $mailConnectionTested && $mailSendTested && $mailReceiveTested;
-    }
 
     /**
      * 管理者通知メールを構築（汎用）

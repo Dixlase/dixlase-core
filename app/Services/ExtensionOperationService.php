@@ -192,7 +192,7 @@ class ExtensionOperationService
     protected function sendNotificationIfNeeded(array $details, string $operation): void
     {
         // メールサーバーが設定されているか確認
-        if (!$this->isMailServerConfigured()) {
+        if (!MailServerValidatorService::isMailServerTested()) {
             return;
         }
 
@@ -294,13 +294,4 @@ class ExtensionOperationService
         return $details['health_status'] !== 'low';
     }
 
-    /**
-     * メールサーバーが設定されているか確認
-     */
-    protected function isMailServerConfigured(): bool
-    {
-        return (bool) BaseSetting::getValue('mail_connection_tested', false)
-            && (bool) BaseSetting::getValue('mail_send_tested', false)
-            && (bool) BaseSetting::getValue('mail_receive_tested', false);
-    }
 }

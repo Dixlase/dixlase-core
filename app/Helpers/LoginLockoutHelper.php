@@ -297,9 +297,8 @@ class LoginLockoutHelper
                 return false;
             }
 
-            // メールサーバーが設定済みかチェック（SystemNotificationServiceの一部機能を借用）
-            $systemNotificationService = new SystemNotificationService();
-            if (!$systemNotificationService->isMailServerConfigured()) {
+            // メールサーバーが設定済みかチェック
+            if (!\App\Services\MailServerValidatorService::isMailServerTested()) {
                 Log::warning('ロックアウト通知: メールサーバーが設定されていません');
                 return false;
             }

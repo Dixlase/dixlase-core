@@ -43,7 +43,7 @@ class AdminProfileNotificationsController extends AdminLoggedInController
         $member = Auth::guard('member')->user();
         
         // ログイン通知設定の追加
-        $loginNoticeGlobal = (int) MemberSetting::getValue(
+        $loginNoticeGlobal = (int) SecuritySetting::getValue(
             'login_notification_mode',
             AuthenticationMode::UseProfileSetting->value
         );

@@ -47,7 +47,7 @@ trait TwoFactorEnableCheck
     public function canEnableTwoFa(): bool
     {
         // メールサーバーが設定されているかチェック
-        $mailConfigured = $this->isMailServerConfigured();
+        $mailConfigured = \App\Services\MailServerValidatorService::isMailServerTested();
         
         // パスキーが登録されているかチェック
         $hasPasskey = $this->twoFaPasskeys()->exists();
@@ -59,37 +59,6 @@ trait TwoFactorEnableCheck
     }
 
     /**
-     * メールサーバーが設定されているかチェック
-     * 
-     * @return bool
-     */
-    public function isMailServerConfigured(): bool
-    {
-        try {
-            $driver = config('mail.default');
-            
-            // nullまたは空文字列の場合は未設定
-            if (empty($driver)) {
-                return false;
-            }
-            
-            // SMTPの場合は必須設定をチェック
-            if ($driver === 'smtp') {
-                $host = config('mail.mailers.smtp.host');
-                $port = config('mail.mailers.smtp.port');
-                $username = config('mail.mailers.smtp.username');
-                
-                return !empty($host) && !empty($port) && !empty($username);
-            }
-            
-            // その他のドライバー（sendmail, mailgun等）は設定されていると見なす
-            return true;
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
-
-    /**
      * 二段階認証を有効化できない理由を取得
      * 
      * @return array 理由のリスト
@@ -98,7 +67,7 @@ trait TwoFactorEnableCheck
     {
         $reasons = [];
         
-        $mailConfigured = $this->isMailServerConfigured();
+        $mailConfigured = \App\Services\MailServerValidatorService::isMailServerTested();
         $hasPasskey = $this->twoFaPasskeys()->exists();
         $hasRecoveryCode = $this->twoFaRecoveryCodes()->where('used_at', null)->exists();
         
