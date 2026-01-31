@@ -15,6 +15,24 @@ class MemberTwoFaPasskey extends BaseWebAuthnCredential
     protected $table = 'members_two_fa_passkeys';
 
     /**
+     * モデルの初期化
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // 保存前にauthenticatable_idをmember_idから自動設定
+        static::creating(function ($model) {
+            if (empty($model->authenticatable_id) && !empty($model->member_id)) {
+                $model->authenticatable_id = $model->member_id;
+            }
+            if (empty($model->authenticatable_type)) {
+                $model->authenticatable_type = 'App\\Models\\Member';
+            }
+        });
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>

@@ -7,6 +7,7 @@ use App\Models\Member;
 use App\Models\MembersTrustedDevice;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Laragear\WebAuthn\WebAuthnAuthentication;
 
 class TwoFaPasskeyService
 {
@@ -58,8 +59,12 @@ class TwoFaPasskeyService
     public function generateLoginChallenge(TwoFaInterface $user): array
     {
         try {
-            // Laragear WebAuthnでチャレンジを生成
-            $publicKey = \Laragear\WebAuthn\WebAuthn::generateAssertion($user);
+            // Laragear WebAuthn v4: AssertionCreationオブジェクトを作成
+            $assertionCreation = new \Laragear\WebAuthn\Assertion\Creator\AssertionCreation($user);
+            
+            // AssertionCreatorパイプラインを実行
+            $assertionCreator = app(\Laragear\WebAuthn\Assertion\Creator\AssertionCreator::class);
+            $result = $assertionCreator->send($assertionCreation)->thenReturn();
             
             Log::info('[Passkey] Login challenge generated (Laragear)', [
                 'member_id' => $user->getId(),
@@ -68,7 +73,7 @@ class TwoFaPasskeyService
             
             return [
                 'id' => Str::random(32),
-                'publicKey' => $publicKey,
+                'publicKey' => $result->json,
             ];
         } catch (\Exception $e) {
             Log::error('[Passkey] Challenge generation failed', [
@@ -87,13 +92,23 @@ class TwoFaPasskeyService
     public function verifyLoginChallenge(TwoFaInterface $user, array $data, ?string $challengeId = null): bool
     {
         try {
-            // Laragear WebAuthnで署名検証
-            $credential = \Laragear\WebAuthn\WebAuthn::validateAssertion($user, request());
+            // Laragear WebAuthn v4: JsonTransportを作成（リクエストのJSONデータを渡す）
+            $jsonTransport = new \Laragear\WebAuthn\JsonTransport(request()->json()->all());
             
-            if ($credential) {
+            // AssertionValidationオブジェクトを作成
+            $assertionValidation = new \Laragear\WebAuthn\Assertion\Validator\AssertionValidation(
+                $jsonTransport,
+                $user
+            );
+            
+            // AssertionValidatorパイプラインを実行
+            $assertionValidator = app(\Laragear\WebAuthn\Assertion\Validator\AssertionValidator::class);
+            $result = $assertionValidator->send($assertionValidation)->thenReturn();
+            
+            if ($result && $result->credential) {
                 Log::info('[Passkey] Login verification successful (Laragear)', [
                     'member_id' => $user->getId(),
-                    'credential_id' => $credential->id,
+                    'credential_id' => $result->credential->id,
                 ]);
                 
                 return true;
@@ -108,6 +123,7 @@ class TwoFaPasskeyService
             Log::error('[Passkey] Verification error', [
                 'member_id' => $user->getId(),
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
             
             return false;
