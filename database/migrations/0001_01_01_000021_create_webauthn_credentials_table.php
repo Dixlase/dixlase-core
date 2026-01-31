@@ -28,7 +28,10 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
 
-    protected $table = 'members_two_fa_passkeys';
+    /**
+     * テーブル名
+     */
+    protected $table = 'webauthn_credentials';
 
     /**
      * Run the migrations.
