@@ -50,4 +50,16 @@ return [
         'timeout' => 60,
         'key' => '_webauthn',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Credential Model
+    |--------------------------------------------------------------------------
+    |
+    | This is the model that will be used to store WebAuthn credentials.
+    | You can use your own model by extending the base WebAuthnCredential.
+    |
+    */
+
+    'model' => \App\Models\WebAuthnCredential::class,
 ];

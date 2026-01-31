@@ -49,6 +49,9 @@ return new class extends Migration
             // Dixlase用メンバーID（既存互換性のため）
             $table->unsignedBigInteger('member_id');
             
+            // Laragear\WebAuthn用ユーザーID（UUID）
+            $table->uuid('user_id');
+            
             // WebAuthn標準フィールド
             $table->string('alias')->nullable();
             $table->unsignedBigInteger('counter')->nullable();

@@ -21,15 +21,37 @@ class WebAuthnCredential extends BaseWebAuthnCredential
     {
         parent::boot();
 
-        // 保存前にauthenticatable_idをmember_idから自動設定
+        // 保存前にmember_idとnameを自動設定（Laragear\WebAuthnがauthenticatable_idとaliasを設定する）
         static::creating(function ($model) {
-            if (empty($model->authenticatable_id) && !empty($model->member_id)) {
-                $model->authenticatable_id = $model->member_id;
+            // authenticatable_idからmember_idを設定
+            if (empty($model->member_id) && !empty($model->authenticatable_id)) {
+                $model->member_id = $model->authenticatable_id;
             }
-            if (empty($model->authenticatable_type)) {
-                $model->authenticatable_type = 'App\\Models\\Member';
+            // aliasからnameを設定
+            if (empty($model->name) && !empty($model->alias)) {
+                $model->name = $model->alias;
             }
         });
+    }
+    
+    /**
+     * user_idミューテーター: member_idから自動生成
+     */
+    public function setUserIdAttribute($value)
+    {
+        // 値が設定されている場合はそのまま使用
+        if (!empty($value)) {
+            $this->attributes['user_id'] = $value;
+            return;
+        }
+        
+        // member_idからUUIDを生成
+        if (!empty($this->member_id)) {
+            $member = \App\Models\Member::find($this->member_id);
+            if ($member) {
+                $this->attributes['user_id'] = $member->webAuthnId()->toString();
+            }
+        }
     }
 
     /**
@@ -42,6 +64,7 @@ class WebAuthnCredential extends BaseWebAuthnCredential
         'authenticatable_type',
         'authenticatable_id',
         'member_id',
+        'user_id',
         'alias',
         'counter',
         'rp_id',
@@ -56,36 +79,58 @@ class WebAuthnCredential extends BaseWebAuthnCredential
     ];
 
     /**
-     * Get the name of the user ID column.
-     * 
-     * Laragearのuser_idの代わりにmember_idを使用
+     * The attributes that aren't mass assignable.
      *
-     * @return string
+     * @var array
      */
-    public function getUserIdColumn(): string
-    {
-        return 'member_id';
-    }
-    
+    protected $guarded = [];
+
     /**
-     * user_idアクセサー: member_idを返す
-     * 
-     * Laragearがuser_idを参照する際にmember_idを返す
+     * The attributes that should be cast.
+     *
+     * @var array
      */
-    public function getUserIdAttribute()
-    {
-        return $this->member_id;
-    }
-    
+    protected $casts = [
+        'public_key' => 'string', // 親クラスのencryptedキャストを上書き
+        'transports' => 'json',
+        'certificates' => 'json',
+        'disabled_at' => 'datetime',
+    ];
+
     /**
-     * user_idミューテーター: member_idに設定
-     * 
-     * Laragearがuser_idを設定する際にmember_idに保存
+     * Get the casts array.
+     * 親クラスのencryptedキャストを完全に無効化
+     *
+     * @return array
      */
-    public function setUserIdAttribute($value)
+    public function getCasts(): array
     {
-        $this->attributes['member_id'] = $value;
+        $casts = parent::getCasts();
+        // public_keyの暗号化キャストを削除
+        unset($casts['public_key']);
+        // 通常の文字列として扱う
+        $casts['public_key'] = 'string';
+        return $casts;
     }
+
+    /**
+     * public_keyアクセサ: 暗号化を完全にバイパス
+     */
+    public function getPublicKeyAttribute($value)
+    {
+        // 親クラスのencryptedキャストをバイパスして、生の値を返す
+        return $this->attributes['public_key'] ?? $value;
+    }
+
+    /**
+     * public_keyミューテーター: 暗号化せずに保存
+     */
+    public function setPublicKeyAttribute($value)
+    {
+        // 暗号化せずにそのまま保存
+        $this->attributes['public_key'] = $value;
+    }
+
 
     /**
      * Get the member that owns the credential.

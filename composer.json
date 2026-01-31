@@ -9,6 +9,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "cweagans/composer-patches": "^2.0",
         "google/cloud-recaptcha-enterprise": "^2.1",
         "laragear/webauthn": "^4.0",
         "laravel/fortify": "^1.25",
@@ -85,6 +86,11 @@
         },
         "laravel": {
             "dont-discover": []
+        },
+        "patches": {
+            "laragear/webauthn": [
+                "patches/laragear-webauthn-disable-public-key-encryption.patch"
+            ]
         }
     },
     "config": {
@@ -94,7 +100,8 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true,
-            "wikimedia/composer-merge-plugin": true
+            "wikimedia/composer-merge-plugin": true,
+            "cweagans/composer-patches": true
         }
     },
     "minimum-stability": "stable",

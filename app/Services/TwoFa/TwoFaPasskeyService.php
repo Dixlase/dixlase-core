@@ -66,14 +66,20 @@ class TwoFaPasskeyService
             $assertionCreator = app(\Laragear\WebAuthn\Assertion\Creator\AssertionCreator::class);
             $result = $assertionCreator->send($assertionCreation)->thenReturn();
             
+            // JsonTransportオブジェクトから配列に変換
+            $jsonData = is_array($result->json) ? $result->json : $result->json->toArray();
+            
+            // デバッグ: チャレンジに含まれるallowCredentialsを確認
+            $allowCredentials = $jsonData['allowCredentials'] ?? [];
             Log::info('[Passkey] Login challenge generated (Laragear)', [
                 'member_id' => $user->getId(),
                 'credentials_count' => $user->webauthnCredentials()->count(),
+                'allowCredentials' => $allowCredentials,
             ]);
             
             return [
                 'id' => Str::random(32),
-                'publicKey' => $result->json,
+                'publicKey' => $jsonData,
             ];
         } catch (\Exception $e) {
             Log::error('[Passkey] Challenge generation failed', [
@@ -94,6 +100,21 @@ class TwoFaPasskeyService
         try {
             // Laragear WebAuthn v4: JsonTransportを作成（リクエストのJSONデータを渡す）
             $jsonTransport = new \Laragear\WebAuthn\JsonTransport(request()->json()->all());
+            
+            // デバッグ: userHandleとcredential情報をログ出力
+            $userHandle = request()->json('response.userHandle');
+            $credentialId = request()->json('id');
+            $credential = \App\Models\WebAuthnCredential::find($credentialId);
+            
+            Log::info('[Passkey] Verification debug', [
+                'member_id' => $user->getId(),
+                'userHandle_from_browser' => $userHandle,
+                'credential_id' => $credentialId,
+                'credential_user_id' => $credential ? $credential->user_id : null,
+                'expected_user_id' => $user->webAuthnId()->toString(),
+                'credential_casts' => $credential ? $credential->getCasts() : null,
+                'credential_class' => $credential ? get_class($credential) : null,
+            ]);
             
             // AssertionValidationオブジェクトを作成
             $assertionValidation = new \Laragear\WebAuthn\Assertion\Validator\AssertionValidation(
@@ -162,19 +183,42 @@ class TwoFaPasskeyService
      */
     public function registerCredential(TwoFaInterface $user, array $credentialData, string $deviceName = null)
     {
-        $publicKey = $credentialData['publicKey'] ?? $credentialData['id'];
-        
-        $credential = $user->twoFaPasskeys()->create([
-            'id' => $credentialData['id'],
-            'public_key' => $publicKey,
-            'name' => $deviceName ?? $this->generateDeviceName(),
-            'rp_id' => request()->getHost(),
-            'origin' => request()->getSchemeAndHttpHost(),
-        ]);
-        
-        Log::info("[Passkey] 認証情報登録: ユーザーID {$user->getId()}, デバイス: " . ($deviceName ?? $this->generateDeviceName()));
-        
-        return $credential;
+        try {
+            // JsonTransportオブジェクトを作成
+            $jsonTransport = new \Laragear\WebAuthn\JsonTransport($credentialData);
+            
+            // AttestationValidationオブジェクトを作成
+            $attestationValidation = new \Laragear\WebAuthn\Attestation\Validator\AttestationValidation(
+                $user,
+                $jsonTransport
+            );
+            
+            // AttestationValidatorパイプラインを実行
+            $attestationValidator = app(\Laragear\WebAuthn\Attestation\Validator\AttestationValidator::class);
+            $result = $attestationValidator->send($attestationValidation)->thenReturn();
+            
+            // デバイス名を設定
+            if ($deviceName) {
+                $result->credential->alias = $deviceName;
+                $result->credential->save();
+            }
+            
+            Log::info("[Passkey] 認証情報登録成功 (Laragear)", [
+                'member_id' => $user->getId(),
+                'credential_id' => $result->credential->id,
+                'device_name' => $deviceName ?? $this->generateDeviceName(),
+            ]);
+            
+            return $result->credential;
+        } catch (\Exception $e) {
+            Log::error('[Passkey] Registration error', [
+                'member_id' => $user->getId(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            throw $e;
+        }
     }
 
     /**
@@ -260,35 +304,31 @@ class TwoFaPasskeyService
      */
     public function generateRegistrationChallenge(TwoFaInterface $user): array
     {
-        $challenge = random_bytes(32);
-        $challengeBase64 = base64_encode($challenge);
-        
-        $options = [
-            'challenge' => $challengeBase64,
-            'rp' => [
-                'name' => config('app.name', 'Dixlase'),
-                'id' => parse_url(config('app.url'), PHP_URL_HOST),
-            ],
-            'user' => [
-                'id' => base64_encode($user->getId()),
-                'name' => $user->getEmail(),
-                'displayName' => $user->getDisplayName(),
-            ],
-            'pubKeyCredParams' => [
-                ['type' => 'public-key', 'alg' => -7],  // ES256
-                ['type' => 'public-key', 'alg' => -257], // RS256
-            ],
-            'timeout' => 60000,
-            'attestation' => 'direct',
-            'authenticatorSelection' => [
-                'authenticatorAttachment' => 'platform',
-                'userVerification' => 'required',
-            ],
-        ];
-        
-        session(['webauthn_challenge' => $challengeBase64]);
-        
-        return $options;
+        try {
+            // AttestationCreationオブジェクトを作成
+            $attestationCreation = new \Laragear\WebAuthn\Attestation\Creator\AttestationCreation($user);
+            
+            // AttestationCreatorパイプラインを実行
+            $attestationCreator = app(\Laragear\WebAuthn\Attestation\Creator\AttestationCreator::class);
+            $result = $attestationCreator->send($attestationCreation)->thenReturn();
+            
+            // JsonTransportオブジェクトから配列に変換
+            $jsonData = is_array($result->json) ? $result->json : $result->json->toArray();
+            
+            Log::info('[Passkey] Registration challenge generated (Laragear)', [
+                'member_id' => $user->getId(),
+            ]);
+            
+            return $jsonData;
+        } catch (\Exception $e) {
+            Log::error('[Passkey] Registration challenge generation error', [
+                'member_id' => $user->getId(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            throw $e;
+        }
     }
 
     /**
