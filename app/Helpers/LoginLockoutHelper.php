@@ -36,23 +36,9 @@ class LoginLockoutHelper
     public static function isNotificationEnabled(string $settingKey = 'lockout_notification_enabled', $settingSource = null): bool
     {
         if ($settingSource) {
-            $value = $settingSource::getValue($settingKey, true);
-            Log::info('LoginLockoutHelper::isNotificationEnabled (custom source)', [
-                'setting_key' => $settingKey,
-                'source' => get_class($settingSource),
-                'raw_value' => $value,
-                'boolean_value' => (bool) $value
-            ]);
-            return (bool) $value;
+            return (bool) $settingSource::getValue($settingKey, true);
         }
-        
-        $value = SecuritySetting::getValue($settingKey, true);
-        Log::info('LoginLockoutHelper::isNotificationEnabled (SecuritySetting)', [
-            'setting_key' => $settingKey,
-            'raw_value' => $value,
-            'boolean_value' => (bool) $value
-        ]);
-        return (bool) $value;
+        return (bool) SecuritySetting::getValue($settingKey, true);
     }
 
     /**
@@ -161,29 +147,21 @@ class LoginLockoutHelper
                 $lockoutSettings['lockout_duration']
             );
 
-            \Log::info('LoginLockout Remaining Time Check', [
-                'identifier' => $identifier,
-                'remaining_minutes' => $remainingLockoutMinutes,
-                'last_attempt' => MemberLoginAttempt::getLastFailedAttempt($identifier)?->format('Y-m-d H:i:s')
-            ]);
 
             if ($remainingLockoutMinutes === null) {
                 // 失敗記録がない場合（通常ここには来ない）
                 $lockoutInfo['is_locked_out'] = false;
                 $lockoutInfo['remaining_attempts'] = $lockoutSettings['max_attempts'];
                 $lockoutInfo['lockout_minutes'] = 0;
-                \Log::info('LoginLockout Result: No records found');
             } else if ($remainingLockoutMinutes === 0) {
                 // ロックアウト期間が終了している場合は解除
                 $lockoutInfo['is_locked_out'] = false;
                 $lockoutInfo['remaining_attempts'] = $lockoutSettings['max_attempts'];
                 $lockoutInfo['lockout_minutes'] = 0;
-                \Log::info('LoginLockout Result: Period expired, unlocked');
             } else {
                 // ロックアウト期間中
                 $lockoutInfo['is_locked_out'] = true;
                 $lockoutInfo['lockout_minutes'] = $remainingLockoutMinutes;
-                \Log::info('LoginLockout Result: Still locked', ['remaining_minutes' => $remainingLockoutMinutes]);
 
                 // ロックアウト通知を送信（重複送信を防ぐ）
                 if ($lockoutSettings['notification_enabled']) {
@@ -192,37 +170,18 @@ class LoginLockoutHelper
                     
                     // 最後の通知から30分以上経過している場合のみ再送信
                     if (!$lastNotificationTime || Carbon::parse($lastNotificationTime)->addMinutes(30)->isPast()) {
-                        Log::info('LoginLockout: Sending notification', [
-                            'identifier' => $identifier,
-                            'notification_enabled' => $lockoutSettings['notification_enabled'],
-                            'last_notification' => $lastNotificationTime,
-                            'settings' => $lockoutSettings
-                        ]);
-                        
                         // 通知送信を試行し、成功した場合のみセッションに記録
                         $sent = static::sendLockoutNotification($identifier, $request, $lockoutSettings);
                         if ($sent) {
                             session([$notificationKey => Carbon::now()->toDateTimeString()]);
-                            Log::info('LoginLockout: Notification sent and recorded', [
-                                'identifier' => $identifier,
-                                'notification_time' => Carbon::now()->toDateTimeString()
-                            ]);
                         } else {
                             Log::warning('LoginLockout: Notification failed, not recorded in session', [
                                 'identifier' => $identifier
                             ]);
                         }
                     } else {
-                        Log::info('LoginLockout: Notification already sent recently', [
-                            'identifier' => $identifier,
-                            'last_notification' => $lastNotificationTime
-                        ]);
                     }
                 } else {
-                    Log::info('LoginLockout: Notification disabled', [
-                        'identifier' => $identifier,
-                        'notification_enabled' => $lockoutSettings['notification_enabled']
-                    ]);
                 }
             }
         } else {
@@ -230,9 +189,6 @@ class LoginLockoutHelper
             $lockoutInfo['is_locked_out'] = false;
             $lockoutInfo['remaining_attempts'] = $lockoutSettings['max_attempts'] - $failedAttempts;
             $lockoutInfo['lockout_minutes'] = 0;
-            \Log::info('LoginLockout Result: Normal state', [
-                'remaining_attempts' => $lockoutInfo['remaining_attempts']
-            ]);
         }
 
         // IPアドレスベースのロックアウトもチェック
@@ -282,11 +238,6 @@ class LoginLockoutHelper
      */
     public static function sendLockoutNotification(string $identifier, Request $request, array $settings): bool
     {
-        Log::info('LoginLockout: sendLockoutNotification called', [
-            'identifier' => $identifier,
-            'ip' => $request->ip(),
-            'settings' => $settings
-        ]);
         
         try {
             // 通知先メールアドレスを取得

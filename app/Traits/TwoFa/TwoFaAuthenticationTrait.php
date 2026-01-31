@@ -536,6 +536,18 @@ trait TwoFaAuthenticationTrait
             return $user;
         }
 
+        // ロックアウト状態をチェック
+        $twoFa = $this->getTwoFaService();
+        $lockoutStatus = $twoFa->checkLockout($user);
+        
+        if ($lockoutStatus['locked_out']) {
+            return back()->withErrors([
+                'code' => __('two_fa.lockout.message', [
+                    'minutes' => $lockoutStatus['remaining_minutes']
+                ])
+            ]);
+        }
+
         if (!$this->verifyEmailCode($user, $request->code)) {
             return back()->withErrors([
                 'code' => __('two_fa.email.invalid_code')
