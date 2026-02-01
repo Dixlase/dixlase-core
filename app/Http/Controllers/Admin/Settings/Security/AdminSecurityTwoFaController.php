@@ -74,6 +74,12 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
             $twoFaDefaultMethod = (int) old('two_fa_default_method');
         }
 
+        // パスキーデバイス最大登録数（セキュリティ設定から取得）
+        $twoFaPasskeyMaxDevices = (int) $this->securitySettingRepository->get('two_fa_passkey_max_devices', '5');
+        if (old('two_fa_passkey_max_devices') !== null) {
+            $twoFaPasskeyMaxDevices = (int) old('two_fa_passkey_max_devices');
+        }
+
         // 二段階認証詳細設定（セキュリティ設定から取得）
         $twoFaExpireMinutes = (int) $this->securitySettingRepository->get('two_fa_expire_minutes', '5');
         $twoFaResendIntervalSeconds = (int) $this->securitySettingRepository->get('two_fa_resend_interval_seconds', '60');
@@ -89,9 +95,11 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
         $mailConnectionTestDate = BaseSetting::getValue('mail_connection_test_date');
 
         $this->viewParams['twoFaMode'] = $twoFaMode;
+        $this->viewParams['twoFaEnabled'] = $twoFaMode !== AuthenticationMode::Disabled->value;
         $this->viewParams['twoFaGlobalOptions'] = $twoFactorGlobalOptions;
         $this->viewParams['twoFaPasskeyMode'] = $twoFaPasskeyMode;
         $this->viewParams['twoFaDefaultMethod'] = $twoFaDefaultMethod;
+        $this->viewParams['twoFaPasskeyMaxDevices'] = $twoFaPasskeyMaxDevices;
         $this->viewParams['twoFaExpireMinutes'] = $twoFaExpireMinutes;
         $this->viewParams['twoFaResendIntervalSeconds'] = $twoFaResendIntervalSeconds;
         $this->viewParams['twoFaMaxAttempts'] = $twoFaMaxAttempts;
@@ -122,6 +130,9 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
         }
         if (array_key_exists('two_fa_default_method', $validated)) {
             $this->securitySettingRepository->set('two_fa_default_method', (string) $validated['two_fa_default_method']);
+        }
+        if (array_key_exists('two_fa_passkey_max_devices', $validated)) {
+            $this->securitySettingRepository->set('two_fa_passkey_max_devices', (string) $validated['two_fa_passkey_max_devices']);
         }
 
         // 二段階認証詳細設定（セキュリティ設定に保存）

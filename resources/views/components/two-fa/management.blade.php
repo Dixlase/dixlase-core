@@ -21,6 +21,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @props([
     'twoFaPasskeyEnabled' => false,
     'twoFaPasskeyDevices' => null,
+    'twoFaPasskeyMaxDevices' => 5,
+    'twoFaPasskeyCurrentCount' => 0,
+    'canRegisterMorePasskeys' => true,
     'twoFaHasRecoveryCodes' => false,
     'twoFaRecoveryCodesCount' => 0,
     'twoFaTrustedDevices' => null,
@@ -118,13 +121,33 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
         
         @if(!$hideAddButtons)
+        <!-- デバイス登録数の表示 -->
+        <div class="mb-3 text-sm text-gray-600 dark:text-gray-400">
+            {{ __('components.two_fa_management.device_count', [
+                'current' => $twoFaPasskeyCurrentCount,
+                'max' => $twoFaPasskeyMaxDevices
+            ]) }}
+        </div>
+        
         <!-- 新しいPasskeyを追加 -->
-        <button 
-            type="button"
-            onclick="registerPasskey()"
-            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
-            <i class="fas fa-plus mr-2"></i>{{ __('components.two_fa_management.add_passkey') }}
-        </button>
+        @if($canRegisterMorePasskeys)
+            <button 
+                type="button"
+                onclick="registerPasskey()"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                <i class="fas fa-plus mr-2"></i>{{ __('components.two_fa_management.add_passkey') }}
+            </button>
+        @else
+            <button 
+                type="button"
+                disabled
+                class="px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed opacity-50">
+                <i class="fas fa-plus mr-2"></i>{{ __('components.two_fa_management.add_passkey') }}
+            </button>
+            <p class="mt-2 text-sm text-red-600 dark:text-red-400">
+                {{ __('components.two_fa_management.max_devices_reached', ['max' => $twoFaPasskeyMaxDevices]) }}
+            </p>
+        @endif
         @endif
 
         <!-- Passkeyの説明（管理者コンテキストでは非表示） -->

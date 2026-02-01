@@ -29,6 +29,13 @@ return [
     'two_fa_basic_settings_description' => 'Configure basic behavior of two-factor authentication.',
     'mail_server_test_warning' => 'To use email authentication, please complete mail server settings and all mail tests in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">Base Settings</a>.',
     
+    // Passkey Device Management Settings
+    'passkey_device_management' => 'Passkey Device Management Settings',
+    'passkey_device_management_description' => 'Configure passkey device registration limits and other settings.',
+    'passkey_max_devices' => 'Maximum Registered Devices',
+    'passkey_max_devices_help' => 'Maximum number of passkey devices a single user can register. Can be set between 1-10 devices.',
+    'devices_unit' => 'devices',
+    
     // Two-Factor Authentication Detailed Settings
     'two_fa_detailed_settings' => 'Two-Factor Authentication Detailed Settings',
     'two_fa_detailed_settings_description' => 'Configure detailed behavior of two-factor authentication.',

@@ -61,6 +61,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <x-two-fa.management
                 :twoFaPasskeyEnabled="$twoFaPasskeyEnabled"
                 :twoFaPasskeyDevices="$twoFaPasskeyDevices"
+                :twoFaPasskeyMaxDevices="$twoFaPasskeyMaxDevices"
+                :twoFaPasskeyCurrentCount="$twoFaPasskeyCurrentCount"
+                :canRegisterMorePasskeys="$canRegisterMorePasskeys"
                 :twoFaHasRecoveryCodes="$twoFaHasRecoveryCodes"
                 :twoFaRecoveryCodesCount="$twoFaRecoveryCodesCount"
                 :twoFaTrustedDevices="collect()"

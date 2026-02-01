@@ -249,6 +249,8 @@ return [
         'passkey_warning_title' => 'Passkeyデバイスが登録されていません',
         'passkey_warning_message' => 'Passkeyを使用するには、デバイスの登録が必要です。デバイスが登録されていない場合、Passkey認証は使用できません。',
         'passkey_warning_action' => '下の「Passkeyを追加」ボタンからデバイスを登録してください。',
+        'device_count' => '登録済み: :current / :max 台',
+        'max_devices_reached' => '登録可能なデバイス数の上限（:max台）に達しました。新しいデバイスを追加するには、既存のデバイスを削除してください。',
         'recovery_codes_title' => '回復コード',
         'recovery_codes_remaining' => '残り :count 個の回復コードがあります',
         'recovery_codes_not_generated' => '回復コードが生成されていません',

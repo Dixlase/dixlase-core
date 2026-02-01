@@ -235,6 +235,15 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
         $twoFaPasskeyService = new TwoFaPasskeyService();
         $this->viewParams['twoFaPasskeyDevices'] = $twoFaPasskeyService->getDevices($member);
         
+        // Passkeyデバイス最大登録数を取得
+        $twoFaPasskeyMaxDevices = (int) SecuritySetting::getValue('two_fa_passkey_max_devices', '5');
+        $currentDeviceCount = count($this->viewParams['twoFaPasskeyDevices']);
+        $canRegisterMoreDevices = $currentDeviceCount < $twoFaPasskeyMaxDevices;
+        
+        $this->viewParams['twoFaPasskeyMaxDevices'] = $twoFaPasskeyMaxDevices;
+        $this->viewParams['twoFaPasskeyCurrentCount'] = $currentDeviceCount;
+        $this->viewParams['canRegisterMorePasskeys'] = $canRegisterMoreDevices;
+        
         // 回復コード情報を取得
         $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
         $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodeService->getRemainingCount($member);
