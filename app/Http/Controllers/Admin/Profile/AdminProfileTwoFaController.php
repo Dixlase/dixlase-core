@@ -23,7 +23,7 @@
 namespace App\Http\Controllers\Admin\Profile;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Http\Requests\Admin\Profile\ProfileTwoFactorUpdateRequest;
+use App\Http\Requests\Admin\Profile\ProfileTwoFaUpdateRequest;
 use App\Enums\AuthenticationMode;
 use App\Enums\TwoFaMethod;
 use App\Models\SecuritySetting;
@@ -32,7 +32,7 @@ use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use Illuminate\Support\Facades\Auth;
 
-class AdminProfileTwoFactorController extends AdminLoggedInController
+class AdminProfileTwoFaController extends AdminLoggedInController
 {
     public function __construct()
     {
@@ -55,13 +55,13 @@ class AdminProfileTwoFactorController extends AdminLoggedInController
         $this->viewParams['canEnableTwoFa'] = $this->viewParams['isMailServerTested'];
         $this->viewParams['twoFaEnableBlockReasons'] = $this->viewParams['canEnableTwoFa'] ? [] : ['no_mail_server'];
         
-        return view('admin.profile.two-factor', $this->viewParams);
+        return view('admin.profile.two-fa', $this->viewParams);
     }
 
     /**
      * Update two-factor authentication settings.
      */
-    public function update(ProfileTwoFactorUpdateRequest $request)
+    public function update(ProfileTwoFaUpdateRequest $request)
     {
         $member = Auth::guard('member')->user();
         $validated = $request->validated();
@@ -127,7 +127,7 @@ class AdminProfileTwoFactorController extends AdminLoggedInController
             }
         }
         
-        $redirect = redirect()->route('admin.profile.two-factor')->with('success', __('admin/profile.updated'));
+        $redirect = redirect()->route('admin.profile.two-fa')->with('success', __('admin/profile.two_fa_updated'));
         
         // 回復コードが生成された場合はセッションに保存
         if ($shouldGenerateRecoveryCodes && isset($codes)) {

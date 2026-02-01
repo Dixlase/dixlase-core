@@ -22,6 +22,7 @@ return [
     'display_name_help' => '管理バーやプロフィールに表示される名前です。空欄の場合はアカウント名が表示されます。',
     'password_change_only' => 'パスワード（変更する場合のみ入力）',
     'updated' => 'プロフィールが更新されました。',
+    'two_fa_updated' => '二段階認証設定が更新されました。',
     'login_notification_global_setting_help' => 'この設定はメンバー全体設定で制御されています。',
     'single_method_available' => '利用可能な認証方法',
     'submit' => 'プロフィールを更新',

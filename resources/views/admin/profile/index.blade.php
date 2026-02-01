@@ -86,7 +86,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- 二段階認証設定 -->
         @if($isMailServerTested)
-        <a href="{{ route('admin.profile.two-factor') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+        <a href="{{ route('admin.profile.two-fa') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-shield-alt text-red-500 text-xl mr-3"></i>
@@ -108,7 +108,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </a>
 
         <!-- 二段階認証管理 -->
-        <a href="{{ route('admin.profile.two-factor-management') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+        <a href="{{ route('admin.profile.two-fa-management') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-fingerprint text-indigo-500 text-xl mr-3"></i>

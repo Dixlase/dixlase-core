@@ -30,7 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </p>
         </div>
     @else
-        <form method="POST" action="{{ route('admin.profile.two-factor.update') }}" id="profile-two-factor-form">
+        <form method="POST" action="{{ route('admin.profile.two-fa.update') }}" id="profile-two-fa-form">
             @csrf
 
             @php
@@ -43,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="mb-6">
                     <x-message 
                         type="warning" 
-                        :message="__('admin/profile/two-factor.two_fa_cannot_enable_warning')"
+                        :message="__('admin/profile/two-fa.two_fa_cannot_enable_warning')"
                     />
                 </div>
             @endif
@@ -54,13 +54,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="mb-6">
                         <x-message 
                             type="warning" 
-                            :message="__('admin/profile.passkey_no_devices_notice', ['url' => route('admin.profile.two-factor-management')])"
+                            :message="__('admin/profile.passkey_no_devices_notice', ['url' => route('admin.profile.two-fa-management')])"
                         />
                     </div>
                 @endif
 
                 <section class="transition-colors-unified">
-                    <h2>{{ __('admin/profile/two-factor.two_fa_settings') }}</h2>
+                    <h2>{{ __('admin/profile/two-fa.two_fa_settings') }}</h2>
 
                     {{-- 1. 二段階認証モード --}}
                     <x-two-fa.mode-selector
@@ -141,7 +141,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :message="__('admin/profile.confirm_message')"
             :confirm_label="__('common.update')"
             :cancel_label="__('common.cancel')"
-            form="profile-two-factor-form"
+            form="profile-two-fa-form"
         />
     @endif
 @endsection

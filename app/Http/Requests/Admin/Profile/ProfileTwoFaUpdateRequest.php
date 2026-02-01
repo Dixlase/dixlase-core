@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 use App\Traits\TwoFa\TwoFactorEnableCheck;
 
-class ProfileTwoFactorUpdateRequest extends FormRequest
+class ProfileTwoFaUpdateRequest extends FormRequest
 {
     use TwoFactorEnableCheck;
 

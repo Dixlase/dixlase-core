@@ -24,13 +24,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 @php
-    $passkeyPromptMessage = '<p class="mb-4">' . __('admin/profile/two-factor.passkey_prompt_message') . '</p>' .
-        '<p class="text-sm text-gray-600 dark:text-gray-400">' . __('admin/profile/two-factor.passkey_prompt_description') . '</p>';
+    $passkeyPromptMessage = '<p class="mb-4">' . __('admin/profile/two-fa.passkey_prompt_message') . '</p>' .
+        '<p class="text-sm text-gray-600 dark:text-gray-400">' . __('admin/profile/two-fa.passkey_prompt_description') . '</p>';
 @endphp
 
 <x-ui.modal 
     :id="$modalId"
-    :title="__('admin/profile/two-factor.passkey_prompt_title')"
+    :title="__('admin/profile/two-fa.passkey_prompt_title')"
     :message="$passkeyPromptMessage"
     icon-type="info"
     :dismissible="true"
@@ -48,8 +48,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <x-form.button
             type="link"
             variant="primary"
-            :label="__('admin/profile/two-factor.go_to_passkey_registration')"
-            :href="route('admin.profile.two-factor-management')"
+            :label="__('admin/profile/two-fa.go_to_passkey_registration')"
+            :href="route('admin.profile.two-fa-management')"
             icon="fas fa-key"
             class="mx-2"
         />

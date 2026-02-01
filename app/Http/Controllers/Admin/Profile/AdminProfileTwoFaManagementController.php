@@ -33,7 +33,7 @@ use App\Traits\ManagesTwoFaTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class AdminProfileTwoFactorManagementController extends AdminLoggedInController
+class AdminProfileTwoFaManagementController extends AdminLoggedInController
 {
     use ManagesTwoFaTrait;
 
@@ -54,7 +54,7 @@ class AdminProfileTwoFactorManagementController extends AdminLoggedInController
         
         $this->loadTwoFactorSettings($member);
         
-        return view('admin.profile.two-factor-management', $this->viewParams);
+        return view('admin.profile.two-fa-management', $this->viewParams);
     }
 
     /**

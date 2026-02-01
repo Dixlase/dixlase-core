@@ -104,6 +104,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :message="__('common.update_confirmation_message')"
         :confirm_label="__('common.update')"
         :cancel_label="__('common.cancel')"
-        form="authentication-settings-form"
+        form="two-fa-settings-form"
     />
 @endsection
