@@ -379,6 +379,7 @@ return [
         ],
         'help' => [
             'global' => 'Configure passkey authentication availability for all members',
+            'global_toggle' => 'When enabled, all members can register and use passkey devices for authentication',
             'profile_forced_disabled' => 'Passkey authentication is disabled by global settings',
             'profile_forced_enabled' => 'Passkey authentication is enabled by global settings',
             'profile_editable' => 'You can configure passkey authentication availability',

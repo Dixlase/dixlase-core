@@ -75,17 +75,6 @@ class AdminProfileTwoFaController extends AdminLoggedInController
             $member->two_fa_mode = (int) $validated['two_fa_mode'];
         }
         
-        // two_fa_passkey_enabled は全体設定の two_fa_passkey_mode が UseProfileSetting のときだけ上書き
-        $twoFaPasskeyMode = (int) SecuritySetting::getValue('two_fa_passkey_mode', '2');
-        if ($twoFaPasskeyMode === \App\Enums\PasskeyMode::UseProfileSetting->value && array_key_exists('two_fa_passkey_enabled', $validated)) {
-            $member->two_fa_passkey_enabled = (bool) $validated['two_fa_passkey_enabled'];
-        }
-        
-        // two_fa_default_method の処理
-        if (array_key_exists('two_fa_default_method', $validated)) {
-            $member->two_fa_default_method = (int) $validated['two_fa_default_method'];
-        }
-        
         $member->save();
         
         // 保存後の2FA状態を取得（保存後の値を使用）
@@ -155,17 +144,11 @@ class AdminProfileTwoFaController extends AdminLoggedInController
         $twoFaMode = $member->two_fa_mode;
         
         // グローバル設定で有効な二段階認証方法を取得
-        $twoFaPasskeyMode = (int) SecuritySetting::getValue('two_fa_passkey_mode', '2');
-        $twoFaPasskeyEnabled = $twoFaPasskeyMode > 0;
+        // 0=無効, 1=有効（デフォルト: 有効）
+        $twoFaPasskeyMode = (int) SecuritySetting::getValue('two_fa_passkey_mode', '1');
+        $twoFaPasskeyEnabled = $twoFaPasskeyMode === 1;
         
-        // パスキー設定の計算
-        $twoFaPasskeyEditable = \App\Enums\PasskeyMode::isProfileEditable($twoFaPasskeyMode);
-        $twoFaPasskeyForcedValue = \App\Enums\PasskeyMode::getForcedProfileValue($twoFaPasskeyMode);
-        $twoFaPasskeyCurrentEnabled = $twoFaPasskeyForcedValue ?? ($member->two_fa_passkey_enabled ?? true);
-        
-        $this->viewParams['isPasskeyEditable'] = $twoFaPasskeyEditable;
-        $this->viewParams['forcedPasskeyValue'] = $twoFaPasskeyForcedValue;
-        $this->viewParams['currentPasskeyEnabled'] = $twoFaPasskeyCurrentEnabled;
+        $this->viewParams['currentPasskeyEnabled'] = $twoFaPasskeyEnabled;
         
         // メール認証は常に有効、Passkeyは設定に応じて
         $twoFaEnabledMethods = [
@@ -175,14 +158,11 @@ class AdminProfileTwoFaController extends AdminLoggedInController
             $twoFaEnabledMethods[TwoFaMethod::PASSKEY->value] = TwoFaMethod::PASSKEY->translationKey();
         }
         
-        $twoFaDefaultMethod = (int) SecuritySetting::getValue('two_fa_default_method', TwoFaMethod::EMAIL->value);
-        
         $this->viewParams['twoFaForceMode'] = $twoFaForceMode;
         $this->viewParams['twoFaMode'] = $twoFaMode;
         $this->viewParams['twoFaEnabledMethods'] = $twoFaEnabledMethods;
         $this->viewParams['twoFaPasskeyMode'] = $twoFaPasskeyMode;
         $this->viewParams['twoFaPasskeyEnabled'] = $twoFaPasskeyEnabled;
-        $this->viewParams['twoFaDefaultMethod'] = $twoFaDefaultMethod;
         
         // Passkeyデバイス一覧を取得
         $twoFaPasskeyService = new TwoFaPasskeyService();

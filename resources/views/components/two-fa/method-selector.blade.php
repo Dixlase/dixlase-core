@@ -109,14 +109,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <fieldset>
         <legend>{{ __('common.passkey_mode.label') }}</legend>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            {{ __('common.passkey_mode.help.global') }}
+            {{ __('common.passkey_mode.help.global_toggle') }}
         </p>
         
-        <x-form.radio-card-group
+        <x-form.toggle
             :name="$name"
-            :options="$passkeyModeOptions"
-            :value="$currentPasskeyMode"
-            :columns="$columns"
+            :label="__('common.passkey_mode.options.enabled')"
+            :checked="old($name, $value) == '1'"
             :xModel="$xModel"
         />
         

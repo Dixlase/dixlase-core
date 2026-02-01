@@ -129,7 +129,7 @@ class SecuritySettingsTableSeeder extends Seeder
         );
         SecuritySetting::updateOrCreate(
             ['name' => 'two_fa_passkey_mode'],
-            ['value' => '2'] // 0=無効, 1=有効, 2=プロフィール設定に従う（デフォルト: プロフィール設定に従う）
+            ['value' => '1'] // 0=無効, 1=有効（デフォルト: 有効）
         );
         SecuritySetting::updateOrCreate(
             ['name' => 'two_fa_passkey_max_devices'],

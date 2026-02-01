@@ -68,8 +68,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :twoFaRecoveryCodesCount="$twoFaRecoveryCodesCount"
                 :twoFaTrustedDevices="collect()"
                 :twoFaShowTrustedDevices="false"
-                :twoFaDisabled="$twoFaMode?->value === 0"
-                :passkeyDisabled="$twoFaMode?->value === 0 || !$currentPasskeyEnabled"
+                :twoFaDisabled="$isTwoFaActuallyDisabled"
+                :passkeyDisabled="$isTwoFaActuallyDisabled || !$currentPasskeyEnabled"
                 :routes="[
                     'passkey_register_options' => route('admin.profile.passkey.register-options'),
                     'passkey_register' => route('admin.profile.passkey.register'),

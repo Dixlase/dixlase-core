@@ -48,7 +48,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             @endif
             
-            <div x-data="twoFaProfileSettings(@js(old('two_fa_mode', (string) ($twoFaMode?->value ?? 0))), @js($currentPasskeyEnabled ? '1' : '0'))" id="two-fa-settings-wrapper">
+            <div x-data="twoFaProfileSettings(@js(old('two_fa_mode', (string) ($twoFaMode?->value ?? 0))))" id="two-fa-settings-wrapper">
                 {{-- Passkeyが有効だがデバイスが未登録の場合の警告 --}}
                 @if($currentPasskeyEnabled && $twoFaPasskeyDevices->isEmpty())
                     <div class="mb-6">
@@ -73,20 +73,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :isTwoFaEditable="$isTwoFaEditable"
                         xModel="twoFaMode"
                     />
-
-                    {{-- 2. 二段階認証方法（メール認証・パスキー設定） --}}
-                    <div :class="{ 'opacity-50 pointer-events-none': !twoFaEnabled }">
-                        <x-two-fa.method-selector
-                            name="two_fa_passkey_enabled"
-                            :value="(string) ($currentPasskeyEnabled ? '1' : '0')"
-                            :columns="3"
-                            :isProfile="true"
-                            :isPasskeyEditable="$isPasskeyEditable ?? false"
-                            :forcedPasskeyValue="$forcedPasskeyValue ?? null"
-                            :currentPasskeyEnabled="$currentPasskeyEnabled ?? false"
-                            xModel="passkeyEnabled"
-                        />
-                    </div>
                 </section>
             </div>
 
