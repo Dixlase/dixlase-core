@@ -63,7 +63,8 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
             ->toArray();
         
         // パスキーモード設定（セキュリティ設定から取得）
-        $twoFaPasskeyMode = (int) $this->securitySettingRepository->get('two_fa_passkey_mode', '2');
+        // 0=無効, 1=有効（デフォルト: 有効）
+        $twoFaPasskeyMode = (int) $this->securitySettingRepository->get('two_fa_passkey_mode', '1');
         if (old('two_fa_passkey_mode') !== null) {
             $twoFaPasskeyMode = (int) old('two_fa_passkey_mode');
         }

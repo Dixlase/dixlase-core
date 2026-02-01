@@ -167,7 +167,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
 
     <!-- 回復コード -->
-    <div class="mb-8 {{ $twoFaDisabled ? 'opacity-50 pointer-events-none' : '' }}">
+    @if(!$twoFaDisabled)
+    <div class="mb-8">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold">{{ __('components.two_fa_management.recovery_codes_title') }}</h3>
         </div>
@@ -219,6 +220,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         @endif
     </div>
+    @endif
 
     <!-- 信頼済みデバイス管理 -->
     @if($twoFaShowTrustedDevices)

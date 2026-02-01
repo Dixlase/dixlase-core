@@ -202,17 +202,11 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
         $twoFaMode = $member->two_fa_mode;
         
         // グローバル設定で有効な二段階認証方法を取得
-        $twoFaPasskeyMode = (int) SecuritySetting::getValue('two_fa_passkey_mode', '2');
-        $twoFaPasskeyEnabled = $twoFaPasskeyMode > 0;
+        // 0=無効, 1=有効（デフォルト: 有効）
+        $twoFaPasskeyMode = (int) SecuritySetting::getValue('two_fa_passkey_mode', '1');
+        $twoFaPasskeyEnabled = $twoFaPasskeyMode === 1;
         
-        // パスキー設定の計算
-        $twoFaPasskeyEditable = \App\Enums\PasskeyMode::isProfileEditable($twoFaPasskeyMode);
-        $twoFaPasskeyForcedValue = \App\Enums\PasskeyMode::getForcedProfileValue($twoFaPasskeyMode);
-        $twoFaPasskeyCurrentEnabled = $twoFaPasskeyForcedValue ?? ($member->two_fa_passkey_enabled ?? true);
-        
-        $this->viewParams['isPasskeyEditable'] = $twoFaPasskeyEditable;
-        $this->viewParams['forcedPasskeyValue'] = $twoFaPasskeyForcedValue;
-        $this->viewParams['currentPasskeyEnabled'] = $twoFaPasskeyCurrentEnabled;
+        $this->viewParams['currentPasskeyEnabled'] = $twoFaPasskeyEnabled;
         
         // メール認証は常に有効、Passkeyは設定に応じて
         $twoFaEnabledMethods = [
@@ -222,8 +216,16 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
             $twoFaEnabledMethods[TwoFaMethod::PASSKEY->value] = TwoFaMethod::PASSKEY->translationKey();
         }
         
+        // 実際の二段階認証の有効/無効状態を判定
+        // 全体設定で無効、または全体設定がプロフィールに従う場合はプロフィール設定を確認
+        $actualTwoFaMode = $twoFaForceMode === AuthenticationMode::UseProfileSetting->value 
+            ? (is_int($twoFaMode) ? $twoFaMode : $twoFaMode->value)
+            : $twoFaForceMode;
+        $isTwoFaActuallyDisabled = $actualTwoFaMode === AuthenticationMode::Disabled->value;
+        
         $this->viewParams['twoFaForceMode'] = $twoFaForceMode;
         $this->viewParams['twoFaMode'] = $twoFaMode;
+        $this->viewParams['isTwoFaActuallyDisabled'] = $isTwoFaActuallyDisabled;
         $this->viewParams['twoFaEnabledMethods'] = $twoFaEnabledMethods;
         $this->viewParams['twoFaPasskeyMode'] = $twoFaPasskeyMode;
         $this->viewParams['twoFaPasskeyEnabled'] = $twoFaPasskeyEnabled;
