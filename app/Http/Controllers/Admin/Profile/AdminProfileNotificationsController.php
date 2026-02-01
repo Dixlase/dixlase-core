@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Profile\ProfileNotificationsUpdateRequest;
 use App\Enums\AuthenticationMode;
 use App\Models\SecuritySetting;
+use App\Services\MailServerValidatorService;
 use Illuminate\Support\Facades\Auth;
 
 class AdminProfileNotificationsController extends AdminLoggedInController
@@ -41,6 +42,9 @@ class AdminProfileNotificationsController extends AdminLoggedInController
     public function index()
     {
         $member = Auth::guard('member')->user();
+        
+        // メールサーバー設定状態を渡す
+        $this->viewParams['isMailServerTested'] = MailServerValidatorService::isMailServerTested();
         
         // ログイン通知設定の追加
         $loginNoticeGlobal = (int) SecuritySetting::getValue(

@@ -278,24 +278,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if(!$isMailServerTested)
             <x-message
                 type="warning"
-                :message="__('admin/members/form.mail_server_not_tested')"
+                :message="__('admin/members/form.mail_server_not_tested_login_notification')"
+            />
+        @else
+            @php
+                $currentLoginNotification = $member->login_notification_mode ?? \App\Enums\AuthenticationMode::Always->value;
+                if ($currentLoginNotification instanceof \App\Enums\AuthenticationMode) {
+                    $currentLoginNotification = $currentLoginNotification->value;
+                }
+            @endphp
+            
+            <x-login-notification-selector
+                name="login_notification_mode"
+                :value="old('login_notification_mode', (string)$currentLoginNotification)"
+                :globalSetting="$loginNotificationMode"
+                :excludeUseProfileSetting="true"
+                :columns="3"
             />
         @endif
-        
-        @php
-            $currentLoginNotification = $member->login_notification_mode ?? \App\Enums\AuthenticationMode::Always->value;
-            if ($currentLoginNotification instanceof \App\Enums\AuthenticationMode) {
-                $currentLoginNotification = $currentLoginNotification->value;
-            }
-        @endphp
-        
-        <x-login-notification-selector
-            name="login_notification_mode"
-            :value="old('login_notification_mode', (string)$currentLoginNotification)"
-            :globalSetting="$loginNotificationMode"
-            :excludeUseProfileSetting="true"
-            :columns="3"
-        />
     </section>
 
     <!-- 二段階認証設定セクション -->
@@ -308,20 +308,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
         @endif
         
-        @if(!$canEnableTwoFa)
-            <x-message
-                type="warning"
-                :message="__('admin/members/form.two_fa_cannot_enable_warning')"
-            />
-        @endif
-        
         @php
             $currentTwoFaMode = $member->two_fa_mode ?? \App\Enums\AuthenticationMode::Always->value;
             if ($currentTwoFaMode instanceof \App\Enums\AuthenticationMode) {
                 $currentTwoFaMode = $currentTwoFaMode->value;
             }
-            $twoFaPasskeyGloballyEnabled = in_array(\App\Enums\TwoFaMethod::PASSKEY->value, array_keys($twoFaEnabledMethods ?? []));
-            $initialPasskeyEnabled = old('two_fa_passkey_enabled', $member->two_fa_passkey_enabled ?? true);
         @endphp
         
         <x-two-fa.individual-auth-selector
@@ -329,10 +320,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :value="old('two_fa_mode', (string)$currentTwoFaMode)"
             :globalSetting="$forceTwoFa"
             :excludeUseProfileSetting="true"
-            :twoFaPasskeyGloballyEnabled="$twoFaPasskeyGloballyEnabled"
-            :twoFaPasskeyEnabled="$initialPasskeyEnabled"
-            :twoFaPasskeyMode="(string)($twoFaPasskeyMode ?? '2')"
-            :twoFaDefaultMethod="(string)($member->default_two_fa_method ?? $twoFaDefaultMethod)"
             :columns="3"
             :globalSettingsUrl="route('admin.settings.security.two-fa')"
         />
@@ -359,6 +346,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :twoFaRecoveryCodesCount="$twoFaRecoveryCodesCount"
             :twoFaTrustedDevices="collect()"
             :twoFaShowTrustedDevices="false"
+            :twoFaDisabled="false"
+            :passkeyDisabled="false"
             :hideAddButtons="true"
             :hideGenerateButton="true"
             :adminContext="true"

@@ -27,7 +27,7 @@ return [
     // 二段階認証基本設定
     'two_fa_basic_settings' => '二段階認証基本設定',
     'two_fa_basic_settings_description' => '二段階認証の基本的な動作を設定します。',
-    'mail_server_test_warning' => 'メール認証を使用するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">基本設定</a>でメールサーバー設定とメールテストをすべて完了してください。',
+    'mail_server_test_warning' => '二段階認証を使用するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">基本設定</a>でメールサーバー設定とメールテストをすべて完了してください。',
     
     // パスキーデバイス管理設定
     'passkey_device_management' => 'パスキーデバイス管理設定',

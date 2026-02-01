@@ -34,13 +34,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <section class="transition-colors-unified">
             <h2>{{ __('admin/profile/notifications.login_notification_mode') }}</h2>
-            <x-login-notification-selector
-                name="login_notification_mode"
-                :value="old('login_notification_mode', (string) $loginNotificationModeValue)"
-                :globalSetting="(int) ($loginNoticeGlobal ?? 0)"
-                :excludeUseProfileSetting="true"
-                :columns="3"
-            />
+            
+            @if(!$isMailServerTested)
+                <x-message
+                    type="warning"
+                    :message="__('admin/profile/notifications.mail_server_not_tested')"
+                />
+            @else
+                <x-login-notification-selector
+                    name="login_notification_mode"
+                    :value="old('login_notification_mode', (string) $loginNotificationModeValue)"
+                    :globalSetting="(int) ($loginNoticeGlobal ?? 0)"
+                    :excludeUseProfileSetting="true"
+                    :columns="3"
+                />
+            @endif
         </section>
 
     </form>

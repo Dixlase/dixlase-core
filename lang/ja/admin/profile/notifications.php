@@ -23,5 +23,6 @@
 return [
     'heading' => '通知設定',
     'description' => 'ログイン通知などの通知設定を管理します。',
+    'mail_server_not_tested' => 'メールサーバーの設定とテストが完了していないため、ログイン通知は使用できません。',
     'login_notification_mode' => 'ログイン通知モード',
 ];

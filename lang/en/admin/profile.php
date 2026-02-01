@@ -103,7 +103,7 @@ return [
     'recovery_codes_info_6' => 'Store generated recovery codes in a safe place by downloading, copying, taking a screenshot, photo, or printing them.',
     
     // Two-factor authentication requirement message
-    'two_factor_requires_mail_server' => 'To use two-factor authentication, please complete mail server settings and testing in basic settings.',
+    'two_factor_requires_mail_server' => 'Two-factor authentication is not available because mail server settings and testing have not been completed.',
     'two_fa_disabled_notice' => 'To manage two-factor authentication, please enable two-factor authentication in your profile settings.',
     'passkey_disabled_notice' => 'Passkey device management is not available because passkey authentication is not enabled.',
     'passkey_no_devices_notice' => 'Passkey authentication is enabled, but no devices have been registered yet. Please register a Passkey device in <a href=":url" class="underline font-semibold">Two-Factor Authentication Management</a>.',
