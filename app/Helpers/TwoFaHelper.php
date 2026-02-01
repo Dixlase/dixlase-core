@@ -346,7 +346,6 @@ class TwoFaHelper
     {
         return match($method) {
             TwoFaMethod::EMAIL->value => "{$prefix}.two-fa.email.show",
-            TwoFaMethod::PASSKEY->value => "{$prefix}.two-fa.passkey.show",
             default => "{$prefix}.two-fa.email.show",
         };
     }

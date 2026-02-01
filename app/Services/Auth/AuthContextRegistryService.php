@@ -48,7 +48,6 @@ class AuthContextRegistryService
             'login' => 'admin.login',
             'dashboard' => 'admin.dashboard',
             'two_fa.email' => 'admin.two-fa.email.show',
-            'two_fa.passkey' => 'admin.two-fa.passkey.show',
             'two_fa.recovery_code' => 'admin.two-fa.recovery-code.show',
         ],
         'translation_prefix' => 'admin/members',

@@ -88,11 +88,6 @@ Route::prefix($adminUrl)->name('admin.')
         Route::post('/two-fa-email/verify', [AdminTwoFaController::class, 'verifyEmail'])->name('two-fa.email.verify');
         Route::post('/two-fa-email/resend', [AdminTwoFaController::class, 'resendEmail'])->name('two-fa.email.resend');
         
-        // Passkey認証
-        Route::get('/two-fa-passkey', [AdminTwoFaController::class, 'showPasskeyChallenge'])->name('two-fa.passkey.show');
-        Route::post('/two-fa-passkey/challenge', [AdminTwoFaController::class, 'getPasskeyChallenge'])->name('two-fa.passkey.challenge');
-        Route::post('/two-fa-passkey/verify', [AdminTwoFaController::class, 'verifyPasskey'])->name('two-fa.passkey.verify');
-        
         // 回復コード
         Route::get('/two-fa-recovery', [AdminTwoFaController::class, 'showRecoveryCodeChallenge'])->name('two-fa.recovery-code.show');
         Route::post('/two-fa-recovery', [AdminTwoFaController::class, 'verifyRecoveryCode'])->name('two-fa.recovery-code.confirm');
