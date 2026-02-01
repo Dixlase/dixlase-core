@@ -24,7 +24,7 @@ namespace App\Http\Controllers\Admin\Auth;
 
 use Illuminate\Routing\Controller;
 use App\Helpers\LoginHelper;
-use App\Models\MemberSetting;
+use App\Models\SecuritySetting;
 use App\Traits\PasswordResetTrait;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -40,7 +40,7 @@ class AdminPasswordResetLinkController extends Controller
      */
     protected function getSettingsGetter(): callable
     {
-        return fn($key, $default = null) => MemberSetting::getValue($key, $default);
+        return fn($key, $default = null) => SecuritySetting::get($key, $default);
     }
 
     /**

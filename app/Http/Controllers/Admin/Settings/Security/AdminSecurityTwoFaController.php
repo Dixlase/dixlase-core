@@ -27,20 +27,16 @@ use App\Http\Requests\Admin\Settings\Security\AdminSecurityTwoFaUpdateRequest;
 use App\Models\BaseSetting;
 use App\Models\SecuritySetting;
 use App\Enums\AuthenticationMode;
-use App\Contracts\Repositories\MemberSettingRepositoryInterface;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 
 class AdminSecurityTwoFaController extends AdminLoggedInController
 {
-    protected MemberSettingRepositoryInterface $memberSettingRepository;
     protected SecuritySettingRepositoryInterface $securitySettingRepository;
 
     public function __construct(
-        MemberSettingRepositoryInterface $memberSettingRepository,
         SecuritySettingRepositoryInterface $securitySettingRepository
     ) {
         parent::__construct();
-        $this->memberSettingRepository = $memberSettingRepository;
         $this->securitySettingRepository = $securitySettingRepository;
     }
 

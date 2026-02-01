@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Models\Member;
-use App\Models\MemberSetting;
 use App\Models\MemberTwoFaToken;
 use App\Enums\TwoFaMethod;
 use App\Helpers\TwoFaHelper;

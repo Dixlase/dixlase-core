@@ -37,7 +37,7 @@ class ConfigHelper
      * @param string $dbKey Database key for model (e.g., 'session_driver', 'app_name', 'mail_host')
      * @param mixed $default Default value if neither config nor database has the value
      * @param string $type Return type: 'string', 'bool', 'int', 'float'
-     * @param string $model Model class to use: 'SecuritySetting', 'BaseSetting', 'MemberSetting'
+     * @param string $model Model class to use: 'SecuritySetting', 'BaseSetting'
      * @return mixed
      */
     public static function get(string $configKey, string $dbKey, $default, string $type = 'string', string $model = 'SecuritySetting')

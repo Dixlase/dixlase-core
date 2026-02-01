@@ -35,7 +35,6 @@ use App\Services\MailServerValidatorService;
 use App\Services\PasswordService;
 use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
-use App\Contracts\Repositories\MemberSettingRepositoryInterface;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use App\Traits\ManagesAccountTrait;
@@ -45,15 +44,12 @@ class AdminMemberController extends AdminLoggedInController
 {
     use ManagesAccountTrait, ManagesTwoFaTrait;
 
-    protected MemberSettingRepositoryInterface $memberSettingRepository;
     protected SecuritySettingRepositoryInterface $securitySettingRepository;
 
     public function __construct(
-        MemberSettingRepositoryInterface $memberSettingRepository,
         SecuritySettingRepositoryInterface $securitySettingRepository
     ) {
         parent::__construct();
-        $this->memberSettingRepository = $memberSettingRepository;
         $this->securitySettingRepository = $securitySettingRepository;
     }
 
@@ -241,7 +237,7 @@ class AdminMemberController extends AdminLoggedInController
         $this->loadMemberFormParams();
 
         // グローバル設定で有効な二段階認証方法を取得
-        $twoFaPasskeyMode = (int) $this->memberSettingRepository->get('two_fa_passkey_mode', '2');
+        $twoFaPasskeyMode = (int) $this->securitySettingRepository->get('two_fa_passkey_mode', '2');
         // two_fa_passkey_modeが0（無効）以外ならPasskeyは有効とみなす
         $twoFaPasskeyEnabled = $twoFaPasskeyMode > 0;
         
@@ -336,7 +332,7 @@ class AdminMemberController extends AdminLoggedInController
         }
         $this->viewParams['loginNotificationModeOptions'] = $loginNotificationOptions;
 
-        $twoFaForceMode = (int) $this->memberSettingRepository->get('two_fa_mode', AuthenticationMode::Disabled->value);
+        $twoFaForceMode = (int) $this->securitySettingRepository->get('two_fa_mode', AuthenticationMode::Disabled->value);
         // Enumオブジェクトの場合は整数値に変換
         if ($twoFaForceMode instanceof AuthenticationMode) {
             $twoFaForceMode = $twoFaForceMode->value;
@@ -344,7 +340,7 @@ class AdminMemberController extends AdminLoggedInController
         $this->viewParams['forceTwoFa'] = $twoFaForceMode;
         
         // パスキーモード設定を追加
-        $twoFaPasskeyMode = (int) $this->memberSettingRepository->get('two_fa_passkey_mode', '2');
+        $twoFaPasskeyMode = (int) $this->securitySettingRepository->get('two_fa_passkey_mode', '2');
         $this->viewParams['twoFaPasskeyMode'] = $twoFaPasskeyMode;
         $twoFactorEnum = AuthenticationMode::tryFrom($twoFaForceMode);
         $this->viewParams['twoFactorModeLabel'] = $twoFactorEnum ? $twoFactorEnum->twoFactorLabel() : '';
@@ -365,13 +361,13 @@ class AdminMemberController extends AdminLoggedInController
         ];
         
         // 全体設定でパスキー認証が有効な場合は追加
-        $twoFaPasskeyEnabled = $this->memberSettingRepository->get('two_fa_passkey_enabled', '0') === '1';
+        $twoFaPasskeyEnabled = $this->securitySettingRepository->get('two_fa_passkey_enabled', '0') === '1';
         if ($twoFaPasskeyEnabled) {
             $twoFaMethodOptions[TwoFaMethod::PASSKEY->value] = TwoFaMethod::PASSKEY->translationKey();
         }
         
         // デフォルトの認証方法を取得
-        $twoFaDefaultMethod = (int) $this->memberSettingRepository->get('default_two_fa_method', TwoFaMethod::EMAIL->value);
+        $twoFaDefaultMethod = (int) $this->securitySettingRepository->get('default_two_fa_method', TwoFaMethod::EMAIL->value);
         
         $this->viewParams['twoFaEnabledMethods'] = $twoFaMethodOptions;
         $this->viewParams['twoFaDefaultMethod'] = $twoFaDefaultMethod;

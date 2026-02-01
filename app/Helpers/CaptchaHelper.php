@@ -23,7 +23,6 @@
 namespace App\Helpers;
 
 use App\Models\SecuritySetting;
-use App\Models\MemberSetting;
 use App\Services\CaptchaTestService;
 use App\Services\CaptchaFailoverService;
 use App\Services\CaptchaBypassService;
@@ -213,7 +212,7 @@ class CaptchaHelper
     /**
      * 指定されたフォームでCAPTCHAが有効かチェック
      * 
-     * admin_login, admin_password_resetの場合はMemberSettingから読み込む
+     * admin_login, admin_password_resetの場合はSecuritySettingから読み込む
      * user_login, user_register, user_password_resetの場合はDixlaseUsersUserSettingから読み込む
      * その他のフォームはプラグイン側で独自に管理する
      */
@@ -227,7 +226,7 @@ class CaptchaHelper
             };
             
             return filter_var(
-                MemberSetting::get($settingKey, false),
+                SecuritySetting::get($settingKey, false),
                 FILTER_VALIDATE_BOOLEAN
             );
         }

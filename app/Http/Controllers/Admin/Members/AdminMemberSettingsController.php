@@ -26,18 +26,14 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\BaseSetting;
 use App\Models\SecuritySetting;
 use App\Enums\AuthenticationMode;
-use App\Contracts\Repositories\MemberSettingRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class AdminMemberSettingsController extends AdminLoggedInController
 {
-    protected MemberSettingRepositoryInterface $memberSettingRepository;
-
-    public function __construct(MemberSettingRepositoryInterface $memberSettingRepository)
+    public function __construct()
     {
         parent::__construct();
-        $this->memberSettingRepository = $memberSettingRepository;
         
         // index()メソッドが呼ばれる前にloadViewParams()を自動実行
         $this->middleware(function ($request, $next) {
@@ -86,7 +82,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
         // パスワード設定はセキュリティ設定に移動
         // ログイン通知設定はセキュリティ設定に移動
 
-        $twoFaForceMode = (int) $this->memberSettingRepository->get('two_fa_mode', AuthenticationMode::Disabled->value);
+        $twoFaForceMode = (int) SecuritySetting::get('two_fa_mode', AuthenticationMode::Disabled->value);
         
         if (old('two_fa_force_mode') !== null) {
             $twoFaForceMode = (int) old('two_fa_force_mode');
@@ -104,14 +100,14 @@ class AdminMemberSettingsController extends AdminLoggedInController
             ->toArray();
         
         // パスキーモード設定（0=無効, 1=有効, 2=プロフィール設定に従う）
-        $twoFaPasskeyMode = (int) $this->memberSettingRepository->get('two_fa_passkey_mode', '2');
+        $twoFaPasskeyMode = (int) SecuritySetting::get('two_fa_passkey_mode', '2');
         
         if (old('two_fa_passkey_mode') !== null) {
             $twoFaPasskeyMode = (int) old('two_fa_passkey_mode');
         }
 
         // デフォルトの二段階認証方法（0=メール, 1=パスキー）
-        $twoFaDefaultMethod = (int) $this->memberSettingRepository->get('two_fa_default_method', '0');
+        $twoFaDefaultMethod = (int) SecuritySetting::get('two_fa_default_method', '0');
         
         if (old('two_fa_default_method') !== null) {
             $twoFaDefaultMethod = (int) old('two_fa_default_method');
@@ -143,8 +139,8 @@ class AdminMemberSettingsController extends AdminLoggedInController
         // CAPTCHA設定
         $captchaEnabled = filter_var(SecuritySetting::get('captcha_enabled', false), FILTER_VALIDATE_BOOLEAN);
         $captchaAuthenticationResult = filter_var(SecuritySetting::get('captcha_authentication_result', false), FILTER_VALIDATE_BOOLEAN);
-        $captchaAdminLoginEnabled = (bool) $this->memberSettingRepository->get('captcha_admin_login_enabled', false);
-        $captchaPasswordResetEnabled = (bool) $this->memberSettingRepository->get('captcha_password_reset_enabled', false);
+        $captchaAdminLoginEnabled = (bool) SecuritySetting::get('captcha_admin_login_enabled', false);
+        $captchaPasswordResetEnabled = (bool) SecuritySetting::get('captcha_password_reset_enabled', false);
         $captchaAvailable = $captchaEnabled && $captchaAuthenticationResult;
         $this->viewParams['captchaEnabled'] = $captchaEnabled;
         $this->viewParams['captchaAuthenticationResult'] = $captchaAuthenticationResult;

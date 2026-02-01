@@ -25,7 +25,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\SecuritySetting;
-use App\Models\MemberSetting;
 use App\Models\BaseSetting;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -735,11 +734,6 @@ class SecuritySettingsRegistry
                         return SecuritySetting::get($key, $default);
                     }
                     break;
-                case 'members_settings':
-                    if (Schema::hasTable('members_settings')) {
-                        return MemberSetting::getValue($key, $default);
-                    }
-                    break;
                 case 'base_settings':
                     if (Schema::hasTable('base_settings')) {
                         return BaseSetting::get($key, $default);
@@ -764,12 +758,6 @@ class SecuritySettingsRegistry
                 case 'security_settings':
                     if (Schema::hasTable('security_settings')) {
                         SecuritySetting::set($key, $stringValue);
-                        return true;
-                    }
-                    break;
-                case 'members_settings':
-                    if (Schema::hasTable('members_settings')) {
-                        MemberSetting::setValue($key, $stringValue);
                         return true;
                     }
                     break;
