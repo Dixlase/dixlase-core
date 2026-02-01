@@ -40,7 +40,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     type="warning"
                     :message="__('admin/profile/notifications.mail_server_not_tested')"
                 />
-            @else
+            @endif
+
+            <div :class="{ 'opacity-50 pointer-events-none': {{ !$isMailServerTested ? 'true' : 'false' }} }">
                 <x-login-notification-selector
                     name="login_notification_mode"
                     :value="old('login_notification_mode', (string) $loginNotificationModeValue)"
@@ -48,7 +50,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :excludeUseProfileSetting="true"
                     :columns="3"
                 />
-            @endif
+            </div>
         </section>
 
     </form>

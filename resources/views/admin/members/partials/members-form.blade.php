@@ -280,22 +280,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 type="warning"
                 :message="__('admin/members/form.mail_server_not_tested_login_notification')"
             />
-        @else
-            @php
-                $currentLoginNotification = $member->login_notification_mode ?? \App\Enums\AuthenticationMode::Always->value;
-                if ($currentLoginNotification instanceof \App\Enums\AuthenticationMode) {
-                    $currentLoginNotification = $currentLoginNotification->value;
-                }
-            @endphp
-            
-            <x-login-notification-selector
-                name="login_notification_mode"
-                :value="old('login_notification_mode', (string)$currentLoginNotification)"
-                :globalSetting="$loginNotificationMode"
-                :excludeUseProfileSetting="true"
-                :columns="3"
-            />
         @endif
+
+        @php
+            $currentLoginNotification = $member->login_notification_mode ?? \App\Enums\AuthenticationMode::Always->value;
+            if ($currentLoginNotification instanceof \App\Enums\AuthenticationMode) {
+                $currentLoginNotification = $currentLoginNotification->value;
+            }
+        @endphp
+        
+        <x-login-notification-selector
+            name="login_notification_mode"
+            :value="old('login_notification_mode', (string)$currentLoginNotification)"
+            :globalSetting="$loginNotificationMode"
+            :excludeUseProfileSetting="true"
+            :columns="3"
+        />
     </section>
 
     <!-- 二段階認証設定セクション -->

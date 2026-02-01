@@ -79,8 +79,18 @@ class AdminProfileTwoFaController extends AdminLoggedInController
         
         // 保存後の2FA状態を取得（保存後の値を使用）
         $member->refresh();
-        $twoFaNewMode = is_int($member->two_fa_mode) ? $member->two_fa_mode : $member->two_fa_mode->value;
-        $isTwoFaEnabled = ($twoFaNewMode === AuthenticationMode::Always->value || $twoFaNewMode === AuthenticationMode::DifferentDevice->value);
+        $profileTwoFaMode = is_int($member->two_fa_mode) ? $member->two_fa_mode : $member->two_fa_mode->value;
+        
+        // 実際の二段階認証モードを判定（全体設定とプロフィール設定の両方を考慮）
+        if ($twoFaForceMode === AuthenticationMode::UseProfileSetting->value) {
+            // プロフィール設定に従う場合はプロフィールの値を使用
+            $actualTwoFaMode = $profileTwoFaMode;
+        } else {
+            // それ以外は全体設定を使用
+            $actualTwoFaMode = $twoFaForceMode;
+        }
+        
+        $isTwoFaEnabled = ($actualTwoFaMode === AuthenticationMode::Always->value || $actualTwoFaMode === AuthenticationMode::DifferentDevice->value);
         
         // 回復コードとパスキーの状態をチェック
         $shouldGenerateRecoveryCodes = false;

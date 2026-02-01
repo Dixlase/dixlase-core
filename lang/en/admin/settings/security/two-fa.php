@@ -27,7 +27,7 @@ return [
     // Two-Factor Authentication Basic Settings
     'two_fa_basic_settings' => 'Two-Factor Authentication Basic Settings',
     'two_fa_basic_settings_description' => 'Configure basic behavior of two-factor authentication.',
-    'mail_server_test_warning' => 'To use email authentication, please complete mail server settings and all mail tests in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">Base Settings</a>.',
+    'mail_server_test_warning' => 'To use two-factor authentication, please complete mail server settings and all mail tests in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">Base Settings</a>.',
     
     // Passkey Device Management Settings
     'passkey_device_management' => 'Passkey Device Management Settings',
