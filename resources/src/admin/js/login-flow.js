@@ -39,12 +39,7 @@ export function createLoginFlow() {
                 this.hasPasskey = false;
             }
 
-            // sessionStorageからロックアウトメッセージを読み込み
-            const loginError = sessionStorage.getItem('login_error');
-            if (loginError) {
-                this.errors.login = loginError;
-                sessionStorage.removeItem('login_error');
-            }
+            // sessionStorageは使用しない（サーバー側でセッションフラッシュメッセージを設定）
         },
         step: 1,
         identifier: '',
@@ -76,20 +71,14 @@ export function createLoginFlow() {
                     this.hasPasskey = data.has_passkey;
                     this.step = 2;
                 } else {
-                    // ロックアウトエラーの場合はページをリロードしてフラッシュメッセージを表示
-                    if (data.errors && data.errors.login) {
-                        // エラーメッセージを取得（配列の場合は最初の要素）
-                        const errorMessage = Array.isArray(data.errors.login)
-                            ? data.errors.login[0]
-                            : data.errors.login;
+                    // リダイレクトフラグがある場合はページをリロード
+                    if (data.redirect) {
+                        window.location.reload();
+                        return;
+                    }
 
-                        // ロックアウトメッセージかチェック
-                        if (errorMessage.includes('上限に達しました') || errorMessage.includes('lockout') || errorMessage.includes('locked out')) {
-                            // セッションにエラーメッセージを保存してリロード
-                            sessionStorage.setItem('login_error', errorMessage);
-                            window.location.reload();
-                            return;
-                        }
+                    // エラーメッセージを表示
+                    if (data.errors && data.errors.login) {
                         this.errors = data.errors;
                     } else if (data.message) {
                         this.errors.login = data.message;
