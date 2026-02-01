@@ -33,54 +33,10 @@ class IdentifierCheckHelper
         array $settings,
         string $context = 'admin'
     ): array {
-        $lockoutEnabled = $settings['enabled'] ?? false;
-        $maxAttempts = $settings['max_attempts'] ?? 5;
-        $timeWindow = $settings['time_window'] ?? 15;
-        
         // レート制限が無効の場合はスキップ
-        if (!$lockoutEnabled) {
+        if (!($settings['enabled'] ?? false)) {
             return self::performCheck($login, $ipAddress, $userModelClass, $context);
         }
-        
-        // レート制限キー（IP + identifier）
-        $rateLimitKey = 'login-identifier-check:' . $ipAddress . ':' . md5($login);
-        
-        // レート制限チェック
-        if (RateLimiter::tooManyAttempts($rateLimitKey, $maxAttempts)) {
-            $seconds = RateLimiter::availableIn($rateLimitKey);
-            $minutes = ceil($seconds / 60);
-            
-            // ロックアウトログ記録
-            AuditLog::logSecurity(AuditLog::ACTION_LOCKOUT_TRIGGERED, [
-                'severity' => AuditLog::SEVERITY_CRITICAL,
-                'outcome' => AuditLog::OUTCOME_DENIED,
-                'context' => [
-                    'reason' => 'login_identifier_check_rate_limit',
-                    'login_identifier' => $login,
-                    'available_in_seconds' => $seconds,
-                    'available_in_minutes' => $minutes,
-                    'max_attempts' => $maxAttempts,
-                    'time_window_minutes' => $timeWindow,
-                    'check_context' => $context,
-                ],
-            ]);
-            
-            Log::warning('Login identifier check rate limit exceeded', [
-                'ip' => $ipAddress,
-                'login' => $login,
-                'available_in_seconds' => $seconds,
-                'available_in_minutes' => $minutes,
-                'max_attempts' => $maxAttempts,
-                'context' => $context,
-            ]);
-            
-            throw ValidationException::withMessages([
-                'login' => __('auth.lockout', ['minutes' => $minutes]),
-            ]);
-        }
-
-        // レート制限カウンターを増やす
-        RateLimiter::hit($rateLimitKey, $timeWindow * 60);
         
         return self::performCheck($login, $ipAddress, $userModelClass, $context);
     }
@@ -174,15 +130,27 @@ class IdentifierCheckHelper
             
             // エラーメッセージを決定
             $errorMessage = __('auth.failed');
-            if ($lockoutInfo['is_locked_out']) {
+            
+            // IPベースのロックアウトをチェック
+            if ($lockoutInfo['is_ip_locked_out']) {
+                $lockoutDuration = $lockoutInfo['settings']['lockout_duration'] ?? 30;
+                $errorMessage = __('auth.lockout', ['minutes' => $lockoutDuration]);
+            } elseif ($lockoutInfo['is_locked_out']) {
                 $errorMessage = __('auth.lockout', ['minutes' => $lockoutInfo['lockout_minutes']]);
             } elseif ($lockoutInfo['remaining_attempts'] > 0) {
                 $errorMessage = __('auth.failed_with_attempts', ['attempts' => $lockoutInfo['remaining_attempts']]);
             }
             
-            throw ValidationException::withMessages([
+            // エラーメッセージ情報を含めてValidationExceptionを投げる
+            $exception = ValidationException::withMessages([
                 'login' => $errorMessage,
             ]);
+            
+            // エラーメッセージをカスタムデータとして保存
+            $exception->errorBag = 'default';
+            $exception->redirectTo = null;
+            
+            throw $exception;
         }
     }
 
@@ -223,7 +191,9 @@ class IdentifierCheckHelper
         return [
             'enabled' => (bool) $settingModelClass::getValue('login_attempt_limit_enabled', false),
             'max_attempts' => (int) $settingModelClass::getValue('login_attempt_max_attempts', 5),
+            'max_attempts_ip' => (int) $settingModelClass::getValue('login_attempt_max_attempts_ip', null),
             'time_window' => (int) $settingModelClass::getValue('login_attempt_time_window', 15),
+            'lockout_duration' => (int) $settingModelClass::getValue('login_attempt_lockout_duration', 30),
         ];
     }
 }

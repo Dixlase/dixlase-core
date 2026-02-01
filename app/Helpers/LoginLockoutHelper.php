@@ -53,6 +53,7 @@ class LoginLockoutHelper
         $defaultKeys = [
             'enabled_key' => 'login_attempt_limit_enabled',
             'max_attempts_key' => 'login_attempt_max_attempts',
+            'max_attempts_ip_key' => 'login_attempt_max_attempts_ip',
             'time_window_key' => 'login_attempt_time_window',
             'lockout_duration_key' => 'login_attempt_lockout_duration',
             'notification_enabled_key' => 'login_attempt_lockout_notification_enabled',
@@ -64,6 +65,7 @@ class LoginLockoutHelper
         return [
             'enabled' => (bool) $source::getValue($keys['enabled_key'], false),
             'max_attempts' => (int) $source::getValue($keys['max_attempts_key'], 5),
+            'max_attempts_ip' => (int) $source::getValue($keys['max_attempts_ip_key'], null),
             'time_window' => (int) $source::getValue($keys['time_window_key'], 15),
             'lockout_duration' => (int) $source::getValue($keys['lockout_duration_key'], 30),
             'notification_enabled' => (bool) $source::getValue($keys['notification_enabled_key'], true),
@@ -196,7 +198,8 @@ class LoginLockoutHelper
             $request->ip(),
             $lockoutSettings['time_window']
         );
-        $maxAttemptsForIp = $lockoutSettings['max_attempts'] * 2;
+        // login_attempt_max_attempts_ip設定を優先的に使用、なければmax_attempts * 2
+        $maxAttemptsForIp = $lockoutSettings['max_attempts_ip'] ?? ($lockoutSettings['max_attempts'] * 2);
         $lockoutInfo['is_ip_locked_out'] = $ipFailedAttempts >= $maxAttemptsForIp;
 
         return $lockoutInfo;

@@ -68,10 +68,16 @@ class AdminLoginIdentifierCheckController extends AdminController
                 'has_passkey' => $result['has_passkey'],
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // バリデーションエラーの場合、JSONエラーレスポンスを返す
+            // エラーメッセージを取得
+            $errors = $e->errors();
+            $errorMessage = $errors['login'][0] ?? $e->getMessage();
+            
+            // セッションにエラーメッセージを保存してリダイレクト指示を返す
+            session()->flash('error', $errorMessage);
+            
             return response()->json([
-                'message' => $e->getMessage(),
-                'errors' => $e->errors(),
+                'redirect' => true,
+                'message' => $errorMessage,
             ], 422);
         }
     }

@@ -211,19 +211,21 @@ trait LoginTrait
             $lockoutInfo = $lockoutService->handleFailedLogin($request, $login);
             
             $errorMessage = __('auth.failed');
-            if ($lockoutInfo['is_locked_out']) {
+            
+            // IPベースのロックアウトをチェック
+            if ($lockoutInfo['is_ip_locked_out']) {
+                $lockoutDuration = $lockoutInfo['settings']['lockout_duration'] ?? 30;
+                $errorMessage = __('auth.lockout', ['minutes' => $lockoutDuration]);
+            } elseif ($lockoutInfo['is_locked_out']) {
                 $errorMessage = __('auth.lockout', ['minutes' => $lockoutInfo['lockout_minutes']]);
             } elseif ($lockoutInfo['remaining_attempts'] > 0) {
                 $errorMessage = __('auth.failed_with_attempts', ['attempts' => $lockoutInfo['remaining_attempts']]);
             }
 
-            // ユーザーが見つかった場合はパスワードフィールドにエラーを表示（同じ画面に留まる）
-            // ユーザーが見つからない場合はloginフィールドにエラーを表示（メールアドレス入力画面に戻る）
-            $errorField = $user ? 'password' : 'login';
-
-            return back()->withErrors([
-                $errorField => $errorMessage,
-            ])->withInput($request->except('password'));
+            // エラーメッセージをセッションフラッシュメッセージとして保存
+            return back()
+                ->with('error', $errorMessage)
+                ->withInput($request->except('password'));
         }
         
         // ロックアウト用にメールアドレスを取得
