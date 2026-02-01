@@ -200,9 +200,9 @@ return [
                             'route' => 'admin.settings.security.login',
                             'icon' => 'fas fa-fw fa-sign-in-alt',
                         ],
-                        'authentication' => [
-                            'text' => 'admin/nav.settings.security.authentication',
-                            'route' => 'admin.settings.security.authentication',
+                        'two-fa' => [
+                            'text' => 'admin/nav.settings.security.two-fa',
+                            'route' => 'admin.settings.security.two-fa',
                             'icon' => 'fas fa-fw fa-user-shield',
                         ],
                         'captcha' => [

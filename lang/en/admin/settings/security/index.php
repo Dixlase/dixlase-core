@@ -17,7 +17,7 @@ return [
     'description' => 'View the overview and status of each security setting.',
     'password_security' => 'Password Breach Check',
     'login_attempt_desc' => 'Login Attempt Limits & Notifications',
-    'authentication_desc' => 'Two-Factor Authentication & Passkey',
+    'two_fa_desc' => 'Two-Factor Authentication & Passkey',
     'session_driver' => 'Session Driver',
     'captcha_active' => 'CAPTCHA Active',
     'captcha_test_required' => 'Test Required',

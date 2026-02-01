@@ -109,7 +109,7 @@ class AdminLoginController extends AdminController
      */
     protected function getSettingModelClass(): string
     {
-        return \App\Models\MemberSetting::class;
+        return \App\Models\SecuritySetting::class;
     }
 
     /**

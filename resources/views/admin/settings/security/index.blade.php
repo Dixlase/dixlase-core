@@ -53,17 +53,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </a>
 
-        <!-- 認証設定 -->
-        <a href="{{ route('admin.settings.security.authentication') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+        <!-- 二段階認証設定 -->
+        <a href="{{ route('admin.settings.security.two-fa') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-user-shield text-teal-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.authentication') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.two-fa') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
             <div class="text-sm text-gray-600 dark:text-gray-400">
-                <p>{{ __('admin/settings/security/index.authentication_desc') }}</p>
+                <p>{{ __('admin/settings/security/index.two_fa_desc') }}</p>
             </div>
         </a>
 

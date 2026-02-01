@@ -23,14 +23,14 @@
 namespace App\Http\Controllers\Admin\Settings\Security;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Http\Requests\Admin\Settings\Security\AdminSecurityAuthenticationUpdateRequest;
+use App\Http\Requests\Admin\Settings\Security\AdminSecurityTwoFaUpdateRequest;
 use App\Models\BaseSetting;
 use App\Models\SecuritySetting;
 use App\Enums\AuthenticationMode;
 use App\Contracts\Repositories\MemberSettingRepositoryInterface;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 
-class AdminSecurityAuthenticationController extends AdminLoggedInController
+class AdminSecurityTwoFaController extends AdminLoggedInController
 {
     protected MemberSettingRepositoryInterface $memberSettingRepository;
     protected SecuritySettingRepositoryInterface $securitySettingRepository;
@@ -45,7 +45,7 @@ class AdminSecurityAuthenticationController extends AdminLoggedInController
     }
 
     /**
-     * 認証設定画面
+     * 二段階認証設定画面
      */
     public function index()
     {
@@ -107,13 +107,13 @@ class AdminSecurityAuthenticationController extends AdminLoggedInController
         $this->viewParams['isMailServerTested'] = $isMailServerTested;
         $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
 
-        return view('admin.settings.security.authentication', $this->viewParams);
+        return view('admin.settings.security.two-fa', $this->viewParams);
     }
 
     /**
-     * 認証設定更新
+     * 二段階認証設定更新
      */
-    public function update(AdminSecurityAuthenticationUpdateRequest $request)
+    public function update(AdminSecurityTwoFaUpdateRequest $request)
     {
         $validated = $request->validated();
 
@@ -155,7 +155,7 @@ class AdminSecurityAuthenticationController extends AdminLoggedInController
         }
 
         return redirect()->back()
-            ->with('success', __('admin/settings/security/authentication.updated'));
+            ->with('success', __('admin/settings/security/two-fa.updated'));
     }
 
     protected function isMailServerTested(): bool
