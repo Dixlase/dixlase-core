@@ -26,7 +26,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
 
         <div x-data="{
-            twoFaMode: '{{ old('two_fa_force_mode', (string) $twoFaForceMode) }}',
+            twoFaMode: '{{ old('two_fa_mode', (string) $twoFaMode) }}',
             passkeyMode: '{{ old('two_fa_passkey_mode', (string) $twoFaPasskeyMode) }}',
             defaultMethod: '{{ old('two_fa_default_method', (string) $twoFaDefaultMethod) }}',
             get twoFaEnabled() {
@@ -57,8 +57,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 
                 {{-- 全体設定用の二段階認証設定コンポーネント --}}
                 <x-two-fa.general-settings
-                    twoFaModeName="two_fa_force_mode"
-                    :twoFaModeValue="(string) $twoFaForceMode"
+                    twoFaModeName="two_fa_mode"
+                    :twoFaModeValue="(string) $twoFaMode"
                     twoFaPasskeyModeName="two_fa_passkey_mode"
                     :twoFaPasskeyModeValue="(string) $twoFaPasskeyMode"
                     twoFaDefaultMethodName="two_fa_default_method"

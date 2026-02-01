@@ -49,10 +49,10 @@ class AdminSecurityAuthenticationController extends AdminLoggedInController
      */
     public function index()
     {
-        // 二段階認証基本設定
-        $twoFaForceMode = (int) $this->memberSettingRepository->get('two_fa_mode', AuthenticationMode::Disabled->value);
-        if (old('two_fa_force_mode') !== null) {
-            $twoFaForceMode = (int) old('two_fa_force_mode');
+        // 二段階認証基本設定（セキュリティ設定から取得）
+        $twoFaMode = (int) $this->securitySettingRepository->get('two_fa_mode', AuthenticationMode::Disabled->value);
+        if (old('two_fa_mode') !== null) {
+            $twoFaMode = (int) old('two_fa_mode');
         }
         
         $twoFactorGlobalOptions = collect(config('admin.global_two_factor_mode'))
@@ -66,14 +66,14 @@ class AdminSecurityAuthenticationController extends AdminLoggedInController
             ->values()
             ->toArray();
         
-        // パスキーモード設定
-        $twoFaPasskeyMode = (int) $this->memberSettingRepository->get('two_fa_passkey_mode', '2');
+        // パスキーモード設定（セキュリティ設定から取得）
+        $twoFaPasskeyMode = (int) $this->securitySettingRepository->get('two_fa_passkey_mode', '2');
         if (old('two_fa_passkey_mode') !== null) {
             $twoFaPasskeyMode = (int) old('two_fa_passkey_mode');
         }
 
-        // デフォルトの二段階認証方法
-        $twoFaDefaultMethod = (int) $this->memberSettingRepository->get('two_fa_default_method', '0');
+        // デフォルトの二段階認証方法（セキュリティ設定から取得）
+        $twoFaDefaultMethod = (int) $this->securitySettingRepository->get('two_fa_default_method', '0');
         if (old('two_fa_default_method') !== null) {
             $twoFaDefaultMethod = (int) old('two_fa_default_method');
         }
@@ -92,7 +92,7 @@ class AdminSecurityAuthenticationController extends AdminLoggedInController
         $isMailServerTested = $this->isMailServerTested();
         $mailConnectionTestDate = BaseSetting::getValue('mail_connection_test_date');
 
-        $this->viewParams['twoFaForceMode'] = $twoFaForceMode;
+        $this->viewParams['twoFaMode'] = $twoFaMode;
         $this->viewParams['twoFaGlobalOptions'] = $twoFactorGlobalOptions;
         $this->viewParams['twoFaPasskeyMode'] = $twoFaPasskeyMode;
         $this->viewParams['twoFaDefaultMethod'] = $twoFaDefaultMethod;
@@ -117,15 +117,15 @@ class AdminSecurityAuthenticationController extends AdminLoggedInController
     {
         $validated = $request->validated();
 
-        // 二段階認証基本設定
-        if (array_key_exists('two_fa_force_mode', $validated)) {
-            $this->memberSettingRepository->set('two_fa_mode', (int) $validated['two_fa_force_mode']);
+        // 二段階認証基本設定（セキュリティ設定に保存）
+        if (array_key_exists('two_fa_mode', $validated)) {
+            $this->securitySettingRepository->set('two_fa_mode', (int) $validated['two_fa_mode']);
         }
         if (array_key_exists('two_fa_passkey_mode', $validated)) {
-            $this->memberSettingRepository->set('two_fa_passkey_mode', (string) $validated['two_fa_passkey_mode']);
+            $this->securitySettingRepository->set('two_fa_passkey_mode', (string) $validated['two_fa_passkey_mode']);
         }
         if (array_key_exists('two_fa_default_method', $validated)) {
-            $this->memberSettingRepository->set('two_fa_default_method', (string) $validated['two_fa_default_method']);
+            $this->securitySettingRepository->set('two_fa_default_method', (string) $validated['two_fa_default_method']);
         }
 
         // 二段階認証詳細設定（セキュリティ設定に保存）

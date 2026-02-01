@@ -32,7 +32,7 @@ interface TwoFaInterface
     /**
      * 二段階認証モードを取得
      */
-    public function getTwoFaMode(): int;
+    public function getTwoFaMode(): \App\Enums\AuthenticationMode|int;
 
     /**
      * パスキーが有効かどうか

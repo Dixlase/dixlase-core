@@ -27,6 +27,7 @@ return [
         'login_with_passkey' => 'Sign in with Passkey',
         'no_passkey_registered' => 'No passkey registered',
         'passkey_cancelled' => 'Passkey authentication cancelled',
+        'two_fa_disabled' => 'Two-factor authentication is disabled. Please log in with password.',
     ],
     'forgot_password' => [
         'title' => 'Password Reset',
