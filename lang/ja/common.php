@@ -304,6 +304,7 @@ return [
     
     // 保存確認ダイアログ（詳細版）
     'save_confirmation_title' => '保存の確認',
+    'delete_confirmation_title' => '削除の確認',
     'save_confirmation_message' => '変更内容を保存しますか？',
     'update_confirmation_title' => '更新の確認',
     'update_confirmation_message' => 'この内容で設定を更新しますか？',

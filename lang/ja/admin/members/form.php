@@ -59,6 +59,7 @@ return [
     'passkey_disabled_default_email_only' => 'パスキー認証を無効にしているため、デフォルトの認証方法は自動的にメール認証になります。',
     'two_fa_management_admin_note' => '管理者はPasskeyデバイスの追加や回復コードの生成はできません。削除のみ可能です。追加・生成はメンバー本人のみが実行できます。',
     'two_fa_cannot_enable_warning' => '二段階認証を有効化できません。メールサーバーの設定、パスキーの登録、または回復コードの生成のいずれかが必要です。',
+    'passkey_all_deleted' => 'Passkeyデバイス（:count件）を削除しました。',
     
     // ロールの権限範囲説明
     'role_permissions_info' => 'ロールごとの権限範囲',
