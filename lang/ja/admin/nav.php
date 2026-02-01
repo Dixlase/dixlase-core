@@ -52,7 +52,7 @@ return [
             'password' => 'パスワード',
             'login_attempt' => 'ログイン',
             'session' => 'セッション',
-            'authentication' => '認証設定',
+            'two-fa' => '二段階認証',
             'captcha' => 'CAPTCHA',
             'ip' => 'IPアクセス制御',
             'extensions' => '拡張機能',

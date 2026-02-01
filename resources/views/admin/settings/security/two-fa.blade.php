@@ -22,7 +22,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="max-w-7xl mx-auto">
-    <form method="POST" action="{{ route('admin.settings.security.authentication.update') }}" id="authentication-settings-form">
+    <form method="POST" action="{{ route('admin.settings.security.two-fa.update') }}" id="two-fa-settings-form">
         @csrf
 
         <div x-data="{
@@ -45,13 +45,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         }">
             <!-- 二段階認証基本設定 -->
             <section>
-                <h2>{{ __('admin/settings/security/authentication.two_fa_basic_settings') }}</h2>
-                <p>{{ __('admin/settings/security/authentication.two_fa_basic_settings_description') }}</p>
+                <h2>{{ __('admin/settings/security/two-fa.two_fa_basic_settings') }}</h2>
+                <p>{{ __('admin/settings/security/two-fa.two_fa_basic_settings_description') }}</p>
                 
                 @if(!$isMailServerTested)
                     <x-message
                         type="warning"
-                        :message="__('admin/settings/security/authentication.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
+                        :message="__('admin/settings/security/two-fa.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
                     />
                 @endif
                 
@@ -69,8 +69,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <!-- 二段階認証詳細設定 -->
             <section>
-                <h2>{{ __('admin/settings/security/authentication.two_fa_detailed_settings') }}</h2>
-                <p>{{ __('admin/settings/security/authentication.two_fa_detailed_settings_description') }}</p>
+                <h2>{{ __('admin/settings/security/two-fa.two_fa_detailed_settings') }}</h2>
+                <p>{{ __('admin/settings/security/two-fa.two_fa_detailed_settings_description') }}</p>
 
                 <x-two-fa.detailed-settings
                     :expireMinutes="$twoFaExpireMinutes"

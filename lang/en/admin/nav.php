@@ -52,7 +52,7 @@ return [
             'password' => 'Password',
             'login_attempt' => 'Login',
             'session' => 'Session',
-            'authentication' => 'Authentication',
+            'two-fa' => 'Two-Factor Authentication',
             'captcha' => 'CAPTCHA',
             'ip' => 'IP Access Control',
             'extensions' => 'Extensions',

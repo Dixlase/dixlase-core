@@ -321,11 +321,11 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.security')
                     ->name('session.update');
                 
-                // 認証設定
-                Route::get('/authentication', [Security\AdminSecurityAuthenticationController::class, 'index'])->name('authentication');
-                Route::post('/authentication', [Security\AdminSecurityAuthenticationController::class, 'update'])
+                // 二段階認証設定
+                Route::get('/two-fa', [Security\AdminSecurityTwoFaController::class, 'index'])->name('two-fa');
+                Route::post('/two-fa', [Security\AdminSecurityTwoFaController::class, 'update'])
                     ->middleware('check.menu.edit:settings.security')
-                    ->name('authentication.update');
+                    ->name('two-fa.update');
                 
                 // CAPTCHA
                 Route::get('/captcha', [Security\AdminSecurityCaptchaController::class, 'index'])->name('captcha');
