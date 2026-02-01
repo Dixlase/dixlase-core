@@ -222,14 +222,11 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
             $twoFaEnabledMethods[TwoFaMethod::PASSKEY->value] = TwoFaMethod::PASSKEY->translationKey();
         }
         
-        $twoFaDefaultMethod = (int) SecuritySetting::getValue('two_fa_default_method', TwoFaMethod::EMAIL->value);
-        
         $this->viewParams['twoFaForceMode'] = $twoFaForceMode;
         $this->viewParams['twoFaMode'] = $twoFaMode;
         $this->viewParams['twoFaEnabledMethods'] = $twoFaEnabledMethods;
         $this->viewParams['twoFaPasskeyMode'] = $twoFaPasskeyMode;
         $this->viewParams['twoFaPasskeyEnabled'] = $twoFaPasskeyEnabled;
-        $this->viewParams['twoFaDefaultMethod'] = $twoFaDefaultMethod;
         
         // Passkeyデバイス一覧を取得
         $twoFaPasskeyService = new TwoFaPasskeyService();

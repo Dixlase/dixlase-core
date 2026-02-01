@@ -24,7 +24,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'twoFaGlobalSetting' => null,
     'twoFaPasskeyEnabled' => true,
     'twoFaPasskeyMode' => '2',
-    'twoFaDefaultMethod' => '0',
     'columns' => 3,
     'globalSettingsUrl' => null,
 ])
@@ -48,22 +47,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     twoFaMode: '{{ old($twoFaModeName, (string) $twoFaModeValue) }}',
     passkeyEnabled: {{ $currentPasskeyEnabled ? 'true' : 'false' }},
     isPasskeyEditable: {{ $isPasskeyEditable ? 'true' : 'false' }},
-    defaultMethod: '{{ old('two_fa_default_method', (string) $twoFaDefaultMethod) }}',
     get twoFaEnabled() {
         return this.twoFaMode !== '0';
     },
     get isPasskeyActuallyEnabled() {
         // 編集可能な場合はpasskeyEnabledの値を使用、編集不可の場合は強制値を使用
         return this.isPasskeyEditable ? this.passkeyEnabled : {{ $currentPasskeyEnabled ? 'true' : 'false' }};
-    },
-    init() {
-        // パスキー有効状態の変更を監視
-        this.$watch('passkeyEnabled', value => {
-            // パスキーが無効になった場合、デフォルト認証方法を強制的にメール（0）に変更
-            if (!value) {
-                this.defaultMethod = '0';
-            }
-        });
     }
 }">
     {{-- 1. 二段階認証モード --}}
@@ -179,27 +168,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
         </fieldset>
     </div>
-
-    {{-- 3. デフォルトの認証方法 --}}
-    <fieldset>
-        <legend>{{ __('components.two_fa.default_method') }}</legend>
-        
-        {{-- パスキーが無効の場合の情報メッセージ（親スコープの変数を使用） --}}
-        <div x-show="!isPasskeyActuallyEnabled" x-transition class="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
-            <p class="text-sm text-blue-800 dark:text-blue-200">
-                <i class="fas fa-info-circle mr-1"></i>
-                {{ __('components.two_fa.passkey_disabled_default_email_only') }}
-            </p>
-        </div>
-        
-        {{-- ラジオカードグループ（無効化条件を適用） --}}
-        <div :class="{ 'opacity-50 pointer-events-none': !twoFaEnabled || !isPasskeyActuallyEnabled }">
-            <x-two-fa.default-method
-                :twoFaPasskeyEnabled="$currentPasskeyEnabled"
-                :twoFaDefaultMethod="(string) $twoFaDefaultMethod"
-                :columns="2"
-                xModel="defaultMethod"
-            />
-        </div>
-    </fieldset>
 </div>

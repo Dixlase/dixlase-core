@@ -23,8 +23,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'twoFaModeValue' => '3',
     'twoFaPasskeyModeName' => 'two_fa_passkey_mode',
     'twoFaPasskeyModeValue' => '2',
-    'twoFaDefaultMethodName' => 'two_fa_default_method',
-    'twoFaDefaultMethodValue' => '0',
     'columns' => 4,
 ])
 
@@ -49,27 +47,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             xModel="passkeyMode"
         />
     </div>
-
-    {{-- 3. デフォルトの認証方法 --}}
-    <fieldset>
-        <legend>{{ __('components.two_fa.default_method') }}</legend>
-        
-        {{-- パスキーが無効の場合の情報メッセージ --}}
-        <div x-show="!passkeyEnabled" x-transition class="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
-            <p class="text-sm text-blue-800 dark:text-blue-200">
-                <i class="fas fa-info-circle mr-1"></i>
-                {{ __('components.two_fa.passkey_disabled_default_email_only') }}
-            </p>
-        </div>
-        
-        {{-- ラジオカードグループ（無効化条件を適用） --}}
-        <div :class="{ 'opacity-50 pointer-events-none': !twoFaEnabled || !passkeyEnabled }">
-            <x-two-fa.default-method
-                :twoFaPasskeyEnabled="old($twoFaPasskeyModeName, $twoFaPasskeyModeValue) != '0'"
-                :twoFaDefaultMethod="old($twoFaDefaultMethodName, (string) $twoFaDefaultMethodValue)"
-                :columns="2"
-                xModel="defaultMethod"
-            />
-        </div>
-    </fieldset>
 </div>
