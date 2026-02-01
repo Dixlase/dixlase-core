@@ -160,8 +160,7 @@ class AdminMemberController extends AdminLoggedInController
         $this->loadMemberFormParams();
 
         // 新規作成時は、メールサーバーが設定されていれば2FA有効化可能
-        $member = new Member();
-        $this->viewParams['canEnableTwoFa'] = $member->isMailServerConfigured();
+        $this->viewParams['canEnableTwoFa'] = \App\Services\MailServerValidatorService::isMailServerTested();
         $this->viewParams['twoFaEnableBlockReasons'] = $this->viewParams['canEnableTwoFa'] ? [] : ['no_mail_server'];
 
         return view('admin.members.create', $this->viewParams);

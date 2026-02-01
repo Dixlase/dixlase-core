@@ -99,6 +99,7 @@ return [
     'yes' => 'はい',
     'no' => 'いいえ',
     'ok' => 'OK',
+    'processing' => '処理中...',
     'error_occurred' => 'エラーが発生しました',
 
     // 状態・属性

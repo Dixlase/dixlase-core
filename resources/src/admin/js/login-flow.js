@@ -31,15 +31,14 @@ export function createLoginFlow() {
             };
 
             // old入力値があればステップ2を表示（パスワード間違い時）
-            const oldLogin = document.querySelector('input[name="login"]')?.value;
+            const oldLogin = el.dataset.oldLogin;
+
             if (oldLogin) {
                 this.identifier = oldLogin;
                 this.step = 2;
                 // パスキー情報は再チェックが必要だが、エラー表示を優先するためスキップ
                 this.hasPasskey = false;
             }
-
-            // sessionStorageは使用しない（サーバー側でセッションフラッシュメッセージを設定）
         },
         step: 1,
         identifier: '',
