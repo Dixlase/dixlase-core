@@ -67,6 +67,40 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
             </section>
 
+            <!-- パスキーデバイス管理設定 -->
+            <section>
+                <h2>{{ __('admin/settings/security/two-fa.passkey_device_management') }}</h2>
+                <p>{{ __('admin/settings/security/two-fa.passkey_device_management_description') }}</p>
+
+                <div :class="{ 'opacity-50 pointer-events-none': !twoFaEnabled }">
+                    <input type="hidden" name="two_fa_passkey_max_devices" :value="twoFaEnabled ? null : '{{ $twoFaPasskeyMaxDevices }}'" x-show="!twoFaEnabled">
+
+                    <div class="space-y-4">
+                        <div>
+                            <label for="two_fa_passkey_max_devices" class="block text-sm font-medium">
+                                {{ __('admin/settings/security/two-fa.passkey_max_devices') }}
+                            </label>
+                            <div class="mt-1 flex items-center space-x-2">
+                                <x-form.text
+                                    type="number"
+                                    id="two_fa_passkey_max_devices"
+                                    name="two_fa_passkey_max_devices"
+                                    :value="old('two_fa_passkey_max_devices', $twoFaPasskeyMaxDevices)"
+                                    :min="1"
+                                    :max="10"
+                                    :step="1"
+                                    class="input-common input-sm"
+                                />
+                                <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/settings/security/two-fa.devices_unit') }}</span>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                {{ __('admin/settings/security/two-fa.passkey_max_devices_help') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- 二段階認証詳細設定 -->
             <section>
                 <h2>{{ __('admin/settings/security/two-fa.two_fa_detailed_settings') }}</h2>

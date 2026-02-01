@@ -29,6 +29,13 @@ return [
     'two_fa_basic_settings_description' => '二段階認証の基本的な動作を設定します。',
     'mail_server_test_warning' => 'メール認証を使用するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">基本設定</a>でメールサーバー設定とメールテストをすべて完了してください。',
     
+    // パスキーデバイス管理設定
+    'passkey_device_management' => 'パスキーデバイス管理設定',
+    'passkey_device_management_description' => 'パスキーデバイスの登録数などを設定します。',
+    'passkey_max_devices' => '最大登録デバイス数',
+    'passkey_max_devices_help' => '1人のユーザーが登録できるパスキーデバイスの最大数。1〜10台の範囲で設定できます。',
+    'devices_unit' => '台',
+    
     // 二段階認証詳細設定
     'two_fa_detailed_settings' => '二段階認証詳細設定',
     'two_fa_detailed_settings_description' => '二段階認証の詳細な動作を設定します。',

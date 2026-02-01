@@ -250,6 +250,8 @@ return [
         'passkey_warning_title' => 'No Passkey Device Registered',
         'passkey_warning_message' => 'You need to register a device to use Passkey. Passkey authentication cannot be used without a registered device.',
         'passkey_warning_action' => 'Please register a device using the "Add Passkey" button below.',
+        'device_count' => 'Registered: :current / :max devices',
+        'max_devices_reached' => 'You have reached the maximum number of devices (:max). To add a new device, please delete an existing one.',
         'recovery_codes_title' => 'Recovery Codes',
         'recovery_codes_remaining' => 'You have :count recovery codes remaining',
         'recovery_codes_not_generated' => 'Recovery codes have not been generated',
