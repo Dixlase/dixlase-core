@@ -71,7 +71,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         type="submit"
                         variant="primary"
                         size="md"
-                        xDisabled="loading"
+                        xDisabled="loading || !identifier.trim()"
                         class="w-full"
                     >
                         <span x-show="!loading">{{ __('admin/auth.login.continue') }}</span>
@@ -82,6 +82,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </svg>
                             {{ __('common.processing') }}
                         </span>
+                    </x-form.button>
+                </div>
+
+                <!-- 区切り線 -->
+                <div class="mt-4 mb-4 flex items-center">
+                    <div class="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
+                    <span class="px-3 text-sm text-gray-500 dark:text-gray-400">{{ __('common.or') }}</span>
+                    <div class="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
+                </div>
+
+                <!-- パスキーボタン -->
+                <div class="mt-4">
+                    <x-form.button
+                        type="button"
+                        variant="primary"
+                        size="md"
+                        xClick="loginWithPasskeyDirect"
+                        xDisabled="loading || !identifier.trim()"
+                        class="w-full"
+                    >
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                        </svg>
+                        {{ __('admin/auth.login.login_with_passkey') }}
                     </x-form.button>
                 </div>
             </form>
@@ -100,30 +124,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         xClick="resetFlow"
                         :label="__('admin/auth.login.change_account')"
                     />
-                </div>
-            </div>
-
-            {{-- パスキー認証ボタン --}}
-            <div x-show="hasPasskey" class="mb-4">
-                <x-form.button
-                    type="button"
-                    variant="primary"
-                    size="lg"
-                    xClick="loginWithPasskey"
-                    xDisabled="loading"
-                    class="w-full"
-                >
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
-                    </svg>
-                    {{ __('admin/auth.login.login_with_passkey') }}
-                </x-form.button>
-                
-                <!-- 区切り線 -->
-                <div class="mt-4 mb-4 flex items-center">
-                    <div class="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
-                    <span class="px-3 text-sm text-gray-500 dark:text-gray-400">{{ __('common.or') }}</span>
-                    <div class="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
                 </div>
             </div>
 
@@ -166,6 +166,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endif
                 </div>
             </form>
+
+            {{-- パスキー認証ボタン --}}
+            <div x-show="hasPasskey" class="mt-6">
+                <!-- 区切り線 -->
+                <div class="mb-4 flex items-center">
+                    <div class="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
+                    <span class="px-3 text-sm text-gray-500 dark:text-gray-400">{{ __('common.or') }}</span>
+                    <div class="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
+                </div>
+
+                <x-form.button
+                    type="button"
+                    variant="primary"
+                    size="md"
+                    xClick="loginWithPasskey"
+                    xDisabled="loading"
+                    class="w-full"
+                >
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                    </svg>
+                    {{ __('admin/auth.login.login_with_passkey') }}
+                </x-form.button>
+            </div>
         </div>
     </div>
 @endsection

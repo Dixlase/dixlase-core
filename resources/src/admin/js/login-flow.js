@@ -91,7 +91,17 @@ export function createLoginFlow() {
             }
         },
 
-        async loginWithPasskey() {
+        async loginWithPasskeyDirect() {
+            // アカウント名が未入力の場合は何もしない
+            if (!this.identifier.trim()) {
+                return;
+            }
+
+            // 直接パスキー認証を実行（ステップは変更しない）
+            await this.loginWithPasskey(false);
+        },
+
+        async loginWithPasskey(fromStep2 = true) {
             this.loading = true;
             this.errors = {};
 
@@ -121,6 +131,7 @@ export function createLoginFlow() {
 
                     this.errors.login = challengeData.error || challengeData.message || this.translations.errorOccurred;
                     this.loading = false;
+                    // ステップ1から呼ばれた場合はステップ1のまま、ステップ2から呼ばれた場合はステップ2のまま
                     return;
                 }
 
