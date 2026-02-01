@@ -41,6 +41,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         data-trans-passkey-cancelled="{{ __('admin/auth.login.passkey_cancelled') }}"
         data-old-login="{{ old('login') }}"
     >
+        {{-- Alpine.jsエラーメッセージ（flash-messageと同じ位置） --}}
+        <div x-show="errors.login" x-transition class="mb-6 p-4 font-semibold text-red-800 bg-red-100 border border-red-200 rounded-xl dark:text-red-200 dark:bg-red-900 dark:border-red-700">
+            <span x-text="errors.login"></span>
+        </div>
+
         {{-- ステップ1: 識別子入力 --}}
         <div x-show="step === 1" x-transition>
             <form @submit.prevent="checkIdentifier">
@@ -61,8 +66,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :autofocus="true"
                     autocomplete="username"
                     xModel="identifier"
-                    showError="errors.login"
-                    errorMessage="errors.login"
                 />
 
                 <!-- 続けるボタン -->

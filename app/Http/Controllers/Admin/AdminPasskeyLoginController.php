@@ -63,10 +63,8 @@ class AdminPasskeyLoginController extends AdminController
         
         if (!$member) {
             $errorMessage = __('auth.failed');
-            session()->flash('error', $errorMessage);
-            session()->flash('_old_input', ['login' => $login]);
             return response()->json([
-                'redirect' => true,
+                'success' => false,
                 'error' => $errorMessage,
             ], 422);
         }
@@ -74,10 +72,8 @@ class AdminPasskeyLoginController extends AdminController
         // パスキーが登録されているか確認（Laragear WebAuthn）
         if (!$member->webauthnCredentials()->exists()) {
             $errorMessage = __('admin/auth.login.no_passkey_registered');
-            session()->flash('error', $errorMessage);
-            session()->flash('_old_input', ['login' => $login]);
             return response()->json([
-                'redirect' => true,
+                'success' => false,
                 'error' => $errorMessage,
             ], 422);
         }
@@ -93,10 +89,8 @@ class AdminPasskeyLoginController extends AdminController
             
             if ($twoFaModeValue === 0) {
                 $errorMessage = __('admin/auth.login.two_fa_disabled');
-                session()->flash('error', $errorMessage);
-                session()->flash('_old_input', ['login' => $login]);
                 return response()->json([
-                    'redirect' => true,
+                    'success' => false,
                     'error' => $errorMessage,
                 ], 422);
             }

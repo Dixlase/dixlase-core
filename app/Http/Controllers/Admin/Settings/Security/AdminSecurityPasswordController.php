@@ -47,11 +47,11 @@ class AdminSecurityPasswordController extends AdminLoggedInController
             'pwned_password_check_enabled' => filter_var($this->securitySettingRepository->get('pwned_password_check_enabled', false), FILTER_VALIDATE_BOOLEAN),
             
             // デフォルトパスワードポリシー
-            'password_min_length_default' => (int) $this->securitySettingRepository->get('password_min_length_default', 8),
-            'password_require_uppercase_default' => filter_var($this->securitySettingRepository->get('password_require_uppercase_default', true), FILTER_VALIDATE_BOOLEAN),
-            'password_require_number_default' => filter_var($this->securitySettingRepository->get('password_require_number_default', true), FILTER_VALIDATE_BOOLEAN),
-            'password_require_symbol_default' => filter_var($this->securitySettingRepository->get('password_require_symbol_default', false), FILTER_VALIDATE_BOOLEAN),
-            'password_reset_enabled_default' => filter_var($this->securitySettingRepository->get('password_reset_enabled_default', true), FILTER_VALIDATE_BOOLEAN),
+            'password_min_length' => (int) $this->securitySettingRepository->get('password_min_length', 8),
+            'password_require_uppercase' => filter_var($this->securitySettingRepository->get('password_require_uppercase', true), FILTER_VALIDATE_BOOLEAN),
+            'password_require_number' => filter_var($this->securitySettingRepository->get('password_require_number', true), FILTER_VALIDATE_BOOLEAN),
+            'password_require_symbol' => filter_var($this->securitySettingRepository->get('password_require_symbol', false), FILTER_VALIDATE_BOOLEAN),
+            'password_reset_enabled' => filter_var($this->securitySettingRepository->get('password_reset_enabled', true), FILTER_VALIDATE_BOOLEAN),
         ];
 
         $minLengthOptions = collect(__('passwords.requirements.password_min_length_options'))
@@ -78,20 +78,20 @@ class AdminSecurityPasswordController extends AdminLoggedInController
         }
 
         // デフォルトパスワードポリシー
-        if (array_key_exists('password_min_length_default', $validated)) {
-            $this->securitySettingRepository->set('password_min_length_default', (int) $validated['password_min_length_default']);
+        if (array_key_exists('password_min_length', $validated)) {
+            $this->securitySettingRepository->set('password_min_length', (int) $validated['password_min_length']);
         }
-        if (array_key_exists('password_require_uppercase_default', $validated)) {
-            $this->securitySettingRepository->set('password_require_uppercase_default', $validated['password_require_uppercase_default'] ?? false);
+        if (array_key_exists('password_require_uppercase', $validated)) {
+            $this->securitySettingRepository->set('password_require_uppercase', $validated['password_require_uppercase'] ?? false);
         }
-        if (array_key_exists('password_require_number_default', $validated)) {
-            $this->securitySettingRepository->set('password_require_number_default', $validated['password_require_number_default'] ?? false);
+        if (array_key_exists('password_require_number', $validated)) {
+            $this->securitySettingRepository->set('password_require_number', $validated['password_require_number'] ?? false);
         }
-        if (array_key_exists('password_require_symbol_default', $validated)) {
-            $this->securitySettingRepository->set('password_require_symbol_default', $validated['password_require_symbol_default'] ?? false);
+        if (array_key_exists('password_require_symbol', $validated)) {
+            $this->securitySettingRepository->set('password_require_symbol', $validated['password_require_symbol'] ?? false);
         }
-        if (array_key_exists('password_reset_enabled_default', $validated)) {
-            $this->securitySettingRepository->set('password_reset_enabled_default', $validated['password_reset_enabled_default'] ?? false);
+        if (array_key_exists('password_reset_enabled', $validated)) {
+            $this->securitySettingRepository->set('password_reset_enabled', $validated['password_reset_enabled'] ?? false);
         }
 
         return redirect()->route('admin.settings.security.password')

@@ -95,22 +95,14 @@
         </div>
     </form>
 
-    <!-- Passkeyデバイス未登録警告 -->
-    @if($showPasskeyDeviceWarning ?? false)
-        <x-message 
-            type="warning" 
-            :message="'<strong>' . __('two_fa.passkey_device_not_registered_title') . '</strong><br>' . __('two_fa.passkey_device_not_registered_message')" 
-        />
+    <!-- メール認証へのリンク -->
+    @if(isset($emailChallengeRoute))
+        <div class="mt-4 text-center">
+            <a href="{{ route($emailChallengeRoute) }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                <i class="fas fa-envelope mr-1"></i>{{ __('two_fa.email.use_email_code') }}
+            </a>
+        </div>
     @endif
-
-    <!-- 別の認証方法に切り替える -->
-    @include('two-fa.partials.alternative-methods', [
-        'methods' => $availableMethods ?? [],
-        'currentMethod' => null,
-        'context' => $contextValue,
-        'recoveryCodeRoute' => null,
-        'showRecoveryCode' => false,
-    ])
 @endsection
 
 @section('back_link')

@@ -157,7 +157,7 @@ class AdminLoginController extends AdminController
      */
     protected function isPasswordResetEnabled(): bool
     {
-        return (bool) \App\Models\MemberSetting::getValue('password_reset_enabled', true);
+        return (bool) \App\Models\SecuritySetting::getValue('password_reset_enabled', false);
     }
 
     /**

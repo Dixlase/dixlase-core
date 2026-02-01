@@ -786,6 +786,7 @@ trait TwoFaAuthenticationTrait
             'context' => $this->getContext(),
             'loginRoute' => route($this->getLoginRoute()),
             'action' => route($this->getTwoFaRoutePrefix() . '.two-fa.recovery-code.confirm'),
+            'emailChallengeRoute' => $this->getTwoFaRoutePrefix() . '.two-fa.email.show',
         ]);
     }
 
