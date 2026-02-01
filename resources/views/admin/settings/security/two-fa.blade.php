@@ -28,19 +28,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div x-data="{
             twoFaMode: '{{ old('two_fa_mode', (string) $twoFaMode) }}',
             passkeyMode: '{{ old('two_fa_passkey_mode', (string) $twoFaPasskeyMode) }}',
-            defaultMethod: '{{ old('two_fa_default_method', (string) $twoFaDefaultMethod) }}',
             get twoFaEnabled() {
                 return this.twoFaMode !== '0';
             },
             get passkeyEnabled() {
                 return this.passkeyMode !== '0';
-            },
-            init() {
-                this.$watch('passkeyMode', value => {
-                    if (value === '0') {
-                        this.defaultMethod = '0';
-                    }
-                });
             }
         }">
             <!-- 二段階認証基本設定 -->
@@ -61,8 +53,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :twoFaModeValue="(string) $twoFaMode"
                     twoFaPasskeyModeName="two_fa_passkey_mode"
                     :twoFaPasskeyModeValue="(string) $twoFaPasskeyMode"
-                    twoFaDefaultMethodName="two_fa_default_method"
-                    :twoFaDefaultMethodValue="(string) $twoFaDefaultMethod"
                     :columns="4"
                 />
             </section>

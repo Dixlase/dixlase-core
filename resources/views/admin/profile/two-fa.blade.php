@@ -87,15 +87,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             xModel="passkeyEnabled"
                         />
                     </div>
-
-                    {{-- 3. デフォルトの認証方法 --}}
-                    <div :class="{ 'opacity-50 pointer-events-none': !twoFaEnabled || !passkeyEnabled }">
-                        <x-two-fa.default-method
-                            :twoFaPasskeyEnabled="$currentPasskeyEnabled"
-                            :twoFaDefaultMethod="(string) (Auth::guard('member')->user()->two_fa_default_method ?? $twoFaDefaultMethod)"
-                            :columns="2"
-                        />
-                    </div>
                 </section>
             </div>
 

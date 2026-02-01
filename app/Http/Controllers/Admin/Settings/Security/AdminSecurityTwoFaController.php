@@ -68,12 +68,6 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
             $twoFaPasskeyMode = (int) old('two_fa_passkey_mode');
         }
 
-        // デフォルトの二段階認証方法（セキュリティ設定から取得）
-        $twoFaDefaultMethod = (int) $this->securitySettingRepository->get('two_fa_default_method', '0');
-        if (old('two_fa_default_method') !== null) {
-            $twoFaDefaultMethod = (int) old('two_fa_default_method');
-        }
-
         // パスキーデバイス最大登録数（セキュリティ設定から取得）
         $twoFaPasskeyMaxDevices = (int) $this->securitySettingRepository->get('two_fa_passkey_max_devices', '5');
         if (old('two_fa_passkey_max_devices') !== null) {
@@ -98,7 +92,6 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
         $this->viewParams['twoFaEnabled'] = $twoFaMode !== AuthenticationMode::Disabled->value;
         $this->viewParams['twoFaGlobalOptions'] = $twoFactorGlobalOptions;
         $this->viewParams['twoFaPasskeyMode'] = $twoFaPasskeyMode;
-        $this->viewParams['twoFaDefaultMethod'] = $twoFaDefaultMethod;
         $this->viewParams['twoFaPasskeyMaxDevices'] = $twoFaPasskeyMaxDevices;
         $this->viewParams['twoFaExpireMinutes'] = $twoFaExpireMinutes;
         $this->viewParams['twoFaResendIntervalSeconds'] = $twoFaResendIntervalSeconds;
@@ -127,9 +120,6 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
         }
         if (array_key_exists('two_fa_passkey_mode', $validated)) {
             $this->securitySettingRepository->set('two_fa_passkey_mode', (string) $validated['two_fa_passkey_mode']);
-        }
-        if (array_key_exists('two_fa_default_method', $validated)) {
-            $this->securitySettingRepository->set('two_fa_default_method', (string) $validated['two_fa_default_method']);
         }
         if (array_key_exists('two_fa_passkey_max_devices', $validated)) {
             $this->securitySettingRepository->set('two_fa_passkey_max_devices', (string) $validated['two_fa_passkey_max_devices']);

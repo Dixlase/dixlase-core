@@ -128,10 +128,6 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '3'] // 0=無効, 1=異なるデバイス, 2=常に有効, 3=プロフィール設定に従う
         );
         SecuritySetting::updateOrCreate(
-            ['name' => 'two_fa_default_method'],
-            ['value' => '0'] // デフォルトの認証方法はメール認証
-        );
-        SecuritySetting::updateOrCreate(
             ['name' => 'two_fa_passkey_mode'],
             ['value' => '2'] // 0=無効, 1=有効, 2=プロフィール設定に従う（デフォルト: プロフィール設定に従う）
         );
