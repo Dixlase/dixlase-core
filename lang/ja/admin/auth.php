@@ -27,6 +27,7 @@ return [
         'login_with_passkey' => 'パスキーでログイン',
         'no_passkey_registered' => 'パスキーが登録されていません',
         'passkey_cancelled' => 'パスキー認証がキャンセルされました',
+        'two_fa_disabled' => '二段階認証が無効になっています。パスワードでログインしてください。',
     ],
     'forgot_password' => [
         'title' => 'パスワードリセット',

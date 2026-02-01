@@ -41,7 +41,7 @@ class AdminSecurityAuthenticationUpdateRequest extends FormRequest
     {
         return [
             // 二段階認証基本設定
-            'two_fa_force_mode' => ['nullable', 'integer', 'in:0,1,2,3'],
+            'two_fa_mode' => ['nullable', 'integer', 'in:0,1,2,3'],
             'two_fa_passkey_mode' => ['nullable', 'integer', 'in:0,1,2'],
             'two_fa_default_method' => ['nullable', 'integer', 'in:0,1'],
 

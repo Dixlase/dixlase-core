@@ -189,7 +189,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     /**
      * 二段階認証モードを取得
      */
-    public function getTwoFaMode(): int
+    public function getTwoFaMode(): AuthenticationMode|int
     {
         return $this->two_fa_mode ?? 0;
     }

@@ -62,16 +62,44 @@ class AdminPasskeyLoginController extends AdminController
             ->first();
         
         if (!$member) {
+            $errorMessage = __('auth.failed');
+            session()->flash('error', $errorMessage);
+            session()->flash('_old_input', ['login' => $login]);
             return response()->json([
-                'error' => __('auth.failed'),
+                'redirect' => true,
+                'error' => $errorMessage,
             ], 422);
         }
 
         // パスキーが登録されているか確認（Laragear WebAuthn）
         if (!$member->webauthnCredentials()->exists()) {
+            $errorMessage = __('admin/auth.login.no_passkey_registered');
+            session()->flash('error', $errorMessage);
+            session()->flash('_old_input', ['login' => $login]);
             return response()->json([
-                'error' => __('admin/auth.login.no_passkey_registered'),
+                'redirect' => true,
+                'error' => $errorMessage,
             ], 422);
+        }
+
+        // 二段階認証が有効かチェック
+        // セキュリティ設定で強制されている場合は個別設定を無視
+        $globalTwoFaMode = \App\Models\SecuritySetting::getValue('two_fa_mode', 0);
+        
+        // グローバル設定が無効（0）の場合のみ、個別設定をチェック
+        if ($globalTwoFaMode == 0) {
+            $twoFaMode = $member->getTwoFaMode();
+            $twoFaModeValue = is_int($twoFaMode) ? $twoFaMode : $twoFaMode->value;
+            
+            if ($twoFaModeValue === 0) {
+                $errorMessage = __('admin/auth.login.two_fa_disabled');
+                session()->flash('error', $errorMessage);
+                session()->flash('_old_input', ['login' => $login]);
+                return response()->json([
+                    'redirect' => true,
+                    'error' => $errorMessage,
+                ], 422);
+            }
         }
 
         try {

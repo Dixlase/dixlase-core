@@ -121,6 +121,25 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '']
         );
 
+        
+        // Two-factor authentication basic settings (moved from MembersSettingsSeeder)
+        SecuritySetting::updateOrCreate(
+            ['name' => 'two_fa_mode'],
+            ['value' => '3'] // 0=無効, 1=異なるデバイス, 2=常に有効, 3=プロフィール設定に従う
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'two_fa_default_method'],
+            ['value' => '0'] // デフォルトの認証方法はメール認証
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'two_fa_passkey_mode'],
+            ['value' => '2'] // 0=無効, 1=有効, 2=プロフィール設定に従う（デフォルト: プロフィール設定に従う）
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'two_fa_passkey_max_devices'],
+            ['value' => '3'] // Passkey最大登録数（1-5）
+        );
+
         // Two-factor authentication detailed settings (moved from MembersSettingsSeeder)
         SecuritySetting::updateOrCreate(
             ['name' => 'two_fa_expire_minutes'],

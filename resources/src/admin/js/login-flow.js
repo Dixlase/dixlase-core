@@ -113,6 +113,12 @@ export function createLoginFlow() {
                 const challengeData = await challengeResponse.json();
 
                 if (!challengeResponse.ok || !challengeData.success) {
+                    // リダイレクトフラグがある場合はページをリロード
+                    if (challengeData.redirect) {
+                        window.location.reload();
+                        return;
+                    }
+
                     this.errors.login = challengeData.error || challengeData.message || this.translations.errorOccurred;
                     this.loading = false;
                     return;
