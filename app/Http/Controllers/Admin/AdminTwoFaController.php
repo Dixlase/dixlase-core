@@ -22,7 +22,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\MemberSetting;
+use App\Models\SecuritySetting;
 use App\Services\TwoFa\TwoFaService;
 
 class AdminTwoFaController extends AdminLoginController
@@ -34,7 +34,7 @@ class AdminTwoFaController extends AdminLoginController
      */
     protected function getSettingModelClass(): string
     {
-        return MemberSetting::class;
+        return SecuritySetting::class;
     }
 
     /**
@@ -43,7 +43,7 @@ class AdminTwoFaController extends AdminLoginController
     protected function getTwoFaService()
     {
         return app(TwoFaService::class, [
-            'settingModelClass' => MemberSetting::class,
+            'settingModelClass' => SecuritySetting::class,
             'context' => 'admin'
         ]);
     }

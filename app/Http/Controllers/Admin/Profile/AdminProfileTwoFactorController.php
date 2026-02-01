@@ -26,7 +26,7 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Profile\ProfileTwoFactorUpdateRequest;
 use App\Enums\AuthenticationMode;
 use App\Enums\TwoFaMethod;
-use App\Models\MemberSetting;
+use App\Models\SecuritySetting;
 use App\Services\MailServerValidatorService;
 use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
@@ -70,13 +70,13 @@ class AdminProfileTwoFactorController extends AdminLoggedInController
         $twoFaOldMode = is_int($member->two_fa_mode) ? $member->two_fa_mode : $member->two_fa_mode->value;
         
         // two_fa_mode は全体設定が UseProfileSetting のときだけ上書き
-        $twoFaForceMode = (int) MemberSetting::getValue('two_fa_mode', AuthenticationMode::UseProfileSetting->value);
+        $twoFaForceMode = (int) SecuritySetting::getValue('two_fa_mode', AuthenticationMode::UseProfileSetting->value);
         if ($twoFaForceMode === AuthenticationMode::UseProfileSetting->value && array_key_exists('two_fa_mode', $validated)) {
             $member->two_fa_mode = (int) $validated['two_fa_mode'];
         }
         
         // two_fa_passkey_enabled は全体設定の two_fa_passkey_mode が UseProfileSetting のときだけ上書き
-        $twoFaPasskeyMode = (int) MemberSetting::getValue('two_fa_passkey_mode', '2');
+        $twoFaPasskeyMode = (int) SecuritySetting::getValue('two_fa_passkey_mode', '2');
         if ($twoFaPasskeyMode === \App\Enums\PasskeyMode::UseProfileSetting->value && array_key_exists('two_fa_passkey_enabled', $validated)) {
             $member->two_fa_passkey_enabled = (bool) $validated['two_fa_passkey_enabled'];
         }
@@ -148,14 +148,14 @@ class AdminProfileTwoFactorController extends AdminLoggedInController
     private function loadTwoFactorSettings($member)
     {
         // 二段階認証設定の追加
-        $twoFaForceMode = (int) MemberSetting::getValue(
+        $twoFaForceMode = (int) SecuritySetting::getValue(
             'two_fa_mode',
             AuthenticationMode::UseProfileSetting->value
         );
         $twoFaMode = $member->two_fa_mode;
         
         // グローバル設定で有効な二段階認証方法を取得
-        $twoFaPasskeyMode = (int) MemberSetting::getValue('two_fa_passkey_mode', '2');
+        $twoFaPasskeyMode = (int) SecuritySetting::getValue('two_fa_passkey_mode', '2');
         $twoFaPasskeyEnabled = $twoFaPasskeyMode > 0;
         
         // パスキー設定の計算
@@ -175,7 +175,7 @@ class AdminProfileTwoFactorController extends AdminLoggedInController
             $twoFaEnabledMethods[TwoFaMethod::PASSKEY->value] = TwoFaMethod::PASSKEY->translationKey();
         }
         
-        $twoFaDefaultMethod = (int) MemberSetting::getValue('two_fa_default_method', TwoFaMethod::EMAIL->value);
+        $twoFaDefaultMethod = (int) SecuritySetting::getValue('two_fa_default_method', TwoFaMethod::EMAIL->value);
         
         $this->viewParams['twoFaForceMode'] = $twoFaForceMode;
         $this->viewParams['twoFaMode'] = $twoFaMode;
