@@ -51,20 +51,28 @@ class AdminLoginIdentifierCheckController extends AdminController
         $ipAddress = $request->ip();
         
         // ロックアウト設定を取得
-        $settings = IdentifierCheckHelper::getLockoutSettings(\App\Models\MemberSetting::class);
+        $settings = IdentifierCheckHelper::getLockoutSettings(\App\Models\SecuritySetting::class);
         
-        // 識別子確認を実行（レート制限付き）
-        $result = IdentifierCheckHelper::checkWithRateLimit(
-            $login,
-            $ipAddress,
-            Member::class,
-            $settings,
-            'admin'
-        );
-        
-        return response()->json([
-            'exists' => $result['exists'],
-            'has_passkey' => $result['has_passkey'],
-        ]);
+        try {
+            // 識別子確認を実行（レート制限付き）
+            $result = IdentifierCheckHelper::checkWithRateLimit(
+                $login,
+                $ipAddress,
+                Member::class,
+                $settings,
+                'admin'
+            );
+            
+            return response()->json([
+                'exists' => $result['exists'],
+                'has_passkey' => $result['has_passkey'],
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // バリデーションエラーの場合、JSONエラーレスポンスを返す
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        }
     }
 }

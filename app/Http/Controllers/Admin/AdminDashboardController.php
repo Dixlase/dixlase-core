@@ -51,7 +51,7 @@ class AdminDashboardController extends AdminLoggedInController
 
         // 2FAが有効かつ回復コード未生成の場合、自動生成してモーダル表示
         $twoFaMode = is_int($user->two_fa_mode) ? $user->two_fa_mode : $user->two_fa_mode->value;
-        $isTwoFaEnabled = ($twoFaMode === AuthenticationMode::Always->value || $twoFaMode === AuthenticationMode::Optional->value);
+        $isTwoFaEnabled = ($twoFaMode === AuthenticationMode::Always->value || $twoFaMode === AuthenticationMode::DifferentDevice->value);
         
         $shouldGenerateRecoveryCodes = false;
         $shouldPromptPasskey = false;

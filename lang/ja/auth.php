@@ -1,0 +1,51 @@
+<?php
+
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * Website: https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
+return [
+    /*
+    |--------------------------------------------------------------------------
+    | 認証関連の翻訳（共通）
+    |--------------------------------------------------------------------------
+    |
+    | 管理画面とユーザー画面で共通して使用される認証関連の翻訳
+    |
+    */
+
+    'failed' => 'ログイン情報が正しくありません。',
+    'failed_with_attempts' => 'ログイン情報が正しくありません。残り :attempts 回試行できます。',
+    'password' => 'パスワードが正しくありません。',
+    'throttle' => 'ログイン試行回数が多すぎます。:seconds秒後に再度お試しください。',
+    'lockout' => 'ログイン試行回数が上限に達しました。:minutes分後に再度お試しください。',
+    'two_fa_locked_out' => '二段階認証の試行回数が上限に達しました。:minutes分後に再度お試しください。',
+
+    // パスワードリセット
+    'reset' => [
+        'sent' => 'パスワードリセットリンクをメールで送信しました。',
+        'token' => 'このパスワードリセットトークンは無効です。',
+        'user' => 'このメールアドレスのユーザーが見つかりません。',
+        'password' => 'パスワードは8文字以上で、確認用パスワードと一致する必要があります。',
+        'reset' => 'パスワードをリセットしました。',
+        'throttled' => 'しばらく待ってから再度お試しください。',
+    ],
+
+    // 認証モード（通知設定用）
+    'authentication_mode' => [
+        'notification' => [
+            'disabled' => '無効',
+            'different_device' => '異なるデバイス・IPでのログイン時のみ',
+            'always' => '常に通知',
+            'use_profile_setting' => 'プロフィール設定に従う',
+        ],
+    ],
+];

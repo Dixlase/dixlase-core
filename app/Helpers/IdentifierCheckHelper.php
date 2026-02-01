@@ -48,6 +48,7 @@ class IdentifierCheckHelper
         // レート制限チェック
         if (RateLimiter::tooManyAttempts($rateLimitKey, $maxAttempts)) {
             $seconds = RateLimiter::availableIn($rateLimitKey);
+            $minutes = ceil($seconds / 60);
             
             // ロックアウトログ記録
             AuditLog::logSecurity(AuditLog::ACTION_LOCKOUT_TRIGGERED, [
@@ -57,6 +58,7 @@ class IdentifierCheckHelper
                     'reason' => 'login_identifier_check_rate_limit',
                     'login_identifier' => $login,
                     'available_in_seconds' => $seconds,
+                    'available_in_minutes' => $minutes,
                     'max_attempts' => $maxAttempts,
                     'time_window_minutes' => $timeWindow,
                     'check_context' => $context,
@@ -66,13 +68,14 @@ class IdentifierCheckHelper
             Log::warning('Login identifier check rate limit exceeded', [
                 'ip' => $ipAddress,
                 'login' => $login,
-                'available_in' => $seconds,
+                'available_in_seconds' => $seconds,
+                'available_in_minutes' => $minutes,
                 'max_attempts' => $maxAttempts,
                 'context' => $context,
             ]);
             
             throw ValidationException::withMessages([
-                'login' => __('auth.throttle', ['seconds' => $seconds]),
+                'login' => __('auth.lockout', ['minutes' => $minutes]),
             ]);
         }
 
@@ -153,9 +156,32 @@ class IdentifierCheckHelper
                 'context' => $context,
             ]);
             
-            // エラーメッセージは統一（ユーザー列挙攻撃対策）
+            // ログイン試行を記録（ロックアウト対策）
+            \App\Models\MemberLoginAttempt::recordAttempt(
+                $login,
+                $ipAddress,
+                request()->userAgent() ?? 'Unknown',
+                false
+            );
+            
+            // ロックアウト状態をチェック
+            $lockoutInfo = \App\Helpers\LoginLockoutHelper::checkLockoutStatus(
+                request(),
+                $login,
+                self::getLockoutSettings(\App\Models\SecuritySetting::class),
+                \App\Models\SecuritySetting::class
+            );
+            
+            // エラーメッセージを決定
+            $errorMessage = __('auth.failed');
+            if ($lockoutInfo['is_locked_out']) {
+                $errorMessage = __('auth.lockout', ['minutes' => $lockoutInfo['lockout_minutes']]);
+            } elseif ($lockoutInfo['remaining_attempts'] > 0) {
+                $errorMessage = __('auth.failed_with_attempts', ['attempts' => $lockoutInfo['remaining_attempts']]);
+            }
+            
             throw ValidationException::withMessages([
-                'login' => __('auth.failed'),
+                'login' => $errorMessage,
             ]);
         }
     }
