@@ -50,7 +50,9 @@ TEXT,
         'resend_success' => 'Email has been resent.',
         'resend_failed' => 'Failed to resend code',
         'network_error' => 'A network error occurred',
+        'minutes_suffix' => 'min',
         'seconds_suffix' => 's',
+        'use_email_code' => 'Email Authentication',
     ],
     
     // Device Authentication

@@ -50,7 +50,9 @@ TEXT,
         'resend_success' => 'メールを再送信しました。',
         'resend_failed' => 'コードの再送信に失敗しました',
         'network_error' => 'ネットワークエラーが発生しました',
+        'minutes_suffix' => '分',
         'seconds_suffix' => '秒',
+        'use_email_code' => 'メール認証',
     ],
     
     // デバイス認証

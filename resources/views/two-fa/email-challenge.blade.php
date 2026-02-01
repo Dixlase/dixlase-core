@@ -25,21 +25,14 @@
         'context' => $contextValue
     ])
 
-    <!-- Passkeyデバイス未登録警告 -->
-    @if($showPasskeyDeviceWarning ?? false)
-        <x-message 
-            type="warning" 
-            :message="'<strong>' . __('two_fa.passkey_device_not_registered_title') . '</strong><br>' . __('two_fa.passkey_device_not_registered_message')" 
-        />
+    <!-- 回復コードへのリンク -->
+    @if($recoveryCodeRoute ?? null)
+        <div class="mt-4 text-center">
+            <a href="{{ route($recoveryCodeRoute) }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                <i class="fas fa-life-ring mr-1"></i>{{ __('two_fa.recovery_code.use_recovery_code') }}
+            </a>
+        </div>
     @endif
-
-    <!-- 別の認証方法へのリンク -->
-    @include('two-fa.partials.alternative-methods', [
-        'methods' => $availableMethods,
-        'currentMethod' => $currentMethod,
-        'context' => $contextValue,
-        'recoveryCodeRoute' => $recoveryCodeRoute ?? null
-    ])
 @endsection
 
 @section('back_link')

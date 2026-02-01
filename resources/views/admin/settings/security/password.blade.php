@@ -35,9 +35,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin/settings/security/password.min_length') }}</legend>
                 <x-form.radio-card-group
-                    name="password_min_length_default"
+                    name="password_min_length"
                     :options="$minLengthOptions"
-                    :value="old('password_min_length_default', (string) $settings['password_min_length_default'])"
+                    :value="old('password_min_length', (string) $settings['password_min_length'])"
                     :columns="3"
                     class="mb-4"
                 />
@@ -46,27 +46,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- 大文字 -->
             <fieldset>
                 <x-form.toggle
-                    name="password_require_uppercase_default"
+                    name="password_require_uppercase"
                     :label="__('admin/settings/security/password.require_uppercase')"
-                    :checked="old('password_require_uppercase_default', $settings['password_require_uppercase_default'])"
+                    :checked="old('password_require_uppercase', $settings['password_require_uppercase'])"
                 />
             </fieldset>
 
             <!-- 数字 -->
             <fieldset>
                 <x-form.toggle
-                    name="password_require_number_default"
+                    name="password_require_number"
                     :label="__('admin/settings/security/password.require_number')"
-                    :checked="old('password_require_number_default', $settings['password_require_number_default'])"
+                    :checked="old('password_require_number', $settings['password_require_number'])"
                 />
             </fieldset>
 
             <!-- 記号 -->
             <fieldset>
                 <x-form.toggle
-                    name="password_require_symbol_default"
+                    name="password_require_symbol"
                     :label="__('admin/settings/security/password.require_symbol')"
-                    :checked="old('password_require_symbol_default', $settings['password_require_symbol_default'])"
+                    :checked="old('password_require_symbol', $settings['password_require_symbol'])"
                 />
             </fieldset>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
@@ -81,9 +81,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <x-form.toggle
-                    name="password_reset_enabled_default"
+                    name="password_reset_enabled"
                     :label="__('admin/settings/security/password.reset_enabled')"
-                    :checked="old('password_reset_enabled_default', $settings['password_reset_enabled_default'])"
+                    :checked="old('password_reset_enabled', $settings['password_reset_enabled'])"
                 />
             </fieldset>
         </section>

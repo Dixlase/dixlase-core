@@ -56,23 +56,23 @@ class SecuritySettingsTableSeeder extends Seeder
 
         // Default password policy settings (moved from MembersSettingsSeeder)
         SecuritySetting::updateOrCreate(
-            ['name' => 'password_min_length_default'],
+            ['name' => 'password_min_length'],
             ['value' => '8']
         );
         SecuritySetting::updateOrCreate(
-            ['name' => 'password_require_uppercase_default'],
+            ['name' => 'password_require_uppercase'],
             ['value' => '1']
         );
         SecuritySetting::updateOrCreate(
-            ['name' => 'password_require_number_default'],
+            ['name' => 'password_require_number'],
             ['value' => '1']
         );
         SecuritySetting::updateOrCreate(
-            ['name' => 'password_require_symbol_default'],
+            ['name' => 'password_require_symbol'],
             ['value' => '1']
         );
         SecuritySetting::updateOrCreate(
-            ['name' => 'password_reset_enabled_default'],
+            ['name' => 'password_reset_enabled'],
             ['value' => '0']
         );
         // Password security settings

@@ -46,11 +46,11 @@ class AdminSecurityPasswordUpdateRequest extends FormRequest
             'pwned_password_check_enabled' => 'boolean',
             
             // デフォルトパスワードポリシー
-            'password_min_length_default' => 'required|integer|min:4|max:128',
-            'password_require_uppercase_default' => 'boolean',
-            'password_require_number_default' => 'boolean',
-            'password_require_symbol_default' => 'boolean',
-            'password_reset_enabled_default' => 'boolean',
+            'password_min_length' => 'required|integer|min:4|max:128',
+            'password_require_uppercase' => 'boolean',
+            'password_require_number' => 'boolean',
+            'password_require_symbol' => 'boolean',
+            'password_reset_enabled' => 'boolean',
         ];
     }
 }
