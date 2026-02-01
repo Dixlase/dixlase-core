@@ -99,6 +99,7 @@ return [
     'yes' => 'Yes',
     'no' => 'No',
     'ok' => 'OK',
+    'processing' => 'Processing...',
     'error_occurred' => 'An error occurred',
 
     // Status & Attributes

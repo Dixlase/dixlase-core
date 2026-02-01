@@ -39,6 +39,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         data-trans-error-occurred="{{ __('common.error_occurred') }}"
         data-trans-auth-failed="{{ __('auth.failed') }}"
         data-trans-passkey-cancelled="{{ __('admin/auth.login.passkey_cancelled') }}"
+        data-old-login="{{ old('login') }}"
     >
         {{-- ステップ1: 識別子入力 --}}
         <div x-show="step === 1" x-transition>

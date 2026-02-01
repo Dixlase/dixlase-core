@@ -148,7 +148,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
                 // 新規作成の場合は、メールサーバーが設定されていればOK
                 // （作成後に回復コードやパスキーを登録できるため）
                 else {
-                    $mailConfigured = $this->isMailServerConfigured();
+                    $mailConfigured = \App\Services\MailServerValidatorService::isMailServerTested();
                     if (!$mailConfigured) {
                         $validator->errors()->add(
                             'two_fa_mode',
