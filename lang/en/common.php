@@ -267,6 +267,7 @@ return [
 
     // Save Confirmation Dialog (Detailed)
     'save_confirmation_title' => 'Save Confirmation',
+    'delete_confirmation_title' => 'Delete Confirmation',
     'save_confirmation_message' => 'Do you want to save the changes?',
     'update_confirmation_title' => 'Update Confirmation',
     'update_confirmation_message' => 'Do you want to update the settings with this content?',

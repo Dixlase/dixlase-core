@@ -29,6 +29,7 @@ return [
         'initial_member_cannot_delete' => 'The initial member account cannot be deleted.',
         'permissions_saved' => 'Permission settings have been saved.',
         'insufficient_permissions' => 'You do not have permission to perform this operation.',
+        'deleted' => 'Member has been deleted.',
     ],
     'validation' => [
         'mail_server_not_tested' => 'To enable lockout notification function, password reset function, login notification function, and two-factor authentication function, you must pass the mail server connection test in the basic settings.',

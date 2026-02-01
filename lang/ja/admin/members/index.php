@@ -30,6 +30,7 @@ return [
         'initial_member_cannot_delete' => '初期メンバーアカウントは削除できません。',
         'permissions_saved' => '権限設定を保存しました。',
         'insufficient_permissions' => 'この操作を行う権限がありません。',
+        'deleted' => 'メンバーを削除しました。',
     ],
     'validation' => [
         'mail_server_not_tested' => 'ロックアウト通知機能、パスワードリセット機能、ログイン通知機能、2段階認証機能を使用するには、基本設定でメールサーバーの接続テストに合格する必要があります。',

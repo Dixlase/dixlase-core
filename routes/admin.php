@@ -208,44 +208,46 @@ Route::prefix($adminUrl)->name('admin.')
 
             // メンバー管理（権限チェック付き）
             Route::middleware('check.menu.access:members')->prefix('members')->name('members.')->group(function () {
-                // メンバー一覧・CRUD
+                // メンバー一覧
                 Route::get('/', [Members\AdminMemberController::class, 'index'])->name('index');
-                Route::get('/create', [Members\AdminMemberController::class, 'create'])
+                
+                // メンバーCRUD
+                Route::get('/create', [Members\AdminMemberFormController::class, 'create'])
                     ->middleware('check.menu.access:members.create_edit')
                     ->name('create');
-                Route::post('/', [Members\AdminMemberController::class, 'store'])
+                Route::post('/', [Members\AdminMemberFormController::class, 'store'])
                     ->middleware('check.menu.access:members.create_edit')
                     ->name('store');
-                Route::get('/edit/{member}', [Members\AdminMemberController::class, 'edit'])
+                Route::get('/edit/{member}', [Members\AdminMemberFormController::class, 'edit'])
                     ->middleware('check.menu.access:members.create_edit')
                     ->name('edit');
-                Route::post('/update/{member}', [Members\AdminMemberController::class, 'update'])
+                Route::post('/update/{member}', [Members\AdminMemberFormController::class, 'update'])
                     ->middleware('check.menu.access:members.create_edit')
                     ->name('update');
-                Route::delete('/destroy/{member}', [Members\AdminMemberController::class, 'destroy'])
+                Route::delete('/destroy/{member}', [Members\AdminMemberFormController::class, 'destroy'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('destroy');
 
                 // セキュリティ操作
-                Route::delete('/passkey/{member}/{credentialId}', [Members\AdminMemberController::class, 'revokePasskey'])
+                Route::delete('/passkey/{member}/{credentialId}', [Members\AdminMemberSecurityController::class, 'revokePasskey'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('passkey.revoke');
-                Route::delete('/passkey/{member}/all', [Members\AdminMemberController::class, 'revokeAllPasskeys'])
+                Route::delete('/passkey/{member}/all', [Members\AdminMemberSecurityController::class, 'revokeAllPasskeys'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('passkey.revoke-all');  
-                Route::delete('/recovery-codes/{member}', [Members\AdminMemberController::class, 'revokeRecoveryCodes'])
+                Route::delete('/recovery-codes/{member}', [Members\AdminMemberSecurityController::class, 'revokeRecoveryCodes'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('recovery-codes.revoke');
-                Route::post('/force-logout/{member}', [Members\AdminMemberController::class, 'forceLogout'])
+                Route::post('/force-logout/{member}', [Members\AdminMemberSecurityController::class, 'forceLogout'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('force-logout');
-                Route::post('/unlock-lockout/{member}', [Members\AdminMemberController::class, 'unlockTwoFa'])
+                Route::post('/unlock-lockout/{member}', [Members\AdminMemberSecurityController::class, 'unlockTwoFa'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('unlock-lockout');
-                Route::post('/force-logout-all', [Members\AdminMemberSettingsController::class, 'forceLogoutAll'])
-                    ->middleware('check.menu.edit:members.settings')
+                Route::post('/force-logout-all', [Members\AdminMemberSecurityController::class, 'forceLogoutAll'])
+                    ->middleware('check.menu.edit:members.index')
                     ->name('force-logout-all');
-                Route::post('/{member}/send-verification-email', [Members\AdminMemberController::class, 'sendVerificationEmail'])
+                Route::post('/{member}/send-verification-email', [Members\AdminMemberSecurityController::class, 'sendVerificationEmail'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('send-verification-email');
 
