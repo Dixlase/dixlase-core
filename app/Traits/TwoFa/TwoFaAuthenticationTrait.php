@@ -263,7 +263,6 @@ trait TwoFaAuthenticationTrait
         
         return match($method) {
             \App\Enums\TwoFaMethod::EMAIL->value => "{$prefix}.two-fa.email.show",
-            \App\Enums\TwoFaMethod::PASSKEY->value => "{$prefix}.two-fa.passkey.show",
             default => "{$prefix}.two-fa.email.show",
         };
     }
@@ -455,7 +454,6 @@ trait TwoFaAuthenticationTrait
                 // ルート名を生成
                 $routeName = match($method) {
                     \App\Enums\TwoFaMethod::EMAIL->value => "{$prefix}.two-fa.email.show",
-                    \App\Enums\TwoFaMethod::PASSKEY->value => "{$prefix}.two-fa.passkey.show",
                     default => "{$prefix}.two-fa.email.show",
                 };
                 
@@ -593,178 +591,6 @@ trait TwoFaAuthenticationTrait
             return response()->json([
                 'success' => false,
                 'message' => __('two_fa.email.send_failed')
-            ], 500);
-        }
-    }
-
-    /**
-     * Passkey認証チャレンジ画面を表示
-     */
-    public function showPasskeyChallenge(Request $request)
-    {
-        $user = $this->checkSessionAndGetUser();
-        if ($user instanceof \Illuminate\Http\RedirectResponse) {
-            return $user;
-        }
-
-        $currentMethod = \App\Enums\TwoFaMethod::PASSKEY->value;
-        $availableMethods = $this->getAvailableMethods($currentMethod);
-        
-        // リカバリーコードルートとダッシュボードルートを取得
-        $context = $this->getContext();
-        $recoveryCodeRoute = $this->getRecoveryCodeRoute();
-        $dashboardRoute = $this->getDashboardRoute();
-
-        return view('two-fa.passkey-challenge', [
-            'availableMethods' => $availableMethods,
-            'currentMethod' => $currentMethod,
-            'context' => $context,
-            'loginRoute' => route($this->getLoginRoute()),
-            'challengeAction' => route($this->getTwoFaRoutePrefix() . '.two-fa.passkey.challenge'),
-            'verifyAction' => route($this->getTwoFaRoutePrefix() . '.two-fa.passkey.verify'),
-            'recoveryCodeRoute' => $recoveryCodeRoute,
-            'dashboardRoute' => $dashboardRoute,
-        ]);
-    }
-
-    /**
-     * Passkey認証チャレンジを取得
-     */
-    public function getPasskeyChallenge(Request $request)
-    {
-        $user = $this->getUserFromSession();
-
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => __('auth.failed')
-            ], 401);
-        }
-
-        try {
-            $challenge = $this->generatePasskeyChallenge($user);
-
-            return response()->json([
-                'success' => true,
-                'challenge' => $challenge,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('[Passkey Challenge] Failed to generate challenge', [
-                'user_id' => $user->id,
-                'context' => $this->getContext(),
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => __('two_fa.passkey.challenge_failed'),
-            ], 500);
-        }
-    }
-
-    /**
-     * Passkey認証を検証
-     */
-    public function verifyPasskey(Request $request)
-    {
-        $user = $this->getUserFromSession();
-
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => __('auth.failed')
-            ], 401);
-        }
-
-        $request->validate([
-            'response' => 'required|array',
-            'response.id' => 'required|string',
-            'response.response' => 'required|array',
-        ]);
-
-        try {
-            $credentialData = $request->input('response');
-
-            if ($this->verifyPasskeyCredential($user, $credentialData)) {
-                Log::info('[2FA] Passkey authentication success', [
-                    'user_id' => $user->id,
-                    'context' => $this->getContext()
-                ]);
-
-                // completeAuthentication()を呼び出してログイン処理を実行
-                // ただし、JSONレスポンスが必要なので、ここでは手動でログイン処理を行う
-                $sessionPrefix = $this->getSessionPrefix();
-                $remember = session($sessionPrefix . '.remember', false);
-                $guardName = $this->getGuardName();
-                $dashboardRoute = $this->getDashboardRoute();
-                
-                Log::info('[2FA] Starting Passkey completeAuthentication', [
-                    'user_id' => $user->id,
-                    'guard' => $guardName,
-                    'remember' => $remember,
-                    'dashboard_route' => $dashboardRoute,
-                ]);
-                
-                // セッションクリーンアップ
-                session()->forget([
-                    $sessionPrefix . '.id',
-                    $sessionPrefix . '.remember',
-                    $sessionPrefix . '.email_sent'
-                ]);
-                
-                // ログイン通知を送信（ログイン前に送信）
-                if (method_exists($this, 'getLoginNotificationServiceClass')) {
-                    try {
-                        app($this->getLoginNotificationServiceClass())->handle($user, $request);
-                    } catch (\Exception $e) {
-                        Log::error('[2FA] Login notification failed (Passkey)', [
-                            'user_id' => $user->id,
-                            'error' => $e->getMessage()
-                        ]);
-                    }
-                }
-                
-                // 先にログイン（AdminLoginControllerと同じ順序）
-                Auth::guard($guardName)->login($user, $remember);
-                
-                Log::info('[2FA] Auth::login completed (Passkey)', [
-                    'user_id' => $user->id,
-                    'is_authenticated' => Auth::guard($guardName)->check(),
-                    'authenticated_user_id' => Auth::guard($guardName)->id(),
-                ]);
-                
-                // ログイン後にセッションを再生成（AdminLoginControllerと同じ）
-                $request->session()->regenerate(true);
-                
-                Log::info('[2FA] Session regenerated (Passkey), returning JSON redirect', [
-                    'dashboard_route' => $dashboardRoute,
-                ]);
-
-                return response()->json([
-                    'success' => true,
-                    'redirect' => route($dashboardRoute)
-                ]);
-            } else {
-                Log::warning('[2FA] Passkey authentication failed', [
-                    'user_id' => $user->id,
-                    'context' => $this->getContext(),
-                ]);
-
-                return response()->json([
-                    'success' => false,
-                    'message' => __('auth.passkey_verification_failed')
-                ], 401);
-            }
-        } catch (\Exception $e) {
-            Log::error('[2FA] Passkey verification error', [
-                'user_id' => $user->id,
-                'context' => $this->getContext(),
-                'error' => $e->getMessage()
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => __('auth.passkey_verification_error')
             ], 500);
         }
     }
