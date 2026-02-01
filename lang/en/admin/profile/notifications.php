@@ -23,5 +23,6 @@
 return [
     'heading' => 'Notification Settings',
     'description' => 'Manage notification settings such as login notifications.',
+    'mail_server_not_tested' => 'Login notification is not available because mail server settings and testing have not been completed.',
     'login_notification_mode' => 'Login Notification Mode',
 ];
