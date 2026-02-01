@@ -50,8 +50,20 @@ class AdminDashboardController extends AdminLoggedInController
         $this->viewParams['twoFaNextRegenerateTime'] = $twoFaRecoveryCodeService->getNextRegenerateTime($user);
 
         // 2FAが有効かつ回復コード未生成の場合、自動生成してモーダル表示
-        $twoFaMode = is_int($user->two_fa_mode) ? $user->two_fa_mode : $user->two_fa_mode->value;
-        $isTwoFaEnabled = ($twoFaMode === AuthenticationMode::Always->value || $twoFaMode === AuthenticationMode::DifferentDevice->value);
+        // 全体設定とプロフィール設定の両方を考慮
+        $twoFaForceMode = (int) SecuritySetting::getValue('two_fa_mode', AuthenticationMode::UseProfileSetting->value);
+        $profileTwoFaMode = is_int($user->two_fa_mode) ? $user->two_fa_mode : $user->two_fa_mode->value;
+        
+        // 実際の二段階認証モードを判定
+        if ($twoFaForceMode === AuthenticationMode::UseProfileSetting->value) {
+            // プロフィール設定に従う場合はプロフィールの値を使用
+            $actualTwoFaMode = $profileTwoFaMode;
+        } else {
+            // それ以外は全体設定を使用
+            $actualTwoFaMode = $twoFaForceMode;
+        }
+        
+        $isTwoFaEnabled = ($actualTwoFaMode === AuthenticationMode::Always->value || $actualTwoFaMode === AuthenticationMode::DifferentDevice->value);
         
         $shouldGenerateRecoveryCodes = false;
         $shouldPromptPasskey = false;
