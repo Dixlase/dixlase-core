@@ -126,19 +126,19 @@ trait TwoFaUtilityTrait
 
         // プロフィール設定を使用する場合
         if ($forceSetting === AuthenticationMode::UseProfileSetting->value) {
-            return $this->checkMemberSetting($user);
+            return $this->checkUserTwoFaSetting($user);
         }
 
         return AuthenticationMode::Disabled->value;
     }
 
     /**
-     * メンバーの個人設定をチェック
+     * ユーザーの2FA個人設定をチェック
      *
      * @param mixed $user ユーザーモデル
      * @return int 2FAモード
      */
-    protected function checkMemberSetting($user): int
+    protected function checkUserTwoFaSetting($user): int
     {
         $mode = $user->two_fa_mode;
 

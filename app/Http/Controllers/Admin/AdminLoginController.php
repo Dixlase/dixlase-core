@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Member;
-use App\Models\MemberSetting;
 use App\Repositories\BaseSettingRepository;
 
 /**

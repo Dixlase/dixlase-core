@@ -23,8 +23,6 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use App\Contracts\Repositories\MemberSettingRepositoryInterface;
-use App\Repositories\MemberSettingRepository;
 use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 use App\Repositories\BaseSettingRepository;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
@@ -50,12 +48,6 @@ class RepositoryServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // MemberSetting リポジトリのバインディング
-        $this->app->bind(
-            MemberSettingRepositoryInterface::class,
-            MemberSettingRepository::class
-        );
-
         // BaseSetting リポジトリのバインディング
         $this->app->bind(
             BaseSettingRepositoryInterface::class,

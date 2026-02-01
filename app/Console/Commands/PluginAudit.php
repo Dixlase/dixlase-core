@@ -58,9 +58,9 @@ class PluginAudit extends Command
         'database.core_tables' => [
             'patterns' => [
                 // コアテーブルへのアクセス（モデル経由）
-                '/\\\\App\\\\Models\\\\(User|Member|Plugin|Media|Setting|BaseSetting|MemberSetting|SecuritySetting)/i',
+                '/\\\\App\\\\Models\\\\(User|Member|Plugin|Media|Setting|BaseSetting|SecuritySetting)/i',
                 // 直接テーブル名指定
-                '/DB::table\s*\(\s*[\'"](users|members|plugins|media|settings|base_settings|member_settings|security_settings)[\'"]\)/i',
+                '/DB::table\s*\(\s*[\'"](users|members|plugins|media|settings|base_settings|security_settings)[\'"]\)/i',
             ],
         ],
         'storage.own_directory' => [
@@ -86,7 +86,6 @@ class PluginAudit extends Command
         'settings.read_core' => [
             'patterns' => [
                 '/BaseSetting::(get|find|first|all)/i',
-                '/MemberSetting::(get|find|first|all)/i',
                 '/SecuritySetting::(get|find|first|all)/i',
                 '/config\s*\(\s*[\'"]app\./i',
                 '/config\s*\(\s*[\'"]mail\./i',
