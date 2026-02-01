@@ -205,6 +205,7 @@ trait LoginTrait
         // ユーザーを検索
         $user = $this->findUserByLogin($login, $isEmail);
 
+        // ユーザーが見つからない、またはパスワードが間違っている場合
         if (!$user || !\Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
             // 失敗したログインを記録
             $lockoutInfo = $lockoutService->handleFailedLogin($request, $login);
@@ -216,9 +217,13 @@ trait LoginTrait
                 $errorMessage = __('auth.failed_with_attempts', ['attempts' => $lockoutInfo['remaining_attempts']]);
             }
 
+            // ユーザーが見つかった場合はパスワードフィールドにエラーを表示（同じ画面に留まる）
+            // ユーザーが見つからない場合はloginフィールドにエラーを表示（メールアドレス入力画面に戻る）
+            $errorField = $user ? 'password' : 'login';
+
             return back()->withErrors([
-                'login' => $errorMessage,
-            ]);
+                $errorField => $errorMessage,
+            ])->withInput($request->except('password'));
         }
         
         // ロックアウト用にメールアドレスを取得
