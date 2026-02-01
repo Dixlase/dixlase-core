@@ -33,8 +33,8 @@ return [
         'password' => 'Password Settings',
         'appearance' => 'Appearance Settings',
         'notifications' => 'Notification Settings',
-        'two_factor' => 'Two-Factor Authentication',
-        'two_factor_management' => '2FA Management',
+        'two_fa' => 'Two-Factor Auth',
+        'two_fa_management' => 'Passkey & Code',
     ],
     'settings' => [
         'text' => 'Global Settings',

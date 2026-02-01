@@ -113,14 +113,14 @@ return [
                     'route' => 'admin.profile.notifications',
                     'icon' => 'fas fa-fw fa-bell',
                 ],
-                'two_factor' => [
-                    'text' => 'admin/nav.profile.two_factor',
-                    'route' => 'admin.profile.two-factor',
+                'two_fa' => [
+                    'text' => 'admin/nav.profile.two_fa',
+                    'route' => 'admin.profile.two-fa',
                     'icon' => 'fas fa-fw fa-shield-alt',
                 ],
-                'two_factor_management' => [
-                    'text' => 'admin/nav.profile.two_factor_management',
-                    'route' => 'admin.profile.two-factor-management',
+                'two_fa_management' => [
+                    'text' => 'admin/nav.profile.two_fa_management',
+                    'route' => 'admin.profile.two-fa-management',
                     'icon' => 'fas fa-fw fa-fingerprint',
                 ],
             ]

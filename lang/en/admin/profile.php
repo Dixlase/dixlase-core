@@ -24,6 +24,7 @@ return [
     'display_name_help' => 'Name displayed in the admin bar and profile. If left empty, the account name will be used.',
     'password_change_only' => 'Password (Enter only if changing)',
     'updated' => 'Profile has been updated.',
+    'two_fa_updated' => 'Two-factor authentication settings have been updated.',
     'login_notification_global_setting_fixed' => 'Fixed by Global Setting',
     'login_notification_global_setting_help' => 'This setting is controlled by the global member settings. Please contact an administrator to request changes.',
     'default_method' => 'Default method to use. You can choose from methods enabled in member global settings.',

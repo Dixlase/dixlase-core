@@ -33,8 +33,8 @@ return [
         'password' => 'パスワード設定',
         'appearance' => '外観設定',
         'notifications' => '通知設定',
-        'two_factor' => '二段階認証設定',
-        'two_factor_management' => '二段階認証管理',
+        'two_fa' => '二段階認証',
+        'two_fa_management' => 'パスキー・コード',
     ],
     'settings' => [
         'text' => '全体設定',

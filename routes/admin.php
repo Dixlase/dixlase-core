@@ -47,8 +47,8 @@ use App\Http\Controllers\Admin\Profile\AdminProfileBasicController;
 use App\Http\Controllers\Admin\Profile\AdminProfilePasswordController;
 use App\Http\Controllers\Admin\Profile\AdminProfileAppearanceController;
 use App\Http\Controllers\Admin\Profile\AdminProfileNotificationsController;
-use App\Http\Controllers\Admin\Profile\AdminProfileTwoFactorController;
-use App\Http\Controllers\Admin\Profile\AdminProfileTwoFactorManagementController;
+use App\Http\Controllers\Admin\Profile\AdminProfileTwoFaController;
+use App\Http\Controllers\Admin\Profile\AdminProfileTwoFaManagementController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\SecuritySetting;
@@ -194,22 +194,22 @@ Route::prefix($adminUrl)->name('admin.')
             Route::post('/profile/notifications', [AdminProfileNotificationsController::class, 'update'])->name('profile.notifications.update');
             
             // 二段階認証設定
-            Route::get('/profile/two-factor', [AdminProfileTwoFactorController::class, 'index'])->name('profile.two-factor');
-            Route::post('/profile/two-factor', [AdminProfileTwoFactorController::class, 'update'])->name('profile.two-factor.update');
+            Route::get('/profile/two-fa', [AdminProfileTwoFaController::class, 'index'])->name('profile.two-fa');
+            Route::post('/profile/two-fa', [AdminProfileTwoFaController::class, 'update'])->name('profile.two-fa.update');
             
-            // 二段階認証管理
-            Route::get('/profile/two-factor-management', [AdminProfileTwoFactorManagementController::class, 'index'])->name('profile.two-factor-management');
+            // 二段階認証管理（パスキー・コード）
+            Route::get('/profile/two-fa-management', [AdminProfileTwoFaManagementController::class, 'index'])->name('profile.two-fa-management');
             
             // Passkey管理
-            Route::post('/profile/passkey/register-options', [AdminProfileTwoFactorManagementController::class, 'passkeyRegisterOptions'])->name('profile.passkey.register-options');
-            Route::post('/profile/passkey/register', [AdminProfileTwoFactorManagementController::class, 'passkeyRegister'])->name('profile.passkey.register');
-            Route::delete('/profile/passkey/{credentialId}', [AdminProfileTwoFactorManagementController::class, 'revokePasskey'])->name('profile.passkey.revoke');
-            Route::delete('/profile/passkey/all', [AdminProfileTwoFactorManagementController::class, 'revokeAllPasskeys'])->name('profile.passkey.revoke-all');
+            Route::post('/profile/passkey/register-options', [AdminProfileTwoFaManagementController::class, 'passkeyRegisterOptions'])->name('profile.passkey.register-options');
+            Route::post('/profile/passkey/register', [AdminProfileTwoFaManagementController::class, 'passkeyRegister'])->name('profile.passkey.register');
+            Route::delete('/profile/passkey/{credentialId}', [AdminProfileTwoFaManagementController::class, 'revokePasskey'])->name('profile.passkey.revoke');
+            Route::delete('/profile/passkey/all', [AdminProfileTwoFaManagementController::class, 'revokeAllPasskeys'])->name('profile.passkey.revoke-all');
             
             // 回復コード管理
-            Route::post('/profile/recovery-codes/generate', [AdminProfileTwoFactorManagementController::class, 'generateRecoveryCodes'])->name('profile.recovery-codes.generate');
-            Route::post('/profile/recovery-codes/regenerate', [AdminProfileTwoFactorManagementController::class, 'regenerateRecoveryCodes'])->name('profile.recovery-codes.regenerate');
-            Route::post('/profile/recovery-codes/clear-session', [AdminProfileTwoFactorManagementController::class, 'clearRecoveryCodesSession'])->name('profile.recovery-codes.clear-session');
+            Route::post('/profile/recovery-codes/generate', [AdminProfileTwoFaManagementController::class, 'generateRecoveryCodes'])->name('profile.recovery-codes.generate');
+            Route::post('/profile/recovery-codes/regenerate', [AdminProfileTwoFaManagementController::class, 'regenerateRecoveryCodes'])->name('profile.recovery-codes.regenerate');
+            Route::post('/profile/recovery-codes/clear-session', [AdminProfileTwoFaManagementController::class, 'clearRecoveryCodesSession'])->name('profile.recovery-codes.clear-session');
 
             // メンバー管理（権限チェック付き）
             Route::middleware('check.menu.access:members')->prefix('members')->name('members.')->group(function () {
