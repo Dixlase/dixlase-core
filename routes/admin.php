@@ -237,7 +237,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('passkey.revoke');
                 Route::delete('/passkey/{member}/all', [Members\AdminMemberController::class, 'revokeAllPasskeys'])
                     ->middleware('check.menu.edit:members.index')
-                    ->name('passkey.revoke-all');
+                    ->name('passkey.revoke-all');  
                 Route::delete('/recovery-codes/{member}', [Members\AdminMemberController::class, 'revokeRecoveryCodes'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('recovery-codes.revoke');

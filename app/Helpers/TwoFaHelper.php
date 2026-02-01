@@ -4,7 +4,7 @@ namespace App\Helpers;
 
 use Illuminate\Support\Facades\Log;
 use App\Traits\TwoFa\TwoFaUtilityTrait;
-use App\Models\MemberSetting;
+use App\Models\SecuritySetting;
 use App\Enums\TwoFaMethod;
 use App\Enums\AuthenticationMode;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
@@ -15,7 +15,7 @@ class TwoFaHelper
     use TwoFaUtilityTrait;
 
     /**
-     * 設定値を取得する（MemberSettingから）
+     * 設定値を取得する（SecuritySettingから）
      *
      * @param string $key 設定キー
      * @param mixed $default デフォルト値
@@ -23,7 +23,7 @@ class TwoFaHelper
      */
     protected function getSettingValue(string $key, $default = null)
     {
-        return MemberSetting::getValue($key, $default);
+        return SecuritySetting::getValue($key, $default);
     }
 
     /**
@@ -79,12 +79,12 @@ class TwoFaHelper
     /**
      * 二段階認証設定を取得（メンバーまたはユーザー）
      *
-     * @param string|null $settingModelClass 設定モデルクラス名（null=MemberSetting）
+     * @param string|null $settingModelClass 設定モデルクラス名（null=SecuritySetting）
      * @return array
      */
     public function getTwoFaSettings(?string $settingModelClass = null): array
     {
-        $settingModelClass = $settingModelClass ?? \App\Models\MemberSetting::class;
+        $settingModelClass = $settingModelClass ?? \App\Models\SecuritySetting::class;
         
         return [
             'two_fa_mode' => (int) $settingModelClass::getValue('two_fa_mode', '0'),
@@ -96,12 +96,12 @@ class TwoFaHelper
     /**
      * 有効な二段階認証方法を取得（グローバル設定ベース）
      *
-     * @param string|null $settingModelClass 設定モデルクラス名（null=MemberSetting）
+     * @param string|null $settingModelClass 設定モデルクラス名（null=SecuritySetting）
      * @return array
      */
     public function getEnabledTwoFaMethods(?string $settingModelClass = null): array
     {
-        $settingModelClass = $settingModelClass ?? \App\Models\MemberSetting::class;
+        $settingModelClass = $settingModelClass ?? \App\Models\SecuritySetting::class;
         $methods = [];
         
         // メール認証（常に有効）
@@ -121,7 +121,7 @@ class TwoFaHelper
      * Passkeyデバイスが未登録の場合はPasskeyを除外
      *
      * @param mixed $member メンバーモデル
-     * @param string|null $settingModelClass 設定モデルクラス名（null=MemberSetting）
+     * @param string|null $settingModelClass 設定モデルクラス名（null=SecuritySetting）
      * @return array
      */
     public function getAvailableTwoFaMethodsForMember($member, ?string $settingModelClass = null): array
@@ -148,7 +148,7 @@ class TwoFaHelper
      * 二段階認証が有効かどうかを判定
      *
      * @param mixed $user ユーザーモデル
-     * @param string|null $settingModelClass 設定モデルクラス名（null=MemberSetting）
+     * @param string|null $settingModelClass 設定モデルクラス名（null=SecuritySetting）
      * @return bool
      */
     public function isTwoFaEnabled($user, ?string $settingModelClass = null): bool
@@ -230,12 +230,12 @@ class TwoFaHelper
      * 使用する認証方法を決定
      *
      * @param mixed $user ユーザーモデル
-     * @param string|null $settingModelClass 設定モデルクラス名（null=MemberSetting）
+     * @param string|null $settingModelClass 設定モデルクラス名（null=SecuritySetting）
      * @return int 認証方法
      */
     public function getEffectiveAuthMethod($user, ?string $settingModelClass = null): int
     {
-        $settingModelClass = $settingModelClass ?? \App\Models\MemberSetting::class;
+        $settingModelClass = $settingModelClass ?? \App\Models\SecuritySetting::class;
         $userMethod = $user->two_fa_default_method ?? null;
         $defaultMethod = (int) $settingModelClass::getValue('default_two_fa_method', (string)TwoFaMethod::EMAIL->value);
         $enabledMethods = $this->getEnabledTwoFaMethods($settingModelClass);

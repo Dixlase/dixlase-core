@@ -11,7 +11,7 @@ class TwoFaRecoveryCodeService
 {
     protected string $settingModelClass;
 
-    public function __construct(string $settingModelClass = \App\Models\MemberSetting::class)
+    public function __construct(string $settingModelClass = \App\Models\SecuritySetting::class)
     {
         $this->settingModelClass = $settingModelClass;
     }
