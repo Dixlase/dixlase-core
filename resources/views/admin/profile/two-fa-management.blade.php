@@ -26,11 +26,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <div x-data="{
         twoFaMode: '{{ (string) ($twoFaMode?->value ?? 0) }}',
         passkeyEnabled: {{ $currentPasskeyEnabled ? 'true' : 'false' }},
+        isTwoFaActuallyDisabled: {{ $isTwoFaActuallyDisabled ? 'true' : 'false' }},
         get isTwoFaDisabled() {
-            return this.twoFaMode === '0';
+            return this.isTwoFaActuallyDisabled;
         },
         get isPasskeyDisabled() {
-            return this.twoFaMode === '0' || !this.passkeyEnabled;
+            return this.isTwoFaActuallyDisabled || !this.passkeyEnabled;
         }
     }">
         <section class="transition-colors-unified mb-8">

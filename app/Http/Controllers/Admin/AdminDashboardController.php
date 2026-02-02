@@ -25,10 +25,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use App\Services\TwoFa\TwoFaPasskeyService;
+use App\Models\SecuritySetting;
+use App\Enums\AuthenticationMode;
+use App\Enums\TwoFaMethod;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use App\Enums\TwoFaMethod;
-use App\Enums\AuthenticationMode;
 use Illuminate\Http\Request;
 
 class AdminDashboardController extends AdminLoggedInController
@@ -84,8 +85,22 @@ class AdminDashboardController extends AdminLoggedInController
         
         // パスキーが有効かつデバイス未登録の場合、促進モーダルを表示
         if ($isTwoFaEnabled) {
-            $passkeyEnabled = $user->two_fa_passkey_enabled ?? true;
-            if ($passkeyEnabled) {
+            // 全体設定のパスキーモードを取得
+            $twoFaPasskeyMode = (int) SecuritySetting::getValue('two_fa_passkey_mode', '2');
+            
+            // 実際のパスキー有効状態を判定
+            if ($twoFaPasskeyMode === 0) {
+                // 全体設定で無効
+                $actualPasskeyEnabled = false;
+            } elseif ($twoFaPasskeyMode === 1) {
+                // 全体設定で有効
+                $actualPasskeyEnabled = true;
+            } else {
+                // プロフィール設定に従う
+                $actualPasskeyEnabled = $user->two_fa_passkey_enabled ?? true;
+            }
+            
+            if ($actualPasskeyEnabled) {
                 $twoFaPasskeyService = new TwoFaPasskeyService();
                 $passkeyDevices = $twoFaPasskeyService->getDevices($user);
                 

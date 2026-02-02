@@ -160,6 +160,11 @@ trait LoginTrait
         $viewParams['captchaDriver'] = \App\Helpers\CaptchaHelper::getDriver();
         $viewParams['captchaWidget'] = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
 
+        // パスキーモードを取得
+        $settingModelClass = $this->getSettingModelClass();
+        $twoFaPasskeyMode = (int) $settingModelClass::getValue('two_fa_passkey_mode', '2');
+        $viewParams['passkeyEnabled'] = $twoFaPasskeyMode > 0; // 0=無効、1=有効、2=プロフィールに従う
+
         return view($this->getLoginViewName(), $viewParams);
     }
 
