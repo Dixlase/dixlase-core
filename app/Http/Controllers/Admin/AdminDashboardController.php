@@ -25,8 +25,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use App\Services\TwoFa\TwoFaPasskeyService;
-use App\Models\SecuritySetting;
-use App\Enums\AuthenticationMode;
+use App\Services\TwoFa\TwoFaStatusService;
 use App\Enums\TwoFaMethod;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -50,30 +49,13 @@ class AdminDashboardController extends AdminLoggedInController
         $this->viewParams['twoFaCanRegenerateRecoveryCodes'] = $twoFaRecoveryCodeService->canRegenerate($user);
         $this->viewParams['twoFaNextRegenerateTime'] = $twoFaRecoveryCodeService->getNextRegenerateTime($user);
 
+        // TwoFaStatusServiceを使用して判定
+        $twoFaStatusService = new TwoFaStatusService();
+        
         // 2FAが有効かつ回復コード未生成の場合、自動生成してモーダル表示
-        // 全体設定とプロフィール設定の両方を考慮
-        $twoFaForceMode = (int) SecuritySetting::getValue('two_fa_mode', AuthenticationMode::UseProfileSetting->value);
-        $profileTwoFaMode = is_int($user->two_fa_mode) ? $user->two_fa_mode : $user->two_fa_mode->value;
-        
-        // 実際の二段階認証モードを判定
-        if ($twoFaForceMode === AuthenticationMode::UseProfileSetting->value) {
-            // プロフィール設定に従う場合はプロフィールの値を使用
-            $actualTwoFaMode = $profileTwoFaMode;
-        } else {
-            // それ以外は全体設定を使用
-            $actualTwoFaMode = $twoFaForceMode;
-        }
-        
-        $isTwoFaEnabled = ($actualTwoFaMode === AuthenticationMode::Always->value || $actualTwoFaMode === AuthenticationMode::DifferentDevice->value);
-        
-        $shouldGenerateRecoveryCodes = false;
-        $shouldPromptPasskey = false;
-        
-        if ($isTwoFaEnabled && !$twoFaRecoveryCodeService->hasRecoveryCodes($user)) {
-            // 回復コードを自動生成
+        if ($twoFaStatusService->shouldGenerateRecoveryCodes($user, $twoFaRecoveryCodeService)) {
             try {
                 $codes = $twoFaRecoveryCodeService->generate($user);
-                $shouldGenerateRecoveryCodes = true;
                 $this->viewParams['auto_generated_recovery_codes'] = $codes;
             } catch (\Exception $e) {
                 Log::error('[Dashboard] Failed to auto-generate recovery codes', [
@@ -84,31 +66,9 @@ class AdminDashboardController extends AdminLoggedInController
         }
         
         // パスキーが有効かつデバイス未登録の場合、促進モーダルを表示
-        if ($isTwoFaEnabled) {
-            // 全体設定のパスキーモードを取得
-            $twoFaPasskeyMode = (int) SecuritySetting::getValue('two_fa_passkey_mode', '2');
-            
-            // 実際のパスキー有効状態を判定
-            if ($twoFaPasskeyMode === 0) {
-                // 全体設定で無効
-                $actualPasskeyEnabled = false;
-            } elseif ($twoFaPasskeyMode === 1) {
-                // 全体設定で有効
-                $actualPasskeyEnabled = true;
-            } else {
-                // プロフィール設定に従う
-                $actualPasskeyEnabled = $user->two_fa_passkey_enabled ?? true;
-            }
-            
-            if ($actualPasskeyEnabled) {
-                $twoFaPasskeyService = new TwoFaPasskeyService();
-                $passkeyDevices = $twoFaPasskeyService->getDevices($user);
-                
-                if ($passkeyDevices->isEmpty()) {
-                    $shouldPromptPasskey = true;
-                    $this->viewParams['prompt_passkey_registration'] = true;
-                }
-            }
+        $twoFaPasskeyService = new TwoFaPasskeyService();
+        if ($twoFaStatusService->shouldPromptPasskeyRegistration($user, $twoFaPasskeyService)) {
+            $this->viewParams['prompt_passkey_registration'] = true;
         }
 
         return view('admin::dashboard', $this->viewParams);

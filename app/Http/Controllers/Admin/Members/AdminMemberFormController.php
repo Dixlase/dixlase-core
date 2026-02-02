@@ -23,15 +23,16 @@
 namespace App\Http\Controllers\Admin\Members;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Http\Requests\Admin\Settings\Members\AdminSettingsMemberStoreRequest;
+use App\Http\Requests\Admin\Settings\AdminSettingsMemberStoreRequest;
 use App\Models\Member;
-use App\Enums\TwoFaMethod;
-use App\Enums\AuthenticationMode;
-use App\Enums\AppearanceMode;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
-use App\Services\MailServerValidatorService;
+use App\Enums\AppearanceMode;
+use App\Enums\AuthenticationMode;
+use App\Enums\TwoFaMethod;
 use App\Services\PasswordService;
+use App\Services\MailServerValidatorService;
+use App\Services\TwoFa\TwoFaStatusService;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 
 class AdminMemberFormController extends AdminLoggedInController
@@ -165,10 +166,9 @@ class AdminMemberFormController extends AdminLoggedInController
 
         $this->loadMemberFormParams();
 
-        // グローバル設定で有効な二段階認証方法を取得
-        $twoFaPasskeyMode = (int) $this->securitySettingRepository->get('two_fa_passkey_mode', '2');
-        // two_fa_passkey_modeが0（無効）以外ならPasskeyは有効とみなす
-        $twoFaPasskeyEnabled = $twoFaPasskeyMode > 0;
+        // TwoFaStatusServiceを使用してパスキーモード判定
+        $twoFaStatusService = new TwoFaStatusService();
+        $twoFaPasskeyEnabled = $twoFaStatusService->isPasskeyEnabledGlobally();
         
         $twoFaPasskeyService = new \App\Services\TwoFa\TwoFaPasskeyService();
         $this->viewParams['twoFaPasskeyDevices'] = $twoFaPasskeyService->getDevices($member);
@@ -258,16 +258,13 @@ class AdminMemberFormController extends AdminLoggedInController
         }
         $this->viewParams['loginNotificationModeOptions'] = $loginNotificationOptions;
 
-        // 二段階認証の強制モード（0=無効, 1=有効, 2=プロフィール設定に従う）
-        $twoFaForceMode = (int) $this->securitySettingRepository->get('two_fa_mode', AuthenticationMode::Disabled->value);
-        // Enumオブジェクトの場合は整数値に変換
-        if ($twoFaForceMode instanceof AuthenticationMode) {
-            $twoFaForceMode = $twoFaForceMode->value;
-        }
+        // TwoFaStatusServiceを使用して設定を取得
+        $twoFaStatusService = new TwoFaStatusService();
+        $twoFaForceMode = $twoFaStatusService->getGlobalTwoFaMode();
         $this->viewParams['forceTwoFa'] = $twoFaForceMode;
         
         // パスキーモード設定を追加
-        $twoFaPasskeyMode = (int) $this->securitySettingRepository->get('two_fa_passkey_mode', '2');
+        $twoFaPasskeyMode = $twoFaStatusService->getGlobalPasskeyMode();
         $this->viewParams['twoFaPasskeyMode'] = $twoFaPasskeyMode;
         
         $twoFactorEnum = AuthenticationMode::tryFrom($twoFaForceMode);

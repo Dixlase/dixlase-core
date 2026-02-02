@@ -23,13 +23,14 @@
 namespace App\Http\Controllers\Admin\Profile;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Traits\ManagesTwoFaTrait;
+use App\Models\SecuritySetting;
 use App\Enums\AuthenticationMode;
 use App\Enums\TwoFaMethod;
-use App\Models\SecuritySetting;
 use App\Services\MailServerValidatorService;
 use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
-use App\Traits\ManagesTwoFaTrait;
+use App\Services\TwoFa\TwoFaStatusService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -194,16 +195,13 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
      */
     private function loadTwoFactorSettings($member)
     {
-        // 二段階認証設定の追加
-        $twoFaForceMode = (int) SecuritySetting::getValue(
-            'two_fa_mode',
-            AuthenticationMode::UseProfileSetting->value
-        );
+        // TwoFaStatusServiceを使用して設定を取得
+        $twoFaStatusService = new TwoFaStatusService();
+        $twoFaForceMode = $twoFaStatusService->getGlobalTwoFaMode();
         $twoFaMode = $member->two_fa_mode;
         
         // グローバル設定で有効な二段階認証方法を取得
-        // 0=無効, 1=有効（デフォルト: 有効）
-        $twoFaPasskeyMode = (int) SecuritySetting::getValue('two_fa_passkey_mode', '1');
+        $twoFaPasskeyMode = $twoFaStatusService->getGlobalPasskeyMode();
         $twoFaPasskeyEnabled = $twoFaPasskeyMode === 1;
         
         $this->viewParams['currentPasskeyEnabled'] = $twoFaPasskeyEnabled;
