@@ -212,4 +212,15 @@ TEXT,
         'all_revoked_successfully' => 'All biometric authentications deleted (:count items).',
         'revoke_all_failed' => 'Failed to delete all biometric authentications.',
     ],
+    
+    // Passkey Registration Prompt Modal
+    'passkey_prompt' => [
+        'title' => 'We recommend registering Passkey (Biometric Authentication)',
+        'message' => 'By registering Passkey, you can log in more securely and conveniently with fingerprint or face recognition.',
+        'register_now' => 'Register Now',
+        'later' => 'Register Later',
+        'dont_show_again' => 'Don\'t show this again',
+        'dismissed' => 'Passkey registration prompt modal has been hidden.',
+        'reset' => 'Passkey registration prompt modal settings have been reset.',
+    ],
 ];

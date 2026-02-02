@@ -49,6 +49,7 @@ use App\Http\Controllers\Admin\Profile\AdminProfileAppearanceController;
 use App\Http\Controllers\Admin\Profile\AdminProfileNotificationsController;
 use App\Http\Controllers\Admin\Profile\AdminProfileTwoFaController;
 use App\Http\Controllers\Admin\Profile\AdminProfileTwoFaManagementController;
+use App\Http\Controllers\Admin\Profile\AdminProfilePasskeyPromptController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\SecuritySetting;
@@ -205,6 +206,10 @@ Route::prefix($adminUrl)->name('admin.')
             Route::post('/profile/recovery-codes/generate', [AdminProfileTwoFaManagementController::class, 'generateRecoveryCodes'])->name('profile.recovery-codes.generate');
             Route::post('/profile/recovery-codes/regenerate', [AdminProfileTwoFaManagementController::class, 'regenerateRecoveryCodes'])->name('profile.recovery-codes.regenerate');
             Route::post('/profile/recovery-codes/clear-session', [AdminProfileTwoFaManagementController::class, 'clearRecoveryCodesSession'])->name('profile.recovery-codes.clear-session');
+            
+            // パスキー登録促進モーダル設定
+            Route::post('/profile/passkey-prompt/dismiss', [AdminProfilePasskeyPromptController::class, 'dismiss'])->name('profile.passkey-prompt.dismiss');
+            Route::post('/profile/passkey-prompt/reset', [AdminProfilePasskeyPromptController::class, 'reset'])->name('profile.passkey-prompt.reset');
 
             // メンバー管理（権限チェック付き）
             Route::middleware('check.menu.access:members')->prefix('members')->name('members.')->group(function () {

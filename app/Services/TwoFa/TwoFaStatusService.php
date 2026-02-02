@@ -92,6 +92,11 @@ class TwoFaStatusService
      */
     public function shouldPromptPasskeyRegistration($user, TwoFaPasskeyService $passkeyService): bool
     {
+        // ユーザーがモーダルを非表示にしている場合は表示しない
+        if ($user->passkey_prompt_dismissed ?? false) {
+            return false;
+        }
+        
         if (!$this->isTwoFaEnabled($user)) {
             return false;
         }
