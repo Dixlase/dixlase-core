@@ -359,6 +359,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :csrfToken="csrf_token()"
         />
     </section>
+    
+    <!-- パスキー登録促進モーダル設定 -->
+    <section class="mt-8">
+        <h2>{{ __('admin/members/form.passkey_prompt_settings') }}</h2>
+        
+        <div class="mb-4">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{ __('admin/members/form.passkey_prompt_settings_description') }}
+            </p>
+        </div>
+        
+        <x-form.toggle
+            name="passkey_prompt_dismissed"
+            :label="__('admin/members/form.passkey_prompt_dismissed')"
+            :checked="old('passkey_prompt_dismissed', $member->passkey_prompt_dismissed ?? false)"
+            :help="__('admin/members/form.passkey_prompt_dismissed_help')"
+        />
+    </section>
 @endif
 
 @if($includeForm && $formAction)
