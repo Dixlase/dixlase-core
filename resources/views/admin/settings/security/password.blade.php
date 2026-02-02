@@ -31,87 +31,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <section>
             <h2>{{ __('admin/settings/security/password.default_password_policy') }}</h2>
             <p>{{ __('admin/settings/security/password.default_password_policy_description') }}</p>
-
-            <fieldset>
-                <legend>{{ __('admin/settings/security/password.min_length') }}</legend>
-                <x-form.radio-card-group
-                    name="password_min_length"
-                    :options="$minLengthOptions"
-                    :value="old('password_min_length', (string) $settings['password_min_length'])"
-                    :columns="3"
-                    class="mb-4"
-                />
-            </fieldset>
-
-            <!-- 大文字 -->
-            <fieldset>
-                <x-form.toggle
-                    name="password_require_uppercase"
-                    :label="__('admin/settings/security/password.require_uppercase')"
-                    :checked="old('password_require_uppercase', $settings['password_require_uppercase'])"
-                />
-            </fieldset>
-
-            <!-- 数字 -->
-            <fieldset>
-                <x-form.toggle
-                    name="password_require_number"
-                    :label="__('admin/settings/security/password.require_number')"
-                    :checked="old('password_require_number', $settings['password_require_number'])"
-                />
-            </fieldset>
-
-            <!-- 記号 -->
-            <fieldset>
-                <x-form.toggle
-                    name="password_require_symbol"
-                    :label="__('admin/settings/security/password.require_symbol')"
-                    :checked="old('password_require_symbol', $settings['password_require_symbol'])"
-                />
-            </fieldset>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                {{ __('admin/settings/security/password.security_warning') }}
-            </p>
         </section>
 
-        <!-- パスワードリセット機能 -->
-        <section>
-            <h2>{{ __('admin/settings/security/password.password_reset_feature') }}</h2>
-            <p>{{ __('admin/settings/security/password.password_reset_feature_description') }}</p>
-
-            <fieldset>
-                <x-form.toggle
-                    name="password_reset_enabled"
-                    :label="__('admin/settings/security/password.reset_enabled')"
-                    :checked="old('password_reset_enabled', $settings['password_reset_enabled'])"
-                />
-            </fieldset>
-        </section>
-
-        <!-- 共通設定 -->
-        <section>
-            <h2>{{ __('admin/settings/security/password.pwned_password_check') }}</h2>
-            <p>{{ __('admin/settings/security/password.pwned_password_check_description') }}</p>
-
-            <!-- パスワード漏洩チェック -->
-            <fieldset>
-                <x-form.toggle
-                    :label="__('common.enabled')"
-                    id="pwned_password_check_enabled"
-                    name="pwned_password_check_enabled"
-                    :checked="old('pwned_password_check_enabled', $settings['pwned_password_check_enabled'])"
-                />
-                
-                <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <div class="flex items-start gap-2">
-                        <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
-                        <div class="text-sm text-blue-700 dark:text-blue-300">
-                            <p>{{ __('admin/settings/security/password.pwned_password_api_info') }}</p>
-                        </div>
-                    </div>
-                </div>
-            </fieldset>
-        </section>
+        <x-security.password-settings
+            :minLength="$settings['password_min_length']"
+            :requireUppercase="$settings['password_require_uppercase'] == '1'"
+            :requireNumber="$settings['password_require_number'] == '1'"
+            :requireSymbol="$settings['password_require_symbol'] == '1'"
+            :resetEnabled="$settings['password_reset_enabled'] == '1'"
+            :pwnedCheckEnabled="$settings['pwned_password_check_enabled'] == '1'"
+            :showPwnedCheck="true"
+            :minLengthOptions="$minLengthOptions"
+            :isMailServerTested="true"
+        />
 
     </form>
 </div>
