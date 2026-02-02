@@ -30,6 +30,7 @@ use App\Models\SecuritySetting;
 use App\Services\MailServerValidatorService;
 use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
+use App\Services\TwoFa\TwoFaStatusService;
 use Illuminate\Support\Facades\Auth;
 
 class AdminProfileTwoFaController extends AdminLoggedInController
@@ -79,76 +80,29 @@ class AdminProfileTwoFaController extends AdminLoggedInController
         
         // 保存後の2FA状態を取得（保存後の値を使用）
         $member->refresh();
-        $profileTwoFaMode = is_int($member->two_fa_mode) ? $member->two_fa_mode : $member->two_fa_mode->value;
         
-        // 実際の二段階認証モードを判定（全体設定とプロフィール設定の両方を考慮）
-        if ($twoFaForceMode === AuthenticationMode::UseProfileSetting->value) {
-            // プロフィール設定に従う場合はプロフィールの値を使用
-            $actualTwoFaMode = $profileTwoFaMode;
-        } else {
-            // それ以外は全体設定を使用
-            $actualTwoFaMode = $twoFaForceMode;
-        }
-        
-        $isTwoFaEnabled = ($actualTwoFaMode === AuthenticationMode::Always->value || $actualTwoFaMode === AuthenticationMode::DifferentDevice->value);
-        
-        // 回復コードとパスキーの状態をチェック
-        $shouldGenerateRecoveryCodes = false;
-        $shouldPromptPasskey = false;
-        
-        if ($isTwoFaEnabled) {
-            $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
-            $hasRecoveryCodes = $twoFaRecoveryCodeService->hasRecoveryCodes($member);
-            
-            // 回復コードが存在しない場合は自動生成
-            if (!$hasRecoveryCodes) {
-                try {
-                    $recoveryCodeService = app(\App\Services\TwoFa\TwoFaRecoveryCodeService::class);
-                    $codes = $recoveryCodeService->generate($member);
-                    $shouldGenerateRecoveryCodes = true;
-                } catch (\Exception $e) {
-                    \Log::error('[Profile] Failed to auto-generate recovery codes', [
-                        'member_id' => $member->id,
-                        'error' => $e->getMessage()
-                    ]);
-                }
-            }
-            
-            // パスキーが有効かつデバイス未登録の場合、促進モーダルを表示
-            // 全体設定のパスキーモードを取得
-            $twoFaPasskeyMode = (int) SecuritySetting::getValue('two_fa_passkey_mode', '2');
-            
-            // 実際のパスキー有効状態を判定
-            if ($twoFaPasskeyMode === 0) {
-                // 全体設定で無効
-                $actualPasskeyEnabled = false;
-            } elseif ($twoFaPasskeyMode === 1) {
-                // 全体設定で有効
-                $actualPasskeyEnabled = true;
-            } else {
-                // プロフィール設定に従う
-                $actualPasskeyEnabled = $member->two_fa_passkey_enabled ?? true;
-            }
-            
-            if ($actualPasskeyEnabled) {
-                $twoFaPasskeyService = new TwoFaPasskeyService();
-                $passkeyDevices = $twoFaPasskeyService->getDevices($member);
-                
-                if ($passkeyDevices->isEmpty()) {
-                    $shouldPromptPasskey = true;
-                }
-            }
-        }
+        // TwoFaStatusServiceを使用して判定
+        $twoFaStatusService = new TwoFaStatusService();
+        $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
+        $twoFaPasskeyService = new TwoFaPasskeyService();
         
         $redirect = redirect()->route('admin.profile.two-fa')->with('success', __('admin/profile.two_fa_updated'));
         
-        // 回復コードが生成された場合はセッションに保存
-        if ($shouldGenerateRecoveryCodes && isset($codes)) {
-            $redirect->with('auto_generated_recovery_codes', $codes);
+        // 回復コードが存在しない場合は自動生成
+        if ($twoFaStatusService->shouldGenerateRecoveryCodes($member, $twoFaRecoveryCodeService)) {
+            try {
+                $codes = $twoFaRecoveryCodeService->generate($member);
+                $redirect->with('auto_generated_recovery_codes', $codes);
+            } catch (\Exception $e) {
+                \Log::error('[Profile] Failed to auto-generate recovery codes', [
+                    'member_id' => $member->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
         }
         
-        // パスキー促進フラグをセッションに保存
-        if ($shouldPromptPasskey) {
+        // パスキーが有効かつデバイス未登録の場合、促進モーダルを表示
+        if ($twoFaStatusService->shouldPromptPasskeyRegistration($member, $twoFaPasskeyService)) {
             $redirect->with('prompt_passkey_registration', true);
         }
         
