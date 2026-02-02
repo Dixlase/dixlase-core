@@ -24,34 +24,87 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 @php
-    $passkeyPromptMessage = '<p class="mb-4">' . __('admin/profile/two-fa.passkey_prompt_message') . '</p>' .
-        '<p class="text-sm text-gray-600 dark:text-gray-400">' . __('admin/profile/two-fa.passkey_prompt_description') . '</p>';
+    $passkeyPromptMessage = '<p class="mb-4">' . __('two_fa.passkey_prompt.message') . '</p>';
 @endphp
 
-<x-ui.modal 
-    :id="$modalId"
-    :title="__('admin/profile/two-fa.passkey_prompt_title')"
-    :message="$passkeyPromptMessage"
-    icon-type="info"
-    :dismissible="true"
-    data-passkey-prompt="true"
-    :data-has-recovery-modal="$hasRecoveryModal ? 'true' : 'false'">
-    
-    <x-slot name="footer">
-        <x-form.button
-            type="button"
-            variant="secondary"
-            :label="__('common.later')"
-            @click="close()"
-            class="mx-2"
-        />
-        <x-form.button
-            type="link"
-            variant="primary"
-            :label="__('admin/profile/two-fa.go_to_passkey_registration')"
-            :href="route('admin.profile.two-fa-management')"
-            icon="fas fa-key"
-            class="mx-2"
-        />
-    </x-slot>
-</x-ui.modal>
+<div x-data="passkeyPromptModal()">
+    <x-ui.modal 
+        :id="$modalId"
+        :title="__('two_fa.passkey_prompt.title')"
+        :message="$passkeyPromptMessage"
+        icon-type="info"
+        :dismissible="true"
+        data-passkey-prompt="true"
+        :data-has-recovery-modal="$hasRecoveryModal ? 'true' : 'false'"
+        @close="handleClose()">
+        
+        <x-slot name="body">
+            <div class="mt-4">
+                <x-form.toggle
+                    name="dont_show_again"
+                    :label="__('two_fa.passkey_prompt.dont_show_again')"
+                    x-model="dontShowAgain"
+                />
+            </div>
+        </x-slot>
+        
+        <x-slot name="footer">
+            <x-form.button
+                type="button"
+                variant="secondary"
+                :label="__('two_fa.passkey_prompt.later')"
+                @click="closeModal()"
+                class="mx-2"
+            />
+            <x-form.button
+                type="link"
+                variant="primary"
+                :label="__('two_fa.passkey_prompt.register_now')"
+                :href="route('admin.profile.two-fa-management')"
+                icon="fas fa-key"
+                class="mx-2"
+            />
+        </x-slot>
+    </x-ui.modal>
+</div>
+
+<script>
+function passkeyPromptModal() {
+    return {
+        dontShowAgain: false,
+        
+        handleClose() {
+            if (this.dontShowAgain) {
+                this.dismissPrompt();
+            }
+        },
+        
+        closeModal() {
+            if (this.dontShowAgain) {
+                this.dismissPrompt();
+            }
+            // モーダルを閉じる
+            Alpine.store('modal').close('{{ $modalId }}');
+        },
+        
+        dismissPrompt() {
+            fetch('{{ route("admin.profile.passkey-prompt.dismiss") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Passkey prompt dismissed');
+                }
+            })
+            .catch(error => {
+                console.error('Error dismissing passkey prompt:', error);
+            });
+        }
+    }
+}
+</script>

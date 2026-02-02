@@ -212,4 +212,15 @@ TEXT,
         'all_revoked_successfully' => 'すべての生体認証を削除しました（:count件）。',
         'revoke_all_failed' => '生体認証の一括削除に失敗しました。',
     ],
+    
+    // パスキー登録促進モーダル
+    'passkey_prompt' => [
+        'title' => 'Passkey(生体認証)の登録をおすすめします',
+        'message' => 'Passkeyを登録すると、指紋認証や顔認証でより安全かつ便利にログインできます。',
+        'register_now' => '今すぐ登録',
+        'later' => '後で登録',
+        'dont_show_again' => '今後この画面を表示しない',
+        'dismissed' => 'パスキー登録促進モーダルを非表示に設定しました。',
+        'reset' => 'パスキー登録促進モーダルの設定をリセットしました。',
+    ],
 ];
