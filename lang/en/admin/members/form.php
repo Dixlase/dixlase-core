@@ -71,4 +71,10 @@ return [
     'role_contributor_description' => 'Can create and edit content, but cannot publish. Requires approval from editors or higher.',
     'role_receptionist_description' => 'Limited access to functions necessary for reception duties. Cannot create or edit content.',
     'role_guest_description' => 'Minimal viewing permissions only. Cannot access most administrative functions.',
+    
+    // Passkey Registration Prompt Modal Settings
+    'passkey_prompt_settings' => 'Passkey Registration Prompt Modal Settings',
+    'passkey_prompt_settings_description' => 'Configure whether to display the passkey registration prompt modal for this member.',
+    'passkey_prompt_dismissed' => 'Don\'t show passkey registration prompt modal',
+    'passkey_prompt_dismissed_help' => 'When enabled, the passkey registration prompt modal will not be displayed when this member logs in.',
 ];

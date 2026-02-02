@@ -94,6 +94,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
             'login_notification_mode' => 'nullable|numeric|in:0,1,2',
             'two_fa_mode' => 'nullable|numeric|in:0,1,2',
             'two_fa_passkey_enabled' => 'nullable|integer|in:0,1',
+            'passkey_prompt_dismissed' => 'nullable|integer|in:0,1',
             'default_two_fa_method' => 'nullable|integer|in:0,1',
         ];
 

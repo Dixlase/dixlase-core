@@ -71,4 +71,10 @@ return [
     'role_contributor_description' => 'コンテンツの作成・編集が可能ですが、公開はできません。編集者以上の承認が必要です。',
     'role_receptionist_description' => '受付業務に必要な限定的な機能のみ利用できます。コンテンツの作成・編集はできません。',
     'role_guest_description' => '最小限の閲覧権限のみを持ちます。ほとんどの管理機能にアクセスできません。',
+    
+    // パスキー登録促進モーダル設定
+    'passkey_prompt_settings' => 'パスキー登録促進モーダル設定',
+    'passkey_prompt_settings_description' => 'このメンバーに対してパスキー登録促進モーダルを表示するかどうかを設定します。',
+    'passkey_prompt_dismissed' => 'パスキー登録促進モーダルを表示しない',
+    'passkey_prompt_dismissed_help' => '有効にすると、このメンバーがログインした際にパスキー登録促進モーダルが表示されなくなります。',
 ];

@@ -23,36 +23,42 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'hasRecoveryModal' => false,
 ])
 
-@php
-    $passkeyPromptMessage = '<p class="mb-4">' . __('two_fa.passkey_prompt.message') . '</p>';
-@endphp
-
 <div x-data="passkeyPromptModal()">
     <x-ui.modal 
         :id="$modalId"
         :title="__('two_fa.passkey_prompt.title')"
-        :message="$passkeyPromptMessage"
+        message=""
         icon-type="info"
         :dismissible="true"
         data-passkey-prompt="true"
         :data-has-recovery-modal="$hasRecoveryModal ? 'true' : 'false'"
         @close="handleClose()">
         
-        <x-slot name="body">
-            <div class="mt-4">
+        {{-- カスタムコンテンツ --}}
+        <div class="flex items-center justify-center w-16 h-16 mx-auto rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400">
+            <i class="fas fa-info-circle text-3xl" aria-hidden="true"></i>
+        </div>
+        
+        <div class="modal-body">
+            <h2 class="modal-title">{{ __('two_fa.passkey_prompt.title') }}</h2>
+            <div class="modal-message">
+                <p>{{ __('two_fa.passkey_prompt.message') }}</p>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <x-form.toggle
                     name="dont_show_again"
                     :label="__('two_fa.passkey_prompt.dont_show_again')"
                     x-model="dontShowAgain"
                 />
             </div>
-        </x-slot>
+        </div>
         
         <x-slot name="footer">
             <x-form.button
                 type="button"
                 variant="secondary"
-                :label="__('two_fa.passkey_prompt.later')"
+                :label="__('common.close')"
                 @click="closeModal()"
                 class="mx-2"
             />
@@ -83,8 +89,11 @@ function passkeyPromptModal() {
             if (this.dontShowAgain) {
                 this.dismissPrompt();
             }
-            // モーダルを閉じる
-            Alpine.store('modal').close('{{ $modalId }}');
+            
+            // グローバル関数を使用してモーダルを閉じる
+            if (typeof window.closeModal === 'function') {
+                window.closeModal('{{ $modalId }}');
+            }
         },
         
         dismissPrompt() {
@@ -96,11 +105,6 @@ function passkeyPromptModal() {
                 }
             })
             .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('Passkey prompt dismissed');
-                }
-            })
             .catch(error => {
                 console.error('Error dismissing passkey prompt:', error);
             });
