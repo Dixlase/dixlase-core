@@ -25,44 +25,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form id="security-session-form" method="POST" action="{{ route('admin.settings.security.session.update') }}">
         @csrf
         
-        <!-- セッション管理設定 -->
-        <section>
-            <h2>{{ __('admin/settings/security/session.session_management') }}</h2>
-            <p>{{ __('admin/settings/security/session.session_management_description') }}</p>
-
-            <!-- セッション暗号化 -->
-            <fieldset>
-                <x-form.toggle
-                    name="session_encrypt"
-                    :label="__('admin/settings/security/session.session_encrypt')"
-                    :checked="old('session_encrypt', $settings['session_encrypt'])"
-                />
-                <p class="mt-2">{{ __('admin/settings/security/session.session_encrypt_help') }}</p>
-            </fieldset>
-
-            <!-- デフォルトセッション有効時間 -->
-            <fieldset>
-                <legend>{{ __('admin/settings/security/session.session_lifetime') }}</legend>
-                
-                <div class="flex items-center space-x-3 mt-2">
-                    <x-form.text
-                        id="session_lifetime"
-                        name="session_lifetime"
-                        type="number"
-                        :min="1"
-                        :max="43200"
-                        :value="old('session_lifetime', $settings['session_lifetime'])"
-                        class="input-common input-sm"
-                        aria-describedby="session_lifetime_unit session_lifetime_help"
-                    />
-                    <span id="session_lifetime_unit" class="text-sm text-gray-700 dark:text-gray-300">
-                        {{ __('common.minutes') }}
-                    </span>
-                </div>
-                
-                <p id="session_lifetime_help">{{ __('admin/settings/security/session.session_lifetime_help') }}</p>
-            </fieldset>
-        </section>
+        <x-security.session-settings
+            :sessionLifetime="$settings['session_lifetime']"
+            :sessionEncrypt="$settings['session_encrypt'] == '1'"
+        />
 
     </form>
 </div>

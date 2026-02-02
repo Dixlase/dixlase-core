@@ -32,7 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <legend>{{ __('admin/settings/security/login.login_notification_mode') }}</legend>
-                <x-login-notification-selector
+                <x-security.login-notification-selector
                     name="login_notification_mode"
                     :value="old('login_notification_mode', (string) $loginNotificationMode)"
                     :globalSetting="null"

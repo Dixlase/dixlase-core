@@ -289,7 +289,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             }
         @endphp
         
-        <x-login-notification-selector
+        <x-security.login-notification-selector
             name="login_notification_mode"
             :value="old('login_notification_mode', (string)$currentLoginNotification)"
             :globalSetting="$loginNotificationMode"

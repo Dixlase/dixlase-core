@@ -43,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
 
             <div :class="{ 'opacity-50 pointer-events-none': {{ !$isMailServerTested ? 'true' : 'false' }} }">
-                <x-login-notification-selector
+                <x-security.login-notification-selector
                     name="login_notification_mode"
                     :value="old('login_notification_mode', (string) $loginNotificationModeValue)"
                     :globalSetting="(int) ($loginNoticeGlobal ?? 0)"
