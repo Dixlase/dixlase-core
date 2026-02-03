@@ -207,7 +207,7 @@ class AppServiceProvider extends ServiceProvider
 
         // カスタムファイルのディレクトリを追加
         $customFilesPath = base_path(config('custom.custom_files_dir', 'custom'));
-        $fileTypes = config('custom.file_types');
+        $fileTypes = config('app.file_types');
 
         // プラグインロード後にカスタムファイルをロード
         $this->app->booted(function () use ($customFilesPath, $fileTypes) {
