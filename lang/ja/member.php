@@ -10,9 +10,4 @@ return [
         'receptionist' => '受付',
         'guest' => 'ゲスト',
     ],
-    'appearance' => [
-        'auto' => '自動（PC設定に従う）',
-        'light' => 'ライト',
-        'dark' => 'ダーク',
-    ],
 ];

@@ -114,11 +114,6 @@ return [
     'no_description' => '説明がありません',
     'available_methods' => '利用可能な方法',
     
-    // テーマ
-    //'auto' => '自動',
-    //'light' => 'ライト',
-    //'dark' => 'ダーク',
-
     // 言語
     'ja' => '日本語',
     'en' => '英語',
@@ -132,7 +127,6 @@ return [
     // ロール・権限
     'permissions' => '権限',
     'role' => '権限',
-
 
     // 基本的な属性
     // 基本情報
@@ -209,9 +203,7 @@ return [
     // デザイン・表示
     'color' => 'カラー',
     'font' => 'フォント',
-    //'admin_theme' => '管理画面テーマ',
-    //'appearance_mode' => '外観モード',
-
+    
     // システム設定
     'site_name' => 'サイト名',
     'locale' => '言語',
