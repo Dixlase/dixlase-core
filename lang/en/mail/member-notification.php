@@ -1,0 +1,43 @@
+<?php
+
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * Website: https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+return [
+    // Admin Notifications
+    'admin_notification' => [
+        'member_verified' => [
+            'subject' => 'Member Account Verification Completed',
+            'greeting' => 'Dear System Administrator',
+            'title' => 'Member Account Verification Completed',
+            'message' => 'A member account verification has been completed.',
+            'member_info' => '【Member Information】',
+            'name' => 'Name',
+            'email' => 'Email Address',
+            'verified_at' => 'Verification Completed',
+            'login_available' => 'This member is now able to log in.',
+            'urls' => '【URL Information】',
+            'front_url' => 'Front Page URL',
+            'admin_url' => 'Admin Panel URL',
+            'notification_time' => 'Notification Time',
+            'regards' => 'Best regards,',
+        ],
+    ],
+];
