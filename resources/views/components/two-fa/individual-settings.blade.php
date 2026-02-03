@@ -19,14 +19,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @props([
-    'twoFaModeName' => 'two_fa_mode',
-    'twoFaModeValue' => '0',
+    // 新しいパラメータ名（individual-auth-selectorとの互換性）
+    'name' => null,
+    'value' => null,
+    'globalSetting' => null,
+    'excludeUseProfileSetting' => false,
+    'twoFaPasskeyGloballyEnabled' => false,
+    'twoFaDefaultMethod' => '0',
+    
+    // 既存のパラメータ名（後方互換性のため保持）
+    'twoFaModeName' => null,
+    'twoFaModeValue' => null,
     'twoFaGlobalSetting' => null,
     'twoFaPasskeyEnabled' => true,
     'twoFaPasskeyMode' => '2',
     'columns' => 3,
     'globalSettingsUrl' => null,
 ])
+
+@php
+    // パラメータの統合（新しい名前を優先、なければ既存の名前を使用）
+    $twoFaModeName = $name ?? $twoFaModeName ?? 'two_fa_mode';
+    $twoFaModeValue = $value ?? $twoFaModeValue ?? '0';
+    $twoFaGlobalSetting = $globalSetting ?? $twoFaGlobalSetting;
+@endphp
 
 @php
     use App\Enums\AuthenticationMode;
