@@ -40,7 +40,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     maxlength="20"
                     class="w-full"
                 />
-                <p class="description-text">{!! __('admin/profile.account_name_help') !!}</p>
+                <p class="description-text">{!! __('admin/profile/common.account_name_help') !!}</p>
                 @error('account_name')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
@@ -53,7 +53,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :value="old('display_name', $member->display_name)"
                     class="w-full"
                 />
-                <p class="description-text">{{ __('admin/profile.display_name_help') }}</p>
+                <p class="description-text">{{ __('admin/profile/common.display_name_help') }}</p>
                 @error('display_name')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
@@ -114,12 +114,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :options="$localeOptions"
                     :value="old('locale', $member->locale?->value)"
                     :nullable="true"
-                    :nullLabel="__('admin/profile.use_system_default')"
+                    :nullLabel="__('admin/profile/common.use_system_default')"
                 />
                 @error('locale')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
-                <p>{{ __('admin/profile.language_help') }}</p>
+                <p>{{ __('admin/profile/common.language_help') }}</p>
             </fieldset>
         </section>
 

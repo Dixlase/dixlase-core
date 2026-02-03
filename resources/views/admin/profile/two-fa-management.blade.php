@@ -40,7 +40,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if(!$isMailServerTested)
                 <x-ui-message
                     type="warning"
-                    :message="__('admin/profile.two_factor_requires_mail_server')"
+                    :message="__('admin/profile/common.two_factor_requires_mail_server')"
                 />
             @endif
 
@@ -56,7 +56,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div x-show="!isTwoFaDisabled && !passkeyEnabled" class="mb-6">
                 <x-ui-message 
                     type="warning" 
-                    :message="__('admin/profile.passkey_disabled_notice')"
+                    :message="__('admin/profile/common.passkey_disabled_notice')"
                 />
             </div>
 

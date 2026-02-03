@@ -709,16 +709,16 @@ class SecuritySettingsRegistry
     public static function getCategories(): array
     {
         return [
-            self::CATEGORY_AUTH => __('admin/security_settings.categories.auth'),
-            self::CATEGORY_LOGIN => __('admin/security_settings.categories.login'),
-            self::CATEGORY_SESSION => __('admin/security_settings.categories.session'),
-            self::CATEGORY_CAPTCHA => __('admin/security_settings.categories.captcha'),
-            self::CATEGORY_IP => __('admin/security_settings.categories.ip'),
-            self::CATEGORY_CSP => __('admin/security_settings.categories.csp'),
-            self::CATEGORY_EXTENSION => __('admin/security_settings.categories.extension'),
-            self::CATEGORY_NOTIFICATION => __('admin/security_settings.categories.notification'),
-            self::CATEGORY_API => __('admin/security_settings.categories.api'),
-            self::CATEGORY_LOCKDOWN => __('admin/security_settings.categories.lockdown'),
+            self::CATEGORY_AUTH => __('admin/settings/security/common.categories.auth'),
+            self::CATEGORY_LOGIN => __('admin/settings/security/common.categories.login'),
+            self::CATEGORY_SESSION => __('admin/settings/security/common.categories.session'),
+            self::CATEGORY_CAPTCHA => __('admin/settings/security/common.categories.captcha'),
+            self::CATEGORY_IP => __('admin/settings/security/common.categories.ip'),
+            self::CATEGORY_CSP => __('admin/settings/security/common.categories.csp'),
+            self::CATEGORY_EXTENSION => __('admin/settings/security/common.categories.extension'),
+            self::CATEGORY_NOTIFICATION => __('admin/settings/security/common.categories.notification'),
+            self::CATEGORY_API => __('admin/settings/security/common.categories.api'),
+            self::CATEGORY_LOCKDOWN => __('admin/settings/security/common.categories.lockdown'),
         ];
     }
 
