@@ -169,12 +169,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :options="$localeOptions"
                 :value="old('locale', $member->locale?->value ?? null)"
                 :nullable="true"
-                :nullLabel="__('admin/profile.use_system_default')"
+                :nullLabel="__('admin/profile/common.use_system_default')"
             />
             <x-form-error
                 :messages="$errors->get('locale')"
             />
-            <p class="description-text">{{ __('admin/profile.language_help') }}</p>
+            <p class="description-text">{{ __('admin/profile/common.language_help') }}</p>
         </fieldset>
         
         <!-- 外観モード -->

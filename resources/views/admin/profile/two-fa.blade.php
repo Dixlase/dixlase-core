@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="mb-6">
                     <x-ui-message 
                         type="warning" 
-                        :message="__('admin/profile.passkey_no_devices_notice', ['url' => route('admin.profile.two-fa-management')])"
+                        :message="__('admin/profile/common.passkey_no_devices_notice', ['url' => route('admin.profile.two-fa-management')])"
                     />
                 </div>
             @endif
@@ -48,7 +48,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if(!$isMailServerTested)
                     <x-ui-message
                         type="warning"
-                        :message="__('admin/profile.two_factor_requires_mail_server')"
+                        :message="__('admin/profile/common.two_factor_requires_mail_server')"
                     />
                 @endif
 
