@@ -315,7 +315,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             }
         @endphp
         
-        <x-two-fa.individual-auth-selector
+        <x-two-fa.individual-settings
             name="two_fa_mode"
             :value="old('two_fa_mode', (string)$currentTwoFaMode)"
             :globalSetting="$forceTwoFa"
