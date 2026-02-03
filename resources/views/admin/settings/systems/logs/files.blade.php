@@ -24,14 +24,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- Success/Error Messages -->
     @if(session('success'))
-        <x-message
+        <x-ui-message
             type="success"
             :message="session('success')"
         />
     @endif
 
     @if(session('error'))
-        <x-message
+        <x-ui-message
             type="error"
             :message="session('error')"
         />

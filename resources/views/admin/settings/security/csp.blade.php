@@ -79,7 +79,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- 開発モードの警告 -->
                 <template x-if="cspMode === '0'">
                     <div class="mt-4">
-                        <x-message
+                        <x-ui-message
                             type="warning"
                             :message="__('admin/settings/security/csp.development_mode_warning')"
                         />
@@ -261,7 +261,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <x-save
+    <x-admin.save-button
         id_confirmation="confirmationModal"
         :label="__('common.save')"
         :title="__('common.save_confirmation_title')"

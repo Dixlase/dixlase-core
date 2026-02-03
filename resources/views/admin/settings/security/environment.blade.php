@@ -52,7 +52,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- 本番環境でデバッグモードONの警告 -->
             <template x-if="appEnv === 'production' && appDebug">
                 <div class="mt-4">
-                    <x-message
+                    <x-ui-message
                         type="error"
                         :message="__('admin/settings/security/environment.production_debug_warning')"
                     />
@@ -76,7 +76,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- デバッグモードの警告 -->
                 <template x-if="appDebug">
                     <div class="mt-4">
-                        <x-message
+                        <x-ui-message
                             type="warning"
                             :message="__('admin/settings/security/environment.debug_enabled_warning')"
                         />
@@ -128,7 +128,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <x-save
+    <x-admin.save-button
         id_confirmation="confirmationModal"
         :label="__('common.save')"
         :title="__('admin/settings/security/environment.save_confirmation_title')"

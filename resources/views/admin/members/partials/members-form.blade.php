@@ -103,7 +103,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </fieldset>
 
         <div id="email-input-wrapper">
-            <x-email-input
+            <x-form-email
                 id="email"
                 name="email"
                 :value="old('email', $member->email ?? '')"
@@ -128,7 +128,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <fieldset>
             <legend>{{ $requirePassword ? __('common.password') : __('admin/profile.password_change_only') }}</legend>
-            <x-password-tools
+            <x-form-password-tools
                 id="password"
                 name="password"
                 :required="$requirePassword"
@@ -183,7 +183,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @php
                 $appearanceValue = old('appearance', (string) ($member->appearance->value ?? 0));
             @endphp
-            <x-appearance-mode-selector
+            <x-ui-appearance-mode-selector
                 name="appearance"
                 :value="$appearanceValue"
                 :enableRealtimeSwitch="false"
@@ -195,7 +195,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </fieldset>
 
         <!-- アカウントステータス -->
-        <x-account-status
+        <x-admin.account-status
             :statusValue="(string) $statusValue"
             :statusOptions="$statusOptions"
             :columns="2"
@@ -237,7 +237,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 
                 {{-- ロールの権限範囲説明 --}}
                 <div class="mt-4">
-                    <x-message type="info">
+                    <x-ui-message type="info">
                         <x-slot name="message">
                             <strong>{{ __('admin/members/form.role_permissions_info') }}</strong>
                             <dl class="mt-3">
@@ -263,7 +263,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_guest_description') }}</dd>
                             </dl>
                         </x-slot>
-                    </x-message>
+                    </x-ui-message>
                 </div>
             @endif
             <x-form-error
@@ -276,7 +276,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section>
         <h2>{{ __('common.notification_settings') }}</h2>
         @if(!$isMailServerTested)
-            <x-message
+            <x-ui-message
                 type="warning"
                 :message="__('admin/members/form.mail_server_not_tested_login_notification')"
             />
@@ -302,7 +302,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section>
         <h2>{{ __('auth.two_fa_settings') }}</h2>
         @if(!$isMailServerTested)
-            <x-message
+            <x-ui-message
                 type="warning"
                 :message="__('admin/members/form.mail_server_not_tested')"
             />
@@ -385,7 +385,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @if(isset($member) && $member->exists)
     <!-- 管理操作セクション -->
-    <x-danger-zone
+    <x-admin.danger-zone
         :unlockRoute="route('admin.members.unlock-lockout', ['member' => $member->id])"
         :forceLogoutRoute="route('admin.members.force-logout', ['member' => $member->id])"
         :deleteRoute="!$isInitialAdmin ? route('admin.members.destroy', ['member' => $member->id]) : null"

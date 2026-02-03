@@ -38,7 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('admin/profile.two_fa_management') }}</h2>
             
             @if(!$isMailServerTested)
-                <x-message
+                <x-ui-message
                     type="warning"
                     :message="__('admin/profile.two_factor_requires_mail_server')"
                 />
@@ -46,7 +46,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             {{-- 二段階認証が無効な場合の説明 --}}
             <div x-show="isTwoFaDisabled" class="mb-6">
-                <x-message 
+                <x-ui-message 
                     type="warning" 
                     :message="__('admin/profile.two_fa_disabled_notice')"
                 />
@@ -54,7 +54,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             {{-- Passkeyが無効な場合の説明 --}}
             <div x-show="!isTwoFaDisabled && !passkeyEnabled" class="mb-6">
-                <x-message 
+                <x-ui-message 
                     type="warning" 
                     :message="__('admin/profile.passkey_disabled_notice')"
                 />

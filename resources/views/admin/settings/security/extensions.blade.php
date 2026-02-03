@@ -301,7 +301,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- メールサーバー設定の確認メッセージ -->
             @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
                 <div class="mt-4">
-                    <x-message
+                    <x-ui-message
                         type="warning"
                         :message="__('admin.settings.security.error_notification_mail_test_required', ['url' => route('admin.settings.base.mail')])"
                     />
@@ -392,7 +392,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <x-save
+    <x-admin.save-button
         id_confirmation="confirmationModal"
         :label="__('common.save')"
         :title="__('common.save_confirmation_title')"

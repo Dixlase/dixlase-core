@@ -32,7 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </div>
 
 @if (session('resent') || session('status'))
-    <x-message
+    <x-ui-message
         type="success"
         :message="$resentMessage"
     />

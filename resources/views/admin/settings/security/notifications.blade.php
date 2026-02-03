@@ -34,7 +34,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- システム管理者メール未設定の警告 -->
             @if(!$hasSystemAdminEmail)
                 <div class="mt-4">
-                    <x-message
+                    <x-ui-message
                         type="warning"
                         :message="__('admin/settings/security/notifications.system_admin_email_required', ['url' => route('admin.settings.base.mail')])"
                     />
@@ -44,7 +44,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- メールサーバー設定の確認メッセージ -->
             @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
                 <div class="mt-4">
-                    <x-message
+                    <x-ui-message
                         type="warning"
                         :message="__('admin/settings/security/notifications.mail_test_required', ['url' => route('admin.settings.base.mail')])"
                     />
@@ -100,7 +100,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <x-save
+    <x-admin.save-button
         id_confirmation="confirmationModal"
         :label="__('common.save')"
         :title="__('common.save_confirmation_title')"

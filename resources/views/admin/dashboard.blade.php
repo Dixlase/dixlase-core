@@ -87,7 +87,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="max-w-md space-y-4">
                         <div>
                             <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">パターン1: 確認欄常時表示</h4>
-                            <x-email-input
+                            <x-form-email
                                 name="test_email_1"
                                 id="test_email_1"
                                 value="test@example.com"
@@ -97,7 +97,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                         <div>
                             <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">パターン2: 変更時のみ確認欄表示</h4>
-                            <x-email-input
+                            <x-form-email
                                 name="test_email_2"
                                 id="test_email_2"
                                 value="user@example.com"
@@ -197,7 +197,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="max-w-md space-y-4">
                         <div>
                             <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">パターン1: 確認欄常時表示</h4>
-                            <x-password-tools
+                            <x-form-password-tools
                                 name="test_password_1"
                                 id="test_password_1"
                                 :showConfirmation="true"
@@ -223,7 +223,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                         <div>
                             <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">パターン2: 入力時のみ確認欄表示</h4>
-                            <x-password-tools
+                            <x-form-password-tools
                                 name="test_password_2"
                                 id="test_password_2"
                                 :showConfirmation="true"

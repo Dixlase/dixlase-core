@@ -221,7 +221,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </section>
 </div>
 
-<x-message type="info">
+<x-ui-message type="info">
     <x-slot name="message">
         <h3 class="text-lg font-semibold mb-3">{{ __('admin/settings/systems/database.info_panel.title') }}</h3>
         <ul class="text-sm space-y-2">
@@ -231,7 +231,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <li>• {{ __('admin/settings/systems/database.info_panel.notes.defaults') }}</li>
         </ul>
     </x-slot>
-</x-message>
+</x-ui-message>
 
 @endsection
 

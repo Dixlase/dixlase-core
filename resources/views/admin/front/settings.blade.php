@@ -56,7 +56,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <legend>{{ __('admin.settings.front.front_ogp_image') }}</legend>
-                <x-media-picker
+                <x-media.picker
                     name="front_ogp_image_id"
                     :value="$settings['front_ogp_image_id']"
                     :media="$frontOgpImage"
@@ -74,7 +74,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('save')
     <!-- 保存ボタンとモーダル -->
-    <x-save
+    <x-admin.save-button
         id_confirmation="frontSettingsConfirmationModal"
         :label="__('common.save')"
         :title="__('admin.settings.front.save_confirmation_title')"

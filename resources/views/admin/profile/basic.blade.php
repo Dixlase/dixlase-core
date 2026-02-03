@@ -72,7 +72,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @enderror
             </fieldset>
 
-            <x-email-input
+            <x-form-email
                 id="profile_email"
                 name="email"
                 :value="old('email', $member->email)"
@@ -128,7 +128,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <x-save
+    <x-admin.save-button
         id_confirmation="confirmProfileBasicModal"
         :label="__('common.update')"
         :title="__('admin/profile.confirm_title')"
