@@ -1,0 +1,30 @@
+<?php
+
+return [
+
+        'warning_minimal' => '⚠️ Warning: Minimal mode disables all security features.',
+        'minimal_description' => 'Features disabled: CAPTCHA, IP restrictions, Lockdown, Login lockout',
+        'confirm_minimal' => 'Switch to minimal configuration?',
+        'cancelled' => 'Operation cancelled.',
+        'minimal_success' => '✅ Security settings reset to minimal configuration.',
+        'security_notice' => '⚠️ All security features are disabled. Make sure to reconfigure after recovery.',
+        'restore_hint' => 'To restore from backup: check JSON files in storage/app/',
+        'warning_category' => '⚠️ Warning: Resetting :category category settings.',
+        'warning_full' => '⚠️ Warning: Resetting all security settings to defaults.',
+        'confirm_full' => 'Reset security settings?',
+        'full_success' => '✅ :count security settings reset to defaults.',
+        'status_title' => '【Security Settings Status】',
+        'setting' => 'Setting',
+        'value' => 'Value',
+        'exported' => '✅ Settings exported to: :path',
+        'backup_created' => '📁 Pre-reset backup created: :path',
+        'cache_cleared' => '🗑️ Security-related caches cleared.',
+        'reason_prompt' => 'Enter the reason for reset',
+        'reason_required' => 'Reason is required.',
+        'invalid_action' => 'Invalid action: :action',
+        'valid_actions' => 'Valid actions:',
+        'action_minimal' => 'Minimal configuration (disable all)',
+        'action_full' => 'Reset to defaults',
+        'action_status' => 'Show current settings',
+        'action_export' => 'Export settings',
+];

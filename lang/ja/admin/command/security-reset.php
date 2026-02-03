@@ -1,0 +1,30 @@
+<?php
+
+return [
+
+        'warning_minimal' => '⚠️ 警告: 最小構成モードは全てのセキュリティ機能を無効化します。',
+        'minimal_description' => '無効化される機能: CAPTCHA、IP制限、ロックダウン、ログインロックアウト',
+        'confirm_minimal' => '最小構成モードに切り替えますか？',
+        'cancelled' => '操作がキャンセルされました。',
+        'minimal_success' => '✅ セキュリティ設定を最小構成にリセットしました。',
+        'security_notice' => '⚠️ 全てのセキュリティ機能が無効化されています。復旧後は必ず再設定してください。',
+        'restore_hint' => 'バックアップから復元するには: storage/app/ 内のJSONファイルを参照してください。',
+        'warning_category' => '⚠️ 警告: :category カテゴリの設定をリセットします。',
+        'warning_full' => '⚠️ 警告: 全てのセキュリティ設定をデフォルトにリセットします。',
+        'confirm_full' => 'セキュリティ設定をリセットしますか？',
+        'full_success' => '✅ :count 件のセキュリティ設定をデフォルトにリセットしました。',
+        'status_title' => '【セキュリティ設定状態】',
+        'setting' => '設定',
+        'value' => '値',
+        'exported' => '✅ 設定をエクスポートしました: :path',
+        'backup_created' => '📁 リセット前のバックアップを作成しました: :path',
+        'cache_cleared' => '🗑️ セキュリティ関連キャッシュをクリアしました。',
+        'reason_prompt' => 'リセットの理由を入力してください',
+        'reason_required' => '理由の入力は必須です。',
+        'invalid_action' => '無効なアクション: :action',
+        'valid_actions' => '有効なアクション:',
+        'action_minimal' => '最小構成（全機能無効化）',
+        'action_full' => 'デフォルトにリセット',
+        'action_status' => '現在の設定を表示',
+        'action_export' => '設定をエクスポート',
+];

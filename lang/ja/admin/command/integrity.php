@@ -1,0 +1,69 @@
+<?php
+
+return [
+
+        // ベースライン生成
+        'generating_baseline' => 'ファイル整合性ベースラインを生成しています...',
+        'baseline_exists' => '既存のベースラインが見つかりました（生成日: :date, バージョン: :version）',
+        'overwrite_confirm' => '既存のベースラインを上書きしますか？',
+        'cancelled' => '操作がキャンセルされました。',
+        'scanning_files' => 'ファイルをスキャン中...',
+        'saving_baseline' => 'ベースラインを保存中...',
+        'baseline_success' => 'ベースラインが正常に生成されました。',
+        'baseline_failed' => 'ベースラインの保存に失敗しました。',
+        'baseline_generated' => 'ファイル整合性ベースラインを生成しました',
+        'baseline_regenerated' => 'ファイル整合性ベースラインを再生成しました',
+
+        // スキャン
+        'starting_scan' => 'ファイル整合性スキャンを開始します...',
+        'scope_not_supported' => 'スコープ ":scope" は現在サポートされていません。',
+        'using_core_scope' => 'コアスコープを使用します。',
+        'scanning' => 'スキャン中...',
+        'scan_error' => 'スキャンエラー: :error',
+
+        // 結果表示
+        'status' => 'ステータス',
+        'status_ok' => '正常',
+        'status_warning' => '警告',
+        'status_critical' => '重大',
+        'files_scanned' => 'スキャンしたファイル数',
+        'duration' => '実行時間',
+        'summary' => 'サマリー',
+
+        // 問題の詳細
+        'changed_files' => '変更されたファイル (:count 件)',
+        'added_files' => '追加されたファイル (:count 件)',
+        'removed_files' => '削除されたファイル (:count 件)',
+        'suspicious_files' => '疑わしいファイル (:count 件)',
+
+        // 疑わしいファイルの理由
+        'reason_php_in_uploads' => 'アップロードディレクトリ内のPHPファイル',
+        'reason_unknown_php_in_public' => 'public直下の未知のPHPファイル',
+
+        // 重大な警告
+        'critical_warning' => '⚠️ 重大なセキュリティ問題が検出されました！',
+        'critical_action_1' => '1. 疑わしいファイルを直ちに確認してください。',
+        'critical_action_2' => '2. 不正なファイルが見つかった場合は削除してください。',
+        'critical_action_3' => '3. システムのセキュリティ監査を実施してください。',
+
+        // サマリーメッセージ
+        'summary_changed' => ':count 件のファイルが変更されました',
+        'summary_added' => ':count 件のファイルが追加されました',
+        'summary_removed' => ':count 件のファイルが削除されました',
+        'summary_suspicious' => ':count 件の疑わしいファイルがあります',
+        'summary_ok' => '問題は検出されませんでした',
+
+        // テーブル表示
+        'item' => '項目',
+        'value' => '値',
+        'files_count' => 'ファイル数',
+        'app_version' => 'アプリバージョン',
+        'hash_algo' => 'ハッシュアルゴリズム',
+        'generated_at' => '生成日時',
+
+        // 通知関連
+        'notification_disabled' => '通知機能が無効になっています。',
+        'no_notification_email' => '通知先メールアドレスが設定されていません。',
+        'notification_sent' => 'アラート通知を送信しました: :email',
+        'notification_failed' => '通知の送信に失敗しました: :error',
+];

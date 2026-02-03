@@ -62,19 +62,19 @@ class CleanupPluginTable extends Command
 
         // バリデーション
         if (empty($pluginSlug) || empty($tableName)) {
-            $this->error(__('command.cleanup_plugin_table.missing_options'));
+            $this->error(__('command.cleanup-plugin-table.missing_options'));
             return Command::FAILURE;
         }
 
         // テーブルの存在確認
         if (!Schema::hasTable($tableName)) {
-            $this->error(__('command.cleanup_plugin_table.table_not_found', ['table' => $tableName]));
+            $this->error(__('command.cleanup-plugin-table.table_not_found', ['table' => $tableName]));
             return Command::FAILURE;
         }
 
         // カラムの存在確認
         if (!Schema::hasColumn($tableName, $dateColumn)) {
-            $this->error(__('command.cleanup_plugin_table.column_not_found', [
+            $this->error(__('command.cleanup-plugin-table.column_not_found', [
                 'column' => $dateColumn,
                 'table' => $tableName
             ]));
@@ -83,7 +83,7 @@ class CleanupPluginTable extends Command
 
         // プラグインのcleanup設定を確認（セキュリティチェック）
         if (!$this->isTableAllowedForCleanup($pluginSlug, $tableName)) {
-            $this->error(__('command.cleanup_plugin_table.table_not_allowed', [
+            $this->error(__('command.cleanup-plugin-table.table_not_allowed', [
                 'table' => $tableName,
                 'plugin' => $pluginSlug
             ]));
@@ -97,18 +97,18 @@ class CleanupPluginTable extends Command
             ->count();
 
         if ($count === 0) {
-            $this->info(__('command.cleanup_plugin_table.no_records'));
+            $this->info(__('command.cleanup-plugin-table.no_records'));
             $this->line("DELETED_COUNT: 0");
             return Command::SUCCESS;
         }
 
         // 確認
-        if (!$force && !$this->confirm(__('command.cleanup_plugin_table.confirm', [
+        if (!$force && !$this->confirm(__('command.cleanup-plugin-table.confirm', [
             'count' => $count,
             'table' => $tableName,
             'days' => $days
         ]))) {
-            $this->info(__('command.cleanup_plugin_table.cancelled'));
+            $this->info(__('command.cleanup-plugin-table.cancelled'));
             return Command::SUCCESS;
         }
 
@@ -117,7 +117,7 @@ class CleanupPluginTable extends Command
             ->where($dateColumn, '<', $cutoffDate)
             ->delete();
 
-        $this->info(__('command.cleanup_plugin_table.success', [
+        $this->info(__('command.cleanup-plugin-table.success', [
             'count' => $deleted,
             'table' => $tableName
         ]));
