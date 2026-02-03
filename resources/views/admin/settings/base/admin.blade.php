@@ -31,7 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <fieldset>
             <legend>{{ __('admin/settings/base/admin.admin_url') }}</legend>
-            <x-form.text
+            <x-form-text
                 name="admin_url"
                 :value="old('admin_url', $settings['admin_url'])"
                 :required="true"
@@ -41,7 +41,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </fieldset>
 
         <fieldset>
-            <x-form.toggle
+            <x-form-toggle
                 name="force_ssl"
                 :label="__('admin/settings/base/admin.force_ssl')"
                 :checked="old('force_ssl', $settings['force_ssl'])"

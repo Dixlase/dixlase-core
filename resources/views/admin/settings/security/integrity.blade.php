@@ -59,9 +59,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 
                 <form method="POST" action="{{ route('admin.settings.security.integrity.regenerate-baseline') }}" class="mt-3">
                     @csrf
-                    <x-form.button type="submit">
+                    <x-form-button type="submit">
                         <i class="fas fa-plus mr-1"></i>{{ __('admin/settings/security/integrity.generate_baseline') }}
-                    </x-form.button>
+                    </x-form-button>
                 </form>
             </div>
         @endif
@@ -75,9 +75,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if($hasBaseline)
                 <form method="POST" action="{{ route('admin.settings.security.integrity.scan') }}">
                     @csrf
-                    <x-form.button type="submit">
+                    <x-form-button type="submit">
                         <i class="fas fa-search mr-1"></i>{{ __('admin/settings/security/integrity.run_scan') }}
-                    </x-form.button>
+                    </x-form-button>
                 </form>
             @endif
         </div>

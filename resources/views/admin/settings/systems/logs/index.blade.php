@@ -58,7 +58,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <nav class="flex flex-row items-center justify-center md:justify-end gap-2 mb-4">
         @if($auditLogs->count() > 0)
             <!-- Export Button -->
-            <x-form.button
+            <x-form-button
                 type="link"
                 variant="success"
                 :href="route('admin.settings.systems.logs.audit.export', request()->query())"
@@ -88,12 +88,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {{-- 検索 --}}
                     <div>
-                        <x-form.label
+                        <x-form-label
                             for="search"
                             :text="__('admin/settings/systems/logs/index.search')"
                             class="mb-1"
                         />
-                        <x-form.text
+                        <x-form-text
                             type="text"
                             name="search"
                             id="search"
@@ -105,12 +105,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     {{-- カテゴリ --}}
                     <div>
-                        <x-form.label
+                        <x-form-label
                             for="category"
                             :text="__('admin/settings/systems/logs/index.category')"
                             class="mb-1"
                         />
-                        <x-form.select
+                        <x-form-select
                             name="category"
                             id="category"
                             :options="array_merge(['' => 'common.all'], array_combine($categories, array_map(fn($cat) => 'admin/settings/systems/logs/index.categories.' . $cat, $categories)))"
@@ -121,7 +121,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     {{-- アクション --}}
                     <div>
-                        <x-form.label
+                        <x-form-label
                             for="action"
                             :text="__('admin/settings/systems/logs/index.action')"
                             class="mb-1"
@@ -138,12 +138,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     {{-- 重要度 --}}
                     <div>
-                        <x-form.label
+                        <x-form-label
                             for="severity"
                             :text="__('admin/settings/systems/logs/index.severity')"
                             class="mb-1"
                         />
-                        <x-form.select
+                        <x-form-select
                             name="severity"
                             id="severity"
                             :options="array_merge(['' => 'common.all'], array_combine($severities, array_map(fn($sev) => 'admin/settings/systems/logs/index.severities.' . $sev, $severities)))"
@@ -154,12 +154,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     {{-- 結果 --}}
                     <div>
-                        <x-form.label
+                        <x-form-label
                             for="outcome"
                             :text="__('admin/settings/systems/logs/index.outcome')"
                             class="mb-1"
                         />
-                        <x-form.select
+                        <x-form-select
                             name="outcome"
                             id="outcome"
                             :options="array_merge(['' => 'common.all'], array_combine($outcomes, array_map(fn($out) => 'admin/settings/systems/logs/index.outcomes.' . $out, $outcomes)))"
@@ -170,12 +170,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     {{-- IPアドレス --}}
                     <div>
-                        <x-form.label
+                        <x-form-label
                             for="ip_address"
                             :text="__('admin/settings/systems/logs/index.ip_address')"
                             class="mb-1"
                         />
-                        <x-form.text
+                        <x-form-text
                             type="text"
                             name="ip_address"
                             id="ip_address"
@@ -187,12 +187,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     {{-- 開始日 --}}
                     <div>
-                        <x-form.label
+                        <x-form-label
                             for="date_from"
                             :text="__('admin/settings/systems/logs/index.date_from')"
                             class="mb-1"
                         />
-                        <x-form.text
+                        <x-form-text
                             type="date"
                             name="date_from"
                             id="date_from"
@@ -203,12 +203,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     {{-- 終了日 --}}
                     <div>
-                        <x-form.label
+                        <x-form-label
                             for="date_to"
                             :text="__('admin/settings/systems/logs/index.date_to')"
                             class="mb-1"
                         />
-                        <x-form.text
+                        <x-form-text
                             type="date"
                             name="date_to"
                             id="date_to"
@@ -219,13 +219,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
 
                 <div class="mt-4 flex justify-end space-x-2">
-                    <x-form.button
+                    <x-form-button
                         type="link"
                         variant="secondary"
                         :href="route('admin.settings.systems.logs.index')"
                         :label="__('common.reset')"
                     />
-                    <x-form.button
+                    <x-form-button
                         type="submit"
                         variant="primary"
                         :label="__('common.search')"
@@ -238,7 +238,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     
 
     <!-- Pagination Controls -->
-    <x-ui.pagination-controls
+    <x-ui-pagination-controls
         :paginator="$auditLogs"
         :perPageOptions="[25, 50, 100, 200]"
         :currentPerPage="request('per_page', 50)"
@@ -246,7 +246,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         perPageLabel="components.pagination.per_page_label"
     />
 
-    <x-ui.pagination
+    <x-ui-pagination
         :pagination="[
             'current_page' => $auditLogs->currentPage(),
             'last_page' => $auditLogs->lastPage(),
@@ -342,7 +342,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </section>
 
     <!-- Pagination Controls -->
-    <x-ui.pagination-controls
+    <x-ui-pagination-controls
         :paginator="$auditLogs"
         :perPageOptions="[25, 50, 100, 200]"
         :currentPerPage="request('per_page', 50)"
@@ -350,7 +350,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         perPageLabel="components.pagination.per_page_label"
     />
 
-    <x-ui.pagination
+    <x-ui-pagination
         :pagination="[
             'current_page' => $auditLogs->currentPage(),
             'last_page' => $auditLogs->lastPage(),
@@ -383,12 +383,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @csrf
                 <div class="flex items-center gap-4">
                     <div>
-                        <x-form.label
+                        <x-form-label
                             for="cleanup_days"
                             :text="__('admin/settings/systems/logs/index.cleanup_days')"
                             class="mb-1"
                         />
-                        <x-form.text
+                        <x-form-text
                             type="number"
                             name="days"
                             id="cleanup_days"
@@ -398,7 +398,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         />
                     </div>
                     <div class="pt-6">
-                        <x-form.button
+                        <x-form-button
                             type="button"
                             variant="danger"
                             :label="__('admin/settings/systems/logs/index.cleanup_button')"
@@ -412,7 +412,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 
     <!-- Cleanup Confirmation Modal -->
-    <x-ui.modal
+    <x-ui-modal
         id="cleanupConfirmModal"
         :title="__('admin/settings/systems/logs/index.cleanup_modal.title')"
         :message="__('admin/settings/systems/logs/index.cleanup_modal.confirm_message')"

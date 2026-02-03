@@ -39,7 +39,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <legend>{{ __('admin/settings/security/environment.app_env') }}</legend>
                 
                 <div class="my-3">
-                    <x-form.radio-card-group
+                    <x-form-radio-card-group
                         name="app_env"
                         :options="\App\Enums\AppEnvironment::getRadioCardOptions()"
                         :value="old('app_env', $settings['app_env'])"
@@ -63,7 +63,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin/settings/security/environment.app_debug') }}</legend>
                 
-                <x-form.toggle
+                <x-form-toggle
                     :label="__('admin/settings/security/environment.app_debug')"
                     id="app_debug"
                     name="app_debug"

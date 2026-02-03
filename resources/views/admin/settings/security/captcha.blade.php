@@ -102,7 +102,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
             @endif
             
-            <x-form.toggle
+            <x-form-toggle
                 :label="__('admin/settings/security/captcha.enabled')"
                 id="captcha_enabled"
                 name="captcha_enabled"
@@ -111,11 +111,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
 
             <div class="mt-4 space-y-4" :class="{ 'opacity-50 pointer-events-none': !captchaEnabled }">
-                <x-form.label
+                <x-form-label
                     for="captcha_driver"
                     :text="__('admin/settings/security/captcha.driver')"
                 />
-                <x-form.select
+                <x-form-select
                     :label="__('admin/settings/security/captcha.driver')"
                     id="captcha_driver"
                     name="captcha_driver"
@@ -131,11 +131,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
 
                 <!-- Common CAPTCHA Settings -->
-                <x-form.label
+                <x-form-label
                     for="captcha_site_key"
                     :text="__('admin/settings/security/captcha.site_key')"
                 />
-                <x-form.text
+                <x-form-text
                     id="captcha_site_key"
                     name="captcha_site_key"
                     :value="old('captcha_site_key', $settings['captcha_site_key'] ?? '')"
@@ -150,7 +150,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                        x-text="captchaDriver === 'google_enterprise' ? '{{ __("admin/settings/security/captcha.google_enterprise_secret_key") }}' : '{{ __("admin/settings/security/captcha.secret_key") }}'">
                     {{ __('admin/settings/security/captcha.secret_key') }}
                 </label>
-                <x-form.text
+                <x-form-text
                     id="captcha_secret_key"
                     name="captcha_secret_key"
                     :value="old('captcha_secret_key', $settings['captcha_secret_key'] ?? '')"
@@ -163,11 +163,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <!-- Google reCAPTCHA Settings -->
                 <div x-show="captchaDriver === 'google'">
-                    <x-form.label
+                    <x-form-label
                         for="captcha_google_version"
                         :text="__('admin/settings/security/captcha.google_version')"
                     />
-                    <x-form.select
+                    <x-form-select
                         id="captcha_google_version"
                         name="captcha_google_version"
                         :value="old('captcha_google_version', $settings['captcha_google_version'])"
@@ -180,11 +180,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <!-- Google reCAPTCHA Enterprise Settings -->
                 <div x-show="captchaDriver === 'google_enterprise'">
-                    <x-form.label
+                    <x-form-label
                         for="captcha_google_project_id"
                         :text="__('admin/settings/security/captcha.google_project_id')"
                     />
-                    <x-form.text
+                    <x-form-text
                         id="captcha_google_project_id"
                         name="captcha_google_project_id"
                         :value="old('captcha_google_project_id', $settings['captcha_google_project_id'])"
@@ -197,11 +197,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <!-- Min Score for Google v3 and Enterprise -->
                 <div x-show="(captchaDriver === 'google' && captchaVersion === 'v3') || captchaDriver === 'google_enterprise'" class="mt-4">
-                    <x-form.label
+                    <x-form-label
                         for="captcha_google_min_score"
                         :text="__('admin/settings/security/captcha.google_min_score')"
                     />
-                    <x-form.text
+                    <x-form-text
                         id="captcha_google_min_score"
                         name="captcha_google_min_score"
                         :value="old('captcha_google_min_score', $settings['captcha_google_min_score'])"
@@ -290,7 +290,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <fieldset class="mb-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
                             <div class="flex items-start justify-between">
                                 <div class="flex-1">
-                                    <x-form.toggle
+                                    <x-form-toggle
                                         name="forms[{{ $formKey }}]"
                                         :label="__($form['name'])"
                                         :checked="old('forms.' . $formKey, $enabledForms[$formKey] ?? false)"

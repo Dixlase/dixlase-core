@@ -32,7 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- セッション暗号化 -->
     <fieldset>
-        <x-form.toggle
+        <x-form-toggle
             name="session_encrypt"
             :label="__($translationPrefix . '.session_encrypt')"
             :checked="old('session_encrypt', $sessionEncrypt)"
@@ -46,7 +46,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <legend>{{ __($translationPrefix . '.session_lifetime') }}</legend>
         
         <div class="flex items-center space-x-3 mt-2">
-            <x-form.text
+            <x-form-text
                 id="session_lifetime"
                 name="session_lifetime"
                 type="number"

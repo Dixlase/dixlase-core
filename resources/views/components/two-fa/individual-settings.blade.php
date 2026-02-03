@@ -99,7 +99,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         ];
                     }
                 @endphp
-                <x-form.radio-card-group
+                <x-form-radio-card-group
                     :name="$twoFaModeName"
                     :options="$modeOptions"
                     :value="(string) $twoFaGlobalSetting"

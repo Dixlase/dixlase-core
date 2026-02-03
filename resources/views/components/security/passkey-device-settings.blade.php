@@ -41,7 +41,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ __($translationPrefix . '.passkey_max_devices') }}
                 </label>
                 <div class="mt-1 flex items-center space-x-2">
-                    <x-form.text
+                    <x-form-text
                         type="number"
                         id="two_fa_passkey_max_devices"
                         name="two_fa_passkey_max_devices"

@@ -78,7 +78,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
             
             <div class="flex justify-center md:justify-end flex-shrink-0">
-                <x-form.button
+                <x-form-button
                     type="button"
                     variant="danger"
                     :label="__('admin/settings/systems/database.cleanup_button')"
@@ -119,7 +119,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         
         <div class="flex-shrink-0">
-            <x-form.button
+            <x-form-button
                 type="button"
                 variant="danger"
                 :label="__('admin/settings/systems/database.all_cleanup_button')"
@@ -172,7 +172,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                     
                     <div class="flex justify-end flex-shrink-0">
-                        <x-form.button
+                        <x-form-button
                             type="button"
                             variant="danger"
                             size="sm"
@@ -236,7 +236,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @foreach($cleanupInfo as $type => $info)
-<x-ui.modal
+<x-ui-modal
     id="cleanupModal{{ ucfirst($type) }}"
     title="{{ __('admin/settings/systems/database.modal.title') }}"
     message="{{ __('admin/settings/systems/database.modal.message_single', ['name' => $info['name']]) }}"
@@ -248,7 +248,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 />
 @endforeach
 
-<x-ui.modal
+<x-ui-modal
     id="cleanupAllModal"
     title="{{ __('admin/settings/systems/database.modal.title') }}"
     message="{{ __('admin/settings/systems/database.modal.message_all') }}"
@@ -261,7 +261,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @if(!empty($pluginCleanupInfo))
 @foreach($pluginCleanupInfo as $key => $info)
-<x-ui.modal
+<x-ui-modal
     id="cleanupModal{{ Str::camel($key) }}"
     title="{{ __('admin/settings/systems/database.modal.title') }}"
     message="{{ __('admin/settings/systems/database.modal.message_plugin', ['name' => $info['name'], 'plugin' => $info['plugin_name']]) }}"

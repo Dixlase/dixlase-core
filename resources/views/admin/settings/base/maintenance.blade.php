@@ -30,7 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <h2>{{ __('admin/settings/base/maintenance.maintenance_settings') }}</h2>
         
         <fieldset>
-            <x-form.toggle
+            <x-form-toggle
                 name="maintenance_mode"
                 :label="__('admin/settings/base/maintenance.maintenance_mode')"
                 :checked="old('maintenance_mode', $settings['maintenance_mode'])"
@@ -40,7 +40,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <fieldset>
             <legend>{{ __('admin/settings/base/maintenance.maintenance_message') }}</legend>
-            <x-form.textarea
+            <x-form-textarea
                 name="maintenance_message"
                 :value="old('maintenance_message', $settings['maintenance_message'])"
                 :rows="3"

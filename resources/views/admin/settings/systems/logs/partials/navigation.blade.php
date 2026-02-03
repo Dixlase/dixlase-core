@@ -34,25 +34,25 @@
         <!-- 大カテゴリボタン -->
         <div class="mb-4">
             <nav class="flex flex-wrap gap-2 justify-center md:justify-start">
-                <x-form.button
+                <x-form-button
                     type="link"
                     :variant="$currentCategory === 'admin' ? 'primary' : 'tertiary'"
                     :href="route('admin.settings.systems.logs.files', ['type' => 'activity'])"
                     :label="__('admin/settings/systems/logs/files.admin_logs_label')"
                 />
-                <x-form.button
+                <x-form-button
                     type="link"
                     :variant="$currentCategory === 'front' ? 'primary' : 'tertiary'"
                     :href="route('admin.settings.systems.logs.files', ['type' => 'front_activity'])"
                     :label="__('admin/settings/systems/logs/files.front_logs_label')"
                 />
-                <x-form.button
+                <x-form-button
                     type="link"
                     :variant="$currentCategory === 'security' ? 'primary' : 'tertiary'"
                     :href="route('admin.settings.systems.logs.files', ['type' => 'csp'])"
                     :label="__('admin/settings/systems/logs/files.security_logs_label')"
                 />
-                <x-form.button
+                <x-form-button
                     type="link"
                     :variant="$currentCategory === 'browser' ? 'primary' : 'tertiary'"
                     :href="route('admin.settings.systems.logs.files', ['type' => 'browser'])"
@@ -66,7 +66,7 @@
             <nav class="flex flex-wrap gap-2 justify-center md:justify-start">
                 @if($currentCategory === 'admin')
                     @foreach ($adminTypes as $type)
-                        <x-form.button
+                        <x-form-button
                             type="link"
                             :variant="$logType === $type ? 'success' : 'tertiary'"
                             :href="route('admin.settings.systems.logs.files', ['type' => $type])"
@@ -75,7 +75,7 @@
                     @endforeach
                 @elseif($currentCategory === 'front')
                     @foreach ($frontTypes as $type)
-                        <x-form.button
+                        <x-form-button
                             type="link"
                             :variant="$logType === $type ? 'success' : 'tertiary'"
                             :href="route('admin.settings.systems.logs.files', ['type' => $type])"
@@ -84,7 +84,7 @@
                     @endforeach
                 @elseif($currentCategory === 'security')
                     @foreach ($securityTypes as $type)
-                        <x-form.button
+                        <x-form-button
                             type="link"
                             :variant="$logType === $type ? 'success' : 'tertiary'"
                             :href="route('admin.settings.systems.logs.files', ['type' => $type])"

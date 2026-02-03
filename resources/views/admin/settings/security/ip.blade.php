@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 
                 <!-- 許可IP設定 -->
                 <fieldset>
-                    <x-form.toggle
+                    <x-form-toggle
                         :label="__('admin/settings/security/ip.enable_allowed_admin_ips')"
                         id="enable_allowed_admin_ips"
                         name="enable_allowed_admin_ips"
@@ -51,13 +51,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     />
 
                     <div :class="{ 'opacity-50': !enableAllowedIPs }">
-                        <x-form.label
+                        <x-form-label
                             for="allowed_admin_ips"
                             :text="__('admin/settings/security/ip.allowed_admin_ips_list')"
                             class="text-sm font-medium"
                         />
                         
-                        <x-form.textarea
+                        <x-form-textarea
                             id="allowed_admin_ips"
                             name="allowed_admin_ips"
                             :value="$settings['allowed_admin_ips']"
@@ -73,7 +73,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <!-- ブロックIP設定 -->
                 <fieldset>
-                    <x-form.toggle
+                    <x-form-toggle
                         :label="__('admin/settings/security/ip.enable_blocked_admin_ips')"
                         id="enable_blocked_admin_ips"
                         name="enable_blocked_admin_ips"
@@ -82,13 +82,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     />
 
                     <div :class="{ 'opacity-50': !blockedAdminIps }">
-                        <x-form.label
+                        <x-form-label
                             for="blocked_admin_ips"
                             :text="__('admin/settings/security/ip.blocked_admin_ips_list')"
                             class="text-sm font-medium"
                         />
                         
-                        <x-form.textarea
+                        <x-form-textarea
                             id="blocked_admin_ips"
                             name="blocked_admin_ips"
                             :value="$settings['blocked_admin_ips']"
@@ -109,7 +109,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 
                 <!-- 許可IP設定 -->
                 <fieldset>
-                    <x-form.toggle
+                    <x-form-toggle
                         :label="__('admin/settings/security/ip.enable_allowed_front_ips')"
                         id="enable_allowed_front_ips"
                         name="enable_allowed_front_ips"
@@ -118,13 +118,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     />
 
                     <div :class="{ 'opacity-50': !enableAllowedFrontIPs }">
-                        <x-form.label
+                        <x-form-label
                             for="allowed_front_ips"
                             :text="__('admin/settings/security/ip.allowed_front_ips_list')"
                             class="text-sm font-medium"
                         />
                         
-                        <x-form.textarea
+                        <x-form-textarea
                             id="allowed_front_ips"
                             name="allowed_front_ips"
                             :value="$settings['allowed_front_ips']"
@@ -140,7 +140,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <!-- ブロックIP設定 -->
                 <fieldset>
-                    <x-form.toggle
+                    <x-form-toggle
                         :label="__('admin/settings/security/ip.enable_blocked_front_ips')"
                         id="enable_blocked_front_ips"
                         name="enable_blocked_front_ips"
@@ -149,13 +149,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     />
 
                     <div :class="{ 'opacity-50': !enableBlockedFrontIps }">
-                        <x-form.label
+                        <x-form-label
                             for="blocked_front_ips"
                             :text="__('admin/settings/security/ip.blocked_front_ips_list')"
                             class="text-sm font-medium"
                         />
                         
-                        <x-form.textarea
+                        <x-form-textarea
                             id="blocked_front_ips"
                             name="blocked_front_ips"
                             :value="$settings['blocked_front_ips']"

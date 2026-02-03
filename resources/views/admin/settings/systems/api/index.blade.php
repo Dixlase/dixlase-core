@@ -51,7 +51,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <legend>{{ __('admin/settings/systems/api.api_enabled') }}</legend>
-                <x-form.radio-group
+                <x-form-radio-group
                     name="api_enabled"
                     :options="[
                         '1' => __('common.enabled'),
@@ -64,7 +64,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <legend>{{ __('admin/settings/systems/api.signature_required') }}</legend>
-                <x-form.radio-group
+                <x-form-radio-group
                     name="api_signature_required"
                     :options="[
                         '1' => __('common.required'),
@@ -78,7 +78,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin/settings/systems/api.default_rate_limit') }}</legend>
                 <div class="flex items-center gap-2">
-                    <x-form.text
+                    <x-form-text
                         name="api_rate_limit"
                         type="number"
                         :value="old('api_rate_limit', $settings['api_rate_limit'])"

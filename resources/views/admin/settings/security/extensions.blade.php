@@ -93,7 +93,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <legend>{{ __('admin/settings/security/extensions.security.preset_label') }}</legend>
                 
                 <div class="mt-3">
-                    <x-form.radio-card-group
+                    <x-form-radio-card-group
                         name="extension_security_preset"
                         :options="\App\Enums\ExtensionSecurityPreset::getRadioCardOptions()"
                         :value="old('extension_security_preset', $settings['extension_security_preset'])"
@@ -118,7 +118,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <fieldset>
                     <legend>{{ __('admin/settings/security/extensions.security.signature_settings') }}</legend>
                     
-                    <x-form.toggle
+                    <x-form-toggle
                         :label="__('admin/settings/security/extensions.security.require_signature')"
                         id="extension_require_signature"
                         name="extension_require_signature"
@@ -132,7 +132,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <fieldset>
                     <legend>{{ __('admin/settings/security/extensions.security.permission_settings') }}</legend>
                     
-                    <x-form.toggle
+                    <x-form-toggle
                         :label="__('admin/settings/security/extensions.security.require_permission_definition')"
                         id="extension_require_permission_definition"
                         name="extension_require_permission_definition"
@@ -142,7 +142,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <p>{{ __('admin/settings/security/extensions.security.require_permission_definition_help') }}</p>
                     
                     <div class="mt-4">
-                        <x-form.toggle
+                        <x-form-toggle
                             :label="__('admin/settings/security/extensions.security.allow_undefined_permissions')"
                             id="extension_allow_undefined_permissions"
                             name="extension_allow_undefined_permissions"
@@ -158,7 +158,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <legend>{{ __('admin/settings/security/extensions.security.plugin_health_level') }}</legend>
                     
                     <div class="mt-3">
-                        <x-form.range
+                        <x-form-range
                             id="extension_plugin_max_health_level"
                             name="extension_plugin_max_health_level"
                             :value="old('extension_plugin_max_health_level', $settings['extension_plugin_max_health_level'])"
@@ -198,7 +198,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <legend>{{ __('admin/settings/security/extensions.security.theme_health_level') }}</legend>
                     
                     <div class="mt-3">
-                        <x-form.range
+                        <x-form-range
                             id="extension_theme_max_health_level"
                             name="extension_theme_max_health_level"
                             :value="old('extension_theme_max_health_level', $settings['extension_theme_max_health_level'])"
@@ -237,7 +237,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <fieldset>
                     <legend>{{ __('admin/settings/security/extensions.security.logic_themes') }}</legend>
                     
-                    <x-form.toggle
+                    <x-form-toggle
                         :label="__('admin/settings/security/extensions.security.allow_logic_themes')"
                         id="extension_allow_logic_themes"
                         name="extension_allow_logic_themes"
@@ -266,7 +266,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <p>{{ __('admin/settings/security/extensions.security.permission_mismatch_help') }}</p>
                     
                     <div class="mt-3">
-                        <x-form.radio-card-group
+                        <x-form-radio-card-group
                             name="extension_permission_mismatch_action"
                             :options="[
                                 [
@@ -312,7 +312,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin/settings/security/extensions.notification.notify_on_install') }}</legend>
                 
-                <x-form.toggle
+                <x-form-toggle
                     :label="__('admin/settings/security/extensions.notification.notify_on_install')"
                     id="extension_notify_on_install"
                     name="extension_notify_on_install"
@@ -325,7 +325,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin/settings/security/extensions.notification.notify_on_uninstall') }}</legend>
                 
-                <x-form.toggle
+                <x-form-toggle
                     :label="__('admin/settings/security/extensions.notification.notify_on_uninstall')"
                     id="extension_notify_on_uninstall"
                     name="extension_notify_on_uninstall"
@@ -338,7 +338,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin/settings/security/extensions.notification.notify_on_enable') }}</legend>
                 
-                <x-form.toggle
+                <x-form-toggle
                     :label="__('admin/settings/security/extensions.notification.notify_on_enable')"
                     id="extension_notify_on_enable"
                     name="extension_notify_on_enable"
@@ -351,7 +351,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin/settings/security/extensions.notification.notify_on_disable') }}</legend>
                 
-                <x-form.toggle
+                <x-form-toggle
                     :label="__('admin/settings/security/extensions.notification.notify_on_disable')"
                     id="extension_notify_on_disable"
                     name="extension_notify_on_disable"
@@ -364,7 +364,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin/settings/security/extensions.notification.notify_on_unhealthy') }}</legend>
                 
-                <x-form.toggle
+                <x-form-toggle
                     :label="__('admin/settings/security/extensions.notification.notify_on_unhealthy')"
                     id="extension_notify_on_unhealthy"
                     name="extension_notify_on_unhealthy"
@@ -377,7 +377,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin/settings/security/extensions.notification.log_operations') }}</legend>
                 
-                <x-form.toggle
+                <x-form-toggle
                     :label="__('admin/settings/security/extensions.notification.log_operations')"
                     id="extension_log_operations"
                     name="extension_log_operations"

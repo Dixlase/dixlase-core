@@ -41,7 +41,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <input type="hidden" name="status" value="1">
         <p class="description-text">{{ __('admin/members/form.initial_admin_status_fixed') }}</p>
     @else
-        <x-form.radio-card-group
+        <x-form-radio-card-group
             name="status"
             :options="$statusOptions"
             :value="$statusValue"
@@ -65,7 +65,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
     @endif
     
-    <x-form.error
+    <x-form-error
         :messages="$errors?->get('status') ?? []"
     />
 </fieldset>

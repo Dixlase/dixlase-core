@@ -49,7 +49,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ __('components.two_fa_detailed_settings.expire_minutes') }}
                 </label>
                 <div class="mt-1 flex items-center space-x-2">
-                    <x-form.text
+                    <x-form-text
                         type="number"
                         id="two_fa_expire_minutes"
                         name="two_fa_expire_minutes"
@@ -70,7 +70,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ __('components.two_fa_detailed_settings.resend_interval_seconds') }}
                 </label>
                 <div class="mt-1 flex items-center space-x-2">
-                    <x-form.text
+                    <x-form-text
                         type="number"
                         id="two_fa_resend_interval_seconds"
                         name="two_fa_resend_interval_seconds"
@@ -99,7 +99,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ __('components.two_fa_detailed_settings.max_attempts') }}
                 </label>
                 <div class="mt-1 flex items-center space-x-2">
-                    <x-form.text
+                    <x-form-text
                         type="number"
                         id="two_fa_max_attempts"
                         name="two_fa_max_attempts"
@@ -120,7 +120,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ __('components.two_fa_detailed_settings.attempt_window') }}
                 </label>
                 <div class="mt-1 flex items-center space-x-2">
-                    <x-form.text
+                    <x-form-text
                         type="number"
                         id="two_fa_attempt_window"
                         name="two_fa_attempt_window"
@@ -141,7 +141,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ __('components.two_fa_detailed_settings.lockout_duration') }}
                 </label>
                 <div class="mt-1 flex items-center space-x-2">
-                    <x-form.text
+                    <x-form-text
                         type="number"
                         id="two_fa_lockout_duration"
                         name="two_fa_lockout_duration"
@@ -158,7 +158,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
 
             <div>
-                <x-form.toggle
+                <x-form-toggle
                     name="two_fa_lockout_notification_enabled"
                     :label="__('components.two_fa_detailed_settings.lockout_notification_enabled')"
                     :checked="old('two_fa_lockout_notification_enabled', $lockoutNotificationEnabled)"
@@ -180,7 +180,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ __('components.two_fa_detailed_settings.recovery_codes_count') }}
                 </label>
                 <div class="mt-1 flex items-center space-x-2">
-                    <x-form.text
+                    <x-form-text
                         type="number"
                         id="two_fa_recovery_codes_count"
                         name="two_fa_recovery_codes_count"
@@ -201,7 +201,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ __('components.two_fa_detailed_settings.recovery_code_regenerate_interval') }}
                 </label>
                 <div class="mt-1 flex items-center space-x-2">
-                    <x-form.text
+                    <x-form-text
                         type="number"
                         id="two_fa_recovery_code_regenerate_interval"
                         name="two_fa_recovery_code_regenerate_interval"

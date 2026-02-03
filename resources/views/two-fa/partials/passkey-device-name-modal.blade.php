@@ -67,14 +67,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         
         <div class="modal-actions">
-            <x-form.button
+            <x-form-button
                 type="button"
                 variant="secondary"
                 :label="$cancelLabel ?? __('common.cancel')"
                 @click="cancel()"
                 class="mx-2"
             />
-            <x-form.button
+            <x-form-button
                 type="button"
                 variant="primary"
                 :label="$confirmLabel ?? __('common.ok')"

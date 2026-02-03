@@ -100,7 +100,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if($showSettings)
         <fieldset>
             <legend>{{ __('components.two_fa.mode_label') }}</legend>
-            <x-form.radio-card-group
+            <x-form-radio-card-group
                 :name="$name"
                 :options="$options"
                 :value="$value"
@@ -131,7 +131,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     {{-- 全体設定画面の場合 --}}
     <fieldset>
         <legend>{{ __('components.two_fa.mode_label') }}</legend>
-        <x-form.radio-card-group
+        <x-form-radio-card-group
             :name="$name"
             :options="$options"
             :value="$value"

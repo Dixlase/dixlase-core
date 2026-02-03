@@ -34,7 +34,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <form method="POST" action="{{ $route }}">
     @csrf
 
-    <x-form.hidden
+    <x-form-hidden
         name="token"
         :value="$token"
     />
@@ -43,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <fieldset>
             <legend class="sr-only">{{ $emailLabel }}</legend>
             
-            <x-form.text
+            <x-form-text
                 type="email"
                 id="email"
                 name="email"
@@ -53,7 +53,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 autocomplete="username"
             />
             
-            <x-form.error
+            <x-form-error
                 :messages="$errors->get('email')"
             />
         </fieldset>
@@ -75,18 +75,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :showConfirmation="true"
             />
             
-            <x-form.error
+            <x-form-error
                 :messages="$errors->get('password')"
             />
             
-            <x-form.error
+            <x-form-error
                 :messages="$errors->get('password_confirmation')"
             />
         </fieldset>
     </section>
 
     <section class="flex items-center justify-center mt-6">
-        <x-form.button
+        <x-form-button
             type="submit"
             variant="primary"
             size="md"

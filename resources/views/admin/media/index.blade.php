@@ -23,7 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto">
     <div class="flex justify-start mb-4">
-        <x-form.button
+        <x-form-button
             type="link"
             :href="route('admin.media.upload')"
             :label="__('admin/media/index.upload_new_file')"
@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <form method="GET" action="{{ route('admin.media.index') }}">
             <fieldset>
                 <legend>{{ __('common.file_name') }}</legend>
-                <x-form.text
+                <x-form-text
                     type="text"
                     id="search"
                     name="search"
@@ -48,7 +48,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                 <fieldset>
                     <legend>{{ __('common.file_type') }}</legend>
-                    <x-form.select
+                    <x-form-select
                         id="file_type"
                         name="file_type"
                         :options="[
@@ -64,7 +64,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <fieldset>
                     <legend>{{ __('admin/media/index.search.date_from') }}</legend>
-                    <x-form.text
+                    <x-form-text
                         type="date"
                         id="date_from"
                         name="date_from"
@@ -74,7 +74,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <fieldset>
                     <legend>{{ __('admin/media/index.search.date_to') }}</legend>
-                    <x-form.text
+                    <x-form-text
                         type="date"
                         id="date_to"
                         name="date_to"
@@ -84,14 +84,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
 
             <div class="flex flex-col sm:flex-row gap-2">
-                <x-form.button
+                <x-form-button
                     type="submit"
                     variant="primary"
                     :label="__('common.search')"
                     icon="fas fa-search"
                 />
                 
-                <x-form.button
+                <x-form-button
                     type="button"
                     variant="secondary"
                     :label="__('common.reset')"
@@ -105,7 +105,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 上部のページネーションと表示件数設定 -->
     @if($media->hasPages() || $media->count() > 0)
         <div class="media-controls">
-            <x-ui.pagination-controls
+            <x-ui-pagination-controls
                 :paginator="$media"
                 :perPageOptions="[10, 25, 50, 100]"
                 :currentPerPage="request('per_page', 25)"
@@ -122,7 +122,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :currentOrder="$currentOrder ?? 'desc'"
             />
             
-            <x-ui.pagination
+            <x-ui-pagination
                 :pagination="[
                     'current_page' => $media->currentPage(),
                     'last_page' => $media->lastPage(),
@@ -157,7 +157,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 下部のページネーション -->
     @if($media->hasPages())
         <div class="media-controls media-controls--bottom">
-            <x-ui.pagination
+            <x-ui-pagination
                 :pagination="[
                     'current_page' => $media->currentPage(),
                     'last_page' => $media->lastPage(),
@@ -171,7 +171,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
 
 <!-- 削除確認モーダル -->
-<x-ui.modal
+<x-ui-modal
     id="deleteModal"
     data-delete-message="{{ __('admin/media.index.delete_message') }}"
     :title="__('admin/media.preview.delete_confirmation')"

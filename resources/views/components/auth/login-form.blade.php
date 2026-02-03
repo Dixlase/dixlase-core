@@ -57,7 +57,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
 
             <!-- メールアドレスまたはアカウント名 -->
-            <x-form.input-with-label
+            <x-form-input-with-label
                 id="login"
                 name="login"
                 :label="__($translationPrefix . '.login_field')"
@@ -70,7 +70,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <!-- 続けるボタン -->
             <div class="mt-6">
-                <x-form.button
+                <x-form-button
                     type="submit"
                     variant="primary"
                     size="md"
@@ -85,7 +85,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </svg>
                         {{ __('common.processing') }}
                     </span>
-                </x-form.button>
+                </x-form-button>
             </div>
 
             @if($passkeyEnabled)
@@ -98,7 +98,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <!-- パスキーボタン -->
                 <div class="mt-4">
-                    <x-form.button
+                    <x-form-button
                         type="button"
                         variant="primary"
                         size="md"
@@ -110,7 +110,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
                         </svg>
                         {{ __($translationPrefix . '.login_with_passkey') }}
-                    </x-form.button>
+                    </x-form-button>
                 </div>
             @endif
         </form>
@@ -122,7 +122,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="mb-6 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
             <div class="flex items-center justify-between">
                 <span class="text-sm text-gray-600 dark:text-gray-400" x-text="identifier"></span>
-                <x-form.button
+                <x-form-button
                     type="button"
                     variant="ghost"
                     size="xs"
@@ -138,7 +138,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <input type="hidden" name="login" x-model="identifier">
 
             <!-- パスワード -->
-            <x-form.input-with-label
+            <x-form-input-with-label
                 id="password"
                 name="password"
                 :label="__('common.password')"
@@ -148,7 +148,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
 
             <!-- Remember Me -->
-            <x-form.checkbox
+            <x-form-checkbox
                 id="remember_me"
                 name="remember"
                 :label="$translationPrefix . '.remember_me'"
@@ -157,7 +157,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <!-- ボタンとパスワードリセットリンク -->
             <div class="flex flex-col items-center justify-center mt-6">
-                <x-form.button
+                <x-form-button
                     type="submit"
                     variant="primary"
                     :label="__('common.login')"
@@ -182,7 +182,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
                 </div>
 
-                <x-form.button
+                <x-form-button
                     type="button"
                     variant="primary"
                     size="md"
@@ -194,7 +194,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
                     </svg>
                     {{ __($translationPrefix . '.login_with_passkey') }}
-                </x-form.button>
+                </x-form-button>
             </div>
         @endif
     </div>

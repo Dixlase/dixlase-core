@@ -54,7 +54,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     
     @if(!$isEdit)
         {{-- 新規作成時 --}}
-        <x-form.radio-card-group
+        <x-form-radio-card-group
             name="email_verified"
             :options="$emailVerificationOptionsCreate"
             :value="$emailVerifiedValueCreate"
@@ -64,7 +64,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <p class="description-text">{{ __($prefix . '.account_verification_help_create') }}</p>
     @else
         {{-- 編集時 --}}
-        <x-form.radio-card-group
+        <x-form-radio-card-group
             name="email_verified"
             :options="$emailVerificationOptionsEdit"
             :value="$emailVerifiedValueEdit"
@@ -76,7 +76,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{-- 認証メール送信ボタン（編集時のみ） --}}
         <div class="my-4">
             @if($isMailServerTested)
-                <x-form.button
+                <x-form-button
                     type="button"
                     variant="secondary"
                     size="sm"
@@ -89,7 +89,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     data-error-message="{{ __('common.error_occurred') }}"
                 />
             @else
-                <x-form.button
+                <x-form-button
                     type="button"
                     variant="secondary"
                     size="sm"
@@ -115,14 +115,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
     @endif
     
-    <x-form.error
+    <x-form-error
         :messages="$errors?->get('email_verified') ?? []"
     />
 </fieldset>
 
 <!-- 認証メール送信確認モーダル -->
 @if($isEdit)
-    <x-ui.modal
+    <x-ui-modal
         id="verificationEmailModal"
         :title="__($prefix . '.send_verification_email_title')"
         :message="__($prefix . ($entityType === 'member' ? '.send_verification_email_confirm' : '.send_verification_email_message'))"

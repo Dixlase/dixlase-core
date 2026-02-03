@@ -38,7 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset class="mb-4">
                 <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.enabled') }}</legend>
                 
-                <x-form.toggle
+                <x-form-toggle
                     :label="__('admin/settings/security/csp.enabled')"
                     id="csp_enabled"
                     name="csp_enabled"
@@ -67,7 +67,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <fieldset class="mb-4">
                     <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.mode') }}</legend>
                     
-                    <x-form.radio-card-group
+                    <x-form-radio-card-group
                         name="csp_mode"
                         :options="\App\Enums\CspMode::getRadioCardOptions()"
                         :value="old('csp_mode', $settings['csp_mode'] ?? \App\Enums\CspMode::default()->value)"
@@ -90,7 +90,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <fieldset class="mb-4">
                     <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.log_violations') }}</legend>
                     
-                    <x-form.toggle
+                    <x-form-toggle
                         :label="__('admin/settings/security/csp.log_violations')"
                         id="csp_log_violations"
                         name="csp_log_violations"
@@ -103,7 +103,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <fieldset class="mb-4">
                     <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.exclude_dev_tools') }}</legend>
                     
-                    <x-form.toggle
+                    <x-form-toggle
                         :label="__('admin/settings/security/csp.exclude_dev_tools')"
                         id="csp_exclude_dev_tools"
                         name="csp_exclude_dev_tools"
@@ -116,7 +116,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <fieldset class="mb-4">
                     <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.trusted_domains') }}</legend>
                     
-                    <x-form.textarea
+                    <x-form-textarea
                         id="csp_trusted_domains"
                         name="csp_trusted_domains"
                         :value="old('csp_trusted_domains', $settings['csp_trusted_domains'] ?? '')"
@@ -131,7 +131,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <fieldset class="mb-4">
                     <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.denied_domains') }}</legend>
                     
-                    <x-form.textarea
+                    <x-form-textarea
                         id="csp_denied_domains"
                         name="csp_denied_domains"
                         :value="old('csp_denied_domains', $settings['csp_denied_domains'] ?? '')"
@@ -152,7 +152,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <!-- 有効/無効 -->
                     <div class="mb-4">
-                        <x-form.toggle
+                        <x-form-toggle
                             :label="__('admin/settings/security/csp.blocklist_check_enabled')"
                             id="csp_blocklist_check_enabled"
                             name="csp_blocklist_check_enabled"
@@ -170,7 +170,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <input type="hidden" name="csp_blocklist_action" value="{{ old('csp_blocklist_action', $settings['csp_blocklist_action'] ?? \App\Enums\CspBlocklistAction::default()->value) }}">
                         </template>
                         
-                        <x-form.radio-card-group
+                        <x-form-radio-card-group
                             name="csp_blocklist_action"
                             :options="[
                                 [
@@ -242,7 +242,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <fieldset class="mb-4">
                     <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.custom_directives') }}</legend>
                     
-                    <x-form.textarea
+                    <x-form-textarea
                         id="csp_custom_directives"
                         name="csp_custom_directives"
                         :value="old('csp_custom_directives', $settings['csp_custom_directives'] ?? '')"
@@ -274,7 +274,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 {{-- CSP設定確認モーダル --}}
 @if(session('show_csp_confirmation'))
-<x-ui.modal
+<x-ui-modal
     id="cspConfirmationModal"
     :title="__('admin/settings/security/csp.confirmation_modal_title')"
     :message="__('admin/settings/security/csp.confirmation_modal_message', ['seconds' => '<span id=\'csp-countdown\'>10</span>'])"
@@ -285,14 +285,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     data-confirm-message="{{ __('admin/settings/security/csp.settings_confirmed') }}"
 >
     <x-slot name="footer">
-        <x-form.button
+        <x-form-button
             type="button"
             variant="secondary"
             :label="__('admin/settings/security/csp.confirmation_modal_cancel')"
             @click="rollbackCspSettings()"
             class="mx-2"
         />
-        <x-form.button
+        <x-form-button
             type="button"
             variant="primary"
             :label="__('admin/settings/security/csp.confirmation_modal_confirm')"
@@ -300,7 +300,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             class="mx-2"
         />
     </x-slot>
-</x-ui.modal>
+</x-ui-modal>
 
 @push('scripts')
     @vite('resources/src/admin/settings/security/js/csp-confirmation.js')

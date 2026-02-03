@@ -19,7 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 <!-- 削除ボタン -->
-<x-form.button
+<x-form-button
     type="button"
     variant="danger"
     :label="$label ?? __('common.delete')"
@@ -29,7 +29,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 />
 
 <!-- 削除モーダル -->
-<x-ui.modal
+<x-ui-modal
     :id="$id_confirmation"
     :title="$title ?? __('common.delete_confirmation_title')"
     :message="$message ?? __('common.delete_confirmation_message')"

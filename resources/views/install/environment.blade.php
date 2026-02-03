@@ -32,7 +32,7 @@
             <legend class="sr-only">{{ __('install.application_environment') }}</legend>
             
             <div>
-                <x-form.label for="app_env" :text="__('install.app_env')" :required="true" />
+                <x-form-label for="app_env" :text="__('install.app_env')" :required="true" />
                 @php
                     $envOptions = [
                         'local' => 'install.app_env_options.local',
@@ -40,7 +40,7 @@
                         'production' => 'install.app_env_options.production',
                     ];
                 @endphp
-                <x-form.select
+                <x-form-select
                     id="app_env"
                     name="app_env"
                     :options="$envOptions"
@@ -50,8 +50,8 @@
             </div>
 
             <div>
-                <x-form.label for="app_debug" :text="__('install.app_debug')" />
-                <x-form.toggle
+                <x-form-label for="app_debug" :text="__('install.app_debug')" />
+                <x-form-toggle
                     name="app_debug"
                     id="app_debug"
                     :checked="old('app_debug', session('install_data.app_debug', '1')) == '1'"
@@ -70,12 +70,12 @@
             <legend class="sr-only">{{ __('install.application_url_configuration') }}</legend>
             
             <div>
-                <x-form.label for="app_url" :text="__('install.app_url')" :required="true" />
+                <x-form-label for="app_url" :text="__('install.app_url')" :required="true" />
                 <div class="flex items-center">
                     <span id="protocol_display" class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300 text-sm">
                         {{ session('install_data.force_ssl', false) ? 'https://' : 'http://' }}
                     </span>
-                    <x-form.text
+                    <x-form-text
                         name="app_url"
                         id="app_url"
                         :value="old('app_url', $hostAndPort)"
@@ -86,7 +86,7 @@
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('install.app_url_note') }}</p>
             </div>
 
-            <x-form.toggle
+            <x-form-toggle
                 name="force_ssl"
                 id="force_ssl"
                 :checked="session('install_data.force_ssl', false)"
@@ -103,10 +103,10 @@
             <legend class="sr-only">{{ __('install.admin_panel_url') }}</legend>
             
             <div>
-                <x-form.label for="admin_url" :text="__('install.admin_url')" />
+                <x-form-label for="admin_url" :text="__('install.admin_url')" />
                 <div class="flex items-center">
                     <span id="admin_url_prefix" class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300 text-sm"></span>
-                    <x-form.text
+                    <x-form-text
                         name="admin_url"
                         id="admin_url"
                         :value="old('admin_url', session('install_data.admin_url', 'admin'))"
@@ -128,7 +128,7 @@
             <legend class="sr-only">{{ __('install.application_timezone') }}</legend>
             
             <div>
-                <x-form.label for="app_timezone" :text="is_array(__('install.timezone')) ? __('install.timezone.label') : __('install.timezone')" :required="true" />
+                <x-form-label for="app_timezone" :text="is_array(__('install.timezone')) ? __('install.timezone.label') : __('install.timezone')" :required="true" />
             @php
                 // 現在のタイムゾーンを取得（セッションがあればそれを使い、なければクッキーから取得）
                 $currentTz = old('app_timezone', session('install_data.app_timezone', ''));
@@ -182,7 +182,7 @@
             class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
             {{ __('install.back') }}
         </a>
-        <x-form.button
+        <x-form-button
             type="submit"
             variant="primary"
             :label="__('install.next')"

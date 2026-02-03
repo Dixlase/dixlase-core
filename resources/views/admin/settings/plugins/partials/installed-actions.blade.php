@@ -18,7 +18,7 @@ https://exc-d.com
     @endphp
     @if ($settingsUrl)
         <a href="{{ $settingsUrl }}" class="inline-block">
-            <x-form.button
+            <x-form-button
                 type="button"
                 :label="__('common.settings')"
                 variant="primary"
@@ -34,7 +34,7 @@ https://exc-d.com
     {{-- 有効化中：無効化ボタンのみ --}}
     <form action="{{ route('admin.settings.plugins.disable', $plugin->id) }}" method="POST" class="inline-block">
         @csrf
-        <x-form.button
+        <x-form-button
             type="submit"
             :label="__('common.disable')"
             variant="warning"
@@ -79,7 +79,7 @@ https://exc-d.com
     <form action="{{ route('admin.settings.plugins.enable', $plugin->id) }}" method="POST" class="inline-block" id="enableForm-{{ $plugin->id }}">
         @csrf
         @if($hasEnableWarnings)
-            <x-form.button
+            <x-form-button
                 type="button"
                 :label="__('common.enable')"
                 variant="success"
@@ -89,7 +89,7 @@ https://exc-d.com
                 class="py-2 px-3"
             />
             
-            <x-ui.modal
+            <x-ui-modal
                 :id="$enableModalId"
                 :title="__('admin/settings/plugins/index.permissions.enable_warning_title')"
                 icon_type="warning"
@@ -114,7 +114,7 @@ https://exc-d.com
                 </div>
             </x-modal>
         @else
-            <x-form.button
+            <x-form-button
                 type="submit"
                 :label="__('common.enable')"
                 variant="success"
@@ -127,7 +127,7 @@ https://exc-d.com
 
     <form action="{{ route('admin.settings.plugins.uninstall', $plugin->id) }}" method="POST" class="inline-block" id="uninstallForm-{{ $plugin->id }}">
         @csrf
-        <x-form.button
+        <x-form-button
             type="button"
             :label="__('common.uninstall')"
             variant="danger"
@@ -137,7 +137,7 @@ https://exc-d.com
             class="py-2 px-3"
         />
 
-        <x-ui.modal
+        <x-ui-modal
             id="uninstallModal-{{ $plugin->id }}"
             :title="__('admin/settings/plugins/index.uninstall.confirm_title')"
             :message="str_replace('{name}', $plugin->name, __('admin/settings/plugins/index.uninstall.confirm_message'))"

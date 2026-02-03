@@ -41,7 +41,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div class="mt-4 flex items-center justify-between">
     <form method="POST" action="{{ $resendRoute }}">
         @csrf
-        <x-form.button
+        <x-form-button
             type="submit"
             variant="primary"
             :label="$resendButtonText"
@@ -50,7 +50,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <form method="POST" action="{{ $logoutRoute }}">
         @csrf
-        <x-form.button
+        <x-form-button
             type="submit"
             variant="secondary"
             :label="$logoutButtonText"

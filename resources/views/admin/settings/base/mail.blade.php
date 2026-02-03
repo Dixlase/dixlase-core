@@ -67,7 +67,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <fieldset>
             <legend>{{ __('admin/settings/base/mail.admin_email') }}</legend>
-            <x-form.text
+            <x-form-text
                 type="email"
                 name="system_admin_email"
                 :value="old('system_admin_email', $settings['system_admin_email'])"

@@ -34,7 +34,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 {{-- ラジオカードグループのみ（親スコープで無効化制御） --}}
-<x-form.radio-card-group
+<x-form-radio-card-group
     name="two_fa_default_method"
     :options="$defaultMethodOptions"
     :value="$currentDefaultMethod"
@@ -45,6 +45,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
     {{ __('components.two_fa.default_method_help') }}
 </p>
-<x-form.error
+<x-form-error
     :messages="$errors->get('two_fa_default_method')"
 />

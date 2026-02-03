@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <fieldset>
             <legend class="sr-only">{{ __('admin/auth.forgot_password.email_label') }}</legend>
             
-            <x-form.text
+            <x-form-text
                 type="email"
                 id="email"
                 name="email"
@@ -47,14 +47,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 autocomplete="username"
             />
             
-            <x-form.error
+            <x-form-error
                 :messages="$errors->get('email')"
             />
         </fieldset>
     </section>
 
     <section class="flex items-center flex-col justify-between mt-6">
-        <x-form.button
+        <x-form-button
             type="submit"
             variant="primary"
             size="md"

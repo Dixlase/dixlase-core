@@ -195,7 +195,7 @@
            class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
             {{ __('install.back_button') }}
         </a>
-        <x-form.button
+        <x-form-button
             type="submit"
             variant="primary"
             :label="__('install.confirm_button')"

@@ -30,7 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <div x-data="{ enabled: {{ $enabled ? 'true' : 'false' }} }">
     <fieldset>
-        <x-form.toggle
+        <x-form-toggle
             name="login_attempt_limit_enabled"
             :label="__('components.login_attempt_limit_settings.enabled')"
             :checked="old('login_attempt_limit_enabled', $enabled)"
@@ -52,7 +52,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <fieldset>
             <legend>{{ __('components.login_attempt_limit_settings.max_attempts') }}</legend>
-            <x-form.text
+            <x-form-text
                 type="number"
                 name="login_attempt_max_attempts"
                 :value="old('login_attempt_max_attempts', $maxAttempts)"
@@ -69,7 +69,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if($showIpBasedAttempts)
             <fieldset>
                 <legend>{{ __('components.login_attempt_limit_settings.max_attempts_ip') }}</legend>
-                <x-form.text
+                <x-form-text
                     type="number"
                     name="login_attempt_max_attempts_ip"
                     :value="old('login_attempt_max_attempts_ip', $maxAttemptsIp)"
@@ -86,7 +86,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <fieldset>
             <legend>{{ __('components.login_attempt_limit_settings.time_window') }}</legend>
-            <x-form.text
+            <x-form-text
                 type="number"
                 name="login_attempt_time_window"
                 :value="old('login_attempt_time_window', $timeWindow)"
@@ -102,7 +102,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <fieldset>
             <legend>{{ __('components.login_attempt_limit_settings.lockout_duration') }}</legend>
-            <x-form.text
+            <x-form-text
                 type="number"
                 name="login_attempt_lockout_duration"
                 :value="old('login_attempt_lockout_duration', $lockoutDuration)"
@@ -117,7 +117,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </fieldset>
 
         <fieldset>
-            <x-form.toggle
+            <x-form-toggle
                 name="login_attempt_lockout_notification_enabled"
                 :label="__('components.login_attempt_limit_settings.notification_enabled')"
                 :checked="old('login_attempt_lockout_notification_enabled', $notificationEnabled)"

@@ -75,7 +75,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 {{ __('common.passkey_mode.help.profile_editable') }}
             </p>
-            <x-form.toggle
+            <x-form-toggle
                 name="two_fa_passkey_enabled"
                 :label="__('common.passkey_mode.options.enabled')"
                 :checked="old('two_fa_passkey_enabled', $currentPasskeyEnabled ? '1' : '0') == '1'"
@@ -91,7 +91,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </p>
             <div class="opacity-50 pointer-events-none">
-                <x-form.toggle
+                <x-form-toggle
                     name="two_fa_passkey_enabled"
                     :label="__('common.passkey_mode.options.enabled')"
                     :checked="$forcedPasskeyValue"
@@ -112,7 +112,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{ __('common.passkey_mode.help.global_toggle') }}
         </p>
         
-        <x-form.toggle
+        <x-form-toggle
             :name="$name"
             :label="__('common.passkey_mode.options.enabled')"
             :checked="old($name, $value) == '1'"

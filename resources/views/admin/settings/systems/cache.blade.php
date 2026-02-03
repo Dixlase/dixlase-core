@@ -40,7 +40,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <input type="hidden" name="type" value="{{ $type }}">
                 </form>
                 
-                <x-form.button
+                <x-form-button
                     type="button"
                     variant="danger"
                     :label="__('common.clear')"
@@ -64,7 +64,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <input type="hidden" name="type" value="all">
                 </form>
                 
-                <x-form.button
+                <x-form-button
                     type="button"
                     variant="danger"
                     :label="__('admin/settings/systems/cache.clear_all_button')"
@@ -96,7 +96,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <!-- Individual Cache Clear Modals -->
 @foreach($cacheInfo as $type => $info)
-    <x-ui.modal
+    <x-ui-modal
         id="clearCacheModal{{ ucfirst($type) }}"
         :title="__('admin/settings/systems/cache.clear_confirm', ['name' => $info['name']])"
         :message="$info['description']"
@@ -109,7 +109,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endforeach
 
 <!-- Clear All Cache Modal -->
-    <x-ui.modal
+    <x-ui-modal
         id="clearAllCacheModal"
         :title="__('admin/settings/systems/cache.clear_all_title')"
         :message="__('admin/settings/systems/cache.clear_all_description') . ' ' . __('admin/settings/systems/cache.clear_all_warning')"

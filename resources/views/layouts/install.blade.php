@@ -65,7 +65,7 @@
                                         $languageOptions[$locale] = 'install.languages.' . $locale;
                                     }
                                 @endphp
-                                <x-form.select
+                                <x-form-select
                                     id="language-selector"
                                     name="locale"
                                     :options="$languageOptions"

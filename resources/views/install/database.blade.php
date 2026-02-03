@@ -16,14 +16,14 @@
             <legend class="sr-only">{{ __('install.database_connection_details') }}</legend>
             
             <div>
-                <x-form.label for="db_connection" :text="__('install.db_connection')" :required="true" />
+                <x-form-label for="db_connection" :text="__('install.db_connection')" :required="true" />
                 @php
                     $dbConnectionOptions = [
                         'mysql' => 'MySQL',
                         'sqlite' => 'SQLite',
                     ];
                 @endphp
-                <x-form.select
+                <x-form-select
                     id="db_connection"
                     name="db_connection"
                     :options="$dbConnectionOptions"
@@ -40,8 +40,8 @@
             @endphp
 
             <div>
-                <x-form.label for="db_host" :text="__('install.db_host')" :required="true" />
-                <x-form.text
+                <x-form-label for="db_host" :text="__('install.db_host')" :required="true" />
+                <x-form-text
                     name="db_host"
                     id="db_host"
                     :value="old('db_host', session('install_data.db_host', $defaultDbHost))"
@@ -51,8 +51,8 @@
             </div>
 
             <div>
-                <x-form.label for="db_port" :text="__('install.db_port')" :required="true" />
-                <x-form.text
+                <x-form-label for="db_port" :text="__('install.db_port')" :required="true" />
+                <x-form-text
                     type="number"
                     name="db_port"
                     id="db_port"
@@ -63,8 +63,8 @@
             </div>
 
             <div>
-                <x-form.label for="db_database" :text="__('install.db_database')" :required="true" />
-                <x-form.text
+                <x-form-label for="db_database" :text="__('install.db_database')" :required="true" />
+                <x-form-text
                     name="db_database"
                     id="db_database"
                     :value="old('db_database', session('install_data.db_database', 'dixlase'))"
@@ -74,8 +74,8 @@
             </div>
 
             <div>
-                <x-form.label for="db_username" :text="__('install.db_username')" :required="true" />
-                <x-form.text
+                <x-form-label for="db_username" :text="__('install.db_username')" :required="true" />
+                <x-form-text
                     name="db_username"
                     id="db_username"
                     :value="old('db_username', session('install_data.db_username', $defaultDbUser))"
@@ -86,9 +86,9 @@
             </div>
 
             <div>
-                <x-form.label for="db_password" :text="__('install.db_password')" :required="true" />
+                <x-form-label for="db_password" :text="__('install.db_password')" :required="true" />
                 <div class="relative">
-                    <x-form.text
+                    <x-form-text
                         type="password"
                         name="db_password"
                         id="db_password"
@@ -102,7 +102,7 @@
                         <i id="password-eye" class="fas fa-eye"></i>
                     </button>
                 </div>
-                <x-form.help-text :text="__('install.db_password_required')" />
+                <x-form-help-text :text="__('install.db_password_required')" />
             </div>
         </fieldset>
     </section>
@@ -114,13 +114,13 @@
         <fieldset>
             <legend class="sr-only">{{ __('install.database_preservation_options') }}</legend>
             
-            <x-form.toggle
+            <x-form-toggle
                 name="preserve_data"
                 id="preserve_data"
                 :checked="old('preserve_data', session('install_data.preserve_data', false)) === true"
                 :label="__('install.preserve_database')"
             />
-            <x-form.help-text :text="__('install.preserve_database_help')" />
+            <x-form-help-text :text="__('install.preserve_database_help')" />
         </fieldset>
     </section>
 
@@ -137,7 +137,7 @@
                 {{ __('install.db_test_required') }}
             </p>
             
-            <x-form.button 
+            <x-form-button 
                 type="button"
                 variant="success"
                 :label="__('install.test_db_connection')"
@@ -157,7 +157,7 @@
         </a>
 
         <div class="relative group">
-            <x-form.button 
+            <x-form-button 
                 type="submit"
                 id="next-button"
                 :label="__('install.next')"

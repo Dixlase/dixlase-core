@@ -99,7 +99,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{-- 設定可能な場合 --}}
         <fieldset>
             <legend>{{ __('components.login_notification.label') }}</legend>
-            <x-form.radio-card-group
+            <x-form-radio-card-group
                 :name="$name"
                 :options="$options"
                 :value="$value"
@@ -111,7 +111,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{-- 全体設定で固定されている場合：全体設定の値を選択状態で表示し操作不可にする --}}
         <fieldset>
             <legend>{{ __('components.login_notification.label') }}</legend>
-            <x-form.radio-card-group
+            <x-form-radio-card-group
                 :name="$name"
                 :options="$options"
                 :value="(string)$globalSetting"

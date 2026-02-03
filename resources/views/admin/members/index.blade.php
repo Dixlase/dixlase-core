@@ -23,7 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="max-w-7xl mx-auto">
     <div class="flex justify-between items-center mb-4">
-        <x-form.button
+        <x-form-button
             type="link"
             :href="route('admin.members.create')"
             :label="__('common.create')"
@@ -31,7 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             icon="fas fa-plus"
         />
         
-        <x-form.button
+        <x-form-button
             type="button"
             :label="__('admin/members/index.force_logout_all')"
             variant="danger"
@@ -56,7 +56,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ __('common.filters.search_keyword') }}
                         </label>
-                        <x-form.text
+                        <x-form-text
                             id="search"
                             name="search"
                             :placeholder="__('components.forms.placeholder.search')"
@@ -69,7 +69,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ __('common.filters.role_filter') }}
                         </label>
-                        <x-form.select
+                        <x-form-select
                             id="role"
                             name="role"
                             :options="array_merge(
@@ -85,7 +85,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ __('common.filters.status_filter') }}
                         </label>
-                        <x-form.select
+                        <x-form-select
                             id="status"
                             name="status"
                             :options="[
@@ -100,7 +100,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <!-- 検索ボタン -->
                     <div class="flex items-end">
                         <div class="flex gap-2 w-full">
-                            <x-form.button
+                            <x-form-button
                                 type="submit"
                                 variant="primary"
                                 :label="__('common.search')"
@@ -122,7 +122,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <h2 class="sr-only">{{ __('admin/members/index.heading') }}</h2>
 
         <!-- ページネーション制御 -->
-        <x-ui.pagination-controls
+        <x-ui-pagination-controls
             :paginator="$members"
             :perPageOptions="[10, 25, 50, 100]"
             :currentPerPage="request('per_page', 25)"
@@ -135,7 +135,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
 
         <!-- ページネーション -->
-        <x-ui.pagination
+        <x-ui-pagination
             :pagination="$pagination ?? null"
             :route="'admin.members.index'"
             :routeParams="array_filter([
@@ -177,7 +177,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <td data-label="{{ __('common.email') }}">{{ $member->email }}</td>
                             <td data-label="{{ __('common.role') }}">{{ $member->role->label() }}</td>
                             <td data-label="{{ __('common.actions') }}">
-                                <x-form.button
+                                <x-form-button
                                     type="button"
                                     variant="secondary"
                                     size="sm"
@@ -193,7 +193,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>        
 
         <!-- ページネーション -->
-        <x-ui.pagination
+        <x-ui-pagination
             :pagination="$pagination ?? null"
             route="admin.members.index"
             :routeParams="array_filter([
@@ -211,7 +211,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('modals')
     <!-- 全メンバー強制ログアウト確認モーダル -->
-    <x-ui.modal
+    <x-ui-modal
         id="forceLogoutAllModal"
         :title="__('admin/members/index.force_logout_all_confirmation_title')"
         :message="__('admin/members/index.force_logout_all_confirmation_message')"

@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <legend>{{ __('admin.settings.front.front_description') }}</legend>
-                <x-form.textarea
+                <x-form-textarea
                     name="front_description"
                     :value="old('front_description', $settings['front_description'])"
                     :rows="3"

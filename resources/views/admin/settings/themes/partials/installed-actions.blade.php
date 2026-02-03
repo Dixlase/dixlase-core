@@ -15,7 +15,7 @@ https://exc-d.com
     {{-- 有効化中のテーマ：設定ボタンのみ --}}
     @if(($theme->has_settings ?? false) && Route::has('admin.settings.themes.settings'))
         <a href="{{ route('admin.settings.themes.settings') }}" class="inline-block">
-            <x-form.button
+            <x-form-button
                 type="button"
                 :label="__('common.settings')"
                 variant="primary"
@@ -64,7 +64,7 @@ https://exc-d.com
     <form action="{{ route('admin.settings.themes.switch', $theme->id) }}" method="POST" class="inline-block" id="enableThemeForm-{{ $theme->id }}">
         @csrf
         @if($hasEnableWarnings)
-            <x-form.button
+            <x-form-button
                 type="button"
                 :label="__('common.enable')"
                 variant="success"
@@ -74,7 +74,7 @@ https://exc-d.com
                 onclick="openModal('{{ $enableModalId }}')"
             />
             
-            <x-ui.modal
+            <x-ui-modal
                 :id="$enableModalId"
                 :title="__('admin/settings/themes/index.permissions.enable_warning_title')"
                 icon_type="warning"
@@ -99,7 +99,7 @@ https://exc-d.com
                 </div>
             </x-modal>
         @else
-            <x-form.button
+            <x-form-button
                 type="submit"
                 :label="__('common.enable')"
                 variant="success"
@@ -112,7 +112,7 @@ https://exc-d.com
 
     <form action="{{ route('admin.settings.themes.uninstall', $theme->id) }}" method="POST" class="inline-block" id="uninstallThemeForm-{{ $theme->id }}">
         @csrf
-        <x-form.button
+        <x-form-button
             type="button"
             :label="__('common.uninstall')"
             variant="danger"
@@ -122,7 +122,7 @@ https://exc-d.com
             onclick="openModal('uninstallThemeModal-{{ $theme->id }}')"
         />
 
-        <x-ui.modal
+        <x-ui-modal
             id="uninstallThemeModal-{{ $theme->id }}"
             :title="__('admin/settings/themes/index.uninstall.confirm_title')"
             :message="str_replace('{name}', $theme->name, __('admin/settings/themes/index.uninstall.confirm_message'))"

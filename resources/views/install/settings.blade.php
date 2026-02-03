@@ -15,8 +15,8 @@
         
         <fieldset class="space-y-4">
             <div>
-                <x-form.label for="site_name" :text="__('install.site_name')" :required="true" />
-                <x-form.text
+                <x-form-label for="site_name" :text="__('install.site_name')" :required="true" />
+                <x-form-text
                     name="site_name"
                     id="site_name"
                     :value="old('site_name', session('install_data.site_name', ''))"
@@ -35,8 +35,8 @@
             <legend class="sr-only">{{ __('install.admin_account_details') }}</legend>
             
             <div>
-                <x-form.label for="admin_account_name" :text="__('install.admin_account_name')" :required="true" />
-                <x-form.text
+                <x-form-label for="admin_account_name" :text="__('install.admin_account_name')" :required="true" />
+                <x-form-text
                     name="admin_account_name"
                     id="admin_account_name"
                     :value="old('admin_account_name', session('install_data.admin_account_name', ''))"
@@ -50,12 +50,12 @@
                     ariaDescribedby="admin_account_name_help"
                     class="input-full"
                 />
-                <x-form.help-text :text="__('install.admin_account_name_requirements')" id="admin_account_name_help" />
+                <x-form-help-text :text="__('install.admin_account_name_requirements')" id="admin_account_name_help" />
             </div>
 
             <div>
-                <x-form.label for="admin_display_name" :text="__('install.admin_display_name')" />
-                <x-form.text
+                <x-form-label for="admin_display_name" :text="__('install.admin_display_name')" />
+                <x-form-text
                     name="admin_display_name"
                     id="admin_display_name"
                     :value="old('admin_display_name', session('install_data.admin_display_name', ''))"
@@ -64,12 +64,12 @@
                     ariaDescribedby="admin_display_name_help"
                     class="input-full"
                 />
-                <x-form.help-text :text="__('install.admin_display_name_requirements')" id="admin_display_name_help" />
+                <x-form-help-text :text="__('install.admin_display_name_requirements')" id="admin_display_name_help" />
             </div>
 
             <div>
-                <x-form.label for="admin_email" :text="__('install.admin_email')" :required="true" />
-                <x-form.text
+                <x-form-label for="admin_email" :text="__('install.admin_email')" :required="true" />
+                <x-form-text
                     type="email"
                     name="admin_email"
                     id="admin_email"
@@ -90,7 +90,7 @@
             <legend class="sr-only">{{ __('install.password_setup') }}</legend>
             
             <div>
-                <x-form.label for="admin_password" :text="__('install.admin_password')" :required="true" />
+                <x-form-label for="admin_password" :text="__('install.admin_password')" :required="true" />
                 <x-password-tools
                     name="admin_password"
                     id="admin_password"
@@ -114,7 +114,7 @@
            class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
             {{ __('install.back') }}
         </a>
-        <x-form.button
+        <x-form-button
             type="submit"
             variant="primary"
             :label="__('install.next')"

@@ -140,7 +140,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <span class="text-xs text-gray-500">(jpg, png, gif, webp, svg)</span>
                     </label>
                     <div class="flex items-center space-x-2">
-                        <x-form.text
+                        <x-form-text
                             type="number"
                             name="max_file_size_image"
                             :value="round(($securitySettings['max_file_size_image'] ?? 10240) / 1024)"
@@ -161,7 +161,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <span class="text-xs text-gray-500">(mp4)</span>
                     </label>
                     <div class="flex items-center space-x-2">
-                        <x-form.text
+                        <x-form-text
                             type="number"
                             name="max_file_size_video"
                             :value="round(($securitySettings['max_file_size_video'] ?? 307200) / 1024)"
@@ -182,7 +182,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <span class="text-xs text-gray-500">(pdf, docx, txt)</span>
                     </label>
                     <div class="flex items-center space-x-2">
-                        <x-form.text
+                        <x-form-text
                             type="number"
                             name="max_file_size_document"
                             :value="round(($securitySettings['max_file_size_document'] ?? 30720) / 1024)"
@@ -203,7 +203,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <span class="text-xs text-gray-500">(zip)</span>
                     </label>
                     <div class="flex items-center space-x-2">
-                        <x-form.text
+                        <x-form-text
                             type="number"
                             name="max_file_size_archive"
                             :value="round(($securitySettings['max_file_size_archive'] ?? 102400) / 1024)"
@@ -232,7 +232,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{-- MIME実体検証 --}}
                 <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                     <div class="flex items-center justify-start">
-                        <x-form.toggle
+                        <x-form-toggle
                             name="mime_validation_enabled"
                             :checked="($securitySettings['mime_validation_enabled'] ?? true)"
                         />
@@ -247,7 +247,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{-- SVGサニタイズ --}}
                 <div class="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
                     <div class="flex items-center justify-start">
-                        <x-form.toggle
+                        <x-form-toggle
                             name="svg_sanitization_enabled"
                             :checked="($securitySettings['svg_sanitization_enabled'] ?? true)"
                         />
@@ -264,7 +264,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{-- ZIPセキュリティ --}}
                 <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
                     <div class="flex items-center justify-start">
-                        <x-form.toggle
+                        <x-form-toggle
                             name="zip_security_enabled"
                             :checked="($securitySettings['zip_security_enabled'] ?? true)"
                             :xModel="'showZipSettings'"
@@ -286,7 +286,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     {{ __('admin/media/settings.zip_max_compression_ratio') }}
                                 </label>
                                 <div class="flex items-center space-x-2">
-                                    <x-form.text
+                                    <x-form-text
                                         type="number"
                                         name="zip_max_compression_ratio"
                                         :value="$securitySettings['zip_max_compression_ratio'] ?? 100"
@@ -305,7 +305,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     {{ __('admin/media/settings.zip_max_file_count') }}
                                 </label>
                                 <div class="flex items-center space-x-2">
-                                    <x-form.text
+                                    <x-form-text
                                         type="number"
                                         name="zip_max_file_count"
                                         :value="$securitySettings['zip_max_file_count'] ?? 1000"

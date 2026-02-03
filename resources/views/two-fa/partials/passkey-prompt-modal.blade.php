@@ -24,7 +24,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 <div x-data="passkeyPromptModal()">
-    <x-ui.modal 
+    <x-ui-modal 
         :id="$modalId"
         :title="__('two_fa.passkey_prompt.title')"
         message=""
@@ -46,7 +46,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
             
             <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <x-form.toggle
+                <x-form-toggle
                     name="dont_show_again"
                     :label="__('two_fa.passkey_prompt.dont_show_again')"
                     x-model="dontShowAgain"
@@ -55,14 +55,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         
         <x-slot name="footer">
-            <x-form.button
+            <x-form-button
                 type="button"
                 variant="secondary"
                 :label="__('common.close')"
                 @click="closeModal()"
                 class="mx-2"
             />
-            <x-form.button
+            <x-form-button
                 type="link"
                 variant="primary"
                 :label="__('two_fa.passkey_prompt.register_now')"
@@ -71,7 +71,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 class="mx-2"
             />
         </x-slot>
-    </x-ui.modal>
+    </x-ui-modal>
 </div>
 
 <script>
