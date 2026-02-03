@@ -10,9 +10,4 @@ return [
         'receptionist' => 'Receptionist',
         'guest' => 'Guest',
     ],
-    'appearance' => [
-        'auto' => 'Auto (Follow PC Settings)',
-        'light' => 'Light',
-        'dark' => 'Dark',
-    ],
 ];

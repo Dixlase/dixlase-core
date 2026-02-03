@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * Website: https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+return [
+    'title' => 'Recovery Code',
+    'prompt' => 'Please enter your recovery code. If you cannot access your device, you can use a recovery code to log in.',
+    'code_label' => 'Recovery Code',
+    'format_hint' => 'Enter 20 digits (with or without hyphens)',
+    'submit' => 'Authenticate and Login',
+    'invalid' => 'The recovery code is invalid.',
+    'invalid_with_attempts' => 'The recovery code is invalid. Remaining attempts: :attempts',
+    'use_recovery_code' => 'Recovery Code',
+    'back_to_two_fa' => 'Back to Two-Factor Authentication',
+];
