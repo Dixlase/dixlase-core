@@ -50,22 +50,22 @@ class MemberVerifiedNotification extends Notification
         $adminUrl = route('admin.login');
 
         return (new MailMessage)
-            ->subject(__('mail.member_verification_completed.subject'))
-            ->greeting(__('mail.member_verification_completed.greeting', ['name' => $notifiable->name]))
-            ->line(__('mail.member_verification_completed.message'))
+            ->subject(__('mail.verify-email.member_verification_completed.subject'))
+            ->greeting(__('mail.verify-email.member_verification_completed.greeting', ['name' => $notifiable->name]))
+            ->line(__('mail.verify-email.member_verification_completed.message'))
             ->line('') // 空白行
-            ->line(__('mail.member_verification_completed.member_info'))
-            ->line(__('mail.member_verification_completed.name') . ': ' . $notifiable->name)
-            ->line(__('mail.member_verification_completed.email') . ': ' . $notifiable->email)
+            ->line(__('mail.verify-email.member_verification_completed.member_info'))
+            ->line(__('mail.verify-email.member_verification_completed.name') . ': ' . $notifiable->name)
+            ->line(__('mail.verify-email.member_verification_completed.email') . ': ' . $notifiable->email)
             ->line('') // 空白行
-            ->line(__('mail.member_verification_completed.login_info'))
+            ->line(__('mail.verify-email.member_verification_completed.login_info'))
             ->line('') // 空白行
-            ->line(__('mail.member_verification_completed.url_info'))
-            ->line(__('mail.member_verification_completed.front_url') . ': ' . $frontUrl)
-            ->line(__('mail.member_verification_completed.admin_url') . ': ' . $adminUrl)
+            ->line(__('mail.verify-email.member_verification_completed.url_info'))
+            ->line(__('mail.verify-email.member_verification_completed.front_url') . ': ' . $frontUrl)
+            ->line(__('mail.verify-email.member_verification_completed.admin_url') . ': ' . $adminUrl)
             ->action(__('common.login'), $adminUrl)
             ->line('') // 空白行
-            ->line(__('mail.member_verification_completed.thanks'))
-            ->salutation(__('mail.member_verification_completed.regards') . "\n\n{$appName}");
+            ->line(__('mail.verify-email.member_verification_completed.thanks'))
+            ->salutation(__('mail.verify-email.member_verification_completed.regards') . "\n\n{$appName}");
     }
 }

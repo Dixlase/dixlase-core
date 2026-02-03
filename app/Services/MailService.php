@@ -192,7 +192,7 @@ class MailService implements MailServiceInterface
     {
         if (!$config->isSmtp()) {
             return MailResultDTO::failed(
-                __('mail.test_functions.mailer_not_supported', ['mailer' => $config->mailer])
+                __('mail/test.test_functions.mailer_not_supported', ['mailer' => $config->mailer])
             );
         }
 
@@ -218,7 +218,7 @@ class MailService implements MailServiceInterface
             );
 
             if (!$socket) {
-                throw new \Exception(__('mail.test_advanced.smtp_connection_error', [
+                throw new \Exception(__('mail/test.test_advanced.smtp_connection_error', [
                     'error' => $errstr,
                     'errno' => $errno
                 ]));
@@ -229,7 +229,7 @@ class MailService implements MailServiceInterface
 
             if (!$response || !str_starts_with($response, '220')) {
                 fclose($socket);
-                throw new \Exception(__('mail.test_advanced.smtp_response_invalid', ['response' => trim($response)]));
+                throw new \Exception(__('mail/test.test_advanced.smtp_response_invalid', ['response' => trim($response)]));
             }
 
             // STARTTLSが必要な場合
@@ -242,12 +242,12 @@ class MailService implements MailServiceInterface
 
                 if (!str_starts_with($response, '220')) {
                     fclose($socket);
-                    throw new \Exception(__('mail.test_advanced.smtp_starttls_failed', ['response' => trim($response)]));
+                    throw new \Exception(__('mail/test.test_advanced.smtp_starttls_failed', ['response' => trim($response)]));
                 }
 
                 if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
                     fclose($socket);
-                    throw new \Exception(__('mail.test_advanced.smtp_tls_crypto_failed'));
+                    throw new \Exception(__('mail/test.test_advanced.smtp_tls_crypto_failed'));
                 }
             }
 
@@ -261,7 +261,7 @@ class MailService implements MailServiceInterface
 
                 if (!str_starts_with($response, '334')) {
                     fclose($socket);
-                    throw new \Exception(__('mail.test_advanced.smtp_auth_login_failed', ['response' => trim($response)]));
+                    throw new \Exception(__('mail/test.test_advanced.smtp_auth_login_failed', ['response' => trim($response)]));
                 }
 
                 fwrite($socket, base64_encode($config->username) . "\r\n");
@@ -269,7 +269,7 @@ class MailService implements MailServiceInterface
 
                 if (!str_starts_with($response, '334')) {
                     fclose($socket);
-                    throw new \Exception(__('mail.test_advanced.smtp_username_auth_failed', ['response' => trim($response)]));
+                    throw new \Exception(__('mail/test.test_advanced.smtp_username_auth_failed', ['response' => trim($response)]));
                 }
 
                 fwrite($socket, base64_encode($config->password) . "\r\n");
@@ -277,7 +277,7 @@ class MailService implements MailServiceInterface
 
                 if (!str_starts_with($response, '235')) {
                     fclose($socket);
-                    throw new \Exception(__('mail.test_advanced.smtp_password_auth_failed', ['response' => trim($response)]));
+                    throw new \Exception(__('mail/test.test_advanced.smtp_password_auth_failed', ['response' => trim($response)]));
                 }
             }
 
@@ -285,7 +285,7 @@ class MailService implements MailServiceInterface
             fwrite($socket, "QUIT\r\n");
             fclose($socket);
 
-            return MailResultDTO::success([], null, __('mail.test_functions.connection_test_success'));
+            return MailResultDTO::success([], null, __('mail/test.test_functions.connection_test_success'));
 
         } catch (\Exception $e) {
             return MailResultDTO::failed($e->getMessage());

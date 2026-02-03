@@ -1,8 +1,8 @@
 @extends('layouts.install')
 
-@section('title', __('install.confirm_title'))
-@section('header', __('install.confirm_header'))
-@section('description', __('install.confirm_message'))
+@section('title', __('install/confirm.confirm_title'))
+@section('header', __('install/confirm.confirm_header'))
+@section('description', __('install/confirm.confirm_message'))
 
 @section('content')
 
@@ -42,30 +42,30 @@
 
 <!-- 設定確認セクション -->
 <section aria-labelledby="settings-review-heading" class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 p-4 rounded-lg mb-6 space-y-4 h-96 overflow-auto">
-    <h2 id="settings-review-heading" class="sr-only">{{ __('install.settings_review') }}</h2>
+    <h2 id="settings-review-heading" class="sr-only">{{ __('install/confirm.settings_review') }}</h2>
     
     <!-- 基本設定 -->
     <article aria-labelledby="basic-settings-heading">
-        <h3 id="basic-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install.basic_settings') }}</h3>
+        <h3 id="basic-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install/confirm.basic_settings') }}</h3>
         <ul class="space-y-1 text-gray-700 dark:text-gray-300">
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.site_name') }}:</strong> {{ $data['site_name'] }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.site_name') }}:</strong> {{ $data['site_name'] }}</li>
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.admin_account_name') }}:</strong> {{ $data['admin_account_name'] }}</li>
             @if(!empty($data['admin_display_name']))
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.admin_display_name') }}:</strong> {{ $data['admin_display_name'] }}</li>
             @endif
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.admin_email') }}:</strong> {{ $data['admin_email'] }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.admin_password') }}:</strong> <span class="text-gray-500 dark:text-gray-400">●●●●●</span></li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.admin_email') }}:</strong> {{ $data['admin_email'] }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.admin_password') }}:</strong> <span class="text-gray-500 dark:text-gray-400">●●●●●</span></li>
         </ul>
     </article>
 
     <!-- アプリケーション設定 -->
     <article aria-labelledby="app-settings-heading">
-        <h3 id="app-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install.app_settings') }}</h3>
+        <h3 id="app-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install/confirm.app_settings') }}</h3>
         <ul class="space-y-1 text-gray-700 dark:text-gray-300">
             <!-- ✅ アプリケーションURL（SSL反映） -->
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.app_url') }}:</strong> {{ $fullAppUrl }}</li>
             <!-- ✅ SSL設定 -->
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.force_ssl') }}:</strong> {{ $data['force_ssl'] ? __('install.enabled') : __('install.disabled') }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.force_ssl') }}:</strong> {{ $data['force_ssl'] ? __('install/common.enabled') : __('install/common.disabled') }}</li>
             <!-- ✅ 管理画面URL-->
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.admin_url') }}:</strong> {{ url($data['admin_url']) }}</li>
         </ul>
@@ -73,21 +73,21 @@
 
     <!-- データベース設定 -->
     <article aria-labelledby="database-settings-heading">
-        <h3 id="database-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install.database_settings') }}</h3>
+        <h3 id="database-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install/confirm.database_settings') }}</h3>
         <ul class="space-y-1 text-gray-700 dark:text-gray-300">
             <!-- ✅ DB情報 -->
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.db_connection') }}:</strong> {{ ucfirst($data['db_connection']) }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.db_host') }}:</strong> {{ $data['db_host'] }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.db_port') }}:</strong> {{ $data['db_port'] }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.db_name') }}:</strong> {{ $data['db_database'] }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.db_user') }}:</strong> {{ $data['db_username'] }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.db_password') }}:</strong> <span class="text-gray-500 dark:text-gray-400">●●●●●</span></li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.db_connection') }}:</strong> {{ ucfirst($data['db_connection']) }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.db_host') }}:</strong> {{ $data['db_host'] }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.db_port') }}:</strong> {{ $data['db_port'] }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.db_name') }}:</strong> {{ $data['db_database'] }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.db_user') }}:</strong> {{ $data['db_username'] }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.db_password') }}:</strong> <span class="text-gray-500 dark:text-gray-400">●●●●●</span></li>
         </ul>
     </article>
 
     <!-- メール設定 -->
     <article aria-labelledby="mail-settings-heading">
-        <h3 id="mail-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install.mail_settings') }}</h3>
+        <h3 id="mail-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install/confirm.mail_settings') }}</h3>
         <ul class="space-y-1 text-gray-700 dark:text-gray-300">
             <!-- ✅ メールサーバー設定 -->
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail.server_settings.mailer') }}:</strong> {{ $data['mail_mailer'] ?? '' }}</li>
@@ -162,30 +162,30 @@
 
     <!-- セキュリティ設定 -->
     <article aria-labelledby="security-settings-heading">
-        <h3 id="security-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install.security_settings') }}</h3>
+        <h3 id="security-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install/confirm.security_settings') }}</h3>
         <ul class="space-y-1 text-gray-700 dark:text-gray-300">
             <!-- ✅ IP制限（管理画面 & フロント） -->
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.enable_allowed_admin_ips') }}:</strong> {{ isset($data['enable_allowed_admin_ips']) && $data['enable_allowed_admin_ips'] ? __('install.enabled') : __('install.disabled') }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.allowed_admin_ips') }}:</strong>
-                {{ isset($data['allowed_admin_ips']) && $data['allowed_admin_ips'] ? nl2br(e($data['allowed_admin_ips'])) : __('install.none') }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.enable_allowed_admin_ips') }}:</strong> {{ isset($data['enable_allowed_admin_ips']) && $data['enable_allowed_admin_ips'] ? __('install/common.enabled') : __('install/common.disabled') }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.allowed_admin_ips') }}:</strong>
+                {{ isset($data['allowed_admin_ips']) && $data['allowed_admin_ips'] ? nl2br(e($data['allowed_admin_ips'])) : __('install/common.none') }}</li>
 
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.enable_blocked_admin_ips') }}:</strong> {{ isset($data['enable_blocked_admin_ips']) && $data['enable_blocked_admin_ips'] ? __('install.enabled') : __('install.disabled') }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.blocked_admin_ips') }}:</strong>
-                {{ isset($data['blocked_admin_ips']) && $data['blocked_admin_ips'] ? nl2br(e($data['blocked_admin_ips'])) : __('install.none') }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.enable_blocked_admin_ips') }}:</strong> {{ isset($data['enable_blocked_admin_ips']) && $data['enable_blocked_admin_ips'] ? __('install/common.enabled') : __('install/common.disabled') }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.blocked_admin_ips') }}:</strong>
+                {{ isset($data['blocked_admin_ips']) && $data['blocked_admin_ips'] ? nl2br(e($data['blocked_admin_ips'])) : __('install/common.none') }}</li>
 
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.enable_allowed_front_ips') }}:</strong> {{ isset($data['enable_allowed_front_ips']) && $data['enable_allowed_front_ips'] ? __('install.enabled') : __('install.disabled') }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.allowed_front_ips') }}:</strong>
-                {{ isset($data['allowed_front_ips']) && $data['allowed_front_ips'] ? nl2br(e($data['allowed_front_ips'])) : __('install.none') }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.enable_allowed_front_ips') }}:</strong> {{ isset($data['enable_allowed_front_ips']) && $data['enable_allowed_front_ips'] ? __('install/common.enabled') : __('install/common.disabled') }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.allowed_front_ips') }}:</strong>
+                {{ isset($data['allowed_front_ips']) && $data['allowed_front_ips'] ? nl2br(e($data['allowed_front_ips'])) : __('install/common.none') }}</li>
 
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.enable_blocked_front_ips') }}:</strong> {{ isset($data['enable_blocked_front_ips']) && $data['enable_blocked_front_ips'] ? __('install.enabled') : __('install.disabled') }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.blocked_front_ips') }}:</strong>
-                {{ isset($data['blocked_front_ips']) && $data['blocked_front_ips'] ? nl2br(e($data['blocked_front_ips'])) : __('install.none') }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.enable_blocked_front_ips') }}:</strong> {{ isset($data['enable_blocked_front_ips']) && $data['enable_blocked_front_ips'] ? __('install/common.enabled') : __('install/common.disabled') }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.blocked_front_ips') }}:</strong>
+                {{ isset($data['blocked_front_ips']) && $data['blocked_front_ips'] ? nl2br(e($data['blocked_front_ips'])) : __('install/common.none') }}</li>
         </ul>
     </article>
 </section>
 
 <!-- 確認メッセージ -->
-<p class="text-center text-gray-700 dark:text-gray-300 mb-4">{!! __('install.confirm_description') !!}</p>
+<p class="text-center text-gray-700 dark:text-gray-300 mb-4">{!! __('install/confirm.confirm_description') !!}</p>
 
 <!-- インストール実行フォーム -->
 <form action="{{ route('install.confirm.store') }}" method="POST" class="space-y-4">
@@ -198,7 +198,7 @@
         <x-form-button
             type="submit"
             variant="primary"
-            :label="__('install.confirm_button')"
+            :label="__('install/confirm.confirm_button')"
         />
     </nav>
 </form>

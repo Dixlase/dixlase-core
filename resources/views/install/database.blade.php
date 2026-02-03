@@ -1,8 +1,8 @@
 @extends('layouts.install')
 
-@section('title', __('install.database_title'))
-@section('header', __('install.database_header'))
-@section('description', __('install.database_description'))
+@section('title', __('install/step3.database_title'))
+@section('header', __('install/step3.database_header'))
+@section('description', __('install/step3.database_description'))
 
 @section('content')
 <form action="{{ route('install.database.store') }}" method="POST" class="space-y-6">
@@ -10,13 +10,13 @@
 
     <!-- データベース接続設定セクション -->
     <section aria-labelledby="db-connection-heading">
-        <h2 id="db-connection-heading" class="sr-only">{{ __('install.database_connection_settings') }}</h2>
+        <h2 id="db-connection-heading" class="sr-only">{{ __('install/step3.database_connection_settings') }}</h2>
         
         <fieldset class="space-y-4">
-            <legend class="sr-only">{{ __('install.database_connection_details') }}</legend>
+            <legend class="sr-only">{{ __('install/step3.database_connection_details') }}</legend>
             
             <div>
-                <x-form-label for="db_connection" :text="__('install.db_connection')" :required="true" />
+                <x-form-label for="db_connection" :text="__('install/step3.db_connection')" :required="true" />
                 @php
                     $dbConnectionOptions = [
                         'mysql' => 'MySQL',
@@ -40,7 +40,7 @@
             @endphp
 
             <div>
-                <x-form-label for="db_host" :text="__('install.db_host')" :required="true" />
+                <x-form-label for="db_host" :text="__('install/step3.db_host')" :required="true" />
                 <x-form-text
                     name="db_host"
                     id="db_host"
@@ -51,7 +51,7 @@
             </div>
 
             <div>
-                <x-form-label for="db_port" :text="__('install.db_port')" :required="true" />
+                <x-form-label for="db_port" :text="__('install/step3.db_port')" :required="true" />
                 <x-form-text
                     type="number"
                     name="db_port"
@@ -63,7 +63,7 @@
             </div>
 
             <div>
-                <x-form-label for="db_database" :text="__('install.db_database')" :required="true" />
+                <x-form-label for="db_database" :text="__('install/step3.db_database')" :required="true" />
                 <x-form-text
                     name="db_database"
                     id="db_database"
@@ -74,7 +74,7 @@
             </div>
 
             <div>
-                <x-form-label for="db_username" :text="__('install.db_username')" :required="true" />
+                <x-form-label for="db_username" :text="__('install/step3.db_username')" :required="true" />
                 <x-form-text
                     name="db_username"
                     id="db_username"
@@ -86,7 +86,7 @@
             </div>
 
             <div>
-                <x-form-label for="db_password" :text="__('install.db_password')" :required="true" />
+                <x-form-label for="db_password" :text="__('install/step3.db_password')" :required="true" />
                 <div class="relative">
                     <x-form-text
                         type="password"
@@ -102,45 +102,45 @@
                         <i id="password-eye" class="fas fa-eye"></i>
                     </button>
                 </div>
-                <x-form-help-text :text="__('install.db_password_required')" />
+                <x-form-help-text :text="__('install/step3.db_password_required')" />
             </div>
         </fieldset>
     </section>
 
     <!-- データ保持設定セクション -->
     <section aria-labelledby="data-preservation-heading">
-        <h2 id="data-preservation-heading" class="sr-only">{{ __('install.data_preservation_settings') }}</h2>
+        <h2 id="data-preservation-heading" class="sr-only">{{ __('install/step3.data_preservation_settings') }}</h2>
         
         <fieldset>
-            <legend class="sr-only">{{ __('install.database_preservation_options') }}</legend>
+            <legend class="sr-only">{{ __('install/step3.database_preservation_options') }}</legend>
             
             <x-form-toggle
                 name="preserve_data"
                 id="preserve_data"
                 :checked="old('preserve_data', session('install_data.preserve_data', false)) === true"
-                :label="__('install.preserve_database')"
+                :label="__('install/step3.preserve_database')"
             />
-            <x-form-help-text :text="__('install.preserve_database_help')" />
+            <x-form-help-text :text="__('install/step3.preserve_database_help')" />
         </fieldset>
     </section>
 
     <!-- 接続テストセクション -->
     <section aria-labelledby="connection-test-heading">
-        <h2 id="connection-test-heading" class="sr-only">{{ __('install.database_connection_test') }}</h2>
+        <h2 id="connection-test-heading" class="sr-only">{{ __('install/step3.database_connection_test') }}</h2>
         
         <!-- 外部JSで使用するデータ -->
         <input type="hidden" id="db-test-url" value="{{ url('/install/test-db') }}">
-        <input type="hidden" id="db-success-message" value="{{ __('install.db_test_success') }}">
+        <input type="hidden" id="db-success-message" value="{{ __('install/step3.db_test_success') }}">
         
         <div class="text-center space-y-3">
             <p id="db-test-result" class="text-sm text-red-600 dark:text-red-400" role="status" aria-live="polite">
-                {{ __('install.db_test_required') }}
+                {{ __('install/step3.db_test_required') }}
             </p>
             
             <x-form-button 
                 type="button"
                 variant="success"
-                :label="__('install.test_db_connection')"
+                :label="__('install/step3.test_db_connection')"
                 icon="fas fa-plug"
                 onclick="testDatabaseConnection()"
             />

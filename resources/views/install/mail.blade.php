@@ -1,9 +1,9 @@
 @extends('layouts.install')
 
-@section('title', __('install.mail_title'))
-@section('header', __('install.mail_header'))
+@section('title', __('install/step4.mail_title'))
+@section('header', __('install/step4.mail_header'))
 @section('description')
-    {!! __('install.mail_description') !!}
+    {!! __('install/step4.mail_description') !!}
 @endsection
 
 @section('content')
@@ -12,7 +12,7 @@
 
     <!-- メールサーバー設定セクション -->
     <section aria-labelledby="mail-server-heading">
-        <h2 id="mail-server-heading" class="sr-only">{{ __('install.mail_server_settings') }}</h2>
+        <h2 id="mail-server-heading" class="sr-only">{{ __('install/step4.mail_server_settings') }}</h2>
         
         <x-mail-server.form
             :settings="[]"
@@ -25,7 +25,7 @@
 
     <!-- メール接続テストセクション -->
     <section aria-labelledby="mail-test-heading">
-        <h2 id="mail-test-heading" class="sr-only">{{ __('install.mail_connection_test') }}</h2>
+        <h2 id="mail-test-heading" class="sr-only">{{ __('install/step4.mail_connection_test') }}</h2>
         
         <x-mail-server.test
             context="install"

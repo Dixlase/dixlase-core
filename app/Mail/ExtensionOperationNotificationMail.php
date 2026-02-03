@@ -55,16 +55,16 @@ class ExtensionOperationNotificationMail extends Mailable
     {
         $appName = config('app.name', 'Dixlase');
         $type = $this->details['type'] ?? 'plugin';
-        $typeLabel = __('mail.extension_operation.type_' . $type);
+        $typeLabel = __('mail.extension.type_' . $type);
         $name = $this->details['name'] ?? 'Unknown';
 
         if ($this->isUnhealthyWarning) {
-            $subject = __('mail.extension_operation.subject_unhealthy_warning', [
+            $subject = __('mail.extension.subject_unhealthy_warning', [
                 'app_name' => $appName,
                 'type' => $typeLabel,
             ]);
         } else {
-            $subject = __('mail.extension_operation.subject_' . $this->operation, [
+            $subject = __('mail.extension.subject_' . $this->operation, [
                 'app_name' => $appName,
                 'type' => $typeLabel,
                 'name' => $name,

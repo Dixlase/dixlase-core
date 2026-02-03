@@ -50,7 +50,7 @@ class InstallEnvironmentController extends BaseInstallController
         // ドメイン形式か簡易チェック
         if (!preg_match('/^[\w.\-]+(:\d+)?$/', $data['app_url'])) {
             return back()->withErrors([
-                'app_url' => __('validation.url', ['attribute' => __('install.app_url')])
+                'app_url' => __('validation.url', ['attribute' => __('install/step2.app_url')])
             ])->withInput();
         }
 
