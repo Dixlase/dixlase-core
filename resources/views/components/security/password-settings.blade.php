@@ -96,7 +96,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <section>
     <h2>{{ __($translationPrefix . '.reset_settings') }}</h2>
     @if(!$isMailServerTested)
-        <x-message
+        <x-ui-message
             type="warning"
             :message="__($translationPrefix . '.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
         />

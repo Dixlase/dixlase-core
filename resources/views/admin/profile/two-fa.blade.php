@@ -35,7 +35,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- Passkeyが有効だがデバイスが未登録の場合の警告 --}}
             @if($currentPasskeyEnabled && $twoFaPasskeyDevices->isEmpty())
                 <div class="mb-6">
-                    <x-message 
+                    <x-ui-message 
                         type="warning" 
                         :message="__('admin/profile.passkey_no_devices_notice', ['url' => route('admin.profile.two-fa-management')])"
                     />
@@ -46,7 +46,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <h2>{{ __('admin/profile/two-fa.two_fa_settings') }}</h2>
                 
                 @if(!$isMailServerTested)
-                    <x-message
+                    <x-ui-message
                         type="warning"
                         :message="__('admin/profile.two_factor_requires_mail_server')"
                     />
@@ -102,7 +102,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('save')
     @if($isMailServerTested)
-        <x-save
+        <x-admin.save-button
             id_confirmation="confirmProfileTwoFactorModal"
             :label="__('common.update')"
             :title="__('admin/profile.confirm_title')"

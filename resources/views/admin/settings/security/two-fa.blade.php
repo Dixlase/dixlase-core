@@ -41,7 +41,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p>{{ __('admin/settings/security/two-fa.two_fa_basic_settings_description') }}</p>
                 
                 @if(!$isMailServerTested)
-                    <x-message
+                    <x-ui-message
                         type="warning"
                         :message="__('admin/settings/security/two-fa.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
                     />

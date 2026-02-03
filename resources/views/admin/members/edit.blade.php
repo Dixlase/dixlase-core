@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('save')
     <!-- 保存ボタンとモーダル -->
-    <x-save
+    <x-admin.save-button
         id_confirmation="confirmationModal"
         :label="__('common.update')"
         :title="__('admin/members/edit.confirm_title')"

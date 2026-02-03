@@ -329,7 +329,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('save')
     <!-- 保存ボタンとモーダル -->
-    <x-save
+    <x-admin.save-button
         id="confirmationModal"
         :label="__('common.save')"
         onclick="openModal('confirmationModal')"

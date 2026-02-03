@@ -38,7 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         
         {{-- 除外項目の説明 --}}
-        <x-message type="info" :message="__('admin/members/roles.excluded_items_note')" />
+        <x-ui-message type="info" :message="__('admin/members/roles.excluded_items_note')" />
         
         <div class="permission-groups mt-6">
             @foreach ($permissions as $key => $item)
@@ -126,7 +126,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('save')
     <!-- 更新ボタンとモーダル-->
-    <x-save
+    <x-admin.save-button
         id="confirmationModal"
         :label="__('common.save')"
         :title="__('common.save_confirmation_title')"

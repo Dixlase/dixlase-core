@@ -31,7 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             <fieldset>
                 <legend>{{ __('admin/profile.password_change_only') }}</legend>
-                <x-password-tools
+                <x-form-password-tools
                     name="password"
                     id="profile_password"
                     :required="false"
@@ -51,7 +51,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <x-save
+    <x-admin.save-button
         id_confirmation="confirmProfilePasswordModal"
         :label="__('common.update')"
         :title="__('admin/profile.confirm_title')"

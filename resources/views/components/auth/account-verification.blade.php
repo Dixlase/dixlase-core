@@ -109,7 +109,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
 
     @if(!$isMailServerTested)
-        <x-message
+        <x-ui-message
             type="info"
             :message="__($prefix . '.account_verification_disabled')"
         />

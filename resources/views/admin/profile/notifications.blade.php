@@ -36,7 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('admin/profile/notifications.login_notification_mode') }}</h2>
             
             @if(!$isMailServerTested)
-                <x-message
+                <x-ui-message
                     type="warning"
                     :message="__('admin/profile/notifications.mail_server_not_tested')"
                 />
@@ -58,7 +58,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <x-save
+    <x-admin.save-button
         id_confirmation="confirmProfileNotificationsModal"
         :label="__('common.update')"
         :title="__('admin/profile.confirm_title')"

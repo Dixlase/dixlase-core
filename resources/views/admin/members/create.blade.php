@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <x-save
+    <x-admin.save-button
         id="confirmationModal"
         :label="__('common.create')"
         :title="__('admin/members/create.create_confirmation_title')"

@@ -32,12 +32,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <div>
     @if(!$captchaEnabled)
-        <x-message
+        <x-ui-message
             type="warning"
             :message="__('components.captcha_settings.not_enabled', ['url' => $settingsUrl])"
         />
     @elseif(!$captchaAuthenticationResult)
-        <x-message
+        <x-ui-message
             type="warning"
             :message="__('components.captcha_settings.not_authenticated', ['url' => $settingsUrl])"
         />

@@ -26,7 +26,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
     {{-- メール認証待ちメッセージ --}}
     @if(session('email_verification_pending') || session('info'))
-        <x-message
+        <x-ui-message
             type="info"
             :message="session('info') ?? __('account.verify_email_login_required')"
         />

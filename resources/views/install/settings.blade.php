@@ -91,7 +91,7 @@
             
             <div>
                 <x-form-label for="admin_password" :text="__('install.admin_password')" :required="true" />
-                <x-password-tools
+                <x-form-password-tools
                     name="admin_password"
                     id="admin_password"
                     :required="false"

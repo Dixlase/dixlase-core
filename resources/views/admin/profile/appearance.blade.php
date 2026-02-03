@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <section class="transition-colors duration-[500ms]">
             <h2>{{ __('common.appearance_settings') }}</h2>
             <div class="lg:w-1/2">
-                <x-appearance-mode-selector
+                <x-ui-appearance-mode-selector
                     name="appearance"
                     :value="$appearanceValue"
                     :enableRealtimeSwitch="true"
@@ -54,7 +54,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <x-save
+    <x-admin.save-button
         id_confirmation="confirmProfileAppearanceModal"
         :label="__('common.update')"
         :title="__('admin/profile.confirm_title')"
