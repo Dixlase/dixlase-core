@@ -41,7 +41,7 @@ class AdminMemberRolesController extends AdminLoggedInController
     public function index()
     {
         $roles = MemberRole::cases();
-        $menuList = config('admin.nav');
+        $menuList = config('admin.navigation');
 
         // コア権限（デフォルト＋オーバーライド合成済み）- ネスト構造
         $corePermissions = PermissionRegistry::getAllCorePermissions();

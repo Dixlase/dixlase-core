@@ -27,7 +27,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     {{-- サイドバー本体 --}}
     <div class="flex flex-col w-64 h-full overflow-y-auto bg-white/75 dark:bg-gray-900/75 border-r border-gray-200 dark:border-gray-600 backdrop-blur-sm shadow-md">
         <nav class="flex-1 px-4 py-4 space-y-1" role="navigation" aria-label="Admin navigation menu">
-        @foreach (config('admin.nav') as $key => $item)
+        @foreach (config('admin.navigation') as $key => $item)
             @php
                 // 現在のルート名を階層ごとに分割
                 $current_route_parts = explode('.', $route_name);
