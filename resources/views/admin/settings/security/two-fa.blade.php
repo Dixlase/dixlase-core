@@ -84,7 +84,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <x-form.button
+    <x-form-button
         type="button"
         :label="__('common.update')"
         class="button-save"
@@ -93,7 +93,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('modals')
-    <x-ui.modal
+    <x-ui-modal
         id="confirmationModal"
         :title="__('common.update_confirmation_title')"
         :message="__('common.update_confirmation_message')"

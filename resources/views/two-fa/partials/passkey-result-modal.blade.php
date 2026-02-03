@@ -46,7 +46,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         
         <div class="modal-actions">
-            <x-form.button
+            <x-form-button
                 type="button"
                 variant="primary"
                 :label="__('common.close')"

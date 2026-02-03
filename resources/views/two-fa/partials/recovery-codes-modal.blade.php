@@ -31,7 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $nextModal = $nextModal ?? null; // 次に開くモーダルのID
 @endphp
 
-<x-ui.modal :id="$modalId" :title="$error ? __('common.error') : ($title ?? __('two_fa.recovery_codes.title'))" :icon_type="$error ? 'danger' : 'warning'" :dismissible="false">
+<x-ui-modal :id="$modalId" :title="$error ? __('common.error') : ($title ?? __('two_fa.recovery_codes.title'))" :icon_type="$error ? 'danger' : 'warning'" :dismissible="false">
     <div class="space-y-4" x-data="recoveryCodesModal(@js($modalId), @js($codes), @js($autoOpen), @js($clearSessionRoute), @js($nextModal))">
         @if($error)
             {{-- エラー表示モード --}}

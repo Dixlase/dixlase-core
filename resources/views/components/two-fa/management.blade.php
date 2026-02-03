@@ -283,7 +283,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </section>
 
 {{-- モーダル --}}
-<x-ui.modal 
+<x-ui-modal 
     id="deleteTrustedDeviceModal"
     title="{{ __('components.two_fa_management.confirm_delete_trusted_device_title') }}"
     message="{{ __('components.two_fa_management.confirm_delete_trusted_device_message') }}"
@@ -294,7 +294,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     form="deleteTrustedDeviceForm"
 />
 
-<x-ui.modal 
+<x-ui-modal 
     id="deleteAllTrustedDevicesModal"
     title="{{ __('components.two_fa_management.confirm_delete_all_trusted_devices_title') }}"
     message="{{ __('components.two_fa_management.confirm_delete_all_trusted_devices_message') }}"
@@ -305,7 +305,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     form="deleteAllTrustedDevicesForm"
 />
 
-<x-ui.modal 
+<x-ui-modal 
     id="deletePasskeyModal"
     title="{{ __('components.two_fa_management.confirm_delete_passkey_title') }}"
     message="{{ __('components.two_fa_management.confirm_delete_passkey_message') }}"
@@ -316,7 +316,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     form="deletePasskeyForm"
 />
 
-<x-ui.modal 
+<x-ui-modal 
     id="deleteAllPasskeysModal"
     title="{{ __('components.two_fa_management.confirm_delete_all_passkeys_title') }}"
     message="{{ __('components.two_fa_management.confirm_delete_all_passkeys_message') }}"
@@ -328,7 +328,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 />
 
 <!-- 回復コード生成/再生成確認モーダル -->
-<x-ui.modal 
+<x-ui-modal 
     id="recoveryCodesConfirmModal" 
     title="{{ __('components.two_fa_management.recovery_codes_confirm_title') }}"
     message="{{ __('components.two_fa_management.recovery_codes_confirm_message') }}"
@@ -341,7 +341,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <!-- 回復コード削除確認モーダル（管理画面用） -->
 @if($adminContext)
-<x-ui.modal 
+<x-ui-modal 
     id="deleteRecoveryCodesModal"
     title="{{ __('components.two_fa_management.confirm_delete_recovery_codes_title') }}"
     message="{{ __('components.two_fa_management.confirm_delete_recovery_codes_message') }}"

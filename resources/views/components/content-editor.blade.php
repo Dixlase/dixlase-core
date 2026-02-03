@@ -110,7 +110,7 @@ $editorTranslations = [
         }
         @endphp
         
-        <x-form.radio-card-group
+        <x-form-radio-card-group
             :name="$storageFieldName"
             :options="$storageOptions"
             :value="$storageTypeEnum->value"

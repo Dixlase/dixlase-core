@@ -22,7 +22,7 @@ https://exc-d.com
 <form action="{{ route('admin.settings.plugins.install') }}" method="POST" class="inline-block" id="installForm-{{ $plugin['directory'] }}">
     @csrf
     <input type="hidden" name="directory" value="{{ $plugin['directory'] }}">
-    <x-form.button
+    <x-form-button
         type="button"
         :label="__('common.install')"
         variant="success"
@@ -32,7 +32,7 @@ https://exc-d.com
         onclick="openModal('installModal-{{ $plugin['directory'] }}')"
     />
 
-    <x-ui.modal
+    <x-ui-modal
         id="installModal-{{ $plugin['directory'] }}"
         :title="$hasWarnings ? __('admin/settings/plugins/index.permissions.install_warning_title') : __('admin/settings/plugins/index.install.confirm_title')"
         :confirm_label="__('common.install')"
@@ -85,7 +85,7 @@ https://exc-d.com
 <form action="{{ route('admin.settings.plugins.delete') }}" method="POST" class="inline-block" id="deleteForm-{{ $plugin['directory'] }}">
     @csrf
     <input type="hidden" name="directory" value="{{ $plugin['directory'] }}">
-    <x-form.button
+    <x-form-button
         type="button"
         :label="__('common.delete')"
         variant="danger"
@@ -95,7 +95,7 @@ https://exc-d.com
         onclick="openModal('deleteModal-{{ $plugin['directory'] }}')"
     />
 
-    <x-ui.modal
+    <x-ui-modal
         id="deleteModal-{{ $plugin['directory'] }}"
         :title="__('admin/settings/plugins/index.delete.confirm_title')"
         :message="str_replace('{name}', $plugin['name'], __('admin/settings/plugins/index.delete.confirm_message'))"

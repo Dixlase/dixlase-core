@@ -150,7 +150,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if(!$hasCustomFooter)
                 @if($closeOnly || $closeLabel)
                     {{-- 閉じるボタンのみモード --}}
-                    <x-form.button
+                    <x-form-button
                         type="button"
                         variant="secondary"
                         :label="$closeLabel ?? __('common.close')"
@@ -159,7 +159,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     />
                 @else
                     {{-- 標準フッター（確認・キャンセル） --}}
-                    <x-form.button
+                    <x-form-button
                         type="button"
                         variant="secondary"
                         label="{{ $cancelLabel ?? __('common.cancel') }}"
@@ -167,7 +167,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         class="mx-2"
                     />
                     @if($form)
-                        <x-form.button
+                        <x-form-button
                             type="submit"
                             variant="{{ $confirm_variant ?? 'primary' }}"
                             label="{{ $confirmLabel ?? __('common.confirm') }}"
@@ -176,7 +176,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             class="mx-2"
                         />
                     @else
-                        <x-form.button
+                        <x-form-button
                             type="button"
                             variant="{{ $confirm_variant ?? 'primary' }}"
                             label="{{ $confirmLabel ?? __('common.confirm') }}"

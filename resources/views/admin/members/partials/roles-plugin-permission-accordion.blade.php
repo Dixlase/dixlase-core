@@ -207,7 +207,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                        name="plugin_permissions[{{ $pluginSlug }}][{{ $menuKey }}][view_roles]" 
                                        :value="viewValue">
                                 
-                                <x-form.range
+                                <x-form-range
                                     :id="$viewId"
                                     :name="''"
                                     :value="$viewRoleIndex"
@@ -237,7 +237,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                        name="plugin_permissions[{{ $pluginSlug }}][{{ $menuKey }}][access_roles]" 
                                        :value="accessValue">
                                 
-                                <x-form.range
+                                <x-form-range
                                     :id="$accessId"
                                     :name="''"
                                     :value="$accessRoleIndex"

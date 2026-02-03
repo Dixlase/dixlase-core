@@ -31,7 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             <fieldset>
                 <legend>{{ __('common.account_name') }}</legend>
-                <x-form.text
+                <x-form-text
                     name="account_name"
                     :value="old('account_name', $member->account_name)"
                     :required="true"
@@ -48,7 +48,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <legend>{{ __('common.display_name') }}</legend>
-                <x-form.text
+                <x-form-text
                     name="display_name"
                     :value="old('display_name', $member->display_name)"
                     class="w-full"
@@ -61,7 +61,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <legend>{{ __('common.description') }}</legend>
-                <x-form.textarea
+                <x-form-textarea
                     name="description"
                     :value="old('description', $member->description)"
                     :rows="3"
@@ -109,7 +109,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <legend>{{ __('common.locale') }}</legend>
-                <x-form.select
+                <x-form-select
                     name="locale"
                     :options="$localeOptions"
                     :value="old('locale', $member->locale?->value)"

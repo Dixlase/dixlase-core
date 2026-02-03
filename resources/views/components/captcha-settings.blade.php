@@ -50,14 +50,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="space-y-3">
             @if(!$captchaAvailable)
                 @foreach($screens as $screen)
-                    <x-form.hidden
+                    <x-form-hidden
                         :name="$screen['name']"
                         :value="$screen['value'] ? '1' : '0'"
                     />
                 @endforeach
             @endif
             @foreach($screens as $screen)
-                <x-form.toggle
+                <x-form-toggle
                     :name="$screen['name']"
                     :label="$screen['label']"
                     :checked="old($screen['name'], $screen['value'])"

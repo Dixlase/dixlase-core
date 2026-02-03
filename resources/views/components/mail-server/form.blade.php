@@ -47,8 +47,8 @@ $mailServerFormConfig = [
 <!-- Mailer -->
 <div class="mt-4">
     @if($isInstall)
-        <x-form.label for="mail_mailer" :text="__('mail.server_settings.mailer')" :required="true" />
-        <x-form.select
+        <x-form-label for="mail_mailer" :text="__('mail.server_settings.mailer')" :required="true" />
+        <x-form-select
             id="mail_mailer"
             name="mail_mailer"
             :options="$mailers"
@@ -57,11 +57,11 @@ $mailServerFormConfig = [
             class="input-lg"
         />
     @else
-        <x-form.label
+        <x-form-label
             for="mail_mailer"
             :text="__('mail.server_settings.mailer')"
         />
-        <x-form.select
+        <x-form-select
             id="mail_mailer"
             name="mail_mailer"
             :options="$mailers"
@@ -74,8 +74,8 @@ $mailServerFormConfig = [
 <!-- Host -->
 <div class="mt-4">
     @if($isInstall)
-        <x-form.label for="mail_host" :text="__('mail.server_settings.mail_host')" :required="true" />
-        <x-form.text
+        <x-form-label for="mail_host" :text="__('mail.server_settings.mail_host')" :required="true" />
+        <x-form-text
             name="mail_host"
             id="mail_host"
             :value="old('mail_host', session('install_data.mail_host', 'mailpit'))"
@@ -83,11 +83,11 @@ $mailServerFormConfig = [
             class="input-full"
         />
     @else
-        <x-form.label
+        <x-form-label
             for="mail_host"
             :text="__('mail.server_settings.mail_host')"
         />
-        <x-form.text
+        <x-form-text
             id="mail_host"
             name="mail_host"
             :value="old('mail_host', $settings['mail_host'])"
@@ -99,8 +99,8 @@ $mailServerFormConfig = [
 <!-- Port -->
 <div class="mt-4">
     @if($isInstall)
-        <x-form.label for="mail_port" :text="__('mail.server_settings.mail_port')" :required="true" />
-        <x-form.text
+        <x-form-label for="mail_port" :text="__('mail.server_settings.mail_port')" :required="true" />
+        <x-form-text
             type="number"
             name="mail_port"
             id="mail_port"
@@ -108,11 +108,11 @@ $mailServerFormConfig = [
             class="input-full"
         />
     @else
-        <x-form.label
+        <x-form-label
             for="mail_port"
             :text="__('mail.server_settings.mail_port')"
         />
-        <x-form.text
+        <x-form-text
             id="mail_port"
             name="mail_port"
             :value="old('mail_port', $settings['mail_port'])"
@@ -124,19 +124,19 @@ $mailServerFormConfig = [
 <!-- Username -->
 <div class="mt-4">
     @if($isInstall)
-        <x-form.label for="mail_username" :text="__('mail.server_settings.mail_username')" />
-        <x-form.text
+        <x-form-label for="mail_username" :text="__('mail.server_settings.mail_username')" />
+        <x-form-text
             name="mail_username"
             id="mail_username"
             :value="old('mail_username', session('install_data.mail_username'))"
             class="input-full"
         />
     @else
-        <x-form.label
+        <x-form-label
             for="mail_username"
             :text="__('mail.server_settings.mail_username')"
         />
-        <x-form.text
+        <x-form-text
             id="mail_username"
             name="mail_username"
             :value="old('mail_username', $settings['mail_username'])"
@@ -148,8 +148,8 @@ $mailServerFormConfig = [
 <!-- Password -->
 <div class="mt-4">
     @if($isInstall)
-        <x-form.label for="mail_password" :text="__('mail.server_settings.mail_password')" />
-        <x-form.text
+        <x-form-label for="mail_password" :text="__('mail.server_settings.mail_password')" />
+        <x-form-text
             type="password"
             name="mail_password"
             id="mail_password"
@@ -158,11 +158,11 @@ $mailServerFormConfig = [
             class="input-full"
         />
     @else
-        <x-form.label
+        <x-form-label
             for="mail_password"
             :text="__('mail.server_settings.mail_password')"
         />
-        <x-form.text
+        <x-form-text
             type="password"
             id="mail_password"
             name="mail_password"
@@ -176,8 +176,8 @@ $mailServerFormConfig = [
 <!-- Encryption -->
 <div class="mt-4">
     @if($isInstall)
-        <x-form.label for="mail_encryption" :text="__('mail.server_settings.mail_encryption')" :required="true" />
-        <x-form.select
+        <x-form-label for="mail_encryption" :text="__('mail.server_settings.mail_encryption')" :required="true" />
+        <x-form-select
             id="mail_encryption"
             name="mail_encryption"
             :options="$encryptions"
@@ -185,11 +185,11 @@ $mailServerFormConfig = [
             class="input-full mail-setting-input"
         />
     @else
-        <x-form.label
+        <x-form-label
             for="mail_encryption"
             :text="__('mail.server_settings.mail_encryption')"
         />
-        <x-form.select
+        <x-form-select
             id="mail_encryption"
             name="mail_encryption"
             :options="$encryptions"
@@ -202,8 +202,8 @@ $mailServerFormConfig = [
 <!-- From Address -->
 <div class="mt-4">
     @if($isInstall)
-        <x-form.label for="mail_from_address" :text="__('mail.server_settings.mail_from_address')" :required="true" />
-        <x-form.text
+        <x-form-label for="mail_from_address" :text="__('mail.server_settings.mail_from_address')" :required="true" />
+        <x-form-text
             type="email"
             name="mail_from_address"
             id="mail_from_address"
@@ -211,11 +211,11 @@ $mailServerFormConfig = [
             class="input-full"
         />
     @else
-        <x-form.label
+        <x-form-label
             for="mail_from_address"
             :text="__('mail.server_settings.mail_from_address')"
         />
-        <x-form.text
+        <x-form-text
             id="mail_from_address"
             name="mail_from_address"
             :value="old('mail_from_address', $settings['mail_from_address'])"

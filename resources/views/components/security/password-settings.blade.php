@@ -48,7 +48,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     
     <fieldset>
         <legend>{{ __($translationPrefix . '.min_length') }}</legend>
-        <x-form.radio-card-group
+        <x-form-radio-card-group
             name="password_min_length"
             :options="$minLengthOptions"
             :value="old('password_min_length', (string) $minLength)"
@@ -60,7 +60,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 大文字 -->
     <fieldset>
-        <x-form.toggle
+        <x-form-toggle
             name="password_require_uppercase"
             :label="__($translationPrefix . '.require_uppercase')"
             :checked="old('password_require_uppercase', $requireUppercase)"
@@ -70,7 +70,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 数字 -->
     <fieldset>
-        <x-form.toggle
+        <x-form-toggle
             name="password_require_number"
             :label="__($translationPrefix . '.require_number')"
             :checked="old('password_require_number', $requireNumber)"
@@ -80,7 +80,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 記号 -->
     <fieldset>
-        <x-form.toggle
+        <x-form-toggle
             name="password_require_symbol"
             :label="__($translationPrefix . '.require_symbol')"
             :checked="old('password_require_symbol', $requireSymbol)"
@@ -102,7 +102,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
     @endif
     <fieldset>
-        <x-form.toggle
+        <x-form-toggle
             name="password_reset_enabled"
             :label="__($translationPrefix . '.reset_enabled')"
             :checked="old('password_reset_enabled', $resetEnabled)"
@@ -121,7 +121,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <p>{{ __($translationPrefix . '.pwned_password_check_description') }}</p>
 
         <fieldset>
-            <x-form.toggle
+            <x-form-toggle
                 :label="__('common.enabled')"
                 id="pwned_password_check_enabled"
                 name="pwned_password_check_enabled"

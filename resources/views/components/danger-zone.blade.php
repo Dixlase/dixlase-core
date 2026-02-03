@@ -36,7 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <fieldset>
             <legend>{{ __('components.danger_zone.unlock_lockout') }}</legend>
             <p class="mb-4">{{ __('components.danger_zone.unlock_lockout_description') }}</p>
-            <x-form.button
+            <x-form-button
                 variant="info"
                 icon="fas fa-unlock"
                 :label="__('components.danger_zone.unlock_lockout_button')"
@@ -49,7 +49,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <fieldset>
             <legend>{{ __('components.danger_zone.force_logout') }}</legend>
             <p class="mb-4">{{ __('components.danger_zone.force_logout_description') }}</p>
-            <x-form.button
+            <x-form-button
                 variant="warning"
                 icon="fas fa-sign-out-alt"
                 :label="__('components.danger_zone.force_logout_button')"
@@ -62,7 +62,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <fieldset>
             <legend>{{ __('components.danger_zone.delete_' . $entityType) }}</legend>
             <p class="mb-4">{{ __('components.danger_zone.delete_' . $entityType . '_description') }}</p>
-            <x-form.button
+            <x-form-button
                 variant="danger"
                 icon="fas fa-trash"
                 :label="__('components.danger_zone.delete_' . $entityType . '_button')"
@@ -74,7 +74,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <!-- モーダル -->
 @if($unlockRoute)
-    <x-ui.modal
+    <x-ui-modal
         id="unlockLockoutModal"
         :title="__('components.danger_zone.unlock_lockout')"
         :message="__('components.danger_zone.unlock_lockout_description')"
@@ -87,7 +87,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endif
 
 @if($forceLogoutRoute)
-    <x-ui.modal
+    <x-ui-modal
         id="forceLogoutModal"
         :title="__('components.danger_zone.force_logout')"
         :message="__('components.danger_zone.force_logout_description')"
@@ -100,7 +100,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endif
 
 @if($deleteRoute && $canDelete)
-    <x-ui.modal
+    <x-ui-modal
         id="delete{{ ucfirst($entityType) }}Modal"
         :title="__('common.delete_confirmation_title')"
         :message="__('components.danger_zone.delete_' . $entityType . '_description')"

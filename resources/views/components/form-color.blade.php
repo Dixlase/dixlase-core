@@ -30,9 +30,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <div x-data="colorPicker('{{ old($name, $value) }}')" class="space-y-2">
     @if ($label)
-        <x-form.label :for="$id ?? $name" :required="$required">
+        <x-form-label :for="$id ?? $name" :required="$required">
             {{ $label }}
-        </x-form.label>
+        </x-form-label>
     @endif
 
     <div class="flex items-center space-x-3">
@@ -55,5 +55,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <p class="text-sm text-gray-500 dark:text-gray-400">{{ $help }}</p>
     @endif
 
-    <x-form.error :name="$name" />
+    <x-form-error :name="$name" />
 </div>

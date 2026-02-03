@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         1. Tooltip コンポーネント
                     </h3>
                     <div class="flex items-center gap-4">
-                        <x-ui.tooltip title="クリック型ツールチップ" trigger="click">
+                        <x-ui-tooltip title="クリック型ツールチップ" trigger="click">
                             <button class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md">
                                 クリックしてツールチップを表示
                             </button>
@@ -52,7 +52,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </x-slot>
                         </x-tooltip>
 
-                        <x-ui.tooltip title="ホバー型ツールチップ" trigger="hover" position="top">
+                        <x-ui-tooltip title="ホバー型ツールチップ" trigger="hover" position="top">
                             <button class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md">
                                 ホバーでツールチップを表示
                             </button>
@@ -70,7 +70,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         2. Color Picker コンポーネント
                     </h3>
                     <div class="max-w-md">
-                        <x-form.color
+                        <x-form-color
                             name="test_color"
                             label="テーマカラー"
                             value="#3b82f6"
@@ -255,7 +255,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
 
         {{-- テスト用モーダル --}}
-        <x-ui.modal 
+        <x-ui-modal 
             id="test-modal-info"
             icon-type="info"
             title="情報モーダル"
@@ -264,7 +264,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             cancel-label="キャンセル"
         />
 
-        <x-ui.modal 
+        <x-ui-modal 
             id="test-modal-warning"
             icon-type="warning"
             title="警告モーダル"
@@ -273,7 +273,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             cancel-label="キャンセル"
         />
 
-        <x-ui.modal 
+        <x-ui-modal 
             id="test-modal-danger"
             icon-type="danger"
             title="危険な操作"

@@ -31,7 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <fieldset>
             <legend>{{ __('admin/settings/base/site.app_name') }}</legend>
-            <x-form.text
+            <x-form-text
                 name="app_name"
                 :value="old('app_name', $settings['app_name'])"
                 :required="true"
@@ -41,7 +41,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <fieldset>
             <legend>{{ __('admin/settings/base/site.site_description') }}</legend>
-            <x-form.textarea
+            <x-form-textarea
                 name="site_description"
                 :value="old('site_description', $settings['site_description'])"
                 :rows="3"
@@ -52,7 +52,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <fieldset>
             <legend>{{ __('admin/settings/base/site.site_keywords') }}</legend>
-            <x-form.text
+            <x-form-text
                 name="site_keywords"
                 :value="old('site_keywords', $settings['site_keywords'])"
                 class="input-full"
@@ -67,7 +67,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <fieldset>
             <legend>{{ __('admin/settings/base/site.locale') }}</legend>
-            <x-form.select
+            <x-form-select
                 name="locale"
                 :options="$locales"
                 :value="old('locale', $settings['locale'])"
@@ -78,7 +78,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <fieldset>
             <legend>{{ __('common.timezone') }}</legend>
-            <x-form.select
+            <x-form-select
                 name="timezone"
                 :options="$timezones"
                 :value="$settings['timezone']"
@@ -106,7 +106,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <fieldset>
             <legend>{{ __('admin/settings/base/site.twitter_card_type') }}</legend>
-            <x-form.select
+            <x-form-select
                 name="twitter_card_type"
                 :options="[
                     'summary' => __('admin/settings/base/site.twitter_card_summary'),

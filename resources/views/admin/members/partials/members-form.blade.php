@@ -45,7 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @method($formMethod)
         @endif
         @if(isset($member) && $member->id)
-            <x-form.hidden
+            <x-form-hidden
                 name="id"
                 :value="$member->id"
             />
@@ -58,7 +58,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <fieldset>
             <legend>{{ __('common.account_name') }}</legend>
-            <x-form.text
+            <x-form-text
                 id="account_name"
                 name="account_name"
                 :value="old('account_name', $member->account_name ?? '')"
@@ -68,14 +68,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 class="w-full"
             />
             <p class="description-text">{{ __('admin/members/form.account_name_help') }}</p>
-            <x-form.error
+            <x-form-error
                 :messages="$errors->get('account_name')"
             />
         </fieldset>
 
         <fieldset>
             <legend>{{ __('common.display_name') }}</legend>
-            <x-form.text
+            <x-form-text
                 id="display_name"
                 name="display_name"
                 :value="old('display_name', $member->display_name ?? '')"
@@ -83,21 +83,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 class="w-full"
             />
             <p class="description-text">{{ __('admin/members/form.display_name_help') }}</p>
-            <x-form.error
+            <x-form-error
                 :messages="$errors->get('display_name')"
             />
         </fieldset>
 
         <fieldset>
             <legend>{{ __('common.description') }}</legend>
-            <x-form.textarea
+            <x-form-textarea
                 id="description"
                 name="description"
                 :value="old('description', $member->description ?? '')"
                 rows="3"
                 class="w-full"
             />
-            <x-form.error
+            <x-form-error
                 :messages="$errors->get('description')"
             />
         </fieldset>
@@ -111,11 +111,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :showConfirmation="true"
                 :showConfirmationOnChange="isset($member) && $member->exists"
             />
-            <x-form.error
+            <x-form-error
                 :messages="$errors->get('email')"
             />
             <div id="email-confirmation-wrapper" style="display: none;">
-                <x-form.error
+                <x-form-error
                     :messages="$errors->get('email_confirmation')"
                 />
             </div>
@@ -140,7 +140,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :showConfirmation="true"
                 :showConfirmationOnChange="isset($member) && $member->exists"
             />
-            <x-form.error
+            <x-form-error
                 :messages="$errors->get('password')"
             />
         </fieldset>
@@ -164,14 +164,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- 言語設定 -->
         <fieldset>
             <legend>{{ __('common.locale') }}</legend>
-            <x-form.select
+            <x-form-select
                 name="locale"
                 :options="$localeOptions"
                 :value="old('locale', $member->locale?->value ?? null)"
                 :nullable="true"
                 :nullLabel="__('admin/profile.use_system_default')"
             />
-            <x-form.error
+            <x-form-error
                 :messages="$errors->get('locale')"
             />
             <p class="description-text">{{ __('admin/profile.language_help') }}</p>
@@ -189,7 +189,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :enableRealtimeSwitch="false"
                 :columns="3"
             />
-            <x-form.error
+            <x-form-error
                 :messages="$errors->get('appearance')"
             />
         </fieldset>
@@ -228,7 +228,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         ];
                     }
                 @endphp
-                <x-form.radio-card-group
+                <x-form-radio-card-group
                     name="role"
                     :options="$roleOptions"
                     :value="$roleValue"
@@ -266,7 +266,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </x-message>
                 </div>
             @endif
-            <x-form.error
+            <x-form-error
                 :messages="$errors->get('role')"
             />
         </fieldset>
@@ -370,7 +370,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </p>
         </div>
         
-        <x-form.toggle
+        <x-form-toggle
             name="passkey_prompt_dismissed"
             :label="__('admin/members/form.passkey_prompt_dismissed')"
             :checked="old('passkey_prompt_dismissed', $member->passkey_prompt_dismissed ?? false)"

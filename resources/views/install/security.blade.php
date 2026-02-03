@@ -32,13 +32,13 @@
             
             <!-- 許可IPアドレス -->
             <div class="space-y-2">
-                <x-form.toggle
+                <x-form-toggle
                     name="enable_allowed_admin_ips"
                     id="enable_allowed_admin_ips"
                     :checked="old('enable_allowed_admin_ips', session('install_data.enable_allowed_admin_ips', '0')) == '1'"
                     :label="__('install.enable_allowed_admin_ips')"
                 />
-                <x-form.textarea
+                <x-form-textarea
                     name="allowed_admin_ips"
                     id="allowed_admin_ips"
                     rows="3"
@@ -51,13 +51,13 @@
 
             <!-- ブロックIPアドレス -->
             <div class="space-y-2">
-                <x-form.toggle
+                <x-form-toggle
                     name="enable_blocked_admin_ips"
                     id="enable_blocked_admin_ips"
                     :checked="old('enable_blocked_admin_ips', session('install_data.enable_blocked_admin_ips', '0')) == '1'"
                     :label="__('install.enable_blocked_admin_ips')"
                 />
-                <x-form.textarea
+                <x-form-textarea
                     name="blocked_admin_ips"
                     id="blocked_admin_ips"
                     rows="3"
@@ -76,13 +76,13 @@
             
             <!-- 許可IPアドレス -->
             <div class="space-y-2">
-                <x-form.toggle
+                <x-form-toggle
                     name="enable_allowed_front_ips"
                     id="enable_allowed_front_ips"
                     :checked="old('enable_allowed_front_ips', session('install_data.enable_allowed_front_ips', '0')) == '1'"
                     :label="__('install.enable_allowed_front_ips')"
                 />
-                <x-form.textarea
+                <x-form-textarea
                     name="allowed_front_ips"
                     id="allowed_front_ips"
                     rows="3"
@@ -94,13 +94,13 @@
 
             <!-- ブロックIPアドレス -->
             <div class="space-y-2">
-                <x-form.toggle
+                <x-form-toggle
                     name="enable_blocked_front_ips"
                     id="enable_blocked_front_ips"
                     :checked="old('enable_blocked_front_ips', session('install_data.enable_blocked_front_ips', '0')) == '1'"
                     :label="__('install.enable_blocked_front_ips')"
                 />
-                <x-form.textarea
+                <x-form-textarea
                     name="blocked_front_ips"
                     id="blocked_front_ips"
                     rows="3"
@@ -118,7 +118,7 @@
             class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
             {{ __('install.back') }}
         </a>
-        <x-form.button
+        <x-form-button
             type="submit"
             variant="primary"
             :label="__('install.next')"

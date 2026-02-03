@@ -55,7 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin/settings/security/notifications.enabled') }}</legend>
                 
-                <x-form.toggle
+                <x-form-toggle
                     :label="__('admin/settings/security/notifications.enabled')"
                     id="notification_enabled"
                     name="notification_enabled"
@@ -81,7 +81,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         }
                     @endphp
                     
-                    <x-form.toggle-group
+                    <x-form-toggle-group
                         name="notification_log_levels"
                         :options="$logLevelOptions"
                         :values="$settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels()"

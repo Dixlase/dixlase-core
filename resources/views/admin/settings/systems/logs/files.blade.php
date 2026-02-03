@@ -61,7 +61,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
 
         <!-- Download Button -->
-        <x-form.button
+        <x-form-button
             type="link"
             variant="success"
             :href="route('admin.settings.systems.logs.download', ['type' => $logType, 'date' => $selectedDate ?? ''])"
@@ -85,13 +85,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {{ __('admin/settings/systems/logs/files.level_filter.label') }}:
                 </span>
-                <x-form.toggle-group
+                <x-form-toggle-group
                     name="levels"
                     :options="$availableLevelFilters"
                     :values="$levelFilters ?? ['error', 'warning', 'normal', 'debug']"
                     flexDirection="row"
                 />
-                <x-form.button
+                <x-form-button
                     type="submit"
                     variant="primary"
                     :label="__('common.filter')"
@@ -104,7 +104,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
 
     <!-- ページネーション制御 -->
-    <x-ui.pagination-controls
+    <x-ui-pagination-controls
         :paginator="(object) [
             'total' => $pagination['total'] ?? 0,
             'currentPage' => $pagination['current_page'] ?? 1,
@@ -118,7 +118,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     />
 
     <!-- Pagination Controls -->
-    <x-ui.pagination
+    <x-ui-pagination
         :pagination="$pagination ?? null"
         route="admin.settings.systems.logs.files"
         :routeParams="array_merge(
@@ -276,7 +276,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </section>
 
     <!-- ページネーション制御 -->
-    <x-ui.pagination-controls
+    <x-ui-pagination-controls
         :paginator="(object) [
             'total' => $pagination['total'] ?? 0,
             'currentPage' => $pagination['current_page'] ?? 1,
@@ -290,7 +290,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     />
 
     <!-- Pagination Controls -->
-    <x-ui.pagination
+    <x-ui-pagination
         :pagination="$pagination ?? null"
         route="admin.settings.systems.logs.files"
         :routeParams="array_filter([
@@ -316,12 +316,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @csrf
                 <div class="flex items-center gap-4">
                     <div>
-                        <x-form.label
+                        <x-form-label
                             for="cleanup_days"
                             :text="__('admin/settings/systems/logs/index.cleanup_days')"
                             class="mb-1"
                         />
-                        <x-form.text
+                        <x-form-text
                             type="number"
                             name="days"
                             id="cleanup_days"
@@ -332,7 +332,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         />
                     </div>
                     <div class="pt-6">
-                        <x-form.button
+                        <x-form-button
                             type="button"
                             variant="danger"
                             :label="__('common.clear')"
@@ -346,7 +346,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 
     <!-- Clear Confirmation Modal -->
-    <x-ui.modal
+    <x-ui-modal
         id="clearConfirmModal"
         :title="__('admin/settings/systems/logs/files.clear_modal.title')"
         :message="__('admin/settings/systems/logs/files.clear_modal.confirm_message')"

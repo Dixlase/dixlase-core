@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     @if($back_url)
         <!-- {{ __('common.back') }} -->
-        <x-form.button
+        <x-form-button
             type="link"
             variant="tertiary"
             :label="$back_label ?? __('common.back')"
@@ -51,7 +51,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             class="mx-2"
         />
     @endif
-    <x-form.button
+    <x-form-button
         type="button"
         variant="primary"
         :label="$label ?? __('common.save')"
@@ -65,7 +65,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <!-- {{ __('common.save_confirmation_title') }} -->
 @push('modals')
-    <x-ui.modal
+    <x-ui-modal
         :id="$id_confirmation"
         :title="$title ?? __('common.save_confirmation_title')"
         :message="$message ?? __('common.save_confirmation_message')"
