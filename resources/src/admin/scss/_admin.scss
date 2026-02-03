@@ -3,11 +3,11 @@
 @use '../../common/scss/typography';
 @use '../../common/scss/buttons';
 @use '../../common/scss/tables';
-@use '../../components/ui/scss/navigation';
-@use '../../components/ui/scss/pagination';
-@use '../../components/ui/scss/modal';
-@use '../../components/ui/scss/message';
-@use '../../components/ui/scss/status-badge';
+@use '../../components/scss/ui-navigation';
+@use '../../components/scss/ui-pagination';
+@use '../../components/scss/ui-modal';
+@use '../../components/scss/ui-message';
+@use '../../components/scss/ui-status-badge';
 
 
 .admin {
