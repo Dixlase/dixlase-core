@@ -27,17 +27,17 @@
 @use 'typography';
 @use 'buttons';
 @use 'tables';
-@use '../../components/ui/scss/navigation';
-@use '../../components/ui/scss/pagination';
-@use '../../components/ui/scss/modal';
-@use '../../components/ui/scss/message';
-@use '../../components/ui/scss/status-badge';
+@use '../../components/scss/ui-navigation';
+@use '../../components/scss/ui-pagination';
+@use '../../components/scss/ui-modal';
+@use '../../components/scss/ui-message';
+@use '../../components/scss/ui-status-badge';
 
 // Form components
-@use '../../components/form/scss/range';
+@use '../../components/scss/form-range';
 
 // Other components
-@use '../../components/scss/media-selector';
+@use '../../components/media/scss/selector';
 
 // Vendor styles
 @use '../../vendor/mail/html/scss/layout';
