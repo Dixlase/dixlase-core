@@ -177,4 +177,70 @@ return [
     */
 
     'installed' => env('INSTALLED', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Custom File Types (from custom.php)
+    |--------------------------------------------------------------------------
+    |
+    | カスタムファイルのタイプ別設定
+    |
+    */
+    'file_types' => [
+        'routes' => [
+            'path' => 'routes',
+            'namespace' => '',
+            'naming_convention' => 'snake_case',
+        ],
+        'config' => [
+            'path' => 'config',
+            'namespace' => '',
+            'naming_convention' => 'snake_case',
+        ],
+        'lang' => [
+            'path' => 'lang',
+            'namespace' => '',
+            'naming_convention' => 'snake_case',
+        ],
+        'controllers' => [
+            'path' => 'app/Http/Controllers',
+            'namespace' => 'App\\Http\\Controllers\\',
+            'naming_convention' => 'studly_case',
+        ],
+        'models' => [
+            'path' => 'app/Models',
+            'namespace' => 'App\\Models\\',
+            'naming_convention' => 'studly_case',
+        ],
+        'middleware' => [
+            'path' => 'app/Http/Middleware',
+            'namespace' => 'App\\Http\\Middleware\\',
+            'naming_convention' => 'studly_case',
+        ],
+        'events' => [
+            'path' => 'app/Events',
+            'namespace' => 'App\\Events\\',
+            'naming_convention' => 'studly_case',
+        ],
+        'jobs' => [
+            'path' => 'app/Jobs',
+            'namespace' => 'App\\Jobs\\',
+            'naming_convention' => 'studly_case',
+        ],
+        'policies' => [
+            'path' => 'app/Policies',
+            'namespace' => 'App\\Policies\\',
+            'naming_convention' => 'studly_case',
+        ],
+        'migrations' => [
+            'path' => 'database/migrations',
+            'namespace' => '',
+            'naming_convention' => 'snake_case_with_timestamp',
+        ],
+        'views' => [
+            'path' => 'resources/views',
+            'namespace' => '',
+            'naming_convention' => 'kebab_case',
+        ],
+    ],
 ];
