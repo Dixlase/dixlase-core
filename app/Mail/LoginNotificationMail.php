@@ -30,8 +30,8 @@ class LoginNotificationMail extends Mailable
     public function envelope(): Envelope
     {
         $subject = $this->toSystem
-            ? __('mail.login_notification.subject_system')
-            : __('mail.login_notification.subject_user', ['name' => $this->user->name ?? $this->user->account_name]);
+            ? __('mail.login-notification.subject_system')
+            : __('mail.login-notification.subject_user', ['name' => $this->user->name ?? $this->user->account_name]);
 
         return new Envelope(subject: $subject);
     }

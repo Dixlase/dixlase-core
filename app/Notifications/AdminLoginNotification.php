@@ -102,14 +102,14 @@ class AdminLoginNotification extends Notification
 
         // Set subject based on notification type
         if ($this->isSystemNotification) {
-            $message->subject(__('mail.login_notification.subject_system', ['context' => __($contextKey)]));
-            $message->greeting(__('mail.login_notification.system_message'));
+            $message->subject(__('mail.login-notification.subject_system', ['context' => __($contextKey)]));
+            $message->greeting(__('mail.login-notification.system_message'));
         } else {
-            $message->subject(__('mail.login_notification.subject_user', [
+            $message->subject(__('mail.login-notification.subject_user', [
                 'name' => $displayName,
                 'context' => __($contextKey)
             ]));
-            $message->greeting(__('mail.login_notification.user_message', [
+            $message->greeting(__('mail.login-notification.user_message', [
                 'name' => $displayName,
                 'context' => __($contextKey)
             ]));
@@ -117,25 +117,25 @@ class AdminLoginNotification extends Notification
 
         // Add login details
         if ($this->isSystemNotification) {
-            $message->line('**' . __('mail.login_notification.details_title') . '**');
-            $message->line('**' . __('mail.login_notification.datetime') . '** ' . $this->loginDetails['datetime']);
-            $message->line('**' . __('mail.login_notification.ip_address') . '** ' . $this->loginDetails['ip']);
+            $message->line('**' . __('mail.login-notification.details_title') . '**');
+            $message->line('**' . __('mail.login-notification.datetime') . '** ' . $this->loginDetails['datetime']);
+            $message->line('**' . __('mail.login-notification.ip_address') . '** ' . $this->loginDetails['ip']);
             
             // Add User-Agent for system notifications only
             if (isset($this->loginDetails['user_agent'])) {
-                $message->line('**' . __('mail.login_notification.user_agent') . '** ' . $this->loginDetails['user_agent']);
+                $message->line('**' . __('mail.login-notification.user_agent') . '** ' . $this->loginDetails['user_agent']);
             }
         } else {
-            $message->line(__('mail.login_notification.datetime') . ' ' . $this->loginDetails['datetime']);
-            $message->line(__('mail.login_notification.ip_address') . ' ' . $this->loginDetails['ip']);
-            $message->line(__('mail.login_notification.user_agent') . ' ' . $this->loginDetails['user_agent']);
+            $message->line(__('mail.login-notification.datetime') . ' ' . $this->loginDetails['datetime']);
+            $message->line(__('mail.login-notification.ip_address') . ' ' . $this->loginDetails['ip']);
+            $message->line(__('mail.login-notification.user_agent') . ' ' . $this->loginDetails['user_agent']);
             $message->line('');
-            $message->line(__('mail.login_notification.security_notice'));
+            $message->line(__('mail.login-notification.security_notice'));
         }
 
         // Add regards
         $message->line('');
-        $message->line(__('mail.login_notification.regards'));
+        $message->line(__('mail.login-notification.regards'));
         $message->line(config('app.name'));
 
         return $message;

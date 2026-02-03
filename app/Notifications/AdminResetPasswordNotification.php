@@ -101,13 +101,13 @@ class AdminResetPasswordNotification extends Notification
         $expireMinutes = config('auth.passwords.members.expire', 60);
         
         return (new MailMessage)
-            ->subject(__('mail.reset_password.subject'))
-            ->greeting(__('mail.reset_password.greeting'))
-            ->line(__('mail.reset_password.line1'))
-            ->action(__('mail.reset_password.action'), $url)
-            ->line(__('mail.reset_password.line2', ['count' => $expireMinutes]))
-            ->line(__('mail.reset_password.line3'))
-            ->salutation(__('mail.reset_password.regards') . ",\n\n" . config('app.name'));
+            ->subject(__('mail.password-reset.subject'))
+            ->greeting(__('mail.password-reset.greeting'))
+            ->line(__('mail.password-reset.line1'))
+            ->action(__('mail.password-reset.action'), $url)
+            ->line(__('mail.password-reset.line2', ['count' => $expireMinutes]))
+            ->line(__('mail.password-reset.line3'))
+            ->salutation(__('mail.password-reset.regards') . ",\n\n" . config('app.name'));
     }
 
     /**

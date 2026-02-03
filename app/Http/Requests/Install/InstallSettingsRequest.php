@@ -72,11 +72,11 @@ class InstallSettingsRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'admin_account_name.required' => __('install.validation.admin_account_name_required'),
-            'admin_account_name.alpha_num' => __('install.validation.admin_account_name_alpha_num'),
-            'admin_account_name.min' => __('install.validation.admin_account_name_length'),
-            'admin_account_name.max' => __('install.validation.admin_account_name_length'),
-            'admin_password.regex' => __('install.password_requirements_error'),
+            'admin_account_name.required' => __('install/step1.validation.admin_account_name_required'),
+            'admin_account_name.alpha_num' => __('install/step1.validation.admin_account_name_alpha_num'),
+            'admin_account_name.min' => __('install/step1.validation.admin_account_name_length'),
+            'admin_account_name.max' => __('install/step1.validation.admin_account_name_length'),
+            'admin_password.regex' => __('install/step1.password_strength_error'),
             'site_name.required' => __('validation.required', ['attribute' => __('validation.attributes.site_name')]),
             'admin_email.required' => __('validation.required', ['attribute' => __('validation.attributes.admin_email')]),
             'admin_email.email' => __('validation.email', ['attribute' => __('validation.attributes.admin_email')]),

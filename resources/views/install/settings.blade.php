@@ -1,8 +1,8 @@
 @extends('layouts.install')
 
-@section('title', __('install.settings_title'))
-@section('header', __('install.settings_header'))
-@section('description', __('install.settings_description'))
+@section('title', __('install/step1.settings_title'))
+@section('header', __('install/step1.settings_header'))
+@section('description', __('install/step1.settings_description'))
 
 @section('content')
 
@@ -11,11 +11,11 @@
 
     <!-- サイト基本情報 -->
     <section aria-labelledby="site-info-heading">
-        <h2 id="site-info-heading" class="sr-only">{{ __('install.site_information') }}</h2>
+        <h2 id="site-info-heading" class="sr-only">{{ __('install/step1.site_information') }}</h2>
         
         <fieldset class="space-y-4">
             <div>
-                <x-form-label for="site_name" :text="__('install.site_name')" :required="true" />
+                <x-form-label for="site_name" :text="__('install/step1.site_name')" :required="true" />
                 <x-form-text
                     name="site_name"
                     id="site_name"
@@ -29,13 +29,13 @@
 
     <!-- 管理者アカウント情報 -->
     <section aria-labelledby="admin-account-heading">
-        <h2 id="admin-account-heading" class="sr-only">{{ __('install.admin_account_information') }}</h2>
+        <h2 id="admin-account-heading" class="sr-only">{{ __('install/step1.admin_account_information') }}</h2>
         
         <fieldset class="space-y-4">
-            <legend class="sr-only">{{ __('install.admin_account_details') }}</legend>
+            <legend class="sr-only">{{ __('install/step1.admin_account_details') }}</legend>
             
             <div>
-                <x-form-label for="admin_account_name" :text="__('install.admin_account_name')" :required="true" />
+                <x-form-label for="admin_account_name" :text="__('install/step1.admin_account_name')" :required="true" />
                 <x-form-text
                     name="admin_account_name"
                     id="admin_account_name"
@@ -44,31 +44,31 @@
                     minlength="3"
                     maxlength="20"
                     :required="true"
-                    :placeholder="__('install.admin_account_name_placeholder')"
-                    oninvalid="setCustomValidity('{{ __('install.validation.admin_account_name_required') }}')"
+                    :placeholder="__('install/step1.admin_account_name_placeholder')"
+                    oninvalid="setCustomValidity('{{ __('install/step1.validation.admin_account_name_required') }}')"
                     oninput="setCustomValidity('')"
                     ariaDescribedby="admin_account_name_help"
                     class="input-full"
                 />
-                <x-form-help-text :text="__('install.admin_account_name_requirements')" id="admin_account_name_help" />
+                <x-form-help-text :text="__('install/step1.admin_account_name_requirements')" id="admin_account_name_help" />
             </div>
 
             <div>
-                <x-form-label for="admin_display_name" :text="__('install.admin_display_name')" />
+                <x-form-label for="admin_display_name" :text="__('install/step1.admin_display_name')" />
                 <x-form-text
                     name="admin_display_name"
                     id="admin_display_name"
                     :value="old('admin_display_name', session('install_data.admin_display_name', ''))"
                     maxlength="255"
-                    :placeholder="__('install.admin_display_name_placeholder')"
+                    :placeholder="__('install/step1.admin_display_name_placeholder')"
                     ariaDescribedby="admin_display_name_help"
                     class="input-full"
                 />
-                <x-form-help-text :text="__('install.admin_display_name_requirements')" id="admin_display_name_help" />
+                <x-form-help-text :text="__('install/step1.admin_display_name_requirements')" id="admin_display_name_help" />
             </div>
 
             <div>
-                <x-form-label for="admin_email" :text="__('install.admin_email')" :required="true" />
+                <x-form-label for="admin_email" :text="__('install/step1.admin_email')" :required="true" />
                 <x-form-text
                     type="email"
                     name="admin_email"
@@ -84,13 +84,13 @@
 
     <!-- パスワード設定 -->
     <section aria-labelledby="password-heading">
-        <h2 id="password-heading" class="sr-only">{{ __('install.password_settings') }}</h2>
+        <h2 id="password-heading" class="sr-only">{{ __('install/step1.password_settings') }}</h2>
         
         <fieldset class="space-y-4">
-            <legend class="sr-only">{{ __('install.password_setup') }}</legend>
+            <legend class="sr-only">{{ __('install/step1.password_setup') }}</legend>
             
             <div>
-                <x-form-label for="admin_password" :text="__('install.admin_password')" :required="true" />
+                <x-form-label for="admin_password" :text="__('install/step1.admin_password')" :required="true" />
                 <x-form-password-tools
                     name="admin_password"
                     id="admin_password"
@@ -109,15 +109,15 @@
     </section>
 
     <!-- フォームナビゲーション -->
-    <nav aria-label="{{ __('install.form_navigation') }}" class="flex justify-between mt-6">
+    <nav aria-label="{{ __('install/common.form_navigation') }}" class="flex justify-between mt-6">
         <a href="{{ route('install.index') }}"
            class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
-            {{ __('install.back') }}
+            {{ __('install/common.back') }}
         </a>
         <x-form-button
             type="submit"
             variant="primary"
-            :label="__('install.next')"
+            :label="__('install/common.next')"
         />
     </nav>
 </form>

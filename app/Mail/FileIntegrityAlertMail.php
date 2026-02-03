@@ -55,13 +55,13 @@ class FileIntegrityAlertMail extends Mailable
     public function envelope(): Envelope
     {
         $statusLabel = match ($this->audit->status) {
-            FileIntegrityAudit::STATUS_CRITICAL => __('mail.file_integrity.status_critical'),
-            FileIntegrityAudit::STATUS_WARNING => __('mail.file_integrity.status_warning'),
-            default => __('mail.file_integrity.status_unknown'),
+            FileIntegrityAudit::STATUS_CRITICAL => __('mail.file-integrity.status_critical'),
+            FileIntegrityAudit::STATUS_WARNING => __('mail.file-integrity.status_warning'),
+            default => __('mail.file-integrity.status_unknown'),
         };
 
         return new Envelope(
-            subject: __('mail.file_integrity.subject', [
+            subject: __('mail.file-integrity.subject', [
                 'site_name' => $this->siteName,
                 'status' => $statusLabel,
             ]),
@@ -81,9 +81,9 @@ class FileIntegrityAlertMail extends Mailable
                 'siteName' => $this->siteName,
                 'siteUrl' => $this->siteUrl,
                 'statusLabel' => match ($this->audit->status) {
-                    FileIntegrityAudit::STATUS_CRITICAL => __('mail.file_integrity.status_critical'),
-                    FileIntegrityAudit::STATUS_WARNING => __('mail.file_integrity.status_warning'),
-                    default => __('mail.file_integrity.status_unknown'),
+                    FileIntegrityAudit::STATUS_CRITICAL => __('mail.file-integrity.status_critical'),
+                    FileIntegrityAudit::STATUS_WARNING => __('mail.file-integrity.status_warning'),
+                    default => __('mail.file-integrity.status_unknown'),
                 },
                 'statusColor' => match ($this->audit->status) {
                     FileIntegrityAudit::STATUS_CRITICAL => 'red',

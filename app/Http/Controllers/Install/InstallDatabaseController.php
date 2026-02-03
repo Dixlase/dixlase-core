@@ -101,12 +101,12 @@ class InstallDatabaseController extends BaseInstallController
 
             return response()->json([
                 'success' => true,
-                'message' => __('install.database_connection_success')
+                'message' => __('install/step3.db_connection_success')
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('install.database_connection_failed', ['error' => $e->getMessage()])
+                'message' => __('install/step3.db_connection_error', ['error' => $e->getMessage()])
             ], 500);
         }
     }

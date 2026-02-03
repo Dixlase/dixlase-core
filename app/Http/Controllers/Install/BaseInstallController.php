@@ -121,7 +121,7 @@ abstract class BaseInstallController extends Controller
             $response = [
                 'success' => true,
                 'locale' => $locale,
-                'message' => __('install.language_changed')
+                'message' => __('install/common.language_changed')
             ];
             
             // 常にJSONで返す（リダイレクトなし）＋ クッキーで永続化

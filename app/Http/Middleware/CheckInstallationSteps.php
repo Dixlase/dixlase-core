@@ -187,7 +187,7 @@ class CheckInstallationSteps
                 // 現在のルートと異なる場合のみリダイレクト
                 if ($currentRoute !== $targetRoute) {
                     return redirect()->route($targetRoute)
-                        ->with('error', __('install.please_complete_previous_steps'));
+                        ->with('error', __('install/common.please_complete_previous_steps'));
                 }
             }
         }

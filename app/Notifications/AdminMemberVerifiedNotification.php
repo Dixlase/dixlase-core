@@ -61,20 +61,20 @@ class AdminMemberVerifiedNotification extends Notification
         $appName = env('APP_NAME', 'Dixlase');
 
         return (new MailMessage)
-            ->subject("[{$appName}] " . __('mail.admin_notification.member_verified.subject'))
-            ->greeting(__('mail.admin_notification.member_verified.greeting'))
-            ->line(__('mail.admin_notification.member_verified.title'))
+            ->subject("[{$appName}] " . __('mail.member-notification.admin_notification.member_verified.subject'))
+            ->greeting(__('mail.member-notification.admin_notification.member_verified.greeting'))
+            ->line(__('mail.member-notification.admin_notification.member_verified.title'))
             ->line('') // 空白行
-            ->line(__('mail.admin_notification.member_verified.message'))
+            ->line(__('mail.member-notification.admin_notification.member_verified.message'))
             ->line('') // 空白行
-            ->line(__('mail.admin_notification.member_verified.member_info'))
-            ->line(__('mail.admin_notification.member_verified.name') . ': ' . $this->member->name)
-            ->line(__('mail.admin_notification.member_verified.email') . ': ' . $this->member->email)
-            ->line(__('mail.admin_notification.member_verified.verified_at') . ': ' . $this->verifiedAt)
+            ->line(__('mail.member-notification.admin_notification.member_verified.member_info'))
+            ->line(__('mail.member-notification.admin_notification.member_verified.name') . ': ' . $this->member->name)
+            ->line(__('mail.member-notification.admin_notification.member_verified.email') . ': ' . $this->member->email)
+            ->line(__('mail.member-notification.admin_notification.member_verified.verified_at') . ': ' . $this->verifiedAt)
             ->line('') // 空白行
-            ->line(__('mail.admin_notification.member_verified.login_available'))
+            ->line(__('mail.member-notification.admin_notification.member_verified.login_available'))
             ->line('') // 空白行
-            ->line(__('mail.admin_notification.member_verified.notification_time') . ': ' . now()->format('Y-m-d H:i:s'))
-            ->salutation(__('mail.admin_notification.member_verified.regards') . "\n\n{$appName}");
+            ->line(__('mail.member-notification.admin_notification.member_verified.notification_time') . ': ' . now()->format('Y-m-d H:i:s'))
+            ->salutation(__('mail.member-notification.admin_notification.member_verified.regards') . "\n\n{$appName}");
     }
 }

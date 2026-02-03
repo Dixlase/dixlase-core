@@ -40,7 +40,7 @@ class TwoFaDeviceMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: __('mail.two_fa.device.subject'),
+            subject: __('mail.two-fa.device.subject'),
         );
     }
 

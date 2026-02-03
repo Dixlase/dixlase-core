@@ -1,9 +1,9 @@
 @extends('layouts.install')
 
-@section('title', __('install.security_title'))
-@section('header', __('install.security_header'))
+@section('title', __('install/step5.security_title'))
+@section('header', __('install/step5.security_header'))
 @section('description')
-    {!! __('install.security_description') !!}
+    {!! __('install/step5.security_description') !!}
 @endsection
 
 @section('content')
@@ -14,11 +14,11 @@
     <!-- IP制限設定セクション -->
     <section aria-labelledby="ip-restrictions-heading">
         <h2 id="ip-restrictions-heading" class="text-lg font-bold text-gray-900 dark:text-gray-100">
-            {{ __('install.ip_restrictions') }}
+            {{ __('install/step5.ip_restrictions') }}
         </h2>
         
         <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-            {{ __('install.ip_address_format_instruction') }}
+            {{ __('install/step5.ip_address_format_instruction') }}
         </p>
         <pre class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 p-3 rounded-lg mt-2 border border-gray-200 dark:border-gray-700">127.0.0.1
 192.168.1.1
@@ -27,7 +27,7 @@
         <!-- 管理画面IP制限 -->
         <fieldset class="mt-6 space-y-4">
             <legend class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                {{ __('install.admin_panel_ip_restrictions') }}
+                {{ __('install/step5.admin_panel_ip_restrictions') }}
             </legend>
             
             <!-- 許可IPアドレス -->
@@ -36,7 +36,7 @@
                     name="enable_allowed_admin_ips"
                     id="enable_allowed_admin_ips"
                     :checked="old('enable_allowed_admin_ips', session('install_data.enable_allowed_admin_ips', '0')) == '1'"
-                    :label="__('install.enable_allowed_admin_ips')"
+                    :label="__('install/step5.enable_allowed_admin_ips')"
                 />
                 <x-form-textarea
                     name="allowed_admin_ips"
@@ -55,7 +55,7 @@
                     name="enable_blocked_admin_ips"
                     id="enable_blocked_admin_ips"
                     :checked="old('enable_blocked_admin_ips', session('install_data.enable_blocked_admin_ips', '0')) == '1'"
-                    :label="__('install.enable_blocked_admin_ips')"
+                    :label="__('install/step5.enable_blocked_admin_ips')"
                 />
                 <x-form-textarea
                     name="blocked_admin_ips"
@@ -71,7 +71,7 @@
         <!-- フロント画面IP制限 -->
         <fieldset class="mt-6 space-y-4">
             <legend class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                {{ __('install.front_panel_ip_restrictions') }}
+                {{ __('install/step5.front_panel_ip_restrictions') }}
             </legend>
             
             <!-- 許可IPアドレス -->
@@ -80,7 +80,7 @@
                     name="enable_allowed_front_ips"
                     id="enable_allowed_front_ips"
                     :checked="old('enable_allowed_front_ips', session('install_data.enable_allowed_front_ips', '0')) == '1'"
-                    :label="__('install.enable_allowed_front_ips')"
+                    :label="__('install/step5.enable_allowed_front_ips')"
                 />
                 <x-form-textarea
                     name="allowed_front_ips"
@@ -98,7 +98,7 @@
                     name="enable_blocked_front_ips"
                     id="enable_blocked_front_ips"
                     :checked="old('enable_blocked_front_ips', session('install_data.enable_blocked_front_ips', '0')) == '1'"
-                    :label="__('install.enable_blocked_front_ips')"
+                    :label="__('install/step5.enable_blocked_front_ips')"
                 />
                 <x-form-textarea
                     name="blocked_front_ips"

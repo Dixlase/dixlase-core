@@ -56,7 +56,7 @@ class MemberVerifyEmailNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $prefix = 'mail.member_verify_email';
+        $prefix = 'mail.verify-email.member';
         $verificationUrl = $this->generateVerificationUrl($notifiable, 'admin.verification.verify', 'member');
 
         $subjectKey = $this->getSubjectKey($prefix);
@@ -65,15 +65,15 @@ class MemberVerifyEmailNotification extends Notification
 
         return (new MailMessage)
             ->subject(__($subjectKey))
-            ->greeting(__('mail.member_verify_email.greeting', ['name' => $notifiable->name]))
+            ->greeting(__('mail.verify-email.member.greeting', ['name' => $notifiable->name]))
             ->line(__($messageKey))
             ->action(__($actionKey), $verificationUrl)
-            ->line(__('mail.member_verify_email.manual_verification'))
+            ->line(__('mail.verify-email.member.manual_verification'))
             ->line($verificationUrl)
-            ->line(__('mail.member_verify_email.expiration', ['minutes' => $this->getExpirationMinutes()]))
+            ->line(__('mail.verify-email.member.expiration', ['minutes' => $this->getExpirationMinutes()]))
             ->line('') // 空白行
-            ->line(__('mail.member_verify_email.security_notice'))
-            ->salutation(__('mail.member_verify_email.regards'));
+            ->line(__('mail.verify-email.member.security_notice'))
+            ->salutation(__('mail.verify-email.member.regards'));
     }
 
 }

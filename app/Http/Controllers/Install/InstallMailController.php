@@ -71,8 +71,8 @@ class InstallMailController extends BaseInstallController
             [
                 'admin_email' => $adminEmail,
                 'testStatus' => $testStatus,
-                'mailers' => __('mail.mailers'),
-                'encryptions' => __('mail.encryptions')
+                'mailers' => __('mail/config.mailers'),
+                'encryptions' => __('mail/config.encryptions')
             ]
         ));
     }

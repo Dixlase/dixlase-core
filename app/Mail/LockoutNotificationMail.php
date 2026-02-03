@@ -28,7 +28,7 @@ class LockoutNotificationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: __('mail.lockout_notification.subject'),
+            subject: __('mail.lockout.subject'),
         );
     }
 

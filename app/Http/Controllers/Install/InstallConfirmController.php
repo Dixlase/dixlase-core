@@ -101,7 +101,7 @@ class InstallConfirmController extends BaseInstallController
             
             $route = 'install.' . ($firstMissing['step'] === 'settings' ? 'create' : $firstMissing['step'] . '.create');
             return redirect()->route($route)
-                ->with('error', __('install.missing_required_fields') . " (不足フィールド: {$firstMissing['field']})");
+                ->with('error', __('install/common.missing_required_fields') . " (不足フィールド: {$firstMissing['field']})");
         }
         
         // メールテスト結果をセッションから取得
@@ -347,7 +347,7 @@ class InstallConfirmController extends BaseInstallController
                     'started_at' => now(),
                     'finished_at' => now(),
                     'duration_ms' => 0,
-                    'summary' => __('admin/command.integrity.baseline_generated'),
+                    'summary' => __('command.integrity.baseline_generated'),
                 ]);
                 
                 Log::channel('install')->info('ファイル整合性ベースライン生成完了', [
@@ -403,18 +403,18 @@ class InstallConfirmController extends BaseInstallController
         $errorMessage = $e->getMessage();
         
         if (strpos($errorMessage, 'database') !== false) {
-            return __('install.error.database');
+            return __('install/error.database_general');
         }
         
         if (strpos($errorMessage, 'file') !== false || strpos($errorMessage, 'directory') !== false) {
-            return __('install.error.file_system');
+            return __('install/error.file_system');
         }
         
         if (strpos($errorMessage, 'env') !== false || strpos($errorMessage, 'environment') !== false) {
-            return __('install.error.environment');
+            return __('install/error.environment');
         }
         
-        return __('install.error.unknown');
+        return __('install/error.unknown');
     }
 
     /**
