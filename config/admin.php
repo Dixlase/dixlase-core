@@ -205,6 +205,11 @@ return [
                             'route' => 'admin.settings.security.two-fa',
                             'icon' => 'fas fa-fw fa-user-shield',
                         ],
+                        'notifications' => [
+                            'text' => 'admin/nav.settings.security.notifications',
+                            'route' => 'admin.settings.security.notifications',
+                            'icon' => 'fas fa-fw fa-bell',
+                        ],
                         'captcha' => [
                             'text' => 'admin/nav.settings.security.captcha',
                             'route' => 'admin.settings.security.captcha',
@@ -214,11 +219,6 @@ return [
                             'text' => 'admin/nav.settings.security.session',
                             'route' => 'admin.settings.security.session',
                             'icon' => 'fas fa-fw fa-clock',
-                        ],
-                        'notifications' => [
-                            'text' => 'admin/nav.settings.security.notifications',
-                            'route' => 'admin.settings.security.notifications',
-                            'icon' => 'fas fa-fw fa-bell',
                         ],
                         'csp' => [
                             'text' => 'admin/nav.settings.security.csp',
