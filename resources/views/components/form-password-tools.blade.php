@@ -46,36 +46,36 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @php
     // 長さの要件（常に必須）
     $lengthBase = $minLength < $recommendedLength
-        ? __('components.password_messages.requirements.length_full', ['min' => $minLength, 'recommended' => $recommendedLength])
-        : __('components.password_messages.requirements.length_simple', ['min' => $minLength]);
+        ? __('components/form-password-tools.requirements.length_full', ['min' => $minLength, 'recommended' => $recommendedLength])
+        : __('components/form-password-tools.requirements.length_simple', ['min' => $minLength]);
     $lengthText = $lengthBase . '（' . __('common.required') . '）';
 
     // 小文字の要件（必須 or 任意）
     if ($requireLowercase) {
-        $lowercaseText = __('components.password_messages.requirements.lowercase') . '（' . __('common.required') . '）';
+        $lowercaseText = __('components/form-password-tools.requirements.lowercase') . '（' . __('common.required') . '）';
     } else {
-        $lowercaseText = __('components.password_messages.requirements.lowercase_optional_note') . '（' . __('common.optional') . '）';
+        $lowercaseText = __('components/form-password-tools.requirements.lowercase_optional_note') . '（' . __('common.optional') . '）';
     }
 
     // 数字の要件（必須 or 任意）
     if ($requireNumber) {
-        $numberText = __('components.password_messages.requirements.number') . '（' . __('common.required') . '）';
+        $numberText = __('components/form-password-tools.requirements.number') . '（' . __('common.required') . '）';
     } else {
-        $numberText = __('components.password_messages.requirements.number_optional_note') . '（' . __('common.optional') . '）';
+        $numberText = __('components/form-password-tools.requirements.number_optional_note') . '（' . __('common.optional') . '）';
     }
 
     // 大文字の要件（必須 or 任意）
     if ($requireUppercase) {
-        $uppercaseText = __('components.password_messages.requirements.uppercase') . '（' . __('common.required') . '）';
+        $uppercaseText = __('components/form-password-tools.requirements.uppercase') . '（' . __('common.required') . '）';
     } else {
-        $uppercaseText = __('components.password_messages.requirements.uppercase_optional_note') . '（' . __('common.optional') . '）';
+        $uppercaseText = __('components/form-password-tools.requirements.uppercase_optional_note') . '（' . __('common.optional') . '）';
     }
 
     // 記号の要件（必須 or 任意）
     if ($requireSymbol) {
-        $symbolText = __('components.password_messages.requirements.symbol') . '（' . __('common.required') . '）';
+        $symbolText = __('components/form-password-tools.requirements.symbol') . '（' . __('common.required') . '）';
     } else {
-        $symbolText = __('components.password_messages.requirements.symbol_optional_note') . '（' . __('common.optional') . '）';
+        $symbolText = __('components/form-password-tools.requirements.symbol_optional_note') . '（' . __('common.optional') . '）';
     }
 @endphp
 
@@ -91,11 +91,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         disableConfirmationCopyPaste: {{ $disableConfirmationCopyPaste ? 'true' : 'false' }},
         confirmationInputId: '{{ $id }}_confirmation'
     })"
-    data-msg-error="{{ __('components.password_messages.error') }}"
-    data-msg-weak="{{ __('components.password_messages.requirements.weak') }}"
-    data-msg-normal="{{ __('components.password_messages.requirements.normal') }}"
-    data-msg-strong="{{ __('components.password_messages.requirements.strong') }}"
-    data-msg-very-strong="{{ __('components.password_messages.requirements.very_strong') }}"
+    data-msg-error="{{ __('components/form-password-tools.error') }}"
+    data-msg-weak="{{ __('components/form-password-tools.requirements.weak') }}"
+    data-msg-normal="{{ __('components/form-password-tools.requirements.normal') }}"
+    data-msg-strong="{{ __('components/form-password-tools.requirements.strong') }}"
+    data-msg-very-strong="{{ __('components/form-password-tools.requirements.very_strong') }}"
     data-msg-paste-error="{{ __('install.password_paste_error') }}">
     <div class="relative">
         <input
@@ -109,19 +109,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
 
         <!-- パスワードツールバー -->
-        <div class="absolute top-0 right-2 h-full flex items-center gap-1" role="toolbar" aria-label="{{ __('components.password_messages.toolbar_label') }}">
+        <div class="absolute top-0 right-2 h-full flex items-center gap-1" role="toolbar" aria-label="{{ __('components/form-password-tools.toolbar_label') }}">
             <!-- 自動生成ボタン -->
             <div class="group relative">
                 <button 
                     type="button" 
                     @click="generatePassword()"
                     class="px-2 py-1 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 transition-colors"
-                    aria-label="{{ __('components.password_messages.tooltip.generate') }}"
-                    title="{{ __('components.password_messages.tooltip.generate') }}">
+                    aria-label="{{ __('components/form-password-tools.tooltip.generate') }}"
+                    title="{{ __('components/form-password-tools.tooltip.generate') }}">
                     <i class="fa-solid fa-random" aria-hidden="true"></i>
                 </button>
                 <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10 pointer-events-none" role="tooltip">
-                    {{ __('components.password_messages.tooltip.generate') }}
+                    {{ __('components/form-password-tools.tooltip.generate') }}
                 </span>
             </div>
 
@@ -131,12 +131,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     type="button" 
                     @click="copyPassword()"
                     class="px-2 py-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-                    aria-label="{{ __('components.password_messages.tooltip.copy') }}"
-                    title="{{ __('components.password_messages.tooltip.copy') }}">
+                    aria-label="{{ __('components/form-password-tools.tooltip.copy') }}"
+                    title="{{ __('components/form-password-tools.tooltip.copy') }}">
                     <i class="fa-solid fa-copy" aria-hidden="true"></i>
                 </button>
                 <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10 pointer-events-none" role="tooltip">
-                    {{ __('components.password_messages.tooltip.copy') }}
+                    {{ __('components/form-password-tools.tooltip.copy') }}
                 </span>
             </div>
 
@@ -147,12 +147,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @click="togglePasswordVisibility()"
                     class="px-2 py-1 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white transition-colors"
                     :aria-pressed="showPassword ? 'true' : 'false'"
-                    aria-label="{{ __('components.password_messages.tooltip.toggle') }}"
-                    title="{{ __('components.password_messages.tooltip.toggle') }}">
+                    aria-label="{{ __('components/form-password-tools.tooltip.toggle') }}"
+                    title="{{ __('components/form-password-tools.tooltip.toggle') }}">
                     <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" aria-hidden="true"></i>
                 </button>
                 <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10 pointer-events-none" role="tooltip">
-                    {{ __('components.password_messages.tooltip.toggle') }}
+                    {{ __('components/form-password-tools.tooltip.toggle') }}
                 </span>
             </div>
         </div>

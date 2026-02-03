@@ -34,18 +34,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if(!$captchaEnabled)
         <x-ui-message
             type="warning"
-            :message="__('components.captcha_settings.not_enabled', ['url' => $settingsUrl])"
+            :message="__('components/security/captcha-settings.not_enabled', ['url' => $settingsUrl])"
         />
     @elseif(!$captchaAuthenticationResult)
         <x-ui-message
             type="warning"
-            :message="__('components.captcha_settings.not_authenticated', ['url' => $settingsUrl])"
+            :message="__('components/security/captcha-settings.not_authenticated', ['url' => $settingsUrl])"
         />
     @endif
 
     <fieldset>
         <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-            {{ __('components.captcha_settings.screens') }}
+            {{ __('components/security/captcha-settings.screens') }}
         </legend>
         <div class="space-y-3">
             @if(!$captchaAvailable)

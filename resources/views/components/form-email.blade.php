@@ -34,8 +34,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         showConfirmation: {{ $showConfirmation ? 'true' : 'false' }},
         showConfirmationOnChange: {{ $showConfirmationOnChange ? 'true' : 'false' }}
     })"
-    data-match-success="{{ __('components.email_input.match_success') }}"
-    data-match-error="{{ __('components.email_input.match_error') }}"
+    data-match-success="{{ __('components/form-email.match_success') }}"
+    data-match-error="{{ __('components/form-email.match_error') }}"
     class="space-y-4">
     
     <!-- メインのメールアドレス入力 -->
@@ -54,7 +54,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if($showConfirmation)
         <!-- メールアドレス確認入力 -->
         <fieldset x-show="shouldShowConfirmation" x-transition>
-            <legend>{{ __('components.email_input.confirmation_label') }}</legend>
+            <legend>{{ __('components/form-email.confirmation_label') }}</legend>
             <div class="relative">
                 <input type="email"
                     id="{{ $id }}_confirmation"
@@ -77,7 +77,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <i :class="matchIconClass" :aria-label="matchIconLabel"></i>
                 </div>
             </div>
-            <p id="{{ $id }}-confirmation-help" class="help-text">{{ __('components.email_input.confirmation_help') }}</p>
+            <p id="{{ $id }}-confirmation-help" class="help-text">{{ __('components/form-email.confirmation_help') }}</p>
         </fieldset>
     @endif
 </div>

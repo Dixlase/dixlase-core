@@ -55,17 +55,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         $options = [
             [
                 'value' => (string) AuthenticationMode::Disabled->value,
-                'label' => __('components.two_fa.options.disabled'),
+                'label' => __('components/security/two-fa-general-settings.options.disabled'),
                 'icon' => 'fas fa-shield-alt',
             ],
             [
                 'value' => (string) AuthenticationMode::DifferentDevice->value,
-                'label' => __('components.two_fa.options.different_device'),
+                'label' => __('components/security/two-fa-general-settings.options.different_device'),
                 'icon' => 'fas fa-shield-virus',
             ],
             [
                 'value' => (string) AuthenticationMode::Always->value,
-                'label' => __('components.two_fa.options.always'),
+                'label' => __('components/security/two-fa-general-settings.options.always'),
                 'icon' => 'fas fa-shield-check',
             ],
         ];
@@ -73,22 +73,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         $options = [
             [
                 'value' => (string) AuthenticationMode::Disabled->value,
-                'label' => __('components.two_fa.options.disabled'),
+                'label' => __('components/security/two-fa-general-settings.options.disabled'),
                 'icon' => 'fas fa-shield-alt',
             ],
             [
                 'value' => (string) AuthenticationMode::DifferentDevice->value,
-                'label' => __('components.two_fa.options.different_device'),
+                'label' => __('components/security/two-fa-general-settings.options.different_device'),
                 'icon' => 'fas fa-shield-virus',
             ],
             [
                 'value' => (string) AuthenticationMode::Always->value,
-                'label' => __('components.two_fa.options.always'),
+                'label' => __('components/security/two-fa-general-settings.options.always'),
                 'icon' => 'fas fa-shield-check',
             ],
             [
                 'value' => (string) AuthenticationMode::UseProfileSetting->value,
-                'label' => __('components.two_fa.options.use_profile_setting'),
+                'label' => __('components/security/two-fa-general-settings.options.use_profile_setting'),
                 'icon' => 'fas fa-user-cog',
             ],
         ];
@@ -99,7 +99,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     {{-- プロフィール画面の場合 --}}
     @if($showSettings)
         <fieldset>
-            <legend>{{ __('components.two_fa.mode_label') }}</legend>
+            <legend>{{ __('components/security/two-fa-general-settings.mode_label') }}</legend>
             <x-form-radio-card-group
                 :name="$name"
                 :options="$options"
@@ -107,11 +107,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :columns="$columns"
                 :xModel="$xModel"
             />
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{!! __('components.two_fa.help') !!}</p>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{!! __('components/security/two-fa-general-settings.help') !!}</p>
         </fieldset>
     @elseif($isFixedByGlobal)
         <fieldset>
-            <legend>{{ __('components.two_fa.mode_label') }}</legend>
+            <legend>{{ __('components/security/two-fa-general-settings.mode_label') }}</legend>
             <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
                 <p class="text-sm">
                     @php
@@ -122,7 +122,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endphp
                 </p>
                 <p class="text-xs mt-1">
-                    {{ __('components.two_fa.global_setting_fixed') }}
+                    {{ __('components/security/two-fa-general-settings.global_setting_fixed') }}
                 </p>
             </div>
         </fieldset>
@@ -130,7 +130,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @elseif($showSettings || $excludeUseProfileSetting)
     {{-- 全体設定画面の場合 --}}
     <fieldset>
-        <legend>{{ __('components.two_fa.mode_label') }}</legend>
+        <legend>{{ __('components/security/two-fa-general-settings.mode_label') }}</legend>
         <x-form-radio-card-group
             :name="$name"
             :options="$options"
@@ -138,11 +138,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :columns="$columns"
             :xModel="$xModel"
         />
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{!! __('components.two_fa.help') !!}</p>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{!! __('components/security/two-fa-general-settings.help') !!}</p>
     </fieldset>
 @elseif($isFixedByGlobal)
     <fieldset>
-        <legend>{{ __('components.two_fa.mode_label') }}</legend>
+        <legend>{{ __('components/security/two-fa-general-settings.mode_label') }}</legend>
         <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
             <p class="text-sm">
                 @php
@@ -153,7 +153,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endphp
             </p>
             <p class="text-xs mt-1">
-                {{ __('components.two_fa.global_setting_fixed') }}
+                {{ __('components/security/two-fa-general-settings.global_setting_fixed') }}
             </p>
         </div>
     </fieldset>

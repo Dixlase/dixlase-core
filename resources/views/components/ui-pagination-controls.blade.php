@@ -2,8 +2,8 @@
     'paginator' => null, // ページネーターオブジェクト
     'perPageOptions' => [10, 25, 50, 100], // 表示件数オプション
     'currentPerPage' => 25, // 現在の表示件数
-    'totalLabel' => 'components.pagination.total_count', // 総件数ラベルの翻訳キー
-    'perPageLabel' => 'components.pagination.per_page_label', // 表示件数ラベルの翻訳キー
+    'totalLabel' => 'components/ui-pagination.total_count', // 総件数ラベルの翻訳キー
+    'perPageLabel' => 'components/ui-pagination.per_page_label', // 表示件数ラベルの翻訳キー
     'sortOptions' => [], // ソートオプション ['name' => '名前', 'created_at' => '作成日時']
     'currentSort' => 'created_at', // 現在のソートフィールド
     'currentOrder' => 'desc', // 現在のソート順序 (asc/desc)
@@ -27,7 +27,7 @@
         @if($showSort && !empty($sortOptions))
             <div class="flex items-center gap-2">
                 <label for="sortBy" class="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                    {{ __('components.pagination.sort_by') }}:
+                    {{ __('components/ui-pagination.sort_by') }}:
                 </label>
                 <select id="sortBy" 
                         name="sort" 
@@ -44,9 +44,9 @@
                         id="sortOrder" 
                         data-order="{{ $currentOrder }}"
                         class="px-3 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                        title="{{ $currentOrder === 'asc' ? __('components.pagination.ascending') : __('components.pagination.descending') }}">
+                        title="{{ $currentOrder === 'asc' ? __('components/ui-pagination.ascending') : __('components/ui-pagination.descending') }}">
                     <i class="fas fa-sort-amount-{{ $currentOrder === 'asc' ? 'up' : 'down' }}-alt"></i>
-                    <span class="ml-1 text-sm">{{ $currentOrder === 'asc' ? __('components.pagination.asc') : __('components.pagination.desc') }}</span>
+                    <span class="ml-1 text-sm">{{ $currentOrder === 'asc' ? __('components/ui-pagination.asc') : __('components/ui-pagination.desc') }}</span>
                 </button>
             </div>
         @endif
@@ -61,7 +61,7 @@
                     class="px-3 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                 @foreach($perPageOptions as $count)
                     <option value="{{ $count }}" {{ $currentPerPage == $count ? 'selected' : '' }}>
-                        {{ $count }}{{ __('components.pagination.items_suffix') }}
+                        {{ $count }}{{ __('components/ui-pagination.items_suffix') }}
                     </option>
                 @endforeach
             </select>

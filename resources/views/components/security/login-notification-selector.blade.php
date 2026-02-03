@@ -53,17 +53,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         $options = [
             [
                 'value' => (string) AuthenticationMode::Disabled->value,
-                'label' => __('components.login_notification.options.disabled'),
+                'label' => __('components/security/login-notification-selector.options.disabled'),
                 'icon' => 'fas fa-bell-slash',
             ],
             [
                 'value' => (string) AuthenticationMode::DifferentDevice->value,
-                'label' => __('components.login_notification.options.different_device'),
+                'label' => __('components/security/login-notification-selector.options.different_device'),
                 'icon' => 'fas fa-exclamation-triangle',
             ],
             [
                 'value' => (string) AuthenticationMode::Always->value,
-                'label' => __('components.login_notification.options.always'),
+                'label' => __('components/security/login-notification-selector.options.always'),
                 'icon' => 'fas fa-bell',
             ],
         ];
@@ -72,22 +72,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         $options = [
             [
                 'value' => (string) AuthenticationMode::Disabled->value,
-                'label' => __('components.login_notification.options.disabled'),
+                'label' => __('components/security/login-notification-selector.options.disabled'),
                 'icon' => 'fas fa-bell-slash',
             ],
             [
                 'value' => (string) AuthenticationMode::DifferentDevice->value,
-                'label' => __('components.login_notification.options.different_device'),
+                'label' => __('components/security/login-notification-selector.options.different_device'),
                 'icon' => 'fas fa-exclamation-triangle',
             ],
             [
                 'value' => (string) AuthenticationMode::Always->value,
-                'label' => __('components.login_notification.options.always'),
+                'label' => __('components/security/login-notification-selector.options.always'),
                 'icon' => 'fas fa-bell',
             ],
             [
                 'value' => (string) AuthenticationMode::UseProfileSetting->value,
-                'label' => __('components.login_notification.options.use_profile_setting'),
+                'label' => __('components/security/login-notification-selector.options.use_profile_setting'),
                 'icon' => 'fas fa-user-cog',
             ],
         ];
@@ -98,19 +98,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if($showSettings)
         {{-- 設定可能な場合 --}}
         <fieldset>
-            <legend>{{ __('components.login_notification.label') }}</legend>
+            <legend>{{ __('components/security/login-notification-selector.label') }}</legend>
             <x-form-radio-card-group
                 :name="$name"
                 :options="$options"
                 :value="$value"
                 :columns="$columns"
             />
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ __('components.login_notification.help') }}</p>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ __('components/security/login-notification-selector.help') }}</p>
         </fieldset>
     @else
         {{-- 全体設定で固定されている場合：全体設定の値を選択状態で表示し操作不可にする --}}
         <fieldset>
-            <legend>{{ __('components.login_notification.label') }}</legend>
+            <legend>{{ __('components/security/login-notification-selector.label') }}</legend>
             <x-form-radio-card-group
                 :name="$name"
                 :options="$options"
@@ -120,7 +120,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
             <p class="mt-2 text-sm text-yellow-600 dark:text-yellow-400">
                 <i class="fas fa-lock mr-1"></i>
-                {{ __('components.login_notification.global_setting_locked') }}
+                {{ __('components/security/login-notification-selector.global_setting_locked') }}
             </p>
         </fieldset>
     @endif

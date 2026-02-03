@@ -41,12 +41,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 認証の有効期限設定 -->
     <fieldset>
-        <legend>{{ __('components.two_fa_detailed_settings.expire_settings') }}</legend>
+        <legend>{{ __('components/security/two-fa-detailed-settings.expire_settings') }}</legend>
 
         <div class="space-y-4">
             <div>
                 <label for="two_fa_expire_minutes" class="block text-sm font-medium">
-                    {{ __('components.two_fa_detailed_settings.expire_minutes') }}
+                    {{ __('components/security/two-fa-detailed-settings.expire_minutes') }}
                 </label>
                 <div class="mt-1 flex items-center space-x-2">
                     <x-form-text
@@ -61,13 +61,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('common.minutes') }}</span>
                 </div>
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {{ __('components.two_fa_detailed_settings.expire_minutes_help') }}
+                    {{ __('components/security/two-fa-detailed-settings.expire_minutes_help') }}
                 </p>
             </div>
 
             <div>
                 <label for="two_fa_resend_interval_seconds" class="block text-sm font-medium">
-                    {{ __('components.two_fa_detailed_settings.resend_interval_seconds') }}
+                    {{ __('components/security/two-fa-detailed-settings.resend_interval_seconds') }}
                 </label>
                 <div class="mt-1 flex items-center space-x-2">
                     <x-form-text
@@ -83,7 +83,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('common.seconds') }}</span>
                 </div>
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {{ __('components.two_fa_detailed_settings.resend_interval_seconds_help') }}
+                    {{ __('components/security/two-fa-detailed-settings.resend_interval_seconds_help') }}
                 </p>
             </div>
         </div>
@@ -91,12 +91,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 2FA試行制限設定 -->
     <fieldset>
-        <legend>{{ __('components.two_fa_detailed_settings.attempt_limit_settings') }}</legend>
+        <legend>{{ __('components/security/two-fa-detailed-settings.attempt_limit_settings') }}</legend>
 
         <div class="space-y-4">
             <div>
                 <label for="two_fa_max_attempts" class="block text-sm font-medium">
-                    {{ __('components.two_fa_detailed_settings.max_attempts') }}
+                    {{ __('components/security/two-fa-detailed-settings.max_attempts') }}
                 </label>
                 <div class="mt-1 flex items-center space-x-2">
                     <x-form-text
@@ -111,13 +111,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('common.times') }}</span>
                 </div>
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {{ __('components.two_fa_detailed_settings.max_attempts_help') }}
+                    {{ __('components/security/two-fa-detailed-settings.max_attempts_help') }}
                 </p>
             </div>
 
             <div>
                 <label for="two_fa_attempt_window" class="block text-sm font-medium">
-                    {{ __('components.two_fa_detailed_settings.attempt_window') }}
+                    {{ __('components/security/two-fa-detailed-settings.attempt_window') }}
                 </label>
                 <div class="mt-1 flex items-center space-x-2">
                     <x-form-text
@@ -132,13 +132,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('common.minutes') }}</span>
                 </div>
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {{ __('components.two_fa_detailed_settings.attempt_window_help') }}
+                    {{ __('components/security/two-fa-detailed-settings.attempt_window_help') }}
                 </p>
             </div>
 
             <div>
                 <label for="two_fa_lockout_duration" class="block text-sm font-medium">
-                    {{ __('components.two_fa_detailed_settings.lockout_duration') }}
+                    {{ __('components/security/two-fa-detailed-settings.lockout_duration') }}
                 </label>
                 <div class="mt-1 flex items-center space-x-2">
                     <x-form-text
@@ -153,18 +153,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('common.minutes') }}</span>
                 </div>
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {{ __('components.two_fa_detailed_settings.lockout_duration_help') }}
+                    {{ __('components/security/two-fa-detailed-settings.lockout_duration_help') }}
                 </p>
             </div>
 
             <div>
                 <x-form-toggle
                     name="two_fa_lockout_notification_enabled"
-                    :label="__('components.two_fa_detailed_settings.lockout_notification_enabled')"
+                    :label="__('components/security/two-fa-detailed-settings.lockout_notification_enabled')"
                     :checked="old('two_fa_lockout_notification_enabled', $lockoutNotificationEnabled)"
                 />
                 <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    {{ __('components.two_fa_detailed_settings.lockout_notification_enabled_help') }}
+                    {{ __('components/security/two-fa-detailed-settings.lockout_notification_enabled_help') }}
                 </p>
             </div>
         </div>
@@ -172,12 +172,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 回復コード設定 -->
     <fieldset>
-        <legend>{{ __('components.two_fa_detailed_settings.recovery_code_settings') }}</legend>
+        <legend>{{ __('components/security/two-fa-detailed-settings.recovery_code_settings') }}</legend>
 
         <div class="space-y-4">
             <div>
                 <label for="two_fa_recovery_codes_count" class="block text-sm font-medium">
-                    {{ __('components.two_fa_detailed_settings.recovery_codes_count') }}
+                    {{ __('components/security/two-fa-detailed-settings.recovery_codes_count') }}
                 </label>
                 <div class="mt-1 flex items-center space-x-2">
                     <x-form-text
@@ -192,13 +192,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('common.codes') }}</span>
                 </div>
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {{ __('components.two_fa_detailed_settings.recovery_codes_count_help') }}
+                    {{ __('components/security/two-fa-detailed-settings.recovery_codes_count_help') }}
                 </p>
             </div>
 
             <div>
                 <label for="two_fa_recovery_code_regenerate_interval" class="block text-sm font-medium">
-                    {{ __('components.two_fa_detailed_settings.recovery_code_regenerate_interval') }}
+                    {{ __('components/security/two-fa-detailed-settings.recovery_code_regenerate_interval') }}
                 </label>
                 <div class="mt-1 flex items-center space-x-2">
                     <x-form-text
@@ -213,7 +213,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('common.hours') }}</span>
                 </div>
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {{ __('components.two_fa_detailed_settings.recovery_code_regenerate_interval_help') }}
+                    {{ __('components/security/two-fa-detailed-settings.recovery_code_regenerate_interval_help') }}
                 </p>
             </div>
         </div>

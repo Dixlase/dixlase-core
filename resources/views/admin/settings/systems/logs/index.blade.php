@@ -242,8 +242,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :paginator="$auditLogs"
         :perPageOptions="[25, 50, 100, 200]"
         :currentPerPage="request('per_page', 50)"
-        totalLabel="components.pagination.total_count"
-        perPageLabel="components.pagination.per_page_label"
+        totalLabel="components/ui-pagination.total_count"
+        perPageLabel="components/ui-pagination.per_page_label"
     />
 
     <x-ui-pagination
@@ -346,8 +346,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :paginator="$auditLogs"
         :perPageOptions="[25, 50, 100, 200]"
         :currentPerPage="request('per_page', 50)"
-        totalLabel="components.pagination.total_count"
-        perPageLabel="components.pagination.per_page_label"
+        totalLabel="components/ui-pagination.total_count"
+        perPageLabel="components/ui-pagination.per_page_label"
     />
 
     <x-ui-pagination
