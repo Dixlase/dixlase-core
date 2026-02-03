@@ -337,12 +337,12 @@ trait PluginLoaderTrait
 
         foreach ($pluginConfig['nav'] as $key => $value) {
             if (isset($value['_insert_before'])) {
-                $this->insertOrderedConfig('admin.nav', $key, $value, $value['_insert_before'], 'before');
+                $this->insertOrderedConfig('admin.navigation', $key, $value, $value['_insert_before'], 'before');
             } elseif (isset($value['_insert_after'])) {
-                $this->insertOrderedConfig('admin.nav', $key, $value, $value['_insert_after'], 'after');
+                $this->insertOrderedConfig('admin.navigation', $key, $value, $value['_insert_after'], 'after');
             } else {
                 // 既存のキーがある場合はマージ、ない場合は追加
-                $existingValue = config("admin.nav.{$key}");
+                $existingValue = config("admin.navigation.{$key}");
                 if ($existingValue !== null && is_array($existingValue)) {
                     // 既存の設定がある場合、childrenのみをマージし、他のプロパティは保持
                     if (isset($value['children']) && is_array($value['children'])) {
@@ -350,10 +350,10 @@ trait PluginLoaderTrait
                         $existingValue['children'] = array_merge($existingChildren, $value['children']);
                     }
                     // 他のプロパティ（text, iconなど）は既存の設定を保持
-                    config(["admin.nav.{$key}" => $existingValue]);
+                    config(["admin.navigation.{$key}" => $existingValue]);
                 } else {
                     // 新規追加
-                    config(["admin.nav.{$key}" => $value]);
+                    config(["admin.navigation.{$key}" => $value]);
                 }
             }
         }

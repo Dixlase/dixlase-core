@@ -291,12 +291,12 @@ class AdminHelper
             $existingNav = self::$navigationCache;
         } else {
             // 初回のみconfig()から取得
-            // IMPORTANT: app()->config['admin.nav']を必ず使用（プラグインのマージを保持）
-            $fromAppConfig = app()->config['admin.nav'] ?? null;
+            // IMPORTANT: app()->config['admin.navigation']を必ず使用（プラグインのマージを保持）
+            $fromAppConfig = app()->config['admin.navigation'] ?? null;
             
             // app()->configがnullの場合のみconfig()から読み込む
             if ($fromAppConfig === null) {
-                $fromAppConfig = config('admin.nav', []);
+                $fromAppConfig = config('admin.navigation', []);
             }
             
             $existingNav = $fromAppConfig;
