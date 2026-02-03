@@ -26,13 +26,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 @if(isset($pagination) && $pagination['last_page'] > 1)
-    <nav aria-label="{{ __('components.pagination.navigation') }}" class="mb-4">
+    <nav aria-label="{{ __('components/ui-pagination.navigation') }}" class="mb-4">
         <!-- Mobile Layout: Stack vertically -->
         <div class="flex flex-col space-y-3 md:hidden">
             <!-- Page Info -->
             <div class="text-center">
                 <span class="pagination-info text-sm">
-                    {{ __('components.pagination.page', ['current' => $pagination['current_page'], 'total' => $pagination['last_page']]) }}
+                    {{ __('components/ui-pagination.page', ['current' => $pagination['current_page'], 'total' => $pagination['last_page']]) }}
                 </span>
             </div>
             
@@ -42,11 +42,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if($pagination['prev_page'])
                     <a href="{{ route($route, array_merge($routeParams, ['page' => $pagination['prev_page']])) }}" 
                        class="pagination-button pagination-button--prev flex-shrink-0">
-                        {{ __('components.pagination.previous') }}
+                        {{ __('components/ui-pagination.previous') }}
                     </a>
                 @else
                     <span class="pagination-button pagination-button--prev pagination-button--disabled flex-shrink-0">
-                        {{ __('components.pagination.previous') }}
+                        {{ __('components/ui-pagination.previous') }}
                     </span>
                 @endif
 
@@ -87,11 +87,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if($pagination['next_page'])
                     <a href="{{ route($route, array_merge($routeParams, ['page' => $pagination['next_page']])) }}" 
                        class="pagination-button pagination-button--next flex-shrink-0">
-                        {{ __('components.pagination.next') }}
+                        {{ __('components/ui-pagination.next') }}
                     </a>
                 @else
                     <span class="pagination-button pagination-button--next pagination-button--disabled flex-shrink-0">
-                        {{ __('components.pagination.next') }}
+                        {{ __('components/ui-pagination.next') }}
                     </span>
                 @endif
             </div>
@@ -104,26 +104,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if($pagination['prev_page'])
                     <a href="{{ route($route, array_merge($routeParams, ['page' => $pagination['prev_page']])) }}" 
                        class="pagination-button pagination-button--prev">
-                        {{ __('components.pagination.previous') }}
+                        {{ __('components/ui-pagination.previous') }}
                     </a>
                 @else
                     <span class="pagination-button pagination-button--prev pagination-button--disabled">
-                        {{ __('components.pagination.previous') }}
+                        {{ __('components/ui-pagination.previous') }}
                     </span>
                 @endif
 
                 <span class="pagination-info">
-                    {{ __('components.pagination.page', ['current' => $pagination['current_page'], 'total' => $pagination['last_page']]) }}
+                    {{ __('components/ui-pagination.page', ['current' => $pagination['current_page'], 'total' => $pagination['last_page']]) }}
                 </span>
 
                 @if($pagination['next_page'])
                     <a href="{{ route($route, array_merge($routeParams, ['page' => $pagination['next_page']])) }}" 
                        class="pagination-button pagination-button--next">
-                        {{ __('components.pagination.next') }}
+                        {{ __('components/ui-pagination.next') }}
                     </a>
                 @else
                     <span class="pagination-button pagination-button--next pagination-button--disabled">
-                        {{ __('components.pagination.next') }}
+                        {{ __('components/ui-pagination.next') }}
                     </span>
                 @endif
             </div>

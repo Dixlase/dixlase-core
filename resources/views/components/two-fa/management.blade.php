@@ -50,35 +50,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @php
     $translations = [
         'error' => __('common.error'),
-        'passkey_not_supported' => __('components.two_fa_management.passkey_not_supported'),
-        'passkey_register_success' => __('components.two_fa_management.passkey_register_success'),
-        'passkey_register_error' => __('components.two_fa_management.passkey_register_error'),
-        'passkey_cancelled' => __('components.two_fa_management.passkey_cancelled'),
-        'passkey_already_registered' => __('components.two_fa_management.passkey_already_registered'),
-        'passkey_delete_success' => __('components.two_fa_management.passkey_delete_success'),
-        'passkey_delete_error' => __('components.two_fa_management.passkey_delete_error'),
-        'passkey_delete_all_error' => __('components.two_fa_management.passkey_delete_all_error'),
-        'confirm_delete_passkey' => __('components.two_fa_management.confirm_delete_passkey'),
-        'recovery_codes_error' => __('components.two_fa_management.recovery_codes_error'),
+        'passkey_not_supported' => __('components/security/two-fa-management.passkey_not_supported'),
+        'passkey_register_success' => __('components/security/two-fa-management.passkey_register_success'),
+        'passkey_register_error' => __('components/security/two-fa-management.passkey_register_error'),
+        'passkey_cancelled' => __('components/security/two-fa-management.passkey_cancelled'),
+        'passkey_already_registered' => __('components/security/two-fa-management.passkey_already_registered'),
+        'passkey_delete_success' => __('components/security/two-fa-management.passkey_delete_success'),
+        'passkey_delete_error' => __('components/security/two-fa-management.passkey_delete_error'),
+        'passkey_delete_all_error' => __('components/security/two-fa-management.passkey_delete_all_error'),
+        'confirm_delete_passkey' => __('components/security/two-fa-management.confirm_delete_passkey'),
+        'recovery_codes_error' => __('components/security/two-fa-management.recovery_codes_error'),
     ];
 @endphp
 
 <section class="mt-8 transition-colors-unified {{ $disabled ? 'opacity-50 pointer-events-none' : '' }}" 
     x-data='twoFaManagement(@json($routes), "{{ $csrfToken }}", @json($translations))'
     x-init="window.twoFaManagementInstance = $data">
-    <h2>{{ __('components.two_fa_management.title') }}</h2>
+    <h2>{{ __('components/security/two-fa-management.title') }}</h2>
 
     <!-- Passkeyデバイス -->
     @if($twoFaPasskeyEnabled)
     <div class="{{ $passkeyDisabled ? 'opacity-50 pointer-events-none' : '' }}">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold">{{ __('components.two_fa_management.passkey_devices') }}</h3>
+            <h3 class="text-lg font-semibold">{{ __('components/security/two-fa-management.passkey_devices') }}</h3>
             @if($twoFaPasskeyDevices && !$twoFaPasskeyDevices->isEmpty())
                 <button 
                     type="button"
                     onclick="openModal('deleteAllPasskeysModal')"
                     class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
-                    <i class="fas fa-trash-alt mr-1"></i>{{ __('components.two_fa_management.delete_all') }}
+                    <i class="fas fa-trash-alt mr-1"></i>{{ __('components/security/two-fa-management.delete_all') }}
                 </button>
             @endif
         </div>
@@ -88,11 +88,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if(!$adminContext)
                 <x-ui-message 
                     type="warning" 
-                    :message="'<strong>' . __('components.two_fa_management.passkey_warning_title') . '</strong><br>' . __('components.two_fa_management.passkey_warning_message') . '<br>' . __('components.two_fa_management.passkey_warning_action')" 
+                    :message="'<strong>' . __('components/security/two-fa-management.passkey_warning_title') . '</strong><br>' . __('components/security/two-fa-management.passkey_warning_message') . '<br>' . __('components/security/two-fa-management.passkey_warning_action')" 
                 />
             @endif
             
-            <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('components.two_fa_management.no_passkey_devices') }}</p>
+            <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('components/security/two-fa-management.no_passkey_devices') }}</p>
         @else
             <div class="space-y-4 mb-4">
                 @foreach($twoFaPasskeyDevices as $device)
@@ -103,9 +103,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 <h4 class="font-semibold">{{ $device->name }}</h4>
                             </div>
                             <div class="text-sm text-gray-600 dark:text-gray-400">
-                                <p><strong>{{ __('components.two_fa_management.registered_at') }}:</strong> {{ $device->created_at->format('Y-m-d H:i') }}</p>
+                                <p><strong>{{ __('components/security/two-fa-management.registered_at') }}:</strong> {{ $device->created_at->format('Y-m-d H:i') }}</p>
                                 @if($device->last_used_at)
-                                    <p><strong>{{ __('components.two_fa_management.last_used') }}:</strong> {{ $device->last_used_at->format('Y-m-d H:i') }}</p>
+                                    <p><strong>{{ __('components/security/two-fa-management.last_used') }}:</strong> {{ $device->last_used_at->format('Y-m-d H:i') }}</p>
                                 @endif
                             </div>
                         </div>
@@ -113,7 +113,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             type="button"
                             onclick="openDeletePasskeyModal('{{ $device->id }}', '{{ $device->name }}')"
                             class="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
-                            {{ __('components.two_fa_management.delete') }}
+                            {{ __('components/security/two-fa-management.delete') }}
                         </button>
                     </div>
                 @endforeach
@@ -123,7 +123,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if(!$hideAddButtons)
         <!-- デバイス登録数の表示 -->
         <div class="mb-3 text-sm text-gray-600 dark:text-gray-400">
-            {{ __('components.two_fa_management.device_count', [
+            {{ __('components/security/two-fa-management.device_count', [
                 'current' => $twoFaPasskeyCurrentCount,
                 'max' => $twoFaPasskeyMaxDevices
             ]) }}
@@ -135,17 +135,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 type="button"
                 onclick="registerPasskey()"
                 class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
-                <i class="fas fa-plus mr-2"></i>{{ __('components.two_fa_management.add_passkey') }}
+                <i class="fas fa-plus mr-2"></i>{{ __('components/security/two-fa-management.add_passkey') }}
             </button>
         @else
             <button 
                 type="button"
                 disabled
                 class="px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed opacity-50">
-                <i class="fas fa-plus mr-2"></i>{{ __('components.two_fa_management.add_passkey') }}
+                <i class="fas fa-plus mr-2"></i>{{ __('components/security/two-fa-management.add_passkey') }}
             </button>
             <p class="mt-2 text-sm text-red-600 dark:text-red-400">
-                {{ __('components.two_fa_management.max_devices_reached', ['max' => $twoFaPasskeyMaxDevices]) }}
+                {{ __('components/security/two-fa-management.max_devices_reached', ['max' => $twoFaPasskeyMaxDevices]) }}
             </p>
         @endif
         @endif
@@ -154,12 +154,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if(!$adminContext)
         <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
             <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                <i class="fas fa-info-circle mr-2"></i>{{ __('components.two_fa_management.passkey_info_title') }}
+                <i class="fas fa-info-circle mr-2"></i>{{ __('components/security/two-fa-management.passkey_info_title') }}
             </h4>
             <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
-                <li>{{ __('components.two_fa_management.passkey_info_1') }}</li>
-                <li>{{ __('components.two_fa_management.passkey_info_2') }}</li>
-                <li>{{ __('components.two_fa_management.passkey_info_3') }}</li>
+                <li>{{ __('components/security/two-fa-management.passkey_info_1') }}</li>
+                <li>{{ __('components/security/two-fa-management.passkey_info_2') }}</li>
+                <li>{{ __('components/security/two-fa-management.passkey_info_3') }}</li>
             </ul>
         </div>
         @endif
@@ -170,7 +170,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if(!$twoFaDisabled)
     <div class="mb-8">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold">{{ __('components.two_fa_management.recovery_codes_title') }}</h3>
+            <h3 class="text-lg font-semibold">{{ __('components/security/two-fa-management.recovery_codes_title') }}</h3>
         </div>
 
         @if($twoFaHasRecoveryCodes)
@@ -178,20 +178,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="flex items-center justify-between">
                     <p class="text-sm text-blue-800 dark:text-blue-200">
                         <i class="fas fa-info-circle mr-2"></i>
-                        {{ __('components.two_fa_management.recovery_codes_remaining', ['count' => $twoFaRecoveryCodesCount]) }}
+                        {{ __('components/security/two-fa-management.recovery_codes_remaining', ['count' => $twoFaRecoveryCodesCount]) }}
                     </p>
                     @if($adminContext && isset($routes['recovery_codes_delete']))
                     <button 
                         type="button"
                         onclick="openModal('deleteRecoveryCodesModal')"
                         class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
-                        <i class="fas fa-trash mr-1"></i>{{ __('components.two_fa_management.delete') }}
+                        <i class="fas fa-trash mr-1"></i>{{ __('components/security/two-fa-management.delete') }}
                     </button>
                     @endif
                 </div>
             </div>
         @else
-            <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('components.two_fa_management.recovery_codes_not_generated') }}</p>
+            <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('components/security/two-fa-management.recovery_codes_not_generated') }}</p>
         @endif
         
         @if(!$hideGenerateButton)
@@ -199,7 +199,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             type="button"
             onclick="openModal('recoveryCodesConfirmModal')"
             class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            <i class="fas fa-{{ $twoFaHasRecoveryCodes ? 'sync-alt' : 'plus' }} mr-2"></i>{{ __('components.two_fa_management.recovery_codes_' . ($twoFaHasRecoveryCodes ? 'regenerate' : 'generate')) }}
+            <i class="fas fa-{{ $twoFaHasRecoveryCodes ? 'sync-alt' : 'plus' }} mr-2"></i>{{ __('components/security/two-fa-management.recovery_codes_' . ($twoFaHasRecoveryCodes ? 'regenerate' : 'generate')) }}
         </button>
         @endif
         
@@ -207,15 +207,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if(!$adminContext)
         <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
             <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                <i class="fas fa-info-circle mr-2"></i>{{ __('components.two_fa_management.recovery_codes_info_title') }}
+                <i class="fas fa-info-circle mr-2"></i>{{ __('components/security/two-fa-management.recovery_codes_info_title') }}
             </h4>
             <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
-                <li>{{ __('components.two_fa_management.recovery_codes_info_1') }}</li>
-                <li>{{ __('components.two_fa_management.recovery_codes_info_2') }}</li>
-                <li>{{ __('components.two_fa_management.recovery_codes_info_3') }}</li>
-                <li>{{ __('components.two_fa_management.recovery_codes_info_4') }}</li>
-                <li>{{ __('components.two_fa_management.recovery_codes_info_5') }}</li>
-                <li>{{ __('components.two_fa_management.recovery_codes_info_6') }}</li>
+                <li>{{ __('components/security/two-fa-management.recovery_codes_info_1') }}</li>
+                <li>{{ __('components/security/two-fa-management.recovery_codes_info_2') }}</li>
+                <li>{{ __('components/security/two-fa-management.recovery_codes_info_3') }}</li>
+                <li>{{ __('components/security/two-fa-management.recovery_codes_info_4') }}</li>
+                <li>{{ __('components/security/two-fa-management.recovery_codes_info_5') }}</li>
+                <li>{{ __('components/security/two-fa-management.recovery_codes_info_6') }}</li>
             </ul>
         </div>
         @endif
@@ -226,19 +226,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if($twoFaShowTrustedDevices)
     <div class="mb-8">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold">{{ __('components.two_fa_management.trusted_devices_title') }}</h3>
+            <h3 class="text-lg font-semibold">{{ __('components/security/two-fa-management.trusted_devices_title') }}</h3>
             @if($twoFaTrustedDevices && !$twoFaTrustedDevices->isEmpty())
                 <button 
                     type="button"
                     onclick="openModal('deleteAllTrustedDevicesModal')"
                     class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
-                    <i class="fas fa-trash-alt mr-1"></i>{{ __('components.two_fa_management.delete_all') }}
+                    <i class="fas fa-trash-alt mr-1"></i>{{ __('components/security/two-fa-management.delete_all') }}
                 </button>
             @endif
         </div>
         
         @if(!$twoFaTrustedDevices || $twoFaTrustedDevices->isEmpty())
-            <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('components.two_fa_management.no_trusted_devices') }}</p>
+            <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('components/security/two-fa-management.no_trusted_devices') }}</p>
         @else
             <div class="space-y-4 mb-4">
                 @foreach($twoFaTrustedDevices as $device)
@@ -246,21 +246,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <div class="flex-1">
                             <div class="flex items-center mb-2">
                                 <i class="fas fa-mobile-alt text-blue-600 dark:text-blue-400 mr-2"></i>
-                                <h4 class="font-semibold">{{ $device->device_name ?? __('components.two_fa_management.unknown_device') }}</h4>
+                                <h4 class="font-semibold">{{ $device->device_name ?? __('components/security/two-fa-management.unknown_device') }}</h4>
                             </div>
                             <div class="text-sm text-gray-600 dark:text-gray-400">
-                                <p><strong>{{ __('components.two_fa_management.ip_address') }}:</strong> {{ $device->ip_address }}</p>
-                                <p><strong>{{ __('components.two_fa_management.registered_at') }}:</strong> {{ $device->created_at->format('Y-m-d H:i') }}</p>
+                                <p><strong>{{ __('components/security/two-fa-management.ip_address') }}:</strong> {{ $device->ip_address }}</p>
+                                <p><strong>{{ __('components/security/two-fa-management.registered_at') }}:</strong> {{ $device->created_at->format('Y-m-d H:i') }}</p>
                                 @if($device->last_used_at)
-                                    <p><strong>{{ __('components.two_fa_management.last_used') }}:</strong> {{ $device->last_used_at->format('Y-m-d H:i') }}</p>
+                                    <p><strong>{{ __('components/security/two-fa-management.last_used') }}:</strong> {{ $device->last_used_at->format('Y-m-d H:i') }}</p>
                                 @endif
                             </div>
                         </div>
                         <button 
                             type="button"
-                            onclick="openDeleteTrustedDeviceModal('{{ $device->id }}', '{{ $device->device_name ?? __('components.two_fa_management.unknown_device') }}')"
+                            onclick="openDeleteTrustedDeviceModal('{{ $device->id }}', '{{ $device->device_name ?? __('components/security/two-fa-management.unknown_device') }}')"
                             class="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
-                            {{ __('components.two_fa_management.delete') }}
+                            {{ __('components/security/two-fa-management.delete') }}
                         </button>
                     </div>
                 @endforeach
@@ -270,12 +270,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- 信頼済みデバイスの説明 -->
         <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                <i class="fas fa-info-circle mr-2"></i>{{ __('components.two_fa_management.trusted_devices_info_title') }}
+                <i class="fas fa-info-circle mr-2"></i>{{ __('components/security/two-fa-management.trusted_devices_info_title') }}
             </h4>
             <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
-                <li>{{ __('components.two_fa_management.trusted_devices_info_1') }}</li>
-                <li>{{ __('components.two_fa_management.trusted_devices_info_2') }}</li>
-                <li>{{ __('components.two_fa_management.trusted_devices_info_3') }}</li>
+                <li>{{ __('components/security/two-fa-management.trusted_devices_info_1') }}</li>
+                <li>{{ __('components/security/two-fa-management.trusted_devices_info_2') }}</li>
+                <li>{{ __('components/security/two-fa-management.trusted_devices_info_3') }}</li>
             </ul>
         </div>
     </div>
@@ -285,8 +285,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 {{-- モーダル --}}
 <x-ui-modal 
     id="deleteTrustedDeviceModal"
-    title="{{ __('components.two_fa_management.confirm_delete_trusted_device_title') }}"
-    message="{{ __('components.two_fa_management.confirm_delete_trusted_device_message') }}"
+    title="{{ __('components/security/two-fa-management.confirm_delete_trusted_device_title') }}"
+    message="{{ __('components/security/two-fa-management.confirm_delete_trusted_device_message') }}"
     confirm_label="{{ __('common.delete') }}"
     cancel_label="{{ __('common.cancel') }}"
     icon_type="danger"
@@ -296,8 +296,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <x-ui-modal 
     id="deleteAllTrustedDevicesModal"
-    title="{{ __('components.two_fa_management.confirm_delete_all_trusted_devices_title') }}"
-    message="{{ __('components.two_fa_management.confirm_delete_all_trusted_devices_message') }}"
+    title="{{ __('components/security/two-fa-management.confirm_delete_all_trusted_devices_title') }}"
+    message="{{ __('components/security/two-fa-management.confirm_delete_all_trusted_devices_message') }}"
     confirm_label="{{ __('common.delete') }}"
     cancel_label="{{ __('common.cancel') }}"
     icon_type="danger"
@@ -307,8 +307,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <x-ui-modal 
     id="deletePasskeyModal"
-    title="{{ __('components.two_fa_management.confirm_delete_passkey_title') }}"
-    message="{{ __('components.two_fa_management.confirm_delete_passkey_message') }}"
+    title="{{ __('components/security/two-fa-management.confirm_delete_passkey_title') }}"
+    message="{{ __('components/security/two-fa-management.confirm_delete_passkey_message') }}"
     confirm_label="{{ __('common.delete') }}"
     cancel_label="{{ __('common.cancel') }}"
     icon_type="danger"
@@ -318,8 +318,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <x-ui-modal 
     id="deleteAllPasskeysModal"
-    title="{{ __('components.two_fa_management.confirm_delete_all_passkeys_title') }}"
-    message="{{ __('components.two_fa_management.confirm_delete_all_passkeys_message') }}"
+    title="{{ __('components/security/two-fa-management.confirm_delete_all_passkeys_title') }}"
+    message="{{ __('components/security/two-fa-management.confirm_delete_all_passkeys_message') }}"
     confirm_label="{{ __('common.delete') }}"
     cancel_label="{{ __('common.cancel') }}"
     icon_type="danger"
@@ -330,8 +330,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <!-- 回復コード生成/再生成確認モーダル -->
 <x-ui-modal 
     id="recoveryCodesConfirmModal" 
-    title="{{ __('components.two_fa_management.recovery_codes_confirm_title') }}"
-    message="{{ __('components.two_fa_management.recovery_codes_confirm_message') }}"
+    title="{{ __('components/security/two-fa-management.recovery_codes_confirm_title') }}"
+    message="{{ __('components/security/two-fa-management.recovery_codes_confirm_message') }}"
     confirm_label="{{ __('common.ok') }}"
     cancel_label="{{ __('common.cancel') }}"
     icon_type="warning"
@@ -343,8 +343,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @if($adminContext)
 <x-ui-modal 
     id="deleteRecoveryCodesModal"
-    title="{{ __('components.two_fa_management.confirm_delete_recovery_codes_title') }}"
-    message="{{ __('components.two_fa_management.confirm_delete_recovery_codes_message') }}"
+    title="{{ __('components/security/two-fa-management.confirm_delete_recovery_codes_title') }}"
+    message="{{ __('components/security/two-fa-management.confirm_delete_recovery_codes_message') }}"
     confirm_label="{{ __('common.delete') }}"
     cancel_label="{{ __('common.cancel') }}"
     icon_type="danger"

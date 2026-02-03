@@ -38,9 +38,9 @@ enum ContentStatus: string
     public function label(): string
     {
         return match($this) {
-            self::DRAFT => __('components.status.draft'),
-            self::PUBLISHED => __('components.status.published'),
-            self::SCHEDULED => __('components.status.scheduled'),
+            self::DRAFT => __('components/ui-status-badge.draft'),
+            self::PUBLISHED => __('components/ui-status-badge.published'),
+            self::SCHEDULED => __('components/ui-status-badge.scheduled'),
         };
     }
 
@@ -50,9 +50,9 @@ enum ContentStatus: string
     public function description(): string
     {
         return match($this) {
-            self::DRAFT => __('components.status.draft_description'),
-            self::PUBLISHED => __('components.status.published_description'),
-            self::SCHEDULED => __('components.status.scheduled_description'),
+            self::DRAFT => __('components/ui-status-badge.draft_description'),
+            self::PUBLISHED => __('components/ui-status-badge.published_description'),
+            self::SCHEDULED => __('components/ui-status-badge.scheduled_description'),
         };
     }
 

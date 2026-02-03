@@ -34,20 +34,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $appearanceOptions = [
         [
             'value' => (string) AppearanceMode::Auto->value,
-            'label' => __('components.appearance_mode.auto'),
-            'description' => __('components.appearance_mode.auto_description'),
+            'label' => __('components/ui-appearance-mode-selector.auto'),
+            'description' => __('components/ui-appearance-mode-selector.auto_description'),
             'icon' => 'fas fa-adjust'
         ],
         [
             'value' => (string) AppearanceMode::Light->value,
-            'label' => __('components.appearance_mode.light'),
-            'description' => __('components.appearance_mode.light_description'),
+            'label' => __('components/ui-appearance-mode-selector.light'),
+            'description' => __('components/ui-appearance-mode-selector.light_description'),
             'icon' => 'fas fa-sun'
         ],
         [
             'value' => (string) AppearanceMode::Dark->value,
-            'label' => __('components.appearance_mode.dark'),
-            'description' => __('components.appearance_mode.dark_description'),
+            'label' => __('components/ui-appearance-mode-selector.dark'),
+            'description' => __('components/ui-appearance-mode-selector.dark_description'),
             'icon' => 'fas fa-moon'
         ],
     ];

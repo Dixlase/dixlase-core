@@ -109,8 +109,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :paginator="$media"
                 :perPageOptions="[10, 25, 50, 100]"
                 :currentPerPage="request('per_page', 25)"
-                totalLabel="components.pagination.total_count"
-                perPageLabel="components.pagination.per_page_label"
+                totalLabel="components/ui-pagination.total_count"
+                perPageLabel="components/ui-pagination.per_page_label"
                 :showSort="true"
                 :sortOptions="[
                     'name' => __('common.file_name'),

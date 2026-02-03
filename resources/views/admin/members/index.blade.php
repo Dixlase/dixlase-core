@@ -59,7 +59,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <x-form-text
                             id="search"
                             name="search"
-                            :placeholder="__('components.forms.placeholder.search')"
+                            :placeholder="__('components/form.placeholder.search')"
                             :value="$search"
                         />
                     </div>
@@ -90,8 +90,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             name="status"
                             :options="[
                                 '' => 'common.all',
-                                '1' => 'components.status.active',
-                                '0' => 'components.status.inactive',
+                                '1' => 'components/ui-status-badge.active',
+                                '0' => 'components/ui-status-badge.inactive',
                             ]"
                             :value="$status ?? ''"
                         />

@@ -32,12 +32,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <fieldset>
         <x-form-toggle
             name="login_attempt_limit_enabled"
-            :label="__('components.login_attempt_limit_settings.enabled')"
+            :label="__('components/security/login-attempt-limit-settings.enabled')"
             :checked="old('login_attempt_limit_enabled', $enabled)"
             x-model="enabled"
         />
         <p class="mt-2">
-            {{ __('components.login_attempt_limit_settings.enabled_help') }}
+            {{ __('components/security/login-attempt-limit-settings.enabled_help') }}
         </p>
     </fieldset>
 
@@ -51,7 +51,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <input type="hidden" name="login_attempt_lockout_notification_enabled" :value="enabled ? null : '{{ $notificationEnabled ? '1' : '0' }}'" x-show="!enabled">
 
         <fieldset>
-            <legend>{{ __('components.login_attempt_limit_settings.max_attempts') }}</legend>
+            <legend>{{ __('components/security/login-attempt-limit-settings.max_attempts') }}</legend>
             <x-form-text
                 type="number"
                 name="login_attempt_max_attempts"
@@ -62,13 +62,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 ::disabled="!enabled"
             />
             <p>
-                {{ __('components.login_attempt_limit_settings.max_attempts_help') }}
+                {{ __('components/security/login-attempt-limit-settings.max_attempts_help') }}
             </p>
         </fieldset>
 
         @if($showIpBasedAttempts)
             <fieldset>
-                <legend>{{ __('components.login_attempt_limit_settings.max_attempts_ip') }}</legend>
+                <legend>{{ __('components/security/login-attempt-limit-settings.max_attempts_ip') }}</legend>
                 <x-form-text
                     type="number"
                     name="login_attempt_max_attempts_ip"
@@ -79,13 +79,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     ::disabled="!enabled"
                 />
                 <p>
-                    {{ __('components.login_attempt_limit_settings.max_attempts_ip_help') }}
+                    {{ __('components/security/login-attempt-limit-settings.max_attempts_ip_help') }}
                 </p>
             </fieldset>
         @endif
 
         <fieldset>
-            <legend>{{ __('components.login_attempt_limit_settings.time_window') }}</legend>
+            <legend>{{ __('components/security/login-attempt-limit-settings.time_window') }}</legend>
             <x-form-text
                 type="number"
                 name="login_attempt_time_window"
@@ -96,12 +96,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 ::disabled="!enabled"
             />
             <p>
-                {{ __('components.login_attempt_limit_settings.time_window_help') }}
+                {{ __('components/security/login-attempt-limit-settings.time_window_help') }}
             </p>
         </fieldset>
 
         <fieldset>
-            <legend>{{ __('components.login_attempt_limit_settings.lockout_duration') }}</legend>
+            <legend>{{ __('components/security/login-attempt-limit-settings.lockout_duration') }}</legend>
             <x-form-text
                 type="number"
                 name="login_attempt_lockout_duration"
@@ -112,19 +112,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 ::disabled="!enabled"
             />
             <p>
-                {{ __('components.login_attempt_limit_settings.lockout_duration_help') }}
+                {{ __('components/security/login-attempt-limit-settings.lockout_duration_help') }}
             </p>
         </fieldset>
 
         <fieldset>
             <x-form-toggle
                 name="login_attempt_lockout_notification_enabled"
-                :label="__('components.login_attempt_limit_settings.notification_enabled')"
+                :label="__('components/security/login-attempt-limit-settings.notification_enabled')"
                 :checked="old('login_attempt_lockout_notification_enabled', $notificationEnabled)"
                 ::disabled="!enabled"
             />
             <p class="mt-2">
-                {!! __('components.login_attempt_limit_settings.notification_help') !!}
+                {!! __('components/security/login-attempt-limit-settings.notification_help') !!}
             </p>
         </fieldset>
     </div>

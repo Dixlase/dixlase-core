@@ -34,12 +34,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     @if($unlockRoute)
         <fieldset>
-            <legend>{{ __('components.danger_zone.unlock_lockout') }}</legend>
-            <p class="mb-4">{{ __('components.danger_zone.unlock_lockout_description') }}</p>
+            <legend>{{ __('components/admin/danger-zone.unlock_lockout') }}</legend>
+            <p class="mb-4">{{ __('components/admin/danger-zone.unlock_lockout_description') }}</p>
             <x-form-button
                 variant="info"
                 icon="fas fa-unlock"
-                :label="__('components.danger_zone.unlock_lockout_button')"
+                :label="__('components/admin/danger-zone.unlock_lockout_button')"
                 @click="openModal('unlockLockoutModal')"
             />
         </fieldset>
@@ -47,12 +47,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     
     @if($forceLogoutRoute)
         <fieldset>
-            <legend>{{ __('components.danger_zone.force_logout') }}</legend>
-            <p class="mb-4">{{ __('components.danger_zone.force_logout_description') }}</p>
+            <legend>{{ __('components/admin/danger-zone.force_logout') }}</legend>
+            <p class="mb-4">{{ __('components/admin/danger-zone.force_logout_description') }}</p>
             <x-form-button
                 variant="warning"
                 icon="fas fa-sign-out-alt"
-                :label="__('components.danger_zone.force_logout_button')"
+                :label="__('components/admin/danger-zone.force_logout_button')"
                 @click="openModal('forceLogoutModal')"
             />
         </fieldset>
@@ -60,12 +60,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     @if($deleteRoute && $canDelete)
         <fieldset>
-            <legend>{{ __('components.danger_zone.delete_' . $entityType) }}</legend>
-            <p class="mb-4">{{ __('components.danger_zone.delete_' . $entityType . '_description') }}</p>
+            <legend>{{ __('components/admin/danger-zone.delete_' . $entityType) }}</legend>
+            <p class="mb-4">{{ __('components/admin/danger-zone.delete_' . $entityType . '_description') }}</p>
             <x-form-button
                 variant="danger"
                 icon="fas fa-trash"
-                :label="__('components.danger_zone.delete_' . $entityType . '_button')"
+                :label="__('components/admin/danger-zone.delete_' . $entityType . '_button')"
                 @click="openModal('delete{{ ucfirst($entityType) }}Modal')"
             />
         </fieldset>
@@ -76,9 +76,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @if($unlockRoute)
     <x-ui-modal
         id="unlockLockoutModal"
-        :title="__('components.danger_zone.unlock_lockout')"
-        :message="__('components.danger_zone.unlock_lockout_description')"
-        :confirm-label="__('components.danger_zone.unlock_lockout_button')"
+        :title="__('components/admin/danger-zone.unlock_lockout')"
+        :message="__('components/admin/danger-zone.unlock_lockout_description')"
+        :confirm-label="__('components/admin/danger-zone.unlock_lockout_button')"
         :cancel-label="__('common.cancel')"
         form="unlock-lockout-form"
         icon-type="info"
@@ -89,9 +89,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @if($forceLogoutRoute)
     <x-ui-modal
         id="forceLogoutModal"
-        :title="__('components.danger_zone.force_logout')"
-        :message="__('components.danger_zone.force_logout_description')"
-        :confirm-label="__('components.danger_zone.force_logout_button')"
+        :title="__('components/admin/danger-zone.force_logout')"
+        :message="__('components/admin/danger-zone.force_logout_description')"
+        :confirm-label="__('components/admin/danger-zone.force_logout_button')"
         :cancel-label="__('common.cancel')"
         form="force-logout-form"
         icon-type="warning"
@@ -103,7 +103,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <x-ui-modal
         id="delete{{ ucfirst($entityType) }}Modal"
         :title="__('common.delete_confirmation_title')"
-        :message="__('components.danger_zone.delete_' . $entityType . '_description')"
+        :message="__('components/admin/danger-zone.delete_' . $entityType . '_description')"
         :confirm-label="__('common.delete')"
         :cancel-label="__('common.cancel')"
         form="{{ $entityType }}-delete-form"

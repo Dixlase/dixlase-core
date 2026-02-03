@@ -87,13 +87,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @else
         {{-- 全体設定で強制されている場合：選択済み・操作不能で表示 --}}
         <fieldset>
-            <legend>{{ __('components.two_fa.mode_label') }}</legend>
+            <legend>{{ __('components/security/two-fa-general-settings.mode_label') }}</legend>
             
             {{-- 全体設定により固定されている旨の説明 --}}
             <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
                 <p class="text-sm text-blue-800 dark:text-blue-200">
                     <i class="fas fa-info-circle mr-1"></i>
-                    {{ __('components.two_fa.global_setting_fixed') }}
+                    {{ __('components/security/two-fa-general-settings.global_setting_fixed') }}
                 </p>
             </div>
             
@@ -126,7 +126,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- 現在の設定値の説明 --}}
             <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
                 <p class="text-sm text-gray-700 dark:text-gray-300">
-                    <strong>{{ __('components.two_fa.authentication_mode.' . strtolower(\App\Enums\AuthenticationMode::tryFrom((int) $twoFaGlobalSetting)?->name ?? 'disabled')) }}</strong>
+                    <strong>{{ __('components/security/two-fa-general-settings.authentication_mode.' . strtolower(\App\Enums\AuthenticationMode::tryFrom((int) $twoFaGlobalSetting)?->name ?? 'disabled')) }}</strong>
                 </p>
             </div>
         </fieldset>

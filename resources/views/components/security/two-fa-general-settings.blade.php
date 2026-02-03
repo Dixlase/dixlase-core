@@ -42,16 +42,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <div :class="{ 'opacity-50 pointer-events-none': !twoFaEnabled }">
         {{-- メール認証は常に有効 --}}
         <fieldset>
-            <legend>{{ __('components.two_fa.method_label') }}</legend>
+            <legend>{{ __('components/security/two-fa-general-settings.method_label') }}</legend>
 
             <div class="space-y-6">
                 <div class="space-y-3">
                     <div class="flex items-center space-x-3">
                         <div class="flex items-center">
                             <i class="fas fa-check-circle text-green-600 dark:text-green-400 mr-2"></i>
-                            <span class="text-sm font-medium">{{ __('components.two_fa.email_always_enabled') }}</span>
+                            <span class="text-sm font-medium">{{ __('components/security/two-fa-general-settings.email_always_enabled') }}</span>
                         </div>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('components.two_fa.email_always_enabled') }}</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('components/security/two-fa-general-settings.email_always_enabled') }}</span>
                     </div>
                 </div>
             </div>
