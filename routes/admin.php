@@ -121,8 +121,6 @@ Route::prefix($adminUrl)->name('admin.')
 
             // ダッシュボード（全員アクセス可能）
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-            Route::post('/dashboard/switch-two-fa-method', [AdminDashboardController::class, 'switchToUsedMethod'])->name('dashboard.switchTwoFaMethod');
-            Route::post('/dashboard/dismiss-method-change', [AdminDashboardController::class, 'dismissMethodChangeModal'])->name('dashboard.dismissMethodChange');
             
             // フロントページ管理（権限チェック付き）
             Route::middleware('check.menu.access:front')->group(function () {

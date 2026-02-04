@@ -33,3 +33,6 @@
 
 // Component styles (admin-specific)
 @use '../../components/scss/ui-admin-bar';
+
+// Security component styles
+@use '../../components/security/scss/csp-safe-mode-banner';

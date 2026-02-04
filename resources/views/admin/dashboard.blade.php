@@ -288,15 +288,88 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     </div>
 
-    <!-- 認証方法変更確認モーダル -->
-    @if($shouldShowMethodChangeModal ?? false)
-        @include('two-fa.partials.method-change-modal', [
-            'modalId' => 'methodChangeModal',
-            'usedMethod' => $usedMethod,
-            'currentMethod' => $currentMethod,
-            'autoOpen' => !session('auto_generated_recovery_codes')
-        ])
-    @endif
+    {{-- CSP違反テストセクション（検証用・本番では削除） --}}
+    <div class="bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600 overflow-hidden shadow-sm sm:rounded-lg">
+        <div class="p-6 space-y-4">
+            <h2 class="text-xl font-semibold text-yellow-900 dark:text-yellow-100 flex items-center gap-2">
+                <i class="fas fa-exclamation-triangle"></i>
+                🧪 CSP違反テスト（検証用）
+            </h2>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-4 space-y-3">
+                <p class="text-sm text-gray-700 dark:text-gray-300">
+                    以下のボタンをクリックすると、意図的にCSP違反を発生させます。
+                    ブラウザコンソールとサーバーログでCSP違反レポートを確認してください。
+                </p>
+                
+                <div class="space-y-2">
+                    <button 
+                        onclick="alert('これはインラインイベントハンドラによるCSP違反です')"
+                        class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md">
+                        ❌ テスト1: インラインイベントハンドラ（onclick）
+                    </button>
+                    
+                    <button 
+                        id="csp-test-inline-script"
+                        class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md">
+                        ❌ テスト2: インラインスクリプト実行
+                    </button>
+                    
+                    <button 
+                        id="csp-test-eval"
+                        class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md">
+                        ❌ テスト3: eval()実行
+                    </button>
+                    
+                    <button 
+                        id="csp-test-external-script"
+                        class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md">
+                        ❌ テスト4: 外部スクリプト読み込み
+                    </button>
+                </div>
+                
+                <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
+                    <p class="text-sm text-blue-800 dark:text-blue-200">
+                        <strong>確認方法：</strong><br>
+                        1. ブラウザの開発者ツール（F12）→ コンソールタブでCSP違反を確認<br>
+                        2. サーバーログ: <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded">storage/logs/csp.log</code><br>
+                        3. データベース: <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded">csp_violations</code> テーブル
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- CSP違反テスト用のインラインスクリプト（意図的なCSP違反） --}}
+    <script>
+        // テスト2: インラインスクリプトによるCSP違反
+        document.getElementById('csp-test-inline-script')?.addEventListener('click', function() {
+            console.log('インラインスクリプトが実行されました（CSP違反）');
+            alert('インラインスクリプトによるCSP違反が発生しました');
+        });
+        
+        // テスト3: eval()によるCSP違反
+        document.getElementById('csp-test-eval')?.addEventListener('click', function() {
+            try {
+                eval('alert("eval()によるCSP違反です")');
+            } catch (e) {
+                console.error('eval()がブロックされました（CSP正常動作）:', e);
+                alert('eval()がCSPによってブロックされました');
+            }
+        });
+        
+        // テスト4: 外部スクリプト動的読み込みによるCSP違反
+        document.getElementById('csp-test-external-script')?.addEventListener('click', function() {
+            const script = document.createElement('script');
+            script.src = 'https://example.com/malicious-script.js';
+            script.onerror = function() {
+                console.error('外部スクリプトがブロックされました（CSP正常動作）');
+                alert('外部スクリプトがCSPによってブロックされました');
+            };
+            document.body.appendChild(script);
+        });
+    </script>
+
 
     <!-- 自動生成された回復コード表示モーダル -->
     @if(isset($auto_generated_recovery_codes))

@@ -23,7 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'hasRecoveryModal' => false,
 ])
 
-<div x-data="passkeyPromptModal()">
+<div x-data="passkeyPromptModal('{{ route('admin.profile.passkey-prompt.dismiss') }}', '{{ $modalId }}')">
     <x-ui-modal 
         :id="$modalId"
         :title="__('two_fa.passkey_prompt.title')"
@@ -73,42 +73,3 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-slot>
     </x-ui-modal>
 </div>
-
-<script>
-function passkeyPromptModal() {
-    return {
-        dontShowAgain: false,
-        
-        handleClose() {
-            if (this.dontShowAgain) {
-                this.dismissPrompt();
-            }
-        },
-        
-        closeModal() {
-            if (this.dontShowAgain) {
-                this.dismissPrompt();
-            }
-            
-            // グローバル関数を使用してモーダルを閉じる
-            if (typeof window.closeModal === 'function') {
-                window.closeModal('{{ $modalId }}');
-            }
-        },
-        
-        dismissPrompt() {
-            fetch('{{ route("admin.profile.passkey-prompt.dismiss") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            })
-            .then(response => response.json())
-            .catch(error => {
-                console.error('Error dismissing passkey prompt:', error);
-            });
-        }
-    }
-}
-</script>
