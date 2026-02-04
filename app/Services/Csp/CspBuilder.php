@@ -91,7 +91,7 @@ class CspBuilder
 
         // 4. 管理画面専用のディレクティブを追加
         if ($this->isAdminContext()) {
-            $adminDirectives = config('csp.admin_directives', []);
+            $adminDirectives = config('csp.admin', []);
             $directives = $this->mergeDirectives($directives, $adminDirectives);
         }
 
@@ -337,7 +337,20 @@ class CspBuilder
                 $base[$directive] = [];
             }
 
-            foreach ((array) $values as $value) {
+            // 'none'が含まれる場合は、'none'のみにする
+            $valuesArray = (array) $values;
+            if (in_array("'none'", $valuesArray, true)) {
+                $base[$directive] = ["'none'"];
+                continue;
+            }
+
+            // 既存に'none'がある場合は、新しい値で上書き
+            if (in_array("'none'", $base[$directive], true)) {
+                $base[$directive] = $valuesArray;
+                continue;
+            }
+
+            foreach ($valuesArray as $value) {
                 if (!in_array($value, $base[$directive], true)) {
                     $base[$directive][] = $value;
                 }

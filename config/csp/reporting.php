@@ -103,4 +103,5 @@ return [
     | デフォルト: 86400秒（24時間）
     |
     */
-    'blocklist_cache_ttl' => env('CSP_BLOCKLIST_CACHE_TTL', 86400),];
+    'blocklist_cache_ttl' => env('CSP_BLOCKLIST_CACHE_TTL', 86400),
+];

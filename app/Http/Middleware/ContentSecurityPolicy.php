@@ -83,6 +83,11 @@ class ContentSecurityPolicy
 
         // HTMLレスポンスのみにCSPヘッダーを付与
         if ($this->shouldAddCspHeader($response)) {
+            // Laravel Boostが挿入するスクリプトにnonceを追加（開発環境のみ）
+            if (!app()->environment('production')) {
+                $this->addNonceToBoostScripts($response);
+            }
+
             $headerName = $this->builder->getHeaderName();
             $headerValue = $this->builder->build();
             
@@ -147,6 +152,33 @@ class ContentSecurityPolicy
         }
 
         return false;
+    }
+
+    /**
+     * Laravel Boostが挿入するスクリプトにnonceを追加
+     * 
+     * 開発環境でLaravel Boost（MCP Server）が動的に挿入する
+     * browser-logger-activeスクリプトにCSP nonceを付与する。
+     */
+    protected function addNonceToBoostScripts(Response $response): void
+    {
+        $content = $response->getContent();
+        
+        if ($content === false || empty($content)) {
+            return;
+        }
+
+        $nonce = $this->nonceGenerator->getNonce();
+        
+        // <script id="browser-logger-active"> にnonceを追加
+        $pattern = '/<script\s+id=["\']browser-logger-active["\']\s*>/i';
+        $replacement = '<script id="browser-logger-active" nonce="' . $nonce . '">';
+        
+        $newContent = preg_replace($pattern, $replacement, $content);
+        
+        if ($newContent !== null && $newContent !== $content) {
+            $response->setContent($newContent);
+        }
     }
 
     /**
