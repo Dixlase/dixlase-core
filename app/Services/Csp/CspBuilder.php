@@ -423,9 +423,15 @@ class CspBuilder
                 return $value !== "'strict-dynamic'";
             });
             
-            // 'unsafe-inline'を追加（まだ存在しない場合）
-            if (!in_array("'unsafe-inline'", $directives['script-src'])) {
+            // allow_unsafe_inlineがtrueの場合のみ'unsafe-inline'を追加
+            $allowUnsafeInline = $modeConfig['allow_unsafe_inline'] ?? false;
+            if ($allowUnsafeInline && !in_array("'unsafe-inline'", $directives['script-src'])) {
                 $directives['script-src'][] = "'unsafe-inline'";
+            } elseif (!$allowUnsafeInline) {
+                // allow_unsafe_inlineがfalseの場合は'unsafe-inline'を削除
+                $directives['script-src'] = array_filter($directives['script-src'], function ($value) {
+                    return $value !== "'unsafe-inline'";
+                });
             }
             
             $directives['script-src'] = array_values($directives['script-src']);
@@ -505,9 +511,10 @@ class CspBuilder
     {
         // Vite開発サーバー実行時は強制的に開発モードを使用
         // （strict-dynamicとVite開発サーバーは互換性がないため）
-        if (function_exists('is_vite_dev_server') && is_vite_dev_server()) {
-            return 'development';
-        }
+        // 注: 標準モードのテストのため、一時的にコメントアウト
+        // if (function_exists('is_vite_dev_server') && is_vite_dev_server()) {
+        //     return 'development';
+        // }
         
         // 管理画面コンテキストの場合、admin_modeを優先
         if ($this->isAdminContext()) {
