@@ -15,13 +15,4 @@
 return [
     'heading' => 'Dashboard',
     'description' => 'You can check the site overview.',
-    'method_change_modal' => [
-        'title' => 'Change Authentication Method',
-        'message' => 'You authenticated with ":used_method" this time, but your current default authentication method is ":current_method".',
-        'question' => 'Would you like to change your default authentication method to ":used_method"?',
-        'switch_button' => 'Yes, change it',
-        'keep_button' => 'No, keep current',
-    ],
-    'method_switched_success' => 'Default authentication method has been changed.',
-    'method_switch_failed' => 'Failed to change authentication method.',
 ];

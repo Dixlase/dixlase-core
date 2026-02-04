@@ -407,7 +407,10 @@ class CspBuilder
     protected function applyModeSettings(array $directives): array
     {
         $mode = $this->getCspMode();
-        $modeConfig = config("csp.modes.{$mode}", []);
+        
+        // config/csp/base.phpから直接modes設定を読み込み
+        $baseConfig = require config_path('csp/base.php');
+        $modeConfig = $baseConfig['modes'][$mode] ?? [];
 
         if (!isset($directives['script-src'])) {
             return $directives;
@@ -472,7 +475,7 @@ class CspBuilder
                     $directives['style-src'][] = "'unsafe-inline'";
                 }
             } elseif ($mode === 'standard') {
-                // 標準モード: nonce/hash経由のみ（unsafe-inlineは削除）
+                // 標準モード: allow_inline_stylesに従う
                 if ($allowInlineStyles === false) {
                     $directives['style-src'] = array_filter($directives['style-src'], function ($value) {
                         return $value !== "'unsafe-inline'";
@@ -502,9 +505,10 @@ class CspBuilder
     {
         // Vite開発サーバー実行時は強制的に開発モードを使用
         // （strict-dynamicとVite開発サーバーは互換性がないため）
-        if (function_exists('is_vite_dev_server') && is_vite_dev_server()) {
-            return 'development';
-        }
+        // 注: CSP標準モードのテストのため、一時的にコメントアウト
+        // if (function_exists('is_vite_dev_server') && is_vite_dev_server()) {
+        //     return 'development';
+        // }
         
         // 管理画面コンテキストの場合、admin_modeを優先
         if ($this->isAdminContext()) {
@@ -514,9 +518,6 @@ class CspBuilder
             }
         }
         
-        // 設定ファイルのデフォルト値
-        $configMode = config('csp.mode', 'development');
-
         // データベースの設定を優先
         try {
             $dbMode = SecuritySetting::get('csp_mode');
@@ -542,7 +543,9 @@ class CspBuilder
             // データベース未設定時は設定ファイルの値を使用
         }
 
-        return $configMode;
+        // 設定ファイルのデフォルト値（config/csp/base.phpから直接読み込み）
+        $baseConfig = require config_path('csp/base.php');
+        return $baseConfig['mode'] ?? 'development';
     }
 
     /**

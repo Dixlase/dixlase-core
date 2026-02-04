@@ -108,7 +108,7 @@ return [
         'standard' => [
             'header' => 'Content-Security-Policy',
             'allow_inline_scripts' => false, // unsafe-inline禁止
-            'allow_inline_styles' => false,  // unsafe-inline禁止
+            'allow_inline_styles' => true,   // Alpine.jsのインラインスタイル用に許可
             'allow_eval' => true,            // Alpine.jsが必要とするため許可
             'allow_unsafe_inline' => false,
             'require_nonce' => true,         // ヘルパー経由でnonceを要求

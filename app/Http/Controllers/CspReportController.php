@@ -164,7 +164,8 @@ class CspReportController extends Controller
         // 開発環境（local/staging）では、インラインスクリプト違反を除外
         // （MCP/Windsurf等の開発ツールが注入するスクリプトを考慮）
         // 本番環境では正常にログに記録される
-        return true;
+        // 注: CSP標準モードのテストのため、一時的に無効化
+        return false; // 元の値: true
     }
 
     /**

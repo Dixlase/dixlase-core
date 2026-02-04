@@ -56,7 +56,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         variant="primary"
         :label="$label ?? __('common.save')"
         icon="fas fa-save"
-        onclick="openModal('{{ $id_confirmation }}')"
+        @click="openModal('{{ $id_confirmation }}')"
         class="save-button mx-2"
     />
 

@@ -25,3 +25,5 @@ import '../media/js/preview';
 import '../profile/js/appearance-mode';
 import '../../components/mail-server/js/settings-admin';
 import '../settings/security/js/csp';
+import '../security/js/csp-safe-mode-banner';
+import '../two-fa/js/passkey-prompt-modal';
