@@ -92,14 +92,15 @@ return [
         // 開発モード: 最大互換性、Report-Onlyで違反を記録
         'development' => [
             'header' => 'Content-Security-Policy-Report-Only',
-            'allow_inline_scripts' => true,
+            'allow_inline_scripts' => false, // 違反を記録するためfalse（Report-Onlyなので動作する）
             'allow_inline_styles' => true,
             'allow_eval' => true,
-            'allow_unsafe_inline' => true,
-            'require_nonce' => false,
+            'allow_unsafe_inline' => false,  // 違反を記録するためfalse（Report-Onlyなので動作する）
+            'require_nonce' => true,         // nonce付きスクリプトを推奨
             'block_inline_plugins' => false,
             'enforce_deny_domains' => false, // 拒否ドメインも警告のみ
-            'strict_dynamic' => false,
+            'strict_dynamic' => false,       // Vite互換性のためfalse
+            'block_script_attr' => false,    // Report-Onlyなので動作する
             'description' => 'テーマ/プラグイン開発用。すべて動作するが違反を記録。',
             'description_en' => 'For theme/plugin development. Everything works but violations are logged.',
         ],
