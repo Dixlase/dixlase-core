@@ -505,10 +505,9 @@ class CspBuilder
     {
         // Vite開発サーバー実行時は強制的に開発モードを使用
         // （strict-dynamicとVite開発サーバーは互換性がないため）
-        // 注: CSP標準モードのテストのため、一時的にコメントアウト
-        // if (function_exists('is_vite_dev_server') && is_vite_dev_server()) {
-        //     return 'development';
-        // }
+        if (function_exists('is_vite_dev_server') && is_vite_dev_server()) {
+            return 'development';
+        }
         
         // 管理画面コンテキストの場合、admin_modeを優先
         if ($this->isAdminContext()) {

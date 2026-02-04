@@ -154,18 +154,15 @@ class CspReportController extends Controller
             return false;
         }
 
-        // source-fileが開発ツール関連のパターンに一致する場合は除外
+        // source-fileが開発ツール関連のパターンに一致する場合のみ除外
         foreach ($this->devToolPatterns as $pattern) {
             if (stripos($sourceFile, $pattern) !== false) {
                 return true;
             }
         }
 
-        // 開発環境（local/staging）では、インラインスクリプト違反を除外
-        // （MCP/Windsurf等の開発ツールが注入するスクリプトを考慮）
-        // 本番環境では正常にログに記録される
-        // 注: CSP標準モードのテストのため、一時的に無効化
-        return false; // 元の値: true
+        // 開発ツール関連以外のインライン違反は記録する
+        return false;
     }
 
     /**
