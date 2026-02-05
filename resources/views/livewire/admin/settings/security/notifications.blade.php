@@ -19,6 +19,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 <div class="mx-auto">
+    <!-- デバッグ: Livewireコンポーネントがレンダリングされているか確認 -->
+    <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+        <p><strong>デバッグ:</strong> Livewireコンポーネントがレンダリングされています</p>
+        <p>notificationEnabled: {{ $notificationEnabled ? 'true' : 'false' }}</p>
+    </div>
+
     <form wire:submit.prevent="save" id="security-notifications-form">
         
         <!-- システムエラー通知設定 -->
@@ -85,18 +91,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p>{{ __('admin/settings/security/notifications.log_levels_help') }}</p>
             </fieldset>
         </section>
-
     </form>
-</div>
 
-@section('save')
-    <x-admin.save-button
-        id_confirmation="confirmationModal"
-        :label="__('common.save')"
-        :title="__('common.save_confirmation_title')"
-        :message="__('common.save_confirmation_message')"
-        :confirm_label="__('common.save')"
-        :cancel_label="__('common.cancel')"
-        form="security-notifications-form"
-    />
-@endsection
+    <!-- 保存ボタン（確認モーダル付き） -->
+    <div class="mt-6 flex justify-center">
+        <x-admin.livewire-save-button
+            :label="__('common.save')"
+            :title="__('common.save_confirmation_title')"
+            :message="__('common.save_confirmation_message')"
+            :confirmLabel="__('common.save')"
+            :cancelLabel="__('common.cancel')"
+            wireClick="save"
+            showConfirmation="showSaveConfirmation"
+        />
+    </div>
+</div>

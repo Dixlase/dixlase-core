@@ -34,8 +34,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'onclick' => null,                       // Custom onclick function (optional)
     'back_url' => null,                      // Back button URL (optional)
     'back_label' => __('common.back'),       // Back button text
-
-
 ])
 
 <div class="flex justify-between items-center">

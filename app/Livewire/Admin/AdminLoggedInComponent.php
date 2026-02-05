@@ -37,6 +37,8 @@ abstract class AdminLoggedInComponent extends Component
     protected $heading = '';
     protected $description = null;
     protected $breadcrumbs = [];
+    protected $hasSaveButton = false;
+    protected $saveButtonForm = '';
 
     /**
      * コンポーネント初期化
