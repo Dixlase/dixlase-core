@@ -456,6 +456,13 @@ class CspBuilder
             
             // strict_dynamicがfalseの場合、'strict-dynamic'を削除
             $strictDynamic = $modeConfig['strict_dynamic'] ?? false;
+            
+            // Vite開発サーバー使用時は強制的にstrict_dynamicを無効化
+            // （strict-dynamicとVite HMRは互換性がないため）
+            if (function_exists('is_vite_dev_server') && is_vite_dev_server()) {
+                $strictDynamic = false;
+            }
+            
             if ($strictDynamic === false) {
                 $directives['script-src'] = array_filter($directives['script-src'], function ($value) {
                     return $value !== "'strict-dynamic'";
@@ -509,13 +516,6 @@ class CspBuilder
      */
     protected function getCspMode(): string
     {
-        // Vite開発サーバー実行時は強制的に開発モードを使用
-        // （strict-dynamicとVite開発サーバーは互換性がないため）
-        // 注: 標準モードのテストのため、一時的にコメントアウト
-        // if (function_exists('is_vite_dev_server') && is_vite_dev_server()) {
-        //     return 'development';
-        // }
-        
         // 管理画面コンテキストの場合、admin_modeを優先
         if ($this->isAdminContext()) {
             $adminMode = $this->getAdminCspMode();

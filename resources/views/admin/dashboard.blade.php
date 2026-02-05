@@ -340,18 +340,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    {{-- CSP違反テスト用のインラインスクリプト（意図的なCSP違反） --}}
+    {{-- CSP違反テスト用のスクリプト（nonce付き） --}}
     <script>
-        // テスト2: インラインスクリプトによるCSP違反
+        // テスト2: インラインスクリプト動的追加によるCSP違反
         document.getElementById('csp-test-inline-script')?.addEventListener('click', function() {
-            console.log('インラインスクリプトが実行されました（CSP違反）');
-            alert('インラインスクリプトによるCSP違反が発生しました');
+            // nonceなしの<script>タグを動的に追加（CSP違反）
+            const script = document.createElement('script');
+            script.textContent = 'console.log("動的に追加されたインラインスクリプト（CSP違反）"); alert("インラインスクリプトによるCSP違反が発生しました");';
+            document.body.appendChild(script);
         });
         
         // テスト3: eval()によるCSP違反
         document.getElementById('csp-test-eval')?.addEventListener('click', function() {
             try {
                 eval('alert("eval()によるCSP違反です")');
+                console.log('eval()が実行されました（unsafe-evalが許可されている）');
             } catch (e) {
                 console.error('eval()がブロックされました（CSP正常動作）:', e);
                 alert('eval()がCSPによってブロックされました');
@@ -365,6 +368,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             script.onerror = function() {
                 console.error('外部スクリプトがブロックされました（CSP正常動作）');
                 alert('外部スクリプトがCSPによってブロックされました');
+            };
+            script.onload = function() {
+                console.log('外部スクリプトが読み込まれました');
             };
             document.body.appendChild(script);
         });
