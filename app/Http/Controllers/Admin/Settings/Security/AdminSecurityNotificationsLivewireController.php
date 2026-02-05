@@ -32,10 +32,12 @@ class AdminSecurityNotificationsLivewireController extends AdminLoggedInControll
      */
     public function index()
     {
-        // Livewireコンポーネントをレンダリング
-        $component = app(Notifications::class);
-        $component->mount();
-        
-        return $component->render();
+        // Livewireコンポーネントを含むビューを返す
+        return view('admin.settings.security.notifications-livewire', array_merge(
+            $this->viewParams,
+            [
+                'livewireComponent' => Notifications::class,
+            ]
+        ));
     }
 }

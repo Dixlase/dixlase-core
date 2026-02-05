@@ -25,6 +25,8 @@ namespace App\Livewire\Admin;
 use Livewire\Component;
 use App\Enums\AppearanceMode;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Lang;
 
 /**
  * 管理画面Livewireコンポーネントの基底クラス
@@ -46,6 +48,17 @@ abstract class AdminLoggedInComponent extends Component
     public function mount()
     {
         $this->initializeAfterLogin();
+        
+        // パンくずリストを自動生成
+        if (empty($this->breadcrumbs)) {
+            $this->generateBreadcrumbsFromRoute();
+        }
+        
+        // ページ説明を自動設定
+        if ($this->description === null) {
+            $this->setDescription();
+        }
+        
         $this->mountComponent();
     }
 
@@ -65,6 +78,145 @@ abstract class AdminLoggedInComponent extends Component
     protected function mountComponent()
     {
         // 子クラスでオーバーライド
+        // ここでページ固有の$headingや$descriptionを設定可能
+    }
+
+    /**
+     * ページ見出しを設定
+     * AdminInterfaceTraitのsetHeading()と同等
+     */
+    protected function setHeading()
+    {
+        $routeName = Route::currentRouteName();
+        
+        // プラグインのルートかどうかを判別
+        if (strpos($routeName, '::') !== false) {
+            $this->heading = $this->resolvePluginHeadingKey($routeName);
+        } else {
+            $this->heading = $this->resolveCoreHeadingKey($routeName);
+        }
+    }
+
+    /**
+     * コアの翻訳キーを解決する
+     */
+    protected function resolveCoreHeadingKey(string $routeName): string
+    {
+        $keys = explode('.', $routeName);
+        array_shift($keys); // 'admin'を除去
+        
+        if (empty($keys)) {
+            return 'admin/dashboard.heading';
+        }
+        
+        // パターン1: 完全パス
+        $fullPath = 'admin/' . implode('/', $keys) . '.heading';
+        if (Lang::has($fullPath)) {
+            return $fullPath;
+        }
+        
+        // パターン2: index.phpを参照
+        $indexPath = 'admin/' . implode('/', $keys) . '/index.heading';
+        if (Lang::has($indexPath)) {
+            return $indexPath;
+        }
+        
+        // パターン3: 親ディレクトリのindex.phpを参照
+        if (count($keys) >= 2) {
+            $parentKeys = array_slice($keys, 0, -1);
+            $parentIndexPath = 'admin/' . implode('/', $parentKeys) . '/index.heading';
+            if (Lang::has($parentIndexPath)) {
+                return $parentIndexPath;
+            }
+        }
+        
+        return $fullPath;
+    }
+
+    /**
+     * プラグインの翻訳キーを解決する
+     */
+    protected function resolvePluginHeadingKey(string $routeName): string
+    {
+        // プラグイン名とルート部分を分離
+        [$pluginPart, $routePart] = explode('::', $routeName, 2);
+        
+        $keys = explode('.', $routePart);
+        array_shift($keys); // 'admin'を除去
+        
+        $pluginName = str_replace('admin.', '', $pluginPart);
+        
+        return $pluginName . '::admin/' . implode('/', $keys) . '.heading';
+    }
+
+    /**
+     * ページ説明を設定
+     */
+    protected function setDescription()
+    {
+        $routeName = Route::currentRouteName();
+        
+        if (strpos($routeName, '::') !== false) {
+            [$pluginPart, $routePart] = explode('::', $routeName, 2);
+            $keys = explode('.', $routePart);
+            array_shift($keys);
+            $pluginName = str_replace('admin.', '', $pluginPart);
+            $descriptionKey = $pluginName . '::admin/' . implode('/', $keys) . '.description';
+        } else {
+            $keys = explode('.', $routeName);
+            array_shift($keys);
+            $descriptionKey = 'admin/' . implode('/', $keys) . '.description';
+        }
+        
+        if (Lang::has($descriptionKey)) {
+            $this->description = __($descriptionKey);
+        }
+    }
+
+    /**
+     * パンくずリストをルートから自動生成
+     */
+    protected function generateBreadcrumbsFromRoute()
+    {
+        $routeName = Route::currentRouteName();
+        
+        if (!$routeName) {
+            return;
+        }
+        
+        $parts = explode('.', $routeName);
+        
+        // ダッシュボードを追加
+        $this->addBreadcrumb('admin.dashboard', __('admin/dashboard.heading'));
+        
+        // ルートの各部分からパンくずを生成
+        $accumulated = ['admin'];
+        for ($i = 1; $i < count($parts); $i++) {
+            $accumulated[] = $parts[$i];
+            $currentRoute = implode('.', $accumulated);
+            
+            // 最後の要素は現在のページなのでリンクなし
+            if ($i === count($parts) - 1) {
+                break;
+            }
+            
+            // 翻訳キーを解決
+            $labelKey = $this->resolveCoreHeadingKey($currentRoute);
+            if (Lang::has($labelKey)) {
+                $this->addBreadcrumb($currentRoute, __($labelKey));
+            }
+        }
+    }
+
+    /**
+     * パンくずリストに項目を追加
+     */
+    protected function addBreadcrumb(?string $route, string $label): void
+    {
+        $this->breadcrumbs[] = [
+            'route' => $route,
+            'label' => $label,
+        ];
     }
 
     /**
