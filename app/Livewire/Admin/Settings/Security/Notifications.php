@@ -41,10 +41,6 @@ class Notifications extends AdminLoggedInComponent
     {
         \Log::info('[Livewire Debug] mountComponent() called');
         
-        // ページ情報設定
-        $this->heading = __('admin/settings/security/notifications.title');
-        $this->description = __('admin/settings/security/notifications.description');
-
         // リポジトリを取得
         $securitySettingRepository = app(SecuritySettingRepositoryInterface::class);
 
@@ -103,6 +99,6 @@ class Notifications extends AdminLoggedInComponent
             'mailSendTested' => $this->mailSendTested,
             'mailReceiveTested' => $this->mailReceiveTested,
             'showSaveConfirmation' => $this->showSaveConfirmation,
-        ])->layout('layouts.admin', $this->getLayoutData());
+        ]);
     }
 }
