@@ -35,30 +35,31 @@ class Notifications extends AdminLoggedInComponent
     public $mailConnectionTested;
     public $mailSendTested;
     public $mailReceiveTested;
-
-    protected SecuritySettingRepositoryInterface $securitySettingRepository;
-
-    public function boot(SecuritySettingRepositoryInterface $securitySettingRepository)
-    {
-        $this->securitySettingRepository = $securitySettingRepository;
-    }
+    public $showSaveConfirmation = false;
 
     protected function mountComponent()
     {
+        \Log::info('[Livewire Debug] mountComponent() called');
+        
         // ページ情報設定
         $this->heading = __('admin/settings/security/notifications.title');
         $this->description = __('admin/settings/security/notifications.description');
 
+        // リポジトリを取得
+        $securitySettingRepository = app(SecuritySettingRepositoryInterface::class);
+
         // 通知設定を取得
         $this->notificationEnabled = filter_var(
-            $this->securitySettingRepository->get('notification_enabled', true), 
+            $securitySettingRepository->get('notification_enabled', true), 
             FILTER_VALIDATE_BOOLEAN
         );
+        
+        \Log::info('[Livewire Debug] notificationEnabled set to: ' . ($this->notificationEnabled ? 'true' : 'false'));
         
         $this->notificationLogLevels = array_map(
             'intval', 
             array_filter(
-                explode(',', $this->securitySettingRepository->get(
+                explode(',', $securitySettingRepository->get(
                     'notification_log_levels', 
                     implode(',', LogLevel::getDefaultNotificationLevels())
                 ))
@@ -78,11 +79,14 @@ class Notifications extends AdminLoggedInComponent
 
     public function save()
     {
+        // リポジトリを取得
+        $securitySettingRepository = app(SecuritySettingRepositoryInterface::class);
+
         // 通知設定を更新
-        $this->securitySettingRepository->set('notification_enabled', $this->notificationEnabled ?? false);
+        $securitySettingRepository->set('notification_enabled', $this->notificationEnabled ?? false);
         
         $logLevels = $this->notificationLogLevels ?? LogLevel::getDefaultNotificationLevels();
-        $this->securitySettingRepository->set('notification_log_levels', implode(',', $logLevels));
+        $securitySettingRepository->set('notification_log_levels', implode(',', $logLevels));
 
         session()->flash('success', __('admin/settings/security/notifications.settings_updated'));
         
@@ -91,7 +95,14 @@ class Notifications extends AdminLoggedInComponent
 
     public function render()
     {
-        return view('livewire.admin.settings.security.notifications')
-            ->layout('layouts.admin', $this->getLayoutData());
+        return view('livewire.admin.settings.security.notifications', [
+            'notificationEnabled' => $this->notificationEnabled,
+            'notificationLogLevels' => $this->notificationLogLevels,
+            'hasSystemAdminEmail' => $this->hasSystemAdminEmail,
+            'mailConnectionTested' => $this->mailConnectionTested,
+            'mailSendTested' => $this->mailSendTested,
+            'mailReceiveTested' => $this->mailReceiveTested,
+            'showSaveConfirmation' => $this->showSaveConfirmation,
+        ])->layout('layouts.admin', $this->getLayoutData());
     }
 }
