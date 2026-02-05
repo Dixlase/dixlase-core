@@ -499,10 +499,18 @@ class CspBuilder
                     }
                 }
             } elseif ($mode === 'strict') {
-                // 厳格モード: 外部CSSのみ（unsafe-inlineとnonceを削除）
-                $directives['style-src'] = array_filter($directives['style-src'], function ($value) {
-                    return $value !== "'unsafe-inline'" && $value !== "'nonce'";
-                });
+                // 厳格モード: allow_inline_stylesに従う
+                if ($allowInlineStyles === true) {
+                    // Alpine.js用にunsafe-inlineを追加
+                    if (!in_array("'unsafe-inline'", $directives['style-src'])) {
+                        $directives['style-src'][] = "'unsafe-inline'";
+                    }
+                } else {
+                    // 外部CSSのみ（unsafe-inlineとnonceを削除）
+                    $directives['style-src'] = array_filter($directives['style-src'], function ($value) {
+                        return $value !== "'unsafe-inline'" && $value !== "'nonce'";
+                    });
+                }
             }
             
             $directives['style-src'] = array_values($directives['style-src']);
