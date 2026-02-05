@@ -116,7 +116,7 @@ return [
             'allow_nonce_inline_execution' => true, // nonce付き実行コードは許可
             'block_inline_plugins' => true,
             'enforce_deny_domains' => true,  // 拒否ドメインを強制ブロック
-            'strict_dynamic' => true,        // 推奨ON（入口を絞る）
+            'strict_dynamic' => false,       // テスト用に無効化（動的スクリプトをブロック）
             'warn_onclick' => true,          // onclick等を警告（ブロックはしない）
             'block_script_attr' => true,     // script-src-attrでunsafe-inline禁止
             'description' => '本番運用推奨。ヘルパー経由のインラインは許可。',
