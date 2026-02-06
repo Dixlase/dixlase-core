@@ -19,7 +19,29 @@
 </head>
 <body class="admin font-sans antialiased transition-colors-unified dark:bg-black dark:text-white">
     <div class="min-h-screen">
+        <!-- CSP Safe Mode Banner -->
+        <x-security.csp-safe-mode-banner />
+        
+        <!-- Admin Bar (Header) -->
+        <x-ui-admin-bar :isAdminLayout="true" />
+        
         <div class="min-h-screen flex">
+            <!-- Navigation Sidebar (Desktop only) -->
+            <aside class="md:fixed md:h-full hidden sm:block w-64 flex-shrink-0 border-gray-300 transition-transform duration-300"
+                   role="navigation" aria-label="Main navigation"
+                   data-mobile-sidebar>
+                @include('admin.partials.sidebar-vanilla', [
+                    'transitionEnabled' => $transitionEnabled ?? null,
+                    'route_name' => Route::currentRouteName()
+                ])
+            </aside>
+
+            <!-- Sidebar Toggle Button (Desktop) -->
+            <button class="hidden sm:flex fixed left-0 top-21 -translate-y-1/2 z-40 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-transform duration-200"
+                    aria-label="Toggle sidebar menu">
+                <i class="fas text-sm fa-chevron-left"></i>
+            </button>
+
             <!-- Main Content Area -->
             <main class="mt-12 ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white">
                 @yield('content')

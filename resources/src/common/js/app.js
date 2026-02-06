@@ -22,6 +22,8 @@ import '../scss/style.scss';
 import './bootstrap';
 import './appearance';
 import './livewire-notification';
+import '../../admin/js/layout-vanilla';
+import '../../admin/js/sidebar-vanilla';
 /*
 import '../../components/auth/js/account-verification';
 import '../../components/js/form-color';

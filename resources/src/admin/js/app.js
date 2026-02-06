@@ -19,7 +19,8 @@
  */
 
 import '../scss/style.scss';
-import './layout';
+//import './layout';
+import './layout-vanilla';
 import '../media/js/index';
 import '../media/js/preview';
 import '../profile/js/appearance-mode';
