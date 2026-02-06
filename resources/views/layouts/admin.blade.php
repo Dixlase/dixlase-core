@@ -210,5 +210,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         @stack('scripts')
 
+        <script{!! get_csp_nonce_attr() !!}>
+            document.addEventListener('DOMContentLoaded', function() {
+                if (typeof Livewire !== 'undefined' && Livewire.all().length === 0) {
+                    console.log('[Livewire] Manual component scan triggered');
+                    // Livewireコンポーネントを手動でスキャン
+                    document.querySelectorAll('[wire\\:id]').forEach(function(el) {
+                        console.log('[Livewire] Found component:', el.getAttribute('wire:id'));
+                    });
+                }
+            });
+        </script>
     </body>
 </html>

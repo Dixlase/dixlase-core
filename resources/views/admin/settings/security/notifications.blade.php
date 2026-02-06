@@ -21,92 +21,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-<div class="mx-auto">
-<div x-data="{ notificationEnabled: '{{ ($settings['notification_enabled'] ?? 0) ? '1' : '0' }}' }">
-    <form id="security-notifications-form" method="POST" action="{{ route('admin.settings.security.notifications.update') }}">
-        @csrf
-        
-        <!-- システムエラー通知設定 -->
-        <section>
-            <h2>{{ __('admin/settings/security/notifications.title') }}</h2>
-            <p>{{ __('admin/settings/security/notifications.description') }}</p>
-
-            <!-- システム管理者メール未設定の警告 -->
-            @if(!$hasSystemAdminEmail)
-                <div class="mt-4">
-                    <x-ui-message
-                        type="warning"
-                        :message="__('admin/settings/security/notifications.system_admin_email_required', ['url' => route('admin.settings.base.mail')])"
-                    />
-                </div>
-            @endif
-
-            <!-- メールサーバー設定の確認メッセージ -->
-            @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
-                <div class="mt-4">
-                    <x-ui-message
-                        type="warning"
-                        :message="__('admin/settings/security/notifications.mail_test_required', ['url' => route('admin.settings.base.mail')])"
-                    />
-                </div>
-            @endif
-
-            <!-- エラー通知機能の有効/無効 -->
-            <fieldset>
-                <legend>{{ __('admin/settings/security/notifications.enabled') }}</legend>
-                
-                <x-form-toggle
-                    :label="__('admin/settings/security/notifications.enabled')"
-                    id="notification_enabled"
-                    name="notification_enabled"
-                    :checked="$settings['notification_enabled'] ?? false"
-                    xModel="notificationEnabled"
-                />
-                
-                <p>{{ __('admin/settings/security/notifications.enabled_help') }}</p>
-            </fieldset>
-
-            <!-- 通知するログレベル -->
-            <fieldset>
-                <legend>{{ __('admin/settings/security/notifications.log_levels') }}</legend>
-                
-                <div class="my-3" :class="{ 'opacity-50 pointer-events-none': notificationEnabled === '0' }">
-                    <input type="hidden" name="notification_log_levels" :value="notificationEnabled === '1' ? null : '{{ implode(',', $settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels()) }}'" x-show="notificationEnabled === '0'">
-                    
-                    @php
-                        $logLevelOptions = [];
-                        foreach (\App\Enums\LogLevel::getNotificationLevels() as $level) {
-                            $levelString = \App\Enums\LogLevel::from($level)->toString();
-                            $logLevelOptions[$level] = 'admin/settings/security/notifications.log_level_options.' . $levelString;
-                        }
-                    @endphp
-                    
-                    <x-form-toggle-group
-                        name="notification_log_levels"
-                        :options="$logLevelOptions"
-                        :values="$settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels()"
-                        xBindDisabled="notificationEnabled === '0'"
-                        flexDirection="col"
-                    />
-                </div>
-                
-                <p>{{ __('admin/settings/security/notifications.log_levels_help') }}</p>
-            </fieldset>
-        </section>
-
-    </form>
-</div>
-</div>
-@endsection
-
-@section('save')
-    <x-admin.save-button
-        id_confirmation="confirmationModal"
-        :label="__('common.save')"
-        :title="__('common.save_confirmation_title')"
-        :message="__('common.save_confirmation_message')"
-        :confirm_label="__('common.save')"
-        :cancel_label="__('common.cancel')"
-        form="security-notifications-form"
-    />
+    @livewire('admin.settings.security.notifications', [
+        'initialNotificationEnabled' => $initialData['notification_enabled'],
+        'initialNotificationLogLevels' => $initialData['notification_log_levels'],
+        'hasSystemAdminEmail' => $hasSystemAdminEmail,
+        'mailConnectionTested' => $mailConnectionTested,
+        'mailSendTested' => $mailSendTested,
+        'mailReceiveTested' => $mailReceiveTested,
+    ])
 @endsection
