@@ -332,8 +332,10 @@ if (!function_exists('load_active_assets')) {
      */
     function load_active_assets(): string
     {
+        
         $output = '';
 
+        
         // 共通アセットを読み込み
         $output .= load_assets('common', null, ['js/app.js', 'scss/style.scss']);
 

@@ -31,6 +31,10 @@ return [
         // CDN (必要に応じて追加)
         // 'https://cdn.jsdelivr.net',
         // 'https://cdnjs.cloudflare.com',
+
+        // Tailwind CSS
+        //'https://cdn.tailwindcss.com/',
+
     ],
 
     /*
