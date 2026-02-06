@@ -32,12 +32,12 @@ const accordionStates = {};
 function toggleAccordion(key, button, content) {
     const isOpen = accordionStates[key] || false;
     const newState = !isOpen;
-    
+
     accordionStates[key] = newState;
-    
+
     // ボタンのaria-expanded属性を更新
     button.setAttribute('aria-expanded', newState);
-    
+
     // 矢印アイコンの回転
     const arrow = button.querySelector('svg');
     if (arrow) {
@@ -47,7 +47,7 @@ function toggleAccordion(key, button, content) {
             arrow.classList.remove('rotate-180');
         }
     }
-    
+
     // コンテンツの表示/非表示
     if (newState) {
         content.style.display = 'block';
@@ -69,21 +69,21 @@ function toggleAccordion(key, button, content) {
 function initSidebarAccordions() {
     // すべてのアコーディオンボタンを取得
     const accordionButtons = document.querySelectorAll('[data-accordion-button]');
-    
+
     accordionButtons.forEach(button => {
         const key = button.getAttribute('data-accordion-key');
         const contentId = button.getAttribute('data-accordion-content');
         const content = document.getElementById(contentId);
-        
+
         if (!content) {
             console.warn('[Sidebar] Content not found for key:', key);
             return;
         }
-        
+
         // 初期状態を設定
         const initialState = button.getAttribute('data-accordion-open') === 'true';
         accordionStates[key] = initialState;
-        
+
         // 初期表示を設定
         if (initialState) {
             content.style.display = 'block';
@@ -100,18 +100,18 @@ function initSidebarAccordions() {
             content.style.opacity = '0';
             button.setAttribute('aria-expanded', 'false');
         }
-        
+
         // CSSトランジションを設定
         content.style.transition = 'max-height 300ms ease-in-out, opacity 300ms ease-in-out';
         content.style.overflow = 'hidden';
-        
+
         // クリックイベントを設定
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             toggleAccordion(key, button, content);
         });
     });
-    
+
     console.log('[Sidebar] Accordion initialized, states:', accordionStates);
 }
 
@@ -119,14 +119,14 @@ function initSidebarAccordions() {
 function initMobileSidebarToggle() {
     const mobileToggle = document.querySelector('[data-mobile-sidebar-toggle]');
     const sidebar = document.querySelector('[data-mobile-sidebar]');
-    
+
     if (mobileToggle && sidebar) {
         let isOpen = false;
-        
-        mobileToggle.addEventListener('click', function(e) {
+
+        mobileToggle.addEventListener('click', function (e) {
             e.preventDefault();
             isOpen = !isOpen;
-            
+
             // サイドバーの表示/非表示
             if (isOpen) {
                 sidebar.classList.remove('-translate-x-full');
@@ -135,7 +135,7 @@ function initMobileSidebarToggle() {
                 sidebar.classList.add('-translate-x-full');
                 sidebar.classList.remove('translate-x-0');
             }
-            
+
             // アイコンの切り替え
             const icon = mobileToggle.querySelector('i');
             if (icon) {
@@ -148,25 +148,21 @@ function initMobileSidebarToggle() {
                 }
             }
         });
-        
+
         console.log('[Sidebar] Mobile toggle initialized');
     }
 }
 
 // 初期化
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('[Sidebar] DOMContentLoaded, initializing...');
-    
-    setTimeout(function() {
+
+    setTimeout(function () {
         initSidebarAccordions();
         initMobileSidebarToggle();
         console.log('[Sidebar] Vanilla JS initialized');
     }, 100);
 });
 
-// Livewireのページ遷移後も再初期化
-document.addEventListener('livewire:navigated', function() {
-    initSidebarAccordions();
-    initMobileSidebarToggle();
-    console.log('[Sidebar] Re-initialized after Livewire navigation');
-});
+// Livewire v4ではSPAナビゲーションが無効なので、livewire:navigatedイベントは不要
+// ページ遷移時は通常のページリロードが発生し、DOMContentLoadedで再初期化される

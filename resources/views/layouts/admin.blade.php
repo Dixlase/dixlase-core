@@ -38,7 +38,8 @@
 
             <!-- Sidebar Toggle Button (Desktop) -->
             <button class="hidden sm:flex fixed left-0 top-21 -translate-y-1/2 z-40 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-transform duration-200"
-                    aria-label="Toggle sidebar menu">
+                    aria-label="Toggle desktop sidebar menu"
+                    data-desktop-sidebar-toggle>
                 <i class="fas text-sm fa-chevron-left"></i>
             </button>
 
