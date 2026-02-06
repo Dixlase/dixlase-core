@@ -19,90 +19,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 <div class="mx-auto">
-    <!-- デバッグ: Livewireコンポーネントがレンダリングされているか確認 -->
-    <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
-        <p><strong>デバッグ:</strong> Livewireコンポーネントがレンダリングされています</p>
-        <p>notificationEnabled: {{ $notificationEnabled ? 'true' : 'false' }}</p>
-    </div>
-
-    <form wire:submit.prevent="save" id="security-notifications-form">
+    <h2 class="text-xl font-bold mb-4">テスト: 最小限のLivewireフォーム</h2>
+    
+    <form wire:submit="save">
+        <div class="mb-4">
+            <label class="flex items-center space-x-2">
+                <input type="checkbox" wire:model="notificationEnabled" class="rounded">
+                <span>エラー通知を有効にする (現在: {{ $notificationEnabled ? 'ON' : 'OFF' }})</span>
+            </label>
+        </div>
         
-        <!-- システムエラー通知設定 -->
-        <section>
-            <h2>{{ __('admin/settings/security/notifications.title') }}</h2>
-            <p>{{ __('admin/settings/security/notifications.description') }}</p>
-
-            <!-- システム管理者メール未設定の警告 -->
-            @if(!$hasSystemAdminEmail)
-                <div class="mt-4">
-                    <x-ui-message
-                        type="warning"
-                        :message="__('admin/settings/security/notifications.system_admin_email_required', ['url' => route('admin.settings.base.mail')])"
-                    />
-                </div>
-            @endif
-
-            <!-- メールサーバー設定の確認メッセージ -->
-            @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
-                <div class="mt-4">
-                    <x-ui-message
-                        type="warning"
-                        :message="__('admin/settings/security/notifications.mail_test_required', ['url' => route('admin.settings.base.mail')])"
-                    />
-                </div>
-            @endif
-
-            <!-- エラー通知機能の有効/無効 -->
-            <fieldset>
-                <legend>{{ __('admin/settings/security/notifications.enabled') }}</legend>
-                
-                <x-form-toggle
-                    :label="__('admin/settings/security/notifications.enabled')"
-                    id="notification_enabled"
-                    name="notification_enabled"
-                    wire:model.live="notificationEnabled"
-                />
-                
-                <p>{{ __('admin/settings/security/notifications.enabled_help') }}</p>
-            </fieldset>
-
-            <!-- 通知するログレベル -->
-            <fieldset>
-                <legend>{{ __('admin/settings/security/notifications.log_levels') }}</legend>
-                
-                <div class="my-3 {{ !$notificationEnabled ? 'opacity-50 pointer-events-none' : '' }}">
-                    @foreach(\App\Enums\LogLevel::getNotificationLevels() as $level)
-                        @php
-                            $levelString = \App\Enums\LogLevel::from($level)->toString();
-                        @endphp
-                        <label class="flex items-center space-x-2 mb-2">
-                            <input 
-                                type="checkbox" 
-                                wire:model="notificationLogLevels" 
-                                value="{{ $level }}"
-                                {{ !$notificationEnabled ? 'disabled' : '' }}
-                                class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                            >
-                            <span class="text-gray-700 dark:text-gray-300">{{ __('admin/settings/security/notifications.log_level_options.' . $levelString) }}</span>
-                        </label>
-                    @endforeach
-                </div>
-                
-                <p>{{ __('admin/settings/security/notifications.log_levels_help') }}</p>
-            </fieldset>
-        </section>
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">
+            保存
+        </button>
     </form>
-
-    <!-- 保存ボタン（確認モーダル付き） -->
-    <div class="mt-6 flex justify-center">
-        <x-admin.livewire-save-button
-            :label="__('common.save')"
-            :title="__('common.save_confirmation_title')"
-            :message="__('common.save_confirmation_message')"
-            :confirmLabel="__('common.save')"
-            :cancelLabel="__('common.cancel')"
-            wireClick="save"
-            showConfirmation="showSaveConfirmation"
-        />
+    
+    <div class="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded">
+        <p>デバッグ情報:</p>
+        <p>notificationEnabled: {{ $notificationEnabled ? 'true' : 'false' }}</p>
+        <p>Livewire ID: {{ $this->getId() }}</p>
     </div>
 </div>

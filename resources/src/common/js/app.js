@@ -56,4 +56,4 @@ window.loginFlow = createLoginFlow;
 
 Alpine.plugin(collapse)
 window.Alpine = Alpine;
-Alpine.start();
+// Alpine.start(); // Livewireが自動的にAlpineを起動するためコメントアウト

@@ -22,67 +22,56 @@
 
 namespace App\Livewire\Admin\Settings\Security;
 
-use App\Livewire\Admin\AdminLoggedInComponent;
-use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
+use App\Livewire\Admin\Settings\SecuritySettingsComponent;
 use App\Enums\LogLevel;
 use App\Models\BaseSetting;
 
-class Notifications extends AdminLoggedInComponent
+class Notifications extends SecuritySettingsComponent
 {
+    // 動的な値（ユーザー操作で変更される値）
     public $notificationEnabled;
     public $notificationLogLevels = [];
+    public $showSaveConfirmation = false;
+    
+    // 静的な値（コントローラーから渡される値）
+    public $initialNotificationEnabled;
+    public $initialNotificationLogLevels;
     public $hasSystemAdminEmail;
     public $mailConnectionTested;
     public $mailSendTested;
     public $mailReceiveTested;
-    public $showSaveConfirmation = false;
 
+    /**
+     * コンポーネント初期化
+     * 静的な値（初期表示データ）をコントローラーから受け取る
+     */
     protected function mountComponent()
     {
-        \Log::info('[Livewire Debug] mountComponent() called');
+        // @livewire()で渡されたパラメータは既にパブリックプロパティに設定されている
+        // 動的な値を初期化
+        $this->notificationEnabled = $this->initialNotificationEnabled;
+        $this->notificationLogLevels = $this->initialNotificationLogLevels;
         
-        // リポジトリを取得
-        $securitySettingRepository = app(SecuritySettingRepositoryInterface::class);
-
-        // 通知設定を取得
-        $this->notificationEnabled = filter_var(
-            $securitySettingRepository->get('notification_enabled', true), 
-            FILTER_VALIDATE_BOOLEAN
-        );
-        
-        \Log::info('[Livewire Debug] notificationEnabled set to: ' . ($this->notificationEnabled ? 'true' : 'false'));
-        
-        $this->notificationLogLevels = array_map(
-            'intval', 
-            array_filter(
-                explode(',', $securitySettingRepository->get(
-                    'notification_log_levels', 
-                    implode(',', LogLevel::getDefaultNotificationLevels())
-                ))
-            )
-        );
-        
-        // メールテスト状態を取得（セッション優先）
-        $sessionTestResults = session('mail_test_results', []);
-        $this->mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? BaseSetting::getValue('mail_connection_tested', false));
-        $this->mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? BaseSetting::getValue('mail_send_tested', false));
-        $this->mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
-
-        // システム管理者メールアドレスの設定状態を確認
-        $systemAdminEmail = BaseSetting::getValue('system_admin_email', '');
-        $this->hasSystemAdminEmail = !empty($systemAdminEmail);
+        // デバッグ用ログ
+        \Log::info('[Debug] Livewire mountComponent - hasSystemAdminEmail: ' . ($this->hasSystemAdminEmail ? 'true' : 'false'));
+        \Log::info('[Debug] Livewire mountComponent - mailConnectionTested: ' . ($this->mailConnectionTested ? 'true' : 'false'));
+        \Log::info('[Debug] Livewire mountComponent - mailSendTested: ' . ($this->mailSendTested ? 'true' : 'false'));
+        \Log::info('[Debug] Livewire mountComponent - mailReceiveTested: ' . ($this->mailReceiveTested ? 'true' : 'false'));
     }
 
     public function save()
     {
-        // リポジトリを取得
-        $securitySettingRepository = app(SecuritySettingRepositoryInterface::class);
-
-        // 通知設定を更新
-        $securitySettingRepository->set('notification_enabled', $this->notificationEnabled ?? false);
+        \Log::info('[Debug] save() called');
+        \Log::info('[Debug] notificationEnabled: ' . ($this->notificationEnabled ? 'true' : 'false'));
+        \Log::info('[Debug] notificationLogLevels: ' . json_encode($this->notificationLogLevels));
         
-        $logLevels = $this->notificationLogLevels ?? LogLevel::getDefaultNotificationLevels();
-        $securitySettingRepository->set('notification_log_levels', implode(',', $logLevels));
+        // 通知設定を更新
+        $this->setSecuritySettings([
+            'notification_enabled' => $this->notificationEnabled ?? false,
+            'notification_log_levels' => implode(',', $this->notificationLogLevels ?? LogLevel::getDefaultNotificationLevels()),
+        ]);
+
+        \Log::info('[Debug] Settings saved successfully');
 
         session()->flash('success', __('admin/settings/security/notifications.settings_updated'));
         
