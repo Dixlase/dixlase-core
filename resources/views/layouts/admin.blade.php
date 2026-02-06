@@ -37,14 +37,14 @@
             </aside>
 
             <!-- Sidebar Toggle Button (Desktop) -->
-            <button class="hidden sm:flex fixed left-0 top-21 -translate-y-1/2 z-40 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-transform duration-200"
+            <button class="hidden sm:flex fixed left-0 top-21 -translate-y-1/2 z-40 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
                     aria-label="Toggle desktop sidebar menu"
                     data-desktop-sidebar-toggle>
                 <i class="fas text-sm fa-chevron-left"></i>
             </button>
 
             <!-- Main Content Area -->
-            <main class="mt-12 ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white">
+            <main class="mt-12 ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white transition-all duration-300">
                 @yield('content')
             </main>
         </div>

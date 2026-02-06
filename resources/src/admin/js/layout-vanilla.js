@@ -51,12 +51,11 @@ function updateSidebarState(collapsed) {
     }
 
     if (toggleButton) {
+        // leftプロパティを変更してアニメーション
         if (collapsed) {
-            toggleButton.classList.add('translate-x-0');
-            toggleButton.classList.remove('translate-x-64');
+            toggleButton.style.left = '0';
         } else {
-            toggleButton.classList.remove('translate-x-0');
-            toggleButton.classList.add('translate-x-64');
+            toggleButton.style.left = '16rem'; // 256px = w-64
         }
 
         // デスクトップトグルボタンのアイコンの切り替え
@@ -108,16 +107,30 @@ function initSidebarToggle() {
 document.addEventListener('DOMContentLoaded', function () {
     console.log('[Admin Layout] DOMContentLoaded, initializing...');
 
-    // 少し遅延させて確実にDOMが準備できてから実行
+    // 初期状態を即座に適用（トランジションなし）
+    const sidebar = document.querySelector('aside[role="navigation"]');
+    const toggleButton = document.querySelector('[data-desktop-sidebar-toggle]');
+    const mainContent = document.querySelector('main');
+
+    // トランジションを一時的に無効化
+    if (sidebar) sidebar.style.transition = 'none';
+    if (toggleButton) toggleButton.style.transition = 'none';
+    if (mainContent) mainContent.style.transition = 'none';
+
+    // 初期状態を適用
+    updateSidebarState(sidebarCollapsed);
+
+    // 少し遅延させてトランジションを有効化
     setTimeout(function () {
-        // 初期状態を適用
-        updateSidebarState(sidebarCollapsed);
+        if (sidebar) sidebar.style.transition = '';
+        if (toggleButton) toggleButton.style.transition = '';
+        if (mainContent) mainContent.style.transition = '';
 
         // トグルボタンのイベントリスナーを設定
         initSidebarToggle();
 
         console.log('[Admin Layout] Vanilla JS initialized, sidebar collapsed:', sidebarCollapsed);
-    }, 150);
+    }, 50);
 });
 
 // Livewire v4ではSPAナビゲーションが無効なので、livewire:navigatedイベントは不要
