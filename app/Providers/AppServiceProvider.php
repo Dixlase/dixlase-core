@@ -101,6 +101,16 @@ class AppServiceProvider extends ServiceProvider
         // ViteのCSP nonce機能を無効化（カスタム実装を使用）
         // これによりViteは独自のnonceを生成しなくなる
         config(['vite.csp_nonce' => false]);
+        
+        // Livewireのnavigate機能を無効化（data-navigate-once属性を削除）
+        // これにより初回ページロードでLivewireコンポーネントが正常に初期化される
+        config(['livewire.navigate' => false]);
+        
+        // カスタムBladeディレクティブ: @livewireScriptsWithoutNavigate
+        // @livewireScriptsの出力からdata-navigate-once属性を削除
+        \Blade::directive('livewireScriptsWithoutNavigate', function () {
+            return "<?php echo view('components.livewire-scripts-without-navigate')->render(); ?>";
+        });
 
         // インストール済みかどうかをチェック（config経由で取得することでキャッシュに対応）
         // env()は本番環境でキャッシュされると更新されないため、config()を使用
