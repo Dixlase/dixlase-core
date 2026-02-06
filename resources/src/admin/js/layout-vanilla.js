@@ -35,8 +35,8 @@ function updateSidebarState(collapsed) {
 
     // サイドバー要素
     const sidebar = document.querySelector('aside[role="navigation"]');
-    // トグルボタン
-    const toggleButton = document.querySelector('button[aria-label="Toggle sidebar menu"]');
+    // トグルボタン（デスクトップ用）
+    const toggleButton = document.querySelector('[data-desktop-sidebar-toggle]');
     // メインコンテンツ
     const mainContent = document.querySelector('main');
 
@@ -59,7 +59,7 @@ function updateSidebarState(collapsed) {
             toggleButton.classList.add('translate-x-64');
         }
 
-        // アイコンの切り替え
+        // デスクトップトグルボタンのアイコンの切り替え
         const icon = toggleButton.querySelector('i');
         if (icon) {
             if (collapsed) {
@@ -85,12 +85,12 @@ function updateSidebarState(collapsed) {
 
 // サイドバートグルボタンのイベントリスナーを設定
 function initSidebarToggle() {
-    const toggleButton = document.querySelector('button[aria-label="Toggle sidebar menu"]');
+    const toggleButton = document.querySelector('[data-desktop-sidebar-toggle]');
 
     if (toggleButton) {
         // 既存のイベントリスナーを削除（重複防止）
         toggleButton.replaceWith(toggleButton.cloneNode(true));
-        const newButton = document.querySelector('button[aria-label="Toggle sidebar menu"]');
+        const newButton = document.querySelector('[data-desktop-sidebar-toggle]');
 
         newButton.addEventListener('click', function (e) {
             e.preventDefault();
@@ -117,12 +117,8 @@ document.addEventListener('DOMContentLoaded', function () {
         initSidebarToggle();
 
         console.log('[Admin Layout] Vanilla JS initialized, sidebar collapsed:', sidebarCollapsed);
-    }, 100);
+    }, 150);
 });
 
-// Livewireのページ遷移後も再初期化
-document.addEventListener('livewire:navigated', function () {
-    updateSidebarState(sidebarCollapsed);
-    initSidebarToggle();
-    console.log('[Admin Layout] Re-initialized after Livewire navigation');
-});
+// Livewire v4ではSPAナビゲーションが無効なので、livewire:navigatedイベントは不要
+// ページ遷移時は通常のページリロードが発生し、DOMContentLoadedで再初期化される
