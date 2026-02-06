@@ -41,7 +41,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {!! load_active_assets() !!}
 
         {{-- 通知コンポーネント（他のスクリプトより先に読み込み） --}}
-        <x-ui.notification />
+        <x-ui-notification />
 
     </head>
     <body class="admin font-sans antialiased transition-colors-unified dark:bg-black dark:text-white"
@@ -50,10 +50,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           x-init="init()">
         <div class="min-h-screen">
             <!-- CSP Safe Mode Banner -->
-            <x-csp-safe-mode-banner />
+            <x-security.csp-safe-mode-banner />
             
             <!-- Admin Bar (Header) -->
-            <x-ui.admin-bar :isAdminLayout="true" />
+            <x-ui-admin-bar :isAdminLayout="true" />
 
 
             <div class="min-h-screen flex">
@@ -171,7 +171,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <!-- Page Content -->
                     <article class="w-full px-6 lg:px-8 pb-8 mt-8">
-                        <x-flash-message />
+                        <x-ui-flash-message />
                         @yield('content')
                     </article>
 
