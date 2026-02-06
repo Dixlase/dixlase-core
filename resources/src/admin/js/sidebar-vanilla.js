@@ -28,6 +28,36 @@
 // アコーディオンの開閉状態を管理
 const accordionStates = {};
 
+// 親アコーディオンの高さを再計算する
+function updateParentAccordionHeight(element) {
+    console.log('[Sidebar] Updating parent accordion heights for:', element.id);
+    let parent = element.parentElement;
+    let level = 0;
+    while (parent) {
+        // data-accordion-contentを持つ親要素を探す
+        if (parent.id && parent.id.startsWith('accordion-content-')) {
+            const parentKey = parent.id.replace('accordion-content-', '');
+            const isOpen = accordionStates[parentKey];
+
+            if (isOpen) {
+                const oldHeight = parent.style.maxHeight;
+                // 親アコーディオンは十分に大きな値に設定（子のアニメーションを妨げない）
+                const newHeight = '2000px';
+                parent.style.maxHeight = newHeight;
+
+                console.log(`[Sidebar] Level ${level}: ${parent.id}`, {
+                    isOpen,
+                    oldHeight,
+                    newHeight
+                });
+                console.log(`[Sidebar] Updated ${parent.id} height: ${oldHeight} -> ${newHeight}`);
+            }
+            level++;
+        }
+        parent = parent.parentElement;
+    }
+}
+
 // アコーディオンの開閉を切り替える
 function toggleAccordion(key, button, content) {
     const isOpen = accordionStates[key] || false;
@@ -51,16 +81,47 @@ function toggleAccordion(key, button, content) {
     // コンテンツの表示/非表示
     if (newState) {
         content.style.display = 'block';
+        console.log(`[Sidebar] Opening ${key}: display set to block`);
+
         // アニメーション用に少し遅延
         setTimeout(() => {
-            content.style.maxHeight = content.scrollHeight + 'px';
+            // scrollHeightを取得（現在の内容の高さ）
+            const targetHeight = content.scrollHeight;
+            content.style.maxHeight = targetHeight + 'px';
             content.style.opacity = '1';
+
+            console.log(`[Sidebar] Opening ${key}: maxHeight set to ${targetHeight}px, starting animation`);
+
+            // 親アコーディオンの高さを即座に更新（アニメーション開始と同時）
+            console.log(`[Sidebar] Updating parent immediately for ${key}`);
+            updateParentAccordionHeight(content);
+
+            // アニメーション中も定期的に親の高さを更新（100ms, 200ms）
+            setTimeout(() => {
+                console.log(`[Sidebar] Mid-animation update (100ms) for ${key}`);
+                updateParentAccordionHeight(content);
+            }, 100);
+
+            setTimeout(() => {
+                console.log(`[Sidebar] Mid-animation update (200ms) for ${key}`);
+                updateParentAccordionHeight(content);
+            }, 200);
+
+            // アニメーション完了後にも再更新（より正確な高さに）
+            setTimeout(() => {
+                console.log(`[Sidebar] Final update (320ms) for ${key}`);
+                updateParentAccordionHeight(content);
+            }, 320);
         }, 10);
     } else {
+        console.log(`[Sidebar] Closing ${key}: starting close animation`);
         content.style.maxHeight = '0';
         content.style.opacity = '0';
+        // 親アコーディオンの高さを即座に更新
+        updateParentAccordionHeight(content);
         setTimeout(() => {
             content.style.display = 'none';
+            console.log(`[Sidebar] Closed ${key}: display set to none`);
         }, 300);
     }
 }
@@ -87,7 +148,10 @@ function initSidebarAccordions() {
         // 初期表示を設定
         if (initialState) {
             content.style.display = 'block';
-            content.style.maxHeight = content.scrollHeight + 'px';
+            // 初期表示時はscrollHeightを使用
+            setTimeout(() => {
+                content.style.maxHeight = content.scrollHeight + 'px';
+            }, 0);
             content.style.opacity = '1';
             button.setAttribute('aria-expanded', 'true');
             const arrow = button.querySelector('svg');
