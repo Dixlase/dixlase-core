@@ -43,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
 
     {{-- API設定フォーム --}}
-    <form action="{{ route('admin.settings.systems.api.update') }}" method="POST">
+    <form id="api-settings-form" action="{{ route('admin.settings.systems.api.update') }}" method="POST">
         @csrf
 
         <section>
@@ -51,26 +51,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <legend>{{ __('admin/settings/systems/api.api_enabled') }}</legend>
-                <x-form-radio-group
+                <x-form-toggle
                     name="api_enabled"
-                    :options="[
-                        '1' => __('common.enabled'),
-                        '0' => __('common.disabled'),
-                    ]"
-                    :value="old('api_enabled', $settings['api_enabled'] ? '1' : '0')"
+                    :checked="old('api_enabled', $settings['api_enabled']) == '1'"
                 />
                 <p>{{ __('admin/settings/systems/api.api_enabled_help') }}</p>
             </fieldset>
 
             <fieldset>
                 <legend>{{ __('admin/settings/systems/api.signature_required') }}</legend>
-                <x-form-radio-group
+                <x-form-toggle
                     name="api_signature_required"
-                    :options="[
-                        '1' => __('common.required'),
-                        '0' => __('common.optional'),
-                    ]"
-                    :value="old('api_signature_required', $settings['api_signature_required'] ? '1' : '0')"
+                    :checked="old('api_signature_required', $settings['api_signature_required']) == '1'"
                 />
                 <p>{{ __('admin/settings/systems/api.signature_required_help') }}</p>
             </fieldset>
@@ -91,11 +83,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p>{{ __('admin/settings/systems/api.rate_limit_help') }}</p>
             </fieldset>
 
-            <div class="flex justify-end mt-4">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save mr-2"></i>{{ __('common.save') }}
-                </button>
-            </div>
         </section>
     </form>
 
@@ -103,9 +90,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section class="mt-8">
         <div class="flex items-center justify-between mb-4">
             <h2 class="mb-0">{{ __('admin/settings/systems/api.api_keys') }}</h2>
-            <button type="button" @click="showCreateModal = true" class="btn btn-primary">
-                <i class="fas fa-plus mr-2"></i>{{ __('admin/settings/systems/api.create_key') }}
-            </button>
+            <x-form-button
+                type="button"
+                variant="primary"
+                icon="fas fa-plus"
+                :label="__('admin/settings/systems/api.create_key')"
+                @click="showCreateModal = true"
+            />
         </div>
 
         @if($apiKeys->isEmpty())
@@ -203,107 +194,134 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
     </section>
 
+</div>
+@endsection
+
+@section('save')
+    <x-form-button
+        type="button"
+        :label="__('common.save')"
+        class="button-save"
+        @click="openModal('apiSettingsConfirmationModal')"
+    />
+@endsection
+
+@section('modals')
+    {{-- 保存確認モーダル --}}
+    <x-ui-modal
+        id="apiSettingsConfirmationModal"
+        :title="__('common.save_confirmation_title')"
+        :message="__('common.save_confirmation_message')"
+        :confirm_label="__('common.save')"
+        :cancel_label="__('common.cancel')"
+        form="api-settings-form"
+    />
+
     {{-- APIキー作成モーダル --}}
-    <div x-show="showCreateModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div x-show="showCreateModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showCreateModal = false"></div>
+    <x-ui-modal
+        id="createKeyModal"
+        :title="__('admin/settings/systems/api.create_key')"
+        icon-type="info"
+        x-show="showCreateModal"
+        @click.away="showCreateModal = false"
+    >
+        <form id="create-key-form" action="{{ route('admin.settings.systems.api.generate-key') }}" method="POST" class="px-4 pt-5 pb-4 sm:p-6">
+            @csrf
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.key_name') }}</label>
+                    <input type="text" name="name" required class="input-full" placeholder="{{ __('admin/settings/systems/api.key_name_placeholder') }}">
+                </div>
 
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.environment') }}</label>
+                    <select name="environment" class="input-full">
+                        <option value="live">Live ({{ __('admin/settings/systems/api.env_live_desc') }})</option>
+                        <option value="test">Test ({{ __('admin/settings/systems/api.env_test_desc') }})</option>
+                    </select>
+                </div>
 
-            <div x-show="showCreateModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                <form action="{{ route('admin.settings.systems.api.generate-key') }}" method="POST">
-                    @csrf
-                    <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">{{ __('admin/settings/systems/api.create_key') }}</h3>
-
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.key_name') }} <span class="text-red-500">*</span></label>
-                                <input type="text" name="name" required class="input-full" placeholder="{{ __('admin/settings/systems/api.key_name_placeholder') }}">
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.environment') }}</label>
-                                <select name="environment" class="input-full">
-                                    <option value="live">Live ({{ __('admin/settings/systems/api.env_live_desc') }})</option>
-                                    <option value="test">Test ({{ __('admin/settings/systems/api.env_test_desc') }})</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.scopes') }}</label>
-                                <div class="space-y-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded p-3">
-                                    @foreach($availableScopes as $scope => $label)
-                                    <label class="flex items-center">
-                                        <input type="checkbox" name="scopes[]" value="{{ $scope }}" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                        <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ $label }}</span>
-                                    </label>
-                                    @endforeach
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.rate_limit') }}</label>
-                                <div class="flex items-center gap-2">
-                                    <input type="number" name="rate_limit" class="input-sm" min="1" max="10000" placeholder="{{ __('admin/settings/systems/api.unlimited') }}">
-                                    <span class="text-sm text-gray-500">{{ __('admin/settings/systems/api.requests_per_minute') }}</span>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.allowed_ips') }}</label>
-                                <input type="text" name="allowed_ips" class="input-full" placeholder="{{ __('admin/settings/systems/api.allowed_ips_placeholder') }}">
-                                <p class="text-xs text-gray-500 mt-1">{{ __('admin/settings/systems/api.allowed_ips_help') }}</p>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.expires_at') }}</label>
-                                <input type="date" name="expires_at" class="input-full" min="{{ now()->addDay()->format('Y-m-d') }}">
-                                <p class="text-xs text-gray-500 mt-1">{{ __('admin/settings/systems/api.expires_at_help') }}</p>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.key_description') }}</label>
-                                <textarea name="description" rows="2" class="input-full" placeholder="{{ __('admin/settings/systems/api.key_description_placeholder') }}"></textarea>
-                            </div>
-                        </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.scopes') }}</label>
+                    <div class="space-y-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded p-3">
+                        @foreach($availableScopes as $scope => $label)
+                        <label class="flex items-center">
+                            <input type="checkbox" name="scopes[]" value="{{ $scope }}" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ $label }}</span>
+                        </label>
+                        @endforeach
                     </div>
+                </div>
 
-                    <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-key mr-2"></i>{{ __('admin/settings/systems/api.generate') }}
-                        </button>
-                        <button type="button" @click="showCreateModal = false" class="btn btn-secondary">
-                            {{ __('common.cancel') }}
-                        </button>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.rate_limit') }}</label>
+                    <div class="flex items-center gap-2">
+                        <input type="number" name="rate_limit" class="input-sm" min="1" max="10000" placeholder="{{ __('admin/settings/systems/api.unlimited') }}">
+                        <span class="text-sm text-gray-500">{{ __('admin/settings/systems/api.requests_per_minute') }}</span>
                     </div>
-                </form>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.allowed_ips') }}</label>
+                    <input type="text" name="allowed_ips" class="input-full" placeholder="{{ __('admin/settings/systems/api.allowed_ips_placeholder') }}">
+                    <p class="text-xs text-gray-500 mt-1">{{ __('admin/settings/systems/api.allowed_ips_help') }}</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.expires_at') }}</label>
+                    <input type="date" name="expires_at" class="input-full" min="{{ now()->addDay()->format('Y-m-d') }}">
+                    <p class="text-xs text-gray-500 mt-1">{{ __('admin/settings/systems/api.expires_at_help') }}</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.key_description') }}</label>
+                    <textarea name="description" rows="2" class="input-full" placeholder="{{ __('admin/settings/systems/api.key_description_placeholder') }}"></textarea>
+                </div>
             </div>
-        </div>
-    </div>
+        </form>
+
+        <x-slot name="footer">
+            <x-form-button
+                type="button"
+                variant="secondary"
+                :label="__('common.cancel')"
+                @click="showCreateModal = false"
+                class="mx-2"
+            />
+            <x-form-button
+                type="submit"
+                variant="primary"
+                icon="fas fa-key"
+                :label="__('admin/settings/systems/api.generate')"
+                form="create-key-form"
+                class="mx-2"
+            />
+        </x-slot>
+    </x-ui-modal>
 
     {{-- APIキー詳細モーダル --}}
-    <div x-show="showViewModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div x-show="showViewModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showViewModal = false"></div>
-
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-            <div x-show="showViewModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                <div class="px-4 pt-5 pb-4 sm:p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">{{ __('admin/settings/systems/api.key_details') }}</h3>
-                    <div x-html="keyDetails" class="space-y-3"></div>
-                </div>
-                <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 flex justify-end">
-                    <button type="button" @click="showViewModal = false" class="btn btn-secondary">
-                        {{ __('common.close') }}
-                    </button>
-                </div>
-            </div>
+    <x-ui-modal
+        id="viewKeyModal"
+        :title="__('admin/settings/systems/api.key_details')"
+        icon-type="info"
+        :close-only="true"
+        x-show="showViewModal"
+        @click.away="showViewModal = false"
+    >
+        <div class="px-4 pt-5 pb-4 sm:p-6">
+            <div x-show="keyDetails" x-html="keyDetails" class="space-y-3"></div>
         </div>
-    </div>
 
-</div>
+        <x-slot name="footer">
+            <x-form-button
+                type="button"
+                variant="secondary"
+                :label="__('common.close')"
+                @click="showViewModal = false"
+                class="mx-2"
+            />
+        </x-slot>
+    </x-ui-modal>
 @endsection
 
 @push('scripts')

@@ -18,7 +18,7 @@ return [
     'general_settings' => '基本設定',
     'api_enabled' => 'APIを有効にする',
     'api_enabled_help' => '外部システムからのAPI経由でのアクセスを許可します。',
-    'signature_required' => '署名検証',
+    'signature_required' => '署名検証を必須にする',
     'signature_required_help' => 'APIリクエストに署名検証を必須とします。セキュリティ向上のため有効にすることを推奨します。',
     'default_rate_limit' => 'デフォルトレート制限',
     'rate_limit_help' => 'APIキーごとに個別設定がない場合に適用されるデフォルトのレート制限です。',
