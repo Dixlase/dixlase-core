@@ -23,25 +23,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto">
 <section>
-    <h2>{{ __('admin/settings/systems/database.heading') }}</h2>
+    <h2>{{ __('admin/settings/systems/database.core_cleanup_heading') }}</h2>
+    <p class="mb-6">{{ __('admin/settings/systems/database.core_cleanup_description') }}</p>
     
     @foreach($cleanupInfo as $type => $info)
         <section class="flex flex-col md:flex-row md:items-center justify-center md:justify-between">
             <div class="flex-1 mb-4 md:mb-0 md:mr-6">
                 <h3 class="text-center md:text-left">{{ $info['name'] }}</h3>
-                <p class="mb-4">{{ $info['description'] }}</p>
-                <code class="text-sm rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1 inline-block max-w-full overflow-x-auto">php artisan {{ $info['command'] }}</code>
+                <p class="mb-2">{{ $info['description'] }}</p>
+                <code class="text-xs text-gray-500 dark:text-gray-400">{{ $info['table'] }}</code>
                 
                 @if($info['default_days'])
                 <div class="mt-2">
                     <span class="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-full inline-block">
-                        {{ __('admin/settings/systems/database.' . $type . '.default_days') }}
+                        {{ __('admin/settings/systems/database.default_retention', ['days' => $info['default_days']]) }}
                     </span>
                 </div>
                 @else
                 <div class="mt-2">
                     <span class="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full inline-block">
-                        {{ __('admin/settings/systems/database.' . $type . '.default_days') }}
+                        {{ __('admin/settings/systems/database.expired_only') }}
                     </span>
                 </div>
                 @endif
@@ -61,12 +62,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             min="0" 
                             max="365"
                             class="input-common input-sm">
-                        @if($info['default_days'])
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             <i class="fas fa-info-circle mr-1"></i>
                             {{ __('admin/settings/systems/database.days_zero_info') }}
                         </p>
-                        @endif
                     </form>
                 </div>
                 @else

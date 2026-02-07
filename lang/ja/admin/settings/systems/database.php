@@ -15,6 +15,10 @@
 return [
     'heading' => 'データベース管理',
     'description' => 'システムパフォーマンスを維持するために古いデータベースレコードをクリーンアップします',
+    'core_cleanup_heading' => 'コアテーブルのクリーンアップ',
+    'core_cleanup_description' => 'Dixlaseコアシステムが使用するテーブルのクリーンアップ設定です。',
+    'default_retention' => 'デフォルト保持期間: :days 日',
+    'expired_only' => '期限切れのみ削除',
     'all_cleanup_button' => '全種類クリーンアップ',
     'all_cleanup_description' => 'すべてのデータベーステーブルを共通の保持日数でクリーンアップします',
     'all_cleanup_warning' => 'この操作は元に戻すことができません。',
