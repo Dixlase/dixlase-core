@@ -159,7 +159,7 @@ function initSidebarAccordions() {
         });
     });
 
-    console.log('[Sidebar] Accordion initialized, states:', accordionStates);
+    // Accordion initialized
 }
 
 // サイドバートグルの初期化（モバイル・デスクトップ共通）
@@ -182,14 +182,14 @@ function initSidebarToggle() {
                 sidebar.classList.add('translate-x-0');
                 if (mainContent) {
                     mainContent.classList.remove('md:ml-0');
-                    mainContent.classList.add('md:ml-72');
+                    mainContent.classList.add('md:ml-64');
                 }
             } else {
                 sidebar.classList.add('-translate-x-64');
                 sidebar.classList.remove('translate-x-0');
                 if (mainContent) {
                     mainContent.classList.add('md:ml-0');
-                    mainContent.classList.remove('md:ml-72');
+                    mainContent.classList.remove('md:ml-64');
                 }
             }
         }
@@ -216,10 +216,10 @@ function initSidebarToggle() {
             if (mainContent && window.innerWidth >= 768) {
                 if (isOpen) {
                     mainContent.classList.remove('md:ml-0');
-                    mainContent.classList.add('md:ml-72');
+                    mainContent.classList.add('md:ml-64');
                 } else {
                     mainContent.classList.add('md:ml-0');
-                    mainContent.classList.remove('md:ml-72');
+                    mainContent.classList.remove('md:ml-64');
                 }
             }
 
@@ -237,22 +237,72 @@ function initSidebarToggle() {
 
             // localStorageに保存
             localStorage.setItem('sidebarCollapsed', !isOpen);
-
-            console.log('[Sidebar] Sidebar toggled:', isOpen);
         });
 
-        console.log('[Sidebar] Sidebar toggle initialized, isOpen:', isOpen);
+        // Sidebar toggle initialized
+
+        // ウィンドウリサイズ時の処理
+        let resizeTimer;
+        window.addEventListener('resize', function () {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function () {
+                const isMobile = window.innerWidth < 768;
+
+                if (isMobile) {
+                    // モバイル表示に切り替わったらサイドバーを非表示
+                    sidebar.classList.add('-translate-x-64');
+                    sidebar.classList.remove('translate-x-0');
+                    isOpen = false;
+
+                    // アイコンを右向きに
+                    const icon = sidebarToggle.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('fa-chevron-left');
+                        icon.classList.add('fa-chevron-right');
+                    }
+                } else {
+                    // デスクトップ表示に切り替わったらlocalStorageの状態を復元
+                    const savedIsOpen = localStorage.getItem('sidebarCollapsed') !== 'true';
+                    isOpen = savedIsOpen;
+
+                    if (isOpen) {
+                        sidebar.classList.remove('-translate-x-64');
+                        sidebar.classList.add('translate-x-0');
+                        if (mainContent) {
+                            mainContent.classList.remove('md:ml-0');
+                            mainContent.classList.add('md:ml-64');
+                        }
+                    } else {
+                        sidebar.classList.add('-translate-x-64');
+                        sidebar.classList.remove('translate-x-0');
+                        if (mainContent) {
+                            mainContent.classList.add('md:ml-0');
+                            mainContent.classList.remove('md:ml-64');
+                        }
+                    }
+
+                    // アイコンを更新
+                    const icon = sidebarToggle.querySelector('i');
+                    if (icon) {
+                        if (isOpen) {
+                            icon.classList.remove('fa-chevron-right');
+                            icon.classList.add('fa-chevron-left');
+                        } else {
+                            icon.classList.remove('fa-chevron-left');
+                            icon.classList.add('fa-chevron-right');
+                        }
+                    }
+                }
+            }, 250);
+        });
     }
 }
 
 // 初期化
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('[Sidebar] DOMContentLoaded, initializing...');
-
     setTimeout(function () {
         initSidebarAccordions();
         initSidebarToggle();
-        console.log('[Sidebar] Vanilla JS initialized');
     }, 100);
 });
 

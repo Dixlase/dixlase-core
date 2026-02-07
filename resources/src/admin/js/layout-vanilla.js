@@ -35,23 +35,19 @@ function updateMainContentMargin(collapsed) {
     if (mainContent) {
         if (collapsed) {
             mainContent.classList.add('md:ml-0');
-            mainContent.classList.remove('md:ml-72');
+            mainContent.classList.remove('md:ml-64');
         } else {
             mainContent.classList.remove('md:ml-0');
-            mainContent.classList.add('md:ml-72');
+            mainContent.classList.add('md:ml-64');
         }
     }
 }
 
 // サイドバーの状態変更を監視
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('[Admin Layout] DOMContentLoaded, initializing...');
-
     // localStorageから保存された状態を読み込む
     const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
 
     // 初期状態を適用
     updateMainContentMargin(sidebarCollapsed);
-
-    console.log('[Admin Layout] Main content margin initialized, sidebar collapsed:', sidebarCollapsed);
 });

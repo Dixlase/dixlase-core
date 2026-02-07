@@ -324,7 +324,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 {{-- サイドバートグルボタン（モバイル・デスクトップ共通） --}}
 {{-- サイドバーの右端に配置（サイドバーの外側） --}}
 <button data-sidebar-toggle
-        class="fixed left-64 top-16 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 z-50"
+        class="fixed left-64 top-14 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 z-50"
         aria-label="Toggle sidebar menu">
     <i class="fas text-sm fa-chevron-left"></i>
 </button>
