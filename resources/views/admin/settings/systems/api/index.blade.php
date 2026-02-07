@@ -54,6 +54,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <x-form-toggle
                     name="api_enabled"
                     :checked="old('api_enabled', $settings['api_enabled']) == '1'"
+                    x-model="apiEnabled"
                 />
                 <p>{{ __('admin/settings/systems/api.api_enabled_help') }}</p>
             </fieldset>
@@ -87,7 +88,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </form>
 
     {{-- APIキー管理 --}}
-    <section class="mt-8">
+    <section class="mt-8 transition-opacity" :class="{ 'opacity-50 pointer-events-none': !apiEnabled }">
         <div class="flex items-center justify-between mb-4">
             <h2 class="mb-0">{{ __('admin/settings/systems/api.api_keys') }}</h2>
             <x-form-button
@@ -96,6 +97,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 icon="fas fa-plus"
                 :label="__('admin/settings/systems/api.create_key')"
                 @click="openModal('createKeyModal')"
+                xDisabled="!apiEnabled"
             />
         </div>
 
@@ -171,16 +173,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 <button type="button" @click="viewKey({{ $key->id }})" class="btn btn-sm btn-secondary" title="{{ __('admin/settings/systems/api.key_details') }}">
                                     <i class="fas fa-eye"></i>
                                 </button>
-                                <form action="{{ route('admin.settings.systems.api.regenerate-key', $key->id) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('admin/settings/systems/api.regenerate_confirm') }}')">
+                                <form id="regenerate-form-{{ $key->id }}" action="{{ route('admin.settings.systems.api.regenerate-key', $key->id) }}" method="POST" class="inline">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-warning" title="{{ __('admin/settings/systems/api.regenerate') }}">
+                                    <button type="button" @click="openModal('regenerateModal{{ $key->id }}')" class="btn btn-sm btn-warning" title="{{ __('admin/settings/systems/api.regenerate') }}">
                                         <i class="fas fa-sync-alt"></i>
                                     </button>
                                 </form>
-                                <form action="{{ route('admin.settings.systems.api.revoke-key', $key->id) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('admin/settings/systems/api.revoke_confirm') }}')">
+                                <form id="revoke-form-{{ $key->id }}" action="{{ route('admin.settings.systems.api.revoke-key', $key->id) }}" method="POST" class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" title="{{ __('common.delete') }}">
+                                    <button type="button" @click="openModal('revokeModal{{ $key->id }}')" class="btn btn-sm btn-danger" title="{{ __('common.delete') }}">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
@@ -215,6 +217,31 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
         </x-slot>
     </x-ui-modal>
+
+    {{-- 各APIキーの更新・削除確認モーダル --}}
+    @foreach($apiKeys as $key)
+        {{-- 再生成確認モーダル --}}
+        <x-ui-modal
+            id="regenerateModal{{ $key->id }}"
+            :title="__('admin/settings/systems/api.regenerate')"
+            :message="__('admin/settings/systems/api.regenerate_confirm')"
+            icon-type="warning"
+            :confirm_label="__('admin/settings/systems/api.regenerate')"
+            :cancel_label="__('common.cancel')"
+            form="regenerate-form-{{ $key->id }}"
+        />
+
+        {{-- 削除確認モーダル --}}
+        <x-ui-modal
+            id="revokeModal{{ $key->id }}"
+            :title="__('common.delete')"
+            :message="__('admin/settings/systems/api.revoke_confirm')"
+            icon-type="danger"
+            :confirm_label="__('common.delete')"
+            :cancel_label="__('common.cancel')"
+            form="revoke-form-{{ $key->id }}"
+        />
+    @endforeach
 
 </div>
 @endsection
@@ -349,6 +376,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <script @cspNonce>
 function apiSettings() {
     return {
+        apiEnabled: {{ old('api_enabled', $settings['api_enabled']) ? 'true' : 'false' }},
         showCreateModal: false,
         showViewModal: false,
         keyDetails: '',
