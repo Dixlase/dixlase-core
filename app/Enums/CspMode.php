@@ -209,11 +209,19 @@ enum CspMode: int
     public function features(): array
     {
         $baseKey = $this->translationKey();
-        return [
+        $features = [
             __($baseKey . '_feature1'),
             __($baseKey . '_feature2'),
             __($baseKey . '_feature3'),
         ];
+        
+        // feature4が存在する場合は追加
+        $feature4Key = $baseKey . '_feature4';
+        if (__($feature4Key) !== $feature4Key) {
+            $features[] = __($feature4Key);
+        }
+        
+        return $features;
     }
 
     /**
