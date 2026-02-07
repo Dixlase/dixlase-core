@@ -62,18 +62,25 @@ window.appearanceMode = function (defaultValue) {
  */
 function initThemeStore() {
     const defaultAppearance = document.body?.dataset.defaultAppearance ?? '0';
+    const storedTheme = localStorage.getItem('appearance');
+    const finalTheme = storedTheme ?? defaultAppearance;
 
     window.themeStore = {
-        theme: localStorage.getItem('appearance') ?? defaultAppearance,
+        theme: finalTheme,
         isDark: false,
 
         applyTheme() {
-            this.isDark = this.theme === '2' || (this.theme === '0' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            this.isDark = this.theme === '2' || (this.theme === '0' && prefersDark);
+
             localStorage.setItem('appearance', this.theme);
             document.documentElement.classList.toggle('dark', this.isDark);
             document.documentElement.classList.toggle('light', !this.isDark);
         }
     };
+
+    // 初期テーマを適用
+    window.themeStore.applyTheme();
 }
 
 if (document.readyState === 'loading') {

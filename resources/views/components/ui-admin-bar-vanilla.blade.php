@@ -130,7 +130,7 @@
 
     {{-- 右側スライドインユーザーメニュー（モバイル） --}}
     <div data-mobile-user-menu
-         class="fixed right-0 top-0 w-64 h-full shadow-lg transform transition-transform duration-300 ease-in-out z-50 bg-white dark:bg-black border-l border-gray-300 dark:border-gray-700 translate-x-full">
+         class="sm:hidden fixed right-0 top-0 w-64 h-full shadow-lg transform transition-transform duration-300 ease-in-out z-50 bg-white dark:bg-black border-l border-gray-300 dark:border-gray-700 translate-x-full">
         
         {{-- 閉じるボタン --}}
         <button data-mobile-user-menu-close class="absolute top-4 right-4 p-2 text-gray-700 dark:text-gray-300">
