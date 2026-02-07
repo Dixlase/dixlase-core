@@ -46,6 +46,9 @@ class CleanupLoginAttempts extends Command
      */
     public function handle()
     {
+        $this->warn('This command is deprecated. Please use: php artisan dls:cleanup --type=login_attempts');
+        $this->newLine();
+        
         $deleteAll = $this->option('all');
         $days = (int) $this->option('days');
         $force = $this->option('force');

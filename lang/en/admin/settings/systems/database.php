@@ -15,6 +15,10 @@
 return [
     'heading' => 'Database Management',
     'description' => 'Clean up old database records to maintain system performance',
+    'core_cleanup_heading' => 'Core Table Cleanup',
+    'core_cleanup_description' => 'Cleanup configuration for tables used by Dixlase core system.',
+    'default_retention' => 'Default retention: :days days',
+    'expired_only' => 'Expired only',
     'all_cleanup_button' => 'Clean Up All',
     'all_cleanup_description' => 'Clean up all database tables with a common retention period',
     'all_cleanup_warning' => 'This operation cannot be undone.',
