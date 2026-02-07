@@ -30,7 +30,6 @@ const accordionStates = {};
 
 // 親アコーディオンの高さを再計算する
 function updateParentAccordionHeight(element) {
-    console.log('[Sidebar] Updating parent accordion heights for:', element.id);
     let parent = element.parentElement;
     let level = 0;
     while (parent) {
@@ -44,13 +43,6 @@ function updateParentAccordionHeight(element) {
                 // 親アコーディオンは十分に大きな値に設定（子のアニメーションを妨げない）
                 const newHeight = '2000px';
                 parent.style.maxHeight = newHeight;
-
-                console.log(`[Sidebar] Level ${level}: ${parent.id}`, {
-                    isOpen,
-                    oldHeight,
-                    newHeight
-                });
-                console.log(`[Sidebar] Updated ${parent.id} height: ${oldHeight} -> ${newHeight}`);
             }
             level++;
         }
@@ -81,7 +73,6 @@ function toggleAccordion(key, button, content) {
     // コンテンツの表示/非表示
     if (newState) {
         content.style.display = 'block';
-        console.log(`[Sidebar] Opening ${key}: display set to block`);
 
         // アニメーション用に少し遅延
         setTimeout(() => {
@@ -90,38 +81,30 @@ function toggleAccordion(key, button, content) {
             content.style.maxHeight = targetHeight + 'px';
             content.style.opacity = '1';
 
-            console.log(`[Sidebar] Opening ${key}: maxHeight set to ${targetHeight}px, starting animation`);
-
             // 親アコーディオンの高さを即座に更新（アニメーション開始と同時）
-            console.log(`[Sidebar] Updating parent immediately for ${key}`);
             updateParentAccordionHeight(content);
 
             // アニメーション中も定期的に親の高さを更新（100ms, 200ms）
             setTimeout(() => {
-                console.log(`[Sidebar] Mid-animation update (100ms) for ${key}`);
                 updateParentAccordionHeight(content);
             }, 100);
 
             setTimeout(() => {
-                console.log(`[Sidebar] Mid-animation update (200ms) for ${key}`);
                 updateParentAccordionHeight(content);
             }, 200);
 
             // アニメーション完了後にも再更新（より正確な高さに）
             setTimeout(() => {
-                console.log(`[Sidebar] Final update (320ms) for ${key}`);
                 updateParentAccordionHeight(content);
             }, 320);
         }, 10);
     } else {
-        console.log(`[Sidebar] Closing ${key}: starting close animation`);
         content.style.maxHeight = '0';
         content.style.opacity = '0';
         // 親アコーディオンの高さを即座に更新
         updateParentAccordionHeight(content);
         setTimeout(() => {
             content.style.display = 'none';
-            console.log(`[Sidebar] Closed ${key}: display set to none`);
         }, 300);
     }
 }
@@ -179,29 +162,69 @@ function initSidebarAccordions() {
     console.log('[Sidebar] Accordion initialized, states:', accordionStates);
 }
 
-// モバイルサイドバートグルの初期化
-function initMobileSidebarToggle() {
-    const mobileToggle = document.querySelector('[data-mobile-sidebar-toggle]');
+// サイドバートグルの初期化（モバイル・デスクトップ共通）
+function initSidebarToggle() {
+    const sidebarToggle = document.querySelector('[data-sidebar-toggle]');
     const sidebar = document.querySelector('[data-mobile-sidebar]');
+    const mainContent = document.querySelector('main');
 
-    if (mobileToggle && sidebar) {
-        let isOpen = false;
+    if (sidebarToggle && sidebar) {
+        // localStorageから初期状態を読み込む
+        let isOpen = localStorage.getItem('sidebarCollapsed') !== 'true';
 
-        mobileToggle.addEventListener('click', function (e) {
+        // トランジションを一時的に無効化
+        sidebar.style.transition = 'none';
+
+        // 初期状態を適用（デスクトップのみ）
+        if (window.innerWidth >= 768) { // md breakpoint
+            if (isOpen) {
+                sidebar.classList.remove('-translate-x-64');
+                sidebar.classList.add('translate-x-0');
+                if (mainContent) {
+                    mainContent.classList.remove('md:ml-0');
+                    mainContent.classList.add('md:ml-72');
+                }
+            } else {
+                sidebar.classList.add('-translate-x-64');
+                sidebar.classList.remove('translate-x-0');
+                if (mainContent) {
+                    mainContent.classList.add('md:ml-0');
+                    mainContent.classList.remove('md:ml-72');
+                }
+            }
+        }
+
+        // トランジションを再有効化
+        setTimeout(() => {
+            sidebar.style.transition = '';
+        }, 50);
+
+        sidebarToggle.addEventListener('click', function (e) {
             e.preventDefault();
             isOpen = !isOpen;
 
             // サイドバーの表示/非表示
             if (isOpen) {
-                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.remove('-translate-x-64');
                 sidebar.classList.add('translate-x-0');
             } else {
-                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.add('-translate-x-64');
                 sidebar.classList.remove('translate-x-0');
             }
 
+            // メインコンテンツのマージン調整（デスクトップのみ）
+            if (mainContent && window.innerWidth >= 768) {
+                if (isOpen) {
+                    mainContent.classList.remove('md:ml-0');
+                    mainContent.classList.add('md:ml-72');
+                } else {
+                    mainContent.classList.add('md:ml-0');
+                    mainContent.classList.remove('md:ml-72');
+                }
+            }
+
             // アイコンの切り替え
-            const icon = mobileToggle.querySelector('i');
+            const icon = sidebarToggle.querySelector('i');
             if (icon) {
                 if (isOpen) {
                     icon.classList.remove('fa-chevron-right');
@@ -211,9 +234,14 @@ function initMobileSidebarToggle() {
                     icon.classList.add('fa-chevron-right');
                 }
             }
+
+            // localStorageに保存
+            localStorage.setItem('sidebarCollapsed', !isOpen);
+
+            console.log('[Sidebar] Sidebar toggled:', isOpen);
         });
 
-        console.log('[Sidebar] Mobile toggle initialized');
+        console.log('[Sidebar] Sidebar toggle initialized, isOpen:', isOpen);
     }
 }
 
@@ -223,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     setTimeout(function () {
         initSidebarAccordions();
-        initMobileSidebarToggle();
+        initSidebarToggle();
         console.log('[Sidebar] Vanilla JS initialized');
     }, 100);
 });
