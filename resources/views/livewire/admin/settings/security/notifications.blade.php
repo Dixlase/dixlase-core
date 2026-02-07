@@ -18,25 +18,79 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-<div class="mx-auto">
-    <h2 class="text-xl font-bold mb-4">テスト: 最小限のLivewireフォーム</h2>
-    
-    <form wire:submit="save">
-        <div class="mb-4">
-            <label class="flex items-center space-x-2">
-                <input type="checkbox" wire:model="notificationEnabled" class="rounded">
-                <span>エラー通知を有効にする (現在: {{ $notificationEnabled ? 'ON' : 'OFF' }})</span>
+<div>
+    <!-- エラー通知設定 -->
+    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            {{ __('admin.settings.security.error_notification') }}
+        </h2>
+
+        <!-- メール設定未完了の警告 -->
+        @if(!$mailConnectionTested || !$mailSendTested || !$mailReceiveTested)
+            <div class="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+                <div class="flex">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3"></i>
+                    <div class="text-sm text-yellow-700 dark:text-yellow-300">
+                        {!! __('admin.settings.security.error_notification_mail_test_required') !!}
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- 通知有効/無効 -->
+        <div class="mb-6">
+            <label class="flex items-center space-x-3 cursor-pointer">
+                <input 
+                    type="checkbox" 
+                    wire:model="notificationEnabled"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                >
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-300">
+                    {{ __('admin.settings.security.notification_enabled') }}
+                </span>
             </label>
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                {{ __('admin.settings.security.notification_enabled_help') }}
+            </p>
         </div>
-        
-        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">
-            保存
-        </button>
-    </form>
-    
-    <div class="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded">
-        <p>デバッグ情報:</p>
-        <p>notificationEnabled: {{ $notificationEnabled ? 'true' : 'false' }}</p>
-        <p>Livewire ID: {{ $this->getId() }}</p>
+
+        <!-- ログレベル選択 -->
+        <div class="mb-6" x-data="{ enabled: @entangle('notificationEnabled') }">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {{ __('admin.settings.security.notification_log_levels') }}
+            </label>
+            <div class="space-y-2" :class="{ 'opacity-50 pointer-events-none': !enabled }">
+                @foreach(\App\Enums\LogLevel::getNotificationLevelStrings() as $level => $levelString)
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input 
+                            type="checkbox" 
+                            wire:model="notificationLogLevels"
+                            value="{{ $level }}"
+                            :disabled="!enabled"
+                            class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                        >
+                        <span class="text-sm text-gray-900 dark:text-gray-300">
+                            {{ __('admin.settings.security.log_levels.' . $levelString) }}
+                        </span>
+                    </label>
+                @endforeach
+            </div>
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                {{ __('admin.settings.security.notification_log_levels_help') }}
+            </p>
+        </div>
+    </div>
+
+    <!-- 保存ボタン（Livewire版） -->
+    <div class="mt-6">
+        <x-admin.livewire-save-button
+            wireClick="save"
+            showConfirmation="showSaveConfirmation"
+            :label="__('common.save')"
+            :title="__('common.save_confirmation_title')"
+            :message="__('common.save_confirmation_message')"
+            :confirmLabel="__('common.save')"
+            :cancelLabel="__('common.cancel')"
+        />
     </div>
 </div>
