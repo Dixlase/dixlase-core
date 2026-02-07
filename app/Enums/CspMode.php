@@ -43,13 +43,14 @@ enum CspMode: int
      */
     case Standard = 1;
 
-    /**
-     * 厳格モード
+    /*
+     * 厳格モード（初期バージョンでは未実装）
      * - 最も厳しいポリシー
      * - インラインスクリプト禁止
      * - 高セキュリティ要件向け
-     */
+     *
     case Strict = 2;
+     */
 
     /**
      * 翻訳キーを取得
@@ -83,7 +84,7 @@ enum CspMode: int
         return match ($this) {
             self::Development => 'development',
             self::Standard => 'standard',
-            self::Strict => 'strict',
+            // self::Strict => 'strict', // 初期バージョンでは未実装
         };
     }
 
@@ -95,7 +96,7 @@ enum CspMode: int
         return match ($value) {
             'development' => self::Development,
             'standard' => self::Standard,
-            'strict' => self::Strict,
+            // 'strict' => self::Strict, // 初期バージョンでは未実装
             default => null,
         };
     }
@@ -109,7 +110,7 @@ enum CspMode: int
         return match ($intValue) {
             0 => self::Development,
             1 => self::Standard,
-            2 => self::Strict,
+            // 2 => self::Strict, // 初期バージョンでは未実装
             default => null,
         };
     }
@@ -122,7 +123,7 @@ enum CspMode: int
         return match ($this) {
             self::Development => 'text-yellow-600 dark:text-yellow-400',
             self::Standard => 'text-green-600 dark:text-green-400',
-            self::Strict => 'text-red-600 dark:text-red-400',
+            // self::Strict => 'text-red-600 dark:text-red-400', // 初期バージョンでは未実装
         };
     }
 
@@ -134,7 +135,7 @@ enum CspMode: int
         return match ($this) {
             self::Development => 'yellow',
             self::Standard => 'blue',
-            self::Strict => 'red',
+            // self::Strict => 'red', // 初期バージョンでは未実装
         };
     }
 
@@ -146,7 +147,7 @@ enum CspMode: int
         return match ($this) {
             self::Development => 'fas fa-code',
             self::Standard => 'fas fa-shield-alt',
-            self::Strict => 'fas fa-lock',
+            // self::Strict => 'fas fa-lock', // 初期バージョンでは未実装
         };
     }
 
@@ -157,7 +158,8 @@ enum CspMode: int
     {
         return match ($this) {
             self::Development => false,
-            self::Standard, self::Strict => true,
+            self::Standard => true,
+            // self::Strict => true, // 初期バージョンでは未実装
         };
     }
 
