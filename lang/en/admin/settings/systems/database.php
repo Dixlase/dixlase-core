@@ -57,6 +57,7 @@ return [
     ],
     'plugin_cleanup_heading' => 'Plugin Data Cleanup',
     'plugin_cleanup_description' => 'Cleanup targets provided by enabled plugins. Defined in each plugin\'s plugin.json.',
+    'plugin_cleanup_description_config' => 'Cleanup targets provided by enabled plugins. Defined in each plugin\'s database-cleanup.php.',
     'password_reset_tokens' => [
         'name' => 'Password Reset Tokens',
         'description' => 'Clean up old password reset token records',

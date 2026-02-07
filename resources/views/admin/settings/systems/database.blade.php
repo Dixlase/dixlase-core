@@ -30,7 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <section class="flex flex-col md:flex-row md:items-center justify-center md:justify-between">
             <div class="flex-1 mb-4 md:mb-0 md:mr-6">
                 <h3 class="text-center md:text-left">{{ $info['name'] }}</h3>
-                <p class="mb-2">{{ $info['description'] }}</p>
+                <p class="mb-2 text-sm text-gray-600 dark:text-gray-400">{{ $info['description'] }}</p>
                 <code class="text-xs text-gray-500 dark:text-gray-400">{{ $info['table'] }}</code>
                 
                 @if($info['default_days'])
@@ -82,7 +82,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     variant="danger"
                     :label="__('admin/settings/systems/database.cleanup_button')"
                     icon="fas fa-database"
-                    onclick="openModal('cleanupModal{{ ucfirst($type) }}')"
+                    @click="openModal('cleanupModal{{ ucfirst($type) }}')"
                 />
             </div>
         </section>
@@ -123,7 +123,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 variant="danger"
                 :label="__('admin/settings/systems/database.all_cleanup_button')"
                 icon="fas fa-trash-alt"
-                onclick="openModal('cleanupAllModal')"
+                @click="openModal('cleanupAllModal')"
             />
         </div>
     </section>
@@ -132,7 +132,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if(!empty($pluginCleanupInfo))
     <section>
         <h2>{{ __('admin/settings/systems/database.plugin_cleanup_heading') }}</h2>
-        <p class="mb-6">{{ __('admin/settings/systems/database.plugin_cleanup_description') }}</p>
+        <p class="mb-6">{{ __('admin/settings/systems/database.plugin_cleanup_description_config') }}</p>
         
         @php
             $groupedByPlugin = collect($pluginCleanupInfo)->groupBy('plugin_slug');
@@ -152,15 +152,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <h4 class="font-medium">{{ $info['name'] }}</h4>
                         <code class="text-xs text-gray-500 dark:text-gray-400">{{ $info['table'] }}</code>
                         
-                        <form id="cleanupForm{{ Str::camel($key) }}" action="{{ route('admin.settings.systems.database.cleanup') }}" method="POST" class="mt-2">
+                        @php
+                            $modalId = 'cleanupModal' . Str::camel(str_replace(':', '', $key));
+                        @endphp
+                        <form id="cleanupForm{{ Str::camel(str_replace(':', '', $key)) }}" action="{{ route('admin.settings.systems.database.cleanup') }}" method="POST" class="mt-2">
                             @csrf
                             <input type="hidden" name="type" value="{{ $key }}">
                             <div class="flex items-center gap-2">
-                                <label for="days_{{ Str::camel($key) }}" class="text-sm">
+                                <label for="days_{{ Str::camel(str_replace(':', '', $key)) }}" class="text-sm">
                                     {{ __('admin/settings/systems/database.days_label') }}
                                 </label>
                                 <input type="number" 
-                                    id="days_{{ Str::camel($key) }}" 
+                                    id="days_{{ Str::camel(str_replace(':', '', $key)) }}" 
                                     name="days" 
                                     value="{{ $info['default_days'] }}" 
                                     min="0" 
@@ -177,7 +180,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             size="sm"
                             :label="__('admin/settings/systems/database.cleanup_button')"
                             icon="fas fa-trash"
-                            onclick="openModal('cleanupModal{{ Str::camel($key) }}')"
+                            @click="openModal('{{ $modalId }}')"
                         />
                     </div>
                 </div>
@@ -187,36 +190,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </section>
     @endif
 
-    <section class="info-section">
-        <div>
-            <h2>{{ __('admin/settings/systems/database.info_title') }}</h2>
-            <dl class="text-sm">
-                <dt class="font-semibold">{{ __('admin/settings/systems/database.login_attempts.name') }}</dt>
-                <dd class="font-normal mb-2">{{ __('admin/settings/systems/database.info_login_attempts') }}</dd>
-                
-                <dt class="font-semibold">{{ __('admin/settings/systems/database.password_reset_tokens.name') }}</dt>
-                <dd class="font-normal mb-2">{{ __('admin/settings/systems/database.info_password_reset') }}</dd>
-                
-                <dt class="font-semibold">{{ __('admin/settings/systems/database.two_fa_attempts.name') }}</dt>
-                <dd class="font-normal mb-2">{{ __('admin/settings/systems/database.info_two_fa_attempts') }}</dd>
-                
-                <dt class="font-semibold">{{ __('admin/settings/systems/database.two_fa_tokens.name') }}</dt>
-                <dd class="font-normal mb-2">{{ __('admin/settings/systems/database.info_two_fa_tokens') }}</dd>
-                
-                <dt class="font-semibold">{{ __('admin/settings/systems/database.recovery_codes.name') }}</dt>
-                <dd class="font-normal mb-2">{{ __('admin/settings/systems/database.info_recovery_codes') }}</dd>
-                
-                <dt class="font-semibold">{{ __('admin/settings/systems/database.passkeys.name') }}</dt>
-                <dd class="font-normal mb-2">{{ __('admin/settings/systems/database.info_passkeys') }}</dd>
-                
-                <dt class="font-semibold">{{ __('admin/settings/systems/database.cache_data.name') }}</dt>
-                <dd class="font-normal mb-2">{{ __('admin/settings/systems/database.info_cache') }}</dd>
-                
-                <dt class="font-semibold">{{ __('admin/settings/systems/database.sessions.name') }}</dt>
-                <dd class="font-normal">{{ __('admin/settings/systems/database.info_sessions') }}</dd>
-            </dl>
-        </div>
-    </section>
+   
 </section>
 </div>
 
@@ -261,14 +235,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @if(!empty($pluginCleanupInfo))
 @foreach($pluginCleanupInfo as $key => $info)
 <x-ui-modal
-    id="cleanupModal{{ Str::camel($key) }}"
+    id="cleanupModal{{ Str::camel(str_replace(':', '', $key)) }}"
     title="{{ __('admin/settings/systems/database.modal.title') }}"
     message="{{ __('admin/settings/systems/database.modal.message_plugin', ['name' => $info['name'], 'plugin' => $info['plugin_name']]) }}"
     confirm-label="{{ __('common.execute') }}"
     cancel-label="{{ __('common.cancel') }}"
     icon-type="danger"
     confirm-color="red"
-    form="cleanupForm{{ Str::camel($key) }}"
+    form="cleanupForm{{ Str::camel(str_replace(':', '', $key)) }}"
 />
 @endforeach
 @endif

@@ -57,6 +57,7 @@ return [
     ],
     'plugin_cleanup_heading' => 'プラグインデータのクリーンアップ',
     'plugin_cleanup_description' => '有効なプラグインが提供するクリーンアップ対象テーブルです。各プラグインのplugin.jsonで定義されています。',
+    'plugin_cleanup_description_config' => '有効なプラグインが提供するクリーンアップ対象テーブルです。各プラグインのdatabase-cleanup.phpで定義されています。',
     'password_reset_tokens' => [
         'name' => 'パスワードリセットトークン',
         'description' => '古いパスワードリセットトークン記録をクリーンアップします',
