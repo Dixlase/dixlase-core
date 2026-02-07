@@ -23,7 +23,7 @@
         <x-security.csp-safe-mode-banner />
         
         <!-- Admin Bar (Header) -->
-        <x-ui-admin-bar :isAdminLayout="true" />
+        <x-ui-admin-bar isAdminLayout="true" />
         
         <div class="min-h-screen flex">
             <!-- Navigation Sidebar (Desktop only) -->

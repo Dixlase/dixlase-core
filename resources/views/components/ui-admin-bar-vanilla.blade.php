@@ -128,18 +128,6 @@
          class="hidden fixed inset-0 bg-black bg-opacity-50 z-40" 
          aria-hidden="true"></div>
 
-    {{-- 左側スライドインサイドバー（モバイル） --}}
-    <div class="sm:hidden fixed h-full inset-y-12 left-0 transform transition-transform duration-300 ease-in-out z-50 -translate-x-64"
-         data-mobile-sidebar>
-        
-        {{-- スクロール可能なメニュー部分（タブボタン含む） --}}
-        <div class="flex-1 h-full ">
-            @include('admin.partials.sidebar-vanilla', [
-                'route_name' => Route::currentRouteName()
-            ])
-        </div>
-    </div>
-
     {{-- 右側スライドインユーザーメニュー（モバイル） --}}
     <div data-mobile-user-menu
          class="fixed right-0 top-0 w-64 h-full shadow-lg transform transition-transform duration-300 ease-in-out z-50 bg-white dark:bg-black border-l border-gray-300 dark:border-gray-700 translate-x-full">

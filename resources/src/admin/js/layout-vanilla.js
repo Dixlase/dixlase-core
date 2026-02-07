@@ -74,10 +74,10 @@ function updateSidebarState(collapsed) {
     if (mainContent) {
         if (collapsed) {
             mainContent.classList.add('md:ml-0');
-            mainContent.classList.remove('md:ml-64');
+            mainContent.classList.remove('md:ml-72');
         } else {
             mainContent.classList.remove('md:ml-0');
-            mainContent.classList.add('md:ml-64');
+            mainContent.classList.add('md:ml-72');
         }
     }
 }

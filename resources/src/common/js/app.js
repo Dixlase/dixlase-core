@@ -24,6 +24,7 @@ import './appearance';
 import './livewire-notification';
 import '../../admin/js/layout-vanilla';
 import '../../admin/js/sidebar-vanilla';
+import '../../admin/js/admin-bar-vanilla';
 /*
 import '../../components/auth/js/account-verification';
 import '../../components/js/form-color';
