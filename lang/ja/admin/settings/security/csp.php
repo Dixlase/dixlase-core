@@ -31,6 +31,7 @@ return [
     'mode_standard_feature1' => '素の<script>タグはブロック',
     'mode_standard_feature2' => '@dixScript等のヘルパー経由ならOK',
     'mode_standard_feature3' => 'ほとんどのプラグイン・テーマが動作',
+    'mode_standard_feature4' => 'unsafe-evalを限定的に許可（Alpine.js使用のため）。',
     // 'mode_strict' => '厳格モード', // 初期バージョンでは未実装
     // 'mode_strict_desc' => '最高レベルのセキュリティ。インラインスクリプトを一切許可しません。',
     // 'mode_strict_feature1' => 'インラインJS・CSS完全禁止',

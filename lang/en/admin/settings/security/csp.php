@@ -31,6 +31,7 @@ return [
     'mode_standard_feature1' => 'Raw <script> tags are blocked',
     'mode_standard_feature2' => '@dixScript helpers are allowed',
     'mode_standard_feature3' => 'Most plugins/themes work',
+    'mode_standard_feature4' => 'Allows unsafe-eval for Alpine.js usage',
     // 'mode_strict' => 'Strict Mode', // Not implemented in initial version
     // 'mode_strict_desc' => 'Maximum security level. No inline scripts allowed at all.',
     // 'mode_strict_feature1' => 'Inline JS/CSS completely forbidden',
