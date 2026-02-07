@@ -220,8 +220,16 @@ class DatabaseCleanupService
         $info = [];
         
         foreach ($coreConfig as $key => $config) {
-            $description = $config['description'] ?? '';
+            // 名前を取得
+            $name = $config['name'] ?? '';
+            if (is_string($name) && str_contains($name, '.')) {
+                $name = __($name);
+            } elseif (is_array($name)) {
+                $name = $name[$locale] ?? $name['en'] ?? $name['ja'] ?? '';
+            }
             
+            // 説明を取得
+            $description = $config['description'] ?? '';
             if (is_string($description) && str_contains($description, '.')) {
                 $description = __($description);
             } elseif (is_array($description)) {
@@ -229,7 +237,7 @@ class DatabaseCleanupService
             }
             
             $info[$key] = [
-                'name' => $description,
+                'name' => $name,
                 'description' => $description,
                 'default_days' => $config['default_days'],
                 'table' => $config['table'],
@@ -249,8 +257,16 @@ class DatabaseCleanupService
         $info = [];
         
         foreach ($pluginConfig as $key => $config) {
-            $description = $config['description'] ?? '';
+            // 名前を取得
+            $name = $config['name'] ?? '';
+            if (is_string($name) && str_contains($name, '.')) {
+                $name = __($name);
+            } elseif (is_array($name)) {
+                $name = $name[$locale] ?? $name['en'] ?? $name['ja'] ?? '';
+            }
             
+            // 説明を取得
+            $description = $config['description'] ?? '';
             if (is_string($description) && str_contains($description, '.')) {
                 $description = __($description);
             } elseif (is_array($description)) {
@@ -260,7 +276,7 @@ class DatabaseCleanupService
             $info[$key] = [
                 'plugin_name' => $config['plugin_name'],
                 'plugin_slug' => $config['plugin_slug'],
-                'name' => $description ?: $config['table'],
+                'name' => $name ?: $config['table'],
                 'description' => $description,
                 'default_days' => $config['default_days'],
                 'table' => $config['table'],
