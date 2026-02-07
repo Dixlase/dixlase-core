@@ -172,9 +172,6 @@ function initSidebarToggle() {
         // localStorageから初期状態を読み込む
         let isOpen = localStorage.getItem('sidebarCollapsed') !== 'true';
 
-        // トランジションを一時的に無効化
-        sidebar.style.transition = 'none';
-
         // 初期状態を適用（デスクトップのみ）
         if (window.innerWidth >= 768) { // md breakpoint
             if (isOpen) {
@@ -194,9 +191,15 @@ function initSidebarToggle() {
             }
         }
 
-        // トランジションを再有効化
+        // トランジションを再有効化（サイドバーとメインコンテンツ）
         setTimeout(() => {
             sidebar.style.transition = '';
+            sidebar.classList.add('transition-transform', 'duration-300');
+
+            if (mainContent) {
+                mainContent.style.transition = '';
+                mainContent.classList.add('transition-all', 'duration-300');
+            }
         }, 50);
 
         sidebarToggle.addEventListener('click', function (e) {
@@ -243,57 +246,69 @@ function initSidebarToggle() {
 
         // ウィンドウリサイズ時の処理
         let resizeTimer;
+        let previousIsMobile = window.innerWidth < 768;
+
         window.addEventListener('resize', function () {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(function () {
                 const isMobile = window.innerWidth < 768;
 
-                if (isMobile) {
-                    // モバイル表示に切り替わったらサイドバーを非表示
-                    sidebar.classList.add('-translate-x-64');
-                    sidebar.classList.remove('translate-x-0');
-                    isOpen = false;
+                // モバイル⇔デスクトップの切り替え時のみ処理
+                if (isMobile !== previousIsMobile) {
+                    previousIsMobile = isMobile;
 
-                    // アイコンを右向きに
-                    const icon = sidebarToggle.querySelector('i');
-                    if (icon) {
-                        icon.classList.remove('fa-chevron-left');
-                        icon.classList.add('fa-chevron-right');
-                    }
-                } else {
-                    // デスクトップ表示に切り替わったらlocalStorageの状態を復元
-                    const savedIsOpen = localStorage.getItem('sidebarCollapsed') !== 'true';
-                    isOpen = savedIsOpen;
-
-                    if (isOpen) {
-                        sidebar.classList.remove('-translate-x-64');
-                        sidebar.classList.add('translate-x-0');
-                        if (mainContent) {
-                            mainContent.classList.remove('md:ml-0');
-                            mainContent.classList.add('md:ml-64');
-                        }
-                    } else {
+                    if (isMobile) {
+                        // モバイル表示に切り替わったらサイドバーを非表示
                         sidebar.classList.add('-translate-x-64');
                         sidebar.classList.remove('translate-x-0');
-                        if (mainContent) {
-                            mainContent.classList.add('md:ml-0');
-                            mainContent.classList.remove('md:ml-64');
-                        }
-                    }
+                        isOpen = false;
 
-                    // アイコンを更新
-                    const icon = sidebarToggle.querySelector('i');
-                    if (icon) {
-                        if (isOpen) {
-                            icon.classList.remove('fa-chevron-right');
-                            icon.classList.add('fa-chevron-left');
-                        } else {
+                        // メインコンテンツのマージンをリセット
+                        if (mainContent) {
+                            mainContent.classList.remove('md:ml-0', 'md:ml-64');
+                        }
+
+                        // アイコンを右向きに
+                        const icon = sidebarToggle.querySelector('i');
+                        if (icon) {
                             icon.classList.remove('fa-chevron-left');
                             icon.classList.add('fa-chevron-right');
                         }
+                    } else {
+                        // デスクトップ表示に切り替わったらlocalStorageの状態を復元
+                        const savedIsOpen = localStorage.getItem('sidebarCollapsed') !== 'true';
+                        isOpen = savedIsOpen;
+
+                        if (isOpen) {
+                            sidebar.classList.remove('-translate-x-64');
+                            sidebar.classList.add('translate-x-0');
+                            if (mainContent) {
+                                mainContent.classList.remove('md:ml-0');
+                                mainContent.classList.add('md:ml-64');
+                            }
+                        } else {
+                            sidebar.classList.add('-translate-x-64');
+                            sidebar.classList.remove('translate-x-0');
+                            if (mainContent) {
+                                mainContent.classList.add('md:ml-0');
+                                mainContent.classList.remove('md:ml-64');
+                            }
+                        }
+
+                        // アイコンを更新
+                        const icon = sidebarToggle.querySelector('i');
+                        if (icon) {
+                            if (isOpen) {
+                                icon.classList.remove('fa-chevron-right');
+                                icon.classList.add('fa-chevron-left');
+                            } else {
+                                icon.classList.remove('fa-chevron-left');
+                                icon.classList.add('fa-chevron-right');
+                            }
+                        }
                     }
                 }
-            }, 250);
+            }, 100);
         });
     }
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', env('APP_LOCALE', config('app.locale', 'en'))) }}">
+<html lang="{{ str_replace('_', '-', env('APP_LOCALE', config('app.locale', 'en'))) }}" class="{{ $htmlClass ?? '' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,7 +17,7 @@
     <x-ui-livewire-notification />
 
 </head>
-<body class="admin font-sans antialiased transition-colors-unified dark:bg-black dark:text-white">
+<body class="admin font-sans antialiased transition-colors-unified dark:bg-black dark:text-white" data-default-appearance="{{ $appearance }}">
     <div class="min-h-screen">
         <!-- CSP Safe Mode Banner -->
         <x-security.csp-safe-mode-banner />
@@ -27,9 +27,10 @@
         
         <div class="min-h-screen flex">
             <!-- Navigation Sidebar -->
-            <aside class="fixed h-full w-64 flex-shrink-0 border-gray-300 transition-transform duration-300 -translate-x-64 z-50"
+            <aside class="fixed h-full w-64 flex-shrink-0 border-gray-300 -translate-x-64 z-50"
                    role="navigation" aria-label="Main navigation"
-                   data-mobile-sidebar>
+                   data-mobile-sidebar
+                   style="transition: none;">
                 @include('admin.partials.sidebar-vanilla', [
                     'transitionEnabled' => $transitionEnabled ?? null,
                     'route_name' => Route::currentRouteName()
@@ -37,7 +38,7 @@
             </aside>
 
             <!-- Main Content Area -->
-            <main class="mt-12 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white transition-all duration-300" role="main">
+            <main class="mt-12 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white" role="main" style="transition: none;">
 
                 <!-- Page Header -->
                 @if(!empty($heading))
