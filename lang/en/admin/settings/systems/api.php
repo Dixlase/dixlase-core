@@ -17,7 +17,7 @@ return [
     'general_settings' => 'General Settings',
     'api_enabled' => 'Enable API',
     'api_enabled_help' => 'Allow access via API from external systems.',
-    'signature_required' => 'Signature Verification',
+    'signature_required' => 'Require Signature Verification',
     'signature_required_help' => 'Require signature verification for API requests. Recommended for enhanced security.',
     'default_rate_limit' => 'Default Rate Limit',
     'rate_limit_help' => 'Default rate limit applied when no individual setting is configured for an API key.',
