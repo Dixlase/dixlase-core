@@ -59,7 +59,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p>{{ __('admin/settings/systems/api.api_enabled_help') }}</p>
             </fieldset>
 
-            <fieldset>
+            <fieldset class="transition-opacity" :class="{ 'opacity-50 pointer-events-none': apiEnabled !== '1' }">
                 <legend>{{ __('admin/settings/systems/api.signature_required') }}</legend>
                 <x-form-toggle
                     name="api_signature_required"
@@ -68,7 +68,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p>{{ __('admin/settings/systems/api.signature_required_help') }}</p>
             </fieldset>
 
-            <fieldset>
+            <fieldset class="transition-opacity" :class="{ 'opacity-50 pointer-events-none': apiEnabled !== '1' }">
                 <legend>{{ __('admin/settings/systems/api.default_rate_limit') }}</legend>
                 <div class="flex items-center gap-2">
                     <x-form-text
@@ -88,7 +88,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </form>
 
     {{-- APIキー管理 --}}
-    <section class="mt-8 transition-opacity" :class="{ 'opacity-50 pointer-events-none': !apiEnabled }">
+    <section class="mt-8 transition-opacity" :class="{ 'opacity-50 pointer-events-none': apiEnabled !== '1' }">
         <div class="flex items-center justify-between mb-4">
             <h2 class="mb-0">{{ __('admin/settings/systems/api.api_keys') }}</h2>
             <x-form-button
@@ -97,7 +97,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 icon="fas fa-plus"
                 :label="__('admin/settings/systems/api.create_key')"
                 @click="openModal('createKeyModal')"
-                xDisabled="!apiEnabled"
+                xDisabled="apiEnabled !== '1'"
             />
         </div>
 
@@ -376,7 +376,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <script @cspNonce>
 function apiSettings() {
     return {
-        apiEnabled: {{ old('api_enabled', $settings['api_enabled']) ? 'true' : 'false' }},
+        apiEnabled: '{{ old('api_enabled', $settings['api_enabled']) ? '1' : '0' }}',
         showCreateModal: false,
         showViewModal: false,
         keyDetails: '',
