@@ -1,6 +1,6 @@
 {{-- 
 管理者ログイン時のみ表示される管理バー（Vanilla JS版）
-@props(['isAdminLayout' => false]) - 管理画面レイアウトモードの場合true
+@props(['isAdminLayout' => false, 'transitionEnabled' => false]) - 管理画面レイアウトモードの場合true、外観設定ページの場合transitionEnabled
 --}}
 @php
     // データベースが存在しない場合（アンインストール後など）は何も表示しない
@@ -12,7 +12,7 @@
 @endphp
 
 @if($isAuthenticated)
-@props(['isAdminLayout' => false])
+@props(['isAdminLayout' => false, 'transitionEnabled' => false])
 
 <div id="admin-bar" class="fixed top-0 left-0 right-0 backdrop-blur-sm text-gray-700 dark:text-white bg-white/75 dark:bg-gray-900/75 border-b border-gray-300 dark:border-gray-700 shadow-md" style="z-index: 9900;">
     <div class="w-full mx-auto px-4">
@@ -83,7 +83,7 @@
 
                 {{-- デスクトップ用ユーザーメニュー --}}
                 <div class="hidden sm:block relative">
-                    <button data-desktop-user-menu-toggle class="flex items-center space-x-2 px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <button data-desktop-user-menu-toggle class="flex items-center space-x-2 px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 @if($transitionEnabled) transition-colors @endif">
                         <i class="fas fa-user-circle text-xl"></i>
                         <span class="text-sm hidden sm:inline">{{ auth('member')->user()->display_name ?? auth('member')->user()->account_name }}</span>
                         <i class="fas fa-chevron-down text-xs"></i>
