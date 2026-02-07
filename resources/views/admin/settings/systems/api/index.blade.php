@@ -168,7 +168,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </td>
                         <td class="text-right">
                             <div class="flex items-center justify-end gap-2">
-                                <button type="button" @click="viewKey({{ $key->id }})" class="btn btn-sm btn-secondary" title="{{ __('common.view') }}">
+                                <button type="button" @click="viewKey({{ $key->id }})" class="btn btn-sm btn-secondary" title="{{ __('admin/settings/systems/api.key_details') }}">
                                     <i class="fas fa-eye"></i>
                                 </button>
                                 <form action="{{ route('admin.settings.systems.api.regenerate-key', $key->id) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('admin/settings/systems/api.regenerate_confirm') }}')">
@@ -193,6 +193,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         @endif
     </section>
+
+    {{-- APIキー詳細モーダル --}}
+    <x-ui-modal
+        id="viewKeyModal"
+        :title="__('admin/settings/systems/api.key_details')"
+        icon-type="info"
+        :close-only="true"
+    >
+        <div class="px-4 pt-5 pb-4 sm:p-6">
+            <div x-html="keyDetails" class="space-y-3"></div>
+        </div>
+
+        <x-slot name="footer">
+            <x-form-button
+                type="button"
+                variant="secondary"
+                :label="__('common.close')"
+                @click="closeModal('viewKeyModal')"
+                class="mx-2"
+            />
+        </x-slot>
+    </x-ui-modal>
 
 </div>
 @endsection
@@ -317,28 +339,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 icon="fas fa-key"
                 :label="__('admin/settings/systems/api.generate')"
                 form="create-key-form"
-                class="mx-2"
-            />
-        </x-slot>
-    </x-ui-modal>
-
-    {{-- APIキー詳細モーダル --}}
-    <x-ui-modal
-        id="viewKeyModal"
-        :title="__('admin/settings/systems/api.key_details')"
-        icon-type="info"
-        :close-only="true"
-    >
-        <div class="px-4 pt-5 pb-4 sm:p-6" x-data="{ get details() { return $root.keyDetails || ''; } }">
-            <div x-show="details" x-html="details" class="space-y-3"></div>
-        </div>
-
-        <x-slot name="footer">
-            <x-form-button
-                type="button"
-                variant="secondary"
-                :label="__('common.close')"
-                @click="closeModal('viewKeyModal')"
                 class="mx-2"
             />
         </x-slot>

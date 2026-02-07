@@ -35,6 +35,31 @@ class AdminSystemApiGenerateKeyRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        // 空文字列をnullに変換
+        $data = [];
+        
+        if ($this->rate_limit === '') {
+            $data['rate_limit'] = null;
+        }
+        
+        if ($this->expires_at === '') {
+            $data['expires_at'] = null;
+        }
+        
+        if ($this->description === '') {
+            $data['description'] = null;
+        }
+        
+        if (!empty($data)) {
+            $this->merge($data);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
@@ -46,7 +71,7 @@ class AdminSystemApiGenerateKeyRequest extends FormRequest
             'environment' => 'required|in:live,test',
             'scopes' => 'nullable|array',
             'scopes.*' => 'string',
-            'rate_limit' => 'nullable|integer|min:1|max:10000',
+            'rate_limit' => 'nullable|integer|min:0|max:10000',
             'allowed_ips' => 'nullable|string',
             'expires_at' => 'nullable|date|after:today',
             'description' => 'nullable|string|max:500',
