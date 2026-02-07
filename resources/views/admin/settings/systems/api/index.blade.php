@@ -95,7 +95,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 variant="primary"
                 icon="fas fa-plus"
                 :label="__('admin/settings/systems/api.create_key')"
-                @click="showCreateModal = true"
+                @click="openModal('createKeyModal')"
             />
         </div>
 
@@ -222,61 +222,84 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         id="createKeyModal"
         :title="__('admin/settings/systems/api.create_key')"
         icon-type="info"
-        x-show="showCreateModal"
-        @click.away="showCreateModal = false"
     >
         <form id="create-key-form" action="{{ route('admin.settings.systems.api.generate-key') }}" method="POST" class="px-4 pt-5 pb-4 sm:p-6">
             @csrf
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.key_name') }}</label>
-                    <input type="text" name="name" required class="input-full" placeholder="{{ __('admin/settings/systems/api.key_name_placeholder') }}">
-                </div>
+            <div class="space-y-3">
+                <fieldset>
+                    <legend>{{ __('admin/settings/systems/api.key_name') }}</legend>
+                    <x-form-text
+                        name="name"
+                        :placeholder="__('admin/settings/systems/api.key_name_placeholder')"
+                        required
+                    />
+                </fieldset>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.environment') }}</label>
-                    <select name="environment" class="input-full">
-                        <option value="live">Live ({{ __('admin/settings/systems/api.env_live_desc') }})</option>
-                        <option value="test">Test ({{ __('admin/settings/systems/api.env_test_desc') }})</option>
-                    </select>
-                </div>
+                <fieldset>
+                    <legend>{{ __('admin/settings/systems/api.environment') }}</legend>
+                    <x-form-select
+                        name="environment"
+                        :options="[
+                            'live' => 'Live (' . __('admin/settings/systems/api.env_live_desc') . ')',
+                            'test' => 'Test (' . __('admin/settings/systems/api.env_test_desc') . ')'
+                        ]"
+                        value="live"
+                    />
+                </fieldset>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.scopes') }}</label>
-                    <div class="space-y-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded p-3">
-                        @foreach($availableScopes as $scope => $label)
-                        <label class="flex items-center">
-                            <input type="checkbox" name="scopes[]" value="{{ $scope }}" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ $label }}</span>
-                        </label>
-                        @endforeach
+                <fieldset>
+                    <legend>{{ __('admin/settings/systems/api.scopes') }}</legend>
+                    <div class="max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded p-3">
+                        <x-form-checkbox-group
+                            name="scopes"
+                            :options="$availableScopes"
+                            flexDirection="col"
+                        />
                     </div>
-                </div>
+                </fieldset>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.rate_limit') }}</label>
+                <fieldset>
+                    <legend>{{ __('admin/settings/systems/api.rate_limit') }}</legend>
                     <div class="flex items-center gap-2">
-                        <input type="number" name="rate_limit" class="input-sm" min="1" max="10000" placeholder="{{ __('admin/settings/systems/api.unlimited') }}">
+                        <x-form-text
+                            name="rate_limit"
+                            type="number"
+                            :placeholder="__('admin/settings/systems/api.unlimited')"
+                            min="0"
+                            max="10000"
+                            class="input-sm"
+                        />
                         <span class="text-sm text-gray-500">{{ __('admin/settings/systems/api.requests_per_minute') }}</span>
                     </div>
-                </div>
+                </fieldset>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.allowed_ips') }}</label>
-                    <input type="text" name="allowed_ips" class="input-full" placeholder="{{ __('admin/settings/systems/api.allowed_ips_placeholder') }}">
+                <fieldset>
+                    <legend>{{ __('admin/settings/systems/api.allowed_ips') }}</legend>
+                    <x-form-text
+                        name="allowed_ips"
+                        :placeholder="__('admin/settings/systems/api.allowed_ips_placeholder')"
+                    />
                     <p class="text-xs text-gray-500 mt-1">{{ __('admin/settings/systems/api.allowed_ips_help') }}</p>
-                </div>
+                </fieldset>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.expires_at') }}</label>
-                    <input type="date" name="expires_at" class="input-full" min="{{ now()->addDay()->format('Y-m-d') }}">
+                <fieldset>
+                    <legend>{{ __('admin/settings/systems/api.expires_at') }}</legend>
+                    <x-form-text
+                        name="expires_at"
+                        type="date"
+                        min="{{ now()->addDay()->format('Y-m-d') }}"
+                    />
                     <p class="text-xs text-gray-500 mt-1">{{ __('admin/settings/systems/api.expires_at_help') }}</p>
-                </div>
+                </fieldset>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.key_description') }}</label>
-                    <textarea name="description" rows="2" class="input-full" placeholder="{{ __('admin/settings/systems/api.key_description_placeholder') }}"></textarea>
-                </div>
+                <fieldset>
+                    <legend>{{ __('admin/settings/systems/api.key_description') }}</legend>
+                    <x-form-textarea
+                        name="description"
+                        rows="2"
+                        :placeholder="__('admin/settings/systems/api.key_description_placeholder')"
+                    />
+                </fieldset>
             </div>
         </form>
 
@@ -285,7 +308,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 type="button"
                 variant="secondary"
                 :label="__('common.cancel')"
-                @click="showCreateModal = false"
+                @click="closeModal('createKeyModal')"
                 class="mx-2"
             />
             <x-form-button
@@ -305,11 +328,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :title="__('admin/settings/systems/api.key_details')"
         icon-type="info"
         :close-only="true"
-        x-show="showViewModal"
-        @click.away="showViewModal = false"
     >
-        <div class="px-4 pt-5 pb-4 sm:p-6">
-            <div x-show="keyDetails" x-html="keyDetails" class="space-y-3"></div>
+        <div class="px-4 pt-5 pb-4 sm:p-6" x-data="{ get details() { return $root.keyDetails || ''; } }">
+            <div x-show="details" x-html="details" class="space-y-3"></div>
         </div>
 
         <x-slot name="footer">
@@ -317,7 +338,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 type="button"
                 variant="secondary"
                 :label="__('common.close')"
-                @click="showViewModal = false"
+                @click="closeModal('viewKeyModal')"
                 class="mx-2"
             />
         </x-slot>
@@ -393,7 +414,7 @@ function apiSettings() {
                 ` : ''}
             `;
             
-            this.showViewModal = true;
+            openModal('viewKeyModal');
         }
     };
 }
