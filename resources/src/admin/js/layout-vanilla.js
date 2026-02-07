@@ -28,48 +28,9 @@
 // サイドバーの状態管理
 let sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
 
-// サイドバーの状態を更新する関数
-function updateSidebarState(collapsed) {
-    sidebarCollapsed = collapsed;
-    localStorage.setItem('sidebarCollapsed', collapsed);
-
-    // サイドバー要素
-    const sidebar = document.querySelector('aside[role="navigation"]');
-    // トグルボタン（デスクトップ用）
-    const toggleButton = document.querySelector('[data-desktop-sidebar-toggle]');
-    // メインコンテンツ
+// メインコンテンツの左マージンを更新する
+function updateMainContentMargin(collapsed) {
     const mainContent = document.querySelector('main');
-
-    if (sidebar) {
-        if (collapsed) {
-            sidebar.classList.add('-translate-x-64');
-            sidebar.classList.remove('translate-x-0');
-        } else {
-            sidebar.classList.remove('-translate-x-64');
-            sidebar.classList.add('translate-x-0');
-        }
-    }
-
-    if (toggleButton) {
-        // leftプロパティを変更してアニメーション
-        if (collapsed) {
-            toggleButton.style.left = '0';
-        } else {
-            toggleButton.style.left = '16rem'; // 256px = w-64
-        }
-
-        // デスクトップトグルボタンのアイコンの切り替え
-        const icon = toggleButton.querySelector('i');
-        if (icon) {
-            if (collapsed) {
-                icon.classList.remove('fa-chevron-left');
-                icon.classList.add('fa-chevron-right');
-            } else {
-                icon.classList.remove('fa-chevron-right');
-                icon.classList.add('fa-chevron-left');
-            }
-        }
-    }
 
     if (mainContent) {
         if (collapsed) {
@@ -82,56 +43,15 @@ function updateSidebarState(collapsed) {
     }
 }
 
-// サイドバートグルボタンのイベントリスナーを設定
-function initSidebarToggle() {
-    const toggleButton = document.querySelector('[data-desktop-sidebar-toggle]');
-
-    if (toggleButton) {
-        // 既存のイベントリスナーを削除（重複防止）
-        toggleButton.replaceWith(toggleButton.cloneNode(true));
-        const newButton = document.querySelector('[data-desktop-sidebar-toggle]');
-
-        newButton.addEventListener('click', function (e) {
-            e.preventDefault();
-            console.log('[Admin Layout] Toggle button clicked, current state:', sidebarCollapsed);
-            updateSidebarState(!sidebarCollapsed);
-        });
-
-        console.log('[Admin Layout] Toggle button event listener attached');
-    } else {
-        console.warn('[Admin Layout] Toggle button not found');
-    }
-}
-
-// 初期化
+// サイドバーの状態変更を監視
 document.addEventListener('DOMContentLoaded', function () {
     console.log('[Admin Layout] DOMContentLoaded, initializing...');
 
-    // 初期状態を即座に適用（トランジションなし）
-    const sidebar = document.querySelector('aside[role="navigation"]');
-    const toggleButton = document.querySelector('[data-desktop-sidebar-toggle]');
-    const mainContent = document.querySelector('main');
-
-    // トランジションを一時的に無効化
-    if (sidebar) sidebar.style.transition = 'none';
-    if (toggleButton) toggleButton.style.transition = 'none';
-    if (mainContent) mainContent.style.transition = 'none';
+    // localStorageから保存された状態を読み込む
+    const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
 
     // 初期状態を適用
-    updateSidebarState(sidebarCollapsed);
+    updateMainContentMargin(sidebarCollapsed);
 
-    // 少し遅延させてトランジションを有効化
-    setTimeout(function () {
-        if (sidebar) sidebar.style.transition = '';
-        if (toggleButton) toggleButton.style.transition = '';
-        if (mainContent) mainContent.style.transition = '';
-
-        // トグルボタンのイベントリスナーを設定
-        initSidebarToggle();
-
-        console.log('[Admin Layout] Vanilla JS initialized, sidebar collapsed:', sidebarCollapsed);
-    }, 50);
+    console.log('[Admin Layout] Main content margin initialized, sidebar collapsed:', sidebarCollapsed);
 });
-
-// Livewire v4ではSPAナビゲーションが無効なので、livewire:navigatedイベントは不要
-// ページ遷移時は通常のページリロードが発生し、DOMContentLoadedで再初期化される
