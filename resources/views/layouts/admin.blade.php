@@ -23,7 +23,7 @@
         <x-security.csp-safe-mode-banner />
         
         <!-- Admin Bar (Header) -->
-        <x-ui-admin-bar-vanilla isAdminLayout="true" />
+        <x-ui-admin-bar-vanilla isAdminLayout="true" transitionEnabled="{{ $transitionEnabled ?? false }}" />
         
         <div class="min-h-screen flex">
             <!-- Navigation Sidebar -->
