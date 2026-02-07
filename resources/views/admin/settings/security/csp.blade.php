@@ -72,7 +72,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :options="\App\Enums\CspMode::getRadioCardOptions()"
                         :value="old('csp_mode', $settings['csp_mode'] ?? \App\Enums\CspMode::default()->value)"
                         xModel="cspMode"
-                        :columns="3"
+                        :columns="2"
                     />
                 </fieldset>
 

@@ -44,16 +44,7 @@ return [
     |   - strict-dynamic推奨（任意）
     |   - プラグイン互換性：高
     |
-    | - 'strict': 厳格モード（最大セキュリティ）
-    |   - CSP強制（ブロック）
-    |   - インライン実行コード：完全禁止（nonceでも不可）
-    |   - データ受け渡し：type="application/json"、data-*のみ許可
-    |   - 外部JSのみ（dixlase-boot.js経由で初期化）
-    |   - onclick等属性イベント：禁止
-    |   - unsafe-eval禁止
-    |   - strict-dynamic推奨（ON）
-    |   - requires_inline_js: trueのプラグイン：有効化不可
-    |   - プラグイン互換性：CSP Readyのみ
+    | ※ 'strict'（厳格モード）は初期バージョンでは未実装
     |
     | 実際の設定はデータベース（SecuritySetting）から読み込まれます。
     |
@@ -68,14 +59,11 @@ return [
     | 管理画面とフロントエンドで異なるCSPモードを使用できます。
     |
     | - null: フロントエンドと同じモードを使用（デフォルト）
-    | - 'development' / 'standard' / 'strict': 管理画面専用のモード
+    | - 'development' / 'standard': 管理画面専用のモード
     |
     | 推奨設定：
-    | - フロント: strict（最大セキュリティ）
+    | - フロント: standard（本番推奨）
     | - 管理画面: standard（実用性とセキュリティのバランス）
-    |
-    | これにより、管理画面が壊れるリスクを最小化しつつ、
-    | フロントエンドで最大限のセキュリティを実現できます。
     |
     */
     'admin_mode' => env('CSP_ADMIN_MODE', null),
@@ -123,7 +111,8 @@ return [
             'description_en' => 'Recommended for production. Inline via helpers allowed.',
         ],
         
-        // 厳格モード: 最大セキュリティ、外部JSのみ
+        /*
+        // 厳格モード: 最大セキュリティ、外部JSのみ（初期バージョンでは未実装）
         'strict' => [
             'header' => 'Content-Security-Policy',
             'allow_inline_scripts' => false,
@@ -142,6 +131,7 @@ return [
             'description' => '最大セキュリティ。CSP Readyプラグインのみ動作。',
             'description_en' => 'Maximum security. Only CSP Ready plugins work.',
         ],
+        */
     ],
 
     /*
