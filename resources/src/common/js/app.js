@@ -22,10 +22,6 @@ import '../scss/style.scss';
 import './bootstrap';
 import './appearance';
 import './livewire-notification';
-import '../../admin/js/layout-vanilla';
-import '../../admin/js/sidebar-vanilla';
-import '../../admin/js/admin-bar-vanilla';
-/*
 import '../../components/auth/js/account-verification';
 import '../../components/js/form-color';
 import '../../components/js/form-email';
@@ -52,14 +48,13 @@ import '../../components/mail-server/js/test';
 import '../../components/mail-server/js/verification';
 import '../../admin/js/layout';
 import '../../admin/settings/security/js/csp';
-*/
-// import { createLoginFlow } from '../../admin/js/login-flow';
-//import Alpine from 'alpinejs';
-//import collapse from '@alpinejs/collapse'
+import { createLoginFlow } from '../../admin/js/login-flow';
+import Alpine from 'alpinejs';
+import collapse from '@alpinejs/collapse'
 
 // Alpine.jsのグローバルスコープに登録（Alpine起動前に実行）
-// window.loginFlow = createLoginFlow;
+window.loginFlow = createLoginFlow;
 
-//Alpine.plugin(collapse)
-//window.Alpine = Alpine;
-// Alpine.start(); // Livewireが自動的にAlpineを起動するためコメントアウト
+Alpine.plugin(collapse)
+window.Alpine = Alpine;
+Alpine.start();
