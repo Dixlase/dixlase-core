@@ -147,6 +147,6 @@ return [
     'forms' => [
         'admin_login' => 'Admin Login',
         'admin_password_reset' => 'Admin Password Reset',
-        'admin_two_factor' => 'Admin Two-Factor Authentication',
+        'admin_two_fa' => 'Admin Two-Factor Authentication',
     ],
 ];

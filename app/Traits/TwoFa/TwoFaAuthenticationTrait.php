@@ -314,13 +314,6 @@ trait TwoFaAuthenticationTrait
         $guardName = $this->getGuardName();
         $dashboardRoute = $this->getDashboardRoute();
         
-        Log::info('[2FA] Starting completeAuthentication', [
-            'user_id' => $user->id,
-            'guard' => $guardName,
-            'remember' => $remember,
-            'dashboard_route' => $dashboardRoute,
-        ]);
-        
         // セッションクリーンアップ
         session()->forget([
             $sessionPrefix . '.id',
@@ -343,18 +336,8 @@ trait TwoFaAuthenticationTrait
         // 先にログイン（AdminLoginControllerと同じ順序）
         Auth::guard($guardName)->login($user, $remember);
         
-        Log::info('[2FA] Auth::login completed', [
-            'user_id' => $user->id,
-            'is_authenticated' => Auth::guard($guardName)->check(),
-            'authenticated_user_id' => Auth::guard($guardName)->id(),
-        ]);
-        
         // ログイン後にセッションを再生成（AdminLoginControllerと同じ）
         $request->session()->regenerate(true);
-        
-        Log::info('[2FA] Session regenerated, redirecting to dashboard', [
-            'dashboard_route' => $dashboardRoute,
-        ]);
         
         return redirect()->route($dashboardRoute);
     }
@@ -484,10 +467,6 @@ trait TwoFaAuthenticationTrait
             try {
                 $twoFa->generate($user, \App\Enums\TwoFaMethod::EMAIL->value);
                 session([$sessionKey => true]);
-                \Illuminate\Support\Facades\Log::info('[2FA] Email code generated and sent', [
-                    'user_id' => $user->id,
-                    'context' => $this->getContext(),
-                ]);
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error('[2FA] Failed to generate email code', [
                     'user_id' => $user->id,
@@ -505,6 +484,11 @@ trait TwoFaAuthenticationTrait
         $context = $this->getContext();
         $recoveryCodeRoute = $this->getRecoveryCodeRoute();
 
+        // CAPTCHA設定を取得
+        $captchaAction = $context . '_two_fa';
+        $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
+        $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
+
         return view('two-fa.email-challenge', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
@@ -516,6 +500,8 @@ trait TwoFaAuthenticationTrait
             'action' => route($this->getTwoFaRoutePrefix() . '.two-fa.email.verify'),
             'resendAction' => route($this->getTwoFaRoutePrefix() . '.two-fa.email.resend'),
             'recoveryCodeRoute' => $recoveryCodeRoute,
+            'captchaEnabled' => $captchaEnabled,
+            'captchaWidget' => $captchaWidget,
         ]);
     }
 
@@ -550,11 +536,6 @@ trait TwoFaAuthenticationTrait
                 'code' => __('two_fa.email.invalid_code')
             ]);
         }
-
-        Log::info('[2FA] Email authentication success', [
-            'user_id' => $user->id,
-            'context' => $this->getContext()
-        ]);
 
         return $this->completeAuthentication($user, $request);
     }
@@ -605,13 +586,21 @@ trait TwoFaAuthenticationTrait
         }
 
         $availableMethods = $this->getAvailableMethods();
+        $context = $this->getContext();
+
+        // CAPTCHA設定を取得
+        $captchaAction = $context . '_two_fa';
+        $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
+        $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
 
         return view('two-fa.recovery-code-challenge', [
             'availableMethods' => $availableMethods,
-            'context' => $this->getContext(),
+            'context' => $context,
             'loginRoute' => route($this->getLoginRoute()),
             'action' => route($this->getTwoFaRoutePrefix() . '.two-fa.recovery-code.confirm'),
             'emailChallengeRoute' => $this->getTwoFaRoutePrefix() . '.two-fa.email.show',
+            'captchaEnabled' => $captchaEnabled,
+            'captchaWidget' => $captchaWidget,
         ]);
     }
 
@@ -634,11 +623,6 @@ trait TwoFaAuthenticationTrait
                 'recovery_code' => __('two_fa.recovery_code.invalid')
             ]);
         }
-
-        Log::info('[2FA] Recovery code authentication success', [
-            'user_id' => $user->id,
-            'context' => $this->getContext()
-        ]);
 
         return $this->completeAuthentication($user, $request);
     }
