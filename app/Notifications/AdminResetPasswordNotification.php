@@ -123,9 +123,10 @@ class AdminResetPasswordNotification extends Notification
         }
 
         // 管理画面用のパスワードリセットURLを生成
-        $adminUrl = config('admin.url', 'admin');
-        $baseUrl = rtrim(config('app.url'), '/');
-        return $baseUrl.'/'.$adminUrl.'/reset-password/'.$this->token.'?email='.urlencode($notifiable->getEmailForPasswordReset());
+        $adminUrl = config('admin.url.admin_url', 'admin');
+        
+        // url()ヘルパーを使用してリクエストのスキーム（http/https）を自動検出
+        return url($adminUrl.'/reset-password/'.$this->token.'?email='.urlencode($notifiable->getEmailForPasswordReset()));
     }
 
     /**

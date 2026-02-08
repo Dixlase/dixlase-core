@@ -135,7 +135,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{-- パスワードログインフォーム --}}
         <form method="POST" action="{{ $routeLogin }}">
             @csrf
-            <input type="hidden" name="login" x-model="identifier">
+            <input type="text" name="login" x-model="identifier" autocomplete="username" class="sr-only" tabindex="-1" aria-hidden="true" readonly>
 
             <!-- パスワード -->
             <x-form-input-with-label
