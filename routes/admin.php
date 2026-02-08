@@ -361,8 +361,11 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/csp/disable-safe-mode', [Security\AdminSecurityCspController::class, 'disableSafeMode'])
                     ->name('csp.disable-safe-mode');
                 
-                // 通知（Livewire）
+                // 通知
                 Route::get('/notifications', [Security\AdminSecurityNotificationsController::class, 'index'])->name('notifications');
+                Route::post('/notifications', [Security\AdminSecurityNotificationsController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.security')
+                    ->name('notifications.update');
                 
                 // 環境設定
                 Route::get('/environment', [Security\AdminSecurityEnvironmentController::class, 'index'])->name('environment');
