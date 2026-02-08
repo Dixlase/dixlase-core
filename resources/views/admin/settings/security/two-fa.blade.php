@@ -84,21 +84,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <x-form-button
-        type="button"
+    <x-admin.save-button
         :label="__('common.update')"
-        class="button-save"
-        onclick="openModal('confirmationModal')"
-    />
-@endsection
-
-@section('modals')
-    <x-ui-modal
-        id="confirmationModal"
         :title="__('common.update_confirmation_title')"
         :message="__('common.update_confirmation_message')"
         :confirm_label="__('common.update')"
-        :cancel_label="__('common.cancel')"
         form="two-fa-settings-form"
     />
 @endsection

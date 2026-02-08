@@ -3,6 +3,7 @@
     'icon' => null, // カスタムアイコンクラス（指定しない場合は自動選択）
     'dismissible' => false, // 閉じるボタンを表示するか
     'message' => '', // メッセージ内容
+    'textSize' => '', // フォントサイズ（text-sm, text-base, text-lg など）
 ])
 
 @php
@@ -42,7 +43,7 @@
             </div>
         @endif
         
-        <div class="{{ $iconClass ? 'ml-2' : '' }} flex-1">
+        <div class="{{ $iconClass ? 'ml-2' : '' }} flex-1 {{ $textSize }}">
             {!! $message !!}
         </div>
         

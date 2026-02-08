@@ -76,7 +76,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if($twoFaPasskeyDevices && !$twoFaPasskeyDevices->isEmpty())
                 <button 
                     type="button"
-                    onclick="openModal('deleteAllPasskeysModal')"
+                    @click="openModal('deleteAllPasskeysModal')"
                     class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
                     <i class="fas fa-trash-alt mr-1"></i>{{ __('components/security/two-fa-management.delete_all') }}
                 </button>
@@ -111,7 +111,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                         <button 
                             type="button"
-                            onclick="openDeletePasskeyModal('{{ $device->id }}', '{{ $device->name }}')"
+                            @click="openDeletePasskeyModal('{{ $device->id }}', '{{ $device->name }}')"
                             class="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
                             {{ __('components/security/two-fa-management.delete') }}
                         </button>
@@ -133,7 +133,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if($canRegisterMorePasskeys)
             <button 
                 type="button"
-                onclick="registerPasskey()"
+                @click="registerPasskey()"
                 class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
                 <i class="fas fa-plus mr-2"></i>{{ __('components/security/two-fa-management.add_passkey') }}
             </button>
@@ -183,7 +183,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @if($adminContext && isset($routes['recovery_codes_delete']))
                     <button 
                         type="button"
-                        onclick="openModal('deleteRecoveryCodesModal')"
+                        @click="openModal('deleteRecoveryCodesModal')"
                         class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
                         <i class="fas fa-trash mr-1"></i>{{ __('components/security/two-fa-management.delete') }}
                     </button>
@@ -197,7 +197,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if(!$hideGenerateButton)
         <button 
             type="button"
-            onclick="openModal('recoveryCodesConfirmModal')"
+            @click="openModal('recoveryCodesConfirmModal')"
             class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
             <i class="fas fa-{{ $twoFaHasRecoveryCodes ? 'sync-alt' : 'plus' }} mr-2"></i>{{ __('components/security/two-fa-management.recovery_codes_' . ($twoFaHasRecoveryCodes ? 'regenerate' : 'generate')) }}
         </button>
@@ -230,7 +230,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if($twoFaTrustedDevices && !$twoFaTrustedDevices->isEmpty())
                 <button 
                     type="button"
-                    onclick="openModal('deleteAllTrustedDevicesModal')"
+                    @click="openModal('deleteAllTrustedDevicesModal')"
                     class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
                     <i class="fas fa-trash-alt mr-1"></i>{{ __('components/security/two-fa-management.delete_all') }}
                 </button>
@@ -258,7 +258,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                         <button 
                             type="button"
-                            onclick="openDeleteTrustedDeviceModal('{{ $device->id }}', '{{ $device->device_name ?? __('components/security/two-fa-management.unknown_device') }}')"
+                            @click="openDeleteTrustedDeviceModal('{{ $device->id }}', '{{ $device->device_name ?? __('components/security/two-fa-management.unknown_device') }}')"
                             class="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
                             {{ __('components/security/two-fa-management.delete') }}
                         </button>
