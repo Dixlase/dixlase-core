@@ -38,28 +38,17 @@ class AdminSecurityNotificationsController extends AdminLoggedInController
     }
 
     /**
-     * 通知設定ページ（Livewireラッパー）
+     * 通知設定ページ
      */
     public function index()
     {
-        // 静的な値（初期表示データ）を取得
-        $initialData = [
-            'notification_enabled' => filter_var(
-                $this->securitySettingRepository->get('notification_enabled', true), 
-                FILTER_VALIDATE_BOOLEAN
-            ),
-            'notification_log_levels' => array_map(
-                'intval', 
-                array_filter(
-                    explode(',', $this->securitySettingRepository->get(
-                        'notification_log_levels', 
-                        implode(',', LogLevel::getDefaultNotificationLevels())
-                    ))
-                )
-            ),
+        
+        $settings = [
+            'notification_enabled' => filter_var($this->securitySettingRepository->get('notification_enabled', true), FILTER_VALIDATE_BOOLEAN),
+            'notification_log_levels' => array_map('intval', array_filter(explode(',', $this->securitySettingRepository->get('notification_log_levels', implode(',', LogLevel::getDefaultNotificationLevels()))))),
         ];
 
-        // メールテスト状態を取得（セッション優先）
+        // メールテスト状態を取得
         $sessionTestResults = session('mail_test_results', []);
         $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? BaseSetting::getValue('mail_connection_tested', false));
         $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? BaseSetting::getValue('mail_send_tested', false));
@@ -69,20 +58,29 @@ class AdminSecurityNotificationsController extends AdminLoggedInController
         $systemAdminEmail = BaseSetting::getValue('system_admin_email', '');
         $hasSystemAdminEmail = !empty($systemAdminEmail);
 
-        // デバッグ用ログ
-        \Log::info('[Debug] Controller - systemAdminEmail: ' . $systemAdminEmail);
-        \Log::info('[Debug] Controller - hasSystemAdminEmail: ' . ($hasSystemAdminEmail ? 'true' : 'false'));
-        \Log::info('[Debug] Controller - mailConnectionTested: ' . ($mailConnectionTested ? 'true' : 'false'));
-        \Log::info('[Debug] Controller - mailSendTested: ' . ($mailSendTested ? 'true' : 'false'));
-        \Log::info('[Debug] Controller - mailReceiveTested: ' . ($mailReceiveTested ? 'true' : 'false'));
-
-        // ビューに渡すデータ
-        $this->viewParams['initialData'] = $initialData;
+        $this->viewParams['settings'] = $settings;
         $this->viewParams['mailConnectionTested'] = $mailConnectionTested;
         $this->viewParams['mailSendTested'] = $mailSendTested;
         $this->viewParams['mailReceiveTested'] = $mailReceiveTested;
         $this->viewParams['hasSystemAdminEmail'] = $hasSystemAdminEmail;
 
         return view('admin.settings.security.notifications', $this->viewParams);
+    }
+
+    /**
+     * 通知設定の更新
+     */
+    public function update(\App\Http\Requests\Admin\Settings\Security\AdminSecurityNotificationsUpdateRequest $request)
+    {
+        $validated = $request->validated();
+
+        // 通知設定を更新
+        $this->securitySettingRepository->set('notification_enabled', $validated['notification_enabled'] ?? false);
+        
+        $logLevels = $validated['notification_log_levels'] ?? LogLevel::getDefaultNotificationLevels();
+        $this->securitySettingRepository->set('notification_log_levels', implode(',', $logLevels));
+
+        return redirect()->route('admin.settings.security.notifications')
+            ->with('success', __('admin/settings/security/notifications.settings_updated'));
     }
 }

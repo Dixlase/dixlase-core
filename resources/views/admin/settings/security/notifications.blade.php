@@ -71,7 +71,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <legend>{{ __('admin/settings/security/notifications.log_levels') }}</legend>
                 
                 <div class="my-3" :class="{ 'opacity-50 pointer-events-none': notificationEnabled === '0' }">
-                    <input type="hidden" name="notification_log_levels" :value="notificationEnabled === '1' ? null : '{{ implode(',', $settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels()) }}'" x-show="notificationEnabled === '0'">
+                    <!-- Hidden inputs to preserve settings when disabled -->
+                    <template x-if="notificationEnabled === '0'">
+                        <div>
+                            @foreach(($settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels()) as $level)
+                                <input type="hidden" name="notification_log_levels[]" value="{{ $level }}">
+                            @endforeach
+                        </div>
+                    </template>
                     
                     @php
                         $logLevelOptions = [];
@@ -85,7 +92,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         name="notification_log_levels"
                         :options="$logLevelOptions"
                         :values="$settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels()"
-                        xBindDisabled="notificationEnabled === '0'"
                         flexDirection="col"
                     />
                 </div>

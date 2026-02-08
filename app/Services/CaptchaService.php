@@ -54,13 +54,7 @@ class CaptchaService
         $pluginForms = [];
         $pluginsPath = base_path('plugins');
         
-        \Log::info('CaptchaService: プラグインフォーム読み込み開始', [
-            'plugins_path' => $pluginsPath,
-            'path_exists' => File::exists($pluginsPath),
-        ]);
-        
         if (!File::exists($pluginsPath)) {
-            \Log::warning('CaptchaService: pluginsディレクトリが存在しません');
             return $pluginForms;
         }
         
@@ -70,26 +64,13 @@ class CaptchaService
             ->pluck('directory')
             ->toArray();
         
-        \Log::info('CaptchaService: 有効なプラグイン', [
-            'enabled_plugins' => $enabledPlugins,
-            'count' => count($enabledPlugins),
-        ]);
-        
         $pluginDirs = File::directories($pluginsPath);
         
         foreach ($pluginDirs as $pluginDir) {
             $pluginName = basename($pluginDir);
             
-            \Log::info('CaptchaService: プラグインディレクトリをチェック', [
-                'plugin_name' => $pluginName,
-                'is_enabled' => in_array($pluginName, $enabledPlugins),
-            ]);
-            
             // Skip if plugin is not installed or not enabled
             if (!in_array($pluginName, $enabledPlugins)) {
-                \Log::info('CaptchaService: プラグインがインストール/有効化されていないためスキップ', [
-                    'plugin_name' => $pluginName,
-                ]);
                 continue;
             }
             
@@ -101,31 +82,13 @@ class CaptchaService
                 $pluginJson = json_decode(File::get($pluginJsonPath), true);
                 if (isset($pluginJson['slug'])) {
                     $pluginSlug = $pluginJson['slug'];
-                    \Log::info('CaptchaService: plugin.jsonからslugを読み込み', [
-                        'plugin_name' => $pluginName,
-                        'slug' => $pluginSlug,
-                    ]);
                 }
             }
             
             $captchaConfigPath = $pluginDir . '/config/captcha.php';
             
-            \Log::info('CaptchaService: CAPTCHA設定ファイルをチェック', [
-                'plugin_name' => $pluginName,
-                'plugin_slug' => $pluginSlug,
-                'config_path' => $captchaConfigPath,
-                'file_exists' => File::exists($captchaConfigPath),
-            ]);
-            
             if (File::exists($captchaConfigPath)) {
                 $config = include $captchaConfigPath;
-                
-                \Log::info('CaptchaService: CAPTCHA設定ファイルを読み込み', [
-                    'plugin_name' => $pluginName,
-                    'plugin_slug' => $pluginSlug,
-                    'has_forms' => isset($config['forms']),
-                    'forms_count' => isset($config['forms']) ? count($config['forms']) : 0,
-                ]);
                 
                 if (isset($config['forms']) && is_array($config['forms'])) {
                     foreach ($config['forms'] as $key => $form) {
@@ -135,23 +98,10 @@ class CaptchaService
                             'plugin' => $pluginName,
                             'plugin_slug' => $pluginSlug,
                         ]);
-                        
-                        \Log::info('CaptchaService: プラグインフォームを追加', [
-                            'plugin_name' => $pluginName,
-                            'plugin_slug' => $pluginSlug,
-                            'original_key' => $key,
-                            'form_key' => $formKey,
-                            'form_name' => $form['name'] ?? 'N/A',
-                        ]);
                     }
                 }
             }
         }
-        
-        \Log::info('CaptchaService: プラグインフォーム読み込み完了', [
-            'total_plugin_forms' => count($pluginForms),
-            'form_keys' => array_keys($pluginForms),
-        ]);
         
         return $pluginForms;
     }
@@ -176,17 +126,9 @@ class CaptchaService
     public function isEnabled(string $formKey): bool
     {
         // データベースにレコードが存在すれば有効
-        $exists = CaptchaEnabledForm::where('form_key', $formKey)
+        return CaptchaEnabledForm::where('form_key', $formKey)
             ->where('enabled', true)
             ->exists();
-        
-        \Log::info('CaptchaService::isEnabled チェック', [
-            'form_key' => $formKey,
-            'exists' => $exists,
-            'record_count' => CaptchaEnabledForm::where('form_key', $formKey)->count(),
-        ]);
-        
-        return $exists;
     }
 
     /**
@@ -200,33 +142,18 @@ class CaptchaService
      */
     public function updateFormSetting(string $formKey, bool $enabled, ?string $provider = null): void
     {
-        \Log::info('CaptchaService::updateFormSetting 呼び出し', [
-            'form_key' => $formKey,
-            'enabled' => $enabled,
-            'provider' => $provider,
-        ]);
-        
         if ($enabled) {
             // 有効な場合のみデータベースに保存
-            $result = CaptchaEnabledForm::updateOrCreate(
+            CaptchaEnabledForm::updateOrCreate(
                 ['form_key' => $formKey],
                 [
                     'enabled' => true,
                     'provider' => $provider,
                 ]
             );
-            \Log::info('CAPTCHAフォーム有効化: レコード作成/更新', [
-                'form_key' => $formKey,
-                'record_id' => $result->id,
-                'was_recently_created' => $result->wasRecentlyCreated,
-            ]);
         } else {
             // 無効な場合はレコードを削除
-            $deleted = CaptchaEnabledForm::where('form_key', $formKey)->delete();
-            \Log::info('CAPTCHAフォーム無効化: レコード削除', [
-                'form_key' => $formKey,
-                'deleted_count' => $deleted,
-            ]);
+            CaptchaEnabledForm::where('form_key', $formKey)->delete();
         }
     }
 
@@ -238,21 +165,9 @@ class CaptchaService
      */
     public function bulkUpdateFormSettings(array $formSettings): void
     {
-        \Log::info('CaptchaService::bulkUpdateFormSettings 呼び出し', [
-            'form_settings' => $formSettings,
-            'count' => count($formSettings),
-        ]);
-        
         foreach ($formSettings as $formKey => $enabled) {
-            \Log::info('フォーム設定処理中', [
-                'form_key' => $formKey,
-                'enabled_raw' => $enabled,
-                'enabled_bool' => (bool) $enabled,
-            ]);
             $this->updateFormSetting($formKey, (bool) $enabled);
         }
-        
-        \Log::info('CaptchaService::bulkUpdateFormSettings 完了');
     }
 
     /**
