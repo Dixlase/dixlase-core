@@ -72,6 +72,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <form id="cleanupForm{{ ucfirst($type) }}" action="{{ route('admin.settings.systems.database.cleanup') }}" method="POST">
                     @csrf
                     <input type="hidden" name="type" value="{{ $type }}">
+                    <input type="hidden" name="days" value="0">
                 </form>
                 @endif
             </div>
