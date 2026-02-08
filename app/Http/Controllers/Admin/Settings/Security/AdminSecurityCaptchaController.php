@@ -79,14 +79,19 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         $captchaTestResult = $captchaTestService->getTestResult();
         $captchaTestDetails = $captchaTestService->getCaptchaTestResult($settings['captcha_driver']);
 
-        // フォーム設定を取得
-        $formsByCategory = $this->captchaService->getFormsByCategory();
+        // 全フォームを取得してキーを保持
+        $allForms = $this->captchaService->getAllForms();
         $enabledForms = [];
+        $formsByCategory = [];
         
-        foreach ($formsByCategory as $category => $forms) {
-            foreach ($forms as $formKey => $form) {
-                $enabledForms[$formKey] = $this->captchaService->isEnabled($formKey);
+        // カテゴリ別にグループ化しつつ、元のキーを保持
+        foreach ($allForms as $formKey => $form) {
+            $category = $form['category'] ?? 'other';
+            if (!isset($formsByCategory[$category])) {
+                $formsByCategory[$category] = [];
             }
+            $formsByCategory[$category][$formKey] = $form;
+            $enabledForms[$formKey] = $this->captchaService->isEnabled($formKey);
         }
 
         $this->viewParams['settings'] = $settings;
