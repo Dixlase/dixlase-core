@@ -312,7 +312,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             @endforeach
 
-            @if($formsByCategory->isEmpty())
+            @if(empty($formsByCategory))
                 <div class="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
                     <p class="text-gray-600 dark:text-gray-400">
                         {{ __('admin/settings/security/captcha.no_forms_available') }}
