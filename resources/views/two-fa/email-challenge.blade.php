@@ -74,7 +74,7 @@
                         type="button" 
                         id="resend-button"
                         class="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                        onclick="resendCode()"
+                        @click="resendCode()"
                     >
                         {{ __('two_fa.email.resend') }}
                     </button>

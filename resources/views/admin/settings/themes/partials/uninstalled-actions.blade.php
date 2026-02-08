@@ -29,7 +29,7 @@ https://exc-d.com
         size="xs"
         class="py-2 px-3"
         icon="fas fa-download"
-        onclick="openModal('installThemeModal-{{ $theme['directory'] }}')"
+        @click="openModal('installThemeModal-{{ $theme['directory'] }}')"
     />
 
     <x-ui-modal
@@ -92,7 +92,7 @@ https://exc-d.com
         size="xs"
         class="py-2 px-3"
         icon="fas fa-trash"
-        onclick="openModal('deleteThemeModal-{{ $theme['directory'] }}')"
+        @click="openModal('deleteThemeModal-{{ $theme['directory'] }}')"
     />
 
     <x-ui-modal

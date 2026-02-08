@@ -49,7 +49,7 @@
                      alt="{{ $media->name }}" 
                      class="w-64 {{ $aspectClasses }} rounded border border-gray-300 dark:border-gray-600">
                 <button type="button" 
-                        onclick="removeMediaPreview('{{ $inputId }}', '{{ $previewId }}')" 
+                        @click="removeMediaPreview('{{ $inputId }}', '{{ $previewId }}')" 
                         class="absolute -top-2 -right-2 w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
                         title="{{ __('common.delete') }}">
                     <i class="fas fa-times"></i>
@@ -60,7 +60,7 @@
     
     <!-- 選択ボタン -->
     <button type="button" 
-            onclick="openMediaSelector('{{ $selectorId }}', '{{ $inputId }}', '{{ $previewId }}', false, '{{ $aspectRatio }}')"
+            @click="openMediaSelector('{{ $selectorId }}', '{{ $inputId }}', '{{ $previewId }}', false, '{{ $aspectRatio }}')"
             class="px-4 py-2 mb-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
         <i class="fas fa-image mr-2"></i>{{ $buttonText ?? __('admin/settings/base/select_ogp_image') }}
     </button>

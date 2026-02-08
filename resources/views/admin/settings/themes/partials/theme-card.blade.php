@@ -171,7 +171,7 @@ https://exc-d.com
                 <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/themes/index.badge_labels.health') }}</span>
                 <button type="button" 
                         class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $badgeColor }} cursor-pointer hover:opacity-80 transition-opacity"
-                        onclick="openModal('{{ $permissionModalId }}')">
+                        @click="openModal('{{ $permissionModalId }}')">
                     <i class="{{ $badgeIcon }} mr-1"></i>
                     {{ $badgeLabel }}
                     <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>

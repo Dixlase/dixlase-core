@@ -83,7 +83,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :label="__($prefix . '.send_verification_email_button')"
                     icon="fas fa-envelope"
                     id="send-verification-email-btn"
-                    onclick="sendVerificationEmail({{ $entity->id }})"
+                    @click="sendVerificationEmail({{ $entity->id }})"
                     data-send-route="{{ $sendRoute }}"
                     data-sending-text="{{ __('common.sending') }}..."
                     data-error-message="{{ __('common.error_occurred') }}"

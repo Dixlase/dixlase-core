@@ -44,7 +44,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ __('common.select_media') }}
                 </h3>
                 <button type="button" 
-                        onclick="closeMediaSelector('{{ $id }}')"
+                        @click="closeMediaSelector('{{ $id }}')"
                         class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none">
                     <i class="fas fa-times text-xl"></i>
                 </button>
@@ -96,12 +96,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
                 <div class="flex gap-3">
                     <button type="button" 
-                            onclick="closeMediaSelector('{{ $id }}')"
+                            @click="closeMediaSelector('{{ $id }}')"
                             class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
                         {{ __('common.cancel') }}
                     </button>
                     <button type="button" 
-                            onclick="confirmMediaSelection('{{ $id }}', '{{ $inputId }}', '{{ $previewId }}', {{ $multiple ? 'true' : 'false' }})"
+                            @click="confirmMediaSelection('{{ $id }}', '{{ $inputId }}', '{{ $previewId }}', {{ $multiple ? 'true' : 'false' }})"
                             class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         {{ __('common.select') }}
                     </button>

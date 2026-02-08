@@ -403,7 +403,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             variant="danger"
                             :label="__('admin/settings/systems/logs/index.cleanup_button')"
                             icon="fas fa-trash"
-                            onclick="openModal('cleanupConfirmModal')"
+                            @click="openModal('cleanupConfirmModal')"
                         />
                     </div>
                 </div>

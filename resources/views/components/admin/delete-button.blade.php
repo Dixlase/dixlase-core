@@ -24,7 +24,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     variant="danger"
     :label="$label ?? __('common.delete')"
     icon="fas fa-trash-alt"
-    onclick="openModal('{{ $id_confirmation }}')"
+    @click="openModal('{{ $id_confirmation }}')"
     class="delete-button"
 />
 
