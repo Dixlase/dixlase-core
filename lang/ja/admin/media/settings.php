@@ -55,4 +55,8 @@ return [
     'zip_max_file_count' => '最大ファイル数',
     'times' => '倍',
     'files' => '個',
+    
+    'success' => [
+        'settings_updated' => 'メディア設定が更新されました。',
+    ],
 ];

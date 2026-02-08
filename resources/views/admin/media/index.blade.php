@@ -92,11 +92,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
                 
                 <x-form-button
-                    type="button"
+                    type="link"
                     variant="secondary"
                     :label="__('common.reset')"
                     icon="fas fa-redo"
-                    :onclick="\"window.location.href='\" . route('admin.media.index') . \"'\""
+                    :href="route('admin.media.index')"
                 />
             </div>
         </form>
@@ -141,7 +141,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @foreach($media as $file)
                     @include('admin.media.partials.card', [
                         'file' => $file,
-                        'mediaPath' => config('admin.mediaPath')
+                        'mediaPath' => config('admin.files.mediaPath')
                     ])
                 @endforeach
             </div>

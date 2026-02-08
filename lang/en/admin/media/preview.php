@@ -13,13 +13,12 @@
  */
 
 return [
-    'heading' => 'Media Upload',
-    'description' => 'Upload images, videos, documents and other files. Allowed file types and size limits apply.',
-    'select_file' => 'Select Media File:',
-    'drag_drop_text' => 'Drag files here or click to upload',
-    'supported_formats' => 'Supported formats:',
-    
-    'error' => [
-        'file_not_found' => 'File not found.',
-    ],
+    'title' => 'Media Preview',
+    'no_preview' => 'No preview available',
+    'media_url' => 'Media URL',
+    'url_description' => 'You can copy and use this URL',
+    'copy_failed' => 'Failed to copy',
+    'delete_confirmation' => 'Delete File',
+    'delete_message' => 'Are you sure you want to delete this file? This action cannot be undone.',
+    'unknown' => 'Unknown',
 ];
