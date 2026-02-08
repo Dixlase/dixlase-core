@@ -197,18 +197,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="max-w-md space-y-4">
                         <div>
                             <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">パターン1: 確認欄常時表示</h4>
-                            <x-form-password-tools
-                                name="test_password_1"
-                                id="test_password_1"
-                                :showConfirmation="true"
-                                :required="false"
-                                :minLength="8"
-                                :recommendedLength="12"
-                                :requireUppercase="true"
-                                :requireLowercase="true"
-                                :requireNumber="true"
-                                :requireSymbol="false"
-                            />
+                            <form>
+                                <input type="text" name="username" autocomplete="username" class="sr-only" tabindex="-1" aria-hidden="true">
+                                <x-form-password-tools
+                                    name="test_password_1"
+                                    id="test_password_1"
+                                    :showConfirmation="true"
+                                    :required="false"
+                                    :minLength="8"
+                                    :recommendedLength="12"
+                                    :requireUppercase="true"
+                                    :requireLowercase="true"
+                                    :requireNumber="true"
+                                    :requireSymbol="false"
+                                />
+                            </form>
                             <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-xs space-y-1">
                                 <p class="font-semibold text-gray-700 dark:text-gray-300">機能テスト:</p>
                                 <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-1">
@@ -223,19 +226,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                         <div>
                             <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">パターン2: 入力時のみ確認欄表示</h4>
-                            <x-form-password-tools
-                                name="test_password_2"
-                                id="test_password_2"
-                                :showConfirmation="true"
-                                :showConfirmationOnChange="true"
-                                :required="false"
-                                :minLength="10"
-                                :recommendedLength="16"
-                                :requireUppercase="true"
-                                :requireLowercase="true"
-                                :requireNumber="true"
-                                :requireSymbol="true"
-                            />
+                            <form>
+                                <input type="text" name="username" autocomplete="username" class="sr-only" tabindex="-1" aria-hidden="true">
+                                <x-form-password-tools
+                                    name="test_password_2"
+                                    id="test_password_2"
+                                    :showConfirmation="true"
+                                    :showConfirmationOnChange="true"
+                                    :required="false"
+                                    :minLength="10"
+                                    :recommendedLength="16"
+                                    :requireUppercase="true"
+                                    :requireLowercase="true"
+                                    :requireNumber="true"
+                                    :requireSymbol="true"
+                                />
+                            </form>
                             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
                                 ※ パスワードを入力すると確認欄が表示されます（記号必須）
                             </p>
