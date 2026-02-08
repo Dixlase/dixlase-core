@@ -160,10 +160,11 @@ trait LoginTrait
         $viewParams['captchaDriver'] = \App\Helpers\CaptchaHelper::getDriver();
         $viewParams['captchaWidget'] = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
 
-        // パスキーモードを取得
+        // パスキー認証ボタンの表示判定
+        // ステップ1では常に表示（識別子チェック後にhasPasskeyで制御）
+        // ステップ2では二段階認証とパスキーの設定に基づいて表示
         $settingModelClass = $this->getSettingModelClass();
-        $twoFaPasskeyMode = (int) $settingModelClass::getValue('two_fa_passkey_mode', '2');
-        $viewParams['passkeyEnabled'] = $twoFaPasskeyMode > 0; // 0=無効、1=有効、2=プロフィールに従う
+        $viewParams['passkeyEnabled'] = $this->shouldShowPasskeyButton($settingModelClass);
 
         return view($this->getLoginViewName(), $viewParams);
     }
@@ -359,5 +360,37 @@ trait LoginTrait
         }
         
         return to_route($redirectRoute);
+    }
+    
+    /**
+     * パスキー認証ボタンを表示すべきか判定
+     * 
+     * 全体設定で二段階認証またはパスキーが無効の場合は非表示
+     * それ以外はステップ1で表示（識別子チェック後にhasPasskeyで制御）
+     * 
+     * @param string $settingModelClass
+     * @return bool
+     */
+    protected function shouldShowPasskeyButton(string $settingModelClass): bool
+    {
+        // パスキーモードを取得（0=無効、1=有効、2=プロフィールに従う）
+        $twoFaPasskeyMode = (int) $settingModelClass::getValue('two_fa_passkey_mode', '2');
+        
+        // パスキーが無効の場合は非表示
+        if ($twoFaPasskeyMode === 0) {
+            return false;
+        }
+        
+        // 二段階認証モードを取得（0=無効、1=異なるデバイス・IP、2=常に有効、3=プロフィール設定に従う）
+        $twoFaMode = (int) $settingModelClass::getValue('two_fa_mode', '0');
+        
+        // 二段階認証が無効の場合は非表示
+        if ($twoFaMode === 0) {
+            return false;
+        }
+        
+        // 二段階認証とパスキーが有効な場合は表示
+        // ステップ1で表示し、識別子チェック後にhasPasskeyで制御
+        return true;
     }
 }

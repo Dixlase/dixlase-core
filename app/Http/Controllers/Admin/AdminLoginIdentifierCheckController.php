@@ -54,20 +54,7 @@ class AdminLoginIdentifierCheckController extends AdminController
         $captchaAction = 'admin_login';
         $captchaResult = \App\Helpers\CaptchaHelper::verify($request, $captchaAction);
         
-        \Log::info('AdminLoginIdentifierCheckController::check - CAPTCHA verification', [
-            'login' => $login,
-            'captcha_result' => $captchaResult ? [
-                'is_valid' => $captchaResult->isValid(),
-                'error_message' => $captchaResult->getErrorMessage(),
-            ] : null,
-            'request_has_captcha' => $request->has('cf-turnstile-response') || $request->has('g-recaptcha-response'),
-        ]);
-        
         if ($captchaResult && !$captchaResult->isValid()) {
-            \Log::warning('AdminLoginIdentifierCheckController::check - CAPTCHA validation failed', [
-                'login' => $login,
-                'error' => $captchaResult->getErrorMessage(),
-            ]);
             
             return response()->json([
                 'redirect' => true,
@@ -78,11 +65,6 @@ class AdminLoginIdentifierCheckController extends AdminController
         
         // CAPTCHA検証済みフラグをセッションに保存（5分間有効）
         session()->put('captcha_verified_' . $login, time());
-        
-        \Log::info('AdminLoginIdentifierCheckController::check - CAPTCHA verified, session flag set', [
-            'login' => $login,
-            'session_key' => 'captcha_verified_' . $login,
-        ]);
         
         // ロックアウト設定を取得
         $settings = IdentifierCheckHelper::getLockoutSettings(\App\Models\SecuritySetting::class);
