@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-<div class="mx-auto" x-data="{}">
+<div class="mx-auto">
 <section>
     <h2>{{ __('admin/settings/systems/database.core_cleanup_heading') }}</h2>
     <p class="mb-6">{{ __('admin/settings/systems/database.core_cleanup_description') }}</p>
@@ -134,19 +134,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <h2>{{ __('admin/settings/systems/database.plugin_cleanup_heading') }}</h2>
         <p class="mb-6">{{ __('admin/settings/systems/database.plugin_cleanup_description_config') }}</p>
         
-        @php
-            $groupedByPlugin = collect($pluginCleanupInfo)->groupBy('plugin_slug');
-        @endphp
-        
-        @foreach($groupedByPlugin as $pluginSlug => $tables)
-            @php $firstTable = $tables->first(); @endphp
-            <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <h3 class="text-lg font-semibold mb-4 flex items-center">
-                    <i class="fas fa-puzzle-piece mr-2 text-purple-500"></i>
-                    {{ $firstTable['plugin_name'] }}
-                </h3>
-                
-                @foreach($tables as $key => $info)
+        @foreach($pluginCleanupInfo as $key => $info)
                 <div class="flex flex-col md:flex-row md:items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
                     <div class="flex-1 mb-3 md:mb-0 md:mr-6">
                         <h4 class="font-medium">{{ $info['name'] }}</h4>
@@ -184,8 +172,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         />
                     </div>
                 </div>
-                @endforeach
-            </div>
         @endforeach
     </section>
     @endif
@@ -208,41 +194,43 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @endsection
 
-@foreach($cleanupInfo as $type => $info)
-<x-ui-modal
-    id="cleanupModal{{ ucfirst($type) }}"
-    title="{{ __('admin/settings/systems/database.modal.title') }}"
-    message="{{ __('admin/settings/systems/database.modal.message_single', ['name' => $info['name']]) }}"
-    confirm-label="{{ __('common.execute') }}"
-    cancel-label="{{ __('common.cancel') }}"
-    icon-type="danger"
-    confirm-color="red"
-    form="cleanupForm{{ ucfirst($type) }}"
-/>
-@endforeach
+@section('modals')
+    @foreach($cleanupInfo as $type => $info)
+    <x-ui-modal
+        id="cleanupModal{{ ucfirst($type) }}"
+        title="{{ __('admin/settings/systems/database.modal.title') }}"
+        message="{{ __('admin/settings/systems/database.modal.message_single', ['name' => $info['name']]) }}"
+        confirm-label="{{ __('common.execute') }}"
+        cancel-label="{{ __('common.cancel') }}"
+        icon-type="danger"
+        confirm-color="red"
+        form="cleanupForm{{ ucfirst($type) }}"
+    />
+    @endforeach
 
-<x-ui-modal
-    id="cleanupAllModal"
-    title="{{ __('admin/settings/systems/database.modal.title') }}"
-    message="{{ __('admin/settings/systems/database.modal.message_all') }}"
-    confirm-label="{{ __('common.execute') }}"
-    cancel-label="{{ __('common.cancel') }}"
-    icon-type="danger"
-    confirm-color="red"
-    form="cleanupAllForm"
-/>
+    <x-ui-modal
+        id="cleanupAllModal"
+        title="{{ __('admin/settings/systems/database.modal.title') }}"
+        message="{{ __('admin/settings/systems/database.modal.message_all') }}"
+        confirm-label="{{ __('common.execute') }}"
+        cancel-label="{{ __('common.cancel') }}"
+        icon-type="danger"
+        confirm-color="red"
+        form="cleanupAllForm"
+    />
 
-@if(!empty($pluginCleanupInfo))
-@foreach($pluginCleanupInfo as $key => $info)
-<x-ui-modal
-    id="cleanupModal{{ Str::camel(str_replace(':', '', $key)) }}"
-    title="{{ __('admin/settings/systems/database.modal.title') }}"
-    message="{{ __('admin/settings/systems/database.modal.message_plugin', ['name' => $info['name'], 'plugin' => $info['plugin_name']]) }}"
-    confirm-label="{{ __('common.execute') }}"
-    cancel-label="{{ __('common.cancel') }}"
-    icon-type="danger"
-    confirm-color="red"
-    form="cleanupForm{{ Str::camel(str_replace(':', '', $key)) }}"
-/>
-@endforeach
-@endif
+    @if(!empty($pluginCleanupInfo))
+    @foreach($pluginCleanupInfo as $key => $info)
+    <x-ui-modal
+        id="cleanupModal{{ Str::camel(str_replace(':', '', $key)) }}"
+        title="{{ __('admin/settings/systems/database.modal.title') }}"
+        message="{{ __('admin/settings/systems/database.modal.message_plugin', ['name' => $info['name'], 'plugin' => $info['plugin_name']]) }}"
+        confirm-label="{{ __('common.execute') }}"
+        cancel-label="{{ __('common.cancel') }}"
+        icon-type="danger"
+        confirm-color="red"
+        form="cleanupForm{{ Str::camel(str_replace(':', '', $key)) }}"
+    />
+    @endforeach
+    @endif
+@endsection

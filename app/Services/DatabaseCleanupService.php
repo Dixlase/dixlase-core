@@ -151,8 +151,13 @@ class DatabaseCleanupService
                 $query->where($dateColumn, '<', $cutoffDate);
             }
             
-            if (isset($config['additional_conditions']) && is_callable($config['additional_conditions'])) {
-                $query = $config['additional_conditions']($query);
+            // 追加条件の適用
+            if (isset($config['additional_conditions'])) {
+                if (is_callable($config['additional_conditions'])) {
+                    $query = $config['additional_conditions']($query);
+                } elseif (is_string($config['additional_conditions'])) {
+                    $query = $this->applyAdditionalCondition($query, $config['additional_conditions'], $table);
+                }
             }
             
             $count = $query->delete();
@@ -284,5 +289,46 @@ class DatabaseCleanupService
         }
         
         return $info;
+    }
+    
+    /**
+     * 追加条件を適用
+     */
+    protected function applyAdditionalCondition($query, string $condition, string $table)
+    {
+        switch ($condition) {
+            case 'expired':
+                // 2FAトークン: 有効期限切れも削除
+                if ($table === 'members_two_fa_tokens') {
+                    $query->orWhere('expires_at', '<', now());
+                }
+                break;
+                
+            case 'used':
+                // リカバリーコード: 使用済みも削除
+                if ($table === 'members_recovery_codes') {
+                    $query->orWhereNotNull('used_at');
+                }
+                break;
+                
+            case 'unused':
+                // パスキー: 未使用かつ90日以上経過したものも削除
+                if ($table === 'webauthn_credentials') {
+                    $query->orWhere(function($q) {
+                        $q->whereNull('last_used_at')
+                          ->where('created_at', '<', now()->subDays(90));
+                    });
+                }
+                break;
+                
+            case 'expired_cache':
+                // キャッシュ: 有効期限切れのみ削除
+                if ($table === 'cache') {
+                    $query->where('expiration', '<', now()->timestamp);
+                }
+                break;
+        }
+        
+        return $query;
     }
 }

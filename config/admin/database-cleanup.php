@@ -65,9 +65,7 @@ return [
         'name' => 'admin/settings/systems/database.two_fa_tokens.name',
         'description' => 'admin/settings/systems/database.two_fa_tokens.description',
         'enabled' => true,
-        'additional_conditions' => function ($query) {
-            return $query->orWhere('expires_at', '<', now());
-        },
+        'additional_conditions' => 'expired',
     ],
 
     'recovery_codes' => [
@@ -77,9 +75,7 @@ return [
         'name' => 'admin/settings/systems/database.recovery_codes.name',
         'description' => 'admin/settings/systems/database.recovery_codes.description',
         'enabled' => true,
-        'additional_conditions' => function ($query) {
-            return $query->orWhere('used_at', '!=', null);
-        },
+        'additional_conditions' => 'used',
     ],
 
     'passkeys' => [
@@ -89,10 +85,7 @@ return [
         'name' => 'admin/settings/systems/database.passkeys.name',
         'description' => 'admin/settings/systems/database.passkeys.description',
         'enabled' => true,
-        'additional_conditions' => function ($query) {
-            return $query->whereNull('last_used_at')
-                ->where('created_at', '<', now()->subDays(90));
-        },
+        'additional_conditions' => 'unused',
     ],
 
     'sessions' => [
@@ -113,8 +106,6 @@ return [
         'description' => 'admin/settings/systems/database.cache_data.description',
         'enabled' => true,
         'date_column_type' => 'timestamp',
-        'additional_conditions' => function ($query) {
-            return $query->where('expiration', '<', now()->timestamp);
-        },
+        'additional_conditions' => 'expired_cache',
     ],
 ];
