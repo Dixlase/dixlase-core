@@ -71,6 +71,20 @@ return [
         'ip_address' => 'IPアドレス',
         'user_agent' => 'ブラウザ/デバイス',
         'datetime' => '日時',
+        'timestamp' => '日時',
+        'email' => [
+            'greeting' => '二段階認証',
+            'message' => 'ログインするには、以下の認証コードを入力してください。',
+            'instructions' => 'このコードは10分間有効です。心当たりがない場合は、このメールを無視してください。',
+        ],
+        'device' => [
+            'title' => '新しいデバイスからのログイン試行',
+            'greeting' => ':nameさん',
+            'message' => '新しいデバイスからログインが試行されました。',
+            'action_prompt' => 'このログインを承認または拒否してください。',
+            'approve_button' => 'ログインを承認',
+            'deny_button' => 'ログインを拒否',
+        ],
     ],
     
     'lockout' => [

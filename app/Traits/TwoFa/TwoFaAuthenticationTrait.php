@@ -578,7 +578,7 @@ trait TwoFaAuthenticationTrait
 
             return response()->json([
                 'success' => true,
-                'message' => __('two_fa.email.resend_success')
+                'message' => __('two-fa/email.resend_success')
             ]);
         } catch (\Exception $e) {
             Log::error('[2FA] Email code resend failed', [

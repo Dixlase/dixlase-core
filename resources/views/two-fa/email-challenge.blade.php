@@ -1,11 +1,11 @@
 @extends('layouts.auth')
 
-@section('title', __('two_fa.title'))
+@section('title', __('two-fa/common.title'))
 @section('icon')
 ["fas fa-envelope", "fas fa-key"]
 @endsection
-@section('header', __('two_fa.title'))
-@section('description', __('two_fa.email.prompt'))
+@section('header', __('two-fa/common.title'))
+@section('description', __('two-fa/email.prompt'))
 
 @section('content')
     @php
@@ -18,10 +18,10 @@
 
     <div class="text-center">
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            {{ __('two_fa.email.code_title') }}
+            {{ __('two-fa/email.code_title') }}
         </h2>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-            {{ __('two_fa.email.code_prompt') }}
+            {{ __('two-fa/email.code_prompt') }}
         </p>
 
         <form action="{{ $verifyAction }}" method="POST" id="two-factor-form">
@@ -51,7 +51,7 @@
             <!-- 有効期限表示 -->
             <div class="mb-4">
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ __('two_fa.email.expire_label') }}: <span id="expire-time">{{ $expireMinutes }}{{ __('two_fa.email.minutes_suffix') }}</span>
+                    {{ __('two-fa/email.expire_label') }}: <span id="expire-time">{{ $expireMinutes }}{{ __('two-fa/email.minutes_suffix') }}</span>
                 </p>
             </div>
 
@@ -63,7 +63,7 @@
                     class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-500 dark:hover:bg-blue-600"
                     disabled
                 >
-                    {{ __('two_fa.email.verify') }}
+                    {{ __('two-fa/email.verify') }}
                 </button>
             </div>
 
@@ -74,9 +74,9 @@
                         type="button" 
                         id="resend-button"
                         class="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                        @click="resendCode()"
+                        onclick="resendCode()"
                     >
-                        {{ __('two_fa.email.resend') }}
+                        {{ __('two-fa/email.resend') }}
                     </button>
                     <span id="resend-countdown" class="text-xs text-gray-500 dark:text-gray-400 ml-2 hidden"></span>
                 </div>
@@ -88,7 +88,7 @@
     @if($recoveryCodeRoute ?? null)
         <div class="mt-4 text-center">
             <a href="{{ route($recoveryCodeRoute) }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                <i class="fas fa-life-ring mr-1"></i>{{ __('two_fa.recovery_code.use_recovery_code') }}
+                <i class="fas fa-life-ring mr-1"></i>{{ __('two-fa/recovery-code.use_recovery_code') }}
             </a>
         </div>
     @endif
@@ -104,11 +104,11 @@
         "showExpireTime": true,
         "showResend": true,
         "translations": {
-            "minutes_suffix": "{{ __('two_fa.email.minutes_suffix') }}",
-            "seconds_suffix": "{{ __('two_fa.email.seconds_suffix') }}",
-            "expired": "{{ __('two_fa.email.expired') }}",
-            "resend_failed": "{{ __('two_fa.email.resend_failed') }}",
-            "network_error": "{{ __('two_fa.email.network_error') }}"
+            "minutes_suffix": "{{ __('two-fa/email.minutes_suffix') }}",
+            "seconds_suffix": "{{ __('two-fa/email.seconds_suffix') }}",
+            "expired": "{{ __('two-fa/email.expired') }}",
+            "resend_failed": "{{ __('two-fa/email.resend_failed') }}",
+            "network_error": "{{ __('two-fa/email.network_error') }}"
         }
     }
     </script>
@@ -119,6 +119,6 @@
         $backRoute = $loginRoute ?? route('admin.login');
     @endphp
     <a href="{{ $backRoute }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
-        ← {{ __('two_fa.back_to_login') }}
+        ← {{ __('two-fa/common.back_to_login') }}
     </a>
 @endsection

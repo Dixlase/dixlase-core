@@ -82,17 +82,6 @@ class CaptchaHelper
         // フォーム固有の設定チェック
         $formCaptchaEnabled = $formName ? self::isEnabledForForm($formName) : true;
         
-        // デバッグログ
-        \Log::info('CaptchaHelper::shouldShowCaptcha', [
-            'form_name' => $formName,
-            'bypass_active' => $bypassActive,
-            'captcha_enabled' => $settings['enabled'],
-            'form_captcha_enabled' => $formCaptchaEnabled,
-            'authentication_result' => $settings['authentication_result'],
-            'site_key' => !empty($settings['site_key']),
-            'secret_key' => !empty($settings['secret_key']),
-        ]);
-        
         if ($bypassActive) {
             return false;
         }
@@ -234,12 +223,6 @@ class CaptchaHelper
     {
         // CaptchaServiceを使用してフォームの有効状態をチェック
         $captchaService = app(\App\Services\CaptchaService::class);
-        
-        // デバッグログ
-        \Log::info('CaptchaHelper::isEnabledForForm', [
-            'form_name' => $formName,
-            'is_enabled' => $captchaService->isEnabled($formName),
-        ]);
         
         return $captchaService->isEnabled($formName);
     }
