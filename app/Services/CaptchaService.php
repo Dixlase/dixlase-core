@@ -105,42 +105,22 @@ class CaptchaService
 
     /**
      * Check if CAPTCHA is enabled for a specific form.
+     * Returns true only if the form exists in the database.
      *
      * @param string $formKey
      * @return bool
      */
     public function isEnabled(string $formKey): bool
     {
-        // Check if form is in enabled forms table
-        $enabledForm = CaptchaEnabledForm::where('form_key', $formKey)->first();
-        
-        if ($enabledForm) {
-            return $enabledForm->enabled;
-        }
-        
-        // If not in database, check default_enabled from config
-        return $this->getDefaultEnabled($formKey);
-    }
-
-    /**
-     * Get default enabled state from config.
-     *
-     * @param string $formKey
-     * @return bool
-     */
-    protected function getDefaultEnabled(string $formKey): bool
-    {
-        $allForms = $this->getAllForms();
-        
-        if ($allForms->has($formKey)) {
-            return $allForms[$formKey]['default_enabled'] ?? false;
-        }
-        
-        return false;
+        // データベースにレコードが存在すれば有効
+        return CaptchaEnabledForm::where('form_key', $formKey)
+            ->where('enabled', true)
+            ->exists();
     }
 
     /**
      * Update CAPTCHA setting for a form.
+     * Enabled forms are saved to database, disabled forms are deleted.
      *
      * @param string $formKey
      * @param bool $enabled
@@ -149,10 +129,33 @@ class CaptchaService
      */
     public function updateFormSetting(string $formKey, bool $enabled, ?string $provider = null): void
     {
+        \Log::info('CaptchaService::updateFormSetting 呼び出し', [
+            'form_key' => $formKey,
+            'enabled' => $enabled,
+            'provider' => $provider,
+        ]);
+        
         if ($enabled) {
-            CaptchaEnabledForm::enableForm($formKey, $provider);
+            // 有効な場合のみデータベースに保存
+            $result = CaptchaEnabledForm::updateOrCreate(
+                ['form_key' => $formKey],
+                [
+                    'enabled' => true,
+                    'provider' => $provider,
+                ]
+            );
+            \Log::info('CAPTCHAフォーム有効化: レコード作成/更新', [
+                'form_key' => $formKey,
+                'record_id' => $result->id,
+                'was_recently_created' => $result->wasRecentlyCreated,
+            ]);
         } else {
-            CaptchaEnabledForm::disableForm($formKey);
+            // 無効な場合はレコードを削除
+            $deleted = CaptchaEnabledForm::where('form_key', $formKey)->delete();
+            \Log::info('CAPTCHAフォーム無効化: レコード削除', [
+                'form_key' => $formKey,
+                'deleted_count' => $deleted,
+            ]);
         }
     }
 
@@ -164,9 +167,21 @@ class CaptchaService
      */
     public function bulkUpdateFormSettings(array $formSettings): void
     {
+        \Log::info('CaptchaService::bulkUpdateFormSettings 呼び出し', [
+            'form_settings' => $formSettings,
+            'count' => count($formSettings),
+        ]);
+        
         foreach ($formSettings as $formKey => $enabled) {
+            \Log::info('フォーム設定処理中', [
+                'form_key' => $formKey,
+                'enabled_raw' => $enabled,
+                'enabled_bool' => (bool) $enabled,
+            ]);
             $this->updateFormSetting($formKey, (bool) $enabled);
         }
+        
+        \Log::info('CaptchaService::bulkUpdateFormSettings 完了');
     }
 
     /**

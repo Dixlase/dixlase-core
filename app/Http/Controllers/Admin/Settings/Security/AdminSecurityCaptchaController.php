@@ -50,7 +50,6 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
      */
     public function index()
     {
-        
         $currentDriver = $this->securitySettingRepository->get('captcha_driver', 'google');
         
         // プロバイダごとのキーを取得
@@ -156,8 +155,19 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         $this->securitySettingRepository->set('captcha_google_project_id', $validated['captcha_google_project_id'] ?? '');
 
         // フォーム設定を更新
+        Log::info('CAPTCHA フォーム設定の保存開始', [
+            'validated_forms' => $validated['forms'] ?? null,
+            'has_forms' => isset($validated['forms']),
+            'is_array' => isset($validated['forms']) && is_array($validated['forms']),
+        ]);
+        
         if (isset($validated['forms']) && is_array($validated['forms'])) {
+            Log::info('CAPTCHA フォーム設定を更新', [
+                'forms' => $validated['forms'],
+            ]);
             $this->captchaService->bulkUpdateFormSettings($validated['forms']);
+        } else {
+            Log::warning('CAPTCHA フォーム設定がリクエストに含まれていません');
         }
 
         return redirect()->route('admin.settings.security.captcha')
