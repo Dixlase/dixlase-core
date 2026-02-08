@@ -5,6 +5,40 @@
 @section('description', __('install/step3.database_description'))
 
 @section('content')
+<div x-data="{
+    showPassword: false,
+    testResult: '{{ __('install/step3.db_test_required') }}',
+    testResultClass: 'text-red-600 dark:text-red-400',
+    async testDatabaseConnection() {
+        const formData = new FormData();
+        formData.append('db_connection', document.getElementById('db_connection').value);
+        formData.append('db_host', document.getElementById('db_host').value);
+        formData.append('db_port', document.getElementById('db_port').value);
+        formData.append('db_database', document.getElementById('db_database').value);
+        formData.append('db_username', document.getElementById('db_username').value);
+        formData.append('db_password', document.getElementById('db_password').value);
+        formData.append('_token', document.querySelector('input[name=_token]').value);
+        
+        try {
+            const response = await fetch(document.getElementById('db-test-url').value, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                this.testResult = document.getElementById('db-success-message').value;
+                this.testResultClass = 'text-green-600 dark:text-green-400';
+            } else {
+                this.testResult = data.message || 'Connection failed';
+                this.testResultClass = 'text-red-600 dark:text-red-400';
+            }
+        } catch (error) {
+            this.testResult = 'Connection test failed';
+            this.testResultClass = 'text-red-600 dark:text-red-400';
+        }
+    }
+}">
 <form action="{{ route('install.database.store') }}" method="POST" class="space-y-6">
     @csrf
 
@@ -88,18 +122,19 @@
             <div>
                 <x-form-label for="db_password" :text="__('install/step3.db_password')" :required="true" />
                 <div class="relative">
-                    <x-form-text
-                        type="password"
-                        name="db_password"
+                    <input
+                        :type="showPassword ? 'text' : 'password'"
                         id="db_password"
-                        :value="old('db_password', $defaultDbPassword)"
-                        :required="true"
+                        name="db_password"
+                        value="{{ old('db_password', $defaultDbPassword) }}"
+                        required
                         autocomplete="off"
-                        class="input-full pr-10"
+                        class="input-full pr-10 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                     />
-                    <button type="button" onclick="togglePassword()" 
+                    <button type="button" 
+                        x-on:click="showPassword = !showPassword"
                         class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
-                        <i id="password-eye" class="fas fa-eye"></i>
+                        <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
                     </button>
                 </div>
                 <x-form-help-text :text="__('install/step3.db_password_required')" />
@@ -133,17 +168,15 @@
         <input type="hidden" id="db-success-message" value="{{ __('install/step3.db_test_success') }}">
         
         <div class="text-center space-y-3">
-            <p id="db-test-result" class="text-sm text-red-600 dark:text-red-400" role="status" aria-live="polite">
-                {{ __('install/step3.db_test_required') }}
+            <p id="db-test-result" class="text-sm" :class="testResultClass" role="status" aria-live="polite" x-text="testResult">
             </p>
             
-            <x-form-button 
+            <button 
                 type="button"
-                variant="success"
-                :label="__('install/step3.test_db_connection')"
-                icon="fas fa-plug"
-                onclick="testDatabaseConnection()"
-            />
+                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+                x-on:click="testDatabaseConnection()">
+                <i class="fas fa-plug mr-2"></i>{{ __('install/step3.test_db_connection') }}
+            </button>
         </div>
     </section>
 
@@ -174,5 +207,6 @@
         </div>
     </nav>
 </form>
+</div>
 
 @endsection
