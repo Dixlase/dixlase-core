@@ -52,6 +52,25 @@ export function createLoginFlow() {
 
             try {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+                // CAPTCHAトークンを取得
+                const requestBody = {
+                    login: this.identifier
+                };
+
+                // Turnstile (Cloudflare)
+                const turnstileToken = document.querySelector('input[name="cf-turnstile-response"]')?.value;
+                if (turnstileToken) {
+                    requestBody['cf-turnstile-response'] = turnstileToken;
+                }
+
+                // Google reCAPTCHA
+                const recaptchaToken = document.querySelector('input[name="g-recaptcha-response"]')?.value ||
+                    document.querySelector('textarea[name="g-recaptcha-response"]')?.value;
+                if (recaptchaToken) {
+                    requestBody['g-recaptcha-response'] = recaptchaToken;
+                }
+
                 const response = await fetch(this.routes.checkIdentifier, {
                     method: 'POST',
                     headers: {
@@ -59,9 +78,7 @@ export function createLoginFlow() {
                         'X-CSRF-TOKEN': csrfToken,
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({
-                        login: this.identifier
-                    })
+                    body: JSON.stringify(requestBody)
                 });
 
                 const data = await response.json();

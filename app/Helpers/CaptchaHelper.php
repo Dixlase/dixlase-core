@@ -75,19 +75,33 @@ class CaptchaHelper
     {
         // 緊急バイパスがアクティブな場合はCAPTCHAを表示しない
         $scope = self::getBypassScopeForForm($formName);
-        if (CaptchaBypassService::shouldSkipCaptcha($scope)) {
+        $bypassActive = CaptchaBypassService::shouldSkipCaptcha($scope);
+        
+        $settings = self::getSettings();
+        
+        // フォーム固有の設定チェック
+        $formCaptchaEnabled = $formName ? self::isEnabledForForm($formName) : true;
+        
+        // デバッグログ
+        \Log::info('CaptchaHelper::shouldShowCaptcha', [
+            'form_name' => $formName,
+            'bypass_active' => $bypassActive,
+            'captcha_enabled' => $settings['enabled'],
+            'form_captcha_enabled' => $formCaptchaEnabled,
+            'authentication_result' => $settings['authentication_result'],
+            'site_key' => !empty($settings['site_key']),
+            'secret_key' => !empty($settings['secret_key']),
+        ]);
+        
+        if ($bypassActive) {
             return false;
         }
-
-        $settings = self::getSettings();
         
         // 基本的なCAPTCHA有効性チェック
         if (!$settings['enabled']) {
             return false;
         }
 
-        // フォーム固有の設定チェック
-        $formCaptchaEnabled = $formName ? self::isEnabledForForm($formName) : true;
         if (!$formCaptchaEnabled) {
             return false;
         }
@@ -217,6 +231,24 @@ class CaptchaHelper
      * その他のフォームはプラグイン側で独自に管理する
      */
     public static function isEnabledForForm(string $formName): bool
+    {
+        // CaptchaServiceを使用してフォームの有効状態をチェック
+        $captchaService = app(\App\Services\CaptchaService::class);
+        
+        // デバッグログ
+        \Log::info('CaptchaHelper::isEnabledForForm', [
+            'form_name' => $formName,
+            'is_enabled' => $captchaService->isEnabled($formName),
+        ]);
+        
+        return $captchaService->isEnabled($formName);
+    }
+    
+    /**
+     * 旧バージョンとの互換性のため残す（非推奨）
+     * @deprecated Use isEnabledForForm() instead
+     */
+    protected static function isEnabledForFormLegacy(string $formName): bool
     {
         // 管理画面のフォーム
         if (in_array($formName, ['admin_login', 'admin_password_reset'])) {

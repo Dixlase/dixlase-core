@@ -182,15 +182,24 @@ trait LoginTrait
         // 入力値がメールアドレスかアカウント名かを判定
         $isEmail = str_contains($login, '@');
 
-        // CAPTCHA検証
-        $captchaAction = $this->getCaptchaAction();
-        $captchaResult = \App\Helpers\CaptchaHelper::verify($request, $captchaAction);
+        // CAPTCHA検証（識別子チェックで検証済みの場合はスキップ）
+        $captchaVerifiedKey = 'captcha_verified_' . $login;
+        $captchaVerifiedTime = session()->get($captchaVerifiedKey);
+        $captchaVerified = $captchaVerifiedTime && (time() - $captchaVerifiedTime) < 300; // 5分以内
         
-        if ($captchaResult && !$captchaResult->isValid()) {
-            return back()->withErrors([
-                'captcha' => $captchaResult->getErrorMessage(),
-            ])->withInput($request->except('password'));
+        if (!$captchaVerified) {
+            $captchaAction = $this->getCaptchaAction();
+            $captchaResult = \App\Helpers\CaptchaHelper::verify($request, $captchaAction);
+            
+            if ($captchaResult && !$captchaResult->isValid()) {
+                return back()->withErrors([
+                    'captcha' => $captchaResult->getErrorMessage(),
+                ])->withInput($request->except('password'));
+            }
         }
+        
+        // CAPTCHA検証済みフラグをクリア
+        session()->forget($captchaVerifiedKey);
 
         // ロックアウト状態をチェック
         if ($lockoutService->isLockedOut($login)) {
