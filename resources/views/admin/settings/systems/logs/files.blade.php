@@ -337,7 +337,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             variant="danger"
                             :label="__('common.clear')"
                             icon="fas fa-trash"
-                            onclick="openModal('clearConfirmModal')"
+                            @click="openModal('clearConfirmModal')"
                         />
                     </div>
                 </div>

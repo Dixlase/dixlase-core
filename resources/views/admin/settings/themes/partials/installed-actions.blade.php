@@ -69,9 +69,9 @@ https://exc-d.com
                 :label="__('common.enable')"
                 variant="success"
                 size="xs"
-                class="py-2 px-3"
-                icon="fas fa-check"
-                onclick="openModal('{{ $enableModalId }}')"
+                icon="fas fa-play"
+                @click="openModal('{{ $enableModalId }}')"
+                class="py-2 px-3"          
             />
             
             <x-ui-modal
@@ -119,7 +119,7 @@ https://exc-d.com
             size="xs"
             class="py-2 px-3"
             icon="fas fa-trash"
-            onclick="openModal('uninstallThemeModal-{{ $theme->id }}')"
+            @click="openModal('uninstallThemeModal-{{ $theme->id }}')"
         />
 
         <x-ui-modal

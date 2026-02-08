@@ -49,7 +49,7 @@
         
         @if($dismissible)
             <div class="ml-auto pl-3">
-                <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                <button @click="$el.closest('.ui-message').remove()" 
                         class="inline-flex text-gray-400 hover:text-gray-500">
                     <i class="fas fa-times"></i>
                 </button>

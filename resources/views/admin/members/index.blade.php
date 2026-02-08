@@ -34,9 +34,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <x-form-button
             type="button"
             :label="__('admin/members/index.force_logout_all')"
-            variant="danger"
+            variant="warning"
             icon="fas fa-sign-out-alt"
-            onclick="openModal('forceLogoutAllModal')"
+            @click="openModal('forceLogoutAllModal')"
         />
     </div>
 
@@ -183,7 +183,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     size="sm"
                                     :label="__('common.edit')"
                                     icon="fas fa-edit"
-                                    onclick="window.location.href='{{ route('admin.members.edit', ['member' => $member->id]) }}'"
+                                    @click="window.location.href='{{ route('admin.members.edit', ['member' => $member->id]) }}'"
                                 />
                             </td>
                         </tr>
@@ -218,6 +218,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :confirm_label="__('admin/members/index.force_logout_all')"
         :cancel_label="__('common.cancel')"
         form="forceLogoutAllForm"
+        icon_type="warning"
+        confirm_color="yellow"
     />
     
     <form id="forceLogoutAllForm" method="POST" action="{{ route('admin.members.force-logout-all') }}" style="display: none;">

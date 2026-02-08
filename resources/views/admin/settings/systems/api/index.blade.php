@@ -33,7 +33,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p class="text-sm text-yellow-700 dark:text-yellow-300 mt-1">{{ __('admin/settings/systems/api.key_generated_warning_detail') }}</p>
                 <div class="mt-3 flex items-center gap-2">
                     <code id="generated-key" class="flex-1 p-3 bg-white dark:bg-gray-800 border border-yellow-400 rounded font-mono text-sm break-all">{{ session('generated_key') }}</code>
-                    <button type="button" onclick="copyToClipboard('generated-key')" class="btn btn-secondary">
+                    <button type="button" @click="copyToClipboard('generated-key')" class="btn btn-secondary">
                         <i class="fas fa-copy"></i>
                     </button>
                 </div>

@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                             <i class="fas fa-search mr-2"></i>${auditMessages.resultTitle}
                         </h3>
-                        <button type="button" onclick="window.location.reload()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <button type="button" @click="window.location.reload()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         ${contentHtml}
                     </div>
                     <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-                        <button type="button" onclick="window.location.reload()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700">
+                        <button type="button" @click="window.location.reload()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700">
                             ${auditMessages.close}
                         </button>
                     </div>

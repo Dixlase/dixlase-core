@@ -73,7 +73,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @if ($type === 'link')
 <a href="{{ $href }}"
     @if ($id) id="{{ $id }}" @endif
-    @if ($onclick) onclick="{{ $onclick }}" @endif
     @if ($xShow) x-show="{{ $xShow }}" @endif
     class="{{ implode(' ', $buttonClasses) }} {{ $disabled ? 'pointer-events-none' : '' }}"
     >
@@ -94,7 +93,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @else
 <button type="{{ $type }}"
     @if ($id) id="{{ $id }}" @endif
-    @if ($onclick) onclick="{{ $onclick }}" @endif
     @if ($xClick) @click="{{ $xClick }}" @endif
     @if ($xDisabled) :disabled="{{ $xDisabled }}" @endif
     @if ($xShow) x-show="{{ $xShow }}" @endif

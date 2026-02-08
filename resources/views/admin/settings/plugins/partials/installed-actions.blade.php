@@ -85,7 +85,7 @@ https://exc-d.com
                 variant="success"
                 size="xs"
                 icon="fas fa-play"
-                onclick="openModal('{{ $enableModalId }}')"
+                @click="openModal('{{ $enableModalId }}')"
                 class="py-2 px-3"
             />
             
@@ -133,7 +133,7 @@ https://exc-d.com
             variant="danger"
             size="xs"
             icon="fas fa-trash"
-            onclick="openModal('uninstallModal-{{ $plugin->id }}')"
+            @click="openModal('uninstallModal-{{ $plugin->id }}')"
             class="py-2 px-3"
         />
 

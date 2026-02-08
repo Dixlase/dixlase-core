@@ -265,7 +265,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <button type="button" 
                                 id="captcha-validate-button"
                                 class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed mb-3"
-                                onclick="validateCaptchaWidget()"
+                                @click="validateCaptchaWidget()"
                                 :disabled="!captchaEnabled || !captchaDriver"
                                 x-text="captchaSettingsChanged ? '{{ __('admin/settings/security/captcha.validate_button') }}' : '{{ $captchaTestResult ? __('admin/settings/security/captcha.revalidate_button') : __('admin/settings/security/captcha.validate_button') }}'">
                         </button>
