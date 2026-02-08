@@ -45,7 +45,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             <form method="POST" action="{{ route('admin.settings.security.integrity.regenerate-baseline') }}" class="inline">
                 @csrf
-                <button type="submit" class="text-sm text-blue-600 dark:text-blue-400 hover:underline" onclick="return confirm('{{ __('admin/settings/security/integrity.regenerate_confirm') }}')">
+                <button type="submit" class="text-sm text-blue-600 dark:text-blue-400 hover:underline" 
+                    x-on:click.prevent="if (confirm('{{ __('admin/settings/security/integrity.regenerate_confirm') }}')) $el.closest('form').submit()">
                     <i class="fas fa-sync-alt mr-1"></i>{{ __('admin/settings/security/integrity.regenerate_baseline') }}
                 </button>
             </form>
