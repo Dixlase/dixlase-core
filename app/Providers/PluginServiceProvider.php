@@ -24,6 +24,7 @@ namespace App\Providers;
 
 use App\Helpers\PluginHelper;
 use App\Models\Plugin;
+use App\Traits\PluginLoaderTrait;
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
@@ -33,6 +34,8 @@ use Illuminate\Support\Facades\Log;
 
 class PluginServiceProvider extends ServiceProvider
 {
+    use PluginLoaderTrait;
+
     /**
      * 登録されたプラグインコマンドを保持
      */
@@ -266,6 +269,9 @@ class PluginServiceProvider extends ServiceProvider
         // プラグインのAPIルートを読み込む
         PluginHelper::loadEnabledApiRoutes();
         
+        // プラグインのルートを読み込む
+        $this->loadPluginRoutes();
+        
         // プラグインのコマンドを登録（CLIモードのみ、有効化されたプラグインのみ）
         if ($this->app->runningInConsole()) {
             $this->registerPluginCommands($enabledPlugins);
@@ -333,23 +339,52 @@ class PluginServiceProvider extends ServiceProvider
             // Load web routes
             $webRoutePath = "{$pluginPath}/routes/web.php";
             if (File::exists($webRoutePath)) {
-                include $webRoutePath;
+                \Route::middleware('web')->group($webRoutePath);
+            }
+            
+            // DixlaseUsersは独自のServiceProviderでルートを登録するためスキップ
+            if ($plugin->directory === 'DixlaseUsers') {
+                continue;
             }
             
             // Load admin routes within the admin route group
             $adminRoutePath = "{$pluginPath}/routes/admin.php";
             if (File::exists($adminRoutePath)) {
+                Log::info("[PluginServiceProvider] Loading admin routes", [
+                    'plugin' => $plugin->directory,
+                    'path' => $adminRoutePath
+                ]);
+                
                 // Get admin URL from helper
                 $adminUrl = \App\Helpers\AdminHelper::getAdminUrl();
                 
-                // Load admin routes within the secure admin group
-                \Route::prefix($adminUrl)->name('admin.')
-                    ->middleware(['admin.ip'])
-                    ->group(function () use ($adminRoutePath) {
-                        \Route::middleware(['auth:member', 'verified', 'log.admin.activity'])->group(function () use ($adminRoutePath) {
-                            include $adminRoutePath;
-                        });
-                    });
+                // Load admin routes - プラグイン側でルート名を完全に制御
+                // ルートグループスタックをリセットしてからルートを登録
+                $router = app('router');
+                
+                // 現在のグループスタックを保存
+                $originalGroupStack = $router->getGroupStack();
+                
+                // グループスタックをリセット（リフレクションを使用）
+                $reflection = new \ReflectionClass($router);
+                $property = $reflection->getProperty('groupStack');
+                $property->setAccessible(true);
+                $property->setValue($router, []);
+                
+                // ルートを登録
+                $router->group([
+                    'prefix' => $adminUrl,
+                    'middleware' => ['web', 'admin.ip', 'auth:member', 'verified', 'log.admin.activity'],
+                ], function () use ($adminRoutePath, $plugin) {
+                    Log::info("[PluginServiceProvider] Including admin route file", [
+                        'plugin' => $plugin->directory,
+                        'file' => $adminRoutePath
+                    ]);
+                    include $adminRoutePath;
+                });
+                
+                // グループスタックを復元
+                $property->setValue($router, $originalGroupStack);
             }
         }
     }
