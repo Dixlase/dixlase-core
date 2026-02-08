@@ -147,6 +147,6 @@ return [
     'forms' => [
         'admin_login' => '管理画面ログイン',
         'admin_password_reset' => '管理画面パスワードリセット',
-        'admin_two_factor' => '管理画面二段階認証',
+        'admin_two_fa' => '管理画面二段階認証',
     ],
 ];

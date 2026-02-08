@@ -55,6 +55,9 @@
                 </p>
             </div>
 
+            <!-- CAPTCHA -->
+            <x-captcha :enabled="$captchaEnabled ?? false" :widget="$captchaWidget ?? null" />
+
             <!-- 送信ボタン -->
             <div class="mb-4">
                 <button 

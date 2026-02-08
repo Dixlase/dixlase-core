@@ -109,9 +109,9 @@ return [
             'default_enabled' => false,
             'priority' => 20,
         ],
-        'admin_two_factor' => [
-            'name' => 'admin/settings/security/captcha.forms.admin_two_factor',
-            'route' => 'admin.two-factor.verify',
+        'admin_two_fa' => [
+            'name' => 'admin/settings/security/captcha.forms.admin_two_fa',
+            'route' => 'admin.two-fa.email.verify',
             'category' => 'admin',
             'default_enabled' => false,
             'priority' => 30,
