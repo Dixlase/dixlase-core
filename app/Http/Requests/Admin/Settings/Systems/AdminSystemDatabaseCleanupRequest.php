@@ -41,8 +41,21 @@ class AdminSystemDatabaseCleanupRequest extends FormRequest
      */
     public function rules(): array
     {
+        // コアのクリーンアップタイプ
+        $coreTypes = array_keys(config('admin.database-cleanup', []));
+        
+        // プラグインのクリーンアップタイプ
+        $pluginTypes = [];
+        $pluginCleanupInfo = app(\App\Services\DatabaseCleanupService::class)->getPluginCleanupInfo();
+        if (!empty($pluginCleanupInfo)) {
+            $pluginTypes = array_keys($pluginCleanupInfo);
+        }
+        
+        // すべてのタイプを結合
+        $allTypes = array_merge($coreTypes, $pluginTypes, ['all']);
+        
         return [
-            'type' => 'required|in:login_attempts,password_reset_tokens,trusted_devices,two_fa_attempts,two_fa_tokens,recovery_codes,cache_data,sessions,all',
+            'type' => 'required|in:' . implode(',', $allTypes),
             'days' => 'required|integer|min:0|max:365',
         ];
     }

@@ -69,7 +69,7 @@ return [
     ],
 
     'recovery_codes' => [
-        'table' => 'members_recovery_codes',
+        'table' => 'members_two_fa_recovery_codes',
         'date_column' => 'created_at',
         'default_days' => 90,
         'name' => 'admin/settings/systems/database.recovery_codes.name',
@@ -80,12 +80,11 @@ return [
 
     'passkeys' => [
         'table' => 'webauthn_credentials',
-        'date_column' => 'last_used_at',
+        'date_column' => 'created_at',
         'default_days' => 365,
         'name' => 'admin/settings/systems/database.passkeys.name',
         'description' => 'admin/settings/systems/database.passkeys.description',
         'enabled' => true,
-        'additional_conditions' => 'unused',
     ],
 
     'sessions' => [
