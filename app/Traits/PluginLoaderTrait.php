@@ -169,16 +169,28 @@ trait PluginLoaderTrait
             config(["{$pluginSlug}.{$key}" => $value]);
         }
 
-        // admin.php ファイルが存在する場合、ナビゲーションをマージ
-        $adminConfigFile = $corePath . '/admin.php';
-        if (file_exists($adminConfigFile)) {
-            $this->mergeAdminNavConfig($adminConfigFile);
+        // 新しい構造: config/admin/navigation.php を優先的に読み込む
+        $adminNavConfigFile = $corePath . '/admin/navigation.php';
+        if (file_exists($adminNavConfigFile)) {
+            $this->mergeAdminNavigationFile($adminNavConfigFile);
+        } else {
+            // 旧構造: admin.php ファイルが存在する場合、ナビゲーションをマージ
+            $adminConfigFile = $corePath . '/admin.php';
+            if (file_exists($adminConfigFile)) {
+                $this->mergeAdminNavConfig($adminConfigFile);
+            }
         }
 
-        // カスタムのadmin.phpファイルも確認
-        $customAdminConfigFile = $customPath . '/admin.php';
-        if (file_exists($customAdminConfigFile)) {
-            $this->mergeAdminNavConfig($customAdminConfigFile);
+        // カスタムのadmin/navigation.phpファイルも確認
+        $customAdminNavConfigFile = $customPath . '/admin/navigation.php';
+        if (file_exists($customAdminNavConfigFile)) {
+            $this->mergeAdminNavigationFile($customAdminNavConfigFile);
+        } else {
+            // カスタムのadmin.phpファイルも確認
+            $customAdminConfigFile = $customPath . '/admin.php';
+            if (file_exists($customAdminConfigFile)) {
+                $this->mergeAdminNavConfig($customAdminConfigFile);
+            }
         }
     }
 
@@ -319,7 +331,48 @@ trait PluginLoaderTrait
     }
 
     /**
-     * 管理画面のナビゲーション (`admin.nav`) をマージする
+     * 新しい構造のナビゲーションファイル (config/admin/navigation.php) をマージする
+     *
+     * @param string $configFile プラグインのナビゲーション設定ファイル
+     */
+    public function mergeAdminNavigationFile($configFile)
+    {
+        if (!file_exists($configFile)) {
+            return;
+        }
+
+        $pluginNavigation = require $configFile;
+
+        if (!is_array($pluginNavigation)) {
+            return;
+        }
+
+        foreach ($pluginNavigation as $key => $value) {
+            if (isset($value['_insert_before'])) {
+                $this->insertOrderedConfig('admin.navigation', $key, $value, $value['_insert_before'], 'before');
+            } elseif (isset($value['_insert_after'])) {
+                $this->insertOrderedConfig('admin.navigation', $key, $value, $value['_insert_after'], 'after');
+            } else {
+                // 既存のキーがある場合はマージ、ない場合は追加
+                $existingValue = config("admin.navigation.{$key}");
+                if ($existingValue !== null && is_array($existingValue)) {
+                    // 既存の設定がある場合、childrenのみをマージし、他のプロパティは保持
+                    if (isset($value['children']) && is_array($value['children'])) {
+                        $existingChildren = $existingValue['children'] ?? [];
+                        $existingValue['children'] = array_merge($existingChildren, $value['children']);
+                    }
+                    // 他のプロパティ（text, iconなど）は既存の設定を保持
+                    config(["admin.navigation.{$key}" => $existingValue]);
+                } else {
+                    // 新規追加
+                    config(["admin.navigation.{$key}" => $value]);
+                }
+            }
+        }
+    }
+
+    /**
+     * 管理画面のナビゲーション (`admin.nav`) をマージする（旧構造用）
      *
      * @param string $configFile プラグインのナビゲーション設定ファイル
      */
