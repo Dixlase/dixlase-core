@@ -24,7 +24,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <div class="container mx-auto p-6">
         <div class="bg-white shadow-md rounded-lg p-6 dark:bg-gray-800">
             @if(in_array($media->type, ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']))
-                <img src="{{ asset('storage/' . config('admin.mediaPath') . '/' . $media->path) }}" alt="{{ $media->name }}" class="w-full h-auto object-cover rounded">
+                <img src="{{ asset('storage/' . config('admin.files.mediaPath') . '/' . $media->path) }}" alt="{{ $media->name }}" class="w-full h-auto object-cover rounded">
             @else
                 <p class="text-gray-700">{{ __('admin/media.preview.no_preview') }}</p>
             @endif
@@ -95,10 +95,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <h3 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">{{ __('admin/media.preview.media_url') }}</h3>
                 <div class="flex items-center gap-2">
-                    <input type="text" id="mediaUrl" value="{{ asset('storage/' . config('admin.mediaPath') . '/' . $media->path) }}" 
+                    <input type="text" id="mediaUrl" value="{{ asset('storage/' . config('admin.files.mediaPath') . '/' . $media->path) }}" 
                            class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm" 
                            readonly>
-                    <button onclick="copyToClipboard()" 
+                    <button @click="copyToClipboard()" 
                             data-copied-text="{{ __('common.copied') }}"
                             data-copy-failed-text="{{ __('admin/media.preview.copy_failed') }}"
                             class="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition dark:bg-green-600 dark:hover:bg-green-700 flex items-center gap-2">
@@ -122,7 +122,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @csrf
                         @method('DELETE')
                         <!-- 削除ボタン -->
-                        <button type="button" onclick="openModal('deleteModal')" class="bg-red-500 text-white py-2 px-4 rounded flex items-center gap-2 hover:bg-red-600 transition dark:bg-red-600 dark:hover:bg-red-700">
+                        <button type="button" @click="openModal('deleteModal')" class="bg-red-500 text-white py-2 px-4 rounded flex items-center gap-2 hover:bg-red-600 transition dark:bg-red-600 dark:hover:bg-red-700">
                             <i class="fas fa-trash-alt"></i> {{ __('common.delete') }}
                         </button>
 

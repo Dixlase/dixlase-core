@@ -150,7 +150,7 @@ class AdminMediaController extends AdminLoggedInController
     {
         $file = $request->file('file');
         if (!$file) {
-            return redirect()->back()->withErrors(['file' => __('admin/media.error.file_not_found')]);
+            return redirect()->back()->withErrors(['file' => __('admin/media.upload.error.file_not_found')]);
         }
 
         // セキュリティチェック
@@ -163,17 +163,17 @@ class AdminMediaController extends AdminLoggedInController
         $memberId = $this->member->id;
 
         try {
-            $path = $file->store(config('admin.mediaPath'), config('admin.storageDisk'));
+            $path = $file->store(config('admin.files.mediaPath'), config('admin.files.storageDisk'));
             $fileName = basename($path);
             
             // SVGファイルの場合、サニタイズを実行
             $extension = strtolower($file->getClientOriginalExtension());
             if ($extension === 'svg') {
-                $fullPath = Storage::disk(config('admin.storageDisk'))->path($path);
+                $fullPath = Storage::disk(config('admin.files.storageDisk'))->path($path);
                 $this->mediaSecurityService->sanitizeSvgIfNeeded($fullPath);
             }
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['file' => __('admin/media.error.save_failed')]);
+            return redirect()->back()->withErrors(['file' => __('admin/media.index.error.save_failed')]);
         }
 
         $this->mediaRepository->create([
@@ -189,14 +189,14 @@ class AdminMediaController extends AdminLoggedInController
             session()->flash('warnings', $warnings);
         }
 
-        return redirect()->route('admin.media.index')->with('success', __('admin/media.success.uploaded'));
+        return redirect()->route('admin.media.index')->with('success', __('admin/media.index.success.uploaded'));
     }
 
 
     public function delete(Media $media)
     {
-        $disk = config('admin.storageDisk', 'public');
-        $mediaPath = config('admin.mediaPath', 'media');
+        $disk = config('admin.files.storageDisk', 'public');
+        $mediaPath = config('admin.files.mediaPath', 'media');
         
         // pathフィールドがファイル名のみの場合とフルパスの場合を考慮
         if (strpos($media->path, $mediaPath) === 0) {
@@ -213,13 +213,13 @@ class AdminMediaController extends AdminLoggedInController
 
         $media->delete();
 
-        return redirect()->route('admin.media.index')->with('success', 'File deleted successfully.');
+        return redirect()->route('admin.media.index')->with('success', __('admin/media.index.success.deleted'));
     }
 
     public function download(Media $media)
     {
-        $disk = config('admin.storageDisk', 'public');
-        $mediaPath = config('admin.mediaPath', 'media');
+        $disk = config('admin.files.storageDisk', 'public');
+        $mediaPath = config('admin.files.mediaPath', 'media');
         
         // pathフィールドがファイル名のみの場合とフルパスの場合を考慮
         if (strpos($media->path, $mediaPath) === 0) {
@@ -231,7 +231,7 @@ class AdminMediaController extends AdminLoggedInController
         }
 
         if (!Storage::disk($disk)->exists($filePath)) {
-            abort(404, __('admin/media.error.file_not_exists'));
+            abort(404, __('admin/media.index.error.file_not_exists'));
         }
 
         // セキュアなダウンロードレスポンスを生成
@@ -249,13 +249,13 @@ class AdminMediaController extends AdminLoggedInController
         $media->load('member');
         
         // pathフィールドがファイル名のみの場合とフルパスの場合を考慮
-        $mediaPath = config('admin.mediaPath', 'media');
+        $mediaPath = config('admin.files.mediaPath', 'media');
         if (strpos($media->path, $mediaPath) === 0) {
             // フルパスが保存されている場合
-            $filePath = storage_path('app/' . config('admin.storageDisk') . '/' . $media->path);
+            $filePath = storage_path('app/' . config('admin.files.storageDisk') . '/' . $media->path);
         } else {
             // ファイル名のみが保存されている場合
-            $filePath = storage_path('app/' . config('admin.storageDisk') . '/' . $mediaPath . '/' . $media->path);
+            $filePath = storage_path('app/' . config('admin.files.storageDisk') . '/' . $mediaPath . '/' . $media->path);
         }
 
         if (!file_exists($filePath)) {
@@ -289,8 +289,8 @@ class AdminMediaController extends AdminLoggedInController
         $allowedFileTypes = $this->mediaSettingRepository->get('allowed_file_types', []);
         $maxFileSize = $this->mediaSettingRepository->get('max_file_size', '2048');
 
-        $fileExtensions = config('admin.fileExtensions');
-        $fileExtensionNames = config('admin.fileExtensionNames');
+        $fileExtensions = config('admin.files.fileExtensions');
+        $fileExtensionNames = config('admin.files.fileExtensionNames');
 
         // セキュリティ設定を取得
         $securitySettings = $this->mediaSecurityService->getSecuritySettings();
@@ -326,12 +326,14 @@ class AdminMediaController extends AdminLoggedInController
         $media = $this->mediaRepository->paginate($perPage, $filters, 'created_at', 'desc');
         
         // URLを追加
-        $mediaPath = config('admin.mediaPath', 'media');
+        $mediaPath = config('admin.files.mediaPath', 'media');
         $media->getCollection()->transform(function($item) use ($mediaPath) {
             // pathフィールドがファイル名のみの場合とフルパスの場合を考慮
-            if (strpos($item->path, $mediaPath) === 0) {
+            if (strpos($item->path, $mediaPath . '/') === 0) {
+                // フルパスが保存されている場合（media/filename.jpg）
                 $item->url = asset('storage/' . $item->path);
             } else {
+                // ファイル名のみが保存されている場合（filename.jpg）
                 $item->url = asset('storage/' . $mediaPath . '/' . $item->path);
             }
             return $item;
@@ -367,6 +369,6 @@ class AdminMediaController extends AdminLoggedInController
         $this->mediaSettingRepository->set('zip_max_compression_ratio', $request->input('zip_max_compression_ratio'));
         $this->mediaSettingRepository->set('zip_max_file_count', $request->input('zip_max_file_count'));
 
-        return redirect()->back()->with('success', __('admin/media.success.settings_updated'));
+        return redirect()->back()->with('success', __('admin/media.settings.success.settings_updated'));
     }
 }

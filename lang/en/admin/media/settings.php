@@ -55,4 +55,8 @@ return [
     'zip_max_file_count' => 'Max File Count',
     'times' => 'times',
     'files' => 'files',
+    
+    'success' => [
+        'settings_updated' => 'Media settings updated successfully.',
+    ],
 ];

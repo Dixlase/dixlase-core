@@ -18,4 +18,8 @@ return [
     'select_file' => 'メディアファイルを選択:',
     'drag_drop_text' => 'ここにファイルをドラッグするか、クリックしてアップロード',
     'supported_formats' => '対応形式:',
+    
+    'error' => [
+        'file_not_found' => 'ファイルが見つかりません。',
+    ],
 ];

@@ -60,7 +60,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     class="action-btn action-btn--copy"
                     title="{{ __('common.copy') }} URL" 
                     aria-label="{{ __('common.copy') }} URL: {{ $file->name }}"
-                    onclick="copyMediaUrl('{{ asset('storage/' . $mediaPath . '/' . $file->path) }}', this)">
+                    @click="copyMediaUrl('{{ asset('storage/' . $mediaPath . '/' . $file->path) }}', $el)">
                 <i class="fas fa-copy" aria-hidden="true"></i>
             </button>
 
@@ -83,7 +83,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     class="action-btn action-btn--delete"
                     title="{{ __('admin/media.index.delete') }}" 
                     aria-label="{{ __('admin/media.index.delete') }} {{ $file->name }}"
-                    onclick="openDeleteModal({{ $file->id }}, '{{ addslashes($file->name) }}')">
+                    @click="openDeleteModal({{ $file->id }}, '{{ addslashes($file->name) }}')">
                 <i class="fas fa-trash-alt" aria-hidden="true"></i>
             </button>
         </div>

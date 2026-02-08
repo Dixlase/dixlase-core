@@ -332,7 +332,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <x-admin.save-button
         id="confirmationModal"
         :label="__('common.save')"
-        onclick="openModal('confirmationModal')"
+        @click="openModal('confirmationModal')"
         :title="__('common.save_confirmation_title')"
         :message="__('common.save_confirmation_message')"
         :confirm-label="__('common.save')"
