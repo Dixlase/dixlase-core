@@ -19,29 +19,57 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @if (session('status'))
-    <div class="mb-6 p-4 font-semibold text-blue-800 bg-blue-100 border border-blue-200 rounded-xl dark:text-blue-200 dark:bg-blue-900 dark:border-blue-700">
-        {!! session('status') !!}
+    <div class="my-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-blue-500 dark:text-blue-400 text-sm"></i>
+            </div>
+            <div class="ml-2 flex-1 font-medium">
+                {!! session('status') !!}
+            </div>
+        </div>
     </div>
 @endif
 
 @if (session('success'))
-    <div class="mb-6 p-4 font-semibold text-green-800 bg-green-100 border border-green-200 rounded-xl dark:text-green-200 dark:bg-green-900 dark:border-green-700">
-        {!! session('success') !!}
+    <div class="my-4 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <i class="fas fa-check-circle text-green-500 dark:text-green-400 text-sm"></i>
+            </div>
+            <div class="ml-2 flex-1 font-medium">
+                {!! session('success') !!}
+            </div>
+        </div>
     </div>
 @endif
 
 @if (session('error'))
-    <div class="mb-6 p-4 font-semibold text-red-800 bg-red-100 border border-red-200 rounded-xl dark:text-red-200 dark:bg-red-900 dark:border-red-700">
-        {!! session('error') !!}
+    <div class="my-4 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <i class="fas fa-times-circle text-red-500 dark:text-red-400 text-sm"></i>
+            </div>
+            <div class="ml-2 flex-1 font-medium">
+                {!! session('error') !!}
+            </div>
+        </div>
     </div>
 @endif
 
 @if ($errors->any())
-    <div class="mb-6 p-4 font-semibold text-red-800 bg-red-100 border border-red-200 rounded-xl dark:text-red-200 dark:bg-red-900 dark:border-red-700">
-        <ul class="list-disc list-inside">
-            @foreach ($errors->all() as $error)
-                <li>{!! $error !!}</li>
-            @endforeach
-        </ul>
+    <div class="my-4 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <i class="fas fa-times-circle text-red-500 dark:text-red-400 text-sm"></i>
+            </div>
+            <div class="ml-2 flex-1 font-medium">
+                <ul class="list-disc list-inside">
+                    @foreach ($errors->all() as $error)
+                        <li>{!! $error !!}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
     </div>
 @endif

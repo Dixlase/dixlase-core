@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-<div class="mx-auto">
+<div class="mx-auto" x-data="{}">
 <section>
     <h2>{{ __('admin/settings/systems/database.core_cleanup_heading') }}</h2>
     <p class="mb-6">{{ __('admin/settings/systems/database.core_cleanup_description') }}</p>

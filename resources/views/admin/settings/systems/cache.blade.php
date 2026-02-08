@@ -22,7 +22,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-    
+    @php
+        // クッキーからフラッシュメッセージを取得（キャッシュクリア後も表示されるように）
+        $cookieSuccess = request()->cookie('flash_success');
+        $cookieError = request()->cookie('flash_error');
+    @endphp
+
+    @if(session('success') || $cookieSuccess)
+        <x-ui-message 
+            type="success" 
+            :message="session('success') ?? $cookieSuccess"
+            textSize="text-base font-medium"
+        />
+    @endif
+
+    @if(session('error') || $cookieError)
+        <x-ui-message 
+            type="error" 
+            :message="session('error') ?? $cookieError"
+            textSize="text-base font-medium"
+        />
+    @endif
 
     <section>
         <h2>{{ __('admin/settings/systems/cache.title') }}</h2>
@@ -45,7 +65,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     variant="danger"
                     :label="__('common.clear')"
                     icon="fas fa-trash"
-                    onclick="openModal('clearCacheModal{{ ucfirst($type) }}')"
+                    @click="openModal('clearCacheModal{{ ucfirst($type) }}')"
                 />
             </div>
         </section>
@@ -69,7 +89,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     variant="danger"
                     :label="__('admin/settings/systems/cache.clear_all_button')"
                     icon="fas fa-trash-alt"
-                    onclick="openModal('clearAllCacheModal')"
+                    @click="openModal('clearAllCacheModal')"
                 />
             </div>
         </section>
