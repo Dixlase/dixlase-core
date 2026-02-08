@@ -50,6 +50,8 @@ class AdminSecurityCaptchaUpdateRequest extends FormRequest
             'captcha_google_min_score' => 'nullable|numeric|min:0|max:1',
             'captcha_google_project_id' => 'nullable|string|max:255',
             'captcha_authentication_result' => 'nullable|boolean',
+            'forms' => 'nullable|array',
+            'forms.*' => 'nullable|boolean',
         ];
     }
 }
