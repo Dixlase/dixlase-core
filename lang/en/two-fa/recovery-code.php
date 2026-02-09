@@ -31,4 +31,9 @@ return [
     'invalid_with_attempts' => 'The recovery code is invalid. Remaining attempts: :attempts',
     'use_recovery_code' => 'Recovery Code',
     'back_to_two_fa' => 'Back to Two-Factor Authentication',
+    
+    // Recovery codes display modal
+    'warning' => 'Please store these recovery codes in a safe place.<br>If you lose access to your device, you can use these codes to access your account.',
+    'confirm_saved' => 'I confirm that I have saved the recovery codes in a safe place',
+    'auto_generated_message' => 'Recovery codes have been automatically generated because two-factor authentication is enabled.',
 ];
