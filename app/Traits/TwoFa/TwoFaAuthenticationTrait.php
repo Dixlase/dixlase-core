@@ -485,7 +485,7 @@ trait TwoFaAuthenticationTrait
         $recoveryCodeRoute = $this->getRecoveryCodeRoute();
 
         // CAPTCHA設定を取得
-        $captchaAction = $context . '_two_fa';
+        $captchaAction = $this->getCaptchaAction();
         $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
         $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
 
@@ -589,7 +589,7 @@ trait TwoFaAuthenticationTrait
         $context = $this->getContext();
 
         // CAPTCHA設定を取得
-        $captchaAction = $context . '_two_fa';
+        $captchaAction = $this->getCaptchaAction();
         $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
         $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
 
