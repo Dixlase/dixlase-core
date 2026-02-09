@@ -48,4 +48,22 @@ return [
             'use_profile_setting' => 'Use profile setting',
         ],
     ],
+
+    // Login Form (Common)
+    'login_field' => 'Email Address or Account Name',
+    'continue' => 'Continue',
+    'password_field' => 'Password',
+    'login_button' => 'Login',
+    'back_to_identifier' => 'Back',
+    'remember_me' => 'Remember me',
+    'forgot_password' => 'Forgot your password?',
+
+    // Passkey Authentication (Common)
+    'passkey_login' => 'Login with Passkey',
+    'passkey_cancelled' => 'Passkey authentication was cancelled',
+    'no_passkey_registered' => 'No passkey registered',
+    'two_fa_disabled' => 'Two-factor authentication is disabled',
+
+    // IP Restriction
+    'ip_lockout' => 'Too many login attempts from this IP address. Please try again later.',
 ];

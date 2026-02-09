@@ -48,4 +48,22 @@ return [
             'use_profile_setting' => 'プロフィール設定に従う',
         ],
     ],
+
+    // ログインフォーム（共通）
+    'login_field' => 'メールアドレスまたはアカウント名',
+    'continue' => '続ける',
+    'password_field' => 'パスワード',
+    'login_button' => 'ログイン',
+    'back_to_identifier' => '戻る',
+    'remember_me' => 'ログイン状態を保持する',
+    'forgot_password' => 'パスワードをお忘れですか？',
+
+    // パスキー認証（共通）
+    'passkey_login' => 'パスキーでログイン',
+    'passkey_cancelled' => 'パスキー認証がキャンセルされました',
+    'no_passkey_registered' => 'パスキーが登録されていません',
+    'two_fa_disabled' => '二段階認証が無効になっています',
+
+    // IP制限
+    'ip_lockout' => 'このIPアドレスからのログイン試行回数が上限に達しました。しばらく時間をおいてから再度お試しください。',
 ];

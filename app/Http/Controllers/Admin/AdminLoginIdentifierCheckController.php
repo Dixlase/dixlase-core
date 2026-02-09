@@ -23,8 +23,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Member;
-use App\Helpers\IdentifierCheckHelper;
-use App\Http\Requests\Admin\AdminLoginIdentifierCheckRequest;
+use App\Traits\LoginIdentifierCheckTrait;
 
 /**
  * ログイン識別子確認コントローラー
@@ -34,67 +33,37 @@ use App\Http\Requests\Admin\AdminLoginIdentifierCheckRequest;
  */
 class AdminLoginIdentifierCheckController extends AdminController
 {
-    public function __construct()
+    use LoginIdentifierCheckTrait;
+
+    /**
+     * CAPTCHAアクション名を取得
+     */
+    protected function getCaptchaAction(): string
     {
-        parent::__construct();
+        return 'admin_login';
     }
 
     /**
-     * メンバー存在確認
-     * 
-     * @param AdminLoginIdentifierCheckRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * 設定モデルクラス名を取得
      */
-    public function check(AdminLoginIdentifierCheckRequest $request)
+    protected function getSettingModelClass(): string
     {
-        $login = $request->input('login');
-        $ipAddress = $request->ip();
-        
-        // CAPTCHA検証
-        $captchaAction = 'admin_login';
-        $captchaResult = \App\Helpers\CaptchaHelper::verify($request, $captchaAction);
-        
-        if ($captchaResult && !$captchaResult->isValid()) {
-            
-            return response()->json([
-                'redirect' => true,
-                'message' => $captchaResult->getErrorMessage(),
-                'errors' => ['captcha' => [$captchaResult->getErrorMessage()]],
-            ], 422);
-        }
-        
-        // CAPTCHA検証済みフラグをセッションに保存（5分間有効）
-        session()->put('captcha_verified_' . $login, time());
-        
-        // ロックアウト設定を取得
-        $settings = IdentifierCheckHelper::getLockoutSettings(\App\Models\SecuritySetting::class);
-        
-        try {
-            // 識別子確認を実行（レート制限付き）
-            $result = IdentifierCheckHelper::checkWithRateLimit(
-                $login,
-                $ipAddress,
-                Member::class,
-                $settings,
-                'admin'
-            );
-            
-            return response()->json([
-                'exists' => $result['exists'],
-                'has_passkey' => $result['has_passkey'],
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // エラーメッセージを取得
-            $errors = $e->errors();
-            $errorMessage = $errors['login'][0] ?? $e->getMessage();
-            
-            // セッションにエラーメッセージを保存してリダイレクト指示を返す
-            session()->flash('error', $errorMessage);
-            
-            return response()->json([
-                'redirect' => true,
-                'message' => $errorMessage,
-            ], 422);
-        }
+        return \App\Models\SecuritySetting::class;
+    }
+
+    /**
+     * ユーザーモデルクラス名を取得
+     */
+    protected function getUserModelClass(): string
+    {
+        return Member::class;
+    }
+
+    /**
+     * コンテキストを取得
+     */
+    protected function getContext(): string
+    {
+        return 'admin';
     }
 }

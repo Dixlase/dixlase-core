@@ -271,3 +271,8 @@ export function createLoginFlow() {
         }
     }
 }
+
+// Alpine.jsに登録
+if (typeof window.Alpine !== 'undefined') {
+    window.Alpine.data('loginFlow', createLoginFlow);
+}
