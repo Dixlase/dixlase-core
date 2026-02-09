@@ -39,19 +39,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 // プラグインルートの場合の判定を改善
                 $is_open = false;
                 if (strpos($route_name, '::') !== false) {
-                    // プラグインルートの場合: admin.plugin-name::admin.controller.action
-                    if (strpos($route_name, 'admin.') === 0) {
-                        $without_admin = substr($route_name, 6); // 'admin.'を除去
-                        [$plugin_namespace, $plugin_route] = explode('::', $without_admin, 2);
-                        $plugin_parts = explode('.', $plugin_route);
-                        // admin.controller.action の controller部分を取得
-                        $is_open = isset($plugin_parts[1]) && $plugin_parts[1] === $key;
-                    } else {
-                        // 旧形式: plugin-name::admin.controller.action
-                        [$plugin_namespace, $plugin_route] = explode('::', $route_name, 2);
-                        $plugin_parts = explode('.', $plugin_route);
-                        $is_open = isset($plugin_parts[1]) && $plugin_parts[1] === $key;
-                    }
+                    // プラグインルートの場合: plugin-name::resource.action
+                    [$plugin_namespace, $plugin_route] = explode('::', $route_name, 2);
+                    $plugin_parts = explode('.', $plugin_route);
+                    // users.settings.login の場合、plugin_parts[0] = 'users' が $key と一致するか
+                    $is_open = isset($plugin_parts[0]) && $plugin_parts[0] === $key;
                     
                     // プラグインの子項目の場合の特別判定
                     if (!$is_open && isset($item['children'])) {
@@ -215,9 +207,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                                 @else
                                     @php
-                                        $current_child_route_parts = explode('.', $route_name);
-                                        $open_child_key = 'open_' . $child_key;
-                                        $is_open_child = isset($current_child_route_parts[2]) && $current_child_route_parts[2] === $child_key;
+                                        // 親キーを含めて変数名の競合を回避（例: open_users_settings）
+                                        $open_child_key = 'open_' . $key . '_' . $child_key;
+                                        $is_open_child = false;
+                                        
+                                        // プラグインルートの場合の判定
+                                        if (strpos($route_name, '::') !== false) {
+                                            // plugin-name::resource.action 形式
+                                            [$plugin_ns, $plugin_rt] = explode('::', $route_name, 2);
+                                            $plugin_route_parts = explode('.', $plugin_rt);
+                                            // users.settings.login の場合、settings が child_key と一致するか
+                                            $is_open_child = isset($plugin_route_parts[1]) && $plugin_route_parts[1] === $child_key;
+                                        } else {
+                                            // コアルートの場合: admin.controller.action
+                                            $current_child_route_parts = explode('.', $route_name);
+                                            $is_open_child = isset($current_child_route_parts[2]) && $current_child_route_parts[2] === $child_key;
+                                        }
                                         
                                         // 孫要素のルートが現在のルートと一致する場合も開く
                                         if (!$is_open_child && isset($child_item['children']) && is_array($child_item['children'])) {
