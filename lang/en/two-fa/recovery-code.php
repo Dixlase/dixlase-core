@@ -21,6 +21,7 @@
  */
 
 return [
+    // Recovery code input screen
     'title' => 'Recovery Code',
     'prompt' => 'Please enter your recovery code. If you cannot access your device, you can use a recovery code to log in.',
     'code_label' => 'Recovery Code',
