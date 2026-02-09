@@ -37,7 +37,7 @@ class CheckMaintenanceMode
     public function handle(Request $request, Closure $next): Response
     {
         // 管理者は常にアクセス可能
-        if (auth()->guard('admin')->check()) {
+        if (auth()->guard('member')->check()) {
             return $next($request);
         }
 
