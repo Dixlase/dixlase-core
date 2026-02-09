@@ -219,14 +219,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white !mb-0">{{ __('admin/settings/security/integrity.scan_history') }}</h2>
                 
-                <div class="flex items-center space-x-2">
-                    <input type="number" id="bulk-delete-days" min="1" value="30" class="w-20 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                <div class="flex items-center space-x-2" x-data="{ bulkDeleteDays: 30 }">
+                    <input type="number" x-model="bulkDeleteDays" min="1" class="w-20 px-2 py-1 text-md border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                     <x-form-button
                         type="button"
                         variant="danger"
-                        size="sm"
+                        size="md"
                         icon="fas fa-trash"
-                        x-click="openModal('bulk-delete-modal')"
+                        @click="document.getElementById('bulk-delete-days-input').value = bulkDeleteDays; openModal('bulk-delete-modal')"
                     >
                         {{ __('admin/settings/security/integrity.bulk_delete_audits') }}
                     </x-form-button>
@@ -299,10 +299,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 <td class="px-4 py-3 whitespace-nowrap text-sm">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('admin.settings.security.integrity.show', $audit) }}" class="text-blue-600 dark:text-blue-400 hover:underline">
-                                            {{ __('common.details') }}
+                                            <i class="fas fa-eye mr-1"></i>
                                         </a>
                                         <button type="button" 
-                                            onclick="openModal('delete-audit-{{ $audit->id }}-modal')"
+                                            @click="openModal('delete-audit-{{ $audit->id }}-modal')"
                                             class="text-red-600 dark:text-red-400 hover:underline">
                                             <i class="fas fa-trash"></i>
                                         </button>
@@ -366,16 +366,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </form>
 
     <!-- 一括削除確認モーダル -->
-    <x-ui-modal
-        id="bulk-delete-modal"
-        :title="__('admin/settings/security/integrity.bulk_delete_audits')"
-        message=""
-        :confirm-label="__('common.confirm')"
-        :cancel-label="__('common.cancel')"
-        form="bulk-delete-form"
-        icon-type="warning"
-        confirm-color="red"
-    />
+    <div x-data="{ days: 30 }">
+        <x-ui-modal
+            id="bulk-delete-modal"
+            :title="__('admin/settings/security/integrity.bulk_delete_audits')"
+            :message="__('admin/settings/security/integrity.bulk_delete_confirm', ['days' => '30'])"
+            :confirm-label="__('common.confirm')"
+            :cancel-label="__('common.cancel')"
+            form="bulk-delete-form"
+            icon-type="warning"
+            confirm-color="red"
+        />
+    </div>
     
     <form id="bulk-delete-form" method="POST" action="{{ route('admin.settings.security.integrity.bulk-delete') }}" style="display: none;">
         @csrf
@@ -402,25 +404,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </form>
         @endforeach
     @endif
-
-    <script>
-        // 一括削除モーダルを開く前に日数を設定
-        document.addEventListener('alpine:init', () => {
-            window.addEventListener('click', (e) => {
-                if (e.target.closest('[x-click*="bulk-delete-modal"]')) {
-                    const days = document.getElementById('bulk-delete-days').value;
-                    document.getElementById('bulk-delete-days-input').value = days;
-                    
-                    // モーダルのメッセージを動的に更新
-                    const modal = document.getElementById('bulk-delete-modal');
-                    if (modal) {
-                        const messageEl = modal.querySelector('[data-modal-message]');
-                        if (messageEl) {
-                            messageEl.textContent = '{{ __("admin/settings/security/integrity.bulk_delete_confirm", ["days" => ""]) }}'.replace('', days);
-                        }
-                    }
-                }
-            });
-        });
-    </script>
 @endsection
