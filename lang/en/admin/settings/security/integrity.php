@@ -29,6 +29,7 @@ return [
     'baseline_regeneration_failed' => 'Failed to regenerate baseline.',
     'latest_scan' => 'Latest Scan Result',
     'run_scan' => 'Run Scan',
+    'scan_confirm' => 'Do you want to run the file integrity scan? All core files will be checked.',
     'scan_date' => 'Scan Date',
     'files_scanned' => 'Files Scanned',
     'status' => 'Status',
