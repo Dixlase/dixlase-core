@@ -60,9 +60,11 @@ return [
 
     // パスキー認証（共通）
     'passkey_login' => 'パスキーでログイン',
+    'login_with_passkey' => 'パスキーでログイン',
     'passkey_cancelled' => 'パスキー認証がキャンセルされました',
     'no_passkey_registered' => 'パスキーが登録されていません',
     'two_fa_disabled' => '二段階認証が無効になっています',
+    'change_account' => 'アカウントを変更',
 
     // IP制限
     'ip_lockout' => 'このIPアドレスからのログイン試行回数が上限に達しました。しばらく時間をおいてから再度お試しください。',
