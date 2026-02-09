@@ -25,33 +25,49 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- ベースライン情報 -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 mb-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ __('admin/settings/security/integrity.baseline_info') }}</h2>
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white !mb-0">{{ __('admin/settings/security/integrity.baseline_info') }}</h2>
+            
+            @if($hasBaseline)
+                <x-form-button
+                    type="button"
+                    variant="primary"
+                    size="md"
+                    icon="fas fa-sync-alt"
+                    x-click="openModal('regenerate-baseline-modal')"
+                >
+                    {{ __('admin/settings/security/integrity.regenerate_baseline') }}
+                </x-form-button>
+            @endif
+        </div>
         
         @if($hasBaseline && $baselineMeta)
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.baseline_version') }}</p>
                     <p class="font-medium text-gray-900 dark:text-white">{{ $baselineMeta['version'] ?? 'N/A' }}</p>
                 </div>
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.baseline_generated_at') }}</p>
-                    <p class="font-medium text-gray-900 dark:text-white">{{ $baselineMeta['generated_at'] ?? 'N/A' }}</p>
+                    <p class="font-medium text-gray-900 dark:text-white">
+                        @if(isset($baselineMeta['generated_at']))
+                            @php
+                                $generatedAt = \Carbon\Carbon::parse($baselineMeta['generated_at']);
+                                $formattedDate = app()->getLocale() === 'ja' 
+                                    ? $generatedAt->format('Y年n月j日 H:i')
+                                    : $generatedAt->format('Y-m-d H:i');
+                            @endphp
+                            {{ $formattedDate }}
+                        @else
+                            N/A
+                        @endif
+                    </p>
                 </div>
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.baseline_files_count') }}</p>
                     <p class="font-medium text-gray-900 dark:text-white">{{ $baselineMeta['files_count'] ?? 'N/A' }}</p>
                 </div>
             </div>
-            
-            <x-form-button
-                type="button"
-                variant="primary"
-                size="sm"
-                icon="fas fa-sync-alt"
-                x-click="openModal('regenerate-baseline-modal')"
-            >
-                {{ __('admin/settings/security/integrity.regenerate_baseline') }}
-            </x-form-button>
         @else
             <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                 <div class="flex items-center text-yellow-600 dark:text-yellow-400">
@@ -73,7 +89,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 最新スキャン結果 -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/integrity.latest_scan') }}</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white !mb-0">{{ __('admin/settings/security/integrity.latest_scan') }}</h2>
             
             @if($hasBaseline)
                 <x-form-button
@@ -91,7 +107,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.scan_date') }}</p>
-                    <p class="font-medium text-gray-900 dark:text-white">{{ $latestAudit->created_at->format('Y-m-d H:i:s') }}</p>
+                    <p class="font-medium text-gray-900 dark:text-white">
+                        @php
+                            $formattedScanDate = app()->getLocale() === 'ja' 
+                                ? $latestAudit->created_at->format('Y年n月j日 H:i')
+                                : $latestAudit->created_at->format('Y-m-d H:i');
+                        @endphp
+                        {{ $formattedScanDate }}
+                    </p>
                 </div>
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.files_scanned') }}</p>
@@ -193,7 +216,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- スキャン履歴 -->
     @if($recentAudits->count() > 0)
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ __('admin/settings/security/integrity.scan_history') }}</h2>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white !mb-0">{{ __('admin/settings/security/integrity.scan_history') }}</h2>
+                
+                <div class="flex items-center space-x-2">
+                    <input type="number" id="bulk-delete-days" min="1" value="30" class="w-20 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    <x-form-button
+                        type="button"
+                        variant="danger"
+                        size="sm"
+                        icon="fas fa-trash"
+                        x-click="openModal('bulk-delete-modal')"
+                    >
+                        {{ __('admin/settings/security/integrity.bulk_delete_audits') }}
+                    </x-form-button>
+                </div>
+            </div>
             
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -211,7 +249,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @foreach($recentAudits as $audit)
                             <tr>
                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                    {{ $audit->created_at->format('Y-m-d H:i') }}
+                                    @php
+                                        $formattedDate = app()->getLocale() === 'ja' 
+                                            ? $audit->created_at->format('Y年n月j日 H:i')
+                                            : $audit->created_at->format('Y-m-d H:i');
+                                    @endphp
+                                    {{ $formattedDate }}
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     @if($audit->status === \App\Models\FileIntegrityAudit::STATUS_OK)
@@ -254,15 +297,36 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-sm">
-                                    <a href="{{ route('admin.settings.security.integrity.show', $audit) }}" class="text-blue-600 dark:text-blue-400 hover:underline">
-                                        {{ __('common.details') }}
-                                    </a>
+                                    <div class="flex items-center space-x-2">
+                                        <a href="{{ route('admin.settings.security.integrity.show', $audit) }}" class="text-blue-600 dark:text-blue-400 hover:underline">
+                                            {{ __('common.details') }}
+                                        </a>
+                                        <button type="button" 
+                                            onclick="openModal('delete-audit-{{ $audit->id }}-modal')"
+                                            class="text-red-600 dark:text-red-400 hover:underline">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
+            
+            @if($recentAudits->hasPages())
+                <div class="mt-4">
+                    <x-ui-pagination 
+                        :pagination="[
+                            'current_page' => $recentAudits->currentPage(),
+                            'last_page' => $recentAudits->lastPage(),
+                            'prev_page' => $recentAudits->currentPage() > 1 ? $recentAudits->currentPage() - 1 : null,
+                            'next_page' => $recentAudits->hasMorePages() ? $recentAudits->currentPage() + 1 : null,
+                        ]"
+                        route="admin.settings.security.integrity"
+                    />
+                </div>
+            @endif
         </div>
     @endif
 </div>
@@ -300,4 +364,63 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form id="regenerate-baseline-form" method="POST" action="{{ route('admin.settings.security.integrity.regenerate-baseline') }}" style="display: none;">
         @csrf
     </form>
+
+    <!-- 一括削除確認モーダル -->
+    <x-ui-modal
+        id="bulk-delete-modal"
+        :title="__('admin/settings/security/integrity.bulk_delete_audits')"
+        message=""
+        :confirm-label="__('common.confirm')"
+        :cancel-label="__('common.cancel')"
+        form="bulk-delete-form"
+        icon-type="warning"
+        confirm-color="red"
+    />
+    
+    <form id="bulk-delete-form" method="POST" action="{{ route('admin.settings.security.integrity.bulk-delete') }}" style="display: none;">
+        @csrf
+        <input type="hidden" name="days" id="bulk-delete-days-input">
+    </form>
+
+    @if($recentAudits->count() > 0)
+        @foreach($recentAudits as $audit)
+            <!-- 個別削除確認モーダル -->
+            <x-ui-modal
+                id="delete-audit-{{ $audit->id }}-modal"
+                :title="__('admin/settings/security/integrity.delete_audit')"
+                :message="__('admin/settings/security/integrity.delete_audit_confirm')"
+                :confirm-label="__('common.confirm')"
+                :cancel-label="__('common.cancel')"
+                form="delete-audit-{{ $audit->id }}-form"
+                icon-type="warning"
+                confirm-color="red"
+            />
+            
+            <form id="delete-audit-{{ $audit->id }}-form" method="POST" action="{{ route('admin.settings.security.integrity.destroy', $audit) }}" style="display: none;">
+                @csrf
+                @method('DELETE')
+            </form>
+        @endforeach
+    @endif
+
+    <script>
+        // 一括削除モーダルを開く前に日数を設定
+        document.addEventListener('alpine:init', () => {
+            window.addEventListener('click', (e) => {
+                if (e.target.closest('[x-click*="bulk-delete-modal"]')) {
+                    const days = document.getElementById('bulk-delete-days').value;
+                    document.getElementById('bulk-delete-days-input').value = days;
+                    
+                    // モーダルのメッセージを動的に更新
+                    const modal = document.getElementById('bulk-delete-modal');
+                    if (modal) {
+                        const messageEl = modal.querySelector('[data-modal-message]');
+                        if (messageEl) {
+                            messageEl.textContent = '{{ __("admin/settings/security/integrity.bulk_delete_confirm", ["days" => ""]) }}'.replace('', days);
+                        }
+                    }
+                }
+            });
+        });
+    </script>
 @endsection

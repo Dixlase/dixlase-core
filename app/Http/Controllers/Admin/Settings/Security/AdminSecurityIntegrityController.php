@@ -49,11 +49,10 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
         $hasBaseline = $this->fileIntegrityService->hasBaseline();
         $baselineMeta = $hasBaseline ? $this->fileIntegrityService->getBaselineMeta() : null;
         
-        // 直近のスキャン履歴を取得
+        // 直近のスキャン履歴を取得（ページネーション付き）
         $recentAudits = FileIntegrityAudit::where('scope', FileIntegrityAudit::SCOPE_CORE)
             ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get();
+            ->paginate(10);
 
         $this->viewParams['latestAudit'] = $latestAudit;
         $this->viewParams['hasBaseline'] = $hasBaseline;
@@ -127,5 +126,35 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
         $this->viewParams['audit'] = $audit;
 
         return view('admin.settings.security.integrity-show', $this->viewParams);
+    }
+
+    /**
+     * スキャン履歴を削除
+     */
+    public function destroy(FileIntegrityAudit $audit)
+    {
+        $audit->delete();
+
+        return redirect()->route('admin.settings.security.integrity')
+            ->with('success', __('admin/settings/security/integrity.audit_deleted'));
+    }
+
+    /**
+     * 古いスキャン履歴を一括削除
+     */
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'days' => 'required|integer|min:1',
+        ]);
+
+        $cutoffDate = now()->subDays($request->days);
+        
+        $count = FileIntegrityAudit::where('scope', FileIntegrityAudit::SCOPE_CORE)
+            ->where('created_at', '<', $cutoffDate)
+            ->delete();
+
+        return redirect()->route('admin.settings.security.integrity')
+            ->with('success', __('admin/settings/security/integrity.audits_deleted', ['count' => $count]));
     }
 }
