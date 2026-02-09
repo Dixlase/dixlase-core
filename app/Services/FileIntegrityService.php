@@ -32,7 +32,10 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         'bootstrap',
         'config',
         'routes',
+        'resources',
+        'database/migrations',
         'public/index.php',
+        'public/build',
         'artisan',
         'composer.json',
         'composer.lock',
@@ -42,7 +45,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
      * 除外パターン
      */
     protected array $ignorePatterns = [
-        'app/Custom',
+        'custom',
         'storage',
         'vendor',
         'node_modules',
@@ -50,6 +53,10 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         '.git',
         '.env',
         '.env.*',
+        'public/uploads',
+        'public/storage',
+        'public/hot',
+        '*.log',
     ];
 
     /**
