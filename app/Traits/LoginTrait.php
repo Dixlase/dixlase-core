@@ -363,16 +363,24 @@ trait LoginTrait
     }
     
     /**
-     * パスキー認証ボタンを表示すべきか判定
+     * パスキーボタンを表示するかチェック
      * 
-     * 全体設定で二段階認証またはパスキーが無効の場合は非表示
-     * それ以外はステップ1で表示（識別子チェック後にhasPasskeyで制御）
+     * 優先順位:
+     * 1. メールサーバー未設定の場合は非表示
+     * 2. 全体設定で二段階認証またはパスキーが無効の場合は非表示
+     * 3. それ以外はステップ1で表示（識別子チェック後にhasPasskeyで制御）
      * 
      * @param string $settingModelClass
      * @return bool
      */
     protected function shouldShowPasskeyButton(string $settingModelClass): bool
     {
+        // メールサーバー設定チェック（最優先）
+        $twoFaHelper = app(\App\Helpers\TwoFaHelper::class);
+        if (!$twoFaHelper->isMailConfigured()) {
+            return false;
+        }
+
         // パスキーモードを取得（0=無効、1=有効、2=プロフィールに従う）
         $twoFaPasskeyMode = (int) $settingModelClass::getValue('two_fa_passkey_mode', '2');
         
