@@ -48,9 +48,82 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
             <p>{{ __('admin/settings/base/maintenance.maintenance_message_help') }}</p>
         </fieldset>
+
+        <fieldset>
+            <legend>{{ __('admin/settings/base/maintenance.release_method') }}</legend>
+            <x-form.radio-card-group
+                name="maintenance_auto_release"
+                :options="[
+                    ['value' => '0', 'label' => __('admin/settings/base/maintenance.manual_release'), 'description' => __('admin/settings/base/maintenance.manual_release_help')],
+                    ['value' => '1', 'label' => __('admin/settings/base/maintenance.auto_release'), 'description' => __('admin/settings/base/maintenance.auto_release_help')]
+                ]"
+                :selected="old('maintenance_auto_release', $settings['maintenance_auto_release'])"
+            />
+        </fieldset>
+
+        <fieldset x-data="{ autoRelease: '{{ old('maintenance_auto_release', $settings['maintenance_auto_release']) }}' }">
+            <legend>{{ __('admin/settings/base/maintenance.schedule_settings') }}</legend>
+            
+            <div class="mb-4">
+                <label for="maintenance_start_at">{{ __('admin/settings/base/maintenance.start_at') }}</label>
+                <x-form-text
+                    type="datetime-local"
+                    name="maintenance_start_at"
+                    :value="old('maintenance_start_at', $settings['maintenance_start_at'] ? \Carbon\Carbon::parse($settings['maintenance_start_at'])->format('Y-m-d\TH:i') : '')"
+                />
+                <p class="text-sm text-gray-600 mt-1">{{ __('admin/settings/base/maintenance.start_at_help') }}</p>
+            </div>
+
+            <div x-show="autoRelease === '1'">
+                <label for="maintenance_release_at">{{ __('admin/settings/base/maintenance.release_at') }}</label>
+                <x-form-text
+                    type="datetime-local"
+                    name="maintenance_release_at"
+                    :value="old('maintenance_release_at', $settings['maintenance_release_at'] ? \Carbon\Carbon::parse($settings['maintenance_release_at'])->format('Y-m-d\TH:i') : '')"
+                />
+                <p class="text-sm text-gray-600 mt-1">{{ __('admin/settings/base/maintenance.release_at_help') }}</p>
+            </div>
+
+            <script>
+                document.addEventListener('alpine:init', () => {
+                    document.querySelectorAll('input[name="maintenance_auto_release"]').forEach(radio => {
+                        radio.addEventListener('change', (e) => {
+                            const container = document.querySelector('[x-data*="autoRelease"]');
+                            if (container && container.__x) {
+                                container.__x.$data.autoRelease = e.target.value;
+                            }
+                        });
+                    });
+                });
+            </script>
+        </fieldset>
+
+        <fieldset>
+            <button type="button" onclick="previewMaintenance()" class="btn btn-secondary">
+                {{ __('admin/settings/base/maintenance.preview_button') }}
+            </button>
+            <p class="text-sm text-gray-600 mt-2">{{ __('admin/settings/base/maintenance.preview_help') }}</p>
+        </fieldset>
     </section>
 
 </form>
+
+<script>
+function previewMaintenance() {
+    const message = document.querySelector('[name="maintenance_message"]').value;
+    const releaseAt = document.querySelector('[name="maintenance_release_at"]').value;
+    
+    const params = new URLSearchParams({
+        message: message || '{{ __('admin/settings/base/maintenance.default_message') }}'
+    });
+    
+    if (releaseAt) {
+        params.append('release_at', releaseAt);
+    }
+    
+    window.open('{{ route('admin.settings.base.maintenance.preview') }}?' + params.toString(), '_blank', 'width=800,height=600');
+}
+</script>
 </div>
 @endsection
 

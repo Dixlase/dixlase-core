@@ -44,10 +44,12 @@ class AdminBaseMaintenanceController extends AdminLoggedInController
      */
     public function index()
     {
-        
         $settings = [
             'maintenance_mode' => ConfigHelper::getMaintenanceMode(),
             'maintenance_message' => ConfigHelper::getMaintenanceMessage(),
+            'maintenance_auto_release' => $this->baseSettingRepository->get('maintenance_auto_release', '0'),
+            'maintenance_start_at' => $this->baseSettingRepository->get('maintenance_start_at'),
+            'maintenance_release_at' => $this->baseSettingRepository->get('maintenance_release_at'),
         ];
 
         $this->viewParams['settings'] = $settings;
@@ -63,6 +65,7 @@ class AdminBaseMaintenanceController extends AdminLoggedInController
         $validated = $request->validated();
 
         $maintenanceMode = (int) ($validated['maintenance_mode'] ?? 0);
+        $autoRelease = (int) ($validated['maintenance_auto_release'] ?? 0);
 
         // .envに保存
         $envData = [
@@ -75,11 +78,29 @@ class AdminBaseMaintenanceController extends AdminLoggedInController
         $dbSettings = [
             'maintenance_mode' => $maintenanceMode ? '1' : '0',
             'maintenance_message' => $validated['maintenance_message'] ?? '',
+            'maintenance_auto_release' => $autoRelease ? '1' : '0',
+            'maintenance_start_at' => $validated['maintenance_start_at'] ?? null,
+            'maintenance_release_at' => $autoRelease ? ($validated['maintenance_release_at'] ?? null) : null,
         ];
 
         $this->baseSettingRepository->setMultiple($dbSettings);
 
         return redirect()->route('admin.settings.base.maintenance')
             ->with('success', __('admin/settings/base/maintenance.settings_updated'));
+    }
+
+    /**
+     * メンテナンス画面のプレビュー
+     */
+    public function preview()
+    {
+        $message = request()->input('message', '現在メンテナンス中です。しばらくお待ちください。');
+        $releaseAt = request()->input('release_at');
+
+        return view('maintenance', [
+            'message' => $message,
+            'releaseAt' => $releaseAt,
+            'isPreview' => true,
+        ]);
     }
 }

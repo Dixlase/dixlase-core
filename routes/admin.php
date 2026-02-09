@@ -293,6 +293,7 @@ Route::prefix($adminUrl)->name('admin.')
                 
                 // メンテナンス設定
                 Route::get('/maintenance', [Base\AdminBaseMaintenanceController::class, 'index'])->name('maintenance');
+                Route::get('/maintenance/preview', [Base\AdminBaseMaintenanceController::class, 'preview'])->name('maintenance.preview');
                 Route::post('/maintenance', [Base\AdminBaseMaintenanceController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base')
                     ->name('maintenance.update');

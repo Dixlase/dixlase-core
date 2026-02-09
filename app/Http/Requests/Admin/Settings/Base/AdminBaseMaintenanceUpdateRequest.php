@@ -44,6 +44,9 @@ class AdminBaseMaintenanceUpdateRequest extends FormRequest
         return [
             'maintenance_mode' => 'nullable|boolean',
             'maintenance_message' => 'nullable|string|max:2000',
+            'maintenance_auto_release' => 'nullable|boolean',
+            'maintenance_start_at' => 'nullable|date',
+            'maintenance_release_at' => 'nullable|date|after:maintenance_start_at',
         ];
     }
 }
