@@ -333,6 +333,15 @@ class PluginServiceProvider extends ServiceProvider
         // Get all enabled plugins
         $enabledPlugins = Plugin::enabled()->get();
 
+        // Get admin URL from helper (一度だけ取得)
+        $adminUrl = \App\Helpers\AdminHelper::getAdminUrl();
+        
+        // ルーターとリフレクションを準備（一度だけ）
+        $router = app('router');
+        $reflection = new \ReflectionClass($router);
+        $groupStackProperty = $reflection->getProperty('groupStack');
+        $groupStackProperty->setAccessible(true);
+
         foreach ($enabledPlugins as $plugin) {
             $pluginPath = base_path("plugins/{$plugin->directory}");
             
@@ -342,49 +351,25 @@ class PluginServiceProvider extends ServiceProvider
                 \Route::middleware('web')->group($webRoutePath);
             }
             
-            // DixlaseUsersは独自のServiceProviderでルートを登録するためスキップ
-            if ($plugin->directory === 'DixlaseUsers') {
-                continue;
-            }
-            
-            // Load admin routes within the admin route group
+            // Load admin routes - プラグイン側でルート名を完全に制御
             $adminRoutePath = "{$pluginPath}/routes/admin.php";
             if (File::exists($adminRoutePath)) {
-                Log::info("[PluginServiceProvider] Loading admin routes", [
-                    'plugin' => $plugin->directory,
-                    'path' => $adminRoutePath
-                ]);
-                
-                // Get admin URL from helper
-                $adminUrl = \App\Helpers\AdminHelper::getAdminUrl();
-                
-                // Load admin routes - プラグイン側でルート名を完全に制御
-                // ルートグループスタックをリセットしてからルートを登録
-                $router = app('router');
-                
                 // 現在のグループスタックを保存
                 $originalGroupStack = $router->getGroupStack();
                 
-                // グループスタックをリセット（リフレクションを使用）
-                $reflection = new \ReflectionClass($router);
-                $property = $reflection->getProperty('groupStack');
-                $property->setAccessible(true);
-                $property->setValue($router, []);
+                // グループスタックをリセット（コアのroutes/admin.phpの影響を回避）
+                $groupStackProperty->setValue($router, []);
                 
                 // ルートを登録
                 $router->group([
                     'prefix' => $adminUrl,
                     'middleware' => ['web', 'admin.ip', 'auth:member', 'verified', 'log.admin.activity'],
-                ], function () use ($adminRoutePath, $plugin) {
-                    Log::info("[PluginServiceProvider] Including admin route file", [
-                        'plugin' => $plugin->directory,
-                        'file' => $adminRoutePath
-                    ]);
+                ], function () use ($adminRoutePath) {
                     include $adminRoutePath;
                 });
                 
                 // グループスタックを復元
-                $property->setValue($router, $originalGroupStack);
+                $groupStackProperty->setValue($router, $originalGroupStack);
             }
         }
     }

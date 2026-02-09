@@ -492,8 +492,9 @@ Route::prefix($adminUrl)->name('admin.')
             // ログアウト
             Route::match(['get', 'post'], '/logout', [AdminLoginController::class, 'destroy'])->name('logout');
             
-            // 有効化されているプラグインの管理画面ルートを自動読み込み
-            \App\Helpers\PluginHelper::loadEnabledAdminRoutes();
+            // 注: プラグインの管理画面ルートはPluginServiceProvider::loadPluginRoutes()で読み込む
+            // プラグイン側でルート名を完全に制御するため、ここでは読み込まない
+            // \App\Helpers\PluginHelper::loadEnabledAdminRoutes();
             
             // 有効化されているテーマの管理画面ルートを自動読み込み
             \App\Helpers\ThemeHelper::loadEnabledThemeAdminRoutes();
