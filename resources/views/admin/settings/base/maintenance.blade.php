@@ -51,7 +51,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <fieldset>
             <legend>{{ __('admin/settings/base/maintenance.release_method') }}</legend>
-            <x-form.radio-card-group
+            <x-form-radio-card-group
                 name="maintenance_auto_release"
                 :options="[
                     ['value' => '0', 'label' => __('admin/settings/base/maintenance.manual_release'), 'description' => __('admin/settings/base/maintenance.manual_release_help')],
@@ -70,45 +70,53 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     type="datetime-local"
                     name="maintenance_start_at"
                     :value="old('maintenance_start_at', $settings['maintenance_start_at'] ? \Carbon\Carbon::parse($settings['maintenance_start_at'])->format('Y-m-d\TH:i') : '')"
+                    x-bind:disabled="autoRelease === '0'"
                 />
                 <p class="text-sm text-gray-600 mt-1">{{ __('admin/settings/base/maintenance.start_at_help') }}</p>
             </div>
 
-            <div x-show="autoRelease === '1'">
+            <div class="mb-4">
                 <label for="maintenance_release_at">{{ __('admin/settings/base/maintenance.release_at') }}</label>
                 <x-form-text
                     type="datetime-local"
                     name="maintenance_release_at"
                     :value="old('maintenance_release_at', $settings['maintenance_release_at'] ? \Carbon\Carbon::parse($settings['maintenance_release_at'])->format('Y-m-d\TH:i') : '')"
+                    x-bind:disabled="autoRelease === '0'"
                 />
                 <p class="text-sm text-gray-600 mt-1">{{ __('admin/settings/base/maintenance.release_at_help') }}</p>
             </div>
-
-            <script>
-                document.addEventListener('alpine:init', () => {
-                    document.querySelectorAll('input[name="maintenance_auto_release"]').forEach(radio => {
-                        radio.addEventListener('change', (e) => {
-                            const container = document.querySelector('[x-data*="autoRelease"]');
-                            if (container && container.__x) {
-                                container.__x.$data.autoRelease = e.target.value;
-                            }
-                        });
-                    });
-                });
-            </script>
         </fieldset>
 
         <fieldset>
-            <button type="button" onclick="previewMaintenance()" class="btn btn-secondary">
+            <x-form-button
+                type="button"
+                onclick="previewMaintenance()"
+                variant="secondary"
+            >
                 {{ __('admin/settings/base/maintenance.preview_button') }}
-            </button>
+            </x-form-button>
             <p class="text-sm text-gray-600 mt-2">{{ __('admin/settings/base/maintenance.preview_help') }}</p>
         </fieldset>
     </section>
 
 </form>
+@endsection
 
-<script>
+@push('scripts')
+<script nonce="{{ csp_nonce() }}">
+// ラジオボタン変更時にAlpineデータを更新
+document.addEventListener('alpine:init', () => {
+    document.querySelectorAll('input[name="maintenance_auto_release"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const container = document.querySelector('[x-data*="autoRelease"]');
+            if (container && container.__x) {
+                container.__x.$data.autoRelease = e.target.value;
+            }
+        });
+    });
+});
+
+// プレビュー機能
 function previewMaintenance() {
     const message = document.querySelector('[name="maintenance_message"]').value;
     const releaseAt = document.querySelector('[name="maintenance_release_at"]').value;
@@ -124,8 +132,7 @@ function previewMaintenance() {
     window.open('{{ route('admin.settings.base.maintenance.preview') }}?' + params.toString(), '_blank', 'width=800,height=600');
 }
 </script>
-</div>
-@endsection
+@endpush
 
 @section('save')
     <x-admin.save-button
