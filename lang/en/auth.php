@@ -60,10 +60,12 @@ return [
 
     // Passkey Authentication (Common)
     'passkey_login' => 'Login with Passkey',
+    'login_with_passkey' => 'Login with Passkey',
     'passkey_cancelled' => 'Passkey authentication was cancelled',
     'no_passkey_registered' => 'No passkey registered',
     'two_fa_disabled' => 'Two-factor authentication is disabled',
+    'change_account' => 'Change Account',
 
     // IP Restriction
-    'ip_lockout' => 'Too many login attempts from this IP address. Please try again later.',
+    'ip_lockout' => 'Login attempt limit reached from this IP address. Please try again later.',
 ];
