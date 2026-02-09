@@ -47,4 +47,12 @@ class AdminTwoFaController extends AdminLoginController
             'context' => 'admin'
         ]);
     }
+
+    /**
+     * CAPTCHAアクション名を取得（二段階認証用）
+     */
+    protected function getCaptchaAction(): string
+    {
+        return 'admin_two_fa';
+    }
 }
