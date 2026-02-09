@@ -25,6 +25,8 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Member;
 use App\Traits\PasskeyLoginTrait;
 use App\Services\TwoFa\TwoFaPasskeyService;
+use App\Helpers\TwoFaHelper;
+use Illuminate\Http\Request;
 
 /**
  * パスキーログインコントローラー
@@ -33,12 +35,37 @@ use App\Services\TwoFa\TwoFaPasskeyService;
  */
 class AdminPasskeyLoginController extends AdminController
 {
-    use PasskeyLoginTrait;
+    use PasskeyLoginTrait {
+        getChallenge as traitGetChallenge;
+    }
 
     public function __construct(TwoFaPasskeyService $passkeyService)
     {
         parent::__construct();
         $this->passkeyService = $passkeyService;
+    }
+
+    /**
+     * パスキー認証のチャレンジを取得（オーバーライド）
+     * 
+     * メールサーバー設定のチェックを追加
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getChallenge(Request $request)
+    {
+        // メールサーバー設定チェック
+        $twoFaHelper = app(TwoFaHelper::class);
+        if (!$twoFaHelper->isMailConfigured()) {
+            return response()->json([
+                'success' => false,
+                'error' => __($this->getTranslationPrefix() . '.two_fa_disabled'),
+            ], 422);
+        }
+
+        // トレイトのメソッドを呼び出し
+        return $this->traitGetChallenge($request);
     }
 
     /**
