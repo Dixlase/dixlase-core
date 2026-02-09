@@ -381,6 +381,12 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/integrity/regenerate-baseline', [Security\AdminSecurityIntegrityController::class, 'regenerateBaseline'])
                     ->middleware('check.menu.edit:settings.security')
                     ->name('integrity.regenerate-baseline');
+                Route::delete('/integrity/{audit}', [Security\AdminSecurityIntegrityController::class, 'destroy'])
+                    ->middleware('check.menu.edit:settings.security')
+                    ->name('integrity.destroy');
+                Route::post('/integrity/bulk-delete', [Security\AdminSecurityIntegrityController::class, 'bulkDelete'])
+                    ->middleware('check.menu.edit:settings.security')
+                    ->name('integrity.bulk-delete');
                 Route::get('/integrity/{audit}', [Security\AdminSecurityIntegrityController::class, 'show'])->name('integrity.show');
 
             });

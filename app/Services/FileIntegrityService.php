@@ -576,7 +576,8 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         }
 
         return array_merge($baseline['meta'], [
-            'files' => count($baseline['files'] ?? []),
+            'version' => $baseline['meta']['app_version'] ?? 'N/A',
+            'files_count' => count($baseline['files'] ?? []),
         ]);
     }
 
