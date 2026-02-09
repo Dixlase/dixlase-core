@@ -22,6 +22,7 @@
 
 namespace App\Http\Controllers\Admin\Settings\Security;
 
+use App\DTO\FileIntegrity\ScanTargetDTO;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\FileIntegrityAudit;
 use App\Services\FileIntegrityService;
@@ -97,6 +98,7 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
     public function regenerateBaseline(Request $request)
     {
         $result = $this->fileIntegrityService->regenerateBaseline(
+            ScanTargetDTO::core(),
             FileIntegrityAudit::TRIGGER_MANUAL,
             FileIntegrityAudit::INITIATED_BY_USER,
             Auth::id()

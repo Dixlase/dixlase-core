@@ -43,13 +43,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
             
-            <form method="POST" action="{{ route('admin.settings.security.integrity.regenerate-baseline') }}" class="inline">
+            <form method="POST" action="{{ route('admin.settings.security.integrity.regenerate-baseline') }}" id="regenerate-baseline-form" class="inline">
                 @csrf
-                <button type="submit" class="text-sm text-blue-600 dark:text-blue-400 hover:underline" 
-                    x-on:click.prevent="if (confirm('{{ __('admin/settings/security/integrity.regenerate_confirm') }}')) $el.closest('form').submit()">
-                    <i class="fas fa-sync-alt mr-1"></i>{{ __('admin/settings/security/integrity.regenerate_baseline') }}
-                </button>
             </form>
+            <x-form-button
+                type="button"
+                variant="primary"
+                size="sm"
+                icon="fas fa-sync-alt"
+                x-click="$dispatch('open-modal', 'regenerate-baseline-modal')"
+            >
+                {{ __('admin/settings/security/integrity.regenerate_baseline') }}
+            </x-form-button>
+            
+            <x-ui-modal
+                id="regenerate-baseline-modal"
+                :title="__('admin/settings/security/integrity.regenerate_baseline')"
+                :message="__('admin/settings/security/integrity.regenerate_confirm')"
+                :confirm-label="__('common.confirm')"
+                :cancel-label="__('common.cancel')"
+                form="regenerate-baseline-form"
+                icon-type="warning"
+                confirm-color="blue"
+            />
         @else
             <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                 <div class="flex items-center text-yellow-600 dark:text-yellow-400">
