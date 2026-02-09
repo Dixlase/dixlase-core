@@ -243,7 +243,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                     'status' => FileIntegrityAudit::STATUS_OK,
                     'total_files_scanned' => count($baseline['files']),
                     'finished_at' => now(),
-                    'duration_ms' => now()->diffInMilliseconds($startedAt),
+                    'duration_ms' => $startedAt->diffInMilliseconds(now()),
                     'summary' => __('admin/command.integrity.baseline_generated'),
                     'baseline_version' => $baseline['meta']['app_version'] ?? null,
                 ]);
@@ -272,7 +272,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                 'removed_files_count' => count($result['removed']),
                 'suspicious_files_count' => count($suspicious),
                 'finished_at' => now(),
-                'duration_ms' => now()->diffInMilliseconds($startedAt),
+                'duration_ms' => $startedAt->diffInMilliseconds(now()),
                 'summary' => $this->generateSummary($result, $suspicious, $status),
                 'baseline_version' => $baseline['meta']['app_version'] ?? null,
                 'result_payload' => [
@@ -303,7 +303,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
             $audit->update([
                 'status' => FileIntegrityAudit::STATUS_CRITICAL,
                 'finished_at' => now(),
-                'duration_ms' => now()->diffInMilliseconds($startedAt),
+                'duration_ms' => $startedAt->diffInMilliseconds(now()),
                 'summary' => __('admin/command.integrity.scan_error', ['error' => $e->getMessage()]),
             ]);
         }
@@ -705,7 +705,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                     'status' => FileIntegrityAudit::STATUS_OK,
                     'total_files_scanned' => $baseline->getFileCount(),
                     'finished_at' => now(),
-                    'duration_ms' => now()->diffInMilliseconds($startedAt),
+                    'duration_ms' => $startedAt->diffInMilliseconds(now()),
                     'summary' => __('admin/command.integrity.baseline_generated'),
                     'baseline_version' => $baseline->appVersion,
                 ]);
@@ -727,7 +727,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                     suspiciousFiles: [],
                     startedAt: $startedAt->toIso8601String(),
                     finishedAt: now()->toIso8601String(),
-                    durationMs: now()->diffInMilliseconds($startedAt),
+                    durationMs: $startedAt->diffInMilliseconds(now()),
                     summary: __('admin/command.integrity.baseline_generated'),
                 );
             }
@@ -774,7 +774,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                 'removed_files_count' => count($removedFiles),
                 'suspicious_files_count' => count($suspiciousFiles),
                 'finished_at' => now(),
-                'duration_ms' => now()->diffInMilliseconds($startedAt),
+                'duration_ms' => $startedAt->diffInMilliseconds(now()),
                 'summary' => $summary,
                 'baseline_version' => $baseline->appVersion,
                 'result_payload' => [
@@ -815,7 +815,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                 suspiciousFiles: $suspiciousFiles,
                 startedAt: $startedAt->toIso8601String(),
                 finishedAt: now()->toIso8601String(),
-                durationMs: now()->diffInMilliseconds($startedAt),
+                durationMs: $startedAt->diffInMilliseconds(now()),
                 summary: $summary,
             );
 
@@ -828,7 +828,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
             $audit->update([
                 'status' => FileIntegrityAudit::STATUS_CRITICAL,
                 'finished_at' => now(),
-                'duration_ms' => now()->diffInMilliseconds($startedAt),
+                'duration_ms' => $startedAt->diffInMilliseconds(now()),
                 'summary' => __('admin/command.integrity.scan_error', ['error' => $e->getMessage()]),
             ]);
 
@@ -849,7 +849,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                 suspiciousFiles: [],
                 startedAt: $startedAt->toIso8601String(),
                 finishedAt: now()->toIso8601String(),
-                durationMs: now()->diffInMilliseconds($startedAt),
+                durationMs: $startedAt->diffInMilliseconds(now()),
                 summary: __('admin/command.integrity.scan_error', ['error' => $e->getMessage()]),
             );
         }

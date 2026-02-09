@@ -43,29 +43,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
             
-            <form method="POST" action="{{ route('admin.settings.security.integrity.regenerate-baseline') }}" id="regenerate-baseline-form" class="inline">
-                @csrf
-            </form>
             <x-form-button
                 type="button"
                 variant="primary"
                 size="sm"
                 icon="fas fa-sync-alt"
-                x-click="$dispatch('open-modal', 'regenerate-baseline-modal')"
+                x-click="openModal('regenerate-baseline-modal')"
             >
                 {{ __('admin/settings/security/integrity.regenerate_baseline') }}
             </x-form-button>
-            
-            <x-ui-modal
-                id="regenerate-baseline-modal"
-                :title="__('admin/settings/security/integrity.regenerate_baseline')"
-                :message="__('admin/settings/security/integrity.regenerate_confirm')"
-                :confirm-label="__('common.confirm')"
-                :cancel-label="__('common.cancel')"
-                form="regenerate-baseline-form"
-                icon-type="warning"
-                confirm-color="blue"
-            />
         @else
             <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                 <div class="flex items-center text-yellow-600 dark:text-yellow-400">
@@ -90,12 +76,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/integrity.latest_scan') }}</h2>
             
             @if($hasBaseline)
-                <form method="POST" action="{{ route('admin.settings.security.integrity.scan') }}">
-                    @csrf
-                    <x-form-button type="submit">
-                        <i class="fas fa-search mr-1"></i>{{ __('admin/settings/security/integrity.run_scan') }}
-                    </x-form-button>
-                </form>
+                <x-form-button
+                    type="button"
+                    variant="primary"
+                    icon="fas fa-search"
+                    x-click="openModal('scan-modal')"
+                >
+                    {{ __('admin/settings/security/integrity.run_scan') }}
+                </x-form-button>
             @endif
         </div>
         
@@ -278,4 +266,38 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 </div>
+@endsection
+
+@section('modals')
+    <!-- スキャン実行確認モーダル -->
+    <x-ui-modal
+        id="scan-modal"
+        :title="__('admin/settings/security/integrity.run_scan')"
+        :message="__('admin/settings/security/integrity.scan_confirm')"
+        :confirm-label="__('common.confirm')"
+        :cancel-label="__('common.cancel')"
+        form="scan-form"
+        icon-type="info"
+        confirm-color="blue"
+    />
+    
+    <form id="scan-form" method="POST" action="{{ route('admin.settings.security.integrity.scan') }}" style="display: none;">
+        @csrf
+    </form>
+
+    <!-- ベースライン再生成確認モーダル -->
+    <x-ui-modal
+        id="regenerate-baseline-modal"
+        :title="__('admin/settings/security/integrity.regenerate_baseline')"
+        :message="__('admin/settings/security/integrity.regenerate_confirm')"
+        :confirm-label="__('common.confirm')"
+        :cancel-label="__('common.cancel')"
+        form="regenerate-baseline-form"
+        icon-type="warning"
+        confirm-color="blue"
+    />
+    
+    <form id="regenerate-baseline-form" method="POST" action="{{ route('admin.settings.security.integrity.regenerate-baseline') }}" style="display: none;">
+        @csrf
+    </form>
 @endsection

@@ -29,6 +29,7 @@ return [
     'baseline_regeneration_failed' => 'ベースラインの再生成に失敗しました。',
     'latest_scan' => '最新スキャン結果',
     'run_scan' => 'スキャン実行',
+    'scan_confirm' => 'ファイル整合性スキャンを実行しますか？すべてのコアファイルをチェックします。',
     'scan_date' => 'スキャン日時',
     'files_scanned' => 'スキャンファイル数',
     'status' => 'ステータス',
