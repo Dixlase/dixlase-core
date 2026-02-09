@@ -107,7 +107,7 @@ trait PluginLoaderTrait
     protected function loadPluginFiles($pluginName, $pluginPath, $customPluginPath, $pluginSlug = null)
     {
 
-        $fileTypes = config('custom.file_types', []);
+        $fileTypes = config('app.file_types', []);
 
 
         foreach ($fileTypes as $type => $settings) {
