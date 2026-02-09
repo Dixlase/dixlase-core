@@ -47,6 +47,9 @@ class BaseSettingsTableSeeder extends Seeder
             // メンテナンスモード
             ['name' => 'maintenance_mode', 'value' => config('app.maintenance_mode', false) ? '1' : '0'],
             ['name' => 'maintenance_message', 'value' => '現在メンテナンス中です。しばらくお待ちください。'],
+            ['name' => 'maintenance_auto_release', 'value' => '0'], // 0: 手動解除, 1: 自動解除
+            ['name' => 'maintenance_start_at', 'value' => null], // 開始日時（nullなら即時開始）
+            ['name' => 'maintenance_release_at', 'value' => null], // 終了日時（手動解除ならnull）
 
             // Mail settings (フォールバック用)
             ['name' => 'mail_mailer', 'value' => config('mail.default', 'smtp')],

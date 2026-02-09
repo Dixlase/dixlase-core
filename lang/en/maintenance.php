@@ -20,24 +20,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Schedule;
-
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote')->hourly();
-
-// ファイル整合性スキャン（毎日午前3時に実行）
-Schedule::command('dls:integrity:scan --scheduled')
-    ->dailyAt('03:00')
-    ->withoutOverlapping()
-    ->runInBackground()
-    ->appendOutputTo(storage_path('logs/integrity-scan.log'));
-
-// メンテナンスモード自動解除チェック（1分ごとに実行）
-Schedule::command('maintenance:check-auto-release')
-    ->everyMinute()
-    ->withoutOverlapping()
-    ->runInBackground();
+return [
+    'title' => 'Under Maintenance',
+    'expected_release' => 'Expected Release',
+    'preview_mode' => 'Preview Mode',
+];
