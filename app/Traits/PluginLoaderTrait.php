@@ -121,6 +121,8 @@ trait PluginLoaderTrait
 
     /**
      * ファイルタイプごとのロード処理
+     * 
+     * 注: routesはPluginServiceProvider::loadPluginRoutes()で読み込むため除外
      */
     protected function loadFilesByType($type, $defaultPath, $customPath, $pluginSlug)
     {
@@ -130,7 +132,8 @@ trait PluginLoaderTrait
                 $this->loadPluginConfigs($defaultPath, $customPath, $pluginSlug);
                 break;
             case 'routes':
-                $this->loadPluginRoutes($customPath, $defaultPath);
+                // routesはPluginServiceProvider::loadPluginRoutes()で読み込むため除外
+                // $this->loadPluginRoutes($customPath, $defaultPath);
                 break;
             case 'lang':
                 $this->loadPluginTranslations($customPath, $defaultPath, $pluginSlug);
@@ -196,6 +199,8 @@ trait PluginLoaderTrait
 
     /**
      * ルートの読み込み
+     * 
+     * 注: admin.phpはPluginServiceProvider::loadPluginRoutes()で読み込むため除外
      */
     protected function loadPluginRoutes($customPath, $defaultPath)
     {
@@ -203,6 +208,10 @@ trait PluginLoaderTrait
         foreach ($paths as $path) {
             if (is_dir($path)) {
                 foreach (glob("{$path}/*.php") as $routeFile) {
+                    // admin.phpはPluginServiceProviderで読み込むため除外
+                    if (basename($routeFile) === 'admin.php') {
+                        continue;
+                    }
                     Route::middleware('web')->group($routeFile);
                 }
             }
