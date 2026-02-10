@@ -63,6 +63,7 @@ license.txt
 # IDE / MCP / AI assistant configs
 .junie/
 .cursor/
+.claude/
 .vscode/mcp.json
 .mcp.json
 *.bak

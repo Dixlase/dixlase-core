@@ -40,17 +40,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <p class="mt-2">{{ __('admin/settings/base/maintenance.maintenance_mode_help') }}</p>
         </fieldset>
 
-        <div :class="{ 'opacity-50 pointer-events-none': maintenanceMode === '0' }">
-            <!-- Hidden inputs to preserve settings when disabled -->
-            <template x-if="maintenanceMode === '0'">
-                <div>
-                    <input type="hidden" name="maintenance_message" value="{{ old('maintenance_message', $settings['maintenance_message']) }}">
-                    <input type="hidden" name="maintenance_auto_release" value="{{ old('maintenance_auto_release', $settings['maintenance_auto_release']) }}">
-                    <input type="hidden" name="maintenance_start_at" value="{{ old('maintenance_start_at', $settings['maintenance_start_at']) }}">
-                    <input type="hidden" name="maintenance_release_at" value="{{ old('maintenance_release_at', $settings['maintenance_release_at']) }}">
-                </div>
-            </template>
-
+        <div>
             <fieldset>
                 <legend>{{ __('admin/settings/base/maintenance.maintenance_message') }}</legend>
                 <x-form-textarea
@@ -75,16 +65,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
             </fieldset>
 
-            <fieldset>
+            <fieldset :class="{ 'opacity-50 pointer-events-none': maintenanceMode === '0' || autoRelease === '0' }">
                 <legend>{{ __('admin/settings/base/maintenance.schedule_settings') }}</legend>
-                
+
                 <div class="mb-4">
                     <label for="maintenance_start_at">{{ __('admin/settings/base/maintenance.start_at') }}</label>
                     <x-form-text
                         type="datetime-local"
                         name="maintenance_start_at"
                         :value="old('maintenance_start_at', $settings['maintenance_start_at'] ? \Carbon\Carbon::parse($settings['maintenance_start_at'])->format('Y-m-d\TH:i') : '')"
-                        x-bind:disabled="autoRelease === '0'"
+                        x-bind:disabled="maintenanceMode === '0' || autoRelease === '0'"
                     />
                     <p class="text-sm text-gray-600 mt-1">{{ __('admin/settings/base/maintenance.start_at_help') }}</p>
                 </div>
@@ -95,7 +85,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         type="datetime-local"
                         name="maintenance_release_at"
                         :value="old('maintenance_release_at', $settings['maintenance_release_at'] ? \Carbon\Carbon::parse($settings['maintenance_release_at'])->format('Y-m-d\TH:i') : '')"
-                        x-bind:disabled="autoRelease === '0'"
+                        x-bind:disabled="maintenanceMode === '0' || autoRelease === '0'"
                     />
                     <p class="text-sm text-gray-600 mt-1">{{ __('admin/settings/base/maintenance.release_at_help') }}</p>
                 </div>
