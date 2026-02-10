@@ -36,37 +36,26 @@ class CheckMaintenanceMode
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // デバッグログ
-        \Log::info('CheckMaintenanceMode: ' . $request->path(), [
-            'is_admin' => $request->is('admin/*'),
-            'is_install' => $request->is('install/*'),
-            'is_authenticated' => auth()->guard('member')->check(),
-        ]);
-
         // 管理画面とインストール画面は常にアクセス可能
         if ($request->is('admin/*') || $request->is('install/*')) {
-            \Log::info('CheckMaintenanceMode: Admin/Install path - bypassing');
             return $next($request);
         }
 
         // プレビューリクエストは通す
         if ($request->is('maintenance-preview')) {
-            \Log::info('CheckMaintenanceMode: Preview request - bypassing');
             return $next($request);
         }
 
         // 管理者でログインしている場合はフロントページもアクセス可能
         if (auth()->guard('member')->check()) {
-            \Log::info('CheckMaintenanceMode: Authenticated member - bypassing');
             return $next($request);
         }
 
         // メンテナンスモード設定を取得
         $settings = $this->getMaintenanceSettings();
-        \Log::info('CheckMaintenanceMode: Settings', $settings);
 
         // メンテナンスモードが無効な場合は通常処理
-        if (!$settings['maintenance_mode']) {
+        if (! $settings['maintenance_mode']) {
             return $next($request);
         }
 
