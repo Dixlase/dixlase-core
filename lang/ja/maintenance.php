@@ -24,4 +24,7 @@ return [
     'title' => 'メンテナンス中',
     'expected_release' => '復旧予定',
     'preview_mode' => 'プレビューモード',
+    'banner_title' => '現在メンテナンスモード中です',
+    'default_message' => '現在メンテナンス中です。しばらくお待ちください。',
+    'manage_settings' => '設定を管理',
 ];

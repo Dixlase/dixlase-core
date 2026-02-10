@@ -24,4 +24,7 @@ return [
     'title' => 'Under Maintenance',
     'expected_release' => 'Expected Release',
     'preview_mode' => 'Preview Mode',
+    'banner_title' => 'Site is currently in maintenance mode',
+    'default_message' => 'Currently under maintenance. Please wait for a while.',
+    'manage_settings' => 'Manage Settings',
 ];
