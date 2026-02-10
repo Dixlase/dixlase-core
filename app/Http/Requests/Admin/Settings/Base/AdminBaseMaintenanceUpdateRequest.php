@@ -41,12 +41,34 @@ class AdminBaseMaintenanceUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'maintenance_mode' => 'nullable|boolean',
             'maintenance_message' => 'nullable|string|max:2000',
             'maintenance_auto_release' => 'nullable|boolean',
             'maintenance_start_at' => 'nullable|date',
-            'maintenance_release_at' => 'nullable|date|after:maintenance_start_at',
         ];
+
+        // 自動解除が有効な場合、終了日時は必須
+        if ($this->input('maintenance_auto_release') == '1') {
+            $rules['maintenance_release_at'] = 'required|date|after:maintenance_start_at';
+        } else {
+            // 手動解除の場合、終了日時は入力されていても無視（nullにする）
+            $rules['maintenance_release_at'] = 'nullable|date|after:maintenance_start_at';
+        }
+
+        return $rules;
+    }
+
+    /**
+     * バリデーション後のデータ加工
+     */
+    protected function prepareForValidation(): void
+    {
+        // 手動解除の場合、終了日時をnullにする
+        if ($this->input('maintenance_auto_release') == '0') {
+            $this->merge([
+                'maintenance_release_at' => null,
+            ]);
+        }
     }
 }

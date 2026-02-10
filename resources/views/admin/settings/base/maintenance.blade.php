@@ -70,7 +70,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         ['value' => '0', 'label' => __('admin/settings/base/maintenance.manual_release'), 'description' => __('admin/settings/base/maintenance.manual_release_help')],
                         ['value' => '1', 'label' => __('admin/settings/base/maintenance.auto_release'), 'description' => __('admin/settings/base/maintenance.auto_release_help')]
                     ]"
-                    :selected="old('maintenance_auto_release', $settings['maintenance_auto_release'])"
+                    :value="old('maintenance_auto_release', $settings['maintenance_auto_release'])"
+                    xModel="autoRelease"
                 />
             </fieldset>
 
@@ -144,7 +145,7 @@ window.previewMaintenance = function() {
         params.append('release_at', releaseAt);
     }
     
-    window.open('{{ route('admin.settings.base.maintenance.preview') }}?' + params.toString(), '_blank', 'width=800,height=600');
+    window.open('{{ route('admin.settings.base.maintenance.preview') }}?' + params.toString(), '_blank');
 };
 </script>
 @endpush
