@@ -36,13 +36,18 @@ class CheckMaintenanceMode
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // 管理者は常にアクセス可能
-        if (auth()->guard('member')->check()) {
+        // 管理画面とインストール画面は常にアクセス可能
+        if ($request->is('admin/*') || $request->is('install/*')) {
             return $next($request);
         }
 
         // プレビューリクエストは通す
         if ($request->is('maintenance-preview')) {
+            return $next($request);
+        }
+
+        // 管理者でログインしている場合はフロントページもアクセス可能
+        if (auth()->guard('member')->check()) {
             return $next($request);
         }
 
