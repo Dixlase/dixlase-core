@@ -22,6 +22,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
+<div x-data="{ maintenanceMode: '{{ old('maintenance_mode', $settings['maintenance_mode']) ? '1' : '0' }}', autoRelease: '{{ old('maintenance_auto_release', $settings['maintenance_auto_release']) }}' }">
 <form id="base-maintenance-form" action="{{ route('admin.settings.base.maintenance.update') }}" method="POST">
     @csrf
 
@@ -34,72 +35,86 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 name="maintenance_mode"
                 :label="__('admin/settings/base/maintenance.maintenance_mode')"
                 :checked="old('maintenance_mode', $settings['maintenance_mode'])"
+                xModel="maintenanceMode"
             />
             <p class="mt-2">{{ __('admin/settings/base/maintenance.maintenance_mode_help') }}</p>
         </fieldset>
 
-        <fieldset>
-            <legend>{{ __('admin/settings/base/maintenance.maintenance_message') }}</legend>
-            <x-form-textarea
-                name="maintenance_message"
-                :value="old('maintenance_message', $settings['maintenance_message'])"
-                :rows="3"
-                class="input-full"
-            />
-            <p>{{ __('admin/settings/base/maintenance.maintenance_message_help') }}</p>
-        </fieldset>
+        <div :class="{ 'opacity-50 pointer-events-none': maintenanceMode === '0' }">
+            <!-- Hidden inputs to preserve settings when disabled -->
+            <template x-if="maintenanceMode === '0'">
+                <div>
+                    <input type="hidden" name="maintenance_message" value="{{ old('maintenance_message', $settings['maintenance_message']) }}">
+                    <input type="hidden" name="maintenance_auto_release" value="{{ old('maintenance_auto_release', $settings['maintenance_auto_release']) }}">
+                    <input type="hidden" name="maintenance_start_at" value="{{ old('maintenance_start_at', $settings['maintenance_start_at']) }}">
+                    <input type="hidden" name="maintenance_release_at" value="{{ old('maintenance_release_at', $settings['maintenance_release_at']) }}">
+                </div>
+            </template>
 
-        <fieldset>
-            <legend>{{ __('admin/settings/base/maintenance.release_method') }}</legend>
-            <x-form-radio-card-group
-                name="maintenance_auto_release"
-                :options="[
-                    ['value' => '0', 'label' => __('admin/settings/base/maintenance.manual_release'), 'description' => __('admin/settings/base/maintenance.manual_release_help')],
-                    ['value' => '1', 'label' => __('admin/settings/base/maintenance.auto_release'), 'description' => __('admin/settings/base/maintenance.auto_release_help')]
-                ]"
-                :selected="old('maintenance_auto_release', $settings['maintenance_auto_release'])"
-            />
-        </fieldset>
-
-        <fieldset x-data="{ autoRelease: '{{ old('maintenance_auto_release', $settings['maintenance_auto_release']) }}' }">
-            <legend>{{ __('admin/settings/base/maintenance.schedule_settings') }}</legend>
-            
-            <div class="mb-4">
-                <label for="maintenance_start_at">{{ __('admin/settings/base/maintenance.start_at') }}</label>
-                <x-form-text
-                    type="datetime-local"
-                    name="maintenance_start_at"
-                    :value="old('maintenance_start_at', $settings['maintenance_start_at'] ? \Carbon\Carbon::parse($settings['maintenance_start_at'])->format('Y-m-d\TH:i') : '')"
-                    x-bind:disabled="autoRelease === '0'"
+            <fieldset>
+                <legend>{{ __('admin/settings/base/maintenance.maintenance_message') }}</legend>
+                <x-form-textarea
+                    name="maintenance_message"
+                    :value="old('maintenance_message', $settings['maintenance_message'])"
+                    :rows="3"
+                    class="input-full"
                 />
-                <p class="text-sm text-gray-600 mt-1">{{ __('admin/settings/base/maintenance.start_at_help') }}</p>
-            </div>
+                <p>{{ __('admin/settings/base/maintenance.maintenance_message_help') }}</p>
+            </fieldset>
 
-            <div class="mb-4">
-                <label for="maintenance_release_at">{{ __('admin/settings/base/maintenance.release_at') }}</label>
-                <x-form-text
-                    type="datetime-local"
-                    name="maintenance_release_at"
-                    :value="old('maintenance_release_at', $settings['maintenance_release_at'] ? \Carbon\Carbon::parse($settings['maintenance_release_at'])->format('Y-m-d\TH:i') : '')"
-                    x-bind:disabled="autoRelease === '0'"
+            <fieldset>
+                <legend>{{ __('admin/settings/base/maintenance.release_method') }}</legend>
+                <x-form-radio-card-group
+                    name="maintenance_auto_release"
+                    :options="[
+                        ['value' => '0', 'label' => __('admin/settings/base/maintenance.manual_release'), 'description' => __('admin/settings/base/maintenance.manual_release_help')],
+                        ['value' => '1', 'label' => __('admin/settings/base/maintenance.auto_release'), 'description' => __('admin/settings/base/maintenance.auto_release_help')]
+                    ]"
+                    :selected="old('maintenance_auto_release', $settings['maintenance_auto_release'])"
                 />
-                <p class="text-sm text-gray-600 mt-1">{{ __('admin/settings/base/maintenance.release_at_help') }}</p>
-            </div>
-        </fieldset>
+            </fieldset>
 
-        <fieldset>
-            <x-form-button
-                type="button"
-                onclick="previewMaintenance()"
-                variant="secondary"
-            >
-                {{ __('admin/settings/base/maintenance.preview_button') }}
-            </x-form-button>
-            <p class="text-sm text-gray-600 mt-2">{{ __('admin/settings/base/maintenance.preview_help') }}</p>
-        </fieldset>
+            <fieldset>
+                <legend>{{ __('admin/settings/base/maintenance.schedule_settings') }}</legend>
+                
+                <div class="mb-4">
+                    <label for="maintenance_start_at">{{ __('admin/settings/base/maintenance.start_at') }}</label>
+                    <x-form-text
+                        type="datetime-local"
+                        name="maintenance_start_at"
+                        :value="old('maintenance_start_at', $settings['maintenance_start_at'] ? \Carbon\Carbon::parse($settings['maintenance_start_at'])->format('Y-m-d\TH:i') : '')"
+                        x-bind:disabled="autoRelease === '0'"
+                    />
+                    <p class="text-sm text-gray-600 mt-1">{{ __('admin/settings/base/maintenance.start_at_help') }}</p>
+                </div>
+
+                <div class="mb-4">
+                    <label for="maintenance_release_at">{{ __('admin/settings/base/maintenance.release_at') }}</label>
+                    <x-form-text
+                        type="datetime-local"
+                        name="maintenance_release_at"
+                        :value="old('maintenance_release_at', $settings['maintenance_release_at'] ? \Carbon\Carbon::parse($settings['maintenance_release_at'])->format('Y-m-d\TH:i') : '')"
+                        x-bind:disabled="autoRelease === '0'"
+                    />
+                    <p class="text-sm text-gray-600 mt-1">{{ __('admin/settings/base/maintenance.release_at_help') }}</p>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <x-form-button
+                    type="button"
+                    x-on:click="previewMaintenance()"
+                    variant="secondary"
+                >
+                    {{ __('admin/settings/base/maintenance.preview_button') }}
+                </x-form-button>
+                <p class="text-sm text-gray-600 mt-2">{{ __('admin/settings/base/maintenance.preview_help') }}</p>
+            </fieldset>
+        </div>
     </section>
 
 </form>
+</div>
 @endsection
 
 @push('scripts')
@@ -108,7 +123,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 document.addEventListener('alpine:init', () => {
     document.querySelectorAll('input[name="maintenance_auto_release"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
-            const container = document.querySelector('[x-data*="autoRelease"]');
+            const container = document.querySelector('[x-data]');
             if (container && container.__x) {
                 container.__x.$data.autoRelease = e.target.value;
             }
@@ -116,8 +131,8 @@ document.addEventListener('alpine:init', () => {
     });
 });
 
-// プレビュー機能
-function previewMaintenance() {
+// プレビュー機能をグローバルスコープに定義
+window.previewMaintenance = function() {
     const message = document.querySelector('[name="maintenance_message"]').value;
     const releaseAt = document.querySelector('[name="maintenance_release_at"]').value;
     
@@ -130,7 +145,7 @@ function previewMaintenance() {
     }
     
     window.open('{{ route('admin.settings.base.maintenance.preview') }}?' + params.toString(), '_blank', 'width=800,height=600');
-}
+};
 </script>
 @endpush
 
