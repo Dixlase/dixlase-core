@@ -24,7 +24,7 @@ return [
     'environment_title' => '環境設定',
     'environment_header' => 'アプリケーション環境の設定',
     'environment_description' => 'アプリケーションの動作環境を選択し、URLを設定してください。',
-    
+
     // 環境設定関連
     'environment_settings' => '環境設定',
     'application_environment' => 'アプリケーション環境',
@@ -34,21 +34,28 @@ return [
     'admin_panel_url' => '管理パネルURL',
     'timezone_configuration' => 'タイムゾーン設定',
     'application_timezone' => 'アプリケーションタイムゾーン',
-    
+
     'app_env' => 'アプリケーション環境',
     'app_env_options' => [
         'local' => 'ローカル',
         'staging' => 'ステージング',
         'production' => '本番',
     ],
-    
+
     'app_debug' => 'デバッグモード',
     'enable_debug' => 'デバッグモードを有効にする',
     'app_debug_note' => '本番環境ではデバッグモードは選択できません。',
-    
+
     'app_url' => 'アプリケーションURL',
     'app_url_note' => '現在のホストに基づいて自動的に設定されます。必要に応じて変更してください。',
-    
+
+    // 管理画面URL
+    'admin_url' => '管理画面URL',
+    'admin_url_security_note' => '本番環境では管理画面URLは「admin」以外の予想されにくいURLを設定することを推奨します。',
+
+    // SSL設定
+    'force_ssl' => 'SSL（HTTPS）を強制する',
+
     // タイムゾーン
     'timezone' => [
         'label' => 'タイムゾーン',

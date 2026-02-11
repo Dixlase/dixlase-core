@@ -16,11 +16,11 @@
                 </svg>
             </div>
             <div>
-                <p id="error-heading" class="font-bold">{{ __('install.error.installation_failed') }}</p>
+                <p id="error-heading" class="font-bold">{{ __('install/error.installation_failed') }}</p>
                 <p class="text-sm">{{ session('error') }}</p>
                 @if(session('error_details'))
                     <details class="mt-2">
-                        <summary class="cursor-pointer text-sm font-medium">{{ __('install.error.technical_details') }}</summary>
+                        <summary class="cursor-pointer text-sm font-medium">{{ __('install/error.technical_details') }}</summary>
                         <pre class="mt-2 text-xs bg-red-50 dark:bg-red-900/30 p-2 rounded border dark:border-red-800 overflow-x-auto">{{ session('error_details') }}</pre>
                     </details>
                 @endif
@@ -49,9 +49,9 @@
         <h3 id="basic-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install/confirm.basic_settings') }}</h3>
         <ul class="space-y-1 text-gray-700 dark:text-gray-300">
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.site_name') }}:</strong> {{ $data['site_name'] }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.admin_account_name') }}:</strong> {{ $data['admin_account_name'] }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/step1.admin_account_name') }}:</strong> {{ $data['admin_account_name'] }}</li>
             @if(!empty($data['admin_display_name']))
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.admin_display_name') }}:</strong> {{ $data['admin_display_name'] }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/step1.admin_display_name') }}:</strong> {{ $data['admin_display_name'] }}</li>
             @endif
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.admin_email') }}:</strong> {{ $data['admin_email'] }}</li>
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.admin_password') }}:</strong> <span class="text-gray-500 dark:text-gray-400">●●●●●</span></li>
@@ -63,11 +63,11 @@
         <h3 id="app-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install/confirm.app_settings') }}</h3>
         <ul class="space-y-1 text-gray-700 dark:text-gray-300">
             <!-- ✅ アプリケーションURL（SSL反映） -->
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.app_url') }}:</strong> {{ $fullAppUrl }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/step2.app_url') }}:</strong> {{ $fullAppUrl }}</li>
             <!-- ✅ SSL設定 -->
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.force_ssl') }}:</strong> {{ $data['force_ssl'] ? __('install/common.enabled') : __('install/common.disabled') }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/step2.force_ssl') }}:</strong> {{ $data['force_ssl'] ? __('install/common.enabled') : __('install/common.disabled') }}</li>
             <!-- ✅ 管理画面URL-->
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.admin_url') }}:</strong> {{ url($data['admin_url']) }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/step2.admin_url') }}:</strong> {{ url($data['admin_url']) }}</li>
         </ul>
     </article>
 
@@ -102,19 +102,19 @@
             <!-- メールテスト結果 -->
             @if(!empty($data['mail_mailer']))
                 <li class="mt-3 pt-3 border-t border-gray-300 dark:border-gray-600">
-                    <strong class="text-gray-900 dark:text-gray-100">{{ __('install.mail_test.title') }}:</strong>
+                    <strong class="text-gray-900 dark:text-gray-100">{{ __('install/step4.mail_test.title') }}:</strong>
                     <div class="ml-4 mt-2 space-y-1">
                         <!-- 接続テスト -->
                         <div class="flex items-center">
                             @if($mailTestStatus['connection_tested'])
                                 <span class="text-green-600 dark:text-green-400">✅</span>
-                                <span class="ml-2 text-gray-700 dark:text-gray-300">{{ __('install.mail_test_advanced.connection_test') }}</span>
+                                <span class="ml-2 text-gray-700 dark:text-gray-300">{{ __('install/step4.mail_test_advanced.connection_test') }}</span>
                                 @if($mailTestStatus['connection_test_date'])
                                     <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">({{ $mailTestStatus['connection_test_date'] }})</span>
                                 @endif
                             @else
                                 <span class="text-gray-400 dark:text-gray-500">⚪</span>
-                                <span class="ml-2 text-gray-500 dark:text-gray-400">{{ __('install.mail_test_advanced.connection_test') }} - {{ __('install.not_executed') }}</span>
+                                <span class="ml-2 text-gray-500 dark:text-gray-400">{{ __('install/step4.mail_test_advanced.connection_test') }} - {{ __('install/common.not_executed') }}</span>
                             @endif
                         </div>
                         
@@ -122,13 +122,13 @@
                         <div class="flex items-center">
                             @if($mailTestStatus['send_tested'])
                                 <span class="text-green-600 dark:text-green-400">✅</span>
-                                <span class="ml-2 text-gray-700 dark:text-gray-300">{{ __('install.mail_test_advanced.send_test') }}</span>
+                                <span class="ml-2 text-gray-700 dark:text-gray-300">{{ __('install/step4.mail_test_advanced.send_test') }}</span>
                                 @if($mailTestStatus['send_test_date'])
                                     <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">({{ $mailTestStatus['send_test_date'] }})</span>
                                 @endif
                             @else
                                 <span class="text-gray-400 dark:text-gray-500">⚪</span>
-                                <span class="ml-2 text-gray-500 dark:text-gray-400">{{ __('install.mail_test_advanced.send_test') }} - {{ __('install.not_executed') }}</span>
+                                <span class="ml-2 text-gray-500 dark:text-gray-400">{{ __('install/step4.mail_test_advanced.send_test') }} - {{ __('install/common.not_executed') }}</span>
                             @endif
                         </div>
                         
@@ -136,22 +136,22 @@
                         <div class="flex items-center">
                             @if($mailTestStatus['receive_tested'])
                                 <span class="text-green-600 dark:text-green-400">✅</span>
-                                <span class="ml-2 text-gray-700 dark:text-gray-300">{{ __('install.mail_test_advanced.receive_test') }}</span>
+                                <span class="ml-2 text-gray-700 dark:text-gray-300">{{ __('install/step4.mail_test_advanced.receive_test') }}</span>
                                 @if($mailTestStatus['receive_test_date'])
                                     <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">({{ $mailTestStatus['receive_test_date'] }})</span>
                                 @endif
                             @else
                                 <span class="text-gray-400 dark:text-gray-500">⚪</span>
-                                <span class="ml-2 text-gray-500 dark:text-gray-400">{{ __('install.mail_test_advanced.receive_test') }} - {{ __('install.not_executed') }}</span>
+                                <span class="ml-2 text-gray-500 dark:text-gray-400">{{ __('install/step4.mail_test_advanced.receive_test') }} - {{ __('install/common.not_executed') }}</span>
                             @endif
                         </div>
                         
                         <!-- 全体ステータス -->
                         <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
                             @if($mailTestStatus['connection_tested'] && $mailTestStatus['send_tested'] && $mailTestStatus['receive_tested'])
-                                <span class="text-green-600 dark:text-green-400 font-medium">{{ __('install.mail_test_advanced.three_stage_test_complete') }}</span>
+                                <span class="text-green-600 dark:text-green-400 font-medium">{{ __('install/step4.mail_test_advanced.three_stage_test_complete') }}</span>
                             @else
-                                <span class="text-yellow-600 dark:text-yellow-400 font-medium">{{ __('install.mail_test_advanced.three_stage_test_incomplete') }}</span>
+                                <span class="text-yellow-600 dark:text-yellow-400 font-medium">{{ __('install/step4.mail_test_advanced.three_stage_test_incomplete') }}</span>
                             @endif
                         </div>
                     </div>
@@ -160,28 +160,19 @@
         </ul>
     </article>
 
-    <!-- セキュリティ設定 -->
-    <article aria-labelledby="security-settings-heading">
-        <h3 id="security-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install/confirm.security_settings') }}</h3>
+    @if(($data['install_mode'] ?? 0) == 0)
+    <!-- かんたんモード: 自動設定された項目 -->
+    <article aria-labelledby="auto-configured-heading">
+        <h3 id="auto-configured-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install/mode.auto_configured_title') }}</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">{{ __('install/mode.auto_configured_description') }}</p>
         <ul class="space-y-1 text-gray-700 dark:text-gray-300">
-            <!-- ✅ IP制限（管理画面 & フロント） -->
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.enable_allowed_admin_ips') }}:</strong> {{ isset($data['enable_allowed_admin_ips']) && $data['enable_allowed_admin_ips'] ? __('install/common.enabled') : __('install/common.disabled') }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.allowed_admin_ips') }}:</strong>
-                {{ isset($data['allowed_admin_ips']) && $data['allowed_admin_ips'] ? nl2br(e($data['allowed_admin_ips'])) : __('install/common.none') }}</li>
-
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.enable_blocked_admin_ips') }}:</strong> {{ isset($data['enable_blocked_admin_ips']) && $data['enable_blocked_admin_ips'] ? __('install/common.enabled') : __('install/common.disabled') }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.blocked_admin_ips') }}:</strong>
-                {{ isset($data['blocked_admin_ips']) && $data['blocked_admin_ips'] ? nl2br(e($data['blocked_admin_ips'])) : __('install/common.none') }}</li>
-
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.enable_allowed_front_ips') }}:</strong> {{ isset($data['enable_allowed_front_ips']) && $data['enable_allowed_front_ips'] ? __('install/common.enabled') : __('install/common.disabled') }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.allowed_front_ips') }}:</strong>
-                {{ isset($data['allowed_front_ips']) && $data['allowed_front_ips'] ? nl2br(e($data['allowed_front_ips'])) : __('install/common.none') }}</li>
-
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.enable_blocked_front_ips') }}:</strong> {{ isset($data['enable_blocked_front_ips']) && $data['enable_blocked_front_ips'] ? __('install/common.enabled') : __('install/common.disabled') }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.blocked_front_ips') }}:</strong>
-                {{ isset($data['blocked_front_ips']) && $data['blocked_front_ips'] ? nl2br(e($data['blocked_front_ips'])) : __('install/common.none') }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/step2.app_env') }}:</strong> {{ __('install/mode.app_env_production') }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/step2.app_debug') }}:</strong> {{ __('install/mode.debug_off') }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/step2.admin_url') }}:</strong> /admin</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/step2.force_ssl') }}:</strong> {{ __('install/mode.ssl_on') }}</li>
         </ul>
     </article>
+    @endif
 </section>
 
 <!-- 確認メッセージ -->
@@ -190,10 +181,10 @@
 <!-- インストール実行フォーム -->
 <form action="{{ route('install.confirm.store') }}" method="POST" class="space-y-4">
     @csrf
-    <nav aria-label="{{ __('install.form_navigation') }}" class="flex justify-between">
-        <a href="{{ route('install.security') }}"
+    <nav aria-label="{{ __('install/common.form_navigation') }}" class="flex justify-between">
+        <a href="{{ route('install.mail') }}"
            class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
-            {{ __('install.back_button') }}
+            {{ __('install/common.back_button') }}
         </a>
         <x-form-button
             type="submit"

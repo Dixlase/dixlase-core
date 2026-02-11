@@ -18,7 +18,7 @@
     <div class="flex flex-col justify-center items-center space-y-6">
         <!-- ✅ フロントページURL -->
         <div class="flex flex-col justify-center items-center space-y-2">
-            <p class="text-gray-700 dark:text-gray-300 font-semibold">{{ __('install.site_url') }}</p>
+            <p class="text-gray-700 dark:text-gray-300 font-semibold">{{ __('install/complete.site_url') }}</p>
             <div class="flex items-center space-x-2">
                 <strong id="site-url" class="text-blue-600 dark:text-white px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded break-words">{{ $appUrl }}</strong>
                 <button type="button" 
@@ -48,6 +48,20 @@
             </div>
         </div>
     </div>
+
+    @if($isSimpleMode)
+    <!-- かんたんモード: 自動設定された項目のガイダンス -->
+    <div class="mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">{{ __('install/mode.auto_configured_title') }}</h3>
+        <ul class="text-sm text-blue-700 dark:text-blue-400 space-y-1 mb-3">
+            <li>{{ __('install/step2.app_env') }}: {{ __('install/mode.app_env_production') }}</li>
+            <li>{{ __('install/step2.app_debug') }}: {{ __('install/mode.debug_off') }}</li>
+            <li>{{ __('install/step2.admin_url') }}: /admin</li>
+            <li>{{ __('install/step2.force_ssl') }}: {{ __('install/mode.ssl_on') }}</li>
+        </ul>
+        <p class="text-xs text-blue-600 dark:text-blue-500">{{ __('install/mode.auto_configured_changeable') }}</p>
+    </div>
+    @endif
 
     <div class="flex flex-col items-center justify-center mt-6 space-y-4">
         <!-- ✅ フロントページへのリンク -->

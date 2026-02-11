@@ -7,6 +7,8 @@
 @section('content')
 
 @php
+    $isSimpleMode = (int) session('install_data.install_mode', 0) === 0;
+
     // ✅ セッションから保存済みのapp_url（プロトコルなし）を取得
     $savedAppUrl = session('install_data.app_url');
     
@@ -24,13 +26,14 @@
 <form action="{{ route('install.environment.store') }}" method="POST" class="space-y-6">
     @csrf
 
-    <!-- 環境設定セクション -->
+    @if(!$isSimpleMode)
+    <!-- 環境設定セクション（詳細モードのみ） -->
     <section aria-labelledby="env-settings-heading">
         <h2 id="env-settings-heading" class="sr-only">{{ __('install/step2.environment_settings') }}</h2>
-        
+
         <fieldset class="space-y-4">
             <legend class="sr-only">{{ __('install/step2.application_environment') }}</legend>
-            
+
             <div>
                 <x-form-label for="app_env" :text="__('install/step2.app_env')" :required="true" />
                 @php
@@ -61,6 +64,7 @@
             </div>
         </fieldset>
     </section>
+    @endif
 
     <!-- URL設定セクション -->
     <section aria-labelledby="url-settings-heading">
@@ -83,27 +87,30 @@
                         class="input-full rounded-r-lg rounded-l-none"
                     />
                 </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('install.app_url_note') }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('install/step2.app_url_note') }}</p>
             </div>
 
+            @if(!$isSimpleMode)
             <x-form-toggle
                 name="force_ssl"
                 id="force_ssl"
                 :checked="session('install_data.force_ssl', false)"
-                :label="__('install.force_ssl')"
+                :label="__('install/step2.force_ssl')"
             />
+            @endif
         </fieldset>
     </section>
 
-    <!-- 管理画面URL設定セクション -->
+    @if(!$isSimpleMode)
+    <!-- 管理画面URL設定セクション（詳細モードのみ） -->
     <section aria-labelledby="admin-url-heading">
         <h2 id="admin-url-heading" class="sr-only">{{ __('install/step2.admin_url_configuration') }}</h2>
-        
+
         <fieldset>
             <legend class="sr-only">{{ __('install/step2.admin_panel_url') }}</legend>
-            
+
             <div>
-                <x-form-label for="admin_url" :text="__('install.admin_url')" />
+                <x-form-label for="admin_url" :text="__('install/step2.admin_url')" />
                 <div class="flex items-center">
                     <span id="admin_url_prefix" class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300 text-sm"></span>
                     <x-form-text
@@ -113,10 +120,11 @@
                         class="input-full rounded-r-lg rounded-l-none"
                     />
                 </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('install.admin_url_security_note') }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('install/step2.admin_url_security_note') }}</p>
             </div>
         </fieldset>
     </section>
+    @endif
 
 
 
@@ -177,15 +185,15 @@
     </section>
 
     <!-- フォームナビゲーション -->
-    <nav aria-label="{{ __('install.form_navigation') }}" class="flex justify-between mt-6">
+    <nav aria-label="{{ __('install/common.form_navigation') }}" class="flex justify-between mt-6">
         <a href="{{ route('install.settings') }}"
             class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
-            {{ __('install.back') }}
+            {{ __('install/common.back') }}
         </a>
         <x-form-button
             type="submit"
             variant="primary"
-            :label="__('install.next')"
+            :label="__('install/common.next')"
         />
     </nav>
 </form>

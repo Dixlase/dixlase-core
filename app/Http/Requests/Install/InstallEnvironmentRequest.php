@@ -22,6 +22,7 @@
 
 namespace App\Http\Requests\Install;
 
+use App\Enums\AdminMode;
 use Illuminate\Foundation\Http\FormRequest;
 
 class InstallEnvironmentRequest extends FormRequest
@@ -52,6 +53,15 @@ class InstallEnvironmentRequest extends FormRequest
      */
     public function rules(): array
     {
+        $isSimpleMode = (int) session('install_data.install_mode', 0) === AdminMode::Simple->value;
+
+        if ($isSimpleMode) {
+            return [
+                'app_url' => 'required|string',
+                'app_timezone' => 'required|timezone',
+            ];
+        }
+
         return [
             'app_env' => 'required|in:local,staging,production',
             'app_debug' => 'nullable|boolean',

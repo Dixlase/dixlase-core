@@ -27,4 +27,5 @@ return [
     'go_to_site' => 'Go to Site',
     'go_to_admin' => 'Log in to Admin Panel',
     'admin_login_url' => 'Admin Login URL',
+    'site_url' => 'Site URL',
 ];

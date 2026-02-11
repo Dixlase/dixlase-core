@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of Your Software Name.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * Website: https://exc-d.com
@@ -32,59 +32,111 @@ class InstallControllerTest extends TestCase
     /**
      * インストール画面が表示されることをテスト
      */
-    public function test_install_page_is_displayed()
+    public function test_install_page_is_displayed(): void
     {
-        // /install にアクセスし、ステータスコード200が返るかを確認
         $response = $this->get('/install');
         $response->assertStatus(200);
-        $response->assertViewIs('install'); // ビューが 'install' であることを確認
+        $response->assertViewIs('install.index');
     }
 
     /**
-     * インストール処理が成功するかをテスト
+     * モード選択画面が表示されることをテスト
      */
-    public function test_install_process_works_correctly()
+    public function test_mode_selection_page_is_displayed(): void
     {
-        // テストデータを準備
-        $data = [
-            'site_name' => 'テストサイト',
-            'admin_email' => 'admin@example.com',
-            'admin_password' => 'password123',
-            'admin_password_confirmation' => 'password123',
-            'db_host' => '127.0.0.1',
-            'db_database' => 'test_database',
-            'db_username' => 'test_user',
-            'db_password' => 'test_password',
-            'mail_host' => 'smtp.example.com',
-            'mail_port' => 587,
-            'mail_username' => 'user@example.com',
-            'mail_password' => 'mailpassword',
-        ];
-
-        // /install にPOSTリクエストを送信し、リダイレクトされるか確認
-        $response = $this->post('/install', $data);
-        $response->assertRedirect('/'); // インストール完了後、トップページにリダイレクトされるか確認
-
-        // .envファイルに INSTALLED=true が追加されているか確認
-        $this->assertTrue(strpos(file_get_contents(base_path('.env')), 'INSTALLED=true') !== false);
+        $response = $this->get('/install/mode');
+        $response->assertStatus(200);
+        $response->assertViewIs('install.mode');
     }
 
     /**
-     * インストール処理でバリデーションエラーが発生するかをテスト
+     * かんたんモードを選択するとセッションに保存されリダイレクトされることをテスト
      */
-    public function test_install_process_shows_validation_errors()
+    public function test_simple_mode_selection_stores_to_session(): void
     {
-        // 不完全なデータを準備（バリデーションエラーを引き起こすため）
-        $data = [
-            'site_name' => 'テストサイト',
-            // 'admin_email' が欠けている
-            'admin_password' => 'password123',
-            'admin_password_confirmation' => 'password123',
-        ];
+        $response = $this->post('/install/mode', [
+            'install_mode' => 0,
+        ]);
 
-        // /install にPOSTリクエストを送信
-        $response = $this->post('/install', $data);
-        $response->assertStatus(302); // リダイレクト（バリデーションエラーの場合は302）
-        $response->assertSessionHasErrors(['admin_email']); // バリデーションエラーがセッションに含まれているか確認
+        $response->assertRedirect(route('install.settings'));
+        $response->assertSessionHas('install_data.install_mode', 0);
+    }
+
+    /**
+     * 詳細モードを選択するとセッションに保存されリダイレクトされることをテスト
+     */
+    public function test_advanced_mode_selection_stores_to_session(): void
+    {
+        $response = $this->post('/install/mode', [
+            'install_mode' => 1,
+        ]);
+
+        $response->assertRedirect(route('install.settings'));
+        $response->assertSessionHas('install_data.install_mode', 1);
+    }
+
+    /**
+     * モード選択でバリデーションエラーが発生することをテスト
+     */
+    public function test_mode_selection_validates_input(): void
+    {
+        $response = $this->post('/install/mode', [
+            'install_mode' => 99,
+        ]);
+
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['install_mode']);
+    }
+
+    /**
+     * かんたんモード時の環境設定ではapp_urlとapp_timezoneのみ必須であることをテスト
+     */
+    public function test_simple_mode_environment_requires_minimal_fields(): void
+    {
+        // かんたんモードをセッションに設定
+        $this->withSession([
+            'install_data' => [
+                'install_mode' => 0,
+                'site_name' => 'Test Site',
+                'admin_account_name' => 'admin',
+                'admin_email' => 'admin@example.com',
+                'admin_password' => 'encrypted_password',
+                'app_locale' => 'ja',
+            ],
+        ]);
+
+        $response = $this->post('/install/environment', [
+            'app_url' => 'example.com',
+            'app_timezone' => 'Asia/Tokyo',
+        ]);
+
+        $response->assertRedirect(route('install.database'));
+    }
+
+    /**
+     * 詳細モード時の環境設定ではすべてのフィールドが必須であることをテスト
+     */
+    public function test_advanced_mode_environment_requires_all_fields(): void
+    {
+        // 詳細モードをセッションに設定
+        $this->withSession([
+            'install_data' => [
+                'install_mode' => 1,
+                'site_name' => 'Test Site',
+                'admin_account_name' => 'admin',
+                'admin_email' => 'admin@example.com',
+                'admin_password' => 'encrypted_password',
+                'app_locale' => 'ja',
+            ],
+        ]);
+
+        // app_envとadmin_urlが欠けているのでバリデーションエラー
+        $response = $this->post('/install/environment', [
+            'app_url' => 'example.com',
+            'app_timezone' => 'Asia/Tokyo',
+        ]);
+
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['app_env', 'admin_url']);
     }
 }

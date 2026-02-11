@@ -22,6 +22,7 @@
 
 namespace App\Http\Controllers\Install;
 
+use App\Enums\AdminMode;
 use App\Http\Requests\Install\InstallEnvironmentRequest;
 
 /**
@@ -43,14 +44,23 @@ class InstallEnvironmentController extends BaseInstallController
     public function store(InstallEnvironmentRequest $request)
     {
         $data = $request->validated();
+        $isSimpleMode = (int) session('install_data.install_mode', 0) === AdminMode::Simple->value;
+
+        // かんたんモード時はデフォルト値を適用
+        if ($isSimpleMode) {
+            $data['app_env'] = 'production';
+            $data['app_debug'] = false;
+            $data['admin_url'] = 'admin';
+            $data['force_ssl'] = true;
+        }
 
         // プロトコル除去
         $data['app_url'] = preg_replace('/^(http:\/\/|https:\/\/)/', '', $data['app_url']);
 
         // ドメイン形式か簡易チェック
-        if (!preg_match('/^[\w.\-]+(:\d+)?$/', $data['app_url'])) {
+        if (! preg_match('/^[\w.\-]+(:\d+)?$/', $data['app_url'])) {
             return back()->withErrors([
-                'app_url' => __('validation.url', ['attribute' => __('install/step2.app_url')])
+                'app_url' => __('validation.url', ['attribute' => __('install/step2.app_url')]),
             ])->withInput();
         }
 

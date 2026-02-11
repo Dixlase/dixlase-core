@@ -24,7 +24,7 @@ return [
     'environment_title' => 'Environment Settings',
     'environment_header' => 'Application Environment Settings',
     'environment_description' => 'Select the environment in which the application will run and configure the URL.',
-    
+
     // Environment Settings Related
     'environment_settings' => 'Environment Settings',
     'application_environment' => 'Application Environment',
@@ -34,21 +34,28 @@ return [
     'admin_panel_url' => 'Admin Panel URL',
     'timezone_configuration' => 'Timezone Configuration',
     'application_timezone' => 'Application Timezone',
-    
+
     'app_env' => 'Application Environment',
     'app_env_options' => [
         'local' => 'Local',
         'staging' => 'Staging',
         'production' => 'Production',
     ],
-    
+
     'app_debug' => 'Debug Mode',
     'enable_debug' => 'Enable debug mode',
     'app_debug_note' => 'Debug mode cannot be enabled in production environment.',
-    
+
     'app_url' => 'Application URL',
     'app_url_note' => 'Automatically set based on current host. Change if necessary.',
-    
+
+    // Admin URL
+    'admin_url' => 'Admin Panel URL',
+    'admin_url_security_note' => 'For production, it is recommended to use a URL other than "admin" that is harder to guess.',
+
+    // SSL Settings
+    'force_ssl' => 'Force SSL (HTTPS)',
+
     // Timezone
     'timezone' => [
         'label' => 'Timezone',

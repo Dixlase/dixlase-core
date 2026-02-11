@@ -23,7 +23,6 @@
 namespace App\Http\Controllers\Install;
 
 use Illuminate\Routing\Controller;
-use App\Helpers\EnvHelper;
 use Illuminate\Support\Facades\File;
 
 /**
@@ -39,7 +38,7 @@ abstract class BaseInstallController extends Controller
     /**
      * インストールの総ステップ数
      */
-    protected $total_steps = 5;
+    protected $total_steps = 4;
 
     /**
      * コンストラクタ
@@ -51,8 +50,6 @@ abstract class BaseInstallController extends Controller
 
     /**
      * 現在のロケールを取得
-     *
-     * @return string
      */
     protected function getCurrentLocale(): string
     {
@@ -60,7 +57,7 @@ abstract class BaseInstallController extends Controller
         $cookieLocale = request()->cookie('install_locale');
         $sessionLocale = session('install_locale');
         $candidate = $sessionLocale ?: $cookieLocale;
-        
+
         return $candidate && in_array($candidate, $this->availableLocales)
             ? $candidate
             : (in_array($browserLocale, $this->availableLocales) ? $browserLocale : 'en');
@@ -68,9 +65,6 @@ abstract class BaseInstallController extends Controller
 
     /**
      * ビューに渡す共通データを取得
-     *
-     * @param int $currentStep
-     * @return array
      */
     protected function getViewData(int $currentStep): array
     {
@@ -88,7 +82,7 @@ abstract class BaseInstallController extends Controller
     /**
      * 言語切り替えと.envの更新
      *
-     * @param string $locale
+     * @param  string  $locale
      * @return \Illuminate\Http\JsonResponse
      */
     public function setLanguage($locale)
@@ -99,54 +93,51 @@ abstract class BaseInstallController extends Controller
             session([
                 'install_locale' => $locale,
                 'app.locale' => $locale,
-                'locale' => $locale
+                'locale' => $locale,
             ]);
-            
+
             // 現在のリクエストのロケールも即時変更
             app()->setLocale($locale);
-            
+
             // .envファイルを同期的に更新
             $envPath = base_path('.env');
             if (file_exists($envPath) && is_writable($envPath)) {
                 $updates = [
                     'APP_LOCALE' => $locale,
                     'APP_FALLBACK_LOCALE' => $locale,
-                    'APP_FAKER_LOCALE' => $locale . '_' . strtoupper($locale)
+                    'APP_FAKER_LOCALE' => $locale.'_'.strtoupper($locale),
                 ];
-                
+
                 $this->updateEnv($updates);
             }
-            
+
             // レスポンス用の設定
             $response = [
                 'success' => true,
                 'locale' => $locale,
-                'message' => __('install/common.language_changed')
+                'message' => __('install/common.language_changed'),
             ];
-            
+
             // 常にJSONで返す（リダイレクトなし）＋ クッキーで永続化
             return response()->json($response)
                 ->cookie('install_locale', $locale, 60 * 24 * 30);
         } else {
             return response()->json([
                 'success' => false,
-                'message' => '無効な言語が選択されました。'
+                'message' => '無効な言語が選択されました。',
             ], 400);
         }
     }
 
     /**
      * .envファイルを更新する
-     *
-     * @param array $values
-     * @return void
      */
     protected function updateEnv(array $values): void
     {
         $envPath = base_path('.env');
 
         // .envがない場合は.env.exampleからコピー
-        if (!File::exists($envPath)) {
+        if (! File::exists($envPath)) {
             File::copy(base_path('.env.example'), $envPath);
         }
 
@@ -155,7 +146,7 @@ abstract class BaseInstallController extends Controller
         foreach ($values as $key => $value) {
             // EnvHelperのformatEnvValueを使用したいが、protectedなので独自実装
             $formattedValue = $this->formatEnvValue($value);
-            
+
             if (preg_match("/^{$key}=/m", $env)) {
                 // 既存の値を更新
                 $env = preg_replace(
@@ -171,12 +162,11 @@ abstract class BaseInstallController extends Controller
 
         File::put($envPath, $env);
     }
-    
+
     /**
      * .env用に値をフォーマットする
      *
-     * @param mixed $value
-     * @return string
+     * @param  mixed  $value
      */
     protected function formatEnvValue($value): string
     {
@@ -184,26 +174,27 @@ abstract class BaseInstallController extends Controller
         if ($value === null) {
             return '';
         }
-        
+
         // booleanの場合は文字列に変換
         if (is_bool($value)) {
             return $value ? 'true' : 'false';
         }
-        
+
         $value = (string) $value;
-        
+
         // 空文字列、スペース、特殊文字を含む場合は引用符で囲む
-        if ($value === '' || 
-            preg_match('/[\s"\'#$]/', $value) || 
+        if ($value === '' ||
+            preg_match('/[\s"\'#$]/', $value) ||
             str_contains($value, '=')) {
             // 既に引用符で囲まれている場合はそのまま
             if (preg_match('/^".*"$/', $value) || preg_match("/^'.*'$/", $value)) {
                 return $value;
             }
+
             // ダブルクォートで囲む（内部のダブルクォートはエスケープ）
-            return '"' . str_replace('"', '\\"', $value) . '"';
+            return '"'.str_replace('"', '\\"', $value).'"';
         }
-        
+
         return $value;
     }
 }
