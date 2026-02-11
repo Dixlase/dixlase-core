@@ -297,6 +297,12 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/maintenance', [Base\AdminBaseMaintenanceController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base')
                     ->name('maintenance.update');
+                
+                // モード設定
+                Route::get('/mode', [Base\AdminBaseModeController::class, 'index'])->name('mode');
+                Route::post('/mode', [Base\AdminBaseModeController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.base')
+                    ->name('mode.update');
             });
 
             // セキュリティ設定（権限チェック付き）

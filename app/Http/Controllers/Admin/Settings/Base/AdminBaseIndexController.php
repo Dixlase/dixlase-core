@@ -22,6 +22,7 @@
 
 namespace App\Http\Controllers\Admin\Settings\Base;
 
+use App\Enums\AdminMode;
 use App\Helpers\ConfigHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\BaseSetting;
@@ -64,6 +65,11 @@ class AdminBaseIndexController extends AdminLoggedInController
         // メンテナンス設定
         $maintenanceMode = ConfigHelper::getMaintenanceMode();
 
+        // モード設定
+        $adminMode = AdminMode::fromInt(
+            (int) $this->baseSettingRepository->get('admin_mode', AdminMode::Simple->value)
+        );
+
         $this->viewParams['appName'] = $appName;
         $this->viewParams['siteDescription'] = $siteDescription;
         $this->viewParams['locale'] = $locale;
@@ -73,6 +79,7 @@ class AdminBaseIndexController extends AdminLoggedInController
         $this->viewParams['mailMailer'] = $mailMailer;
         $this->viewParams['mailTestComplete'] = $mailTestComplete;
         $this->viewParams['maintenanceMode'] = $maintenanceMode;
+        $this->viewParams['adminMode'] = $adminMode;
 
         return view('admin.settings.base.index', $this->viewParams);
     }

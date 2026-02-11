@@ -24,7 +24,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div class="mx-auto">
 
     <!-- 設定カード -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
         <!-- サイト設定 -->
         <a href="{{ route('admin.settings.base.site') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
@@ -104,6 +104,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <i class="fas fa-check-circle mr-1"></i>{{ __('admin/settings/base/index.maintenance_inactive') }}
                     </span>
                 @endif
+            </div>
+        </a>
+
+        <!-- モード設定 -->
+        <a href="{{ route('admin.settings.base.mode') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <i class="fas fa-sliders-h text-indigo-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.base.mode') }}</h3>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            <div class="text-sm">
+                <span class="inline-flex items-center gap-1.5">
+                    <i class="{{ $adminMode->iconClass() }} {{ $adminMode->isSimple() ? 'text-blue-500' : 'text-gray-500' }}"></i>
+                    <span class="text-gray-700 dark:text-gray-300">
+                        {{ __('admin/settings/base/mode.current_mode') }}:
+                        @if($adminMode->isSimple())
+                            <span class="font-medium text-blue-600 dark:text-blue-400">{{ __('admin/settings/base/mode.simple_mode') }}</span>
+                        @else
+                            <span class="font-medium text-gray-600 dark:text-gray-400">{{ __('admin/settings/base/mode.advanced_mode') }}</span>
+                        @endif
+                    </span>
+                </span>
             </div>
         </a>
     </div>

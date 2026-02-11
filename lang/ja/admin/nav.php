@@ -45,6 +45,7 @@ return [
             'admin' => '管理画面設定',
             'mail' => 'メール設定',
             'maintenance' => 'メンテナンス設定',
+            'mode' => 'モード設定',
         ],
         'security' => [
             'text' => 'セキュリティ設定',

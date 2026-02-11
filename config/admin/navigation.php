@@ -164,6 +164,11 @@ return [
               'route' => 'admin.settings.base.maintenance',
               'icon' => 'fas fa-fw fa-tools',
             ],
+            'mode' => [
+              'text' => 'admin/nav.settings.base.mode',
+              'route' => 'admin.settings.base.mode',
+              'icon' => 'fas fa-fw fa-sliders-h',
+            ],
           ]
         ],
         'security' => [
