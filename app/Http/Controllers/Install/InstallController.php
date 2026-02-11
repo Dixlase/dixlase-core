@@ -23,17 +23,6 @@
 namespace App\Http\Controllers\Install;
 
 use Illuminate\Routing\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Hash;
-use Exception;
-use Illuminate\Support\Facades\Log;
-use App\Models\SecuritySetting;
-use Illuminate\Support\Facades\Crypt;
-use App\Helpers\GitExcludeHelper;
-use App\Helpers\GitIgnoreHelper;
 
 /**
  * インストールコントローラー
@@ -42,14 +31,14 @@ class InstallController extends Controller
 {
     // 利用可能な言語のリスト
     protected $availableLocales;
-    private $total_steps = 5;
+
+    private $total_steps = 4;
 
     public function __construct()
     {
         $this->availableLocales = array_keys(config('language.languages', []));
     }
 
-   
     // 最初の画面
     public function index()
     {
@@ -59,7 +48,7 @@ class InstallController extends Controller
         session(['install_data' => $installData]);
 
         // 言語設定をセッション/クッキーから取得、デフォルトはブラウザの言語設定を考慮
-        
+
         $browserLocale = substr(request()->server('HTTP_ACCEPT_LANGUAGE', 'en'), 0, 2);
         $cookieLocale = request()->cookie('install_locale');
         $sessionLocale = session('install_locale');
@@ -68,20 +57,19 @@ class InstallController extends Controller
             ? $candidate
             : (in_array($browserLocale, $this->availableLocales) ? $browserLocale : 'en');
         app()->setLocale($locale);
-        
+
         $requirements = $this->checkServerRequirements();
-        
+
         return view('install.index', [
             'requirements' => $requirements,
             'currentLocale' => $locale,
-            'availableLocales' => $this->availableLocales
+            'availableLocales' => $this->availableLocales,
         ]);
     }
 
-
     /**
      * サーバーが Laravel 12 の要件を満たしているか確認
-     * 
+     *
      * @return array
      */
     protected function checkServerRequirements()
@@ -119,6 +107,4 @@ class InstallController extends Controller
             ],
         ];
     }
-
-
 }

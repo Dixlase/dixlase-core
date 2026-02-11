@@ -54,7 +54,7 @@
                            in_array(false, $requirements['permissions']);
     @endphp
     <div class="flex justify-center">
-        <a href="{{ $hasRequiredIssues ? '#' : route('install.settings') }}"
+        <a href="{{ $hasRequiredIssues ? '#' : route('install.mode') }}"
         class="block w-auto bg-blue-600 dark:bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition text-center
                 {{ $hasRequiredIssues ? 'opacity-50 cursor-not-allowed' : '' }}"
         {{ $hasRequiredIssues ? 'disabled' : '' }}>

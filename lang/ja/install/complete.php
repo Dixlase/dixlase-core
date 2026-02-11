@@ -27,4 +27,5 @@ return [
     'go_to_site' => 'サイトへ移動',
     'go_to_admin' => '管理画面へログイン',
     'admin_login_url' => '管理画面ログインURL',
+    'site_url' => 'フロントページURL',
 ];

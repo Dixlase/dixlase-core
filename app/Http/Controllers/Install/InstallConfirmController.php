@@ -22,13 +22,13 @@
 
 namespace App\Http\Controllers\Install;
 
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\GitIgnoreHelper;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 /**
  * インストール - 確認画面
@@ -42,9 +42,9 @@ class InstallConfirmController extends BaseInstallController
     {
         $locale = $this->getCurrentLocale();
         app()->setLocale($locale);
-        
+
         $data = session('install_data', []);
-        
+
         // デバッグ情報をログに出力
         Log::channel('install')->info('確認画面表示時のセッションデータ', [
             'session_id' => session()->getId(),
@@ -62,19 +62,20 @@ class InstallConfirmController extends BaseInstallController
             'has_db_port' => isset($data['db_port']),
             'has_db_database' => isset($data['db_database']),
             'has_db_username' => isset($data['db_username']),
-            'full_data_keys' => $data ? array_keys($data) : 'empty'
+            'full_data_keys' => $data ? array_keys($data) : 'empty',
         ]);
-        
+
         // 必須フィールドのチェックと不足フィールドに基づく適切なステップへのリダイレクト
         $steps = [
             'settings' => ['site_name', 'admin_account_name', 'admin_email', 'admin_password'],
             'environment' => ['app_env', 'app_url', 'admin_url', 'app_timezone'],
-            'database' => ['db_connection', 'db_host', 'db_port', 'db_database', 'db_username']
+            'database' => ['db_connection', 'db_host', 'db_port', 'db_database', 'db_username'],
         ];
-        
+
         // セッションデータが完全に空の場合は最初からやり直し
         if (empty($data)) {
             Log::channel('install')->error('セッションデータが完全に空です');
+
             return redirect()->route('install.index')
                 ->with('error', 'セッションデータが失われました。インストールを最初からやり直してください。');
         }
@@ -90,20 +91,21 @@ class InstallConfirmController extends BaseInstallController
         }
 
         // 不足フィールドがある場合
-        if (!empty($missingFields)) {
+        if (! empty($missingFields)) {
             $firstMissing = $missingFields[0];
             Log::channel('install')->error('必須フィールドが不足しています', [
                 'missing_fields' => $missingFields,
                 'session_keys' => array_keys($data),
                 'session_id' => session()->getId(),
-                'redirecting_to_step' => $firstMissing['step']
+                'redirecting_to_step' => $firstMissing['step'],
             ]);
-            
-            $route = 'install.' . ($firstMissing['step'] === 'settings' ? 'create' : $firstMissing['step'] . '.create');
+
+            $route = 'install.'.($firstMissing['step'] === 'settings' ? 'create' : $firstMissing['step'].'.create');
+
             return redirect()->route($route)
-                ->with('error', __('install/common.missing_required_fields') . " (不足フィールド: {$firstMissing['field']})");
+                ->with('error', __('install/common.missing_required_fields')." (不足フィールド: {$firstMissing['field']})");
         }
-        
+
         // メールテスト結果をセッションから取得
         $mailTestStatus = [
             'connection_tested' => (bool) ($data['mail_connection_tested'] ?? false),
@@ -118,7 +120,7 @@ class InstallConfirmController extends BaseInstallController
             'data' => $data,
             'mailTestStatus' => $mailTestStatus,
             'currentLocale' => $locale,
-            'availableLocales' => $this->availableLocales
+            'availableLocales' => $this->availableLocales,
         ]);
     }
 
@@ -129,17 +131,18 @@ class InstallConfirmController extends BaseInstallController
     {
         try {
             Log::channel('install')->info('=== インストール開始 ===');
-            
+
             $data = session('install_data');
             Log::channel('install')->info('セッションデータ取得完了', [
                 'keys' => array_keys($data ?? []),
                 'session_id' => session()->getId(),
-                'full_data' => $data
+                'full_data' => $data,
             ]);
 
             // セッションデータが空の場合は確認画面にリダイレクト
             if (empty($data)) {
                 Log::channel('install')->error('セッションデータが空です - 確認画面にリダイレクト');
+
                 return redirect()->route('install.confirm')
                     ->with('error', '');
             }
@@ -149,23 +152,23 @@ class InstallConfirmController extends BaseInstallController
             Log::channel('install')->info('管理者パスワード復号化完了');
 
             // DBパスワードを復号化（空文字列の場合は復号化しない）
-            $dbPassword = (!empty($data['db_password'])) ? Crypt::decryptString($data['db_password']) : '';
+            $dbPassword = (! empty($data['db_password'])) ? Crypt::decryptString($data['db_password']) : '';
             Log::channel('install')->info('DBパスワード復号化完了');
 
             // メールパスワードを復号化（空文字列の場合は復号化しない）
-            $mailPassword = (!empty($data['mail_password'])) ? Crypt::decryptString($data['mail_password']) : '';
+            $mailPassword = (! empty($data['mail_password'])) ? Crypt::decryptString($data['mail_password']) : '';
             Log::channel('install')->info('メールパスワード復号化完了');
 
             // force_sslの値を取得
-            $forceSslBool = !empty($data['force_ssl']);
+            $forceSslBool = ! empty($data['force_ssl']);
 
             // force_sslに基づいてAPP_URLのプロトコルを決定
             $protocol = $forceSslBool ? 'https://' : 'http://';
-            $appUrl = $protocol . $data['app_url'];
+            $appUrl = $protocol.$data['app_url'];
 
             // セッションから言語設定を取得
             $locale = session('install_locale', 'en');
-            
+
             $envData = [
                 'APP_NAME' => $data['site_name'],
                 'APP_ENV' => $data['app_env'],
@@ -176,7 +179,7 @@ class InstallConfirmController extends BaseInstallController
                 'INSTALLED' => 'false',
                 'FORCE_SSL' => $data['force_ssl'] ? 'true' : 'false',
                 'MAINTENANCE_MODE' => 'false',
-                
+
                 // Session settings
                 'SESSION_DRIVER' => 'database',
                 'SESSION_LIFETIME' => '120',
@@ -214,15 +217,15 @@ class InstallConfirmController extends BaseInstallController
             // マイグレーション実行中はセッションドライバーを一時的にfileに変更
             $envPath = base_path('.env');
             $envContent = file_get_contents($envPath);
-            
+
             // 元のSESSION_DRIVERを保存
             preg_match('/SESSION_DRIVER=(.+)/', $envContent, $matches);
             $originalSessionDriver = $matches[1] ?? 'guard-aware-database';
-            
+
             // SESSION_DRIVERをfileに変更
             $envContent = preg_replace('/SESSION_DRIVER=.+/', 'SESSION_DRIVER=file', $envContent);
             file_put_contents($envPath, $envContent);
-            
+
             // 設定を再読み込み
             Artisan::call('config:clear');
             Log::channel('install')->info('セッションドライバーを一時的にfileに変更', ['original' => $originalSessionDriver]);
@@ -240,34 +243,34 @@ class InstallConfirmController extends BaseInstallController
 
             // セッションドライバーを元に戻す
             $envContent = file_get_contents($envPath);
-            $envContent = preg_replace('/SESSION_DRIVER=.+/', 'SESSION_DRIVER=' . $originalSessionDriver, $envContent);
+            $envContent = preg_replace('/SESSION_DRIVER=.+/', 'SESSION_DRIVER='.$originalSessionDriver, $envContent);
             file_put_contents($envPath, $envContent);
-            
+
             // 設定を再読み込み
             Artisan::call('config:clear');
             Log::channel('install')->info('セッションドライバーを復元', ['driver' => $originalSessionDriver]);
-            
+
             // DB接続を再確立（テーブルプレフィックスを正しく適用するため）
             DB::purge();
             DB::reconnect();
-            
+
             // デバッグ: 現在のテーブルプレフィックスと全テーブル一覧を取得
             $prefix = DB::connection()->getTablePrefix();
             $tables = DB::select('SHOW TABLES');
-            $tableNames = array_map(function($table) {
-                return array_values((array)$table)[0];
+            $tableNames = array_map(function ($table) {
+                return array_values((array) $table)[0];
             }, $tables);
             Log::channel('install')->info('DB接続を再確立しました', [
                 'prefix' => $prefix,
                 'tables_count' => count($tableNames),
-                'sample_tables' => array_slice($tableNames, 0, 5)
+                'sample_tables' => array_slice($tableNames, 0, 5),
             ]);
-            
+
             // シーダー実行（テーブル存在チェックをスキップして無条件で実行）
             Log::channel('install')->info('DatabaseSeeder実行開始');
             Artisan::call('db:seed', [
                 '--class' => 'DatabaseSeeder',
-                '--force' => true
+                '--force' => true,
             ]);
             Log::channel('install')->info('DatabaseSeeder実行完了');
 
@@ -275,7 +278,7 @@ class InstallConfirmController extends BaseInstallController
             Log::channel('install')->info('DixlaseDefaultTheme マイグレーション開始');
             Artisan::call('migrate', [
                 '--path' => 'themes/DixlaseDefaultTheme/database/migrations',
-                '--force' => true
+                '--force' => true,
             ]);
             Log::channel('install')->info('DixlaseDefaultTheme マイグレーション完了');
 
@@ -283,7 +286,7 @@ class InstallConfirmController extends BaseInstallController
             Log::channel('install')->info('DixlaseDefaultTheme DatabaseSeeder実行開始');
             Artisan::call('db:seed', [
                 '--class' => 'Themes\\DixlaseDefaultTheme\\Database\\Seeders\\DatabaseSeeder',
-                '--force' => true
+                '--force' => true,
             ]);
             Log::channel('install')->info('DixlaseDefaultTheme DatabaseSeeder実行完了（設定 + 権限）');
 
@@ -302,7 +305,7 @@ class InstallConfirmController extends BaseInstallController
             $themeSetting = DB::table('theme_settings')
                 ->where('key', 'enabled_theme_id')
                 ->first();
-            
+
             $activeTheme = null;
             if ($themeSetting && $themeSetting->value) {
                 $activeTheme = DB::table('themes')
@@ -315,10 +318,10 @@ class InstallConfirmController extends BaseInstallController
                 try {
                     Artisan::call('dls:theme:symlink', [
                         'action' => 'create',
-                        'theme' => $activeTheme->directory
+                        'theme' => $activeTheme->directory,
                     ]);
                     Log::channel('install')->info('テーマシンボリックリンク作成完了', ['theme' => $activeTheme->directory]);
-                    
+
                     GitExcludeHelper::addThemeExclusion($activeTheme->directory);
                     GitIgnoreHelper::addThemeExclusion($activeTheme->directory);
                     Log::channel('install')->info('テーマGit除外ルール追加完了', ['theme' => $activeTheme->directory]);
@@ -326,7 +329,7 @@ class InstallConfirmController extends BaseInstallController
                     Log::channel('install')->error("シンボリックリンクの作成に失敗しました: {$e->getMessage()}");
                 }
             } else {
-                Log::channel('install')->warning("アクティブなテーマが見つかりません。シンボリックリンクは作成されませんでした。");
+                Log::channel('install')->warning('アクティブなテーマが見つかりません。シンボリックリンクは作成されませんでした。');
             }
 
             // ファイル整合性ベースラインを生成
@@ -335,7 +338,7 @@ class InstallConfirmController extends BaseInstallController
                 $fileIntegrityService = app(\App\Services\FileIntegrityService::class);
                 $baseline = $fileIntegrityService->generateCoreBaseline();
                 $fileIntegrityService->saveBaselineArray($baseline);
-                
+
                 \App\Models\FileIntegrityAudit::create([
                     'scope' => \App\Models\FileIntegrityAudit::SCOPE_CORE,
                     'trigger' => \App\Models\FileIntegrityAudit::TRIGGER_INSTALL,
@@ -349,14 +352,14 @@ class InstallConfirmController extends BaseInstallController
                     'duration_ms' => 0,
                     'summary' => __('command.integrity.baseline_generated'),
                 ]);
-                
+
                 Log::channel('install')->info('ファイル整合性ベースライン生成完了', [
                     'files_count' => count($baseline['files']),
-                    'version' => $baseline['meta']['app_version'] ?? 'unknown'
+                    'version' => $baseline['meta']['app_version'] ?? 'unknown',
                 ]);
             } catch (\Exception $e) {
                 Log::channel('install')->warning('ファイル整合性ベースライン生成に失敗しましたが、インストールは続行します', [
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
 
@@ -366,29 +369,28 @@ class InstallConfirmController extends BaseInstallController
             Log::channel('install')->info('install.completeルートにリダイレクト中...');
 
             return redirect()->route('install.complete');
-            
         } catch (\Exception $e) {
             Log::channel('install')->error('=== インストールエラー ===', [
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
-                'session_data_exists' => !empty($data),
-                'session_keys' => array_keys($data ?? [])
+                'session_data_exists' => ! empty($data),
+                'session_keys' => array_keys($data ?? []),
             ]);
-            
+
             // セッションデータが失われていないことを確認
             if (empty(session('install_data'))) {
                 Log::channel('install')->warning('セッションデータが失われています - 復元を試行');
-                if (!empty($data)) {
+                if (! empty($data)) {
                     session(['install_data' => $data]);
                     Log::channel('install')->info('セッションデータを復元しました');
                 }
             }
-            
+
             // ユーザーフレンドリーなエラーメッセージを作成
             $errorMessage = $this->getInstallationErrorMessage($e);
-            
+
             return redirect()->route('install.confirm')
                 ->with('error', $errorMessage)
                 ->with('error_details', $e->getMessage());
@@ -401,19 +403,19 @@ class InstallConfirmController extends BaseInstallController
     private function getInstallationErrorMessage(\Exception $e)
     {
         $errorMessage = $e->getMessage();
-        
+
         if (strpos($errorMessage, 'database') !== false) {
             return __('install/error.database_general');
         }
-        
+
         if (strpos($errorMessage, 'file') !== false || strpos($errorMessage, 'directory') !== false) {
             return __('install/error.file_system');
         }
-        
+
         if (strpos($errorMessage, 'env') !== false || strpos($errorMessage, 'environment') !== false) {
             return __('install/error.environment');
         }
-        
+
         return __('install/error.unknown');
     }
 
@@ -422,10 +424,10 @@ class InstallConfirmController extends BaseInstallController
      */
     private function initializeDatabase(array $data, string $adminPassword)
     {
-        Log::channel('install')->info('initializeDatabase - 開始: admin_email=' . $data['admin_email'] . ', admin_account_name=' . $data['admin_account_name']);
-        
+        Log::channel('install')->info('initializeDatabase - 開始: admin_email='.$data['admin_email'].', admin_account_name='.$data['admin_account_name']);
+
         Log::channel('install')->info('initializeDatabase - base_settings更新開始');
-        
+
         $baseSettings = [
             'app_name' => $data['site_name'],
             'locale' => $data['app_locale'] ?? 'ja',
@@ -441,10 +443,11 @@ class InstallConfirmController extends BaseInstallController
             'maintenance_message' => '現在メンテナンス中です。しばらくお待ちください。',
             'system_admin_email' => $data['admin_email'],
             'site_name' => $data['site_name'],
+            'admin_mode' => (string) ($data['install_mode'] ?? 0),
         ];
-        
+
         foreach ($baseSettings as $name => $value) {
-            if (!DB::connection('mysql')->table('base_settings')->where('name', $name)->exists()) {
+            if (! DB::connection('mysql')->table('base_settings')->where('name', $name)->exists()) {
                 DB::connection('mysql')->table('base_settings')->insert([
                     'name' => $name,
                     'value' => $value,
@@ -461,19 +464,19 @@ class InstallConfirmController extends BaseInstallController
         }
 
         // 管理画面URLを追加
-        if (!DB::connection('mysql')->table('base_settings')->where('name', 'admin_url')->exists()) {
+        if (! DB::connection('mysql')->table('base_settings')->where('name', 'admin_url')->exists()) {
             DB::connection('mysql')->table('base_settings')->insert([
                 'name' => 'admin_url',
                 'value' => $data['admin_url'],
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            Log::channel('install')->info('initializeDatabase - admin_url新規作成: ' . $data['admin_url']);
+            Log::channel('install')->info('initializeDatabase - admin_url新規作成: '.$data['admin_url']);
         } else {
             DB::connection('mysql')->table('base_settings')
                 ->where('name', 'admin_url')
                 ->update(['value' => $data['admin_url'], 'updated_at' => now()]);
-            Log::channel('install')->info('initializeDatabase - admin_url更新: ' . $data['admin_url']);
+            Log::channel('install')->info('initializeDatabase - admin_url更新: '.$data['admin_url']);
         }
 
         // メールテスト結果を保存
@@ -489,7 +492,7 @@ class InstallConfirmController extends BaseInstallController
 
         foreach ($mailTestFields as $fieldName => $fieldValue) {
             if ($fieldValue !== null) {
-                if (!DB::connection('mysql')->table('base_settings')->where('name', $fieldName)->exists()) {
+                if (! DB::connection('mysql')->table('base_settings')->where('name', $fieldName)->exists()) {
                     DB::connection('mysql')->table('base_settings')->insert([
                         'name' => $fieldName,
                         'value' => $fieldValue,
@@ -541,12 +544,12 @@ class InstallConfirmController extends BaseInstallController
         // 管理者アカウント処理
         Log::channel('install')->info('initializeDatabase - 管理者アカウント処理開始');
         $admin = DB::connection('mysql')->table('members')->where('email', $data['admin_email'])->first();
-        
+
         $installLocale = $data['app_locale'] ?? session('install_locale', 'ja');
-        Log::channel('install')->info('initializeDatabase - インストール言語設定: ' . $installLocale);
-        
+        Log::channel('install')->info('initializeDatabase - インストール言語設定: '.$installLocale);
+
         if ($admin) {
-            Log::channel('install')->info('initializeDatabase - 既存管理者更新: ID=' . $admin->id);
+            Log::channel('install')->info('initializeDatabase - 既存管理者更新: ID='.$admin->id);
             DB::connection('mysql')->table('members')
                 ->where('id', $admin->id)
                 ->update([
@@ -559,7 +562,7 @@ class InstallConfirmController extends BaseInstallController
                     'email_verified_at' => now(),
                     'updated_at' => now(),
                 ]);
-            Log::channel('install')->info('initializeDatabase - 既存管理者更新完了（言語設定: ' . $installLocale . '）');
+            Log::channel('install')->info('initializeDatabase - 既存管理者更新完了（言語設定: '.$installLocale.'）');
         } else {
             Log::channel('install')->info('initializeDatabase - 新規管理者作成開始');
             $memberId = DB::connection('mysql')->table('members')->insertGetId([
@@ -574,11 +577,11 @@ class InstallConfirmController extends BaseInstallController
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            Log::channel('install')->info('initializeDatabase - 新規管理者作成完了: ID=' . $memberId . '（言語設定: ' . $installLocale . '）');
+            Log::channel('install')->info('initializeDatabase - 新規管理者作成完了: ID='.$memberId.'（言語設定: '.$installLocale.'）');
         }
-        
+
         $memberCount = DB::connection('mysql')->table('members')->count();
-        Log::channel('install')->info('initializeDatabase - membersテーブル総レコード数: ' . $memberCount);
+        Log::channel('install')->info('initializeDatabase - membersテーブル総レコード数: '.$memberCount);
         Log::channel('install')->info('initializeDatabase - 完了');
     }
 }
