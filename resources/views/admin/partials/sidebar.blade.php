@@ -27,6 +27,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     {{-- サイドバー本体 --}}
     <div class="flex flex-col w-64 h-full overflow-y-auto bg-white/75 dark:bg-gray-900/75 border-r border-gray-200 dark:border-gray-600 backdrop-blur-sm shadow-md">
         <nav class="flex-1 px-4 py-4 space-y-1" role="navigation" aria-label="Admin navigation menu">
+        @php
+            // モード表示設定を一度だけ取得
+            $__isSimpleMode = \App\Helpers\AdminModeHelper::isSimpleMode();
+        @endphp
         @foreach (config('admin.navigation') as $key => $item)
             @php
                 // 現在のルート名を階層ごとに分割
@@ -128,13 +132,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         }
                     }
                 @endphp
-                @if ($has_permission)
+                @php
+                    // モード表示レベルチェック
+                    $__menuVis = $__isSimpleMode
+                        ? \App\Helpers\AdminModeHelper::getMenuVisibility($key)
+                        : \App\Enums\MenuVisibility::Full;
+                    $__menuHidden = $__menuVis === \App\Enums\MenuVisibility::Hidden;
+                @endphp
+                @if ($has_permission && !$__menuHidden)
                     @if (isset($item['route']) && is_string($item['route']) && Route::has($item['route']))
                         <a href="{{ route($item['route']) }}"
                         class="{{ $button_class }} {{ $item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
                         role="menuitem">
                             <i class="{{ $item['icon'] }} mr-3" aria-hidden="true"></i>
                             <span>{{ __($item['text']) }}</span>
+                            @if ($__menuVis === \App\Enums\MenuVisibility::ReadOnly)
+                                <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
+                            @elseif ($__menuVis === \App\Enums\MenuVisibility::GuideOnly)
+                                <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
+                            @endif
                         </a>
                     @else
                         <button @click="{{ $open_key }} = !{{ $open_key }}" 
@@ -143,6 +159,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :aria-expanded="{{ $open_key }}.toString()">
                             <i class="{{ $item['icon'] }} mr-3" aria-hidden="true"></i>
                             <span>{{ __($item['text']) }}</span>
+                            @if ($__menuVis === \App\Enums\MenuVisibility::ReadOnly)
+                                <i class="fas fa-lock text-xs text-gray-400 ml-1" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
+                            @elseif ($__menuVis === \App\Enums\MenuVisibility::GuideOnly)
+                                <i class="fas fa-directions text-xs text-purple-400 ml-1" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
+                            @endif
                             <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
@@ -196,13 +217,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     }
                                 }
                             @endphp
-                            @if ($child_has_permission)
+                            @php
+                                // 子メニューのモード表示レベルチェック
+                                $__childMenuKey = $key . '.' . $child_key;
+                                $__childMenuVis = $__isSimpleMode
+                                    ? \App\Helpers\AdminModeHelper::getMenuVisibility($__childMenuKey)
+                                    : \App\Enums\MenuVisibility::Full;
+                                $__childMenuHidden = $__childMenuVis === \App\Enums\MenuVisibility::Hidden;
+                            @endphp
+                            @if ($child_has_permission && !$__childMenuHidden)
                                 @if (isset($child_item['route']) && is_string($child_item['route']) && Route::has($child_item['route']))
                                     <a href="{{ route($child_item['route']) }}" 
                                     class="{{ $button_class }} {{ $child_item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
                                     role="menuitem">
                                         <i class="{{ $child_item['icon'] }} mr-3" aria-hidden="true"></i>
                                         <span>{{ __($child_item['text']) }}</span>
+                                        @if ($__childMenuVis === \App\Enums\MenuVisibility::ReadOnly)
+                                            <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
+                                        @elseif ($__childMenuVis === \App\Enums\MenuVisibility::GuideOnly)
+                                            <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
+                                        @endif
                                     </a>
 
                                 @else
@@ -251,13 +285,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                         // 孫項目の権限キーを生成（親キー.子キー.孫キー）
                                                         $grand_child_role_key = $key . '.' . $child_key . '.' . $grand_child_key;
                                                         $grand_child_plugin_slug = $grand_child_item['plugin_slug'] ?? $child_plugin_slug;
+                                                        // 孫メニューのモード表示レベルチェック
+                                                        $__gcMenuVis = $__isSimpleMode
+                                                            ? \App\Helpers\AdminModeHelper::getMenuVisibility($grand_child_role_key)
+                                                            : \App\Enums\MenuVisibility::Full;
+                                                        $__gcMenuHidden = $__gcMenuVis === \App\Enums\MenuVisibility::Hidden;
                                                     @endphp
-                                                    @if (isset($grand_child_item['route']) && is_string($grand_child_item['route']) && Route::has($grand_child_item['route']) && isset($grand_child_item['icon']) && is_string($grand_child_item['icon']) && isset($grand_child_item['text']) && is_string($grand_child_item['text']) && (\App\Helpers\AdminHelper::canEditMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key) || \App\Helpers\AdminHelper::canViewMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key)))
+                                                    @if (!$__gcMenuHidden && isset($grand_child_item['route']) && is_string($grand_child_item['route']) && Route::has($grand_child_item['route']) && isset($grand_child_item['icon']) && is_string($grand_child_item['icon']) && isset($grand_child_item['text']) && is_string($grand_child_item['text']) && (\App\Helpers\AdminHelper::canEditMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key) || \App\Helpers\AdminHelper::canViewMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key)))
                                                         <a href="{{ route($grand_child_item['route']) }}"
                                                         class="{{ $button_class }} {{ $grand_child_item['route'] === $route_name ? 'sidebar-link-active' : 'sidebar-link' }}">
                                                             <i class="{{ $grand_child_item['icon'] }} mr-3"></i>
                                                             <span>{{ __($grand_child_item['text']) }}</span>
-                                                            @if (!\App\Helpers\AdminHelper::canEditMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key))
+                                                            @if ($__gcMenuVis === \App\Enums\MenuVisibility::ReadOnly)
+                                                                <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
+                                                            @elseif ($__gcMenuVis === \App\Enums\MenuVisibility::GuideOnly)
+                                                                <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
+                                                            @elseif (!\App\Helpers\AdminHelper::canEditMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key))
                                                                 <span class="text-xs text-gray-400">(閲覧のみ)</span>
                                                             @endif
                                                         </a>

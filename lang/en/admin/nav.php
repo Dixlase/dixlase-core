@@ -45,6 +45,7 @@ return [
             'admin' => 'Admin Panel Settings',
             'mail' => 'Mail Settings',
             'maintenance' => 'Maintenance Settings',
+            'mode' => 'Mode Settings',
         ],
         'security' => [
             'text' => 'Security Settings',
