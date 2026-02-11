@@ -33,6 +33,31 @@ return [
 
     'recommended' => '推奨',
 
+    // かんたんモードの注意事項（カード内表示）
+    'simple_caution_settings_reset' => '一部のセキュリティ設定が推奨値にリセットされます',
+    'simple_caution_menu_hidden' => '一部のメニューが非表示になります',
+    'simple_caution_auto_optimize' => '非表示メニューの設定は自動で最適化されます',
+
+    // 詳細モードの注意事項（カード内表示）
+    'advanced_caution_all_visible' => 'すべてのメニューと設定が表示されます',
+    'advanced_caution_manual' => '設定の最適化は手動で行う必要があります',
+    'advanced_caution_knowledge' => 'システムへの影響を理解した上でご利用ください',
+
+    // モード切替警告モーダル
+    'switch_modal_title' => 'モードを切り替えますか？',
+    'switch_to_simple_warning' => 'かんたんモードに切り替えると、以下の変更が適用されます：',
+    'switch_to_simple_warn_1' => '一部のセキュリティ設定が推奨値にリセットされる場合があります',
+    'switch_to_simple_warn_2' => '一部のメニューが非表示になります',
+    'switch_to_simple_warn_3' => '非表示メニューの設定は自動で最適化されます',
+    'switch_to_simple_note' => 'いつでも詳細モードに戻すことができます。',
+    'switch_to_advanced_warning' => '詳細モードに切り替えると、以下の変更が適用されます：',
+    'switch_to_advanced_warn_1' => 'すべてのメニューと設定項目が表示されます',
+    'switch_to_advanced_warn_2' => 'メニュー表示のカスタマイズ設定はクリアされます',
+    'switch_to_advanced_warn_3' => '設定の最適化は手動で行う必要があります',
+    'switch_to_advanced_note' => 'いつでもかんたんモードに戻すことができます。',
+    'switch_confirm' => '切り替える',
+    'switch_cancel' => 'キャンセル',
+
     // メニューカスタマイズ
     'menu_customize' => 'メニュー表示カスタマイズ',
     'menu_customize_description' => 'かんたんモードで各メニューの表示レベルを調整できます。非表示にしたメニューの設定は自動で最適化されます。',
