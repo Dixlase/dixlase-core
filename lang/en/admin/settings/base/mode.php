@@ -33,6 +33,31 @@ return [
 
     'recommended' => 'Recommended',
 
+    // Simple mode cautions (displayed on card)
+    'simple_caution_settings_reset' => 'Some security settings will be reset to recommended values',
+    'simple_caution_menu_hidden' => 'Some menus will be hidden',
+    'simple_caution_auto_optimize' => 'Hidden menu settings will be automatically optimized',
+
+    // Advanced mode cautions (displayed on card)
+    'advanced_caution_all_visible' => 'All menus and settings will be displayed',
+    'advanced_caution_manual' => 'Settings optimization must be done manually',
+    'advanced_caution_knowledge' => 'Please use with understanding of system implications',
+
+    // Mode switch warning modal
+    'switch_modal_title' => 'Switch mode?',
+    'switch_to_simple_warning' => 'Switching to Simple Mode will apply the following changes:',
+    'switch_to_simple_warn_1' => 'Some security settings may be reset to recommended values',
+    'switch_to_simple_warn_2' => 'Some menus will be hidden',
+    'switch_to_simple_warn_3' => 'Hidden menu settings will be automatically optimized',
+    'switch_to_simple_note' => 'You can switch back to Advanced Mode at any time.',
+    'switch_to_advanced_warning' => 'Switching to Advanced Mode will apply the following changes:',
+    'switch_to_advanced_warn_1' => 'All menus and settings will be displayed',
+    'switch_to_advanced_warn_2' => 'Menu visibility customization settings will be cleared',
+    'switch_to_advanced_warn_3' => 'Settings optimization must be done manually',
+    'switch_to_advanced_note' => 'You can switch back to Simple Mode at any time.',
+    'switch_confirm' => 'Switch',
+    'switch_cancel' => 'Cancel',
+
     // Menu customization
     'menu_customize' => 'Menu Visibility Customization',
     'menu_customize_description' => 'Adjust the visibility level of each menu in Simple Mode. Hidden menu settings are automatically optimized.',
