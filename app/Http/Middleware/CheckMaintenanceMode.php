@@ -36,8 +36,14 @@ class CheckMaintenanceMode
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // インストールが完了していない場合はメンテナンスチェックをスキップ
+        $installed = env('INSTALLED');
+        if ($installed !== 'true' && $installed !== true) {
+            return $next($request);
+        }
+
         // 管理画面とインストール画面は常にアクセス可能
-        if ($request->is('admin/*') || $request->is('install/*')) {
+        if ($request->is('admin/*') || $request->is('install') || $request->is('install/*')) {
             return $next($request);
         }
 

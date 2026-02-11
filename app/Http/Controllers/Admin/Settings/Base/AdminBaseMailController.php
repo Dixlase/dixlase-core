@@ -22,15 +22,15 @@
 
 namespace App\Http\Controllers\Admin\Settings\Base;
 
+use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 use App\Helpers\ConfigHelper;
 use App\Helpers\EnvHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Http\Requests\Admin\Settings\Base\AdminBaseMailUpdateRequest;
 use App\Http\Requests\MailServerRequest;
-use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 use App\Traits\MailTestTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Http\Requests\Admin\Settings\Base\AdminBaseMailUpdateRequest;
 
 class AdminBaseMailController extends AdminLoggedInController
 {
@@ -55,7 +55,7 @@ class AdminBaseMailController extends AdminLoggedInController
             $mailTestResults['mail_receive_tested'] = 1;
             $mailTestResults['mail_receive_test_date'] = now()->format('Y-m-d H:i:s');
             session(['mail_test_results' => $mailTestResults]);
-            
+
             return response()->json(['success' => true]);
         }
 
@@ -75,11 +75,11 @@ class AdminBaseMailController extends AdminLoggedInController
 
         // メールテスト状態を取得
         $sessionTestResults = session('mail_test_results', []);
-        
+
         $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? $this->baseSettingRepository->get('mail_connection_tested', false));
         $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? $this->baseSettingRepository->get('mail_send_tested', false));
         $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? $this->baseSettingRepository->get('mail_receive_tested', false));
-        
+
         $mailConnectionTestDate = $sessionTestResults['mail_connection_test_date'] ?? $this->baseSettingRepository->get('mail_connection_test_date', '');
         $mailSendTestDate = $sessionTestResults['mail_send_test_date'] ?? $this->baseSettingRepository->get('mail_send_test_date', '');
         $mailReceiveTestDate = $sessionTestResults['mail_receive_test_date'] ?? $this->baseSettingRepository->get('mail_receive_test_date', '');
@@ -91,8 +91,8 @@ class AdminBaseMailController extends AdminLoggedInController
         $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
         $this->viewParams['mailSendTestDate'] = $mailSendTestDate;
         $this->viewParams['mailReceiveTestDate'] = $mailReceiveTestDate;
-        $this->viewParams['mailers'] = __('mail.mailers');
-        $this->viewParams['encryptions'] = __('mail.encryptions');
+        $this->viewParams['mailers'] = __('mail-server/config.mailers');
+        $this->viewParams['encryptions'] = __('mail-server/config.encryptions');
 
         return view('admin.settings.base.mail', $this->viewParams);
     }
@@ -126,15 +126,15 @@ class AdminBaseMailController extends AdminLoggedInController
         // メール設定が変更されたかチェック
         $mailKeys = ['mail_mailer', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption', 'mail_from_address'];
         $mailSettingsChanged = false;
-        
+
         foreach ($mailKeys as $key) {
             if (array_key_exists($key, $envData)) {
                 $currentValue = env(strtoupper($key));
                 $newValue = $envData[$key];
-                
-                $currentValue = $currentValue === null ? '' : (string)$currentValue;
-                $newValue = $newValue === null ? '' : (string)$newValue;
-                
+
+                $currentValue = $currentValue === null ? '' : (string) $currentValue;
+                $newValue = $newValue === null ? '' : (string) $newValue;
+
                 if ($currentValue !== $newValue) {
                     $mailSettingsChanged = true;
                     break;
@@ -155,10 +155,10 @@ class AdminBaseMailController extends AdminLoggedInController
         ];
 
         $this->baseSettingRepository->setMultiple($dbSettings);
-        
+
         // .envファイルに設定を保存
         EnvHelper::update($envData);
-        
+
         if ($mailSettingsChanged) {
             // メール設定変更時は全てのテストステータスをリセット
             $this->baseSettingRepository->set('mail_connection_tested', 0);
@@ -168,17 +168,17 @@ class AdminBaseMailController extends AdminLoggedInController
             $this->baseSettingRepository->set('mail_receive_tested', 0);
             $this->baseSettingRepository->set('mail_receive_test_date', null);
             $this->baseSettingRepository->set('mail_verification_token', null);
-            
+
             session()->forget('mail_test_results');
         } else {
             // メール設定が変更されていない場合、セッションのテスト結果をDBに保存
             $sessionTestResults = session('mail_test_results', []);
-            
-            if (!empty($sessionTestResults)) {
+
+            if (! empty($sessionTestResults)) {
                 foreach ($sessionTestResults as $key => $value) {
                     $this->baseSettingRepository->set($key, $value);
                 }
-                
+
                 session()->forget('mail_test_results');
             }
         }
@@ -193,7 +193,7 @@ class AdminBaseMailController extends AdminLoggedInController
     public function clearTestSession()
     {
         session()->forget('mail_test_results');
-        
+
         $this->baseSettingRepository->set('mail_connection_tested', 0);
         $this->baseSettingRepository->set('mail_connection_test_date', null);
         $this->baseSettingRepository->set('mail_send_tested', 0);
@@ -201,12 +201,12 @@ class AdminBaseMailController extends AdminLoggedInController
         $this->baseSettingRepository->set('mail_receive_tested', 0);
         $this->baseSettingRepository->set('mail_receive_test_date', null);
         $this->baseSettingRepository->set('mail_verification_token', null);
-        
+
         Log::info('メールテストセッション・DB両方クリア完了');
-        
+
         return response()->json([
             'success' => true,
-            'message' => __('admin/settings/base/mail.test_session_cleared')
+            'message' => __('admin/settings/base/mail.test_session_cleared'),
         ]);
     }
 
@@ -216,14 +216,14 @@ class AdminBaseMailController extends AdminLoggedInController
     public function checkTestSession()
     {
         $sessionTestResults = session('mail_test_results', []);
-        
+
         $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? $this->baseSettingRepository->get('mail_connection_tested', false));
         $mailConnectionTestDate = $sessionTestResults['mail_connection_test_date'] ?? $this->baseSettingRepository->get('mail_connection_test_date', null);
         $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? $this->baseSettingRepository->get('mail_send_tested', false));
         $mailSendTestDate = $sessionTestResults['mail_send_test_date'] ?? $this->baseSettingRepository->get('mail_send_test_date', null);
         $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? $this->baseSettingRepository->get('mail_receive_tested', false));
         $mailReceiveTestDate = $sessionTestResults['mail_receive_test_date'] ?? $this->baseSettingRepository->get('mail_receive_test_date', null);
-        
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -233,8 +233,8 @@ class AdminBaseMailController extends AdminLoggedInController
                 'send_test_date' => $mailSendTestDate,
                 'receive_tested' => $mailReceiveTested,
                 'receive_test_date' => $mailReceiveTestDate,
-                'all_tests_complete' => $mailConnectionTested && $mailSendTested && $mailReceiveTested
-            ]
+                'all_tests_complete' => $mailConnectionTested && $mailSendTested && $mailReceiveTested,
+            ],
         ]);
     }
 
@@ -268,7 +268,7 @@ class AdminBaseMailController extends AdminLoggedInController
     public function mailVerificationSuccess()
     {
         return view('components.mail-server.verification-success', [
-            'isInstall' => false
+            'isInstall' => false,
         ]);
     }
 }

@@ -62,7 +62,7 @@
                                 @php
                                     $languageOptions = [];
                                     foreach($availableLocales as $locale) {
-                                        $languageOptions[$locale] = 'install.languages.' . $locale;
+                                        $languageOptions[$locale] = 'install/common.languages.' . $locale;
                                     }
                                 @endphp
                                 <x-form-select

@@ -71,8 +71,8 @@ class InstallMailController extends BaseInstallController
             [
                 'admin_email' => $adminEmail,
                 'testStatus' => $testStatus,
-                'mailers' => __('mail/config.mailers'),
-                'encryptions' => __('mail/config.encryptions')
+                'mailers' => __('mail-server/config.mailers'),
+                'encryptions' => __('mail-server/config.encryptions')
             ]
         ));
     }
@@ -90,7 +90,7 @@ class InstallMailController extends BaseInstallController
 
         session(['install_data' => array_merge(session('install_data', []), $validated)]);
 
-        return redirect()->route('install.security');
+        return redirect()->route('install.confirm');
     }
 
     /**

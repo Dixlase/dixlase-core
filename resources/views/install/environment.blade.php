@@ -77,7 +77,7 @@
                 <x-form-label for="app_url" :text="__('install/step2.app_url')" :required="true" />
                 <div class="flex items-center">
                     <span id="protocol_display" class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300 text-sm">
-                        {{ session('install_data.force_ssl', false) ? 'https://' : 'http://' }}
+                        {{ (session('install_data.force_ssl', false) || request()->isSecure()) ? 'https://' : 'http://' }}
                     </span>
                     <x-form-text
                         name="app_url"

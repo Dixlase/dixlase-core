@@ -1,5 +1,5 @@
 @php
-    $translations = __('mail.verification_error');
+    $translations = __('mail-server/verification.verification_error');
     $errorType = $errorType ?? 'invalid_token';
     $errorMessage = $errorMessage ?? '';
     
@@ -73,7 +73,7 @@
             </section>
 
             <!-- アクションボタン -->
-            <nav class="flex justify-center" aria-label="{{ __('mail.verification_error.actions') }}">
+            <nav class="flex justify-center" aria-label="{{ __('mail-server/verification.verification_error.actions') }}">
                 <button 
                     type="button"
                     id="close-verification-btn"

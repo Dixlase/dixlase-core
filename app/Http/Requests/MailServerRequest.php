@@ -45,12 +45,12 @@ class MailServerRequest extends FormRequest
     public function rules()
     {
         return [
-            'mail_mailer' => ['required', 'string', Rule::in(array_keys(trans('mail.mailers')))],
+            'mail_mailer' => ['required', 'string', Rule::in(array_keys(trans('mail-server/config.mailers')))],
             'mail_host' => 'nullable|string',
             'mail_port' => 'nullable|numeric',
             'mail_username' => 'nullable|string',
             'mail_password' => 'nullable|string',
-            'mail_encryption' => ['nullable', 'string', Rule::in(array_keys(trans('mail.encryptions')))],
+            'mail_encryption' => ['nullable', 'string', Rule::in(array_keys(trans('mail-server/config.encryptions')))],
             'mail_from_address' => 'nullable|email|max:255',
             'mail_from_name' => 'nullable|string|max:255',
         ];
@@ -62,13 +62,13 @@ class MailServerRequest extends FormRequest
     public function messages()
     {
         return [
-            'mail_mailer.required' => __('mail.validation.mail_mailer_required'),
-            'mail_mailer.in' => __('mail.validation.mail_mailer_required'),
-            'mail_host.required' => __('mail.validation.mail_host_required'),
-            'mail_port.required' => __('mail.validation.mail_port_required'),
-            'mail_port.numeric' => __('mail.validation.mail_port_numeric'),
-            'mail_from_address.email' => __('mail.validation.mail_from_address_email'),
-            'mail_encryption.in' => __('mail.validation.mail_mailer_required'),
+            'mail_mailer.required' => __('mail-server/config.validation.mail_mailer_required'),
+            'mail_mailer.in' => __('mail-server/config.validation.mail_mailer_required'),
+            'mail_host.required' => __('mail-server/config.validation.mail_host_required'),
+            'mail_port.required' => __('mail-server/config.validation.mail_port_required'),
+            'mail_port.numeric' => __('mail-server/config.validation.mail_port_numeric'),
+            'mail_from_address.email' => __('mail-server/config.validation.mail_from_address_email'),
+            'mail_encryption.in' => __('mail-server/config.validation.mail_mailer_required'),
         ];
     }
 }

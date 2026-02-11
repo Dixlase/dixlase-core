@@ -90,14 +90,14 @@
         <h3 id="mail-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install/confirm.mail_settings') }}</h3>
         <ul class="space-y-1 text-gray-700 dark:text-gray-300">
             <!-- ✅ メールサーバー設定 -->
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail.server_settings.mailer') }}:</strong> {{ $data['mail_mailer'] ?? '' }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail.server_settings.mail_host') }}:</strong> {{ $data['mail_host'] ?? '' }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail.server_settings.mail_port') }}:</strong> {{ $data['mail_port'] ?? '' }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail.server_settings.mail_username') }}:</strong> {{ $data['mail_username'] ?? '' }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail.server_settings.mail_password') }}:</strong> <span class="text-gray-500 dark:text-gray-400">{{ !empty($data['mail_password']) ? '●●●●●' : '' }}</span></li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail.server_settings.mail_encryption') }}:</strong> {{ $data['mail_encryption'] ?? '' }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail.server_settings.mail_from_address') }}:</strong> {{ $data['mail_from_address'] ?? '' }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail.server_settings.mail_from_name') }}:</strong> {{ $data['mail_from_name'] ?? '' }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail-server/config.server_settings.mailer') }}:</strong> {{ $data['mail_mailer'] ?? '' }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail-server/config.server_settings.mail_host') }}:</strong> {{ $data['mail_host'] ?? '' }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail-server/config.server_settings.mail_port') }}:</strong> {{ $data['mail_port'] ?? '' }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail-server/config.server_settings.mail_username') }}:</strong> {{ $data['mail_username'] ?? '' }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail-server/config.server_settings.mail_password') }}:</strong> <span class="text-gray-500 dark:text-gray-400">{{ !empty($data['mail_password']) ? '●●●●●' : '' }}</span></li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail-server/config.server_settings.mail_encryption') }}:</strong> {{ $data['mail_encryption'] ?? '' }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail-server/config.server_settings.mail_from_address') }}:</strong> {{ $data['mail_from_address'] ?? '' }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail-server/config.server_settings.mail_from_name') }}:</strong> {{ $data['mail_from_name'] ?? '' }}</li>
             
             <!-- メールテスト結果 -->
             @if(!empty($data['mail_mailer']))
