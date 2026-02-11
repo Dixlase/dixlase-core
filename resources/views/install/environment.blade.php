@@ -9,9 +9,15 @@
 @php
     $isSimpleMode = (int) session('install_data.install_mode', 0) === 0;
 
+    // HTTPS判定（リバースプロキシ経由にも対応）
+    $isHttps = session('install_data.force_ssl', false)
+        || request()->isSecure()
+        || request()->header('X-Forwarded-Proto') === 'https';
+    $protocol = $isHttps ? 'https://' : 'http://';
+
     // ✅ セッションから保存済みのapp_url（プロトコルなし）を取得
     $savedAppUrl = session('install_data.app_url');
-    
+
     if ($savedAppUrl) {
         // セッションに保存されている場合はそのまま使用（プロトコルなしで保存されている）
         $hostAndPort = old('app_url', $savedAppUrl);
@@ -38,9 +44,9 @@
                 <x-form-label for="app_env" :text="__('install/step2.app_env')" :required="true" />
                 @php
                     $envOptions = [
-                        'local' => 'install.app_env_options.local',
-                        'staging' => 'install.app_env_options.staging',
-                        'production' => 'install.app_env_options.production',
+                        'local' => __('install/step2.app_env_options.local'),
+                        'staging' => __('install/step2.app_env_options.staging'),
+                        'production' => __('install/step2.app_env_options.production'),
                     ];
                 @endphp
                 <x-form-select
@@ -77,7 +83,7 @@
                 <x-form-label for="app_url" :text="__('install/step2.app_url')" :required="true" />
                 <div class="flex items-center">
                     <span id="protocol_display" class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300 text-sm">
-                        {{ (session('install_data.force_ssl', false) || request()->isSecure()) ? 'https://' : 'http://' }}
+                        {{ $protocol }}
                     </span>
                     <x-form-text
                         name="app_url"
@@ -112,7 +118,7 @@
             <div>
                 <x-form-label for="admin_url" :text="__('install/step2.admin_url')" />
                 <div class="flex items-center">
-                    <span id="admin_url_prefix" class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300 text-sm"></span>
+                    <span id="admin_url_prefix" class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300 text-sm">{{ $protocol }}{{ $hostAndPort }}/</span>
                     <x-form-text
                         name="admin_url"
                         id="admin_url"

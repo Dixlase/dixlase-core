@@ -29,6 +29,8 @@ return [
         'title' => 'Enter title',
         'description' => 'Enter description',
     ],
+    'show_password' => 'Show password',
+    'hide_password' => 'Hide password',
     'validation' => [
         'required' => 'This field is required',
         'email' => 'Please enter a valid email address',
