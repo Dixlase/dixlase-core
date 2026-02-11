@@ -1,5 +1,5 @@
 @php
-    $translations = __('mail.verification_success');
+    $translations = __('mail-server/verification.verification_success');
     $alreadyVerified = $alreadyVerified ?? false;
     
     // Server-side dark mode detection (Strict CSP compliant)
@@ -30,16 +30,16 @@
                 
                 <h1 class="mt-6 text-2xl font-bold text-gray-900 dark:text-white">
                     @if($alreadyVerified)
-                        {{ __('mail.verification_success.already_verified_heading') }}
+                        {{ __('mail-server/verification.verification_success.already_verified_heading') }}
                     @else
-                        {{ __('mail.verification_success.heading') }}
+                        {{ __('mail-server/verification.verification_success.heading') }}
                     @endif
                 </h1>
                 <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
                     @if($alreadyVerified)
-                        {{ __('mail.verification_success.already_verified_description') }}
+                        {{ __('mail-server/verification.verification_success.already_verified_description') }}
                     @else
-                        {{ __('mail.verification_success.description') }}
+                        {{ __('mail-server/verification.verification_success.description') }}
                     @endif
                 </p>
             </header>
@@ -54,15 +54,15 @@
                     </div>
                     <div class="ml-3">
                         <h2 id="next-steps-heading" class="text-sm font-medium text-blue-800 dark:text-blue-200">
-                            {{ __('mail.verification_success.next_steps_title') }}
+                            {{ __('mail-server/verification.verification_success.next_steps_title') }}
                         </h2>
                         <ol class="mt-2 text-sm text-blue-700 dark:text-blue-300 list-decimal list-inside space-y-1">
                             @if(isset($isInstall) && $isInstall)
-                                @foreach(__('mail.verification_success.next_steps_install') as $step)
+                                @foreach(__('mail-server/verification.verification_success.next_steps_install') as $step)
                                     <li>{{ $step }}</li>
                                 @endforeach
                             @else
-                                @foreach(__('mail.verification_success.next_steps') as $step)
+                                @foreach(__('mail-server/verification.verification_success.next_steps') as $step)
                                     <li>{{ $step }}</li>
                                 @endforeach
                             @endif
@@ -82,10 +82,10 @@
                     </div>
                     <div class="ml-3">
                         <h2 id="important-notice-heading" class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                            {{ __('mail.verification_success.important_notice_title') }}
+                            {{ __('mail-server/verification.verification_success.important_notice_title') }}
                         </h2>
                         <p class="mt-1 text-sm text-yellow-700 dark:text-yellow-300">
-                            {{ __('mail.verification_success.important_notice') }}
+                            {{ __('mail-server/verification.verification_success.important_notice') }}
                         </p>
                     </div>
                 </div>
@@ -93,13 +93,13 @@
             @endif
 
             <!-- アクションボタン -->
-            <nav class="flex justify-center" aria-label="{{ __('mail.verification_success.actions') }}">
+            <nav class="flex justify-center" aria-label="{{ __('mail-server/verification.verification_success.actions') }}">
                 <button 
                     type="button"
                     id="close-verification-btn"
-                    data-message="{{ __('mail.verification_success.completed_message') }}"
+                    data-message="{{ __('mail-server/verification.verification_success.completed_message') }}"
                     class="bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200">
-                    {{ __('mail.verification_success.close_button') }}
+                    {{ __('mail-server/verification.verification_success.close_button') }}
                 </button>
             </nav>
         </article>

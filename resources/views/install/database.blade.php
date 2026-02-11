@@ -7,6 +7,7 @@
 @section('content')
 <div x-data="{
     showPassword: false,
+    connectionSuccess: false,
     testResult: '{{ __('install/step3.db_test_required') }}',
     testResultClass: 'text-red-600 dark:text-red-400',
     async testDatabaseConnection() {
@@ -18,24 +19,27 @@
         formData.append('db_username', document.getElementById('db_username').value);
         formData.append('db_password', document.getElementById('db_password').value);
         formData.append('_token', document.querySelector('input[name=_token]').value);
-        
+
         try {
             const response = await fetch(document.getElementById('db-test-url').value, {
                 method: 'POST',
                 body: formData
             });
             const data = await response.json();
-            
+
             if (data.success) {
                 this.testResult = document.getElementById('db-success-message').value;
                 this.testResultClass = 'text-green-600 dark:text-green-400';
+                this.connectionSuccess = true;
             } else {
                 this.testResult = data.message || 'Connection failed';
                 this.testResultClass = 'text-red-600 dark:text-red-400';
+                this.connectionSuccess = false;
             }
         } catch (error) {
             this.testResult = 'Connection test failed';
             this.testResultClass = 'text-red-600 dark:text-red-400';
+            this.connectionSuccess = false;
         }
     }
 }">
@@ -186,23 +190,27 @@
     <nav aria-label="{{ __('install.form_navigation') }}" class="flex justify-between mt-6">
         <a href="{{ route('install.environment') }}"
             class="inline-flex items-center justify-center font-semibold rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 px-4 py-2 text-sm bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500">
-            {{ __('install.back') }}
+            {{ __('install/common.back') }}
         </a>
 
         <div class="relative group">
-            <x-form-button 
+            <button
                 type="submit"
                 id="next-button"
-                :label="__('install.next')"
-                variant="primary"
-                disabled
-                class="bg-blue-400 dark:bg-blue-400 hover:bg-blue-400 dark:hover:bg-blue-400 cursor-not-allowed"
-            />
-            <div id="tooltip" 
+                x-bind:disabled="!connectionSuccess"
+                :class="connectionSuccess
+                    ? 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 cursor-pointer'
+                    : 'bg-blue-400 dark:bg-blue-400 hover:bg-blue-400 dark:hover:bg-blue-400 cursor-not-allowed'"
+                class="inline-flex items-center justify-center font-semibold rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 px-4 py-2 text-sm text-white focus:ring-blue-500"
+            >
+                {{ __('install/common.next') }}
+            </button>
+            <div id="tooltip"
+                x-show="!connectionSuccess"
                 class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity
                 bg-gray-800 dark:bg-gray-700 text-white text-xs rounded px-3 py-2 whitespace-nowrap z-10"
                 role="tooltip">
-                {{ __('install.tooltip_test_db') }}
+                {{ __('install/step3.db_test_required') }}
             </div>
         </div>
     </nav>

@@ -53,19 +53,19 @@ class AdminBaseSettingsRequest extends FormRequest
     public function rules()
     {
         $availableLocales = array_keys(config('admin.locale.available', []));
-        
+
         return [
             'app_name' => 'required|string|max:255',
             'site_description' => 'nullable|string|max:500',
             'site_keywords' => 'nullable|string|max:500',
             'locale' => ['required', Rule::in($availableLocales)],
             'timezone' => 'required|timezone',
-            'mail_mailer' => ['required', Rule::in(array_keys(trans('mail.mailers')))],
+            'mail_mailer' => ['required', Rule::in(array_keys(trans('mail-server/config.mailers')))],
             'mail_host' => 'nullable|string',
             'mail_port' => 'nullable|numeric',
             'mail_username' => 'nullable|string',
             'mail_password' => 'nullable|string',
-            'mail_encryption' => ['nullable', Rule::in(array_keys(trans('mail.encryptions')))],
+            'mail_encryption' => ['nullable', Rule::in(array_keys(trans('mail-server/config.encryptions')))],
             'mail_from_address' => 'nullable|email|max:255',
             'mail_from_name' => 'nullable|string|max:255',
             'maintenance_mode' => 'required|boolean',
@@ -87,10 +87,10 @@ class AdminBaseSettingsRequest extends FormRequest
             'app_name.required' => __('admin/settings/base/validation.app_name_required'),
             'locale.required' => __('admin/settings/base/validation.locale_required'),
             'timezone.timezone' => __('admin/settings/base/validation.timezone_invalid'),
-            'mail_mailer.required' => __('mail.validation.mail_mailer_required'),
-            'mail_host.required' => __('mail.validation.mail_host_required'),
-            'mail_port.required' => __('mail.validation.mail_port_required'),
-            'mail_port.numeric' => __('mail.validation.mail_port_numeric'),
+            'mail_mailer.required' => __('mail-server/config.validation.mail_mailer_required'),
+            'mail_host.required' => __('mail-server/config.validation.mail_host_required'),
+            'mail_port.required' => __('mail-server/config.validation.mail_port_required'),
+            'mail_port.numeric' => __('mail-server/config.validation.mail_port_numeric'),
             'maintenance_mode.required' => __('admin/settings/base/validation.maintenance_mode_required'),
         ];
     }

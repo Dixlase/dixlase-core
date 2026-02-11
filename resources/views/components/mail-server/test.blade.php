@@ -95,20 +95,20 @@
 <!-- メールテスト機能 -->
 <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-        {{ __('mail.test.title') }}
+        {{ __('mail-server/test.title') }}
     </h3>
     <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        {{ __('mail.settings.mail_test_description') }}<br>
+        {{ __('mail-server/config.settings.mail_test_description') }}<br>
         @if($isInstall)
-            {{ __('mail.test.description_admin_email') }}
+            {{ __('mail-server/test.description_admin_email') }}
         @else
-            {{ __('mail.settings.mail_test_description_2') }}
+            {{ __('mail-server/config.settings.mail_test_description_2') }}
         @endif
     </p>
     <div class="flex flex-wrap gap-3">
         <button type="button" id="test-connection-btn" 
             class="bg-green-600 dark:bg-green-500 hover:bg-green-700 dark:hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
-            <i class="fas fa-plug mr-2"></i>{{ __('mail.settings.test_connection_button') }}
+            <i class="fas fa-plug mr-2"></i>{{ __('mail-server/config.settings.test_connection_button') }}
         </button>
         <button 
             type="button"
@@ -123,7 +123,7 @@
             "
             @if(($isInstall && !$testStatus['connection_tested']) || (!$isInstall && $showStatus && !$testStatus['connection_tested'])) disabled @endif
         >
-            <i class="fas fa-envelope mr-2"></i>{{ __('mail.settings.test_mail_button') }}
+            <i class="fas fa-envelope mr-2"></i>{{ __('mail-server/config.settings.test_mail_button') }}
         </button>
     </div>
     <div id="test-result" class="hidden mt-4"></div>
@@ -138,9 +138,9 @@
             <div class="ml-3">
                 <h3 id="status-title" class="text-sm font-medium @if($testStatus['connection_tested'] && $testStatus['send_tested'] && $testStatus['receive_tested']) text-green-800 dark:text-green-200 @else text-yellow-800 dark:text-yellow-200 @endif">
                     @if($testStatus['connection_tested'] && $testStatus['send_tested'] && $testStatus['receive_tested'])
-                        {{ __('mail.test.three_stage_test_complete') }}
+                        {{ __('mail-server/test.three_stage_test_complete') }}
                     @else
-                        {{ __('mail.test.three_stage_test_incomplete') }}
+                        {{ __('mail-server/test.three_stage_test_incomplete') }}
                     @endif
                 </h3>
                 <div class="mt-3 text-sm text-yellow-700 dark:text-yellow-300">
@@ -148,21 +148,21 @@
                         <li class="flex items-center">
                             <i id="connection-test-icon" class="mr-2 fas @if($testStatus['connection_tested']) fa-circle-check text-green-600 @else fa-times-circle text-gray-400 @endif"></i>
                             <span id="connection-test-text" class="text-sm @if($testStatus['connection_tested']) text-green-700 dark:text-green-300 @else text-gray-600 dark:text-gray-400 @endif">
-                                {{ __('mail.test.connection_test') }}
+                                {{ __('mail-server/test.connection_test') }}
                             </span>
                             <span id="connection-test-date" class="text-xs text-gray-500">@if($testStatus['connection_tested']) ({{ $testStatus['connection_test_date'] }}) @endif</span>
                         </li>
                         <li class="flex items-center">
                             <i id="send-test-icon" class="mr-2 fas @if($testStatus['send_tested']) fa-circle-check text-green-600 @else fa-times-circle text-gray-400 @endif"></i>
                             <span id="send-test-text" class="text-sm @if($testStatus['send_tested']) text-green-700 dark:text-green-300 @else text-gray-600 dark:text-gray-400 @endif">
-                                {{ __('mail.test.send_test') }}
+                                {{ __('mail-server/test.send_test') }}
                             </span>
                             <span id="send-test-date" class="text-xs text-gray-500">@if($testStatus['send_tested']) ({{ $testStatus['send_test_date'] }}) @endif</span>
                         </li>
                         <li class="flex items-center">
                             <i id="receive-test-icon" class="mr-2 fas @if($testStatus['receive_tested']) fa-circle-check text-green-600 @else fa-circle-xmark text-gray-400 @endif"></i>
                             <span id="receive-test-text" class="text-sm @if($testStatus['receive_tested']) text-green-700 dark:text-green-300 @else text-gray-600 dark:text-gray-400 @endif">
-                                {{ __('mail.test.receive_test') }}
+                                {{ __('mail-server/test.receive_test') }}
                             </span>
                             <span id="receive-test-date" class="text-xs text-gray-500">@if($testStatus['receive_tested']) ({{ $testStatus['receive_test_date'] }}) @endif</span>
                         </li>
@@ -178,22 +178,22 @@
 @php
 $mailTestConfig = [
     'translations' => [
-        'mailReceiveVerified' => __('mail.js_messages.mail_receive_verified'),
-        'testRouteNotSet' => __('mail.js_messages.test_route_not_set'),
-        'testing' => __('mail.js_messages.testing'),
-        'connectionTestSuccessDefault' => __('mail.js_messages.connection_test_success_default'),
-        'connectionTestFailedDefault' => __('mail.js_messages.connection_test_failed_default'),
-        'mailTestFailedSideNote' => __('mail.js_messages.mail_test_failed_side_note'),
-        'connectionTestError' => __('mail.js_messages.connection_test_error'),
-        'testConnectionButton' => __('mail.settings.test_connection_button'),
-        'mailTestRouteNotSet' => __('mail.js_messages.mail_test_route_not_set'),
-        'connectionTestFirst' => __('mail.js_messages.connection_test_first'),
-        'mailTestSuccessDefault' => __('mail.js_messages.mail_test_success_default'),
-        'mailTestFailedDefault' => __('mail.js_messages.mail_test_failed_default'),
-        'mailTestError' => __('mail.js_messages.mail_test_error'),
-        'testMailButton' => __('mail.settings.test_mail_button'),
-        'threeStageTestComplete' => __('mail.test.three_stage_test_complete'),
-        'threeStageTestIncomplete' => __('mail.test.three_stage_test_incomplete')
+        'mailReceiveVerified' => __('mail-server/test.js_messages.mail_receive_verified'),
+        'testRouteNotSet' => __('mail-server/test.js_messages.test_route_not_set'),
+        'testing' => __('mail-server/test.js_messages.testing'),
+        'connectionTestSuccessDefault' => __('mail-server/test.js_messages.connection_test_success_default'),
+        'connectionTestFailedDefault' => __('mail-server/test.js_messages.connection_test_failed_default'),
+        'mailTestFailedSideNote' => __('mail-server/test.js_messages.mail_test_failed_side_note'),
+        'connectionTestError' => __('mail-server/test.js_messages.connection_test_error'),
+        'testConnectionButton' => __('mail-server/config.settings.test_connection_button'),
+        'mailTestRouteNotSet' => __('mail-server/test.js_messages.mail_test_route_not_set'),
+        'connectionTestFirst' => __('mail-server/test.js_messages.connection_test_first'),
+        'mailTestSuccessDefault' => __('mail-server/test.js_messages.mail_test_success_default'),
+        'mailTestFailedDefault' => __('mail-server/test.js_messages.mail_test_failed_default'),
+        'mailTestError' => __('mail-server/test.js_messages.mail_test_error'),
+        'testMailButton' => __('mail-server/config.settings.test_mail_button'),
+        'threeStageTestComplete' => __('mail-server/test.three_stage_test_complete'),
+        'threeStageTestIncomplete' => __('mail-server/test.three_stage_test_incomplete')
     ],
     'routes' => [
         'connectionTest' => $connectionTestRoute ?? '',
