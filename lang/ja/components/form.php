@@ -29,6 +29,8 @@ return [
         'title' => 'タイトルを入力',
         'description' => '説明を入力',
     ],
+    'show_password' => 'パスワードを表示',
+    'hide_password' => 'パスワードを非表示',
     'validation' => [
         'required' => 'この項目は必須です',
         'email' => '有効なメールアドレスを入力してください',

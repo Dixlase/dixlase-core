@@ -43,9 +43,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'ariaLabel' => null,
     'autocomplete' => null,
     'xModel' => null,
+    'showPasswordToggle' => false,
 ])
 
+@if ($showPasswordToggle)
+<div x-data="{ showPassword: false }" class="relative">
+    <input :type="showPassword ? 'text' : 'password'"
+@else
 <input type="{{ $type }}"
+@endif
     id="{{ $id ?? $name }}"
     name="{{ $name }}"
     @if ($disabled) disabled @endif
@@ -67,6 +73,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if ($ariaLabel) aria-label="{{ $ariaLabel }}" @endif
     @if ($autocomplete) autocomplete="{{ $autocomplete }}" @endif
     @if ($xModel) x-model="{{ $xModel }}" @endif
-    class="input-common input-full my-2 {{ $class }}"
+    class="input-common input-full my-2 {{ $showPasswordToggle ? 'pr-10' : '' }} {{ $class }}"
     value="{{ old($name, $value) }}"
     >
+@if ($showPasswordToggle)
+    <button type="button"
+        x-on:click="showPassword = !showPassword"
+        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+        :aria-label="showPassword ? '{{ __('components/form.hide_password') }}' : '{{ __('components/form.show_password') }}'">
+        <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+    </button>
+</div>
+@endif

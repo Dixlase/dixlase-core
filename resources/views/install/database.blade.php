@@ -6,7 +6,6 @@
 
 @section('content')
 <div x-data="{
-    showPassword: false,
     connectionSuccess: false,
     testResult: '{{ __('install/step3.db_test_required') }}',
     testResultClass: 'text-red-600 dark:text-red-400',
@@ -125,22 +124,16 @@
 
             <div>
                 <x-form-label for="db_password" :text="__('install/step3.db_password')" :required="true" />
-                <div class="relative">
-                    <input
-                        :type="showPassword ? 'text' : 'password'"
-                        id="db_password"
-                        name="db_password"
-                        value="{{ old('db_password', $defaultDbPassword) }}"
-                        required
-                        autocomplete="off"
-                        class="input-full pr-10 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                    />
-                    <button type="button" 
-                        x-on:click="showPassword = !showPassword"
-                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
-                        <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-                    </button>
-                </div>
+                <x-form-text
+                    type="password"
+                    name="db_password"
+                    id="db_password"
+                    :value="old('db_password', $defaultDbPassword)"
+                    :required="true"
+                    autocomplete="off"
+                    :showPasswordToggle="true"
+                    class="input-full"
+                />
                 <x-form-help-text :text="__('install/step3.db_password_required')" />
             </div>
         </fieldset>
