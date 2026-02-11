@@ -19,34 +19,58 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @if(session('csp_safe_mode'))
-<div class="fixed top-0 left-0 right-0 z-[60] bg-red-600 dark:bg-red-700 text-white shadow-lg" role="alert" id="csp-safe-mode-banner">
-    <div class="container mx-auto px-4 py-3">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <i class="fas fa-exclamation-triangle text-2xl"></i>
-                <div>
-                    <p class="font-bold text-lg">
-                        {{ __('admin/settings/security/csp.safe_mode_banner_title') }}
-                    </p>
-                    <p class="text-sm">
-                        {{ __('admin/settings/security/csp.safe_mode_banner_message') }}
-                    </p>
+@php
+    // メンテナンスバナーが表示されているかチェック
+    try {
+        $maintenanceMode = DB::table('base_settings')
+            ->where('name', 'maintenance_mode')
+            ->value('value');
+        $hasMaintenanceBanner = $maintenanceMode === '1';
+    } catch (\Exception $e) {
+        $hasMaintenanceBanner = false;
+    }
+    
+    $cspBannerHeight = 68;
+@endphp
+
+<div class="fixed top-0 left-0 right-0 z-[10000] bg-red-600 dark:bg-red-700 text-white px-4 py-3 shadow-md" role="alert" id="csp-safe-mode-banner">
+    <div class="max-w-full mx-auto flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <i class="fas fa-exclamation-triangle text-xl"></i>
+            <div>
+                <div class="font-semibold">
+                    {{ __('admin/settings/security/csp.safe_mode_banner_title') }}
+                </div>
+                <div class="text-sm opacity-90">
+                    {{ __('admin/settings/security/csp.safe_mode_banner_message') }}
                 </div>
             </div>
-            <div class="flex items-center space-x-4">
-                <a href="{{ route('admin.settings.security.csp') }}" 
-                   class="px-4 py-2 bg-white text-red-600 dark:bg-gray-800 dark:text-red-400 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                    {{ __('admin/settings/security/csp.safe_mode_go_to_settings') }}
-                </a>
-                <form method="POST" action="{{ route('admin.settings.security.csp.disable-safe-mode') }}" class="inline">
-                    @csrf
-                    <button type="submit" 
-                            class="px-4 py-2 bg-red-800 dark:bg-red-900 text-white rounded hover:bg-red-900 dark:hover:bg-red-950 transition">
-                        {{ __('admin/settings/security/csp.safe_mode_disable') }}
-                    </button>
-                </form>
-            </div>
+        </div>
+        <div class="flex items-center space-x-2">
+            <a href="{{ route('admin.settings.security.csp') }}" 
+               class="px-4 py-2 bg-white text-red-600 dark:text-red-700 rounded hover:bg-gray-100 transition text-sm font-medium whitespace-nowrap">
+                {{ __('admin/settings/security/csp.safe_mode_go_to_settings') }}
+            </a>
+            <form method="POST" action="{{ route('admin.settings.security.csp.disable-safe-mode') }}" class="inline">
+                @csrf
+                <button type="submit" 
+                        class="px-4 py-2 bg-red-800 dark:bg-red-900 text-white rounded hover:bg-red-900 dark:hover:bg-red-950 transition text-sm font-medium whitespace-nowrap">
+                    {{ __('admin/settings/security/csp.safe_mode_disable') }}
+                </button>
+            </form>
         </div>
     </div>
 </div>
+
+@if(!$hasMaintenanceBanner)
+{{-- CSPバナーのみ表示の場合、admin-barを調整 --}}
+<style>
+    /*
+    #admin-bar {
+        top: {{ $cspBannerHeight }}px !important;
+    }
+        */
+</style>
+
+@endif
 @endif

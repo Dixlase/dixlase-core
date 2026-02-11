@@ -30,7 +30,7 @@
 @endphp
 
 @if($showBanner)
-<div class="bg-yellow-500 dark:bg-yellow-600 text-white px-4 py-3 shadow-md" style="margin-top: 48px;">
+<div class="bg-yellow-500 dark:bg-yellow-600 text-white px-4 py-3 shadow-md">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
         <div class="flex items-center space-x-3">
             <i class="fas fa-exclamation-triangle text-xl"></i>

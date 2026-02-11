@@ -65,7 +65,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
             </fieldset>
 
-            <fieldset :class="{ 'opacity-50 pointer-events-none': maintenanceMode === '0' || autoRelease === '0' }">
+            <fieldset :class="{ 'opacity-50 pointer-events-none': maintenanceMode === '0' }">
                 <legend>{{ __('admin/settings/base/maintenance.schedule_settings') }}</legend>
 
                 <div class="mb-4">
@@ -74,7 +74,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         type="datetime-local"
                         name="maintenance_start_at"
                         :value="old('maintenance_start_at', $settings['maintenance_start_at'] ? \Carbon\Carbon::parse($settings['maintenance_start_at'])->format('Y-m-d\TH:i') : '')"
-                        x-bind:disabled="maintenanceMode === '0' || autoRelease === '0'"
+                        x-bind:disabled="maintenanceMode === '0'"
                     />
                     <p class="text-sm text-gray-600 mt-1">{{ __('admin/settings/base/maintenance.start_at_help') }}</p>
                 </div>
@@ -85,7 +85,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         type="datetime-local"
                         name="maintenance_release_at"
                         :value="old('maintenance_release_at', $settings['maintenance_release_at'] ? \Carbon\Carbon::parse($settings['maintenance_release_at'])->format('Y-m-d\TH:i') : '')"
-                        x-bind:disabled="maintenanceMode === '0' || autoRelease === '0'"
+                        x-bind:disabled="maintenanceMode === '0'"
                     />
                     <p class="text-sm text-gray-600 mt-1">{{ __('admin/settings/base/maintenance.release_at_help') }}</p>
                 </div>
