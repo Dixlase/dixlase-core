@@ -49,16 +49,40 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           x-data="adminLayout()"
           x-init="init()">
         <div class="min-h-screen">
+            <!-- Maintenance Mode Banner (Sticky at top) -->
+            <x-ui-admin-maintenance-banner />
+            
             <!-- CSP Safe Mode Banner -->
             <x-security.csp-safe-mode-banner />
             
             <!-- Admin Bar (Header) -->
             <x-ui-admin-bar :isAdminLayout="true" />
 
+            @php
+                // バナーの高さを計算
+                $bannerHeight = 68; // 各バナーの高さ(px)
+                $adminBarHeight = 48; // 管理バーの高さ(px)
 
-            <div class="min-h-screen flex">
+                $cspBannerActive = session('csp_safe_mode');
+                try {
+                    $maintenanceBannerActive = DB::table('base_settings')
+                        ->where('name', 'maintenance_mode')
+                        ->value('value') === '1';
+                } catch (\Exception $e) {
+                    $maintenanceBannerActive = false;
+                }
+
+                $totalBannerHeight = 0;
+                if ($cspBannerActive) $totalBannerHeight += $bannerHeight;
+                if ($maintenanceBannerActive) $totalBannerHeight += $bannerHeight;
+
+                $contentTop = $totalBannerHeight + $adminBarHeight;
+            @endphp
+
+            <div class="min-h-screen flex relative" style="margin-top: {{ $contentTop}}px">
                 <!-- Navigation Sidebar (Desktop only) -->
-                <aside class="md:fixed md:h-full hidden sm:block w-64 flex-shrink-0 border-gray-300 @if($transitionEnabled ?? false) transition-all duration-[300ms] @else transition-transform duration-300 @endif"
+                <aside class="md:fixed hidden sm:block w-64 flex-shrink-0 border-gray-300 @if($transitionEnabled ?? false) transition-all duration-[300ms] @else transition-transform duration-300 @endif"
+                       style="height: calc(100vh - {{ $contentTop }}px);"
                        :class="{
                            '-translate-x-64': sidebarCollapsed,
                            'translate-x-0': !sidebarCollapsed
@@ -72,7 +96,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <!-- Sidebar Toggle Button (Desktop) -->
                 <button @click="sidebarCollapsed = !sidebarCollapsed"
-                        class="hidden sm:flex fixed left-0 top-21 -translate-y-1/2 z-40 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        class="hidden sm:flex fixed top-14 left-0 z-40 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
                         :class="{
                             'translate-x-0': sidebarCollapsed,
                             'translate-x-64': !sidebarCollapsed
@@ -83,7 +107,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </button>
 
                 <!-- Main Content Area -->
-                <main class="mt-12 ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white"
+                <main class="ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white"
                       :class="{
                           'md:ml-0': sidebarCollapsed,
                           'md:ml-64': !sidebarCollapsed

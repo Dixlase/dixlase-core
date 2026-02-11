@@ -23,7 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'arrow_class' => 'w-4 h-4 ml-auto transform'
 ])
 
-<div class="flex h-full sm:pt-12">
+<div class="flex h-full">
     {{-- サイドバー本体 --}}
     <div class="flex flex-col w-64 h-full overflow-y-auto bg-white/75 dark:bg-gray-900/75 border-r border-gray-200 dark:border-gray-600 backdrop-blur-sm shadow-md">
         <nav class="flex-1 px-4 py-4 space-y-1" role="navigation" aria-label="Admin navigation menu">

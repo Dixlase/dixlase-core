@@ -32,12 +32,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endif
 
 @if (session('success'))
-    <div class="my-4 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200">
+    <div class="my-4 p-4 rounded-lg bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200">
         <div class="flex items-start">
             <div class="flex-shrink-0">
                 <i class="fas fa-check-circle text-green-500 dark:text-green-400 text-sm"></i>
             </div>
-            <div class="ml-2 flex-1 font-medium">
+            <div class="ml-2 flex-1 font-bold">
                 {!! session('success') !!}
             </div>
         </div>
