@@ -39,9 +39,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'label' => __('admin/settings/base/mode.simple_mode'),
                     'description' => __('admin/settings/base/mode.simple_mode_description'),
                     'icon' => 'fas fa-magic',
-                    'color' => 'blue',
+                    'color' => 'green',
                     'badge' => __('admin/settings/base/mode.recommended'),
-                    'badgeColor' => 'blue',
+                    'badgeColor' => 'green',
                     'features' => [
                         __('admin/settings/base/mode.simple_feature_auto'),
                         __('admin/settings/base/mode.simple_feature_clean'),
@@ -53,7 +53,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'label' => __('admin/settings/base/mode.advanced_mode'),
                     'description' => __('admin/settings/base/mode.advanced_mode_description'),
                     'icon' => 'fas fa-cogs',
-                    'color' => 'gray',
+                    'color' => 'blue',
+                    'badgeColor' => 'blue',
                     'features' => [
                         __('admin/settings/base/mode.advanced_feature_full'),
                         __('admin/settings/base/mode.advanced_feature_control'),
@@ -116,103 +117,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </ul>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <!-- かんたんモード: メニュー表示カスタマイズ -->
-    <section x-show="selectedMode === '0'" x-transition x-cloak class="mb-8">
-        <h2>{{ __('admin/settings/base/mode.menu_customize') }}</h2>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">{{ __('admin/settings/base/mode.menu_customize_description') }}</p>
-
-        <!-- 表示レベル凡例 -->
-        <div class="flex flex-wrap gap-3 mb-6 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-            @foreach ($menuVisibilityCases as $vis)
-                <span class="inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
-                    <i class="{{ $vis->iconClass() }}"></i>
-                    {{ __($vis->translationKey()) }}
-                </span>
-            @endforeach
-        </div>
-
-        <!-- メニュー項目リスト -->
-        <div class="space-y-3">
-            @foreach ($menuItems as $menuKey => $menuItem)
-                @php
-                    $isLocked = $menuItem['locked'] ?? false;
-                    $allowedVisibilities = $menuItem['allowed_visibilities'] ?? \App\Enums\MenuVisibility::cases();
-                    $currentValue = $currentVisibilities[$menuKey] ?? \App\Enums\MenuVisibility::Full->value;
-                @endphp
-
-                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <!-- 親メニュー -->
-                    <div class="flex items-center justify-between p-4 {{ isset($menuItem['children']) ? 'border-b border-gray-100 dark:border-gray-700' : '' }}">
-                        <div class="flex items-center gap-3">
-                            <i class="{{ $menuItem['icon'] }} text-gray-500 dark:text-gray-400 w-5 text-center"></i>
-                            <span class="font-medium text-gray-900 dark:text-white">{{ __($menuItem['text_key']) }}</span>
-                            @if ($isLocked)
-                                <span class="inline-block px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded">{{ __('admin/settings/base/mode.always_visible') }}</span>
-                            @endif
-                        </div>
-
-                        @if (!$isLocked)
-                            <select
-                                name="menu_visibilities[{{ $menuKey }}]"
-                                x-model="visibilities['{{ $menuKey }}']"
-                                class="text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                            >
-                                @foreach ($allowedVisibilities as $vis)
-                                    <option value="{{ $vis->value }}" {{ $currentValue === $vis->value ? 'selected' : '' }}>
-                                        {{ __($vis->translationKey()) }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        @else
-                            <input type="hidden" name="menu_visibilities[{{ $menuKey }}]" value="{{ \App\Enums\MenuVisibility::Full->value }}">
-                            <span class="text-sm text-gray-400 dark:text-gray-500">
-                                <i class="{{ \App\Enums\MenuVisibility::Full->iconClass() }} mr-1"></i>
-                                {{ __(\App\Enums\MenuVisibility::Full->translationKey()) }}
-                            </span>
-                        @endif
-                    </div>
-
-                    <!-- 子メニュー -->
-                    @if (isset($menuItem['children']))
-                        <div class="bg-gray-50 dark:bg-gray-800/50">
-                            @foreach ($menuItem['children'] as $childKey => $childItem)
-                                @php
-                                    $childFullKey = $menuKey . '.' . $childKey;
-                                    $childAllowed = $childItem['allowed_visibilities'] ?? \App\Enums\MenuVisibility::cases();
-                                    $childCurrentValue = $currentVisibilities[$childFullKey] ?? \App\Enums\MenuVisibility::Full->value;
-                                @endphp
-                                <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-700 first:border-t-0">
-                                    <div class="flex items-center gap-3 pl-6">
-                                        <i class="{{ $childItem['icon'] }} text-gray-400 dark:text-gray-500 w-5 text-center text-sm"></i>
-                                        <span class="text-sm text-gray-700 dark:text-gray-300">{{ __($childItem['text_key']) }}</span>
-                                    </div>
-                                    <select
-                                        name="menu_visibilities[{{ $childFullKey }}]"
-                                        x-model="visibilities['{{ $childFullKey }}']"
-                                        class="text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                    >
-                                        @foreach ($childAllowed as $vis)
-                                            <option value="{{ $vis->value }}" {{ $childCurrentValue === $vis->value ? 'selected' : '' }}>
-                                                {{ __($vis->translationKey()) }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-            @endforeach
-        </div>
-
-        <!-- リセットボタン -->
-        <div class="mt-4 text-right">
-            <button type="button" @click="resetToDefaults()" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition">
-                <i class="fas fa-undo mr-1"></i>{{ __('admin/settings/base/mode.reset_to_defaults') }}
-            </button>
         </div>
     </section>
 
@@ -331,8 +235,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @push('scripts')
 <script @cspNonce>
 function adminModeSettings() {
-    const defaults = @json(collect($simpleDefaults)->map(fn($v) => $v instanceof \App\Enums\MenuVisibility ? $v->value : (int) $v)->toArray());
-    const saved = @json($currentVisibilities);
     const original = '{{ $currentMode->value }}';
 
     return {
@@ -340,7 +242,6 @@ function adminModeSettings() {
         originalMode: original,
         pendingMode: null,
         _skipWatch: false,
-        visibilities: { ...saved },
 
         init() {
             this.$watch('selectedMode', (newVal, oldVal) => {
@@ -391,10 +292,6 @@ function adminModeSettings() {
         cancelSwitch() {
             this.pendingMode = null;
             this.closeSwitchModal();
-        },
-
-        resetToDefaults() {
-            this.visibilities = { ...defaults };
         }
     };
 }
