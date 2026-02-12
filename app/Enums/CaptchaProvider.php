@@ -24,25 +24,26 @@ namespace App\Enums;
 
 enum CaptchaProvider: string
 {
+    case TURNSTILE = 'turnstile';
     case GOOGLE = 'google';
     case GOOGLE_ENTERPRISE = 'google_enterprise';
-    case TURNSTILE = 'turnstile';
+
 
     public function label(): string
     {
         return match ($this) {
+            self::TURNSTILE => 'Cloudflare Turnstile',
             self::GOOGLE => 'Google reCAPTCHA',
             self::GOOGLE_ENTERPRISE => 'Google reCAPTCHA Enterprise',
-            self::TURNSTILE => 'Cloudflare Turnstile',
         };
     }
 
     public function translationKey(): string
     {
         return match ($this) {
+            self::TURNSTILE => 'cloudflare_turnstile',
             self::GOOGLE => 'google_recaptcha',
             self::GOOGLE_ENTERPRISE => 'google_recaptcha_enterprise',
-            self::TURNSTILE => 'cloudflare_turnstile',
         };
     }
 
@@ -66,9 +67,10 @@ enum CaptchaProvider: string
     public function getSetupUrl(): string
     {
         return match ($this) {
+            self::TURNSTILE => 'https://dash.cloudflare.com/?to=/:account/turnstile',
             self::GOOGLE => 'https://www.google.com/recaptcha/admin/create',
             self::GOOGLE_ENTERPRISE => 'https://cloud.google.com/recaptcha-enterprise/docs/create-key',
-            self::TURNSTILE => 'https://dash.cloudflare.com/?to=/:account/turnstile',
+
         };
     }
 }
