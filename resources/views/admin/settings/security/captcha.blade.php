@@ -121,9 +121,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     name="captcha_driver"
                     :value="old('captcha_driver', $settings['captcha_driver'])"
                     :options="[
+                        'turnstile' => 'Cloudflare Turnstile',
                         'google' => 'Google reCAPTCHA (v2/v3)',
                         'google_enterprise' => 'Google reCAPTCHA Enterprise',
-                        'turnstile' => 'Cloudflare Turnstile'
                     ]"
                     xModel="captchaDriver"
                     x-bind:disabled="!captchaEnabled"

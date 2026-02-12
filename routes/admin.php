@@ -323,9 +323,11 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('login.update');
                 
                 // セッション管理
-                Route::get('/session', [Security\AdminSecuritySessionController::class, 'index'])->name('session');
+                Route::get('/session', [Security\AdminSecuritySessionController::class, 'index'])
+                    ->middleware('check.menu.access:settings.security.session')
+                    ->name('session');
                 Route::post('/session', [Security\AdminSecuritySessionController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.security')
+                    ->middleware(['check.menu.access:settings.security.session', 'check.menu.edit:settings.security'])
                     ->name('session.update');
                 
                 // 二段階認証設定

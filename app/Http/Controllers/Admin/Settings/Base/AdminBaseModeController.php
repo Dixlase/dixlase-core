@@ -26,6 +26,7 @@ use App\Enums\AdminMode;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Contracts\Repositories\BaseSettingRepositoryInterface;
+use App\Services\AdminModeAutoConfigService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -56,7 +57,7 @@ class AdminBaseModeController extends AdminLoggedInController
     /**
      * モード設定の更新
      */
-    public function update(Request $request)
+    public function update(Request $request, AdminModeAutoConfigService $autoConfigService)
     {
         $validated = $request->validate([
             'admin_mode' => 'required|integer|in:0,1',
@@ -69,6 +70,16 @@ class AdminBaseModeController extends AdminLoggedInController
 
         // キャッシュをクリアして即座に反映
         AdminModeHelper::clearCache();
+
+        // かんたんモードへの切り替え時: Hidden項目の自動設定値を適用
+        if ($newMode->isSimple()) {
+            $results = $autoConfigService->applyAll();
+
+            Log::channel('admin_activity')->info('かんたんモード自動設定を適用', [
+                'results' => $results,
+                'member_id' => auth()->id(),
+            ]);
+        }
 
         Log::channel('admin_activity')->info('管理画面モード設定を更新', [
             'mode' => $newMode->name,
