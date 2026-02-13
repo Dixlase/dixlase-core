@@ -24,7 +24,6 @@ namespace App\Helpers;
 
 use App\Models\BaseSetting;
 use App\Models\SecuritySetting;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
@@ -90,7 +89,6 @@ class ConfigHelper
         } catch (\Exception $e) {
             // If there's any database error (e.g., during installation), return null
         }
-
     }
 
     /**
@@ -143,41 +141,13 @@ class ConfigHelper
     /**
      * Get effective session lifetime for the current user context
      *
-     * @param  string|null  $guard  Guard name (e.g., 'member' for admin)
+     * All guards share the same session_lifetime setting.
+     *
+     * @param  string|null  $guard  Guard name (unused, kept for API compatibility)
      * @return int Session lifetime in minutes
      */
     public static function getEffectiveSessionLifetime(?string $guard = null): int
     {
-        // Determine the guard if not provided
-        if ($guard === null) {
-            $guard = Auth::getDefaultDriver();
-        }
-
-        // For admin members, check if custom session lifetime is enabled
-        if ($guard === 'member') {
-            try {
-                // セキュリティ設定からセッション設定を取得
-                if (Schema::hasTable('security_settings')) {
-                    $sessionLifetime = (int) SecuritySetting::getValue('session_member_lifetime', 120);
-                    if ($sessionLifetime > 0) {
-                        return $sessionLifetime;
-                    }
-                }
-            } catch (\Exception $e) {
-                // If there's any database error (e.g., during installation), fall back to config
-            }
-        }
-
-        // For user management plugins or other contexts, add similar logic here
-        // Example:
-        // if ($guard === 'user') {
-        //     $userSessionEnabled = (bool) UserSetting::getValue('user_session_lifetime_enabled', false);
-        //     if ($userSessionEnabled) {
-        //         return (int) UserSetting::getValue('user_session_lifetime', 120);
-        //     }
-        // }
-
-        // Fall back to base session lifetime
         return self::getSessionLifetime();
     }
 
@@ -384,28 +354,12 @@ class ConfigHelper
      */
     public static function getSessionConfigSummary(?string $guard = null): array
     {
-        $membersSessionEnabled = false;
-        $membersSessionLifetime = null;
-
-        if ($guard === 'member') {
-            try {
-                // セキュリティ設定からセッション設定を取得
-                if (Schema::hasTable('security_settings')) {
-                    $membersSessionLifetime = (int) SecuritySetting::getValue('session_member_lifetime', 120);
-                }
-            } catch (\Exception $e) {
-                // If there's any database error (e.g., during installation), use default values
-            }
-        }
-
         return [
             'guard' => $guard,
             'effective_lifetime' => self::getEffectiveSessionLifetime($guard),
             'effective_driver' => self::getSessionDriver(),
             'effective_encrypt' => self::getSessionEncrypt(),
-            'members_session_enabled' => $membersSessionEnabled,
-            'members_session_lifetime' => $membersSessionLifetime,
-            'security_default_lifetime' => self::getSessionLifetime(),
+            'session_lifetime' => self::getSessionLifetime(),
             'config_default_lifetime' => config('session.lifetime', 120),
         ];
     }
