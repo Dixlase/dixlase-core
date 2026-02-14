@@ -41,4 +41,18 @@ return [
     'files_scanned' => 'スキャンファイル数',
     'status' => 'ステータス',
     'view_details' => '詳細を見る',
+
+    'nav' => [
+        'password' => 'パスワード',
+        'login_attempt' => 'ログイン',
+        'two_fa' => '二段階認証',
+        'captcha' => 'CAPTCHA',
+        'session' => 'セッション',
+        'notifications' => 'エラー通知',
+        'csp' => 'CSP',
+        'extensions' => '拡張機能',
+        'ip' => 'IPアクセス制御',
+        'integrity' => 'ファイル整合性',
+        'environment' => '環境設定',
+    ],
 ];

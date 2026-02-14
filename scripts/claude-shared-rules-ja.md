@@ -9,6 +9,11 @@
   - ビジネスロジック、データ変換、設定配列の構築はコントローラーまたはPresenterで行う
   - 許容される例外: インライン式（`{{ $var ?? 'default' }}`）、`old()` ヘルパー、単純な変数代入
 
+### Translation Key Scoping
+- `lang/*/admin/navigation.php` はサイドバー専用の翻訳ファイル。サイドバー以外のビューから参照しない
+- 各ビューは自身の翻訳ファイル（例: `lang/*/admin/settings/base/index.php`）に翻訳キーを定義する
+- コンポーネントは `lang/*/components/<component-name>.php` に翻訳キーを定義する
+
 ### No Inline Scripts / Styles
 - **Bladeビュー内に `<script>` タグや `<style>` タグでインラインコードを書かない**
 - JS・CSS は外部ファイルに分離し、`resources/src/` 配下に配置する

@@ -30,7 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-globe text-blue-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/navigation.settings.base.site') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/base/index.nav.site') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -45,7 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-cog text-purple-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/navigation.settings.base.admin') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/base/index.nav.admin') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -67,7 +67,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-envelope text-green-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/navigation.settings.base.mail') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/base/index.nav.mail') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -90,7 +90,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-tools text-orange-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/navigation.settings.base.maintenance') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/base/index.nav.maintenance') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -112,7 +112,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-sliders-h text-indigo-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/navigation.settings.base.mode') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/base/index.nav.mode') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>

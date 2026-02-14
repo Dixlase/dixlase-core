@@ -22,4 +22,12 @@ return [
     'mail_test_required' => 'メールテスト未完了',
     'maintenance_active' => 'メンテナンス中',
     'maintenance_inactive' => '通常運用中',
+
+    'nav' => [
+        'site' => 'サイト設定',
+        'admin' => '管理画面設定',
+        'mail' => 'メール設定',
+        'maintenance' => 'メンテナンス設定',
+        'mode' => 'モード設定',
+    ],
 ];

@@ -22,4 +22,12 @@ return [
     'mail_test_required' => 'Mail Test Required',
     'maintenance_active' => 'Maintenance Mode Active',
     'maintenance_inactive' => 'Normal Operation',
+
+    'nav' => [
+        'site' => 'Site Settings',
+        'admin' => 'Admin Panel Settings',
+        'mail' => 'Mail Settings',
+        'maintenance' => 'Maintenance Settings',
+        'mode' => 'Mode Settings',
+    ],
 ];

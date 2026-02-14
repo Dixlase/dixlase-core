@@ -7,7 +7,10 @@
 # individual plugins and themes so they can run independent Claude Code sessions.
 #
 # Usage:
-#   ./scripts/setup-claude-sessions.sh --all
+#   ./scripts/setup-claude-sessions.sh --all              # Core + all plugins/themes (English)
+#   ./scripts/setup-claude-sessions.sh --lang ja --all    # Core + all plugins/themes (Japanese)
+#   ./scripts/setup-claude-sessions.sh --core             # Core CLAUDE.md only (English)
+#   ./scripts/setup-claude-sessions.sh --core --lang ja   # Core CLAUDE.md only (Japanese)
 #   ./scripts/setup-claude-sessions.sh --plugin DixlaseBlog
 #   ./scripts/setup-claude-sessions.sh --theme DixlaseDefaultTheme
 #   ./scripts/setup-claude-sessions.sh --clean            # Remove all generated files
@@ -22,7 +25,9 @@ CORE_CLAUDE_DIR="$CORE_ROOT/.claude"
 CORE_HOOKS_DIR="$CORE_CLAUDE_DIR/hooks"
 CORE_MCP="$CORE_ROOT/.mcp.json"
 CORE_SETTINGS="$CORE_CLAUDE_DIR/settings.json"
-SHARED_RULES="$CORE_ROOT/scripts/claude-shared-rules.md"
+
+# Default language
+LANG_CODE="en"
 
 # Colors for output
 RED='\033[0;31m'
@@ -49,14 +54,262 @@ check_dependencies() {
 }
 
 # =============================================================================
+# Language / Translation
+# =============================================================================
+
+set_lang() {
+    case "$LANG_CODE" in
+        ja)
+            # === Common Headers ===
+            L_PLUGIN_SUFFIX="Dixlase CMS プラグイン"
+            L_THEME_SUFFIX="Dixlase CMS テーマ"
+            L_ARCHITECTURE="アーキテクチャ"
+            L_KEY_PATHS="主要パス"
+            L_DEV_RULES="開発ルール"
+            L_PLUGIN_OVERVIEW="プラグイン概要"
+            L_THEME_OVERVIEW="テーマ概要"
+            L_CORE_INTEGRATION="コアとの連携"
+            L_PHP_STANDARDS="PHP 標準"
+            L_TRANSLATION="翻訳"
+            L_ROUTE_NAMING="ルート命名規則"
+            L_TESTING="テスト"
+            L_CODE_FORMAT="コードフォーマット"
+            L_MCP_TOOLS="MCP ツール (Laravel Boost)"
+            L_GUIDELINES="基本方針"
+            L_FRONTEND_STACK="フロントエンドスタック"
+            L_BLADE_COMPONENTS="Blade コンポーネント（コア提供）"
+            L_ASSET_BUNDLE="アセットバンドル"
+            L_PLUGIN_FEATURES="プラグイン提供機能"
+            L_THEME_FEATURES="テーマ対応機能"
+
+            # === Meta Labels ===
+            L_META_TYPE="種別"
+            L_META_CATEGORY="カテゴリ"
+            L_META_VERSION="バージョン"
+            L_META_NAMESPACE="名前空間"
+            L_META_PLUGIN="Dixlase プラグイン"
+            L_META_THEME="Dixlase テーマ"
+
+            # === Architecture Descriptions ===
+            L_PLUGIN_ARCH="**Dixlase CMS** (Laravel 12) のプラグイン。コアアプリケーションは \`../../\` に配置。"
+            L_PLUGIN_ARCH_FULL="**Dixlase CMS** (Laravel 12) のプラグイン。コアアプリケーションはこのプラグインディレクトリから \`../../\` に配置。"
+            L_THEME_ARCH="**Dixlase CMS** (Laravel 12) のテーマ。コアアプリケーションは \`../../\` に配置。"
+            L_THEME_ARCH_FULL="**Dixlase CMS** (Laravel 12) のテーマ。コアアプリケーションはこのテーマディレクトリから \`../../\` に配置。"
+
+            # === Path Labels ===
+            L_CORE_ROOT="コアルート"
+            L_CORE_ROOT_DETAIL=" （\`vendor/\`, \`artisan\`, コア \`app/\` を含む）"
+            L_THIS_PLUGIN="このプラグイン"
+            L_THIS_THEME="このテーマ"
+            L_ARTISAN_CMD="Artisan コマンド"
+            L_RUN_TESTS="テスト実行"
+
+            # === Minimal Template Rules ===
+            L_RULE_CONSTRUCTOR_SHORT="コンストラクタプロパティプロモーション、明示的な戻り値型"
+            L_RULE_FORM_REQUEST="バリデーションは Form Request クラスで（インライン不可）"
+            L_RULE_PHPDOC="インラインコメントよりPHPDocブロック"
+            L_RULE_TRANSLATION="翻訳ファイルは en/ と ja/ の両方を用意する"
+            L_RULE_CONFIG="\`env()\` は直接使わず \`config()\` を使用"
+            L_RULE_PHPUNIT="テストは PHPUnit で記述（Pest不可）"
+            L_RULE_DARK_MODE_SHORT="ダークモード必須（\`dark:\` バリアント）"
+            L_RULE_RESPONSIVE_SHORT="レスポンシブ必須（モバイルファースト）"
+            L_RULE_NO_LOGIC_SHORT="テーマ内にビジネスロジックを含めない"
+
+            # === Full Template Rules ===
+            L_RULE_CONSTRUCTOR="コンストラクタプロパティプロモーションを使用"
+            L_RULE_RETURN_TYPE="全メソッドに明示的な戻り値型を宣言"
+            L_RULE_PHPDOC_FULL="インラインコメントよりPHPDocブロックを優先"
+            L_RULE_ENUM="Enum キーは TitleCase"
+            L_RULE_TRANSLATION_FULL="翻訳ファイルは \`en/\` と \`ja/\` の両方を必ず用意する"
+            L_RULE_FACTORY="モデルファクトリを使用（手動セットアップ前に既存のstateを確認）"
+            L_RULE_PHPUNIT_FULL="PHPUnit でフィーチャーテストを記述（Pest不可）"
+            L_RULE_PINT="Pint はフック経由で編集後に自動実行"
+
+            # === Plugin-Specific Rules ===
+            L_RULE_NO_CORE_IMPORT="**コア内部を直接インポートしない** — \`App\\Contracts\\*\` インターフェースを使用"
+            L_RULE_REGISTER_SP="**全てServiceProviderで登録** — ルート、ビュー、設定、マイグレーション"
+            L_RULE_NS_ISOLATION="**名前空間の分離** — 全クラスは"  # + namespace appended
+            L_RULE_NS_ISOLATION_SUFFIX="配下"
+            L_RULE_SELF_MIGRATION="**マイグレーションは自己完結** — プラグイン独自のテーブルを管理"
+
+            # === Route Naming ===
+            L_ROUTE_PATTERN="パターン"
+            L_ROUTE_MIDDLEWARE="ミドルウェアグループ"
+
+            # === Theme-Specific Rules ===
+            L_RULE_NO_LOGIC="**テーマ内にビジネスロジックを含めない** — 表示のみ、ビュー内で Eloquent クエリ不可"
+            L_RULE_VIEW_NS="**ビュー名前空間**: テーマビューは全て \`themes::\`"
+            L_RULE_TRANS_NS="**翻訳名前空間**: テーマ翻訳は全て \`themes::\`"
+            L_RULE_TABLE_PREFIX="**テーブル接頭辞**: テーマDBテーブルは \`thm_\`"
+            L_RULE_DARK_MODE="**ダークモード必須**: 全コンポーネントで \`dark:\` Tailwind バリアントをサポート"
+            L_RULE_RESPONSIVE="**レスポンシブ必須**: モバイルファースト、全ブレークポイントでテスト"
+            L_RULE_PLUGIN_COMPAT="**プラグイン対応**: プラグインと連携するが、なくても正常に動作すること"
+
+            # === Frontend ===
+            L_TAILWIND_DESC="ユーティリティファースト、スペーシングは \`gap-*\`、ダークモードは \`dark:\`"
+            L_VITE_DESC="開発は \`npm run dev\`、本番は \`npm run build\`"
+            L_BLADE_AVAILABLE="利用可能"
+            L_ASSET_DEV="開発時はテーマディレクトリで \`npm run dev\` を実行"
+            L_ASSET_BUILD="アセット変更のコミット前に \`npm run build\` を実行"
+
+            # === Test Commands ===
+            L_TEST_SPECIFIC="特定テスト"
+            L_TEST_RUN="テスト実行"
+
+            # === MCP Descriptions ===
+            L_MCP_SEARCH_DOCS_PLUGIN="Laravel エコシステムのドキュメント検索"
+            L_MCP_SEARCH_DOCS_THEME="Laravel/Tailwind/Livewire ドキュメント検索"
+            L_MCP_TINKER_PLUGIN="PHP コードのデバッグ"
+            L_MCP_TINKER_THEME="デバッグ"
+            L_MCP_DB_QUERY="読み取り専用データベースクエリ"
+            L_MCP_LIST_ARTISAN="Artisan コマンド実行前に利用可能なコマンドを確認"
+            ;;
+
+        en|*)
+            # === Common Headers ===
+            L_PLUGIN_SUFFIX="Dixlase CMS Plugin"
+            L_THEME_SUFFIX="Dixlase CMS Theme"
+            L_ARCHITECTURE="Architecture"
+            L_KEY_PATHS="Key Paths"
+            L_DEV_RULES="Development Rules"
+            L_PLUGIN_OVERVIEW="Plugin Overview"
+            L_THEME_OVERVIEW="Theme Overview"
+            L_CORE_INTEGRATION="Core Integration"
+            L_PHP_STANDARDS="PHP Standards"
+            L_TRANSLATION="Translation"
+            L_ROUTE_NAMING="Route Naming"
+            L_TESTING="Testing"
+            L_CODE_FORMAT="Code Formatting"
+            L_MCP_TOOLS="MCP Tools (Laravel Boost)"
+            L_GUIDELINES="Guidelines"
+            L_FRONTEND_STACK="Frontend Stack"
+            L_BLADE_COMPONENTS="Blade Components (Core)"
+            L_ASSET_BUNDLE="Asset Bundling"
+            L_PLUGIN_FEATURES="Plugin Features"
+            L_THEME_FEATURES="Theme Features"
+
+            # === Meta Labels ===
+            L_META_TYPE="Type"
+            L_META_CATEGORY="Category"
+            L_META_VERSION="Version"
+            L_META_NAMESPACE="Namespace"
+            L_META_PLUGIN="Dixlase Plugin"
+            L_META_THEME="Dixlase Theme"
+
+            # === Architecture Descriptions ===
+            L_PLUGIN_ARCH="Plugin for **Dixlase CMS** (Laravel 12). The core application is located at \`../../\`."
+            L_PLUGIN_ARCH_FULL="Plugin for **Dixlase CMS** (Laravel 12). The core application is located at \`../../\` relative to this plugin directory."
+            L_THEME_ARCH="Theme for **Dixlase CMS** (Laravel 12). The core application is located at \`../../\`."
+            L_THEME_ARCH_FULL="Theme for **Dixlase CMS** (Laravel 12). The core application is located at \`../../\` relative to this theme directory."
+
+            # === Path Labels ===
+            L_CORE_ROOT="Core Root"
+            L_CORE_ROOT_DETAIL=" (includes \`vendor/\`, \`artisan\`, core \`app/\`)"
+            L_THIS_PLUGIN="This Plugin"
+            L_THIS_THEME="This Theme"
+            L_ARTISAN_CMD="Artisan Commands"
+            L_RUN_TESTS="Run Tests"
+
+            # === Minimal Template Rules ===
+            L_RULE_CONSTRUCTOR_SHORT="Constructor property promotion, explicit return types"
+            L_RULE_FORM_REQUEST="Validate with Form Request classes (no inline validation)"
+            L_RULE_PHPDOC="Prefer PHPDoc blocks over inline comments"
+            L_RULE_TRANSLATION="Provide both en/ and ja/ translation files"
+            L_RULE_CONFIG="Use \`config()\` instead of \`env()\` directly"
+            L_RULE_PHPUNIT="Write tests with PHPUnit (not Pest)"
+            L_RULE_DARK_MODE_SHORT="Dark mode required (\`dark:\` variant)"
+            L_RULE_RESPONSIVE_SHORT="Responsive required (mobile-first)"
+            L_RULE_NO_LOGIC_SHORT="No business logic in themes"
+
+            # === Full Template Rules ===
+            L_RULE_CONSTRUCTOR="Use constructor property promotion"
+            L_RULE_RETURN_TYPE="Declare explicit return types for all methods"
+            L_RULE_PHPDOC_FULL="Prefer PHPDoc blocks over inline comments"
+            L_RULE_ENUM="Enum keys should be TitleCase"
+            L_RULE_TRANSLATION_FULL="Always provide both \`en/\` and \`ja/\` translation files"
+            L_RULE_FACTORY="Use model factories (check existing states before manual setup)"
+            L_RULE_PHPUNIT_FULL="Write feature tests with PHPUnit (not Pest)"
+            L_RULE_PINT="Pint auto-runs via hook after edits"
+
+            # === Plugin-Specific Rules ===
+            L_RULE_NO_CORE_IMPORT="**Do not import core internals directly** — use \`App\\Contracts\\*\` interfaces"
+            L_RULE_REGISTER_SP="**Register everything in ServiceProvider** — routes, views, config, migrations"
+            L_RULE_NS_ISOLATION="**Namespace isolation** — all classes under"  # + namespace appended
+            L_RULE_NS_ISOLATION_SUFFIX=""
+            L_RULE_SELF_MIGRATION="**Self-contained migrations** — manage plugin-specific tables"
+
+            # === Route Naming ===
+            L_ROUTE_PATTERN="Pattern"
+            L_ROUTE_MIDDLEWARE="Middleware groups"
+
+            # === Theme-Specific Rules ===
+            L_RULE_NO_LOGIC="**No business logic in themes** — display only, no Eloquent queries in views"
+            L_RULE_VIEW_NS="**View namespace**: all theme views use \`themes::\`"
+            L_RULE_TRANS_NS="**Translation namespace**: all theme translations use \`themes::\`"
+            L_RULE_TABLE_PREFIX="**Table prefix**: theme DB tables use \`thm_\`"
+            L_RULE_DARK_MODE="**Dark mode required**: support \`dark:\` Tailwind variant in all components"
+            L_RULE_RESPONSIVE="**Responsive required**: mobile-first, test across all breakpoints"
+            L_RULE_PLUGIN_COMPAT="**Plugin compatible**: integrate with plugins but function without them"
+
+            # === Frontend ===
+            L_TAILWIND_DESC="Utility-first, spacing with \`gap-*\`, dark mode with \`dark:\`"
+            L_VITE_DESC="Dev: \`npm run dev\`, Prod: \`npm run build\`"
+            L_BLADE_AVAILABLE="Available"
+            L_ASSET_DEV="Run \`npm run dev\` in theme directory during development"
+            L_ASSET_BUILD="Run \`npm run build\` before committing asset changes"
+
+            # === Test Commands ===
+            L_TEST_SPECIFIC="Specific test"
+            L_TEST_RUN="Run tests"
+
+            # === MCP Descriptions ===
+            L_MCP_SEARCH_DOCS_PLUGIN="Search Laravel ecosystem documentation"
+            L_MCP_SEARCH_DOCS_THEME="Search Laravel/Tailwind/Livewire documentation"
+            L_MCP_TINKER_PLUGIN="Debug PHP code"
+            L_MCP_TINKER_THEME="Debug"
+            L_MCP_DB_QUERY="Read-only database queries"
+            L_MCP_LIST_ARTISAN="Check available commands before running Artisan"
+            ;;
+    esac
+}
+
+# =============================================================================
 # Shared Rules Injection
 # =============================================================================
 
 get_shared_rules() {
-    if [ -f "$SHARED_RULES" ]; then
+    local rules_file="$CORE_ROOT/scripts/claude-shared-rules-${LANG_CODE}.md"
+    if [ -f "$rules_file" ]; then
         echo ""
-        cat "$SHARED_RULES"
+        cat "$rules_file"
     fi
+}
+
+# =============================================================================
+# Core Guidelines Setup
+# =============================================================================
+
+setup_core_guidelines() {
+    local src="$CORE_ROOT/.ai/guidelines-${LANG_CODE}"
+    local dest="$CORE_ROOT/.ai/guidelines"
+
+    if [ ! -d "$src" ]; then
+        error "Guidelines source not found: $src"
+        return 1
+    fi
+
+    # Clean destination and copy language-specific guidelines
+    if [ -d "$dest" ]; then
+        rm -f "$dest"/*.blade.php
+        find "$dest" -mindepth 1 -type f -name '*.blade.php' -delete
+        find "$dest" -mindepth 1 -type d -empty -delete
+    fi
+    cp -R "$src/." "$dest"
+
+    # Regenerate CLAUDE.md via boost:install
+    docker exec -i dixlase-laravel.test-1 php artisan boost:install --no-interaction
+
+    ok "Core CLAUDE.md generated ($LANG_CODE)"
 }
 
 # =============================================================================
@@ -194,26 +447,26 @@ generate_plugin_claude_md() {
     if [ ! -f "$plugin_json" ]; then
         warn "No plugin.json found in $dir_name, generating minimal CLAUDE.md"
         cat > "$plugin_dir/CLAUDE.md" << EOF
-# $dir_name - Dixlase CMS Plugin
+# $dir_name - $L_PLUGIN_SUFFIX
 
-## Architecture
+## $L_ARCHITECTURE
 
-This is a plugin for **Dixlase CMS** (Laravel 12). The core application lives at \`../../\`.
+$L_PLUGIN_ARCH
 
-### Key Paths
-- **Core root**: \`../../\`
+### $L_KEY_PATHS
+- **$L_CORE_ROOT**: \`../../\`
 - **Artisan**: \`docker exec -i dixlase-laravel.test-1 php artisan <command>\`
-- **Tests**: \`docker exec -i dixlase-laravel.test-1 php artisan test plugins/$dir_name/tests/\`
+- **$L_RUN_TESTS**: \`docker exec -i dixlase-laravel.test-1 php artisan test plugins/$dir_name/tests/\`
 
-## Development Rules
+## $L_DEV_RULES
 
 - PHP 8.3, Laravel 12, Livewire 4
-- Constructor property promotion, explicit return types
-- Form Request classes for validation
-- PHPDoc blocks over inline comments
-- Bilingual translations (en/ and ja/)
-- Never use \`env()\` directly — use \`config()\`
-- Write PHPUnit feature tests (not Pest)
+- $L_RULE_CONSTRUCTOR_SHORT
+- $L_RULE_FORM_REQUEST
+- $L_RULE_PHPDOC
+- $L_RULE_TRANSLATION
+- $L_RULE_CONFIG
+- $L_RULE_PHPUNIT
 $(get_shared_rules)
 EOF
         return
@@ -260,66 +513,66 @@ EOF
     fi
 
     cat > "$plugin_dir/CLAUDE.md" << CLAUDE_EOF
-# $name - Dixlase CMS Plugin
+# $name - $L_PLUGIN_SUFFIX
 
-> **Type**: Dixlase Plugin | **Category**: $category | **Version**: $version
-> **Namespace**: \`$namespace\`
+> **$L_META_TYPE**: $L_META_PLUGIN | **$L_META_CATEGORY**: $category | **$L_META_VERSION**: $version
+> **$L_META_NAMESPACE**: \`$namespace\`
 
-## What This Plugin Does
+## $L_PLUGIN_OVERVIEW
 
 $desc_en
 
-## Architecture
+## $L_ARCHITECTURE
 
-This is a plugin for **Dixlase CMS** (Laravel 12). The core application lives at \`../../\` relative to this plugin directory.
+$L_PLUGIN_ARCH_FULL
 
-### Key Paths
-- **Core root**: \`../../\` (contains \`vendor/\`, \`artisan\`, core \`app/\`)
-- **This plugin**: \`plugins/$dir_name/\`
-- **Artisan commands**: \`docker exec -i dixlase-laravel.test-1 php artisan <command>\`
+### $L_KEY_PATHS
+- **$L_CORE_ROOT**: \`../../\`$L_CORE_ROOT_DETAIL
+- **$L_THIS_PLUGIN**: \`plugins/$dir_name/\`
+- **$L_ARTISAN_CMD**: \`docker exec -i dixlase-laravel.test-1 php artisan <command>\`
 
-### Plugin Provides
+### $L_PLUGIN_FEATURES
 $provides_text
 
-## Development Rules
+## $L_DEV_RULES
 
-### Core Interaction
-- **Never import core internals directly** — use \`App\Contracts\*\` interfaces
-- **Register everything via ServiceProvider** — routes, views, config, migrations
-- **Namespace isolation** — all classes under \`$namespace\*\`
-- **Self-contained migrations** — this plugin manages its own tables
+### $L_CORE_INTEGRATION
+- $L_RULE_NO_CORE_IMPORT
+- $L_RULE_REGISTER_SP
+- $L_RULE_NS_ISOLATION \`$namespace\*\` $L_RULE_NS_ISOLATION_SUFFIX
+- $L_RULE_SELF_MIGRATION
 
-### PHP Standards
+### $L_PHP_STANDARDS
 - PHP 8.3, Laravel 12, Livewire 4
-- Always use constructor property promotion
-- Always use explicit return types on all methods
-- Use Form Request classes for validation (never inline)
-- Prefer PHPDoc blocks over inline comments
-- Enum keys in TitleCase
-- Use \`config()\` never \`env()\` directly
+- $L_RULE_CONSTRUCTOR
+- $L_RULE_RETURN_TYPE
+- $L_RULE_FORM_REQUEST
+- $L_RULE_PHPDOC_FULL
+- $L_RULE_ENUM
+- $L_RULE_CONFIG
 
-### Translations
-- Always provide both \`en/\` and \`ja/\` lang files
+### $L_TRANSLATION
+- $L_RULE_TRANSLATION_FULL
 
-### Route Naming
-- Pattern: \`plugin.{slug}.{resource}.{action}\`
-- Use \`plugin\`, \`plugin.web\`, \`plugin.admin\` middleware groups
+### $L_ROUTE_NAMING
+- $L_ROUTE_PATTERN: \`plugin.{slug}.{resource}.{action}\`
+- $L_ROUTE_MIDDLEWARE: \`plugin\`, \`plugin.web\`, \`plugin.admin\`
 
-### Testing
-- Write PHPUnit feature tests (not Pest)
-- Use model factories (check for existing states before manual setup)
-- Run tests: \`docker exec -i dixlase-laravel.test-1 php artisan test plugins/$dir_name/tests/\`
-- Run specific test: \`docker exec -i dixlase-laravel.test-1 php artisan test --filter=testMethodName\`
+### $L_TESTING
+- $L_RULE_PHPUNIT_FULL
+- $L_RULE_FACTORY
+- $L_TEST_RUN: \`docker exec -i dixlase-laravel.test-1 php artisan test plugins/$dir_name/tests/\`
+- $L_TEST_SPECIFIC: \`docker exec -i dixlase-laravel.test-1 php artisan test --filter=testMethodName\`
 
-### Code Formatting
-- Pint runs automatically after edits via hooks
+### $L_CODE_FORMAT
+- $L_RULE_PINT
 $(get_shared_rules)
 
-## MCP Tools (Laravel Boost)
-- Use \`search-docs\` for Laravel ecosystem documentation
-- Use \`tinker\` for debugging PHP code
-- Use \`database-query\` for read-only database queries
-- Use \`list-artisan-commands\` before running artisan commands
+## $L_MCP_TOOLS
+- \`search-docs\`: $L_MCP_SEARCH_DOCS_PLUGIN
+- \`tinker\`: $L_MCP_TINKER_PLUGIN
+- \`database-query\`: $L_MCP_DB_QUERY
+- \`list-artisan-commands\`: $L_MCP_LIST_ARTISAN
 CLAUDE_EOF
 }
 
@@ -336,23 +589,23 @@ generate_theme_claude_md() {
     if [ ! -f "$theme_json" ]; then
         warn "No theme.json found in $dir_name, generating minimal CLAUDE.md"
         cat > "$theme_dir/CLAUDE.md" << EOF
-# $dir_name - Dixlase CMS Theme
+# $dir_name - $L_THEME_SUFFIX
 
-## Architecture
+## $L_ARCHITECTURE
 
-This is a theme for **Dixlase CMS** (Laravel 12). The core application lives at \`../../\`.
+$L_THEME_ARCH
 
-### Key Paths
-- **Core root**: \`../../\`
+### $L_KEY_PATHS
+- **$L_CORE_ROOT**: \`../../\`
 - **Artisan**: \`docker exec -i dixlase-laravel.test-1 php artisan <command>\`
 
-## Development Rules
+## $L_DEV_RULES
 
 - PHP 8.3, Laravel 12, Livewire 4, Tailwind CSS 3, Alpine.js 3
-- Dark mode required (\`dark:\` variants)
-- Responsive required (mobile-first)
-- No business logic in themes
-- Bilingual translations (en/ and ja/)
+- $L_RULE_DARK_MODE_SHORT
+- $L_RULE_RESPONSIVE_SHORT
+- $L_RULE_NO_LOGIC_SHORT
+- $L_RULE_TRANSLATION
 $(get_shared_rules)
 EOF
         return
@@ -387,72 +640,72 @@ EOF
     fi
 
     cat > "$theme_dir/CLAUDE.md" << CLAUDE_EOF
-# $name - Dixlase CMS Theme
+# $name - $L_THEME_SUFFIX
 
-> **Type**: Dixlase Theme | **Version**: $version
-> **Namespace**: \`$namespace\`
+> **$L_META_TYPE**: $L_META_THEME | **$L_META_VERSION**: $version
+> **$L_META_NAMESPACE**: \`$namespace\`
 
-## What This Theme Does
+## $L_THEME_OVERVIEW
 
 $desc_en
 
-## Architecture
+## $L_ARCHITECTURE
 
-This is a theme for **Dixlase CMS** (Laravel 12). The core application lives at \`../../\` relative to this theme directory.
+$L_THEME_ARCH_FULL
 
-### Key Paths
-- **Core root**: \`../../\` (contains \`vendor/\`, \`artisan\`, core \`app/\`)
-- **This theme**: \`themes/$dir_name/\`
-- **Artisan commands**: \`docker exec -i dixlase-laravel.test-1 php artisan <command>\`
+### $L_KEY_PATHS
+- **$L_CORE_ROOT**: \`../../\`$L_CORE_ROOT_DETAIL
+- **$L_THIS_THEME**: \`themes/$dir_name/\`
+- **$L_ARTISAN_CMD**: \`docker exec -i dixlase-laravel.test-1 php artisan <command>\`
 
-### Theme Supports
+### $L_THEME_FEATURES
 $supports_text
 
-## Development Rules
+## $L_DEV_RULES
 
-### Core Principles
-- **No business logic in themes** — presentation only, no Eloquent queries in views
-- **View namespace**: \`themes::\` for all theme views
-- **Translation namespace**: \`themes::\` for all translations
-- **Table prefix**: \`thm_\` for theme database tables
-- **Dark mode required**: All components must support \`dark:\` Tailwind variants
-- **Responsive required**: Mobile-first, test all breakpoints
-- **Plugin-aware**: Integrate with plugins but gracefully degrade without them
+### $L_GUIDELINES
+- $L_RULE_NO_LOGIC
+- $L_RULE_VIEW_NS
+- $L_RULE_TRANS_NS
+- $L_RULE_TABLE_PREFIX
+- $L_RULE_DARK_MODE
+- $L_RULE_RESPONSIVE
+- $L_RULE_PLUGIN_COMPAT
 
-### PHP Standards
+### $L_PHP_STANDARDS
 - PHP 8.3, Laravel 12, Livewire 4
-- Always use constructor property promotion
-- Always use explicit return types
-- Prefer PHPDoc blocks over inline comments
-- Use \`config()\` never \`env()\` directly
+- $L_RULE_CONSTRUCTOR
+- $L_RULE_RETURN_TYPE
+- $L_RULE_PHPDOC_FULL
+- $L_RULE_CONFIG
 
-### Frontend Stack
-- **Tailwind CSS 3**: Utility-first, \`gap-*\` for spacing, \`dark:\` for dark mode
+### $L_FRONTEND_STACK
+- **Tailwind CSS 3**: $L_TAILWIND_DESC
 - **Alpine.js 3**: \`x-data\`, \`@click\`, \`x-show\`, \`x-transition\`, \`x-cloak\`
-- **Vite**: \`npm run dev\` for development, \`npm run build\` for production
+- **Vite**: $L_VITE_DESC
 
-### Blade Components (Core)
-Available: \`x-ui-maintenance-banner\`, \`x-ui-admin-bar\`, \`x-form-text\`,
+### $L_BLADE_COMPONENTS
+$L_BLADE_AVAILABLE: \`x-ui-maintenance-banner\`, \`x-ui-admin-bar\`, \`x-form-text\`,
 \`x-form-textarea\`, \`x-front.button\`, \`components.media-picker\`, \`components.save\`
 
-### Translations
-- Always provide both \`en/\` and \`ja/\` lang files
+### $L_TRANSLATION
+- $L_RULE_TRANSLATION_FULL
 
-### Asset Bundling
-- Run \`npm run dev\` in this theme directory for development
-- Run \`npm run build\` before committing asset changes
+### $L_ASSET_BUNDLE
+- $L_ASSET_DEV
+- $L_ASSET_BUILD
 
-### Testing
-- Run tests: \`docker exec -i dixlase-laravel.test-1 php artisan test\`
+### $L_TESTING
+- $L_TEST_RUN: \`docker exec -i dixlase-laravel.test-1 php artisan test\`
 
-### Code Formatting
-- Pint runs automatically after edits via hooks
+### $L_CODE_FORMAT
+- $L_RULE_PINT
 $(get_shared_rules)
 
-## MCP Tools (Laravel Boost)
-- Use \`search-docs\` for Laravel/Tailwind/Livewire documentation
-- Use \`tinker\` for debugging
-- Use \`database-query\` for read-only database queries
+## $L_MCP_TOOLS
+- \`search-docs\`: $L_MCP_SEARCH_DOCS_THEME
+- \`tinker\`: $L_MCP_TINKER_THEME
+- \`database-query\`: $L_MCP_DB_QUERY
 CLAUDE_EOF
 }
 
@@ -531,8 +784,53 @@ clean_target() {
 # Main
 # =============================================================================
 
+show_usage() {
+    echo "Usage: $0 <command> [options]"
+    echo ""
+    echo "Commands:"
+    echo "  --all                  Set up core, all plugins and themes"
+    echo "  --core                 Set up core CLAUDE.md only"
+    echo "  --plugin <Name>        Set up a specific plugin"
+    echo "  --theme <Name>         Set up a specific theme"
+    echo "  --clean                Remove all generated files"
+    echo "  --clean-plugin <Name>  Clean a specific plugin"
+    echo "  --clean-theme <Name>   Clean a specific theme"
+    echo ""
+    echo "Options:"
+    echo "  --lang <en|ja>         Language for generated files (default: en)"
+    exit 1
+}
+
 main() {
     check_dependencies
+
+    # Pass 1: Extract --lang option from arguments
+    local args=()
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --lang)
+                if [ -z "${2:-}" ]; then
+                    error "Language code required. Usage: --lang <en|ja>"
+                    exit 1
+                fi
+                case "$2" in
+                    en|ja) LANG_CODE="$2" ;;
+                    *)
+                        error "Unsupported language: $2 (supported: en, ja)"
+                        exit 1
+                        ;;
+                esac
+                shift 2
+                ;;
+            *)
+                args+=("$1")
+                shift
+                ;;
+        esac
+    done
+
+    # Initialize translation variables
+    set_lang
 
     echo ""
     echo "========================================"
@@ -540,8 +838,12 @@ main() {
     echo "========================================"
     echo ""
 
-    case "${1:-}" in
+    info "Language: $LANG_CODE"
+
+    # Pass 2: Process commands
+    case "${args[0]:-}" in
         --all)
+            setup_core_guidelines
             local count=0
             for dir in "$CORE_ROOT"/plugins/*/; do
                 [ -d "$dir" ] && setup_plugin "$dir" && ((count++))
@@ -550,21 +852,24 @@ main() {
                 [ -d "$dir" ] && setup_theme "$dir" && ((count++))
             done
             echo ""
-            ok "Setup complete: $count targets configured"
+            ok "Setup complete: core + $count targets configured"
+            ;;
+        --core)
+            setup_core_guidelines
             ;;
         --plugin)
-            if [ -z "${2:-}" ]; then
+            if [ -z "${args[1]:-}" ]; then
                 error "Plugin name required. Usage: $0 --plugin PluginName"
                 exit 1
             fi
-            setup_plugin "$CORE_ROOT/plugins/$2"
+            setup_plugin "$CORE_ROOT/plugins/${args[1]}"
             ;;
         --theme)
-            if [ -z "${2:-}" ]; then
+            if [ -z "${args[1]:-}" ]; then
                 error "Theme name required. Usage: $0 --theme ThemeName"
                 exit 1
             fi
-            setup_theme "$CORE_ROOT/themes/$2"
+            setup_theme "$CORE_ROOT/themes/${args[1]}"
             ;;
         --clean)
             for dir in "$CORE_ROOT"/plugins/*/; do
@@ -577,30 +882,21 @@ main() {
             ok "All generated files removed"
             ;;
         --clean-plugin)
-            if [ -z "${2:-}" ]; then
+            if [ -z "${args[1]:-}" ]; then
                 error "Plugin name required."
                 exit 1
             fi
-            clean_target "$CORE_ROOT/plugins/$2"
+            clean_target "$CORE_ROOT/plugins/${args[1]}"
             ;;
         --clean-theme)
-            if [ -z "${2:-}" ]; then
+            if [ -z "${args[1]:-}" ]; then
                 error "Theme name required."
                 exit 1
             fi
-            clean_target "$CORE_ROOT/themes/$2"
+            clean_target "$CORE_ROOT/themes/${args[1]}"
             ;;
         *)
-            echo "Usage: $0 <command> [name]"
-            echo ""
-            echo "Commands:"
-            echo "  --all                  Set up all plugins and themes"
-            echo "  --plugin <Name>        Set up a specific plugin"
-            echo "  --theme <Name>         Set up a specific theme"
-            echo "  --clean                Remove all generated files"
-            echo "  --clean-plugin <Name>  Clean a specific plugin"
-            echo "  --clean-theme <Name>   Clean a specific theme"
-            exit 1
+            show_usage
             ;;
     esac
 }

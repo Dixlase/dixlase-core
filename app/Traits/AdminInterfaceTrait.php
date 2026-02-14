@@ -186,9 +186,27 @@ trait AdminInterfaceTrait
         // 旧形式: plugin-name::admin.controller.action
         [$pluginNamespace, $route] = explode('::', $routeName, 2);
         $keys = explode('.', $route);
+
+        // パターン1: 完全パス（directory-based）
+        $fullPath = implode('/', $keys) . '.heading';
+        if (Lang::has($pluginNamespace . '::' . $fullPath)) {
+            return $pluginNamespace . '::' . $fullPath;
+        }
+
+        // パターン2: 最後の要素がファイル内のキー
+        if (count($keys) >= 2) {
+            $keysCopy = $keys;
+            $lastKey = array_pop($keysCopy);
+            $filePath = implode('/', $keysCopy) . '.' . $lastKey . '.heading';
+            if (Lang::has($pluginNamespace . '::' . $filePath)) {
+                return $pluginNamespace . '::' . $filePath;
+            }
+        }
+
+        // フォールバック: 旧形式dot notation
         array_shift($keys); // 'admin'を除去
-        
         $headingKey = implode('.', $keys) . '.heading';
+
         return $pluginNamespace . '::admin.' . $headingKey;
     }
 }
