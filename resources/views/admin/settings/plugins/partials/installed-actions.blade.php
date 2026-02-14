@@ -7,32 +7,23 @@ https://exc-d.com
 インストール済みプラグインのアクションボタン
 --}}
 
-@php
-    $isEnabled = $plugin->isEnabled();
-@endphp
-
 {{-- 設定画面リンク --}}
-@if ($isEnabled && isset($plugin->has_settings) && $plugin->has_settings)
-    @php
-        $settingsUrl = app('App\Http\Controllers\Admin\Settings\AdminPluginsSettingsController')->getPluginSettingsUrl($plugin);
-    @endphp
-    @if ($settingsUrl)
-        <a href="{{ $settingsUrl }}" class="inline-block">
-            <x-form-button
-                type="button"
-                :label="__('common.settings')"
-                variant="primary"
-                size="xs"
-                icon="fas fa-cog"
-                class="py-2 px-3"
-            />
-        </a>
-    @endif
+@if ($card['isEnabled'] && $card['settingsUrl'])
+    <a href="{{ $card['settingsUrl'] }}" class="inline-block">
+        <x-form-button
+            type="button"
+            :label="__('common.settings')"
+            variant="primary"
+            size="xs"
+            icon="fas fa-cog"
+            class="py-2 px-3"
+        />
+    </a>
 @endif
 
-@if ($isEnabled)
+@if ($card['isEnabled'])
     {{-- 有効化中：無効化ボタンのみ --}}
-    <form action="{{ route('admin.settings.plugins.disable', $plugin->id) }}" method="POST" class="inline-block">
+    <form action="{{ route('admin.settings.plugins.disable', $card['id']) }}" method="POST" class="inline-block">
         @csrf
         <x-form-button
             type="submit"
@@ -45,65 +36,34 @@ https://exc-d.com
     </form>
 @else
     {{-- 無効化中：有効化とアンインストールボタン --}}
-    @php
-        $enableWarnings = [];
-        $signatureStatus = $plugin->permission_summary['signature']['status'] ?? 'unsigned';
-        $riskLevel = $plugin->permission_summary['risk_level'] ?? 'low';
-        $hasPermissions = !empty($plugin->permission_summary['permissions'] ?? []);
-        $hasMismatchesForEnable = $plugin->permission_summary['audit']['has_mismatches'] ?? false;
-        $auditedAtForEnable = $plugin->permission_summary['audit']['audited_at'] ?? null;
-        
-        if ($signatureStatus === 'invalid') {
-            $enableWarnings[] = __('admin/settings/plugins/index.permissions.enable_warning_invalid_signature');
-        }
-        if ($signatureStatus === 'unsigned' || $signatureStatus === 'none') {
-            $enableWarnings[] = __('admin/settings/plugins/index.permissions.install_warning_unsigned');
-        }
-        if (!$hasPermissions) {
-            $enableWarnings[] = __('admin/settings/plugins/index.permissions.install_warning_undefined');
-        }
-        if ($riskLevel === 'high') {
-            $enableWarnings[] = __('admin/settings/plugins/index.permissions.enable_warning_high_risk');
-        }
-        if ($hasMismatchesForEnable) {
-            $enableWarnings[] = __('admin/settings/plugins/index.permissions.install_warning_mismatch');
-        }
-        if (!$auditedAtForEnable) {
-            $enableWarnings[] = __('admin/settings/plugins/index.permissions.warning_not_scanned');
-        }
-        
-        $hasEnableWarnings = !empty($enableWarnings);
-        $enableModalId = 'enableModal-' . $plugin->id;
-    @endphp
-    
-    <form action="{{ route('admin.settings.plugins.enable', $plugin->id) }}" method="POST" class="inline-block" id="enableForm-{{ $plugin->id }}">
+    <form action="{{ route('admin.settings.plugins.enable', $card['id']) }}" method="POST" class="inline-block" id="enableForm-{{ $card['id'] }}">
         @csrf
-        @if($hasEnableWarnings)
+        @if($card['hasEnableWarnings'])
             <x-form-button
                 type="button"
                 :label="__('common.enable')"
                 variant="success"
                 size="xs"
                 icon="fas fa-play"
-                @click="openModal('{{ $enableModalId }}')"
+                @click="openModal('{{ $card['enableModalId'] }}')"
                 class="py-2 px-3"
             />
-            
+
             <x-ui-modal
-                :id="$enableModalId"
+                :id="$card['enableModalId']"
                 :title="__('admin/settings/plugins/index.permissions.enable_warning_title')"
                 icon_type="warning"
                 :confirm_label="__('common.enable')"
                 :cancel_label="__('common.cancel')"
-                form="enableForm-{{ $plugin->id }}"
+                form="enableForm-{{ $card['id'] }}"
                 confirm_color="yellow">
                 <div class="text-left">
                     <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
-                        {{ __('admin/settings/plugins/index.permissions.enable_warning_message', ['name' => $plugin->translated_name]) }}
+                        {{ __('admin/settings/plugins/index.permissions.enable_warning_message', ['name' => $card['translatedName']]) }}
                     </p>
                     <div class="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 mb-3">
                         <ul class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1 ml-4 list-disc">
-                            @foreach($enableWarnings as $warning)
+                            @foreach($card['enableWarnings'] as $warning)
                                 <li>{{ $warning }}</li>
                             @endforeach
                         </ul>
@@ -125,7 +85,7 @@ https://exc-d.com
         @endif
     </form>
 
-    <form action="{{ route('admin.settings.plugins.uninstall', $plugin->id) }}" method="POST" class="inline-block" id="uninstallForm-{{ $plugin->id }}">
+    <form action="{{ route('admin.settings.plugins.uninstall', $card['id']) }}" method="POST" class="inline-block" id="uninstallForm-{{ $card['id'] }}">
         @csrf
         <x-form-button
             type="button"
@@ -133,20 +93,20 @@ https://exc-d.com
             variant="danger"
             size="xs"
             icon="fas fa-trash"
-            @click="openModal('uninstallModal-{{ $plugin->id }}')"
+            @click="openModal('uninstallModal-{{ $card['id'] }}')"
             class="py-2 px-3"
         />
 
         <x-ui-modal
-            id="uninstallModal-{{ $plugin->id }}"
+            id="uninstallModal-{{ $card['id'] }}"
             :title="__('admin/settings/plugins/index.uninstall.confirm_title')"
-            :message="str_replace('{name}', $plugin->name, __('admin/settings/plugins/index.uninstall.confirm_message'))"
+            :message="str_replace('{name}', $card['name'], __('admin/settings/plugins/index.uninstall.confirm_message'))"
             :confirm_label="__('common.uninstall')"
             :cancel_label="__('common.cancel')"
             :checkbox="true"
             checkbox_name="remove_db_data"
             checkbox_label="{!! __('admin/settings/plugins/index.uninstall.remove_data_checkbox') !!}"
-            form="uninstallForm-{{ $plugin->id }}"
+            form="uninstallForm-{{ $card['id'] }}"
             icon_type="danger"
             confirm_color="red"
         />

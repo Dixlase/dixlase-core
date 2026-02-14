@@ -31,6 +31,7 @@ use App\Http\Requests\Admin\Settings\AdminThemeInstallRequest;
 use App\Http\Requests\Admin\Settings\AdminThemeUploadRequest;
 use App\Models\Theme;
 use App\Models\ThemeAudit;
+use App\Presenters\Admin\ExtensionCardPresenter;
 use App\Services\Csp\CspDiagnosticService;
 use App\Services\Csp\CspExtensionLoader;
 use App\Services\ExtensionOperationService;
@@ -100,9 +101,21 @@ class AdminThemesSettingsController extends AdminLoggedInController
             $theme['csp_compatibility'] = $cspLoader->getCspCompatibility('theme', $theme['slug']);
         }
 
+        // カードデータを事前計算
+        $themeCards = [];
+        foreach ($themes as $theme) {
+            $themeCards[] = ExtensionCardPresenter::forTheme($theme, $activeThemeId);
+        }
+        $uninstalledThemeCards = [];
+        foreach ($uninstalledThemes as $theme) {
+            $uninstalledThemeCards[] = ExtensionCardPresenter::forTheme($theme, $activeThemeId);
+        }
+
         $this->viewParams['themes'] = $themes;
         $this->viewParams['uninstalledThemes'] = $uninstalledThemes;
         $this->viewParams['activeThemeId'] = $activeThemeId;
+        $this->viewParams['themeCards'] = $themeCards;
+        $this->viewParams['uninstalledThemeCards'] = $uninstalledThemeCards;
 
         return view('admin::settings.themes.index', $this->viewParams);
     }
@@ -260,6 +273,9 @@ class AdminThemesSettingsController extends AdminLoggedInController
     // テーマ追加
     public function add()
     {
+        $uploadMaxBytes = $this->parsePhpSize(ini_get('upload_max_filesize'));
+        $this->viewParams['uploadMaxMB'] = number_format($uploadMaxBytes / 1048576, 2);
+
         return view('admin::settings.themes.add', $this->viewParams);
     }
 
@@ -606,6 +622,33 @@ class AdminThemesSettingsController extends AdminLoggedInController
 
             return redirect()->back()->with('error', 'テーマの削除に失敗しました: '.$e->getMessage());
         }
+    }
+
+    /**
+     * PHPのサイズ表記をバイト数に変換
+     */
+    private function parsePhpSize(string $sizeStr): int
+    {
+        $sizeStr = trim($sizeStr);
+        $unit = strtoupper(substr($sizeStr, -1));
+        $value = (int) substr($sizeStr, 0, -1);
+
+        switch ($unit) {
+            case 'G':
+                $value *= 1024;
+                // fall-through
+            case 'M':
+                $value *= 1024;
+                // fall-through
+            case 'K':
+                $value *= 1024;
+                break;
+            default:
+                $value = (int) $sizeStr;
+                break;
+        }
+
+        return $value;
     }
 
     /**

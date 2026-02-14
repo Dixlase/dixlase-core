@@ -241,18 +241,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
             <div class="text-sm">
-                @php
-                    $envColors = [
-                        'local' => 'text-blue-600 dark:text-blue-400',
-                        'staging' => 'text-yellow-600 dark:text-yellow-400',
-                        'production' => 'text-green-600 dark:text-green-400',
-                    ];
-                    $envIcons = [
-                        'local' => 'fa-laptop-code',
-                        'staging' => 'fa-flask',
-                        'production' => 'fa-server',
-                    ];
-                @endphp
                 <span class="inline-flex items-center {{ $envColors[$appEnv] ?? $envColors['local'] }}">
                     <i class="fas {{ $envIcons[$appEnv] ?? $envIcons['local'] }} mr-1"></i>{{ __('admin/settings/security/environment.env_options.' . $appEnv) }}
                 </span>

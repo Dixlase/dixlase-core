@@ -22,15 +22,14 @@
 
 namespace App\Http\Controllers\Admin\Front;
 
+use App\Contracts\Repositories\FrontSettingRepositoryInterface;
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Models\FrontSetting;
+use App\Http\Requests\Admin\Front\AdminFrontEditUpdateRequest;
+use App\Http\Requests\Admin\Front\AdminFrontSettingsUpdateRequest;
 use App\Models\FrontPage;
 use App\Models\Media;
 use App\Services\FrontPageContentService;
 use Illuminate\Http\Request;
-use App\Contracts\Repositories\FrontSettingRepositoryInterface;
-use App\Http\Requests\Admin\Front\AdminFrontEditUpdateRequest;
-use App\Http\Requests\Admin\Front\AdminFrontSettingsUpdateRequest;
 
 class AdminFrontController extends AdminLoggedinController
 {
@@ -55,12 +54,12 @@ class AdminFrontController extends AdminLoggedinController
         $this->frontSettingRepository = $frontSettingRepository;
         $this->contentService = $contentService;
     }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-
         return view('admin::front/index', $this->viewParams);
     }
 
@@ -71,7 +70,7 @@ class AdminFrontController extends AdminLoggedinController
     {
         // フロントページのメインコンテンツを取得または作成
         $frontPage = FrontPage::findOrCreateByType('main_content');
-        
+
         // ファイル保存の場合、ファイルからコンテンツを読み込む
         $fileContents = null;
         if ($frontPage->storage_type->value === 'file') {
@@ -81,10 +80,21 @@ class AdminFrontController extends AdminLoggedinController
                 $frontPage->editor_type->value
             );
         }
-        
+
+        // コンテンツの取得
+        $editorType = $frontPage->editor_type->value ?? 'html';
+        $contentColumn = 'content_'.$editorType;
+        if ($fileContents !== null) {
+            $content = $fileContents;
+        } else {
+            $content = $frontPage->{$contentColumn} ?? $frontPage->content ?? '';
+        }
+
         $this->viewParams['frontPage'] = $frontPage;
         $this->viewParams['fileContents'] = $fileContents;
-        
+        $this->viewParams['content'] = $content;
+        $this->viewParams['editorType'] = $editorType;
+
         return view('admin::front/edit', $this->viewParams);
     }
 
@@ -94,21 +104,21 @@ class AdminFrontController extends AdminLoggedinController
     public function updateEdit(AdminFrontEditUpdateRequest $request)
     {
         $validated = $request->validated();
-        
+
         // GUIエディタの場合は強制的にDBに
         $storageType = $validated['storage_type'];
         if ($validated['editor_type'] === 'gui') {
             $storageType = 'database';
         }
-        
+
         // フロントページを取得または作成
         $frontPage = FrontPage::findOrCreateByType('main_content');
         $oldStorageType = $frontPage->storage_type->value;
         $oldEditorType = $frontPage->editor_type->value;
         $locale = app()->getLocale();
-        
+
         $content = $validated['content'] ?? '';
-        
+
         // コンテンツカラムの準備
         $contentData = [
             'content' => null,
@@ -116,7 +126,7 @@ class AdminFrontController extends AdminLoggedinController
             'content_html' => null,
             'content_blade' => null,
         ];
-        
+
         // 保存方法が変更された場合の処理
         if ($oldStorageType !== $storageType) {
             if ($oldStorageType === 'file' && $storageType === 'database') {
@@ -128,7 +138,7 @@ class AdminFrontController extends AdminLoggedinController
                 $this->contentService->deleteFile($frontPage->page_type, $locale, $oldEditorType);
             }
         }
-        
+
         if ($storageType === 'file') {
             // ファイル保存の場合はコンテンツをファイルに保存
             $this->contentService->saveToFile(
@@ -139,10 +149,10 @@ class AdminFrontController extends AdminLoggedinController
             );
         } else {
             // DB保存の場合はエディタータイプ別のカラムに保存
-            $contentColumn = 'content_' . $validated['editor_type'];
+            $contentColumn = 'content_'.$validated['editor_type'];
             $contentData[$contentColumn] = $content;
         }
-        
+
         // フロントページを更新
         $frontPage->update([
             'title' => $validated['title'] ?? null,
@@ -173,7 +183,7 @@ class AdminFrontController extends AdminLoggedinController
             ) ?? '';
         } else {
             // DBからエディタータイプ別のカラムを読み込む
-            $contentColumn = 'content_' . $editorType;
+            $contentColumn = 'content_'.$editorType;
             $content = $frontPage->{$contentColumn} ?? '';
         }
 
@@ -190,13 +200,13 @@ class AdminFrontController extends AdminLoggedinController
             'front_ogp_image_id' => $this->frontSettingRepository->get('front_ogp_image_id'),
             'front_description' => $this->frontSettingRepository->get('front_description'),
         ];
-        
+
         // メディア情報を取得
         $frontOgpImage = $settings['front_ogp_image_id'] ? Media::find($settings['front_ogp_image_id']) : null;
-        
+
         $this->viewParams['settings'] = $settings;
         $this->viewParams['frontOgpImage'] = $frontOgpImage;
-        
+
         return view('admin::front/settings', $this->viewParams);
     }
 
@@ -205,11 +215,10 @@ class AdminFrontController extends AdminLoggedinController
      */
     public function updateSettings(AdminFrontSettingsUpdateRequest $request)
     {
-        
         // 設定を保存
         $this->frontSettingRepository->set('front_ogp_image_id', $request->input('front_ogp_image_id'));
         $this->frontSettingRepository->set('front_description', $request->input('front_description'));
-        
+
         return redirect()->route('admin.front.settings')
             ->with('success', __('admin/front.settings_updated'));
     }

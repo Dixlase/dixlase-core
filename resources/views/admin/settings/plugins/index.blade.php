@@ -34,8 +34,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         @if($plugins->count() > 0)
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                @foreach ($plugins as $plugin)
-                    @include('admin.settings.plugins.partials.plugin-card', ['plugin' => $plugin])
+                @foreach ($pluginCards as $card)
+                    @include('admin.settings.plugins.partials.plugin-card', ['card' => $card])
                 @endforeach
             </div>
         @else
@@ -62,8 +62,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <p class="text-gray-600 dark:text-gray-400 mb-6">{{ __('admin/settings/plugins/index.uninstalled_description') }}</p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            @foreach ($uninstalledPlugins as $plugin)
-                @include('admin.settings.plugins.partials.plugin-card', ['plugin' => $plugin])
+            @foreach ($uninstalledPluginCards as $card)
+                @include('admin.settings.plugins.partials.plugin-card', ['card' => $card])
             @endforeach
         </div>
     </section>

@@ -251,6 +251,17 @@ class AdminMemberFormController extends AdminLoggedInController
      */
     private function loadMemberFormParams(): void
     {
+        // radio-card-group用のロールオプション配列を生成
+        $roleCardOptions = [];
+        foreach (MemberRole::cases() as $role) {
+            $roleCardOptions[] = [
+                'value' => $role->value,
+                'label' => $role->label(),
+                'icon' => 'fas fa-user-shield',
+            ];
+        }
+        $this->viewParams['roleCardOptions'] = $roleCardOptions;
+
         // パスワード設定（セキュリティ設定から）
         $this->viewParams['passwordMinLength'] = (int) $this->securitySettingRepository->get('password_min_length', 8);
         $this->viewParams['passwordRequireUppercase'] = (bool) $this->securitySettingRepository->get('password_require_uppercase', true);
