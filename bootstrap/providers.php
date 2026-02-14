@@ -1,7 +1,6 @@
 <?php
 
 return [
-    App\Providers\SessionServiceProvider::class,
     App\Providers\AdminServiceProvider::class,
     App\Providers\AppServiceProvider::class,
     App\Providers\AuditServiceProvider::class,
@@ -11,6 +10,7 @@ return [
     App\Providers\PluginMigrationServiceProvider::class,
     App\Providers\PluginServiceProvider::class,
     App\Providers\RepositoryServiceProvider::class,
+    App\Providers\SessionServiceProvider::class,
     App\Providers\ShortcodeServiceProvider::class,
     App\Providers\ThemeServiceProvider::class,
     App\Providers\WebhookServiceProvider::class,

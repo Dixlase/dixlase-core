@@ -22,19 +22,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-    @php
-    // コンテンツの取得
-    $editorType = $frontPage->editor_type->value ?? 'html';
-    $contentColumn = 'content_' . $editorType;
-    
-    // ファイル保存の場合はファイルから、DB保存の場合はカラムから
-    if ($fileContents !== null) {
-        $content = old('content', $fileContents);
-    } else {
-        $content = old('content', $frontPage->{$contentColumn} ?? $frontPage->content ?? '');
-    }
-    @endphp
-
     @if(session('success'))
     <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
         {{ session('success') }}
@@ -50,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :storageType="old('storage_type', $frontPage->storage_type->value ?? 'database')"
             :editorType="old('editor_type', $frontPage->editor_type->value ?? 'html')"
             :title="old('title', $frontPage->title ?? '')"
-            :content="$content"
+            :content="old('content', $content)"
             :identifier="'front-main-content'"
             :pageId="$frontPage->id"
             :contentApiUrl="url('admin/front/edit/content/{storageType}/{editorType}')"

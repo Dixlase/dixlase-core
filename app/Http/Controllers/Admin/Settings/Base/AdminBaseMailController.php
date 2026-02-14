@@ -93,6 +93,16 @@ class AdminBaseMailController extends AdminLoggedInController
         $this->viewParams['mailReceiveTestDate'] = $mailReceiveTestDate;
         $this->viewParams['mailers'] = __('mail-server/config.mailers');
         $this->viewParams['encryptions'] = __('mail-server/config.encryptions');
+        $this->viewParams['mailSettingsConfig'] = [
+            'routes' => [
+                'checkTestSession' => route('admin.settings.base.mail.check-test-session'),
+                'clearTestSession' => route('admin.settings.base.mail.clear-test-session'),
+            ],
+            'translations' => [
+                'mailReceiveTestCompleted' => __('admin/settings/base/mail.mail_receive_test_completed'),
+                'mailTestIncomplete' => __('admin/settings/base/mail.mail_test_incomplete'),
+            ],
+        ];
 
         return view('admin.settings.base.mail', $this->viewParams);
     }

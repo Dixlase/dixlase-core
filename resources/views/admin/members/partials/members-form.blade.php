@@ -225,20 +225,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <input type="hidden" name="role" value="{{ $roleSuperAdminValue }}">
                 <p class="description-text">{{ __('admin/members/form.initial_admin_role_fixed') }}</p>
             @else
-                @php
-                    $roleValue = old('role', $member->role->value ?? $roleAdminValue);
-                    $roleOptions = [];
-                    foreach ($roles as $role) {
-                        $roleOptions[] = [
-                            'value' => $role->value,
-                            'label' => $role->label(),
-                            'icon' => 'fas fa-user-shield',
-                        ];
-                    }
-                @endphp
                 <x-form-radio-card-group
                     name="role"
-                    :options="$roleOptions"
+                    :options="$roleCardOptions"
                     :value="$roleValue"
                     :columns="4"
                 />

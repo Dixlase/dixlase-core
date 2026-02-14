@@ -19,40 +19,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @php
-    // ログインユーザーの権限を取得
-    $currentUserRole = auth()->user()->role;
-    $currentUserRoleValue = $currentUserRole->value;
-    $isSuperAdmin = $currentUserRoleValue === $superAdminValue;
-
-    // 選択可能な最大値
-    $maxSelectableRole = $isSuperAdmin
-        ? $superAdminValue
-        : $currentUserRoleValue;
-
-    // 最小値はGUEST
-    $minSelectableRole = $guestValue;
-    
-    // 権限オプションを作成
-    $roleOptions = [];
-    $roleValues = [];
-    $roleLabelsForRange = [];
-    $index = 0;
-    foreach ($roles as $role) {
-        if ($role->value <= $maxSelectableRole) {
-            $roleOptions[$role->value] = $role->label();
-        }
-    }
-    ksort($roleOptions);
-    
-    foreach ($roleOptions as $value => $label) {
-        $roleValues[$index] = $value;
-        $roleLabelsForRange[$index] = $label;
-        $index++;
-    }
-    
-    $valueToIndex = array_flip($roleValues);
-    $maxIndex = count($roleValues) - 1;
-    
     // プラグイン情報
     $pluginSlug = $pluginGroup['slug'];
     $pluginName = $pluginGroup['name'];

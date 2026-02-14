@@ -20,48 +20,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('layouts.admin')
 
-@php
-    /**
-     * アップロード出来るファイルサイズの上限を取得
-     * @param string $sizeStr PHPの設定値 (例: "2M")
-     * @return int バイト数
-     */
-    function parsePhpSize($sizeStr) {
-        $sizeStr = trim($sizeStr);
-        $unit = strtoupper(substr($sizeStr, -1)); // 末尾1文字 (K, M, G)
-        $value = (int) substr($sizeStr, 0, -1);
-
-        switch ($unit) {
-            case 'G':
-                $value *= 1024;
-                // no break
-            case 'M':
-                $value *= 1024;
-                // no break
-            case 'K':
-                $value *= 1024;
-                break;
-            default:
-                $value = (int)$sizeStr; // 単位なしの場合
-        }
-        return $value;
-    }
-
-    // PHPの設定から取得
-    $uploadMaxFilesize = ini_get('upload_max_filesize');  // 例: "2M"
-    $postMaxSize       = ini_get('post_max_size');        // 例: "8M"
-
-    // バイト数に変換
-    $uploadMaxBytes = parsePhpSize($uploadMaxFilesize);
-    $postMaxBytes   = parsePhpSize($postMaxSize);
-
-    // 画面表示用に "2M" 形式でそのまま表示しても良いし、
-    // あるいは数値(MB)を小数込みで表示したい場合は:
-    $uploadMaxMB = number_format($uploadMaxBytes / 1048576, 2); // 1MB = 1048576 bytes
-    $postMaxMB   = number_format($postMaxBytes / 1048576, 2);
-@endphp
-
-
 @section('content')
 <div class="mx-auto">
 

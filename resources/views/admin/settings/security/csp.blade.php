@@ -201,28 +201,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <template x-if="blocklistEnabled === '0'">
                             <input type="hidden" name="csp_blocklist_enabled_categories" value="{{ old('csp_blocklist_enabled_categories', $settings['csp_blocklist_enabled_categories'] ?? '') }}">
                         </template>
-                        @php
-                            $enabledCategories = explode(',', old('csp_blocklist_enabled_categories', $settings['csp_blocklist_enabled_categories'] ?? ''));
-                            $blocklistSources = config('csp.blocklist_sources', []);
-                            $categoryIcons = [
-                                'tracking' => 'fas fa-ad',
-                                'malware' => 'fas fa-virus',
-                                'cryptominer' => 'fas fa-coins',
-                            ];
-                        @endphp
                         @foreach($blocklistSources as $categoryKey => $categoryData)
-                        @php
-                            $isChecked = in_array($categoryKey, $enabledCategories);
-                            $toggleId = 'csp_blocklist_category_' . $categoryKey;
-                        @endphp
                         <div class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
-                            <label for="{{ $toggleId }}" class="flex items-center gap-3 cursor-pointer">
+                            <label for="csp_blocklist_category_{{ $categoryKey }}" class="flex items-center gap-3 cursor-pointer">
                                 <div class="relative inline-flex items-center flex-shrink-0">
                                     <input type="checkbox"
-                                           id="{{ $toggleId }}"
+                                           id="csp_blocklist_category_{{ $categoryKey }}"
                                            name="csp_blocklist_categories[]"
                                            value="{{ $categoryKey }}"
-                                           {{ $isChecked ? 'checked' : '' }}
+                                           {{ in_array($categoryKey, $enabledCategories) ? 'checked' : '' }}
                                            class="sr-only peer">
                                     <div class="w-11 h-6 rounded-full transition-colors peer-focus:outline-none bg-gray-200 dark:bg-gray-600 peer-checked:bg-indigo-600"></div>
                                     <div class="absolute left-1 top-1 w-4 h-4 bg-white border border-gray-300 rounded-full transition-all peer-checked:translate-x-full peer-checked:border-white"></div>

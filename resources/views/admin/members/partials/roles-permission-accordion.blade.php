@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @php
     // メニューキーを生成
     $menuKey = $prefix ? $prefix . '.' . $key : $key;
-    
+
     // ナビゲーション設定からアイコンとテキストを取得
     $navItem = null;
     $navParts = explode('.', $menuKey);
@@ -35,34 +35,31 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             break;
         }
     }
-    
+
     $icon = $navItem['icon'] ?? 'fas fa-folder';
     $text = $navItem['text'] ?? $key;
-    
+
     // 権限設定専用のラベルがあるか確認
     $permissionLabel = __('admin/members/roles.permission_labels.' . $key);
     $hasPermissionLabel = $permissionLabel !== 'admin/members/roles.permission_labels.' . $key;
-    
+
     if ($hasPermissionLabel) {
-        // 権限設定専用のラベルがある場合はそれを使用
         $title = $permissionLabel;
     } elseif ($navItem === null) {
-        // ナビゲーションにもない場合はキーをそのまま使用
         $title = $key;
     } else {
-        // ナビゲーションのテキストを使用
         $title = __($text);
     }
-    
+
     // 権限定義があるかどうか
     $hasPermission = isset($item['access_roles']);
-    
+
     // 子要素があるかどうか
     $hasChildren = isset($item['children']) && !empty($item['children']);
-    
+
     // ユニークID
     $accordionId = 'perm_' . str_replace('.', '_', $menuKey);
-    
+
     // 深さに応じたインデント
     $indentClass = match($depth) {
         0 => '',
@@ -71,40 +68,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         3 => 'ml-12',
         default => 'ml-16'
     };
-    
-    // ログインユーザーの権限を取得
-    $currentUserRole = auth()->user()->role;
-    $currentUserRoleValue = $currentUserRole->value;
-    $isSuperAdmin = $currentUserRoleValue === $superAdminValue;
-
-    // 選択可能な最大値
-    $maxSelectableRole = $isSuperAdmin
-        ? $superAdminValue
-        : $currentUserRoleValue;
-
-    // 最小値はGUEST
-    $minSelectableRole = $guestValue;
-    
-    // 権限オプションを作成
-    $roleOptions = [];
-    $roleValues = [];
-    $roleLabelsForRange = [];
-    $index = 0;
-    foreach ($roles as $role) {
-        if ($role->value <= $maxSelectableRole) {
-            $roleOptions[$role->value] = $role->label();
-        }
-    }
-    ksort($roleOptions);
-    
-    foreach ($roleOptions as $value => $label) {
-        $roleValues[$index] = $value;
-        $roleLabelsForRange[$index] = $label;
-        $index++;
-    }
-    
-    $valueToIndex = array_flip($roleValues);
-    $maxIndex = count($roleValues) - 1;
 @endphp
 
 <div class="permission-accordion {{ $indentClass }}" x-data="{ open: false }">

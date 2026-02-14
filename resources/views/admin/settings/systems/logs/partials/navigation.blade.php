@@ -6,25 +6,6 @@
     @param string $pageType - ページタイプ（'system' or 'audit'）
 --}}
 
-@php
-    $currentView = $currentView ?? request('view', 'db');
-    $pageType = $pageType ?? 'system';
-    
-    // 現在のログタイプからカテゴリを判定
-    $adminTypes = ['activity', 'error', 'dixlase'];
-    $frontTypes = ['front_activity', 'front_error'];
-    $securityTypes = ['csp', 'audit'];
-    $browserTypes = ['browser'];
-    
-    $currentCategory = match(true) {
-        in_array($logType, $adminTypes) => 'admin',
-        in_array($logType, $frontTypes) => 'front',
-        in_array($logType, $securityTypes) => 'security',
-        in_array($logType, $browserTypes) => 'browser',
-        default => 'admin',
-    };
-@endphp
-
 <!-- Log Type Selection -->
 <div class="mb-4">
     @if($pageType === 'system')

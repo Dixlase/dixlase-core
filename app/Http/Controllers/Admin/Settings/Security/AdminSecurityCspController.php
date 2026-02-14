@@ -61,6 +61,13 @@ class AdminSecurityCspController extends AdminLoggedInController
         $this->viewParams['cspModeOptions'] = CspMode::getRadioCardOptions();
         $this->viewParams['cspModeDefaultValue'] = (string) CspMode::default()->value;
         $this->viewParams['cspBlocklistActionDefaultValue'] = (string) CspBlocklistAction::default()->value;
+        $this->viewParams['enabledCategories'] = explode(',', old('csp_blocklist_enabled_categories', $settings['csp_blocklist_enabled_categories'] ?? ''));
+        $this->viewParams['blocklistSources'] = config('csp.blocklist_sources', []);
+        $this->viewParams['categoryIcons'] = [
+            'tracking' => 'fas fa-ad',
+            'malware' => 'fas fa-virus',
+            'cryptominer' => 'fas fa-coins',
+        ];
 
         return view('admin.settings.security.csp', $this->viewParams);
     }

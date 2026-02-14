@@ -31,6 +31,7 @@ use App\Http\Requests\Admin\Settings\AdminPluginInstallRequest;
 use App\Http\Requests\Admin\Settings\AdminPluginUploadRequest;
 use App\Models\Plugin;
 use App\Models\PluginAudit;
+use App\Presenters\Admin\ExtensionCardPresenter;
 use App\Services\Csp\CspDiagnosticService;
 use App\Services\Csp\CspExtensionLoader;
 use App\Services\ExtensionOperationService;
@@ -98,8 +99,20 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $plugin['csp_compatibility'] = $cspLoader->getCspCompatibility('plugin', $plugin['slug']);
         }
 
+        // カードデータを事前計算
+        $pluginCards = [];
+        foreach ($plugins as $plugin) {
+            $pluginCards[] = ExtensionCardPresenter::forPlugin($plugin);
+        }
+        $uninstalledPluginCards = [];
+        foreach ($uninstalledPlugins as $plugin) {
+            $uninstalledPluginCards[] = ExtensionCardPresenter::forPlugin($plugin);
+        }
+
         $this->viewParams['plugins'] = $plugins;
         $this->viewParams['uninstalledPlugins'] = $uninstalledPlugins;
+        $this->viewParams['pluginCards'] = $pluginCards;
+        $this->viewParams['uninstalledPluginCards'] = $uninstalledPluginCards;
         $this->viewParams['heading'] = 'プラグインマスター';
 
         return view('admin::settings.plugins.index', $this->viewParams);
@@ -232,6 +245,8 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
     public function add()
     {
+        $uploadMaxBytes = $this->parsePhpSize(ini_get('upload_max_filesize'));
+        $this->viewParams['uploadMaxMB'] = number_format($uploadMaxBytes / 1048576, 2);
         $this->viewParams['heading'] = 'プラグインを追加';
 
         return view('admin::settings.plugins.add', $this->viewParams);

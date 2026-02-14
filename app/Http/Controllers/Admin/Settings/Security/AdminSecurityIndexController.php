@@ -97,6 +97,16 @@ class AdminSecurityIndexController extends AdminLoggedInController
         $this->viewParams['appDebug'] = $appDebug;
         $this->viewParams['integrityStatusOk'] = FileIntegrityAudit::STATUS_OK;
         $this->viewParams['integrityStatusWarning'] = FileIntegrityAudit::STATUS_WARNING;
+        $this->viewParams['envColors'] = [
+            'local' => 'text-blue-600 dark:text-blue-400',
+            'staging' => 'text-yellow-600 dark:text-yellow-400',
+            'production' => 'text-green-600 dark:text-green-400',
+        ];
+        $this->viewParams['envIcons'] = [
+            'local' => 'fa-laptop-code',
+            'staging' => 'fa-flask',
+            'production' => 'fa-server',
+        ];
 
         return view('admin.settings.security.index', $this->viewParams);
     }

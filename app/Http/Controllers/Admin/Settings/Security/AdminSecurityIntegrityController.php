@@ -53,6 +53,15 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
+        // ロケールに応じた日付フォーマット
+        $dateFormat = app()->getLocale() === 'ja' ? 'Y年n月j日 H:i' : 'Y-m-d H:i';
+
+        // ベースライン日付をフォーマット
+        if (isset($baselineMeta['generated_at'])) {
+            $baselineMeta['formatted_generated_at'] = \Carbon\Carbon::parse($baselineMeta['generated_at'])->format($dateFormat);
+        }
+
+        $this->viewParams['dateFormat'] = $dateFormat;
         $this->viewParams['latestAudit'] = $latestAudit;
         $this->viewParams['hasBaseline'] = $hasBaseline;
         $this->viewParams['baselineMeta'] = $baselineMeta;

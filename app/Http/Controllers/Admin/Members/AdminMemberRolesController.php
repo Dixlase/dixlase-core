@@ -52,6 +52,32 @@ class AdminMemberRolesController extends AdminLoggedInController
         // プラグイン権限グループを収集
         $pluginPermissionGroups = $this->collectPluginPermissions();
 
+        // ロールマッピングデータを事前計算（各アコーディオンビューで共有）
+        $currentUserRole = auth()->user()->role;
+        $currentUserRoleValue = $currentUserRole->value;
+        $isSuperAdmin = $currentUserRoleValue === MemberRole::SUPER_ADMIN->value;
+        $maxSelectableRole = $isSuperAdmin ? MemberRole::SUPER_ADMIN->value : $currentUserRoleValue;
+        $minSelectableRole = MemberRole::GUEST->value;
+
+        $roleOptions = [];
+        foreach ($roles as $role) {
+            if ($role->value <= $maxSelectableRole) {
+                $roleOptions[$role->value] = $role->label();
+            }
+        }
+        ksort($roleOptions);
+
+        $roleValues = [];
+        $roleLabelsForRange = [];
+        $index = 0;
+        foreach ($roleOptions as $value => $label) {
+            $roleValues[$index] = $value;
+            $roleLabelsForRange[$index] = $label;
+            $index++;
+        }
+        $valueToIndex = array_flip($roleValues);
+        $maxIndex = count($roleValues) - 1;
+
         $this->viewParams['permissions'] = $corePermissions;
         $this->viewParams['permissionsFlat'] = $corePermissionsFlat;
         $this->viewParams['roles'] = $roles;
@@ -60,6 +86,13 @@ class AdminMemberRolesController extends AdminLoggedInController
         $this->viewParams['superAdminValue'] = MemberRole::SUPER_ADMIN->value;
         $this->viewParams['guestValue'] = MemberRole::GUEST->value;
         $this->viewParams['adminDefaultValue'] = MemberRole::ADMIN->value;
+        $this->viewParams['isSuperAdmin'] = $isSuperAdmin;
+        $this->viewParams['maxSelectableRole'] = $maxSelectableRole;
+        $this->viewParams['minSelectableRole'] = $minSelectableRole;
+        $this->viewParams['roleValues'] = $roleValues;
+        $this->viewParams['roleLabelsForRange'] = $roleLabelsForRange;
+        $this->viewParams['valueToIndex'] = $valueToIndex;
+        $this->viewParams['maxIndex'] = $maxIndex;
 
         return view('admin.members.roles', $this->viewParams);
     }

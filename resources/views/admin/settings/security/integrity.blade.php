@@ -50,14 +50,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.baseline_generated_at') }}</p>
                     <p class="font-medium text-gray-900 dark:text-white">
-                        @if(isset($baselineMeta['generated_at']))
-                            @php
-                                $generatedAt = \Carbon\Carbon::parse($baselineMeta['generated_at']);
-                                $formattedDate = app()->getLocale() === 'ja' 
-                                    ? $generatedAt->format('Y年n月j日 H:i')
-                                    : $generatedAt->format('Y-m-d H:i');
-                            @endphp
-                            {{ $formattedDate }}
+                        @if(isset($baselineMeta['formatted_generated_at']))
+                            {{ $baselineMeta['formatted_generated_at'] }}
                         @else
                             N/A
                         @endif
@@ -108,12 +102,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.scan_date') }}</p>
                     <p class="font-medium text-gray-900 dark:text-white">
-                        @php
-                            $formattedScanDate = app()->getLocale() === 'ja' 
-                                ? $latestAudit->created_at->format('Y年n月j日 H:i')
-                                : $latestAudit->created_at->format('Y-m-d H:i');
-                        @endphp
-                        {{ $formattedScanDate }}
+                        {{ $latestAudit->created_at->format($dateFormat) }}
                     </p>
                 </div>
                 <div>
@@ -249,12 +238,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @foreach($recentAudits as $audit)
                             <tr>
                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                    @php
-                                        $formattedDate = app()->getLocale() === 'ja' 
-                                            ? $audit->created_at->format('Y年n月j日 H:i')
-                                            : $audit->created_at->format('Y-m-d H:i');
-                                    @endphp
-                                    {{ $formattedDate }}
+                                    {{ $audit->created_at->format($dateFormat) }}
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     @if($audit->status === $integrityStatusOk)
