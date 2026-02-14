@@ -67,3 +67,7 @@ license.txt
 .mcp.json
 *.bak
 
+# AI guidelines (language overrides are personal preference)
+.ai/guidelines/*
+!.ai/guidelines/foundation.blade.php
+

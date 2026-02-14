@@ -41,4 +41,18 @@ return [
     'files_scanned' => 'Files Scanned',
     'status' => 'Status',
     'view_details' => 'View Details',
+
+    'nav' => [
+        'password' => 'Password',
+        'login_attempt' => 'Login',
+        'two_fa' => 'Two-Factor Authentication',
+        'captcha' => 'CAPTCHA',
+        'session' => 'Session',
+        'notifications' => 'Error Notifications',
+        'csp' => 'CSP',
+        'extensions' => 'Extensions',
+        'ip' => 'IP Access Control',
+        'integrity' => 'File Integrity',
+        'environment' => 'Environment',
+    ],
 ];

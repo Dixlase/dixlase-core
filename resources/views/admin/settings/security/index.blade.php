@@ -30,7 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-key text-blue-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/navigation.settings.security.password') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.password') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -44,7 +44,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-sign-in-alt text-indigo-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/navigation.settings.security.login_attempt') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.login_attempt') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -58,7 +58,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-user-shield text-teal-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/navigation.settings.security.two-fa') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.two_fa') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -72,7 +72,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-robot text-purple-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/navigation.settings.security.captcha') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.captcha') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -100,7 +100,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-clock text-green-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/navigation.settings.security.session') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.session') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -114,7 +114,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-bell text-yellow-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/navigation.settings.security.notifications') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.notifications') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -142,7 +142,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-code text-orange-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/navigation.settings.security.csp') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.csp') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -164,7 +164,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-puzzle-piece text-pink-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/navigation.settings.security.extensions') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.extensions') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -178,7 +178,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-network-wired text-cyan-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/navigation.settings.security.ip') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.ip') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -200,7 +200,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-file-shield text-red-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/navigation.settings.security.integrity') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.integrity') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -236,7 +236,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-cog text-gray-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/navigation.settings.security.environment') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.environment') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>

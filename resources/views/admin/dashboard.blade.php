@@ -288,10 +288,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             cancel-label="キャンセル"
         />
 
-         {{__('custom.welcome')}};
-         {{__('admin/navigation.custom.text')}};
-         {{ __('reservation-plugin::admin.nav.reservations.text')}};
-
     </div>
 
     {{-- CSP違反テストセクション（検証用・本番では削除） --}}
