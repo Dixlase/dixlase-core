@@ -74,24 +74,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <!-- Hidden inputs to preserve settings when disabled -->
                     <template x-if="notificationEnabled === '0'">
                         <div>
-                            @foreach(($settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels()) as $level)
+                            @foreach(($settings['notification_log_levels'] ?? $defaultNotificationLevels) as $level)
                                 <input type="hidden" name="notification_log_levels[]" value="{{ $level }}">
                             @endforeach
                         </div>
                     </template>
                     
-                    @php
-                        $logLevelOptions = [];
-                        foreach (\App\Enums\LogLevel::getNotificationLevels() as $level) {
-                            $levelString = \App\Enums\LogLevel::from($level)->toString();
-                            $logLevelOptions[$level] = 'admin/settings/security/notifications.log_level_options.' . $levelString;
-                        }
-                    @endphp
-                    
                     <x-form-toggle-group
                         name="notification_log_levels"
                         :options="$logLevelOptions"
-                        :values="$settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels()"
+                        :values="$settings['notification_log_levels'] ?? $defaultNotificationLevels"
                         flexDirection="col"
                     />
                 </div>

@@ -35,7 +35,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'formAction' => null,        // フォームのaction URL
     'formMethod' => 'POST',      // フォームのメソッド
     'formId' => 'member-form',   // フォームのID
-    'includeForm' => true        // フォームタグを含めるかどうか
+    'includeForm' => true,       // フォームタグを含めるかどうか
+    'roleLabels' => [],
+    'currentLoginNotification' => '2',
+    'currentTwoFaMode' => '2',
+    'isTwoFaEditable' => null,
+    'isPasskeyEditable' => null,
+    'forcedPasskeyValue' => null,
+    'twoFaModeOptionsWithIcons' => null,
+    'twoFaGlobalModeName' => null,
 ])
 
 @if($includeForm && $formAction)
@@ -241,25 +249,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <x-slot name="message">
                             <strong>{{ __('admin/members/form.role_permissions_info') }}</strong>
                             <dl class="mt-3">
-                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::SUPER_ADMIN->label() }}</dt>
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['SUPER_ADMIN'] }}</dt>
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_super_admin_description') }}</dd>
-                                
-                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::ADMIN->label() }}</dt>
+
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['ADMIN'] }}</dt>
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_admin_description') }}</dd>
-                                
-                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::EDITOR->label() }}</dt>
+
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['EDITOR'] }}</dt>
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_editor_description') }}</dd>
-                                
-                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::AUTHOR->label() }}</dt>
+
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['AUTHOR'] }}</dt>
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_author_description') }}</dd>
-                                
-                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::CONTRIBUTOR->label() }}</dt>
+
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['CONTRIBUTOR'] }}</dt>
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_contributor_description') }}</dd>
-                                
-                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::RECEPTIONIST->label() }}</dt>
+
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['RECEPTIONIST'] }}</dt>
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_receptionist_description') }}</dd>
-                                
-                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::GUEST->label() }}</dt>
+
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['GUEST'] }}</dt>
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_guest_description') }}</dd>
                             </dl>
                         </x-slot>
@@ -282,13 +290,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
         @endif
 
-        @php
-            $currentLoginNotification = $member->login_notification_mode ?? \App\Enums\AuthenticationMode::Always->value;
-            if ($currentLoginNotification instanceof \App\Enums\AuthenticationMode) {
-                $currentLoginNotification = $currentLoginNotification->value;
-            }
-        @endphp
-        
         <x-security.login-notification-selector
             name="login_notification_mode"
             :value="old('login_notification_mode', (string)$currentLoginNotification)"
@@ -308,13 +309,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
         @endif
         
-        @php
-            $currentTwoFaMode = $member->two_fa_mode ?? \App\Enums\AuthenticationMode::Always->value;
-            if ($currentTwoFaMode instanceof \App\Enums\AuthenticationMode) {
-                $currentTwoFaMode = $currentTwoFaMode->value;
-            }
-        @endphp
-        
         <x-two-fa.individual-settings
             name="two_fa_mode"
             :value="old('two_fa_mode', (string)$currentTwoFaMode)"
@@ -322,6 +316,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :excludeUseProfileSetting="true"
             :columns="3"
             :globalSettingsUrl="route('admin.settings.security.two-fa')"
+            :isTwoFaEditable="$isTwoFaEditable"
+            :isPasskeyEditable="$isPasskeyEditable"
+            :forcedPasskeyValue="$forcedPasskeyValue"
+            :twoFaModeOptionsWithIcons="$twoFaModeOptionsWithIcons"
+            :twoFaGlobalModeName="$twoFaGlobalModeName"
         />
     </section>
 

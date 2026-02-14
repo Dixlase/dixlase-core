@@ -44,11 +44,10 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
      */
     public function index()
     {
-        
         $latestAudit = FileIntegrityAudit::getLatestCore();
         $hasBaseline = $this->fileIntegrityService->hasBaseline();
         $baselineMeta = $hasBaseline ? $this->fileIntegrityService->getBaselineMeta() : null;
-        
+
         // 直近のスキャン履歴を取得（ページネーション付き）
         $recentAudits = FileIntegrityAudit::where('scope', FileIntegrityAudit::SCOPE_CORE)
             ->orderBy('created_at', 'desc')
@@ -58,6 +57,7 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
         $this->viewParams['hasBaseline'] = $hasBaseline;
         $this->viewParams['baselineMeta'] = $baselineMeta;
         $this->viewParams['recentAudits'] = $recentAudits;
+        $this->addIntegrityConstants();
 
         return view('admin.settings.security.integrity', $this->viewParams);
     }
@@ -124,6 +124,7 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
     public function show(FileIntegrityAudit $audit)
     {
         $this->viewParams['audit'] = $audit;
+        $this->addIntegrityConstants();
 
         return view('admin.settings.security.integrity-show', $this->viewParams);
     }
@@ -149,12 +150,22 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
         ]);
 
         $cutoffDate = now()->subDays($request->days);
-        
+
         $count = FileIntegrityAudit::where('scope', FileIntegrityAudit::SCOPE_CORE)
             ->where('created_at', '<', $cutoffDate)
             ->delete();
 
         return redirect()->route('admin.settings.security.integrity')
             ->with('success', __('admin/settings/security/integrity.audits_deleted', ['count' => $count]));
+    }
+
+    private function addIntegrityConstants(): void
+    {
+        $this->viewParams['integrityStatusOk'] = FileIntegrityAudit::STATUS_OK;
+        $this->viewParams['integrityStatusWarning'] = FileIntegrityAudit::STATUS_WARNING;
+        $this->viewParams['triggerManual'] = FileIntegrityAudit::TRIGGER_MANUAL;
+        $this->viewParams['triggerSchedule'] = FileIntegrityAudit::TRIGGER_SCHEDULE;
+        $this->viewParams['triggerInstall'] = FileIntegrityAudit::TRIGGER_INSTALL;
+        $this->viewParams['triggerUpdate'] = FileIntegrityAudit::TRIGGER_UPDATE;
     }
 }

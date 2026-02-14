@@ -41,7 +41,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="my-3">
                     <x-form-radio-card-group
                         name="app_env"
-                        :options="\App\Enums\AppEnvironment::getRadioCardOptions()"
+                        :options="$environmentOptions"
                         :value="old('app_env', $settings['app_env'])"
                         xModel="appEnv"
                         columns="3"

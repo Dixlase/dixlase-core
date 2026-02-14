@@ -22,11 +22,11 @@
 
 namespace App\Http\Controllers\Admin\Settings\Security;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Enums\AppEnvironment;
 use App\Helpers\EnvHelper;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Security\AdminSecurityEnvironmentUpdateRequest;
+use Illuminate\Support\Facades\Log;
 
 class AdminSecurityEnvironmentController extends AdminLoggedInController
 {
@@ -35,13 +35,13 @@ class AdminSecurityEnvironmentController extends AdminLoggedInController
      */
     public function index()
     {
-        
         $settings = [
             'app_env' => config('app.env', 'local'),
             'app_debug' => config('app.debug', false),
         ];
 
         $this->viewParams['settings'] = $settings;
+        $this->viewParams['environmentOptions'] = AppEnvironment::getRadioCardOptions();
 
         return view('admin.settings.security.environment', $this->viewParams);
     }

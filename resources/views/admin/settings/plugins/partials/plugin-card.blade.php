@@ -230,8 +230,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             {{-- CSP互換性 --}}
             @php
-                $cspLoader = app(\App\Services\Csp\CspExtensionLoader::class);
-                $cspCompatibility = $cspLoader->getCspCompatibility('plugin', $pluginSlug);
+                $cspCompatibility = $isModel ? ($plugin->csp_compatibility ?? []) : ($plugin['csp_compatibility'] ?? []);
             @endphp
             <div class="flex items-center gap-2">
                 <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/plugins/index.badge_labels.csp') }}</span>

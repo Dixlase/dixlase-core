@@ -26,12 +26,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
 
         <!-- ログイン通知設定 -->
-        @php
-            $loginNotificationModeValue = $loginNotificationMode instanceof \App\Enums\AuthenticationMode 
-                ? $loginNotificationMode->value 
-                : ($loginNotificationMode ?? 1);
-        @endphp
-
         <section class="transition-colors-unified">
             <h2>{{ __('admin/profile/notifications.login_notification_mode') }}</h2>
             

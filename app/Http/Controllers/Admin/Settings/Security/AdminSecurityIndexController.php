@@ -22,15 +22,13 @@
 
 namespace App\Http\Controllers\Admin\Settings\Security;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Models\SecuritySetting;
-use App\Models\BaseSetting;
-use App\Models\FileIntegrityAudit;
-use App\Services\FileIntegrityService;
-use App\Services\CaptchaTestService;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Enums\CspMode;
-use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Models\BaseSetting;
+use App\Models\FileIntegrityAudit;
+use App\Services\CaptchaTestService;
+use App\Services\FileIntegrityService;
 
 class AdminSecurityIndexController extends AdminLoggedInController
 {
@@ -47,7 +45,6 @@ class AdminSecurityIndexController extends AdminLoggedInController
      */
     public function index()
     {
-        
         // メールテスト状態を取得
         $sessionTestResults = session('mail_test_results', []);
         $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? BaseSetting::getValue('mail_connection_tested', false));
@@ -98,6 +95,8 @@ class AdminSecurityIndexController extends AdminLoggedInController
         $this->viewParams['sessionDriver'] = $sessionDriver;
         $this->viewParams['appEnv'] = $appEnv;
         $this->viewParams['appDebug'] = $appDebug;
+        $this->viewParams['integrityStatusOk'] = FileIntegrityAudit::STATUS_OK;
+        $this->viewParams['integrityStatusWarning'] = FileIntegrityAudit::STATUS_WARNING;
 
         return view('admin.settings.security.index', $this->viewParams);
     }

@@ -24,7 +24,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div class="mx-auto">
 <div x-data="cspSettings()"
      data-csp-enabled="{{ old('csp_enabled', $settings['csp_enabled']) ? '1' : '0' }}"
-     data-csp-mode="{{ old('csp_mode', $settings['csp_mode'] ?? \App\Enums\CspMode::default()->value) }}"
+     data-csp-mode="{{ old('csp_mode', $settings['csp_mode'] ?? $cspModeDefaultValue) }}"
      data-app-env="{{ config('app.env') }}">
     <form id="security-csp-form" method="POST" action="{{ route('admin.settings.security.csp.update') }}">
         @csrf
@@ -53,7 +53,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- Hidden inputs to preserve settings when disabled -->
                 <template x-if="cspEnabled === '0'">
                     <div>
-                        <input type="hidden" name="csp_mode" :value="'{{ old('csp_mode', $settings['csp_mode'] ?? \App\Enums\CspMode::default()->value) }}'">
+                        <input type="hidden" name="csp_mode" :value="'{{ old('csp_mode', $settings['csp_mode'] ?? $cspModeDefaultValue) }}'">
                         <input type="hidden" name="csp_log_violations" :value="'{{ old('csp_log_violations', $settings['csp_log_violations'] ?? true) ? '1' : '0' }}'">
                         <input type="hidden" name="csp_exclude_dev_tools" :value="'{{ old('csp_exclude_dev_tools', $settings['csp_exclude_dev_tools'] ?? true) ? '1' : '0' }}'">
                         <input type="hidden" name="csp_trusted_domains" :value="'{{ old('csp_trusted_domains', $settings['csp_trusted_domains'] ?? '') }}'">
@@ -69,8 +69,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     
                     <x-form-radio-card-group
                         name="csp_mode"
-                        :options="\App\Enums\CspMode::getRadioCardOptions()"
-                        :value="old('csp_mode', $settings['csp_mode'] ?? \App\Enums\CspMode::default()->value)"
+                        :options="$cspModeOptions"
+                        :value="old('csp_mode', $settings['csp_mode'] ?? $cspModeDefaultValue)"
                         xModel="cspMode"
                         :columns="2"
                     />
@@ -167,7 +167,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         
                         <!-- ブロックリスト無効時のデフォルト値 -->
                         <template x-if="blocklistEnabled === '0'">
-                            <input type="hidden" name="csp_blocklist_action" value="{{ old('csp_blocklist_action', $settings['csp_blocklist_action'] ?? \App\Enums\CspBlocklistAction::default()->value) }}">
+                            <input type="hidden" name="csp_blocklist_action" value="{{ old('csp_blocklist_action', $settings['csp_blocklist_action'] ?? $cspBlocklistActionDefaultValue) }}">
                         </template>
                         
                         <x-form-radio-card-group
@@ -188,7 +188,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     'color' => 'red',
                                 ],
                             ]"
-                            :value="old('csp_blocklist_action', $settings['csp_blocklist_action'] ?? \App\Enums\CspBlocklistAction::default()->value)"
+                            :value="old('csp_blocklist_action', $settings['csp_blocklist_action'] ?? $cspBlocklistActionDefaultValue)"
                             :columns="2"
                         />
                     </div>

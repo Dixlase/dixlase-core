@@ -206,11 +206,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
             <div class="text-sm">
                 @if($latestIntegrityAudit)
-                    @if($latestIntegrityAudit->status === \App\Models\FileIntegrityAudit::STATUS_OK)
+                    @if($latestIntegrityAudit->status === $integrityStatusOk)
                         <span class="inline-flex items-center text-green-600 dark:text-green-400">
                             <i class="fas fa-check-circle mr-1"></i>{{ __('admin/settings/security/index.integrity_ok') }}
                         </span>
-                    @elseif($latestIntegrityAudit->status === \App\Models\FileIntegrityAudit::STATUS_WARNING)
+                    @elseif($latestIntegrityAudit->status === $integrityStatusWarning)
                         <span class="inline-flex items-center text-yellow-600 dark:text-yellow-400">
                             <i class="fas fa-exclamation-triangle mr-1"></i>{{ __('admin/settings/security/index.integrity_warning') }}
                         </span>
@@ -280,11 +280,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
             <div>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/index.status') }}</p>
-                @if($latestIntegrityAudit->status === \App\Models\FileIntegrityAudit::STATUS_OK)
+                @if($latestIntegrityAudit->status === $integrityStatusOk)
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                         {{ __('admin/settings/security/integrity.status_ok') }}
                     </span>
-                @elseif($latestIntegrityAudit->status === \App\Models\FileIntegrityAudit::STATUS_WARNING)
+                @elseif($latestIntegrityAudit->status === $integrityStatusWarning)
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
                         {{ __('admin/settings/security/integrity.status_warning') }}
                     </span>

@@ -25,12 +25,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form method="POST" action="{{ route('admin.profile.two-fa.update') }}" id="profile-two-fa-form">
         @csrf
 
-        @php
-            $member = Auth::guard('member')->user();
-            $twoFaPasskeyGloballyEnabled = in_array(\App\Enums\TwoFaMethod::PASSKEY->value, array_keys($twoFaEnabledMethods ?? []));
-            $isTwoFaEditable = $twoFaForceMode === \App\Enums\AuthenticationMode::UseProfileSetting->value;
-        @endphp
-                
         <div x-data="twoFaProfileSettings(@js(old('two_fa_mode', (string) ($twoFaMode?->value ?? 0))))" id="two-fa-settings-wrapper">
             {{-- Passkeyが有効だがデバイスが未登録の場合の警告 --}}
             @if($currentPasskeyEnabled && $twoFaPasskeyDevices->isEmpty())

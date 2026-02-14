@@ -22,9 +22,9 @@
 
 namespace App\Http\Controllers\Admin\Settings\Security;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Enums\LogLevel;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\BaseSetting;
 
 class AdminSecurityNotificationsController extends AdminLoggedInController
@@ -42,7 +42,6 @@ class AdminSecurityNotificationsController extends AdminLoggedInController
      */
     public function index()
     {
-        
         $settings = [
             'notification_enabled' => filter_var($this->securitySettingRepository->get('notification_enabled', true), FILTER_VALIDATE_BOOLEAN),
             'notification_log_levels' => array_map('intval', array_filter(explode(',', $this->securitySettingRepository->get('notification_log_levels', implode(',', LogLevel::getDefaultNotificationLevels()))))),
@@ -56,9 +55,19 @@ class AdminSecurityNotificationsController extends AdminLoggedInController
 
         // システム管理者メールアドレスの設定状態を確認
         $systemAdminEmail = BaseSetting::getValue('system_admin_email', '');
-        $hasSystemAdminEmail = !empty($systemAdminEmail);
+        $hasSystemAdminEmail = ! empty($systemAdminEmail);
+
+        $defaultNotificationLevels = LogLevel::getDefaultNotificationLevels();
+
+        $logLevelOptions = [];
+        foreach (LogLevel::getNotificationLevels() as $level) {
+            $levelString = LogLevel::from($level)->toString();
+            $logLevelOptions[$level] = 'admin/settings/security/notifications.log_level_options.'.$levelString;
+        }
 
         $this->viewParams['settings'] = $settings;
+        $this->viewParams['defaultNotificationLevels'] = $defaultNotificationLevels;
+        $this->viewParams['logLevelOptions'] = $logLevelOptions;
         $this->viewParams['mailConnectionTested'] = $mailConnectionTested;
         $this->viewParams['mailSendTested'] = $mailSendTested;
         $this->viewParams['mailReceiveTested'] = $mailReceiveTested;
@@ -76,7 +85,7 @@ class AdminSecurityNotificationsController extends AdminLoggedInController
 
         // 通知設定を更新
         $this->securitySettingRepository->set('notification_enabled', $validated['notification_enabled'] ?? false);
-        
+
         $logLevels = $validated['notification_log_levels'] ?? LogLevel::getDefaultNotificationLevels();
         $this->securitySettingRepository->set('notification_log_levels', implode(',', $logLevels));
 
