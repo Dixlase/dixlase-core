@@ -21,16 +21,17 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Facades\Auth;
 use App\Enums\AppearanceMode;
-
-
+use Illuminate\Support\Facades\Auth;
 
 trait AdminLoggedInTrait
 {
     protected $member;
+
     protected $appearance;
+
     protected $breadcrumbs = [];
+
     protected $description = null;
 
     /**
@@ -43,10 +44,10 @@ trait AdminLoggedInTrait
 
             // メンバーの言語設定を適用（SetMemberLocaleミドルウェアと同じロジック）
             if ($this->member && $this->member->locale) {
-                $locale = $this->member->locale instanceof \App\Enums\Locale 
-                    ? $this->member->locale->value 
+                $locale = $this->member->locale instanceof \App\Enums\Locale
+                    ? $this->member->locale->value
                     : $this->member->locale;
-                
+
                 if (\App\Enums\Locale::isValid($locale)) {
                     app()->setLocale($locale);
                 }
@@ -94,20 +95,19 @@ trait AdminLoggedInTrait
      */
     protected function generateBreadcrumbsFromRoute(): void
     {
-        
         $routeName = request()->route()?->getName();
-        
-        if (!$routeName) {
+
+        if (! $routeName) {
             return;
         }
-        
+
         // プラグインのルート名の場合
         if (str_contains($routeName, '::')) {
             $this->generatePluginBreadcrumbs($routeName);
         } else {
             $this->generateCoreBreadcrumbs($routeName);
         }
-        
+
         $this->setBreadcrumbs();
     }
 
@@ -119,46 +119,46 @@ trait AdminLoggedInTrait
         // admin. を除去
         $parts = explode('.', $routeName);
         array_shift($parts); // 'admin' を除去
-        
+
         if (empty($parts)) {
             return;
         }
-        
+
         // 最後が 'index' の場合は除去（重複を避けるため）
         if (end($parts) === 'index') {
             array_pop($parts);
         }
-        
+
         if (empty($parts)) {
             return;
         }
-        
+
         // 先頭に「管理画面」を追加（ダッシュボードへのリンク）
         $this->addBreadcrumb('admin.dashboard', __('common.admin_panel'));
-        
+
         // 各階層のパンくずを生成
         $currentPath = 'admin';
         $translationPath = 'admin';
-        
+
         foreach ($parts as $index => $part) {
-            $currentPath .= '.' . $part;
-            $translationPath .= '/' . $part;
-            
+            $currentPath .= '.'.$part;
+            $translationPath .= '/'.$part;
+
             // 最後の要素（現在のページ）はリンクなし
             $route = null;
             if ($index < count($parts) - 1) {
                 // 中間ルートが存在するかチェック（.index を付けて試行）
-                $indexRouteName = $currentPath . '.index';
+                $indexRouteName = $currentPath.'.index';
                 if (\Route::has($indexRouteName)) {
                     $route = $indexRouteName;
                 } elseif (\Route::has($currentPath)) {
                     $route = $currentPath;
                 }
             }
-            
+
             // 翻訳キーを試行: index.heading または nav.{part}
             $label = $this->resolveBreadcrumbLabel($translationPath, $part);
-            
+
             if ($label) {
                 $this->addBreadcrumb($route, $label);
             }
@@ -172,55 +172,55 @@ trait AdminLoggedInTrait
     {
         // プラグイン名とルート部分を分離
         [$pluginPrefix, $route] = explode('::', $routeName, 2);
-        
+
         // admin. を除去
         $parts = explode('.', $route);
         if ($parts[0] === 'admin') {
             array_shift($parts);
         }
-        
+
         if (empty($parts)) {
             return;
         }
-        
+
         // 最後が 'index' の場合は除去（重複を避けるため）
         if (end($parts) === 'index') {
             array_pop($parts);
         }
-        
+
         if (empty($parts)) {
             return;
         }
-        
+
         // 先頭に「管理画面」を追加（ダッシュボードへのリンク）
         $this->addBreadcrumb('admin.dashboard', __('common.admin_panel'));
-        
+
         // 各階層のパンくずを生成
         $currentPath = 'admin';
         $translationPath = 'admin';
-        
+
         foreach ($parts as $index => $part) {
-            $currentPath .= '.' . $part;
-            $translationPath .= '/' . $part;
-            
+            $currentPath .= '.'.$part;
+            $translationPath .= '/'.$part;
+
             // 最後の要素（現在のページ）はリンクなし
             $route = null;
             if ($index < count($parts) - 1) {
                 // 中間ルートが存在するかチェック（.index を付けて試行）
-                $indexRouteName = $pluginPrefix . '::' . $currentPath . '.index';
+                $indexRouteName = $pluginPrefix.'::'.$currentPath.'.index';
                 if (\Route::has($indexRouteName)) {
                     $route = $indexRouteName;
                 } else {
-                    $fullRouteName = $pluginPrefix . '::' . $currentPath;
+                    $fullRouteName = $pluginPrefix.'::'.$currentPath;
                     if (\Route::has($fullRouteName)) {
                         $route = $fullRouteName;
                     }
                 }
             }
-            
+
             // 翻訳キーを試行
             $label = $this->resolvePluginBreadcrumbLabel($pluginPrefix, $translationPath, $part);
-            
+
             if ($label) {
                 $this->addBreadcrumb($route, $label);
             }
@@ -233,40 +233,44 @@ trait AdminLoggedInTrait
     protected function resolveBreadcrumbLabel(string $translationPath, string $part): ?string
     {
         // パターン1: {path}/index.heading
-        $indexKey = $translationPath . '/index.heading';
+        $indexKey = $translationPath.'/index.heading';
         if (\Lang::has($indexKey)) {
             $label = __($indexKey);
+
             return $label;
         }
-        
+
         // パターン2: {path}.heading
-        $headingKey = $translationPath . '.heading';
+        $headingKey = $translationPath.'.heading';
         if (\Lang::has($headingKey)) {
             $label = __($headingKey);
+
             return $label;
         }
-        
+
         // パターン3: 親のnav.{part}
         $pathParts = explode('/', $translationPath);
         if (count($pathParts) >= 2) {
             $lastPart = array_pop($pathParts);
             $parentPath = implode('/', $pathParts);
-            $navKey = $parentPath . '/index.nav.' . $lastPart;
+            $navKey = $parentPath.'/index.nav.'.$lastPart;
             if (\Lang::has($navKey)) {
                 $label = __($navKey);
+
                 return $label;
             }
         }
-        
-        // パターン4: admin/nav.{part}.text（配列の場合）
-        $navTextKey = 'admin/nav.' . $part . '.text';
+
+        // パターン4: admin/navigation.{part}.text（配列の場合）
+        $navTextKey = 'admin/navigation.'.$part.'.text';
         if (\Lang::has($navTextKey)) {
             $label = __($navTextKey);
+
             return $label;
         }
-        
-        // パターン5: admin/nav.{part}（文字列の場合）
-        $navKey = 'admin/nav.' . $part;
+
+        // パターン5: admin/navigation.{part}（文字列の場合）
+        $navKey = 'admin/navigation.'.$part;
         if (\Lang::has($navKey)) {
             $value = __($navKey);
             // 配列が返ってきた場合は .text を試す
@@ -278,7 +282,7 @@ trait AdminLoggedInTrait
                 return $value;
             }
         }
-        
+
         return null;
     }
 
@@ -288,36 +292,36 @@ trait AdminLoggedInTrait
     protected function resolvePluginBreadcrumbLabel(string $pluginPrefix, string $translationPath, string $part): ?string
     {
         // パターン1: plugin::{path}/index.heading
-        $indexKey = $pluginPrefix . '::' . $translationPath . '/index.heading';
+        $indexKey = $pluginPrefix.'::'.$translationPath.'/index.heading';
         if (\Lang::has($indexKey)) {
             return __($indexKey);
         }
-        
+
         // パターン2: plugin::{path}.heading
-        $headingKey = $pluginPrefix . '::' . $translationPath . '.heading';
+        $headingKey = $pluginPrefix.'::'.$translationPath.'.heading';
         if (\Lang::has($headingKey)) {
             return __($headingKey);
         }
-        
+
         // パターン3: 親のnav.{part}
         $pathParts = explode('/', $translationPath);
         if (count($pathParts) >= 2) {
             $lastPart = array_pop($pathParts);
             $parentPath = implode('/', $pathParts);
-            $navKey = $pluginPrefix . '::' . $parentPath . '/index.nav.' . $lastPart;
+            $navKey = $pluginPrefix.'::'.$parentPath.'/index.nav.'.$lastPart;
             if (\Lang::has($navKey)) {
                 return __($navKey);
             }
         }
-        
-        // パターン4: plugin::admin/nav.{part}.text（配列の場合）
-        $navTextKey = $pluginPrefix . '::admin/nav.' . $part . '.text';
+
+        // パターン4: plugin::admin/navigation.{part}.text（配列の場合）
+        $navTextKey = $pluginPrefix.'::admin/navigation.'.$part.'.text';
         if (\Lang::has($navTextKey)) {
             return __($navTextKey);
         }
-        
-        // パターン5: plugin::admin/nav.{part}（文字列の場合）
-        $navKey = $pluginPrefix . '::admin/nav.' . $part;
+
+        // パターン5: plugin::admin/navigation.{part}（文字列の場合）
+        $navKey = $pluginPrefix.'::admin/navigation.'.$part;
         if (\Lang::has($navKey)) {
             $value = __($navKey);
             // 配列が返ってきた場合は .text を試す
@@ -329,7 +333,7 @@ trait AdminLoggedInTrait
                 return $value;
             }
         }
-        
+
         return null;
     }
 
@@ -342,7 +346,7 @@ trait AdminLoggedInTrait
         if ($description === null) {
             $description = $this->getDescriptionFromRoute();
         }
-        
+
         $this->description = $description;
         $this->viewParams['description'] = $this->description;
     }
@@ -353,36 +357,36 @@ trait AdminLoggedInTrait
     protected function getDescriptionFromRoute(): ?string
     {
         $routeName = request()->route()?->getName();
-        
-        if (!$routeName) {
+
+        if (! $routeName) {
             return null;
         }
-        
+
         // プラグインのルート名の場合、プレフィックスを処理
         // 例: dixlase-users::admin.users.index -> dixlase-users::admin/users/index.description
         if (str_contains($routeName, '::')) {
             [$pluginPrefix, $route] = explode('::', $routeName, 2);
-            
+
             // ルート部分をパスに変換
             $routePath = str_replace('.', '/', $route);
-            
+
             // プラグインの翻訳キー形式: プラグイン名::パス.description
-            $translationKey = $pluginPrefix . '::' . $routePath . '.description';
+            $translationKey = $pluginPrefix.'::'.$routePath.'.description';
         } else {
             // 通常のルート名を翻訳キーに変換
             // 例: admin.members.settings -> admin/members/settings.description
             //     admin.settings.base.site -> admin/settings/base/site.description
-            $translationKey = str_replace('.', '/', $routeName) . '.description';
+            $translationKey = str_replace('.', '/', $routeName).'.description';
         }
-        
+
         // 翻訳が存在するかチェック
         $translation = __($translationKey);
-        
+
         // 翻訳キーがそのまま返ってきた場合は翻訳が存在しない
         if ($translation === $translationKey) {
             return null;
         }
-        
+
         return $translation;
     }
 

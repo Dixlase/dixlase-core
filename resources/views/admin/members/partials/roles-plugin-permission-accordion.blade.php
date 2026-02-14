@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     // ナビゲーションにないキーの場合、翻訳ファイルからラベルを取得
     if ($navItem === null) {
         $pluginNamespace = strtolower(str_replace('Dixlase', '', $pluginSlug)) . '-plugin';
-        $pluginTransKey = $pluginNamespace . '::admin/nav.permission_labels.' . $key;
+        $pluginTransKey = $pluginNamespace . '::admin/navigation.permission_labels.' . $key;
         $pluginLabel = __($pluginTransKey);
 
         if ($pluginLabel !== $pluginTransKey) {

@@ -22,6 +22,7 @@ CORE_CLAUDE_DIR="$CORE_ROOT/.claude"
 CORE_HOOKS_DIR="$CORE_CLAUDE_DIR/hooks"
 CORE_MCP="$CORE_ROOT/.mcp.json"
 CORE_SETTINGS="$CORE_CLAUDE_DIR/settings.json"
+SHARED_RULES="$CORE_ROOT/scripts/claude-shared-rules.md"
 
 # Colors for output
 RED='\033[0;31m'
@@ -44,6 +45,17 @@ check_dependencies() {
         error "jq is required but not installed."
         echo "  Install with: brew install jq (macOS) or apt install jq (Linux)"
         exit 1
+    fi
+}
+
+# =============================================================================
+# Shared Rules Injection
+# =============================================================================
+
+get_shared_rules() {
+    if [ -f "$SHARED_RULES" ]; then
+        echo ""
+        cat "$SHARED_RULES"
     fi
 }
 
@@ -202,6 +214,7 @@ This is a plugin for **Dixlase CMS** (Laravel 12). The core application lives at
 - Bilingual translations (en/ and ja/)
 - Never use \`env()\` directly — use \`config()\`
 - Write PHPUnit feature tests (not Pest)
+$(get_shared_rules)
 EOF
         return
     fi
@@ -300,6 +313,7 @@ $provides_text
 
 ### Code Formatting
 - Pint runs automatically after edits via hooks
+$(get_shared_rules)
 
 ## MCP Tools (Laravel Boost)
 - Use \`search-docs\` for Laravel ecosystem documentation
@@ -339,6 +353,7 @@ This is a theme for **Dixlase CMS** (Laravel 12). The core application lives at 
 - Responsive required (mobile-first)
 - No business logic in themes
 - Bilingual translations (en/ and ja/)
+$(get_shared_rules)
 EOF
         return
     fi
@@ -432,6 +447,7 @@ Available: \`x-ui-maintenance-banner\`, \`x-ui-admin-bar\`, \`x-form-text\`,
 
 ### Code Formatting
 - Pint runs automatically after edits via hooks
+$(get_shared_rules)
 
 ## MCP Tools (Laravel Boost)
 - Use \`search-docs\` for Laravel/Tailwind/Livewire documentation

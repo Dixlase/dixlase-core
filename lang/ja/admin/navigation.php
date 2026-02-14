@@ -24,7 +24,7 @@ return [
         'text' => 'メディア管理',
         'index' => 'メディアマスター',
         'upload' => 'メディアアップロード',
-        'settings' => 'メディア設定'
+        'settings' => 'メディア設定',
     ],
     'profile' => [
         'text' => 'プロフィール設定',

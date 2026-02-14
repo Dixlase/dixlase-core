@@ -289,7 +289,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
 
          {{__('custom.welcome')}};
-         {{__('admin/nav.custom.text')}};
+         {{__('admin/navigation.custom.text')}};
          {{ __('reservation-plugin::admin.nav.reservations.text')}};
 
     </div>
