@@ -16,7 +16,15 @@ class MemberTwoFaToken extends Model
         'code',
         'expires_at',
     ];
-    protected $dates = ['expires_at'];
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'expires_at' => 'datetime',
+        ];
+    }
 
     public function member()
     {

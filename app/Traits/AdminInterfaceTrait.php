@@ -70,7 +70,13 @@ trait AdminInterfaceTrait
     protected function setHeading()
     {
         $routeName = Route::currentRouteName();
-        
+
+        if ($routeName === null) {
+            $this->viewParams['heading'] = '';
+
+            return;
+        }
+
         // プラグインのルートかどうかを判別（::が含まれている場合はプラグイン）
         if (strpos($routeName, '::') !== false) {
             $this->heading = $this->resolvePluginHeadingKey($routeName);
