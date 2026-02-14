@@ -95,7 +95,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="mt-3">
                     <x-form-radio-card-group
                         name="extension_security_preset"
-                        :options="\App\Enums\ExtensionSecurityPreset::getRadioCardOptions()"
+                        :options="$presetOptions"
                         :value="old('extension_security_preset', $settings['extension_security_preset'])"
                         xModel="preset"
                         :columns="2"
@@ -165,8 +165,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :min="0"
                             :max="3"
                             :step="1"
-                            :labels="\App\Enums\ExtensionSecurityLevel::getRangeLabels()"
-                            :labelColors="\App\Enums\ExtensionSecurityLevel::getRangeLabelColors()"
+                            :labels="$securityLevelRangeLabels"
+                            :labelColors="$securityLevelRangeLabelColors"
                             xModel="pluginMaxHealthLevel"
                         />
                     </div>
@@ -205,8 +205,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :min="0"
                             :max="3"
                             :step="1"
-                            :labels="\App\Enums\ExtensionSecurityLevel::getRangeLabels()"
-                            :labelColors="\App\Enums\ExtensionSecurityLevel::getRangeLabelColors()"
+                            :labels="$securityLevelRangeLabels"
+                            :labelColors="$securityLevelRangeLabelColors"
                             xModel="themeMaxHealthLevel"
                         />
                     </div>

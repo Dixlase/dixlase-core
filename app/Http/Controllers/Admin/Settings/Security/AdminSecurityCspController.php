@@ -22,12 +22,12 @@
 
 namespace App\Http\Controllers\Admin\Settings\Security;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
-use App\Enums\CspMode;
 use App\Enums\CspBlocklistAction;
-use Illuminate\Http\Request;
+use App\Enums\CspMode;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Security\AdminSecurityCspUpdateRequest;
+use Illuminate\Http\Request;
 
 class AdminSecurityCspController extends AdminLoggedInController
 {
@@ -44,7 +44,6 @@ class AdminSecurityCspController extends AdminLoggedInController
      */
     public function index()
     {
-        
         $settings = [
             'csp_enabled' => filter_var($this->securitySettingRepository->get('csp_enabled', true), FILTER_VALIDATE_BOOLEAN),
             'csp_mode' => $this->securitySettingRepository->get('csp_mode', (string) CspMode::default()->value),
@@ -59,6 +58,9 @@ class AdminSecurityCspController extends AdminLoggedInController
         ];
 
         $this->viewParams['settings'] = $settings;
+        $this->viewParams['cspModeOptions'] = CspMode::getRadioCardOptions();
+        $this->viewParams['cspModeDefaultValue'] = (string) CspMode::default()->value;
+        $this->viewParams['cspBlocklistActionDefaultValue'] = (string) CspBlocklistAction::default()->value;
 
         return view('admin.settings.security.csp', $this->viewParams);
     }
@@ -84,7 +86,7 @@ class AdminSecurityCspController extends AdminLoggedInController
             'csp_blocklist_action' => $this->securitySettingRepository->get('csp_blocklist_action', (string) CspBlocklistAction::default()->value),
             'csp_blocklist_enabled_categories' => $this->securitySettingRepository->get('csp_blocklist_enabled_categories', ''),
         ];
-        
+
         session(['csp_previous_settings' => $previousSettings]);
         session(['csp_pending_confirmation' => true]);
         session(['csp_confirmation_expires_at' => now()->addSeconds(10)]);
@@ -99,7 +101,7 @@ class AdminSecurityCspController extends AdminLoggedInController
         $this->securitySettingRepository->set('csp_custom_directives', $validated['csp_custom_directives'] ?? '');
         $this->securitySettingRepository->set('csp_blocklist_check_enabled', $validated['csp_blocklist_check_enabled'] ?? false);
         $this->securitySettingRepository->set('csp_blocklist_action', $validated['csp_blocklist_action'] ?? (string) CspBlocklistAction::default()->value);
-        
+
         // カテゴリ配列をカンマ区切り文字列に変換
         $categories = $validated['csp_blocklist_categories'] ?? [];
         $this->securitySettingRepository->set('csp_blocklist_enabled_categories', implode(',', $categories));
@@ -121,7 +123,7 @@ class AdminSecurityCspController extends AdminLoggedInController
 
         return response()->json([
             'success' => true,
-            'message' => __('admin/settings/security/csp.settings_confirmed')
+            'message' => __('admin/settings/security/csp.settings_confirmed'),
         ]);
     }
 
@@ -131,11 +133,11 @@ class AdminSecurityCspController extends AdminLoggedInController
     public function rollback(Request $request)
     {
         $previousSettings = session('csp_previous_settings');
-        
-        if (!$previousSettings) {
+
+        if (! $previousSettings) {
             return response()->json([
                 'success' => false,
-                'message' => __('admin/settings/security/csp.no_previous_settings')
+                'message' => __('admin/settings/security/csp.no_previous_settings'),
             ], 400);
         }
 
@@ -151,7 +153,7 @@ class AdminSecurityCspController extends AdminLoggedInController
 
         return response()->json([
             'success' => true,
-            'message' => __('admin/settings/security/csp.settings_rolled_back')
+            'message' => __('admin/settings/security/csp.settings_rolled_back'),
         ]);
     }
 

@@ -35,6 +35,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'twoFaPasskeyMode' => '2',
     'columns' => 3,
     'globalSettingsUrl' => null,
+    'isTwoFaEditable' => null,
+    'isPasskeyEditable' => null,
+    'forcedPasskeyValue' => null,
+    'twoFaModeOptionsWithIcons' => null,
+    'twoFaGlobalModeName' => null,
 ])
 
 @php
@@ -45,17 +50,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 @php
-    use App\Enums\AuthenticationMode;
-    use App\Enums\PasskeyMode;
-    
-    // 全体設定の二段階認証モード
-    $twoFaForceMode = (int) $twoFaGlobalSetting;
-    $isTwoFaEditable = $twoFaForceMode === AuthenticationMode::UseProfileSetting->value;
-    
-    // 全体設定のパスキーモード
-    $passkeyMode = (int) $twoFaPasskeyMode;
-    $isPasskeyEditable = PasskeyMode::isProfileEditable($passkeyMode);
-    $forcedPasskeyValue = PasskeyMode::getForcedProfileValue($passkeyMode);
+    // 事前計算されたpropsがない場合はフォールバック（プラグインとの後方互換性）
+    if ($isTwoFaEditable === null || $isPasskeyEditable === null || $forcedPasskeyValue === null) {
+        $twoFaForceMode = (int) $twoFaGlobalSetting;
+        $isTwoFaEditable = $isTwoFaEditable ?? ($twoFaForceMode === \App\Enums\AuthenticationMode::UseProfileSetting->value);
+        $passkeyModeVal = (int) $twoFaPasskeyMode;
+        $isPasskeyEditable = $isPasskeyEditable ?? \App\Enums\PasskeyMode::isProfileEditable($passkeyModeVal);
+        $forcedPasskeyValue = $forcedPasskeyValue ?? \App\Enums\PasskeyMode::getForcedProfileValue($passkeyModeVal);
+    }
     $currentPasskeyEnabled = $forcedPasskeyValue ?? $twoFaPasskeyEnabled;
 @endphp
 
@@ -100,19 +102,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- 選択済み・操作不能のラジオカード --}}
             <div class="opacity-50 pointer-events-none">
                 @php
-                    $forcedMode = \App\Enums\AuthenticationMode::tryFrom((int) $twoFaGlobalSetting);
-                    $modeOptions = [];
-                    foreach (\App\Enums\AuthenticationMode::forProfile() as $case) {
-                        $modeOptions[] = [
-                            'value' => (string) $case->value,
-                            'label' => $case->twoFactorLabel(),
-                            'icon' => match($case) {
-                                \App\Enums\AuthenticationMode::Disabled => 'fas fa-ban',
-                                \App\Enums\AuthenticationMode::DifferentDevice => 'fas fa-shield-alt',
-                                \App\Enums\AuthenticationMode::Always => 'fas fa-lock',
-                                default => 'fas fa-cog',
-                            },
-                        ];
+                    // 事前計算されたpropsがない場合はフォールバック（プラグインとの後方互換性）
+                    if ($twoFaModeOptionsWithIcons === null) {
+                        $modeOptions = [];
+                        foreach (\App\Enums\AuthenticationMode::forProfile() as $case) {
+                            $modeOptions[] = [
+                                'value' => (string) $case->value,
+                                'label' => $case->twoFactorLabel(),
+                                'icon' => match($case) {
+                                    \App\Enums\AuthenticationMode::Disabled => 'fas fa-ban',
+                                    \App\Enums\AuthenticationMode::DifferentDevice => 'fas fa-shield-alt',
+                                    \App\Enums\AuthenticationMode::Always => 'fas fa-lock',
+                                    default => 'fas fa-cog',
+                                },
+                            ];
+                        }
+                    } else {
+                        $modeOptions = $twoFaModeOptionsWithIcons;
                     }
                 @endphp
                 <x-form-radio-card-group
@@ -126,7 +132,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- 現在の設定値の説明 --}}
             <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
                 <p class="text-sm text-gray-700 dark:text-gray-300">
-                    <strong>{{ __('components/security/two-fa-general-settings.authentication_mode.' . strtolower(\App\Enums\AuthenticationMode::tryFrom((int) $twoFaGlobalSetting)?->name ?? 'disabled')) }}</strong>
+                    <strong>{{ __('components/security/two-fa-general-settings.authentication_mode.' . ($twoFaGlobalModeName ?? strtolower(\App\Enums\AuthenticationMode::tryFrom((int) $twoFaGlobalSetting)?->name ?? 'disabled'))) }}</strong>
                 </p>
             </div>
         </fieldset>

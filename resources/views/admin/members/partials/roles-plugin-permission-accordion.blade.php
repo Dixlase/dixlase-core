@@ -82,15 +82,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     // ログインユーザーの権限を取得
     $currentUserRole = auth()->user()->role;
     $currentUserRoleValue = $currentUserRole->value;
-    $isSuperAdmin = $currentUserRoleValue === \App\Enums\MemberRole::SUPER_ADMIN->value;
-    
+    $isSuperAdmin = $currentUserRoleValue === $superAdminValue;
+
     // 選択可能な最大値
-    $maxSelectableRole = $isSuperAdmin 
-        ? \App\Enums\MemberRole::SUPER_ADMIN->value 
+    $maxSelectableRole = $isSuperAdmin
+        ? $superAdminValue
         : $currentUserRoleValue;
-    
+
     // 最小値はGUEST
-    $minSelectableRole = \App\Enums\MemberRole::GUEST->value;
+    $minSelectableRole = $guestValue;
     
     // 権限オプションを作成
     $roleOptions = [];
@@ -141,11 +141,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @php
                     // 現在の設定値を取得
                     $permission = $permissionsFlat[$menuKey] ?? null;
-                    $accessRoleValue = $permission['access_roles'] ?? \App\Enums\MemberRole::ADMIN->value;
-                    $viewRoleValue = $permission['view_roles'] ?? \App\Enums\MemberRole::ADMIN->value;
+                    $accessRoleValue = $permission['access_roles'] ?? $adminDefaultValue;
+                    $viewRoleValue = $permission['view_roles'] ?? $adminDefaultValue;
                     $isOverridden = $permission['is_overridden'] ?? false;
-                    $defaultAccessRoles = $permission['default_access_roles'] ?? \App\Enums\MemberRole::ADMIN->value;
-                    $defaultViewRoles = $permission['default_view_roles'] ?? \App\Enums\MemberRole::ADMIN->value;
+                    $defaultAccessRoles = $permission['default_access_roles'] ?? $adminDefaultValue;
+                    $defaultViewRoles = $permission['default_view_roles'] ?? $adminDefaultValue;
                     
                     // 設定値がログインユーザーの権限を超えている場合は、最大値に制限
                     $accessRoleValue = min($accessRoleValue, $maxSelectableRole);

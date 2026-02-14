@@ -22,17 +22,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     // ログインユーザーの権限を取得
     $currentUserRole = auth()->user()->role;
     $currentUserRoleValue = $currentUserRole->value;
-    $isSuperAdmin = $currentUserRoleValue === \App\Enums\MemberRole::SUPER_ADMIN->value;
-    
+    $isSuperAdmin = $currentUserRoleValue === $superAdminValue;
+
     // 選択可能な最大値
     // SUPER_ADMINの場合はSUPER_ADMINまで選択可能（特権管理者専用の設定ができる）
     // それ以外は自分の権限まで
-    $maxSelectableRole = $isSuperAdmin 
-        ? \App\Enums\MemberRole::SUPER_ADMIN->value 
+    $maxSelectableRole = $isSuperAdmin
+        ? $superAdminValue
         : $currentUserRoleValue;
-    
+
     // 最小値はGUEST
-    $minSelectableRole = \App\Enums\MemberRole::GUEST->value;
+    $minSelectableRole = $guestValue;
     
     // 権限オプションを作成（値 => ラベル）- 権限が低い順にソート（rangeスライダー用）
     // SUPER_ADMINの場合は全権限を表示、それ以外は自分の権限以下のみ

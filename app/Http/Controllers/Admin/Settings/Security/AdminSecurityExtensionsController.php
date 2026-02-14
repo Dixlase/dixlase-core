@@ -22,14 +22,13 @@
 
 namespace App\Http\Controllers\Admin\Settings\Security;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Enums\ExtensionSecurityLevel;
 use App\Enums\ExtensionSecurityPreset;
 use App\Enums\SecurityAction;
-use App\Models\BaseSetting;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Security\AdminSecurityExtensionsUpdateRequest;
+use App\Models\BaseSetting;
 
 class AdminSecurityExtensionsController extends AdminLoggedInController
 {
@@ -46,7 +45,6 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
      */
     public function index()
     {
-        
         $settings = [
             // Extension security settings
             'extension_security_preset' => $this->securitySettingRepository->get('extension_security_preset', ExtensionSecurityPreset::Balanced->value),
@@ -76,6 +74,9 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
         $this->viewParams['mailConnectionTested'] = $mailConnectionTested;
         $this->viewParams['mailSendTested'] = $mailSendTested;
         $this->viewParams['mailReceiveTested'] = $mailReceiveTested;
+        $this->viewParams['presetOptions'] = ExtensionSecurityPreset::getRadioCardOptions();
+        $this->viewParams['securityLevelRangeLabels'] = ExtensionSecurityLevel::getRangeLabels();
+        $this->viewParams['securityLevelRangeLabelColors'] = ExtensionSecurityLevel::getRangeLabelColors();
 
         return view('admin.settings.security.extensions', $this->viewParams);
     }

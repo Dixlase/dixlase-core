@@ -22,15 +22,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     // ログインユーザーの権限を取得
     $currentUserRole = auth()->user()->role;
     $currentUserRoleValue = $currentUserRole->value;
-    $isSuperAdmin = $currentUserRoleValue === \App\Enums\MemberRole::SUPER_ADMIN->value;
-    
+    $isSuperAdmin = $currentUserRoleValue === $superAdminValue;
+
     // 選択可能な最大値
-    $maxSelectableRole = $isSuperAdmin 
-        ? \App\Enums\MemberRole::SUPER_ADMIN->value 
+    $maxSelectableRole = $isSuperAdmin
+        ? $superAdminValue
         : $currentUserRoleValue;
-    
+
     // 最小値はGUEST
-    $minSelectableRole = \App\Enums\MemberRole::GUEST->value;
+    $minSelectableRole = $guestValue;
     
     // 権限オプションを作成
     $roleOptions = [];
@@ -114,7 +114,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @foreach ($pluginGroup['items'] as $item)
                 @php
                     // 現在の設定値を取得（配列形式、デフォルトはADMIN）
-                    $defaultRole = \App\Enums\MemberRole::ADMIN->value;
+                    $defaultRole = $adminDefaultValue;
                     $permission = $pluginPermissions[$item['menuKey']] ?? null;
                     $accessRoleValue = $permission['access_roles'] ?? $defaultRole;
                     $viewRoleValue = $permission['view_roles'] ?? $defaultRole;

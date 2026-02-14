@@ -22,9 +22,9 @@
 
 namespace App\Http\Controllers\Admin\Profile;
 
+use App\Enums\AuthenticationMode;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Profile\ProfileNotificationsUpdateRequest;
-use App\Enums\AuthenticationMode;
 use App\Models\SecuritySetting;
 use App\Services\MailServerValidatorService;
 use Illuminate\Support\Facades\Auth;
@@ -42,20 +42,25 @@ class AdminProfileNotificationsController extends AdminLoggedInController
     public function index()
     {
         $member = Auth::guard('member')->user();
-        
+
         // メールサーバー設定状態を渡す
         $this->viewParams['isMailServerTested'] = MailServerValidatorService::isMailServerTested();
-        
+
         // ログイン通知設定の追加
         $loginNoticeGlobal = (int) SecuritySetting::getValue(
             'login_notification_mode',
             AuthenticationMode::UseProfileSetting->value
         );
         $loginNotificationMode = $member->login_notification_mode;
-        
+
         $this->viewParams['loginNoticeGlobal'] = $loginNoticeGlobal;
         $this->viewParams['loginNotificationMode'] = $loginNotificationMode;
-        
+
+        $loginNotificationModeValue = $loginNotificationMode instanceof AuthenticationMode
+            ? $loginNotificationMode->value
+            : ($loginNotificationMode ?? 1);
+        $this->viewParams['loginNotificationModeValue'] = $loginNotificationModeValue;
+
         return view('admin.profile.notifications', $this->viewParams);
     }
 
@@ -66,14 +71,14 @@ class AdminProfileNotificationsController extends AdminLoggedInController
     {
         $member = Auth::guard('member')->user();
         $validated = $request->validated();
-        
+
         // login_notification_mode は全体設定が UseProfileSetting のときだけ上書き（セキュリティ設定から）
         $globalLogin = (int) SecuritySetting::getValue('login_notification_mode', AuthenticationMode::UseProfileSetting->value);
         if ($globalLogin === AuthenticationMode::UseProfileSetting->value && array_key_exists('login_notification_mode', $validated)) {
             $member->login_notification_mode = (int) $validated['login_notification_mode'];
             $member->save();
         }
-        
+
         return redirect()->route('admin.profile.notifications')->with('success', __('admin/profile.updated'));
     }
 }
