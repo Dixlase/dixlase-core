@@ -118,59 +118,59 @@ return [
 
     'menu_items' => [
         'dashboard' => [
-            'text_key' => 'admin/nav.dashboard',
+            'text_key' => 'admin/navigation.dashboard',
             'icon' => 'fas fa-tachometer-alt',
             'allowed_visibilities' => [MenuVisibility::Full],
             'locked' => true,
         ],
         'front' => [
-            'text_key' => 'admin/nav.front.text',
+            'text_key' => 'admin/navigation.front.text',
             'icon' => 'fas fa-desktop',
             'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Partial, MenuVisibility::Hidden],
         ],
         'media' => [
-            'text_key' => 'admin/nav.media.text',
+            'text_key' => 'admin/navigation.media.text',
             'icon' => 'fas fa-photo-video',
             'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Partial, MenuVisibility::Hidden],
         ],
         'profile' => [
-            'text_key' => 'admin/nav.profile.text',
+            'text_key' => 'admin/navigation.profile.text',
             'icon' => 'fas fa-id-badge',
             'allowed_visibilities' => [MenuVisibility::Full],
             'locked' => true,
         ],
         'members' => [
-            'text_key' => 'admin/nav.settings.members.text',
+            'text_key' => 'admin/navigation.settings.members.text',
             'icon' => 'fas fa-users-cog',
             'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Partial, MenuVisibility::Hidden, MenuVisibility::ReadOnly],
         ],
         'settings' => [
-            'text_key' => 'admin/nav.settings.text',
+            'text_key' => 'admin/navigation.settings.text',
             'icon' => 'fas fa-cogs',
             'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Partial],
             'children' => [
                 'base' => [
-                    'text_key' => 'admin/nav.settings.base.text',
+                    'text_key' => 'admin/navigation.settings.base.text',
                     'icon' => 'fas fa-gear',
                     'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Partial],
                 ],
                 'security' => [
-                    'text_key' => 'admin/nav.settings.security.text',
+                    'text_key' => 'admin/navigation.settings.security.text',
                     'icon' => 'fas fa-shield-alt',
                     'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Partial, MenuVisibility::Hidden, MenuVisibility::ReadOnly, MenuVisibility::GuideOnly],
                 ],
                 'themes' => [
-                    'text_key' => 'admin/nav.settings.themes.text',
+                    'text_key' => 'admin/navigation.settings.themes.text',
                     'icon' => 'fas fa-palette',
                     'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Partial, MenuVisibility::Hidden],
                 ],
                 'plugins' => [
-                    'text_key' => 'admin/nav.settings.plugins.text',
+                    'text_key' => 'admin/navigation.settings.plugins.text',
                     'icon' => 'fas fa-puzzle-piece',
                     'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Partial, MenuVisibility::Hidden],
                 ],
                 'systems' => [
-                    'text_key' => 'admin/nav.settings.systems.text',
+                    'text_key' => 'admin/navigation.settings.systems.text',
                     'icon' => 'fas fa-server',
                     'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Hidden, MenuVisibility::ReadOnly, MenuVisibility::GuideOnly],
                 ],

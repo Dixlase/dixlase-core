@@ -24,7 +24,7 @@ return [
         'text' => 'Media Management',
         'index' => 'Media Master',
         'upload' => 'Media Upload',
-        'settings' => 'Media Settings'
+        'settings' => 'Media Settings',
     ],
     'profile' => [
         'text' => 'Profile Settings',
