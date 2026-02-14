@@ -6,7 +6,7 @@ use App\Enums\TwoFaMethod;
 use App\Enums\AuthenticationMode;
 use App\Models\Member;
 use App\Models\MemberTwoFaToken;
-use App\Models\MemberSetting;
+use App\Models\SecuritySetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -46,7 +46,7 @@ class TwoFaTraitTest extends TestCase
 
         $code = $this->service->generateTwoFaCode($member);
 
-        $this->assertDatabaseHas('members_two_factor_tokens', [
+        $this->assertDatabaseHas('members_two_fa_tokens', [
             'member_id' => $member->id,
         ]);
 
@@ -123,7 +123,7 @@ class TwoFaTraitTest extends TestCase
 
         $this->service->validateTwoFaCode($member, $code);
 
-        $this->assertDatabaseMissing('members_two_factor_tokens', [
+        $this->assertDatabaseMissing('members_two_fa_tokens', [
             'member_id' => $member->id,
         ]);
     }
@@ -225,10 +225,10 @@ class TwoFaTraitTest extends TestCase
  */
 class TestTwoFactorService
 {
-    use \App\Traits\TwoFaTrait;
+    use \App\Traits\TwoFa\TwoFaUtilityTrait;
 
     protected function getSettingValue(string $key, $default = null)
     {
-        return MemberSetting::getValue($key, $default);
+        return SecuritySetting::getValue($key, $default);
     }
 }
