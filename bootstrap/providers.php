@@ -14,5 +14,4 @@ return [
     App\Providers\ShortcodeServiceProvider::class,
     App\Providers\ThemeServiceProvider::class,
     App\Providers\WebhookServiceProvider::class,
-    Plugins\DixlaseCoreDeveloper\App\Providers\DixlaseCoreDeveloperServiceProvider::class,
 ];
