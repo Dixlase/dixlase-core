@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of Dixlase.
  *
@@ -36,7 +37,7 @@ return [
     'all' => 'All',
     'none' => 'None',
     'or' => 'or',
-    
+
     // Labels
     'required' => 'Required',
     'optional' => 'Optional',
@@ -117,7 +118,7 @@ return [
     'contact_info' => 'Contact Information',
     'other_info' => 'Other Information',
     'account_settings' => 'Account Settings',
-    
+
     // Theme
     'auto' => 'Auto',
     'light' => 'Light',
@@ -126,7 +127,7 @@ return [
     // Language
     'ja' => 'Japanese',
     'en' => 'English',
-    
+
     // Account Types
     'account_types' => [
         'member' => 'Member',
@@ -135,7 +136,6 @@ return [
     // Roles & Permissions
     'permissions' => 'Permissions',
     'role' => 'Role',
-
 
     // Basic Attributes
     // Basic Information
@@ -171,7 +171,7 @@ return [
     'prefer_not_to_say' => 'Prefer not to say',
     'birthday' => 'Birthday',
     'name_info' => 'Name Information',
-    
+
     // Dangerous Operations
     'danger_zone' => 'Danger Zone',
     'send_password_reset_link' => 'Send Password Reset Link',
@@ -181,7 +181,7 @@ return [
     'file_type' => 'File Type',
     'upload_date' => 'Upload Date',
     'uploaded_by' => 'Uploaded By',
-    
+
     // Media Related
     'select_media' => 'Select Media',
     'all_types' => 'All Types',
@@ -228,12 +228,14 @@ return [
     'info' => 'Information',
     'error' => 'Error',
     'unknown' => 'Unknown',
-    
+
     // Time Units
     'created_at' => 'Created At',
     'updated_at' => 'Updated At',
     'deleted_at' => 'Deleted At',
     'minutes' => 'minutes',
+    'seconds' => 'seconds',
+    'times' => 'times',
     'hours' => 'hours',
     'days' => 'days',
     // Search & Filter Related
@@ -241,7 +243,7 @@ return [
     'role_filter' => 'Role',
     'status_filter' => 'Status',
     'clear_button' => 'Clear',
-    
+
     // Filter Options
     'filters' => [
         'all_roles' => 'All Roles',
@@ -282,6 +284,8 @@ return [
     // Profile & Settings Common Items
     'account_verification_success' => 'Account verification completed.',
     'account_settings' => 'Account Settings',
+    'notification_settings' => 'Notification Settings',
+    'two_fa_settings' => 'Two-Factor Authentication Settings',
     'management_operations' => 'Management Operations',
     'appearance_settings' => 'Appearance Settings',
     'language_settings' => 'Language Settings',

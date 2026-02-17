@@ -99,8 +99,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <x-admin.save-button
             id_confirmation="confirmProfileTwoFactorModal"
             :label="__('common.update')"
-            :title="__('admin/profile.confirm_title')"
-            :message="__('admin/profile.confirm_message')"
+            :title="__('admin/profile/common.confirm_title')"
+            :message="__('admin/profile/common.confirm_message')"
             :confirm_label="__('common.update')"
             :cancel_label="__('common.cancel')"
             form="profile-two-fa-form"

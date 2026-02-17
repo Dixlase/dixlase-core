@@ -68,8 +68,8 @@ class AdminMemberFormController extends AdminLoggedInController
 
         // ステータスオプションをコンポーネント用の形式に変換
         $this->viewParams['statusOptions'] = [
-            ['value' => '1', 'label' => 'components.status.active', 'icon' => 'fas fa-check-circle', 'color' => 'green'],
-            ['value' => '0', 'label' => 'components.status.inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
+            ['value' => '1', 'label' => 'components/ui-status-badge.active', 'icon' => 'fas fa-check-circle', 'color' => 'green'],
+            ['value' => '0', 'label' => 'components/ui-status-badge.inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
         ];
 
         $statusOld = request()->old('status');
@@ -165,8 +165,8 @@ class AdminMemberFormController extends AdminLoggedInController
 
         // ステータスオプションをコンポーネント用の形式に変換
         $this->viewParams['statusOptions'] = [
-            ['value' => '1', 'label' => 'components.status.active', 'icon' => 'fas fa-check-circle', 'color' => 'green'],
-            ['value' => '0', 'label' => 'components.status.inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
+            ['value' => '1', 'label' => 'components/ui-status-badge.active', 'icon' => 'fas fa-check-circle', 'color' => 'green'],
+            ['value' => '0', 'label' => 'components/ui-status-badge.inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
         ];
 
         $statusOld = request()->old('status');

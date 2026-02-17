@@ -46,6 +46,7 @@ return [
     'email_change_help_no_mail' => 'If you change your email address, it will be updated immediately.',
     'updated_email_immediate' => 'Profile has been updated. Email address has been changed.',
     'two_factor_requires_mail_server' => 'Two-factor authentication is not available because mail server settings and testing have not been completed.',
+    'two_fa_management' => '2FA Management',
     'two_fa_disabled_notice' => 'To manage two-factor authentication, please enable two-factor authentication in your profile settings.',
     'passkey_disabled_notice' => 'Passkey device management is not available because passkey authentication is not enabled.',
     'passkey_no_devices_notice' => 'Passkey authentication is enabled, but no devices have been registered yet. Please register a Passkey device in <a href=":url" class="underline font-semibold">Two-Factor Authentication Management</a>.',

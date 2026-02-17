@@ -1,7 +1,5 @@
 <?php
 
-
-
 /**
  * This file is part of Dixlase.
  *
@@ -162,7 +160,6 @@ return [
     | 状態・ステータス表示
     |--------------------------------------------------------------------------
     */
-
 
     'default_method' => 'デフォルト',
     'enabled' => '有効',
@@ -359,6 +356,8 @@ return [
     'updated_at' => '更新日時',
     'deleted_at' => '削除日時',
     'minutes' => '分',
+    'seconds' => '秒',
+    'times' => '回',
     'hours' => '時間',
     'days' => '日',
 
@@ -428,6 +427,8 @@ return [
     */
 
     'account_verification_success' => 'アカウント認証が完了しました。',
+    'notification_settings' => '通知設定',
+    'two_fa_settings' => '二段階認証設定',
     'password_settings' => 'パスワード設定',
     'security_settings' => 'セキュリティ設定',
     'management_operations' => '管理操作',

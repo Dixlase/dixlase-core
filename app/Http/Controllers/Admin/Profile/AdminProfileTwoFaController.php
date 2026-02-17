@@ -86,7 +86,7 @@ class AdminProfileTwoFaController extends AdminLoggedInController
         $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
         $twoFaPasskeyService = new TwoFaPasskeyService();
 
-        $redirect = redirect()->route('admin.profile.two-fa')->with('success', __('admin/profile.two_fa_updated'));
+        $redirect = redirect()->route('admin.profile.two-fa')->with('success', __('admin/profile/common.two_fa_updated'));
 
         // 回復コードが存在しない場合は自動生成
         if ($twoFaStatusService->shouldGenerateRecoveryCodes($member, $twoFaRecoveryCodeService)) {
