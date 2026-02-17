@@ -135,7 +135,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <h2>{{ __('common.password_settings') }}</h2>
         
         <fieldset>
-            <legend>{{ $requirePassword ? __('common.password') : __('admin/profile.password_change_only') }}</legend>
+            <legend>{{ $requirePassword ? __('common.password') : __('admin/profile/common.password_change_only') }}</legend>
             <x-form-password-tools
                 id="password"
                 name="password"
@@ -290,7 +290,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 二段階認証設定セクション -->
     <section>
-        <h2>{{ __('auth.two_fa_settings') }}</h2>
+        <h2>{{ __('common.two_fa_settings') }}</h2>
         @if(!$isMailServerTested)
             <x-ui-message
                 type="warning"
@@ -318,7 +318,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @if(isset($member) && $member->exists)
     <!-- 2FA管理セクション -->
     <section class="mt-8">
-        <h2>{{ __('admin/profile.two_fa_management') }}</h2>
+        <h2>{{ __('admin/profile/common.two_fa_management') }}</h2>
         
         <div class="mb-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
             <p class="text-sm text-yellow-800 dark:text-yellow-200">

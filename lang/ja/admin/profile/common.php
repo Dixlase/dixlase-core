@@ -47,6 +47,7 @@ return [
     'email_change_help_no_mail' => 'メールアドレスを変更した場合、即時反映されます。',
     'updated_email_immediate' => 'プロフィールが更新されました。メールアドレスが変更されました。',
     'two_factor_requires_mail_server' => 'メールサーバーの設定とテストが完了していないため、二段階認証は使用できません。',
+    'two_fa_management' => '二段階認証管理',
     'two_fa_disabled_notice' => '二段階認証管理を行うには、プロフィール設定で二段階認証を有効にしてください。',
     'passkey_disabled_notice' => 'パスキーが有効になっていないため、パスキーデバイスの管理はできません。',
     'passkey_no_devices_notice' => 'Passkey認証が有効になっていますが、まだデバイスが登録されていません。<a href=":url" class="underline font-semibold">二段階認証管理</a>でPasskeyデバイスを登録してください。',

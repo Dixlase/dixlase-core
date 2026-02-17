@@ -40,13 +40,13 @@ class AdminProfileAppearanceController extends AdminLoggedInController
     {
         // 外観モードのセッションをクリアして、保存された値に戻す
         session()->forget('appearance');
-        
+
         // プロフィール画面だけアニメーションを有効にする（統一された速度）
         $this->setupTransitionClasses();
-        
+
         // プロフィール画面だけアニメーションを有効にする
         $this->viewParams['transitionEnabled'] = true;
-        
+
         return view('admin.profile.appearance', $this->viewParams);
     }
 
@@ -57,12 +57,12 @@ class AdminProfileAppearanceController extends AdminLoggedInController
     {
         $member = Auth::guard('member')->user();
         $validated = $request->validated();
-        
+
         $member->update([
             'appearance' => (int) $validated['appearance'] ?? null,
         ]);
-        
-        return redirect()->route('admin.profile.appearance')->with('success', __('admin/profile.updated'));
+
+        return redirect()->route('admin.profile.appearance')->with('success', __('admin/profile/common.updated'));
     }
 
     /**
@@ -72,44 +72,44 @@ class AdminProfileAppearanceController extends AdminLoggedInController
     {
         $transition = 'transition-colors duration-500';
         $appearanceClass = config('appearance.appearance_class');
-        
+
         if (isset($appearanceClass['layout'])) {
             foreach ($appearanceClass['layout'] as $key => $value) {
-                $appearanceClass['layout'][$key] = $value . ' ' . $transition;
+                $appearanceClass['layout'][$key] = $value.' '.$transition;
             }
         }
-        
+
         if (isset($appearanceClass['sidebar'])) {
             foreach ($appearanceClass['sidebar'] as $key => $value) {
-                $appearanceClass['sidebar'][$key] = $value . ' ' . $transition;
+                $appearanceClass['sidebar'][$key] = $value.' '.$transition;
             }
         }
-        
+
         if (isset($appearanceClass['table'])) {
             foreach ($appearanceClass['table'] as $key => $value) {
-                $appearanceClass['table'][$key] = $value . ' ' . $transition;
+                $appearanceClass['table'][$key] = $value.' '.$transition;
             }
         }
-        
+
         if (isset($appearanceClass['link'])) {
-            $appearanceClass['link'] .= ' ' . $transition;
+            $appearanceClass['link'] .= ' '.$transition;
         }
-        
+
         if (isset($appearanceClass['form'])) {
             foreach ($appearanceClass['form'] as $key => $value) {
-                $appearanceClass['form'][$key] = $value . ' ' . $transition;
+                $appearanceClass['form'][$key] = $value.' '.$transition;
             }
         }
-        
+
         config(['appearance.appearance_class' => $appearanceClass]);
-        
+
         $appearance = (int) (old('appearance') ?? Auth::guard('member')->user()->appearance?->value ?? 0);
-        
+
         $htmlClass = '';
         if ($appearance === 2 || ($appearance === 0 && request()->cookie('prefers_dark') === '1')) {
             $htmlClass .= 'dark ';
         }
-        
+
         $this->viewParams['htmlClass'] = trim($htmlClass);
     }
 }

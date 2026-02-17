@@ -66,7 +66,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
             <div class="text-sm text-gray-600 dark:text-gray-400">
-                <p>{{ $member->appearance?->label() ?? __('common.appearance_mode.options.0') }}</p>
+                <p>{{ $member->appearance?->label() ?? __('components/ui-appearance-mode-selector.auto') }}</p>
             </div>
         </a>
 

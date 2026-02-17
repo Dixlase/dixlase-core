@@ -79,6 +79,6 @@ class AdminProfileNotificationsController extends AdminLoggedInController
             $member->save();
         }
 
-        return redirect()->route('admin.profile.notifications')->with('success', __('admin/profile.updated'));
+        return redirect()->route('admin.profile.notifications')->with('success', __('admin/profile/common.updated'));
     }
 }

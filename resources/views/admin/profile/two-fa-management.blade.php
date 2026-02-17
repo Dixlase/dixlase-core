@@ -35,7 +35,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         }
     }">
         <section class="transition-colors-unified mb-8">
-            <h2>{{ __('admin/profile.two_fa_management') }}</h2>
+            <h2>{{ __('admin/profile/common.two_fa_management') }}</h2>
             
             @if(!$isMailServerTested)
                 <x-ui-message
@@ -48,7 +48,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div x-show="isTwoFaDisabled" class="mb-6">
                 <x-ui-message 
                     type="warning" 
-                    :message="__('admin/profile.two_fa_disabled_notice')"
+                    :message="__('admin/profile/common.two_fa_disabled_notice')"
                 />
             </div>
 
