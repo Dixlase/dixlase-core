@@ -1,37 +1,37 @@
-# 二段階認証（2FA）UIコンポーネント
+# Two-Factor Authentication (2FA) UI Components
 
-このドキュメントは、Dixlaseの二段階認証システムで使用するUIコンポーネントの使用方法を説明します。
+This document explains how to use the UI components for Dixlase's two-factor authentication system.
 
-> **📚 関連ドキュメント**
-> - [2FAアーキテクチャ](./two-factor-authentication-architecture.md) - 技術仕様と詳細
-> - [2FA実践ガイド](./two-factor-authentication-guide.md) - バックエンド実装
-
----
-
-## 概要
-
-Dixlaseは、二段階認証のUIを簡単に実装できる再利用可能なBladeコンポーネントを提供しています。これらのコンポーネントは、管理画面、ユーザープラグイン、カスタムプラグインで共通して使用できます。
-
-### 提供されるコンポーネント
-
-1. **`<x-two-factor-challenge>`** - 6桁コード入力フォーム
-2. **認証レイアウト** - `layouts.auth`
+> **Related Documentation**
+> - [2FA Architecture](./two-factor-authentication-architecture.md) - Technical specifications and details
+> - [2FA Practical Guide](./two-factor-authentication-guide.md) - Backend implementation
 
 ---
 
-## 基本的な使用方法
+## Overview
 
-### 最小限の実装
+Dixlase provides reusable Blade components that make it easy to implement two-factor authentication UIs. These components can be used across the admin panel, user plugins, and custom plugins.
+
+### Provided Components
+
+1. **`<x-two-factor-challenge>`** - 6-digit code input form
+2. **Authentication layout** - `layouts.auth`
+
+---
+
+## Basic Usage
+
+### Minimal Implementation
 
 ```blade
 @extends('layouts.auth')
 
-@section('title', '二段階認証')
-@section('header', '二段階認証')
-@section('description', 'メールに送信された認証コードを入力してください')
+@section('title', 'Two-Factor Authentication')
+@section('header', 'Two-Factor Authentication')
+@section('description', 'Enter the verification code sent to your email')
 
 @section('content')
-    <x-two-factor-challenge 
+    <x-two-factor-challenge
         :action="route('admin.two-fa.email.verify')"
         :resend-action="route('admin.two-fa.email.resend')"
     />
@@ -40,49 +40,49 @@ Dixlaseは、二段階認証のUIを簡単に実装できる再利用可能なBl
 
 ---
 
-## コンポーネント詳細
+## Component Details
 
-### 1. `<x-two-factor-challenge>` コンポーネント
+### 1. `<x-two-factor-challenge>` Component
 
-6桁の認証コード入力フォームを提供します。
+Provides a 6-digit verification code input form.
 
-**場所**: `resources/views/components/two-factor-challenge.blade.php`
+**Location**: `resources/views/components/two-factor-challenge.blade.php`
 
-#### プロパティ
+#### Properties
 
-| プロパティ | 型 | デフォルト | 必須 | 説明 |
-|-----------|-----|-----------|------|------|
-| `action` | string | - | ✅ | フォーム送信先URL |
-| `resendAction` | string | null | ❌ | 再送信URL（オプション） |
-| `title` | string | `__('auth.two_factor.title')` | ❌ | タイトル |
-| `prompt` | string | `__('auth.two_factor.prompt')` | ❌ | プロンプトメッセージ |
-| `submitText` | string | `__('auth.two_factor.submit')` | ❌ | 送信ボタンテキスト |
-| `resendText` | string | `__('auth.two_factor.resend')` | ❌ | 再送信ボタンテキスト |
-| `expireMinutes` | int | 10 | ❌ | 有効期限（分） |
-| `codeLength` | int | 6 | ❌ | コード桁数 |
-| `autoSubmit` | bool | true | ❌ | 自動送信 |
-| `showExpireTime` | bool | true | ❌ | 有効期限表示 |
-| `showResend` | bool | true | ❌ | 再送信ボタン表示 |
+| Property | Type | Default | Required | Description |
+|----------|------|---------|----------|-------------|
+| `action` | string | - | Yes | Form submission URL |
+| `resendAction` | string | null | No | Resend URL (optional) |
+| `title` | string | `__('auth.two_factor.title')` | No | Title |
+| `prompt` | string | `__('auth.two_factor.prompt')` | No | Prompt message |
+| `submitText` | string | `__('auth.two_factor.submit')` | No | Submit button text |
+| `resendText` | string | `__('auth.two_factor.resend')` | No | Resend button text |
+| `expireMinutes` | int | 10 | No | Expiration time (minutes) |
+| `codeLength` | int | 6 | No | Code length |
+| `autoSubmit` | bool | true | No | Auto-submit |
+| `showExpireTime` | bool | true | No | Show expiration time |
+| `showResend` | bool | true | No | Show resend button |
 
-#### 基本的な使用例
+#### Basic Usage Example
 
 ```blade
-<x-two-factor-challenge 
+<x-two-factor-challenge
     :action="route('admin.two-fa.email.verify')"
     :resend-action="route('admin.two-fa.email.resend')"
 />
 ```
 
-#### カスタマイズ例
+#### Customization Example
 
 ```blade
-<x-two-factor-challenge 
+<x-two-factor-challenge
     :action="route('custom.verify')"
     :resend-action="route('custom.resend')"
-    title="カスタム認証"
-    prompt="カスタムメッセージをここに表示"
-    submit-text="確認"
-    resend-text="コードを再送信"
+    title="Custom Authentication"
+    prompt="Enter your custom message here"
+    submit-text="Confirm"
+    resend-text="Resend Code"
     :expire-minutes="5"
     :code-length="4"
     :auto-submit="false"
@@ -91,67 +91,67 @@ Dixlaseは、二段階認証のUIを簡単に実装できる再利用可能なBl
 />
 ```
 
-#### 機能
+#### Features
 
-##### 1. 入力処理
+##### 1. Input Handling
 
-- **数字のみ入力**: 0-9のみ受け付け
-- **自動フォーカス**: 入力後、自動的に次のフィールドに移動
-- **Backspace対応**: 空のフィールドでBackspaceを押すと前のフィールドに戻る
-- **ペースト対応**: 6桁のコードをペーストすると自動的に各フィールドに分配
+- **Numeric only**: Accepts only digits 0-9
+- **Auto-focus**: Automatically moves focus to the next field after input
+- **Backspace support**: Pressing Backspace on an empty field moves focus to the previous field
+- **Paste support**: Pasting a 6-digit code automatically distributes it across the fields
 
-##### 2. 自動送信
+##### 2. Auto-Submit
 
-`autoSubmit`が`true`（デフォルト）の場合、すべてのフィールドが入力されると自動的にフォームを送信します。
+When `autoSubmit` is `true` (default), the form is automatically submitted once all fields are filled.
 
-##### 3. アクセシビリティ
+##### 3. Accessibility
 
-- `inputmode="numeric"`: モバイルで数字キーボードを表示
-- `autocomplete="one-time-code"`: ブラウザの自動入力に対応
-- 適切なフォーカス管理
+- `inputmode="numeric"`: Displays the numeric keyboard on mobile devices
+- `autocomplete="one-time-code"`: Supports browser auto-fill
+- Proper focus management
 
-##### 4. フォームデータ
+##### 4. Form Data
 
-コンポーネントは以下のデータを送信します：
+The component submits the following data:
 
 ```php
 [
-    '_token' => 'csrf_token', // 自動的に含まれる
-    'code' => '123456'        // 入力されたコード
+    '_token' => 'csrf_token', // Automatically included
+    'code' => '123456'        // The entered code
 ]
 ```
 
 ---
 
-### 2. `layouts.auth` レイアウト
+### 2. `layouts.auth` Layout
 
-認証画面用の統一されたレイアウトを提供します。
+Provides a unified layout for authentication screens.
 
-**場所**: `resources/views/layouts/auth.blade.php`
+**Location**: `resources/views/layouts/auth.blade.php`
 
-#### セクション
+#### Sections
 
-| セクション | 型 | 必須 | 説明 |
-|-----------|-----|------|------|
-| `@section('title')` | string | ✅ | ページタイトル（ブラウザタブ） |
-| `@section('icon')` | string | ❌ | Font Awesomeアイコンクラス |
-| `@section('header')` | string | ✅ | ページヘッダー |
-| `@section('description')` | string | ❌ | 説明文 |
-| `@section('content')` | blade | ✅ | メインコンテンツ |
-| `@section('back_link')` | blade | ❌ | 戻るリンク |
+| Section | Type | Required | Description |
+|---------|------|----------|-------------|
+| `@section('title')` | string | Yes | Page title (browser tab) |
+| `@section('icon')` | string | No | Font Awesome icon class |
+| `@section('header')` | string | Yes | Page header |
+| `@section('description')` | string | No | Description text |
+| `@section('content')` | blade | Yes | Main content |
+| `@section('back_link')` | blade | No | Back link |
 
-#### 使用例
+#### Usage Example
 
 ```blade
 @extends('layouts.auth')
 
-@section('title', '二段階認証')
+@section('title', 'Two-Factor Authentication')
 @section('icon', 'fas fa-shield-alt')
-@section('header', '二段階認証')
-@section('description', 'セキュリティのため、追加の認証が必要です')
+@section('header', 'Two-Factor Authentication')
+@section('description', 'Additional authentication is required for security')
 
 @section('content')
-    <x-two-factor-challenge 
+    <x-two-factor-challenge
         :action="route('admin.two-fa.email.verify')"
         :resend-action="route('admin.two-fa.email.resend')"
     />
@@ -159,27 +159,27 @@ Dixlaseは、二段階認証のUIを簡単に実装できる再利用可能なBl
 
 @section('back_link')
     <a href="{{ route('admin.login') }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
-        ← ログイン画面に戻る
+        ← Back to login
     </a>
 @endsection
 ```
 
 ---
 
-## 実装パターン
+## Implementation Patterns
 
-### パターン1: メール認証のみ
+### Pattern 1: Email Authentication Only
 
 ```blade
 @extends('layouts.auth')
 
-@section('title', 'メール認証')
+@section('title', 'Email Authentication')
 @section('icon', 'fas fa-envelope')
-@section('header', 'メール認証')
-@section('description', 'メールに送信された6桁のコードを入力してください')
+@section('header', 'Email Authentication')
+@section('description', 'Enter the 6-digit code sent to your email')
 
 @section('content')
-    <x-two-factor-challenge 
+    <x-two-factor-challenge
         :action="route('admin.two-fa.email.verify')"
         :resend-action="route('admin.two-fa.email.resend')"
     />
@@ -187,40 +187,40 @@ Dixlaseは、二段階認証のUIを簡単に実装できる再利用可能なBl
 
 @section('back_link')
     <a href="{{ route('admin.login') }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
-        ← ログイン画面に戻る
+        ← Back to login
     </a>
 @endsection
 ```
 
 ---
 
-### パターン2: 代替認証方法の表示
+### Pattern 2: Displaying Alternative Authentication Methods
 
 ```blade
 @extends('layouts.auth')
 
-@section('title', '二段階認証')
+@section('title', 'Two-Factor Authentication')
 @section('icon', 'fas fa-shield-alt')
-@section('header', '二段階認証')
-@section('description', '認証方法を選択してください')
+@section('header', 'Two-Factor Authentication')
+@section('description', 'Choose your authentication method')
 
 @section('content')
-    {{-- メール認証フォーム --}}
-    <x-two-factor-challenge 
+    {{-- Email authentication form --}}
+    <x-two-factor-challenge
         :action="route('admin.two-fa.email.verify')"
         :resend-action="route('admin.two-fa.email.resend')"
     />
 
-    {{-- 代替認証方法 --}}
+    {{-- Alternative authentication methods --}}
     @if(!empty($availableMethods))
         <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 text-center">
-                または
+                or
             </p>
-            
+
             <div class="space-y-2">
                 @foreach($availableMethods as $method)
-                    <a href="{{ $method['url'] }}" 
+                    <a href="{{ $method['url'] }}"
                        class="block w-full px-4 py-2 text-sm text-center text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         {{ $method['label'] }}
                     </a>
@@ -229,39 +229,39 @@ Dixlaseは、二段階認証のUIを簡単に実装できる再利用可能なBl
         </div>
     @endif
 
-    {{-- 回復コードリンク --}}
+    {{-- Recovery code link --}}
     <div class="mt-4 text-center">
-        <a href="{{ route('admin.two-fa.recovery.show') }}" 
+        <a href="{{ route('admin.two-fa.recovery.show') }}"
            class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-            回復コードを使用
+            Use a recovery code
         </a>
     </div>
 @endsection
 
 @section('back_link')
     <a href="{{ route('admin.login') }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
-        ← ログイン画面に戻る
+        ← Back to login
     </a>
 @endsection
 ```
 
-**コントローラー側:**
+**Controller Side:**
 
 ```php
 public function showEmailChallenge()
 {
     $user = $this->getUserFromSession();
-    
-    // 利用可能な認証方法を取得
+
+    // Get available authentication methods
     $twoFaService = $this->getTwoFaService();
     $methods = $twoFaService->getAvailableMethods($user);
-    
-    // 現在の認証方法（メール）を除外
+
+    // Exclude the current method (email)
     $availableMethods = array_filter($methods, function($method) {
         return $method['value'] !== \App\Enums\TwoFaMethod::EMAIL->value;
     });
-    
-    // ルート情報を追加
+
+    // Add route information
     $availableMethods = array_map(function($method) {
         $method['url'] = match($method['value']) {
             \App\Enums\TwoFaMethod::PASSKEY->value => route('admin.two-fa.passkey.show'),
@@ -269,7 +269,7 @@ public function showEmailChallenge()
         };
         return $method;
     }, $availableMethods);
-    
+
     return view('admin.two-fa.email-challenge', [
         'availableMethods' => $availableMethods
     ]);
@@ -278,51 +278,51 @@ public function showEmailChallenge()
 
 ---
 
-### パターン3: Passkey認証画面
+### Pattern 3: Passkey Authentication Screen
 
 ```blade
 @extends('layouts.auth')
 
-@section('title', 'Passkey認証')
+@section('title', 'Passkey Authentication')
 @section('icon', 'fas fa-fingerprint')
-@section('header', 'Passkey認証')
-@section('description', 'Touch ID、Face ID等を使用して認証してください')
+@section('header', 'Passkey Authentication')
+@section('description', 'Authenticate using Touch ID, Face ID, or similar')
 
 @section('content')
     <div class="space-y-4">
-        {{-- 認証ボタン --}}
-        <button type="button" 
+        {{-- Authentication button --}}
+        <button type="button"
                 id="passkey-auth-button"
                 class="w-full px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors">
             <i class="fas fa-fingerprint mr-2"></i>
-            Passkeyで認証
+            Authenticate with Passkey
         </button>
 
-        {{-- ステータス表示 --}}
+        {{-- Status display --}}
         <div id="passkey-status" class="text-sm text-center text-gray-600 dark:text-gray-400 hidden">
-            認証中...
+            Authenticating...
         </div>
 
-        {{-- エラー表示 --}}
+        {{-- Error display --}}
         <div id="passkey-error" class="text-sm text-center text-red-600 dark:text-red-400 hidden"></div>
     </div>
 
-    {{-- 代替認証方法 --}}
+    {{-- Alternative authentication methods --}}
     <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 text-center">
-            または
+            or
         </p>
-        
-        <a href="{{ route('admin.two-fa.email.show') }}" 
+
+        <a href="{{ route('admin.two-fa.email.show') }}"
            class="block w-full px-4 py-2 text-sm text-center text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-            メール認証を使用
+            Use email authentication
         </a>
     </div>
 @endsection
 
 @section('back_link')
     <a href="{{ route('admin.login') }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
-        ← ログイン画面に戻る
+        ← Back to login
     </a>
 @endsection
 
@@ -332,13 +332,13 @@ document.getElementById('passkey-auth-button').addEventListener('click', async f
     const button = this;
     const status = document.getElementById('passkey-status');
     const error = document.getElementById('passkey-error');
-    
+
     button.disabled = true;
     status.classList.remove('hidden');
     error.classList.add('hidden');
-    
+
     try {
-        // チャレンジ取得
+        // Get challenge
         const challengeResponse = await fetch('{{ route("admin.two-fa.passkey.challenge") }}', {
             method: 'POST',
             headers: {
@@ -346,19 +346,19 @@ document.getElementById('passkey-auth-button').addEventListener('click', async f
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             }
         });
-        
+
         const challengeData = await challengeResponse.json();
-        
+
         if (!challengeData.success) {
-            throw new Error(challengeData.message || '認証に失敗しました');
+            throw new Error(challengeData.message || 'Authentication failed');
         }
-        
-        // WebAuthn認証
+
+        // WebAuthn authentication
         const credential = await navigator.credentials.get({
             publicKey: challengeData.options
         });
-        
-        // 認証検証
+
+        // Verify authentication
         const verifyResponse = await fetch('{{ route("admin.two-fa.passkey.verify") }}', {
             method: 'POST',
             headers: {
@@ -378,13 +378,13 @@ document.getElementById('passkey-auth-button').addEventListener('click', async f
                 }
             })
         });
-        
+
         const verifyData = await verifyResponse.json();
-        
+
         if (verifyData.success) {
             window.location.href = verifyData.redirect;
         } else {
-            throw new Error(verifyData.message || '認証に失敗しました');
+            throw new Error(verifyData.message || 'Authentication failed');
         }
     } catch (err) {
         error.textContent = err.message;
@@ -399,88 +399,88 @@ document.getElementById('passkey-auth-button').addEventListener('click', async f
 
 ---
 
-### パターン4: 回復コード入力画面
+### Pattern 4: Recovery Code Input Screen
 
 ```blade
 @extends('layouts.auth')
 
-@section('title', '回復コード入力')
+@section('title', 'Recovery Code')
 @section('icon', 'fas fa-key')
-@section('header', '回復コード入力')
-@section('description', '20桁の回復コードを入力してください')
+@section('header', 'Recovery Code')
+@section('description', 'Enter your 20-digit recovery code')
 
 @section('content')
     <form method="POST" action="{{ route('admin.two-fa.recovery.verify') }}">
         @csrf
-        
+
         <div class="space-y-4">
-            {{-- 回復コード入力 --}}
+            {{-- Recovery code input --}}
             <div>
                 <label for="recovery_code" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    回復コード
+                    Recovery Code
                 </label>
-                <input type="text" 
-                       id="recovery_code" 
-                       name="recovery_code" 
+                <input type="text"
+                       id="recovery_code"
+                       name="recovery_code"
                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white @error('recovery_code') border-red-500 @enderror"
                        placeholder="12345-67890-12345-67890"
                        required
                        autofocus>
-                
+
                 @error('recovery_code')
                     <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                 @enderror
-                
+
                 <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    ハイフンは自動的に除去されます
+                    Hyphens are automatically removed
                 </p>
             </div>
 
-            {{-- 送信ボタン --}}
-            <button type="submit" 
+            {{-- Submit button --}}
+            <button type="submit"
                     class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors">
-                認証
+                Authenticate
             </button>
         </div>
     </form>
 
-    {{-- 代替認証方法 --}}
+    {{-- Alternative authentication methods --}}
     <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 text-center">
-            または
+            or
         </p>
-        
-        <a href="{{ route('admin.two-fa.email.show') }}" 
+
+        <a href="{{ route('admin.two-fa.email.show') }}"
            class="block w-full px-4 py-2 text-sm text-center text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-            メール認証に戻る
+            Back to email authentication
         </a>
     </div>
 @endsection
 
 @section('back_link')
     <a href="{{ route('admin.login') }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
-        ← ログイン画面に戻る
+        ← Back to login
     </a>
 @endsection
 ```
 
 ---
 
-## プラグイン開発での使用
+## Usage in Plugin Development
 
-### ユーザープラグインでの実装例
+### Implementation Example for a User Plugin
 
 ```blade
 {{-- plugins/DixlaseUsers/resources/views/two-fa/email-challenge.blade.php --}}
 
 @extends('users-plugin::layouts.auth')
 
-@section('title', '二段階認証')
-@section('header', '二段階認証')
-@section('description', 'メールに送信された認証コードを入力してください')
+@section('title', 'Two-Factor Authentication')
+@section('header', 'Two-Factor Authentication')
+@section('description', 'Enter the verification code sent to your email')
 
 @section('content')
-    <x-two-factor-challenge 
+    <x-two-factor-challenge
         :action="route('users-plugin.two-fa.email.verify')"
         :resend-action="route('users-plugin.two-fa.email.resend')"
         :title="__('users-plugin::auth.two_factor.title')"
@@ -492,45 +492,45 @@ document.getElementById('passkey-auth-button').addEventListener('click', async f
 
 @section('back_link')
     <a href="{{ route('users-plugin.login') }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
-        ← ログイン画面に戻る
+        ← Back to login
     </a>
 @endsection
 ```
 
 ---
 
-## カスタマイズ
+## Customization
 
-### スタイルのカスタマイズ
+### Style Customization
 
-コンポーネントはTailwind CSSを使用しており、ダークモードに対応しています。
+The components use Tailwind CSS and support dark mode.
 
-**カスタムCSSを追加する場合:**
+**To add custom CSS:**
 
 ```blade
 @push('styles')
 <style>
-/* カスタムスタイル */
+/* Custom styles */
 .two-factor-input {
-    /* カスタムスタイルを追加 */
+    /* Add custom styles */
 }
 </style>
 @endpush
 ```
 
-### JavaScriptのカスタマイズ
+### JavaScript Customization
 
-コンポーネントのJavaScript動作をカスタマイズする場合：
+To customize the component's JavaScript behavior:
 
 ```blade
 @push('scripts')
 <script>
-// コンポーネントのイベントをリッスン
+// Listen to component events
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form[action="{{ route('admin.two-fa.email.verify') }}"]');
-    
+
     form.addEventListener('submit', function(e) {
-        // カスタム処理
+        // Custom processing
         console.log('Form submitting...');
     });
 });
@@ -540,27 +540,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
 ---
 
-## 翻訳キー
+## Translation Keys
 
-### デフォルトの翻訳キー
+### Default Translation Keys
 
-コンポーネントは以下の翻訳キーを使用します：
+The components use the following translation keys:
 
 ```php
-// lang/ja/auth.php
+// lang/en/auth.php
 'two_factor' => [
-    'title' => '二段階認証',
-    'prompt' => 'メールに送信された6桁のコードを入力してください',
-    'submit' => '認証',
-    'resend' => '再送信',
-    'expire_message' => 'コードは:minutes分間有効です',
+    'title' => 'Two-Factor Authentication',
+    'prompt' => 'Enter the 6-digit code sent to your email',
+    'submit' => 'Authenticate',
+    'resend' => 'Resend',
+    'expire_message' => 'The code is valid for :minutes minutes',
 ],
 ```
 
-### カスタム翻訳キーの使用
+### Using Custom Translation Keys
 
 ```blade
-<x-two-factor-challenge 
+<x-two-factor-challenge
     :action="route('custom.verify')"
     :title="__('custom.two_factor.title')"
     :prompt="__('custom.two_factor.prompt')"
@@ -571,52 +571,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
 ---
 
-## トラブルシューティング
+## Troubleshooting
 
-### コンポーネントが表示されない
+### Component Not Displaying
 
-**原因**: コンポーネントファイルが見つからない
+**Cause**: Component file not found
 
-**解決策**:
+**Solution**:
 ```bash
-# コンポーネントファイルの存在を確認
+# Verify the component file exists
 ls resources/views/components/two-factor-challenge.blade.php
 ```
 
-### 自動送信が動作しない
+### Auto-Submit Not Working
 
-**原因**: JavaScriptエラー
+**Cause**: JavaScript error
 
-**解決策**:
-1. ブラウザのコンソールを確認
-2. `autoSubmit`プロパティが`true`になっているか確認
-3. JavaScriptが正しく読み込まれているか確認
+**Solution**:
+1. Check the browser console
+2. Verify that the `autoSubmit` property is set to `true`
+3. Verify that JavaScript is loaded correctly
 
-### スタイルが適用されない
+### Styles Not Applied
 
-**原因**: Tailwind CSSが読み込まれていない
+**Cause**: Tailwind CSS is not loaded
 
-**解決策**:
+**Solution**:
 ```blade
-{{-- レイアウトでTailwind CSSを読み込む --}}
+{{-- Load Tailwind CSS in the layout --}}
 <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 ```
 
 ---
 
-## ベストプラクティス
+## Best Practices
 
-### 1. 一貫性のあるレイアウト使用
+### 1. Use a Consistent Layout
 
 ```blade
-{{-- 推奨: layouts.authを使用 --}}
+{{-- Recommended: Use layouts.auth --}}
 @extends('layouts.auth')
 
-{{-- 非推奨: カスタムレイアウトを毎回作成 --}}
+{{-- Not recommended: Create a custom layout each time --}}
 @extends('custom-layout')
 ```
 
-### 2. エラーメッセージの表示
+### 2. Display Error Messages
 
 ```blade
 @if($errors->any())
@@ -627,41 +627,41 @@ ls resources/views/components/two-factor-challenge.blade.php
     </div>
 @endif
 
-<x-two-factor-challenge 
+<x-two-factor-challenge
     :action="route('admin.two-fa.email.verify')"
     :resend-action="route('admin.two-fa.email.resend')"
 />
 ```
 
-### 3. ロックアウト状態の表示
+### 3. Display Lockout Status
 
 ```blade
 @if(session('lockout'))
     <div class="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
         <p class="text-sm text-yellow-600 dark:text-yellow-400">
-            ロックアウト中です。残り{{ session('lockout_minutes') }}分お待ちください。
+            You are locked out. Please wait {{ session('lockout_minutes') }} minutes.
         </p>
     </div>
 @else
-    <x-two-factor-challenge 
+    <x-two-factor-challenge
         :action="route('admin.two-fa.email.verify')"
         :resend-action="route('admin.two-fa.email.resend')"
     />
 @endif
 ```
 
-### 4. 残り試行回数の表示
+### 4. Display Remaining Attempts
 
 ```blade
 @if(isset($remaining_attempts) && $remaining_attempts <= 3)
     <div class="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
         <p class="text-sm text-yellow-600 dark:text-yellow-400">
-            残り{{ $remaining_attempts }}回の試行が可能です。
+            You have {{ $remaining_attempts }} attempt(s) remaining.
         </p>
     </div>
 @endif
 
-<x-two-factor-challenge 
+<x-two-factor-challenge
     :action="route('admin.two-fa.email.verify')"
     :resend-action="route('admin.two-fa.email.resend')"
 />
@@ -669,22 +669,22 @@ ls resources/views/components/two-factor-challenge.blade.php
 
 ---
 
-## まとめ
+## Summary
 
-Dixlaseの2FA UIコンポーネントは、以下の特徴を持っています：
+Dixlase's 2FA UI components have the following characteristics:
 
-✅ **簡単な実装**: 1行のコードで完全な認証フォームを追加
-✅ **再利用可能**: 管理画面、プラグインで共通使用
-✅ **カスタマイズ可能**: プロパティで柔軟に調整
-✅ **アクセシビリティ**: モバイル対応、キーボード操作対応
-✅ **ダークモード対応**: 自動的にダークモードに対応
-✅ **多言語対応**: 翻訳キーで簡単に多言語化
+- **Easy implementation**: Add a complete authentication form with a single line of code
+- **Reusable**: Shared across admin panel and plugins
+- **Customizable**: Flexibly adjustable via properties
+- **Accessible**: Mobile-friendly with keyboard navigation support
+- **Dark mode support**: Automatically adapts to dark mode
+- **Multilingual support**: Easily localized via translation keys
 
-これらのコンポーネントを使用することで、統一感のある美しい2FA認証画面を簡単に実装できます。
+By using these components, you can easily implement beautiful, consistent 2FA authentication screens.
 
 ---
 
-## 関連ドキュメント
+## Related Documentation
 
-- [2FAアーキテクチャ](./two-factor-authentication-architecture.md) - 技術仕様と詳細
-- [2FA実践ガイド](./two-factor-authentication-guide.md) - バックエンド実装
+- [2FA Architecture](./two-factor-authentication-architecture.md) - Technical specifications and details
+- [2FA Practical Guide](./two-factor-authentication-guide.md) - Backend implementation

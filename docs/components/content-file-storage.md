@@ -1,65 +1,65 @@
-# コンテンツファイルストレージ
+# Content File Storage
 
-プラグインやテーマでファイルベースのコンテンツ保存を行う際のガイドです。
+A guide for file-based content storage in plugins and themes.
 
-## ディレクトリ構造
+## Directory Structure
 
-コンテンツファイルは `storage/app/private/` 配下に保存されます：
+Content files are stored under `storage/app/private/`:
 
 ```
 storage/app/private/
 ├── plugins/
-│   ├── dixlase-pages/           # ページプラグイン
-│   │   ├── about/               # ページスラッグ
-│   │   │   ├── content.html     # 英語（デフォルト言語）
-│   │   │   └── content.ja.html  # 日本語
+│   ├── dixlase-pages/           # Pages plugin
+│   │   ├── about/               # Page slug
+│   │   │   ├── content.html     # English (default language)
+│   │   │   └── content.ja.html  # Japanese
 │   │   └── contact/
-│   │       ├── content.md       # Markdown（英語）
-│   │       └── content.ja.md    # Markdown（日本語）
-│   ├── dixlase-blog/            # ブログプラグイン
+│   │       ├── content.md       # Markdown (English)
+│   │       └── content.ja.md    # Markdown (Japanese)
+│   ├── dixlase-blog/            # Blog plugin
 │   │   └── {post-slug}/
-│   └── dixlase-docs/            # ドキュメントプラグイン
+│   └── dixlase-docs/            # Docs plugin
 │       └── {doc-slug}/
 ├── themes/
-│   └── {theme-slug}/            # テーマ固有のコンテンツ
-└── front/                       # フロントページデータ
+│   └── {theme-slug}/            # Theme-specific content
+└── front/                       # Front page data
 ```
 
-## ファイル命名規則
+## File Naming Convention
 
-| エディタータイプ | デフォルト言語 | 他言語 |
-|-----------------|---------------|--------|
+| Editor Type | Default Language | Other Languages |
+|-------------|-----------------|-----------------|
 | HTML | `content.html` | `content.{locale}.html` |
 | Markdown | `content.md` | `content.{locale}.md` |
 | Blade | `content.blade.php` | `content.{locale}.blade.php` |
 
-## ContentFileService の使用方法
+## Using ContentFileService
 
-### 基本的な使用
+### Basic Usage
 
 ```php
 use App\Services\ContentFileService;
 
-// インスタンス作成（ベースパス、ディスク、デフォルト言語）
+// Create an instance (base path, disk, default language)
 $service = new ContentFileService('plugins/my-plugin', 'local', 'en');
 
-// ファイルに保存
-$service->saveToFile('page-slug', 'ja', 'html', '<p>コンテンツ</p>');
+// Save to file
+$service->saveToFile('page-slug', 'ja', 'html', '<p>Content</p>');
 
-// ファイルから読み込み
+// Load from file
 $content = $service->loadFromFile('page-slug', 'ja', 'html');
 
-// ファイルの存在確認
+// Check if file exists
 $exists = $service->fileExists('page-slug', 'ja', 'html');
 
-// ディレクトリごと削除
+// Delete entire directory
 $service->deleteDirectory('page-slug');
 
-// スラッグ変更時のディレクトリリネーム
+// Rename directory when slug changes
 $service->renameFiles('old-slug', 'new-slug', 'html', ['en', 'ja']);
 ```
 
-### プラグインでの継承
+### Extending in Plugins
 
 ```php
 namespace Plugins\MyPlugin\App\Services;
@@ -78,9 +78,9 @@ class MyContentService extends ContentFileService
 }
 ```
 
-## Vite での自動リロード設定
+## Auto-Reload with Vite
 
-開発時にコンテンツファイルの変更を検知して自動リロードするには、`vite.config.js` の `laravel-vite-plugin` の `refresh` オプションにパスを追加します：
+To detect content file changes and trigger auto-reload during development, add paths to the `refresh` option of `laravel-vite-plugin` in `vite.config.js`:
 
 ```javascript
 import laravel from 'laravel-vite-plugin';
@@ -89,12 +89,12 @@ export default defineConfig({
     plugins: [
         laravel({
             input: [
-                // 入力ファイル...
+                // Input files...
             ],
             refresh: [
-                // デフォルトのBladeテンプレート
+                // Default Blade templates
                 'resources/views/**',
-                // ストレージ内のコンテンツファイル
+                // Content files in storage
                 'storage/app/private/plugins/**',
                 'storage/app/private/themes/**',
                 'storage/app/private/front/**',
@@ -105,24 +105,24 @@ export default defineConfig({
 });
 ```
 
-### 監視対象ディレクトリ
+### Watched Directories
 
-| パス | 説明 |
-|-----|------|
-| `storage/app/private/plugins/**` | プラグインのコンテンツファイル |
-| `storage/app/private/themes/**` | テーマのコンテンツファイル |
-| `storage/app/private/front/**` | フロントページのコンテンツファイル |
+| Path | Description |
+|------|-------------|
+| `storage/app/private/plugins/**` | Plugin content files |
+| `storage/app/private/themes/**` | Theme content files |
+| `storage/app/private/front/**` | Front page content files |
 
-> **Note**: `laravel-vite-plugin` の `refresh` オプションは、指定したパスのファイル変更時にフルページリロードをトリガーします。`vite-plugin-live-reload` よりも確実に動作します。
+> **Note**: The `refresh` option of `laravel-vite-plugin` triggers a full page reload when files at the specified paths change. This works more reliably than `vite-plugin-live-reload`.
 
-## 注意事項
+## Notes
 
-1. **セキュリティ**: `storage/app/private/` は公開ディレクトリではないため、直接URLアクセスはできません
-2. **バックアップ**: コンテンツファイルはデータベースとは別にバックアップが必要です
-3. **デプロイ**: 本番環境へのデプロイ時はストレージディレクトリも含めてください
-4. **権限**: Webサーバーがディレクトリに書き込み権限を持っていることを確認してください
+1. **Security**: `storage/app/private/` is not a public directory, so direct URL access is not possible
+2. **Backup**: Content files need to be backed up separately from the database
+3. **Deployment**: Include the storage directory when deploying to production
+4. **Permissions**: Ensure the web server has write permissions to the directory
 
-## 関連ドキュメント
+## Related Documentation
 
-- [プラグイン開発ガイド](./plugin-integration-contracts.md)
-- [テーマ開発ガイド](./theme-development.md)
+- [Plugin Development Guide](./plugin-integration-contracts.md)
+- [Theme Development Guide](./theme-development.md)

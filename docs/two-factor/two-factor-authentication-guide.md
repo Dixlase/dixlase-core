@@ -1,29 +1,29 @@
-# 二段階認証（2FA）実践ガイド
+# Two-Factor Authentication (2FA) Practical Guide
 
-このドキュメントは、Dixlaseの二段階認証システムをプラグインやカスタム実装で使用する際の実践的なガイドです。
+This document is a practical guide for using Dixlase's two-factor authentication system in plugins and custom implementations.
 
-> **📚 関連ドキュメント**
-> - [2FAアーキテクチャ](./two-factor-authentication-architecture.md) - 技術仕様と詳細
-> - [UIコンポーネント](./two-factor-ui-components.md) - フロントエンド実装
+> **Related Documentation**
+> - [2FA Architecture](./two-factor-authentication-architecture.md) - Technical specifications and details
+> - [UI Components](./two-factor-ui-components.md) - Frontend implementation
 
 ---
 
-## クイックスタート
+## Quick Start
 
-### 最小限の実装（5ステップ）
+### Minimal Implementation (5 Steps)
 
 ```php
-// 1. TwoFaAuthenticationTraitを使用
+// 1. Use TwoFaAuthenticationTrait
 class MyTwoFactorController extends Controller
 {
     use TwoFaAuthenticationTrait;
-    
-    // 2. 必須メソッドを実装
+
+    // 2. Implement required methods
     protected function getSettingModelClass(): string
     {
         return \App\Models\MemberSetting::class;
     }
-    
+
     protected function getTwoFaService()
     {
         return app(\App\Services\TwoFa\TwoFaService::class, [
@@ -31,29 +31,29 @@ class MyTwoFactorController extends Controller
             'context' => 'admin'
         ]);
     }
-    
+
     protected function getTwoFaRoutePrefix(): string
     {
         return 'admin';
     }
-    
+
     protected function getSessionPrefix(): string
     {
         return 'admin_two_fa';
     }
-    
+
     protected function getDashboardRoute(): string
     {
         return 'admin.dashboard';
     }
-    
+
     protected function getLoginRoute(): string
     {
         return 'admin.login';
     }
 }
 
-// 3. ルートを定義
+// 3. Define routes
 Route::middleware('guest:member')->group(function () {
     Route::get('/two-fa/email', [MyTwoFactorController::class, 'showEmailChallenge'])
         ->name('admin.two-fa.email.show');
@@ -63,20 +63,20 @@ Route::middleware('guest:member')->group(function () {
         ->name('admin.two-fa.email.resend');
 });
 
-// 4. ビューを作成
+// 4. Create the view
 // resources/views/admin/two-fa/email-challenge.blade.php
 @extends('layouts.auth')
 @section('content')
-    <x-two-factor-challenge 
+    <x-two-factor-challenge
         :action="route('admin.two-fa.email.verify')"
         :resend-action="route('admin.two-fa.email.resend')"
     />
 @endsection
 
-// 5. ログイン処理で2FAチェック
+// 5. Add 2FA check to the login flow
 $helper = app(\App\Helpers\TwoFaHelper::class);
 if ($helper->isTwoFaEnabled($user, \App\Models\MemberSetting::class)) {
-    // 2FA認証画面にリダイレクト
+    // Redirect to 2FA authentication screen
     session(['admin_two_fa.id' => $user->id]);
     return redirect()->route('admin.two-fa.email.show');
 }
@@ -84,17 +84,17 @@ if ($helper->isTwoFaEnabled($user, \App\Models\MemberSetting::class)) {
 
 ---
 
-## 実装パターン
+## Implementation Patterns
 
-### パターン1: TwoFaAuthenticationTraitを使用（推奨）
+### Pattern 1: Using TwoFaAuthenticationTrait (Recommended)
 
-**メリット:**
-- ✅ 認証フロー全体が実装済み
-- ✅ セッション管理が自動
-- ✅ ロックアウト対応済み
-- ✅ 複数認証方法のサポート
+**Benefits:**
+- Complete authentication flow already implemented
+- Automatic session management
+- Built-in lockout handling
+- Multiple authentication method support
 
-**実装例:**
+**Implementation Example:**
 
 ```php
 namespace App\Http\Controllers\Admin;
@@ -105,12 +105,12 @@ use App\Traits\TwoFa\TwoFaAuthenticationTrait;
 class AdminTwoFactorController extends Controller
 {
     use TwoFaAuthenticationTrait;
-    
+
     protected function getSettingModelClass(): string
     {
         return \App\Models\MemberSetting::class;
     }
-    
+
     protected function getTwoFaService()
     {
         return app(\App\Services\TwoFa\TwoFaService::class, [
@@ -118,22 +118,22 @@ class AdminTwoFactorController extends Controller
             'context' => 'admin'
         ]);
     }
-    
+
     protected function getTwoFaRoutePrefix(): string
     {
         return 'admin';
     }
-    
+
     protected function getSessionPrefix(): string
     {
         return 'admin_two_fa';
     }
-    
+
     protected function getDashboardRoute(): string
     {
         return 'admin.dashboard';
     }
-    
+
     protected function getLoginRoute(): string
     {
         return 'admin.login';
@@ -141,27 +141,27 @@ class AdminTwoFactorController extends Controller
 }
 ```
 
-**ルート定義:**
+**Route Definition:**
 
 ```php
 Route::middleware('guest:member')->prefix('admin')->name('admin.')->group(function () {
-    // メール認証
+    // Email authentication
     Route::get('/two-fa/email', [AdminTwoFactorController::class, 'showEmailChallenge'])
         ->name('two-fa.email.show');
     Route::post('/two-fa/email/verify', [AdminTwoFactorController::class, 'verifyEmail'])
         ->name('two-fa.email.verify');
     Route::post('/two-fa/email/resend', [AdminTwoFactorController::class, 'resendEmail'])
         ->name('two-fa.email.resend');
-    
-    // Passkey認証
+
+    // Passkey authentication
     Route::get('/two-fa/passkey', [AdminTwoFactorController::class, 'showPasskeyChallenge'])
         ->name('two-fa.passkey.show');
     Route::post('/two-fa/passkey/challenge', [AdminTwoFactorController::class, 'getPasskeyChallenge'])
         ->name('two-fa.passkey.challenge');
     Route::post('/two-fa/passkey/verify', [AdminTwoFactorController::class, 'verifyPasskey'])
         ->name('two-fa.passkey.verify');
-    
-    // 回復コード認証
+
+    // Recovery code authentication
     Route::get('/two-fa/recovery', [AdminTwoFactorController::class, 'showRecoveryCodeChallenge'])
         ->name('two-fa.recovery.show');
     Route::post('/two-fa/recovery/verify', [AdminTwoFactorController::class, 'verifyRecoveryCode'])
@@ -171,13 +171,13 @@ Route::middleware('guest:member')->prefix('admin')->name('admin.')->group(functi
 
 ---
 
-### パターン2: TwoFaServiceを直接使用
+### Pattern 2: Using TwoFaService Directly
 
-**メリット:**
-- ✅ より細かい制御が可能
-- ✅ カスタムフローに対応
+**Benefits:**
+- More fine-grained control
+- Custom flow support
 
-**実装例:**
+**Implementation Example:**
 
 ```php
 namespace App\Http\Controllers\Custom;
@@ -189,7 +189,7 @@ use Illuminate\Support\Facades\Auth;
 class CustomTwoFactorController extends Controller
 {
     protected $twoFaService;
-    
+
     public function __construct()
     {
         $this->twoFaService = app(\App\Services\TwoFa\TwoFaService::class, [
@@ -197,66 +197,66 @@ class CustomTwoFactorController extends Controller
             'context' => 'custom'
         ]);
     }
-    
+
     public function showChallenge()
     {
         $userId = session('custom_two_fa.id');
         if (!$userId) {
             return redirect()->route('custom.login');
         }
-        
+
         $user = \App\Models\Member::find($userId);
-        
-        // ロックアウトチェック
+
+        // Check lockout status
         $lockoutStatus = $this->twoFaService->checkLockout($user);
         if ($lockoutStatus['locked_out']) {
             return back()->withErrors([
-                'code' => "ロックアウト中です。残り{$lockoutStatus['remaining_minutes']}分お待ちください。"
+                'code' => "You are locked out. Please wait {$lockoutStatus['remaining_minutes']} minutes."
             ]);
         }
-        
-        // 利用可能な認証方法を取得
+
+        // Get available authentication methods
         $methods = $this->twoFaService->getAvailableMethods($user);
-        
+
         return view('custom.two-fa.challenge', [
             'methods' => $methods,
             'remaining_attempts' => $lockoutStatus['remaining_attempts'] ?? null
         ]);
     }
-    
+
     public function verify(Request $request)
     {
         $request->validate([
             'code' => 'required|string'
         ]);
-        
+
         $userId = session('custom_two_fa.id');
         if (!$userId) {
             return redirect()->route('custom.login');
         }
-        
+
         $user = \App\Models\Member::find($userId);
-        
-        // ロックアウトチェック
+
+        // Check lockout status
         $lockoutStatus = $this->twoFaService->checkLockout($user);
         if ($lockoutStatus['locked_out']) {
             return back()->withErrors([
-                'code' => "ロックアウト中です。"
+                'code' => "You are locked out."
             ]);
         }
-        
-        // コード検証
+
+        // Verify code
         if ($this->twoFaService->validate($user, $request->code)) {
-            // 認証成功
+            // Authentication successful
             session()->forget('custom_two_fa');
             Auth::guard('member')->login($user);
-            
+
             return redirect()->route('custom.dashboard');
         }
-        
-        // 認証失敗
+
+        // Authentication failed
         return back()->withErrors([
-            'code' => '認証コードが正しくありません。'
+            'code' => 'The authentication code is incorrect.'
         ]);
     }
 }
@@ -264,13 +264,13 @@ class CustomTwoFactorController extends Controller
 
 ---
 
-### パターン3: 個別サービスを使用
+### Pattern 3: Using Individual Services
 
-**メリット:**
-- ✅ 最も細かい制御が可能
-- ✅ 特定機能のみ使用可能
+**Benefits:**
+- Most fine-grained control
+- Use only specific features as needed
 
-**実装例:**
+**Implementation Example:**
 
 ```php
 namespace App\Http\Controllers\Custom;
@@ -283,65 +283,65 @@ class CustomCodeController extends Controller
     public function sendCode(Request $request)
     {
         $user = $request->user();
-        
-        // コード生成 + メール送信
+
+        // Generate code + send email
         $codeService = app(\App\Services\TwoFa\TwoFaCodeService::class);
-        
+
         try {
             $code = $codeService->generateAndSend(
                 $user,
                 \App\Mail\TwoFaCodeMail::class,
-                10, // 10分間有効
+                10, // Valid for 10 minutes
                 'custom'
             );
-            
+
             return response()->json([
                 'success' => true,
-                'message' => 'コードを送信しました'
+                'message' => 'Code sent successfully'
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'コード送信に失敗しました'
+                'message' => 'Failed to send code'
             ], 500);
         }
     }
-    
+
     public function verifyCode(Request $request)
     {
         $request->validate([
             'code' => 'required|string|size:6'
         ]);
-        
+
         $user = $request->user();
-        
-        // 試行回数チェック
+
+        // Check attempt count
         $attemptService = app(\App\Services\TwoFa\TwoFaAttemptService::class);
         if ($attemptService->isLockedOut($user)) {
             $remainingTime = $attemptService->getRemainingLockoutTime($user);
             return response()->json([
                 'success' => false,
-                'message' => "ロックアウト中です。残り{$remainingTime}分"
+                'message' => "You are locked out. {$remainingTime} minutes remaining."
             ], 429);
         }
-        
-        // コード検証
+
+        // Verify code
         $codeService = app(\App\Services\TwoFa\TwoFaCodeService::class);
         $success = $codeService->validate($user, $request->code);
-        
-        // 試行を記録
+
+        // Record attempt
         $attemptService->recordAttempt($user, 'email', $success);
-        
+
         if ($success) {
             return response()->json([
                 'success' => true,
-                'message' => '認証成功'
+                'message' => 'Authentication successful'
             ]);
         }
-        
+
         return response()->json([
             'success' => false,
-            'message' => 'コードが正しくありません'
+            'message' => 'The code is incorrect'
         ], 400);
     }
 }
@@ -349,9 +349,9 @@ class CustomCodeController extends Controller
 
 ---
 
-## ログインフローへの統合
+## Integrating with the Login Flow
 
-### 基本的な統合
+### Basic Integration
 
 ```php
 namespace App\Http\Controllers\Auth;
@@ -368,34 +368,34 @@ class LoginController extends Controller
             'email' => 'required|email',
             'password' => 'required'
         ]);
-        
-        // 認証情報の検証
+
+        // Verify credentials
         if (!Auth::guard('member')->attempt($credentials, $request->filled('remember'))) {
             return back()->withErrors([
-                'email' => '認証情報が正しくありません。'
+                'email' => 'The provided credentials are incorrect.'
             ]);
         }
-        
+
         $user = Auth::guard('member')->user();
-        
-        // 2FAが必要かチェック
+
+        // Check if 2FA is required
         $helper = app(\App\Helpers\TwoFaHelper::class);
         if ($helper->isTwoFaEnabled($user, \App\Models\MemberSetting::class)) {
-            // 一旦ログアウト
+            // Temporarily log out
             Auth::guard('member')->logout();
-            
-            // セッションに情報を保存
+
+            // Store information in session
             session([
                 'admin_two_fa.id' => $user->id,
                 'admin_two_fa.remember' => $request->filled('remember')
             ]);
-            
-            // コード生成 + メール送信
+
+            // Generate code + send email
             $twoFaService = app(\App\Services\TwoFa\TwoFaService::class, [
                 'settingModelClass' => \App\Models\MemberSetting::class,
                 'context' => 'admin'
             ]);
-            
+
             try {
                 $twoFaService->generate($user);
             } catch (\Exception $e) {
@@ -403,24 +403,24 @@ class LoginController extends Controller
                     'user_id' => $user->id,
                     'error' => $e->getMessage()
                 ]);
-                
+
                 return back()->withErrors([
-                    'email' => '2FA認証の準備に失敗しました。'
+                    'email' => 'Failed to prepare 2FA authentication.'
                 ]);
             }
-            
-            // 2FA認証画面にリダイレクト
+
+            // Redirect to 2FA authentication screen
             $method = $twoFaService->getEffectiveAuthMethod($user);
             $route = match($method) {
                 \App\Enums\TwoFaMethod::EMAIL->value => 'admin.two-fa.email.show',
                 \App\Enums\TwoFaMethod::PASSKEY->value => 'admin.two-fa.passkey.show',
                 default => 'admin.two-fa.email.show',
             };
-            
+
             return redirect()->route($route);
         }
-        
-        // 2FA不要な場合はログイン完了
+
+        // If 2FA is not required, complete login
         $request->session()->regenerate();
         return redirect()->intended('admin/dashboard');
     }
@@ -429,9 +429,9 @@ class LoginController extends Controller
 
 ---
 
-## Passkey認証の実装
+## Passkey Authentication Implementation
 
-### 登録フロー
+### Registration Flow
 
 ```php
 namespace App\Http\Controllers\Admin\Profile;
@@ -443,28 +443,28 @@ use Illuminate\Support\Facades\Auth;
 class PasskeyController extends Controller
 {
     protected $passkeyService;
-    
+
     public function __construct()
     {
         $this->passkeyService = app(\App\Services\TwoFa\TwoFaPasskeyService::class);
     }
-    
-    // 登録チャレンジ生成
+
+    // Generate registration challenge
     public function registerOptions(Request $request)
     {
         $user = Auth::guard('member')->user();
-        
-        // HTTPS接続チェック
+
+        // Check HTTPS connection
         if (!$this->passkeyService->isAvailable()) {
             return response()->json([
                 'success' => false,
-                'message' => 'HTTPS接続が必要です'
+                'message' => 'HTTPS connection is required'
             ], 400);
         }
-        
+
         try {
             $options = $this->passkeyService->generateRegistrationChallenge($user);
-            
+
             return response()->json([
                 'success' => true,
                 'options' => $options
@@ -474,34 +474,34 @@ class PasskeyController extends Controller
                 'user_id' => $user->id,
                 'error' => $e->getMessage()
             ]);
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'チャレンジ生成に失敗しました'
+                'message' => 'Challenge generation failed'
             ], 500);
         }
     }
-    
-    // 登録処理
+
+    // Registration handler
     public function register(Request $request)
     {
         $request->validate([
             'credential' => 'required|array',
             'device_name' => 'nullable|string|max:255'
         ]);
-        
+
         $user = Auth::guard('member')->user();
-        
+
         try {
             $credential = $this->passkeyService->registerCredential(
                 $user,
                 $request->input('credential'),
                 $request->input('device_name')
             );
-            
+
             return response()->json([
                 'success' => true,
-                'message' => 'Passkeyを登録しました',
+                'message' => 'Passkey registered successfully',
                 'credential' => [
                     'id' => $credential->id,
                     'name' => $credential->name,
@@ -513,48 +513,48 @@ class PasskeyController extends Controller
                 'user_id' => $user->id,
                 'error' => $e->getMessage()
             ]);
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'Passkey登録に失敗しました'
+                'message' => 'Passkey registration failed'
             ], 500);
         }
     }
-    
-    // 削除処理
+
+    // Revocation handler
     public function revoke(Request $request, string $credentialId)
     {
         $user = Auth::guard('member')->user();
-        
+
         if ($credentialId === 'all') {
             $count = $this->passkeyService->revokeAllCredentials($user);
-            
+
             return response()->json([
                 'success' => true,
-                'message' => "{$count}個のPasskeyを削除しました"
+                'message' => "{$count} passkey(s) deleted"
             ]);
         }
-        
+
         if ($this->passkeyService->revokeCredential($user, $credentialId)) {
             return response()->json([
                 'success' => true,
-                'message' => 'Passkeyを削除しました'
+                'message' => 'Passkey deleted'
             ]);
         }
-        
+
         return response()->json([
             'success' => false,
-            'message' => 'Passkeyが見つかりません'
+            'message' => 'Passkey not found'
         ], 404);
     }
 }
 ```
 
-### 認証フロー
+### Authentication Flow
 
 ```php
-// TwoFaAuthenticationTraitを使用している場合は自動実装済み
-// カスタム実装の場合:
+// If using TwoFaAuthenticationTrait, this is already implemented automatically.
+// For custom implementation:
 
 public function getPasskeyChallenge(Request $request)
 {
@@ -562,15 +562,15 @@ public function getPasskeyChallenge(Request $request)
     if (!$userId) {
         return response()->json([
             'success' => false,
-            'message' => 'セッションが無効です'
+            'message' => 'Session is invalid'
         ], 401);
     }
-    
+
     $user = \App\Models\Member::find($userId);
-    
+
     try {
         $options = $this->passkeyService->generateAuthenticationChallenge($user);
-        
+
         return response()->json([
             'success' => true,
             'options' => $options
@@ -578,7 +578,7 @@ public function getPasskeyChallenge(Request $request)
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
-            'message' => 'チャレンジ生成に失敗しました'
+            'message' => 'Challenge generation failed'
         ], 500);
     }
 }
@@ -588,57 +588,57 @@ public function verifyPasskey(Request $request)
     $request->validate([
         'credential' => 'required|array'
     ]);
-    
+
     $userId = session('admin_two_fa.id');
     if (!$userId) {
         return response()->json([
             'success' => false,
-            'message' => 'セッションが無効です'
+            'message' => 'Session is invalid'
         ], 401);
     }
-    
+
     $user = \App\Models\Member::find($userId);
-    
-    // 試行回数チェック
+
+    // Check attempt count
     $attemptService = app(\App\Services\TwoFa\TwoFaAttemptService::class);
     if ($attemptService->isLockedOut($user)) {
         return response()->json([
             'success' => false,
-            'message' => 'ロックアウト中です'
+            'message' => 'You are locked out'
         ], 429);
     }
-    
-    // 認証検証
+
+    // Verify authentication
     $success = $this->passkeyService->verifyAssertion($user, $request->input('credential'));
-    
-    // 試行を記録
+
+    // Record attempt
     $attemptService->recordAttempt($user, 'passkey', $success);
-    
+
     if ($success) {
-        // 認証成功
+        // Authentication successful
         $remember = session('admin_two_fa.remember', false);
         session()->forget('admin_two_fa');
-        
+
         Auth::guard('member')->login($user, $remember);
-        
+
         return response()->json([
             'success' => true,
             'redirect' => route('admin.dashboard')
         ]);
     }
-    
+
     return response()->json([
         'success' => false,
-        'message' => '認証に失敗しました'
+        'message' => 'Authentication failed'
     ], 400);
 }
 ```
 
 ---
 
-## 回復コードの実装
+## Recovery Code Implementation
 
-### 生成・表示
+### Generation & Display
 
 ```php
 namespace App\Http\Controllers\Admin\Profile;
@@ -650,142 +650,142 @@ use Illuminate\Support\Facades\Auth;
 class RecoveryCodeController extends Controller
 {
     protected $recoveryCodeService;
-    
+
     public function __construct()
     {
         $this->recoveryCodeService = app(\App\Services\TwoFa\TwoFaRecoveryCodeService::class);
     }
-    
-    // 生成
+
+    // Generate
     public function generate(Request $request)
     {
         $user = Auth::guard('member')->user();
-        
-        // 既に存在する場合は再生成として扱う
+
+        // If codes already exist, treat as regeneration
         if ($this->recoveryCodeService->hasRecoveryCodes($user)) {
             return $this->regenerate($request);
         }
-        
+
         try {
             $codes = $this->recoveryCodeService->generate($user);
-            
-            // フォーマット
+
+            // Format
             $formattedCodes = array_map(function($code) {
                 return $this->recoveryCodeService->formatCode($code);
             }, $codes);
-            
+
             return response()->json([
                 'success' => true,
                 'codes' => $formattedCodes,
-                'message' => '回復コードを生成しました'
+                'message' => 'Recovery codes generated'
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => '回復コード生成に失敗しました'
+                'message' => 'Recovery code generation failed'
             ], 500);
         }
     }
-    
-    // 再生成
+
+    // Regenerate
     public function regenerate(Request $request)
     {
         $user = Auth::guard('member')->user();
-        
-        // 再生成可能かチェック
+
+        // Check if regeneration is allowed
         if (!$this->recoveryCodeService->canRegenerate($user)) {
             $nextTime = $this->recoveryCodeService->getNextRegenerateTime($user);
-            
+
             return response()->json([
                 'success' => false,
-                'message' => "次回生成可能時刻: {$nextTime->format('Y-m-d H:i')}",
+                'message' => "Next regeneration available at: {$nextTime->format('Y-m-d H:i')}",
                 'next_time' => $nextTime->format('Y-m-d H:i')
             ], 429);
         }
-        
+
         try {
             $codes = $this->recoveryCodeService->generate($user);
-            
+
             $formattedCodes = array_map(function($code) {
                 return $this->recoveryCodeService->formatCode($code);
             }, $codes);
-            
+
             return response()->json([
                 'success' => true,
                 'codes' => $formattedCodes,
-                'message' => '回復コードを再生成しました'
+                'message' => 'Recovery codes regenerated'
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => '回復コード再生成に失敗しました'
+                'message' => 'Recovery code regeneration failed'
             ], 500);
         }
     }
 }
 ```
 
-### 認証での使用
+### Using Recovery Codes for Authentication
 
 ```php
-// TwoFaAuthenticationTraitを使用している場合は自動実装済み
-// カスタム実装の場合:
+// If using TwoFaAuthenticationTrait, this is already implemented automatically.
+// For custom implementation:
 
 public function verifyRecoveryCode(Request $request)
 {
     $request->validate([
         'recovery_code' => 'required|string'
     ]);
-    
+
     $userId = session('admin_two_fa.id');
     if (!$userId) {
         return redirect()->route('admin.login');
     }
-    
+
     $user = \App\Models\Member::find($userId);
-    
-    // 試行回数チェック
+
+    // Check attempt count
     $attemptService = app(\App\Services\TwoFa\TwoFaAttemptService::class);
     if ($attemptService->isLockedOut($user)) {
         return back()->withErrors([
-            'recovery_code' => 'ロックアウト中です'
+            'recovery_code' => 'You are locked out'
         ]);
     }
-    
-    // 回復コード検証
+
+    // Verify recovery code
     $recoveryCodeService = app(\App\Services\TwoFa\TwoFaRecoveryCodeService::class);
     $success = $recoveryCodeService->validate($user, $request->recovery_code);
-    
-    // 試行を記録
+
+    // Record attempt
     $attemptService->recordAttempt($user, 'recovery_code', $success);
-    
+
     if ($success) {
-        // 認証成功
+        // Authentication successful
         $remember = session('admin_two_fa.remember', false);
         session()->forget('admin_two_fa');
-        
+
         Auth::guard('member')->login($user, $remember);
-        
-        // 残りの回復コード数を確認
+
+        // Check remaining recovery code count
         $remaining = $recoveryCodeService->getRemainingCount($user);
         if ($remaining <= 2) {
-            session()->flash('warning', "回復コードの残りが{$remaining}個です。新しいコードを生成してください。");
+            session()->flash('warning', "You have {$remaining} recovery code(s) remaining. Please generate new codes.");
         }
-        
+
         return redirect()->route('admin.dashboard');
     }
-    
+
     return back()->withErrors([
-        'recovery_code' => '回復コードが正しくありません'
+        'recovery_code' => 'The recovery code is incorrect'
     ]);
 }
 ```
 
 ---
 
-## プラグイン開発での使用
+## Usage in Plugin Development
 
-### ユーザープラグインでの実装例
+### Implementation Example for a User Plugin
 
 ```php
 namespace Plugins\DixlaseUsers\App\Http\Controllers\Auth;
@@ -796,36 +796,36 @@ use App\Traits\TwoFa\TwoFaAuthenticationTrait;
 class DixlaseUsersTwoFactorController extends Controller
 {
     use TwoFaAuthenticationTrait;
-    
+
     protected function getSettingModelClass(): string
     {
-        // ユーザープラグインの設定モデルを使用
+        // Use the user plugin's settings model
         return \Plugins\DixlaseUsers\App\Models\DixlaseUsersUserSetting::class;
     }
-    
+
     protected function getTwoFaService()
     {
         return app(\App\Services\TwoFa\TwoFaService::class, [
             'settingModelClass' => $this->getSettingModelClass(),
-            'context' => 'user' // コンテキストを'user'に
+            'context' => 'user' // Set context to 'user'
         ]);
     }
-    
+
     protected function getTwoFaRoutePrefix(): string
     {
         return 'users-plugin.two-fa';
     }
-    
+
     protected function getSessionPrefix(): string
     {
         return 'user_two_fa';
     }
-    
+
     protected function getDashboardRoute(): string
     {
         return 'users-plugin.dashboard';
     }
-    
+
     protected function getLoginRoute(): string
     {
         return 'users-plugin.login';
@@ -833,30 +833,30 @@ class DixlaseUsersTwoFactorController extends Controller
 }
 ```
 
-**ルート定義（プラグイン内）:**
+**Route Definition (within the plugin):**
 
 ```php
 // plugins/DixlaseUsers/routes/web.php
 
 Route::middleware('guest:dixlase_users_user')->prefix('user')->name('users-plugin.')->group(function () {
     Route::prefix('two-fa')->name('two-fa.')->group(function () {
-        // メール認証
+        // Email authentication
         Route::get('/email', [DixlaseUsersTwoFactorController::class, 'showEmailChallenge'])
             ->name('email.show');
         Route::post('/email/verify', [DixlaseUsersTwoFactorController::class, 'verifyEmail'])
             ->name('email.verify');
         Route::post('/email/resend', [DixlaseUsersTwoFactorController::class, 'resendEmail'])
             ->name('email.resend');
-        
-        // Passkey認証
+
+        // Passkey authentication
         Route::get('/passkey', [DixlaseUsersTwoFactorController::class, 'showPasskeyChallenge'])
             ->name('passkey.show');
         Route::post('/passkey/challenge', [DixlaseUsersTwoFactorController::class, 'getPasskeyChallenge'])
             ->name('passkey.challenge');
         Route::post('/passkey/verify', [DixlaseUsersTwoFactorController::class, 'verifyPasskey'])
             ->name('passkey.verify');
-        
-        // 回復コード認証
+
+        // Recovery code authentication
         Route::get('/recovery', [DixlaseUsersTwoFactorController::class, 'showRecoveryCodeChallenge'])
             ->name('recovery.show');
         Route::post('/recovery/verify', [DixlaseUsersTwoFactorController::class, 'verifyRecoveryCode'])
@@ -867,75 +867,75 @@ Route::middleware('guest:dixlase_users_user')->prefix('user')->name('users-plugi
 
 ---
 
-## トラブルシューティング
+## Troubleshooting
 
-### メール送信エラー
+### Email Sending Errors
 
-**症状**: コード生成時にメール送信エラーが発生
+**Symptom**: Email sending error occurs during code generation
 
-**原因と解決策:**
+**Causes and Solutions:**
 
-1. **メール設定が未完了**
+1. **Email is not configured**
    ```php
    $helper = app(\App\Helpers\TwoFaHelper::class);
    if (!$helper->isMailConfigured()) {
-       // メール設定を完了してください
+       // Please complete the email configuration
    }
    ```
 
-2. **メールクラスが見つからない**
+2. **Mail class not found**
    ```php
-   // 正しいメールクラスを指定
+   // Specify the correct mail class
    $codeService->generateAndSend(
        $user,
-       \App\Mail\TwoFaCodeMail::class, // ← 存在するクラスを指定
+       \App\Mail\TwoFaCodeMail::class, // ← Specify an existing class
        10,
        'admin'
    );
    ```
 
-3. **ログを確認**
+3. **Check logs**
    ```bash
    tail -f storage/logs/laravel.log | grep "\[2FA\]"
    ```
 
 ---
 
-### Passkey認証エラー
+### Passkey Authentication Errors
 
-**症状**: Passkey認証が利用できない
+**Symptom**: Passkey authentication is unavailable
 
-**原因と解決策:**
+**Causes and Solutions:**
 
-1. **HTTPS接続が必要**
+1. **HTTPS connection required**
    ```php
    $passkeyService = app(\App\Services\TwoFa\TwoFaPasskeyService::class);
    if (!$passkeyService->isAvailable()) {
-       // HTTPS接続が必要です
+       // HTTPS connection is required
    }
    ```
 
-2. **ブラウザが対応していない**
+2. **Browser is not supported**
    - Chrome 67+
    - Firefox 60+
    - Safari 13+
    - Edge 18+
 
-3. **デバイスが対応していない**
-   - Touch ID/Face ID搭載デバイス
-   - Windows Hello対応PC
-   - FIDO2対応セキュリティキー
+3. **Device is not supported**
+   - Devices with Touch ID/Face ID
+   - PCs with Windows Hello support
+   - FIDO2-compatible security keys
 
 ---
 
-### ロックアウト問題
+### Lockout Issues
 
-**症状**: ユーザーがロックアウトされている
+**Symptom**: User is locked out
 
-**解決策:**
+**Solution:**
 
 ```php
-// 手動でロックアウトを解除（管理者のみ）
+// Manually unlock (admin only)
 $user = \App\Models\Member::find($userId);
 $user->twoFaAttempts()
     ->where('success', false)
@@ -945,32 +945,32 @@ $user->twoFaAttempts()
 
 ---
 
-### セッションエラー
+### Session Errors
 
-**症状**: 2FA認証画面で「セッションが無効です」エラー
+**Symptom**: "Session is invalid" error on the 2FA authentication screen
 
-**原因と解決策:**
+**Causes and Solutions:**
 
-1. **セッションキーが正しくない**
+1. **Incorrect session key**
    ```php
-   // ログイン時
+   // During login
    session(['admin_two_fa.id' => $user->id]);
-   
-   // 2FA認証時
-   $userId = session('admin_two_fa.id'); // ← 同じキーを使用
+
+   // During 2FA authentication
+   $userId = session('admin_two_fa.id'); // ← Use the same key
    ```
 
-2. **セッションが期限切れ**
+2. **Session expired**
    ```php
    // config/session.php
-   'lifetime' => 120, // セッション有効期限（分）
+   'lifetime' => 120, // Session lifetime (minutes)
    ```
 
 ---
 
-## ベストプラクティス
+## Best Practices
 
-### 1. エラーハンドリング
+### 1. Error Handling
 
 ```php
 try {
@@ -981,15 +981,15 @@ try {
         'error' => $e->getMessage(),
         'trace' => $e->getTraceAsString()
     ]);
-    
+
     return response()->json([
         'success' => false,
-        'message' => 'コード生成に失敗しました'
+        'message' => 'Code generation failed'
     ], 500);
 }
 ```
 
-### 2. ログ記録
+### 2. Logging
 
 ```php
 \Log::info('[2FA] Authentication attempt', [
@@ -1000,54 +1000,54 @@ try {
 ]);
 ```
 
-### 3. セキュリティ
+### 3. Security
 
 ```php
-// 必ずロックアウトチェックを実装
+// Always implement lockout checks
 $attemptService = app(\App\Services\TwoFa\TwoFaAttemptService::class);
 if ($attemptService->isLockedOut($user)) {
-    // ロックアウト中の処理
+    // Handle lockout
 }
 
-// 試行を必ず記録
+// Always record attempts
 $attemptService->recordAttempt($user, 'email', $success);
 ```
 
-### 4. ユーザーエクスペリエンス
+### 4. User Experience
 
 ```php
-// 残り試行回数を表示
+// Display remaining attempts
 $remaining = $attemptService->getRemainingAttempts($user);
 if ($remaining <= 3) {
-    session()->flash('warning', "残り{$remaining}回の試行が可能です。");
+    session()->flash('warning', "You have {$remaining} attempt(s) remaining.");
 }
 
-// 回復コードの残数を警告
+// Warn about remaining recovery codes
 $recoveryCodeService = app(\App\Services\TwoFa\TwoFaRecoveryCodeService::class);
 $remaining = $recoveryCodeService->getRemainingCount($user);
 if ($remaining <= 2) {
-    session()->flash('warning', "回復コードの残りが{$remaining}個です。");
+    session()->flash('warning', "You have {$remaining} recovery code(s) remaining.");
 }
 ```
 
 ---
 
-## まとめ
+## Summary
 
-Dixlaseの2FAシステムは、以下の特徴を持っています：
+Dixlase's 2FA system has the following characteristics:
 
-✅ **簡単な実装**: TwoFaAuthenticationTraitで5ステップで実装可能
-✅ **柔軟な設計**: 個別サービスを使った細かい制御も可能
-✅ **プラグイン対応**: 設定モデルクラスを柔軟に指定可能
-✅ **複数認証方法**: メール、Passkey、回復コードをサポート
-✅ **セキュリティ**: ロックアウト、試行回数制限、期限切れ管理
-✅ **拡張性**: 新しい認証方法の追加が容易
+- **Easy implementation**: Implement in 5 steps with TwoFaAuthenticationTrait
+- **Flexible design**: Fine-grained control possible with individual services
+- **Plugin support**: Settings model class can be flexibly specified
+- **Multiple authentication methods**: Supports email, Passkey, and recovery codes
+- **Security**: Lockout, attempt limits, and expiration management
+- **Extensibility**: Easy to add new authentication methods
 
-このガイドに従って実装することで、安全で使いやすい2FA機能を簡単に追加できます。
+By following this guide, you can easily add secure and user-friendly 2FA functionality.
 
 ---
 
-## 関連ドキュメント
+## Related Documentation
 
-- [2FAアーキテクチャ](./two-factor-authentication-architecture.md) - 技術仕様と詳細
-- [UIコンポーネント](./two-factor-ui-components.md) - フロントエンド実装
+- [2FA Architecture](./two-factor-authentication-architecture.md) - Technical specifications and details
+- [UI Components](./two-factor-ui-components.md) - Frontend implementation

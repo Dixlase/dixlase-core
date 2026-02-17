@@ -1,58 +1,58 @@
-# セキュリティ設定統一レジストリ
+# Security Settings Unified Registry
 
-## 概要
+## Overview
 
-`SecuritySettingsRegistry`は、散らばったセキュリティ設定を一元管理するサービスです。複数のテーブル（`security_settings`、`members_settings`、`base_settings`）に分散した設定を、統一されたAPIで取得・設定できます。
+`SecuritySettingsRegistry` is a service that centrally manages scattered security settings. It provides a unified API to get and set settings that are distributed across multiple tables (`security_settings`, `members_settings`, `base_settings`).
 
-## 設定カテゴリ
+## Setting Categories
 
-| カテゴリ | 説明 |
-|---------|------|
-| `auth` | 認証（二段階認証、パスワードポリシー） |
-| `login` | ログイン（試行回数、ロックアウト） |
-| `session` | セッション（ドライバー、有効期間） |
-| `captcha` | CAPTCHA設定 |
-| `ip` | IP制限（許可/ブロックリスト） |
+| Category | Description |
+|----------|-------------|
+| `auth` | Authentication (2FA, password policy) |
+| `login` | Login (attempt limits, lockout) |
+| `session` | Session (driver, lifetime) |
+| `captcha` | CAPTCHA settings |
+| `ip` | IP restrictions (allow/block lists) |
 | `csp` | Content Security Policy |
-| `extension` | 拡張機能セキュリティ |
-| `notification` | システム通知 |
-| `api` | API設定（レートリミット、署名） |
-| `lockdown` | ロックダウン設定 |
+| `extension` | Extension security |
+| `notification` | System notifications |
+| `api` | API settings (rate limiting, signatures) |
+| `lockdown` | Lockdown settings |
 
-## 使用方法
+## Usage
 
-### 設定の取得
+### Retrieving Settings
 
 ```php
 use App\Services\SecuritySettingsRegistry;
 
-// 単一の設定を取得
+// Get a single setting
 $captchaEnabled = SecuritySettingsRegistry::get('captcha_enabled');
 $maxAttempts = SecuritySettingsRegistry::get('login_max_attempts');
 
-// デフォルト値を指定
+// Specify a default value
 $timeout = SecuritySettingsRegistry::get('api_timeout', 30);
 
-// カテゴリ別に取得
+// Get by category
 $authSettings = SecuritySettingsRegistry::getByCategory('auth');
 // => ['two_factor_enabled' => true, 'password_min_length' => 8, ...]
 
-// 全設定を取得
+// Get all settings
 $allSettings = SecuritySettingsRegistry::getAll();
 
-// カテゴリ別にグループ化して取得
+// Get all settings grouped by category
 $grouped = SecuritySettingsRegistry::getAllGrouped();
 // => ['auth' => [...], 'login' => [...], ...]
 ```
 
-### 設定の更新
+### Updating Settings
 
 ```php
-// 単一の設定を更新
+// Update a single setting
 SecuritySettingsRegistry::set('captcha_enabled', true);
 SecuritySettingsRegistry::set('login_max_attempts', 10);
 
-// 複数の設定を一括更新
+// Bulk update multiple settings
 SecuritySettingsRegistry::setMultiple([
     'captcha_enabled' => true,
     'captcha_driver' => 'google',
@@ -60,42 +60,42 @@ SecuritySettingsRegistry::setMultiple([
 ]);
 ```
 
-### 設定定義の取得
+### Retrieving Setting Definitions
 
 ```php
-// 特定の設定の定義を取得
+// Get the definition of a specific setting
 $definition = SecuritySettingsRegistry::getDefinition('captcha_enabled');
 // => [
 //     'category' => 'captcha',
 //     'source' => 'security_settings',
 //     'type' => 'bool',
 //     'default' => false,
-//     'description' => 'CAPTCHA有効/無効',
+//     'description' => 'Enable/disable CAPTCHA',
 // ]
 
-// 全定義を取得
+// Get all definitions
 $allDefinitions = SecuritySettingsRegistry::getDefinition();
 
-// 設定が存在するか確認
+// Check if a setting exists
 if (SecuritySettingsRegistry::has('captcha_enabled')) {
     // ...
 }
 ```
 
-### キャッシュ管理
+### Cache Management
 
 ```php
-// 特定の設定のキャッシュをクリア
+// Clear cache for a specific setting
 SecuritySettingsRegistry::clearCache('captcha_enabled');
 
-// 全キャッシュをクリア
+// Clear all caches
 SecuritySettingsRegistry::clearCache();
 ```
 
-### エクスポート/インポート
+### Export / Import
 
 ```php
-// 設定をエクスポート（バックアップ）
+// Export settings (backup)
 $backup = SecuritySettingsRegistry::export();
 // => [
 //     'version' => '1.0',
@@ -103,98 +103,98 @@ $backup = SecuritySettingsRegistry::export();
 //     'settings' => [...],
 // ]
 
-// 機密情報を含めてエクスポート
+// Export including sensitive information
 $backup = SecuritySettingsRegistry::export(includeSensitive: true);
 
-// 設定をインポート（リストア）
+// Import settings (restore)
 $count = SecuritySettingsRegistry::import($backup);
 ```
 
-## 設定一覧
+## Settings Reference
 
-### 認証 (auth)
+### Authentication (auth)
 
-| キー | 型 | デフォルト | 説明 |
-|-----|-----|----------|------|
-| `two_factor_enabled` | bool | false | 二段階認証の有効/無効 |
-| `two_factor_mode` | string | optional | 二段階認証モード |
-| `password_min_length` | int | 8 | パスワード最小文字数 |
-| `password_require_mixed_case` | bool | true | 大文字小文字を必須にするか |
-| `password_require_numbers` | bool | true | 数字を必須にするか |
-| `password_require_symbols` | bool | false | 記号を必須にするか |
-| `password_check_pwned` | bool | true | 漏洩パスワードチェック |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `two_factor_enabled` | bool | false | Enable/disable 2FA |
+| `two_factor_mode` | string | optional | 2FA mode |
+| `password_min_length` | int | 8 | Minimum password length |
+| `password_require_mixed_case` | bool | true | Require uppercase and lowercase |
+| `password_require_numbers` | bool | true | Require digits |
+| `password_require_symbols` | bool | false | Require symbols |
+| `password_check_pwned` | bool | true | Check for compromised passwords |
 
-### ログイン (login)
+### Login (login)
 
-| キー | 型 | デフォルト | 説明 |
-|-----|-----|----------|------|
-| `login_max_attempts` | int | 5 | ログイン試行回数上限 |
-| `login_lockout_duration` | int | 15 | ロックアウト時間（分） |
-| `login_notification_enabled` | bool | true | ログイン通知 |
-| `lockout_notification_enabled` | bool | true | ロックアウト通知 |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `login_max_attempts` | int | 5 | Maximum login attempts |
+| `login_lockout_duration` | int | 15 | Lockout duration (minutes) |
+| `login_notification_enabled` | bool | true | Login notifications |
+| `lockout_notification_enabled` | bool | true | Lockout notifications |
 
-### セッション (session)
+### Session (session)
 
-| キー | 型 | デフォルト | 説明 |
-|-----|-----|----------|------|
-| `session_driver` | string | file | セッションドライバー |
-| `session_lifetime` | int | 120 | セッション有効期間（分） |
-| `session_encrypt` | bool | false | セッション暗号化 |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `session_driver` | string | file | Session driver |
+| `session_lifetime` | int | 120 | Session lifetime (minutes) |
+| `session_encrypt` | bool | false | Session encryption |
 
 ### CAPTCHA (captcha)
 
-| キー | 型 | デフォルト | 説明 |
-|-----|-----|----------|------|
-| `captcha_enabled` | bool | false | CAPTCHA有効/無効 |
-| `captcha_driver` | string | google | CAPTCHAドライバー |
-| `captcha_site_key` | string | | サイトキー |
-| `captcha_secret_key` | string | | シークレットキー（機密） |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `captcha_enabled` | bool | false | Enable/disable CAPTCHA |
+| `captcha_driver` | string | google | CAPTCHA driver |
+| `captcha_site_key` | string | | Site key |
+| `captcha_secret_key` | string | | Secret key (sensitive) |
 
-### IP制限 (ip)
+### IP Restrictions (ip)
 
-| キー | 型 | デフォルト | 説明 |
-|-----|-----|----------|------|
-| `enable_allowed_admin_ips` | bool | false | 管理画面IP許可リスト有効 |
-| `allowed_admin_ips` | string | | 管理画面許可IPリスト |
-| `enable_blocked_admin_ips` | bool | false | 管理画面IPブロックリスト有効 |
-| `blocked_admin_ips` | string | | 管理画面ブロックIPリスト |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `enable_allowed_admin_ips` | bool | false | Enable admin IP allow list |
+| `allowed_admin_ips` | string | | Admin allowed IP list |
+| `enable_blocked_admin_ips` | bool | false | Enable admin IP block list |
+| `blocked_admin_ips` | string | | Admin blocked IP list |
 
 ### CSP (csp)
 
-| キー | 型 | デフォルト | 説明 |
-|-----|-----|----------|------|
-| `csp_enabled` | bool | true | CSP有効/無効 |
-| `csp_mode` | string | standard | CSPモード |
-| `csp_log_violations` | bool | true | CSP違反をログに記録 |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `csp_enabled` | bool | true | Enable/disable CSP |
+| `csp_mode` | string | standard | CSP mode |
+| `csp_log_violations` | bool | true | Log CSP violations |
 
 ### API (api)
 
-| キー | 型 | デフォルト | 説明 |
-|-----|-----|----------|------|
-| `api_rate_limit_enabled` | bool | true | レートリミット有効 |
-| `api_rate_limit_per_minute` | int | 60 | 1分あたりのリクエスト上限 |
-| `api_signature_required` | bool | true | 署名を必須にするか |
-| `api_timestamp_tolerance` | int | 300 | タイムスタンプ許容範囲（秒） |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `api_rate_limit_enabled` | bool | true | Enable rate limiting |
+| `api_rate_limit_per_minute` | int | 60 | Requests per minute limit |
+| `api_signature_required` | bool | true | Require request signatures |
+| `api_timestamp_tolerance` | int | 300 | Timestamp tolerance (seconds) |
 
-## 設定ソース
+## Setting Sources
 
-設定は以下のテーブルに保存されます：
+Settings are stored in the following tables:
 
-| ソース | テーブル | 用途 |
-|--------|---------|------|
-| `security_settings` | `security_settings` | セキュリティ全般 |
-| `members_settings` | `members_settings` | メンバー関連 |
-| `base_settings` | `base_settings` | 基本設定 |
+| Source | Table | Purpose |
+|--------|-------|---------|
+| `security_settings` | `security_settings` | General security |
+| `members_settings` | `members_settings` | Member-related |
+| `base_settings` | `base_settings` | Base settings |
 
-レジストリは各設定がどのソースに保存されるかを自動的に判断し、適切なテーブルに読み書きします。
+The registry automatically determines which source each setting is stored in and reads from / writes to the appropriate table.
 
-## キャッシュ
+## Caching
 
-設定値は5分間キャッシュされます。設定を更新すると、該当するキャッシュは自動的にクリアされます。
+Setting values are cached for 5 minutes. When a setting is updated, its corresponding cache is automatically cleared.
 
-## β版以降の予定
+## Planned for Post-Beta
 
-- 管理画面でのセキュリティ設定ダッシュボード
-- 設定変更の監査ログ
-- 設定のバリデーション強化
-- プラグインからの設定登録API
+- Security settings dashboard in the admin panel
+- Audit logging for setting changes
+- Enhanced setting validation
+- Plugin API for registering custom settings

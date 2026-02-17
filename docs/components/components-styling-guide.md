@@ -1,65 +1,65 @@
 # Dixlase Components Styling Guide
 
-このガイドでは、Dixlaseのコンポーネントスタイルシステムの使用方法について説明します。
+This guide explains how to use the Dixlase component style system.
 
-## 概要
+## Overview
 
-Dixlaseでは、管理画面とプラグインで共有できるコンポーネントスタイルを提供しています。これらのスタイルは`resources/src/common/scss/_components.scss`に定義されており、プラグイン開発者も利用できます。
+Dixlase provides component styles that can be shared across the admin panel and plugins. These styles are defined in `resources/src/common/scss/_components.scss` and are available for plugin developers as well.
 
-## ファイル構成
+## File Structure
 
 ```
 resources/
 ├── src/
 │   ├── common/scss/
-│   │   ├── _components.scss    # 共有コンポーネントスタイル
+│   │   ├── _components.scss    # Shared component styles
 │   │   ├── _tailwind-custom.scss
-│   │   └── style.scss          # メインスタイルファイル
+│   │   └── style.scss          # Main style file
 │   └── admin/scss/
-│       └── _admin.scss         # 管理画面専用スタイル
+│       └── _admin.scss         # Admin-only styles
 └── views/
-    └── components/             # Bladeコンポーネント
+    └── components/             # Blade components
 ```
 
-## 利用可能なコンポーネントスタイル
+## Available Component Styles
 
-### 1. ナビゲーションボタン
+### 1. Navigation Buttons
 
 ```html
-<!-- 基本的なナビゲーションボタン -->
-<button class="nav-button">基本ボタン</button>
+<!-- Basic navigation button -->
+<button class="nav-button">Basic Button</button>
 
-<!-- アクティブ状態のボタン -->
-<button class="nav-button nav-button--blue nav-button--active">アクティブ（青）</button>
-<button class="nav-button nav-button--green nav-button--active">アクティブ（緑）</button>
-<button class="nav-button nav-button--red nav-button--active">アクティブ（赤）</button>
-<button class="nav-button nav-button--yellow nav-button--active">アクティブ（黄）</button>
+<!-- Active state buttons -->
+<button class="nav-button nav-button--blue nav-button--active">Active (Blue)</button>
+<button class="nav-button nav-button--green nav-button--active">Active (Green)</button>
+<button class="nav-button nav-button--red nav-button--active">Active (Red)</button>
+<button class="nav-button nav-button--yellow nav-button--active">Active (Yellow)</button>
 ```
 
-### 2. アクションボタン
+### 2. Action Buttons
 
 ```html
-<button class="action-button action-button--primary">プライマリ</button>
-<button class="action-button action-button--success">成功</button>
-<button class="action-button action-button--danger">危険</button>
-<button class="action-button action-button--warning">警告</button>
+<button class="action-button action-button--primary">Primary</button>
+<button class="action-button action-button--success">Success</button>
+<button class="action-button action-button--danger">Danger</button>
+<button class="action-button action-button--warning">Warning</button>
 ```
 
-### 3. ページネーション
+### 3. Pagination
 
 ```html
 <div class="pagination">
-    <button class="pagination-button pagination-button--disabled">前へ</button>
+    <button class="pagination-button pagination-button--disabled">Previous</button>
     <span class="pagination-number pagination-number--current">1</span>
     <span class="pagination-number">2</span>
     <span class="pagination-ellipsis">...</span>
     <span class="pagination-number">10</span>
-    <button class="pagination-button">次へ</button>
+    <button class="pagination-button">Next</button>
 </div>
 <div class="pagination-info">1-10 of 100 items</div>
 ```
 
-### 4. モーダル
+### 4. Modals
 
 ```html
 <div class="modal modal--animate modal--visible">
@@ -69,13 +69,13 @@ resources/
                 <div class="modal-icon modal-icon--warning">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <h3 class="modal-title">確認</h3>
+                <h3 class="modal-title">Confirmation</h3>
                 <div class="modal-message">
-                    <p>この操作を実行しますか？</p>
+                    <p>Are you sure you want to perform this action?</p>
                 </div>
                 <div class="modal-actions">
-                    <button class="modal-button modal-button--confirm red">実行</button>
-                    <button class="modal-button modal-button--cancel">キャンセル</button>
+                    <button class="modal-button modal-button--confirm red">Execute</button>
+                    <button class="modal-button modal-button--cancel">Cancel</button>
                 </div>
             </div>
         </div>
@@ -83,142 +83,142 @@ resources/
 </div>
 ```
 
-### 5. メッセージ
+### 5. Messages
 
 ```html
 <div class="message success">
-    <p>操作が正常に完了しました。</p>
+    <p>The operation completed successfully.</p>
 </div>
 
 <div class="message warning">
-    <p>注意が必要です。</p>
+    <p>Attention is required.</p>
 </div>
 
 <div class="message error">
-    <p>エラーが発生しました。</p>
+    <p>An error has occurred.</p>
 </div>
 
 <div class="message info">
-    <p>情報をお知らせします。</p>
+    <p>Here is some information for you.</p>
 </div>
 ```
 
-### 6. テーブル
+### 6. Tables
 
 ```html
 <table class="component-table">
     <thead>
         <tr>
             <th>ID</th>
-            <th>名前</th>
-            <th>操作</th>
+            <th>Name</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
         <tr>
             <td>1</td>
-            <td>サンプル</td>
+            <td>Sample</td>
             <td>
-                <button class="action-button action-button--primary">編集</button>
+                <button class="action-button action-button--primary">Edit</button>
             </td>
         </tr>
     </tbody>
 </table>
 ```
 
-### 7. レスポンシブテーブル
+### 7. Responsive Tables
 
 ```html
 <div class="responsive-table">
     <table class="component-table">
-        <!-- テーブル内容 -->
+        <!-- Table content -->
     </table>
 </div>
 ```
 
-## プラグインでの使用方法
+## Using in Plugins
 
-### 1. スタイルのインポート
+### 1. Importing Styles
 
-プラグインのSCSSファイルで共有スタイルをインポートします：
+Import the shared styles in your plugin's SCSS file:
 
 ```scss
-// プラグインのSCSSファイル
+// Plugin SCSS file
 @use '../../../common/scss/components';
 
 .your-plugin-styles {
-    // プラグイン固有のスタイル
+    // Plugin-specific styles
 }
 ```
 
-### 2. Bladeテンプレートでの使用
+### 2. Usage in Blade Templates
 
 ```blade
-{{-- プラグインのBladeテンプレート --}}
+{{-- Plugin Blade template --}}
 <div class="your-plugin-container">
     <button class="action-button action-button--primary">
-        プライマリボタン
+        Primary Button
     </button>
-    
+
     <div class="message success">
-        <p>成功メッセージ</p>
+        <p>Success message</p>
     </div>
 </div>
 ```
 
-### 3. カスタムスタイルの追加
+### 3. Adding Custom Styles
 
-プラグイン固有のスタイルは、共有スタイルを拡張して作成できます：
+Plugin-specific styles can be created by extending the shared styles:
 
 ```scss
-// プラグイン固有のボタンスタイル
+// Plugin-specific button style
 .your-plugin-button {
     @extend .action-button;
     @extend .action-button--primary;
-    
-    // 追加のカスタマイズ
+
+    // Additional customization
     border-radius: 8px;
     font-weight: bold;
 }
 ```
 
-## ダークモード対応
+## Dark Mode Support
 
-すべてのコンポーネントスタイルはダークモードに対応しています。Tailwind CSSの`dark:`プレフィックスを使用して自動的に切り替わります。
+All component styles support dark mode. They switch automatically using the Tailwind CSS `dark:` prefix.
 
-## ベストプラクティス
+## Best Practices
 
-1. **既存のコンポーネントスタイルを優先使用**
-   - 新しいスタイルを作成する前に、既存のコンポーネントスタイルが使用できないか確認してください
+1. **Prefer using existing component styles**
+   - Before creating new styles, check if existing component styles can be used
 
-2. **一貫性の維持**
-   - 色、サイズ、間隔などは既存のデザインシステムに合わせてください
+2. **Maintain consistency**
+   - Match colors, sizes, and spacing to the existing design system
 
-3. **レスポンシブ対応**
-   - モバイルファーストでデザインし、適切なブレークポイントを使用してください
+3. **Responsive support**
+   - Design mobile-first and use appropriate breakpoints
 
-4. **アクセシビリティ**
-   - 適切なコントラスト比、フォーカス状態、キーボードナビゲーションを考慮してください
+4. **Accessibility**
+   - Consider proper contrast ratios, focus states, and keyboard navigation
 
-## カスタマイズ
+## Customization
 
-プラグイン開発者は、共有スタイルをベースにして独自のバリエーションを作成できます：
+Plugin developers can create their own variations based on the shared styles:
 
 ```scss
-// カスタムアクションボタン
+// Custom action button
 .custom-action-button {
     @extend .action-button;
-    
+
     &--custom-color {
         @apply bg-purple-600 hover:bg-purple-700 text-white;
     }
 }
 ```
 
-## サポート
+## Support
 
-スタイルに関する質問や提案がある場合は、開発チームまでお問い合わせください。
+If you have questions or suggestions about styles, please contact the development team.
 
 ---
 
-このガイドは、Dixlaseのコンポーネントスタイルシステムを効果的に活用するためのリファレンスです。定期的に更新されるため、最新の情報を確認してください。
+This guide serves as a reference for effectively using the Dixlase component style system. It is updated regularly, so please check for the latest information.

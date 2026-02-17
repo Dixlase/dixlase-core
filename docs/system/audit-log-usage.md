@@ -1,78 +1,78 @@
-# 監査ログ（Audit Log）使用ガイド
+# Audit Log Usage Guide
 
-## 概要
+## Overview
 
-Dixlaseの監査ログシステムは、「誰が / いつ / どこから / 何に対して / 何をしたか」を記録するための統一APIを提供します。
+Dixlase's audit log system provides a unified API for recording "who / when / from where / on what / did what."
 
-## 基本的な使い方
+## Basic Usage
 
-### Audit Facadeを使用
+### Using the Audit Facade
 
 ```php
 use App\Facades\Audit;
 use App\Models\AuditLog;
 
-// 基本的なログ記録
+// Basic logging
 Audit::log([
     'category' => AuditLog::CATEGORY_AUTH,
     'action' => AuditLog::ACTION_LOGIN,
     'outcome' => AuditLog::OUTCOME_SUCCESS,
     'actor' => $user,
     'context' => [
-        'message' => 'ログインしました',
+        'message' => 'User logged in',
     ],
 ]);
 ```
 
-### ショートカットメソッド
+### Shortcut Methods
 
 ```php
-// 認証ログ
+// Authentication log
 Audit::logAuth(AuditLog::ACTION_LOGIN, [
     'actor' => $user,
     'outcome' => AuditLog::OUTCOME_SUCCESS,
 ]);
 
-// セキュリティログ
+// Security log
 Audit::logSecurity(AuditLog::ACTION_IP_BLOCKED, [
     'severity' => AuditLog::SEVERITY_WARNING,
     'context' => ['blocked_ip' => '192.168.1.1'],
 ]);
 
-// アカウントログ
+// Account log
 Audit::logAccount(AuditLog::ACTION_PASSWORD_CHANGED, [
     'actor' => $user,
     'target' => $user,
 ]);
 
-// 拡張機能ログ
+// Extension log
 Audit::logExtension(AuditLog::ACTION_PLUGIN_INSTALLED, [
     'actor' => $admin,
     'target_label' => 'DixlaseBlog',
 ]);
 
-// システムログ
+// System log
 Audit::logSystem(AuditLog::ACTION_SETTINGS_UPDATED, [
     'actor' => $admin,
     'target_label' => 'security_settings',
 ]);
 
-// コンテンツログ
+// Content log
 Audit::logContent('post_published', [
     'actor' => $author,
     'target' => $post,
 ]);
 
-// プラグインログ
+// Plugin log
 Audit::logPlugin('custom_action', [
     'plugin_name' => 'my-plugin',
     'context' => ['custom_data' => 'value'],
 ]);
 ```
 
-## プラグインからの使用
+## Usage from Plugins
 
-### 基本的な使い方
+### Basic Usage
 
 ```php
 use App\Facades\Audit;
@@ -83,8 +83,8 @@ class MyPluginController extends Controller
     public function store(Request $request)
     {
         $inquiry = Inquiry::create($request->validated());
-        
-        // プラグインからのログ記録
+
+        // Log from a plugin
         Audit::log([
             'category' => AuditLog::CATEGORY_PLUGIN,
             'action' => 'inquiry_submitted',
@@ -92,19 +92,19 @@ class MyPluginController extends Controller
             'plugin_version' => '1.0.0',
             'target' => $inquiry,
             'context' => [
-                'message' => 'お問い合わせが送信されました',
+                'message' => 'Inquiry was submitted',
                 'form_id' => $request->form_id,
             ],
         ]);
-        
+
         return redirect()->back();
     }
 }
 ```
 
-### プラグインコンテキストの設定
+### Setting Plugin Context
 
-ServiceProviderでプラグインコンテキストを設定すると、以降のログに自動的にプラグイン情報が付与されます。
+By setting the plugin context in your ServiceProvider, plugin information is automatically attached to subsequent logs.
 
 ```php
 use App\Facades\Audit;
@@ -113,17 +113,17 @@ class MyPluginServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        // プラグインコンテキストを設定
+        // Set plugin context
         Audit::setPluginContext('my-plugin', '1.0.0');
     }
 }
 ```
 
-## AuditableTrait の使用
+## Using AuditableTrait
 
-モデルの作成・更新・削除を自動的に監査ログに記録できます。
+Automatically record model creation, updates, and deletions in the audit log.
 
-### 基本的な使い方
+### Basic Usage
 
 ```php
 use App\Traits\AuditableTrait;
@@ -134,43 +134,43 @@ class Post extends Model
 }
 ```
 
-### カスタマイズ
+### Customization
 
 ```php
 class Post extends Model
 {
     use AuditableTrait;
-    
-    // 監査対象外のカラム
+
+    // Columns excluded from auditing
     protected array $auditExclude = ['updated_at', 'view_count'];
-    
-    // 監査対象のカラム（指定した場合、これらのみ記録）
+
+    // Columns to audit (when specified, only these are recorded)
     protected array $auditInclude = ['title', 'status', 'content'];
-    
-    // カテゴリを指定
+
+    // Specify the category
     protected string $auditCategory = 'content';
-    
-    // プラグイン名を指定
+
+    // Specify the plugin name
     protected ?string $auditPluginName = 'dixlase-blog';
-    
-    // カスタムアクション名
+
+    // Custom action names
     protected array $auditActions = [
         'created' => 'post_created',
         'updated' => 'post_updated',
         'deleted' => 'post_deleted',
     ];
-    
-    // カスタムメッセージ
+
+    // Custom messages
     protected array $auditMessages = [
-        'created' => '記事が作成されました',
-        'updated' => '記事が更新されました',
-        'deleted' => '記事が削除されました',
+        'created' => 'Post was created',
+        'updated' => 'Post was updated',
+        'deleted' => 'Post was deleted',
     ];
-    
-    // ラベルに使用する属性
+
+    // Attribute to use as the label
     protected string $auditLabelAttribute = 'title';
-    
-    // イベントごとの重要度
+
+    // Severity per event
     protected array $auditSeverities = [
         'created' => 'info',
         'updated' => 'info',
@@ -179,7 +179,7 @@ class Post extends Model
 }
 ```
 
-### 一時的に監査を無効化
+### Temporarily Disabling Auditing
 
 ```php
 $post->withoutAudit(function ($post) {
@@ -188,22 +188,22 @@ $post->withoutAudit(function ($post) {
 });
 ```
 
-## 設定変更のログ
+## Logging Settings Changes
 
 ```php
 use App\Facades\Audit;
 
-// 設定変更をログ
+// Log a settings change
 Audit::logSettingsChange(
-    'site_name',           // 設定キー
-    'Old Site Name',       // 変更前の値
-    'New Site Name',       // 変更後の値
-    auth()->user(),        // 行為者
-    'my-plugin'            // プラグイン名（オプション）
+    'site_name',           // Setting key
+    'Old Site Name',       // Previous value
+    'New Site Name',       // New value
+    auth()->user(),        // Actor
+    'my-plugin'            // Plugin name (optional)
 );
 ```
 
-## モデル変更のログ
+## Logging Model Changes
 
 ```php
 use App\Facades\Audit;
@@ -212,37 +212,37 @@ use App\Models\AuditLog;
 $user->email = 'new@example.com';
 $user->save();
 
-// モデルの変更をログ
+// Log model changes
 Audit::logModelChange(
-    $user,                              // 対象モデル
-    AuditLog::ACTION_EMAIL_CHANGED,     // アクション
-    auth()->user(),                     // 行為者
-    ['reason' => 'ユーザーからの依頼']   // 追加コンテキスト
+    $user,                              // Target model
+    AuditLog::ACTION_EMAIL_CHANGED,     // Action
+    auth()->user(),                     // Actor
+    ['reason' => 'Requested by user']   // Additional context
 );
 ```
 
-## ログの検索・取得
+## Searching and Retrieving Logs
 
 ```php
 use App\Facades\Audit;
 use App\Models\AuditLog;
 
-// 行為者のログを取得
+// Get logs for an actor
 $logs = Audit::getLogsForActor($user, 50);
 
-// 対象のログを取得
+// Get logs for a target
 $logs = Audit::getLogsForTarget($post, 50);
 
-// リクエストIDで関連ログを取得
+// Get related logs by request ID
 $logs = Audit::getLogsForRequest($requestId);
 
-// 最近の警告以上のログ
+// Recent warnings and above
 $warnings = Audit::getRecentWarnings(24, 100);
 
-// 最近の失敗ログ
+// Recent failure logs
 $failures = Audit::getRecentFailures(24, 100);
 
-// Eloquentクエリ
+// Eloquent queries
 $logs = AuditLog::inCategory(AuditLog::CATEGORY_AUTH)
     ->withAction(AuditLog::ACTION_LOGIN)
     ->recent(24)
@@ -250,65 +250,65 @@ $logs = AuditLog::inCategory(AuditLog::CATEGORY_AUTH)
     ->get();
 ```
 
-## 定数一覧
+## Constants Reference
 
-### Severity（重要度）
+### Severity
 
-| 定数 | 値 | 説明 |
-|------|-----|------|
-| `SEVERITY_DEBUG` | debug | デバッグ |
-| `SEVERITY_INFO` | info | 情報 |
-| `SEVERITY_NOTICE` | notice | 通知 |
-| `SEVERITY_WARNING` | warning | 警告 |
-| `SEVERITY_ERROR` | error | エラー |
-| `SEVERITY_CRITICAL` | critical | 重大 |
-| `SEVERITY_ALERT` | alert | アラート |
-| `SEVERITY_EMERGENCY` | emergency | 緊急 |
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `SEVERITY_DEBUG` | debug | Debug |
+| `SEVERITY_INFO` | info | Informational |
+| `SEVERITY_NOTICE` | notice | Notice |
+| `SEVERITY_WARNING` | warning | Warning |
+| `SEVERITY_ERROR` | error | Error |
+| `SEVERITY_CRITICAL` | critical | Critical |
+| `SEVERITY_ALERT` | alert | Alert |
+| `SEVERITY_EMERGENCY` | emergency | Emergency |
 
-### Outcome（結果）
+### Outcome
 
-| 定数 | 値 | 説明 |
-|------|-----|------|
-| `OUTCOME_SUCCESS` | success | 成功 |
-| `OUTCOME_FAILURE` | failure | 失敗 |
-| `OUTCOME_DENIED` | denied | 拒否 |
-| `OUTCOME_PENDING` | pending | 保留 |
-| `OUTCOME_UNKNOWN` | unknown | 不明 |
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `OUTCOME_SUCCESS` | success | Success |
+| `OUTCOME_FAILURE` | failure | Failure |
+| `OUTCOME_DENIED` | denied | Denied |
+| `OUTCOME_PENDING` | pending | Pending |
+| `OUTCOME_UNKNOWN` | unknown | Unknown |
 
-### Category（カテゴリ）
+### Category
 
-| 定数 | 値 | 説明 |
-|------|-----|------|
-| `CATEGORY_AUTH` | auth | 認証 |
-| `CATEGORY_ACCOUNT` | account | アカウント |
-| `CATEGORY_DEVICE` | device | デバイス |
-| `CATEGORY_SECURITY` | security | セキュリティ |
-| `CATEGORY_SESSION` | session | セッション |
-| `CATEGORY_EXTENSION` | extension | 拡張機能 |
-| `CATEGORY_CONTENT` | content | コンテンツ |
-| `CATEGORY_SYSTEM` | system | システム |
-| `CATEGORY_PLUGIN` | plugin | プラグイン |
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `CATEGORY_AUTH` | auth | Authentication |
+| `CATEGORY_ACCOUNT` | account | Account |
+| `CATEGORY_DEVICE` | device | Device |
+| `CATEGORY_SECURITY` | security | Security |
+| `CATEGORY_SESSION` | session | Session |
+| `CATEGORY_EXTENSION` | extension | Extension |
+| `CATEGORY_CONTENT` | content | Content |
+| `CATEGORY_SYSTEM` | system | System |
+| `CATEGORY_PLUGIN` | plugin | Plugin |
 
-## コアで自動記録されるイベント
+## Events Automatically Recorded by Core
 
-以下のイベントはコアで自動的に監査ログに記録されます：
+The following events are automatically recorded in the audit log by the core:
 
-- **認証関連**
-  - ログイン成功/失敗
-  - ログアウト
-  - ロックアウト
-  - パスワードリセット
-  - 他デバイスからのログアウト
+- **Authentication**
+  - Login success/failure
+  - Logout
+  - Lockout
+  - Password reset
+  - Logout from other devices
 
-- **アカウント関連**
-  - ユーザー登録
-  - メール認証完了
+- **Account**
+  - User registration
+  - Email verification completed
 
-## context（JSON）の構造
+## Context (JSON) Structure
 
 ```json
 {
-  "message": "説明テキスト",
+  "message": "Description text",
   "before": {
     "email": "old@example.com"
   },
@@ -324,16 +324,16 @@ $logs = AuditLog::inCategory(AuditLog::CATEGORY_AUTH)
   "meta": {
     "http_method": "POST",
     "url": "/admin/members/123",
-    "reason": "ユーザーからの依頼",
+    "reason": "Requested by user",
     "extra": {}
   }
 }
 ```
 
-## ベストプラクティス
+## Best Practices
 
-1. **適切なカテゴリとアクションを使用**: 定義済みの定数を使用し、一貫性を保つ
-2. **機密情報を記録しない**: パスワード、トークン等は記録しない
-3. **contextを活用**: 変更前後の値、差分、追加情報はcontextに格納
-4. **プラグイン名を明示**: プラグインからのログは必ずplugin_nameを設定
-5. **適切な重要度を設定**: 削除や重要な変更はwarning以上に設定
+1. **Use appropriate categories and actions**: Use the predefined constants for consistency
+2. **Never log sensitive information**: Do not record passwords, tokens, etc.
+3. **Leverage context**: Store before/after values, diffs, and additional information in context
+4. **Specify the plugin name**: Always set plugin_name when logging from a plugin
+5. **Set appropriate severity levels**: Use warning or higher for deletions and critical changes

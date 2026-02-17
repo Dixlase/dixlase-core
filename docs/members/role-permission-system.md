@@ -1,79 +1,79 @@
-# Dixlase 権限設定システム
+# Dixlase Permission Settings System
 
-## 概要
+## Overview
 
-Dixlaseの権限設定システムは「**宣言（default）と保存（override）を分離**」する設計を採用しています。
+The Dixlase permission settings system adopts a design that **separates declaration (defaults) from storage (overrides)**.
 
-- **デフォルト権限**: `config/roles.php`（コア）または `plugins/{slug}/config/roles.php`（プラグイン）で宣言
-- **オーバーライド**: 管理画面で変更された場合のみ `role_permission_overrides` テーブルに差分を保存
-- **実効権限**: 実行時にデフォルトとオーバーライドを合成して計算
+- **Default permissions**: Declared in `config/roles.php` (core) or `plugins/{slug}/config/roles.php` (plugins)
+- **Overrides**: Stored as diffs in the `role_permission_overrides` table only when modified through the admin panel
+- **Effective permissions**: Computed at runtime by merging defaults with overrides
 
-## メリット
+## Benefits
 
-1. **プラグインがDBを書き換えない**: インストール時にコアDBへのレコード追加が不要
-2. **アンインストールが簡単**: プラグイン削除時の権限レコード削除処理が最小限
-3. **サンドボックス思想との整合**: 「要・明示的権限」判定のハードルが下がる
-4. **デフォルトに戻す機能**: オーバーライドを削除するだけで実現
+1. **Plugins don't modify the database**: No need to insert records into core DB tables during installation
+2. **Easy uninstallation**: Minimal permission record cleanup when removing a plugin
+3. **Alignment with the sandbox philosophy**: Lowers the barrier for "explicit permission required" decisions
+4. **Reset to defaults**: Simply delete the override record
 
-## アーキテクチャ
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    管理画面 (UI)                              │
+│                    Admin Panel (UI)                          │
 │  ┌─────────────────────────────────────────────────────────┐ │
-│  │  権限設定画面 (roles.blade.php)                          │ │
-│  │  - デフォルト値を表示                                    │ │
-│  │  - 変更時のみオーバーライドとして保存                    │ │
-│  │  - 「デフォルトに戻す」= オーバーライド削除              │ │
+│  │  Permission Settings Screen (roles.blade.php)           │ │
+│  │  - Displays default values                              │ │
+│  │  - Saves as override only when modified                 │ │
+│  │  - "Reset to default" = delete override                 │ │
 │  └─────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              PermissionRegistry (サービス)                    │
+│              PermissionRegistry (Service)                    │
 │  ┌─────────────────────────────────────────────────────────┐ │
 │  │  getEffective($menuKey)                                  │ │
-│  │  - config/roles.php からデフォルト取得                   │ │
-│  │  - role_permission_overrides からオーバーライド取得      │ │
-│  │  - 合成して実効権限を返す                                │ │
+│  │  - Retrieves defaults from config/roles.php              │ │
+│  │  - Retrieves overrides from role_permission_overrides    │ │
+│  │  - Merges and returns effective permissions              │ │
 │  └─────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
           │                                    │
           ▼                                    ▼
 ┌─────────────────────┐          ┌─────────────────────────────┐
-│  config/roles.php   │          │  role_permission_overrides  │
-│  (デフォルト宣言)    │          │  (差分のみ保存)              │
-│                     │          │                             │
-│  - コア機能         │          │  - source_type: core/plugin │
-│  - 変更不可         │          │  - source_id: plugin slug   │
-│                     │          │  - menu_key                 │
-│                     │          │  - access_roles             │
-│                     │          │  - view_roles               │
-└─────────────────────┘          └─────────────────────────────┘
+│  config/roles.php   │          │  role_permission_overrides   │
+│  (Default decl.)    │          │  (Diffs only)                │
+│                     │          │                              │
+│  - Core features    │          │  - source_type: core/plugin  │
+│  - Immutable        │          │  - source_id: plugin slug    │
+│                     │          │  - menu_key                  │
+│                     │          │  - access_roles              │
+│                     │          │  - view_roles                │
+└─────────────────────┘          └──────────────────────────────┘
 ```
 
-## 権限の種類
+## Permission Types
 
-| 権限 | 説明 | 用途 |
-|------|------|------|
-| `access_roles` | 編集権限（write） | 作成・更新・削除などの操作 |
-| `view_roles` | 閲覧権限（read） | メニュー表示・一覧閲覧 |
+| Permission | Description | Usage |
+|------------|-------------|-------|
+| `access_roles` | Edit permission (write) | Create, update, delete operations |
+| `view_roles` | View permission (read) | Menu display, list viewing |
 
-## 権限値（MemberRole）
+## Permission Values (MemberRole)
 
-| 値 | 定数 | 説明 |
-|----|------|------|
-| 10 | SUPER_ADMIN | 特権管理者専用 |
-| 9 | ADMIN | 管理者以上 |
-| 8 | EDITOR | 編集者以上 |
-| 7 | AUTHOR | 投稿者以上 |
-| 6 | CONTRIBUTOR | 寄稿者以上 |
-| 5 | RECEPTIONIST | 受付以上 |
-| 1 | GUEST | 全員 |
+| Value | Constant | Description |
+|-------|----------|-------------|
+| 10 | SUPER_ADMIN | Super administrator only |
+| 9 | ADMIN | Administrator or above |
+| 8 | EDITOR | Editor or above |
+| 7 | AUTHOR | Author or above |
+| 6 | CONTRIBUTOR | Contributor or above |
+| 5 | RECEPTIONIST | Receptionist or above |
+| 1 | GUEST | Everyone |
 
-## 使用方法
+## Usage
 
-### コア機能のデフォルト権限定義
+### Defining Default Permissions for Core Features
 
 `config/roles.php`:
 
@@ -97,7 +97,7 @@ return [
 ];
 ```
 
-### プラグインのデフォルト権限定義
+### Defining Default Permissions for Plugins
 
 `plugins/{slug}/config/roles.php`:
 
@@ -120,59 +120,59 @@ return [
 ];
 ```
 
-### 権限チェック（コントローラー）
+### Permission Checks (Controller)
 
 ```php
 use App\Services\PermissionRegistry;
 use App\Enums\MemberRole;
 
-// 実効権限を取得
+// Get effective permissions
 $effective = PermissionRegistry::getEffective('settings.base.index');
 // => ['access_roles' => 10, 'view_roles' => 10, 'is_overridden' => false, ...]
 
-// アクセス可能かチェック
+// Check access permission
 $canAccess = PermissionRegistry::canAccess('settings.base.index', $user->role);
 
-// 閲覧可能かチェック
+// Check view permission
 $canView = PermissionRegistry::canView('settings.base.index', $user->role);
 
-// プラグイン機能の権限チェック
+// Check plugin feature permission
 $canAccessPlugin = PermissionRegistry::canAccessPlugin('DixlaseInquiry', 'settings.inquiry.index', $user->role);
 ```
 
-### 権限チェック（AdminHelper経由）
+### Permission Checks (via AdminHelper)
 
 ```php
 use App\Helpers\AdminHelper;
 
-// メニューへのアクセス権限
+// Menu access permission
 if (AdminHelper::canAccessMenu('settings.base.index')) {
-    // アクセス可能
+    // Access allowed
 }
 
-// メニューの閲覧権限
+// Menu view permission
 if (AdminHelper::canViewMenu('settings.base.index')) {
-    // 閲覧可能
+    // Viewing allowed
 }
 
-// メニューの編集権限
+// Menu edit permission
 if (AdminHelper::canEditMenu('settings.base.index')) {
-    // 編集可能
+    // Editing allowed
 }
 
-// プラグインメニューの権限
+// Plugin menu permission
 if (AdminHelper::canAccessPluginMenu('DixlaseInquiry', 'settings.inquiry.index')) {
-    // アクセス可能
+    // Access allowed
 }
 ```
 
-### オーバーライドの操作
+### Managing Overrides
 
 ```php
 use App\Models\RolePermissionOverride;
 use App\Services\PermissionRegistry;
 
-// コア機能のオーバーライドを設定
+// Set a core feature override
 RolePermissionOverride::setCoreOverride(
     'settings.base.index',
     MemberRole::ADMIN->value,  // access_roles
@@ -180,7 +180,7 @@ RolePermissionOverride::setCoreOverride(
     auth()->id()               // updated_by
 );
 
-// プラグイン機能のオーバーライドを設定
+// Set a plugin feature override
 RolePermissionOverride::setPluginOverride(
     'DixlaseInquiry',
     'settings.inquiry.index',
@@ -189,19 +189,19 @@ RolePermissionOverride::setPluginOverride(
     auth()->id()
 );
 
-// オーバーライドを削除（デフォルトに戻す）
+// Delete override (reset to default)
 RolePermissionOverride::resetCoreOverride('settings.base.index');
 RolePermissionOverride::resetPluginOverride('DixlaseInquiry', 'settings.inquiry.index');
 
-// キャッシュをクリア
+// Clear cache
 PermissionRegistry::clearCache();
 ```
 
-## プラグイン開発者向けガイド
+## Plugin Developer Guide
 
-### 1. config/roles.php を作成
+### 1. Create config/roles.php
 
-プラグインディレクトリに `config/roles.php` を作成し、デフォルト権限を定義します。
+Create `config/roles.php` in your plugin directory and define the default permissions.
 
 ```php
 <?php
@@ -210,7 +210,7 @@ use App\Enums\MemberRole;
 
 return [
     'permissions' => [
-        // メニューキーは config/admin.php の nav 構造に対応
+        // Menu keys correspond to the nav structure in config/admin.php
         'settings.myplugin.index' => [
             'access_roles' => MemberRole::EDITOR->value,
             'view_roles' => MemberRole::EDITOR->value,
@@ -219,14 +219,14 @@ return [
 ];
 ```
 
-### 2. メニューキーの命名規則
+### 2. Menu Key Naming Convention
 
-- プラグインのメニューキーは `config/admin.php` の `nav` 構造に対応
-- 例: `settings.{pluginSlug}.index`, `settings.{pluginSlug}.create`
+- Plugin menu keys correspond to the `nav` structure in `config/admin.php`
+- Example: `settings.{pluginSlug}.index`, `settings.{pluginSlug}.create`
 
-### 3. ServiceProviderでの登録（オプション）
+### 3. Registration in ServiceProvider (Optional)
 
-動的に権限を登録する場合は、ServiceProviderで `PermissionRegistry::registerPlugin()` を使用できます。
+To register permissions dynamically, use `PermissionRegistry::registerPlugin()` in your ServiceProvider.
 
 ```php
 use App\Services\PermissionRegistry;
@@ -242,53 +242,53 @@ public function boot(): void
 }
 ```
 
-### 4. サンドボックス思想との整合
+### 4. Alignment with the Sandbox Philosophy
 
-この方式では、プラグインは**デフォルト権限を宣言するだけ**でDBを書き換えません。
-そのため、サンドボックスの「要・明示的権限」判定において、権限設定機能を持つことが
-心理的ハードルにならなくなります。
+With this approach, plugins **only declare default permissions** without modifying the database.
+This means that having a permission settings feature no longer becomes a psychological barrier
+in the sandbox's "explicit permission required" evaluation.
 
-## データベーステーブル
+## Database Table
 
 ### role_permission_overrides
 
-| カラム | 型 | 説明 |
-|--------|-----|------|
-| id | bigint | 主キー |
-| source_type | varchar(20) | `core` または `plugin` |
-| source_id | varchar(100) | coreはnull、pluginはslug |
-| menu_key | varchar(255) | メニューキー |
-| access_roles | tinyint | 編集権限 |
-| view_roles | tinyint | 閲覧権限 |
-| updated_by | bigint | 更新者のmember_id |
-| created_at | timestamp | 作成日時 |
-| updated_at | timestamp | 更新日時 |
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint | Primary key |
+| source_type | varchar(20) | `core` or `plugin` |
+| source_id | varchar(100) | null for core, slug for plugin |
+| menu_key | varchar(255) | Menu key |
+| access_roles | tinyint | Edit permission |
+| view_roles | tinyint | View permission |
+| updated_by | bigint | member_id of the updater |
+| created_at | timestamp | Created at |
+| updated_at | timestamp | Updated at |
 
-**ユニーク制約**: `source_type` + `source_id` + `menu_key`
+**Unique constraint**: `source_type` + `source_id` + `menu_key`
 
-## 孤児オーバーライドの管理
+## Orphan Override Management
 
-プラグインをアンインストールした後、オーバーライドが残る場合があります。
+Overrides may remain after a plugin is uninstalled.
 
 ```php
-// 孤児オーバーライドを検出
+// Detect orphan overrides
 $activePlugins = ['DixlaseInquiry', 'DixlasePages'];
 $orphans = RolePermissionOverride::findOrphanOverrides($activePlugins);
 
-// 孤児オーバーライドを削除
+// Delete orphan overrides
 $deletedCount = RolePermissionOverride::deleteOrphanOverrides($activePlugins);
 ```
 
-## 関連ドキュメント
+## Related Documentation
 
-- [RBAC/権限モデル](./rbac-permissions.md) - ロール階層、Permission Enum、権限チェックの使い方
+- [RBAC / Permission Model](./rbac-permissions.md) - Role hierarchy, Permission Enum, permission check usage
 
-## 関連ソースファイル
+## Related Source Files
 
-- `config/roles.php` - コアのデフォルト権限定義
-- `app/Models/RolePermissionOverride.php` - オーバーライドモデル
-- `app/Services/PermissionRegistry.php` - 権限レジストリサービス
-- `app/Services/PermissionService.php` - 権限サービス
-- `app/Helpers/AdminHelper.php` - 管理画面ヘルパー
-- `app/Http/Controllers/Admin/Members/AdminMemberRolesController.php` - 権限設定コントローラー
-- `resources/views/admin/members/settings/roles.blade.php` - 権限設定画面
+- `config/roles.php` - Core default permission definitions
+- `app/Models/RolePermissionOverride.php` - Override model
+- `app/Services/PermissionRegistry.php` - Permission registry service
+- `app/Services/PermissionService.php` - Permission service
+- `app/Helpers/AdminHelper.php` - Admin helper
+- `app/Http/Controllers/Admin/Members/AdminMemberRolesController.php` - Permission settings controller
+- `resources/views/admin/members/settings/roles.blade.php` - Permission settings screen
