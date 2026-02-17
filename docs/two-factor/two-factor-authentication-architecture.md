@@ -1,29 +1,29 @@
-# 二段階認証（2FA）アーキテクチャドキュメント
+# Two-Factor Authentication (2FA) Architecture Documentation
 
-## 概要
+## Overview
 
-Dixlaseの二段階認証システムは、複数のサービス、トレイト、ヘルパーで構成されており、それぞれが明確な責任を持っています。このドキュメントでは、各コンポーネントの役割と使用方法を説明します。
+Dixlase's two-factor authentication system is composed of multiple services, traits, and helpers, each with clearly defined responsibilities. This document explains the role and usage of each component.
 
 ---
 
-## アーキテクチャ図
+## Architecture Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     コントローラー層                          │
+│                      Controller Layer                        │
 │  (AdminProfileController, LoginController, etc.)            │
 └─────────────────────┬───────────────────────────────────────┘
                       │
                       ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                  TwoFaAuthenticationTrait                    │
-│              (2FA認証フローの共通実装)                        │
+│            (Common 2FA authentication flow)                  │
 └─────────────────────┬───────────────────────────────────────┘
                       │
                       ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                      TwoFaService                            │
-│              (各サービスのオーケストレーション)                │
+│              (Service orchestration layer)                    │
 └─────┬───────┬───────┬───────┬───────┬─────────────────────┘
       │       │       │       │       │
       ↓       ↓       ↓       ↓       ↓
@@ -38,575 +38,575 @@ Dixlaseの二段階認証システムは、複数のサービス、トレイト�
                               ↓
                     ┌──────────────────┐
                     │TwoFaUtilityTrait │
-                    │  (共通ユーティリティ)│
+                    │ (Common utilities)│
                     └──────────────────┘
 ```
 
 ---
 
-## コンポーネント一覧
+## Component List
 
-### 1. **TwoFaCodeService**（コード生成・検証）
+### 1. **TwoFaCodeService** (Code Generation & Verification)
 
-**責任:**
-- メール認証コードの生成
-- コードのDB保存
-- メール送信
-- コード検証
-- 期限切れコードのクリーンアップ
+**Responsibilities:**
+- Generating email verification codes
+- Storing codes in the database
+- Sending emails
+- Verifying codes
+- Cleaning up expired codes
 
-**主要メソッド:**
+**Key Methods:**
 ```php
-// コード生成（DB保存のみ）
+// Generate code (DB storage only)
 public function generate($user, int $expireMinutes = null): string
 
-// コード生成 + メール送信
+// Generate code + send email
 public function generateAndSend($user, string $mailClass, int $expireMinutes = null, string $context = 'admin'): string
 
-// コード検証
+// Verify code
 public function validate($user, string $inputCode): bool
 
-// 有効なコードが存在するかチェック
+// Check if a valid code exists
 public function hasValidCode($user): bool
 
-// 残り有効時間を取得
+// Get remaining valid time
 public function getRemainingTime($user): ?int
 
-// すべてのコードを無効化
+// Revoke all codes
 public function revokeAll($user): int
 
-// 期限切れコードをクリーンアップ
+// Clean up expired codes
 public function cleanupExpired(): int
 ```
 
-**使用例:**
+**Usage Example:**
 ```php
 $codeService = app(\App\Services\TwoFa\TwoFaCodeService::class);
 
-// コード生成 + メール送信
+// Generate code + send email
 $code = $codeService->generateAndSend(
-    $user, 
-    \App\Mail\TwoFaCodeMail::class, 
-    10, // 10分間有効
+    $user,
+    \App\Mail\TwoFaCodeMail::class,
+    10, // Valid for 10 minutes
     'admin'
 );
 
-// コード検証
+// Verify code
 if ($codeService->validate($user, $inputCode)) {
-    // 認証成功
+    // Authentication successful
 }
 ```
 
-**特徴:**
-- ✅ メール設定チェック機能（TwoFaHelperを使用）
-- ✅ 汎用メールクラス対応
-- ✅ コンテキスト別メール送信（admin, user等）
+**Features:**
+- Email configuration check (using TwoFaHelper)
+- Generic mail class support
+- Context-specific email delivery (admin, user, etc.)
 
 ---
 
-### 2. **TwoFaRecoveryCodeService**（回復コード管理）
+### 2. **TwoFaRecoveryCodeService** (Recovery Code Management)
 
-**責任:**
-- 回復コードの生成
-- 回復コードの検証
-- 使用済みコードの管理
-- 再生成制限のチェック
+**Responsibilities:**
+- Generating recovery codes
+- Verifying recovery codes
+- Managing used codes
+- Checking regeneration limits
 
-**主要メソッド:**
+**Key Methods:**
 ```php
-// 回復コード生成（5個）
+// Generate recovery codes (5 codes)
 public function generate(TwoFaInterface $user): array
 
-// 回復コード検証
+// Verify recovery code
 public function validate(TwoFaInterface $user, string $code): bool
 
-// 残りの有効な回復コード数を取得
+// Get remaining valid recovery code count
 public function getRemainingCount(TwoFaInterface $user): int
 
-// 再生成可能かチェック（24時間制限）
+// Check if regeneration is allowed (24-hour limit)
 public function canRegenerate(TwoFaInterface $user): bool
 
-// 次回再生成可能な日時を取得
+// Get the next available regeneration time
 public function getNextRegenerateTime(TwoFaInterface $user): ?Carbon
 
-// 回復コードが存在するかチェック
+// Check if recovery codes exist
 public function hasRecoveryCodes(TwoFaInterface $user): bool
 
-// 回復コードをフォーマット（表示用）
+// Format recovery code (for display)
 public function formatCode(string $code): string
 
-// すべての回復コードを無効化
+// Revoke all recovery codes
 public function revokeAll(TwoFaInterface $user): int
 ```
 
-**使用例:**
+**Usage Example:**
 ```php
 $recoveryCodeService = app(\App\Services\TwoFa\TwoFaRecoveryCodeService::class);
 
-// 回復コード生成
+// Generate recovery codes
 $codes = $recoveryCodeService->generate($user);
-// 例: ['1234567890123456789', '9876543210987654321', ...]
+// e.g.: ['1234567890123456789', '9876543210987654321', ...]
 
-// フォーマット表示
+// Display formatted codes
 foreach ($codes as $code) {
     echo $recoveryCodeService->formatCode($code);
-    // 出力: 12345-67890-12345-67890
+    // Output: 12345-67890-12345-67890
 }
 
-// 回復コード検証
+// Verify recovery code
 if ($recoveryCodeService->validate($user, $inputCode)) {
-    // 認証成功（使用済みとしてマーク）
+    // Authentication successful (code marked as used)
 }
 
-// 再生成可能かチェック
+// Check if regeneration is allowed
 if ($recoveryCodeService->canRegenerate($user)) {
     $newCodes = $recoveryCodeService->generate($user);
 }
 ```
 
-**特徴:**
-- ✅ 20桁の回復コード（5桁×4ブロック）
-- ✅ ハッシュ化して保存
-- ✅ 使用済みコードの自動マーク
-- ✅ 24時間の再生成制限
-- ✅ 設定モデルクラスをコンストラクタで受け取る（柔軟性）
+**Features:**
+- 20-digit recovery codes (4 blocks of 5 digits)
+- Hashed storage
+- Automatic marking of used codes
+- 24-hour regeneration limit
+- Accepts settings model class via constructor (flexibility)
 
-**設定項目:**
-- `two_fa_recovery_codes_count`: 生成個数（1-5個、デフォルト5個）
-- `two_fa_recovery_code_regenerate_interval`: 再生成制限時間（時間、デフォルト24時間）
+**Configuration:**
+- `two_fa_recovery_codes_count`: Number of codes to generate (1-5, default 5)
+- `two_fa_recovery_code_regenerate_interval`: Regeneration cooldown period (hours, default 24 hours)
 
 ---
 
-### 3. **TwoFaPasskeyService**（Passkey認証）
+### 3. **TwoFaPasskeyService** (Passkey Authentication)
 
-**責任:**
-- WebAuthn標準に基づく生体認証
-- Passkey認証情報の登録・削除
-- 認証チャレンジの生成
-- 認証の検証
-- 信頼済みデバイスの管理
+**Responsibilities:**
+- Biometric authentication based on the WebAuthn standard
+- Registering and revoking Passkey credentials
+- Generating authentication challenges
+- Verifying authentication
+- Managing trusted devices
 
-**主要メソッド:**
+**Key Methods:**
 ```php
-// Passkeyが利用可能かチェック（HTTPS必須）
+// Check if Passkey is available (HTTPS required)
 public function isAvailable(): bool
 
-// 認証情報を持っているかチェック
+// Check if user has credentials
 public function hasCredentials(TwoFaInterface $user): bool
 
-// 認証情報を登録
+// Register credential
 public function registerCredential(TwoFaInterface $user, array $credentialData, string $deviceName = null)
 
-// 認証を検証
+// Verify assertion
 public function verifyAssertion(TwoFaInterface $user, array $assertionData): bool
 
-// 認証情報一覧を取得
+// Get credential list
 public function getCredentials(TwoFaInterface $user)
 
-// 認証情報を削除
+// Revoke a credential
 public function revokeCredential(TwoFaInterface $user, string $credentialId): bool
 
-// すべての認証情報を削除
+// Revoke all credentials
 public function revokeAllCredentials(TwoFaInterface $user): int
 
-// 登録チャレンジを生成
+// Generate registration challenge
 public function generateRegistrationChallenge(TwoFaInterface $user): array
 
-// 認証チャレンジを生成
+// Generate authentication challenge
 public function generateAuthenticationChallenge(TwoFaInterface $user): array
 
-// 信頼済みデバイスかチェック
+// Check if device is trusted
 public function isTrustedDevice(TwoFaInterface $user): bool
 
-// デバイスを削除
+// Revoke a device
 public function revokeDevice(TwoFaInterface $user, int $deviceId): bool
 
-// すべてのデバイスを削除
+// Revoke all trusted devices
 public function revokeAllTrustedDevices(Member $member): int
 
-// デバイス一覧を取得
+// Get trusted device list
 public function getTrustedDevices(TwoFaInterface $user)
 ```
 
-**使用例:**
+**Usage Example:**
 ```php
 $passkeyService = app(\App\Services\TwoFa\TwoFaPasskeyService::class);
 
-// Passkey利用可能かチェック
+// Check if Passkey is available
 if (!$passkeyService->isAvailable()) {
-    // HTTPS接続が必要
+    // HTTPS connection required
     throw new \Exception('HTTPS connection required');
 }
 
-// 登録チャレンジ生成
+// Generate registration challenge
 $options = $passkeyService->generateRegistrationChallenge($user);
-// フロントエンドに渡す
+// Pass to frontend
 
-// 認証情報を登録
+// Register credential
 $credential = $passkeyService->registerCredential(
     $user,
     $credentialData,
     'iPhone Touch ID'
 );
 
-// 認証チャレンジ生成
+// Generate authentication challenge
 $options = $passkeyService->generateAuthenticationChallenge($user);
 
-// 認証検証
+// Verify authentication
 if ($passkeyService->verifyAssertion($user, $assertionData)) {
-    // 認証成功
+    // Authentication successful
 }
 ```
 
-**特徴:**
-- ✅ WebAuthn標準準拠
-- ✅ Touch ID、Face ID、Windows Hello対応
-- ✅ HTTPS接続必須
-- ✅ 信頼済みデバイス管理
-- ✅ デバイス名の自動生成
+**Features:**
+- WebAuthn standard compliant
+- Supports Touch ID, Face ID, and Windows Hello
+- Requires HTTPS connection
+- Trusted device management
+- Automatic device name generation
 
-**対応デバイス:**
+**Supported Devices:**
 - iPhone/iPad: Touch ID, Face ID
 - Mac: Touch ID
-- Android: 指紋認証
+- Android: Fingerprint authentication
 - Windows: Windows Hello
 
 ---
 
-### 4. **TwoFaAttemptService**（試行回数管理）
+### 4. **TwoFaAttemptService** (Attempt Tracking)
 
-**責任:**
-- 2FA試行の記録
-- ロックアウト状態の管理
-- 試行回数制限のチェック
-- 残り試行回数の取得
+**Responsibilities:**
+- Recording 2FA attempts
+- Managing lockout state
+- Checking attempt limits
+- Getting remaining attempts
 
-**主要メソッド:**
+**Key Methods:**
 ```php
-// 試行を記録
+// Record an attempt
 public function recordAttempt(TwoFaInterface $user, string $attemptType, bool $success): void
 
-// ロックアウト状態かチェック
+// Check if user is locked out
 public function isLockedOut(TwoFaInterface $user): bool
 
-// ロックアウト解除までの残り時間（分）を取得
+// Get remaining lockout time (minutes)
 public function getRemainingLockoutTime(TwoFaInterface $user): ?int
 
-// 試行回数制限に達しているかチェック
+// Check if maximum attempts have been reached
 public function hasReachedMaxAttempts(TwoFaInterface $user): bool
 
-// 残りの試行可能回数を取得
+// Get remaining available attempts
 public function getRemainingAttempts(TwoFaInterface $user): int
 
-// 成功時の処理
+// Handle successful authentication
 public function handleSuccess(TwoFaInterface $user): void
 
-// ロックアウト通知が有効かチェック
+// Check if lockout notification is enabled
 public function isLockoutNotificationEnabled(): bool
 ```
 
-**使用例:**
+**Usage Example:**
 ```php
 $attemptService = app(\App\Services\TwoFa\TwoFaAttemptService::class);
 
-// ロックアウトチェック
+// Check lockout status
 if ($attemptService->isLockedOut($user)) {
     $remainingTime = $attemptService->getRemainingLockoutTime($user);
-    throw new \Exception("ロックアウト中。残り{$remainingTime}分");
+    throw new \Exception("Locked out. {$remainingTime} minutes remaining.");
 }
 
-// 試行を記録
+// Record attempt
 $success = $codeService->validate($user, $inputCode);
 $attemptService->recordAttempt($user, 'email', $success);
 
-// 残り試行回数を取得
+// Get remaining attempts
 $remaining = $attemptService->getRemainingAttempts($user);
 ```
 
-**特徴:**
-- ✅ IP アドレス・User Agent の記録
-- ✅ 試行タイプ別の記録（email, passkey, recovery_code）
-- ✅ 自動ロックアウト
-- ✅ 設定モデルクラスをコンストラクタで受け取る（柔軟性）
+**Features:**
+- Records IP address and User Agent
+- Per-type attempt tracking (email, passkey, recovery_code)
+- Automatic lockout
+- Accepts settings model class via constructor (flexibility)
 
-**設定項目:**
-- `two_fa_max_attempts`: 最大試行回数（デフォルト5回）
-- `two_fa_attempt_window`: 試行制限の時間枠（分、デフォルト15分）
-- `two_fa_lockout_duration`: ロックアウト時間（分、デフォルト30分）
-- `two_fa_lockout_notification_enabled`: ロックアウト通知の有効化（デフォルトtrue）
+**Configuration:**
+- `two_fa_max_attempts`: Maximum number of attempts (default 5)
+- `two_fa_attempt_window`: Attempt limit time window (minutes, default 15 minutes)
+- `two_fa_lockout_duration`: Lockout duration (minutes, default 30 minutes)
+- `two_fa_lockout_notification_enabled`: Enable lockout notification (default true)
 
 ---
 
-### 5. **TwoFaService**（オーケストレーション）
+### 5. **TwoFaService** (Orchestration)
 
-**責任:**
-- 各サービスを組み合わせて使用
-- 認証方法の自動判定
-- 認証フローの統一インターフェース提供
+**Responsibilities:**
+- Combining and coordinating individual services
+- Automatic authentication method detection
+- Providing a unified authentication flow interface
 
-**主要メソッド:**
+**Key Methods:**
 ```php
-// 2FAコードを生成してメール送信（認証方法を自動判定）
+// Generate 2FA code and send email (auto-detects authentication method)
 public function generate($user, int $method = null)
 
-// 2FAを検証（認証方法を自動判定）
+// Verify 2FA (auto-detects authentication method)
 public function validate($user, $input, int $method = null): bool
 
-// 2FAが必要かどうかを判定
+// Determine if 2FA is required
 public function has($member): bool
 
-// 異なる環境からのアクセスかどうかを判定
+// Determine if access is from a different environment
 public function isDifferentEnvironment($member): bool
 
-// システム設定を取得
+// Get system settings
 public function getSystemSettings(): array
 
-// 使用する認証方法を取得
+// Get the effective authentication method
 public function getEffectiveAuthMethod($user): int
 
-// 利用可能な認証方法を取得
+// Get available authentication methods
 public function getAvailableMethods($user): array
 
-// 回復コードを検証
+// Verify recovery code
 public function validateRecoveryCode($user, string $code): bool
 
-// ロックアウト状態をチェック
+// Check lockout status
 public function checkLockout($user): array
 ```
 
-**使用例:**
+**Usage Example:**
 ```php
 $twoFaService = app(\App\Services\TwoFa\TwoFaService::class, [
     'settingModelClass' => \App\Models\MemberSetting::class,
     'context' => 'admin'
 ]);
 
-// 2FAが必要かチェック
+// Check if 2FA is required
 if ($twoFaService->has($user)) {
-    // コード生成（認証方法を自動判定）
+    // Generate code (auto-detects authentication method)
     $result = $twoFaService->generate($user);
-    
-    // メール認証の場合: string（コード）
-    // Passkey認証の場合: array（チャレンジ）
+
+    // For email authentication: string (code)
+    // For Passkey authentication: array (challenge)
 }
 
-// 検証（認証方法を自動判定）
+// Verify (auto-detects authentication method)
 if ($twoFaService->validate($user, $input)) {
-    // 認証成功
+    // Authentication successful
 }
 
-// ロックアウトチェック
+// Check lockout status
 $lockoutStatus = $twoFaService->checkLockout($user);
 if ($lockoutStatus['locked_out']) {
-    // ロックアウト中
+    // User is locked out
 }
 ```
 
-**特徴:**
-- ✅ 各サービスのオーケストレーション
-- ✅ 認証方法の自動判定
-- ✅ 統一されたインターフェース
-- ✅ コンテキスト別の動作（admin, user等）
+**Features:**
+- Orchestration of individual services
+- Automatic authentication method detection
+- Unified interface
+- Context-specific behavior (admin, user, etc.)
 
 ---
 
-### 6. **TwoFaHelper**（ヘルパー）
+### 6. **TwoFaHelper** (Helper)
 
-**責任:**
-- システム設定の取得
-- 2FA有効/無効の判定
-- 認証方法の判定
-- メール設定のチェック
-- ルート名の取得
+**Responsibilities:**
+- Retrieving system settings
+- Determining 2FA enabled/disabled state
+- Determining authentication methods
+- Checking email configuration
+- Retrieving route names
 
-**主要メソッド:**
+**Key Methods:**
 ```php
-// メール設定が完了しているかチェック
+// Check if email is configured
 public function isMailConfigured(): bool
 
-// コード生成 + メール送信（TwoFaCodeServiceへの委譲）
+// Generate code + send email (delegates to TwoFaCodeService)
 public function generateAndSendCode($user, string $mailClass, int $expireMinutes = null, string $context = 'admin'): string
 
-// 2FA設定を取得
+// Get 2FA settings
 public function getTwoFaSettings(?string $settingModelClass = null): array
 
-// 有効な2FA認証方法を取得
+// Get enabled 2FA methods
 public function getEnabledTwoFaMethods(?string $settingModelClass = null): array
 
-// メンバーが利用可能な2FA認証方法を取得
+// Get available 2FA methods for a member
 public function getAvailableTwoFaMethodsForMember($member, ?string $settingModelClass = null): array
 
-// 2FAが有効かチェック
+// Check if 2FA is enabled
 public function isTwoFaEnabled($user, ?string $settingModelClass = null): bool
 
-// 異なる環境からのアクセスかチェック
+// Check if access is from a different environment
 public function isDifferentEnvironment($user): bool
 
-// 使用する認証方法を取得
+// Get the effective authentication method
 public function getEffectiveAuthMethod($user, ?string $settingModelClass = null): int
 
-// 認証方法に応じたメールクラスを取得
+// Get mail class for the authentication method
 public function getMailClassForMethod(int $method, string $context = 'admin'): string
 
-// 2FA統計情報を取得
+// Get 2FA statistics
 public function getTwoFaStats(): array
 
-// 期限切れトークンをクリーンアップ
+// Clean up expired tokens
 public function cleanupExpiredTokens(): int
 ```
 
-**使用例:**
+**Usage Example:**
 ```php
 $helper = app(\App\Helpers\TwoFaHelper::class);
 
-// メール設定チェック
+// Check email configuration
 if (!$helper->isMailConfigured()) {
-    // メール設定が未完了
+    // Email is not configured
 }
 
-// 2FAが有効かチェック
+// Check if 2FA is enabled
 if ($helper->isTwoFaEnabled($user, \App\Models\MemberSetting::class)) {
-    // 2FA有効
+    // 2FA is enabled
 }
 
-// 利用可能な認証方法を取得
+// Get available authentication methods
 $methods = $helper->getAvailableTwoFaMethodsForMember($user);
-// 例: [TwoFaMethod::EMAIL->value, TwoFaMethod::PASSKEY->value]
+// e.g.: [TwoFaMethod::EMAIL->value, TwoFaMethod::PASSKEY->value]
 
-// 使用する認証方法を取得
+// Get the effective authentication method
 $method = $helper->getEffectiveAuthMethod($user);
 ```
 
-**特徴:**
-- ✅ 設定取得の一元化
-- ✅ 判定ロジックの共通化
-- ✅ サービスへの委譲
-- ✅ 設定モデルクラスの柔軟な指定
+**Features:**
+- Centralized settings retrieval
+- Shared decision logic
+- Delegation to services
+- Flexible settings model class specification
 
 ---
 
-### 7. **TwoFaUtilityTrait**（ユーティリティトレイト）
+### 7. **TwoFaUtilityTrait** (Utility Trait)
 
-**責任:**
-- サービスへの委譲メソッド提供
-- 共通判定ロジック提供
-- 設定取得の抽象化
+**Responsibilities:**
+- Providing delegation methods to services
+- Providing common decision logic
+- Abstracting settings retrieval
 
-**主要メソッド:**
+**Key Methods:**
 ```php
-// 2FAコードを生成（TwoFaCodeServiceへの委譲）
+// Generate 2FA code (delegates to TwoFaCodeService)
 public function generateTwoFaCode($user, int $expireMinutes = null): string
 
-// 2FAコードを検証（TwoFaCodeServiceへの委譲）
+// Verify 2FA code (delegates to TwoFaCodeService)
 public function validateTwoFaCode($user, string $inputCode): bool
 
-// 有効な認証方法を取得
+// Get enabled authentication methods
 public function getEnabledTwoFaMethods(string $settingsKey = 'enabled_two_fa_methods', array $defaultMethods = null): array
 
-// 2FAが必要かどうかを判定
+// Determine if 2FA is required
 public function requiresTwoFa($user, int $forceSetting, array $enabledMethods): bool
 
-// 有効な2FAモードを取得
+// Get effective 2FA mode
 protected function getEffectiveTwoFaMode($user, int $forceSetting): int
 
-// メンバーの個人設定をチェック
+// Check member's personal settings
 protected function checkMemberSetting($user): int
 
-// 信頼済みデバイスからのアクセスかチェック
+// Check if access is from a trusted device
 protected function isFromTrustedDevice($user): bool
 
-// 設定値を取得（継承先で実装）
+// Get setting value (implemented by subclass)
 abstract protected function getSettingValue(string $key, $default = null);
 ```
 
-**使用例:**
+**Usage Example:**
 ```php
 class TwoFaHelper
 {
     use TwoFaUtilityTrait;
-    
+
     protected function getSettingValue(string $key, $default = null)
     {
         return MemberSetting::getValue($key, $default);
     }
 }
 
-// トレイトのメソッドを使用
+// Use trait methods
 $code = $this->generateTwoFaCode($user, 10);
 $isValid = $this->validateTwoFaCode($user, $inputCode);
 ```
 
-**特徴:**
-- ✅ サービスへの薄いラッパー
-- ✅ 判定ロジックの共通化
-- ✅ 設定取得の抽象化
-- ✅ 再利用性の向上
+**Features:**
+- Thin wrapper around services
+- Shared decision logic
+- Abstracted settings retrieval
+- Improved reusability
 
 ---
 
-### 8. **TwoFaAuthenticationTrait**（認証フロートレイト）
+### 8. **TwoFaAuthenticationTrait** (Authentication Flow Trait)
 
-**責任:**
-- 2FA認証フローの共通実装
-- メール認証フォームの表示
-- Passkey認証フォームの表示
-- 回復コード入力フォームの表示
-- 認証検証処理
-- 認証成功後のログイン処理
+**Responsibilities:**
+- Common implementation of the 2FA authentication flow
+- Displaying the email authentication form
+- Displaying the Passkey authentication form
+- Displaying the recovery code input form
+- Authentication verification processing
+- Post-authentication login handling
 
-**主要メソッド:**
+**Key Methods:**
 ```php
-// メール認証フォームを表示
+// Show email authentication form
 protected function showEmailForm(Request $request)
 
-// Passkey認証フォームを表示
+// Show Passkey authentication form
 protected function showPasskeyForm(Request $request)
 
-// 回復コード入力画面を表示
+// Show recovery code input form
 public function showRecoveryCodeForm(Request $request)
 
-// メール認証チャレンジ画面を表示
+// Show email authentication challenge screen
 public function showEmailChallenge(Request $request)
 
-// メール認証コードを検証
+// Verify email authentication code
 public function verifyEmail(Request $request)
 
-// メール認証コードを再送信
+// Resend email authentication code
 public function resendEmail(Request $request)
 
-// Passkey認証チャレンジ画面を表示
+// Show Passkey authentication challenge screen
 public function showPasskeyChallenge(Request $request)
 
-// Passkeyチャレンジを取得
+// Get Passkey challenge
 public function getPasskeyChallenge(Request $request)
 
-// Passkey認証を検証
+// Verify Passkey authentication
 public function verifyPasskey(Request $request)
 
-// 回復コードを検証
+// Verify recovery code
 public function verifyRecoveryCode(Request $request)
 
-// 認証成功後のログイン処理
+// Complete authentication after successful verification
 protected function completeAuthentication($user, Request $request)
 
-// セッションからユーザーを取得
+// Retrieve user from session
 protected function getUserFromSession()
 
-// 利用可能な認証方法を取得
+// Get available authentication methods
 protected function getAvailableMethods(int $currentMethod = null): array
 ```
 
-**使用例:**
+**Usage Example:**
 ```php
 class AdminTwoFactorController extends AdminLoggedInController
 {
     use TwoFaAuthenticationTrait;
-    
+
     protected function getSettingModelClass(): string
     {
         return \App\Models\MemberSetting::class;
     }
-    
+
     protected function getTwoFaService()
     {
         return app(\App\Services\TwoFa\TwoFaService::class, [
@@ -614,22 +614,22 @@ class AdminTwoFactorController extends AdminLoggedInController
             'context' => 'admin'
         ]);
     }
-    
+
     protected function getTwoFaRoutePrefix(): string
     {
         return 'admin';
     }
-    
+
     protected function getSessionPrefix(): string
     {
         return 'admin_two_fa';
     }
-    
+
     protected function getDashboardRoute(): string
     {
         return 'admin.dashboard';
     }
-    
+
     protected function getLoginRoute(): string
     {
         return 'admin.login';
@@ -637,118 +637,118 @@ class AdminTwoFactorController extends AdminLoggedInController
 }
 ```
 
-**特徴:**
-- ✅ 2FA認証フローの完全実装
-- ✅ 複数認証方法のサポート
-- ✅ セッション管理
-- ✅ ロックアウト対応
-- ✅ 再利用可能な設計
+**Features:**
+- Complete 2FA authentication flow implementation
+- Multiple authentication method support
+- Session management
+- Lockout handling
+- Reusable design
 
-**必須実装メソッド:**
-- `getSettingModelClass()`: 設定モデルクラス名を返す
-- `getTwoFaService()`: TwoFaServiceインスタンスを返す
-- `getTwoFaRoutePrefix()`: ルート名のプレフィックスを返す
-- `getSessionPrefix()`: セッションキーのプレフィックスを返す
-- `getDashboardRoute()`: ダッシュボードのルート名を返す
-- `getLoginRoute()`: ログインのルート名を返す
-
----
-
-## 認証フロー
-
-### メール認証フロー
-
-```
-1. ログイン試行
-   ↓
-2. TwoFaService::has() で2FAが必要かチェック
-   ↓
-3. TwoFaService::generate() でコード生成 + メール送信
-   ↓
-4. メール認証画面を表示
-   ↓
-5. ユーザーがコードを入力
-   ↓
-6. TwoFaService::validate() でコード検証
-   ↓
-7. TwoFaAttemptService::recordAttempt() で試行を記録
-   ↓
-8. 認証成功 → ログイン完了
-```
-
-### Passkey認証フロー
-
-```
-1. ログイン試行
-   ↓
-2. TwoFaService::has() で2FAが必要かチェック
-   ↓
-3. TwoFaPasskeyService::generateAuthenticationChallenge() でチャレンジ生成
-   ↓
-4. Passkey認証画面を表示
-   ↓
-5. ユーザーが生体認証
-   ↓
-6. TwoFaPasskeyService::verifyAssertion() で認証検証
-   ↓
-7. TwoFaAttemptService::recordAttempt() で試行を記録
-   ↓
-8. 認証成功 → ログイン完了
-```
-
-### 回復コード認証フロー
-
-```
-1. メール/Passkey認証に失敗
-   ↓
-2. 回復コード入力画面を表示
-   ↓
-3. ユーザーが回復コードを入力
-   ↓
-4. TwoFaRecoveryCodeService::validate() で検証
-   ↓
-5. TwoFaAttemptService::recordAttempt() で試行を記録
-   ↓
-6. 認証成功 → ログイン完了
-   （使用済みコードは自動的に無効化）
-```
+**Required Methods:**
+- `getSettingModelClass()`: Returns the settings model class name
+- `getTwoFaService()`: Returns a TwoFaService instance
+- `getTwoFaRoutePrefix()`: Returns the route name prefix
+- `getSessionPrefix()`: Returns the session key prefix
+- `getDashboardRoute()`: Returns the dashboard route name
+- `getLoginRoute()`: Returns the login route name
 
 ---
 
-## 設定項目一覧
+## Authentication Flows
 
-### システム設定（MemberSetting）
+### Email Authentication Flow
 
-| 設定キー | 説明 | デフォルト値 |
-|---------|------|------------|
-| `two_fa_force_mode` | 2FA強制モード（0: 無効, 1: プロフィール設定, 2: 常に有効） | 0 |
-| `enabled_two_fa_methods` | 有効な認証方法（JSON配列） | `["email"]` |
-| `two_fa_code_expire_minutes` | コード有効期限（分） | 10 |
-| `two_fa_recovery_codes_count` | 回復コード生成個数 | 5 |
-| `two_fa_recovery_code_regenerate_interval` | 回復コード再生成制限（時間） | 24 |
-| `two_fa_max_attempts` | 最大試行回数 | 5 |
-| `two_fa_attempt_window` | 試行制限の時間枠（分） | 15 |
-| `two_fa_lockout_duration` | ロックアウト時間（分） | 30 |
-| `two_fa_lockout_notification_enabled` | ロックアウト通知の有効化 | true |
+```
+1. Login attempt
+   ↓
+2. Check if 2FA is required via TwoFaService::has()
+   ↓
+3. Generate code + send email via TwoFaService::generate()
+   ↓
+4. Display email authentication screen
+   ↓
+5. User enters the code
+   ↓
+6. Verify code via TwoFaService::validate()
+   ↓
+7. Record attempt via TwoFaAttemptService::recordAttempt()
+   ↓
+8. Authentication successful → Login complete
+```
 
-### ユーザー設定（Member）
+### Passkey Authentication Flow
 
-| カラム | 説明 | デフォルト値 |
-|--------|------|------------|
-| `two_fa_mode` | 個人の2FA設定（0: 無効, 2: 常に有効） | 0 |
-| `two_fa_default_method` | デフォルト認証方法 | null |
+```
+1. Login attempt
+   ↓
+2. Check if 2FA is required via TwoFaService::has()
+   ↓
+3. Generate challenge via TwoFaPasskeyService::generateAuthenticationChallenge()
+   ↓
+4. Display Passkey authentication screen
+   ↓
+5. User performs biometric authentication
+   ↓
+6. Verify authentication via TwoFaPasskeyService::verifyAssertion()
+   ↓
+7. Record attempt via TwoFaAttemptService::recordAttempt()
+   ↓
+8. Authentication successful → Login complete
+```
+
+### Recovery Code Authentication Flow
+
+```
+1. Email/Passkey authentication fails
+   ↓
+2. Display recovery code input screen
+   ↓
+3. User enters recovery code
+   ↓
+4. Verify via TwoFaRecoveryCodeService::validate()
+   ↓
+5. Record attempt via TwoFaAttemptService::recordAttempt()
+   ↓
+6. Authentication successful → Login complete
+   (Used code is automatically revoked)
+```
 
 ---
 
-## 使用例
+## Configuration Reference
 
-### 基本的な使用方法
+### System Settings (MemberSetting)
+
+| Setting Key | Description | Default |
+|-------------|-------------|---------|
+| `two_fa_force_mode` | 2FA enforcement mode (0: disabled, 1: profile settings, 2: always enabled) | 0 |
+| `enabled_two_fa_methods` | Enabled authentication methods (JSON array) | `["email"]` |
+| `two_fa_code_expire_minutes` | Code expiration time (minutes) | 10 |
+| `two_fa_recovery_codes_count` | Number of recovery codes to generate | 5 |
+| `two_fa_recovery_code_regenerate_interval` | Recovery code regeneration cooldown (hours) | 24 |
+| `two_fa_max_attempts` | Maximum number of attempts | 5 |
+| `two_fa_attempt_window` | Attempt limit time window (minutes) | 15 |
+| `two_fa_lockout_duration` | Lockout duration (minutes) | 30 |
+| `two_fa_lockout_notification_enabled` | Enable lockout notification | true |
+
+### User Settings (Member)
+
+| Column | Description | Default |
+|--------|-------------|---------|
+| `two_fa_mode` | Personal 2FA setting (0: disabled, 2: always enabled) | 0 |
+| `two_fa_default_method` | Default authentication method | null |
+
+---
+
+## Usage Examples
+
+### Basic Usage
 
 ```php
-// 1. 2FAが必要かチェック
+// 1. Check if 2FA is required
 $helper = app(\App\Helpers\TwoFaHelper::class);
 if ($helper->isTwoFaEnabled($user, \App\Models\MemberSetting::class)) {
-    // 2. コード生成 + メール送信
+    // 2. Generate code + send email
     $codeService = app(\App\Services\TwoFa\TwoFaCodeService::class);
     $code = $codeService->generateAndSend(
         $user,
@@ -756,66 +756,66 @@ if ($helper->isTwoFaEnabled($user, \App\Models\MemberSetting::class)) {
         10,
         'admin'
     );
-    
-    // 3. セッションにユーザーIDを保存
+
+    // 3. Store user ID in session
     session(['admin_two_fa.id' => $user->id]);
-    
-    // 4. 2FA認証画面にリダイレクト
+
+    // 4. Redirect to 2FA authentication screen
     return redirect()->route('admin.two-fa.email.show');
 }
 
-// 2FAが不要な場合はログイン完了
+// If 2FA is not required, complete login
 Auth::guard('member')->login($user);
 return redirect()->route('admin.dashboard');
 ```
 
-### TwoFaServiceを使った統一的な方法
+### Unified Approach Using TwoFaService
 
 ```php
-// TwoFaServiceインスタンスを作成
+// Create TwoFaService instance
 $twoFaService = app(\App\Services\TwoFa\TwoFaService::class, [
     'settingModelClass' => \App\Models\MemberSetting::class,
     'context' => 'admin'
 ]);
 
-// 2FAが必要かチェック
+// Check if 2FA is required
 if ($twoFaService->has($user)) {
-    // コード生成（認証方法を自動判定）
+    // Generate code (auto-detects authentication method)
     $result = $twoFaService->generate($user);
-    
-    // セッションにユーザーIDを保存
+
+    // Store user ID in session
     session(['admin_two_fa.id' => $user->id]);
-    
-    // 認証方法に応じたルートにリダイレクト
+
+    // Redirect to the appropriate route based on authentication method
     $method = $twoFaService->getEffectiveAuthMethod($user);
     $route = match($method) {
         TwoFaMethod::EMAIL->value => 'admin.two-fa.email.show',
         TwoFaMethod::PASSKEY->value => 'admin.two-fa.passkey.show',
         default => 'admin.two-fa.email.show',
     };
-    
+
     return redirect()->route($route);
 }
 ```
 
-### 回復コードの生成と表示
+### Generating and Displaying Recovery Codes
 
 ```php
 $recoveryCodeService = app(\App\Services\TwoFa\TwoFaRecoveryCodeService::class);
 
-// 再生成可能かチェック
+// Check if regeneration is allowed
 if (!$recoveryCodeService->canRegenerate($user)) {
     $nextTime = $recoveryCodeService->getNextRegenerateTime($user);
     return response()->json([
         'success' => false,
-        'message' => "次回生成可能時刻: {$nextTime->format('Y-m-d H:i')}"
+        'message' => "Next regeneration available at: {$nextTime->format('Y-m-d H:i')}"
     ], 429);
 }
 
-// 回復コード生成
+// Generate recovery codes
 $codes = $recoveryCodeService->generate($user);
 
-// フォーマットして表示
+// Format for display
 $formattedCodes = array_map(function($code) use ($recoveryCodeService) {
     return $recoveryCodeService->formatCode($code);
 }, $codes);
@@ -825,20 +825,20 @@ return view('admin.profile.recovery-codes', [
 ]);
 ```
 
-### Passkey登録
+### Passkey Registration
 
 ```php
 $passkeyService = app(\App\Services\TwoFa\TwoFaPasskeyService::class);
 
-// HTTPS接続チェック
+// Check HTTPS connection
 if (!$passkeyService->isAvailable()) {
     return response()->json([
         'success' => false,
-        'message' => 'HTTPS接続が必要です'
+        'message' => 'HTTPS connection is required'
     ], 400);
 }
 
-// 登録チャレンジ生成
+// Generate registration challenge
 $options = $passkeyService->generateRegistrationChallenge($user);
 
 return response()->json([
@@ -846,7 +846,7 @@ return response()->json([
     'options' => $options
 ]);
 
-// フロントエンドで認証情報を取得後、登録
+// After obtaining credentials on the frontend, register them
 $credential = $passkeyService->registerCredential(
     $user,
     $request->input('credential'),
@@ -856,41 +856,41 @@ $credential = $passkeyService->registerCredential(
 
 ---
 
-## ベストプラクティス
+## Best Practices
 
-### 1. **サービスの選択**
+### 1. **Choosing the Right Service**
 
-- **単一機能が必要な場合**: 直接サービスを使用
+- **When a single feature is needed**: Use the service directly
   ```php
   $codeService = app(\App\Services\TwoFa\TwoFaCodeService::class);
   $code = $codeService->generate($user);
   ```
 
-- **統合的な2FA機能が必要な場合**: TwoFaServiceを使用
+- **When integrated 2FA functionality is needed**: Use TwoFaService
   ```php
   $twoFaService = app(\App\Services\TwoFa\TwoFaService::class, [...]);
   $result = $twoFaService->generate($user);
   ```
 
-- **設定取得や判定が必要な場合**: TwoFaHelperを使用
+- **When settings retrieval or decisions are needed**: Use TwoFaHelper
   ```php
   $helper = app(\App\Helpers\TwoFaHelper::class);
   if ($helper->isTwoFaEnabled($user)) { ... }
   ```
 
-### 2. **認証フローの実装**
+### 2. **Implementing the Authentication Flow**
 
-- **コントローラーで認証フローを実装する場合**: TwoFaAuthenticationTraitを使用
+- **When implementing the authentication flow in a controller**: Use TwoFaAuthenticationTrait
   ```php
   class MyTwoFactorController extends Controller
   {
       use TwoFaAuthenticationTrait;
-      
-      // 必須メソッドを実装
+
+      // Implement required methods
   }
   ```
 
-### 3. **エラーハンドリング**
+### 3. **Error Handling**
 
 ```php
 try {
@@ -900,94 +900,94 @@ try {
         'user_id' => $user->id,
         'error' => $e->getMessage()
     ]);
-    
+
     return response()->json([
         'success' => false,
-        'message' => 'コード生成に失敗しました'
+        'message' => 'Code generation failed'
     ], 500);
 }
 ```
 
-### 4. **ロックアウト対応**
+### 4. **Handling Lockouts**
 
 ```php
 $attemptService = app(\App\Services\TwoFa\TwoFaAttemptService::class);
 
-// 検証前にロックアウトチェック
+// Check lockout status before verification
 if ($attemptService->isLockedOut($user)) {
     $remainingTime = $attemptService->getRemainingLockoutTime($user);
-    
+
     return response()->json([
         'success' => false,
-        'message' => "ロックアウト中です。残り{$remainingTime}分お待ちください。"
+        'message' => "You are locked out. Please wait {$remainingTime} minutes."
     ], 429);
 }
 
-// 検証
+// Verify
 $success = $codeService->validate($user, $inputCode);
 
-// 試行を記録
+// Record attempt
 $attemptService->recordAttempt($user, 'email', $success);
 ```
 
-### 5. **設定モデルクラスの指定**
+### 5. **Specifying the Settings Model Class**
 
 ```php
-// 管理画面の場合
+// For the admin panel
 $service = new TwoFaRecoveryCodeService(\App\Models\MemberSetting::class);
 
-// ユーザープラグインの場合
+// For the user plugin
 $service = new TwoFaRecoveryCodeService(\Plugins\DixlaseUsers\App\Models\DixlaseUsersUserSetting::class);
 ```
 
 ---
 
-## トラブルシューティング
+## Troubleshooting
 
-### メール送信エラー
+### Email Sending Errors
 
-**問題**: コード生成時にメール送信エラーが発生する
+**Problem**: Email sending error occurs during code generation
 
-**解決策**:
-1. メール設定を確認
+**Solution**:
+1. Check email configuration
    ```php
    $helper = app(\App\Helpers\TwoFaHelper::class);
    if (!$helper->isMailConfigured()) {
-       // メール設定が未完了
+       // Email is not configured
    }
    ```
 
-2. ログを確認
+2. Check logs
    ```bash
    tail -f storage/logs/laravel.log | grep "\[2FA\]"
    ```
 
-### Passkey認証エラー
+### Passkey Authentication Errors
 
-**問題**: Passkey認証が利用できない
+**Problem**: Passkey authentication is unavailable
 
-**解決策**:
-1. HTTPS接続を確認
+**Solution**:
+1. Verify HTTPS connection
    ```php
    $passkeyService = app(\App\Services\TwoFa\TwoFaPasskeyService::class);
    if (!$passkeyService->isAvailable()) {
-       // HTTPS接続が必要
+       // HTTPS connection required
    }
    ```
 
-2. ブラウザの対応状況を確認
+2. Check browser compatibility
    - Chrome 67+
    - Firefox 60+
    - Safari 13+
    - Edge 18+
 
-### ロックアウト解除
+### Unlocking a Locked-Out User
 
-**問題**: ユーザーがロックアウトされている
+**Problem**: A user is locked out
 
-**解決策**:
+**Solution**:
 ```php
-// 手動でロックアウトを解除（管理者のみ）
+// Manually unlock (admin only)
 $user->twoFaAttempts()
     ->where('success', false)
     ->where('created_at', '>=', Carbon::now()->subMinutes(30))
@@ -996,15 +996,15 @@ $user->twoFaAttempts()
 
 ---
 
-## まとめ
+## Summary
 
-Dixlaseの2FAシステムは、以下の特徴を持っています：
+Dixlase's 2FA system has the following characteristics:
 
-✅ **明確な責任分離**: 各コンポーネントが明確な役割を持つ
-✅ **高い再利用性**: トレイトとサービスで共通機能を提供
-✅ **柔軟な設定**: 設定モデルクラスを柔軟に指定可能
-✅ **複数認証方法**: メール、Passkey、回復コードをサポート
-✅ **セキュリティ**: ロックアウト、試行回数制限、期限切れ管理
-✅ **拡張性**: 新しい認証方法の追加が容易
+- **Clear separation of concerns**: Each component has a well-defined role
+- **High reusability**: Traits and services provide shared functionality
+- **Flexible configuration**: Settings model class can be flexibly specified
+- **Multiple authentication methods**: Supports email, Passkey, and recovery codes
+- **Security**: Lockout, attempt limits, and expiration management
+- **Extensibility**: Easy to add new authentication methods
 
-このアーキテクチャにより、管理画面とユーザープラグインで2FA機能を共有しながら、それぞれのコンテキストに応じた動作を実現しています。
+This architecture enables sharing 2FA functionality between the admin panel and user plugins while achieving context-specific behavior for each.

@@ -1,12 +1,12 @@
-# 監査ログ整合性（ハッシュチェーン）
+# Audit Log Integrity (Hash Chain)
 
-## 概要
+## Overview
 
-Dixlaseの監査ログは、ブロックチェーンに似たハッシュチェーン技術を使用して改ざん耐性を実現しています。各ログレコードは前のレコードのハッシュを含み、連鎖的に整合性を保証します。
+Dixlase's audit logs achieve tamper resistance using hash chain technology similar to blockchain. Each log record contains the hash of the previous record, guaranteeing integrity through chaining.
 
-## 仕組み
+## How It Works
 
-### ハッシュチェーン
+### Hash Chain
 
 ```
 [Log 1] ──hash──> [Log 2] ──hash──> [Log 3] ──hash──> ...
@@ -14,18 +14,18 @@ Dixlaseの監査ログは、ブロックチェーンに似たハッシュチェ�
    └─ genesis        └─ hash(Log 1)    └─ hash(Log 2)
 ```
 
-各ログレコードには以下のフィールドが追加されます：
+The following fields are added to each log record:
 
-| フィールド | 説明 |
-|-----------|------|
-| `record_hash` | このレコードのSHA-256ハッシュ（64文字） |
-| `previous_hash` | 前レコードのハッシュ（最初は'genesis'） |
-| `chain_sequence` | チェーン内の連番 |
-| `hash_algorithm` | 使用アルゴリズム（sha256） |
-| `verification_status` | 検証結果（valid/invalid/null） |
-| `last_verified_at` | 最終検証日時 |
+| Field | Description |
+|-------|-------------|
+| `record_hash` | SHA-256 hash of this record (64 characters) |
+| `previous_hash` | Hash of the previous record ('genesis' for the first) |
+| `chain_sequence` | Sequential number within the chain |
+| `hash_algorithm` | Algorithm used (sha256) |
+| `verification_status` | Verification result (valid/invalid/null) |
+| `last_verified_at` | Last verification timestamp |
 
-### ハッシュ計算対象
+### Hash Calculation Target
 
 ```php
 $data = implode('|', [
@@ -41,114 +41,114 @@ $data = implode('|', [
     $this->target_id,
     $this->ip_address,
     json_encode($this->context),
-    $previousHash,  // 前レコードのハッシュ
+    $previousHash,  // Hash of the previous record
 ]);
 
 $hash = hash('sha256', $data);
 ```
 
-## 日次署名（Daily Seal）
+## Daily Seal
 
-毎日のログを「封印」して、その日のログ全体の整合性を保証します。
+Logs are "sealed" each day to guarantee the integrity of the entire day's logs.
 
-### 日次署名テーブル
+### Daily Seal Table
 
-| フィールド | 説明 |
-|-----------|------|
-| `seal_date` | 対象日 |
-| `first_log_id` | その日の最初のログID |
-| `last_log_id` | その日の最後のログID |
-| `log_count` | ログ件数 |
-| `final_hash` | 最終ログのハッシュ |
-| `daily_signature` | HMAC-SHA256署名 |
-| `key_version` | 署名キーのバージョン |
+| Field | Description |
+|-------|-------------|
+| `seal_date` | Target date |
+| `first_log_id` | First log ID of the day |
+| `last_log_id` | Last log ID of the day |
+| `log_count` | Number of log entries |
+| `final_hash` | Hash of the final log entry |
+| `daily_signature` | HMAC-SHA256 signature |
+| `key_version` | Signing key version |
 
-## コマンド
+## Commands
 
-### ハッシュチェーン構築
+### Building the Hash Chain
 
 ```bash
-# 未処理のログにハッシュチェーンを設定
+# Set up hash chain for unprocessed logs
 php artisan audit:integrity build
 
-# 処理件数を制限
+# Limit the number of records to process
 php artisan audit:integrity build --limit=500
 ```
 
-### ハッシュチェーン検証
+### Verifying the Hash Chain
 
 ```bash
-# 全チェーンを検証
+# Verify the entire chain
 php artisan audit:integrity verify
 
-# ID範囲を指定して検証
+# Verify a specific ID range
 php artisan audit:integrity verify --from=1000 --to=2000
 
-# 特定日の日次署名を検証
+# Verify the daily seal for a specific date
 php artisan audit:integrity verify --date=2025-12-20
 ```
 
-### 日次署名作成
+### Creating Daily Seals
 
 ```bash
-# 過去7日分の日次署名を作成
+# Create daily seals for the past 7 days
 php artisan audit:integrity seal
 
-# 日数を指定
+# Specify the number of days
 php artisan audit:integrity seal --days=30
 
-# 特定日の署名を作成
+# Create a seal for a specific date
 php artisan audit:integrity seal --date=2025-12-20
 ```
 
-### 統計表示
+### Displaying Statistics
 
 ```bash
 php artisan audit:integrity stats
 ```
 
-出力例：
+Example output:
 ```
-監査ログ整合性統計
+Audit Log Integrity Statistics
 
 +---------------------------+--------+
-| 項目                      | 値     |
+| Item                      | Value  |
 +---------------------------+--------+
-| 総ログ数                  | 15420  |
-| ハッシュチェーン設定済み  | 15420  |
-| ハッシュチェーン未設定    | 0      |
-| 検証済み                  | 15420  |
-| 改ざん検知                | 0      |
-| 未検証                    | 0      |
+| Total logs                | 15420  |
+| Hash chain set            | 15420  |
+| Hash chain not set        | 0      |
+| Verified                  | 15420  |
+| Tampering detected        | 0      |
+| Not verified              | 0      |
 +---------------------------+--------+
 
-日次署名統計（過去30日間）
+Daily Seal Statistics (past 30 days)
 
 +------------------+-------+
-| 項目             | 値    |
+| Item             | Value |
 +------------------+-------+
-| 総署名数         | 30    |
-| 正常な署名       | 30    |
-| 異常な署名       | 0     |
-| 署名済みログ数   | 15420 |
+| Total seals      | 30    |
+| Valid seals      | 30    |
+| Invalid seals    | 0     |
+| Sealed log count | 15420 |
 +------------------+-------+
 ```
 
-## プログラムからの使用
+## Programmatic Usage
 
-### ハッシュチェーン付きでログを記録
+### Logging with Hash Chain
 
 ```php
 use App\Models\AuditLog;
 
-// 通常のログ記録（ハッシュチェーンなし）
+// Standard logging (without hash chain)
 AuditLog::log([
     'category' => AuditLog::CATEGORY_AUTH,
     'action' => AuditLog::ACTION_LOGIN,
     'actor' => $member,
 ]);
 
-// ハッシュチェーン付きでログを記録
+// Log with hash chain
 AuditLog::logWithHashChain([
     'category' => AuditLog::CATEGORY_SECURITY,
     'action' => AuditLog::ACTION_SETTINGS_UPDATED,
@@ -157,40 +157,40 @@ AuditLog::logWithHashChain([
 ]);
 ```
 
-### 整合性検証サービス
+### Integrity Verification Service
 
 ```php
 use App\Services\AuditLogIntegrityService;
 
 $service = app(AuditLogIntegrityService::class);
 
-// チェーン検証
+// Verify the chain
 $result = $service->verifyChain();
 if (!$result['is_valid']) {
-    // 改ざん検知
+    // Tampering detected
     foreach ($result['errors'] as $error) {
         Log::alert('Audit log tampered', $error);
     }
 }
 
-// 日次署名作成
+// Create a daily seal
 $seal = $service->createDailySeal(now()->subDay());
 
-// 日次署名検証
+// Verify a daily seal
 $result = $service->verifyDailySeal(now()->subDay());
 
-// 統計取得
+// Get statistics
 $stats = $service->getStats();
 ```
 
-### 改ざん検知時の対応
+### Handling Tampering Detection
 
 ```php
-// 改ざんが検知されたログを取得
+// Retrieve tampered logs
 $tamperedLogs = AuditLog::tampered()->get();
 
 foreach ($tamperedLogs as $log) {
-    // アラート送信
+    // Send alert
     SystemNotificationService::send(
         'Audit Log Tampering Detected',
         "Log ID {$log->id} has been tampered with.",
@@ -199,61 +199,61 @@ foreach ($tamperedLogs as $log) {
 }
 ```
 
-## 推奨運用
+## Recommended Operations
 
-### 定期タスク（Scheduler）
+### Scheduled Tasks (Scheduler)
 
 ```php
 // app/Console/Kernel.php
 protected function schedule(Schedule $schedule): void
 {
-    // 毎時: 未処理ログにハッシュチェーンを設定
+    // Hourly: Set up hash chain for unprocessed logs
     $schedule->command('audit:integrity build --limit=1000')
         ->hourly();
 
-    // 毎日深夜: 前日の日次署名を作成
+    // Daily at midnight: Create the previous day's daily seal
     $schedule->command('audit:integrity seal --days=1')
         ->dailyAt('00:30');
 
-    // 毎週: 過去7日分のチェーンを検証
+    // Weekly: Verify the chain for the past 7 days
     $schedule->command('audit:integrity verify')
         ->weekly();
 }
 ```
 
-### セキュリティ考慮事項
+### Security Considerations
 
-1. **署名キーの保護**: `APP_KEY`または専用の`AUDIT_LOG_SECRET`を安全に管理
-2. **定期検証**: 週次または日次でチェーン全体を検証
-3. **アラート設定**: 改ざん検知時に即座に通知
-4. **バックアップ**: 日次署名テーブルも含めてバックアップ
-5. **アクセス制限**: 監査ログテーブルへの直接アクセスを制限
+1. **Protect the signing key**: Securely manage `APP_KEY` or a dedicated `AUDIT_LOG_SECRET`
+2. **Regular verification**: Verify the entire chain weekly or daily
+3. **Alert configuration**: Set up immediate notifications when tampering is detected
+4. **Backups**: Include the daily seal table in your backups
+5. **Access control**: Restrict direct access to the audit log table
 
-## 技術仕様
+## Technical Specifications
 
-### ハッシュアルゴリズム
+### Hash Algorithms
 
-- **レコードハッシュ**: SHA-256
-- **日次署名**: HMAC-SHA256
+- **Record hash**: SHA-256
+- **Daily seal**: HMAC-SHA256
 
-### 検証エラーコード
+### Verification Error Codes
 
-| コード | 説明 |
-|--------|------|
-| `hash_mismatch` | レコードのハッシュが一致しない |
-| `chain_broken` | 前レコードへのリンクが切れている |
-| `sequence_gap` | シーケンス番号に欠番がある |
-| `invalid_genesis` | 最初のレコードが不正 |
+| Code | Description |
+|------|-------------|
+| `hash_mismatch` | Record hash does not match |
+| `chain_broken` | Link to the previous record is broken |
+| `sequence_gap` | Gap in the sequence numbers |
+| `invalid_genesis` | Invalid first record |
 
-### パフォーマンス
+### Performance
 
-- ハッシュ計算: 約0.1ms/レコード
-- チェーン検証: 約1,000レコード/秒
-- 日次署名作成: 約0.5秒/日
+- Hash calculation: ~0.1ms per record
+- Chain verification: ~1,000 records/second
+- Daily seal creation: ~0.5 seconds per day
 
-## β版以降の予定
+## Planned for Post-Beta
 
-- 管理画面での整合性ダッシュボード
-- リアルタイム改ざん検知
-- 外部タイムスタンプサービス連携
-- ログのエクスポート・インポート（署名付き）
+- Integrity dashboard in the admin panel
+- Real-time tampering detection
+- External timestamping service integration
+- Log export/import with signatures

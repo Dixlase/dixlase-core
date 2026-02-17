@@ -1,21 +1,21 @@
-# ログイン識別子確認機能の使用方法
+# Login Identifier Check Feature Usage
 
-ログイン識別子確認機能は、メールアドレスまたはアカウント名の存在確認を行う共通機能です。
-管理者ログインとユーザーログインの両方で使用できます。
+The login identifier check feature is a shared utility that verifies the existence of an email address or account name.
+It can be used for both admin login and user login.
 
-## 概要
+## Overview
 
-`IdentifierCheckHelper`は、以下の機能を提供します：
+`IdentifierCheckHelper` provides the following features:
 
-- **レート制限**: IP + 識別子ベースのレート制限
-- **タイミング攻撃対策**: 常に一定時間（100-300ms）待機
-- **監査ログ記録**: 成功/失敗の両方を記録
-- **統一されたエラーメッセージ**: ユーザー列挙攻撃対策
-- **パスキー登録状況確認**: WebAuthn認証情報の有無を確認
+- **Rate limiting**: IP + identifier-based rate limiting
+- **Timing attack protection**: Always waits a consistent duration (100-300ms)
+- **Audit logging**: Records both successes and failures
+- **Unified error messages**: Countermeasure against user enumeration attacks
+- **Passkey registration status check**: Checks for the presence of WebAuthn credentials
 
-## 基本的な使用方法
+## Basic Usage
 
-### 1. 管理者ログインでの使用例
+### 1. Usage in Admin Login
 
 ```php
 use App\Helpers\IdentifierCheckHelper;
@@ -32,19 +32,19 @@ class AdminLoginIdentifierCheckController extends AdminController
 
         $login = $request->input('login');
         $ipAddress = $request->ip();
-        
-        // ロックアウト設定を取得
+
+        // Retrieve lockout settings
         $settings = IdentifierCheckHelper::getLockoutSettings(MemberSetting::class);
-        
-        // 識別子確認を実行（レート制限付き）
+
+        // Execute identifier check (with rate limiting)
         $result = IdentifierCheckHelper::checkWithRateLimit(
             $login,
             $ipAddress,
             Member::class,
             $settings,
-            'admin' // コンテキスト
+            'admin' // Context
         );
-        
+
         return response()->json([
             'exists' => $result['exists'],
             'has_passkey' => $result['has_passkey'],
@@ -53,7 +53,7 @@ class AdminLoginIdentifierCheckController extends AdminController
 }
 ```
 
-### 2. ユーザー管理プラグインでの使用例
+### 2. Usage in a User Management Plugin
 
 ```php
 use App\Helpers\IdentifierCheckHelper;
@@ -68,20 +68,20 @@ class UserLoginIdentifierCheckController extends Controller
 
         $login = $request->input('login');
         $ipAddress = $request->ip();
-        
-        // プラグインの設定モデルとユーザーモデルを使用
+
+        // Use the plugin's settings model and user model
         $settings = IdentifierCheckHelper::getLockoutSettings(
             \Plugins\DixlaseUsers\App\Models\UserSetting::class
         );
-        
+
         $result = IdentifierCheckHelper::checkWithRateLimit(
             $login,
             $ipAddress,
             \Plugins\DixlaseUsers\App\Models\User::class,
             $settings,
-            'user' // コンテキストを'user'に設定
+            'user' // Set context to 'user'
         );
-        
+
         return response()->json([
             'exists' => $result['exists'],
             'has_passkey' => $result['has_passkey'],
@@ -90,11 +90,11 @@ class UserLoginIdentifierCheckController extends Controller
 }
 ```
 
-### 3. サービスクラスを使用した実装（プラグイン内）
+### 3. Implementation Using a Service Class (Within a Plugin)
 
-より複雑なロジックが必要な場合は、プラグイン内に専用のサービスクラスを作成できます：
+For more complex logic, you can create a dedicated service class within your plugin:
 
-**ファイル配置**: `plugins/DixlaseUsers/app/Services/UserLoginIdentifierCheckService.php`
+**File location**: `plugins/DixlaseUsers/app/Services/UserLoginIdentifierCheckService.php`
 
 ```php
 <?php
@@ -111,22 +111,22 @@ class UserLoginIdentifierCheckService
         string $userModelClass,
         string $settingModelClass
     ): array {
-        // ロックアウト設定を取得
+        // Retrieve lockout settings
         $settings = IdentifierCheckHelper::getLockoutSettings($settingModelClass);
-        
-        // 識別子確認を実行（レート制限付き）
+
+        // Execute identifier check (with rate limiting)
         return IdentifierCheckHelper::checkWithRateLimit(
             $login,
             $ipAddress,
             $userModelClass,
             $settings,
-            'user' // コンテキストを'user'に設定
+            'user' // Set context to 'user'
         );
     }
 }
 ```
 
-**コントローラーでの使用**:
+**Usage in a controller**:
 
 ```php
 use Plugins\DixlaseUsers\App\Services\UserLoginIdentifierCheckService;
@@ -152,7 +152,7 @@ class UserLoginIdentifierCheckController extends Controller
             \Plugins\DixlaseUsers\App\Models\User::class,
             \Plugins\DixlaseUsers\App\Models\UserSetting::class
         );
-        
+
         return response()->json([
             'exists' => $result['exists'],
             'has_passkey' => $result['has_passkey'],
@@ -161,92 +161,92 @@ class UserLoginIdentifierCheckController extends Controller
 }
 ```
 
-## 設定要件
+## Configuration Requirements
 
-### 設定モデルの要件
+### Settings Model Requirements
 
-`getLockoutSettings()`を使用するには、設定モデルに以下のキーが必要です：
+To use `getLockoutSettings()`, the settings model must have the following keys:
 
 ```php
-// 設定キー
-'login_attempt_limit_enabled' => true/false,  // レート制限の有効/無効
-'login_attempt_max_attempts' => 5,            // 最大試行回数
-'login_attempt_time_window' => 15,            // 時間窓（分）
+// Setting keys
+'login_attempt_limit_enabled' => true/false,  // Enable/disable rate limiting
+'login_attempt_max_attempts' => 5,            // Maximum number of attempts
+'login_attempt_time_window' => 15,            // Time window (minutes)
 ```
 
-設定モデルには`getValue()`メソッドが必要です：
+The settings model must have a `getValue()` method:
 
 ```php
 public static function getValue(string $key, $default = null)
 {
-    // 設定値を取得するロジック
+    // Logic to retrieve the setting value
 }
 ```
 
-### ユーザーモデルの要件
+### User Model Requirements
 
-ユーザーモデルには以下のカラムが必要です：
+The user model must have the following columns:
 
-- `email`: メールアドレス
-- `account_name`: アカウント名（オプション）
+- `email`: Email address
+- `account_name`: Account name (optional)
 
-パスキー確認のため、以下のいずれかのリレーションが必要です：
+For passkey verification, one of the following relationships is required:
 
-- `webauthnCredentials()`: WebAuthn認証情報（推奨）
-- `twoFaPasskeys()`: 二段階認証用パスキー
-- `passkeys()`: 汎用パスキー
+- `webauthnCredentials()`: WebAuthn credentials (recommended)
+- `twoFaPasskeys()`: Two-factor authentication passkeys
+- `passkeys()`: General-purpose passkeys
 
-## 戻り値
+## Return Values
 
-`checkWithRateLimit()`は以下の配列を返します：
+`checkWithRateLimit()` returns the following array:
 
 ```php
 [
-    'exists' => true,           // ユーザーが存在するか
-    'has_passkey' => false,     // パスキーが登録されているか
-    'user' => User|null,        // ユーザーモデル（存在する場合）
+    'exists' => true,           // Whether the user exists
+    'has_passkey' => false,     // Whether a passkey is registered
+    'user' => User|null,        // The user model (if exists)
 ]
 ```
 
-## 例外処理
+## Exception Handling
 
 ### ValidationException
 
-レート制限超過またはユーザーが存在しない場合、`ValidationException`がスローされます：
+A `ValidationException` is thrown when the rate limit is exceeded or the user does not exist:
 
 ```php
 try {
     $result = IdentifierCheckHelper::checkWithRateLimit(...);
 } catch (\Illuminate\Validation\ValidationException $e) {
-    // エラーメッセージを取得
+    // Get error messages
     $errors = $e->errors();
-    // 'login' => 'メールアドレスまたはパスワードが正しくありません'
-    // または
-    // 'login' => 'ログイン試行回数が多すぎます。60秒後に再試行してください。'
+    // 'login' => 'The email address or password is incorrect.'
+    // or
+    // 'login' => 'Too many login attempts. Please try again in 60 seconds.'
 }
 ```
 
-## セキュリティ機能
+## Security Features
 
-### 1. レート制限
+### 1. Rate Limiting
 
-- IPアドレス + 識別子のハッシュでレート制限
-- 設定可能な最大試行回数と時間窓
-- ロックアウト時の監査ログ記録
+- Rate limited by IP address + identifier hash
+- Configurable maximum attempts and time window
+- Audit logging on lockout
 
-### 2. タイミング攻撃対策
+### 2. Timing Attack Protection
 
-- ユーザーの存在/非存在に関わらず、常に100-300msの遅延
-- レスポンス時間からユーザーの存在を推測できないようにする
+- A consistent delay of 100-300ms regardless of whether the user exists or not
+- Prevents inference of user existence from response time
 
-### 3. ユーザー列挙攻撃対策
+### 3. User Enumeration Attack Protection
 
-- 統一されたエラーメッセージ
-- 「このメールアドレスは登録されていません」などの具体的なメッセージは返さない
+- Unified error messages
+- Never returns specific messages such as "This email address is not registered"
 
-### 4. 監査ログ
+### 4. Audit Logging
 
-成功時：
+On success:
 ```php
 AuditLog::logAuth(AuditLog::ACTION_LOGIN_IDENTIFIER_CHECK, [
     'severity' => AuditLog::SEVERITY_INFO,
@@ -260,7 +260,7 @@ AuditLog::logAuth(AuditLog::ACTION_LOGIN_IDENTIFIER_CHECK, [
 ]);
 ```
 
-失敗時：
+On failure:
 ```php
 AuditLog::logSecurity(AuditLog::ACTION_LOGIN_IDENTIFIER_NOT_FOUND, [
     'severity' => AuditLog::SEVERITY_WARNING,
@@ -273,9 +273,9 @@ AuditLog::logSecurity(AuditLog::ACTION_LOGIN_IDENTIFIER_NOT_FOUND, [
 ]);
 ```
 
-## カスタマイズ
+## Customization
 
-### 独自のロックアウト設定を使用する場合
+### Using Custom Lockout Settings
 
 ```php
 $customSettings = [
@@ -293,40 +293,40 @@ $result = IdentifierCheckHelper::checkWithRateLimit(
 );
 ```
 
-### パスキー確認ロジックのカスタマイズ
+### Customizing Passkey Check Logic
 
-独自のパスキー確認ロジックが必要な場合は、`IdentifierCheckHelper`を継承してカスタマイズできます：
+If you need custom passkey verification logic, you can extend `IdentifierCheckHelper`:
 
 ```php
 class CustomIdentifierCheckHelper extends IdentifierCheckHelper
 {
     protected static function hasPasskey($user): bool
     {
-        // 独自のパスキー確認ロジック
+        // Custom passkey verification logic
         return $user->customPasskeys()->active()->count() > 0;
     }
 }
 ```
 
-## トラブルシューティング
+## Troubleshooting
 
-### レート制限が機能しない
+### Rate Limiting Not Working
 
-1. 設定モデルの`getValue()`メソッドが正しく実装されているか確認
-2. `login_attempt_limit_enabled`が`true`に設定されているか確認
-3. Redisまたはキャッシュドライバーが正しく設定されているか確認
+1. Verify that the settings model's `getValue()` method is correctly implemented
+2. Verify that `login_attempt_limit_enabled` is set to `true`
+3. Verify that Redis or the cache driver is correctly configured
 
-### パスキー登録状況が正しく取得できない
+### Passkey Registration Status Not Retrieved Correctly
 
-1. ユーザーモデルに適切なリレーションが定義されているか確認
-2. リレーション名が`webauthnCredentials`、`twoFaPasskeys`、`passkeys`のいずれかであることを確認
+1. Verify that the appropriate relationship is defined on the user model
+2. Verify that the relationship name is one of `webauthnCredentials`, `twoFaPasskeys`, or `passkeys`
 
-### タイミング攻撃対策の遅延が長すぎる
+### Timing Attack Protection Delay Is Too Long
 
-遅延時間は100-300msのランダムな値です。これは変更できませんが、セキュリティ上重要な機能です。
+The delay is a random value between 100-300ms. This cannot be changed, but it is an important security feature.
 
-## 関連ドキュメント
+## Related Documentation
 
-- [ログインロックアウト機能](./login-lockout-usage.md)
-- [二段階認証機能](./two-factor-authentication-usage.md)
-- [監査ログ機能](./audit-log-usage.md)
+- [Login Lockout Feature](./login-lockout-usage.md)
+- [Two-Factor Authentication Feature](./two-factor-authentication-usage.md)
+- [Audit Log Feature](./audit-log-usage.md)

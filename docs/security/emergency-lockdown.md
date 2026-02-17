@@ -1,132 +1,132 @@
-# 緊急ロックダウン機能
+# Emergency Lockdown
 
-## 概要
+## Overview
 
-緊急ロックダウン機能は、セキュリティインシデント発生時に即座にシステムを保護するための機能です。不正アクセスの検知、ブルートフォース攻撃、その他のセキュリティ脅威に対して、迅速に対応できます。
+The emergency lockdown feature is designed to immediately protect the system when a security incident occurs. It enables rapid response to unauthorized access detection, brute-force attacks, and other security threats.
 
-## ロックダウンタイプ
+## Lockdown Types
 
-| タイプ | 説明 | 影響範囲 |
-|--------|------|----------|
-| `full` | 完全ロックダウン | 全アクセス遮断（SUPER_ADMIN以外） |
-| `admin` | 管理画面ロックダウン | 管理画面のみアクセス不可 |
-| `api` | APIロックダウン | APIエンドポイントのみアクセス不可 |
-| `login` | ログインロックダウン | 新規ログインのみ不可 |
+| Type | Description | Scope of Impact |
+|------|-------------|-----------------|
+| `full` | Full lockdown | Blocks all access (except SUPER_ADMIN) |
+| `admin` | Admin panel lockdown | Admin panel access only is blocked |
+| `api` | API lockdown | API endpoints only are blocked |
+| `login` | Login lockdown | New logins only are blocked |
 
-## コマンド
+## Commands
 
-### ロックダウン発動
+### Activate Lockdown
 
 ```bash
-# 完全ロックダウン（確認あり）
+# Full lockdown (with confirmation)
 php artisan lockdown activate
 
-# タイプを指定
+# Specify type
 php artisan lockdown activate --type=admin
 
-# 理由を指定
-php artisan lockdown activate --reason="不正アクセス検知"
+# Specify reason
+php artisan lockdown activate --reason="Unauthorized access detected"
 
-# 自動解除時間を設定（30分後に自動解除）
+# Set auto-release timer (auto-release after 30 minutes)
 php artisan lockdown activate --duration=30
 
-# 特定のIPを許可
+# Allow specific IPs
 php artisan lockdown activate --allow-ip=192.168.1.1 --allow-ip=10.0.0.1
 
-# 特定のメンバーを許可
+# Allow specific members
 php artisan lockdown activate --allow-member=1 --allow-member=2
 
-# 確認なしで実行
+# Execute without confirmation
 php artisan lockdown activate --force
 ```
 
-### ロックダウン解除
+### Deactivate Lockdown
 
 ```bash
-# 解除（確認あり）
+# Deactivate (with confirmation)
 php artisan lockdown deactivate
 
-# 確認なしで解除
+# Deactivate without confirmation
 php artisan lockdown deactivate --force
 
-# 理由を指定して解除
-php artisan lockdown deactivate --reason="脅威が解消されたため"
+# Deactivate with reason
+php artisan lockdown deactivate --reason="Threat has been resolved"
 ```
 
-### 状態確認
+### Check Status
 
 ```bash
-# 現在の状態を表示
+# Display current status
 php artisan lockdown status
 
-# 履歴を表示
+# Display history
 php artisan lockdown history
 ```
 
-## プログラムからの使用
+## Programmatic Usage
 
-### ロックダウン発動
+### Activate Lockdown
 
 ```php
 use App\Services\LockdownService;
 use App\Models\LockdownStatus;
 
-// 完全ロックダウン
+// Full lockdown
 LockdownService::activate(
     type: LockdownStatus::TYPE_FULL,
-    reason: '不正アクセス検知',
+    reason: 'Unauthorized access detected',
     triggeredBy: auth()->id(),
     autoReleaseMinutes: 60,
     allowedIps: ['192.168.1.1'],
     allowedMembers: [1, 2]
 );
 
-// 管理画面のみロック
+// Lock admin panel only
 LockdownService::activate(
     type: LockdownStatus::TYPE_ADMIN,
-    reason: 'メンテナンス作業'
+    reason: 'Maintenance work'
 );
 ```
 
-### ロックダウン解除
+### Deactivate Lockdown
 
 ```php
 LockdownService::deactivate(
     releasedBy: auth()->id(),
-    reason: '脅威が解消されたため'
+    reason: 'Threat has been resolved'
 );
 ```
 
-### 状態確認
+### Check Status
 
 ```php
-// ロックダウン中かどうか
+// Check if system is locked down
 if (LockdownService::isLocked()) {
-    // ロックダウン中
+    // System is in lockdown
 }
 
-// 特定タイプがロックされているか
+// Check if a specific type is locked
 if (LockdownService::isLocked(LockdownStatus::TYPE_API)) {
-    // APIがロックされている
+    // API is locked
 }
 
-// アクセスが許可されているか
+// Check if access is allowed
 $member = auth()->user();
 $ip = request()->ip();
 
 if (LockdownService::isAccessAllowed($ip, $member)) {
-    // アクセス許可
+    // Access allowed
 }
 ```
 
-### ロックダウン延長
+### Extend Lockdown
 
 ```php
-// 30分延長
+// Extend by 30 minutes
 LockdownService::extend(30, auth()->id());
 ```
 
-### 許可リスト更新
+### Update Allow List
 
 ```php
 LockdownService::updateAllowList(
@@ -136,33 +136,33 @@ LockdownService::updateAllowList(
 );
 ```
 
-## ミドルウェア
+## Middleware
 
-### 基本的な使用
+### Basic Usage
 
 ```php
 // routes/admin.php
 
-// 全タイプのロックダウンをチェック
+// Check all lockdown types
 Route::middleware('lockdown')->group(function () {
     // ...
 });
 
-// 特定タイプのみチェック
+// Check specific type only
 Route::middleware('lockdown:admin')->group(function () {
-    // 管理画面ルート
+    // Admin panel routes
 });
 
 Route::middleware('lockdown:api')->group(function () {
-    // APIルート
+    // API routes
 });
 
 Route::middleware('lockdown:login')->group(function () {
-    // ログインルート
+    // Login routes
 });
 ```
 
-### ミドルウェア登録
+### Middleware Registration
 
 ```php
 // bootstrap/app.php (Laravel 11+)
@@ -173,73 +173,73 @@ Route::middleware('lockdown:login')->group(function () {
 })
 ```
 
-## アクセス許可の優先順位
+## Access Permission Priority
 
-1. **SUPER_ADMIN**: 常にアクセス可能
-2. **許可されたIP**: `allowed_ips`に含まれるIP
-3. **許可されたメンバー**: `allowed_members`に含まれるメンバーID
-4. **その他**: アクセス拒否
+1. **SUPER_ADMIN**: Always has access
+2. **Allowed IPs**: IPs included in `allowed_ips`
+3. **Allowed Members**: Member IDs included in `allowed_members`
+4. **Others**: Access denied
 
-## 自動解除
+## Auto-Release
 
-`autoReleaseMinutes`を設定すると、指定時間後に自動的にロックダウンが解除されます。
+When `autoReleaseMinutes` is set, the lockdown is automatically released after the specified duration.
 
 ```php
-// 60分後に自動解除
+// Auto-release after 60 minutes
 LockdownService::activate(
     type: LockdownStatus::TYPE_LOGIN,
-    reason: 'ブルートフォース攻撃検知',
+    reason: 'Brute-force attack detected',
     autoReleaseMinutes: 60
 );
 ```
 
-自動解除は、ミドルウェアがリクエストを処理する際にチェックされます。
+Auto-release is checked when the middleware processes a request.
 
-## 監査ログ
+## Audit Logs
 
-ロックダウンの発動・解除は自動的に監査ログに記録されます：
+Lockdown activation and deactivation are automatically recorded in the audit log:
 
-- `lockdown_activated`: ロックダウン発動
-- `lockdown_deactivated`: ロックダウン解除
-- `lockdown_auto_released`: 自動解除
+- `lockdown_activated`: Lockdown activated
+- `lockdown_deactivated`: Lockdown deactivated
+- `lockdown_auto_released`: Auto-released
 
-## データベーステーブル
+## Database Tables
 
 ### lockdown_status
 
-現在のロックダウン状態を保持
+Holds the current lockdown state
 
-| カラム | 説明 |
-|--------|------|
-| `type` | ロックダウンタイプ |
-| `is_active` | アクティブかどうか |
-| `reason` | 理由 |
-| `triggered_by` | 発動者ID |
-| `triggered_at` | 発動日時 |
-| `released_by` | 解除者ID |
-| `released_at` | 解除日時 |
-| `auto_release_at` | 自動解除日時 |
-| `allowed_ips` | 許可されたIP（JSON） |
-| `allowed_members` | 許可されたメンバー（JSON） |
+| Column | Description |
+|--------|-------------|
+| `type` | Lockdown type |
+| `is_active` | Whether active |
+| `reason` | Reason |
+| `triggered_by` | ID of the user who activated |
+| `triggered_at` | Activation timestamp |
+| `released_by` | ID of the user who deactivated |
+| `released_at` | Deactivation timestamp |
+| `auto_release_at` | Scheduled auto-release timestamp |
+| `allowed_ips` | Allowed IPs (JSON) |
+| `allowed_members` | Allowed members (JSON) |
 
 ### lockdown_history
 
-ロックダウンの履歴を記録
+Records the history of lockdown events
 
-| カラム | 説明 |
-|--------|------|
-| `action` | アクション（activated/deactivated/extended/modified） |
-| `type` | ロックダウンタイプ |
-| `reason` | 理由 |
-| `performed_by` | 実行者ID |
-| `ip_address` | IPアドレス |
-| `details` | 詳細情報（JSON） |
-| `performed_at` | 実行日時 |
+| Column | Description |
+|--------|-------------|
+| `action` | Action (activated/deactivated/extended/modified) |
+| `type` | Lockdown type |
+| `reason` | Reason |
+| `performed_by` | ID of the user who performed the action |
+| `ip_address` | IP address |
+| `details` | Detailed information (JSON) |
+| `performed_at` | Action timestamp |
 
-## β版以降の予定
+## Planned for Beta and Beyond
 
-- 管理画面でのロックダウン管理UI
-- 自動トリガー設定（ログイン失敗回数、不審なアクティビティ等）
-- Slack/メール通知連携
-- ロックダウン中のアクセス試行ログ
-- 地理的ロックダウン（国/地域ベース）
+- Lockdown management UI in the admin panel
+- Automatic trigger configuration (login failure count, suspicious activity, etc.)
+- Slack/email notification integration
+- Access attempt logging during lockdown
+- Geographic lockdown (country/region-based)

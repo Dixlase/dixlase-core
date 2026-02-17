@@ -2,14 +2,14 @@
 
 ## Overview
 
-Dixlaseは外部システムへのWebhook送信機能を提供します。イベント発生時に登録されたエンドポイントへHTTP POSTリクエストを送信し、リアルタイムな連携を実現します。
+Dixlase provides a webhook delivery feature for external systems. When events occur, HTTP POST requests are sent to registered endpoints, enabling real-time integrations.
 
 ## Version
 
 - **Specification Version**: v1
 - **Status**: Alpha
 
-## 1. アーキテクチャ
+## 1. Architecture
 
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
@@ -24,63 +24,63 @@ Dixlaseは外部システムへのWebhook送信機能を提供します。イベ
 └─────────────────┘     └──────────────────┘     └─────────────────┘
 ```
 
-## 2. 基本的な使い方
+## 2. Basic Usage
 
-### 2.1 Facadeを使用した送信
+### 2.1 Sending via Facade
 
 ```php
 use App\Facades\Webhook;
 
-// 非同期送信（キュー経由）
+// Asynchronous dispatch (via queue)
 Webhook::dispatch('dixlase.backup.completed', [
     'path' => '/backups/backup_20251221.zip',
     'size' => 1024000,
 ]);
 
-// 同期送信（即座に送信）
+// Synchronous dispatch (immediate)
 Webhook::dispatchSync('order.created', [
     'order_id' => 123,
     'total' => 9800,
 ]);
 ```
 
-### 2.2 WebhookDispatcherを直接使用
+### 2.2 Using WebhookDispatcher Directly
 
 ```php
 use App\Services\WebhookDispatcher;
 
-// 非同期送信
+// Asynchronous dispatch
 WebhookDispatcher::dispatch('event.name', $payload);
 
-// 特定のWebhookに送信
+// Send to a specific webhook
 WebhookDispatcher::dispatchTo($webhook, 'event.name', $payload);
 ```
 
-### 2.3 プラグインからの使用
+### 2.3 Usage from Plugins
 
 ```php
 use App\Facades\Webhook;
 use App\Events\DixlaseEvents;
 
-// プラグインのイベントを発火（自動的にWebhookも送信される）
+// Fire a plugin event (webhooks are automatically dispatched)
 event(DixlaseEvents::PLUGIN_ACTIVATED, ['plugin' => 'MyPlugin']);
 
-// カスタムイベントを送信
+// Send a custom event
 Webhook::dispatch('myplugin.order.shipped', [
     'order_id' => $order->id,
     'tracking_number' => $trackingNumber,
 ]);
 ```
 
-## 3. Webhookの登録
+## 3. Registering Webhooks
 
-### 3.1 データベースに直接登録
+### 3.1 Direct Database Registration
 
 ```php
 use App\Models\Webhook;
 
 $webhook = Webhook::create([
-    'name' => 'Slack通知',
+    'name' => 'Slack Notification',
     'url' => 'https://hooks.slack.com/services/xxx',
     'secret' => Webhook::generateSecret(),
     'events' => ['dixlase.backup.completed', 'dixlase.backup.failed'],
@@ -94,33 +94,33 @@ $webhook = Webhook::create([
 ]);
 ```
 
-### 3.2 全イベントを購読
+### 3.2 Subscribing to All Events
 
 ```php
 $webhook = Webhook::create([
-    'name' => '全イベント監視',
+    'name' => 'All Events Monitor',
     'url' => 'https://example.com/webhook',
     'secret' => Webhook::generateSecret(),
-    'events' => null, // null または ['*'] で全イベント購読
+    'events' => null, // null or ['*'] to subscribe to all events
 ]);
 ```
 
-## 4. リクエスト形式
+## 4. Request Format
 
-### 4.1 HTTPヘッダー
+### 4.1 HTTP Headers
 
-| ヘッダー | 説明 | 例 |
-|---------|------|-----|
-| `Content-Type` | コンテンツタイプ | `application/json` |
-| `User-Agent` | ユーザーエージェント | `Dixlase-Webhook/1.0` |
-| `X-Dixlase-Event` | イベント名 | `dixlase.backup.completed` |
-| `X-Dixlase-Delivery` | 配信ID | `12345` |
-| `X-Dixlase-Event-Id` | イベントID（冪等性用UUID） | `550e8400-e29b-41d4-a716-446655440000` |
-| `X-Dixlase-Nonce` | ノンス（リプレイ防止用） | `a1b2c3d4...` (64文字) |
-| `X-Dixlase-Timestamp` | タイムスタンプ | `1734700800` |
-| `X-Dixlase-Signature` | 署名 | `v1=abc123...` |
+| Header | Description | Example |
+|--------|-------------|---------|
+| `Content-Type` | Content type | `application/json` |
+| `User-Agent` | User agent | `Dixlase-Webhook/1.0` |
+| `X-Dixlase-Event` | Event name | `dixlase.backup.completed` |
+| `X-Dixlase-Delivery` | Delivery ID | `12345` |
+| `X-Dixlase-Event-Id` | Event ID (UUID for idempotency) | `550e8400-e29b-41d4-a716-446655440000` |
+| `X-Dixlase-Nonce` | Nonce (for replay prevention) | `a1b2c3d4...` (64 chars) |
+| `X-Dixlase-Timestamp` | Timestamp | `1734700800` |
+| `X-Dixlase-Signature` | Signature | `v1=abc123...` |
 
-### 4.2 リクエストボディ
+### 4.2 Request Body
 
 ```json
 {
@@ -134,11 +134,11 @@ $webhook = Webhook::create([
 }
 ```
 
-## 5. 署名検証
+## 5. Signature Verification
 
-Webhookリクエストには`X-Dixlase-Signature`ヘッダーが含まれます。受信側はこの署名を検証してリクエストの正当性を確認できます。
+Webhook requests include an `X-Dixlase-Signature` header. The receiving side can verify this signature to confirm the request's authenticity.
 
-### 5.1 署名検証の実装例（PHP）
+### 5.1 Signature Verification Example (PHP)
 
 ```php
 function verifyWebhookSignature(
@@ -147,12 +147,12 @@ function verifyWebhookSignature(
     string $timestamp,
     string $secret
 ): bool {
-    // タイムスタンプの有効期限チェック（5分以内）
+    // Check timestamp validity (within 5 minutes)
     if (abs(time() - (int)$timestamp) > 300) {
         return false;
     }
 
-    // 署名文字列の構築
+    // Build the signing string
     $bodyHash = hash('sha256', $payload);
     $signingString = implode("\n", [
         $timestamp,
@@ -161,14 +161,14 @@ function verifyWebhookSignature(
         $bodyHash,
     ]);
 
-    // 署名の計算
+    // Compute the signature
     $expectedSignature = 'v1=' . hash_hmac('sha256', $signingString, $secret);
 
-    // 定数時間比較
+    // Constant-time comparison
     return hash_equals($expectedSignature, $signature);
 }
 
-// 使用例
+// Usage example
 $payload = file_get_contents('php://input');
 $signature = $_SERVER['HTTP_X_DIXLASE_SIGNATURE'] ?? '';
 $timestamp = $_SERVER['HTTP_X_DIXLASE_TIMESTAMP'] ?? '';
@@ -179,23 +179,23 @@ if (!verifyWebhookSignature($payload, $signature, $timestamp, $secret)) {
     exit('Invalid signature');
 }
 
-// 署名検証成功、ペイロードを処理
+// Signature verification succeeded, process the payload
 $data = json_decode($payload, true);
 ```
 
-### 5.2 署名検証の実装例（Node.js）
+### 5.2 Signature Verification Example (Node.js)
 
 ```javascript
 const crypto = require('crypto');
 
 function verifyWebhookSignature(payload, signature, timestamp, secret) {
-    // タイムスタンプチェック
+    // Timestamp check
     const now = Math.floor(Date.now() / 1000);
     if (Math.abs(now - parseInt(timestamp)) > 300) {
         return false;
     }
 
-    // 署名計算
+    // Compute signature
     const bodyHash = crypto.createHash('sha256').update(payload).digest('hex');
     const signingString = [timestamp, 'POST', '/webhook', bodyHash].join('\n');
     const expectedSignature = 'v1=' + crypto
@@ -203,7 +203,7 @@ function verifyWebhookSignature(payload, signature, timestamp, secret) {
         .update(signingString)
         .digest('hex');
 
-    // 定数時間比較
+    // Constant-time comparison
     return crypto.timingSafeEqual(
         Buffer.from(expectedSignature),
         Buffer.from(signature)
@@ -211,27 +211,27 @@ function verifyWebhookSignature(payload, signature, timestamp, secret) {
 }
 ```
 
-## 6. リトライ機能
+## 6. Retry Mechanism
 
-### 6.1 リトライポリシー
+### 6.1 Retry Policy
 
-配信に失敗した場合、指数バックオフでリトライします：
+When delivery fails, retries are performed with exponential backoff:
 
-| 試行回数 | 待機時間 |
-|---------|---------|
-| 1回目 | 即座 |
-| 2回目 | 1分後 |
-| 3回目 | 5分後 |
-| 4回目 | 30分後 |
+| Attempt | Wait Time |
+|---------|-----------|
+| 1st | Immediate |
+| 2nd | After 1 minute |
+| 3rd | After 5 minutes |
+| 4th | After 30 minutes |
 
-### 6.2 リトライ処理コマンド
+### 6.2 Retry Processing Command
 
 ```bash
-# 保留中のリトライを処理
+# Process pending retries
 php artisan webhooks:retry
 ```
 
-### 6.3 スケジューラーへの登録
+### 6.3 Scheduler Registration
 
 ```php
 // app/Console/Kernel.php
@@ -241,52 +241,52 @@ protected function schedule(Schedule $schedule): void
 }
 ```
 
-## 7. 配信ステータス
+## 7. Delivery Statuses
 
-| ステータス | 説明 |
-|-----------|------|
-| `pending` | 配信待ち |
-| `success` | 配信成功（2xx応答） |
-| `failed` | 配信失敗（リトライ上限到達） |
-| `retrying` | リトライ待ち |
+| Status | Description |
+|--------|-------------|
+| `pending` | Awaiting delivery |
+| `success` | Delivery succeeded (2xx response) |
+| `failed` | Delivery failed (retry limit reached) |
+| `retrying` | Awaiting retry |
 
-## 8. 利用可能なイベント
+## 8. Available Events
 
-`DixlaseEvents`クラスで定義されている全イベントがWebhook送信対象です：
+All events defined in the `DixlaseEvents` class are eligible for webhook delivery:
 
-### バックアップイベント
+### Backup Events
 - `dixlase.backup.started`
 - `dixlase.backup.completed`
 - `dixlase.backup.failed`
 - `dixlase.backup.cleanup.started`
 - `dixlase.backup.cleanup.completed`
 
-### デプロイイベント
+### Deploy Events
 - `dixlase.deploy.before`
 - `dixlase.deploy.after`
 - `dixlase.deploy.failed`
 
-### プラグインイベント
+### Plugin Events
 - `dixlase.plugin.installed`
 - `dixlase.plugin.activated`
 - `dixlase.plugin.deactivated`
 - `dixlase.plugin.uninstalled`
 
-### セキュリティイベント
+### Security Events
 - `dixlase.integrity.scan.completed`
 - `dixlase.security.alert`
 
-### その他
+### Other
 - `dixlase.cache.cleared`
 - `dixlase.maintenance.enabled`
 - `dixlase.maintenance.disabled`
 
-## 9. 統計情報の取得
+## 9. Retrieving Statistics
 
 ```php
 use App\Facades\Webhook;
 
-// 全体の統計
+// Overall statistics
 $stats = Webhook::getStats();
 // [
 //     'total' => 100,
@@ -296,124 +296,124 @@ $stats = Webhook::getStats();
 //     'success_rate' => 95.0,
 // ]
 
-// 特定Webhookの統計
+// Statistics for a specific webhook
 $stats = Webhook::getStats($webhookId, days: 30);
 ```
 
-## 10. 冪等性（Idempotency）
+## 10. Idempotency
 
-Webhookは同じイベントが複数回配信される可能性があります。受信側は`X-Dixlase-Event-Id`を使用して重複処理を防止できます。
+Webhooks may be delivered multiple times for the same event. The receiving side can use `X-Dixlase-Event-Id` to prevent duplicate processing.
 
-### 10.1 イベントIDの仕組み
+### 10.1 How Event IDs Work
 
-- 各Webhook配信には一意のUUID v4形式の`event_id`が付与されます
-- 同じイベントのリトライでは同じ`event_id`が使用されます
-- 手動リトライでは同じ`event_id`で新しい`nonce`が生成されます
+- Each webhook delivery is assigned a unique UUID v4 `event_id`
+- Retries of the same event use the same `event_id`
+- Manual retries use the same `event_id` with a new `nonce`
 
-### 10.2 受信側での冪等性実装例（PHP）
+### 10.2 Idempotency Implementation Example on the Receiving Side (PHP)
 
 ```php
-// イベントIDを取得
+// Get the event ID
 $eventId = $_SERVER['HTTP_X_DIXLASE_EVENT_ID'] ?? '';
 
-// 既に処理済みかチェック
+// Check if already processed
 if (ProcessedWebhook::where('event_id', $eventId)->exists()) {
-    // 既に処理済み - 200を返して終了
+    // Already processed - return 200 and exit
     http_response_code(200);
     exit('Already processed');
 }
 
-// 処理を実行
+// Execute processing
 processWebhook($payload);
 
-// 処理済みとして記録
+// Record as processed
 ProcessedWebhook::create(['event_id' => $eventId, 'processed_at' => now()]);
 ```
 
-### 10.3 リプレイ防止
+### 10.3 Replay Prevention
 
-`X-Dixlase-Nonce`ヘッダーは各配信で一意の値が生成されます。タイムスタンプと組み合わせることで、リプレイ攻撃を防止できます。
+The `X-Dixlase-Nonce` header generates a unique value for each delivery. Combined with the timestamp, it can prevent replay attacks.
 
 ```php
-// nonceの検証（オプション）
+// Nonce verification (optional)
 $nonce = $_SERVER['HTTP_X_DIXLASE_NONCE'] ?? '';
 $timestamp = $_SERVER['HTTP_X_DIXLASE_TIMESTAMP'] ?? '';
 
-// 使用済みnonceをチェック（5分以内のものを保持）
+// Check used nonces (retain those within the last 5 minutes)
 if (UsedNonce::where('nonce', $nonce)->exists()) {
     http_response_code(401);
     exit('Nonce already used');
 }
 
-// nonceを記録
+// Record the nonce
 UsedNonce::create(['nonce' => $nonce, 'timestamp' => $timestamp]);
 ```
 
-## 11. デッドレター（Dead Letter）
+## 11. Dead Letter
 
-最大リトライ回数に達しても配信に失敗したWebhookは「デッドレター」として記録されます。
+Webhooks that fail delivery after reaching the maximum retry count are recorded as "dead letters".
 
-### 11.1 デッドレターの仕組み
+### 11.1 How Dead Letters Work
 
-1. 配信が失敗し、リトライ上限に達する
-2. `webhook_dead_letters`テーブルに詳細が記録される
-3. 管理者に通知が送信される（設定時）
-4. 管理画面から手動リトライが可能
+1. Delivery fails and the retry limit is reached
+2. Details are recorded in the `webhook_dead_letters` table
+3. An admin notification is sent (if configured)
+4. Manual retry is available from the admin panel
 
-### 11.2 デッドレターコマンド
+### 11.2 Dead Letter Commands
 
 ```bash
-# 統計を表示
+# Display statistics
 php artisan webhooks:dead-letters --stats
 
-# 未通知のデッドレターの通知を送信
+# Send notifications for unnotified dead letters
 php artisan webhooks:dead-letters --notify
 
-# 古いデッドレターをクリーンアップ（90日以上前）
+# Clean up old dead letters (older than 90 days)
 php artisan webhooks:dead-letters --cleanup --days=90
 ```
 
-### 11.3 デッドレターテーブル構造
+### 11.3 Dead Letter Table Structure
 
-| カラム | 説明 |
-|--------|------|
-| `event_id` | イベントID（冪等性追跡用） |
-| `event` | イベント名 |
-| `payload` | 元のペイロード |
-| `last_error` | 最後のエラーメッセージ |
-| `total_attempts` | 総試行回数 |
-| `attempt_log` | 各試行の詳細ログ（JSON） |
-| `notified` | 通知済みフラグ |
-| `manually_retried` | 手動リトライ済みフラグ |
+| Column | Description |
+|--------|-------------|
+| `event_id` | Event ID (for idempotency tracking) |
+| `event` | Event name |
+| `payload` | Original payload |
+| `last_error` | Last error message |
+| `total_attempts` | Total number of attempts |
+| `attempt_log` | Detailed log of each attempt (JSON) |
+| `notified` | Notification sent flag |
+| `manually_retried` | Manual retry flag |
 
-## 12. ベストプラクティス
+## 12. Best Practices
 
-### 受信側の実装
+### Receiving Side Implementation
 
-1. **署名を必ず検証する** - 不正なリクエストを拒否
-2. **タイムスタンプを確認する** - リプレイ攻撃を防止
-3. **イベントIDで冪等性を確保する** - 同じイベントが複数回届いても問題ないように
-4. **nonceを検証する**（オプション） - より強固なリプレイ防止
-5. **迅速に応答する** - 5秒以内に200を返す
-6. **非同期で処理する** - 重い処理はキューに入れる
+1. **Always verify the signature** - Reject unauthorized requests
+2. **Check the timestamp** - Prevent replay attacks
+3. **Ensure idempotency with event IDs** - Handle the same event being delivered multiple times gracefully
+4. **Verify the nonce** (optional) - Stronger replay prevention
+5. **Respond promptly** - Return 200 within 5 seconds
+6. **Process asynchronously** - Queue heavy processing
 
-### 送信側（Dixlase）
+### Sending Side (Dixlase)
 
-1. **適切なイベントを選択する** - 必要なイベントのみ購読
-2. **シークレットを安全に保管する** - 環境変数や暗号化ストレージを使用
-3. **エラーログを監視する** - 配信失敗を検知
+1. **Select appropriate events** - Subscribe only to needed events
+2. **Store secrets securely** - Use environment variables or encrypted storage
+3. **Monitor error logs** - Detect delivery failures
 
-## 13. β版以降の予定機能
+## 13. Features Planned for Post-Beta
 
-- Webhook管理画面UI
-- 配信ログの閲覧・検索
-- 手動再送信機能
-- Webhookテスト送信
-- イベントフィルタリング（条件付き送信）
-- レート制限設定
+- Webhook management UI
+- Delivery log viewing and search
+- Manual resend functionality
+- Webhook test delivery
+- Event filtering (conditional delivery)
+- Rate limit configuration
 
 ---
 
-**Document Version**: 1.0.0  
-**Last Updated**: 2025-12-21  
+**Document Version**: 1.0.0
+**Last Updated**: 2025-12-21
 **Author**: Dixlase Development Team

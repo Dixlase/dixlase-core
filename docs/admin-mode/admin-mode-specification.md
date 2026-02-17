@@ -1,555 +1,555 @@
-# 管理画面モード設定 仕様書
+# Admin Panel Mode Settings Specification
 
-## 目次
+## Table of Contents
 
-1. [概要](#概要)
-2. [モード定義](#モード定義)
-3. [メニュー表示レベル（5分類モデル）](#メニュー表示レベル5分類モデル)
-4. [メニュー別分類一覧](#メニュー別分類一覧)
-5. [各メニューの詳細仕様](#各メニューの詳細仕様)
-6. [自動設定値一覧](#自動設定値一覧)
-7. [UI/UXルール](#uiuxルール)
-8. [実装アーキテクチャ](#実装アーキテクチャ)
-9. [プラグインメニューの対応](#プラグインメニューの対応)
-
----
-
-## 概要
-
-Dixlaseの管理画面は「かんたんモード」と「詳細モード」の2つの動作モードを持っています。かんたんモードでは、セキュリティに関わる設定を安全なデフォルト値で自動設定し、日常的に必要な操作のみを提供します。詳細モードでは全ての機能にアクセスできます。
-
-### 設計原則
-
-1. **壊せるものは触らせない** — 事故リスクの高い設定はかんたんモードで隠します
-2. **起きていることは必ず見せる** — 隠された設定でも状態表示が必要な場合はReadOnlyで見せます
-3. **責任が変わる操作は"場"を分ける** — 高度な設定は詳細モードに誘導します
-
-### 関連ファイル
-
-| 分類 | ファイルパス |
-|------|-------------|
-| エナム（モード） | `app/Enums/AdminMode.php` |
-| エナム（表示レベル） | `app/Enums/MenuVisibility.php` |
-| ヘルパー | `app/Helpers/AdminModeHelper.php` |
-| デフォルト設定 | `config/admin/mode.php` |
-| ナビゲーション構成 | `config/admin/navigation.php` |
-| サイドバービュー | `resources/views/admin/partials/sidebar.blade.php` |
-| モード切替UI | `resources/views/admin/settings/base/mode.blade.php` |
-| コントローラー | `app/Http/Controllers/Admin/Settings/Base/AdminBaseModeController.php` |
+1. [Overview](#overview)
+2. [Mode Definitions](#mode-definitions)
+3. [Menu Visibility Levels (5-Classification Model)](#menu-visibility-levels-5-classification-model)
+4. [Menu Classification List](#menu-classification-list)
+5. [Detailed Specifications for Each Menu](#detailed-specifications-for-each-menu)
+6. [Auto-Configured Values List](#auto-configured-values-list)
+7. [UI/UX Rules](#uiux-rules)
+8. [Implementation Architecture](#implementation-architecture)
+9. [Plugin Menu Support](#plugin-menu-support)
 
 ---
 
-## モード定義
+## Overview
 
-| モード | enum値 | デフォルト | 説明 |
-|--------|--------|-----------|------|
-| かんたんモード (Simple) | `AdminMode::Simple (0)` | ○ | 日常操作に必要な機能のみ提供します。安全なデフォルトを自動適用します |
-| 詳細モード (Advanced) | `AdminMode::Advanced (1)` | | 全機能にアクセスできます。上級者向けです |
+The Dixlase admin panel has two operating modes: "Simple Mode" and "Advanced Mode". In Simple Mode, security-related settings are automatically configured with safe default values, and only day-to-day operations are available. In Advanced Mode, all features are accessible.
 
-- モード設定は `base_settings` テーブルの `admin_mode` キーに保存されます
-- インストール時に選択し、管理画面から後で変更できます
-- 詳細モードでは全メニューが `MenuVisibility::Full` として扱われます
+### Design Principles
 
----
+1. **Don't expose what can break** --- Settings with high risk of accidental misconfiguration are hidden in Simple Mode
+2. **Always show what's happening** --- Even hidden settings are displayed as ReadOnly when their status needs to be visible
+3. **Separate contexts by responsibility level** --- Advanced settings guide users to Advanced Mode
 
-## メニュー表示レベル（5分類モデル）
+### Related Files
 
-| 区分 | enum値 | サイドバー表示 | ページアクセス | フォーム操作 | アイコン |
-|------|--------|---------------|---------------|-------------|---------|
-| **Full** | `MenuVisibility::Full (0)` | 通常表示 | 許可 | 全操作可 | なし |
-| **Partial** | `MenuVisibility::Partial (1)` | 通常表示 | 許可 | 一部フィールド無効化・自動設定 | なし |
-| **Hidden** | `MenuVisibility::Hidden (2)` | 非表示 | 403 or リダイレクト | 不可（自動最適値を適用） | — |
-| **ReadOnly** | `MenuVisibility::ReadOnly (3)` | 🔒アイコン付き | 許可（読み取り専用） | 保存ボタン非表示 | `fa-lock` |
-| **GuideOnly** | `MenuVisibility::GuideOnly (4)` | 🔀アイコン付き | 許可（誘導UI表示） | 「詳細モードで設定」リンクのみ | `fa-directions` |
-
-### 分類の使い分け基準
-
-- **Full**: リスクが低い日常操作に使用します（コンテンツ編集、プロフィール等）
-- **Partial**: 基本操作は必要ですが、詳細パラメータは自動設定すべきものに使用します
-- **Hidden**: 事故リスクが高い、または初心者が触る理由がないものに使用します
-- **ReadOnly**: 設定は変更不可ですが、何が設定されているか透明性を担保すべきものに使用します
-- **GuideOnly**: 存在は知らせますが、操作は詳細モードに誘導すべきものに使用します
+| Category | File Path |
+|----------|-----------|
+| Enum (Mode) | `app/Enums/AdminMode.php` |
+| Enum (Visibility) | `app/Enums/MenuVisibility.php` |
+| Helper | `app/Helpers/AdminModeHelper.php` |
+| Default Settings | `config/admin/mode.php` |
+| Navigation Config | `config/admin/navigation.php` |
+| Sidebar View | `resources/views/admin/partials/sidebar.blade.php` |
+| Mode Switching UI | `resources/views/admin/settings/base/mode.blade.php` |
+| Controller | `app/Http/Controllers/Admin/Settings/Base/AdminBaseModeController.php` |
 
 ---
 
-## メニュー別分類一覧
+## Mode Definitions
 
-### かんたんモード時のデフォルト設定
+| Mode | Enum Value | Default | Description |
+|------|------------|---------|-------------|
+| Simple Mode | `AdminMode::Simple (0)` | Yes | Provides only the features needed for day-to-day operations. Safe defaults are applied automatically |
+| Advanced Mode | `AdminMode::Advanced (1)` | | Full access to all features. Intended for advanced users |
 
-> 詳細モードでは全て **Full** となります。
+- The mode setting is stored in the `base_settings` table under the `admin_mode` key
+- It is selected during installation and can be changed later from the admin panel
+- In Advanced Mode, all menus are treated as `MenuVisibility::Full`
 
-#### ダッシュボード・フロントページ
+---
 
-| メニューキー | 分類 | 備考 |
-|-------------|------|------|
-| `dashboard` | **Full** | 常に表示されます。ロック対象（変更不可） |
-| `front` | **Full** | フロントページ管理は全操作可です |
-| `front.index` | Full（親継承） | |
-| `front.edit` | Full（親継承） | |
-| `front.settings` | Full（親継承） | |
+## Menu Visibility Levels (5-Classification Model)
 
-#### メディア管理
+| Classification | Enum Value | Sidebar Display | Page Access | Form Operations | Icon |
+|----------------|------------|-----------------|-------------|-----------------|------|
+| **Full** | `MenuVisibility::Full (0)` | Normal display | Allowed | All operations available | None |
+| **Partial** | `MenuVisibility::Partial (1)` | Normal display | Allowed | Some fields disabled/auto-configured | None |
+| **Hidden** | `MenuVisibility::Hidden (2)` | Hidden | 403 or redirect | Not allowed (optimal values applied automatically) | --- |
+| **ReadOnly** | `MenuVisibility::ReadOnly (3)` | With lock icon | Allowed (read-only) | Save button hidden | `fa-lock` |
+| **GuideOnly** | `MenuVisibility::GuideOnly (4)` | With directions icon | Allowed (guide UI displayed) | Only "Configure in Advanced Mode" link | `fa-directions` |
 
-| メニューキー | 分類 | 備考 |
-|-------------|------|------|
+### Classification Usage Criteria
+
+- **Full**: Used for low-risk day-to-day operations (content editing, profile, etc.)
+- **Partial**: Used when basic operations are needed but detailed parameters should be auto-configured
+- **Hidden**: Used for items with high risk of accidental misconfiguration, or items beginners have no reason to access
+- **ReadOnly**: Used when settings cannot be changed but transparency about current values must be maintained
+- **GuideOnly**: Used when users should be aware of the feature's existence but directed to Advanced Mode for configuration
+
+---
+
+## Menu Classification List
+
+### Default Settings in Simple Mode
+
+> In Advanced Mode, all items are set to **Full**.
+
+#### Dashboard / Front Page
+
+| Menu Key | Classification | Notes |
+|----------|---------------|-------|
+| `dashboard` | **Full** | Always displayed. Locked (cannot be changed) |
+| `front` | **Full** | Front page management allows all operations |
+| `front.index` | Full (inherited) | |
+| `front.edit` | Full (inherited) | |
+| `front.settings` | Full (inherited) | |
+
+#### Media Management
+
+| Menu Key | Classification | Notes |
+|----------|---------------|-------|
 | `media` | **Partial** | |
-| `media.index` | **Full** | メディアマスターは全操作可です |
-| `media.upload` | **Full** | アップロードは全操作可です |
-| `media.settings` | **Partial** | MIME検証・SVGサニタイズ・ZIPチェックは自動設定されます |
+| `media.index` | **Full** | Media master allows all operations |
+| `media.upload` | **Full** | Upload allows all operations |
+| `media.settings` | **Partial** | MIME validation, SVG sanitization, and ZIP checks are auto-configured |
 
-#### プロフィール設定
+#### Profile Settings
 
-| メニューキー | 分類 | 備考 |
-|-------------|------|------|
-| `profile` | **Full** | ロック対象（変更不可） |
-| `profile.index` | Full（親継承） | |
-| `profile.basic` | Full（親継承） | |
-| `profile.password` | Full（親継承） | |
-| `profile.appearance` | Full（親継承） | |
-| `profile.notifications` | Full（親継承） | 全体設定が「プロフィール設定を反映」の場合のみ操作できます（※ビューレベル制御） |
-| `profile.two_fa` | Full（親継承） | 同上 |
-| `profile.two_fa_management` | Full（親継承） | パスキー・回復コード管理です |
+| Menu Key | Classification | Notes |
+|----------|---------------|-------|
+| `profile` | **Full** | Locked (cannot be changed) |
+| `profile.index` | Full (inherited) | |
+| `profile.basic` | Full (inherited) | |
+| `profile.password` | Full (inherited) | |
+| `profile.appearance` | Full (inherited) | |
+| `profile.notifications` | Full (inherited) | Operable only when global settings are set to "Use Profile Settings" (view-level control) |
+| `profile.two_fa` | Full (inherited) | Same as above |
+| `profile.two_fa_management` | Full (inherited) | Passkey and recovery code management |
 
-#### メンバー管理
+#### Member Management
 
-| メニューキー | 分類 | 備考 |
-|-------------|------|------|
+| Menu Key | Classification | Notes |
+|----------|---------------|-------|
 | `members` | **Partial** | |
-| `members.index` | **Full** | 一覧表示は全操作可です。強制ログアウトボタンはビューレベルで非表示にします |
-| `members.create_edit` | **Full** | 作成・編集ができます |
-| `members.roles` | **Hidden** | 権限設定は詳細モード専用です |
+| `members.index` | **Full** | List view allows all operations. Force logout button is hidden at the view level |
+| `members.create_edit` | **Full** | Create and edit operations are available |
+| `members.roles` | **Hidden** | Permission settings are exclusive to Advanced Mode |
 
-#### 全体設定 > 基本設定
+#### Global Settings > General Settings
 
-| メニューキー | 分類 | 備考 |
-|-------------|------|------|
+| Menu Key | Classification | Notes |
+|----------|---------------|-------|
 | `settings` | **Partial** | |
 | `settings.base` | **Partial** | |
-| `settings.base.index` | **Full** | 概要は全表示されます |
-| `settings.base.site` | **Full** | サイト名・説明・OGP等は全操作可です |
-| `settings.base.admin` | **GuideOnly** | 管理画面URL変更は事故リスクがあるため、「詳細モードで設定」に誘導します |
-| `settings.base.mail` | **Partial** | 管理者メールアドレスは操作可です。SMTP詳細は「詳細モードで設定」と表示します |
-| `settings.base.maintenance` | **Full** | メンテナンスモードは全操作可です |
-| `settings.base.mode` | **Full** | モード設定自体は常に操作できます |
+| `settings.base.index` | **Full** | Overview is fully displayed |
+| `settings.base.site` | **Full** | Site name, description, OGP, etc. allow all operations |
+| `settings.base.admin` | **GuideOnly** | Admin panel URL changes carry accident risk, so users are guided to "Configure in Advanced Mode" |
+| `settings.base.mail` | **Partial** | Admin email address is editable. SMTP details display "Configure in Advanced Mode" |
+| `settings.base.maintenance` | **Full** | Maintenance mode allows all operations |
+| `settings.base.mode` | **Full** | Mode settings are always accessible |
 
-#### 全体設定 > セキュリティ設定
+#### Global Settings > Security Settings
 
-| メニューキー | 分類 | 備考 |
-|-------------|------|------|
-| `settings.security` | **ReadOnly** | セキュリティ概要はサマリー表示です |
+| Menu Key | Classification | Notes |
+|----------|---------------|-------|
+| `settings.security` | **ReadOnly** | Security overview displayed as summary |
 | `settings.security.index` | **ReadOnly** | |
-| `settings.security.password` | **Hidden** | 自動設定: 強いポリシーが適用されます |
-| `settings.security.login` | **Partial** | ログイン通知ON/OFF/条件は操作可です。試行制限詳細は自動設定されます |
-| `settings.security.two-fa` | **Partial** | 2FA・パスキーON/OFF/条件は操作可です。詳細パラメータは自動設定されます |
-| `settings.security.notifications` | **Hidden** | エラー通知は自動設定されます |
-| `settings.security.captcha` | **Partial** | プロバイダー選択・APIキー・フォーム別トグルは操作可です |
-| `settings.security.session` | **Hidden** | 自動設定: デフォルト値が維持されます |
-| `settings.security.csp` | **Hidden** | 自動設定: ON・標準モード・警告のみで動作します |
-| `settings.security.extensions` | **ReadOnly** | セキュリティプリセットの表示のみです |
-| `settings.security.ip` | **Hidden** | 自動設定値なし（無効） |
-| `settings.security.integrity` | **Hidden** | 自動設定値なし |
-| `settings.security.environment` | **Hidden** | 自動設定: 本番環境・デバッグOFFが適用されます |
+| `settings.security.password` | **Hidden** | Auto-configured: strong policy applied |
+| `settings.security.login` | **Partial** | Login notification ON/OFF/conditions are editable. Attempt limit details are auto-configured |
+| `settings.security.two-fa` | **Partial** | 2FA/Passkey ON/OFF/conditions are editable. Detailed parameters are auto-configured |
+| `settings.security.notifications` | **Hidden** | Error notifications are auto-configured |
+| `settings.security.captcha` | **Partial** | Provider selection, API keys, and per-form toggles are editable |
+| `settings.security.session` | **Hidden** | Auto-configured: default values are maintained |
+| `settings.security.csp` | **Hidden** | Auto-configured: ON, standard mode, warn-only |
+| `settings.security.extensions` | **ReadOnly** | Security preset display only |
+| `settings.security.ip` | **Hidden** | No auto-configured values (disabled) |
+| `settings.security.integrity` | **Hidden** | No auto-configured values |
+| `settings.security.environment` | **Hidden** | Auto-configured: production environment, debug OFF |
 
-#### 全体設定 > テーマ・プラグイン管理
+#### Global Settings > Themes & Plugin Management
 
-| メニューキー | 分類 | 備考 |
-|-------------|------|------|
-| `settings.themes` | **Full** | マーケット整備後に再検討します |
-| `settings.themes.index` | Full（親継承） | |
-| `settings.themes.add` | Full（親継承） | マーケット整備後にHiddenへの変更を検討します |
-| `settings.plugins` | **Full** | 同上 |
-| `settings.plugins.index` | Full（親継承） | |
-| `settings.plugins.add` | Full（親継承） | 同上 |
+| Menu Key | Classification | Notes |
+|----------|---------------|-------|
+| `settings.themes` | **Full** | To be reconsidered after marketplace is ready |
+| `settings.themes.index` | Full (inherited) | |
+| `settings.themes.add` | Full (inherited) | May change to Hidden after marketplace is ready |
+| `settings.plugins` | **Full** | Same as above |
+| `settings.plugins.index` | Full (inherited) | |
+| `settings.plugins.add` | Full (inherited) | Same as above |
 
-#### 全体設定 > システム
+#### Global Settings > System
 
-| メニューキー | 分類 | 備考 |
-|-------------|------|------|
+| Menu Key | Classification | Notes |
+|----------|---------------|-------|
 | `settings.systems` | **Partial** | |
-| `settings.systems.cache` | **Full** | キャッシュクリアは日常操作です |
-| `settings.systems.database` | **Hidden** | 事故リスクが高いため非表示です |
-| `settings.systems.api` | **Hidden** | 詳細モード専用です |
-| `settings.systems.logs` | **ReadOnly** | 閲覧のみです（エクスポート不可） |
-| `settings.systems.info` | **ReadOnly** | 閲覧のみです |
+| `settings.systems.cache` | **Full** | Cache clearing is a day-to-day operation |
+| `settings.systems.database` | **Hidden** | Hidden due to high risk of accidental data loss |
+| `settings.systems.api` | **Hidden** | Exclusive to Advanced Mode |
+| `settings.systems.logs` | **ReadOnly** | View only (export disabled) |
+| `settings.systems.info` | **ReadOnly** | View only |
 
 ---
 
-## 各メニューの詳細仕様
+## Detailed Specifications for Each Menu
 
-### メディア設定 (`media.settings`) — Partial
+### Media Settings (`media.settings`) --- Partial
 
-#### かんたんモードで操作可能な項目
+#### Items Editable in Simple Mode
 
-- 許可するファイルタイプ（チェックボックス式: 画像・PDF・動画等）
-- ファイルタイプ別サイズ上限
+- Allowed file types (checkbox format: images, PDF, video, etc.)
+- File size limits by file type
 
-#### かんたんモードで自動設定される項目
+#### Items Auto-Configured in Simple Mode
 
-| 項目 | 自動設定値 | 根拠 |
-|------|-----------|------|
-| MIME実体検証 | **有効** | セキュリティ基盤です。ファイル偽装を防ぎます |
-| SVGサニタイズ | **有効** | SVG内のスクリプト実行を防ぎます |
-| ZIPセキュリティチェック | **有効** | ZIP爆弾・悪意あるファイルを検出します |
-
----
-
-### メンバーマスター (`members.index`) — Full（ビューレベル制限あり）
-
-#### かんたんモードで非表示にするUI要素
-
-| 要素 | 理由 |
-|------|------|
-| 全ユーザー強制ログアウトボタン | 事故率が高いため非表示にします。個別ログアウトは許可します |
-| 特定ユーザー強制ログアウトボタン | <!-- TODO: 個別ログアウトを許可するか要検討 --> |
+| Item | Auto-Configured Value | Rationale |
+|------|----------------------|-----------|
+| MIME content validation | **Enabled** | Security foundation. Prevents file spoofing |
+| SVG sanitization | **Enabled** | Prevents script execution within SVG files |
+| ZIP security check | **Enabled** | Detects zip bombs and malicious files |
 
 ---
 
-### メンバー権限設定 (`members.roles`) — Hidden
+### Member Master (`members.index`) --- Full (with View-Level Restrictions)
 
-自動設定値はありません。デフォルトの権限テンプレートを維持します。権限変更は詳細モードでのみ可能です。
+#### UI Elements Hidden in Simple Mode
 
----
-
-### 基本設定 > 管理画面設定 (`settings.base.admin`) — GuideOnly
-
-ページにアクセスすると以下が表示されます:
-
-- 現在の管理画面URL（読み取り専用）
-- SSL強制の状態（読み取り専用）
-- 「これらの設定を変更するには詳細モードに切り替えてください」メッセージ
-- モード切替ページへのリンクボタン
+| Element | Reason |
+|---------|--------|
+| Force logout all users button | Hidden due to high accident rate. Individual logout is allowed |
+| Force logout specific user button | <!-- TODO: Determine whether to allow individual logout --> |
 
 ---
 
-### 基本設定 > メール設定 (`settings.base.mail`) — Partial
+### Member Roles (`members.roles`) --- Hidden
 
-#### かんたんモードで操作可能な項目
-
-- システム管理者メールアドレス
-
-#### かんたんモードで非表示/誘導表示にする項目
-
-- メールサーバー設定（SMTP）→ 「詳細モードで設定」と表示します
-
-<!-- TODO: メール設定のPartial詳細仕様を確定する -->
+No auto-configured values. The default permission template is maintained. Permission changes are only possible in Advanced Mode.
 
 ---
 
-### セキュリティ > ログイン設定 (`settings.security.login`) — Partial
+### General Settings > Admin Panel Settings (`settings.base.admin`) --- GuideOnly
 
-#### かんたんモードで操作可能な項目
+When the page is accessed, the following is displayed:
 
-- ログイン通知
-  - 無効
-  - 常に有効
-  - 異なる端末/IP時のみ有効
-  - メンバーのプロフィール設定を反映
-
-#### かんたんモードで自動設定される項目
-
-| 項目 | 自動設定値 | 根拠 |
-|------|-----------|------|
-| ログイン試行制限を有効化 | **有効** | ブルートフォース防御の基盤です |
-| 最大試行回数 | **5回** | 一般的な推奨値です |
-| IP最大試行回数 | **20回** | 共有IP環境を考慮しています |
-| 時間窓 | **15分** | 一般的な推奨値です |
-| ロックアウト時間 | **30分** | 一般的な推奨値です |
-| ロックアウト通知を有効化 | **有効** | 攻撃検知のために必要です |
-
-<!-- TODO: 自動設定値の最終確認 -->
+- Current admin panel URL (read-only)
+- SSL enforcement status (read-only)
+- "To change these settings, please switch to Advanced Mode" message
+- Link button to the mode switching page
 
 ---
 
-### セキュリティ > 二段階認証設定 (`settings.security.two-fa`) — Partial
+### General Settings > Mail Settings (`settings.base.mail`) --- Partial
 
-#### かんたんモードで操作可能な項目
+#### Items Editable in Simple Mode
 
-- 二段階認証
-  - 無効
-  - 常に有効
-  - 異なる端末/IP時のみ有効
-  - メンバーのプロフィール設定を反映
-- パスキー認証のON/OFF
+- System administrator email address
 
-#### かんたんモードで自動設定される項目
+#### Items Hidden/Guided in Simple Mode
 
-| 項目 | 自動設定値 | 根拠 |
-|------|-----------|------|
-| 最大登録デバイス数 | **5台** | 一般的な利用想定です |
-| 認証の有効期限 | **10分** | 一般的な推奨値です |
-| 認証メール再送信間隔 | **60秒** | スパム防止のためです |
-| 2FA試行制限 | **5回** | ブルートフォース防御のためです |
-| 試行制限時間枠 | **15分** | 一般的な推奨値です |
-| ロックアウト時間 | **30分** | 一般的な推奨値です |
-| 2FAロックアウト通知 | **有効** | セキュリティ監視のためです |
-| 回復コード生成個数 | **10個** | 一般的な推奨値です |
-| 回復コード再生成間隔 | **24時間** | 乱用防止のためです |
+- Mail server settings (SMTP) -> Displays "Configure in Advanced Mode"
 
-<!-- TODO: 自動設定値の最終確認 -->
+<!-- TODO: Finalize Partial detailed specifications for mail settings -->
 
 ---
 
-### セキュリティ > CAPTCHA設定 (`settings.security.captcha`) — Partial
+### Security > Login Settings (`settings.security.login`) --- Partial
 
-#### かんたんモードで操作可能な項目
+#### Items Editable in Simple Mode
 
-- CAPTCHAプロバイダー選択
+- Login notification
+  - Disabled
+  - Always enabled
+  - Enabled only for different devices/IPs
+  - Use member's profile settings
+
+#### Items Auto-Configured in Simple Mode
+
+| Item | Auto-Configured Value | Rationale |
+|------|----------------------|-----------|
+| Enable login attempt limit | **Enabled** | Foundation of brute-force protection |
+| Maximum attempts | **5 attempts** | Commonly recommended value |
+| IP maximum attempts | **20 attempts** | Accounts for shared IP environments |
+| Time window | **15 minutes** | Commonly recommended value |
+| Lockout duration | **30 minutes** | Commonly recommended value |
+| Enable lockout notification | **Enabled** | Required for attack detection |
+
+<!-- TODO: Final confirmation of auto-configured values -->
+
+---
+
+### Security > Two-Factor Authentication Settings (`settings.security.two-fa`) --- Partial
+
+#### Items Editable in Simple Mode
+
+- Two-factor authentication
+  - Disabled
+  - Always enabled
+  - Enabled only for different devices/IPs
+  - Use member's profile settings
+- Passkey authentication ON/OFF
+
+#### Items Auto-Configured in Simple Mode
+
+| Item | Auto-Configured Value | Rationale |
+|------|----------------------|-----------|
+| Maximum registered devices | **5 devices** | Based on typical usage |
+| Authentication expiration | **10 minutes** | Commonly recommended value |
+| Authentication email resend interval | **60 seconds** | Spam prevention |
+| 2FA attempt limit | **5 attempts** | Brute-force protection |
+| Attempt limit time window | **15 minutes** | Commonly recommended value |
+| Lockout duration | **30 minutes** | Commonly recommended value |
+| 2FA lockout notification | **Enabled** | For security monitoring |
+| Recovery code generation count | **10 codes** | Commonly recommended value |
+| Recovery code regeneration interval | **24 hours** | Abuse prevention |
+
+<!-- TODO: Final confirmation of auto-configured values -->
+
+---
+
+### Security > CAPTCHA Settings (`settings.security.captcha`) --- Partial
+
+#### Items Editable in Simple Mode
+
+- CAPTCHA provider selection
   - CloudFlare Turnstile
   - Google reCAPTCHA
   - Google reCAPTCHA Enterprise
-- APIキー入力（サイトキー・シークレットキー）
-- CAPTCHAを有効にするフォーム（コア・プラグイン別トグル）
+- API key input (site key and secret key)
+- Forms to enable CAPTCHA on (per-core/per-plugin toggles)
 
-#### かんたんモードでの自動動作
+#### Auto Behavior in Simple Mode
 
-- APIキー設定後に新しくインストールされたプラグインのフォームは、デフォルトでCAPTCHAが有効になります
+- After API keys are configured, forms from newly installed plugins have CAPTCHA enabled by default
 
-<!-- TODO: Partial詳細仕様を確定する -->
-
----
-
-### セキュリティ > パスワード設定 (`settings.security.password`) — Hidden
-
-| 項目 | 自動設定値 | 根拠 |
-|------|-----------|------|
-| パスワードの最小文字数 | **8文字** | NIST推奨の下限です |
-| 大文字を必須にする | **有効** | 複雑性を確保します |
-| 数字を必須にする | **有効** | 複雑性を確保します |
-| 記号を必須にする | **有効** | 複雑性を確保します |
-| パスワードリセット機能 | **有効** | 利便性を確保します |
-| Have I Been Pwned APIチェック | **有効** | 漏洩パスワードの使用を防止します |
-
-<!-- TODO: 自動設定値の最終確認 -->
+<!-- TODO: Finalize Partial detailed specifications -->
 
 ---
 
-### セキュリティ > エラー通知設定 (`settings.security.notifications`) — Hidden
+### Security > Password Settings (`settings.security.password`) --- Hidden
 
-| 項目 | 自動設定値 | 根拠 |
-|------|-----------|------|
-| エラー通知機能 | **有効** | 問題の早期検知のためです |
-| 通知するログレベル | **Critical以上**（Emergency, Alert, Critical） | 重大な問題のみ通知します。Error/Warningはノイズになりえます |
+| Item | Auto-Configured Value | Rationale |
+|------|----------------------|-----------|
+| Minimum password length | **8 characters** | NIST-recommended minimum |
+| Require uppercase letters | **Enabled** | Ensures complexity |
+| Require digits | **Enabled** | Ensures complexity |
+| Require symbols | **Enabled** | Ensures complexity |
+| Password reset feature | **Enabled** | Ensures usability |
+| Have I Been Pwned API check | **Enabled** | Prevents use of compromised passwords |
 
-<!-- TODO: 自動設定値の最終確認 -->
-
----
-
-### セキュリティ > セッション設定 (`settings.security.session`) — Hidden
-
-| 項目 | 自動設定値 | 根拠 |
-|------|-----------|------|
-| セッション有効時間 | **120分（デフォルト値維持）** | 一般的な利用想定です |
-
-<!-- TODO: 自動設定値の最終確認 -->
+<!-- TODO: Final confirmation of auto-configured values -->
 
 ---
 
-### セキュリティ > CSP (`settings.security.csp`) — Hidden
+### Security > Error Notification Settings (`settings.security.notifications`) --- Hidden
 
-| 項目 | 自動設定値 | 根拠 |
-|------|-----------|------|
-| CSPを有効にする | **ON** | セキュリティ基盤です |
-| CSPモード | **標準モード** | 開発モードは不要です |
-| 違反をログに記録 | **ON** | 問題発生時の調査に必須です |
-| 開発ツールの違反を除外 | **ON** | ブラウザ拡張機能等によるノイズを軽減します |
-| ブロックリスト照合を有効にする | **ON** | セキュリティモニタリングのためです |
-| ブロックリスト照合モード | **警告のみ** | ブロックモードでは正規スクリプト（Google Analytics等）を遮断するリスクがあります |
-| 照合カテゴリ: トラッキング・広告 | **ON** | 警告のみモードのため、全カテゴリONでも安全です |
-| 照合カテゴリ: マルウェア・フィッシング | **ON** | 同上 |
-| 照合カテゴリ: 暗号通貨マイニング | **ON** | 同上 |
+| Item | Auto-Configured Value | Rationale |
+|------|----------------------|-----------|
+| Error notification feature | **Enabled** | For early detection of issues |
+| Notification log level | **Critical and above** (Emergency, Alert, Critical) | Notifies only for critical issues. Error/Warning can be noise |
+
+<!-- TODO: Final confirmation of auto-configured values -->
 
 ---
 
-### セキュリティ > 拡張設定 (`settings.security.extensions`) — ReadOnly
+### Security > Session Settings (`settings.security.session`) --- Hidden
 
-読み取り専用で以下が表示されます:
+| Item | Auto-Configured Value | Rationale |
+|------|----------------------|-----------|
+| Session lifetime | **120 minutes (default value maintained)** | Based on typical usage |
 
-- 現在のセキュリティプリセット名（開発モード/標準モード/厳格モード/カスタムモード）
-- 各設定項目の現在値
-- 「これらの設定を変更するには詳細モードに切り替えてください」メッセージ
-
----
-
-### セキュリティ > IPアクセス制御 (`settings.security.ip`) — Hidden
-
-自動設定値はありません（無効状態を維持します）。誤設定による自己ロックアウトを防ぐため、詳細モードでのみ設定できます。
+<!-- TODO: Final confirmation of auto-configured values -->
 
 ---
 
-### セキュリティ > ファイル整合性チェック (`settings.security.integrity`) — Hidden
+### Security > CSP (`settings.security.csp`) --- Hidden
 
-自動設定値はありません。現時点では自動実行機能がないため、非表示のみです。
-
----
-
-### セキュリティ > 環境設定 (`settings.security.environment`) — Hidden
-
-| 項目 | 自動設定値 | 根拠 |
-|------|-----------|------|
-| 動作環境 | **本番環境 (production)** | インストール時の設定を維持します |
-| デバッグモード | **OFF** | 本番環境での情報漏洩を防止します |
-
----
-
-### システム > データベース管理 (`settings.systems.database`) — Hidden
-
-自動設定値はありません（自動クリーンアップなし）。データ損失を防止するため、詳細モードでのみ操作できます。
+| Item | Auto-Configured Value | Rationale |
+|------|----------------------|-----------|
+| Enable CSP | **ON** | Security foundation |
+| CSP mode | **Standard mode** | Development mode is unnecessary |
+| Log violations | **ON** | Essential for investigating issues |
+| Exclude dev tools violations | **ON** | Reduces noise from browser extensions, etc. |
+| Enable blocklist matching | **ON** | For security monitoring |
+| Blocklist matching mode | **Warn only** | Block mode risks blocking legitimate scripts (Google Analytics, etc.) |
+| Matching category: Tracking & Ads | **ON** | Safe with warn-only mode since all categories can be enabled |
+| Matching category: Malware & Phishing | **ON** | Same as above |
+| Matching category: Cryptocurrency mining | **ON** | Same as above |
 
 ---
 
-### システム > API管理 (`settings.systems.api`) — Hidden
+### Security > Extension Settings (`settings.security.extensions`) --- ReadOnly
 
-自動設定値はありません（API無効状態を維持します）。不要なAPIエンドポイントの公開を防ぐため、詳細モードでのみ設定できます。
+The following is displayed in read-only mode:
 
----
-
-### システム > ログ管理 (`settings.systems.logs`) — ReadOnly
-
-読み取り専用で以下が表示されます:
-
-- 監査ログの閲覧
-- ファイルログの閲覧
-- エクスポート機能は非表示です
+- Current security preset name (Development Mode / Standard Mode / Strict Mode / Custom Mode)
+- Current values for each setting item
+- "To change these settings, please switch to Advanced Mode" message
 
 ---
 
-### システム > システム情報 (`settings.systems.info`) — ReadOnly
+### Security > IP Access Control (`settings.security.ip`) --- Hidden
 
-読み取り専用で以下が表示されます:
-
-- サーバー環境情報
-- PHPバージョン
-- データベース情報
-- Dixlaseバージョン
+No auto-configured values (remains disabled). Can only be configured in Advanced Mode to prevent self-lockout from misconfiguration.
 
 ---
 
-## 自動設定値一覧
+### Security > File Integrity Check (`settings.security.integrity`) --- Hidden
 
-かんたんモードで Hidden にされた項目の自動設定値をまとめています。
-
-### 確定済み
-
-| メニュー | 項目 | 自動設定値 |
-|---------|------|-----------|
-| CSP | CSP有効 | ON |
-| CSP | CSPモード | 標準モード |
-| CSP | 違反をログに記録 | ON |
-| CSP | 開発ツールの違反を除外 | ON |
-| CSP | ブロックリスト照合 | ON（警告のみ） |
-| CSP | 照合カテゴリ | 全て有効 |
-| 環境設定 | 動作環境 | 本番環境 |
-| 環境設定 | デバッグモード | OFF |
-| メディア設定 | MIME実体検証 | 有効 |
-| メディア設定 | SVGサニタイズ | 有効 |
-| メディア設定 | ZIPセキュリティチェック | 有効 |
-| IPアクセス制御 | — | 無効（設定なし） |
-| ファイル整合性チェック | — | 設定値なし |
-| データベース管理 | — | 自動クリーンアップなし |
-| API管理 | — | API無効 |
-
-### 要確認（TODO）
-
-| メニュー | 項目 | 仮設定値 | 確認事項 |
-|---------|------|---------|---------|
-| パスワード設定 | 最小文字数 | 8文字 | NIST準拠で十分かどうか |
-| パスワード設定 | 大文字/数字/記号必須 | 全て有効 | 過剰ではないかどうか |
-| パスワード設定 | Have I Been Pwned | 有効 | 外部API依存の可否 |
-| ログイン設定 | 最大試行回数 | 5回 | 少なすぎないかどうか |
-| ログイン設定 | IP最大試行回数 | 20回 | 共有IP考慮は十分かどうか |
-| ログイン設定 | 時間窓 | 15分 | |
-| ログイン設定 | ロックアウト時間 | 30分 | |
-| 二段階認証 | 最大デバイス数 | 5台 | |
-| 二段階認証 | 認証有効期限 | 10分 | |
-| 二段階認証 | 回復コード個数 | 10個 | |
-| エラー通知 | 通知レベル | Critical以上 | Errorを含めるかどうか |
-| セッション | 有効時間 | 120分 | |
+No auto-configured values. Hidden only, as there is currently no auto-execution feature.
 
 ---
 
-## UI/UXルール
+### Security > Environment Settings (`settings.security.environment`) --- Hidden
 
-### サイドバー表示
-
-| 分類 | 表示 | アイコン | 色 |
-|------|------|--------|-----|
-| Full | 通常表示 | なし | — |
-| Partial | 通常表示 | なし | — |
-| Hidden | **非表示** | — | — |
-| ReadOnly | メニュー名の横に🔒 | `fas fa-lock` | — |
-| GuideOnly | メニュー名の横に🔀 | `fas fa-directions` | `text-purple-400` |
-
-### ページ内UI
-
-#### Partial ページ
-
-- 操作可能なフィールドは通常のフォームとして表示します
-- 自動設定されるフィールドは非表示、またはdisabled状態で表示します
-- 自動設定セクションには「この設定はかんたんモードでは推奨値が自動適用されています」の説明を表示します
-- 保存ボタンは操作可能フィールドがある場合のみ表示します
-
-#### ReadOnly ページ
-
-- 全フィールドがdisabled状態になります
-- 保存ボタンは非表示です
-- ページ上部に「この設定は読み取り専用です。変更するには詳細モードに切り替えてください。」バナーを表示します
-- モード切替ページへのリンクを含みます
-
-#### GuideOnly ページ
-
-- 現在の設定値を読み取り専用で表示します
-- ページ上部に「この設定はかんたんモードでは変更できません。」バナーを表示します
-- 「詳細モードに切り替える」ボタンを目立つ位置に配置します
-
-### モード切替時の動作
-
-- **かんたん → 詳細**: 即座に全機能が解放されます。自動設定値はそのまま残ります（明示的に変更するまで）
-- **詳細 → かんたん**: 確認モーダルを表示します。Hidden項目は自動設定値で上書きされる旨を警告します
+| Item | Auto-Configured Value | Rationale |
+|------|----------------------|-----------|
+| Operating environment | **Production** | Maintains the setting from installation |
+| Debug mode | **OFF** | Prevents information leakage in production |
 
 ---
 
-## 実装アーキテクチャ
+### System > Database Management (`settings.systems.database`) --- Hidden
 
-### 制御レイヤー
+No auto-configured values (no automatic cleanup). Can only be operated in Advanced Mode to prevent data loss.
+
+---
+
+### System > API Management (`settings.systems.api`) --- Hidden
+
+No auto-configured values (API remains disabled). Can only be configured in Advanced Mode to prevent unnecessary API endpoint exposure.
+
+---
+
+### System > Log Management (`settings.systems.logs`) --- ReadOnly
+
+The following is displayed in read-only mode:
+
+- Audit log viewing
+- File log viewing
+- Export feature is hidden
+
+---
+
+### System > System Information (`settings.systems.info`) --- ReadOnly
+
+The following is displayed in read-only mode:
+
+- Server environment information
+- PHP version
+- Database information
+- Dixlase version
+
+---
+
+## Auto-Configured Values List
+
+Summary of auto-configured values for items set to Hidden in Simple Mode.
+
+### Confirmed
+
+| Menu | Item | Auto-Configured Value |
+|------|------|-----------------------|
+| CSP | CSP enabled | ON |
+| CSP | CSP mode | Standard mode |
+| CSP | Log violations | ON |
+| CSP | Exclude dev tools violations | ON |
+| CSP | Blocklist matching | ON (warn only) |
+| CSP | Matching categories | All enabled |
+| Environment Settings | Operating environment | Production |
+| Environment Settings | Debug mode | OFF |
+| Media Settings | MIME content validation | Enabled |
+| Media Settings | SVG sanitization | Enabled |
+| Media Settings | ZIP security check | Enabled |
+| IP Access Control | --- | Disabled (no settings) |
+| File Integrity Check | --- | No configured values |
+| Database Management | --- | No automatic cleanup |
+| API Management | --- | API disabled |
+
+### Pending Confirmation (TODO)
+
+| Menu | Item | Tentative Value | Confirmation Needed |
+|------|------|----------------|---------------------|
+| Password Settings | Minimum length | 8 characters | Whether sufficient for NIST compliance |
+| Password Settings | Uppercase/digits/symbols required | All enabled | Whether excessive |
+| Password Settings | Have I Been Pwned | Enabled | Whether external API dependency is acceptable |
+| Login Settings | Maximum attempts | 5 attempts | Whether too restrictive |
+| Login Settings | IP maximum attempts | 20 attempts | Whether shared IP consideration is sufficient |
+| Login Settings | Time window | 15 minutes | |
+| Login Settings | Lockout duration | 30 minutes | |
+| Two-Factor Auth | Maximum devices | 5 devices | |
+| Two-Factor Auth | Authentication expiration | 10 minutes | |
+| Two-Factor Auth | Recovery code count | 10 codes | |
+| Error Notifications | Notification level | Critical and above | Whether to include Error level |
+| Session | Lifetime | 120 minutes | |
+
+---
+
+## UI/UX Rules
+
+### Sidebar Display
+
+| Classification | Display | Icon | Color |
+|----------------|---------|------|-------|
+| Full | Normal display | None | --- |
+| Partial | Normal display | None | --- |
+| Hidden | **Hidden** | --- | --- |
+| ReadOnly | Lock icon next to menu name | `fas fa-lock` | --- |
+| GuideOnly | Directions icon next to menu name | `fas fa-directions` | `text-purple-400` |
+
+### In-Page UI
+
+#### Partial Pages
+
+- Editable fields are displayed as normal forms
+- Auto-configured fields are either hidden or displayed in a disabled state
+- Auto-configured sections display the message: "In Simple Mode, recommended values are automatically applied for these settings"
+- The save button is displayed only when there are editable fields
+
+#### ReadOnly Pages
+
+- All fields are in a disabled state
+- The save button is hidden
+- A banner at the top of the page displays: "These settings are read-only. To make changes, please switch to Advanced Mode."
+- Includes a link to the mode switching page
+
+#### GuideOnly Pages
+
+- Current setting values are displayed in read-only format
+- A banner at the top of the page displays: "These settings cannot be changed in Simple Mode."
+- A "Switch to Advanced Mode" button is placed in a prominent position
+
+### Behavior When Switching Modes
+
+- **Simple to Advanced**: All features are immediately unlocked. Auto-configured values remain as-is (until explicitly changed)
+- **Advanced to Simple**: A confirmation modal is displayed. A warning is shown that Hidden items will be overwritten with auto-configured values
+
+---
+
+## Implementation Architecture
+
+### Control Layers
 
 ```
-┌─────────────────────────────────────────────────┐
-│ 1. サイドバー (sidebar.blade.php)               │
-│    → Hidden: メニュー非表示                      │
-│    → ReadOnly/GuideOnly: アイコン付き表示         │
-├─────────────────────────────────────────────────┤
-│ 2. ミドルウェア (CheckMenuAccess)                │
-│    → Hidden: 403 or リダイレクト                  │
-│    → ReadOnly/GuideOnly: GETのみ許可、POST拒否    │
-├─────────────────────────────────────────────────┤
-│ 3. コントローラー                                │
-│    → Partial: 自動設定値のマージ処理              │
-│    → ReadOnly: store/updateアクション拒否         │
-├─────────────────────────────────────────────────┤
-│ 4. ビュー (Blade)                                │
-│    → Partial: フィールド単位のdisabled制御         │
-│    → ReadOnly: 全フィールドdisabled + バナー       │
-│    → GuideOnly: 誘導UI + モード切替リンク          │
-└─────────────────────────────────────────────────┘
++---------------------------------------------------+
+| 1. Sidebar (sidebar.blade.php)                    |
+|    -> Hidden: Menu hidden                         |
+|    -> ReadOnly/GuideOnly: Displayed with icon     |
++---------------------------------------------------+
+| 2. Middleware (CheckMenuAccess)                   |
+|    -> Hidden: 403 or redirect                     |
+|    -> ReadOnly/GuideOnly: GET only, POST rejected |
++---------------------------------------------------+
+| 3. Controller                                     |
+|    -> Partial: Merge auto-configured values       |
+|    -> ReadOnly: Reject store/update actions       |
++---------------------------------------------------+
+| 4. View (Blade)                                   |
+|    -> Partial: Per-field disabled control          |
+|    -> ReadOnly: All fields disabled + banner      |
+|    -> GuideOnly: Guide UI + mode switch link      |
++---------------------------------------------------+
 ```
 
-### 自動設定の適用タイミング
+### When Auto-Configured Values Are Applied
 
-1. **インストール時**: かんたんモードを選択した場合、自動設定値がDBに保存されます
-2. **詳細→かんたんモード切替時**: Hidden項目の自動設定値がDBに上書き保存されます
-3. **Partial項目の保存時**: 自動設定フィールドは送信されたデータに自動設定値をマージしてから保存されます
+1. **During installation**: When Simple Mode is selected, auto-configured values are saved to the database
+2. **When switching from Advanced to Simple Mode**: Auto-configured values for Hidden items are overwritten in the database
+3. **When saving Partial items**: Auto-configured values are merged into the submitted data before saving
 
 ---
 
-## プラグインメニューの対応
+## Plugin Menu Support
 
-### 基本方針
+### Basic Policy
 
-- プラグインは `config/admin/mode.php` に自身のメニューキーのデフォルト表示レベルを定義できます
-- 未定義の場合はデフォルトで **Full**（全操作可）となります
-- プラグインのナビゲーション設定 (`config/admin/navigation.php`) は既存の `_insert_before` / `_insert_after` の仕組みでメインナビゲーションにマージされます
+- Plugins can define default visibility levels for their menu keys in `config/admin/mode.php`
+- If not defined, the default is **Full** (all operations available)
+- Plugin navigation settings (`config/admin/navigation.php`) are merged into the main navigation using the existing `_insert_before` / `_insert_after` mechanism
 
-### プラグイン側の設定例
+### Plugin Configuration Example
 
 ```php
 // plugins/ExamplePlugin/config/admin/mode.php
@@ -562,12 +562,12 @@ return [
 ];
 ```
 
-<!-- TODO: プラグインのモード設定マージの実装詳細を確定する -->
+<!-- TODO: Finalize implementation details for plugin mode configuration merging -->
 
 ---
 
-## 変更履歴
+## Changelog
 
-| 日付 | 内容 |
-|------|------|
-| 2026-02-12 | 初版作成。5分類モデル・メニュー別分類一覧・自動設定値（一部仮）を定義しました |
+| Date | Content |
+|------|---------|
+| 2026-02-12 | Initial version. Defined the 5-classification model, menu classification list, and auto-configured values (some tentative) |

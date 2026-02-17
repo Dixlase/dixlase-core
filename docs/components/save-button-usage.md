@@ -1,30 +1,30 @@
-# 保存ボタンとモーダルの使用方法
+# Save Button and Modal Usage
 
-DixlaseのCSP厳格モード対応に伴い、保存ボタンとモーダルのコンポーネントを3種類用意しています。
+To comply with Dixlase's strict CSP mode, three variants of save button and modal components are provided.
 
-## コンポーネント一覧
+## Component List
 
-### 1. Alpine.js版（従来版）
-- **コンポーネント**: `<x-admin.save-button>`
-- **モーダル**: `<x-ui-modal>`
-- **用途**: Alpine.jsを使用している既存ページ
-- **CSP**: 開発モード・標準モード
+### 1. Alpine.js Version (Legacy)
+- **Component**: `<x-admin.save-button>`
+- **Modal**: `<x-ui-modal>`
+- **Use case**: Existing pages that use Alpine.js
+- **CSP**: Development mode / Standard mode
 
-### 2. Vanilla JS版（CSP厳格モード対応）
-- **コンポーネント**: `<x-admin.save-button-vanilla>`
-- **モーダル**: `<x-ui-modal-vanilla>`
-- **用途**: CSP厳格モードに対応したページ
-- **CSP**: 厳格モード対応
+### 2. Vanilla JS Version (Strict CSP Compliant)
+- **Component**: `<x-admin.save-button-vanilla>`
+- **Modal**: `<x-ui-modal-vanilla>`
+- **Use case**: Pages that require strict CSP compliance
+- **CSP**: Strict mode compliant
 
-### 3. Livewire版
-- **コンポーネント**: `<x-admin.livewire-save-button>`
-- **モーダル**: `<x-ui-livewire-modal>`
-- **用途**: Livewireコンポーネント内
-- **CSP**: 厳格モード対応
+### 3. Livewire Version
+- **Component**: `<x-admin.livewire-save-button>`
+- **Modal**: `<x-ui-livewire-modal>`
+- **Use case**: Inside Livewire components
+- **CSP**: Strict mode compliant
 
-## 使用方法
+## Usage
 
-### Alpine.js版（従来版）
+### Alpine.js Version (Legacy)
 
 ```blade
 @extends('layouts.admin')
@@ -33,7 +33,7 @@ DixlaseのCSP厳格モード対応に伴い、保存ボタンとモーダルの�
 <div>
     <form id="settings-form" method="POST" action="{{ route('admin.settings.update') }}">
         @csrf
-        <!-- フォームフィールド -->
+        <!-- Form fields -->
     </form>
 </div>
 @endsection
@@ -51,7 +51,7 @@ DixlaseのCSP厳格モード対応に伴い、保存ボタンとモーダルの�
 @endsection
 ```
 
-### Vanilla JS版（推奨）
+### Vanilla JS Version (Recommended)
 
 ```blade
 @extends('layouts.admin')
@@ -60,7 +60,7 @@ DixlaseのCSP厳格モード対応に伴い、保存ボタンとモーダルの�
 <div>
     <form id="settings-form" method="POST" action="{{ route('admin.settings.update') }}">
         @csrf
-        <!-- フォームフィールド -->
+        <!-- Form fields -->
     </form>
 </div>
 @endsection
@@ -78,7 +78,7 @@ DixlaseのCSP厳格モード対応に伴い、保存ボタンとモーダルの�
 @endsection
 ```
 
-### Livewire版
+### Livewire Version
 
 ```php
 // app/Livewire/Admin/Settings/SecuritySettings.php
@@ -89,21 +89,21 @@ use Livewire\Component;
 class SecuritySettings extends Component
 {
     public $showSaveConfirmation = false;
-    
-    // 設定プロパティ
+
+    // Setting properties
     public $setting1;
     public $setting2;
-    
+
     public function save()
     {
         $this->validate();
-        
-        // 保存処理
-        
+
+        // Save logic
+
         $this->showSaveConfirmation = false;
-        session()->flash('success', '設定が更新されました。');
+        session()->flash('success', 'Settings have been updated.');
     }
-    
+
     public function render()
     {
         return view('livewire.admin.settings.security-settings');
@@ -115,12 +115,12 @@ class SecuritySettings extends Component
 {{-- resources/views/livewire/admin/settings/security-settings.blade.php --}}
 <div>
     <form wire:submit.prevent="save">
-        <!-- フォームフィールド -->
+        <!-- Form fields -->
         <input type="text" wire:model="setting1">
         <input type="text" wire:model="setting2">
     </form>
-    
-    <!-- 保存ボタン -->
+
+    <!-- Save button -->
     <x-admin.livewire-save-button
         wireClick="save"
         showConfirmation="showSaveConfirmation"
@@ -133,55 +133,55 @@ class SecuritySettings extends Component
 </div>
 ```
 
-## パラメータ一覧
+## Parameter Reference
 
-### 共通パラメータ
+### Common Parameters
 
-| パラメータ | 型 | デフォルト | 説明 |
-|-----------|-----|-----------|------|
-| `label` | string | `__('common.save')` | ボタンのラベル |
-| `title` | string | `__('common.save_confirmation_title')` | モーダルのタイトル |
-| `message` | string | `__('common.save_confirmation_message')` | モーダルのメッセージ |
-| `confirmLabel` | string | `__('common.save')` | 確認ボタンのラベル |
-| `cancelLabel` | string | `__('common.cancel')` | キャンセルボタンのラベル |
-| `backUrl` | string | null | 戻るボタンのURL |
-| `backLabel` | string | `__('common.back')` | 戻るボタンのラベル |
-| `iconType` | string | `'info'` | アイコンタイプ（info, warning, danger, success） |
-| `confirmColor` | string | `'blue'` | 確認ボタンの色（blue, red, green, yellow） |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `label` | string | `__('common.save')` | Button label |
+| `title` | string | `__('common.save_confirmation_title')` | Modal title |
+| `message` | string | `__('common.save_confirmation_message')` | Modal message |
+| `confirmLabel` | string | `__('common.save')` | Confirm button label |
+| `cancelLabel` | string | `__('common.cancel')` | Cancel button label |
+| `backUrl` | string | null | Back button URL |
+| `backLabel` | string | `__('common.back')` | Back button label |
+| `iconType` | string | `'info'` | Icon type (info, warning, danger, success) |
+| `confirmColor` | string | `'blue'` | Confirm button color (blue, red, green, yellow) |
 
-### Alpine.js版 / Vanilla JS版 固有パラメータ
+### Alpine.js / Vanilla JS Version Parameters
 
-| パラメータ | 型 | デフォルト | 説明 |
-|-----------|-----|-----------|------|
-| `form` | string | null | 送信するフォームのID |
-| `modalId` | string | `'confirmationModal'` | モーダルのID（Vanilla版） |
-| `id_confirmation` | string | `'confirmationModal'` | モーダルのID（Alpine版） |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `form` | string | null | ID of the form to submit |
+| `modalId` | string | `'confirmationModal'` | Modal ID (Vanilla version) |
+| `id_confirmation` | string | `'confirmationModal'` | Modal ID (Alpine version) |
 
-### Livewire版 固有パラメータ
+### Livewire Version Parameters
 
-| パラメータ | 型 | デフォルト | 説明 |
-|-----------|-----|-----------|------|
-| `wireClick` | string | `'save'` | 確認時に実行するLivewireメソッド |
-| `showConfirmation` | string | `'showSaveConfirmation'` | モーダル表示状態のプロパティ名 |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `wireClick` | string | `'save'` | Livewire method to execute on confirmation |
+| `showConfirmation` | string | `'showSaveConfirmation'` | Property name for modal visibility state |
 
-## レイアウトへの配置
+## Layout Placement
 
-すべてのバージョンで同じように `@section('save')` を使用して配置できます。
+All versions can be placed using `@section('save')` in the same way.
 
 ```blade
 @section('save')
-    <!-- Alpine.js版 -->
+    <!-- Alpine.js version -->
     <x-admin.save-button ... />
-    
-    <!-- Vanilla JS版 -->
+
+    <!-- Vanilla JS version -->
     <x-admin.save-button-vanilla ... />
-    
-    <!-- Livewire版 -->
+
+    <!-- Livewire version -->
     <x-admin.livewire-save-button ... />
 @endsection
 ```
 
-レイアウトファイル（`layouts/admin.blade.php`）では以下のように配置されています：
+The layout file (`layouts/admin.blade.php`) contains the following placement:
 
 ```blade
 @hasSection('save')
@@ -193,27 +193,27 @@ class SecuritySettings extends Component
 @endif
 ```
 
-## 後方互換性
+## Backward Compatibility
 
-すべてのコンポーネントは後方互換性を保つため、スネークケース（`confirm_label`）とキャメルケース（`confirmLabel`）の両方をサポートしています。
+All components support both snake_case (`confirm_label`) and camelCase (`confirmLabel`) for backward compatibility.
 
 ```blade
-<!-- どちらも動作します -->
+<!-- Both work -->
 <x-admin.save-button-vanilla
-    :confirm_label="__('common.save')"  {{-- スネークケース --}}
+    :confirm_label="__('common.save')"  {{-- snake_case --}}
 />
 
 <x-admin.save-button-vanilla
-    :confirmLabel="__('common.save')"   {{-- キャメルケース（推奨） --}}
+    :confirmLabel="__('common.save')"   {{-- camelCase (recommended) --}}
 />
 ```
 
-## 移行ガイド
+## Migration Guide
 
-### Alpine.js版からVanilla JS版への移行
+### Migrating from Alpine.js to Vanilla JS Version
 
-1. コンポーネント名を変更
-2. パラメータ名を統一（推奨）
+1. Change the component name
+2. Unify parameter names (recommended)
 
 ```diff
 - <x-admin.save-button
@@ -228,11 +228,11 @@ class SecuritySettings extends Component
   />
 ```
 
-### Vanilla JS版からLivewire版への移行
+### Migrating from Vanilla JS to Livewire Version
 
-1. Livewireコンポーネントを作成
-2. コンポーネント名を変更
-3. パラメータを調整
+1. Create a Livewire component
+2. Change the component name
+3. Adjust the parameters
 
 ```diff
 - <x-admin.save-button-vanilla
@@ -246,19 +246,19 @@ class SecuritySettings extends Component
   />
 ```
 
-## トラブルシューティング
+## Troubleshooting
 
-### モーダルが開かない（Vanilla JS版）
+### Modal Does Not Open (Vanilla JS Version)
 
-`window.modalManager` が初期化されているか確認してください。
+Verify that `window.modalManager` is initialized.
 
 ```javascript
-console.log(window.modalManager); // ModalManager インスタンスが表示されるはず
+console.log(window.modalManager); // Should display a ModalManager instance
 ```
 
-### フォームが送信されない
+### Form Does Not Submit
 
-`form` パラメータにフォームのIDが正しく設定されているか確認してください。
+Ensure the `form` parameter is set to the correct form ID.
 
 ```blade
 <form id="my-form" method="POST" action="...">
@@ -266,30 +266,30 @@ console.log(window.modalManager); // ModalManager インスタンスが表示さ
 </form>
 
 <x-admin.save-button-vanilla
-    form="my-form"  {{-- フォームIDと一致させる --}}
+    form="my-form"  {{-- Must match the form ID --}}
 />
 ```
 
-### Livewire版でモーダルが閉じない
+### Modal Does Not Close (Livewire Version)
 
-Livewireコンポーネントに `showSaveConfirmation` プロパティが定義されているか確認してください。
+Verify that the `showSaveConfirmation` property is defined in the Livewire component.
 
 ```php
 class MyComponent extends Component
 {
-    public $showSaveConfirmation = false;  // 必須
-    
+    public $showSaveConfirmation = false;  // Required
+
     public function save()
     {
-        // 保存処理
-        $this->showSaveConfirmation = false;  // モーダルを閉じる
+        // Save logic
+        $this->showSaveConfirmation = false;  // Close the modal
     }
 }
 ```
 
-## まとめ
+## Summary
 
-- **新規開発**: Vanilla JS版またはLivewire版を使用
-- **既存ページ**: Alpine.js版を継続使用可能
-- **CSP厳格モード**: Vanilla JS版またはLivewire版が必須
-- **使い方**: すべてのバージョンで `@section('save')` に配置するだけ
+- **New development**: Use the Vanilla JS or Livewire version
+- **Existing pages**: Can continue using the Alpine.js version
+- **Strict CSP mode**: Vanilla JS or Livewire version is required
+- **Usage**: Simply place any version inside `@section('save')`

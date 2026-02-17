@@ -1,37 +1,37 @@
 # Pagination Component
 
-管理画面・フロントページ共用のレスポンシブページネーションコンポーネントです。
+A responsive pagination component shared between the admin panel and front pages.
 
-## 基本的な使用方法
+## Basic Usage
 
 ```blade
 @include('components.pagination', ['pagination' => $pagination])
 ```
 
-## プロパティ
+## Properties
 
-| プロパティ | 型 | デフォルト値 | 説明 |
-|-----------|---|-------------|-----|
-| `pagination` | array | 必須 | ページネーション情報 |
-| `route` | string | `'admin.settings.systems.logs'` | ルート名 |
-| `routeParams` | array | `[]` | ルートパラメータ |
-| `mobilePageRange` | int | `1` | スマホでの表示ページ範囲 |
-| `desktopPageRange` | int | `2` | デスクトップでの表示ページ範囲 |
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `pagination` | array | Required | Pagination information |
+| `route` | string | `'admin.settings.systems.logs'` | Route name |
+| `routeParams` | array | `[]` | Route parameters |
+| `mobilePageRange` | int | `1` | Page range displayed on mobile |
+| `desktopPageRange` | int | `2` | Page range displayed on desktop |
 
-## ページネーション配列の構造
+## Pagination Array Structure
 
 ```php
 $pagination = [
-    'current_page' => 1,        // 現在のページ
-    'last_page' => 10,          // 最後のページ
-    'prev_page' => null,        // 前のページ（nullの場合は無効）
-    'next_page' => 2,           // 次のページ（nullの場合は無効）
+    'current_page' => 1,        // Current page
+    'last_page' => 10,          // Last page
+    'prev_page' => null,        // Previous page (null when disabled)
+    'next_page' => 2,           // Next page (null when disabled)
 ];
 ```
 
-## 使用例
+## Usage Examples
 
-### 1. 基本的な使用（ログページ）
+### 1. Basic Usage (Log Page)
 
 ```blade
 @include('components.pagination', [
@@ -41,7 +41,7 @@ $pagination = [
 ])
 ```
 
-### 2. メンバー一覧ページ
+### 2. Member List Page
 
 ```blade
 @include('components.pagination', [
@@ -51,7 +51,7 @@ $pagination = [
 ])
 ```
 
-### 3. カスタムページ範囲
+### 3. Custom Page Range
 
 ```blade
 @include('components.pagination', [
@@ -62,7 +62,7 @@ $pagination = [
 ])
 ```
 
-### 4. 複数パラメータの例
+### 4. Multiple Parameters Example
 
 ```blade
 @include('components.pagination', [
@@ -76,35 +76,35 @@ $pagination = [
 ])
 ```
 
-## レスポンシブデザイン
+## Responsive Design
 
-### スマホレイアウト（768px未満）
+### Mobile Layout (below 768px)
 ```
 ┌─────────────────────┐
-│    Page 1 of 5      │  ← ページ情報
+│    Page 1 of 5      │  ← Page info
 ├─────────────────────┤
-│前へ │ 1 2 3 │ 次へ  │  ← ナビゲーション
+│Prev │ 1 2 3 │ Next  │  ← Navigation
 └─────────────────────┘
 ```
 
-### デスクトップレイアウト（768px以上）
+### Desktop Layout (768px and above)
 ```
 ┌─────────────────────────────────────────┐
-│前へ Page 1 of 5 次へ    1 2 3 4 5 ...10 │
+│Prev Page 1 of 5 Next    1 2 3 4 5 ...10│
 └─────────────────────────────────────────┘
 ```
 
-## CSSクラス
+## CSS Classes
 
-使用されるCSSクラスは `_admin.scss` で定義されています：
+The CSS classes used are defined in `_admin.scss`:
 
-- `.pagination-button`: 前へ・次へボタン
-- `.pagination-number`: ページ番号ボタン
-- `.pagination-ellipsis`: 省略記号
-- `.pagination-info`: ページ情報
+- `.pagination-button`: Previous / Next buttons
+- `.pagination-number`: Page number buttons
+- `.pagination-ellipsis`: Ellipsis
+- `.pagination-info`: Page information
 
-## 注意事項
+## Notes
 
-- `pagination` が `null` または `last_page` が1以下の場合、コンポーネントは表示されません
-- ルートパラメータは `array_merge()` で結合されるため、既存パラメータを上書きできます
-- ページ範囲はスマホとデスクトップで個別に設定可能です
+- The component is not rendered when `pagination` is `null` or `last_page` is 1 or less
+- Route parameters are merged using `array_merge()`, so existing parameters can be overridden
+- Page ranges can be configured independently for mobile and desktop

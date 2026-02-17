@@ -1,46 +1,46 @@
-# パスワード辞書攻撃対策機能の使用方法
+# Password Dictionary Attack Protection
 
-Dixlaseのパスワード辞書攻撃対策機能は、Have I Been Pwned APIを使用してパスワードが漏洩データベースに含まれていないかをチェックし、安全でないパスワードの使用を防ぐ機能です。
+Dixlase's password dictionary attack protection feature uses the Have I Been Pwned API to check whether a password has been found in breach databases, preventing the use of compromised passwords.
 
-## 概要
+## Overview
 
-この機能は以下のコンポーネントで構成されています：
+This feature consists of the following components:
 
-- **PwnedPasswordTrait**: Have I Been Pwned API連携機能
-- **PasswordSecurityHelper**: パスワード検証ヘルパークラス
-- **NotPwnedPassword**: バリデーションルール
-- **セキュリティ設定**: 管理画面での有効/無効切り替え
+- **PwnedPasswordTrait**: Have I Been Pwned API integration functionality
+- **PasswordSecurityHelper**: Password validation helper class
+- **NotPwnedPassword**: Validation rule
+- **Security settings**: Enable/disable toggle in the admin panel
 
-## 設定方法
+## Configuration
 
-### 1. セキュリティ設定での有効化
+### 1. Enabling in Security Settings
 
-管理画面 > セキュリティ設定 > パスワード辞書攻撃対策設定で機能を有効にします。
+Enable the feature in Admin Panel > Security Settings > Password Dictionary Attack Protection Settings.
 
 ```
-辞書攻撃対策: 有効/無効
+Dictionary attack protection: Enabled/Disabled
 ```
 
-### 2. データベース設定
+### 2. Database Configuration
 
-設定は `security_settings` テーブルの `pwned_password_check_enabled` キーで管理されます。
+The setting is managed via the `pwned_password_check_enabled` key in the `security_settings` table.
 
 ```php
-// 設定の取得
+// Retrieve the setting
 $enabled = SecuritySetting::get('pwned_password_check_enabled', false);
 
-// 設定の保存
+// Save the setting
 SecuritySetting::set('pwned_password_check_enabled', true);
 ```
 
-## 使用方法
+## Usage
 
-### 1. バリデーションルールとして使用
+### 1. Using as a Validation Rule
 
 ```php
 use App\Rules\NotPwnedPassword;
 
-// フォームリクエストクラスで使用
+// Use in a form request class
 public function rules(): array
 {
     return [
@@ -48,7 +48,7 @@ public function rules(): array
     ];
 }
 
-// カスタム設定キーを使用する場合
+// Use with a custom setting key
 public function rules(): array
 {
     return [
@@ -57,7 +57,7 @@ public function rules(): array
 }
 ```
 
-### 2. トレイトを使用した直接チェック
+### 2. Direct Check Using the Trait
 
 ```php
 use App\Traits\PwnedPasswordTrait;
@@ -68,25 +68,25 @@ class YourController extends Controller
 
     public function checkPassword($password)
     {
-        // パスワードが漏洩しているかチェック
+        // Check if the password has been breached
         $result = $this->checkPwnedPassword($password);
-        
+
         if ($result['is_pwned']) {
-            // パスワードが漏洩している場合の処理
-            return "このパスワードは {$result['count']} 回漏洩しています";
+            // Handle breached password
+            return "This password has been breached {$result['count']} times";
         }
-        
-        return "パスワードは安全です";
+
+        return "Password is safe";
     }
 }
 ```
 
-### 3. ヘルパークラスを使用した包括的チェック
+### 3. Comprehensive Check Using the Helper Class
 
 ```php
 use App\Helpers\PasswordSecurityHelper;
 
-// 基本的なパスワード検証
+// Basic password validation
 $result = PasswordSecurityHelper::validatePassword($password);
 
 if (!$result['is_valid']) {
@@ -95,7 +95,7 @@ if (!$result['is_valid']) {
     }
 }
 
-// パスワード強度と辞書攻撃対策の統合チェック
+// Combined password strength and dictionary attack protection check
 $strengthRequirements = [
     'min_length' => 8,
     'require_uppercase' => true,
@@ -103,26 +103,26 @@ $strengthRequirements = [
 ];
 
 $result = PasswordSecurityHelper::comprehensivePasswordCheck(
-    $password, 
+    $password,
     $strengthRequirements
 );
 
 if (!$result['is_valid']) {
-    // 強度エラー
+    // Strength errors
     foreach ($result['strength_errors'] as $error) {
-        echo "強度エラー: " . $error . "\n";
+        echo "Strength error: " . $error . "\n";
     }
-    
-    // セキュリティエラー（辞書攻撃対策）
+
+    // Security errors (dictionary attack protection)
     foreach ($result['security_errors'] as $error) {
-        echo "セキュリティエラー: " . $error . "\n";
+        echo "Security error: " . $error . "\n";
     }
 }
 ```
 
-## ユーザー管理プラグインでの使用
+## Usage in User Management Plugins
 
-### 1. 独自設定システムを使用する場合
+### 1. Using a Custom Settings System
 
 ```php
 use App\Traits\PwnedPasswordTrait;
@@ -133,9 +133,9 @@ class UserPasswordController extends Controller
 
     public function validateUserPassword($password)
     {
-        // 独自の設定キーを使用
+        // Use a custom setting key
         $safetyCheck = $this->validatePasswordSafety($password, 'user_pwned_password_check_enabled');
-        
+
         if (!$safetyCheck['is_safe']) {
             throw new ValidationException($safetyCheck['message']);
         }
@@ -143,7 +143,7 @@ class UserPasswordController extends Controller
 }
 ```
 
-### 2. バリデーションルールを使用する場合
+### 2. Using the Validation Rule
 
 ```php
 use App\Rules\NotPwnedPassword;
@@ -157,7 +157,7 @@ class UserRegistrationRequest extends FormRequest
                 'required',
                 'string',
                 'min:8',
-                // ユーザー用の設定キーを指定
+                // Specify the user-specific setting key
                 NotPwnedPassword::using('user_pwned_password_check_enabled')
             ],
         ];
@@ -165,128 +165,128 @@ class UserRegistrationRequest extends FormRequest
 }
 ```
 
-## API仕様
+## API Specification
 
 ### Have I Been Pwned API
 
-この機能は Have I Been Pwned API v3 を使用します：
+This feature uses the Have I Been Pwned API v3:
 
-- **エンドポイント**: `https://api.pwnedpasswords.com/range/{hash_prefix}`
-- **方式**: k-Anonymity（パスワードの完全なハッシュは送信されません）
-- **プライバシー**: パスワード自体は送信されず、SHA-1ハッシュの最初の5文字のみが使用されます
+- **Endpoint**: `https://api.pwnedpasswords.com/range/{hash_prefix}`
+- **Method**: k-Anonymity (the full password hash is never sent)
+- **Privacy**: The password itself is never transmitted; only the first 5 characters of its SHA-1 hash are used
 
-### セキュリティ
+### Security
 
-1. **プライバシー保護**: パスワード自体は外部に送信されません
-2. **k-Anonymity**: ハッシュの一部のみを送信してプライバシーを保護
-3. **エラーハンドリング**: APIエラー時はパスワードを許可（デフォルト）
-4. **タイムアウト**: 10秒のタイムアウト設定
+1. **Privacy protection**: The password itself is never sent externally
+2. **k-Anonymity**: Only a portion of the hash is transmitted to protect privacy
+3. **Error handling**: On API errors, the password is allowed by default
+4. **Timeout**: 10-second timeout setting
 
-## 設定オプション
+## Configuration Options
 
-### NotPwnedPasswordルール
+### NotPwnedPassword Rule
 
 ```php
-// デフォルト設定
+// Default configuration
 new NotPwnedPassword()
 
-// カスタム設定キー
+// Custom setting key
 new NotPwnedPassword('custom_setting_key')
 
-// APIエラー時にバリデーションを失敗させる
+// Fail validation on API error
 new NotPwnedPassword('pwned_password_check_enabled', false)
 
-// 静的ファクトリーメソッド
+// Static factory method
 NotPwnedPassword::using('custom_key', false)
 ```
 
-### PwnedPasswordTrait メソッド
+### PwnedPasswordTrait Methods
 
 ```php
-// パスワードチェック
+// Password check
 $result = $this->checkPwnedPassword($password);
-// 戻り値: ['is_pwned' => bool, 'count' => int, 'error' => string|null]
+// Returns: ['is_pwned' => bool, 'count' => int, 'error' => string|null]
 
-// 設定確認
+// Check setting
 $enabled = $this->isPwnedPasswordCheckEnabled($settingKey);
 
-// 安全性チェック
+// Safety check
 $result = $this->validatePasswordSafety($password, $settingKey);
-// 戻り値: ['is_safe' => bool, 'message' => string, 'pwned_info' => array]
+// Returns: ['is_safe' => bool, 'message' => string, 'pwned_info' => array]
 ```
 
-## エラーハンドリング
+## Error Handling
 
-### APIエラー
+### API Errors
 
-APIエラーが発生した場合、デフォルトではパスワードは許可されます：
+When an API error occurs, the password is allowed by default:
 
 ```php
-// APIエラー時の動作を変更
-$rule = new NotPwnedPassword('pwned_password_check_enabled', false); // エラー時に失敗
+// Change behavior on API error
+$rule = new NotPwnedPassword('pwned_password_check_enabled', false); // Fail on error
 ```
 
-### ログ出力
+### Log Output
 
-エラーは自動的にログに記録されます：
+Errors are automatically logged:
 
 ```php
-// 警告レベル（API失敗時）
+// Warning level (API failure)
 Log::warning('Have I Been Pwned API request failed', $context);
 
-// エラーレベル（例外発生時）
+// Error level (exception thrown)
 Log::error('Pwned password check failed', $context);
 ```
 
-## 翻訳
+## Translations
 
-### 日本語 (lang/ja/validation.php)
-
-```php
-'pwned_password_found' => 'このパスワードは過去に :count 回データ漏洩で発見されており、安全ではありません。別のパスワードを選択してください。',
-'pwned_password_api_error' => 'パスワード安全性チェック中にエラーが発生しましたが、パスワードは受け入れられました。',
-```
-
-### 英語 (lang/en/validation.php)
+### Japanese (lang/ja/validation.php)
 
 ```php
 'pwned_password_found' => 'This password has been found :count times in data breaches and is not safe. Please choose a different password.',
 'pwned_password_api_error' => 'An error occurred while checking password safety, but the password has been accepted.',
 ```
 
-## 統合済み箇所
-
-この機能は以下の箇所で既に統合されています：
-
-1. **メンバー作成・編集** (`AdminSettingsMemberStoreRequest`)
-2. **プロフィール設定でのパスワード変更** (`AdminProfileController`)
-
-## パフォーマンス考慮事項
-
-1. **API呼び出し**: 外部APIを呼び出すため、ネットワーク遅延が発生する可能性があります
-2. **タイムアウト**: 10秒のタイムアウトが設定されています
-3. **キャッシュ**: 現在キャッシュは実装されていませんが、必要に応じて追加可能です
-
-## トラブルシューティング
-
-### よくある問題
-
-1. **API接続エラー**: ネットワーク接続を確認してください
-2. **設定が反映されない**: ブラウザのキャッシュをクリアしてください
-3. **バリデーションが動作しない**: 設定が有効になっているか確認してください
-
-### デバッグ
+### English (lang/en/validation.php)
 
 ```php
-// デバッグ情報の取得
+'pwned_password_found' => 'This password has been found :count times in data breaches and is not safe. Please choose a different password.',
+'pwned_password_api_error' => 'An error occurred while checking password safety, but the password has been accepted.',
+```
+
+## Integrated Locations
+
+This feature is already integrated in the following locations:
+
+1. **Member creation/editing** (`AdminSettingsMemberStoreRequest`)
+2. **Password change in profile settings** (`AdminProfileController`)
+
+## Performance Considerations
+
+1. **API calls**: Network latency may occur since an external API is called
+2. **Timeout**: A 10-second timeout is configured
+3. **Caching**: Caching is not currently implemented, but can be added as needed
+
+## Troubleshooting
+
+### Common Issues
+
+1. **API connection error**: Check your network connection
+2. **Settings not taking effect**: Clear your browser cache
+3. **Validation not working**: Verify that the setting is enabled
+
+### Debugging
+
+```php
+// Retrieve debug information
 $helper = new PasswordSecurityHelper();
 $settings = $helper->getPwnedPasswordSettings();
 var_dump($settings);
 ```
 
-## 今後の拡張
+## Future Enhancements
 
-1. **キャッシュ機能**: チェック結果のキャッシュ
-2. **統計機能**: 漏洩パスワード検出の統計
-3. **カスタムAPI**: 独自の漏洩パスワードデータベース対応
-4. **バッチ処理**: 既存パスワードの一括チェック
+1. **Caching**: Cache check results
+2. **Statistics**: Statistics on breached password detections
+3. **Custom API**: Support for custom breach password databases
+4. **Batch processing**: Bulk checking of existing passwords

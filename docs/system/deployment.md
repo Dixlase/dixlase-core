@@ -1,91 +1,91 @@
 # Dixlase Deploy System
 
-WordMoveにインスパイアされた、Dixlase用のマルチステージデプロイメントシステムです。
+A multi-stage deployment system for Dixlase, inspired by WordMove.
 
-## 概要
+## Overview
 
-Dixlase Deployは、ローカル、ステージング、本番環境間でファイルとデータベースを同期するためのコマンドラインツールです。
+Dixlase Deploy is a command-line tool for synchronizing files and databases between local, staging, and production environments.
 
-### 機能
+### Features
 
-- **マルチ環境対応**: ローカル、ステージング、本番など複数の環境を設定可能
-- **接続方式**: SSH（rsync）またはFTP/SFTP（lftp）
-- **同期対象**:
-  - コアファイル
-  - プラグイン
-  - テーマ
-  - カスタムフォルダ
-  - アップロードファイル
-  - データベース（全体または特定テーブル）
-- **フック機能**: デプロイ前後にコマンドを実行
-- **URL/パス置換**: データベース同期時に自動的にURL/パスを変換
-- **環境変数対応**: 機密情報を環境変数で管理
-- **JSON形式設定**: 追加パッケージ不要、IDEサポート良好
+- **Multi-environment support**: Configure multiple environments such as local, staging, and production
+- **Connection methods**: SSH (rsync) or FTP/SFTP (lftp)
+- **Sync targets**:
+  - Core files
+  - Plugins
+  - Themes
+  - Custom folders
+  - Upload files
+  - Database (full or specific tables)
+- **Hook functionality**: Execute commands before and after deployment
+- **URL/path replacement**: Automatically converts URLs/paths during database sync
+- **Environment variable support**: Manage sensitive information with environment variables
+- **JSON configuration**: No additional packages required, good IDE support
 
-## システム要件
+## System Requirements
 
-### ローカル環境
+### Local Environment
 
-- PHP 8.2以上
-- rsync（SSH同期用）
-- lftp（FTP/SFTP同期用、オプション）
-- mysql/mysqldump（データベース同期用）
+- PHP 8.2 or higher
+- rsync (for SSH sync)
+- lftp (for FTP/SFTP sync, optional)
+- mysql/mysqldump (for database sync)
 - gzip
 
-### リモート環境
+### Remote Environment
 
-- rsync（SSH使用時）
+- rsync (when using SSH)
 - mysql/mysqldump
 - gzip
 
-## インストール
+## Installation
 
-Dixlase Deployはコアシステムに含まれています。追加のインストールは不要です。
+Dixlase Deploy is included in the core system. No additional installation is required.
 
-## クイックスタート
+## Quick Start
 
-### 1. 設定ファイルの生成
+### 1. Generate Configuration File
 
 ```bash
 php artisan deploy:init
 ```
 
-これにより `dixlase-deploy.json` が生成されます。
+This generates `dixlase-deploy.json`.
 
-### 2. 設定ファイルの編集
+### 2. Edit Configuration File
 
-`dixlase-deploy.json` を編集して、環境設定を行います。
+Edit `dixlase-deploy.json` to configure your environments.
 
-### 3. 設定の確認
+### 3. Verify Configuration
 
 ```bash
 php artisan deploy:doctor
 ```
 
-### 4. 環境一覧の確認
+### 4. List Environments
 
 ```bash
 php artisan deploy:list
 ```
 
-### 5. デプロイの実行
+### 5. Execute Deployment
 
 ```bash
-# ステージングにプッシュ
+# Push to staging
 php artisan deploy:push staging --plugins --themes
 
-# 本番からプル
+# Pull from production
 php artisan deploy:pull production --uploads
 ```
 
-## 設定ファイル（dixlase-deploy.json）
+## Configuration File (dixlase-deploy.json)
 
-### 基本構造
+### Basic Structure
 
 ```json
 {
-  "_comment": "コメントはアンダースコアで始まるキーで記述可能",
-  
+  "_comment": "Comments can be written using keys starting with underscore",
+
   "global": {
     "sql_adapter": "mysql",
     "default_connection": "ssh"
@@ -131,9 +131,9 @@ php artisan deploy:pull production --uploads
 }
 ```
 
-### 環境変数の使用
+### Using Environment Variables
 
-機密情報は環境変数で管理できます（`${VAR_NAME}` 形式）：
+Sensitive information can be managed with environment variables (`${VAR_NAME}` format):
 
 ```json
 {
@@ -143,14 +143,14 @@ php artisan deploy:pull production --uploads
 }
 ```
 
-`.env` ファイルまたはシステム環境変数で設定：
+Set via `.env` file or system environment variables:
 
 ```bash
 export STAGING_DB_USER=myuser
 export STAGING_DB_PASSWORD=mypassword
 ```
 
-### SSH設定
+### SSH Configuration
 
 ```json
 {
@@ -163,9 +163,9 @@ export STAGING_DB_PASSWORD=mypassword
 }
 ```
 
-**推奨**: パスワード認証ではなく、公開鍵認証を使用してください。
+**Recommended**: Use public key authentication instead of password authentication.
 
-### FTP/SFTP設定
+### FTP/SFTP Configuration
 
 ```json
 {
@@ -180,7 +180,7 @@ export STAGING_DB_PASSWORD=mypassword
 }
 ```
 
-### 除外パターン
+### Exclude Patterns
 
 ```json
 {
@@ -203,9 +203,9 @@ export STAGING_DB_PASSWORD=mypassword
 }
 ```
 
-### フック（Hooks）
+### Hooks
 
-デプロイ前後にコマンドを実行できます：
+Execute commands before and after deployment:
 
 ```json
 {
@@ -233,36 +233,36 @@ export STAGING_DB_PASSWORD=mypassword
 }
 ```
 
-## コマンドリファレンス
+## Command Reference
 
 ### deploy:init
 
-設定ファイルを生成します。
+Generates the configuration file.
 
 ```bash
 php artisan deploy:init [--force]
 ```
 
-| オプション | 説明 |
-|-----------|------|
-| `--force` | 既存の設定ファイルを上書き |
+| Option | Description |
+|--------|-------------|
+| `--force` | Overwrite existing configuration file |
 
 ### deploy:doctor
 
-設定と環境をチェックします。
+Checks configuration and environment.
 
 ```bash
 php artisan deploy:doctor
 ```
 
-チェック項目：
-- 設定ファイルの存在と妥当性
-- rsync、lftp、ssh、mysql、mysqldump、gzipの存在
-- 環境設定の確認
+Check items:
+- Existence and validity of configuration file
+- Presence of rsync, lftp, ssh, mysql, mysqldump, gzip
+- Environment configuration verification
 
 ### deploy:list
 
-利用可能な環境を一覧表示します。
+Lists available environments.
 
 ```bash
 php artisan deploy:list
@@ -270,100 +270,100 @@ php artisan deploy:list
 
 ### deploy:push
 
-ローカルからリモートにデータをプッシュします。
+Pushes data from local to remote.
 
 ```bash
 php artisan deploy:push <environment> [options]
 ```
 
-| オプション | 説明 |
-|-----------|------|
-| `--core` | コアファイルを同期 |
-| `--plugins` | プラグインを同期 |
-| `--themes` | テーマを同期 |
-| `--custom` | カスタムフォルダを同期 |
-| `--uploads` | アップロードファイルを同期 |
-| `--database` | データベースを同期 |
-| `--all` | すべてを同期（データベース含む） |
-| `--tables=*` | 特定のテーブルのみ同期 |
-| `--dry-run` | 実際には同期せず、何が行われるかを表示 |
-| `--force` | 確認プロンプトをスキップ |
+| Option | Description |
+|--------|-------------|
+| `--core` | Sync core files |
+| `--plugins` | Sync plugins |
+| `--themes` | Sync themes |
+| `--custom` | Sync custom folders |
+| `--uploads` | Sync upload files |
+| `--database` | Sync database |
+| `--all` | Sync everything (including database) |
+| `--tables=*` | Sync only specific tables |
+| `--dry-run` | Show what would be done without actually syncing |
+| `--force` | Skip confirmation prompts |
 
-**例:**
+**Examples:**
 
 ```bash
-# プラグインとテーマをステージングにプッシュ
+# Push plugins and themes to staging
 php artisan deploy:push staging --plugins --themes
 
-# データベースの特定テーブルのみプッシュ
+# Push only specific database tables
 php artisan deploy:push staging --database --tables=posts --tables=pages
 
-# すべてを本番にプッシュ（確認あり）
+# Push everything to production (with confirmation)
 php artisan deploy:push production --all
 
-# ドライランで確認
+# Verify with dry run
 php artisan deploy:push staging --all --dry-run
 ```
 
 ### deploy:pull
 
-リモートからローカルにデータをプルします。
+Pulls data from remote to local.
 
 ```bash
 php artisan deploy:pull <environment> [options]
 ```
 
-オプションは `deploy:push` と同じです。
+Options are the same as `deploy:push`.
 
-**例:**
+**Examples:**
 
 ```bash
-# 本番からアップロードファイルをプル
+# Pull upload files from production
 php artisan deploy:pull production --uploads
 
-# ステージングからデータベースをプル
+# Pull database from staging
 php artisan deploy:pull staging --database
 
-# 本番からすべてをプル
+# Pull everything from production
 php artisan deploy:pull production --all --force
 ```
 
-## 同期対象
+## Sync Targets
 
-### ファイル同期
+### File Sync
 
-| ターゲット | デフォルトパス | 説明 |
-|-----------|---------------|------|
-| core | / | Dixlaseコアファイル |
-| plugins | plugins/ | プラグインディレクトリ |
-| themes | themes/ | テーマディレクトリ |
-| custom | custom/ | カスタムコードディレクトリ |
-| uploads | storage/app/public/ | アップロードファイル |
+| Target | Default Path | Description |
+|--------|-------------|-------------|
+| core | / | Dixlase core files |
+| plugins | plugins/ | Plugin directory |
+| themes | themes/ | Theme directory |
+| custom | custom/ | Custom code directory |
+| uploads | storage/app/public/ | Upload files |
 
-### データベース同期
+### Database Sync
 
-- **全テーブル同期**: `--database` オプション
-- **特定テーブル同期**: `--tables=table1 --tables=table2`
+- **Full table sync**: `--database` option
+- **Specific table sync**: `--tables=table1 --tables=table2`
 
-データベース同期時、以下の処理が自動的に行われます：
+During database sync, the following processing is performed automatically:
 
-1. ソース環境のデータベースをダンプ
-2. URL/パスの置換（vhost、dixlase_path）
-3. ターゲット環境にインポート
+1. Dump the source environment's database
+2. Replace URLs/paths (vhost, dixlase_path)
+3. Import into the target environment
 
-## セキュリティ
+## Security
 
-### 設定ファイルの保護
+### Protecting the Configuration File
 
-`dixlase-deploy.json` には機密情報が含まれる可能性があります。必ず `.gitignore` に追加してください：
+`dixlase-deploy.json` may contain sensitive information. Be sure to add it to `.gitignore`:
 
 ```gitignore
 dixlase-deploy.json
 ```
 
-### 環境変数の使用
+### Using Environment Variables
 
-パスワードなどの機密情報は環境変数で管理することを推奨します：
+It is recommended to manage sensitive information such as passwords using environment variables:
 
 ```json
 {
@@ -373,21 +373,21 @@ dixlase-deploy.json
 }
 ```
 
-### SSH鍵認証
+### SSH Key Authentication
 
-パスワード認証ではなく、SSH鍵認証を使用してください：
+Use SSH key authentication instead of password authentication:
 
 ```bash
-# SSH鍵の生成
+# Generate SSH key
 ssh-keygen -t ed25519 -C "deploy@example.com"
 
-# 公開鍵をリモートサーバーに追加
+# Add public key to remote server
 ssh-copy-id -i ~/.ssh/id_ed25519.pub user@example.com
 ```
 
-## トラブルシューティング
+## Troubleshooting
 
-### rsyncが見つからない
+### rsync Not Found
 
 ```bash
 # macOS
@@ -397,7 +397,7 @@ brew install rsync
 sudo apt-get install rsync
 ```
 
-### lftpが見つからない
+### lftp Not Found
 
 ```bash
 # macOS
@@ -407,40 +407,40 @@ brew install lftp
 sudo apt-get install lftp
 ```
 
-### SSH接続エラー
+### SSH Connection Error
 
-1. SSH鍵が正しく設定されているか確認
-2. ホスト名とポートが正しいか確認
-3. ファイアウォール設定を確認
+1. Verify that the SSH key is correctly configured
+2. Verify that the hostname and port are correct
+3. Check firewall settings
 
 ```bash
-# 接続テスト
+# Connection test
 ssh -p 22 user@example.com
 ```
 
-### データベース接続エラー
+### Database Connection Error
 
-1. データベース認証情報を確認
-2. リモートサーバーでmysqlコマンドが利用可能か確認
-3. ファイアウォールでMySQLポートが開いているか確認
+1. Verify database credentials
+2. Verify that the mysql command is available on the remote server
+3. Verify that the MySQL port is open in the firewall
 
-### パーミッションエラー
+### Permission Error
 
-リモートサーバーでファイルの書き込み権限があるか確認してください。
+Verify that you have write permissions for files on the remote server.
 
-## ベストプラクティス
+## Best Practices
 
-1. **本番環境へのプッシュ前にステージングでテスト**
-2. **データベースのバックアップを取る**
-3. **`--dry-run` で事前確認**
-4. **フックを活用してメンテナンスモードを有効化**
-5. **機密情報は環境変数で管理**
-6. **設定ファイルはバージョン管理から除外**
+1. **Test on staging before pushing to production**
+2. **Back up the database**
+3. **Verify with `--dry-run` beforehand**
+4. **Use hooks to enable maintenance mode**
+5. **Manage sensitive information with environment variables**
+6. **Exclude configuration files from version control**
 
-## 関連コマンド
+## Related Commands
 
-- `php artisan deploy:init` - 設定ファイル生成
-- `php artisan deploy:doctor` - 環境チェック
-- `php artisan deploy:list` - 環境一覧
-- `php artisan deploy:push` - プッシュ
-- `php artisan deploy:pull` - プル
+- `php artisan deploy:init` - Generate configuration file
+- `php artisan deploy:doctor` - Environment check
+- `php artisan deploy:list` - List environments
+- `php artisan deploy:push` - Push
+- `php artisan deploy:pull` - Pull

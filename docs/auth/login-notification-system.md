@@ -1,71 +1,72 @@
-# ログイン通知システム
+# Login Notification System
 
-## 概要
+## Overview
 
-Dixlaseのログイン通知システムは、管理画面とマイページの両方で統一されたアーキテクチャを提供し、コンテキストに応じたセキュリティとユーザビリティのバランスを実現します。
+The Dixlase login notification system provides a unified architecture for both the admin panel and the My Page, achieving a balance between security and usability appropriate to each context.
 
-## アーキテクチャ
+## Architecture
 
-### 設計思想
+### Design Philosophy
 
-- **コンテキスト対応**: 管理画面とマイページで異なるセキュリティポリシーを適用
-- **プラグイン拡張性**: プラグインが独自のログイン通知を簡単に実装可能
-- **設定の柔軟性**: グローバル設定とプロフィール設定の優先順位制御
-- **多言語対応**: コアとプラグインで翻訳キーを分離
+- **Context-aware**: Applies different security policies for the admin panel and My Page
+- **Plugin extensibility**: Plugins can easily implement their own login notifications
+- **Configuration flexibility**: Priority control between global settings and profile settings
+- **Multi-language support**: Translation keys are separated between core and plugins
 
-### コンポーネント構成
+### Component Structure
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    ログイン通知システム                        │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌──────────────────┐         ┌──────────────────┐         │
-│  │   コア (Core)    │         │  プラグイン      │         │
-│  ├──────────────────┤         ├──────────────────┤         │
-│  │ LoginNotification│◄────────│UserLoginNotif... │         │
-│  │  (基底クラス)     │         │  (継承)          │         │
-│  └──────────────────┘         └──────────────────┘         │
-│           ▲                            ▲                   │
-│           │                            │                   │
-│  ┌────────┴────────┐         ┌────────┴────────┐          │
-│  │AdminLoginNotif..│         │                 │          │
-│  │  (管理画面)      │         │                 │          │
-│  └─────────────────┘         └─────────────────┘          │
-│                                                             │
-│  ┌──────────────────────────────────────────────┐          │
-│  │        LoginNotificationTrait                │          │
-│  │  (共通ロジック: 通知判定、デバイス検出)        │          │
-│  └──────────────────────────────────────────────┘          │
-│           ▲                            ▲                   │
-│           │                            │                   │
-│  ┌────────┴────────┐         ┌────────┴────────┐          │
-│  │AdminLoginNotif..│         │UserLoginNotif... │          │
-│  │   Service       │         │   Service        │          │
-│  └─────────────────┘         └──────────────────┘          │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                    Login Notification System                 |
++-------------------------------------------------------------+
+|                                                             |
+|  +------------------+         +------------------+         |
+|  |   Core           |         |  Plugin          |         |
+|  +------------------+         +------------------+         |
+|  | LoginNotification|<--------|UserLoginNotif... |         |
+|  |  (Base class)    |         |  (Extends)       |         |
+|  +------------------+         +------------------+         |
+|           ^                            ^                   |
+|           |                            |                   |
+|  +--------+--------+         +--------+--------+          |
+|  |AdminLoginNotif..|         |                 |          |
+|  |  (Admin panel)   |         |                 |          |
+|  +------------------+         +-----------------+          |
+|                                                             |
+|  +----------------------------------------------+          |
+|  |        LoginNotificationTrait                |          |
+|  |  (Shared logic: notification decision,       |          |
+|  |   device detection)                          |          |
+|  +----------------------------------------------+          |
+|           ^                            ^                   |
+|           |                            |                   |
+|  +--------+--------+         +--------+--------+          |
+|  |AdminLoginNotif..|         |UserLoginNotif... |          |
+|  |   Service       |         |   Service        |          |
+|  +------------------+         +------------------+          |
+|                                                             |
++-------------------------------------------------------------+
 ```
 
-## クラス構成
+## Class Structure
 
-### 1. LoginNotification (基底クラス)
+### 1. LoginNotification (Base Class)
 
-**役割**: 管理画面とマイページで共通のログイン通知ロジックを提供
+**Role**: Provides login notification logic shared between the admin panel and My Page
 
-**主要メソッド**:
-- `buildMailMessage()`: メール本文を構築
-- `getContextKey()`: コンテキスト翻訳キーを取得（管理画面用）
+**Key methods**:
+- `buildMailMessage()`: Constructs the email body
+- `getContextKey()`: Gets the context translation key (for admin panel)
 
-**特徴**:
-- ボタン・URL非表示（セキュリティ優先）
-- システム通知とユーザー通知の両方に対応
+**Characteristics**:
+- Button/URL hidden (security-first)
+- Supports both system notifications and user notifications
 
 ### 2. AdminLoginNotification
 
-**役割**: 管理画面専用のログイン通知
+**Role**: Login notification specific to the admin panel
 
-**実装**:
+**Implementation**:
 ```php
 class AdminLoginNotification extends LoginNotification
 {
@@ -76,23 +77,23 @@ class AdminLoginNotification extends LoginNotification
 }
 ```
 
-### 3. UserLoginNotification (プラグイン)
+### 3. UserLoginNotification (Plugin)
 
-**役割**: マイページ専用のログイン通知
+**Role**: Login notification specific to My Page
 
-**実装**:
+**Implementation**:
 ```php
 class UserLoginNotification extends LoginNotification
 {
     protected function buildMailMessage($notifiable)
     {
         $message = parent::buildMailMessage($notifiable);
-        
-        // マイページ固有: サイト情報を追加
+
+        // My Page specific: Add site information
         $message->line('**' . __('users-plugin::mail.login_notification.site_name') . '** ' . config('app.name'));
         $message->line('**' . __('users-plugin::mail.login_notification.site_url') . '** ' . config('app.url'));
-        
-        // マイページ固有: アクションボタンを追加
+
+        // My Page specific: Add action button
         if (!$this->isSystemNotification) {
             $actionUrl = $this->getActionUrl();
             if ($actionUrl) {
@@ -100,15 +101,15 @@ class UserLoginNotification extends LoginNotification
                 $message->action($buttonText, $actionUrl);
             }
         }
-        
+
         return $message;
     }
-    
+
     protected function getContextKey(): string
     {
         return 'users-plugin::mail.login_notification.context.mypage';
     }
-    
+
     protected function getActionUrl(): ?string
     {
         return route('users-plugin::mypage.dashboard');
@@ -116,16 +117,16 @@ class UserLoginNotification extends LoginNotification
 }
 ```
 
-**特徴**:
-- サイト情報表示（サイト名・URL）
-- アクションボタン表示
-- subcopy表示（ボタンクリックできない場合のURL）
+**Characteristics**:
+- Site information display (site name and URL)
+- Action button display
+- Subcopy display (URL for when the button cannot be clicked)
 
 ### 4. LoginNotificationTrait
 
-**役割**: ログイン通知サービスの共通ロジックを提供
+**Role**: Provides shared logic for login notification services
 
-**抽象メソッド**:
+**Abstract methods**:
 ```php
 abstract protected function getGlobalSettingKey(): string;
 abstract protected function getSettingGetter(): callable;
@@ -133,27 +134,27 @@ abstract protected function getNotificationClass(): string;
 abstract protected function getLogContext(): string;
 ```
 
-**実装例**:
+**Implementation example**:
 ```php
 class AdminLoginNotificationService
 {
     use LoginNotificationTrait;
-    
+
     protected function getGlobalSettingKey(): string
     {
         return 'login_notification_mode';
     }
-    
+
     protected function getSettingGetter(): callable
     {
         return fn() => MemberSetting::getValue($this->getGlobalSettingKey(), '0');
     }
-    
+
     protected function getNotificationClass(): string
     {
         return AdminLoginNotification::class;
     }
-    
+
     protected function getLogContext(): string
     {
         return 'Admin login notification';
@@ -161,63 +162,63 @@ class AdminLoginNotificationService
 }
 ```
 
-## 通知モード
+## Notification Modes
 
 ### AuthenticationMode Enum
 
-| 値 | 名前 | 説明 |
-|---|------|------|
-| 0 | Disabled | 通知無効 |
-| 1 | DifferentDevice | 異なるデバイスからのログイン時のみ通知 |
-| 2 | Always | 常に通知 |
-| 3 | UseProfileSetting | プロフィール設定に従う |
+| Value | Name | Description |
+|-------|------|-------------|
+| 0 | Disabled | Notifications disabled |
+| 1 | DifferentDevice | Notify only on login from a different device |
+| 2 | Always | Always notify |
+| 3 | UseProfileSetting | Follow profile settings |
 
-### 設定の優先順位
+### Settings Priority
 
-#### 管理画面（メンバー）
+#### Admin Panel (Members)
 
-| グローバル設定 | プロフィール設定 | 結果 |
-|---------------|----------------|------|
-| 0: 無効 | 任意 | 通知なし |
-| 1: 異なるデバイス | 任意 | 新デバイスのみ通知 |
-| 2: 常に有効 | 任意 | 常に通知 |
-| 3: プロフィールに従う | 0 | 通知なし |
-| 3: プロフィールに従う | 1 | 新デバイスのみ通知 |
-| 3: プロフィールに従う | 2 | 常に通知 |
+| Global Setting | Profile Setting | Result |
+|----------------|-----------------|--------|
+| 0: Disabled | Any | No notification |
+| 1: Different device | Any | Notify on new device only |
+| 2: Always enabled | Any | Always notify |
+| 3: Follow profile | 0 | No notification |
+| 3: Follow profile | 1 | Notify on new device only |
+| 3: Follow profile | 2 | Always notify |
 
-#### マイページ（ユーザー）
+#### My Page (Users)
 
-同様の優先順位ルールが適用されます。
+The same priority rules apply.
 
-## セキュリティポリシー
+## Security Policies
 
-### 管理画面
+### Admin Panel
 
-**方針**: セキュリティ最優先
+**Policy**: Security-first
 
-- ❌ アクションボタン非表示
-- ❌ サイト情報非表示
-- ❌ subcopy非表示
-- ✅ ログイン詳細のみ表示
+- No action button
+- No site information
+- No subcopy
+- Login details only
 
-**理由**: 管理画面のURLは公開情報ではないため、メールに含めない
+**Reason**: The admin panel URL is not public information, so it should not be included in emails
 
-### マイページ
+### My Page
 
-**方針**: 利便性とセキュリティのバランス
+**Policy**: Balance between usability and security
 
-- ✅ アクションボタン表示
-- ✅ サイト情報表示
-- ✅ subcopy表示
-- ✅ ログイン詳細表示
+- Action button displayed
+- Site information displayed
+- Subcopy displayed
+- Login details displayed
 
-**理由**: マイページは公開情報であり、ユーザーの利便性を優先
+**Reason**: My Page is public information, so user convenience is prioritized
 
-## 翻訳キーの分離
+## Translation Key Separation
 
-### コア (lang/ja/mail.php, lang/en/mail.php)
+### Core (lang/ja/mail.php, lang/en/mail.php)
 
-管理画面用の翻訳キー:
+Translation keys for the admin panel:
 ```php
 'login_notification' => [
     'subject_user' => '【ログイン通知】:nameさん、:contextにログインがありました',
@@ -237,9 +238,9 @@ class AdminLoginNotificationService
 ],
 ```
 
-### プラグイン (plugins/DixlaseUsers/lang/ja/mail.php, lang/en/mail.php)
+### Plugin (plugins/DixlaseUsers/lang/ja/mail.php, lang/en/mail.php)
 
-マイページ用の翻訳キー:
+Translation keys for My Page:
 ```php
 'login_notification' => [
     'site_name' => 'サイト名:',
@@ -252,15 +253,15 @@ class AdminLoginNotificationService
 ],
 ```
 
-## 使用方法
+## Usage
 
-### 1. コントローラーでの実装
+### 1. Implementation in a Controller
 
 ```php
 class DixlaseUsersMypageLoginController extends DixlaseUsersMypageController
 {
     use \App\Traits\LoginTrait;
-    
+
     protected function getLoginNotificationServiceClass(): string
     {
         return \Plugins\DixlaseUsers\App\Services\UserLoginNotificationService::class;
@@ -268,12 +269,12 @@ class DixlaseUsersMypageLoginController extends DixlaseUsersMypageController
 }
 ```
 
-### 2. 2FA認証後の通知
+### 2. Notification After 2FA Authentication
 
-`TwoFaAuthenticationTrait`が自動的にログイン通知を送信します:
+`TwoFaAuthenticationTrait` automatically sends login notifications:
 
 ```php
-// 2FA認証成功後
+// After successful 2FA authentication
 if (method_exists($this, 'getLoginNotificationServiceClass')) {
     try {
         app($this->getLoginNotificationServiceClass())->handle($user, $request);
@@ -286,9 +287,9 @@ if (method_exists($this, 'getLoginNotificationServiceClass')) {
 }
 ```
 
-### 3. プラグインでの実装
+### 3. Implementation in a Plugin
 
-#### ステップ1: 通知クラスを作成
+#### Step 1: Create a Notification Class
 
 ```php
 namespace YourPlugin\App\Notifications;
@@ -301,12 +302,12 @@ class YourLoginNotification extends LoginNotification
     {
         parent::__construct($loginDetails, $isSystemNotification, 'your_context');
     }
-    
+
     protected function getContextKey(): string
     {
         return 'your-plugin::mail.login_notification.context.your_context';
     }
-    
+
     protected function getActionUrl(): ?string
     {
         return route('your-plugin::dashboard');
@@ -314,7 +315,7 @@ class YourLoginNotification extends LoginNotification
 }
 ```
 
-#### ステップ2: サービスクラスを作成
+#### Step 2: Create a Service Class
 
 ```php
 namespace YourPlugin\App\Services;
@@ -326,22 +327,22 @@ use YourPlugin\App\Notifications\YourLoginNotification;
 class YourLoginNotificationService
 {
     use LoginNotificationTrait;
-    
+
     protected function getGlobalSettingKey(): string
     {
         return 'login_notification_mode';
     }
-    
+
     protected function getSettingGetter(): callable
     {
         return fn() => YourSetting::getValue($this->getGlobalSettingKey(), '0');
     }
-    
+
     protected function getNotificationClass(): string
     {
         return YourLoginNotification::class;
     }
-    
+
     protected function getLogContext(): string
     {
         return 'Your login notification';
@@ -349,7 +350,7 @@ class YourLoginNotificationService
 }
 ```
 
-#### ステップ3: 翻訳ファイルを作成
+#### Step 3: Create Translation Files
 
 ```php
 // plugins/YourPlugin/lang/ja/mail.php
@@ -362,14 +363,14 @@ return [
 ];
 ```
 
-## メールテンプレートのカスタマイズ
+## Email Template Customization
 
-### subcopyの多言語化
+### Subcopy Localization
 
-`resources/views/vendor/mail/html/subcopy.blade.php`でURLからコンテキストを判断:
+In `resources/views/vendor/mail/html/subcopy.blade.php`, the context is determined from the URL:
 
 ```php
-// URLからコンテキストを判断（マイページの場合はプラグインの翻訳キーを使用）
+// Determine context from URL (use plugin translation key for My Page)
 $translationKey = 'mail.login_notification.action_subcopy';
 if (str_contains($url, '/mypage/')) {
     $translationKey = 'users-plugin::mail.login_notification.action_subcopy';
@@ -378,58 +379,58 @@ if (str_contains($url, '/mypage/')) {
 echo __($translationKey, ['button_text' => $buttonText]);
 ```
 
-## トラブルシューティング
+## Troubleshooting
 
-### 通知が送信されない
+### Notifications Are Not Being Sent
 
-1. **メールサーバー設定を確認**
-   - 基本設定 → メールサーバー設定
-   - メールテストを実行
+1. **Check mail server settings**
+   - General Settings -> Mail Server Settings
+   - Run a mail test
 
-2. **グローバル設定を確認**
-   - 管理画面: メンバー → 設定 → 認証設定
-   - マイページ: ユーザー → 設定 → 認証設定
+2. **Check global settings**
+   - Admin panel: Members -> Settings -> Authentication Settings
+   - My Page: Users -> Settings -> Authentication Settings
 
-3. **ログを確認**
+3. **Check logs**
    ```bash
    tail -f storage/logs/laravel.log | grep "login notification"
    ```
 
-### 翻訳キーが表示される
+### Translation Keys Are Displayed Instead of Text
 
-1. **翻訳ファイルの存在確認**
+1. **Verify translation file existence**
    ```bash
    ls -la lang/ja/mail.php
    ls -la plugins/DixlaseUsers/lang/ja/mail.php
    ```
 
-2. **キャッシュクリア**
+2. **Clear cache**
    ```bash
    php artisan cache:clear
    php artisan config:clear
    php artisan view:clear
    ```
 
-### プロフィール設定が反映されない
+### Profile Settings Not Taking Effect
 
-1. **グローバル設定を確認**
-   - グローバル設定が「プロフィールに従う」になっているか確認
+1. **Check global settings**
+   - Verify that the global setting is set to "Follow profile"
 
-2. **データベースを確認**
+2. **Check the database**
    ```sql
    SELECT login_notification_mode FROM members WHERE id = ?;
    SELECT login_notification_mode FROM dixlase_users_users WHERE id = ?;
    ```
 
-## ベストプラクティス
+## Best Practices
 
-1. **セキュリティ**: 管理画面のURLはメールに含めない
-2. **ユーザビリティ**: 公開ページのURLはメールに含めてユーザーの利便性を向上
-3. **拡張性**: プラグインは独自の通知クラスとサービスクラスを実装
-4. **多言語対応**: プラグインは独自の翻訳ファイルを持つ
-5. **テスト**: メールサーバー設定後、必ずテスト送信を実行
+1. **Security**: Do not include admin panel URLs in emails
+2. **Usability**: Include public page URLs in emails to improve user convenience
+3. **Extensibility**: Plugins should implement their own notification and service classes
+4. **Multi-language support**: Plugins should have their own translation files
+5. **Testing**: Always run a test send after configuring mail server settings
 
-## 参考資料
+## References
 
 - [LoginNotification.php](../app/Notifications/LoginNotification.php)
 - [LoginNotificationTrait.php](../app/Traits/LoginNotificationTrait.php)

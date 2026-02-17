@@ -1,105 +1,105 @@
-# データベースクリーンアップ機能
+# Database Cleanup
 
-## 概要
+## Overview
 
-Dixlaseのデータベースクリーンアップ機能は、古いログやセッションデータなど不要になったデータベースレコードを定期的に削除するための機能です。管理画面から手動で実行でき、プラグインやテーマも独自のクリーンアップ対象を追加できます。
+The Dixlase database cleanup feature periodically removes unnecessary database records such as old logs and session data. It can be executed manually from the admin panel, and plugins or themes can register their own cleanup targets.
 
-## 主な機能
+## Key Features
 
-- **コアテーブルのクリーンアップ**: 管理者ログイン試行履歴、セッション、キャッシュなど
-- **プラグイン/テーマテーブルのクリーンアップ**: 各拡張機能が独自のテーブルをクリーンアップ対象に追加可能
-- **柔軟な保持期間設定**: テーブルごとに保持日数を設定可能
-- **条件付きクリーンアップ**: 期限切れ、使用済み、未使用などの条件を指定可能
-- **多言語対応**: 日本語・英語で説明文を表示
+- **Core table cleanup**: Admin login attempt history, sessions, cache, etc.
+- **Plugin/theme table cleanup**: Each extension can register its own tables as cleanup targets
+- **Flexible retention period settings**: Configurable retention days per table
+- **Conditional cleanup**: Supports conditions such as expired, used, or unused
+- **Multilingual support**: Descriptions displayed in Japanese and English
 
-## アクセス方法
+## How to Access
 
-管理画面 > 設定 > システム設定 > データベース管理
+Admin Panel > Settings > System Settings > Database Management
 
-## クリーンアップ対象テーブル（コア）
+## Core Cleanup Targets
 
-### 1. ログイン試行履歴 (login_attempts)
-- **テーブル**: `members_login_attempts`
-- **対象カラム**: `created_at`
-- **デフォルト保持期間**: 30日
-- **説明**: 管理者のログイン試行記録をクリーンアップします
+### 1. Login Attempt History (login_attempts)
+- **Table**: `members_login_attempts`
+- **Date column**: `created_at`
+- **Default retention period**: 30 days
+- **Description**: Cleans up admin login attempt records
 
-### 2. パスワードリセットトークン (password_reset_tokens)
-- **テーブル**: `members_password_reset_tokens`
-- **対象カラム**: `created_at`
-- **デフォルト保持期間**: 30日
-- **説明**: 古いパスワードリセットトークン記録をクリーンアップします
+### 2. Password Reset Tokens (password_reset_tokens)
+- **Table**: `members_password_reset_tokens`
+- **Date column**: `created_at`
+- **Default retention period**: 30 days
+- **Description**: Cleans up old password reset token records
 
-### 3. 二段階認証試行履歴 (two_fa_attempts)
-- **テーブル**: `members_two_fa_attempts`
-- **対象カラム**: `created_at`
-- **デフォルト保持期間**: 30日
-- **説明**: 二段階認証の試行履歴をクリーンアップします
+### 3. 2FA Attempt History (two_fa_attempts)
+- **Table**: `members_two_fa_attempts`
+- **Date column**: `created_at`
+- **Default retention period**: 30 days
+- **Description**: Cleans up 2FA attempt history
 
-### 4. 二段階認証トークン (two_fa_tokens)
-- **テーブル**: `members_two_fa_tokens`
-- **対象カラム**: `created_at`
-- **デフォルト保持期間**: 7日
-- **追加条件**: `expired` (期限切れのトークンのみ)
-- **説明**: 期限切れの二段階認証トークンをクリーンアップします
+### 4. 2FA Tokens (two_fa_tokens)
+- **Table**: `members_two_fa_tokens`
+- **Date column**: `created_at`
+- **Default retention period**: 7 days
+- **Additional condition**: `expired` (expired tokens only)
+- **Description**: Cleans up expired 2FA tokens
 
-### 5. 二段階認証回復コード (recovery_codes)
-- **テーブル**: `members_two_fa_recovery_codes`
-- **対象カラム**: `created_at`
-- **デフォルト保持期間**: 90日
-- **追加条件**: `used` (使用済みのコードのみ)
-- **説明**: 使用済み・無効化された二段階認証回復コードをクリーンアップします
+### 5. 2FA Recovery Codes (recovery_codes)
+- **Table**: `members_two_fa_recovery_codes`
+- **Date column**: `created_at`
+- **Default retention period**: 90 days
+- **Additional condition**: `used` (used codes only)
+- **Description**: Cleans up used and invalidated 2FA recovery codes
 
-### 6. 二段階認証用PASSKEY (passkeys)
-- **テーブル**: `webauthn_credentials`
-- **対象カラム**: `created_at`
-- **デフォルト保持期間**: 365日
-- **説明**: 古い二段階認証用PASSKEY（生体認証）をクリーンアップします
+### 6. 2FA Passkeys (passkeys)
+- **Table**: `webauthn_credentials`
+- **Date column**: `created_at`
+- **Default retention period**: 365 days
+- **Description**: Cleans up old 2FA passkeys (biometric authentication)
 
-### 7. セッション (sessions)
-- **テーブル**: `sessions`
-- **対象カラム**: `last_activity`
-- **カラムタイプ**: `timestamp`
-- **デフォルト保持期間**: 7日
-- **説明**: 古いセッション記録をクリーンアップします
+### 7. Sessions (sessions)
+- **Table**: `sessions`
+- **Date column**: `last_activity`
+- **Column type**: `timestamp`
+- **Default retention period**: 7 days
+- **Description**: Cleans up old session records
 
-### 8. キャッシュデータ (cache_data)
-- **テーブル**: `cache`
-- **対象カラム**: `expiration`
-- **カラムタイプ**: `timestamp`
-- **デフォルト保持期間**: なし（すべて削除）
-- **追加条件**: `expired_cache` (期限切れのキャッシュのみ)
-- **説明**: 期限切れのキャッシュデータをクリーンアップします
+### 8. Cache Data (cache_data)
+- **Table**: `cache`
+- **Date column**: `expiration`
+- **Column type**: `timestamp`
+- **Default retention period**: None (deletes all)
+- **Additional condition**: `expired_cache` (expired cache only)
+- **Description**: Cleans up expired cache data
 
-## プラグイン/テーマでクリーンアップ対象を追加する方法
+## Adding Cleanup Targets from Plugins/Themes
 
-### 1. 設定ファイルの作成
+### 1. Creating a Configuration File
 
-プラグインまたはテーマのディレクトリに `config/database-cleanup.php` ファイルを作成します。
+Create a `config/database-cleanup.php` file in your plugin or theme directory.
 
-**ファイルパス例:**
+**Example file paths:**
 ```
 plugins/YourPlugin/config/database-cleanup.php
 themes/YourTheme/config/database-cleanup.php
 ```
 
-**設定ファイルの例:**
+**Example configuration file:**
 ```php
 <?php
 
 return [
     'your_table_key' => [
-        'table' => 'plg_your_plugin_table_name',  // テーブル名
-        'date_column' => 'created_at',             // 日付カラム名
-        'default_days' => 30,                      // デフォルト保持日数
+        'table' => 'plg_your_plugin_table_name',  // Table name
+        'date_column' => 'created_at',             // Date column name
+        'default_days' => 30,                      // Default retention days
         'name' => 'your-plugin::admin/settings/systems/database.your_table_key.name',
         'description' => 'your-plugin::admin/settings/systems/database.your_table_key.description',
-        'enabled' => true,                         // 有効/無効
-        'date_column_type' => 'datetime',          // オプション: 'datetime' or 'timestamp'
-        'additional_conditions' => 'expired',      // オプション: 追加条件
+        'enabled' => true,                         // Enabled/disabled
+        'date_column_type' => 'datetime',          // Optional: 'datetime' or 'timestamp'
+        'additional_conditions' => 'expired',      // Optional: additional conditions
     ],
-    
-    // 複数のテーブルを定義可能
+
+    // Multiple tables can be defined
     'another_table' => [
         'table' => 'plg_your_plugin_another_table',
         'date_column' => 'updated_at',
@@ -111,86 +111,86 @@ return [
 ];
 ```
 
-### 2. 翻訳ファイルの作成
+### 2. Creating Translation Files
 
-コアと同じディレクトリ構造で翻訳ファイルを作成します。
+Create translation files following the same directory structure as the core.
 
-**日本語翻訳ファイル:**
+**Japanese translation file:**
 ```
 plugins/YourPlugin/lang/ja/admin/settings/systems/database.php
 ```
 
-**英語翻訳ファイル:**
+**English translation file:**
 ```
 plugins/YourPlugin/lang/en/admin/settings/systems/database.php
 ```
 
-**翻訳ファイルの例:**
+**Example translation file:**
 ```php
 <?php
 
 return [
     'your_table_key' => [
-        'name' => 'あなたのテーブル名',
-        'description' => 'あなたのテーブルの説明文',
+        'name' => 'Your Table Name',
+        'description' => 'Description of your table',
     ],
     'another_table' => [
-        'name' => '別のテーブル名',
-        'description' => '別のテーブルの説明文',
+        'name' => 'Another Table Name',
+        'description' => 'Description of another table',
     ],
 ];
 ```
 
-### 3. 設定パラメータの詳細
+### 3. Configuration Parameter Details
 
-#### 必須パラメータ
+#### Required Parameters
 
-| パラメータ | 型 | 説明 |
-|----------|-----|------|
-| `table` | string | クリーンアップ対象のテーブル名 |
-| `date_column` | string | 日付を判定するカラム名 |
-| `default_days` | int\|null | デフォルト保持日数（nullの場合はすべて削除） |
-| `name` | string | 翻訳キー（テーブル名の表示用） |
-| `description` | string | 翻訳キー（説明文の表示用） |
-| `enabled` | bool | クリーンアップ機能の有効/無効 |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `table` | string | Name of the table to clean up |
+| `date_column` | string | Column name used for date evaluation |
+| `default_days` | int\|null | Default retention days (null deletes all records) |
+| `name` | string | Translation key (for table name display) |
+| `description` | string | Translation key (for description display) |
+| `enabled` | bool | Enable/disable the cleanup feature |
 
-#### オプションパラメータ
+#### Optional Parameters
 
-| パラメータ | 型 | 説明 | デフォルト値 |
-|----------|-----|------|------------|
-| `date_column_type` | string | 日付カラムの型（'datetime' or 'timestamp'） | 'datetime' |
-| `additional_conditions` | string | 追加の削除条件 | null |
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| `date_column_type` | string | Date column type ('datetime' or 'timestamp') | 'datetime' |
+| `additional_conditions` | string | Additional deletion conditions | null |
 
-#### additional_conditions で使用可能な値
+#### Available Values for additional_conditions
 
-| 値 | 説明 |
-|----|------|
-| `expired` | `expires_at < now()` の条件を追加 |
-| `used` | `used_at IS NOT NULL` の条件を追加 |
-| `unused` | `last_used_at IS NULL` の条件を追加 |
-| `expired_cache` | `expiration < now()` の条件を追加（キャッシュ用） |
+| Value | Description |
+|-------|-------------|
+| `expired` | Adds the condition `expires_at < now()` |
+| `used` | Adds the condition `used_at IS NOT NULL` |
+| `unused` | Adds the condition `last_used_at IS NULL` |
+| `expired_cache` | Adds the condition `expiration < now()` (for cache) |
 
-### 4. 翻訳キーの命名規則
+### 4. Translation Key Naming Convention
 
-プラグイン/テーマの翻訳キーは以下の形式で指定します:
+Translation keys for plugins/themes follow this format:
 
 ```
 {plugin-slug}::admin/settings/systems/database.{table_key}.{field}
 ```
 
-**例:**
+**Example:**
 ```php
 'name' => 'dixlase-users::admin/settings/systems/database.login_attempts.name',
 'description' => 'dixlase-users::admin/settings/systems/database.login_attempts.description',
 ```
 
-**プラグインスラッグの確認方法:**
-- プラグインディレクトリ名をケバブケース（小文字+ハイフン）に変換
-- 例: `DixlaseUsers` → `dixlase-users`
+**How to determine the plugin slug:**
+- Convert the plugin directory name to kebab-case (lowercase with hyphens)
+- Example: `DixlaseUsers` -> `dixlase-users`
 
-## 実装例: DixlaseUsersプラグイン
+## Implementation Example: DixlaseUsers Plugin
 
-### 設定ファイル
+### Configuration File
 `plugins/DixlaseUsers/config/database-cleanup.php`
 
 ```php
@@ -228,7 +228,7 @@ return [
 ];
 ```
 
-### 翻訳ファイル（日本語）
+### Translation File (Japanese)
 `plugins/DixlaseUsers/lang/ja/admin/settings/systems/database.php`
 
 ```php
@@ -250,86 +250,86 @@ return [
 ];
 ```
 
-## 使用方法
+## Usage
 
-### 管理画面からのクリーンアップ
+### Running Cleanup from the Admin Panel
 
-1. 管理画面 > 設定 > システム設定 > データベース管理 にアクセス
-2. クリーンアップしたいテーブルを選択
-3. 保持日数を入力（デフォルト値が設定されている場合は自動入力）
-4. 「クリーンアップ」ボタンをクリック
-5. 確認ダイアログで「OK」をクリック
+1. Navigate to Admin Panel > Settings > System Settings > Database Management
+2. Select the tables you want to clean up
+3. Enter the retention days (auto-filled if a default value is configured)
+4. Click the "Cleanup" button
+5. Click "OK" in the confirmation dialog
 
-### 保持日数の設定
+### Retention Period Settings
 
-- **0日**: すべてのレコードを削除
-- **1日以上**: 指定日数より古いレコードを削除
-- **null（設定なし）**: すべてのレコードを削除（キャッシュデータなど）
+- **0 days**: Deletes all records
+- **1 or more days**: Deletes records older than the specified number of days
+- **null (not set)**: Deletes all records (e.g., cache data)
 
-## 注意事項
+## Important Notes
 
-1. **バックアップの推奨**: クリーンアップ実行前にデータベースのバックアップを推奨します
-2. **削除は取り消せません**: 一度削除したデータは復元できません
-3. **追加条件の確認**: `additional_conditions` を使用する場合、対象カラムがテーブルに存在することを確認してください
-4. **テーブル名のプレフィックス**: プラグインのテーブルには `plg_` プレフィックスを付けることを推奨します
-5. **翻訳ファイルの配置**: コアと同じディレクトリ構造（`lang/{locale}/admin/settings/systems/database.php`）を使用してください
+1. **Backup recommended**: It is recommended to back up the database before running cleanup
+2. **Deletion is irreversible**: Deleted data cannot be recovered
+3. **Verify additional conditions**: When using `additional_conditions`, ensure the target columns exist in the table
+4. **Table name prefix**: It is recommended to prefix plugin tables with `plg_`
+5. **Translation file placement**: Use the same directory structure as the core (`lang/{locale}/admin/settings/systems/database.php`)
 
-## トラブルシューティング
+## Troubleshooting
 
-### プラグインのクリーンアップ項目が表示されない
+### Plugin cleanup items are not displayed
 
-1. `config/database-cleanup.php` が正しい場所に配置されているか確認
-2. 設定ファイルの構文エラーがないか確認
-3. `enabled` が `true` に設定されているか確認
+1. Verify that `config/database-cleanup.php` is placed in the correct location
+2. Check the configuration file for syntax errors
+3. Verify that `enabled` is set to `true`
 
-### 翻訳が表示されない
+### Translations are not displayed
 
-1. 翻訳ファイルが正しいディレクトリ構造で配置されているか確認
-2. 翻訳キーのプレフィックスが正しいか確認（プラグインスラッグ）
-3. 翻訳ファイルの構文エラーがないか確認
+1. Verify that translation files are placed in the correct directory structure
+2. Check that the translation key prefix is correct (plugin slug)
+3. Check the translation file for syntax errors
 
-### クリーンアップが実行されない
+### Cleanup does not execute
 
-1. テーブル名が正しいか確認
-2. `date_column` が実際のテーブルに存在するか確認
-3. `additional_conditions` で指定したカラムが存在するか確認
-4. データベース接続が正常か確認
+1. Verify that the table name is correct
+2. Verify that the `date_column` exists in the actual table
+3. Verify that columns specified in `additional_conditions` exist
+4. Check that the database connection is working properly
 
-## 関連ファイル
+## Related Files
 
-- **コア設定**: `config/admin/database-cleanup.php`
-- **サービス**: `app/Services/DatabaseCleanupService.php`
-- **リクエスト**: `app/Http/Requests/Admin/Settings/Systems/AdminSystemDatabaseCleanupRequest.php`
-- **ビュー**: `resources/views/admin/settings/systems/database.blade.php`
-- **翻訳（日本語）**: `lang/ja/admin/settings/systems/database.php`
-- **翻訳（英語）**: `lang/en/admin/settings/systems/database.php`
+- **Core configuration**: `config/admin/database-cleanup.php`
+- **Service**: `app/Services/DatabaseCleanupService.php`
+- **Request**: `app/Http/Requests/Admin/Settings/Systems/AdminSystemDatabaseCleanupRequest.php`
+- **View**: `resources/views/admin/settings/systems/database.blade.php`
+- **Translation (Japanese)**: `lang/ja/admin/settings/systems/database.php`
+- **Translation (English)**: `lang/en/admin/settings/systems/database.php`
 
-## 開発者向け情報
+## Developer Reference
 
 ### DatabaseCleanupService
 
-クリーンアップ処理を担当するサービスクラス。
+The service class responsible for cleanup processing.
 
-**主要メソッド:**
-- `getPluginCleanupInfo()`: プラグインのクリーンアップ設定を取得
-- `cleanup($type, $days)`: 指定されたタイプのクリーンアップを実行
-- `applyAdditionalCondition($query, $condition)`: 追加条件を適用
+**Key methods:**
+- `getPluginCleanupInfo()`: Retrieves plugin cleanup configuration
+- `cleanup($type, $days)`: Executes cleanup for the specified type
+- `applyAdditionalCondition($query, $condition)`: Applies additional conditions
 
-### バリデーション
+### Validation
 
-`AdminSystemDatabaseCleanupRequest` クラスで、コアとプラグインのクリーンアップタイプを動的に検証します。
+The `AdminSystemDatabaseCleanupRequest` class dynamically validates both core and plugin cleanup types.
 
 ```php
-// コアのクリーンアップタイプ
+// Core cleanup types
 $coreTypes = array_keys(config('admin.database-cleanup', []));
 
-// プラグインのクリーンアップタイプ
+// Plugin cleanup types
 $pluginTypes = array_keys($pluginCleanupInfo);
 
-// すべてのタイプを結合
+// Merge all types
 $allTypes = array_merge($coreTypes, $pluginTypes, ['all']);
 ```
 
-## まとめ
+## Summary
 
-データベースクリーンアップ機能は、Dixlaseシステムのパフォーマンスを維持するための重要な機能です。プラグインやテーマ開発者は、この機能を活用して独自のテーブルのクリーンアップを簡単に実装できます。
+The database cleanup feature is essential for maintaining Dixlase system performance. Plugin and theme developers can leverage this feature to easily implement cleanup for their own tables.

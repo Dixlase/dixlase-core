@@ -1,31 +1,31 @@
-# ファイル整合性チェック (File Integrity Check)
+# File Integrity Check
 
-## 概要
+## Overview
 
-ファイル整合性チェックは、Dixlaseコアファイルの改ざんを検知するセキュリティ機能です。ベースライン（基準となるファイルハッシュ）と現在のファイルを比較し、不正な変更や追加・削除を検出します。
+The file integrity check is a security feature that detects tampering with Dixlase core files. It compares current files against a baseline (a reference set of file hashes) to detect unauthorized modifications, additions, and deletions.
 
-### 主な機能
+### Key Features
 
-- **ベースライン生成**: コアファイルのハッシュ値を記録
-- **整合性スキャン**: 現在のファイルとベースラインを比較
-- **変更検知**: 変更・追加・削除されたファイルを検出
-- **疑わしいファイル検知**: 本来存在すべきでない場所のPHPファイルを検出
-- **スキャン履歴管理**: 過去のスキャン結果を保存・閲覧
-- **自動スケジュール**: 毎日午前3時に自動スキャン実行
+- **Baseline generation**: Records hash values of core files
+- **Integrity scanning**: Compares current files against the baseline
+- **Change detection**: Detects modified, added, and deleted files
+- **Suspicious file detection**: Detects PHP files in locations where they should not exist
+- **Scan history management**: Stores and displays past scan results
+- **Automatic scheduling**: Runs an automatic scan daily at 3:00 AM
 
-## ベースライン情報
+## Baseline Information
 
-### ベースラインとは
+### What Is a Baseline?
 
-ベースラインは、正常な状態のコアファイルのハッシュ値（SHA-256）を記録したものです。初回スキャン時またはベースライン再生成時に作成されます。
+A baseline is a record of SHA-256 hash values for core files in their normal state. It is created during the initial scan or when the baseline is regenerated.
 
-### 保存場所
+### Storage Location
 
 ```
 storage/app/dixlase/security/core_hashes.json
 ```
 
-### ベースラインの構造
+### Baseline Structure
 
 ```json
 {
@@ -44,128 +44,128 @@ storage/app/dixlase/security/core_hashes.json
 }
 ```
 
-### ベースライン再生成のタイミング
+### When to Regenerate the Baseline
 
-以下の場合にベースラインを再生成してください：
+Regenerate the baseline in the following cases:
 
-1. **Dixlaseのアップデート後**
-   - コアファイルが更新されるため
-   
-2. **コアファイルを意図的に修正した後**
-   - バグ修正やカスタマイズを行った場合
+1. **After a Dixlase update**
+   - Core files will have been updated
 
-3. **誤検知が多発する場合**
-   - ベースラインが古くなっている可能性
+2. **After intentionally modifying core files**
+   - When applying bug fixes or customizations
 
-## スキャン対象ディレクトリ
+3. **When false positives occur frequently**
+   - The baseline may be outdated
 
-以下のディレクトリとファイルが整合性チェックの対象です：
+## Scanned Directories
 
-### コアディレクトリ
+The following directories and files are subject to integrity checks:
 
-| パス | 説明 |
-|------|------|
-| `app/` | アプリケーションロジック（コントローラー、モデル、サービス等） |
-| `bootstrap/` | アプリケーション起動処理 |
-| `config/` | 設定ファイル |
-| `routes/` | ルート定義 |
-| `resources/` | ビュー、言語ファイル、アセット |
-| `database/migrations/` | データベースマイグレーション |
-| `public/index.php` | エントリポイント |
-| `public/build/` | ビルド済みアセット（JS/CSS） |
-| `artisan` | Artisanコマンドラインツール |
-| `composer.json` | 依存関係定義 |
-| `composer.lock` | 依存関係ロックファイル |
+### Core Directories
 
-### 対象に含める理由
+| Path | Description |
+|------|-------------|
+| `app/` | Application logic (controllers, models, services, etc.) |
+| `bootstrap/` | Application bootstrapping |
+| `config/` | Configuration files |
+| `routes/` | Route definitions |
+| `resources/` | Views, language files, assets |
+| `database/migrations/` | Database migrations |
+| `public/index.php` | Entry point |
+| `public/build/` | Built assets (JS/CSS) |
+| `artisan` | Artisan command-line tool |
+| `composer.json` | Dependency definitions |
+| `composer.lock` | Dependency lock file |
 
-- **app/**: コアロジックの改ざん検知
-- **bootstrap/**: 起動プロセスの保護
-- **config/**: 設定の不正変更検知
-- **routes/**: ルーティングの改ざん防止
-- **resources/**: UIテンプレートの保護
-- **database/migrations/**: スキーマ定義の保護
-- **public/build/**: 本番用アセットの改ざん検知（重要）
-- **composer.json/lock**: 依存関係の不正変更検知
+### Reasons for Inclusion
 
-## 除外ディレクトリ・パターン
+- **app/**: Detect tampering with core logic
+- **bootstrap/**: Protect the bootstrap process
+- **config/**: Detect unauthorized configuration changes
+- **routes/**: Prevent route tampering
+- **resources/**: Protect UI templates
+- **database/migrations/**: Protect schema definitions
+- **public/build/**: Detect tampering with production assets (important)
+- **composer.json/lock**: Detect unauthorized dependency changes
 
-以下のディレクトリとファイルは整合性チェックから除外されます：
+## Excluded Directories and Patterns
 
-### 除外リスト
+The following directories and files are excluded from integrity checks:
 
-| パス/パターン | 説明 | 除外理由 |
-|--------------|------|----------|
-| `custom/` | カスタマイズファイル | ユーザーが意図的に追加・変更 |
-| `storage/` | ストレージディレクトリ | ログ、キャッシュ、アップロードファイル等 |
-| `vendor/` | Composer依存パッケージ | Composerで管理（将来的に別枠で対応予定） |
-| `node_modules/` | npm依存パッケージ | npmで管理 |
-| `bootstrap/cache/` | 起動キャッシュ | 自動生成される |
-| `.git/` | Gitリポジトリ | バージョン管理システム |
-| `.env` | 環境設定ファイル | 環境ごとに異なる |
-| `.env.*` | 環境設定ファイル（各環境） | 環境ごとに異なる |
-| `public/uploads/` | ユーザーアップロード | 動的に変更される |
-| `public/storage/` | ストレージシンボリックリンク | 動的コンテンツ |
-| `public/hot` | Vite開発サーバー | 開発環境のみ |
-| `*.log` | ログファイル | 常に変更される |
+### Exclusion List
 
-### 除外する理由
+| Path/Pattern | Description | Reason for Exclusion |
+|-------------|-------------|---------------------|
+| `custom/` | Customization files | Intentionally added/modified by users |
+| `storage/` | Storage directory | Logs, cache, uploaded files, etc. |
+| `vendor/` | Composer dependency packages | Managed by Composer (separate handling planned for the future) |
+| `node_modules/` | npm dependency packages | Managed by npm |
+| `bootstrap/cache/` | Bootstrap cache | Auto-generated |
+| `.git/` | Git repository | Version control system |
+| `.env` | Environment configuration file | Varies by environment |
+| `.env.*` | Environment configuration files (per environment) | Varies by environment |
+| `public/uploads/` | User uploads | Dynamically changed |
+| `public/storage/` | Storage symlink | Dynamic content |
+| `public/hot` | Vite dev server | Development environment only |
+| `*.log` | Log files | Constantly changing |
 
-1. **動的に変更されるファイル**
-   - ログ、キャッシュ、セッション等
-   - 正常な動作で頻繁に変更される
+### Reasons for Exclusion
 
-2. **ユーザーのカスタマイズ**
-   - `custom/` ディレクトリ
-   - 意図的な変更であり、改ざんではない
+1. **Dynamically changing files**
+   - Logs, cache, sessions, etc.
+   - Frequently changed during normal operation
 
-3. **環境依存ファイル**
-   - `.env` ファイル
-   - 環境ごとに内容が異なる
+2. **User customizations**
+   - `custom/` directory
+   - Intentional changes, not tampering
 
-4. **外部パッケージ**
+3. **Environment-dependent files**
+   - `.env` files
+   - Content differs by environment
+
+4. **External packages**
    - `vendor/`, `node_modules/`
-   - パッケージマネージャーで管理
+   - Managed by package managers
 
-## カスタムディレクトリ構造
+## Custom Directory Structure
 
-ユーザーがコアやプラグイン、テーマをカスタマイズする場合は、`custom/` ディレクトリ配下に配置してください。
+When customizing core, plugins, or themes, place files under the `custom/` directory.
 
-### 推奨構造
+### Recommended Structure
 
 ```
 custom/
-├── app/              # カスタムアプリケーションロジック
-├── config/           # カスタム設定ファイル
-├── database/         # カスタムマイグレーション・シーダー
-├── lang/             # カスタム言語ファイル
-├── plugins/          # カスタムプラグイン
-├── resources/        # カスタムビュー・アセット
-├── routes/           # カスタムルート
-├── tests/            # カスタムテスト
-└── themes/           # カスタムテーマ
+├── app/              # Custom application logic
+├── config/           # Custom configuration files
+├── database/         # Custom migrations and seeders
+├── lang/             # Custom language files
+├── plugins/          # Custom plugins
+├── resources/        # Custom views and assets
+├── routes/           # Custom routes
+├── tests/            # Custom tests
+└── themes/           # Custom themes
 ```
 
-### メリット
+### Benefits
 
-- **コアとの分離**: アップデート時の競合を最小化
-- **明確な管理**: カスタマイズ箇所が一目瞭然
-- **バックアップが容易**: `custom/` ディレクトリのみバックアップ
-- **整合性チェック対象外**: 誤検知を防止
+- **Separation from core**: Minimizes conflicts during updates
+- **Clear management**: Customizations are immediately visible
+- **Easy backups**: Only the `custom/` directory needs to be backed up
+- **Excluded from integrity checks**: Prevents false positives
 
-## スキャン実行方法
+## Running Scans
 
-### 手動スキャン
+### Manual Scan
 
-管理画面から実行：
+Run from the admin panel:
 
-1. **管理画面 > セキュリティ設定 > ファイル整合性**
-2. 「スキャン実行」ボタンをクリック
-3. 確認モーダルで「確認」をクリック
+1. **Admin Panel > Security Settings > File Integrity**
+2. Click the "Run Scan" button
+3. Click "Confirm" in the confirmation modal
 
-### 自動スキャン
+### Automatic Scan
 
-毎日午前3時に自動実行されます（スケジュール設定）。
+Runs automatically daily at 3:00 AM (scheduled).
 
 ```php
 // routes/console.php
@@ -175,104 +175,104 @@ Schedule::command('dls:integrity:scan --scheduled')
     ->runInBackground();
 ```
 
-### コマンドライン
+### Command Line
 
 ```bash
-# 手動スキャン
+# Manual scan
 php artisan dls:integrity:scan
 
-# スケジュール実行
+# Scheduled execution
 php artisan dls:integrity:scan --scheduled
 
-# ベースライン再生成
+# Regenerate baseline
 php artisan dls:integrity:regenerate-baseline
 ```
 
-## スキャン結果の見方
+## Understanding Scan Results
 
-### ステータス
+### Status
 
-- **正常 (OK)**: すべてのファイルが正常
-- **警告 (WARNING)**: 軽微な問題を検出
-- **重大 (CRITICAL)**: 深刻な改ざんを検出
+- **OK**: All files are normal
+- **WARNING**: Minor issues detected
+- **CRITICAL**: Serious tampering detected
 
-### 検出される問題
+### Detected Issues
 
-1. **変更されたファイル (Changed)**
-   - ハッシュ値が一致しないファイル
-   - コアファイルの改ざんの可能性
+1. **Changed Files**
+   - Files with mismatched hash values
+   - Possible core file tampering
 
-2. **追加されたファイル (Added)**
-   - ベースラインに存在しないファイル
-   - 不正なファイルの追加の可能性
+2. **Added Files**
+   - Files not present in the baseline
+   - Possible unauthorized file additions
 
-3. **削除されたファイル (Removed)**
-   - ベースラインに存在するが現在は存在しないファイル
-   - 重要ファイルの削除の可能性
+3. **Removed Files**
+   - Files present in the baseline but no longer exist
+   - Possible deletion of important files
 
-4. **疑わしいファイル (Suspicious)**
-   - `public/uploads/` 等にPHPファイルが存在
-   - Webシェルやバックドアの可能性
+4. **Suspicious Files**
+   - PHP files found in locations such as `public/uploads/`
+   - Possible web shells or backdoors
 
-## トラブルシューティング
+## Troubleshooting
 
-### 誤検知が多い
+### Too Many False Positives
 
-**原因**: ベースラインが古い、または意図的な変更を行った
+**Cause**: Baseline is outdated or intentional changes were made
 
-**対処法**:
-1. 変更が正当なものか確認
-2. 正当な変更であれば、ベースラインを再生成
+**Solution**:
+1. Verify whether the changes are legitimate
+2. If the changes are legitimate, regenerate the baseline
 
-### スキャンが遅い
+### Scan Is Slow
 
-**原因**: 対象ファイル数が多い
+**Cause**: Large number of target files
 
-**対処法**:
-1. 除外パターンを見直し
-2. 不要なファイルを削除
-3. サーバースペックの向上を検討
+**Solution**:
+1. Review the exclusion patterns
+2. Remove unnecessary files
+3. Consider upgrading server specifications
 
-### ベースラインが生成できない
+### Baseline Cannot Be Generated
 
-**原因**: ストレージディレクトリの書き込み権限がない
+**Cause**: No write permissions on the storage directory
 
-**対処法**:
+**Solution**:
 ```bash
 chmod -R 775 storage/app/dixlase/security
 chown -R www-data:www-data storage/app/dixlase/security
 ```
 
-## セキュリティ上の注意事項
+## Security Notes
 
-1. **ベースラインファイルの保護**
-   - `storage/app/dixlase/security/` の権限を適切に設定
-   - 不正なアクセスを防止
+1. **Protect the baseline file**
+   - Set appropriate permissions on `storage/app/dixlase/security/`
+   - Prevent unauthorized access
 
-2. **定期的なスキャン**
-   - 自動スケジュールが正常に動作しているか確認
-   - 手動でも定期的に実行を推奨
+2. **Regular scanning**
+   - Verify that the automatic schedule is running correctly
+   - Periodic manual execution is also recommended
 
-3. **アラートへの対応**
-   - 重大なアラートは即座に調査
-   - 変更内容を詳細に確認
+3. **Respond to alerts**
+   - Investigate critical alerts immediately
+   - Review the details of any changes
 
-4. **ログの保存**
-   - スキャン履歴は定期的にバックアップ
-   - 削除機能を使用する際は慎重に
+4. **Log retention**
+   - Back up scan history regularly
+   - Exercise caution when using the delete function
 
-## 関連ファイル
+## Related Files
 
-- **サービス**: `app/Services/FileIntegrityService.php`
-- **コントローラー**: `app/Http/Controllers/Admin/Settings/Security/AdminSecurityIntegrityController.php`
-- **モデル**: `app/Models/FileIntegrityAudit.php`
-- **ビュー**: `resources/views/admin/settings/security/integrity.blade.php`
-- **コマンド**: `app/Console/Commands/FileIntegrity/`
-- **ベースライン**: `storage/app/dixlase/security/core_hashes.json`
+- **Service**: `app/Services/FileIntegrityService.php`
+- **Controller**: `app/Http/Controllers/Admin/Settings/Security/AdminSecurityIntegrityController.php`
+- **Model**: `app/Models/FileIntegrityAudit.php`
+- **View**: `resources/views/admin/settings/security/integrity.blade.php`
+- **Commands**: `app/Console/Commands/FileIntegrity/`
+- **Baseline**: `storage/app/dixlase/security/core_hashes.json`
 
-## 更新履歴
+## Changelog
 
-- **2026-02-10**: 初版作成
-  - 対象ディレクトリに `resources`, `database/migrations`, `public/build` を追加
-  - 除外パターンに `custom`, `public/uploads`, `public/storage`, `public/hot`, `*.log` を追加
-  - カスタムディレクトリ構造の明確化
+- **2026-02-10**: Initial version
+  - Added `resources`, `database/migrations`, and `public/build` to scanned directories
+  - Added `custom`, `public/uploads`, `public/storage`, `public/hot`, and `*.log` to exclusion patterns
+  - Clarified the custom directory structure

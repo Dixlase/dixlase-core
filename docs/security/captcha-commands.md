@@ -1,40 +1,40 @@
-# CAPTCHA管理コマンドガイド
+# CAPTCHA Management Commands Guide
 
-## 概要
+## Overview
 
-Dixlaseには、CAPTCHAシステムを管理するための2つの主要なコマンドがあります：
+Dixlase provides two primary commands for managing the CAPTCHA system:
 
-1. **`dls:admin:captcha-failover`** - CAPTCHA設定とフェイルオーバー管理（通常運用）
-2. **`dls:admin:captcha-bypass`** - 緊急時のCAPTCHAバイパス（災害復旧専用）
+1. **`dls:admin:captcha-failover`** - CAPTCHA configuration and failover management (normal operations)
+2. **`dls:admin:captcha-bypass`** - Emergency CAPTCHA bypass (disaster recovery only)
 
-これらのコマンドは、CAPTCHAプロバイダーの障害時や緊急時に管理者がシステムにアクセスできるようにするための重要なツールです。
-
----
-
-## 1. CAPTCHAフェイルオーバー管理コマンド
-
-### コマンド: `dls:admin:captcha-failover`
-
-CAPTCHAプロバイダーの状態確認、切り替え、フェイルオーバー設定を管理します。
-
-### 使用シーン
-
-- **通常運用時のプロバイダー管理**
-- Google reCAPTCHAが遅い → Cloudflare Turnstileに切り替え
-- プロバイダーの状態確認
-- 自動フェイルオーバーの有効/無効設定
+These commands are essential tools that allow administrators to access the system during CAPTCHA provider outages or emergencies.
 
 ---
 
-### 1.1 ステータス確認
+## 1. CAPTCHA Failover Management Command
 
-現在のCAPTCHAプロバイダーの状態を確認します。
+### Command: `dls:admin:captcha-failover`
+
+Manages CAPTCHA provider status checks, switching, and failover configuration.
+
+### Use Cases
+
+- **Provider management during normal operations**
+- Google reCAPTCHA is slow -> switch to Cloudflare Turnstile
+- Provider status checks
+- Enabling/disabling automatic failover
+
+---
+
+### 1.1 Status Check
+
+Check the current status of CAPTCHA providers.
 
 ```bash
 php artisan dls:admin:captcha-failover status
 ```
 
-**出力例:**
+**Example output:**
 ```
 [CAPTCHA Failover Status]
 
@@ -44,43 +44,43 @@ php artisan dls:admin:captcha-failover status
 | Primary Provider | Cloudflare Turnstile |
 | Active Provider  | Cloudflare Turnstile |
 | Failed Over      | No                   |
-| Auto Failover    | ✅ Enabled           |
+| Auto Failover    | Enabled              |
 +------------------+----------------------+
 
 [Configured Providers]
 +--------------------------------+------------+---------+----------+----------+
 | Provider                       | Configured | Enabled | Verified | Failures |
 +--------------------------------+------------+---------+----------+----------+
-| ❌ Google reCAPTCHA            | No         | No      | No       | 0        |
-| ❌ Google reCAPTCHA Enterprise | No         | No      | No       | 0        |
-| 🟢 Cloudflare Turnstile        | Yes        | No      | No       | 0        |
+| Google reCAPTCHA               | No         | No      | No       | 0        |
+| Google reCAPTCHA Enterprise    | No         | No      | No       | 0        |
+| Cloudflare Turnstile           | Yes        | No      | No       | 0        |
 +--------------------------------+------------+---------+----------+----------+
 ```
 
-**表示内容:**
-- **Primary Provider**: 設定されているメインプロバイダー
-- **Active Provider**: 現在使用中のプロバイダー
-- **Failed Over**: フェイルオーバー中かどうか
-- **Auto Failover**: 自動フェイルオーバーの有効/無効
-- **Configured Providers**: 各プロバイダーの設定状態
+**Displayed information:**
+- **Primary Provider**: The configured main provider
+- **Active Provider**: The currently active provider
+- **Failed Over**: Whether failover is in progress
+- **Auto Failover**: Whether automatic failover is enabled/disabled
+- **Configured Providers**: Configuration status of each provider
 
-**アイコンの意味:**
-- 🟢 現在アクティブ
-- 🟡 設定済み・有効・検証済み（切り替え可能）
-- ⚪ 設定済みだが未検証
-- ❌ 未設定
+**Icon legend:**
+- Green: Currently active
+- Yellow: Configured, enabled, and verified (switchable)
+- White: Configured but not verified
+- Red: Not configured
 
 ---
 
-### 1.2 利用可能プロバイダー一覧
+### 1.2 List Available Providers
 
-システムでサポートされているCAPTCHAプロバイダーの一覧を表示します。
+Displays the list of CAPTCHA providers supported by the system.
 
 ```bash
 php artisan dls:admin:captcha-failover providers
 ```
 
-**出力例:**
+**Example output:**
 ```
 [Available Providers]
 
@@ -91,38 +91,38 @@ php artisan dls:admin:captcha-failover providers
 
 ---
 
-### 1.3 プロバイダー切り替え
+### 1.3 Switch Providers
 
-CAPTCHAプロバイダーを別のプロバイダーに切り替えます。
+Switch the CAPTCHA provider to a different one.
 
-#### 一時的な切り替え（推奨）
+#### Temporary switch (recommended)
 
 ```bash
 php artisan dls:admin:captcha-failover switch --provider=turnstile
 ```
 
-一時的な切り替えは、次回のデフォルトリセットまで有効です。
+A temporary switch remains in effect until the next default reset.
 
-#### 永続的な切り替え
+#### Permanent switch
 
 ```bash
 php artisan dls:admin:captcha-failover switch --provider=turnstile --permanent
 ```
 
-永続的な切り替えは、確認プロンプトが表示されます：
+A permanent switch displays a confirmation prompt:
 
 ```
  Permanently switch to Cloudflare Turnstile? (yes/no) [no]:
  > yes
 
-✅ Switched to Cloudflare Turnstile (permanent).
+Switched to Cloudflare Turnstile (permanent).
 ```
 
-**注意事項:**
-- 切り替え先のプロバイダーは、設定済み・有効・検証済みである必要があります
-- 未設定のプロバイダーに切り替えようとするとエラーになります
+**Notes:**
+- The target provider must be configured, enabled, and verified
+- Attempting to switch to an unconfigured provider will result in an error
 
-**エラー例:**
+**Error example:**
 ```bash
 php artisan dls:admin:captcha-failover switch --provider=google
 ```
@@ -132,116 +132,116 @@ Switch failed. Please verify the provider is configured, enabled, and verified.
 
 ---
 
-### 1.4 デフォルトに戻す
+### 1.4 Reset to Default
 
-一時的な切り替えを解除し、デフォルトのプロバイダーに戻します。
+Cancel a temporary switch and revert to the default provider.
 
 ```bash
 php artisan dls:admin:captcha-failover reset
 ```
 
-**出力:**
+**Output:**
 ```
-✅ Reset to default provider.
+Reset to default provider.
 ```
 
 ---
 
-### 1.5 自動フェイルオーバー設定
+### 1.5 Auto-Failover Configuration
 
-CAPTCHAプロバイダーの障害時に、自動的に別のプロバイダーに切り替える機能を設定します。
+Configure the automatic failover feature that switches to another provider when the current CAPTCHA provider fails.
 
-#### 自動フェイルオーバーを有効化
+#### Enable auto-failover
 
 ```bash
 php artisan dls:admin:captcha-failover --auto-failover=on
 ```
 
-**出力:**
+**Output:**
 ```
-✅ Auto failover set to Enabled.
+Auto failover set to Enabled.
 ```
 
-#### 自動フェイルオーバーを無効化
+#### Disable auto-failover
 
 ```bash
 php artisan dls:admin:captcha-failover --auto-failover=off
 ```
 
-**出力:**
+**Output:**
 ```
-✅ Auto failover set to Disabled.
+Auto failover set to Disabled.
 ```
 
 ---
 
-### 1.6 コマンドオプション一覧
+### 1.6 Command Options Reference
 
-| オプション | 説明 | デフォルト値 |
-|-----------|------|------------|
-| `action` | 実行するアクション（status / switch / reset / providers） | - |
-| `--provider` | 切り替え先のプロバイダー名 | - |
-| `--permanent` | 永続的な切り替えを行う | false |
-| `--auto-failover` | 自動フェイルオーバーの有効/無効（on/off） | - |
-
----
-
-## 2. CAPTCHA緊急バイパスコマンド（ブレークグラス）
-
-### コマンド: `dls:admin:captcha-bypass`
-
-**⚠️ 警告: このコマンドは緊急時専用です**
-
-全てのCAPTCHAプロバイダーが障害で管理者がログインできない場合にのみ使用してください。
-
-### 使用シーン
-
-- **災害復旧専用**
-- 全CAPTCHAプロバイダーが障害
-- 管理者がログイン不可
-- 緊急アクセスが必要
-
-### セキュリティ上の注意
-
-1. **使用は最小限に**: 年に1回あるかないかの緊急時のみ
-2. **理由の記録必須**: 全ての使用は監査ログに記録されます
-3. **時間制限**: 最大60分まで
-4. **確認プロンプト**: 有効化時は必ず確認が求められます
+| Option | Description | Default |
+|--------|-------------|---------|
+| `action` | Action to perform (status / switch / reset / providers) | - |
+| `--provider` | Target provider name for switching | - |
+| `--permanent` | Perform a permanent switch | false |
+| `--auto-failover` | Enable/disable auto-failover (on/off) | - |
 
 ---
 
-### 2.1 バイパスステータス確認
+## 2. Emergency CAPTCHA Bypass Command (Break Glass)
 
-現在のバイパス状態と履歴を確認します。
+### Command: `dls:admin:captcha-bypass`
+
+**Warning: This command is for emergencies only**
+
+Use this only when all CAPTCHA providers are down and administrators cannot log in.
+
+### Use Cases
+
+- **Disaster recovery only**
+- All CAPTCHA providers are down
+- Administrators cannot log in
+- Emergency access is required
+
+### Security Considerations
+
+1. **Minimize usage**: Should only be needed once a year at most
+2. **Reason required**: All usage is recorded in the audit log
+3. **Time limit**: Maximum of 60 minutes
+4. **Confirmation prompt**: Activation always requires confirmation
+
+---
+
+### 2.1 Check Bypass Status
+
+Check the current bypass state and history.
 
 ```bash
 php artisan dls:admin:captcha-bypass status
 ```
 
-**出力例（無効状態）:**
+**Example output (inactive):**
 ```
-【CAPTCHA Bypass Status】
+[CAPTCHA Bypass Status]
 
-✅ Bypass is inactive (normal operation)
+Bypass is inactive (normal operation)
 
-【Recent Bypass History】
-+---------------------+------------------------+-------------+----------+
-| Time                | Action                 | Scope       | Reason   |
-+---------------------+------------------------+-------------+----------+
-| 2026-01-02 00:35:40 | captcha_bypass_enabled | admin_login | 緊急対応 |
-+---------------------+------------------------+-------------+----------+
+[Recent Bypass History]
++---------------------+------------------------+-------------+--------------------+
+| Time                | Action                 | Scope       | Reason             |
++---------------------+------------------------+-------------+--------------------+
+| 2026-01-02 00:35:40 | captcha_bypass_enabled | admin_login | Emergency response |
++---------------------+------------------------+-------------+--------------------+
 ```
 
-**出力例（有効状態）:**
+**Example output (active):**
 ```
-【CAPTCHA Bypass Status】
+[CAPTCHA Bypass Status]
 
-⚠️ Bypass is ACTIVE (security risk)
+Bypass is ACTIVE (security risk)
 +-------------------+---------------------+
 | Field             | Value               |
 +-------------------+---------------------+
 | Scope             | admin_login         |
-| Reason            | プロバイダー全障害  |
+| Reason            | All providers down  |
 | Expires At        | 2026-01-02 01:00:00 |
 | Remaining Minutes | 45 minutes          |
 | Enabled At        | 2026-01-02 00:15:00 |
@@ -250,314 +250,314 @@ php artisan dls:admin:captcha-bypass status
 
 ---
 
-### 2.2 バイパス有効化
+### 2.2 Enable Bypass
 
-CAPTCHA検証を一時的にバイパスします。
+Temporarily bypass CAPTCHA verification.
 
-#### 基本的な使用方法（デフォルト: 10分間、admin_loginのみ）
+#### Basic usage (default: 10 minutes, admin_login only)
 
 ```bash
-php artisan dls:admin:captcha-bypass enable --reason="全プロバイダー障害"
+php artisan dls:admin:captcha-bypass enable --reason="All providers down"
 ```
 
-#### オプションを指定した使用方法
+#### Usage with options
 
 ```bash
 php artisan dls:admin:captcha-bypass enable \
   --minutes=30 \
   --scope=all \
-  --reason="Google/Cloudflare両方ダウン、緊急メンテナンス必要"
+  --reason="Both Google and Cloudflare are down, emergency maintenance required"
 ```
 
-**確認プロンプト:**
+**Confirmation prompt:**
 ```
-⚠️ Warning: CAPTCHA bypass poses a security risk.
+Warning: CAPTCHA bypass poses a security risk.
 
-Settings: 30 minutes, scope: all, reason: Google/Cloudflare両方ダウン、緊急メンテナンス必要
+Settings: 30 minutes, scope: all, reason: Both Google and Cloudflare are down, emergency maintenance required
 
  Enable CAPTCHA bypass? (yes/no) [no]:
  > yes
 
-✅ CAPTCHA bypass enabled for 30 minutes (expires at 2026-01-02 01:00:00).
+CAPTCHA bypass enabled for 30 minutes (expires at 2026-01-02 01:00:00).
 ```
 
-**監査ログ:**
-バイパス有効化は自動的に監査ログに記録されます：
-- アクション: `captcha_bypass_enabled`
-- カテゴリ: `security`
-- 重大度: `critical`
-- コンテキスト: 時間、スコープ、理由、有効期限
+**Audit log:**
+Bypass activation is automatically recorded in the audit log:
+- Action: `captcha_bypass_enabled`
+- Category: `security`
+- Severity: `critical`
+- Context: duration, scope, reason, expiration time
 
 ---
 
-### 2.3 バイパス無効化
+### 2.3 Disable Bypass
 
-有効なバイパスを手動で無効化します。
+Manually disable an active bypass.
 
 ```bash
 php artisan dls:admin:captcha-bypass disable
 ```
 
-**出力（バイパスが有効な場合）:**
+**Output (when bypass is active):**
 ```
-✅ CAPTCHA bypass has been disabled.
+CAPTCHA bypass has been disabled.
 ```
 
-**出力（バイパスが既に無効な場合）:**
+**Output (when bypass is already inactive):**
 ```
 CAPTCHA bypass is not currently active.
 ```
 
-**監査ログ:**
-バイパス無効化も監査ログに記録されます：
-- アクション: `captcha_bypass_disabled`
-- カテゴリ: `security`
-- 重大度: `warning`
+**Audit log:**
+Bypass deactivation is also recorded in the audit log:
+- Action: `captcha_bypass_disabled`
+- Category: `security`
+- Severity: `warning`
 
 ---
 
-### 2.4 コマンドオプション一覧
+### 2.4 Command Options Reference
 
-| オプション | 説明 | デフォルト値 | 制限 |
-|-----------|------|------------|------|
-| `action` | 実行するアクション（enable / disable / status） | status | - |
-| `--minutes` | バイパス有効時間（分） | 10 | 最大60分 |
-| `--scope` | バイパスのスコープ（admin_login / all） | admin_login | - |
-| `--reason` | バイパス理由（enable時必須） | - | 必須 |
+| Option | Description | Default | Constraints |
+|--------|-------------|---------|-------------|
+| `action` | Action to perform (enable / disable / status) | status | - |
+| `--minutes` | Bypass duration in minutes | 10 | Maximum 60 minutes |
+| `--scope` | Bypass scope (admin_login / all) | admin_login | - |
+| `--reason` | Reason for bypass (required for enable) | - | Required |
 
-**スコープの説明:**
-- `admin_login`: 管理画面ログインのみバイパス（推奨）
-- `all`: 全てのCAPTCHA検証をバイパス（より危険）
+**Scope descriptions:**
+- `admin_login`: Bypass admin panel login only (recommended)
+- `all`: Bypass all CAPTCHA verification (more risky)
 
 ---
 
-## 3. 使用例とベストプラクティス
+## 3. Usage Examples and Best Practices
 
-### 3.1 通常運用のシナリオ
+### 3.1 Normal Operation Scenarios
 
-#### シナリオ1: Google reCAPTCHAが遅い
+#### Scenario 1: Google reCAPTCHA is slow
 
 ```bash
-# 1. 現在の状態を確認
+# 1. Check current status
 php artisan dls:admin:captcha-failover status
 
-# 2. Cloudflare Turnstileに一時切り替え
+# 2. Temporarily switch to Cloudflare Turnstile
 php artisan dls:admin:captcha-failover switch --provider=turnstile
 
-# 3. 問題が解決したらデフォルトに戻す
+# 3. Reset to default once the issue is resolved
 php artisan dls:admin:captcha-failover reset
 ```
 
-#### シナリオ2: 定期メンテナンスでプロバイダー変更
+#### Scenario 2: Provider change during scheduled maintenance
 
 ```bash
-# 永続的にCloudflare Turnstileに切り替え
+# Permanently switch to Cloudflare Turnstile
 php artisan dls:admin:captcha-failover switch --provider=turnstile --permanent
 ```
 
 ---
 
-### 3.2 緊急時のシナリオ
+### 3.2 Emergency Scenarios
 
-#### シナリオ3: 全CAPTCHAプロバイダーがダウン
+#### Scenario 3: All CAPTCHA providers are down
 
 ```bash
-# 1. 状態確認（念のため）
+# 1. Check status (just in case)
 php artisan dls:admin:captcha-failover status
 
-# 2. 緊急バイパスを有効化（最小時間で）
+# 2. Enable emergency bypass (with minimum duration)
 php artisan dls:admin:captcha-bypass enable \
   --minutes=15 \
   --scope=admin_login \
-  --reason="Google/Cloudflare両方ダウン、緊急対応必要"
+  --reason="Both Google and Cloudflare are down, emergency response required"
 
-# 3. 管理画面にログインして対応
+# 3. Log into the admin panel and address the issue
 
-# 4. 対応完了後、バイパスを無効化
+# 4. Disable bypass once the issue is resolved
 php artisan dls:admin:captcha-bypass disable
 
-# 5. 履歴確認
+# 5. Review history
 php artisan dls:admin:captcha-bypass status
 ```
 
 ---
 
-### 3.3 ベストプラクティス
+### 3.3 Best Practices
 
-#### フェイルオーバー管理
+#### Failover Management
 
-1. **定期的な状態確認**
+1. **Regular status checks**
    ```bash
-   # 週次で実行
+   # Run weekly
    php artisan dls:admin:captcha-failover status
    ```
 
-2. **自動フェイルオーバーを有効化**
+2. **Enable auto-failover**
    ```bash
    php artisan dls:admin:captcha-failover --auto-failover=on
    ```
 
-3. **複数プロバイダーの設定**
+3. **Configure multiple providers**
    - Google reCAPTCHA
    - Cloudflare Turnstile
-   - 最低2つのプロバイダーを設定・検証しておく
+   - Keep at least two providers configured and verified
 
-#### バイパス管理
+#### Bypass Management
 
-1. **使用は最小限に**
-   - 年に1回あるかないかの緊急時のみ
-   - 通常のプロバイダー切り替えで対応できないか検討
+1. **Minimize usage**
+   - Only for emergencies that occur once a year at most
+   - Consider whether normal provider switching can resolve the issue first
 
-2. **最小権限の原則**
-   - `--scope=admin_login`を使用（`all`は避ける）
-   - `--minutes`は必要最小限に設定
+2. **Principle of least privilege**
+   - Use `--scope=admin_login` (avoid `all`)
+   - Set `--minutes` to the minimum necessary
 
-3. **必ず理由を記録**
-   - 詳細な理由を`--reason`に記載
-   - 監査ログで後から追跡可能
+3. **Always record a reason**
+   - Provide a detailed reason in `--reason`
+   - Ensures traceability through audit logs
 
-4. **使用後は必ず無効化**
-   - 自動期限切れを待たず、手動で無効化
-   - 無効化を忘れないようにアラート設定
+4. **Always disable after use**
+   - Disable manually rather than waiting for automatic expiration
+   - Set up alerts to avoid forgetting to disable
 
 ---
 
-## 4. トラブルシューティング
+## 4. Troubleshooting
 
-### 4.1 プロバイダー切り替えが失敗する
+### 4.1 Provider Switch Fails
 
-**エラー:**
+**Error:**
 ```
 Switch failed. Please verify the provider is configured, enabled, and verified.
 ```
 
-**原因と対処:**
-1. プロバイダーが設定されていない
-   - 管理画面 > セキュリティ設定 > CAPTCHA設定で設定
-2. プロバイダーが有効化されていない
-   - 管理画面で有効化
-3. プロバイダーが検証されていない
-   - 管理画面でテスト実行
+**Causes and solutions:**
+1. Provider is not configured
+   - Configure it in Admin Panel > Security Settings > CAPTCHA Settings
+2. Provider is not enabled
+   - Enable it in the admin panel
+3. Provider is not verified
+   - Run a test in the admin panel
 
-### 4.2 バイパスが有効化できない
+### 4.2 Bypass Cannot Be Enabled
 
-**エラー:**
+**Error:**
 ```
 Reason for enabling bypass is required.
 ```
 
-**対処:**
+**Solution:**
 ```bash
-# --reasonオプションを必ず指定
-php artisan dls:admin:captcha-bypass enable --reason="緊急対応"
+# Always specify the --reason option
+php artisan dls:admin:captcha-bypass enable --reason="Emergency response"
 ```
 
-### 4.3 コマンドが見つからない
+### 4.3 Command Not Found
 
-**エラー:**
+**Error:**
 ```
 Command "dls:admin:captcha" not found.
 ```
 
-**対処:**
+**Solution:**
 ```bash
-# 正しいコマンド名を使用
+# Use the correct command name
 php artisan dls:admin:captcha-failover status
 
-# または
+# or
 php artisan dls:admin:captcha-bypass status
 ```
 
 ---
 
-## 5. セキュリティ考慮事項
+## 5. Security Considerations
 
-### 5.1 監査ログ
+### 5.1 Audit Logs
 
-全てのCAPTCHA管理操作は監査ログに記録されます：
+All CAPTCHA management operations are recorded in the audit log:
 
-**記録される情報:**
-- 実行日時
-- 実行者（CLI経由の場合は`triggered_by: cli`）
-- アクション（enable, disable, switch等）
-- 詳細（プロバイダー名、理由、期間等）
+**Recorded information:**
+- Execution date and time
+- Executor (for CLI operations: `triggered_by: cli`)
+- Action (enable, disable, switch, etc.)
+- Details (provider name, reason, duration, etc.)
 
-**ログ確認方法:**
+**How to check logs:**
 ```bash
-# 監査ログテーブルを確認
+# Check the audit log table
 php artisan tinker
 >>> \App\Models\AuditLog::where('action', 'like', 'captcha%')->latest()->get();
 ```
 
-### 5.2 アクセス制御
+### 5.2 Access Control
 
-**推奨事項:**
-1. コマンド実行権限をSUPER_ADMINのみに制限
-2. サーバーへのSSHアクセスを厳格に管理
-3. 実行履歴を定期的にレビュー
+**Recommendations:**
+1. Restrict command execution to SUPER_ADMIN only
+2. Strictly manage SSH access to the server
+3. Regularly review execution history
 
-### 5.3 通知設定
+### 5.3 Notification Settings
 
-**推奨設定:**
-1. バイパス有効化時にSlack/メール通知
-2. 自動期限切れ前の警告通知
-3. 異常なフェイルオーバー発生時の通知
+**Recommended configuration:**
+1. Slack/email notifications when bypass is enabled
+2. Warning notifications before automatic expiration
+3. Notifications on abnormal failover events
 
 ---
 
-## 6. よくある質問（FAQ）
+## 6. Frequently Asked Questions (FAQ)
 
-### Q1: `captcha-failover`と`captcha-bypass`の違いは？
+### Q1: What is the difference between `captcha-failover` and `captcha-bypass`?
 
-**A:** 
-- **`captcha-failover`**: 通常運用時のプロバイダー管理（安全）
-- **`captcha-bypass`**: 緊急時のCAPTCHA無効化（危険）
+**A:**
+- **`captcha-failover`**: Provider management during normal operations (safe)
+- **`captcha-bypass`**: Emergency CAPTCHA disabling (risky)
 
-### Q2: バイパスの最大時間は？
+### Q2: What is the maximum bypass duration?
 
-**A:** 最大60分です。セキュリティ上、長時間のバイパスは推奨されません。
+**A:** The maximum is 60 minutes. Extended bypass periods are not recommended for security reasons.
 
-### Q3: バイパス中にログインできない場合は？
+### Q3: What if I cannot log in during a bypass?
 
-**A:** 
-1. バイパスが本当に有効か確認: `php artisan dls:admin:captcha-bypass status`
-2. スコープが正しいか確認（`admin_login` vs `all`）
-3. キャッシュクリア: `php artisan cache:clear`
+**A:**
+1. Verify that the bypass is actually active: `php artisan dls:admin:captcha-bypass status`
+2. Check that the scope is correct (`admin_login` vs `all`)
+3. Clear the cache: `php artisan cache:clear`
 
-### Q4: 自動フェイルオーバーはどう動作する？
+### Q4: How does auto-failover work?
 
-**A:** プロバイダーが連続して失敗すると、自動的に次の利用可能なプロバイダーに切り替わります。
+**A:** When a provider fails consecutively, the system automatically switches to the next available provider.
 
-### Q5: Docker環境での実行方法は？
+### Q5: How do I run these commands in a Docker environment?
 
 **A:**
 ```bash
-# Dockerコンテナ内で実行
+# Run inside the Docker container
 docker exec dixlase-laravel.test-1 php artisan dls:admin:captcha-failover status
 docker exec dixlase-laravel.test-1 php artisan dls:admin:captcha-bypass status
 ```
 
 ---
 
-## 7. 関連ドキュメント
+## 7. Related Documentation
 
-- [CAPTCHA実装ガイド](./captcha-usage.md) - CAPTCHA機能の基本的な使い方
-- [セキュリティ設定ガイド](./security-settings.md) - 管理画面でのCAPTCHA設定
-- [監査ログガイド](./audit-logs.md) - 監査ログの確認方法
-
----
-
-## 8. サポート
-
-問題が発生した場合は、以下の情報を含めてサポートに連絡してください：
-
-1. 実行したコマンド
-2. エラーメッセージ
-3. `php artisan dls:admin:captcha-failover status`の出力
-4. `storage/logs/dixlase.log`の関連ログ
-5. 監査ログの該当エントリ
+- [CAPTCHA Implementation Guide](./captcha-usage.md) - Basic usage of the CAPTCHA feature
+- [Security Settings Guide](./security-settings.md) - CAPTCHA configuration in the admin panel
+- [Audit Logs Guide](./audit-logs.md) - How to review audit logs
 
 ---
 
-**最終更新日**: 2026-01-02  
-**バージョン**: Dixlase α版
+## 8. Support
+
+If you encounter issues, please contact support with the following information:
+
+1. The command you executed
+2. The error message
+3. Output of `php artisan dls:admin:captcha-failover status`
+4. Relevant logs from `storage/logs/dixlase.log`
+5. The corresponding audit log entries
+
+---
+
+**Last updated**: 2026-01-02
+**Version**: Dixlase Alpha

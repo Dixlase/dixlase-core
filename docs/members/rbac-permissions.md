@@ -1,89 +1,89 @@
-# RBAC/権限モデル
+# RBAC / Permission Model
 
-## 概要
+## Overview
 
-Dixlaseは役割ベースアクセス制御（RBAC）を採用しています。各メンバーにはロールが割り当てられ、ロールに応じた権限が付与されます。
+Dixlase employs Role-Based Access Control (RBAC). Each member is assigned a role, and permissions are granted according to that role.
 
-## ロール階層
+## Role Hierarchy
 
-| ロール | 値 | 説明 |
-|--------|-----|------|
-| SUPER_ADMIN | 10 | 特権管理者（全権限） |
-| ADMIN | 9 | 管理者 |
-| EDITOR | 8 | 編集者 |
-| AUTHOR | 7 | 投稿者 |
-| CONTRIBUTOR | 6 | 寄稿者 |
-| RECEPTIONIST | 5 | 受付 |
-| GUEST | 1 | ゲスト |
+| Role | Value | Description |
+|------|-------|-------------|
+| SUPER_ADMIN | 10 | Super administrator (full permissions) |
+| ADMIN | 9 | Administrator |
+| EDITOR | 8 | Editor |
+| AUTHOR | 7 | Author |
+| CONTRIBUTOR | 6 | Contributor |
+| RECEPTIONIST | 5 | Receptionist |
+| GUEST | 1 | Guest |
 
-ロールは階層的で、上位ロールは下位ロールの権限を全て持ちます。
+Roles are hierarchical: higher roles inherit all permissions of lower roles.
 
-## 権限一覧
+## Permission List
 
-### ダッシュボード
-| 権限 | 最低ロール | 説明 |
-|------|-----------|------|
-| `dashboard.view` | GUEST | ダッシュボード閲覧 |
+### Dashboard
+| Permission | Minimum Role | Description |
+|------------|-------------|-------------|
+| `dashboard.view` | GUEST | View dashboard |
 
-### メンバー管理
-| 権限 | 最低ロール | 説明 |
-|------|-----------|------|
-| `members.view` | EDITOR | メンバー閲覧 |
-| `members.create` | ADMIN | メンバー作成 |
-| `members.update` | ADMIN | メンバー編集 |
-| `members.delete` | SUPER_ADMIN | メンバー削除 |
-| `members.manage_roles` | SUPER_ADMIN | 権限管理 |
+### Member Management
+| Permission | Minimum Role | Description |
+|------------|-------------|-------------|
+| `members.view` | EDITOR | View members |
+| `members.create` | ADMIN | Create members |
+| `members.update` | ADMIN | Edit members |
+| `members.delete` | SUPER_ADMIN | Delete members |
+| `members.manage_roles` | SUPER_ADMIN | Manage roles |
 
-### 設定
-| 権限 | 最低ロール | 説明 |
-|------|-----------|------|
-| `settings.view` | EDITOR | 設定閲覧 |
-| `settings.base` | ADMIN | 基本設定 |
-| `settings.security` | SUPER_ADMIN | セキュリティ設定 |
-| `settings.members` | ADMIN | メンバー設定 |
-| `settings.system` | SUPER_ADMIN | システム設定 |
-| `settings.api` | SUPER_ADMIN | API設定 |
+### Settings
+| Permission | Minimum Role | Description |
+|------------|-------------|-------------|
+| `settings.view` | EDITOR | View settings |
+| `settings.base` | ADMIN | General settings |
+| `settings.security` | SUPER_ADMIN | Security settings |
+| `settings.members` | ADMIN | Member settings |
+| `settings.system` | SUPER_ADMIN | System settings |
+| `settings.api` | SUPER_ADMIN | API settings |
 
-### プラグイン
-| 権限 | 最低ロール | 説明 |
-|------|-----------|------|
-| `plugins.view` | EDITOR | プラグイン閲覧 |
-| `plugins.install` | SUPER_ADMIN | インストール |
-| `plugins.uninstall` | SUPER_ADMIN | アンインストール |
-| `plugins.enable` | ADMIN | 有効化 |
-| `plugins.disable` | ADMIN | 無効化 |
-| `plugins.settings` | ADMIN | 設定 |
+### Plugins
+| Permission | Minimum Role | Description |
+|------------|-------------|-------------|
+| `plugins.view` | EDITOR | View plugins |
+| `plugins.install` | SUPER_ADMIN | Install |
+| `plugins.uninstall` | SUPER_ADMIN | Uninstall |
+| `plugins.enable` | ADMIN | Enable |
+| `plugins.disable` | ADMIN | Disable |
+| `plugins.settings` | ADMIN | Settings |
 
-### テーマ
-| 権限 | 最低ロール | 説明 |
-|------|-----------|------|
-| `themes.view` | EDITOR | テーマ閲覧 |
-| `themes.install` | SUPER_ADMIN | インストール |
-| `themes.uninstall` | SUPER_ADMIN | アンインストール |
-| `themes.enable` | ADMIN | 有効化 |
-| `themes.disable` | ADMIN | 無効化 |
-| `themes.settings` | ADMIN | 設定 |
+### Themes
+| Permission | Minimum Role | Description |
+|------------|-------------|-------------|
+| `themes.view` | EDITOR | View themes |
+| `themes.install` | SUPER_ADMIN | Install |
+| `themes.uninstall` | SUPER_ADMIN | Uninstall |
+| `themes.enable` | ADMIN | Enable |
+| `themes.disable` | ADMIN | Disable |
+| `themes.settings` | ADMIN | Settings |
 
-### メディア
-| 権限 | 最低ロール | 説明 |
-|------|-----------|------|
-| `media.view` | CONTRIBUTOR | メディア閲覧 |
-| `media.upload` | AUTHOR | アップロード |
-| `media.delete` | EDITOR | 削除 |
+### Media
+| Permission | Minimum Role | Description |
+|------------|-------------|-------------|
+| `media.view` | CONTRIBUTOR | View media |
+| `media.upload` | AUTHOR | Upload |
+| `media.delete` | EDITOR | Delete |
 
-### システム
-| 権限 | 最低ロール | 説明 |
-|------|-----------|------|
-| `system.logs_view` | EDITOR | ログ閲覧 |
-| `system.logs_delete` | SUPER_ADMIN | ログ削除 |
-| `system.cache_clear` | EDITOR | キャッシュクリア |
-| `system.maintenance` | SUPER_ADMIN | メンテナンスモード |
-| `system.backup` | SUPER_ADMIN | バックアップ |
-| `system.restore` | SUPER_ADMIN | リストア |
+### System
+| Permission | Minimum Role | Description |
+|------------|-------------|-------------|
+| `system.logs_view` | EDITOR | View logs |
+| `system.logs_delete` | SUPER_ADMIN | Delete logs |
+| `system.cache_clear` | EDITOR | Clear cache |
+| `system.maintenance` | SUPER_ADMIN | Maintenance mode |
+| `system.backup` | SUPER_ADMIN | Backup |
+| `system.restore` | SUPER_ADMIN | Restore |
 
-## 使用方法
+## Usage
 
-### コントローラーでの権限チェック
+### Permission Checks in Controllers
 
 ```php
 use App\Enums\Permission;
@@ -93,72 +93,72 @@ class MemberController extends Controller
 {
     public function index()
     {
-        // 権限チェック（失敗時は403）
+        // Permission check (returns 403 on failure)
         PermissionService::authorize(Permission::MEMBERS_VIEW);
-        
-        // または条件分岐
+
+        // Or conditional branching
         if (PermissionService::can(Permission::MEMBERS_CREATE)) {
-            // 作成ボタンを表示
+            // Show the create button
         }
     }
 }
 ```
 
-### ミドルウェアでの権限チェック
+### Permission Checks via Middleware
 
 ```php
 // routes/admin.php
 
-// 単一の権限
+// Single permission
 Route::get('/members', [MemberController::class, 'index'])
     ->middleware('permission:members.view');
 
-// 複数の権限（いずれか）
+// Multiple permissions (any)
 Route::post('/members', [MemberController::class, 'store'])
     ->middleware('permission:members.create,members.update');
 
-// ロールチェック
+// Role check
 Route::get('/settings/security', [SecurityController::class, 'index'])
     ->middleware('role:super_admin');
 ```
 
-### Bladeテンプレートでの権限チェック
+### Permission Checks in Blade Templates
 
 ```blade
 @if(auth()->user()->hasPermission(\App\Enums\Permission::MEMBERS_CREATE))
-    <a href="{{ route('admin.members.create') }}">メンバー作成</a>
+    <a href="{{ route('admin.members.create') }}">Create Member</a>
 @endif
 
 @if(auth()->user()->isSuperAdmin())
-    <a href="{{ route('admin.settings.security') }}">セキュリティ設定</a>
+    <a href="{{ route('admin.settings.security') }}">Security Settings</a>
 @endif
 ```
 
-### Memberモデルでの権限チェック
+### Permission Checks on the Member Model
 
 ```php
 $member = Member::find(1);
 
-// 権限チェック
+// Permission check
 if ($member->hasPermission(Permission::MEMBERS_VIEW)) {
     // ...
 }
 
-// ロールチェック
+// Role check
 if ($member->isAdmin()) {
     // ...
 }
 
-// 全権限を取得
+// Get all permissions
 $permissions = $member->getPermissions();
 ```
 
-## 危険な権限
+## Dangerous Permissions
 
-以下の権限は「危険な権限」としてマークされています：
+The following permissions are flagged as "dangerous":
 
-- `members.delete` - メンバー削除
-- `members.manage_roles` - 権限管理
+- `members.delete` - Delete members
+- `members.manage_roles` - Manage roles
 - `plugins.install` / `plugins.uninstall`
 - `themes.install` / `themes.uninstall`
 - `system.backup` / `system.restore`
@@ -167,31 +167,31 @@ $permissions = $member->getPermissions();
 - `api.keys_delete`
 - `webhooks.delete`
 
-これらの権限は監査ログに記録され、β版以降では強制再認証が必要になる予定です。
+These permissions are recorded in the audit log, and mandatory re-authentication will be required for them starting from the beta release.
 
-## メニュー権限との連携
+## Integration with Menu Permissions
 
-> **Note:** 権限システムがリファクタリングされました。
-> 詳細は `docs/role-permission-system.md` を参照してください。
+> **Note:** The permission system has been refactored.
+> See `docs/role-permission-system.md` for details.
 
-新方式では `PermissionRegistry` サービスを使用してメニューごとの権限をチェックします。
-デフォルト権限は `config/roles.php` で宣言し、管理画面で変更した場合のみ `role_permission_overrides` テーブルに保存されます。
+The new approach uses the `PermissionRegistry` service to check permissions per menu item.
+Default permissions are declared in `config/roles.php`, and only changes made through the admin panel are stored in the `role_permission_overrides` table.
 
 ```php
 use App\Services\PermissionRegistry;
 
-// メニュー権限の取得（デフォルト＋オーバーライド合成済み）
+// Get effective permissions (defaults + overrides merged)
 $effective = PermissionRegistry::getEffective('settings.security');
 
-// アクセス可能かチェック
+// Check if access is allowed
 if (PermissionRegistry::canAccess('settings.security', $member->role)) {
     // ...
 }
 ```
 
-## ミドルウェア登録
+## Middleware Registration
 
-`bootstrap/app.php`または`app/Http/Kernel.php`にミドルウェアを登録：
+Register middleware in `bootstrap/app.php` or `app/Http/Kernel.php`:
 
 ```php
 // bootstrap/app.php (Laravel 11+)
@@ -203,11 +203,11 @@ if (PermissionRegistry::canAccess('settings.security', $member->role)) {
 })
 ```
 
-## 関連ドキュメント
+## Related Documentation
 
-- [権限設定システム](./role-permission-system.md) - 宣言と保存の分離アーキテクチャ、PermissionRegistry、プラグイン開発ガイド
+- [Permission Settings System](./role-permission-system.md) - Declaration/storage separation architecture, PermissionRegistry, plugin development guide
 
-## β版以降の予定
+## Planned for Beta and Beyond
 
-- 危険な操作の強制再認証
-- 権限変更の監査ログ
+- Mandatory re-authentication for dangerous operations
+- Audit logging for permission changes

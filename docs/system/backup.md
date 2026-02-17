@@ -1,194 +1,194 @@
-# Dixlase バックアップシステム
+# Dixlase Backup System
 
-Dixlaseのファイルとデータベースをバックアップするためのコマンドラインツールです。
+A command-line tool for backing up Dixlase files and databases.
 
-## 概要
+## Overview
 
-バックアップシステムは以下の機能を提供します：
+The backup system provides the following features:
 
-- **ファイルバックアップ**: 指定したディレクトリをZIPファイルに圧縮
-- **データベースバックアップ**: MySQLデータベースをSQLファイルにダンプ
-- **バックアップ一覧**: 作成済みバックアップの確認
-- **クリーンアップ**: 古いバックアップの自動削除
+- **File backup**: Compress specified directories into ZIP files
+- **Database backup**: Dump MySQL databases to SQL files
+- **Backup listing**: View existing backups
+- **Cleanup**: Automatically delete old backups
 
-## 必要条件
+## Requirements
 
-- PHP 8.2以上
-- ZipArchive PHP拡張
-- mysqldump（データベースバックアップ用）
+- PHP 8.2 or higher
+- ZipArchive PHP extension
+- mysqldump (for database backups)
 
-## コマンド一覧
+## Command Reference
 
-### backup:create - バックアップの作成
+### backup:create - Create a Backup
 
 ```bash
 php artisan backup:create [options]
 ```
 
-#### ファイルバックアップオプション
+#### File Backup Options
 
-| オプション | 説明 |
-|-----------|------|
-| `--all` | すべてのファイルとデータベースをバックアップ |
-| `--core` | コアファイル（app, bootstrap, config, database/migrations, database/seeders, lang, public, resources, routes, stubs） |
-| `--plugins` | pluginsディレクトリ |
-| `--themes` | themesディレクトリ |
-| `--custom` | customディレクトリ |
-| `--storage-public` | storage/app/publicディレクトリ |
-| `--storage-private` | storage/app/privateディレクトリ |
-| `--logs` | storage/logsディレクトリ |
+| Option | Description |
+|--------|-------------|
+| `--all` | Back up all files and the database |
+| `--core` | Core files (app, bootstrap, config, database/migrations, database/seeders, lang, public, resources, routes, stubs) |
+| `--plugins` | plugins directory |
+| `--themes` | themes directory |
+| `--custom` | custom directory |
+| `--storage-public` | storage/app/public directory |
+| `--storage-private` | storage/app/private directory |
+| `--logs` | storage/logs directory |
 
-#### データベースバックアップオプション
+#### Database Backup Options
 
-| オプション | 説明 |
-|-----------|------|
-| `--database` | データベース全体をバックアップ |
-| `--tables=*` | 特定のテーブルのみバックアップ（複数指定可能） |
+| Option | Description |
+|--------|-------------|
+| `--database` | Back up the entire database |
+| `--tables=*` | Back up specific tables only (multiple tables can be specified) |
 
-#### その他のオプション
+#### Additional Options
 
-| オプション | 説明 |
-|-----------|------|
-| `--files-only` | ファイルのみバックアップ（--allと併用時にDBをスキップ） |
-| `--db-only` | データベースのみバックアップ（--allと併用時にファイルをスキップ） |
+| Option | Description |
+|--------|-------------|
+| `--files-only` | Back up files only (skip DB when used with --all) |
+| `--db-only` | Back up database only (skip files when used with --all) |
 
-#### 使用例
+#### Examples
 
 ```bash
-# すべてをバックアップ
+# Back up everything
 php artisan backup:create --all
 
-# プラグインとテーマのみバックアップ
+# Back up plugins and themes only
 php artisan backup:create --plugins --themes
 
-# データベースのみバックアップ
+# Back up database only
 php artisan backup:create --database
 
-# 特定のテーブルのみバックアップ
+# Back up specific tables only
 php artisan backup:create --tables=members --tables=base_settings
 
-# コアファイルとデータベースをバックアップ
+# Back up core files and database
 php artisan backup:create --core --database
 
-# すべてのファイルをバックアップ（データベースは除く）
+# Back up all files (excluding database)
 php artisan backup:create --all --files-only
 
-# アップロードファイルとログをバックアップ
+# Back up uploaded files and logs
 php artisan backup:create --storage-public --storage-private --logs
 ```
 
-### backup:list - バックアップ一覧
+### backup:list - List Backups
 
 ```bash
 php artisan backup:list [options]
 ```
 
-#### オプション
+#### Options
 
-| オプション | 説明 |
-|-----------|------|
-| `--files` | ファイルバックアップのみ表示 |
-| `--database` | データベースバックアップのみ表示 |
+| Option | Description |
+|--------|-------------|
+| `--files` | Show file backups only |
+| `--database` | Show database backups only |
 
-#### 使用例
+#### Examples
 
 ```bash
-# すべてのバックアップを表示
+# Show all backups
 php artisan backup:list
 
-# ファイルバックアップのみ表示
+# Show file backups only
 php artisan backup:list --files
 
-# データベースバックアップのみ表示
+# Show database backups only
 php artisan backup:list --database
 ```
 
-### backup:cleanup - 古いバックアップの削除
+### backup:cleanup - Delete Old Backups
 
 ```bash
 php artisan backup:cleanup [options]
 ```
 
-#### オプション
+#### Options
 
-| オプション | 説明 |
-|-----------|------|
-| `--days=30` | 指定日数より古いバックアップを削除（デフォルト: 30日） |
-| `--all` | すべてのバックアップを削除 |
-| `--force` | 確認なしで削除 |
+| Option | Description |
+|--------|-------------|
+| `--days=30` | Delete backups older than the specified number of days (default: 30 days) |
+| `--all` | Delete all backups |
+| `--force` | Delete without confirmation |
 
-#### 使用例
+#### Examples
 
 ```bash
-# 30日より古いバックアップを削除
+# Delete backups older than 30 days
 php artisan backup:cleanup
 
-# 7日より古いバックアップを削除
+# Delete backups older than 7 days
 php artisan backup:cleanup --days=7
 
-# すべてのバックアップを削除
+# Delete all backups
 php artisan backup:cleanup --all
 
-# 確認なしで削除
+# Delete without confirmation
 php artisan backup:cleanup --days=14 --force
 ```
 
-## バックアップファイルの保存場所
+## Backup File Storage Location
 
-バックアップファイルは `database/backups/` ディレクトリに保存されます。
+Backup files are stored in the `database/backups/` directory.
 
-### ファイル命名規則
+### File Naming Convention
 
-- ファイルバックアップ: `dixlase_files_YYYYMMDD_HHMMSS.zip`
-- データベースバックアップ: `dixlase_db_YYYYMMDD_HHMMSS.sql`
+- File backups: `dixlase_files_YYYYMMDD_HHMMSS.zip`
+- Database backups: `dixlase_db_YYYYMMDD_HHMMSS.sql`
 
-## 除外されるファイル・ディレクトリ
+## Excluded Files and Directories
 
-ファイルバックアップでは以下が自動的に除外されます：
+The following are automatically excluded from file backups:
 
-- `.git` ディレクトリ
-- `node_modules` ディレクトリ
-- `vendor` ディレクトリ
-- `.env` ファイル
-- `*.log` ファイル
-- `.DS_Store` ファイル
-- `Thumbs.db` ファイル
-- `*.cache` ファイル
+- `.git` directory
+- `node_modules` directory
+- `vendor` directory
+- `.env` files
+- `*.log` files
+- `.DS_Store` files
+- `Thumbs.db` files
+- `*.cache` files
 
-## 自動バックアップの設定
+## Setting Up Automated Backups
 
-cronジョブを使用して定期的なバックアップを設定できます：
+You can set up regular backups using cron jobs:
 
 ```bash
-# 毎日午前3時にすべてをバックアップ
+# Back up everything daily at 3:00 AM
 0 3 * * * cd /path/to/dixlase && php artisan backup:create --all
 
-# 毎週日曜日にバックアップをクリーンアップ
+# Clean up backups every Sunday
 0 4 * * 0 cd /path/to/dixlase && php artisan backup:cleanup --days=30 --force
 ```
 
-## トラブルシューティング
+## Troubleshooting
 
-### ZIPファイルの作成に失敗する
+### ZIP File Creation Fails
 
-- PHP ZipArchive拡張がインストールされているか確認してください
-- `database/backups/` ディレクトリに書き込み権限があるか確認してください
+- Verify that the PHP ZipArchive extension is installed
+- Verify that the `database/backups/` directory has write permissions
 
-### mysqldumpが失敗する
+### mysqldump Fails
 
-- mysqldumpコマンドがインストールされているか確認してください
-- データベース接続設定が正しいか確認してください
-- データベースユーザーに適切な権限があるか確認してください
+- Verify that the mysqldump command is installed
+- Verify that the database connection settings are correct
+- Verify that the database user has the appropriate permissions
 
-### バックアップファイルが大きすぎる
+### Backup Files Are Too Large
 
-- 特定のディレクトリのみをバックアップしてください
-- 古いバックアップを定期的にクリーンアップしてください
-- 大きなファイル（メディアファイルなど）は別途管理することを検討してください
+- Back up only specific directories
+- Clean up old backups regularly
+- Consider managing large files (such as media files) separately
 
-## セキュリティに関する注意
+## Security Notes
 
-- バックアップファイルには機密情報が含まれる可能性があります
-- `database/backups/` ディレクトリへのアクセスを制限してください
-- バックアップファイルを安全な場所に移動・保管してください
-- 本番環境のバックアップは暗号化することを推奨します
+- Backup files may contain sensitive information
+- Restrict access to the `database/backups/` directory
+- Move and store backup files in a secure location
+- Encrypting production backups is recommended

@@ -2,50 +2,50 @@
 
 ## Overview
 
-Dixlaseにマルチプロバイダー対応のreCAPTCHA機能が実装されました。現在はGoogle reCAPTCHAをサポートしており、将来的にhCaptcha、Cloudflare Turnstileなどの追加が可能な設計になっています。
+A multi-provider CAPTCHA feature has been implemented in Dixlase. It currently supports Google reCAPTCHA, with an architecture designed to allow future additions such as hCaptcha and Cloudflare Turnstile.
 
-## 設定方法
+## Configuration
 
-### 1. 管理画面での設定
+### 1. Admin Panel Configuration
 
-1. 管理画面 > セキュリティ設定 にアクセス
-2. 「reCAPTCHAを有効にする」をチェック
-3. Google reCAPTCHAの設定を入力：
-   - サイトキー
-   - シークレットキー
-   - バージョン（v3推奨）
-   - 最小スコア（v3の場合、通常0.5）
-4. フォーム別設定で各フォームでのreCAPTCHA使用を設定
+1. Navigate to Admin Panel > Security Settings
+2. Check "Enable reCAPTCHA"
+3. Enter Google reCAPTCHA settings:
+   - Site key
+   - Secret key
+   - Version (v3 recommended)
+   - Minimum score (for v3, typically 0.5)
+4. Configure reCAPTCHA usage for each form in the per-form settings
 
-### 2. Google reCAPTCHAキーの取得
+### 2. Obtaining Google reCAPTCHA Keys
 
-1. [Google reCAPTCHA](https://www.google.com/recaptcha/)にアクセス
-2. 新しいサイトを登録
-3. サイトキーとシークレットキーを取得
-4. 管理画面に入力
+1. Visit [Google reCAPTCHA](https://www.google.com/recaptcha/)
+2. Register a new site
+3. Obtain the site key and secret key
+4. Enter them in the admin panel
 
-## 使用方法
+## Usage
 
-### フォームでのreCAPTCHA表示
+### Displaying reCAPTCHA in Forms
 
 ```blade
-<!-- フォーム内でreCAPTCHAを表示 -->
+<!-- Display reCAPTCHA inside a form -->
 <form method="POST" action="/contact">
     @csrf
-    
-    <!-- 他のフォームフィールド -->
+
+    <!-- Other form fields -->
     <input type="text" name="name" required>
     <input type="email" name="email" required>
     <textarea name="message" required></textarea>
-    
-    <!-- reCAPTCHAウィジェット -->
+
+    <!-- reCAPTCHA widget -->
     <x-captcha action="contact_form" />
-    
-    <button type="submit">送信</button>
+
+    <button type="submit">Submit</button>
 </form>
 ```
 
-### コントローラーでの検証
+### Verification in Controllers
 
 ```php
 <?php
@@ -62,25 +62,25 @@ class ContactController extends Controller
 
     public function store(Request $request)
     {
-        // reCAPTCHA検証
+        // reCAPTCHA verification
         $this->verifyCaptcha($request, 'contact');
-        
-        // 通常のバリデーション
+
+        // Standard validation
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email',
             'message' => 'required|string',
         ]);
-        
-        // フォーム処理
+
+        // Process the form
         // ...
-        
-        return redirect()->back()->with('success', 'お問い合わせを受け付けました。');
+
+        return redirect()->back()->with('success', 'Your inquiry has been received.');
     }
 }
 ```
 
-### フォームリクエストでの検証
+### Verification in Form Requests
 
 ```php
 <?php
@@ -115,38 +115,38 @@ class ContactFormRequest extends FormRequest
 }
 ```
 
-## 設定オプション
+## Configuration Options
 
-### reCAPTCHA v3 (推奨)
-- 非対話型
-- スコアベース（0.0-1.0）
-- UXに優しい
+### reCAPTCHA v3 (Recommended)
+- Non-interactive
+- Score-based (0.0-1.0)
+- UX-friendly
 
 ### reCAPTCHA v2
-- チェックボックス型
-- より確実だが、UXに影響
+- Checkbox-based
+- More reliable but impacts UX
 
-## プラグイン・テーマでのCAPTCHA実装
+## Implementing CAPTCHA in Plugins and Themes
 
-### アクション名の命名規則
+### Action Name Conventions
 
-プラグインやテーマでCAPTCHAを実装する場合、アクション名にプレフィックスを付ける必要があります。
+When implementing CAPTCHA in plugins or themes, action names must be prefixed.
 
-**命名規則:**
-- **コア機能**: `admin_login`, `user_register` など
-- **プラグイン**: `{plugin-slug}.{action}` 形式
-- **テーマ**: `{theme-slug}.{action}` 形式
+**Naming conventions:**
+- **Core features**: `admin_login`, `user_register`, etc.
+- **Plugins**: `{plugin-slug}.{action}` format
+- **Themes**: `{theme-slug}.{action}` format
 
-**例:**
-- DixlaseUsersプラグイン: `dixlase-users.user_register`
-- DixlaseUsersプラグイン: `dixlase-users.user_profile_update`
-- DixlaseBlogプラグイン: `dixlase-blog.comment_submit`
+**Examples:**
+- DixlaseUsers plugin: `dixlase-users.user_register`
+- DixlaseUsers plugin: `dixlase-users.user_profile_update`
+- DixlaseBlog plugin: `dixlase-blog.comment_submit`
 
-### コントローラーでの実装
+### Controller Implementation
 
-#### 1. getCaptchaAction()メソッドの実装
+#### 1. Implementing the getCaptchaAction() Method
 
-プラグインのコントローラーで`getCaptchaAction()`メソッドを実装し、プレフィックス付きアクション名を返します。
+Implement the `getCaptchaAction()` method in your plugin's controller to return the prefixed action name.
 
 ```php
 <?php
@@ -159,7 +159,7 @@ use Illuminate\Http\Request;
 class DixlaseUsersRegisterController extends Controller
 {
     /**
-     * CAPTCHAアクション名を返す
+     * Returns the CAPTCHA action name
      */
     protected function getCaptchaAction(): string
     {
@@ -167,11 +167,11 @@ class DixlaseUsersRegisterController extends Controller
     }
 
     /**
-     * 登録フォームを表示
+     * Display the registration form
      */
     public function create()
     {
-        // CAPTCHA設定を取得
+        // Get CAPTCHA settings
         $captchaAction = $this->getCaptchaAction();
         $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
         $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
@@ -184,39 +184,39 @@ class DixlaseUsersRegisterController extends Controller
 }
 ```
 
-#### 2. ビューでのCAPTCHA表示
+#### 2. Displaying CAPTCHA in Views
 
-ビューでは、コントローラーから渡された`$captchaEnabled`と`$captchaWidget`を使用してCAPTCHAを表示します。
+In views, use the `$captchaEnabled` and `$captchaWidget` variables passed from the controller to display the CAPTCHA.
 
 ```blade
 <form method="POST" action="{{ route('dixlase-users.register.store') }}">
     @csrf
-    
-    <!-- フォームフィールド -->
+
+    <!-- Form fields -->
     <div class="form-group">
-        <label for="name">名前</label>
+        <label for="name">Name</label>
         <input type="text" name="name" id="name" required>
     </div>
-    
+
     <div class="form-group">
-        <label for="email">メールアドレス</label>
+        <label for="email">Email Address</label>
         <input type="email" name="email" id="email" required>
     </div>
-    
-    <!-- CAPTCHAウィジェット -->
+
+    <!-- CAPTCHA widget -->
     @if($captchaEnabled ?? false)
         <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
             {!! $captchaWidget !!}
         </div>
     @endif
-    
-    <button type="submit" class="btn btn-primary">登録</button>
+
+    <button type="submit" class="btn btn-primary">Register</button>
 </form>
 ```
 
-#### 3. CAPTCHA検証
+#### 3. CAPTCHA Verification
 
-フォーム送信時に`VerifiesCaptcha`トレイトを使用してCAPTCHA検証を行います。
+Use the `VerifiesCaptcha` trait to verify the CAPTCHA when the form is submitted.
 
 ```php
 <?php
@@ -238,28 +238,28 @@ class DixlaseUsersRegisterController extends Controller
 
     public function store(Request $request)
     {
-        // CAPTCHA検証
+        // CAPTCHA verification
         $this->verifyCaptcha($request, $this->getCaptchaAction());
-        
-        // 通常のバリデーション
+
+        // Standard validation
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
-        
-        // 登録処理
+
+        // Registration processing
         // ...
-        
+
         return redirect()->route('dixlase-users.register.complete')
-            ->with('success', '登録が完了しました。');
+            ->with('success', 'Registration is complete.');
     }
 }
 ```
 
-### プロフィール更新など複数フォームでの共通化
+### Sharing Across Multiple Forms (e.g., Profile Updates)
 
-複数のフォームで同じCAPTCHAアクション名を使用する場合の例です。
+Here is an example of using the same CAPTCHA action name across multiple forms.
 
 ```php
 <?php
@@ -275,7 +275,7 @@ class DixlaseUsersMypageProfileController extends Controller
     use VerifiesCaptcha;
 
     /**
-     * プロフィール更新用の共通CAPTCHAアクション名
+     * Shared CAPTCHA action name for profile updates
      */
     protected function getCaptchaAction(): string
     {
@@ -283,14 +283,14 @@ class DixlaseUsersMypageProfileController extends Controller
     }
 
     /**
-     * 基本情報フォーム表示
+     * Display basic info form
      */
     public function basicInfo(Request $request)
     {
         $captchaAction = $this->getCaptchaAction();
         $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
         $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
-        
+
         return view('dixlase-users::mypage.profile.basic-info', [
             'user' => $request->user(),
             'captchaEnabled' => $captchaEnabled,
@@ -299,15 +299,15 @@ class DixlaseUsersMypageProfileController extends Controller
     }
 
     /**
-     * 外観設定フォーム表示
+     * Display appearance settings form
      */
     public function appearance(Request $request)
     {
-        // 同じCAPTCHAアクション名を使用
+        // Use the same CAPTCHA action name
         $captchaAction = $this->getCaptchaAction();
         $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
         $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
-        
+
         return view('dixlase-users::mypage.profile.appearance', [
             'user' => $request->user(),
             'captchaEnabled' => $captchaEnabled,
@@ -317,26 +317,26 @@ class DixlaseUsersMypageProfileController extends Controller
 }
 ```
 
-### CSP対応
+### CSP Compliance
 
-Alpine.jsを使用する保存ボタンなどでは、`x-data`スコープが必要です。
+When using save buttons with Alpine.js, an `x-data` scope is required.
 
 ```blade
 <div x-data="{}">
     <form method="POST" action="{{ route('dixlase-users.profile.update') }}">
         @csrf
-        
-        <!-- フォームフィールド -->
+
+        <!-- Form fields -->
         <input type="text" name="name" value="{{ $user->name }}">
-        
-        <!-- CAPTCHAウィジェット -->
+
+        <!-- CAPTCHA widget -->
         @if($captchaEnabled ?? false)
             <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
                 {!! $captchaWidget !!}
             </div>
         @endif
-        
-        <!-- 保存ボタン（Alpine.js使用） -->
+
+        <!-- Save button (using Alpine.js) -->
         <x-form-button
             type="button"
             variant="primary"
@@ -348,47 +348,47 @@ Alpine.jsを使用する保存ボタンなどでは、`x-data`スコープが必
 </div>
 ```
 
-### 管理画面での設定
+### Admin Panel Configuration
 
-プラグインでCAPTCHAを実装した後、管理者は以下の手順で有効化します：
+After implementing CAPTCHA in a plugin, administrators enable it with the following steps:
 
-1. 管理画面 > セキュリティ設定 > CAPTCHA設定 にアクセス
-2. 「フォーム別設定」セクションで該当フォームを探す
-3. チェックボックスをONにして有効化
-4. 設定を保存
+1. Navigate to Admin Panel > Security Settings > CAPTCHA Settings
+2. Find the relevant form in the "Per-Form Settings" section
+3. Turn on the checkbox to enable
+4. Save settings
 
-**注意:** プラグインのフォームは、管理画面で有効化されるまでCAPTCHA設定のレコードに追加されません。
+**Note:** Plugin forms will not be added to the CAPTCHA settings records until they are enabled in the admin panel.
 
-### CAPTCHAヘルパーメソッド
+### CAPTCHA Helper Methods
 
 #### shouldShowCaptcha()
 
-指定したアクションでCAPTCHAを表示すべきかを判定します。
+Determines whether CAPTCHA should be displayed for the specified action.
 
 ```php
 $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha('dixlase-users.user_register');
-// true または false を返す
+// Returns true or false
 ```
 
 #### renderWidget()
 
-CAPTCHAウィジェットのHTMLを生成します。
+Generates the CAPTCHA widget HTML.
 
 ```php
 $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget('dixlase-users.user_register');
-// HTMLコードを返す（Blade内で {!! $captchaWidget !!} として出力）
+// Returns HTML code (output in Blade as {!! $captchaWidget !!})
 ```
 
-## 将来の拡張
+## Future Extensions
 
-### 新しいプロバイダーの追加
+### Adding New Providers
 
-1. `app/Captcha/` に新しいドライバークラスを作成
-2. `CaptchaDriver` インターフェースを実装
-3. `config/captcha.php` に設定を追加
-4. 管理画面のUIを更新
+1. Create a new driver class in `app/Captcha/`
+2. Implement the `CaptchaDriver` interface
+3. Add configuration to `config/captcha.php`
+4. Update the admin panel UI
 
-例：hCaptcha ドライバー
+Example: hCaptcha driver
 
 ```php
 <?php
@@ -399,33 +399,33 @@ use Illuminate\Http\Request;
 
 class HCaptchaDriver implements CaptchaDriver
 {
-    // CaptchaDriverインターフェースの実装
+    // Implement the CaptchaDriver interface
 }
 ```
 
-## トラブルシューティング
+## Troubleshooting
 
-### よくある問題
+### Common Issues
 
-1. **reCAPTCHAが表示されない**
-   - サイトキーが正しく設定されているか確認
-   - reCAPTCHAが有効になっているか確認
+1. **reCAPTCHA is not displayed**
+   - Verify that the site key is correctly configured
+   - Verify that reCAPTCHA is enabled
 
-2. **検証が失敗する**
-   - シークレットキーが正しく設定されているか確認
-   - ドメインがreCAPTCHAに登録されているか確認
+2. **Verification fails**
+   - Verify that the secret key is correctly configured
+   - Verify that the domain is registered with reCAPTCHA
 
-3. **スコアが低すぎる（v3の場合）**
-   - 最小スコアを調整（0.3-0.7の範囲で調整）
-   - ユーザーの行動パターンを確認
+3. **Score is too low (v3)**
+   - Adjust the minimum score (within the 0.3-0.7 range)
+   - Check user behavior patterns
 
-### ログの確認
+### Checking Logs
 
-reCAPTCHA関連のエラーは `storage/logs/laravel.log` に記録されます。
+reCAPTCHA-related errors are logged in `storage/logs/laravel.log`.
 
-## セキュリティ考慮事項
+## Security Considerations
 
-1. シークレットキーは適切に保護する
-2. 複数の防御層を組み合わせる（レート制限、ハニーポットなど）
-3. 定期的にスコア閾値を見直す
-4. ログを監視してパターンを把握する
+1. Protect the secret key properly
+2. Combine multiple defense layers (rate limiting, honeypots, etc.)
+3. Regularly review the score threshold
+4. Monitor logs to identify patterns
