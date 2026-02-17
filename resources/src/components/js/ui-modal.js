@@ -32,6 +32,7 @@
 window.modal = function () {
     return {
         show: false,
+        submitting: false,
 
         /**
          * 初期化
@@ -66,29 +67,33 @@ window.modal = function () {
          */
         open() {
             this.show = true;
+            this.submitting = false;
         },
 
         /**
-         * モーダルを閉じる
+         * モーダルを閉じる（送信中は無効）
          */
         close() {
+            if (this.submitting) {
+                return;
+            }
             this.show = false;
         },
 
         /**
-         * ESCキーでモーダルを閉じる
+         * ESCキーでモーダルを閉じる（送信中は無効）
          */
         handleEscape(event) {
-            if (event.key === 'Escape' && this.show) {
+            if (event.key === 'Escape' && this.show && !this.submitting) {
                 this.close();
             }
         },
 
         /**
-         * 背景クリックでモーダルを閉じる
+         * 背景クリックでモーダルを閉じる（送信中は無効）
          */
         closeOnBackdrop(dismissible) {
-            if (dismissible) {
+            if (dismissible && !this.submitting) {
                 this.close();
             }
         }

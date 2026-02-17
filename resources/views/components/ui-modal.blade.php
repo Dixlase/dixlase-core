@@ -162,26 +162,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <x-form-button
                         type="button"
                         variant="secondary"
-                        label="{{ $cancelLabel ?? __('common.cancel') }}"
+                        icon="fas fa-times"
+                        xDisabled="submitting"
                         @click="close()"
                         class="mx-2"
-                    />
+                    >{{ $cancelLabel ?? __('common.cancel') }}</x-form-button>
                     @if($form)
                         <x-form-button
                             type="submit"
                             variant="{{ $confirm_variant ?? 'primary' }}"
-                            label="{{ $confirmLabel ?? __('common.confirm') }}"
                             form="{{ $form }}"
-                            @click="submitModalForm('{{ $form }}')"
+                            xDisabled="submitting"
+                            @click="submitting = true; submitModalForm('{{ $form }}')"
                             class="mx-2"
-                        />
+                        >
+                            <i x-show="!submitting" class="fas fa-check mr-2"></i>
+                            <i x-show="submitting" class="fas fa-spinner fa-spin mr-2" x-cloak></i>
+                            {{ $confirmLabel ?? __('common.confirm') }}
+                        </x-form-button>
                     @else
                         <x-form-button
                             type="button"
                             variant="{{ $confirm_variant ?? 'primary' }}"
-                            label="{{ $confirmLabel ?? __('common.confirm') }}"
+                            xDisabled="submitting"
                             class="mx-2"
-                        />
+                        >
+                            <i x-show="!submitting" class="fas fa-check mr-2"></i>
+                            <i x-show="submitting" class="fas fa-spinner fa-spin mr-2" x-cloak></i>
+                            {{ $confirmLabel ?? __('common.confirm') }}
+                        </x-form-button>
                     @endif
                 @endif
             @else
