@@ -48,6 +48,11 @@ return [
         'success' => '{name}を有効化しました',
         'failed' => '{name}の有効化に失敗しました',
     ],
+    'disabled' => [
+        'confirm_title' => '無効化の確認',
+        'confirm_message' => 'プラグイン [{name}] を無効化しますか？',
+        'confirm_warning' => 'このプラグインが提供する機能は一時的に利用できなくなります。',
+    ],
     'delete' => [
         'confirm_title' => '削除の確認',
         'confirm_message' => 'プラグイン [{name}] のファイルとフォルダを完全に削除しますか？この操作は取り消せません。',
@@ -195,6 +200,25 @@ return [
         'violation_note_dev' => '開発モードでは違反はログに記録されますが、ブロックされません。',
         'violation_note_standard' => '標準モードでは一部の機能が動作しない可能性があります。',
         'violation_note_strict' => '厳格モードではこのプラグインは有効化できません。',
+    ],
+
+    // コントローラーメッセージ
+    'messages' => [
+        'install_success' => 'プラグインが正常にインストールされました。プラグインを使用するには :enable_link から有効化してください。',
+        'install_success_no_plugin' => 'プラグインが正常にインストールされました。',
+        'enable_here' => 'こちら',
+        'install_failed' => 'プラグインのインストールに失敗しました: :error',
+        'install_directory_not_found' => 'プラグインディレクトリが見つかりません。',
+        'uninstall_success' => 'プラグインをアンインストールしました',
+        'uninstall_failed' => 'プラグインのアンインストールに失敗しました: :error',
+        'uninstall_must_disable_first' => '有効化中のプラグインはアンインストールできません。先に無効化してください。',
+        'disable_success' => 'プラグインを無効化しました',
+        'disable_failed' => 'プラグイン無効化中にエラーが発生しました: :error',
+        'delete_success' => 'プラグインが正常に削除されました。',
+        'delete_failed' => 'プラグインの削除に失敗しました: :error',
+        'delete_uninstall_failed' => 'プラグインのアンインストールに失敗しました。',
+        'delete_file_failed' => 'プラグインの削除に失敗しました。',
+        'no_plugin_name' => 'プラグイン名なし',
     ],
 
     'permissions' => [

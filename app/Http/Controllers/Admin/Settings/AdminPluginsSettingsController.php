@@ -74,8 +74,8 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $summary['audit'] = $this->getPluginAuditResult($plugin->slug);
             $plugin->permission_summary = $summary;
 
-            // CSP診断結果を取得
-            $pluginPath = base_path('plugins/'.$plugin->slug);
+            // CSP診断結果を取得（ディレクトリ名を使用）
+            $pluginPath = base_path('plugins/'.$plugin->directory);
             $plugin->csp_diagnostic = $cspDiagnosticService->diagnosePlugin($pluginPath);
 
             // CSP互換性情報を取得
@@ -91,13 +91,14 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $summary['audit'] = $this->getPluginAuditResult($plugin['slug']);
             $plugin['permission_summary'] = $summary;
 
-            // CSP診断結果を取得
-            $pluginPath = base_path('plugins/'.$plugin['slug']);
+            // CSP診断結果を取得（ディレクトリ名を使用）
+            $pluginPath = base_path('plugins/'.$plugin['directory']);
             $plugin['csp_diagnostic'] = $cspDiagnosticService->diagnosePlugin($pluginPath);
 
             // CSP互換性情報を取得
             $plugin['csp_compatibility'] = $cspLoader->getCspCompatibility('plugin', $plugin['slug']);
         }
+        unset($plugin);
 
         // カードデータを事前計算
         $pluginCards = [];
@@ -113,7 +114,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $this->viewParams['uninstalledPlugins'] = $uninstalledPlugins;
         $this->viewParams['pluginCards'] = $pluginCards;
         $this->viewParams['uninstalledPluginCards'] = $uninstalledPluginCards;
-        $this->viewParams['heading'] = 'プラグインマスター';
+        $this->viewParams['heading'] = __('admin/settings/plugins/index.heading');
 
         return view('admin::settings.plugins.index', $this->viewParams);
     }
@@ -230,7 +231,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         if (! $slug) {
             return response()->json([
                 'success' => false,
-                'message' => __('admin/settings/plugins.audit.invalid_slug'),
+                'message' => __('admin/settings/plugins/index.audit.invalid_slug'),
             ], 400);
         }
 
@@ -238,7 +239,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
         return response()->json([
             'success' => true,
-            'message' => __('admin/settings/plugins.audit.completed'),
+            'message' => __('admin/settings/plugins/index.audit.completed'),
             'audit' => $result,
         ]);
     }
@@ -247,7 +248,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     {
         $uploadMaxBytes = $this->parsePhpSize(ini_get('upload_max_filesize'));
         $this->viewParams['uploadMaxMB'] = number_format($uploadMaxBytes / 1048576, 2);
-        $this->viewParams['heading'] = 'プラグインを追加';
+        $this->viewParams['heading'] = __('admin/settings/plugins/add.heading');
 
         return view('admin::settings.plugins.add', $this->viewParams);
     }
@@ -289,7 +290,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                     File::delete($tempPath);
 
                     return redirect()->route('admin.settings.plugins.add')
-                        ->with('error', 'ZIP内に有効なプラグインディレクトリが見つかりません。');
+                        ->with('error', __('admin/settings/plugins/add.messages.no_valid_directory'));
                 }
 
                 $destinationPath = base_path('plugins/'.$pluginDir);
@@ -300,7 +301,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                     File::delete($tempPath);
 
                     return redirect()->route('admin.settings.plugins.add')
-                        ->with('error', "プラグインディレクトリ '{$pluginDir}' は既に存在します。");
+                        ->with('error', __('admin/settings/plugins/add.messages.directory_exists', ['directory' => $pluginDir]));
                 }
 
                 // ZIPを解凍
@@ -314,7 +315,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                     File::deleteDirectory($destinationPath);
 
                     return redirect()->route('admin.settings.plugins.add')
-                        ->with('error', 'composer.json が見つかりません。');
+                        ->with('error', __('admin/settings/plugins/add.messages.composer_not_found'));
                 }
 
                 // .git/info/excludeにプラグインの除外ルールを追加
@@ -327,7 +328,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 ComposerLocalHelper::syncAutoload();
 
                 return redirect()->route('admin.settings.plugins.index')
-                    ->with('success', 'プラグインのアップロードが完了しました。一覧からインストールしてください。')
+                    ->with('success', __('admin/settings/plugins/add.messages.upload_success'))
                     ->with('uploaded_plugin_directory', $pluginDir);
             } catch (\Exception $e) {
                 // 例外発生時にクリーンアップ
@@ -343,7 +344,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 ]);
 
                 return redirect()->route('admin.settings.plugins.add')
-                    ->with('error', 'プラグインのアップロードに失敗しました: '.$e->getMessage());
+                    ->with('error', __('admin/settings/plugins/add.messages.upload_failed', ['error' => $e->getMessage()]));
             }
         }
 
@@ -353,7 +354,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         }
 
         return redirect()->route('admin.settings.plugins.add')
-            ->with('error', 'ZIPファイルの展開に失敗しました。');
+            ->with('error', __('admin/settings/plugins/add.messages.zip_extract_failed'));
     }
 
     /**
@@ -367,7 +368,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $pluginPath = base_path("plugins/{$pluginDir}");
 
         if (! File::exists($pluginPath)) {
-            return redirect()->back()->with('error', 'プラグインディレクトリが見つかりません。');
+            return redirect()->back()->with('error', __('admin/settings/plugins/index.messages.install_directory_not_found'));
         }
 
         try {
@@ -399,8 +400,25 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 );
             }
 
+            // インストール成功メッセージ（有効化リンク付き）
+            if ($plugin) {
+                $enableUrl = route('admin.settings.plugins.enable', $plugin->id);
+                $csrfToken = csrf_token();
+                $enableLink = '<form method="POST" action="'.e($enableUrl).'" class="inline">'
+                    .'<input type="hidden" name="_token" value="'.e($csrfToken).'">'
+                    .'<button type="submit" class="underline font-bold hover:opacity-80">'
+                    .__('admin/settings/plugins/index.messages.enable_here')
+                    .'</button></form>';
+
+                $successMessage = __('admin/settings/plugins/index.messages.install_success', [
+                    'enable_link' => $enableLink,
+                ]);
+            } else {
+                $successMessage = __('admin/settings/plugins/index.messages.install_success_no_plugin');
+            }
+
             return redirect()->route('admin.settings.plugins.index')
-                ->with('success', 'プラグインが正常にインストールされました。')
+                ->with('success', $successMessage)
                 ->with('installed_plugin_id', $plugin ? $plugin->id : null);
         } catch (\Exception $e) {
             Log::error('Plugin installation failed', [
@@ -408,7 +426,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 'error' => $e->getMessage(),
             ]);
 
-            return redirect()->back()->with('error', 'プラグインのインストールに失敗しました: '.$e->getMessage());
+            return redirect()->back()->with('error', __('admin/settings/plugins/index.messages.install_failed', ['error' => $e->getMessage()]));
         }
     }
 
@@ -418,12 +436,12 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
         // 有効化中のプラグインはアンインストールできない
         if ($plugin->isEnabled()) {
-            return back()->with('error', '有効化中のプラグインはアンインストールできません。先に無効化してください。');
+            return back()->with('error', __('admin/settings/plugins/index.messages.uninstall_must_disable_first'));
         }
 
         // 通知用にプラグイン情報を保存
         $pluginData = [
-            'name' => $plugin->translated_name ?? $plugin->name,
+            'name' => $this->getPluginName($plugin),
             'slug' => $plugin->slug,
             'version' => $plugin->version ?? null,
             'health_status' => 'low', // アンインストール時は健全性警告不要
@@ -452,20 +470,21 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             );
 
             return redirect()->route('admin.settings.plugins.index')
-                ->with('success', 'プラグインをアンインストールしました');
+                ->with('success', __('admin/settings/plugins/index.messages.uninstall_success'));
         } catch (\Exception $e) {
             Log::error('Plugin uninstall failed', [
                 'plugin' => $plugin->name,
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'プラグインのアンインストールに失敗しました: '.$e->getMessage());
+            return back()->with('error', __('admin/settings/plugins/index.messages.uninstall_failed', ['error' => $e->getMessage()]));
         }
     }
 
     public function enable($id)
     {
         $plugin = Plugin::findOrFail($id);
+        $translatedName = $this->getPluginName($plugin);
 
         try {
             // 有効化前に監査を実行（最新の状態を確認）
@@ -484,7 +503,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 ExtensionOperationService::TYPE_PLUGIN,
                 ExtensionOperationService::OPERATION_ENABLED,
                 [
-                    'name' => $plugin->translated_name ?? $plugin->name,
+                    'name' => $translatedName,
                     'slug' => $plugin->slug,
                     'version' => $plugin->version ?? null,
                     'health_status' => $summary['risk_level'] ?? 'unknown',
@@ -492,20 +511,21 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             );
 
             return redirect()->route('admin.settings.plugins.index')
-                ->with('success', str_replace('{name}', $plugin->translated_name, __('admin/settings/plugins.index.enabled.success')));
+                ->with('success', str_replace('{name}', $translatedName, __('admin/settings/plugins/index.enabled.success')));
         } catch (\Exception $e) {
             Log::error('Plugin enable failed', [
                 'plugin' => $plugin->name,
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', str_replace('{name}', $plugin->translated_name, __('admin/settings/plugins.index.enabled.failed')).": {$e->getMessage()}");
+            return back()->with('error', str_replace('{name}', $translatedName, __('admin/settings/plugins/index.enabled.failed')).": {$e->getMessage()}");
         }
     }
 
     public function disable($id)
     {
         $plugin = Plugin::findOrFail($id);
+        $translatedName = $this->getPluginName($plugin);
 
         try {
             // コマンドを使用して無効化
@@ -518,7 +538,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 ExtensionOperationService::TYPE_PLUGIN,
                 ExtensionOperationService::OPERATION_DISABLED,
                 [
-                    'name' => $plugin->translated_name ?? $plugin->name,
+                    'name' => $translatedName,
                     'slug' => $plugin->slug,
                     'version' => $plugin->version ?? null,
                     'health_status' => 'low', // 無効化時は健全性警告不要
@@ -526,14 +546,14 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             );
 
             return redirect()->route('admin.settings.plugins.index')
-                ->with('success', 'プラグインを無効化しました');
+                ->with('success', __('admin/settings/plugins/index.messages.disable_success'));
         } catch (\Exception $e) {
             Log::error('Plugin disable failed', [
                 'plugin' => $plugin->name,
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', "プラグイン無効化中にエラーが発生しました: {$e->getMessage()}");
+            return back()->with('error', __('admin/settings/plugins/index.messages.disable_failed', ['error' => $e->getMessage()]));
         }
     }
 
@@ -566,7 +586,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                         'output' => $output,
                     ]);
 
-                    return redirect()->back()->with('error', 'プラグインのアンインストールに失敗しました。');
+                    return redirect()->back()->with('error', __('admin/settings/plugins/index.messages.delete_uninstall_failed'));
                 }
             }
 
@@ -584,18 +604,18 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                     'output' => $output,
                 ]);
 
-                return redirect()->back()->with('error', 'プラグインの削除に失敗しました。');
+                return redirect()->back()->with('error', __('admin/settings/plugins/index.messages.delete_file_failed'));
             }
 
             return redirect()->route('admin.settings.plugins.index')
-                ->with('success', 'プラグインが正常に削除されました。');
+                ->with('success', __('admin/settings/plugins/index.messages.delete_success'));
         } catch (\Exception $e) {
             Log::error('Plugin deletion failed', [
                 'directory' => $pluginDir,
                 'error' => $e->getMessage(),
             ]);
 
-            return redirect()->back()->with('error', 'プラグインの削除に失敗しました: '.$e->getMessage());
+            return redirect()->back()->with('error', __('admin/settings/plugins/index.messages.delete_failed', ['error' => $e->getMessage()]));
         }
     }
 
@@ -703,13 +723,13 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
             // 翻訳キーがそのまま返された場合は翻訳が見つからない
             if ($name === $translationKey) {
-                return $plugin->name ?? 'プラグイン名なし';
+                return $plugin->name ?? __('admin/settings/plugins/index.messages.no_plugin_name');
             }
 
             return $name;
         } catch (\Exception $e) {
             // 翻訳ファイルが存在しない場合はDBの名前またはデフォルト
-            return $plugin->name ?? 'プラグイン名なし';
+            return $plugin->name ?? __('admin/settings/plugins/index.messages.no_plugin_name');
         }
     }
 
@@ -726,13 +746,13 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
             // 翻訳キーがそのまま返された場合は翻訳が見つからない
             if ($description === $translationKey) {
-                return $plugin->description ?? '説明がありません';
+                return $plugin->description ?? __('common.no_description');
             }
 
             return $description;
         } catch (\Exception $e) {
             // 翻訳ファイルが存在しない場合はDBの説明またはデフォルト
-            return $plugin->description ?? '説明がありません';
+            return $plugin->description ?? __('common.no_description');
         }
     }
 

@@ -22,17 +22,32 @@ https://exc-d.com
 @endif
 
 @if ($card['isEnabled'])
-    {{-- 有効化中：無効化ボタンのみ --}}
-    <form action="{{ route('admin.settings.plugins.disable', $card['id']) }}" method="POST" class="inline-block">
+    {{-- 有効化中：無効化ボタン（確認モーダル付き） --}}
+    <form action="{{ route('admin.settings.plugins.disable', $card['id']) }}" method="POST" class="inline-block" id="disableForm-{{ $card['id'] }}">
         @csrf
         <x-form-button
-            type="submit"
+            type="button"
             :label="__('common.disable')"
             variant="warning"
             size="xs"
             icon="fas fa-pause"
+            @click="openModal('{{ $card['disableModalId'] }}')"
             class="py-2 px-3"
         />
+
+        <x-ui-modal
+            :id="$card['disableModalId']"
+            :title="__('admin/settings/plugins/index.disabled.confirm_title')"
+            :message="str_replace('{name}', $card['name'], __('admin/settings/plugins/index.disabled.confirm_message'))"
+            icon_type="warning"
+            :confirm_label="__('common.disable')"
+            :cancel_label="__('common.cancel')"
+            form="disableForm-{{ $card['id'] }}"
+            confirm_color="yellow">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{ __('admin/settings/plugins/index.disabled.confirm_warning') }}
+            </p>
+        </x-ui-modal>
     </form>
 @else
     {{-- 無効化中：有効化とアンインストールボタン --}}

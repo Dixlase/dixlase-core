@@ -17,6 +17,10 @@
             <!-- カスタムのFeatureテスト -->
             <directory>custom/tests/Feature</directory>
         </testsuite>
+        <testsuite name="DixlaseDocs">
+            <!-- DixlaseDocs プラグインのテスト -->
+            <directory>plugins/DixlaseDocs/tests</directory>
+        </testsuite>
         <testsuite name="DixlaseDeveloper">
             <!-- DixlaseDeveloper プラグインのテスト（プラグイン/テーマ/カスタム開発用） -->
             <directory>plugins/DixlaseDeveloper/tests</directory>
@@ -44,5 +48,6 @@
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="FORCE_SSL" value="false"/>
+        <env name="INSTALLED" value="false"/>
     </php>
 </phpunit>

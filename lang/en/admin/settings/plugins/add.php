@@ -25,4 +25,14 @@ return [
     'enable_from_here' => 'click here',
     'enable_instruction' => 'to enable.',
     'name' => 'Plugin Name',
+
+    // Controller Messages
+    'messages' => [
+        'upload_success' => 'Plugin upload completed. Please install from the list.',
+        'upload_failed' => 'Plugin upload failed: :error',
+        'zip_extract_failed' => 'Failed to extract ZIP file.',
+        'no_valid_directory' => 'No valid plugin directory found in the ZIP file.',
+        'directory_exists' => "Plugin directory ':directory' already exists.",
+        'composer_not_found' => 'composer.json not found.',
+    ],
 ];
