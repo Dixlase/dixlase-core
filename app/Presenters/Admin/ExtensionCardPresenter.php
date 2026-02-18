@@ -207,6 +207,7 @@ class ExtensionCardPresenter
             'enableWarnings' => $enableWarnings,
             'hasEnableWarnings' => ! empty($enableWarnings),
             'enableModalId' => $isModel ? 'enableModal-'.$plugin->id : null,
+            'disableModalId' => $isModel ? 'disableModal-'.$plugin->id : null,
             'installWarnings' => $installWarnings,
             'hasInstallWarnings' => ! empty($installWarnings),
             'settingsUrl' => $settingsUrl,

@@ -26,10 +26,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section>
         <div class="flex items-center justify-between mb-6">
             <h2 class="mb-0">{{ __('admin/settings/plugins/index.installed_heading') }}</h2>
-            <a href="{{ route('admin.settings.plugins.add') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
-                <i class="fas fa-plus mr-2"></i>
-                {{ __('admin/settings/plugins/index.add_plugin') }}
-            </a>
+            <x-form-button
+                type="link"
+                :href="route('admin.settings.plugins.add')"
+                :label="__('admin/settings/plugins/index.add_plugin')"
+                variant="primary"
+                icon="fas fa-plus"
+            />
         </div>
 
         @if($plugins->count() > 0)
@@ -46,10 +49,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">{{ __('admin/settings/plugins/index.no_plugins') }}</h3>
                     <p class="text-gray-500 dark:text-gray-400 mb-6">{{ __('admin/settings/plugins/index.no_plugins_description') }}</p>
-                    <a href="{{ route('admin.settings.plugins.add') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
-                        <i class="fas fa-plus mr-2"></i>
-                        {{ __('admin/settings/plugins/index.add_plugin') }}
-                    </a>
+                    <x-form-button
+                        type="link"
+                        :href="route('admin.settings.plugins.add')"
+                        :label="__('admin/settings/plugins/index.add_plugin')"
+                        variant="primary"
+                        icon="fas fa-plus"
+                    />
                 </div>
             </div>
         @endif

@@ -48,6 +48,11 @@ return [
         'success' => '{name} has been enabled',
         'failed' => 'Failed to enable {name}',
     ],
+    'disabled' => [
+        'confirm_title' => 'Disable Confirmation',
+        'confirm_message' => 'Do you want to disable plugin [{name}]?',
+        'confirm_warning' => 'Features provided by this plugin will be temporarily unavailable.',
+    ],
     'delete' => [
         'confirm_title' => 'Delete Confirmation',
         'confirm_message' => 'Do you want to permanently delete plugin [{name}] files and folders? This action cannot be undone.',
@@ -195,6 +200,25 @@ return [
         'violation_note_dev' => 'In development mode, violations are logged but not blocked.',
         'violation_note_standard' => 'In standard mode, some features may not work.',
         'violation_note_strict' => 'In strict mode, this plugin cannot be activated.',
+    ],
+
+    // Controller Messages
+    'messages' => [
+        'install_success' => 'Plugin has been installed successfully. To use the plugin, please :enable_link to enable it.',
+        'install_success_no_plugin' => 'Plugin has been installed successfully.',
+        'enable_here' => 'click here',
+        'install_failed' => 'Plugin installation failed: :error',
+        'install_directory_not_found' => 'Plugin directory not found.',
+        'uninstall_success' => 'Plugin has been uninstalled',
+        'uninstall_failed' => 'Plugin uninstall failed: :error',
+        'uninstall_must_disable_first' => 'Cannot uninstall an enabled plugin. Please disable it first.',
+        'disable_success' => 'Plugin has been disabled',
+        'disable_failed' => 'An error occurred while disabling plugin: :error',
+        'delete_success' => 'Plugin has been deleted successfully.',
+        'delete_failed' => 'Plugin deletion failed: :error',
+        'delete_uninstall_failed' => 'Plugin uninstall failed.',
+        'delete_file_failed' => 'Plugin file deletion failed.',
+        'no_plugin_name' => 'No plugin name',
     ],
 
     'permissions' => [
