@@ -22,15 +22,16 @@
 
 namespace App\Services\Plugin;
 
+use App\Contracts\Plugin\SignatureVerifierInterface;
+use App\Models\PluginAudit;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
-use App\Models\PluginAudit;
 
 /**
  * プラグイン権限管理サービス
- * 
+ *
  * plugin.jsonのpermissionsセクションを読み取り、
  * プラグインの権限チェックを行うサービスです。
  */
@@ -94,16 +95,16 @@ class PluginPermissionService
     /**
      * プラグインの権限をチェック
      *
-     * @param string $pluginSlug プラグインのスラッグ（例: dixlase-inquiry）
-     * @param string $permission 権限キー（例: mail.send, database.own_tables）
-     * @return bool
+     * @param  string  $pluginSlug  プラグインのスラッグ（例: dixlase-inquiry）
+     * @param  string  $permission  権限キー（例: mail.send, database.own_tables）
      */
     public function check(string $pluginSlug, string $permission): bool
     {
         $permissions = $this->getPermissions($pluginSlug);
-        
+
         if ($permissions === null) {
-            Log::warning("Plugin permissions not found", ['plugin' => $pluginSlug]);
+            Log::warning('Plugin permissions not found', ['plugin' => $pluginSlug]);
+
             return false;
         }
 
@@ -112,10 +113,6 @@ class PluginPermissionService
 
     /**
      * プラグインが特定の権限を持っているか確認（エイリアス）
-     *
-     * @param string $pluginSlug
-     * @param string $permission
-     * @return bool
      */
     public function has(string $pluginSlug, string $permission): bool
     {
@@ -124,9 +121,6 @@ class PluginPermissionService
 
     /**
      * プラグインの全権限を取得
-     *
-     * @param string $pluginSlug
-     * @return array|null
      */
     public function getPermissions(string $pluginSlug): ?array
     {
@@ -136,21 +130,22 @@ class PluginPermissionService
         }
 
         // ファイルキャッシュを確認
-        $cacheKey = self::CACHE_PREFIX . $pluginSlug;
+        $cacheKey = self::CACHE_PREFIX.$pluginSlug;
         $cached = Cache::get($cacheKey);
-        
+
         if ($cached !== null) {
             $this->loadedPermissions[$pluginSlug] = $cached;
+
             return $cached;
         }
 
         // plugin.jsonから読み込み
         $permissions = $this->loadPermissionsFromFile($pluginSlug);
-        
+
         if ($permissions !== null) {
             // デフォルト値とマージ
             $permissions = $this->mergeWithDefaults($permissions);
-            
+
             // キャッシュに保存
             Cache::put($cacheKey, $permissions, self::CACHE_TTL);
             $this->loadedPermissions[$pluginSlug] = $permissions;
@@ -161,16 +156,13 @@ class PluginPermissionService
 
     /**
      * plugin.jsonから権限を読み込み
-     *
-     * @param string $pluginSlug
-     * @return array|null
      */
     protected function loadPermissionsFromFile(string $pluginSlug): ?array
     {
         $pluginName = $this->slugToName($pluginSlug);
         $pluginJsonPath = base_path("plugins/{$pluginName}/plugin.json");
 
-        if (!File::exists($pluginJsonPath)) {
+        if (! File::exists($pluginJsonPath)) {
             return null;
         }
 
@@ -178,16 +170,69 @@ class PluginPermissionService
         $data = json_decode($content, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            Log::error("Invalid plugin.json", [
+            Log::error('Invalid plugin.json', [
                 'plugin' => $pluginSlug,
                 'error' => json_last_error_msg(),
             ]);
+
             return null;
         }
 
         // permissionsセクションが存在しない場合はnullを返す
-        if (!isset($data['permissions']) || empty($data['permissions'])) {
+        if (! isset($data['permissions']) || empty($data['permissions'])) {
             return null;
+        }
+
+        return $data['permissions'];
+    }
+
+    /**
+     * プラグインの _optional 権限リストを取得
+     *
+     * @return array<string> オプショナル権限キーのリスト
+     */
+    public function getOptionalPermissions(string $pluginSlug): array
+    {
+        $permissions = $this->getRawPermissions($pluginSlug);
+
+        return $permissions['_optional'] ?? [];
+    }
+
+    /**
+     * プラグインの _notes を取得
+     *
+     * @return array{ja?: string, en?: string} 権限使用理由の説明
+     */
+    public function getPermissionNotes(string $pluginSlug): array
+    {
+        $permissions = $this->getRawPermissions($pluginSlug);
+
+        return $permissions['_notes'] ?? [];
+    }
+
+    /**
+     * 権限キーがオプショナルかどうかを判定
+     */
+    public function isOptionalPermission(string $pluginSlug, string $permissionKey): bool
+    {
+        return in_array($permissionKey, $this->getOptionalPermissions($pluginSlug), true);
+    }
+
+    /**
+     * plugin.json から生の permissions を取得（_optional, _notes 含む）
+     */
+    protected function getRawPermissions(string $pluginSlug): array
+    {
+        $pluginName = $this->slugToName($pluginSlug);
+        $pluginJsonPath = base_path("plugins/{$pluginName}/plugin.json");
+
+        if (! File::exists($pluginJsonPath)) {
+            return [];
+        }
+
+        $data = json_decode(File::get($pluginJsonPath), true);
+        if (json_last_error() !== JSON_ERROR_NONE || ! isset($data['permissions'])) {
+            return [];
         }
 
         return $data['permissions'];
@@ -196,20 +241,31 @@ class PluginPermissionService
     /**
      * デフォルト値とマージ
      *
-     * @param array $permissions
-     * @return array
+     * _optional と _notes はメタデータのため、マージ対象から除外します。
      */
     protected function mergeWithDefaults(array $permissions): array
     {
-        return array_replace_recursive($this->defaultPermissions, $permissions);
+        // メタデータを退避
+        $optional = $permissions['_optional'] ?? [];
+        $notes = $permissions['_notes'] ?? [];
+
+        // メタデータを除外してマージ
+        $filtered = array_diff_key($permissions, ['_optional' => true, '_notes' => true]);
+        $merged = array_replace_recursive($this->defaultPermissions, $filtered);
+
+        // メタデータを復元
+        if (! empty($optional)) {
+            $merged['_optional'] = $optional;
+        }
+        if (! empty($notes)) {
+            $merged['_notes'] = $notes;
+        }
+
+        return $merged;
     }
 
     /**
      * ドット記法の権限キーを解決
-     *
-     * @param array $permissions
-     * @param string $key
-     * @return bool
      */
     protected function resolvePermission(array $permissions, string $key): bool
     {
@@ -217,7 +273,7 @@ class PluginPermissionService
         $value = $permissions;
 
         foreach ($parts as $part) {
-            if (!isset($value[$part])) {
+            if (! isset($value[$part])) {
                 return false;
             }
             $value = $value[$part];
@@ -225,7 +281,7 @@ class PluginPermissionService
 
         // 配列の場合は空でないかチェック
         if (is_array($value)) {
-            return !empty($value);
+            return ! empty($value);
         }
 
         return (bool) $value;
@@ -234,21 +290,19 @@ class PluginPermissionService
     /**
      * プラグインが特定のコアテーブルにアクセスできるかチェック
      *
-     * @param string $pluginSlug
-     * @param string $table テーブル名
-     * @param string $access アクセスタイプ（read, write）
-     * @return bool
+     * @param  string  $table  テーブル名
+     * @param  string  $access  アクセスタイプ（read, write）
      */
     public function canAccessCoreTable(string $pluginSlug, string $table, string $access = 'read'): bool
     {
         $permissions = $this->getPermissions($pluginSlug);
-        
+
         if ($permissions === null) {
             return false;
         }
 
         $coreTables = $permissions['database']['core_tables'] ?? [];
-        
+
         foreach ($coreTables as $tablePermission) {
             // "members:read" 形式をパース
             if (is_string($tablePermission)) {
@@ -273,15 +327,13 @@ class PluginPermissionService
     /**
      * プラグインが他のプラグインのコンテンツにアクセスできるかチェック
      *
-     * @param string $pluginSlug
-     * @param string $targetPlugin アクセス先のプラグイン
-     * @param string $access アクセスタイプ（read, write）
-     * @return bool
+     * @param  string  $targetPlugin  アクセス先のプラグイン
+     * @param  string  $access  アクセスタイプ（read, write）
      */
     public function canAccessOtherPlugin(string $pluginSlug, string $targetPlugin, string $access = 'read'): bool
     {
         $permissions = $this->getPermissions($pluginSlug);
-        
+
         if ($permissions === null) {
             return false;
         }
@@ -299,36 +351,35 @@ class PluginPermissionService
 
     /**
      * プラグインの権限サマリーを取得（管理画面表示用）
-     *
-     * @param string $pluginSlug
-     * @return array
      */
     public function getSummary(string $pluginSlug): array
     {
         $permissions = $this->getPermissions($pluginSlug);
         $signatureInfo = $this->getSignatureInfo($pluginSlug);
-        
+
         // 監査結果を取得
         $audit = PluginAudit::getBySlug($pluginSlug);
         $auditData = $audit ? $audit->toAuditArray() : [];
-        
+
         if ($permissions === null) {
             // 権限定義がない場合でも、監査結果があればそれを使用
             $riskLevel = $auditData['risk_level'] ?? 'unknown';
-            
+
             return [
                 'has_permissions' => false,
                 'risk_level' => $riskLevel,
                 'risk_reasons' => $auditData['risk_reasons'] ?? [],
                 'risk_score' => 0,
+                'health_score' => $auditData['health_score'] ?? null,
+                'health_status' => $auditData['health_status'] ?? null,
                 'categories' => [],
                 'signature' => $signatureInfo,
                 'audit' => $auditData,
             ];
         }
-        
+
         // リスクレベルと理由を計算（監査結果があればそちらを優先）
-        if (!empty($auditData['risk_level'])) {
+        if (! empty($auditData['risk_level'])) {
             $riskLevel = $auditData['risk_level'];
             $riskReasons = $auditData['risk_reasons'] ?? [];
             $riskScore = $this->calculateRiskScore($riskLevel);
@@ -338,26 +389,37 @@ class PluginPermissionService
             $riskReasons = $riskResult['reasons'];
             $riskScore = $riskResult['score'];
         }
-        
+
         $baseSummary = [
             'has_permissions' => true,
             'risk_level' => $riskLevel,
             'risk_reasons' => $riskReasons,
             'risk_score' => $riskScore,
+            'health_score' => $auditData['health_score'] ?? null,
+            'health_status' => $auditData['health_status'] ?? null,
             'categories' => [],
+            'optional' => $this->getOptionalPermissions($pluginSlug),
+            'notes' => $this->getPermissionNotes($pluginSlug),
             'signature' => $signatureInfo,
             'audit' => $auditData,
         ];
 
-        // カテゴリごとの権限をまとめる
+        // メタデータキーを除外してカテゴリごとの権限をまとめる
+        $metadataKeys = ['_optional', '_notes'];
         foreach ($permissions as $category => $perms) {
+            if (in_array($category, $metadataKeys, true)) {
+                continue;
+            }
+            if (! is_array($perms)) {
+                continue;
+            }
             $enabled = [];
             foreach ($perms as $key => $value) {
                 if ($this->isPermissionEnabled($value)) {
                     $enabled[] = $key;
                 }
             }
-            if (!empty($enabled)) {
+            if (! empty($enabled)) {
                 $baseSummary['categories'][$category] = $enabled;
             }
         }
@@ -368,87 +430,22 @@ class PluginPermissionService
     /**
      * プラグインの署名情報を取得
      *
-     * @param string $pluginSlug
-     * @return array
+     * SignatureVerifierInterface を使用して署名検証を行います。
+     * DixlaseDeveloper プラグインがインストール済みの場合は Ed25519 ベースの検証、
+     * 未インストールの場合はスタブ実装（メタデータ読み取りのみ）を使用します。
      */
     public function getSignatureInfo(string $pluginSlug): array
     {
-        $pluginName = $this->slugToName($pluginSlug);
-        $pluginPath = base_path("plugins/{$pluginName}");
-        $pluginJsonPath = $pluginPath . '/plugin.json';
-        $signaturePath = $pluginPath . '/signature.sig';
-        
-        $result = [
-            'status' => 'unsigned', // unsigned, valid, invalid
-            'type' => null,         // official, verified, partner
-            'signed_by' => null,
-            'signed_at' => null,
-            'key_id' => null,
-        ];
-        
-        // plugin.json から signing 情報を読み取る
-        if (File::exists($pluginJsonPath)) {
-            $content = File::get($pluginJsonPath);
-            $data = json_decode($content, true);
-            
-            if (json_last_error() === JSON_ERROR_NONE && isset($data['signing'])) {
-                $signing = $data['signing'];
-                $result['key_id'] = $signing['key_id'] ?? null;
-                
-                // signature.sig ファイルの存在確認
-                if (File::exists($signaturePath)) {
-                    // TODO: 実際の署名検証ロジックを実装
-                    // 現時点では署名ファイルが存在すれば valid とする（仮実装）
-                    // 将来的には SignatureVerifier で検証する
-                    $result['status'] = 'pending_verification';
-                    
-                    // 署名ファイルの内容を読み取る
-                    $sigContent = File::get($signaturePath);
-                    $sigData = json_decode($sigContent, true);
-                    
-                    if (json_last_error() === JSON_ERROR_NONE) {
-                        $result['signed_by'] = $sigData['signed_by'] ?? null;
-                        $result['signed_at'] = $sigData['signed_at'] ?? null;
-                        $result['type'] = $this->determineSignatureType($sigData['key_id'] ?? $signing['key_id'] ?? null);
-                    }
-                }
-            }
-        }
-        
-        return $result;
-    }
+        $verifier = app(SignatureVerifierInterface::class);
+        $result = $verifier->verify($pluginSlug);
 
-    /**
-     * 署名タイプを判定
-     *
-     * @param string|null $keyId
-     * @return string|null
-     */
-    protected function determineSignatureType(?string $keyId): ?string
-    {
-        if ($keyId === null) {
-            return null;
-        }
-        
-        // キーIDのプレフィックスで判定
-        if (str_starts_with($keyId, 'dixlase-official')) {
-            return 'official';
-        }
-        if (str_starts_with($keyId, 'dixlase-verified') || str_starts_with($keyId, 'marketplace')) {
-            return 'verified';
-        }
-        if (str_starts_with($keyId, 'partner-')) {
-            return 'partner';
-        }
-        
-        return null;
+        return $result->toArray();
     }
 
     /**
      * 権限が有効かどうかを判定
      *
-     * @param mixed $value
-     * @return bool
+     * @param  mixed  $value
      */
     protected function isPermissionEnabled($value): bool
     {
@@ -456,28 +453,26 @@ class PluginPermissionService
             return $value;
         }
         if (is_array($value)) {
-            return !empty($value);
+            return ! empty($value);
         }
+
         return (bool) $value;
     }
 
     /**
      * リスクレベルを計算
      *
-     * @param array $permissions
      * @return string low, medium, high
      */
     protected function calculateRiskLevel(array $permissions): string
     {
         $result = $this->calculateRiskLevelWithReasons($permissions);
+
         return $result['level'];
     }
 
     /**
      * リスクレベル文字列からスコアを計算
-     *
-     * @param string $level
-     * @return int
      */
     protected function calculateRiskScore(string $level): int
     {
@@ -492,7 +487,9 @@ class PluginPermissionService
     /**
      * リスクレベルと理由を計算
      *
-     * @param array $permissions
+     * @deprecated PluginHealthScorer::calculate() を使用してください。
+     *             リスクスコア（0-10）は非推奨です。健全性スコア（0-100）に移行してください。
+     *
      * @return array ['level' => string, 'reasons' => array, 'score' => int]
      */
     public function calculateRiskLevelWithReasons(array $permissions): array
@@ -521,7 +518,7 @@ class PluginPermissionService
             $score += 2;
             $reasons[] = ['key' => 'storage.public_uploads', 'severity' => 'high', 'score' => 2];
         }
-        if (!empty($permissions['content']['write_other_plugins'] ?? [])) {
+        if (! empty($permissions['content']['write_other_plugins'] ?? [])) {
             $score += 2;
             $reasons[] = ['key' => 'content.write_other_plugins', 'severity' => 'high', 'score' => 2];
         }
@@ -539,7 +536,7 @@ class PluginPermissionService
             $score += 1;
             $reasons[] = ['key' => 'system.register_middleware', 'severity' => 'medium', 'score' => 1];
         }
-        if (!empty($permissions['database']['core_tables'] ?? [])) {
+        if (! empty($permissions['database']['core_tables'] ?? [])) {
             $score += 1;
             $reasons[] = ['key' => 'database.core_tables', 'severity' => 'medium', 'score' => 1];
         }
@@ -561,13 +558,12 @@ class PluginPermissionService
     /**
      * キャッシュをクリア
      *
-     * @param string|null $pluginSlug 特定のプラグインのみクリアする場合
-     * @return void
+     * @param  string|null  $pluginSlug  特定のプラグインのみクリアする場合
      */
     public function clearCache(?string $pluginSlug = null): void
     {
         if ($pluginSlug !== null) {
-            Cache::forget(self::CACHE_PREFIX . $pluginSlug);
+            Cache::forget(self::CACHE_PREFIX.$pluginSlug);
             unset($this->loadedPermissions[$pluginSlug]);
         } else {
             // 全プラグインのキャッシュをクリア
@@ -580,7 +576,7 @@ class PluginPermissionService
     /**
      * スラッグをプラグイン名に変換
      *
-     * @param string $slug dixlase-inquiry
+     * @param  string  $slug  dixlase-inquiry
      * @return string DixlaseInquiry
      */
     protected function slugToName(string $slug): string
@@ -591,7 +587,7 @@ class PluginPermissionService
     /**
      * プラグイン名をスラッグに変換
      *
-     * @param string $name DixlaseInquiry
+     * @param  string  $name  DixlaseInquiry
      * @return string dixlase-inquiry
      */
     protected function nameToSlug(string $name): string
@@ -602,14 +598,11 @@ class PluginPermissionService
     /**
      * 権限違反をログに記録
      *
-     * @param string $pluginSlug
-     * @param string $permission
-     * @param string $action 実行しようとしたアクション
-     * @return void
+     * @param  string  $action  実行しようとしたアクション
      */
     public function logViolation(string $pluginSlug, string $permission, string $action = ''): void
     {
-        Log::warning("Plugin permission violation", [
+        Log::warning('Plugin permission violation', [
             'plugin' => $pluginSlug,
             'permission' => $permission,
             'action' => $action,
@@ -620,15 +613,11 @@ class PluginPermissionService
     /**
      * 権限チェックを行い、違反時は例外をスロー
      *
-     * @param string $pluginSlug
-     * @param string $permission
-     * @param string $action
      * @throws \App\Exceptions\PluginPermissionException
-     * @return void
      */
     public function enforce(string $pluginSlug, string $permission, string $action = ''): void
     {
-        if (!$this->check($pluginSlug, $permission)) {
+        if (! $this->check($pluginSlug, $permission)) {
             $this->logViolation($pluginSlug, $permission, $action);
             throw new \App\Exceptions\PluginPermissionException(
                 "Plugin '{$pluginSlug}' does not have permission: {$permission}"

@@ -205,9 +205,53 @@ Dixlaseのプラグイン・テーマ権限基盤は、拡張機能の**健全�
 
 ---
 
+## ハイブリッド設計（plugin.json と config の役割分担）
+
+プラグインの設定は2つの層に分離されています:
+
+### plugin.json（マニフェスト - 静的宣言）
+
+インストール前に知りたい情報。JSONで記述。
+
+| セクション | 用途 |
+|-----------|------|
+| メタデータ | name, slug, version, description, author, license |
+| 依存関係 | requires |
+| 機能宣言 | provides (admin_menu, front_routes 等) |
+| 権限宣言 | permissions (プラグインがシステムの何に触れるか) |
+| 構成宣言 | declares (どの config ファイルを提供しているか) |
+
+### config/（運用設定 - PHPベース）
+
+ランタイム動作の制御。PHP enum参照や複雑なデータ構造が必要。
+
+| ファイル | 用途 |
+|---------|------|
+| `admin/navigation.php` | メニュー構成 |
+| `admin/roles.php` | メンバーロールのデフォルト値（MemberRole enum参照） |
+| `admin/database-cleanup.php` | クリーンアップ対象テーブル |
+
+**roles / database-cleanup を PHP config で維持する理由:**
+- PHP enum参照 (`MemberRole::EDITOR->value`) が必要
+- 複雑なデータ構造 (`additional_conditions` 等)
+- 既存の読み込み基盤 (`PluginLoaderTrait`, `PermissionRegistry`, `DatabaseCleanupService`) が稼働中
+
+---
+
+## 2種類の「権限」の区別
+
+| 種類 | 定義場所 | 方向 | 例 |
+|------|---------|------|-----|
+| **プラグイン権限** | `plugin.json` permissions | プラグイン → システム | 「メンバーデータを読める」 |
+| **メンバーロール権限** | `config/roles.php` | メンバー → プラグイン | 「編集者以上がページ管理を使える」 |
+
+この2つを混同しないこと。プラグイン権限は「このプラグインがシステムの何にアクセスするか」の宣言であり、メンバーロール権限は「誰がこのプラグインの機能を使えるか」の制御です。
+
+---
+
 ## plugin.json の拡張仕様
 
-### 現在のフォーマット
+### 基本フォーマット
 
 ```json
 {
@@ -229,7 +273,7 @@ Dixlaseのプラグイン・テーマ権限基盤は、拡張機能の**健全�
   "tags": ["pages", "content", "cms"],
   "requires": {
     "dixlase": ">=1.0.0",
-    "php": ">=8.0"
+    "php": ">=8.2"
   },
   "provides": {
     "admin_menu": true,
@@ -240,31 +284,125 @@ Dixlaseのプラグイン・テーマ権限基盤は、拡張機能の**健全�
 }
 ```
 
-### 拡張フィールド（推奨）
+### permissions セクション（必須）
+
+カテゴリ別構造で、全項目を明示的に `true`/`false` で記載します。
 
 ```json
 {
   "permissions": {
-    "declared": [
-      "content.pages.read",
-      "content.pages.write",
-      "admin.menu.register",
-      "settings.plugin.read",
-      "settings.plugin.write"
-    ],
-    "optional": [
-      "mail.send"
-    ],
-    "notes": {
-      "ja": [
-        "mail.send は通知機能を有効にした場合のみ使用します。"
-      ],
-      "en": [
-        "mail.send is only used when notification feature is enabled."
-      ]
+    "database": {
+      "own_tables": true,
+      "core_tables": []
+    },
+    "storage": {
+      "own_directory": true,
+      "public_uploads": false,
+      "temp_files": false
+    },
+    "settings": {
+      "read_core": true,
+      "write_own": true
+    },
+    "members": {
+      "read": false,
+      "write": false,
+      "create": false,
+      "delete": false
+    },
+    "mail": {
+      "send": false,
+      "bulk_send": false
+    },
+    "content": {
+      "read_other_plugins": [],
+      "write_other_plugins": []
+    },
+    "system": {
+      "register_shortcodes": false,
+      "register_middleware": false,
+      "register_commands": false,
+      "register_blade_directives": false,
+      "modify_routes": false
+    },
+    "_optional": ["mail.send"],
+    "_notes": {
+      "ja": "mail.send は通知機能を有効にした場合のみ使用します。",
+      "en": "mail.send is only used when notification feature is enabled."
     }
-  },
+  }
+}
+```
 
+#### permissions フィールド説明
+
+| カテゴリ | フィールド | 型 | 説明 |
+|---------|-----------|------|------|
+| `database` | `own_tables` | bool | プラグイン専用テーブルの使用 |
+| `database` | `core_tables` | array | アクセスするコアテーブル（例: `["members:read"]`） |
+| `storage` | `own_directory` | bool | プラグイン専用ストレージの使用 |
+| `storage` | `public_uploads` | bool | 公開アップロード領域へのアクセス |
+| `storage` | `temp_files` | bool | 一時ファイルの使用 |
+| `settings` | `read_core` | bool | コア設定の読み取り |
+| `settings` | `write_own` | bool | プラグイン設定の書き込み |
+| `members` | `read` | bool | メンバー情報の読み取り |
+| `members` | `write` | bool | メンバー情報の書き込み |
+| `members` | `create` | bool | メンバーの作成 |
+| `members` | `delete` | bool | メンバーの削除 |
+| `mail` | `send` | bool | メール送信 |
+| `mail` | `bulk_send` | bool | 一括メール送信 |
+| `content` | `read_other_plugins` | array | 読み取りアクセスする他プラグインのスラッグ |
+| `content` | `write_other_plugins` | array | 書き込みアクセスする他プラグインのスラッグ |
+| `system` | `register_shortcodes` | bool | ショートコードの登録 |
+| `system` | `register_middleware` | bool | ミドルウェアの登録 |
+| `system` | `register_commands` | bool | Artisan コマンドの登録 |
+| `system` | `register_blade_directives` | bool | Blade ディレクティブの登録 |
+| `system` | `modify_routes` | bool | ルートの変更 |
+| - | `_optional` | array | スキャナーヒント: 未検出でもペナルティなし |
+| - | `_notes` | object | 権限使用理由の説明（`ja`/`en` バイリンガル） |
+
+### declares セクション（必須）
+
+プラグインが提供する config ファイルと構成要素を宣言します。
+
+```json
+{
+  "declares": {
+    "configs": {
+      "roles": true,
+      "database_cleanup": false,
+      "navigation": true
+    },
+    "contracts": [],
+    "migrations": true,
+    "commands": false,
+    "middleware": false
+  }
+}
+```
+
+#### declares フィールド説明
+
+| フィールド | 型 | 説明 |
+|-----------|------|------|
+| `configs.roles` | bool | `config/admin/roles.php` を提供するか |
+| `configs.database_cleanup` | bool | `config/admin/database-cleanup.php` を提供するか |
+| `configs.navigation` | bool | `config/admin/navigation.php` を提供するか |
+| `contracts` | array | 実装する Contract インターフェースの配列 |
+| `migrations` | bool | マイグレーションを提供するか |
+| `commands` | bool | Artisan コマンドを提供するか |
+| `middleware` | bool | ミドルウェアを提供するか |
+
+**整合性チェック:**
+- 宣言あり + ファイルなし → 健全性減点(-5)
+- ファイルあり + 宣言なし → 健全性減点(-2)
+
+### 将来の拡張フィールド（参考）
+
+以下のフィールドはマーケットプレイス開設時に実装予定です:
+
+```json
+{
   "security": {
     "sandbox": {
       "storage_scope": "plugin",
@@ -309,16 +447,6 @@ Dixlaseのプラグイン・テーマ権限基盤は、拡張機能の**健全�
   }
 }
 ```
-
-### フィールド説明
-
-#### permissions
-
-| フィールド | 説明 |
-|------------|------|
-| `declared` | 宣言する権限（スキャン対象の基準） |
-| `optional` | 機能ON時だけ使う権限（注意の誤判定を減らす） |
-| `notes` | 権限使用の補足説明（多言語対応） |
 
 #### security.sandbox
 
@@ -367,49 +495,26 @@ Dixlaseのプラグイン・テーマ権限基盤は、拡張機能の**健全�
 
 ---
 
-## 権限命名規約
+## 権限カテゴリ
 
-### カテゴリ
+permissions のカテゴリ別構造に対応するスキャン対象:
 
-| カテゴリ | 説明 |
-|----------|------|
-| `content.*` | コンテンツ関連 |
-| `database.*` | データベース関連 |
-| `storage.*` | ストレージ関連 |
-| `settings.*` | 設定関連 |
-| `members.*` | メンバー関連 |
-| `mail.*` | メール関連 |
-| `system.*` | システム関連 |
-| `admin.*` | 管理画面関連 |
-
-### 操作
-
-| 操作 | 説明 |
-|------|------|
-| `.read` | 読み取り |
-| `.write` | 書き込み |
-| `.create` | 作成 |
-| `.delete` | 削除 |
-| `.register` | 登録 |
-
-### 例
-
-```
-content.pages.read      # 固定ページの読み取り
-content.pages.write     # 固定ページの書き込み
-database.own_tables     # 専用テーブルへのアクセス
-database.core_tables    # コアテーブルへのアクセス
-storage.plugin_storage  # プラグイン専用ストレージ
-storage.public_uploads  # 公開アップロード領域
-settings.plugin.read    # プラグイン設定の読み取り
-settings.core.read      # コア設定の読み取り
-members.read            # メンバー情報の読み取り
-members.write           # メンバー情報の書き込み
-mail.send               # メール送信
-mail.bulk_send          # 一括メール送信
-system.register_middleware  # ミドルウェア登録
-admin.menu.register     # 管理メニュー登録
-```
+| カテゴリ | スキャン対象 | 説明 |
+|----------|-------------|------|
+| `database.own_tables` | マイグレーション、Schema::create | プラグイン専用テーブル |
+| `database.core_tables` | コアモデルの直接参照 | コアテーブルへのアクセス |
+| `storage.own_directory` | Storage facade の使用 | プラグイン専用ストレージ |
+| `storage.public_uploads` | public ディスクへの書き込み | 公開アップロード領域 |
+| `storage.temp_files` | temp ファイル操作 | 一時ファイル |
+| `settings.read_core` | config() でコア設定を読む | コア設定の読み取り |
+| `settings.write_own` | プラグイン設定の保存 | プラグイン設定の書き込み |
+| `members.read/write/create/delete` | Member モデルの操作 | メンバー関連操作 |
+| `mail.send` | Mail facade, Mailable | メール送信 |
+| `mail.bulk_send` | バッチメール, キュー | 一括メール送信 |
+| `content.read_other_plugins` | 他プラグインモデルの参照 | 他プラグインデータの読み取り |
+| `content.write_other_plugins` | 他プラグインモデルの更新 | 他プラグインデータの書き込み |
+| `system.register_*` | ServiceProvider での登録 | システム拡張ポイント |
+| `system.modify_routes` | ルート定義の変更 | ルート変更 |
 
 ---
 

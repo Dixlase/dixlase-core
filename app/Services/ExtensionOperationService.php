@@ -22,6 +22,7 @@
 
 namespace App\Services;
 
+use App\Enums\PluginHealthStatus;
 use App\Facades\Audit;
 use App\Helpers\AdminHelper;
 use App\Mail\ExtensionOperationNotificationMail;
@@ -37,23 +38,26 @@ class ExtensionOperationService
      * 操作種別定数
      */
     public const OPERATION_INSTALLED = 'installed';
+
     public const OPERATION_UNINSTALLED = 'uninstalled';
+
     public const OPERATION_ENABLED = 'enabled';
+
     public const OPERATION_DISABLED = 'disabled';
 
     /**
      * 拡張機能種別定数
      */
     public const TYPE_PLUGIN = 'plugin';
+
     public const TYPE_THEME = 'theme';
 
     /**
      * 拡張機能の操作を記録・通知する
      *
-     * @param string $type 拡張機能種別 (plugin/theme)
-     * @param string $operation 操作種別 (installed/uninstalled/enabled/disabled)
-     * @param array $extensionData 拡張機能の詳細データ
-     * @return void
+     * @param  string  $type  拡張機能種別 (plugin/theme)
+     * @param  string  $operation  操作種別 (installed/uninstalled/enabled/disabled)
+     * @param  array  $extensionData  拡張機能の詳細データ
      */
     public function recordOperation(string $type, string $operation, array $extensionData): void
     {
@@ -74,7 +78,7 @@ class ExtensionOperationService
     protected function buildOperationDetails(string $type, string $operation, array $extensionData): array
     {
         $member = $this->getCurrentMember();
-        
+
         return [
             'type' => $type,
             'name' => $extensionData['name'] ?? 'Unknown',
@@ -96,9 +100,10 @@ class ExtensionOperationService
     {
         try {
             // adminガードが定義されているか確認
-            if (!config('auth.guards.admin')) {
+            if (! config('auth.guards.admin')) {
                 return null;
             }
+
             return Auth::guard('admin')->user();
         } catch (\Exception $e) {
             // ガードが利用できない場合（CLIなど）
@@ -113,11 +118,11 @@ class ExtensionOperationService
     {
         // 監査ログのアクションを決定
         $action = $this->getAuditAction($details['type'], $operation);
-        
+
         // 健全性が良好以外の場合は警告レベル
-        $isUnhealthy = $details['health_status'] !== 'low' && 
+        $isUnhealthy = ! $this->isHealthStatusHealthy($details['health_status']) &&
             in_array($operation, [self::OPERATION_INSTALLED, self::OPERATION_ENABLED]);
-        
+
         $severity = $isUnhealthy ? AuditLog::SEVERITY_WARNING : AuditLog::SEVERITY_NOTICE;
 
         // 操作者を取得
@@ -176,7 +181,7 @@ class ExtensionOperationService
             self::OPERATION_DISABLED => '無効化',
         ];
         $operationLabel = $operationLabels[$operation] ?? $operation;
-        
+
         return sprintf(
             '%s「%s」(v%s)を%sしました',
             $typeLabel,
@@ -192,7 +197,7 @@ class ExtensionOperationService
     protected function sendNotificationIfNeeded(array $details, string $operation): void
     {
         // メールサーバーが設定されているか確認
-        if (!MailServerValidatorService::isMailServerTested()) {
+        if (! MailServerValidatorService::isMailServerTested()) {
             return;
         }
 
@@ -203,7 +208,7 @@ class ExtensionOperationService
 
         // 操作種別に応じた通知設定を確認
         $shouldNotify = $this->shouldNotifyForOperation($operation);
-        
+
         if ($shouldNotify) {
             $this->sendOperationNotification($adminEmail, $details, $operation);
         }
@@ -286,12 +291,21 @@ class ExtensionOperationService
     protected function isUnhealthyOperation(array $details, string $operation): bool
     {
         // インストール・有効化時のみ健全性警告を送信
-        if (!in_array($operation, [self::OPERATION_INSTALLED, self::OPERATION_ENABLED])) {
+        if (! in_array($operation, [self::OPERATION_INSTALLED, self::OPERATION_ENABLED])) {
             return false;
         }
 
-        // 健全性が「良好（low）」以外の場合
-        return $details['health_status'] !== 'low';
+        return ! $this->isHealthStatusHealthy($details['health_status']);
     }
 
+    /**
+     * 健全性ステータスが「良好」かどうかを判定
+     *
+     * PluginHealthStatus enum値（healthy）と旧リスクレベル値（low）の両方に対応
+     */
+    protected function isHealthStatusHealthy(string $healthStatus): bool
+    {
+        return $healthStatus === PluginHealthStatus::Healthy->value
+            || $healthStatus === 'low';
+    }
 }

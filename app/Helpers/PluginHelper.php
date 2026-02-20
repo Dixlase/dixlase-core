@@ -32,21 +32,20 @@ class PluginHelper
 {
     /**
      * 有効化されているプラグイン一覧を取得
-     *
-     * @return Collection
      */
     public static function getEnabledPlugins(): Collection
     {
         try {
-            if (!Schema::hasTable('plugins')) {
+            if (! Schema::hasTable('plugins')) {
                 return collect();
             }
-            
+
             return Plugin::enabled()->get();
         } catch (\Exception $e) {
             Log::error('PluginHelper: Failed to get enabled plugins', [
                 'error' => $e->getMessage(),
             ]);
+
             return collect();
         }
     }
@@ -54,16 +53,15 @@ class PluginHelper
     /**
      * プラグインが有効化されているか確認
      *
-     * @param string $slug プラグインのスラッグ
-     * @return bool
+     * @param  string  $slug  プラグインのスラッグ
      */
     public static function isEnabled(string $slug): bool
     {
         try {
-            if (!Schema::hasTable('plugins')) {
+            if (! Schema::hasTable('plugins')) {
                 return false;
             }
-            
+
             return Plugin::where('slug', $slug)->where('is_enabled', true)->exists();
         } catch (\Exception $e) {
             return false;
@@ -73,8 +71,7 @@ class PluginHelper
     /**
      * プラグインのパスを取得
      *
-     * @param string $directory プラグインのディレクトリ名
-     * @return string
+     * @param  string  $directory  プラグインのディレクトリ名
      */
     public static function getPluginPath(string $directory): string
     {
@@ -83,17 +80,15 @@ class PluginHelper
 
     /**
      * 有効化されているプラグインの管理画面ルートを読み込む
-     * 
+     *
      * このメソッドはroutes/admin.php内の認証済みルートグループ内で呼び出される
      * ことを想定しています。これにより、プラグインのルートにも認証ミドルウェアが
      * 自動的に適用されます。
-     *
-     * @return void
      */
     public static function loadEnabledAdminRoutes(): void
     {
         // インストール前やテーブルが存在しない場合はスキップ
-        if (!file_exists(base_path('.env')) || !env('INSTALLED', false)) {
+        if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
             return;
         }
 
@@ -101,8 +96,8 @@ class PluginHelper
             $enabledPlugins = self::getEnabledPlugins();
 
             foreach ($enabledPlugins as $plugin) {
-                $adminRoutePath = self::getPluginPath($plugin->directory) . '/routes/admin.php';
-                
+                $adminRoutePath = self::getPluginPath($plugin->directory).'/routes/admin.php';
+
                 if (File::exists($adminRoutePath)) {
                     include $adminRoutePath;
                 }
@@ -117,15 +112,13 @@ class PluginHelper
 
     /**
      * 有効化されているプラグインのWebルートを読み込む
-     * 
-     * このメソッドはroutes/web.php内で呼び出されることを想定しています。
      *
-     * @return void
+     * このメソッドはroutes/web.php内で呼び出されることを想定しています。
      */
     public static function loadEnabledWebRoutes(): void
     {
         // インストール前やテーブルが存在しない場合はスキップ
-        if (!file_exists(base_path('.env')) || !env('INSTALLED', false)) {
+        if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
             return;
         }
 
@@ -133,8 +126,8 @@ class PluginHelper
             $enabledPlugins = self::getEnabledPlugins();
 
             foreach ($enabledPlugins as $plugin) {
-                $webRoutePath = self::getPluginPath($plugin->directory) . '/routes/web.php';
-                
+                $webRoutePath = self::getPluginPath($plugin->directory).'/routes/web.php';
+
                 if (File::exists($webRoutePath)) {
                     include $webRoutePath;
                 }
@@ -149,15 +142,13 @@ class PluginHelper
 
     /**
      * 有効化されているプラグインのAPIルートを読み込む
-     * 
-     * このメソッドはroutes/api.php内またはServiceProviderで呼び出されることを想定しています。
      *
-     * @return void
+     * このメソッドはroutes/api.php内またはServiceProviderで呼び出されることを想定しています。
      */
     public static function loadEnabledApiRoutes(): void
     {
         // インストール前やテーブルが存在しない場合はスキップ
-        if (!file_exists(base_path('.env')) || !env('INSTALLED', false)) {
+        if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
             return;
         }
 
@@ -165,8 +156,8 @@ class PluginHelper
             $enabledPlugins = self::getEnabledPlugins();
 
             foreach ($enabledPlugins as $plugin) {
-                $apiRoutePath = self::getPluginPath($plugin->directory) . '/routes/api.php';
-                
+                $apiRoutePath = self::getPluginPath($plugin->directory).'/routes/api.php';
+
                 if (File::exists($apiRoutePath)) {
                     include $apiRoutePath;
                 }
@@ -181,14 +172,14 @@ class PluginHelper
 
     /**
      * ショートコードを登録
-     * 
+     *
      * プラグインのServiceProviderから呼び出して使用します。
-     * 
+     *
      * 使用例:
      *   PluginHelper::registerShortcode('menu', MenuShortcode::class);
      *
-     * @param string $name ショートコード名
-     * @param string $class ショートコードクラス名
+     * @param  string  $name  ショートコード名
+     * @param  string  $class  ショートコードクラス名
      * @return bool 登録成功したかどうか
      */
     public static function registerShortcode(string $name, string $class): bool
@@ -197,8 +188,10 @@ class PluginHelper
             if (app()->bound('shortcode')) {
                 $shortcode = app('shortcode');
                 $shortcode->add($name, $class);
+
                 return true;
             }
+
             return false;
         } catch (\Exception $e) {
             Log::error('PluginHelper: Failed to register shortcode', [
@@ -206,20 +199,21 @@ class PluginHelper
                 'class' => $class,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
      * 複数のショートコードを一括登録
-     * 
+     *
      * 使用例:
      *   PluginHelper::registerShortcodes([
      *       'menu' => MenuShortcode::class,
      *       'submenu' => SubMenuShortcode::class,
      *   ]);
      *
-     * @param array $shortcodes ['name' => 'ClassName'] の配列
+     * @param  array  $shortcodes  ['name' => 'ClassName'] の配列
      * @return int 登録成功した数
      */
     public static function registerShortcodes(array $shortcodes): int
@@ -230,50 +224,54 @@ class PluginHelper
                 $count++;
             }
         }
+
         return $count;
     }
 
     /**
      * リンクソースを登録（メニュープラグイン用）
-     * 
+     *
      * メニュープラグインのMenuLinkSourceManagerにリンクソースを登録します。
-     * 
+     *
      * 使用例:
      *   PluginHelper::registerLinkSource(new PageLinkSource());
      *
-     * @param object $source リンクソースインスタンス
+     * @param  object  $source  リンクソースインスタンス
      * @return bool 登録成功したかどうか
      */
     public static function registerLinkSource(object $source): bool
     {
         try {
-            $managerClass = 'Plugins\\DixlaseMenu\\App\\Services\\MenuLinkSourceManager';
-            
+            $managerClass = 'Plugins\\DixlaseMenus\\App\\Services\\MenuLinkSourceManager';
+
             if (app()->bound($managerClass)) {
                 $manager = app($managerClass);
                 $manager->register($source);
+
                 return true;
             }
+
             return false;
         } catch (\Exception $e) {
             Log::error('PluginHelper: Failed to register link source', [
                 'source' => get_class($source),
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
      * 複数のリンクソースを一括登録
-     * 
+     *
      * 使用例:
      *   PluginHelper::registerLinkSources([
      *       new PageLinkSource(),
      *       new PostLinkSource(),
      *   ]);
      *
-     * @param array $sources リンクソースインスタンスの配列
+     * @param  array  $sources  リンクソースインスタンスの配列
      * @return int 登録成功した数
      */
     public static function registerLinkSources(array $sources): int
@@ -284,6 +282,7 @@ class PluginHelper
                 $count++;
             }
         }
+
         return $count;
     }
 }
