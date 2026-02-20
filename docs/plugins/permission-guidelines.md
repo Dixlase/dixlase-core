@@ -205,9 +205,53 @@ Recommended Actions:
 
 ---
 
+## Hybrid Design (plugin.json vs config Responsibilities)
+
+Plugin configuration is separated into two layers:
+
+### plugin.json (Manifest - Static Declarations)
+
+Information needed before installation. Written in JSON.
+
+| Section | Purpose |
+|---------|---------|
+| Metadata | name, slug, version, description, author, license |
+| Dependencies | requires |
+| Feature declarations | provides (admin_menu, front_routes, etc.) |
+| Permission declarations | permissions (what system resources the plugin accesses) |
+| Configuration declarations | declares (which config files the plugin provides) |
+
+### config/ (Runtime Settings - PHP-based)
+
+Controls runtime behavior. Requires PHP enum references and complex data structures.
+
+| File | Purpose |
+|------|---------|
+| `admin/navigation.php` | Menu configuration |
+| `admin/roles.php` | Member role defaults (references MemberRole enum) |
+| `admin/database-cleanup.php` | Cleanup target tables |
+
+**Why roles / database-cleanup remain as PHP config:**
+- PHP enum references (`MemberRole::EDITOR->value`) are needed
+- Complex data structures (`additional_conditions`, etc.)
+- Existing loading infrastructure (`PluginLoaderTrait`, `PermissionRegistry`, `DatabaseCleanupService`) is operational
+
+---
+
+## Two Types of "Permissions"
+
+| Type | Definition Location | Direction | Example |
+|------|-------------------|-----------|---------|
+| **Plugin permissions** | `plugin.json` permissions | Plugin -> System | "Can read member data" |
+| **Member role permissions** | `config/roles.php` | Member -> Plugin | "Editors and above can manage pages" |
+
+Do not confuse these two. Plugin permissions declare "what system resources this plugin accesses," while member role permissions control "who can use this plugin's features."
+
+---
+
 ## plugin.json Extended Specification
 
-### Current Format
+### Base Format
 
 ```json
 {
@@ -229,7 +273,7 @@ Recommended Actions:
   "tags": ["pages", "content", "cms"],
   "requires": {
     "dixlase": ">=1.0.0",
-    "php": ">=8.0"
+    "php": ">=8.2"
   },
   "provides": {
     "admin_menu": true,
@@ -240,31 +284,125 @@ Recommended Actions:
 }
 ```
 
-### Extended Fields (Recommended)
+### permissions Section (Required)
+
+Category-based structure with all items explicitly stated as `true`/`false`.
 
 ```json
 {
   "permissions": {
-    "declared": [
-      "content.pages.read",
-      "content.pages.write",
-      "admin.menu.register",
-      "settings.plugin.read",
-      "settings.plugin.write"
-    ],
-    "optional": [
-      "mail.send"
-    ],
-    "notes": {
-      "ja": [
-        "mail.send は通知機能を有効にした場合のみ使用します。"
-      ],
-      "en": [
-        "mail.send is only used when notification feature is enabled."
-      ]
+    "database": {
+      "own_tables": true,
+      "core_tables": []
+    },
+    "storage": {
+      "own_directory": true,
+      "public_uploads": false,
+      "temp_files": false
+    },
+    "settings": {
+      "read_core": true,
+      "write_own": true
+    },
+    "members": {
+      "read": false,
+      "write": false,
+      "create": false,
+      "delete": false
+    },
+    "mail": {
+      "send": false,
+      "bulk_send": false
+    },
+    "content": {
+      "read_other_plugins": [],
+      "write_other_plugins": []
+    },
+    "system": {
+      "register_shortcodes": false,
+      "register_middleware": false,
+      "register_commands": false,
+      "register_blade_directives": false,
+      "modify_routes": false
+    },
+    "_optional": ["mail.send"],
+    "_notes": {
+      "ja": "mail.send は通知機能を有効にした場合のみ使用します。",
+      "en": "mail.send is only used when notification feature is enabled."
     }
-  },
+  }
+}
+```
 
+#### permissions Field Descriptions
+
+| Category | Field | Type | Description |
+|----------|-------|------|-------------|
+| `database` | `own_tables` | bool | Uses plugin-specific tables |
+| `database` | `core_tables` | array | Core tables accessed (e.g., `["members:read"]`) |
+| `storage` | `own_directory` | bool | Uses plugin-specific storage |
+| `storage` | `public_uploads` | bool | Accesses public upload area |
+| `storage` | `temp_files` | bool | Uses temporary files |
+| `settings` | `read_core` | bool | Reads core settings |
+| `settings` | `write_own` | bool | Writes plugin settings |
+| `members` | `read` | bool | Reads member information |
+| `members` | `write` | bool | Writes member information |
+| `members` | `create` | bool | Creates members |
+| `members` | `delete` | bool | Deletes members |
+| `mail` | `send` | bool | Sends email |
+| `mail` | `bulk_send` | bool | Sends bulk email |
+| `content` | `read_other_plugins` | array | Other plugin slugs for read access |
+| `content` | `write_other_plugins` | array | Other plugin slugs for write access |
+| `system` | `register_shortcodes` | bool | Registers shortcodes |
+| `system` | `register_middleware` | bool | Registers middleware |
+| `system` | `register_commands` | bool | Registers Artisan commands |
+| `system` | `register_blade_directives` | bool | Registers Blade directives |
+| `system` | `modify_routes` | bool | Modifies routes |
+| - | `_optional` | array | Scanner hint: no penalty if not detected |
+| - | `_notes` | object | Explanation of permission usage (bilingual `ja`/`en`) |
+
+### declares Section (Required)
+
+Declares the config files and structural elements the plugin provides.
+
+```json
+{
+  "declares": {
+    "configs": {
+      "roles": true,
+      "database_cleanup": false,
+      "navigation": true
+    },
+    "contracts": [],
+    "migrations": true,
+    "commands": false,
+    "middleware": false
+  }
+}
+```
+
+#### declares Field Descriptions
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `configs.roles` | bool | Whether it provides `config/admin/roles.php` |
+| `configs.database_cleanup` | bool | Whether it provides `config/admin/database-cleanup.php` |
+| `configs.navigation` | bool | Whether it provides `config/admin/navigation.php` |
+| `contracts` | array | Array of Contract interfaces implemented |
+| `migrations` | bool | Whether it provides migrations |
+| `commands` | bool | Whether it provides Artisan commands |
+| `middleware` | bool | Whether it provides middleware |
+
+**Consistency checks:**
+- Declaration present + file missing -> health deduction (-5)
+- File present + declaration missing -> health deduction (-2)
+
+### Future Extension Fields (Reference)
+
+The following fields are planned for implementation when the marketplace launches:
+
+```json
+{
   "security": {
     "sandbox": {
       "storage_scope": "plugin",
@@ -309,16 +447,6 @@ Recommended Actions:
   }
 }
 ```
-
-### Field Descriptions
-
-#### permissions
-
-| Field | Description |
-|-------|-------------|
-| `declared` | Declared permissions (baseline for scan evaluation) |
-| `optional` | Permissions used only when a feature is enabled (reduces false Advisory findings) |
-| `notes` | Supplementary descriptions for permission usage (multilingual) |
 
 #### security.sandbox
 
@@ -367,49 +495,26 @@ Recommended Actions:
 
 ---
 
-## Permission Naming Convention
+## Permission Categories
 
-### Categories
+Scan targets corresponding to the category-based permissions structure:
 
-| Category | Description |
-|----------|-------------|
-| `content.*` | Content-related |
-| `database.*` | Database-related |
-| `storage.*` | Storage-related |
-| `settings.*` | Settings-related |
-| `members.*` | Member-related |
-| `mail.*` | Mail-related |
-| `system.*` | System-related |
-| `admin.*` | Admin panel-related |
-
-### Operations
-
-| Operation | Description |
-|-----------|-------------|
-| `.read` | Read |
-| `.write` | Write |
-| `.create` | Create |
-| `.delete` | Delete |
-| `.register` | Register |
-
-### Examples
-
-```
-content.pages.read      # Read static pages
-content.pages.write     # Write static pages
-database.own_tables     # Access plugin's own tables
-database.core_tables    # Access core tables
-storage.plugin_storage  # Plugin-dedicated storage
-storage.public_uploads  # Public upload area
-settings.plugin.read    # Read plugin settings
-settings.core.read      # Read core settings
-members.read            # Read member information
-members.write           # Write member information
-mail.send               # Send email
-mail.bulk_send          # Send bulk email
-system.register_middleware  # Register middleware
-admin.menu.register     # Register admin menu
-```
+| Category | Scan Target | Description |
+|----------|-------------|-------------|
+| `database.own_tables` | Migrations, Schema::create | Plugin-specific tables |
+| `database.core_tables` | Direct core model references | Core table access |
+| `storage.own_directory` | Storage facade usage | Plugin-specific storage |
+| `storage.public_uploads` | Public disk writes | Public upload area |
+| `storage.temp_files` | Temp file operations | Temporary files |
+| `settings.read_core` | config() reading core settings | Core settings read |
+| `settings.write_own` | Plugin settings saving | Plugin settings write |
+| `members.read/write/create/delete` | Member model operations | Member-related operations |
+| `mail.send` | Mail facade, Mailable | Email sending |
+| `mail.bulk_send` | Batch email, queues | Bulk email sending |
+| `content.read_other_plugins` | Other plugin model references | Reading other plugin data |
+| `content.write_other_plugins` | Other plugin model updates | Writing other plugin data |
+| `system.register_*` | ServiceProvider registrations | System extension points |
+| `system.modify_routes` | Route definition changes | Route modification |
 
 ---
 

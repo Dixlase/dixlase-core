@@ -22,41 +22,31 @@
 
 namespace App\Providers;
 
+use App\Contracts\FileIntegrity\FileIntegrityServiceInterface;
+use App\Contracts\Logging\LogServiceInterface;
+use App\Contracts\Mail\MailServiceInterface;
+use App\Contracts\Plugin\SignatureVerifierInterface;
+use App\Models\SecuritySetting;
+use App\Services\FileIntegrityService;
+use App\Services\LogService;
+use App\Services\MailService;
+use App\Services\Plugin\CoreSignatureVerifier;
+use App\Services\Plugin\PluginPermissionService;
+use App\Traits\CustomFilesLoaderTrait;
+use App\Traits\PluginLoaderTrait;
+use App\Traits\ThemeLoaderTrait;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
-use App\Models\BaseSetting;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Route;
-use App\Models\SecuritySetting;
-use App\Traits\ThemeLoaderTrait;
-use App\Traits\PluginLoaderTrait;
-use App\Traits\CustomFilesLoaderTrait;
-use Illuminate\Support\Facades\Lang;
-use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Auth;
-use App\Enums\AppearanceMode;
-use App\Services\Plugin\PluginPermissionService;
-use App\Contracts\FileIntegrity\FileIntegrityServiceInterface;
-use App\Services\FileIntegrityService;
-use App\Contracts\Mail\MailServiceInterface;
-use App\Services\MailService;
-use App\Contracts\Logging\LogServiceInterface;
-use App\Services\LogService;
-use Illuminate\Support\Facades\Vite;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-
-    use ThemeLoaderTrait;
-    use PluginLoaderTrait;
     use CustomFilesLoaderTrait;
-
+    use PluginLoaderTrait;
+    use ThemeLoaderTrait;
 
     /**
      * Register any application services.
@@ -76,10 +66,16 @@ class AppServiceProvider extends ServiceProvider
 
         // ログ出力サービスをバインド
         $this->app->bind(LogServiceInterface::class, LogService::class);
-        
+
+        // 署名検証サービスをバインド（DixlaseDeveloper プラグインが上書き可能）
+        $this->app->bind(SignatureVerifierInterface::class, CoreSignatureVerifier::class);
+
         // CSP Nonce Generatorをシングルトンとして登録（リクエストごとに同じnonce値を使用）
         $this->app->singleton(\App\Services\Csp\CspNonceGenerator::class);
-        
+
+        // 法務ページレジストリサービスをシングルトンとして登録
+        $this->app->singleton(\App\Services\LegalPageService::class);
+
         // Laragear WebAuthnのWebAuthnCredentialモデルをカスタムモデルにバインド
         $this->app->bind(
             \Laragear\WebAuthn\Models\WebAuthnCredential::class,
@@ -90,22 +86,21 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-
     public function boot()
     {
         // .envファイルが存在しない場合はスキップ
-        if (!file_exists(base_path('.env'))) {
+        if (! file_exists(base_path('.env'))) {
             return;
         }
-        
+
         // ViteのCSP nonce機能を無効化（カスタム実装を使用）
         // これによりViteは独自のnonceを生成しなくなる
         config(['vite.csp_nonce' => false]);
-        
+
         // Livewireのnavigate機能を無効化（data-navigate-once属性を削除）
         // これにより初回ページロードでLivewireコンポーネントが正常に初期化される
         config(['livewire.navigate' => false]);
-        
+
         // カスタムBladeディレクティブ: @livewireScriptsWithoutNavigate
         // @livewireScriptsの出力からdata-navigate-once属性を削除
         \Blade::directive('livewireScriptsWithoutNavigate', function () {
@@ -115,14 +110,14 @@ class AppServiceProvider extends ServiceProvider
         // インストール済みかどうかをチェック（config経由で取得することでキャッシュに対応）
         // env()は本番環境でキャッシュされると更新されないため、config()を使用
         $isInstalled = config('app.installed', false) ?: env('INSTALLED', false);
-        if (!$isInstalled) {
+        if (! $isInstalled) {
             return;
         }
 
         try {
-            //セキュリティ設定でSSLを矯正しているかどうかを判定
-            //security_settingsテーブルのforce_sslの値を取得
-            //テーブルが存在しているか確認
+            // セキュリティ設定でSSLを矯正しているかどうかを判定
+            // security_settingsテーブルのforce_sslの値を取得
+            // テーブルが存在しているか確認
 
             if (Schema::hasTable('security_settings')) {
                 $forceSsl = SecuritySetting::get('force_ssl', config('security.force_ssl'));
@@ -137,7 +132,8 @@ class AppServiceProvider extends ServiceProvider
             }
         } catch (\Exception $e) {
             // データベース接続エラーなどの場合はログに記録してスキップ
-            \Log::warning('AppServiceProvider boot error (likely during installation): ' . $e->getMessage());
+            \Log::warning('AppServiceProvider boot error (likely during installation): '.$e->getMessage());
+
             return;
         }
 
@@ -145,15 +141,15 @@ class AppServiceProvider extends ServiceProvider
         // インストール中はセッション/クッキーの言語を優先
         $request = $this->app['request'];
         $language = null;
-        
+
         // 有効なロケールのリスト
         $availableLocales = array_keys(config('language.languages', ['en' => 'English']));
-        
+
         if ($request && $request->is('install*')) {
             // セッションの値（StartSessionより前でも取得できる場合がある）、なければクッキー
             $sessionLocale = session()->get('install_locale');
             $cookieLocale = $request->cookie('install_locale');
-            
+
             // 有効なロケールのみを許可
             if ($sessionLocale && in_array($sessionLocale, $availableLocales)) {
                 $language = $sessionLocale;
@@ -163,24 +159,22 @@ class AppServiceProvider extends ServiceProvider
         }
 
         // それでも未設定なら環境変数→DB→configの順で決定
-        if (!$language) {
+        if (! $language) {
             // 環境変数を直接優先（.envの設定を最優先）
             $language = env('APP_LOCALE') ?? config('app.locale', 'en');
-            
+
             // 有効なロケールかチェック
-            if (!in_array($language, $availableLocales)) {
+            if (! in_array($language, $availableLocales)) {
                 $language = 'en'; // デフォルトにフォールバック
             }
         }
         app()->setLocale($language);
-
 
         // テーマの設定を読み込む
         $adminTheme = config('themes.admin_theme', 'admin'); // 管理画面テーマ
         $themeDirectory = config('themes.theme_directory', 'themes'); // テーマディレクトリ
         $activeThemeDirectory = config('themes.active_theme', 'default-theme'); // アクティブなテーマ
         $defaultTheme = config('themes.default_theme', 'default-theme'); // デフォルトテーマ
-
 
         // カスタムファイルのディレクトリを追加
         $customFilesDir = base_path(config('custom.custom_files_dir', 'custom'));
@@ -203,8 +197,6 @@ class AppServiceProvider extends ServiceProvider
             resource_path('views/layouts'),       // デフォルトレイアウト
         ]);
 
-
-
         // 現在有効化されているテーマを取得
         $enabledThemeDirectory = $this->getEnabledThemeDirectory();
 
@@ -223,8 +215,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->booted(function () use ($customFilesPath, $fileTypes) {
             // コマンドライン引数をチェックしてプラグイン管理コマンド実行中かを判定
             $isPluginManagementCommand = $this->isPluginManagementCommand();
-            
-            if (!$isPluginManagementCommand) {
+
+            if (! $isPluginManagementCommand) {
                 // プラグインのロード
                 $this->loadEnabledPlugins();
             }
@@ -244,18 +236,19 @@ class AppServiceProvider extends ServiceProvider
     {
         // コマンドライン引数をチェック
         $argv = $_SERVER['argv'] ?? [];
-        
+
         // プラグイン管理コマンドかをチェック
         if (count($argv) >= 2) {
             $pluginCommands = [
                 'plugin:install',
                 'plugin:uninstall',
                 'plugin:enable',
-                'plugin:disable'
+                'plugin:disable',
             ];
+
             return in_array($argv[1], $pluginCommands);
         }
-        
+
         return false;
     }
 
@@ -265,12 +258,12 @@ class AppServiceProvider extends ServiceProvider
     private function getUninstallingPluginName(): ?string
     {
         $argv = $_SERVER['argv'] ?? [];
-        
+
         // artisan plugin:uninstall PluginName の形式
         if (count($argv) >= 3 && $argv[1] === 'plugin:uninstall') {
             return $argv[2];
         }
-        
+
         return null;
     }
 }
