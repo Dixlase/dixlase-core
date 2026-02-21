@@ -19,7 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @if (session('status'))
-    <div class="my-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200">
+    <div class="my-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200">
         <div class="flex items-start">
             <div class="flex-shrink-0">
                 <i class="fas fa-info-circle text-blue-500 dark:text-blue-400 text-sm"></i>
@@ -45,7 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endif
 
 @if (session('error'))
-    <div class="my-4 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200">
+    <div class="my-4 p-4 rounded-lg bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200">
         <div class="flex items-start">
             <div class="flex-shrink-0">
                 <i class="fas fa-times-circle text-red-500 dark:text-red-400 text-sm"></i>
@@ -58,7 +58,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endif
 
 @if ($errors->any())
-    <div class="my-4 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200">
+    <div class="my-4 p-4 rounded-lg bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200">
         <div class="flex items-start">
             <div class="flex-shrink-0">
                 <i class="fas fa-times-circle text-red-500 dark:text-red-400 text-sm"></i>
