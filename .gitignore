@@ -1,5 +1,6 @@
 /.phpunit.cache
 /node_modules
+/dixlase
 
 # --- ビルド成果物（Vite出力）を除外 ---
 /public/assets/build
@@ -51,8 +52,8 @@ plugins/*
 !plugins/DixlaseUsers/
 !plugins/DixlaseBlog/
 !plugins/DixlaseDocs/
-!plugins/DixlaseDeveloper/
-!plugins/DixlaseCoreDeveloper/
+!plugins/DixlaseDevKit/
+!plugins/DixlaseCoreDev/
 !plugins/DixlaseAuthority/
 !plugins/DixlaseBackup/
 !plugins/DixlaseMultilingual/
