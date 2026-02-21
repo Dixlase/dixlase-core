@@ -25,6 +25,8 @@ namespace App\Contracts\Plugin;
 use App\DTO\Plugin\SignatureVerificationResult;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 署名検証コントラクト
  *
  * コア側で署名検証の抽象化を提供します。

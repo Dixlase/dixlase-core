@@ -23,8 +23,10 @@
 namespace App\Enums;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * セキュリティ検出時のアクション（汎用）
- * 
+ *
  * 権限不一致、ポリシー違反などの検出時に取るアクションを定義
  */
 enum SecurityAction: int
@@ -50,7 +52,7 @@ enum SecurityAction: int
      */
     public function translationKeyBase(): string
     {
-        return 'admin.settings.security.action_' . $this->toString();
+        return 'admin.settings.security.action_'.$this->toString();
     }
 
     /**
@@ -66,7 +68,7 @@ enum SecurityAction: int
      */
     public function description(): string
     {
-        return __($this->translationKeyBase() . '_desc');
+        return __($this->translationKeyBase().'_desc');
     }
 
     /**
@@ -146,7 +148,7 @@ enum SecurityAction: int
      */
     public static function getAllStrings(): array
     {
-        return array_map(fn($case) => $case->toString(), self::cases());
+        return array_map(fn ($case) => $case->toString(), self::cases());
     }
 
     /**
@@ -154,6 +156,6 @@ enum SecurityAction: int
      */
     public static function validationRule(): string
     {
-        return 'in:' . implode(',', self::getAllStrings());
+        return 'in:'.implode(',', self::getAllStrings());
     }
 }

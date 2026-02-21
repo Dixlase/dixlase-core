@@ -29,6 +29,8 @@ use App\Enums\Permission;
 use App\Services\PermissionService;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * HasPermissions Trait
  *
  * Provides permission checking methods for Member model.
@@ -37,9 +39,6 @@ trait HasPermissions
 {
     /**
      * Check if the member has a permission
-     *
-     * @param Permission|string $permission
-     * @return bool
      */
     public function hasPermission(Permission|string $permission): bool
     {
@@ -49,8 +48,7 @@ trait HasPermissions
     /**
      * Check if the member has any of the given permissions
      *
-     * @param array<Permission|string> $permissions
-     * @return bool
+     * @param  array<Permission|string>  $permissions
      */
     public function hasAnyPermission(array $permissions): bool
     {
@@ -59,30 +57,28 @@ trait HasPermissions
                 return true;
             }
         }
+
         return false;
     }
 
     /**
      * Check if the member has all of the given permissions
      *
-     * @param array<Permission|string> $permissions
-     * @return bool
+     * @param  array<Permission|string>  $permissions
      */
     public function hasAllPermissions(array $permissions): bool
     {
         foreach ($permissions as $permission) {
-            if (!$this->hasPermission($permission)) {
+            if (! $this->hasPermission($permission)) {
                 return false;
             }
         }
+
         return true;
     }
 
     /**
      * Check if the member has a minimum role
-     *
-     * @param MemberRole $role
-     * @return bool
      */
     public function hasRole(MemberRole $role): bool
     {
@@ -91,8 +87,6 @@ trait HasPermissions
 
     /**
      * Check if the member is a super admin
-     *
-     * @return bool
      */
     public function isSuperAdmin(): bool
     {
@@ -101,8 +95,6 @@ trait HasPermissions
 
     /**
      * Check if the member is at least an admin
-     *
-     * @return bool
      */
     public function isAdmin(): bool
     {
@@ -111,8 +103,6 @@ trait HasPermissions
 
     /**
      * Check if the member is at least an editor
-     *
-     * @return bool
      */
     public function isEditor(): bool
     {
@@ -121,8 +111,6 @@ trait HasPermissions
 
     /**
      * Check if the member is at least an author
-     *
-     * @return bool
      */
     public function isAuthor(): bool
     {
@@ -131,8 +119,6 @@ trait HasPermissions
 
     /**
      * Check if the member is at least a contributor
-     *
-     * @return bool
      */
     public function isContributor(): bool
     {
@@ -151,26 +137,22 @@ trait HasPermissions
 
     /**
      * Get the member's role as MemberRole enum
-     *
-     * @return MemberRole|null
      */
     public function getMemberRole(): ?MemberRole
     {
         if ($this->role instanceof MemberRole) {
             return $this->role;
         }
+
         return MemberRole::tryFrom($this->role);
     }
 
     /**
      * Check if the member can perform a dangerous action
-     *
-     * @param Permission $permission
-     * @return bool
      */
     public function canPerformDangerous(Permission $permission): bool
     {
-        if (!$permission->isDangerous()) {
+        if (! $permission->isDangerous()) {
             return $this->hasPermission($permission);
         }
 

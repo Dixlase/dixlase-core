@@ -5,6 +5,8 @@ namespace App\Contracts;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 二段階認証機能を持つユーザーのインターフェース
  */
 interface TwoFaInterface

@@ -22,12 +22,16 @@
 
 namespace App\Enums;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * CAPTCHAプロバイダー定義
+ */
 enum CaptchaProvider: string
 {
     case TURNSTILE = 'turnstile';
     case GOOGLE = 'google';
     case GOOGLE_ENTERPRISE = 'google_enterprise';
-
 
     public function label(): string
     {
@@ -49,8 +53,8 @@ enum CaptchaProvider: string
 
     public static function options(): array
     {
-        return collect(self::cases())->mapWithKeys(fn($provider) => [
-            $provider->value => $provider->label()
+        return collect(self::cases())->mapWithKeys(fn ($provider) => [
+            $provider->value => $provider->label(),
         ])->toArray();
     }
 
@@ -70,7 +74,6 @@ enum CaptchaProvider: string
             self::TURNSTILE => 'https://dash.cloudflare.com/?to=/:account/turnstile',
             self::GOOGLE => 'https://www.google.com/recaptcha/admin/create',
             self::GOOGLE_ENTERPRISE => 'https://cloud.google.com/recaptcha-enterprise/docs/create-key',
-
         };
     }
 }

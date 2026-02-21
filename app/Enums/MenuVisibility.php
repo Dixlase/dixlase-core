@@ -22,6 +22,11 @@
 
 namespace App\Enums;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * メニュー表示設定定義
+ */
 enum MenuVisibility: int
 {
     /**

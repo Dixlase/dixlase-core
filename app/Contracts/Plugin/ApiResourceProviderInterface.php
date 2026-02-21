@@ -28,6 +28,8 @@ use App\DTO\Api\ApiResourceCollection;
 use App\DTO\Api\ApiResourceDTO;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * APIリソースプロバイダーインターフェース
  *
  * プラグインがREST API経由でコンテンツリソースを公開する際に実装します。

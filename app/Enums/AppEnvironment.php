@@ -22,6 +22,11 @@
 
 namespace App\Enums;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * アプリケーション環境定義
+ */
 enum AppEnvironment: string
 {
     case Local = 'local';
@@ -107,6 +112,7 @@ enum AppEnvironment: string
                 'color' => $env->colorName(),
             ];
         }
+
         return $options;
     }
 

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of Dixlase.
  *
@@ -22,19 +23,20 @@
 namespace App\Traits;
 
 use App\Services\Csp\CspExtensionLoader;
-use Illuminate\Support\Facades\Log;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * CSPポリシー登録トレイト
- * 
+ *
  * プラグイン・テーマのServiceProviderでこのトレイトを使用することで、
  * plugin.json/theme.jsonに定義されたCSP設定を自動的にCspPolicyRegistryに登録できます。
- * 
+ *
  * @example
  * class MyPluginServiceProvider extends ServiceProvider
  * {
  *     use RegistersCspPolicy;
- *     
+ *
  *     public function boot()
  *     {
  *         $this->registerCspFromJson('plugin', 'my-plugin');
@@ -45,16 +47,16 @@ trait RegistersCspPolicy
 {
     /**
      * plugin.json/theme.jsonからCSP設定を読み込み、レジストリに登録
-     * 
-     * @param string $type 'plugin' または 'theme'
-     * @param string $slug プラグイン/テーマのスラッグ
+     *
+     * @param  string  $type  'plugin' または 'theme'
+     * @param  string  $slug  プラグイン/テーマのスラッグ
      * @return array 登録されたディレクティブ
      */
     protected function registerCspFromJson(string $type, string $slug): array
     {
         try {
             $loader = app(CspExtensionLoader::class);
-            
+
             if ($type === 'plugin') {
                 return $loader->loadPlugin($slug);
             } else {
@@ -62,23 +64,24 @@ trait RegistersCspPolicy
             }
         } catch (\Exception $e) {
             // Failed to register CSP
-        }    
+        }
+
         return [];
     }
 
     /**
      * CSPディレクティブを直接登録
-     * 
+     *
      * plugin.json/theme.jsonを使用せず、コードから直接CSPディレクティブを登録する場合に使用
-     * 
-     * @param array $directives ディレクティブ配列
-     * @param string|null $source ソース名（デバッグ用）
+     *
+     * @param  array  $directives  ディレクティブ配列
+     * @param  string|null  $source  ソース名（デバッグ用）
      */
     protected function registerCspDirectives(array $directives, ?string $source = null): void
     {
         try {
             $registry = app(\App\Services\Csp\CspPolicyRegistry::class);
-            if (!empty($directives)) {
+            if (! empty($directives)) {
                 $registry->addDirectives($directives, $source);
             }
         } catch (\Exception $e) {

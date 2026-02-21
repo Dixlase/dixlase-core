@@ -2,8 +2,11 @@
 
 namespace App\Enums;
 
-use Illuminate\Support\Facades\Lang;
-
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * メンバーロール定義
+ */
 enum MemberRole: int
 {
     case SUPER_ADMIN = 10;
@@ -54,15 +57,15 @@ enum MemberRole: int
 
     public static function options(): array
     {
-        return collect(self::cases())->mapWithKeys(fn($role) => [
-            $role->value => $role->label()
+        return collect(self::cases())->mapWithKeys(fn ($role) => [
+            $role->value => $role->label(),
         ])->toArray();
     }
 
     public static function translationOptions(): array
     {
-        return collect(self::cases())->mapWithKeys(fn($role) => [
-            $role->value => $role->label()
+        return collect(self::cases())->mapWithKeys(fn ($role) => [
+            $role->value => $role->label(),
         ])->toArray();
     }
 }

@@ -23,8 +23,10 @@
 namespace App\Enums;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * コンテンツエディタータイプの列挙型
- * 
+ *
  * ページコンテンツやフロントページのデザインなど、
  * 編集可能なコンテンツの編集方法を定義します。
  */
@@ -67,7 +69,7 @@ enum ContentEditorType: string
      */
     public function translationKey(): string
     {
-        return match($this) {
+        return match ($this) {
             self::GUI => 'common.content_editor.gui',
             self::MARKDOWN => 'common.content_editor.markdown',
             self::HTML => 'common.content_editor.html',
@@ -80,7 +82,7 @@ enum ContentEditorType: string
      */
     public function descriptionKey(): string
     {
-        return match($this) {
+        return match ($this) {
             self::GUI => 'common.content_editor.gui_description',
             self::MARKDOWN => 'common.content_editor.markdown_description',
             self::HTML => 'common.content_editor.html_description',
@@ -90,13 +92,13 @@ enum ContentEditorType: string
 
     /**
      * 指定された保存方法で利用可能なエディタータイプを取得
-     * 
+     *
      * DATABASE: GUI, Markdown, HTML
      * FILE: Blade, Markdown, HTML
      */
     public static function availableFor(ContentStorageType $storageType): array
     {
-        return match($storageType) {
+        return match ($storageType) {
             ContentStorageType::DATABASE => [
                 self::GUI,      // GUIはDATABASEのみ（JSON形式で保存）
                 self::MARKDOWN, // MarkdownはDATABASEまたはFILE
@@ -109,13 +111,13 @@ enum ContentEditorType: string
             ],
         };
     }
-    
+
     /**
      * 指定されたエディタータイプで利用可能な保存方法を取得
      */
     public static function availableStorageTypes(self $editorType): array
     {
-        return match($editorType) {
+        return match ($editorType) {
             self::GUI => [ContentStorageType::DATABASE],           // GUIはDATABASEのみ
             self::BLADE => [ContentStorageType::FILE],             // BladeはFILEのみ
             self::MARKDOWN, self::HTML => [                        // Markdown/HTMLは両方OK
@@ -145,11 +147,11 @@ enum ContentEditorType: string
     {
         $available = self::availableFor($storageType);
         $options = [];
-        
+
         foreach ($available as $type) {
             $options[$type->value] = __($type->translationKey());
         }
-        
+
         return $options;
     }
 
@@ -160,14 +162,14 @@ enum ContentEditorType: string
     {
         $available = self::availableFor($storageType);
         $options = [];
-        
+
         foreach ($available as $type) {
             $options[$type->value] = [
                 'label' => __($type->translationKey()),
                 'description' => __($type->descriptionKey()),
             ];
         }
-        
+
         return $options;
     }
 
@@ -176,7 +178,7 @@ enum ContentEditorType: string
      */
     public function fileExtension(): string
     {
-        return match($this) {
+        return match ($this) {
             self::GUI => 'json',
             self::MARKDOWN => 'md',
             self::HTML => 'html',

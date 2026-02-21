@@ -22,11 +22,12 @@
 namespace App\Enums;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 拡張機能セキュリティのプリセットモード
  */
 enum ExtensionSecurityPreset: string
 {
-
     /**
      * 開発・検証モード
      * - 未署名や未定義もインストール可（警告表示）
@@ -40,8 +41,6 @@ enum ExtensionSecurityPreset: string
      * - 健全性「注意」まで許可
      */
     case Balanced = 'balanced';
-
-
 
     /**
      * 厳格モード（推奨）
@@ -62,7 +61,7 @@ enum ExtensionSecurityPreset: string
      */
     public function translationKey(): string
     {
-        return 'admin/settings/security/extensions.security.preset.' . $this->value;
+        return 'admin/settings/security/extensions.security.preset.'.$this->value;
     }
 
     /**
@@ -78,7 +77,7 @@ enum ExtensionSecurityPreset: string
      */
     public function description(): string
     {
-        return __($this->translationKey() . '_description');
+        return __($this->translationKey().'_description');
     }
 
     /**
@@ -185,7 +184,7 @@ enum ExtensionSecurityPreset: string
      */
     public static function productionSafe(): array
     {
-        return array_filter(self::cases(), fn($preset) => $preset->isProductionSafe());
+        return array_filter(self::cases(), fn ($preset) => $preset->isProductionSafe());
     }
 
     /**
@@ -211,19 +210,20 @@ enum ExtensionSecurityPreset: string
             $option = [
                 'value' => $preset->value,
                 'label' => $preset->translationKey(),
-                'description' => $preset->translationKey() . '_description',
+                'description' => $preset->translationKey().'_description',
                 'icon' => $preset->iconClass(),
                 'color' => $preset->colorName(),
             ];
-            
+
             // 本番環境で使用不可の場合はバッジを追加
-            if (!$preset->isProductionSafe()) {
+            if (! $preset->isProductionSafe()) {
                 $option['badge'] = 'admin/settings/security/extensions.security.dev_only';
                 $option['badgeColor'] = 'yellow';
             }
-            
+
             $options[] = $option;
         }
+
         return $options;
     }
 }

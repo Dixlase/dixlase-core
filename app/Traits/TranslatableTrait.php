@@ -6,18 +6,20 @@ use App\Contracts\TranslationResolver;
 use Illuminate\Support\Facades\App;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * Translatable Trait
- * 
+ *
  * Provides translation capability for Eloquent models.
  * This trait defines which fields are translatable and provides
  * a standard interface for translation plugins to hook into.
- * 
+ *
  * Usage:
  * ```php
  * class Post extends Model
  * {
  *     use TranslatableTrait;
- * 
+ *
  *     protected array $translatable = [
  *         'title',
  *         'body',
@@ -26,14 +28,14 @@ use Illuminate\Support\Facades\App;
  *     ];
  * }
  * ```
- * 
+ *
  * Translation plugins can register a custom resolver:
  * ```php
  * TranslationManager::resolveUsing(function ($model, $key, $locale) {
  *     return MyTranslationTable::get($model, $key, $locale);
  * });
  * ```
- * 
+ *
  * @see docs/translation-api-spec.md
  */
 trait TranslatableTrait
@@ -66,8 +68,6 @@ trait TranslatableTrait
 
     /**
      * Get the translatable fields for this model
-     *
-     * @return array
      */
     public function getTranslatableFields(): array
     {
@@ -76,9 +76,6 @@ trait TranslatableTrait
 
     /**
      * Check if a field is translatable
-     *
-     * @param string $field
-     * @return bool
      */
     public function isTranslatable(string $field): bool
     {
@@ -88,10 +85,8 @@ trait TranslatableTrait
     /**
      * Get translated value for a field
      *
-     * @param string $field
-     * @param string|null $locale Locale code (defaults to current locale)
-     * @param bool $fallback Whether to fallback to default locale
-     * @return mixed
+     * @param  string|null  $locale  Locale code (defaults to current locale)
+     * @param  bool  $fallback  Whether to fallback to default locale
      */
     public function getTranslation(string $field, ?string $locale = null, bool $fallback = true): mixed
     {
@@ -123,9 +118,6 @@ trait TranslatableTrait
     /**
      * Set translated value for a field
      *
-     * @param string $field
-     * @param mixed $value
-     * @param string|null $locale
      * @return $this
      */
     public function setTranslation(string $field, mixed $value, ?string $locale = null): static
@@ -146,13 +138,13 @@ trait TranslatableTrait
     /**
      * Get all translations for a field
      *
-     * @param string $field
      * @return array ['en' => 'value', 'ja' => 'value', ...]
      */
     public function getTranslations(string $field): array
     {
         if (App::bound(TranslationResolver::class)) {
             $resolver = App::make(TranslationResolver::class);
+
             return $resolver->all($this, $field);
         }
 
@@ -163,10 +155,6 @@ trait TranslatableTrait
 
     /**
      * Check if translation exists for a field and locale
-     *
-     * @param string $field
-     * @param string|null $locale
-     * @return bool
      */
     public function hasTranslation(string $field, ?string $locale = null): bool
     {
@@ -174,6 +162,7 @@ trait TranslatableTrait
 
         if (App::bound(TranslationResolver::class)) {
             $resolver = App::make(TranslationResolver::class);
+
             return $resolver->exists($this, $field, $locale);
         }
 
@@ -183,8 +172,7 @@ trait TranslatableTrait
     /**
      * Delete translation for a field and locale
      *
-     * @param string $field
-     * @param string|null $locale If null, deletes all translations for the field
+     * @param  string|null  $locale  If null, deletes all translations for the field
      * @return $this
      */
     public function deleteTranslation(string $field, ?string $locale = null): static
@@ -201,9 +189,6 @@ trait TranslatableTrait
 
     /**
      * Get the original (non-translated) value of a field
-     *
-     * @param string $field
-     * @return mixed
      */
     protected function getOriginalValue(string $field): mixed
     {
@@ -213,8 +198,7 @@ trait TranslatableTrait
     /**
      * Override getAttribute to automatically return translated values
      *
-     * @param string $key
-     * @return mixed
+     * @param  string  $key
      */
     public function getAttribute($key): mixed
     {
@@ -231,8 +215,6 @@ trait TranslatableTrait
 
     /**
      * Get model identifier for translation storage
-     *
-     * @return string
      */
     public function getTranslatableType(): string
     {
@@ -241,8 +223,6 @@ trait TranslatableTrait
 
     /**
      * Get model ID for translation storage
-     *
-     * @return int|string
      */
     public function getTranslatableId(): int|string
     {

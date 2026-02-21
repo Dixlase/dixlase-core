@@ -22,15 +22,17 @@
 namespace App\Enums;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * プラグイン・テーマの信頼度レベル
- * 
+ *
  * 信頼度は「出どころ・供給経路の確からしさ」を表します。
  * 署名鍵の発行元、配布経路、作者の認証などを評価します。
- * 
+ *
  * Health（健全性）との違い:
  * - Trust: 「誰から来たか」
  * - Health: 「中身が今どうか」
- * 
+ *
  * 例:
  * - Trust: Official / Health: NeedsAttention → 公式でも改ざん疑い
  * - Trust: Local / Health: Healthy → 自作でも整合性OK
@@ -67,7 +69,7 @@ enum PluginTrustLevel: string
      */
     public function translationKey(): string
     {
-        return 'admin/settings/plugins.trust_level.' . $this->value;
+        return 'admin/settings/plugins.trust_level.'.$this->value;
     }
 
     /**
@@ -83,7 +85,7 @@ enum PluginTrustLevel: string
      */
     public function description(): string
     {
-        return __($this->translationKey() . '_description');
+        return __($this->translationKey().'_description');
     }
 
     /**
@@ -180,6 +182,6 @@ enum PluginTrustLevel: string
      */
     public static function productionRecommended(): array
     {
-        return array_filter(self::cases(), fn($level) => $level->isProductionRecommended());
+        return array_filter(self::cases(), fn ($level) => $level->isProductionRecommended());
     }
 }

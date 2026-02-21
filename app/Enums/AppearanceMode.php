@@ -2,6 +2,11 @@
 
 namespace App\Enums;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * 外観モード定義
+ */
 enum AppearanceMode: int
 {
     case Auto = 0;
@@ -30,15 +35,15 @@ enum AppearanceMode: int
 
     public static function options(): array
     {
-        return collect(self::cases())->mapWithKeys(fn($mode) => [
-            $mode->value => $mode->label()
+        return collect(self::cases())->mapWithKeys(fn ($mode) => [
+            $mode->value => $mode->label(),
         ])->toArray();
     }
 
     public static function translationOptions(): array
     {
-        return collect(self::cases())->mapWithKeys(fn($mode) => [
-            $mode->value => "member.appearance.{$mode->translationKey()}"
+        return collect(self::cases())->mapWithKeys(fn ($mode) => [
+            $mode->value => "member.appearance.{$mode->translationKey()}",
         ])->toArray();
     }
 }

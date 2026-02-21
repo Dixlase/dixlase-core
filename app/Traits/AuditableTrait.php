@@ -26,25 +26,27 @@ use App\Facades\Audit;
 use App\Models\AuditLog;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * モデルの監査ログ自動記録トレイト
- * 
+ *
  * モデルの作成・更新・削除時に自動的に監査ログを記録
- * 
+ *
  * 使用例:
  * ```php
  * class Post extends Model
  * {
  *     use AuditableTrait;
- *     
+ *
  *     // オプション: 監査対象外のカラム
  *     protected array $auditExclude = ['updated_at', 'remember_token'];
- *     
+ *
  *     // オプション: 監査対象のカラム（指定した場合、これらのみ記録）
  *     protected array $auditInclude = ['title', 'status'];
- *     
+ *
  *     // オプション: カテゴリを指定
  *     protected string $auditCategory = 'content';
- *     
+ *
  *     // オプション: プラグイン名を指定
  *     protected ?string $auditPluginName = 'my-plugin';
  * }
@@ -116,6 +118,7 @@ trait AuditableTrait
 
         // デフォルト: モデル名_イベント（例: post_created）
         $modelName = strtolower(class_basename($this));
+
         return "{$modelName}_{$event}";
     }
 
@@ -147,8 +150,8 @@ trait AuditableTrait
             case 'updated':
                 $original = $this->filterAuditAttributes($this->getOriginal());
                 $changes = $this->filterAuditAttributes($this->getChanges());
-                
-                if (!empty($changes)) {
+
+                if (! empty($changes)) {
                     $context['before'] = array_intersect_key($original, $changes);
                     $context['after'] = $changes;
                     $context['diff'] = $this->buildDiff($context['before'], $context['after']);
@@ -177,12 +180,12 @@ trait AuditableTrait
     protected function filterAuditAttributes(array $attributes): array
     {
         // 除外リスト
-        $exclude = property_exists($this, 'auditExclude') 
-            ? $this->auditExclude 
+        $exclude = property_exists($this, 'auditExclude')
+            ? $this->auditExclude
             : ['password', 'remember_token', 'two_fa_secret', 'two_fa_recovery_codes'];
 
         // 含めるリスト（指定がある場合はこれらのみ）
-        if (property_exists($this, 'auditInclude') && !empty($this->auditInclude)) {
+        if (property_exists($this, 'auditInclude') && ! empty($this->auditInclude)) {
             $attributes = array_intersect_key($attributes, array_flip($this->auditInclude));
         }
 
@@ -205,6 +208,7 @@ trait AuditableTrait
                 ];
             }
         }
+
         return $diff;
     }
 
@@ -218,6 +222,7 @@ trait AuditableTrait
         }
 
         $modelName = class_basename($this);
+
         return match ($event) {
             'created' => "{$modelName}が作成されました",
             'updated' => "{$modelName}が更新されました",
@@ -296,6 +301,7 @@ trait AuditableTrait
     public function setAuditActor($actor): self
     {
         $this->auditActor = $actor;
+
         return $this;
     }
 }

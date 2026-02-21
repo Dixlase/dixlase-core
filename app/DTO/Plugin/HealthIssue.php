@@ -5,6 +5,8 @@ namespace App\DTO\Plugin;
 use JsonSerializable;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 健全性チェックで検出された問題を表すDTO
  */
 final readonly class HealthIssue implements JsonSerializable

@@ -25,8 +25,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Admin\AdminController;
 use App\Traits\AdminLoggedInTrait;
 
-
-
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * 認証必須の管理画面コントローラー
+ */
 class AdminLoggedInController extends AdminController
 {
 

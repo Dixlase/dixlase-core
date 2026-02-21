@@ -6,6 +6,8 @@ use App\Enums\PluginHealthStatus;
 use JsonSerializable;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 健全性スコア計算結果DTO
  */
 final readonly class HealthScoreResult implements JsonSerializable

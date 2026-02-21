@@ -22,21 +22,23 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\View;
 
-
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * カスタムファイルオーバーライドローディング
+ */
 trait CustomFilesLoaderTrait
 {
-
-
     // カスタムファイルを読み込む
     public function loadCustomFilesForType($customFilesPath, $typeConfig)
     {
-        $customPath = base_path($customFilesPath . $typeConfig['path']);
+        $customPath = base_path($customFilesPath.$typeConfig['path']);
         $defaultNamespace = $typeConfig['namespace'];
 
         $this->loadCustomFiles($customPath, $defaultNamespace);
@@ -44,7 +46,7 @@ trait CustomFilesLoaderTrait
 
     public function loadCustomFiles($customPath, $defaultNamespace)
     {
-        if (!File::exists($customPath)) {
+        if (! File::exists($customPath)) {
             return;
         }
 
@@ -52,8 +54,8 @@ trait CustomFilesLoaderTrait
             $relativePath = Str::replaceFirst($customPath, '', $file->getPath());
             $className = $this->getClassNameFromPath($relativePath);
 
-            $customClass = $defaultNamespace . 'Custom\\' . $className;
-            $coreClass = $defaultNamespace . $className;
+            $customClass = $defaultNamespace.'Custom\\'.$className;
+            $coreClass = $defaultNamespace.$className;
 
             if (class_exists($customClass)) {
                 if (class_exists($coreClass)) {
@@ -80,9 +82,9 @@ trait CustomFilesLoaderTrait
     private function mergeClasses(string $coreClass, string $customClass)
     {
         // 動的なクラス生成のためのクラス名を定義
-        $mergedClassName = $coreClass . 'MergedWith' . $customClass;
+        $mergedClassName = $coreClass.'MergedWith'.$customClass;
 
-        if (!class_exists($mergedClassName)) {
+        if (! class_exists($mergedClassName)) {
             // 動的にクラスを生成
             eval("
             class {$mergedClassName} extends {$coreClass} {
@@ -108,8 +110,6 @@ trait CustomFilesLoaderTrait
         // 動的に生成したクラスのインスタンスを返す
         return new $mergedClassName();
     }
-
-
 
     /*
 

@@ -3,8 +3,10 @@
 namespace App\Enums;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 認証モード（二段階認証・通知設定共通）
- * 
+ *
  * メンバーとユーザーの両方で使用可能
  * 二段階認証と通知設定の両方で使用可能
  */
@@ -76,6 +78,7 @@ enum AuthenticationMode: int
         foreach (self::cases() as $case) {
             $options[$case->value] = $case->twoFactorLabel();
         }
+
         return $options;
     }
 
@@ -88,6 +91,7 @@ enum AuthenticationMode: int
         foreach (self::cases() as $case) {
             $options[$case->value] = $case->twoFactorTranslationKey();
         }
+
         return $options;
     }
 
@@ -100,6 +104,7 @@ enum AuthenticationMode: int
         foreach (self::cases() as $case) {
             $options[$case->value] = $case->notificationLabel();
         }
+
         return $options;
     }
 
@@ -112,6 +117,7 @@ enum AuthenticationMode: int
         foreach (self::cases() as $case) {
             $options[$case->value] = $case->notificationTranslationKey();
         }
+
         return $options;
     }
 
@@ -120,7 +126,7 @@ enum AuthenticationMode: int
      */
     public static function forProfile(): array
     {
-        return array_filter(self::cases(), fn(self $case) => $case !== self::UseProfileSetting);
+        return array_filter(self::cases(), fn (self $case) => $case !== self::UseProfileSetting);
     }
 
     /**
@@ -132,6 +138,7 @@ enum AuthenticationMode: int
         foreach (self::forProfile() as $case) {
             $options[$case->value] = $case->twoFactorLabel();
         }
+
         return $options;
     }
 
@@ -144,6 +151,7 @@ enum AuthenticationMode: int
         foreach (self::forProfile() as $case) {
             $options[$case->value] = $case->notificationLabel();
         }
+
         return $options;
     }
 
