@@ -46,6 +46,26 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.menu.access' => \App\Http\Middleware\CheckMenuAccess::class, // 管理画面メニューアクセス権限
             'check.menu.edit' => \App\Http\Middleware\CheckMenuEdit::class, // 管理画面メニュー編集権限
             'install.steps' => \App\Http\Middleware\CheckInstallationSteps::class, // インストールステップチェック
+            'auth.api' => \App\Http\Middleware\AuthenticateApiKey::class, // APIキー認証
+            'throttle.api' => \App\Http\Middleware\ThrottleApiRequest::class, // APIレートリミット
+            'log.api' => \App\Http\Middleware\LogApiRequest::class, // APIリクエストログ
+        ]);
+
+        // プラグインAPI用（APIキー認証 + レートリミット + ログ）
+        $middleware->group('plugin.api', [
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\CheckLockdown::class,
+            \App\Http\Middleware\AuthenticateApiKey::class,
+            \App\Http\Middleware\ThrottleApiRequest::class,
+            \App\Http\Middleware\LogApiRequest::class,
+        ]);
+
+        // プラグインAPI公開用（認証不要、レートリミット + ログのみ）
+        $middleware->group('plugin.api.public', [
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\CheckLockdown::class,
+            \App\Http\Middleware\ThrottleApiRequest::class,
+            \App\Http\Middleware\LogApiRequest::class,
         ]);
 
         // プラグイン用ミドルウェアグループ（基本）
