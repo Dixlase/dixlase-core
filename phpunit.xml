@@ -21,13 +21,13 @@
             <!-- DixlaseDocs プラグインのテスト -->
             <directory>plugins/DixlaseDocs/tests</directory>
         </testsuite>
-        <testsuite name="DixlaseDeveloper">
-            <!-- DixlaseDeveloper プラグインのテスト（プラグイン/テーマ/カスタム開発用） -->
-            <directory>plugins/DixlaseDeveloper/tests</directory>
+        <testsuite name="DixlaseDevKit">
+            <!-- DixlaseDevKit プラグインのテスト（プラグイン/テーマ/カスタム開発用） -->
+            <directory>plugins/DixlaseDevKit/tests</directory>
         </testsuite>
-        <testsuite name="DixlaseCoreDeveloper">
-            <!-- DixlaseCoreDeveloper プラグインのテスト（コア開発用） -->
-            <directory>plugins/DixlaseCoreDeveloper/tests</directory>
+        <testsuite name="DixlaseCoreDev">
+            <!-- DixlaseCoreDev プラグインのテスト（コア開発用） -->
+            <directory>plugins/DixlaseCoreDev/tests</directory>
         </testsuite>
     </testsuites>
     <source>
