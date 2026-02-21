@@ -26,6 +26,8 @@ use App\Contracts\Plugin\PluginCapabilityInterface;
 use JsonSerializable;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 機能解決結果のDTO
  *
  * PluginServiceResolver による機能解決の結果を保持します。

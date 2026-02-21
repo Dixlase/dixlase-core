@@ -22,12 +22,14 @@
 namespace App\Enums;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 拡張機能（プラグイン・テーマ）の健全性レベル
- * 
+ *
  * 健全性レベルは、拡張機能がシステムに与える影響の範囲を示します。
  * 「リスク」ではなく「健全性」という表現を使用することで、
  * 開発者に対してより前向きで建設的なフィードバックを提供します。
- * 
+ *
  * プリセットモード:
  * - Strict (厳格): 署名必須、権限定義必須、健全性「良好」のみ許可
  * - Balanced (バランス): 署名または信頼済みソース由来ならOK、「注意」まで許可
@@ -153,6 +155,7 @@ enum ExtensionSecurityLevel: int
         foreach (self::cases() as $case) {
             $labels[$case->value] = $case->translationKey();
         }
+
         return $labels;
     }
 

@@ -27,6 +27,8 @@ namespace App\DTO\Api;
 use JsonSerializable;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * APIリソースコレクションDTO
  *
  * ページネーション情報付きのリソース一覧を表現します。

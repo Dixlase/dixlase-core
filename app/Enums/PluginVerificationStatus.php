@@ -22,8 +22,10 @@
 namespace App\Enums;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * プラグイン・テーマの検証状態
- * 
+ *
  * 署名と権限定義の検証状態を表します。
  */
 enum PluginVerificationStatus: string
@@ -119,7 +121,7 @@ enum PluginVerificationStatus: string
      */
     public function translationKey(): string
     {
-        return 'admin/settings/plugins.verification.' . $this->value;
+        return 'admin/settings/plugins.verification.'.$this->value;
     }
 
     /**
@@ -269,7 +271,7 @@ enum PluginVerificationStatus: string
      */
     public function canActivateWithCspMode(string $cspMode): bool
     {
-        if (!$this->isCspStatus()) {
+        if (! $this->isCspStatus()) {
             return true;
         }
 

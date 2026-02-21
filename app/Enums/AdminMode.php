@@ -22,6 +22,11 @@
 
 namespace App\Enums;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * 管理画面モード定義
+ */
 enum AdminMode: int
 {
     case Simple = 0;

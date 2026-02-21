@@ -22,8 +22,10 @@
 namespace App\Enums;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 操作リスクレベル
- * 
+ *
  * β版での「強制再認証」機能の基盤として使用
  * 重大操作（Danger Zone）の判定に使用
  */
@@ -52,7 +54,7 @@ enum OperationRiskLevel: int
      */
     public function translationKey(): string
     {
-        return 'common.operation_risk_level.' . $this->toString();
+        return 'common.operation_risk_level.'.$this->toString();
     }
 
     /**
@@ -68,7 +70,7 @@ enum OperationRiskLevel: int
      */
     public function descriptionKey(): string
     {
-        return 'common.operation_risk_level.' . $this->toString() . '_description';
+        return 'common.operation_risk_level.'.$this->toString().'_description';
     }
 
     /**

@@ -5,6 +5,8 @@ namespace App\DTO\Plugin;
 use JsonSerializable;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 署名検証結果DTO
  *
  * コア側の署名検証結果を表現します。

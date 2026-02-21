@@ -22,11 +22,13 @@
 namespace App\Enums;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * プラグイン・テーマの健全性ステータス
- * 
+ *
  * 健全性は「中身の整合性・状態」を表します。
  * 宣言された権限と実態の一致、署名の有効性、CSP適合性などを評価します。
- * 
+ *
  * 点数化ルール:
  * - 初期スコア: 100
  * - 指摘ごとに減点
@@ -79,7 +81,7 @@ enum PluginHealthStatus: string
      */
     public function translationKey(): string
     {
-        return 'admin/settings/plugins.health_status.' . $this->value;
+        return 'admin/settings/plugins.health_status.'.$this->value;
     }
 
     /**
@@ -95,7 +97,7 @@ enum PluginHealthStatus: string
      */
     public function description(): string
     {
-        return __($this->translationKey() . '_description');
+        return __($this->translationKey().'_description');
     }
 
     /**
@@ -103,7 +105,7 @@ enum PluginHealthStatus: string
      */
     public function tooltip(): string
     {
-        return __($this->translationKey() . '_tooltip');
+        return __($this->translationKey().'_tooltip');
     }
 
     /**

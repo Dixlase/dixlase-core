@@ -2,6 +2,11 @@
 
 namespace App\Enums;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * メンバーステータス定義
+ */
 enum MemberStatus: int
 {
     case Inactive = 0;
@@ -9,13 +14,13 @@ enum MemberStatus: int
 
     public function label(): string
     {
-        return trans('admin.status.' . $this->name);
+        return trans('admin.status.'.$this->name);
     }
 
     public static function options(): array
     {
-        return collect(self::cases())->mapWithKeys(fn($status) => [
-            $status->value => $status->label()
+        return collect(self::cases())->mapWithKeys(fn ($status) => [
+            $status->value => $status->label(),
         ])->toArray();
     }
 }

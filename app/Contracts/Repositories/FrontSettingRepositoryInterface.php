@@ -25,8 +25,10 @@ namespace App\Contracts\Repositories;
 use App\Models\FrontSetting;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * フロント設定リポジトリインターフェース
- * 
+ *
  * フロントページの設定（OGP画像、説明文など）を管理します。
  */
 interface FrontSettingRepositoryInterface extends SettingRepositoryInterface
@@ -34,8 +36,7 @@ interface FrontSettingRepositoryInterface extends SettingRepositoryInterface
     /**
      * リレーションを含めて設定を取得
      *
-     * @param string $name 設定名
-     * @return FrontSetting|null
+     * @param  string  $name  設定名
      */
     public function findWithRelations(string $name): ?FrontSetting;
 }

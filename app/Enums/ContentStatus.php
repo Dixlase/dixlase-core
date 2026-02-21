@@ -23,6 +23,8 @@
 namespace App\Enums;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * コンテンツステータス
  * ページ、ブログ記事などの公開状態を管理
  */
@@ -37,7 +39,7 @@ enum ContentStatus: string
      */
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::DRAFT => __('components/ui-status-badge.draft'),
             self::PUBLISHED => __('components/ui-status-badge.published'),
             self::SCHEDULED => __('components/ui-status-badge.scheduled'),
@@ -49,7 +51,7 @@ enum ContentStatus: string
      */
     public function description(): string
     {
-        return match($this) {
+        return match ($this) {
             self::DRAFT => __('components/ui-status-badge.draft_description'),
             self::PUBLISHED => __('components/ui-status-badge.published_description'),
             self::SCHEDULED => __('components/ui-status-badge.scheduled_description'),
@@ -61,7 +63,7 @@ enum ContentStatus: string
      */
     public function cssClass(): string
     {
-        return match($this) {
+        return match ($this) {
             self::DRAFT => 'gray',
             self::PUBLISHED => 'green',
             self::SCHEDULED => 'yellow',
@@ -85,7 +87,7 @@ enum ContentStatus: string
      */
     public function isPublishable(): bool
     {
-        return match($this) {
+        return match ($this) {
             self::PUBLISHED, self::SCHEDULED => true,
             self::DRAFT => false,
         };

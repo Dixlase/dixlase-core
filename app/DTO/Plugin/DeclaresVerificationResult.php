@@ -5,6 +5,8 @@ namespace App\DTO\Plugin;
 use JsonSerializable;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * declares セクション検証結果DTO
  *
  * plugin.json の declares セクションと実際のファイル構成を

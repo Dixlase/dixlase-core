@@ -3,6 +3,8 @@
 namespace App\Contracts\PluginIntegration;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * プライバシーポリシープロバイダーの契約
  *
  * 法務プラグインなどがこのインターフェースを実装して

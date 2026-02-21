@@ -23,8 +23,10 @@
 namespace App\Enums;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * コンテンツ保存方法の列挙型
- * 
+ *
  * ページコンテンツやフロントページのデザインなど、
  * 編集可能なコンテンツの保存方法を定義します。
  */
@@ -51,7 +53,7 @@ enum ContentStorageType: string
      */
     public function translationKey(): string
     {
-        return match($this) {
+        return match ($this) {
             self::DATABASE => 'common.content_storage.database',
             self::FILE => 'common.content_storage.file',
         };
@@ -62,7 +64,7 @@ enum ContentStorageType: string
      */
     public function descriptionKey(): string
     {
-        return match($this) {
+        return match ($this) {
             self::DATABASE => 'common.content_storage.database_description',
             self::FILE => 'common.content_storage.file_description',
         };
