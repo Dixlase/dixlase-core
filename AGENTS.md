@@ -1,13 +1,13 @@
 <laravel-boost-guidelines>
 === foundation rules ===
 
-# Laravel Boost ガイドライン
+# Laravel Boost Guidelines
 
-Laravel Boost ガイドラインは Laravel メンテナーによってこのアプリケーション専用に作成されたものです。ユーザー満足度を高めるため、このガイドラインに忠実に従ってください。
+The Laravel Boost guidelines are specifically curated by Laravel maintainers for this application. These guidelines should be followed closely to enhance the user's satisfaction building Laravel applications.
 
-## 基本コンテキスト
+## Foundational Context
 
-このアプリケーションは Laravel アプリケーションであり、主要な Laravel エコシステムのパッケージとバージョンは以下の通りです。全てに精通してください。これらの特定のパッケージとバージョンを遵守すること。
+This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
 
 - php - 8.3.24
 - laravel/fortify (FORTIFY) - v1
@@ -22,19 +22,19 @@ Laravel Boost ガイドラインは Laravel メンテナーによってこのア
 - alpinejs (ALPINEJS) - v3
 - tailwindcss (TAILWINDCSS) - v3
 
-## 規約
+## Conventions
 
-- このアプリケーションの既存コード規約に必ず従うこと。ファイルの作成・編集時は、隣接ファイルの構造、アプローチ、命名を確認する
-- 変数やメソッドには説明的な名前を使用する。例: `isRegisteredForDiscounts` であり `discount()` ではない
-- 新しいコンポーネントを作成する前に、再利用可能な既存コンポーネントを確認する
+- You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, naming.
+- Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
+- Check for existing components to reuse before writing a new one.
 
-## Git コミットメッセージ
+## Git Commit Messages
 
-- コミットメッセージに `Co-Authored-By` 行を含めない
-- conventional commit 形式を使用する（例: `feat:`, `fix:`, `refactor:`）
-- コミットメッセージは**日英バイリンガル形式**で記述する
-- タイトルは英語・日本語を連続して冒頭に配置し、その後に英語の箇条書き、`----` 区切り、日本語の箇条書きの順
-- 例:
+- Do not include `Co-Authored-By` lines in commit messages.
+- Use conventional commit format (e.g. `feat:`, `fix:`, `refactor:`).
+- Write the commit message in **bilingual format**.
+- Place both English and Japanese titles consecutively at the top, followed by English bullet points, a `----` separator, then Japanese bullet points.
+- Example:
   ```
   feat: add user profile page
   feat: ユーザープロフィールページを追加
@@ -48,27 +48,27 @@ Laravel Boost ガイドラインは Laravel メンテナーによってこのア
   - アバターアップロード付きプロフィールBladeビューを作成
   ```
 
-## ビューロジック分離ルール
+## View Logic Separation Rules
 
-- Blade テンプレート内で `\App\Enums\*`, `\App\Helpers\*`, `\App\Services\*`, `\App\Models\*` クラスを直接参照しない
-- enum の値/ラベル/オプション配列、ヘルパー結果、サービス結果は全てコントローラーで準備し、ビュー変数として渡す
-- Blade コンポーネントは必要なデータをプロパティとして受け取る（親ビュー/コントローラーから注入）
-- 例外: 共有フルスクリーンパーシャル（例: サイドバー）でのヘルパー呼び出しは許可
-- **管理画面の Blade ビューでは `@php` ブロック禁止**（サイドバーなどの共有フルスクリーンパーシャルを除く）
-  - ビジネスロジック、データ変換、config 配列の構築はコントローラーまたは Presenter で行うこと
-  - 許可される例外: `{{ $var ?? 'default' }}` のようなインライン式、`old()` ヘルパーのインライン使用、`@php $appearanceValue = old('appearance', ...) @endphp` のような単純な変数代入
+- Do not directly reference `\App\Enums\*`, `\App\Helpers\*`, `\App\Services\*`, `\App\Models\*` classes in Blade templates.
+- Prepare all enum values/labels/option arrays, helper results, and service results in controllers and pass them as view variables.
+- Blade components receive necessary data as props (injected from parent views/controllers).
+- Exception: Helper calls in shared full-screen partials (e.g. sidebar) are allowed.
+- **`@php` blocks are forbidden in admin Blade views** (except shared full-screen partials like sidebar).
+  - Business logic, data transformations, and config array building must be done in controllers or Presenters.
+  - Allowed exceptions: inline expressions like `{{ $var ?? 'default' }}`, inline use of `old()` helper, simple variable assignments like `@php $appearanceValue = old('appearance', ...) @endphp`.
 
-## 翻訳キーのスコープ
+## Translation Key Scoping
 
-- `lang/*/admin/navigation.php` はサイドバー専用の翻訳ファイル。サイドバー以外のビューから参照しないこと
-- 各ビューは独自の翻訳ファイルに翻訳キーを定義する（例: `lang/*/admin/settings/base/index.php`）
-- コンポーネントは `lang/*/components/<component-name>.php` に翻訳キーを定義する
+- `lang/*/admin/navigation.php` is a sidebar-only translation file. Do not reference it from non-sidebar views.
+- Each view defines its translation keys in its own translation file (e.g. `lang/*/admin/settings/base/index.php`).
+- Components define their translation keys in `lang/*/components/<component-name>.php`.
 
-### プラグイン翻訳ファイル構成
+### Plugin Translation File Structure
 
-- プラグインはディレクトリベースの構成を使用: `lang/{en,ja}/admin/{resource}/{page}.php`
-- `admin.php` にはプラグイン情報（plugin, provider）のみを含める。ページ固有の翻訳は別ファイルにする
-- 各管理ページの翻訳ファイルには先頭に `heading` と `description` キーが必要:
+- Plugins use a directory-based structure: `lang/{en,ja}/admin/{resource}/{page}.php`.
+- `admin.php` should only contain plugin info (plugin, provider). Page-specific translations go in separate files.
+- Each admin page translation file must have `heading` and `description` keys at the top:
   ```php
   return [
       'heading' => 'Page Master',
@@ -76,88 +76,88 @@ Laravel Boost ガイドラインは Laravel メンテナーによってこのア
       // other keys
   ];
   ```
-- `heading`: `resolvePluginHeadingKey()` により自動解決（ルート名をディレクトリパスに変換）
-- `description`: そのページで何ができるかを1〜2文で説明
+- `heading`: Auto-resolved by `resolvePluginHeadingKey()` (converts route name to directory path).
+- `description`: A 1-2 sentence description of what can be done on that page.
 
-## 検証スクリプト
+## Verification Scripts
 
-- テストがその機能をカバーし動作を証明している場合、検証スクリプトや tinker を作成しない。ユニットテストとフィーチャーテストの方が重要
+- Do not create verification scripts or tinker when tests cover that functionality and prove it works. Unit and feature tests are more important.
 
-## アプリケーション構成とアーキテクチャ
+## Application Structure & Architecture
 
-- 既存のディレクトリ構成に従う — 承認なしに新しいベースフォルダを作成しない
-- 承認なしにアプリケーションの依存関係を変更しない
+- Stick to existing directory structure - don't create new base folders without approval.
+- Do not change the application's dependencies without approval.
 
-## フロントエンドバンドル
+## Frontend Bundling
 
-- フロントエンドの変更がUIに反映されない場合、`npm run build`、`npm run dev`、または `composer run dev` の実行が必要な可能性がある。ユーザーに確認する
+- If the user doesn't see a frontend change reflected in the UI, it could mean they need to run `npm run build`, `npm run dev`, or `composer run dev`. Ask them.
 
-## ドキュメントファイル
+## Documentation Files
 
-- ドキュメントファイルはユーザーが明示的に要求した場合のみ作成すること
+- You must only create documentation files if explicitly requested by the user.
 
-## 応答
+## Replies
 
-- 説明は簡潔に — 自明な詳細の説明ではなく重要な点に集中する
+- Be concise in your explanations - focus on what's important rather than explaining obvious details.
 
 === boost rules ===
 
 # Laravel Boost
 
-- Laravel Boost はこのアプリケーション専用の強力なツールを備えた MCP サーバー。積極的に活用すること
+- Laravel Boost is an MCP server with powerful tools specifically for this application. Use it actively
 
 ## Artisan
 
-- Artisan コマンドを実行する際は `list-artisan-commands` ツールで利用可能なパラメータを確認する
+- When running Artisan commands, check available parameters with the `list-artisan-commands` tool
 
 ## URL
 
-- ユーザーにプロジェクトURLを共有する際は `get-absolute-url` ツールで正しいスキーム、ドメイン/IP、ポートを確認する
+- When sharing project URLs with the user, verify the correct scheme, domain/IP, and port with the `get-absolute-url` tool
 
-## Tinker / デバッグ
+## Tinker / Debugging
 
-- PHP コードのデバッグや Eloquent モデルの直接クエリには `tinker` ツールを使用する
-- データベースの読み取りのみが必要な場合は `database-query` ツールを使用する
-- マイグレーションやモデルを作成する前に `database-schema` ツールでテーブル構造を確認する
+- Use the `tinker` tool for debugging PHP code and directly querying Eloquent models
+- Use the `database-query` tool when you only need to read from the database
+- Check table structure with the `database-schema` tool before creating migrations or models
 
-## ブラウザログの読み取り（`browser-logs` ツール）
+## Reading Browser Logs (`browser-logs` tool)
 
-- `browser-logs` ツールでブラウザのログ、エラー、例外を読み取れる
-- 最近のブラウザログのみが有用 — 古いログは無視する
+- Use the `browser-logs` tool to read browser logs, errors, and exceptions
+- Only recent browser logs are useful — ignore old logs
 
-## ドキュメント検索（重要）
+## Documentation Search (Important)
 
-- Boost には強力な `search-docs` ツールがあり、Laravel エコシステムパッケージの作業時は他のアプローチより先に使用すること。このツールはインストール済みパッケージとバージョンを自動的に Boost API に送信し、バージョン固有のドキュメントのみを返す。特定パッケージのドキュメントが必要な場合はパッケージ名の配列を渡す
-- コード変更前にドキュメントを検索して正しいアプローチを確認する
-- 複数の広範でシンプルなトピックベースのクエリを一度に使用する。例: `['rate limiting', 'routing rate limiting', 'routing']`。最も関連性の高い結果が最初に返される
-- クエリにパッケージ名を含めない（パッケージ情報は既に共有済み）。例: `test resource table` を使用し、`filament 4 test resource table` は不可
+- Boost has a powerful `search-docs` tool — use it before other approaches when working with Laravel ecosystem packages. This tool automatically sends installed packages and versions to the Boost API and returns only version-specific documentation. Pass an array of package names when you need documentation for specific packages
+- Search documentation before making code changes to verify the correct approach
+- Use multiple broad, simple topic-based queries at once. Example: `['rate limiting', 'routing rate limiting', 'routing']`. The most relevant results are returned first
+- Do not include package names in queries (package information is already shared). Example: use `test resource table`, not `filament 4 test resource table`
 
-### 検索構文
+### Search Syntax
 
-1. 自動ステミング付き単語検索 - query=authentication - 'authenticate' や 'auth' も検出
-2. 複数単語（AND論理） - query=rate limit - "rate" AND "limit" を含む結果
-3. 引用フレーズ（完全一致） - query="infinite scroll" - 隣接した単語でこの順序
-4. 混合クエリ - query=middleware "rate limit" - "middleware" AND 完全一致 "rate limit"
-5. 複数クエリ - queries=["authentication", "middleware"] - いずれかの用語
+1. Word search with auto-stemming - query=authentication - also finds 'authenticate' and 'auth'
+2. Multiple words (AND logic) - query=rate limit - results containing "rate" AND "limit"
+3. Quoted phrases (exact match) - query="infinite scroll" - adjacent words in this order
+4. Mixed queries - query=middleware "rate limit" - "middleware" AND exact match "rate limit"
+5. Multiple queries - queries=["authentication", "middleware"] - either term
 
 === php rules ===
 
 # PHP
 
-- 制御構文では単一行でも常に波括弧を使用する
+- Always use curly braces in control structures, even for single-line statements
 
-## コンストラクタ
+## Constructors
 
-- `__construct()` では PHP 8 のコンストラクタプロパティプロモーションを使用する
+- Use PHP 8 constructor property promotion in `__construct()`
     - `public function __construct(public GitHub $github) { }`
-- コンストラクタが private でない限り、パラメータゼロの空 `__construct()` は許可しない
+- Do not allow empty zero-parameter `__construct()` unless the constructor is private
 
-## 型宣言
+## Type Declarations
 
-- メソッドと関数には常に明示的な戻り値型を宣言する
-- メソッドパラメータには適切な PHP 型ヒントを使用する
+- Always declare explicit return types for methods and functions
+- Use appropriate PHP type hints for method parameters
 
-<!-- 明示的な戻り値型とメソッドパラメータの例 -->
+<!-- Example of explicit return types and method parameters -->
 ```php
 protected function isAccessible(User $user, ?string $path = null): bool
 {
@@ -167,142 +167,142 @@ protected function isAccessible(User $user, ?string $path = null): bool
 
 ## Enum
 
-- Enum のキーは通常 TitleCase にする。例: `FavoritePerson`, `BestLake`, `Monthly`
+- Enum keys should typically be TitleCase. Example: `FavoritePerson`, `BestLake`, `Monthly`
 
-## コメント
+## Comments
 
-- インラインコメントよりPHPDocブロックを優先する。ロジックが非常に複雑な場合を除き、コード内にコメントを書かない
+- Prefer PHPDoc blocks over inline comments. Do not write comments in code unless the logic is very complex
 
-## PHPDoc ブロック
+## PHPDoc Blocks
 
-- 配列には適切な array shape 型定義を追加する
+- Add appropriate array shape type definitions for arrays
 
 === tests rules ===
 
-# テストの必須化
+# Enforce Testing
 
-- 全ての変更はプログラム的にテストすること。新しいテストを作成するか既存テストを更新し、該当テストが通ることを確認する
-- コード品質と速度を確保するため、必要最小限のテストを実行する。`php artisan test --compact` にファイル名やフィルタを指定して使用する
+- All changes must be tested programmatically. Create new tests or update existing tests, and verify that the relevant tests pass
+- Run only the minimum necessary tests to ensure code quality and speed. Use `php artisan test --compact` with file names or filters
 
 === laravel/core rules ===
 
-# Laravel の流儀に従う
+# Follow the Laravel Way
 
-- 新しいファイル（マイグレーション、コントローラー、モデル等）の作成には `php artisan make:` コマンドを使用する。利用可能な Artisan コマンドは `list-artisan-commands` ツールで確認できる
-- 汎用 PHP クラスの作成には `php artisan make:class` を使用する
-- 全ての Artisan コマンドに `--no-interaction` を渡してユーザー入力なしで動作させる。正しい `--options` も指定すること
+- Use `php artisan make:` commands for creating new files (migrations, controllers, models, etc.). Check available Artisan commands with the `list-artisan-commands` tool
+- Use `php artisan make:class` for creating generic PHP classes
+- Pass `--no-interaction` to all Artisan commands to run without user input. Also specify the correct `--options`
 
-## データベース
+## Database
 
-- 常に戻り値型ヒント付きの Eloquent リレーションメソッドを使用する。生クエリや手動結合よりリレーションメソッドを優先
-- 生のデータベースクエリの前に Eloquent モデルとリレーションを使用する
-- `DB::` は避け `Model::query()` を優先する。ORM 機能を活用するコードを生成する
-- Eager Loading を使用して N+1 クエリ問題を防止するコードを生成する
-- 非常に複雑なデータベース操作には Laravel のクエリビルダーを使用する
+- Always use Eloquent relation methods with return type hints. Prefer relation methods over raw queries or manual joins
+- Use Eloquent models and relations before raw database queries
+- Avoid `DB::` and prefer `Model::query()`. Generate code that leverages ORM features
+- Generate code that uses Eager Loading to prevent N+1 query problems
+- Use Laravel's query builder for very complex database operations
 
-### モデル作成
+### Model Creation
 
-- 新しいモデル作成時はファクトリとシーダーも作成する。他に必要なものがあるかユーザーに確認し、`list-artisan-commands` で `php artisan make:model` のオプションを確認する
+- When creating a new model, also create a factory and seeder. Ask the user if anything else is needed, and check `php artisan make:model` options with `list-artisan-commands`
 
-### API と Eloquent リソース
+### API and Eloquent Resources
 
-- API ではデフォルトで Eloquent API リソースと API バージョニングを使用する。既存の API ルートが異なる慣例の場合はそれに従う
+- Use Eloquent API Resources and API versioning by default for APIs. Follow existing conventions if API routes use a different pattern
 
-## コントローラーとバリデーション
+## Controllers and Validation
 
-- バリデーションはコントローラー内のインラインではなく、常に Form Request クラスで行う。バリデーションルールとカスタムエラーメッセージの両方を含める
-- 配列ベースか文字列ベースかは既存の Form Request を確認して合わせる
+- Always validate with Form Request classes, not inline in controllers. Include both validation rules and custom error messages
+- Check existing Form Requests to determine whether to use array-based or string-based rules
 
-## 認証と認可
+## Authentication and Authorization
 
-- Laravel の組み込み認証・認可機能（gates、policies、Sanctum 等）を使用する
+- Use Laravel's built-in authentication and authorization features (gates, policies, Sanctum, etc.)
 
-## URL 生成
+## URL Generation
 
-- 他のページへのリンク生成には名前付きルートと `route()` 関数を優先する
+- Prefer named routes and the `route()` function for generating links to other pages
 
-## キュー
+## Queues
 
-- 時間のかかる操作には `ShouldQueue` インターフェースを使用したキュージョブを使用する
+- Use queued jobs with the `ShouldQueue` interface for time-consuming operations
 
-## 設定
+## Configuration
 
-- 環境変数は設定ファイル内でのみ使用する — config ファイル外で `env()` 関数を直接使用しない。`env('APP_NAME')` ではなく `config('app.name')` を使用すること
+- Use environment variables only in config files — do not use the `env()` function directly outside config files. Use `config('app.name')` instead of `env('APP_NAME')`
 
-## テスト
+## Testing
 
-- テスト用モデルの作成にはファクトリを使用する。手動セットアップ前にファクトリのカスタム state を確認する
-- Faker: `$this->faker->word()` や `fake()->randomDigit()` を使用する。`$this->faker` と `fake()` のどちらを使うかは既存の慣例に従う
-- テスト作成には `php artisan make:test [options] {name}` を使用する。フィーチャーテストがデフォルト、ユニットテストには `--unit` を渡す
+- Use factories for creating test models. Check existing factory custom states before manual setup
+- Faker: use `$this->faker->word()` or `fake()->randomDigit()`. Follow existing conventions for whether to use `$this->faker` or `fake()`
+- Use `php artisan make:test [options] {name}` for creating tests. Feature tests are the default; pass `--unit` for unit tests
 
-## Vite エラー
+## Vite Errors
 
-- "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" エラーが発生した場合、`npm run build` を実行するか、ユーザーに `npm run dev` または `composer run dev` の実行を依頼する
+- If you get an "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" error, run `npm run build` or ask the user to run `npm run dev` or `composer run dev`
 
 === laravel/v12 rules ===
 
 # Laravel 12
 
-- 重要: バージョン固有の Laravel ドキュメントと最新のコード例を取得するため、常に `search-docs` ツールを使用すること
-- Laravel 11 以降、新しい簡素化されたファイル構造が採用されており、このプロジェクトはそれを使用している
+- Important: Always use the `search-docs` tool to get version-specific Laravel documentation and the latest code examples
+- Since Laravel 11, a new simplified file structure has been adopted, and this project uses it
 
-## Laravel 12 構造
+## Laravel 12 Structure
 
-- Laravel 12 ではミドルウェアは `app/Http/Kernel.php` に登録しない
-- ミドルウェアは `bootstrap/app.php` で `Application::configure()->withMiddleware()` を使って宣言的に設定する
-- `bootstrap/app.php` はミドルウェア、例外、ルーティングファイルの登録先
-- `bootstrap/providers.php` にアプリケーション固有のサービスプロバイダーを記述する
-- `app\Console\Kernel.php` は存在しない。コンソール設定には `bootstrap/app.php` または `routes/console.php` を使用する
-- `app/Console/Commands/` 内のコンソールコマンドは自動で利用可能になり、手動登録は不要
+- In Laravel 12, middleware is not registered in `app/Http/Kernel.php`
+- Middleware is configured declaratively in `bootstrap/app.php` using `Application::configure()->withMiddleware()`
+- `bootstrap/app.php` is where middleware, exceptions, and routing files are registered
+- Application-specific service providers are listed in `bootstrap/providers.php`
+- `app\Console\Kernel.php` does not exist. Use `bootstrap/app.php` or `routes/console.php` for console configuration
+- Console commands in `app/Console/Commands/` are automatically available without manual registration
 
-## データベース
+## Database
 
-- カラムを変更するマイグレーションでは、そのカラムに以前定義されていた全ての属性を含める必要がある。含めない属性は削除される
-- Laravel 12 では外部パッケージなしでネイティブに Eager Load のレコード数を制限できる: `$query->latest()->limit(10);`
+- When modifying columns in migrations, include all previously defined attributes for that column. Attributes not included will be dropped
+- Laravel 12 natively supports limiting Eager Load record counts without external packages: `$query->latest()->limit(10);`
 
-### モデル
+### Models
 
-- キャストは `$casts` プロパティではなく `casts()` メソッドで設定する。他のモデルの既存の慣例に従う
+- Configure casts using the `casts()` method, not the `$casts` property. Follow existing conventions in other models
 
 === livewire/core rules ===
 
 # Livewire
 
-- Livewire は PHP のみでダイナミックかつリアクティブなインターフェースを構築できる — JavaScript は不要
-- JavaScript フレームワークの代わりに、クライアントサイドのインタラクションが必要な場合は Alpine.js を使用してUIを構築する
-- 状態はサーバーに保持し、UIはそれを反映する。アクション内でバリデーションと認可を行うこと（HTTPリクエストと同様）
-- 重要: Livewire 関連のタスク作業時は必ず `livewire-development` を有効化すること
+- Livewire lets you build dynamic, reactive interfaces using only PHP — no JavaScript required
+- Instead of a JavaScript framework, use Alpine.js for building UIs that need client-side interaction
+- Keep state on the server and let the UI reflect it. Perform validation and authorization in actions (just like HTTP requests)
+- Important: Always activate `livewire-development` when working on Livewire-related tasks
 
 === pint/core rules ===
 
-# Laravel Pint コードフォーマッター
+# Laravel Pint Code Formatter
 
-- 変更を確定する前に `vendor/bin/pint --dirty` を実行して、プロジェクトのコードスタイルに一致させること
-- `vendor/bin/pint --test` は実行しない。フォーマット修正には `vendor/bin/pint` を使用する
+- Run `vendor/bin/pint --dirty` before finalizing changes to match the project's code style
+- Do not run `vendor/bin/pint --test`. Use `vendor/bin/pint` to fix formatting
 
 === phpunit/core rules ===
 
 # PHPUnit
 
-- このアプリケーションは PHPUnit を使用する。全テストは PHPUnit クラスで記述すること。新しいテストの作成には `php artisan make:test --phpunit {name}` を使用する
-- "Pest" で書かれたテストを見つけたら PHPUnit に変換する
-- テストを更新したら、その個別テストを実行する
-- 機能に関連するテストが通ったら、テストスイート全体を実行するかユーザーに確認する
-- テストは全てのハッピーパス、失敗パス、エッジケースをカバーすること
-- 承認なしに tests ディレクトリからテストやテストファイルを削除しない。これらは一時ファイルではなくアプリケーションのコアである
+- This application uses PHPUnit. All tests must be written as PHPUnit classes. Use `php artisan make:test --phpunit {name}` to create new tests
+- If you find tests written in "Pest", convert them to PHPUnit
+- After updating a test, run that individual test
+- Once feature-related tests pass, ask the user whether to run the full test suite
+- Tests should cover all happy paths, failure paths, and edge cases
+- Do not delete tests or test files from the tests directory without approval. These are core parts of the application, not temporary files
 
-## テストの実行
+## Running Tests
 
-- 確定前に最小限のテストをフィルタ指定で実行する
-- 全テスト実行: `php artisan test --compact`
-- ファイル内の全テスト実行: `php artisan test --compact tests/Feature/ExampleTest.php`
-- 特定テスト名でフィルタ: `php artisan test --compact --filter=testName`（関連ファイル変更後に推奨）
+- Run minimal tests with filters before finalizing
+- Run all tests: `php artisan test --compact`
+- Run all tests in a file: `php artisan test --compact tests/Feature/ExampleTest.php`
+- Filter by specific test name: `php artisan test --compact --filter=testName` (recommended after changing related files)
 
 === tailwindcss/core rules ===
 
 # Tailwind CSS
 
-- 既存の Tailwind の慣例を常に使用する。新しいパターンを追加する前にプロジェクト内の既存パターンを確認する
-- 重要: バージョン固有の Tailwind CSS ドキュメントと最新のコード例を取得するため、常に `search-docs` ツールを使用すること。トレーニングデータに頼らない
-- 重要: Tailwind CSS やスタイリング関連のタスク作業時は必ず `tailwindcss-development` を有効化すること
+- Always use existing Tailwind conventions. Check existing patterns in the project before adding new ones
+- Important: Always use the `search-docs` tool to get version-specific Tailwind CSS documentation and the latest code examples. Do not rely on training data
+- Important: Always activate `tailwindcss-development` when working on Tailwind CSS or styling-related tasks
 </laravel-boost-guidelines>
