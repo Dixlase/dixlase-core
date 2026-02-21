@@ -67,7 +67,7 @@ class AppServiceProvider extends ServiceProvider
         // ログ出力サービスをバインド
         $this->app->bind(LogServiceInterface::class, LogService::class);
 
-        // 署名検証サービスをバインド（DixlaseDeveloper プラグインが上書き可能）
+        // 署名検証サービスをバインド（DixlaseDevKit プラグインが上書き可能）
         $this->app->bind(SignatureVerifierInterface::class, CoreSignatureVerifier::class);
 
         // CSP Nonce Generatorをシングルトンとして登録（リクエストごとに同じnonce値を使用）

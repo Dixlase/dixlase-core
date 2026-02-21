@@ -3,9 +3,9 @@
 namespace Tests\Unit\Services\Plugin;
 
 use App\DTO\Plugin\SignatureVerificationResult;
-use Plugins\DixlaseDeveloper\App\Signing\Contracts\VerifierInterface;
-use Plugins\DixlaseDeveloper\App\Signing\CoreSignatureVerifierAdapter;
-use Plugins\DixlaseDeveloper\App\Signing\SignatureResult;
+use Plugins\DixlaseDevKit\App\Signing\Contracts\VerifierInterface;
+use Plugins\DixlaseDevKit\App\Signing\CoreSignatureVerifierAdapter;
+use Plugins\DixlaseDevKit\App\Signing\SignatureResult;
 use Tests\TestCase;
 
 class CoreSignatureVerifierAdapterTest extends TestCase

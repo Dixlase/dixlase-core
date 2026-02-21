@@ -8,7 +8,7 @@ use JsonSerializable;
  * 署名検証結果DTO
  *
  * コア側の署名検証結果を表現します。
- * DixlaseDeveloper プラグインの SignatureResult から変換、
+ * DixlaseDevKit プラグインの SignatureResult から変換、
  * またはスタブ実装から直接生成されます。
  */
 final readonly class SignatureVerificationResult implements JsonSerializable

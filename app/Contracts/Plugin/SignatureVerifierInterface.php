@@ -28,7 +28,7 @@ use App\DTO\Plugin\SignatureVerificationResult;
  * 署名検証コントラクト
  *
  * コア側で署名検証の抽象化を提供します。
- * DixlaseDeveloper プラグインがインストール済みの場合は Ed25519 ベースの
+ * DixlaseDevKit プラグインがインストール済みの場合は Ed25519 ベースの
  * 検証を実行し、未インストール時はスタブ実装が unsigned を返します。
  */
 interface SignatureVerifierInterface
@@ -44,7 +44,7 @@ interface SignatureVerifierInterface
     /**
      * 署名検証が利用可能かどうか
      *
-     * DixlaseDeveloper プラグインがインストールされていない場合は false を返します。
+     * DixlaseDevKit プラグインがインストールされていない場合は false を返します。
      */
     public function isAvailable(): bool;
 }
