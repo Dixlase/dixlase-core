@@ -32,7 +32,7 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(function (string $modelName) {
-            $pluginFactory = 'Plugins\\DixlaseDeveloper\\Database\\Factories\\' . class_basename($modelName) . 'Factory';
+            $pluginFactory = 'Plugins\\DixlaseDevKit\\Database\\Factories\\' . class_basename($modelName) . 'Factory';
 
             if (class_exists($pluginFactory)) {
                 return $pluginFactory;

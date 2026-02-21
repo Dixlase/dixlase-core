@@ -431,7 +431,7 @@ class PluginPermissionService
      * プラグインの署名情報を取得
      *
      * SignatureVerifierInterface を使用して署名検証を行います。
-     * DixlaseDeveloper プラグインがインストール済みの場合は Ed25519 ベースの検証、
+     * DixlaseDevKit プラグインがインストール済みの場合は Ed25519 ベースの検証、
      * 未インストールの場合はスタブ実装（メタデータ読み取りのみ）を使用します。
      */
     public function getSignatureInfo(string $pluginSlug): array

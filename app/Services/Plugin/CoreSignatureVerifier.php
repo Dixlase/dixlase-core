@@ -30,11 +30,11 @@ use Illuminate\Support\Str;
 /**
  * コア側署名検証スタブ
  *
- * DixlaseDeveloper プラグインが未インストールの場合に使用されます。
+ * DixlaseDevKit プラグインが未インストールの場合に使用されます。
  * signature.sig ファイルの存在確認とメタデータ読み取りのみを行い、
  * 実際の暗号学的検証は行いません。
  *
- * DixlaseDeveloper がインストール済みの場合は、プラグイン側の
+ * DixlaseDevKit がインストール済みの場合は、プラグイン側の
  * アダプターが SignatureVerifierInterface にバインドされ、
  * Ed25519 ベースの検証が行われます。
  */
@@ -91,7 +91,7 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
             signedBy: $sigData['signed_by'] ?? null,
             signedAt: $sigData['signed_at'] ?? null,
             keyId: $sigData['key_id'] ?? $keyId,
-            message: '署名検証モジュール（DixlaseDeveloper）が利用できないため、検証を保留中です。',
+            message: '署名検証モジュール（DixlaseDevKit）が利用できないため、検証を保留中です。',
         );
     }
 
