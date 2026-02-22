@@ -312,6 +312,107 @@ if (! function_exists('load_assets')) {
     }
 }
 
+if (! function_exists('get_plugin_declared_assets')) {
+    /**
+     * プラグインの plugin.json から宣言されたアセット情報を取得
+     *
+     * @return array{common: string[], admin: string[], front: string[]}|false|null
+     *                                                                              アセット宣言がある場合は配列、false の場合はアセットなし、null の場合は未宣言
+     */
+    function get_plugin_declared_assets(string $pluginDirectory): array|false|null
+    {
+        static $cache = [];
+
+        if (array_key_exists($pluginDirectory, $cache)) {
+            return $cache[$pluginDirectory];
+        }
+
+        $pluginJsonPath = base_path("plugins/{$pluginDirectory}/plugin.json");
+        if (! file_exists($pluginJsonPath)) {
+            $cache[$pluginDirectory] = null;
+
+            return null;
+        }
+
+        $data = json_decode(file_get_contents($pluginJsonPath), true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $cache[$pluginDirectory] = null;
+
+            return null;
+        }
+
+        $assets = $data['declares']['assets'] ?? null;
+
+        // assets === false の場合はアセットなし
+        if ($assets === false) {
+            $cache[$pluginDirectory] = false;
+
+            return false;
+        }
+
+        // assets が配列の場合はそのまま返す
+        if (is_array($assets)) {
+            $cache[$pluginDirectory] = $assets;
+
+            return $assets;
+        }
+
+        // 未宣言
+        $cache[$pluginDirectory] = null;
+
+        return null;
+    }
+}
+
+if (! function_exists('get_theme_declared_assets')) {
+    /**
+     * テーマの theme.json から宣言されたアセット情報を取得
+     *
+     * @return array{common: string[], admin: string[], front: string[]}|false|null
+     *                                                                              アセット宣言がある場合は配列、false の場合はアセットなし、null の場合は未宣言
+     */
+    function get_theme_declared_assets(string $themeDirectory): array|false|null
+    {
+        static $cache = [];
+
+        if (array_key_exists($themeDirectory, $cache)) {
+            return $cache[$themeDirectory];
+        }
+
+        $themeJsonPath = base_path("themes/{$themeDirectory}/theme.json");
+        if (! file_exists($themeJsonPath)) {
+            $cache[$themeDirectory] = null;
+
+            return null;
+        }
+
+        $data = json_decode(file_get_contents($themeJsonPath), true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $cache[$themeDirectory] = null;
+
+            return null;
+        }
+
+        $assets = $data['assets'] ?? null;
+
+        if ($assets === false) {
+            $cache[$themeDirectory] = false;
+
+            return false;
+        }
+
+        if (is_array($assets)) {
+            $cache[$themeDirectory] = $assets;
+
+            return $assets;
+        }
+
+        $cache[$themeDirectory] = null;
+
+        return null;
+    }
+}
+
 if (! function_exists('load_active_assets')) {
     /**
      * 管理画面用：アクティブなテーマとプラグインのアセットを読み込む
@@ -327,10 +428,20 @@ if (! function_exists('load_active_assets')) {
         try {
             $activePlugins = DB::table('plugins')->whereNotNull('enabled_at')->get();
             foreach ($activePlugins as $plugin) {
-                $configKey = \Illuminate\Support\Str::snake($plugin->directory);
-                $commonAssets = config("{$configKey}.assets.common", ['js/app.js', 'scss/style.scss']);
-                $adminAssets = config("{$configKey}.assets.admin", []);
-                $output .= load_assets('plugin', $plugin->directory, array_merge($commonAssets, $adminAssets));
+                $declaredAssets = get_plugin_declared_assets($plugin->directory);
+
+                // assets === false または未宣言の場合はスキップ
+                if ($declaredAssets === false || $declaredAssets === null) {
+                    continue;
+                }
+
+                $commonAssets = $declaredAssets['common'] ?? [];
+                $adminAssets = $declaredAssets['admin'] ?? [];
+                $allAssets = array_merge($commonAssets, $adminAssets);
+
+                if (! empty($allAssets)) {
+                    $output .= load_assets('plugin', $plugin->directory, $allAssets);
+                }
             }
         } catch (\Exception $e) {
             // プラグインテーブルがない場合はスキップ
@@ -338,7 +449,17 @@ if (! function_exists('load_active_assets')) {
 
         // アクティブなテーマのアセットを読み込み
         $themeDirectory = get_active_theme_directory();
-        $output .= load_assets('theme', $themeDirectory, ['js/app.js', 'scss/style.scss']);
+        $themeDeclaredAssets = get_theme_declared_assets($themeDirectory);
+
+        if (is_array($themeDeclaredAssets)) {
+            $themeCommonAssets = $themeDeclaredAssets['common'] ?? [];
+            $themeAdminAssets = $themeDeclaredAssets['admin'] ?? [];
+            $allThemeAssets = array_merge($themeCommonAssets, $themeAdminAssets);
+
+            if (! empty($allThemeAssets)) {
+                $output .= load_assets('theme', $themeDirectory, $allThemeAssets);
+            }
+        }
 
         // 共通アセットを読み込み（Alpine.start() がここで実行される）
         $output .= load_assets('common', null, ['js/app.js', 'scss/style.scss']);
