@@ -35,6 +35,7 @@ composer.local.json
 DS_Store
 CLAUDE.md
 AGENTS.md
+PLUGIN-API.md
 
 # Dixlase カスタム
 # カスタムファイルを入れるディレクトリを除外

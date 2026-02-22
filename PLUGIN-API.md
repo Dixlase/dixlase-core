@@ -1,7 +1,7 @@
 # Dixlase CMS Plugin API Boundary
 
-**Version:** 0.0.96
-**Last Updated:** 2026-02-21
+**Version:** dev
+**Last Updated:** 2026-02-23
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -12,46 +12,46 @@ AGPL copyleft obligations under the Dixlase Plugin and Theme Exception.
 
 ## 1. Contracts / Interfaces
 
-### 1.1 Plugin Capability Contracts
+### 1.1 Service Contracts
 
 | Contract | Description |
 |---|---|
-| `App\Contracts\Plugin\PluginCapabilityInterface` | Base interface for plugin capabilities |
-| `App\Contracts\Plugin\MailCapableInterface` | Mail sending capability declaration |
-| `App\Contracts\Plugin\ContentProviderCapableInterface` | Content provision capability marker |
-| `App\Contracts\Plugin\ApiResourceProviderInterface` | API resource provision interface |
-| `App\Contracts\Plugin\SignatureVerifierInterface` | Signature verification contract |
+| `App\Contracts\CspPolicyProvider` | CSP Policy Provider Interface |
+| `App\Contracts\FileIntegrity\FileIntegrityServiceInterface` | ファイル整合性チェックサービスの契約 |
+| `App\Contracts\Logging\LogServiceInterface` | ログ出力サービスの契約 |
+| `App\Contracts\Mail\MailServiceInterface` | メール送信サービスの契約 |
+| `App\Contracts\TranslationResolver` | Translation Resolver Contract |
+| `App\Contracts\TwoFaInterface` | 二段階認証機能を持つユーザーのインターフェース |
 
 ### 1.2 Plugin Integration Contracts
 
 | Contract | Description |
 |---|---|
-| `App\Contracts\PluginIntegration\LinkableInterface` | Minimum contract for linkable content |
-| `App\Contracts\PluginIntegration\LinkableProviderInterface` | Content provider for menus/search |
-| `App\Contracts\PluginIntegration\PrivacyPolicyProviderInterface` | Privacy policy provider |
+| `App\Contracts\PluginIntegration\LinkableInterface` | リンク可能なコンテンツの最小契約 |
+| `App\Contracts\PluginIntegration\LinkableProviderInterface` | リンク可能なコンテンツを提供するプラグインの契約 |
+| `App\Contracts\PluginIntegration\PrivacyPolicyProviderInterface` | プライバシーポリシープロバイダーの契約 |
 
-### 1.3 Service Contracts
+### 1.3 Plugin Capability Contracts
 
 | Contract | Description |
 |---|---|
-| `App\Contracts\Mail\MailServiceInterface` | Unified mail service |
-| `App\Contracts\Logging\LogServiceInterface` | Unified logging service |
-| `App\Contracts\FileIntegrity\FileIntegrityServiceInterface` | File integrity audit service |
-| `App\Contracts\CspPolicyProvider` | CSP policy provider |
-| `App\Contracts\TwoFaInterface` | Two-factor authentication |
-| `App\Contracts\TranslationResolver` | Translation resolution |
+| `App\Contracts\Plugin\ApiResourceProviderInterface` | APIリソースプロバイダーインターフェース |
+| `App\Contracts\Plugin\ContentProviderCapableInterface` | コンテンツ提供機能を宣言するインターフェース |
+| `App\Contracts\Plugin\MailCapableInterface` | メール送信機能を宣言するインターフェース |
+| `App\Contracts\Plugin\PluginCapabilityInterface` | プラグイン機能宣言の基底インターフェース |
+| `App\Contracts\Plugin\SignatureVerifierInterface` | 署名検証コントラクト |
 
 ### 1.4 Repository Contracts
 
 | Contract | Description |
 |---|---|
-| `App\Contracts\Repositories\SettingRepositoryInterface` | Base settings repository |
-| `App\Contracts\Repositories\BaseSettingRepositoryInterface` | Base system settings |
-| `App\Contracts\Repositories\FrontSettingRepositoryInterface` | Front-end settings |
-| `App\Contracts\Repositories\SecuritySettingRepositoryInterface` | Security settings |
-| `App\Contracts\Repositories\MediaSettingRepositoryInterface` | Media settings |
-| `App\Contracts\Repositories\ApiSettingRepositoryInterface` | API settings |
-| `App\Contracts\Repositories\MediaRepositoryInterface` | Media CRUD operations |
+| `App\Contracts\Repositories\ApiSettingRepositoryInterface` | API設定リポジトリインターフェース |
+| `App\Contracts\Repositories\BaseSettingRepositoryInterface` | 基本設定リポジトリインターフェース |
+| `App\Contracts\Repositories\FrontSettingRepositoryInterface` | フロント設定リポジトリインターフェース |
+| `App\Contracts\Repositories\MediaRepositoryInterface` | メディアリポジトリインターフェース |
+| `App\Contracts\Repositories\MediaSettingRepositoryInterface` | メディア設定リポジトリインターフェース |
+| `App\Contracts\Repositories\SecuritySettingRepositoryInterface` | セキュリティ設定リポジトリインターフェース |
+| `App\Contracts\Repositories\SettingRepositoryInterface` | 設定リポジトリベースインターフェース |
 
 ---
 
@@ -59,14 +59,14 @@ AGPL copyleft obligations under the Dixlase Plugin and Theme Exception.
 
 | Trait | Description |
 |---|---|
-| `App\Traits\PluginLoaderTrait` | Plugin loading mechanism (routes, views, config, migrations, translations) |
-| `App\Traits\ThemeLoaderTrait` | Theme loading mechanism (views, config, translations) |
-| `App\Traits\ConfigLoaderTrait` | Configuration file loading utilities |
-| `App\Traits\CustomFilesLoaderTrait` | Custom file override loading |
-| `App\Traits\TranslatableTrait` | Translation support for models |
-| `App\Traits\AuditableTrait` | Audit trail support |
-| `App\Traits\HasPermissions` | Permission checking utilities |
-| `App\Traits\RegistersCspPolicy` | CSP policy registration |
+| `App\Traits\AuditableTrait` | モデルの監査ログ自動記録トレイト |
+| `App\Traits\ConfigLoaderTrait` | 設定ファイルローディングユーティリティ |
+| `App\Traits\CustomFilesLoaderTrait` | カスタムファイルオーバーライドローディング |
+| `App\Traits\HasPermissions` | HasPermissions Trait |
+| `App\Traits\PluginLoaderTrait` | プラグインリソースローディング機構 |
+| `App\Traits\RegistersCspPolicy` | CSPポリシー登録トレイト |
+| `App\Traits\ThemeLoaderTrait` | テーマリソースローディング機構 |
+| `App\Traits\TranslatableTrait` | Translatable Trait |
 
 ---
 
@@ -74,40 +74,37 @@ AGPL copyleft obligations under the Dixlase Plugin and Theme Exception.
 
 | Controller | Description |
 |---|---|
-| `App\Http\Controllers\Admin\AdminController` | Base admin controller with `initialize()` |
-| `App\Http\Controllers\Admin\AdminLoggedInController` | Admin controller with auth requirement |
+| `App\Http\Controllers\Admin\AdminController` | 管理画面基底コントローラー |
+| `App\Http\Controllers\Admin\AdminLoggedInController` | 認証必須の管理画面コントローラー |
 | `App\Http\Controllers\Install\BaseInstallController` | Base installation controller |
 
 ---
 
 ## 4. Data Transfer Objects (DTOs)
 
-### 4.1 Plugin DTOs
+### 4.1 API DTOs
 
-- `App\DTO\Plugin\SignatureVerificationResult`
-- `App\DTO\Plugin\HealthScoreResult`
-- `App\DTO\Plugin\HealthIssue`
-- `App\DTO\Plugin\DeclaresVerificationResult`
-- `App\DTO\Plugin\CapabilityResolutionResult`
+- `App\DTO\Api\ApiResourceCollection`
+- `App\DTO\Api\ApiResourceDTO`
 
-### 4.2 Mail DTOs
-
-- `App\DTO\Mail\MailMessageDTO`
-- `App\DTO\Mail\MailResultDTO`
-- `App\DTO\Mail\MailConfigDTO`
-- `App\DTO\Mail\MailAttachmentDTO`
-
-### 4.3 Logging DTOs
-
-- `App\DTO\Logging\LogEntryDTO`
-- `App\DTO\Logging\LogContextDTO`
-
-### 4.4 File Integrity DTOs
+### 4.2 File Integrity DTOs
 
 - `App\DTO\FileIntegrity\BaselineDTO`
 - `App\DTO\FileIntegrity\FileChangeDTO`
 - `App\DTO\FileIntegrity\ScanResultDTO`
 - `App\DTO\FileIntegrity\ScanTargetDTO`
+
+### 4.3 Logging DTOs
+
+- `App\DTO\Logging\LogContextDTO`
+- `App\DTO\Logging\LogEntryDTO`
+
+### 4.4 Mail DTOs
+
+- `App\DTO\Mail\MailAttachmentDTO`
+- `App\DTO\Mail\MailConfigDTO`
+- `App\DTO\Mail\MailMessageDTO`
+- `App\DTO\Mail\MailResultDTO`
 
 ### 4.5 Plugin Integration DTOs
 
@@ -116,52 +113,55 @@ AGPL copyleft obligations under the Dixlase Plugin and Theme Exception.
 - `App\DTO\PluginIntegration\PaginatedResultDTO`
 - `App\DTO\PluginIntegration\SearchQueryDTO`
 
-### 4.6 API DTOs
+### 4.6 Plugin DTOs
 
-- `App\DTO\Api\ApiResourceDTO`
-- `App\DTO\Api\ApiResourceCollection`
+- `App\DTO\Plugin\CapabilityResolutionResult`
+- `App\DTO\Plugin\DeclaresVerificationResult`
+- `App\DTO\Plugin\HealthIssue`
+- `App\DTO\Plugin\HealthScoreResult`
+- `App\DTO\Plugin\SignatureVerificationResult`
 
 ---
 
 ## 5. Enums
 
-### 5.1 User/Role Enums
+### 5.1 System Enums
 
-- `App\Enums\MemberRole` (super_admin, admin, editor, author, contributor, receptionist, guest)
-- `App\Enums\MemberStatus`
-- `App\Enums\Gender`
-
-### 5.2 Security Enums
-
-- `App\Enums\ExtensionSecurityLevel`
-- `App\Enums\ExtensionSecurityPreset`
-- `App\Enums\OperationRiskLevel`
-- `App\Enums\SecurityAction`
-- `App\Enums\TwoFaMethod`
-- `App\Enums\PasskeyMode`
-- `App\Enums\CspMode`
-- `App\Enums\CspBlocklistAction`
-
-### 5.3 Plugin/Theme Enums
-
-- `App\Enums\PluginHealthStatus`
-- `App\Enums\PluginVerificationStatus`
-- `App\Enums\PluginTrustLevel`
-
-### 5.4 System Enums
-
-- `App\Enums\AppEnvironment`
-- `App\Enums\Locale`
-- `App\Enums\LogLevel`
-- `App\Enums\ContentStatus`
-- `App\Enums\ContentStorageType`
-- `App\Enums\ContentEditorType`
 - `App\Enums\AdminMode`
+- `App\Enums\AppEnvironment`
 - `App\Enums\AppearanceMode`
 - `App\Enums\AuthenticationMode`
 - `App\Enums\CaptchaProvider`
+- `App\Enums\ContentEditorType`
+- `App\Enums\ContentStatus`
+- `App\Enums\ContentStorageType`
+- `App\Enums\Locale`
+- `App\Enums\LogLevel`
 - `App\Enums\MenuVisibility`
 - `App\Enums\Permission`
+
+### 5.2 Security Enums
+
+- `App\Enums\CspBlocklistAction`
+- `App\Enums\CspMode`
+- `App\Enums\ExtensionSecurityLevel`
+- `App\Enums\ExtensionSecurityPreset`
+- `App\Enums\OperationRiskLevel`
+- `App\Enums\PasskeyMode`
+- `App\Enums\SecurityAction`
+- `App\Enums\TwoFaMethod`
+
+### 5.3 User/Role Enums
+
+- `App\Enums\Gender`
+- `App\Enums\MemberRole`
+- `App\Enums\MemberStatus`
+
+### 5.4 Plugin/Theme Enums
+
+- `App\Enums\PluginHealthStatus`
+- `App\Enums\PluginTrustLevel`
+- `App\Enums\PluginVerificationStatus`
 
 ---
 
@@ -285,13 +285,13 @@ return [
 
 ### 9.1 Plugin/Theme Services
 
-The first four services below are `@api`-tagged and can be directly injected via DI.
+The services marked with `@api` below can be directly injected via DI.
 The remaining services are accessed via their respective interfaces (see Section 1).
 
-- `App\Services\Plugin\PluginServiceResolver` — `@api`, direct DI
-- `App\Services\Plugin\PluginPermissionService` — `@api`, direct DI
-- `App\Services\Plugin\PluginHealthScorer` — `@api`, direct DI
 - `App\Services\Plugin\DeclaresVerifier` — `@api`, direct DI
+- `App\Services\Plugin\PluginHealthScorer` — `@api`, direct DI
+- `App\Services\Plugin\PluginPermissionService` — `@api`, direct DI
+- `App\Services\Plugin\PluginServiceResolver` — `@api`, direct DI
 - `App\Services\Plugin\CoreSignatureVerifier` — use `SignatureVerifierInterface` instead
 - `App\Services\Theme\ThemePermissionService`
 - `App\Services\PluginMigrator`
@@ -452,6 +452,7 @@ class PluginNameServiceProvider extends ServiceProvider
   },
   "declares": {
     "configs": {"roles": false, "database_cleanup": false, "navigation": false},
+    "assets": {"common": ["js/app.js", "css/style.scss"], "admin": [], "front": []},
     "contracts": [],
     "migrations": false,
     "commands": false,
