@@ -31,6 +31,8 @@ use Illuminate\Support\Str;
  *
  * plugin.json の declares セクションと実際のファイル構成を照合し、
  * 宣言とファイルの不一致を検出します。
+ *
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
  */
 class DeclaresVerifier
 {

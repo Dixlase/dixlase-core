@@ -34,6 +34,8 @@ use Illuminate\Support\Str;
  *
  * plugin.jsonのpermissionsセクションを読み取り、
  * プラグインの権限チェックを行うサービスです。
+ *
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
  */
 class PluginPermissionService
 {

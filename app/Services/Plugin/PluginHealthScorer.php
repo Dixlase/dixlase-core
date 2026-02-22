@@ -33,6 +33,8 @@ use App\Models\PluginAudit;
  * PluginHealthStatus::getDeductionRules() を減点テーブルとして使用し、
  * 署名検証・権限整合性・CSP適合性・危険API検出・スキャン鮮度を評価して
  * 0-100点のスコアと健全性ステータスを返します。
+ *
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
  */
 class PluginHealthScorer
 {

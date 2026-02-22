@@ -285,11 +285,14 @@ return [
 
 ### 9.1 Plugin/Theme Services
 
-- `App\Services\Plugin\PluginServiceResolver`
-- `App\Services\Plugin\PluginPermissionService`
-- `App\Services\Plugin\PluginHealthScorer`
-- `App\Services\Plugin\DeclaresVerifier`
-- `App\Services\Plugin\CoreSignatureVerifier`
+The first four services below are `@api`-tagged and can be directly injected via DI.
+The remaining services are accessed via their respective interfaces (see Section 1).
+
+- `App\Services\Plugin\PluginServiceResolver` — `@api`, direct DI
+- `App\Services\Plugin\PluginPermissionService` — `@api`, direct DI
+- `App\Services\Plugin\PluginHealthScorer` — `@api`, direct DI
+- `App\Services\Plugin\DeclaresVerifier` — `@api`, direct DI
+- `App\Services\Plugin\CoreSignatureVerifier` — use `SignatureVerifierInterface` instead
 - `App\Services\Theme\ThemePermissionService`
 - `App\Services\PluginMigrator`
 - `App\Services\PluginMigrationRepository`
@@ -477,7 +480,30 @@ plugins/PluginName/lang/
 
 ---
 
-## 14. What Is NOT Part of the Plugin API
+## 14. `@api` PHPDoc Tag Convention
+
+All classes that form the Plugin API are annotated with the `@api` PHPDoc tag:
+
+```php
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ */
+```
+
+### Guidelines for Plugin Developers
+- **Safe to depend on:** Classes with `@api` tag are stable and covered by the license exception
+- **Avoid depending on:** Classes without `@api` tag are internal implementation details
+- **PHPStan enforcement:** DixlaseDevKit provides a PHPStan rule that warns about non-`@api` imports
+- **Quick check:** Run `dls:plugin:check-api {plugin-name}` to scan your plugin for non-API imports
+
+### Guidelines for Core Contributors
+- Add `@api` to any new class intended for plugin/theme use
+- Removing `@api` from an existing class is a breaking change requiring a major version bump
+- Run `dls:plugin:check-api` (DixlaseDevKit) to verify API surface consistency
+
+---
+
+## 15. What Is NOT Part of the Plugin API
 
 The following are **internal implementation details** and are NOT covered by the exception:
 
