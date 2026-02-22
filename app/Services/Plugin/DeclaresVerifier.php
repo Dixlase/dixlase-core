@@ -81,6 +81,10 @@ class DeclaresVerifier
         $middlewareIssues = $this->verifyMiddleware($pluginDir, $declares['middleware'] ?? false);
         $issues = array_merge($issues, $middlewareIssues);
 
+        // assets の検証
+        $assetIssues = $this->verifyAssets($pluginDir, $declares['assets'] ?? null);
+        $issues = array_merge($issues, $assetIssues);
+
         // 宣言数と実際の数を計算
         $declaredCount = $this->countDeclared($declares);
         $actualCount = $this->countActual($pluginDir);
@@ -242,6 +246,82 @@ class DeclaresVerifier
     }
 
     /**
+     * assets の検証
+     *
+     * @param  array{common?: string[], admin?: string[], front?: string[]}|false|null  $declaredAssets
+     * @return array<array{key: string, type: string, description: string}>
+     */
+    protected function verifyAssets(string $pluginDir, array|false|null $declaredAssets): array
+    {
+        $issues = [];
+        $resourceSrcDir = "{$pluginDir}/resources/src";
+        $hasAssetFiles = $this->hasAssetSourceFiles($resourceSrcDir);
+
+        if ($declaredAssets === false) {
+            // アセットなし宣言だが、実際にアセットファイルが存在する場合
+            if ($hasAssetFiles) {
+                $issues[] = [
+                    'key' => 'assets',
+                    'type' => 'exists_but_undeclared',
+                    'description' => 'resources/src/ にアセットファイルが存在しますが、declares.assets が false です。',
+                ];
+            }
+
+            return $issues;
+        }
+
+        if (is_array($declaredAssets)) {
+            // 宣言された各アセットファイルが存在するか検証
+            foreach (['common', 'admin', 'front'] as $scope) {
+                $files = $declaredAssets[$scope] ?? [];
+                foreach ($files as $file) {
+                    $filePath = "{$resourceSrcDir}/{$file}";
+                    if (! File::exists($filePath)) {
+                        $issues[] = [
+                            'key' => "assets.{$scope}.{$file}",
+                            'type' => 'declared_but_missing',
+                            'description' => "declares.assets.{$scope} に {$file} が宣言されていますが、resources/src/{$file} が存在しません。",
+                        ];
+                    }
+                }
+            }
+
+            return $issues;
+        }
+
+        // 未宣言（null）だが、実際にアセットファイルが存在する場合
+        if ($hasAssetFiles) {
+            $issues[] = [
+                'key' => 'assets',
+                'type' => 'exists_but_undeclared',
+                'description' => 'resources/src/ にアセットファイルが存在しますが、declares.assets が未宣言です。',
+            ];
+        }
+
+        return $issues;
+    }
+
+    /**
+     * resources/src/ 配下にアセットソースファイルが存在するか
+     */
+    protected function hasAssetSourceFiles(string $resourceSrcDir): bool
+    {
+        if (! File::isDirectory($resourceSrcDir)) {
+            return false;
+        }
+
+        // js/ または css/ ディレクトリにファイルがあるか確認
+        foreach (['js', 'css', 'admin'] as $subDir) {
+            $dir = "{$resourceSrcDir}/{$subDir}";
+            if (File::isDirectory($dir) && count(File::allFiles($dir)) > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * 宣言されたアイテム数を計算
      */
     protected function countDeclared(?array $declares): int
@@ -267,6 +347,11 @@ class DeclaresVerifier
             if ($declares[$key] ?? false) {
                 $count++;
             }
+        }
+
+        // assets（false でも宣言としてカウント、null/未設定はカウントしない）
+        if (array_key_exists('assets', $declares)) {
+            $count++;
         }
 
         return $count;
@@ -306,6 +391,11 @@ class DeclaresVerifier
         // middleware
         $middlewareDir = "{$pluginDir}/app/Http/Middleware";
         if (File::isDirectory($middlewareDir) && count(File::files($middlewareDir)) > 0) {
+            $count++;
+        }
+
+        // assets（resources/src/ にアセットファイルが存在するか）
+        if ($this->hasAssetSourceFiles("{$pluginDir}/resources/src")) {
             $count++;
         }
 

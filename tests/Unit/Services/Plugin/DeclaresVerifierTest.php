@@ -162,6 +162,116 @@ class DeclaresVerifierTest extends TestCase
     }
 
     /**
+     * assets 宣言あり + ファイルが存在する場合は問題なしのテスト
+     */
+    public function test_verify_assets_clean_when_declared_files_exist(): void
+    {
+        $pluginDir = $this->createTempPlugin(
+            declares: [
+                'configs' => ['roles' => false, 'database_cleanup' => false, 'navigation' => false],
+                'assets' => ['common' => ['js/app.js', 'css/style.scss'], 'admin' => [], 'front' => []],
+                'contracts' => [],
+                'migrations' => false,
+                'commands' => false,
+                'middleware' => false,
+            ],
+            files: ['resources/src/js/app.js', 'resources/src/css/style.scss']
+        );
+
+        try {
+            $result = $this->verifier->verify('test-plugin');
+
+            $assetIssues = collect($result->issues)->filter(fn ($i) => str_starts_with($i['key'], 'assets'));
+            $this->assertCount(0, $assetIssues);
+        } finally {
+            File::deleteDirectory($pluginDir);
+        }
+    }
+
+    /**
+     * assets 宣言あり + ファイルなしを検出するテスト
+     */
+    public function test_verify_assets_declared_but_missing(): void
+    {
+        $pluginDir = $this->createTempPlugin(
+            declares: [
+                'configs' => ['roles' => false, 'database_cleanup' => false, 'navigation' => false],
+                'assets' => ['common' => ['js/app.js', 'css/style.scss'], 'admin' => [], 'front' => []],
+                'contracts' => [],
+                'migrations' => false,
+                'commands' => false,
+                'middleware' => false,
+            ],
+            files: []
+        );
+
+        try {
+            $result = $this->verifier->verify('test-plugin');
+
+            $assetIssues = collect($result->issues)->filter(fn ($i) => str_starts_with($i['key'], 'assets'));
+            $this->assertCount(2, $assetIssues);
+            $this->assertTrue($assetIssues->every(fn ($i) => $i['type'] === 'declared_but_missing'));
+        } finally {
+            File::deleteDirectory($pluginDir);
+        }
+    }
+
+    /**
+     * assets: false 宣言でファイルがある場合を検出するテスト
+     */
+    public function test_verify_assets_false_but_files_exist(): void
+    {
+        $pluginDir = $this->createTempPlugin(
+            declares: [
+                'configs' => ['roles' => false, 'database_cleanup' => false, 'navigation' => false],
+                'assets' => false,
+                'contracts' => [],
+                'migrations' => false,
+                'commands' => false,
+                'middleware' => false,
+            ],
+            files: ['resources/src/js/app.js']
+        );
+
+        try {
+            $result = $this->verifier->verify('test-plugin');
+
+            $assetIssues = collect($result->issues)->filter(fn ($i) => str_starts_with($i['key'], 'assets'));
+            $this->assertCount(1, $assetIssues);
+            $this->assertEquals('exists_but_undeclared', $assetIssues->first()['type']);
+        } finally {
+            File::deleteDirectory($pluginDir);
+        }
+    }
+
+    /**
+     * assets: false 宣言でファイルもない場合は問題なしのテスト
+     */
+    public function test_verify_assets_false_and_no_files_is_clean(): void
+    {
+        $pluginDir = $this->createTempPlugin(
+            declares: [
+                'configs' => ['roles' => false, 'database_cleanup' => false, 'navigation' => false],
+                'assets' => false,
+                'contracts' => [],
+                'migrations' => false,
+                'commands' => false,
+                'middleware' => false,
+            ],
+            files: []
+        );
+
+        try {
+            $result = $this->verifier->verify('test-plugin');
+
+            $assetIssues = collect($result->issues)->filter(fn ($i) => str_starts_with($i['key'], 'assets'));
+            $this->assertCount(0, $assetIssues);
+        } finally {
+            File::deleteDirectory($pluginDir);
+        }
+    }
+
+    /**
      * declaredCount と actualCount が正しいテスト
      */
     public function test_counts_are_correct(): void
@@ -169,6 +279,7 @@ class DeclaresVerifierTest extends TestCase
         $pluginDir = $this->createTempPlugin(
             declares: [
                 'configs' => ['roles' => true, 'database_cleanup' => false, 'navigation' => true],
+                'assets' => ['common' => ['js/app.js'], 'admin' => [], 'front' => []],
                 'contracts' => [],
                 'migrations' => true,
                 'commands' => false,
@@ -178,14 +289,17 @@ class DeclaresVerifierTest extends TestCase
                 'config/admin/roles.php',
                 'config/admin/navigation.php',
                 'database/migrations/2025_01_01_test.php',
+                'resources/src/js/app.js',
             ]
         );
 
         try {
             $result = $this->verifier->verify('test-plugin');
 
-            $this->assertEquals(3, $result->declaredCount);
-            $this->assertEquals(3, $result->actualCount);
+            // configs(2) + assets(1) + migrations(1) = 4
+            $this->assertEquals(4, $result->declaredCount);
+            // configs(2) + assets(1) + migrations(1) = 4
+            $this->assertEquals(4, $result->actualCount);
         } finally {
             File::deleteDirectory($pluginDir);
         }
