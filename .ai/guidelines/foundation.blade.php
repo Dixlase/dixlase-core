@@ -4,12 +4,12 @@ $bladePhp = '@' . 'php';
 $bladeEndPhp = '@' . 'endphp';
 $bladeEcho = '{{ $var ?? \'default\' }}';
 @endphp
-# Laravel Boost Guidelines
+# Laravel Boost ガイドライン
 
-The Laravel Boost guidelines are specifically curated by Laravel maintainers for this application. These guidelines should be followed closely to enhance the user's satisfaction building Laravel applications.
+Laravel Boost ガイドラインは Laravel メンテナーによってこのアプリケーション専用に作成されたものです。ユーザー満足度を高めるため、このガイドラインに忠実に従ってください。
 
-## Foundational Context
-This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
+## 基本コンテキスト
+このアプリケーションは Laravel アプリケーションであり、主要な Laravel エコシステムのパッケージとバージョンは以下の通りです。全てに精通してください。これらの特定のパッケージとバージョンを遵守すること。
 
 - php - {{ PHP_VERSION }}
 @foreach (app(\Laravel\Roster\Roster::class)->packages()->unique(fn ($package) => $package->rawName()) as $package)
@@ -17,31 +17,31 @@ This application is a Laravel application and its main Laravel ecosystems packag
 @endforeach
 
 @if (! empty(config('boost.purpose')))
-Application purpose: {!! config('boost.purpose') !!}
+アプリケーションの目的: {!! config('boost.purpose') !!}
 
 @endif
 
 @if($assist->hasSkillsEnabled() && $assist->skills()->isNotEmpty())
-## Activating Skills
+## スキルの有効化
 
-This project has domain-specific skills available. Always activate the relevant skill when working in that domain.
+このプロジェクトにはドメイン固有のスキルが用意されています。該当ドメインの作業時は常に関連スキルを有効化してください。
 
 @foreach($assist->skills() as $skill)
 - `{{ $skill->name }}` — {{ $skill->description }}
 @endforeach
 @endif
 
-## Conventions
-- You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, naming.
-- Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
-- Check for existing components to reuse before writing a new one.
+## 規約
+- このアプリケーションの既存コード規約に必ず従うこと。ファイルの作成・編集時は、隣接ファイルの構造、アプローチ、命名を確認する
+- 変数やメソッドには説明的な名前を使用する。例: `isRegisteredForDiscounts` であり `discount()` ではない
+- 新しいコンポーネントを作成する前に、再利用可能な既存コンポーネントを確認する
 
-## Git Commit Messages
-- Do not include `Co-Authored-By` lines in commit messages.
-- Use conventional commit format (e.g. `feat:`, `fix:`, `refactor:`).
-- Write the commit message in **bilingual format**.
-- Place both English and Japanese titles consecutively at the top, followed by English bullet points, a `----` separator, then Japanese bullet points.
-- Example:
+## Git コミットメッセージ
+- コミットメッセージに `Co-Authored-By` 行を含めない
+- conventional commit 形式を使用する（例: `feat:`, `fix:`, `refactor:`）
+- コミットメッセージは**日英バイリンガル形式**で記述する
+- タイトルは英語・日本語を連続して冒頭に配置し、その後に英語の箇条書き、`----` 区切り、日本語の箇条書きの順
+- 例:
   ```
   feat: add user profile page
   feat: ユーザープロフィールページを追加
@@ -55,24 +55,24 @@ This project has domain-specific skills available. Always activate the relevant 
   - アバターアップロード付きプロフィールBladeビューを作成
   ```
 
-## View Logic Separation Rules
-- Do not directly reference `\App\Enums\*`, `\App\Helpers\*`, `\App\Services\*`, `\App\Models\*` classes in Blade templates.
-- Prepare all enum values/labels/option arrays, helper results, and service results in controllers and pass them as view variables.
-- Blade components receive necessary data as props (injected from parent views/controllers).
-- Exception: Helper calls in shared full-screen partials (e.g. sidebar) are allowed.
-- **`{!! $bladePhp !!}` blocks are forbidden in admin Blade views** (except shared full-screen partials like sidebar).
-  - Business logic, data transformations, and config array building must be done in controllers or Presenters.
-  - Allowed exceptions: inline expressions like `{!! $bladeEcho !!}`, inline use of `old()` helper, simple variable assignments like `{!! $bladePhp !!} $appearanceValue = old('appearance', ...) {!! $bladeEndPhp !!}`.
+## ビューロジック分離ルール
+- Blade テンプレート内で `\App\Enums\*`, `\App\Helpers\*`, `\App\Services\*`, `\App\Models\*` クラスを直接参照しない
+- enum の値/ラベル/オプション配列、ヘルパー結果、サービス結果は全てコントローラーで準備し、ビュー変数として渡す
+- Blade コンポーネントは必要なデータをプロパティとして受け取る（親ビュー/コントローラーから注入）
+- 例外: 共有フルスクリーンパーシャル（例: サイドバー）でのヘルパー呼び出しは許可
+- **管理画面の Blade ビューでは `{!! $bladePhp !!}` ブロック禁止**（サイドバーなどの共有フルスクリーンパーシャルを除く）
+  - ビジネスロジック、データ変換、config 配列の構築はコントローラーまたは Presenter で行うこと
+  - 許可される例外: `{!! $bladeEcho !!}` のようなインライン式、`old()` ヘルパーのインライン使用、`{!! $bladePhp !!} $appearanceValue = old('appearance', ...) {!! $bladeEndPhp !!}` のような単純な変数代入
 
-## Translation Key Scoping
-- `lang/*/admin/navigation.php` is a sidebar-only translation file. Do not reference it from non-sidebar views.
-- Each view defines its translation keys in its own translation file (e.g. `lang/*/admin/settings/base/index.php`).
-- Components define their translation keys in `lang/*/components/<component-name>.php`.
+## 翻訳キーのスコープ
+- `lang/*/admin/navigation.php` はサイドバー専用の翻訳ファイル。サイドバー以外のビューから参照しないこと
+- 各ビューは独自の翻訳ファイルに翻訳キーを定義する（例: `lang/*/admin/settings/base/index.php`）
+- コンポーネントは `lang/*/components/<component-name>.php` に翻訳キーを定義する
 
-### Plugin Translation File Structure
-- Plugins use a directory-based structure: `lang/{en,ja}/admin/{resource}/{page}.php`.
-- `admin.php` should only contain plugin info (plugin, provider). Page-specific translations go in separate files.
-- Each admin page translation file must have `heading` and `description` keys at the top:
+### プラグイン翻訳ファイル構成
+- プラグインはディレクトリベースの構成を使用: `lang/{en,ja}/admin/{resource}/{page}.php`
+- `admin.php` にはプラグイン情報（plugin, provider）のみを含める。ページ固有の翻訳は別ファイルにする
+- 各管理ページの翻訳ファイルには先頭に `heading` と `description` キーが必要:
   ```php
   return [
       'heading' => 'Page Master',
@@ -80,21 +80,21 @@ This project has domain-specific skills available. Always activate the relevant 
       // other keys
   ];
   ```
-- `heading`: Auto-resolved by `resolvePluginHeadingKey()` (converts route name to directory path).
-- `description`: A 1-2 sentence description of what can be done on that page.
+- `heading`: `resolvePluginHeadingKey()` により自動解決（ルート名をディレクトリパスに変換）
+- `description`: そのページで何ができるかを1〜2文で説明
 
-## Verification Scripts
-- Do not create verification scripts or tinker when tests cover that functionality and prove it works. Unit and feature tests are more important.
+## 検証スクリプト
+- テストがその機能をカバーし動作を証明している場合、検証スクリプトや tinker を作成しない。ユニットテストとフィーチャーテストの方が重要
 
-## Application Structure & Architecture
-- Stick to existing directory structure - don't create new base folders without approval.
-- Do not change the application's dependencies without approval.
+## アプリケーション構成とアーキテクチャ
+- 既存のディレクトリ構成に従う — 承認なしに新しいベースフォルダを作成しない
+- 承認なしにアプリケーションの依存関係を変更しない
 
-## Frontend Bundling
-- If the user doesn't see a frontend change reflected in the UI, it could mean they need to run `{{ $assist->nodePackageManagerCommand('run build') }}`, `{{ $assist->nodePackageManagerCommand('run dev') }}`, or `{{ $assist->composerCommand('run dev') }}`. Ask them.
+## フロントエンドバンドル
+- フロントエンドの変更がUIに反映されない場合、`{{ $assist->nodePackageManagerCommand('run build') }}`、`{{ $assist->nodePackageManagerCommand('run dev') }}`、または `{{ $assist->composerCommand('run dev') }}` の実行が必要な可能性がある。ユーザーに確認する
 
-## Documentation Files
-- You must only create documentation files if explicitly requested by the user.
+## ドキュメントファイル
+- ドキュメントファイルはユーザーが明示的に要求した場合のみ作成すること
 
-## Replies
-- Be concise in your explanations - focus on what's important rather than explaining obvious details.
+## 応答
+- 説明は簡潔に — 自明な詳細の説明ではなく重要な点に集中する

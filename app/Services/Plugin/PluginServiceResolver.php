@@ -42,6 +42,8 @@ use Illuminate\Support\Facades\Log;
  * $resolver = app(PluginServiceResolver::class);
  * $result = $resolver->resolve(MailCapableInterface::class);
  * ```
+ *
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
  */
 class PluginServiceResolver
 {
