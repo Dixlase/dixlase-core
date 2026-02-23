@@ -21,17 +21,15 @@
  */
 
 return [
-    'locale' => [
-        'default' => 'en',
-        'available' => [
-            'ja' => [
-                'name' => '日本語',
-                'faker_locale' => 'ja_JA',
-            ],
-            'en' => [
-                'name' => 'English',
-                'faker_locale' => 'en_EN',
-            ],
+    'default' => 'en',
+    'available' => [
+        'ja' => [
+            'name' => '日本語',
+            'faker_locale' => 'ja_JA',
+        ],
+        'en' => [
+            'name' => 'English',
+            'faker_locale' => 'en_EN',
         ],
     ],
 ];

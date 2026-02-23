@@ -22,19 +22,17 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
+use App\Console\Traits\PluginManagementTrait;
 use App\Services\PluginMigrator;
+use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use App\Console\Traits\PluginManagementTrait;
-
 
 class PluginInstall extends Command
 {
-
     use PluginManagementTrait;
 
     /**
@@ -58,12 +56,13 @@ class PluginInstall extends Command
     {
         //
         $pluginName = $this->argument('pluginName');
-        $pluginPath = base_path('plugins/' . $pluginName);
-        $pluginJsonPath = $pluginPath . '/plugin.json';
-        $composerPath = $pluginPath . '/composer.json';
+        $pluginPath = base_path('plugins/'.$pluginName);
+        $pluginJsonPath = $pluginPath.'/plugin.json';
+        $composerPath = $pluginPath.'/composer.json';
 
-        if (!File::exists($pluginPath)) {
+        if (! File::exists($pluginPath)) {
             $this->error(__('admin/command.plugin.not_exists'));
+
             return;
         }
 
@@ -101,28 +100,29 @@ class PluginInstall extends Command
 
             if (json_last_error() !== JSON_ERROR_NONE) {
                 $this->error(__('admin/command.make_plugin.installation.composer_parse_error', [
-                    'error' => json_last_error_msg()
+                    'error' => json_last_error_msg(),
                 ]));
+
                 return;
             }
 
             $packageName = $packageName ?? $composerData['name'] ?? null;
             $description = $description ?? $composerData['description'] ?? null;
             $license = $license ?? $composerData['license'] ?? null;
-            
+
             if ($version === '1.0.0') {
                 $version = $composerData['version'] ?? '1.0.0';
             }
 
             // 作者情報の取得
-            if (!$author) {
+            if (! $author) {
                 $authors = $composerData['authors'] ?? [];
                 $firstAuthor = $authors[0] ?? [];
                 $author = $firstAuthor['name'] ?? null;
                 $email = $email ?? $firstAuthor['email'] ?? null;
                 $web = $web ?? $firstAuthor['homepage'] ?? null;
             }
-            
+
             $slug = $slug ?? $composerData['extra']['slug'] ?? Str::slug(Str::headline($pluginName), '-');
         }
 
@@ -140,18 +140,28 @@ class PluginInstall extends Command
                 'email' => $email,
                 'url' => $web,
                 'version' => $version, // composer.json から取得
-                'installed_at' => now()
+                'installed_at' => now(),
             ]
         );
 
         $this->info(__('admin/command.make_plugin.installation.installed', [
-            'pluginName' => $pluginName
+            'pluginName' => $pluginName,
         ]));
 
         // マイグレーションを実行
         $this->info(__('admin/command.make_plugin.installation.migrating'));
         $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $slug);
         $migrator->migrate($pluginName);
+
+        // シーダーを実行（DatabaseSeederが存在する場合のみ）
+        $seederClass = "Plugins\\{$pluginName}\\Database\\Seeders\\DatabaseSeeder";
+        if (class_exists($seederClass)) {
+            $this->info(__('admin/command.make_plugin.installation.seeding'));
+            $this->call('dls:plugin:seed', [
+                'plugin' => $pluginName,
+                '--force' => true,
+            ]);
+        }
 
         // 注意: composer.local.jsonと.git/info/excludeの更新は、
         // プラグイン作成時（make:plugin）に既に行われているため、ここでは不要
@@ -160,24 +170,24 @@ class PluginInstall extends Command
         // Web経由での実行時は対話的入力ができないため、--enableオプションの有無のみで判断
         if ($this->option('enable')) {
             $this->call('dls:plugin:enable', [
-                'pluginName' => $pluginName
+                'pluginName' => $pluginName,
             ]);
-        } elseif (app()->runningInConsole() && !app()->runningUnitTests()) {
+        } elseif (app()->runningInConsole() && ! app()->runningUnitTests()) {
             // CLIからの実行時のみ確認プロンプトを表示
             if ($this->confirm(__('admin/command.make_plugin.installation.enable_confirm', [
-                'pluginName' => $pluginName
+                'pluginName' => $pluginName,
             ]), false)) {
                 $this->call('dls:plugin:enable', [
-                    'pluginName' => $pluginName
+                    'pluginName' => $pluginName,
                 ]);
             } else {
                 $this->info(__('admin/command.make_plugin.installation.enable_skipped', [
-                    'pluginName' => $pluginName
+                    'pluginName' => $pluginName,
                 ]));
             }
         } else {
             $this->info(__('admin/command.make_plugin.installation.enable_skipped', [
-                'pluginName' => $pluginName
+                'pluginName' => $pluginName,
             ]));
         }
     }
