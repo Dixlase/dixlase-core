@@ -62,7 +62,7 @@ return [
         'completed' => 'プラグインのスキャンが完了しました。',
         'failed' => 'プラグインのスキャンに失敗しました。',
     ],
-    
+
     // バッジラベル（カード表示用）
     'badge_labels' => [
         'health' => '健全性',
@@ -204,9 +204,10 @@ return [
 
     // コントローラーメッセージ
     'messages' => [
-        'install_success' => 'プラグインが正常にインストールされました。プラグインを使用するには :enable_link から有効化してください。',
+        'install_success' => 'プラグインが正常にインストールされました。',
         'install_success_no_plugin' => 'プラグインが正常にインストールされました。',
         'enable_here' => 'こちら',
+        'enable_prompt' => 'プラグイン「:name」を有効化できます。',
         'install_failed' => 'プラグインのインストールに失敗しました: :error',
         'install_directory_not_found' => 'プラグインディレクトリが見つかりません。',
         'uninstall_success' => 'プラグインをアンインストールしました',
@@ -245,6 +246,7 @@ return [
         'enable_warning_title' => '有効化前の確認',
         'enable_warning_message' => 'プラグイン「:name」には以下の注意点があります：',
         'enable_warning_confirm' => '上記を理解した上で有効化しますか？',
+        'enable_confirm_simple' => 'プラグイン「:name」を有効化しますか？',
         'enable_warning_invalid_signature' => '署名が無効です（改ざんの可能性）',
         'enable_warning_needs_attention' => '確認が必要な権限を使用しています',
         'enable_warning_high_risk' => '高い健全性リスクがあります',

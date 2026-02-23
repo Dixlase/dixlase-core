@@ -21,14 +21,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 インストール済み・未インストールの両方で使用
 --}}
 
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all duration-200 flex flex-col group">
+<div x-data class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all duration-200 flex flex-col group">
     {{-- サムネイル --}}
     <div class="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
         <img
             src="{{ $card['thumbnailUrl'] }}"
             alt="{{ $card['name'] }}"
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onerror="this.src='{{ asset('assets/images/plugin-default.svg') }}'"
+            x-on:error="$el.src='{{ asset('assets/images/plugin-default.svg') }}'"
         >
         {{-- ステータスバッジ（オーバーレイ） --}}
         <div class="absolute top-3 right-3">
@@ -79,7 +79,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/plugins/index.badge_labels.health') }}</span>
                 <button type="button"
                         class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $card['badgeColor'] }} cursor-pointer hover:opacity-80 transition-opacity"
-                        @click="openModal('{{ $card['permissionModalId'] }}')"
+                        @click="openModal('{{ $card['permissionModalId'] }}')">
                     <i class="{{ $card['badgeIcon'] }} mr-1"></i>
                     {{ $card['badgeLabel'] }}
                     <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
