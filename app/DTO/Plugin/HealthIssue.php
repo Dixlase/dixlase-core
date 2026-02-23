@@ -5,7 +5,7 @@ namespace App\DTO\Plugin;
 use JsonSerializable;
 
 /**
- * @api プラグイン/テーマから使用可能な安定APIです
+ * @internal コア専用。プラグイン/テーマから参照しないこと
  *
  * 健全性チェックで検出された問題を表すDTO
  */
