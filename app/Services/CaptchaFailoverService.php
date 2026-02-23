@@ -28,8 +28,10 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
+ *
  * CAPTCHAフェイルオーバーサービス
- * 
+ *
  * 複数のCAPTCHAサービスを管理し、障害時に自動/手動で切り替え可能にする
  */
 class CaptchaFailoverService
@@ -38,14 +40,18 @@ class CaptchaFailoverService
      * キャッシュキー
      */
     private const CACHE_KEY_FAILURE_COUNT = 'captcha_failure_count';
+
     private const CACHE_KEY_LAST_FAILURE = 'captcha_last_failure';
+
     private const CACHE_KEY_ACTIVE_PROVIDER = 'captcha_active_provider';
 
     /**
      * フェイルオーバー設定
      */
     private const FAILURE_THRESHOLD = 3;  // この回数連続失敗でフェイルオーバー
+
     private const FAILURE_WINDOW_MINUTES = 5;  // 失敗カウントのウィンドウ
+
     private const COOLDOWN_MINUTES = 30;  // フェイルオーバー後のクールダウン
 
     /**
@@ -69,7 +75,7 @@ class CaptchaFailoverService
     public static function getProviderConfig(string $provider): array
     {
         $prefix = self::getProviderPrefix($provider);
-        
+
         return [
             'site_key' => SecuritySetting::get("{$prefix}_site_key", ''),
             'secret_key' => SecuritySetting::get("{$prefix}_secret_key", ''),
@@ -134,7 +140,7 @@ class CaptchaFailoverService
 
         foreach (CaptchaProvider::cases() as $provider) {
             $config = self::getProviderConfig($provider->value);
-            if (!empty($config['site_key']) && !empty($config['secret_key'])) {
+            if (! empty($config['site_key']) && ! empty($config['secret_key'])) {
                 $providers[$provider->value] = [
                     'provider' => $provider,
                     'config' => $config,
@@ -175,8 +181,8 @@ class CaptchaFailoverService
     public static function getFailoverPriority(): array
     {
         $priority = SecuritySetting::get('captcha_failover_priority', '');
-        
-        if (!empty($priority)) {
+
+        if (! empty($priority)) {
             return array_filter(explode(',', $priority));
         }
 
@@ -201,11 +207,11 @@ class CaptchaFailoverService
      */
     public static function recordFailure(string $provider, string $errorType): void
     {
-        $cacheKey = self::CACHE_KEY_FAILURE_COUNT . ":{$provider}";
+        $cacheKey = self::CACHE_KEY_FAILURE_COUNT.":{$provider}";
         $count = Cache::get($cacheKey, 0) + 1;
-        
+
         Cache::put($cacheKey, $count, now()->addMinutes(self::FAILURE_WINDOW_MINUTES));
-        Cache::put(self::CACHE_KEY_LAST_FAILURE . ":{$provider}", [
+        Cache::put(self::CACHE_KEY_LAST_FAILURE.":{$provider}", [
             'time' => now()->toIso8601String(),
             'error' => $errorType,
         ], now()->addMinutes(self::FAILURE_WINDOW_MINUTES));
@@ -228,7 +234,7 @@ class CaptchaFailoverService
      */
     public static function recordSuccess(string $provider): void
     {
-        $cacheKey = self::CACHE_KEY_FAILURE_COUNT . ":{$provider}";
+        $cacheKey = self::CACHE_KEY_FAILURE_COUNT.":{$provider}";
         Cache::forget($cacheKey);
     }
 
@@ -239,10 +245,11 @@ class CaptchaFailoverService
     {
         $failoverProvider = self::getFailoverProvider();
 
-        if (!$failoverProvider) {
+        if (! $failoverProvider) {
             Log::error('CAPTCHA auto-failover failed: no available failover provider', [
                 'failed_provider' => $failedProvider,
             ]);
+
             return;
         }
 
@@ -284,20 +291,22 @@ class CaptchaFailoverService
     {
         $configuredProviders = self::getConfiguredProviders();
 
-        if (!isset($configuredProviders[$provider])) {
+        if (! isset($configuredProviders[$provider])) {
             Log::error('CAPTCHA switch failed: provider not configured', [
                 'provider' => $provider,
             ]);
+
             return false;
         }
 
         $config = $configuredProviders[$provider]['config'];
-        if (!$config['enabled'] || !$config['verified']) {
+        if (! $config['enabled'] || ! $config['verified']) {
             Log::error('CAPTCHA switch failed: provider not enabled or verified', [
                 'provider' => $provider,
                 'enabled' => $config['enabled'],
                 'verified' => $config['verified'],
             ]);
+
             return false;
         }
 
@@ -346,11 +355,11 @@ class CaptchaFailoverService
     public static function resetToDefault(): void
     {
         Cache::forget(self::CACHE_KEY_ACTIVE_PROVIDER);
-        
+
         // 全プロバイダーの失敗カウントをリセット
         foreach (CaptchaProvider::cases() as $provider) {
-            Cache::forget(self::CACHE_KEY_FAILURE_COUNT . ":{$provider->value}");
-            Cache::forget(self::CACHE_KEY_LAST_FAILURE . ":{$provider->value}");
+            Cache::forget(self::CACHE_KEY_FAILURE_COUNT.":{$provider->value}");
+            Cache::forget(self::CACHE_KEY_LAST_FAILURE.":{$provider->value}");
         }
 
         Log::info('CAPTCHA provider reset to default');
@@ -395,12 +404,12 @@ class CaptchaFailoverService
 
         foreach (CaptchaProvider::cases() as $provider) {
             $config = self::getProviderConfig($provider->value);
-            $failureCount = Cache::get(self::CACHE_KEY_FAILURE_COUNT . ":{$provider->value}", 0);
-            $lastFailure = Cache::get(self::CACHE_KEY_LAST_FAILURE . ":{$provider->value}");
+            $failureCount = Cache::get(self::CACHE_KEY_FAILURE_COUNT.":{$provider->value}", 0);
+            $lastFailure = Cache::get(self::CACHE_KEY_LAST_FAILURE.":{$provider->value}");
 
             $status['configured_providers'][$provider->value] = [
                 'label' => $provider->label(),
-                'configured' => !empty($config['site_key']) && !empty($config['secret_key']),
+                'configured' => ! empty($config['site_key']) && ! empty($config['secret_key']),
                 'enabled' => $config['enabled'],
                 'verified' => $config['verified'],
                 'failure_count' => $failureCount,
@@ -422,7 +431,7 @@ class CaptchaFailoverService
             CaptchaProvider::GOOGLE->value => 'captcha_google',
             CaptchaProvider::GOOGLE_ENTERPRISE->value => 'captcha_google_enterprise',
             CaptchaProvider::TURNSTILE->value => 'captcha_turnstile',
-            default => 'captcha_' . $provider,
+            default => 'captcha_'.$provider,
         };
     }
 

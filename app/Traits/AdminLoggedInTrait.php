@@ -24,6 +24,11 @@ namespace App\Traits;
 use App\Enums\AppearanceMode;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
+ * 管理画面ログイン後の共通初期化トレイト
+ */
 trait AdminLoggedInTrait
 {
     protected $member;

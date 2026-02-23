@@ -26,6 +26,8 @@ use App\Contracts\Repositories\FrontSettingRepositoryInterface;
 use App\Models\FrontSetting;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * フロント設定リポジトリ実装
  */
 class FrontSettingRepository extends AbstractSettingRepository implements FrontSettingRepositoryInterface

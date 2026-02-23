@@ -23,6 +23,8 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * ミドルウェア登録の検出パターン
  *
  * system.register_middleware を検出します。

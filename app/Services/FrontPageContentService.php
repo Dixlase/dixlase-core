@@ -25,6 +25,8 @@ namespace App\Services;
 use App\Models\FrontPage;
 
 /**
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
+ *
  * フロントページコンテンツサービス
  * コアのContentFileServiceを継承し、フロントページ固有の機能を追加
  */
@@ -44,28 +46,28 @@ class FrontPageContentService extends ContentFileService
      * 構造: {basePath}/content.{locale}.{extension}
      * デフォルト言語はファイル名に言語コードを付けない
      *
-     * @param string $slug スラッグ（フロントページでは使用しない）
-     * @param string $locale 言語コード
-     * @param string $editorType エディタータイプ
+     * @param  string  $slug  スラッグ（フロントページでは使用しない）
+     * @param  string  $locale  言語コード
+     * @param  string  $editorType  エディタータイプ
      * @return string ファイルパス
      */
     public function getFilePath(string $slug, string $locale, string $editorType): string
     {
         $extension = $this->extensions[$editorType] ?? 'txt';
-        
+
         // デフォルト言語はファイル名に言語コードを付けない
         if ($locale === $this->defaultLocale) {
             return "{$this->basePath}/content.{$extension}";
         }
-        
+
         return "{$this->basePath}/content.{$locale}.{$extension}";
     }
 
     /**
      * フロントページのコンテンツを取得する（DB or ファイル）
      *
-     * @param FrontPage $frontPage フロントページモデル
-     * @param string|null $locale 言語コード（nullの場合は現在の言語）
+     * @param  FrontPage  $frontPage  フロントページモデル
+     * @param  string|null  $locale  言語コード（nullの場合は現在の言語）
      * @return string|null コンテンツ
      */
     public function getContent(FrontPage $frontPage, ?string $locale = null): ?string
@@ -79,16 +81,17 @@ class FrontPageContentService extends ContentFileService
         }
 
         // データベースから取得（エディタータイプ別カラム）
-        $contentColumn = 'content_' . $editorType;
+        $contentColumn = 'content_'.$editorType;
+
         return $frontPage->{$contentColumn} ?? $frontPage->content ?? null;
     }
 
     /**
      * フロントページのコンテンツを保存する（DB or ファイル）
      *
-     * @param FrontPage $frontPage フロントページモデル
-     * @param string $content コンテンツ
-     * @param string|null $locale 言語コード（nullの場合は現在の言語）
+     * @param  FrontPage  $frontPage  フロントページモデル
+     * @param  string  $content  コンテンツ
+     * @param  string|null  $locale  言語コード（nullの場合は現在の言語）
      * @return bool 保存成功時はtrue
      */
     public function saveContent(FrontPage $frontPage, string $content, ?string $locale = null): bool

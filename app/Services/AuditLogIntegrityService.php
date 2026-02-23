@@ -29,6 +29,8 @@ use App\Models\AuditLogDailySeal;
 use Illuminate\Support\Facades\Log;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * 監査ログ整合性検証サービス
  *
  * ハッシュチェーンの検証、日次署名の作成・検証を行う
@@ -51,9 +53,9 @@ class AuditLogIntegrityService
     /**
      * 指定範囲のログのハッシュチェーンを検証
      *
-     * @param int|null $fromId 開始ID（null=最初から）
-     * @param int|null $toId 終了ID（null=最後まで）
-     * @param bool $updateStatus 検証結果をDBに保存するか
+     * @param  int|null  $fromId  開始ID（null=最初から）
+     * @param  int|null  $toId  終了ID（null=最後まで）
+     * @param  bool  $updateStatus  検証結果をDBに保存するか
      * @return array 検証結果
      */
     public function verifyChain(?int $fromId = null, ?int $toId = null, bool $updateStatus = true): array
@@ -68,7 +70,7 @@ class AuditLogIntegrityService
         }
 
         $logs = $query->get();
-        
+
         $result = [
             'total' => $logs->count(),
             'valid' => 0,
@@ -86,7 +88,7 @@ class AuditLogIntegrityService
             $errors = [];
 
             // ハッシュ検証
-            if (!$log->verifyHash()) {
+            if (! $log->verifyHash()) {
                 $isValid = false;
                 $errors[] = 'hash_mismatch';
             }
@@ -134,7 +136,6 @@ class AuditLogIntegrityService
     /**
      * 特定の日のログにハッシュチェーンを設定
      *
-     * @param \Carbon\Carbon $date
      * @return array 処理結果
      */
     public function buildChainForDate(\Carbon\Carbon $date): array
@@ -169,7 +170,7 @@ class AuditLogIntegrityService
     /**
      * 未処理のログにハッシュチェーンを設定
      *
-     * @param int $limit 一度に処理する最大件数
+     * @param  int  $limit  一度に処理する最大件数
      * @return array 処理結果
      */
     public function buildPendingChains(int $limit = 1000): array
@@ -205,9 +206,6 @@ class AuditLogIntegrityService
 
     /**
      * 日次署名（シール）を作成
-     *
-     * @param \Carbon\Carbon $date
-     * @return AuditLogDailySeal|null
      */
     public function createDailySeal(\Carbon\Carbon $date): ?AuditLogDailySeal
     {
@@ -258,14 +256,13 @@ class AuditLogIntegrityService
     /**
      * 日次署名を検証
      *
-     * @param \Carbon\Carbon $date
      * @return array 検証結果
      */
     public function verifyDailySeal(\Carbon\Carbon $date): array
     {
         $seal = AuditLogDailySeal::forDate($date);
 
-        if (!$seal) {
+        if (! $seal) {
             return [
                 'date' => $date->format('Y-m-d'),
                 'exists' => false,
@@ -316,7 +313,6 @@ class AuditLogIntegrityService
     /**
      * 過去N日分の日次署名を作成
      *
-     * @param int $days
      * @return array 処理結果
      */
     public function createPendingSeals(int $days = 7): array
@@ -326,7 +322,7 @@ class AuditLogIntegrityService
 
         for ($i = 1; $i <= $days; $i++) {
             $date = $today->copy()->subDays($i);
-            
+
             // 既にシールがある場合はスキップ
             if (AuditLogDailySeal::existsForDate($date)) {
                 continue;
@@ -337,7 +333,7 @@ class AuditLogIntegrityService
 
             // シールを作成
             $seal = $this->createDailySeal($date);
-            
+
             if ($seal) {
                 $results[] = [
                     'date' => $date->format('Y-m-d'),
@@ -352,8 +348,6 @@ class AuditLogIntegrityService
 
     /**
      * 統計情報を取得
-     *
-     * @return array
      */
     public function getStats(): array
     {
@@ -371,7 +365,6 @@ class AuditLogIntegrityService
     /**
      * 改ざんが検知されたログを取得
      *
-     * @param int $limit
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getTamperedLogs(int $limit = 100)

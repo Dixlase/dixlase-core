@@ -22,24 +22,28 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
+/**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
+ * フロントページのアクティビティログ記録トレイト
+ */
 trait FrontActivityLogTrait
 {
     /**
      * フロントページの操作をログに記録
      *
-     * @param string $action 操作内容
-     * @param array $details 詳細情報
-     * @param string|null $userId ユーザーID（ログイン済みの場合）
-     * @param Request|null $request リクエスト情報
-     * @return void
+     * @param  string  $action  操作内容
+     * @param  array  $details  詳細情報
+     * @param  string|null  $userId  ユーザーID（ログイン済みの場合）
+     * @param  Request|null  $request  リクエスト情報
      */
     protected function logFrontActivity(string $action, array $details = [], ?string $userId = null, ?Request $request = null): void
     {
         $request = $request ?? request();
-        
+
         $logData = [
             'action' => $action,
             'user_id' => $userId,
@@ -50,7 +54,7 @@ trait FrontActivityLogTrait
             'timestamp' => now()->toDateTimeString(),
         ];
 
-        if (!empty($details)) {
+        if (! empty($details)) {
             $logData['details'] = $details;
         }
 
@@ -60,16 +64,15 @@ trait FrontActivityLogTrait
     /**
      * フロントページのエラーをログに記録
      *
-     * @param string $error エラー内容
-     * @param array $context エラーコンテキスト
-     * @param string|null $userId ユーザーID（ログイン済みの場合）
-     * @param Request|null $request リクエスト情報
-     * @return void
+     * @param  string  $error  エラー内容
+     * @param  array  $context  エラーコンテキスト
+     * @param  string|null  $userId  ユーザーID（ログイン済みの場合）
+     * @param  Request|null  $request  リクエスト情報
      */
     protected function logFrontError(string $error, array $context = [], ?string $userId = null, ?Request $request = null): void
     {
         $request = $request ?? request();
-        
+
         $logData = [
             'error' => $error,
             'user_id' => $userId,
@@ -80,7 +83,7 @@ trait FrontActivityLogTrait
             'timestamp' => now()->toDateTimeString(),
         ];
 
-        if (!empty($context)) {
+        if (! empty($context)) {
             $logData['context'] = $context;
         }
 
@@ -90,74 +93,70 @@ trait FrontActivityLogTrait
     /**
      * ページビューをログに記録
      *
-     * @param string $page ページ名
-     * @param string|null $userId ユーザーID（ログイン済みの場合）
-     * @param Request|null $request リクエスト情報
-     * @return void
+     * @param  string  $page  ページ名
+     * @param  string|null  $userId  ユーザーID（ログイン済みの場合）
+     * @param  Request|null  $request  リクエスト情報
      */
     protected function logPageView(string $page, ?string $userId = null, ?Request $request = null): void
     {
         $this->logFrontActivity('ページビュー', [
-            'page' => $page
+            'page' => $page,
         ], $userId, $request);
     }
 
     /**
      * フォーム送信をログに記録
      *
-     * @param string $formType フォームタイプ
-     * @param array $formData フォームデータ（機密情報は除く）
-     * @param string|null $userId ユーザーID（ログイン済みの場合）
-     * @param Request|null $request リクエスト情報
-     * @return void
+     * @param  string  $formType  フォームタイプ
+     * @param  array  $formData  フォームデータ（機密情報は除く）
+     * @param  string|null  $userId  ユーザーID（ログイン済みの場合）
+     * @param  Request|null  $request  リクエスト情報
      */
     protected function logFormSubmission(string $formType, array $formData = [], ?string $userId = null, ?Request $request = null): void
     {
         // パスワードなどの機密情報を除去
         $sanitizedData = $this->sanitizeFormData($formData);
-        
+
         $this->logFrontActivity('フォーム送信', [
             'form_type' => $formType,
-            'form_data' => $sanitizedData
+            'form_data' => $sanitizedData,
         ], $userId, $request);
     }
 
     /**
      * ダウンロードをログに記録
      *
-     * @param string $fileName ファイル名
-     * @param string|null $userId ユーザーID（ログイン済みの場合）
-     * @param Request|null $request リクエスト情報
-     * @return void
+     * @param  string  $fileName  ファイル名
+     * @param  string|null  $userId  ユーザーID（ログイン済みの場合）
+     * @param  Request|null  $request  リクエスト情報
      */
     protected function logDownload(string $fileName, ?string $userId = null, ?Request $request = null): void
     {
         $this->logFrontActivity('ダウンロード', [
-            'file_name' => $fileName
+            'file_name' => $fileName,
         ], $userId, $request);
     }
 
     /**
      * 検索をログに記録
      *
-     * @param string $query 検索クエリ
-     * @param int $resultCount 検索結果数
-     * @param string|null $userId ユーザーID（ログイン済みの場合）
-     * @param Request|null $request リクエスト情報
-     * @return void
+     * @param  string  $query  検索クエリ
+     * @param  int  $resultCount  検索結果数
+     * @param  string|null  $userId  ユーザーID（ログイン済みの場合）
+     * @param  Request|null  $request  リクエスト情報
      */
     protected function logSearch(string $query, int $resultCount = 0, ?string $userId = null, ?Request $request = null): void
     {
         $this->logFrontActivity('検索', [
             'query' => $query,
-            'result_count' => $resultCount
+            'result_count' => $resultCount,
         ], $userId, $request);
     }
 
     /**
      * フォームデータから機密情報を除去
      *
-     * @param array $data フォームデータ
+     * @param  array  $data  フォームデータ
      * @return array サニタイズされたデータ
      */
     private function sanitizeFormData(array $data): array

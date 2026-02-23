@@ -7,6 +7,9 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 
+/**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ */
 trait MailTestTrait
 {
     /**

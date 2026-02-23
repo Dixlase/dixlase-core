@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
+/**
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
+ */
 class FileIntegrityService implements FileIntegrityServiceInterface
 {
     /**
@@ -82,7 +85,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         $files = [];
 
         foreach ($this->corePaths as $path) {
-            $fullPath = $this->normalizePath($basePath . DIRECTORY_SEPARATOR . $path);
+            $fullPath = $this->normalizePath($basePath.DIRECTORY_SEPARATOR.$path);
 
             if (is_dir($fullPath)) {
                 $this->scanDirectory($fullPath, $basePath, $files);
@@ -112,11 +115,11 @@ class FileIntegrityService implements FileIntegrityServiceInterface
     public function saveBaselineArray(array $baseline, string $filename = 'core_hashes.json'): bool
     {
         try {
-            if (!File::isDirectory($this->baselinePath)) {
+            if (! File::isDirectory($this->baselinePath)) {
                 File::makeDirectory($this->baselinePath, 0755, true);
             }
 
-            $filePath = $this->baselinePath . DIRECTORY_SEPARATOR . $filename;
+            $filePath = $this->baselinePath.DIRECTORY_SEPARATOR.$filename;
             File::put($filePath, json_encode($baseline, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
             Log::channel('admin_activity')->info('ファイル整合性ベースラインを生成しました', [
@@ -130,25 +133,25 @@ class FileIntegrityService implements FileIntegrityServiceInterface
             Log::channel('admin_error')->error('ベースライン保存エラー', [
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
      * ベースラインを保存（Contract対応）
-     * 
-     * @param BaselineDTO $baseline ベースライン
-     * @param string $filename ファイル名
-     * @return bool
+     *
+     * @param  BaselineDTO  $baseline  ベースライン
+     * @param  string  $filename  ファイル名
      */
     public function saveBaseline(BaselineDTO $baseline, string $filename = 'core_hashes.json'): bool
     {
         try {
-            if (!File::isDirectory($this->baselinePath)) {
+            if (! File::isDirectory($this->baselinePath)) {
                 File::makeDirectory($this->baselinePath, 0755, true);
             }
 
-            $filePath = $this->baselinePath . DIRECTORY_SEPARATOR . $filename;
+            $filePath = $this->baselinePath.DIRECTORY_SEPARATOR.$filename;
             File::put($filePath, json_encode($baseline->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
             Log::channel('admin_activity')->info('ファイル整合性ベースラインを生成しました', [
@@ -163,6 +166,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
             Log::channel('admin_error')->error('ベースライン保存エラー', [
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -172,45 +176,48 @@ class FileIntegrityService implements FileIntegrityServiceInterface
      */
     public function loadBaselineArray(string $filename = 'core_hashes.json'): ?array
     {
-        $filePath = $this->baselinePath . DIRECTORY_SEPARATOR . $filename;
+        $filePath = $this->baselinePath.DIRECTORY_SEPARATOR.$filename;
 
-        if (!File::exists($filePath)) {
+        if (! File::exists($filePath)) {
             return null;
         }
 
         try {
             $content = File::get($filePath);
+
             return json_decode($content, true);
         } catch (\Exception $e) {
             Log::channel('admin_error')->error('ベースライン読み込みエラー', [
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
 
     /**
      * ベースラインを読み込み（Contract対応）
-     * 
-     * @param string $filename ファイル名
-     * @return BaselineDTO|null
+     *
+     * @param  string  $filename  ファイル名
      */
     public function loadBaseline(string $filename = 'core_hashes.json'): ?BaselineDTO
     {
-        $filePath = $this->baselinePath . DIRECTORY_SEPARATOR . $filename;
+        $filePath = $this->baselinePath.DIRECTORY_SEPARATOR.$filename;
 
-        if (!File::exists($filePath)) {
+        if (! File::exists($filePath)) {
             return null;
         }
 
         try {
             $content = File::get($filePath);
             $data = json_decode($content, true);
+
             return BaselineDTO::fromArray($data);
         } catch (\Exception $e) {
             Log::channel('admin_error')->error('ベースライン読み込みエラー', [
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -241,7 +248,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
             // ベースラインを読み込み
             $baseline = $this->loadBaselineArray();
 
-            if (!$baseline) {
+            if (! $baseline) {
                 // ベースラインがない場合は生成して保存
                 $baseline = $this->generateCoreBaseline();
                 $this->saveBaselineArray($baseline);
@@ -300,7 +307,6 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                     'suspicious' => count($suspicious),
                 ]);
             }
-
         } catch (\Exception $e) {
             Log::channel('admin_error')->error('ファイル整合性スキャンエラー', [
                 'error' => $e->getMessage(),
@@ -354,7 +360,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
 
         // 変更・削除されたファイルをチェック
         foreach ($baseline as $path => $hash) {
-            if (!isset($current[$path])) {
+            if (! isset($current[$path])) {
                 $removed[] = [
                     'path' => $path,
                     'old_hash' => $hash,
@@ -370,7 +376,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
 
         // 追加されたファイルをチェック
         foreach ($current as $path => $hash) {
-            if (!isset($baseline[$path])) {
+            if (! isset($baseline[$path])) {
                 $added[] = [
                     'path' => $path,
                     'new_hash' => $hash,
@@ -394,9 +400,9 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         $basePath = base_path();
 
         foreach ($this->suspiciousLocations as $location) {
-            $fullPath = $basePath . DIRECTORY_SEPARATOR . $location;
+            $fullPath = $basePath.DIRECTORY_SEPARATOR.$location;
 
-            if (!is_dir($fullPath)) {
+            if (! is_dir($fullPath)) {
                 continue;
             }
 
@@ -421,9 +427,9 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         $publicPath = public_path();
         $allowedPublicPhp = ['index.php'];
 
-        foreach (glob($publicPath . '/*.php') as $file) {
+        foreach (glob($publicPath.'/*.php') as $file) {
             $filename = basename($file);
-            if (!in_array($filename, $allowedPublicPhp)) {
+            if (! in_array($filename, $allowedPublicPhp)) {
                 $relativePath = $this->getRelativePath($file, $basePath);
                 $suspicious[] = [
                     'path' => $relativePath,
@@ -442,7 +448,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
     protected function determineStatus(array $result, array $suspicious): string
     {
         // 重大な問題
-        if (!empty($suspicious)) {
+        if (! empty($suspicious)) {
             return FileIntegrityAudit::STATUS_CRITICAL;
         }
 
@@ -454,12 +460,12 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         }
 
         // コアファイルの変更は警告
-        if (!empty($result['changed']) || !empty($result['removed'])) {
+        if (! empty($result['changed']) || ! empty($result['removed'])) {
             return FileIntegrityAudit::STATUS_WARNING;
         }
 
         // 新規ファイルの追加は警告（コア領域内）
-        if (!empty($result['added'])) {
+        if (! empty($result['added'])) {
             return FileIntegrityAudit::STATUS_WARNING;
         }
 
@@ -488,19 +494,19 @@ class FileIntegrityService implements FileIntegrityServiceInterface
     {
         $parts = [];
 
-        if (!empty($result['changed'])) {
+        if (! empty($result['changed'])) {
             $parts[] = __('admin/command.integrity.summary_changed', ['count' => count($result['changed'])]);
         }
 
-        if (!empty($result['added'])) {
+        if (! empty($result['added'])) {
             $parts[] = __('admin/command.integrity.summary_added', ['count' => count($result['added'])]);
         }
 
-        if (!empty($result['removed'])) {
+        if (! empty($result['removed'])) {
             $parts[] = __('admin/command.integrity.summary_removed', ['count' => count($result['removed'])]);
         }
 
-        if (!empty($suspicious)) {
+        if (! empty($suspicious)) {
             $parts[] = __('admin/command.integrity.summary_suspicious', ['count' => count($suspicious)]);
         }
 
@@ -525,7 +531,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
     protected function getRelativePath(string $fullPath, string $basePath): string
     {
         $fullPath = $this->normalizePath($fullPath);
-        $basePath = rtrim($this->normalizePath($basePath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $basePath = rtrim($this->normalizePath($basePath), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
 
         if (str_starts_with($fullPath, $basePath)) {
             return substr($fullPath, strlen($basePath));
@@ -546,13 +552,13 @@ class FileIntegrityService implements FileIntegrityServiceInterface
             }
 
             // プレフィックス一致
-            if (str_starts_with($path, $pattern . DIRECTORY_SEPARATOR) || str_starts_with($path, $pattern . '/')) {
+            if (str_starts_with($path, $pattern.DIRECTORY_SEPARATOR) || str_starts_with($path, $pattern.'/')) {
                 return true;
             }
 
             // ワイルドカードパターン
             if (str_contains($pattern, '*')) {
-                $regex = '/^' . str_replace(['*', '/'], ['.*', '\/'], $pattern) . '$/';
+                $regex = '/^'.str_replace(['*', '/'], ['.*', '\/'], $pattern).'$/';
                 if (preg_match($regex, $path)) {
                     return true;
                 }
@@ -567,7 +573,8 @@ class FileIntegrityService implements FileIntegrityServiceInterface
      */
     public function hasBaseline(string $filename = 'core_hashes.json'): bool
     {
-        $filePath = $this->baselinePath . DIRECTORY_SEPARATOR . $filename;
+        $filePath = $this->baselinePath.DIRECTORY_SEPARATOR.$filename;
+
         return File::exists($filePath);
     }
 
@@ -577,8 +584,8 @@ class FileIntegrityService implements FileIntegrityServiceInterface
     public function getBaselineMeta(string $filename = 'core_hashes.json'): ?array
     {
         $baseline = $this->loadBaselineArray($filename);
-        
-        if (!$baseline || !isset($baseline['meta'])) {
+
+        if (! $baseline || ! isset($baseline['meta'])) {
             return null;
         }
 
@@ -590,7 +597,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
 
     /**
      * ベースラインを再生成（現在の状態を基準にする）
-     * 
+     *
      * @deprecated 新しいコードではregenerateBaselineWithTarget()を使用してください
      */
     public function regenerateBaselineCore(
@@ -634,19 +641,18 @@ class FileIntegrityService implements FileIntegrityServiceInterface
 
     /**
      * ベースラインを生成（Contract対応）
-     * 
-     * @param ScanTargetDTO $target スキャン対象
-     * @return BaselineDTO
+     *
+     * @param  ScanTargetDTO  $target  スキャン対象
      */
     public function generateBaseline(ScanTargetDTO $target): BaselineDTO
     {
         $basePath = base_path();
         $files = [];
-        $paths = !empty($target->paths) ? $target->paths : $this->corePaths;
-        $ignorePatterns = !empty($target->ignorePatterns) ? $target->ignorePatterns : $this->ignorePatterns;
+        $paths = ! empty($target->paths) ? $target->paths : $this->corePaths;
+        $ignorePatterns = ! empty($target->ignorePatterns) ? $target->ignorePatterns : $this->ignorePatterns;
 
         foreach ($paths as $path) {
-            $fullPath = $this->normalizePath($basePath . DIRECTORY_SEPARATOR . $path);
+            $fullPath = $this->normalizePath($basePath.DIRECTORY_SEPARATOR.$path);
 
             if (is_dir($fullPath)) {
                 $this->scanDirectoryWithPatterns($fullPath, $basePath, $files, $ignorePatterns);
@@ -670,12 +676,11 @@ class FileIntegrityService implements FileIntegrityServiceInterface
 
     /**
      * ファイル整合性スキャンを実行（Contract対応）
-     * 
-     * @param ScanTargetDTO $target スキャン対象
-     * @param string $trigger トリガー
-     * @param string $initiatedByType 実行者タイプ
-     * @param int|null $initiatedById 実行者ID
-     * @return ScanResultDTO
+     *
+     * @param  ScanTargetDTO  $target  スキャン対象
+     * @param  string  $trigger  トリガー
+     * @param  string  $initiatedByType  実行者タイプ
+     * @param  int|null  $initiatedById  実行者ID
      */
     public function scan(
         ScanTargetDTO $target,
@@ -704,7 +709,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
             // ベースラインを読み込み
             $baseline = $this->loadBaseline($filename);
 
-            if (!$baseline) {
+            if (! $baseline) {
                 // ベースラインがない場合は生成して保存
                 $baseline = $this->generateBaseline($target);
                 $this->saveBaseline($baseline, $filename);
@@ -750,7 +755,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
 
             // 変更・削除されたファイルをチェック
             foreach ($baseline->files as $path => $hash) {
-                if (!isset($currentBaseline->files[$path])) {
+                if (! isset($currentBaseline->files[$path])) {
                     $removedFiles[] = FileChangeDTO::removed($path, $hash);
                 } elseif ($currentBaseline->files[$path] !== $hash) {
                     $changedFiles[] = FileChangeDTO::changed($path, $hash, $currentBaseline->files[$path]);
@@ -759,7 +764,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
 
             // 追加されたファイルをチェック
             foreach ($currentBaseline->files as $path => $hash) {
-                if (!$baseline->hasFile($path)) {
+                if (! $baseline->hasFile($path)) {
                     $addedFiles[] = FileChangeDTO::added($path, $hash);
                 }
             }
@@ -786,10 +791,10 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                 'summary' => $summary,
                 'baseline_version' => $baseline->appVersion,
                 'result_payload' => [
-                    'changed' => array_map(fn($f) => $f->toArray(), $changedFiles),
-                    'added' => array_map(fn($f) => $f->toArray(), $addedFiles),
-                    'removed' => array_map(fn($f) => $f->toArray(), $removedFiles),
-                    'suspicious' => array_map(fn($f) => $f->toArray(), $suspiciousFiles),
+                    'changed' => array_map(fn ($f) => $f->toArray(), $changedFiles),
+                    'added' => array_map(fn ($f) => $f->toArray(), $addedFiles),
+                    'removed' => array_map(fn ($f) => $f->toArray(), $removedFiles),
+                    'suspicious' => array_map(fn ($f) => $f->toArray(), $suspiciousFiles),
                 ],
             ]);
 
@@ -826,7 +831,6 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                 durationMs: $startedAt->diffInMilliseconds(now()),
                 summary: $summary,
             );
-
         } catch (\Exception $e) {
             Log::channel('admin_error')->error('ファイル整合性スキャンエラー', [
                 'error' => $e->getMessage(),
@@ -865,12 +869,11 @@ class FileIntegrityService implements FileIntegrityServiceInterface
 
     /**
      * ベースラインを再生成（Contract対応）
-     * 
-     * @param ScanTargetDTO $target スキャン対象
-     * @param string $trigger トリガー
-     * @param string $initiatedByType 実行者タイプ
-     * @param int|null $initiatedById 実行者ID
-     * @return bool
+     *
+     * @param  ScanTargetDTO  $target  スキャン対象
+     * @param  string  $trigger  トリガー
+     * @param  string  $initiatedByType  実行者タイプ
+     * @param  int|null  $initiatedById  実行者ID
      */
     public function regenerateBaseline(
         ScanTargetDTO $target,
@@ -947,12 +950,12 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                 return true;
             }
 
-            if (str_starts_with($path, $pattern . DIRECTORY_SEPARATOR) || str_starts_with($path, $pattern . '/')) {
+            if (str_starts_with($path, $pattern.DIRECTORY_SEPARATOR) || str_starts_with($path, $pattern.'/')) {
                 return true;
             }
 
             if (str_contains($pattern, '*')) {
-                $regex = '/^' . str_replace(['*', '/'], ['.*', '\/'], $pattern) . '$/';
+                $regex = '/^'.str_replace(['*', '/'], ['.*', '\/'], $pattern).'$/';
                 if (preg_match($regex, $path)) {
                     return true;
                 }
@@ -964,7 +967,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
 
     /**
      * 疑わしいファイルをチェック（DTO版）
-     * 
+     *
      * @return array<FileChangeDTO>
      */
     protected function checkSuspiciousFilesDTO(): array
@@ -973,9 +976,9 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         $basePath = base_path();
 
         foreach ($this->suspiciousLocations as $location) {
-            $fullPath = $basePath . DIRECTORY_SEPARATOR . $location;
+            $fullPath = $basePath.DIRECTORY_SEPARATOR.$location;
 
-            if (!is_dir($fullPath)) {
+            if (! is_dir($fullPath)) {
                 continue;
             }
 
@@ -1000,9 +1003,9 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         $publicPath = public_path();
         $allowedPublicPhp = ['index.php'];
 
-        foreach (glob($publicPath . '/*.php') as $file) {
+        foreach (glob($publicPath.'/*.php') as $file) {
             $filename = basename($file);
-            if (!in_array($filename, $allowedPublicPhp)) {
+            if (! in_array($filename, $allowedPublicPhp)) {
                 $relativePath = $this->getRelativePath($file, $basePath);
                 $suspicious[] = FileChangeDTO::suspicious(
                     $relativePath,
@@ -1017,16 +1020,15 @@ class FileIntegrityService implements FileIntegrityServiceInterface
 
     /**
      * ステータスを判定（DTO版）
-     * 
-     * @param array<FileChangeDTO> $changed
-     * @param array<FileChangeDTO> $added
-     * @param array<FileChangeDTO> $removed
-     * @param array<FileChangeDTO> $suspicious
-     * @return string
+     *
+     * @param  array<FileChangeDTO>  $changed
+     * @param  array<FileChangeDTO>  $added
+     * @param  array<FileChangeDTO>  $removed
+     * @param  array<FileChangeDTO>  $suspicious
      */
     protected function determineStatusDTO(array $changed, array $added, array $removed, array $suspicious): string
     {
-        if (!empty($suspicious)) {
+        if (! empty($suspicious)) {
             return ScanResultDTO::STATUS_CRITICAL;
         }
 
@@ -1036,11 +1038,11 @@ class FileIntegrityService implements FileIntegrityServiceInterface
             }
         }
 
-        if (!empty($changed) || !empty($removed)) {
+        if (! empty($changed) || ! empty($removed)) {
             return ScanResultDTO::STATUS_WARNING;
         }
 
-        if (!empty($added)) {
+        if (! empty($added)) {
             return ScanResultDTO::STATUS_WARNING;
         }
 
@@ -1054,19 +1056,19 @@ class FileIntegrityService implements FileIntegrityServiceInterface
     {
         $parts = [];
 
-        if (!empty($changed)) {
+        if (! empty($changed)) {
             $parts[] = __('admin/command.integrity.summary_changed', ['count' => count($changed)]);
         }
 
-        if (!empty($added)) {
+        if (! empty($added)) {
             $parts[] = __('admin/command.integrity.summary_added', ['count' => count($added)]);
         }
 
-        if (!empty($removed)) {
+        if (! empty($removed)) {
             $parts[] = __('admin/command.integrity.summary_removed', ['count' => count($removed)]);
         }
 
-        if (!empty($suspicious)) {
+        if (! empty($suspicious)) {
             $parts[] = __('admin/command.integrity.summary_suspicious', ['count' => count($suspicious)]);
         }
 

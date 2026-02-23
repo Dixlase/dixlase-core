@@ -23,6 +23,8 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * データベース関連の検出パターン
  *
  * database.own_tables と database.core_tables を検出します。

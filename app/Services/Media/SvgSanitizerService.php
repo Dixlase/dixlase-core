@@ -25,8 +25,10 @@ namespace App\Services\Media;
 use Illuminate\Support\Facades\Log;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * SVGサニタイザーサービス
- * 
+ *
  * SVGファイルから危険な要素・属性・外部参照を除去する
  */
 class SvgSanitizerService
@@ -98,22 +100,24 @@ class SvgSanitizerService
         // XMLとして解析
         libxml_use_internal_errors(true);
         $dom = new \DOMDocument();
-        
+
         // SVGをロード（UTF-8エンコーディングを明示）
         $svgContent = $this->ensureUtf8($svgContent);
         $loaded = $dom->loadXML($svgContent, LIBXML_NONET | LIBXML_NOENT);
-        
-        if (!$loaded) {
+
+        if (! $loaded) {
             $errors = libxml_get_errors();
             libxml_clear_errors();
             Log::warning('SVG parsing failed', ['errors' => $errors]);
+
             return '';
         }
 
         // ルート要素がsvgであることを確認
         $root = $dom->documentElement;
-        if (!$root || strtolower($root->nodeName) !== 'svg') {
+        if (! $root || strtolower($root->nodeName) !== 'svg') {
             Log::warning('Invalid SVG: root element is not svg');
+
             return '';
         }
 
@@ -124,7 +128,7 @@ class SvgSanitizerService
         $this->removeExternalReferences($root);
 
         $result = $dom->saveXML($root);
-        
+
         return $result !== false ? $result : '';
     }
 
@@ -143,12 +147,14 @@ class SvgSanitizerService
         // 禁止要素は削除
         if (in_array($nodeName, $this->forbiddenElements)) {
             $node->parentNode?->removeChild($node);
+
             return;
         }
 
         // 許可されていない要素も削除
-        if (!in_array($nodeName, $this->allowedElements)) {
+        if (! in_array($nodeName, $this->allowedElements)) {
             $node->parentNode?->removeChild($node);
+
             return;
         }
 
@@ -160,7 +166,7 @@ class SvgSanitizerService
         foreach ($node->childNodes as $child) {
             $children[] = $child;
         }
-        
+
         foreach (array_reverse($children) as $child) {
             $this->sanitizeNode($child);
         }
@@ -180,12 +186,14 @@ class SvgSanitizerService
             // 禁止属性を削除
             if (in_array($attrName, $this->forbiddenAttributes)) {
                 $attributesToRemove[] = $attr->nodeName;
+
                 continue;
             }
 
             // on*で始まる属性を削除（イベントハンドラ）
             if (str_starts_with($attrName, 'on')) {
                 $attributesToRemove[] = $attr->nodeName;
+
                 continue;
             }
 
@@ -210,15 +218,15 @@ class SvgSanitizerService
     {
         // xlink:href や href の外部参照をチェック
         $hrefAttrs = ['href', 'xlink:href'];
-        
+
         foreach ($hrefAttrs as $attr) {
             if ($element->hasAttribute($attr)) {
                 $value = $element->getAttribute($attr);
-                
+
                 // 外部URLを除去（#で始まる内部参照は許可）
-                if (!str_starts_with($value, '#') && !str_starts_with($value, 'data:image/')) {
+                if (! str_starts_with($value, '#') && ! str_starts_with($value, 'data:image/')) {
                     // data:image/は画像埋め込みなので許可するが、他のdata:は禁止
-                    if (str_starts_with($value, 'data:') && !preg_match('/^data:image\/(png|jpeg|gif|webp);base64,/i', $value)) {
+                    if (str_starts_with($value, 'data:') && ! preg_match('/^data:image\/(png|jpeg|gif|webp);base64,/i', $value)) {
                         $element->removeAttribute($attr);
                     } elseif (preg_match('/^https?:\/\//i', $value) || preg_match('/^\/\//i', $value)) {
                         $element->removeAttribute($attr);
@@ -242,12 +250,12 @@ class SvgSanitizerService
     {
         // BOMを除去
         $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
-        
+
         // XML宣言がない場合は追加
-        if (!preg_match('/^<\?xml/i', $content)) {
-            $content = '<?xml version="1.0" encoding="UTF-8"?>' . $content;
+        if (! preg_match('/^<\?xml/i', $content)) {
+            $content = '<?xml version="1.0" encoding="UTF-8"?>'.$content;
         }
-        
+
         return $content;
     }
 
@@ -256,7 +264,7 @@ class SvgSanitizerService
      */
     public function sanitizeFile(string $inputPath, ?string $outputPath = null): bool
     {
-        if (!file_exists($inputPath)) {
+        if (! file_exists($inputPath)) {
             return false;
         }
 
@@ -271,6 +279,7 @@ class SvgSanitizerService
         }
 
         $targetPath = $outputPath ?? $inputPath;
+
         return file_put_contents($targetPath, $sanitized) !== false;
     }
 
@@ -281,17 +290,18 @@ class SvgSanitizerService
     {
         libxml_use_internal_errors(true);
         $dom = new \DOMDocument();
-        
+
         $svgContent = $this->ensureUtf8($svgContent);
         $loaded = $dom->loadXML($svgContent, LIBXML_NONET | LIBXML_NOENT);
-        
-        if (!$loaded) {
+
+        if (! $loaded) {
             libxml_clear_errors();
+
             return false;
         }
 
         $root = $dom->documentElement;
-        if (!$root || strtolower($root->nodeName) !== 'svg') {
+        if (! $root || strtolower($root->nodeName) !== 'svg') {
             return false;
         }
 
@@ -333,7 +343,7 @@ class SvgSanitizerService
 
         // 子ノードをチェック
         foreach ($node->childNodes as $child) {
-            if (!$this->checkNodeSafety($child)) {
+            if (! $this->checkNodeSafety($child)) {
                 return false;
             }
         }

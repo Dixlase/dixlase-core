@@ -23,6 +23,8 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * メンバー関連の検出パターン
  *
  * members.read, members.write, members.create, members.delete を検出します。

@@ -23,6 +23,8 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * 危険なAPI呼び出しの検出パターン
  *
  * exec, shell_exec, eval, system, passthru, env()直接使用を検出します。

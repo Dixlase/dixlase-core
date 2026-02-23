@@ -23,6 +23,8 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * メール関連の検出パターン
  *
  * mail.send と mail.bulk_send を検出します。

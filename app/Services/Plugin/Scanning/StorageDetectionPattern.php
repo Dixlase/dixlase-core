@@ -23,6 +23,8 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * ストレージ関連の検出パターン
  *
  * storage.own_directory, storage.public_uploads, storage.temp_files を検出します。

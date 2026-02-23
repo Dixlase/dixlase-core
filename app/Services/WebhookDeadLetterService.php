@@ -29,6 +29,8 @@ use App\Models\WebhookDelivery;
 use Illuminate\Support\Facades\Log;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * Webhook Dead Letter Service
  *
  * Handles processing of permanently failed webhook deliveries.
@@ -39,9 +41,7 @@ class WebhookDeadLetterService
     /**
      * Process a failed delivery and create dead letter record
      *
-     * @param WebhookDelivery $delivery
-     * @param array $attemptLog Optional attempt history
-     * @return WebhookDeadLetter
+     * @param  array  $attemptLog  Optional attempt history
      */
     public static function processFailedDelivery(WebhookDelivery $delivery, array $attemptLog = []): WebhookDeadLetter
     {
@@ -89,15 +89,13 @@ class WebhookDeadLetterService
 
     /**
      * Send notification for a dead letter
-     *
-     * @param WebhookDeadLetter $deadLetter
      */
     protected static function sendNotification(WebhookDeadLetter $deadLetter): void
     {
         // Use SystemNotificationService if available
         if (class_exists(\App\Services\SystemNotificationService::class)) {
             $summary = $deadLetter->getSummary();
-            
+
             \App\Services\SystemNotificationService::send(
                 __('admin/webhook.dead_letter.notification_subject'),
                 __('admin/webhook.dead_letter.notification_message', [
@@ -117,13 +115,12 @@ class WebhookDeadLetterService
     /**
      * Retry a dead letter manually
      *
-     * @param WebhookDeadLetter $deadLetter
-     * @param int|null $memberId Member who initiated the retry
+     * @param  int|null  $memberId  Member who initiated the retry
      * @return WebhookDelivery New delivery record
      */
     public static function retryDeadLetter(WebhookDeadLetter $deadLetter, ?int $memberId = null): WebhookDelivery
     {
-        if (!$deadLetter->canRetry()) {
+        if (! $deadLetter->canRetry()) {
             throw new \RuntimeException('Cannot retry: webhook is inactive');
         }
 
@@ -155,8 +152,7 @@ class WebhookDeadLetterService
     /**
      * Get dead letter statistics
      *
-     * @param int $days Number of days to look back
-     * @return array
+     * @param  int  $days  Number of days to look back
      */
     public static function getStats(int $days = 30): array
     {
@@ -166,7 +162,7 @@ class WebhookDeadLetterService
     /**
      * Cleanup old dead letters
      *
-     * @param int $days Delete dead letters older than this many days
+     * @param  int  $days  Delete dead letters older than this many days
      * @return int Number of records deleted
      */
     public static function cleanup(int $days = 90): int
@@ -177,7 +173,6 @@ class WebhookDeadLetterService
     /**
      * Get recent dead letters for dashboard
      *
-     * @param int $limit
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public static function getRecent(int $limit = 10)

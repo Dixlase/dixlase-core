@@ -24,20 +24,23 @@ namespace App\Services\Media;
 
 use App\Contracts\Repositories\MediaSettingRepositoryInterface;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Log;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * メディアセキュリティサービス
- * 
+ *
  * メディアファイルのセキュリティ機能を統合管理
  */
 class MediaSecurityService
 {
     protected SvgSanitizerService $svgSanitizer;
+
     protected ZipSecurityService $zipSecurity;
+
     protected MimeValidatorService $mimeValidator;
+
     protected MediaSettingRepositoryInterface $settingRepository;
 
     /**
@@ -83,7 +86,7 @@ class MediaSecurityService
         // MIME実体検証
         if ($this->isMimeValidationEnabled()) {
             $mimeResult = $this->mimeValidator->validate($file);
-            if (!$mimeResult->isValid()) {
+            if (! $mimeResult->isValid()) {
                 foreach ($mimeResult->getErrors() as $error) {
                     $result->addError($error['code'], $error['message']);
                 }
@@ -100,9 +103,9 @@ class MediaSecurityService
 
         if ($fileSizeKb > $sizeLimit) {
             $result->addError('size_exceeded', __('admin/media.security.size_exceeded', [
-                'size' => round($fileSizeKb / 1024, 2) . 'MB',
-                'max' => round($sizeLimit / 1024, 2) . 'MB',
-                'category' => __('admin/media.security.category.' . $category),
+                'size' => round($fileSizeKb / 1024, 2).'MB',
+                'max' => round($sizeLimit / 1024, 2).'MB',
+                'category' => __('admin/media.security.category.'.$category),
             ]));
         }
 
@@ -123,9 +126,9 @@ class MediaSecurityService
             $this->zipSecurity
                 ->setMaxCompressionRatio((int) ($this->settingRepository->get('zip_max_compression_ratio') ?? 100))
                 ->setMaxFileCount((int) ($this->settingRepository->get('zip_max_file_count') ?? 1000));
-            
+
             $zipResult = $this->zipSecurity->check($file->getPathname());
-            if (!$zipResult->isValid()) {
+            if (! $zipResult->isValid()) {
                 foreach ($zipResult->getErrors() as $error) {
                     $result->addError($error['code'], $error['message']);
                 }
@@ -149,11 +152,12 @@ class MediaSecurityService
         $content = file_get_contents($file->getPathname());
         if ($content === false) {
             $errors[] = ['code' => 'svg_read_error', 'message' => __('admin/media.security.svg.read_error')];
+
             return ['errors' => $errors, 'warnings' => $warnings];
         }
 
         // SVGが安全かチェック
-        if (!$this->svgSanitizer->isSafe($content)) {
+        if (! $this->svgSanitizer->isSafe($content)) {
             if ($this->isSvgSanitizationEnabled()) {
                 $warnings[] = ['code' => 'svg_will_sanitize', 'message' => __('admin/media.security.svg.will_sanitize')];
             } else {
@@ -169,7 +173,7 @@ class MediaSecurityService
      */
     public function sanitizeSvgIfNeeded(string $filePath): bool
     {
-        if (!$this->isSvgSanitizationEnabled()) {
+        if (! $this->isSvgSanitizationEnabled()) {
             return true;
         }
 
@@ -187,13 +191,13 @@ class MediaSecurityService
     public function getFileCategory(string $extension): string
     {
         $extension = strtolower($extension);
-        
+
         foreach ($this->fileTypeCategories as $category => $extensions) {
             if (in_array($extension, $extensions)) {
                 return $category;
             }
         }
-        
+
         return 'other';
     }
 
@@ -202,12 +206,12 @@ class MediaSecurityService
      */
     public function getSizeLimitForCategory(string $category): int
     {
-        $setting = $this->settingRepository->get('max_file_size_' . $category);
-        
+        $setting = $this->settingRepository->get('max_file_size_'.$category);
+
         if ($setting !== null) {
             return (int) $setting;
         }
-        
+
         return $this->defaultSizeLimits[$category] ?? 2048;
     }
 
@@ -241,19 +245,19 @@ class MediaSecurityService
     public function createSecureDownloadResponse(string $filePath, string $fileName, string $mimeType): BinaryFileResponse
     {
         $response = response()->download($filePath, $fileName);
-        
+
         // セキュリティヘッダーを追加
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'DENY');
         $response->headers->set('X-XSS-Protection', '1; mode=block');
         $response->headers->set('Content-Security-Policy', "default-src 'none'");
-        
+
         // 危険なファイルタイプは強制的にダウンロード
         $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
         if ($this->isDangerousExtension($extension)) {
-            $response->headers->set('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+            $response->headers->set('Content-Disposition', 'attachment; filename="'.$fileName.'"');
         }
-        
+
         return $response;
     }
 
@@ -263,18 +267,18 @@ class MediaSecurityService
     public function createSecureInlineResponse(string $filePath, string $fileName, string $mimeType): BinaryFileResponse
     {
         $response = response()->file($filePath);
-        
+
         // セキュリティヘッダーを追加
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('X-XSS-Protection', '1; mode=block');
-        
+
         // SVGの場合は特別なCSPを設定
         $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
         if ($extension === 'svg') {
             $response->headers->set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'");
         }
-        
+
         return $response;
     }
 
@@ -284,6 +288,7 @@ class MediaSecurityService
     protected function isDangerousExtension(string $extension): bool
     {
         $dangerous = ['svg', 'html', 'htm', 'xml', 'xhtml', 'pdf', 'docx', 'doc', 'zip'];
+
         return in_array(strtolower($extension), $dangerous);
     }
 
@@ -312,6 +317,7 @@ class MediaSecurityService
 class MediaSecurityResult
 {
     protected array $errors = [];
+
     protected array $warnings = [];
 
     public function addError(string $code, string $message): void
@@ -326,12 +332,12 @@ class MediaSecurityResult
 
     public function hasErrors(): bool
     {
-        return !empty($this->errors);
+        return ! empty($this->errors);
     }
 
     public function hasWarnings(): bool
     {
-        return !empty($this->warnings);
+        return ! empty($this->warnings);
     }
 
     public function getErrors(): array
@@ -346,7 +352,7 @@ class MediaSecurityResult
 
     public function isValid(): bool
     {
-        return !$this->hasErrors();
+        return ! $this->hasErrors();
     }
 
     public function getFirstError(): ?string

@@ -26,13 +26,14 @@ namespace App\Services;
 
 use App\Jobs\SendWebhook;
 use App\Models\Webhook;
-use App\Models\WebhookDeadLetter;
 use App\Models\WebhookDelivery;
 use App\Support\DixlaseSigner;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * Webhook Dispatcher Service
  *
  * Dispatches webhooks to registered endpoints with signature verification.
@@ -57,9 +58,9 @@ class WebhookDispatcher
     /**
      * Dispatch webhook to all subscribed endpoints (async via queue)
      *
-     * @param string $event Event name (e.g., 'dixlase.backup.completed')
-     * @param array $payload Event payload data
-     * @param string|null $environment Filter by environment (live/test), null for all
+     * @param  string  $event  Event name (e.g., 'dixlase.backup.completed')
+     * @param  array  $payload  Event payload data
+     * @param  string|null  $environment  Filter by environment (live/test), null for all
      * @return int Number of webhooks dispatched
      */
     public static function dispatch(string $event, array $payload, ?string $environment = null): int
@@ -86,9 +87,9 @@ class WebhookDispatcher
     /**
      * Dispatch webhook synchronously (blocking)
      *
-     * @param string $event Event name
-     * @param array $payload Event payload data
-     * @param string|null $environment Filter by environment
+     * @param  string  $event  Event name
+     * @param  array  $payload  Event payload data
+     * @param  string|null  $environment  Filter by environment
      * @return array Results keyed by webhook ID
      */
     public static function dispatchSync(string $event, array $payload, ?string $environment = null): array
@@ -107,10 +108,9 @@ class WebhookDispatcher
     /**
      * Dispatch to a specific webhook (async)
      *
-     * @param Webhook $webhook Target webhook
-     * @param string $event Event name
-     * @param array $payload Event payload data
-     * @return WebhookDelivery
+     * @param  Webhook  $webhook  Target webhook
+     * @param  string  $event  Event name
+     * @param  array  $payload  Event payload data
      */
     public static function dispatchTo(Webhook $webhook, string $event, array $payload): WebhookDelivery
     {
@@ -123,10 +123,9 @@ class WebhookDispatcher
     /**
      * Dispatch to a specific webhook synchronously
      *
-     * @param Webhook $webhook Target webhook
-     * @param string $event Event name
-     * @param array $payload Event payload data
-     * @return WebhookDelivery
+     * @param  Webhook  $webhook  Target webhook
+     * @param  string  $event  Event name
+     * @param  array  $payload  Event payload data
      */
     public static function dispatchToSync(Webhook $webhook, string $event, array $payload): WebhookDelivery
     {
@@ -139,7 +138,6 @@ class WebhookDispatcher
     /**
      * Send a webhook delivery
      *
-     * @param WebhookDelivery $delivery
      * @return bool Success status
      */
     public static function send(WebhookDelivery $delivery): bool
@@ -203,7 +201,7 @@ class WebhookDispatcher
 
             // Non-2xx response
             $delivery->markAsFailed(
-                "HTTP {$response->status()}: " . substr($response->body(), 0, 500),
+                "HTTP {$response->status()}: ".substr($response->body(), 0, 500),
                 $response->status(),
                 $response->body()
             );
@@ -217,7 +215,6 @@ class WebhookDispatcher
             ]);
 
             return false;
-
         } catch (\Exception $e) {
             $delivery->markAsFailed($e->getMessage());
 
@@ -236,16 +233,16 @@ class WebhookDispatcher
     /**
      * Retry a failed delivery
      *
-     * @param WebhookDelivery $delivery
      * @return bool Success status
      */
     public static function retry(WebhookDelivery $delivery): bool
     {
-        if (!$delivery->canRetry()) {
+        if (! $delivery->canRetry()) {
             return false;
         }
 
         $delivery->incrementAttempt();
+
         return self::send($delivery);
     }
 
@@ -270,8 +267,8 @@ class WebhookDispatcher
     /**
      * Get webhooks subscribed to an event
      *
-     * @param string $event Event name
-     * @param string|null $environment Filter by environment
+     * @param  string  $event  Event name
+     * @param  string|null  $environment  Filter by environment
      * @return \Illuminate\Database\Eloquent\Collection
      */
     protected static function getSubscribedWebhooks(string $event, ?string $environment = null)
@@ -288,11 +285,7 @@ class WebhookDispatcher
     /**
      * Create a delivery record
      *
-     * @param Webhook $webhook
-     * @param string $event
-     * @param array $payload
-     * @param string|null $eventId Optional event ID for idempotency (auto-generated if null)
-     * @return WebhookDelivery
+     * @param  string|null  $eventId  Optional event ID for idempotency (auto-generated if null)
      */
     protected static function createDelivery(Webhook $webhook, string $event, array $payload, ?string $eventId = null): WebhookDelivery
     {
@@ -311,9 +304,8 @@ class WebhookDispatcher
     /**
      * Get delivery statistics
      *
-     * @param int|null $webhookId Filter by webhook ID
-     * @param int $days Number of days to look back
-     * @return array
+     * @param  int|null  $webhookId  Filter by webhook ID
+     * @param  int  $days  Number of days to look back
      */
     public static function getStats(?int $webhookId = null, int $days = 7): array
     {

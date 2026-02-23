@@ -26,6 +26,8 @@ use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 use App\Models\BaseSetting;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * 基本設定リポジトリ実装
  */
 class BaseSettingRepository extends AbstractSettingRepository implements BaseSettingRepositoryInterface
@@ -60,7 +62,7 @@ class BaseSettingRepository extends AbstractSettingRepository implements BaseSet
 
     /**
      * 配列をJSON文字列に変換
-     * 
+     *
      * {@inheritDoc}
      */
     protected function transformValueForStorage(mixed $value): mixed
@@ -70,12 +72,13 @@ class BaseSettingRepository extends AbstractSettingRepository implements BaseSet
 
     /**
      * JSON文字列を配列に変換
-     * 
+     *
      * {@inheritDoc}
      */
     protected function transformValueFromStorage(mixed $value): mixed
     {
         $decoded = json_decode($value, true);
+
         return $decoded ?? $value;
     }
 }

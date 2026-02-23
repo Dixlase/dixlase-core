@@ -26,14 +26,16 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * メール送信緊急バイパスサービス（ブレークグラス）
- * 
+ *
  * SMTPサーバー障害時に、メール依存機能を一時的にバイパスする
- * 
+ *
  * 対象機能:
  * - 2FA（メール認証をスキップ）
  * - パスワードリセット（メール送信をスキップして直接リセット可能に）
- * 
+ *
  * 特徴:
  * - 時間制限付き（最大120分）
  * - スコープ指定可能（two_fa, password_reset, all）
@@ -46,6 +48,7 @@ class MailBypassService
      * キャッシュキー
      */
     private const CACHE_KEY_BYPASS = 'mail_bypass';
+
     private const CACHE_KEY_BYPASS_DATA = 'mail_bypass_data';
 
     /**
@@ -60,9 +63,9 @@ class MailBypassService
     {
         // 最大時間を制限
         $minutes = min($minutes, self::MAX_BYPASS_MINUTES);
-        
+
         $expiresAt = now()->addMinutes($minutes);
-        
+
         $data = [
             'active' => true,
             'scope' => $scope,
@@ -89,6 +92,7 @@ class MailBypassService
             Log::channel('admin_error')->error('Failed to enable mail bypass', [
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -109,7 +113,7 @@ class MailBypassService
      */
     public static function isActive(?string $scope = null): bool
     {
-        if (!Cache::get(self::CACHE_KEY_BYPASS, false)) {
+        if (! Cache::get(self::CACHE_KEY_BYPASS, false)) {
             return false;
         }
 
@@ -117,12 +121,12 @@ class MailBypassService
         if ($scope !== null) {
             $data = Cache::get(self::CACHE_KEY_BYPASS_DATA, []);
             $bypassScope = $data['scope'] ?? 'two_fa';
-            
+
             // 'all' スコープは全てにマッチ
             if ($bypassScope === 'all') {
                 return true;
             }
-            
+
             return $bypassScope === $scope;
         }
 
@@ -153,7 +157,7 @@ class MailBypassService
         $isActive = Cache::get(self::CACHE_KEY_BYPASS, false);
         $data = Cache::get(self::CACHE_KEY_BYPASS_DATA, []);
 
-        if (!$isActive || empty($data)) {
+        if (! $isActive || empty($data)) {
             return [
                 'active' => false,
                 'scope' => null,
