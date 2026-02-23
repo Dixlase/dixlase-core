@@ -31,7 +31,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // セッション開始後に実行するミドルウェア
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\CheckMaintenanceMode::class, // メンテナンスモードチェック（認証状態を参照するためセッション後に実行）
-            \App\Http\Middleware\CspSafeMode::class, // CSPセーフモード検出（認証後に実行）
+            \App\Http\Middleware\SafeMode::class, // セーフモード検出（認証後に実行、CSP/プラグイン/テーマ対応）
+            \App\Http\Middleware\BlockPluginRoutes::class, // プラグインセーフモード時のルートブロック
             \App\Http\Middleware\SetLocale::class, // フロントページ言語設定（管理メンバー優先）
             \App\Http\Middleware\SetMemberLocale::class, // 管理メンバー個別言語設定（管理画面用）
         ]);

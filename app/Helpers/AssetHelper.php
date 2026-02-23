@@ -418,6 +418,7 @@ if (! function_exists('get_theme_declared_assets')) {
 if (! function_exists('load_active_assets')) {
     /**
      * 管理画面用：アクティブなテーマとプラグインのアセットを読み込む
+     * プラグインセーフモード有効時はプラグインアセットをスキップ
      */
     function load_active_assets(): string
     {
@@ -426,27 +427,30 @@ if (! function_exists('load_active_assets')) {
         // プラグイン・テーマのアセットを先に読み込み
         // （Alpine.data() 登録を common の Alpine.start() より前に実行するため）
 
-        // 有効なプラグインのアセットを読み込み
-        try {
-            $activePlugins = DB::table('plugins')->whereNotNull('enabled_at')->get();
-            foreach ($activePlugins as $plugin) {
-                $declaredAssets = get_plugin_declared_assets($plugin->directory);
+        // プラグインセーフモード時はプラグインアセットをスキップ
+        if (! session('safe_mode_plugins')) {
+            // 有効なプラグインのアセットを読み込み
+            try {
+                $activePlugins = DB::table('plugins')->whereNotNull('enabled_at')->get();
+                foreach ($activePlugins as $plugin) {
+                    $declaredAssets = get_plugin_declared_assets($plugin->directory);
 
-                // assets === false または未宣言の場合はスキップ
-                if ($declaredAssets === false || $declaredAssets === null) {
-                    continue;
+                    // assets === false または未宣言の場合はスキップ
+                    if ($declaredAssets === false || $declaredAssets === null) {
+                        continue;
+                    }
+
+                    $commonAssets = $declaredAssets['common'] ?? [];
+                    $adminAssets = $declaredAssets['admin'] ?? [];
+                    $allAssets = array_merge($commonAssets, $adminAssets);
+
+                    if (! empty($allAssets)) {
+                        $output .= load_assets('plugin', $plugin->directory, $allAssets);
+                    }
                 }
-
-                $commonAssets = $declaredAssets['common'] ?? [];
-                $adminAssets = $declaredAssets['admin'] ?? [];
-                $allAssets = array_merge($commonAssets, $adminAssets);
-
-                if (! empty($allAssets)) {
-                    $output .= load_assets('plugin', $plugin->directory, $allAssets);
-                }
+            } catch (\Exception $e) {
+                // プラグインテーブルがない場合はスキップ
             }
-        } catch (\Exception $e) {
-            // プラグインテーブルがない場合はスキップ
         }
 
         // アクティブなテーマのアセットを読み込み
@@ -596,6 +600,7 @@ if (! function_exists('load_core_assets')) {
 if (! function_exists('load_front_assets')) {
     /**
      * フロントページ用：コアとテーマのアセットを読み込む
+     * テーマセーフモード有効時はテーマアセットをスキップ
      *
      * @param  array  $coreFiles  コアのフロント用アセットファイル
      * @param  array  $themeFiles  テーマ固有のアセットファイル
@@ -617,8 +622,8 @@ if (! function_exists('load_front_assets')) {
             }
         }
 
-        // テーマのアセットを読み込む
-        if (! empty($themeFiles)) {
+        // テーマセーフモード時はテーマアセットをスキップ
+        if (! session('safe_mode_theme') && ! empty($themeFiles)) {
             $output .= load_theme_assets($themeFiles);
         }
 
