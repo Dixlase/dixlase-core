@@ -35,4 +35,9 @@ return [
         'name' => 'Cookie Policy',
         'description' => 'Page explaining how cookies are used on the site.',
     ],
+
+    'tokushoho' => [
+        'name' => 'Specified Commercial Transactions Act',
+        'description' => 'Page displaying the notation based on the Specified Commercial Transactions Act (Tokutei Shoutorihiki-hou).',
+    ],
 ];
