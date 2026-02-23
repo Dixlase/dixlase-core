@@ -153,4 +153,4 @@ https://exc-d.com
             @endif
         </div>
     </div>
-</x-modal>
+</x-ui-modal>

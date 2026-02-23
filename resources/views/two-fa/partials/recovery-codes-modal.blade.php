@@ -127,4 +127,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{-- デフォルトボタンを非表示にするため、空のdivを配置 --}}
         <div style="display: none;"></div>
     </x-slot>
-</x-modal>
+</x-ui-modal>

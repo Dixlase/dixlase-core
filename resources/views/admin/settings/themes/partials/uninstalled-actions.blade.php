@@ -67,7 +67,7 @@ https://exc-d.com
                 {{ str_replace('{name}', $card['name'], __('admin/settings/themes/index.install.confirm_message')) }}
             </p>
         @endif
-    </x-modal>
+    </x-ui-modal>
 </form>
 
 {{-- 削除ボタン --}}

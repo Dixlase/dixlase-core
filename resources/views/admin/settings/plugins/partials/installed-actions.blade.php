@@ -87,7 +87,7 @@ https://exc-d.com
                         {{ __('admin/settings/plugins/index.permissions.enable_warning_confirm') }}
                     </p>
                 </div>
-            </x-modal>
+            </x-ui-modal>
         @else
             <x-form-button
                 type="submit"
