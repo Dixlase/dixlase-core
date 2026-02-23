@@ -68,7 +68,7 @@ class CspBuilder
     public function build(): string
     {
         // セーフモードの場合はCSPを無効化（空文字列を返す）
-        if (session('csp_safe_mode')) {
+        if (session('safe_mode_csp')) {
             return '';
         }
 

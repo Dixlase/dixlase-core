@@ -52,8 +52,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- Maintenance Mode Banner (Sticky at top) -->
             <x-ui-admin-maintenance-banner />
             
-            <!-- CSP Safe Mode Banner -->
-            <x-security.csp-safe-mode-banner />
+            <!-- Safe Mode Banner -->
+            <x-security.safe-mode-banner />
             
             <!-- Admin Bar (Header) -->
             <x-ui-admin-bar :isAdminLayout="true" />
