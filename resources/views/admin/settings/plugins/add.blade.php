@@ -23,27 +23,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto">
 
-    <!-- Flash message for success or error -->
-    @if(session('success'))
-        <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50">
-            {{ session('success') }}
-
-            @if(session('installed_plugin_id'))
-                <!-- 有効化フォーム -->
-                <br>{{ __('admin/settings/plugins/add.enable_plugin_text') }}
-                <form action="{{ route('admin.settings.plugins.enable', session('installed_plugin_id')) }}"
-                    method="POST" class="inline-block ml-3">
-                    @csrf
-                    <button type="submit"
-                            class="bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded text-sm">
-                        {{ __('admin/settings/plugins/add.enable_from_here') }}
-                    </button>
-                </form>
-                {{ __('admin/settings/plugins/add.enable_instruction') }}
-            @endif
-        </div>
-    @endif
-
     @if ($errors->any())
         <div class="mb-4 p-4 text-red-800 bg-red-100 border border-red-200 rounded-lg">
             <ul class="list-disc list-inside">

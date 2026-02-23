@@ -62,7 +62,7 @@ return [
         'completed' => 'Plugin scan completed.',
         'failed' => 'Plugin scan failed.',
     ],
-    
+
     // Badge Labels (for card display)
     'badge_labels' => [
         'health' => 'Health',
@@ -204,9 +204,10 @@ return [
 
     // Controller Messages
     'messages' => [
-        'install_success' => 'Plugin has been installed successfully. To use the plugin, please :enable_link to enable it.',
+        'install_success' => 'Plugin has been installed successfully.',
         'install_success_no_plugin' => 'Plugin has been installed successfully.',
         'enable_here' => 'click here',
+        'enable_prompt' => 'Plugin ":name" is ready to be enabled.',
         'install_failed' => 'Plugin installation failed: :error',
         'install_directory_not_found' => 'Plugin directory not found.',
         'uninstall_success' => 'Plugin has been uninstalled',
@@ -245,6 +246,7 @@ return [
         'enable_warning_title' => 'Pre-Activation Confirmation',
         'enable_warning_message' => 'Plugin ":name" has the following notes:',
         'enable_warning_confirm' => 'Do you want to enable understanding the above?',
+        'enable_confirm_simple' => 'Do you want to enable plugin ":name"?',
         'enable_warning_invalid_signature' => 'Invalid signature (possible tampering)',
         'enable_warning_needs_attention' => 'Uses permissions that need attention',
         'enable_warning_high_risk' => 'Has high health risk',

@@ -22,6 +22,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
+    {{-- インストール直後の有効化バナー --}}
+    @if($installedPluginCard)
+        <div class="mb-6 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-blue-500 dark:text-blue-400 mr-2"></i>
+                    <span class="text-sm font-medium text-blue-800 dark:text-blue-200">
+                        {{ __('admin/settings/plugins/index.messages.enable_prompt', ['name' => $installedPluginCard['translatedName']]) }}
+                    </span>
+                </div>
+                <x-form-button
+                    type="button"
+                    :label="__('common.enable')"
+                    variant="success"
+                    size="xs"
+                    icon="fas fa-play"
+                    @click="openModal('quickEnableModal')"
+                />
+            </div>
+        </div>
+    @endif
+
     {{-- インストール済みプラグイン一覧セクション --}}
     <section>
         <div class="flex items-center justify-between mb-6">
@@ -75,6 +97,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </section>
     @endif
 </div>
+
+{{-- インストール直後の有効化確認モーダル --}}
+@if($installedPluginCard)
+    @include('admin.settings.plugins.partials.quick-enable-modal', ['card' => $installedPluginCard])
+@endif
 
 @endsection
 

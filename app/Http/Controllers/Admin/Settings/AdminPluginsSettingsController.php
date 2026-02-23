@@ -110,10 +110,18 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $uninstalledPluginCards[] = ExtensionCardPresenter::forPlugin($plugin);
         }
 
+        // インストール直後のプラグインカードを特定（フラッシュメッセージのモーダル用）
+        $installedPluginId = session('installed_plugin_id');
+        $installedPluginCard = null;
+        if ($installedPluginId) {
+            $installedPluginCard = collect($pluginCards)->firstWhere('id', $installedPluginId);
+        }
+
         $this->viewParams['plugins'] = $plugins;
         $this->viewParams['uninstalledPlugins'] = $uninstalledPlugins;
         $this->viewParams['pluginCards'] = $pluginCards;
         $this->viewParams['uninstalledPluginCards'] = $uninstalledPluginCards;
+        $this->viewParams['installedPluginCard'] = $installedPluginCard;
         $this->viewParams['heading'] = __('admin/settings/plugins/index.heading');
 
         return view('admin::settings.plugins.index', $this->viewParams);
@@ -400,22 +408,10 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 );
             }
 
-            // インストール成功メッセージ（有効化リンク付き）
-            if ($plugin) {
-                $enableUrl = route('admin.settings.plugins.enable', $plugin->id);
-                $csrfToken = csrf_token();
-                $enableLink = '<form method="POST" action="'.e($enableUrl).'" class="inline">'
-                    .'<input type="hidden" name="_token" value="'.e($csrfToken).'">'
-                    .'<button type="submit" class="underline font-bold hover:opacity-80">'
-                    .__('admin/settings/plugins/index.messages.enable_here')
-                    .'</button></form>';
-
-                $successMessage = __('admin/settings/plugins/index.messages.install_success', [
-                    'enable_link' => $enableLink,
-                ]);
-            } else {
-                $successMessage = __('admin/settings/plugins/index.messages.install_success_no_plugin');
-            }
+            // インストール成功メッセージ
+            $successMessage = $plugin
+                ? __('admin/settings/plugins/index.messages.install_success')
+                : __('admin/settings/plugins/index.messages.install_success_no_plugin');
 
             return redirect()->route('admin.settings.plugins.index')
                 ->with('success', $successMessage)
