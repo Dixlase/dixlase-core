@@ -67,6 +67,7 @@ AGPL copyleft obligations under the Dixlase Plugin and Theme Exception.
 | `App\Traits\RegistersCspPolicy` | CSPポリシー登録トレイト |
 | `App\Traits\ThemeLoaderTrait` | テーマリソースローディング機構 |
 | `App\Traits\TranslatableTrait` | Translatable Trait |
+| `App\Traits\TwoFa\TwoFaAuthenticationTrait` | 二段階認証のフロー制御機能を提供するトレイト |
 
 ---
 

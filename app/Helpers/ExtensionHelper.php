@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of Dixlase.
  *
@@ -25,18 +26,20 @@ use App\Services\Csp\CspNonceGenerator;
 use Illuminate\Support\HtmlString;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * 拡張機能開発者向けヘルパークラス
- * 
+ *
  * プラグイン・テーマ開発者向けの公開APIを提供します。
- * 
+ *
  * CSP機能:
  * - CSPに対応したスクリプト・スタイルの出力
  * - CSPモードの取得と設定
  * - nonce生成とHTML属性の構築
- * 
+ *
  * プラグイン・テーマ開発者はこのヘルパーを使用することで、
  * CSPモードに関係なく安全にインラインコードを出力できます。
- * 
+ *
  * 使用例:
  * - ExtensionHelper::script('console.log("Hello");')
  * - ExtensionHelper::getCspMode()
@@ -45,73 +48,67 @@ class ExtensionHelper
 {
     /**
      * CSP対応のインラインスクリプトを出力
-     * 
-     * @param string $code JavaScriptコード
-     * @param array $options オプション（defer, async, type等）
-     * @return HtmlString
+     *
+     * @param  string  $code  JavaScriptコード
+     * @param  array  $options  オプション（defer, async, type等）
      */
     public static function script(string $code, array $options = []): HtmlString
     {
         $nonce = self::getNonce();
         $attributes = self::buildAttributes($options, $nonce, 'script');
-        
+
         $code = trim($code);
-        
+
         return new HtmlString("<script{$attributes}>\n{$code}\n</script>");
     }
 
     /**
      * CSP対応のインラインスタイルを出力
-     * 
-     * @param string $css CSSコード
-     * @param array $options オプション
-     * @return HtmlString
+     *
+     * @param  string  $css  CSSコード
+     * @param  array  $options  オプション
      */
     public static function style(string $css, array $options = []): HtmlString
     {
         $nonce = self::getNonce();
         $attributes = self::buildAttributes($options, $nonce, 'style');
-        
+
         $css = trim($css);
-        
+
         return new HtmlString("<style{$attributes}>\n{$css}\n</style>");
     }
 
     /**
      * CSP対応の外部スクリプトタグを出力
-     * 
-     * @param string $src スクリプトURL
-     * @param array $options オプション（defer, async, integrity等）
-     * @return HtmlString
+     *
+     * @param  string  $src  スクリプトURL
+     * @param  array  $options  オプション（defer, async, integrity等）
      */
     public static function scriptSrc(string $src, array $options = []): HtmlString
     {
         $attributes = self::buildSrcAttributes($options, $src);
-        
+
         return new HtmlString("<script{$attributes}></script>");
     }
 
     /**
      * CSP対応の外部スタイルシートタグを出力
-     * 
-     * @param string $href スタイルシートURL
-     * @param array $options オプション（integrity, media等）
-     * @return HtmlString
+     *
+     * @param  string  $href  スタイルシートURL
+     * @param  array  $options  オプション（integrity, media等）
      */
     public static function styleSrc(string $href, array $options = []): HtmlString
     {
         $rel = $options['rel'] ?? 'stylesheet';
         unset($options['rel']);
-        
+
         $attributes = self::buildSrcAttributes($options, $href, 'href');
-        
+
         return new HtmlString("<link rel=\"{$rel}\"{$attributes}>");
     }
 
     /**
      * 現在のnonceを取得
-     * 
-     * @return string
      */
     public static function getNonce(): string
     {
@@ -120,17 +117,15 @@ class ExtensionHelper
 
     /**
      * nonce属性のみを取得（カスタム用途向け）
-     * 
-     * @return string
      */
     public static function nonceAttribute(): string
     {
-        return 'nonce="' . self::getNonce() . '"';
+        return 'nonce="'.self::getNonce().'"';
     }
 
     /**
      * 現在のCSPモードを取得
-     * 
+     *
      * @return string 'development', 'standard', 'strict'
      */
     public static function getCspMode(): string
@@ -138,6 +133,7 @@ class ExtensionHelper
         try {
             $modeValue = \App\Models\SecuritySetting::get('csp_mode', (string) \App\Enums\CspMode::default()->value);
             $mode = \App\Enums\CspMode::fromValue($modeValue);
+
             return $mode ? $mode->toString() : \App\Enums\CspMode::default()->toString();
         } catch (\Exception $e) {
             return config('csp.mode', 'standard');
@@ -146,13 +142,12 @@ class ExtensionHelper
 
     /**
      * 現在のCSPモードEnumを取得
-     * 
-     * @return \App\Enums\CspMode
      */
     public static function getCspModeEnum(): \App\Enums\CspMode
     {
         try {
             $modeValue = \App\Models\SecuritySetting::get('csp_mode', (string) \App\Enums\CspMode::default()->value);
+
             return \App\Enums\CspMode::fromValue($modeValue) ?? \App\Enums\CspMode::default();
         } catch (\Exception $e) {
             return \App\Enums\CspMode::default();
@@ -161,19 +156,16 @@ class ExtensionHelper
 
     /**
      * 現在のCSPモード設定を取得
-     * 
-     * @return array
      */
     public static function getCspModeConfig(): array
     {
         $mode = self::getCspMode();
+
         return config("csp.modes.{$mode}", config('csp.modes.standard'));
     }
 
     /**
      * CSPが有効かどうか
-     * 
-     * @return bool
      */
     public static function isCspEnabled(): bool
     {
@@ -186,8 +178,6 @@ class ExtensionHelper
 
     /**
      * 厳格モードかどうか
-     * 
-     * @return bool
      */
     public static function isStrictMode(): bool
     {
@@ -196,8 +186,6 @@ class ExtensionHelper
 
     /**
      * 開発モードかどうか
-     * 
-     * @return bool
      */
     public static function isDevelopmentMode(): bool
     {
@@ -206,34 +194,31 @@ class ExtensionHelper
 
     /**
      * nonceが必要かどうか
-     * 
-     * @return bool
      */
     public static function requiresNonce(): bool
     {
         $config = self::getCspModeConfig();
+
         return $config['require_nonce'] ?? false;
     }
 
     /**
      * インラインスクリプトが許可されているか
-     * 
-     * @return bool
      */
     public static function allowsInlineScripts(): bool
     {
         $config = self::getCspModeConfig();
+
         return $config['allow_inline_scripts'] ?? false;
     }
 
     /**
      * インラインプラグインがブロックされるか
-     * 
-     * @return bool
      */
     public static function blocksInlinePlugins(): bool
     {
         $config = self::getCspModeConfig();
+
         return $config['block_inline_plugins'] ?? false;
     }
 
@@ -243,24 +228,24 @@ class ExtensionHelper
     protected static function buildAttributes(array $options, string $nonce, string $type): string
     {
         $attrs = [];
-        
+
         // nonceは常に付与
         $attrs[] = "nonce=\"{$nonce}\"";
-        
+
         if ($type === 'script') {
             // defer/asyncオプション
-            if (!empty($options['defer'])) {
+            if (! empty($options['defer'])) {
                 $attrs[] = 'defer';
             }
-            if (!empty($options['async'])) {
+            if (! empty($options['async'])) {
                 $attrs[] = 'async';
             }
             // typeオプション（module等）
-            if (!empty($options['type'])) {
-                $attrs[] = 'type="' . e($options['type']) . '"';
+            if (! empty($options['type'])) {
+                $attrs[] = 'type="'.e($options['type']).'"';
             }
         }
-        
+
         // カスタム属性
         foreach ($options as $key => $value) {
             if (in_array($key, ['defer', 'async', 'type', 'nonce'])) {
@@ -269,11 +254,11 @@ class ExtensionHelper
             if ($value === true) {
                 $attrs[] = e($key);
             } elseif ($value !== false && $value !== null) {
-                $attrs[] = e($key) . '="' . e($value) . '"';
+                $attrs[] = e($key).'="'.e($value).'"';
             }
         }
-        
-        return $attrs ? ' ' . implode(' ', $attrs) : '';
+
+        return $attrs ? ' '.implode(' ', $attrs) : '';
     }
 
     /**
@@ -282,31 +267,31 @@ class ExtensionHelper
     protected static function buildSrcAttributes(array $options, string $url, string $urlAttr = 'src'): string
     {
         $attrs = [];
-        
+
         // URL
-        $attrs[] = "{$urlAttr}=\"" . e($url) . '"';
-        
+        $attrs[] = "{$urlAttr}=\"".e($url).'"';
+
         // defer/async（scriptのみ）
         if ($urlAttr === 'src') {
-            if (!empty($options['defer'])) {
+            if (! empty($options['defer'])) {
                 $attrs[] = 'defer';
             }
-            if (!empty($options['async'])) {
+            if (! empty($options['async'])) {
                 $attrs[] = 'async';
             }
         }
-        
+
         // integrity（SRI）
-        if (!empty($options['integrity'])) {
-            $attrs[] = 'integrity="' . e($options['integrity']) . '"';
+        if (! empty($options['integrity'])) {
+            $attrs[] = 'integrity="'.e($options['integrity']).'"';
             $attrs[] = 'crossorigin="anonymous"';
         }
-        
+
         // crossorigin
-        if (!empty($options['crossorigin']) && empty($options['integrity'])) {
-            $attrs[] = 'crossorigin="' . e($options['crossorigin']) . '"';
+        if (! empty($options['crossorigin']) && empty($options['integrity'])) {
+            $attrs[] = 'crossorigin="'.e($options['crossorigin']).'"';
         }
-        
+
         // その他の属性
         foreach ($options as $key => $value) {
             if (in_array($key, ['defer', 'async', 'integrity', 'crossorigin', 'src', 'href'])) {
@@ -315,10 +300,10 @@ class ExtensionHelper
             if ($value === true) {
                 $attrs[] = e($key);
             } elseif ($value !== false && $value !== null) {
-                $attrs[] = e($key) . '="' . e($value) . '"';
+                $attrs[] = e($key).'="'.e($value).'"';
             }
         }
-        
-        return ' ' . implode(' ', $attrs);
+
+        return ' '.implode(' ', $attrs);
     }
 }

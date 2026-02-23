@@ -3,9 +3,12 @@
 namespace App\Services\TwoFa;
 
 use App\Contracts\TwoFaInterface;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
+/**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ */
 class TwoFaAttemptService
 {
     protected string $settingModelClass;
@@ -43,11 +46,12 @@ class TwoFaAttemptService
         $lockoutDuration = $this->getLockoutDuration();
         $lastLockout = $this->getLastLockoutTime($user);
 
-        if (!$lastLockout) {
+        if (! $lastLockout) {
             return false;
         }
 
         $unlockAt = $lastLockout->addMinutes($lockoutDuration);
+
         return Carbon::now()->lessThan($unlockAt);
     }
 
@@ -56,7 +60,7 @@ class TwoFaAttemptService
      */
     public function getRemainingLockoutTime(TwoFaInterface $user): ?int
     {
-        if (!$this->isLockedOut($user)) {
+        if (! $this->isLockedOut($user)) {
             return null;
         }
 

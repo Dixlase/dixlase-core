@@ -18,20 +18,21 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @internal コア専用。プラグイン/テーマから参照しないこと
  */
 
 use App\Services\Plugin\PluginPermissionService;
 
-if (!function_exists('plugin_permission')) {
+if (! function_exists('plugin_permission')) {
     /**
      * プラグイン権限サービスのインスタンスを取得
      *
-     * @return \App\Services\Plugin\PluginPermissionService
-     * 
+     *
      * @example
      * // 権限チェック
      * plugin_permission()->check('dixlase-inquiry', 'mail.send');
-     * 
+     *
      * // 権限サマリー取得
      * plugin_permission()->getSummary('dixlase-inquiry');
      */
@@ -41,14 +42,13 @@ if (!function_exists('plugin_permission')) {
     }
 }
 
-if (!function_exists('plugin_can')) {
+if (! function_exists('plugin_can')) {
     /**
      * プラグインが特定の権限を持っているかチェック
      *
-     * @param string $pluginSlug プラグインのスラッグ
-     * @param string $permission 権限キー（ドット記法）
-     * @return bool
-     * 
+     * @param  string  $pluginSlug  プラグインのスラッグ
+     * @param  string  $permission  権限キー（ドット記法）
+     *
      * @example
      * if (plugin_can('dixlase-inquiry', 'mail.send')) {
      *     // メール送信処理
@@ -60,16 +60,16 @@ if (!function_exists('plugin_can')) {
     }
 }
 
-if (!function_exists('plugin_enforce')) {
+if (! function_exists('plugin_enforce')) {
     /**
      * プラグインの権限をチェックし、違反時は例外をスロー
      *
-     * @param string $pluginSlug プラグインのスラッグ
-     * @param string $permission 権限キー（ドット記法）
-     * @param string $action 実行しようとしたアクション（ログ用）
+     * @param  string  $pluginSlug  プラグインのスラッグ
+     * @param  string  $permission  権限キー（ドット記法）
+     * @param  string  $action  実行しようとしたアクション（ログ用）
+     *
      * @throws \App\Exceptions\PluginPermissionException
-     * @return void
-     * 
+     *
      * @example
      * plugin_enforce('dixlase-inquiry', 'mail.send', 'Sending inquiry notification');
      */

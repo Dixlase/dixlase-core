@@ -18,21 +18,22 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @internal コア専用。プラグイン/テーマから参照しないこと
  */
-
-if (!function_exists('shortcode_parse')) {
+if (! function_exists('shortcode_parse')) {
     /**
      * ショートコードをパースして実行
      *
-     * @param string $content パース対象のコンテンツ
+     * @param  string  $content  パース対象のコンテンツ
      * @return string パース後のコンテンツ
      */
     function shortcode_parse($content)
     {
-        if (!app()->bound('shortcode')) {
+        if (! app()->bound('shortcode')) {
             return $content;
         }
-        
+
         return app('shortcode')->parse($content);
     }
 }

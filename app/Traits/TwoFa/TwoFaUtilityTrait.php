@@ -2,16 +2,16 @@
 
 namespace App\Traits\TwoFa;
 
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
 use App\Enums\AuthenticationMode;
 use App\Enums\TwoFaMethod;
-use App\Traits\DeviceDetectionTrait;
 use App\Services\TwoFa\TwoFaPasskeyService;
+use App\Traits\DeviceDetectionTrait;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * 二段階認証の低レベルユーティリティ機能を提供するトレイト
- * 
+ *
  * コード生成・検証、設定取得、判定ロジックなど、
  * 二段階認証の基本的な機能を提供します。
  */
@@ -22,65 +22,67 @@ trait TwoFaUtilityTrait
     /**
      * 二段階認証コードを生成してデータベースに保存
      *
-     * @param mixed $user ユーザーモデル
-     * @param int $expireMinutes 有効期限（分）
+     * @param  mixed  $user  ユーザーモデル
+     * @param  int  $expireMinutes  有効期限（分）
      * @return string 生成されたコード
      */
-    public function generateTwoFaCode($user, int $expireMinutes = null): string
+    public function generateTwoFaCode($user, ?int $expireMinutes = null): string
     {
         $codeService = app(\App\Services\TwoFa\TwoFaCodeService::class);
+
         return $codeService->generate($user, $expireMinutes);
     }
 
     /**
      * 二段階認証コードを検証
      *
-     * @param mixed $user ユーザーモデル
-     * @param string $inputCode 入力されたコード
+     * @param  mixed  $user  ユーザーモデル
+     * @param  string  $inputCode  入力されたコード
      * @return bool 検証結果
      */
     public function validateTwoFaCode($user, string $inputCode): bool
     {
         $codeService = app(\App\Services\TwoFa\TwoFaCodeService::class);
+
         return $codeService->validate($user, $inputCode);
     }
 
     /**
      * 有効な認証方法を取得
      *
-     * @param string $settingsKey 設定キー
-     * @param array $defaultMethods デフォルトの認証方法
+     * @param  string  $settingsKey  設定キー
+     * @param  array  $defaultMethods  デフォルトの認証方法
      * @return array 有効な認証方法の配列
      */
-    public function getEnabledTwoFaMethods(string $settingsKey = 'enabled_two_fa_methods', array $defaultMethods = null): array
+    public function getEnabledTwoFaMethods(string $settingsKey = 'enabled_two_fa_methods', ?array $defaultMethods = null): array
     {
         if ($defaultMethods === null) {
             $defaultMethods = [TwoFaMethod::EMAIL->value];
         }
 
         $settingsValue = $this->getSettingValue($settingsKey, json_encode($defaultMethods));
-        
+
         // 設定値が文字列でない場合（整数など）の処理
-        if (!is_string($settingsValue)) {
+        if (! is_string($settingsValue)) {
             return $defaultMethods;
         }
-        
+
         $decoded = json_decode($settingsValue, true);
-        
+
         // JSON デコードが失敗した場合、または配列でない場合はデフォルトを返す
-        if (!is_array($decoded)) {
+        if (! is_array($decoded)) {
             return $defaultMethods;
         }
-        
+
         return $decoded;
     }
 
     /**
      * 二段階認証が必要かどうかを判定
      *
-     * @param mixed $user ユーザーモデル
-     * @param int $forceSetting システム設定の強制2FA設定
-     * @param array $enabledMethods 有効な認証方法
+     * @param  mixed  $user  ユーザーモデル
+     * @param  int  $forceSetting  システム設定の強制2FA設定
+     * @param  array  $enabledMethods  有効な認証方法
      * @return bool 2FAが必要かどうか
      */
     public function requiresTwoFa($user, int $forceSetting, array $enabledMethods): bool
@@ -108,8 +110,8 @@ trait TwoFaUtilityTrait
     /**
      * 有効な2要素認証モードを取得する
      *
-     * @param mixed $user ユーザーモデル
-     * @param int $forceSetting システム設定の強制2FA設定
+     * @param  mixed  $user  ユーザーモデル
+     * @param  int  $forceSetting  システム設定の強制2FA設定
      * @return int 有効な2FAモード
      */
     protected function getEffectiveTwoFaMode($user, int $forceSetting): int
@@ -135,7 +137,7 @@ trait TwoFaUtilityTrait
     /**
      * ユーザーの2FA個人設定をチェック
      *
-     * @param mixed $user ユーザーモデル
+     * @param  mixed  $user  ユーザーモデル
      * @return int 2FAモード
      */
     protected function checkUserTwoFaSetting($user): int
@@ -156,20 +158,21 @@ trait TwoFaUtilityTrait
     /**
      * 信頼済みデバイスからのアクセスかチェック
      *
-     * @param mixed $user ユーザーモデル
+     * @param  mixed  $user  ユーザーモデル
      * @return bool 信頼済みデバイスの場合true
      */
     protected function isFromTrustedDevice($user): bool
     {
         $passkeyService = new TwoFaPasskeyService();
+
         return $passkeyService->isTrustedDevice($user);
     }
 
     /**
      * 設定値を取得する（継承先で実装）
      *
-     * @param string $key 設定キー
-     * @param mixed $default デフォルト値
+     * @param  string  $key  設定キー
+     * @param  mixed  $default  デフォルト値
      * @return mixed 設定値
      */
     abstract protected function getSettingValue(string $key, $default = null);

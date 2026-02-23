@@ -28,6 +28,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 法務ページレジストリサービス
  *
  * コアとプラグインの法務ページ種別を統合管理し、

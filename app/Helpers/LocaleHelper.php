@@ -25,8 +25,10 @@ namespace App\Helpers;
 use Illuminate\Support\Facades\Auth;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 言語設定ヘルパー
- * 
+ *
  * 管理画面の言語設定とフォールバックロジックを管理します。
  */
 class LocaleHelper
@@ -48,8 +50,6 @@ class LocaleHelper
 
     /**
      * サポートされている言語一覧を取得
-     * 
-     * @return array
      */
     public static function supportedLocales(): array
     {
@@ -58,7 +58,7 @@ class LocaleHelper
 
     /**
      * サポートされている言語を選択肢として取得
-     * 
+     *
      * @return array ['ja' => '日本語', 'en' => 'English']
      */
     public static function supportedLocaleOptions(): array
@@ -71,9 +71,6 @@ class LocaleHelper
 
     /**
      * 言語がサポートされているかチェック
-     * 
-     * @param string $locale
-     * @return bool
      */
     public static function isSupported(string $locale): bool
     {
@@ -82,8 +79,6 @@ class LocaleHelper
 
     /**
      * ログイン中のユーザーの優先言語を取得
-     * 
-     * @return string
      */
     public static function getUserPreferredLocale(): string
     {
@@ -103,19 +98,16 @@ class LocaleHelper
 
     /**
      * 現在の言語を取得
-     * 
-     * @return string
      */
     public static function getCurrentLocale(): string
     {
         $locale = app()->getLocale();
+
         return self::isSupported($locale) ? $locale : self::$defaultLocale;
     }
 
     /**
      * デフォルト言語を取得
-     * 
-     * @return string
      */
     public static function getDefaultLocale(): string
     {
@@ -124,10 +116,9 @@ class LocaleHelper
 
     /**
      * フォールバック言語を取得
-     * 
-     * @param string $preferredLocale 優先言語
-     * @param array $availableLocales 利用可能な言語一覧
-     * @return string|null
+     *
+     * @param  string  $preferredLocale  優先言語
+     * @param  array  $availableLocales  利用可能な言語一覧
      */
     public static function getFallbackLocale(string $preferredLocale, array $availableLocales): ?string
     {
@@ -149,15 +140,13 @@ class LocaleHelper
 
     /**
      * 言語名を取得
-     * 
-     * @param string $locale
-     * @param bool $native ネイティブ表記で取得するか
-     * @return string
+     *
+     * @param  bool  $native  ネイティブ表記で取得するか
      */
     public static function getLocaleName(string $locale, bool $native = true): string
     {
         if ($native) {
-            return match($locale) {
+            return match ($locale) {
                 'ja' => '日本語',
                 'en' => 'English',
                 default => $locale,
@@ -169,9 +158,8 @@ class LocaleHelper
 
     /**
      * すべての言語名を取得
-     * 
-     * @param bool $native ネイティブ表記で取得するか
-     * @return array
+     *
+     * @param  bool  $native  ネイティブ表記で取得するか
      */
     public static function getAllLocaleNames(bool $native = true): array
     {
@@ -179,14 +167,12 @@ class LocaleHelper
         foreach (self::$supportedLocales as $locale) {
             $names[$locale] = self::getLocaleName($locale, $native);
         }
+
         return $names;
     }
 
     /**
      * 言語設定を変更
-     * 
-     * @param string $locale
-     * @return void
      */
     public static function setLocale(string $locale): void
     {
@@ -198,8 +184,6 @@ class LocaleHelper
 
     /**
      * セッションから言語を取得
-     * 
-     * @return string|null
      */
     public static function getSessionLocale(): ?string
     {

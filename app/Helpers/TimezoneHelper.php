@@ -5,6 +5,9 @@ namespace App\Helpers;
 use DateTime;
 use DateTimeZone;
 
+/**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ */
 class TimezoneHelper
 {
     public static function getTimezonesWithUtcOffset(): array

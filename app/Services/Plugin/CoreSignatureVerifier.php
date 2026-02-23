@@ -28,6 +28,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * コア側署名検証スタブ
  *
  * DixlaseDevKit プラグインが未インストールの場合に使用されます。

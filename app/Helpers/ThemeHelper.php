@@ -27,73 +27,71 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ */
 class ThemeHelper
 {
     /**
      * 有効化されているテーマを取得
-     *
-     * @return Theme|null
      */
     public static function getActiveTheme(): ?Theme
     {
         try {
-            if (!Schema::hasTable('themes') || !Schema::hasTable('theme_settings')) {
+            if (! Schema::hasTable('themes') || ! Schema::hasTable('theme_settings')) {
                 return null;
             }
-            
+
             // theme_settingsテーブルから有効化されているテーマIDを取得
             $themeSetting = \DB::table('theme_settings')
                 ->where('key', 'enabled_theme_id')
                 ->first();
-            
-            if (!$themeSetting || !$themeSetting->value) {
+
+            if (! $themeSetting || ! $themeSetting->value) {
                 return null;
             }
-            
-            return Theme::find((int)$themeSetting->value);
+
+            return Theme::find((int) $themeSetting->value);
         } catch (\Exception $e) {
             Log::error('ThemeHelper: Failed to get active theme', [
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
 
     /**
      * 有効化されているテーマのディレクトリパスを取得
-     *
-     * @return string|null
      */
     public static function getActiveThemePath(): ?string
     {
         $theme = self::getActiveTheme();
-        
-        if (!$theme) {
+
+        if (! $theme) {
             return null;
         }
-        
+
         return base_path("themes/{$theme->directory}");
     }
 
     /**
      * 有効化されているテーマの管理画面ルートを読み込む
-     * 
+     *
      * このメソッドはroutes/admin.php内の認証済みルートグループ内で呼び出される
      * ことを想定しています。
-     *
-     * @return void
      */
     public static function loadEnabledThemeAdminRoutes(): void
     {
         try {
             $activeTheme = self::getActiveTheme();
-            
-            if (!$activeTheme) {
+
+            if (! $activeTheme) {
                 return;
             }
 
             $adminRoutePath = base_path("themes/{$activeTheme->directory}/routes/admin.php");
-            
+
             if (File::exists($adminRoutePath)) {
                 include $adminRoutePath;
             }
@@ -107,20 +105,18 @@ class ThemeHelper
 
     /**
      * 有効化されているテーマのWebルートを読み込む
-     *
-     * @return void
      */
     public static function loadEnabledThemeWebRoutes(): void
     {
         try {
             $activeTheme = self::getActiveTheme();
-            
-            if (!$activeTheme) {
+
+            if (! $activeTheme) {
                 return;
             }
 
             $webRoutePath = base_path("themes/{$activeTheme->directory}/routes/web.php");
-            
+
             if (File::exists($webRoutePath)) {
                 include $webRoutePath;
             }
@@ -134,37 +130,31 @@ class ThemeHelper
 
     /**
      * テーマのアセットパスを取得
-     *
-     * @param string $path
-     * @return string|null
      */
     public static function asset(string $path = ''): ?string
     {
         $theme = self::getActiveTheme();
-        
-        if (!$theme) {
+
+        if (! $theme) {
             return null;
         }
-        
+
         $basePath = "themes/{$theme->directory}/public";
-        
+
         return $path ? "{$basePath}/{$path}" : $basePath;
     }
 
     /**
      * テーマのビューパスを取得
-     *
-     * @param string $view
-     * @return string|null
      */
     public static function view(string $view): ?string
     {
         $theme = self::getActiveTheme();
-        
-        if (!$theme) {
+
+        if (! $theme) {
             return null;
         }
-        
+
         return "themes::{$view}";
     }
 }
