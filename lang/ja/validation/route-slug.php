@@ -20,30 +20,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Requests\Admin\Settings\Base;
+return [
+    'reserved' => 'スラッグ「:slug」はシステム予約パスのため使用できません。',
+    'conflict' => 'スラッグ「:slug」は:ownerで既に使用されています。',
+    'reserved_path' => 'システム予約パス',
 
-use App\Rules\UniqueRouteSlug;
-use Illuminate\Foundation\Http\FormRequest;
-
-class AdminBaseAdminUpdateRequest extends FormRequest
-{
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return true;
-    }
-
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
-    public function rules(): array
-    {
-        return [
-            'admin_url' => ['required', 'string', 'max:100', 'regex:/^[a-zA-Z0-9_-]+$/', UniqueRouteSlug::for('core:admin_url')],
-        ];
-    }
-}
+    'owners' => [
+        'core_admin_url' => '管理画面URL',
+    ],
+];
