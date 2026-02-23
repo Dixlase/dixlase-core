@@ -1,0 +1,103 @@
+{
+    "name": "Dixlase Legal",
+    "package_name": "plugins/dixlase-legal",
+    "slug": "dixlase-legal",
+    "version": "1.0.0",
+    "description": {
+        "en": "Manages legal pages such as Privacy Policy, Terms of Service, and Cookie Policy. Provides a centralized registry for legal page URLs used by other plugins.",
+        "ja": "プライバシーポリシー、利用規約、クッキーポリシーなどの法務ページを管理します。他のプラグインが利用する法務ページURLの一元レジストリを提供します。"
+    },
+    "author": "exc-D inc.",
+    "email": "info@exc-d.com",
+    "url": "https://exc-d.com",
+    "license": "AGPL",
+    "license_template": "license-agpl.txt",
+    "thumbnail": "thumbnail.png",
+    "namespace": "Plugins\\DixlaseLegal",
+    "providers": [
+        "Plugins\\DixlaseLegal\\App\\Providers\\DixlaseLegalServiceProvider"
+    ],
+    "type": "dixlase-plugin",
+    "category": "legal",
+    "tags": [
+        "legal",
+        "privacy",
+        "terms",
+        "policy"
+    ],
+    "requires": {
+        "dixlase": ">=1.0.0",
+        "php": ">=8.2"
+    },
+    "provides": {
+        "admin_menu": true,
+        "front_routes": false,
+        "api_routes": false,
+        "settings_page": true,
+        "shortcodes": false,
+        "helper_functions": false
+    },
+    "permissions": {
+        "database": {
+            "own_tables": true,
+            "core_tables": []
+        },
+        "storage": {
+            "own_directory": false,
+            "public_uploads": false,
+            "temp_files": false
+        },
+        "settings": {
+            "read_core": true,
+            "write_own": true
+        },
+        "members": {
+            "read": false,
+            "write": false,
+            "create": false,
+            "delete": false
+        },
+        "mail": {
+            "send": false,
+            "bulk_send": false
+        },
+        "content": {
+            "read_other_plugins": [],
+            "write_other_plugins": []
+        },
+        "system": {
+            "register_shortcodes": false,
+            "register_middleware": false,
+            "register_commands": false,
+            "register_blade_directives": false,
+            "modify_routes": false
+        },
+        "_optional": [],
+        "_notes": {
+            "ja": "コア設定(dls_base_settings)を読み書きして法務ページURLとクッキー同意設定を管理。独自テーブル(plg_dixlase_legal_pages)で法務ページコンテンツを保存。PrivacyPolicyProviderInterfaceを実装し他プラグインにプライバシーポリシーURLを提供。",
+            "en": "Reads/writes core settings (dls_base_settings) to manage legal page URLs and cookie consent settings. Stores legal page content in own table (plg_dixlase_legal_pages). Implements PrivacyPolicyProviderInterface to provide privacy policy URL to other plugins."
+        }
+    },
+    "files": [],
+    "signing": {
+        "algo": "ed25519",
+        "key_id": null,
+        "signed_at": null
+    },
+    "declares": {
+        "configs": {
+            "roles": true,
+            "database_cleanup": true,
+            "navigation": true
+        },
+        "assets": {
+            "common": ["js/app.js", "css/style.scss"],
+            "admin": [],
+            "front": []
+        },
+        "contracts": ["PrivacyPolicyProviderInterface"],
+        "migrations": true,
+        "commands": false,
+        "middleware": false
+    }
+}

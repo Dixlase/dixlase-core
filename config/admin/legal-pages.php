@@ -59,4 +59,11 @@ return [
         'required' => false,
         'icon' => 'fas fa-cookie-bite',
     ],
+
+    'tokushoho' => [
+        'name' => 'admin/settings/systems/legal-pages.tokushoho.name',
+        'description' => 'admin/settings/systems/legal-pages.tokushoho.description',
+        'required' => false,
+        'icon' => 'fas fa-store',
+    ],
 ];
