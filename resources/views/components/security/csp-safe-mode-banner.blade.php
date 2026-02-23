@@ -19,20 +19,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @if(session('csp_safe_mode'))
-@php
-    // メンテナンスバナーが表示されているかチェック
-    try {
-        $maintenanceMode = DB::table('base_settings')
-            ->where('name', 'maintenance_mode')
-            ->value('value');
-        $hasMaintenanceBanner = $maintenanceMode === '1';
-    } catch (\Exception $e) {
-        $hasMaintenanceBanner = false;
-    }
-    
-    $cspBannerHeight = 68;
-@endphp
-
 <div class="fixed top-0 left-0 right-0 z-[10000] bg-red-600 dark:bg-red-700 text-white px-4 py-3 shadow-md" role="alert" id="csp-safe-mode-banner">
     <div class="max-w-full mx-auto flex items-center justify-between">
         <div class="flex items-center space-x-3">
@@ -62,15 +48,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 </div>
 
-@if(!$hasMaintenanceBanner)
-{{-- CSPバナーのみ表示の場合、admin-barを調整 --}}
-<style>
-    /*
-    #admin-bar {
-        top: {{ $cspBannerHeight }}px !important;
-    }
-        */
-</style>
-
-@endif
 @endif

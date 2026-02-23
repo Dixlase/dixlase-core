@@ -10,8 +10,3 @@
     margin-block-start: 0 !important;
 }
 
-/* セーフモードバナーが表示されている場合、サイドバー非表示ボタンの位置を調整 */
-body:has(#csp-safe-mode-banner) button[aria-label="Toggle sidebar menu"] {
-    //top: calc(5.25rem + var(--csp-banner-height, 0px)) !important;
-    //top: 5.25rem !important;
-}

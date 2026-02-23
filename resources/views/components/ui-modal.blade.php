@@ -119,14 +119,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
          @click.stop
          style="transition: opacity 300ms ease-out, transform 300ms ease-out;">
         <div class="modal-content">
-            @if(!$hasCustomContent)
-                {{-- 標準モード：既存の確認ダイアログ --}}
-                <div class="flex items-center justify-center w-16 h-16 mx-auto rounded-full {{ $iconColorClass }}">
-                    <i class="{{ $iconClass }} text-3xl" aria-hidden="true"></i>
-                </div>
-                
-                <div class="modal-body">
-                    <h2 class="modal-title">{{ $title }}</h2>
+            {{-- アイコンは常に表示 --}}
+            <div class="flex items-center justify-center w-16 h-16 mx-auto rounded-full {{ $iconColorClass }}">
+                <i class="{{ $iconClass }} text-3xl" aria-hidden="true"></i>
+            </div>
+
+            <div class="modal-body">
+                <h2 class="modal-title">{{ $title }}</h2>
+
+                @if(!$hasCustomContent)
+                    {{-- 標準モード：メッセージ + チェックボックス --}}
                     <div class="modal-message">
                         <p>{!! $message !!}</p>
                     </div>
@@ -139,11 +141,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </label>
                         </div>
                     @endif
-                </div>
-            @else
-                {{-- カスタムモード：slotコンテンツを使用 --}}
-                {{ $slot }}
-            @endif
+                @else
+                    {{-- カスタムモード：メッセージ（あれば） + slotコンテンツ --}}
+                    @if(!empty($message))
+                        <div class="modal-message">
+                            <p>{!! $message !!}</p>
+                        </div>
+                    @endif
+                    {{ $slot }}
+
+                    @if($checkbox)
+                        <div class="modal-checkbox">
+                            <label>
+                                <input type="checkbox" name="{{ $checkboxName }}" value="1" />
+                                <span class="text-left">{!! $checkboxLabel !!}</span>
+                            </label>
+                        </div>
+                    @endif
+                @endif
+            </div>
         </div>
         
         <div class="modal-actions">

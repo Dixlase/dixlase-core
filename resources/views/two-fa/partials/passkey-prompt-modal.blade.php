@@ -34,24 +34,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :data-has-recovery-modal="$hasRecoveryModal ? 'true' : 'false'"
         @close="handleClose()">
         
-        {{-- カスタムコンテンツ --}}
-        <div class="flex items-center justify-center w-16 h-16 mx-auto rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400">
-            <i class="fas fa-info-circle text-3xl" aria-hidden="true"></i>
+        <div class="modal-message">
+            <p>{{ __('two_fa.passkey_prompt.message') }}</p>
         </div>
-        
-        <div class="modal-body">
-            <h2 class="modal-title">{{ __('two_fa.passkey_prompt.title') }}</h2>
-            <div class="modal-message">
-                <p>{{ __('two_fa.passkey_prompt.message') }}</p>
-            </div>
-            
-            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <x-form-toggle
-                    name="dont_show_again"
-                    :label="__('two_fa.passkey_prompt.dont_show_again')"
-                    x-model="dontShowAgain"
-                />
-            </div>
+
+        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <x-form-toggle
+                name="dont_show_again"
+                :label="__('two_fa.passkey_prompt.dont_show_again')"
+                x-model="dontShowAgain"
+            />
         </div>
         
         <x-slot name="footer">
