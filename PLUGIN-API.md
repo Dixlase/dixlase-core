@@ -128,41 +128,26 @@ AGPL copyleft obligations under the Dixlase Plugin and Theme Exception.
 
 ### 5.1 System Enums
 
-- `App\Enums\AdminMode`
-- `App\Enums\AppEnvironment`
 - `App\Enums\AppearanceMode`
 - `App\Enums\AuthenticationMode`
-- `App\Enums\CaptchaProvider`
 - `App\Enums\ContentEditorType`
 - `App\Enums\ContentStatus`
 - `App\Enums\ContentStorageType`
 - `App\Enums\Locale`
 - `App\Enums\LogLevel`
-- `App\Enums\MenuVisibility`
 - `App\Enums\Permission`
 
-### 5.2 Security Enums
-
-- `App\Enums\CspBlocklistAction`
-- `App\Enums\CspMode`
-- `App\Enums\ExtensionSecurityLevel`
-- `App\Enums\ExtensionSecurityPreset`
-- `App\Enums\OperationRiskLevel`
-- `App\Enums\PasskeyMode`
-- `App\Enums\SecurityAction`
-- `App\Enums\TwoFaMethod`
-
-### 5.3 User/Role Enums
+### 5.2 User/Role Enums
 
 - `App\Enums\Gender`
 - `App\Enums\MemberRole`
 - `App\Enums\MemberStatus`
 
-### 5.4 Plugin/Theme Enums
+### 5.3 Security Enums
 
-- `App\Enums\PluginHealthStatus`
-- `App\Enums\PluginTrustLevel`
-- `App\Enums\PluginVerificationStatus`
+- `App\Enums\OperationRiskLevel`
+- `App\Enums\PasskeyMode`
+- `App\Enums\TwoFaMethod`
 
 ---
 
