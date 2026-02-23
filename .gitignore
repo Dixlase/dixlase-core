@@ -47,7 +47,6 @@ custom/*
 plugins/*
 !plugins/DixlaseDeploy/
 !plugins/DixlaseInquiry/
-!plugins/DixlaseLegal/
 !plugins/DixlaseMenu/
 !plugins/DixlasePages/
 !plugins/DixlaseUsers/
