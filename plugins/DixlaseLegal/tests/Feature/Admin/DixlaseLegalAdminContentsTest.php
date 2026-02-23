@@ -51,6 +51,9 @@ class DixlaseLegalAdminContentsTest extends TestCase
         $_ENV['INSTALLED'] = 'true';
         $_SERVER['INSTALLED'] = 'true';
 
+        // プラグインの法務ページ種別設定を手動ロード
+        config(['admin.legal-pages' => require base_path('plugins/DixlaseLegal/config/admin/legal-pages.php')]);
+
         // プラグインのビューと翻訳を手動登録
         $this->app['view']->addNamespace(
             'dixlase-legal',

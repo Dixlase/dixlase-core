@@ -14,27 +14,48 @@
 
 /*
 |--------------------------------------------------------------------------
-| DixlaseLegal - Legal Pages Override
+| DixlaseLegal - Legal Page Types
 |--------------------------------------------------------------------------
 |
-| コアの法務ページ種別に対するオーバーライド設定。
-| プラグインが特定のページ種別を「必須」に昇格させたり、
-| 独自のページ種別を追加できます。
-|
-| 例:
-| 'privacy-policy' => [
-|     'required' => true,
-| ],
-|
-| 'custom-legal-page' => [
-|     'name' => 'dixlase-legal::admin/legal-pages.custom.name',
-|     'description' => 'dixlase-legal::admin/legal-pages.custom.description',
-|     'required' => false,
-|     'icon' => 'fas fa-gavel',
-| ],
+| 法務ページの種別定義。コアの空レジストリにマージされます。
+| LegalPageService::loadPluginOverrides() で自動読み込みされ、
+| admin.legal-pages 設定に統合されます。
 |
 */
 
 return [
-    //
+    'privacy-policy' => [
+        'name' => 'dixlase-legal::admin/legal-pages/page-types.privacy_policy.name',
+        'description' => 'dixlase-legal::admin/legal-pages/page-types.privacy_policy.description',
+        'required' => false,
+        'icon' => 'fas fa-shield-alt',
+    ],
+
+    'terms-of-service' => [
+        'name' => 'dixlase-legal::admin/legal-pages/page-types.terms_of_service.name',
+        'description' => 'dixlase-legal::admin/legal-pages/page-types.terms_of_service.description',
+        'required' => false,
+        'icon' => 'fas fa-file-contract',
+    ],
+
+    'site-policy' => [
+        'name' => 'dixlase-legal::admin/legal-pages/page-types.site_policy.name',
+        'description' => 'dixlase-legal::admin/legal-pages/page-types.site_policy.description',
+        'required' => false,
+        'icon' => 'fas fa-globe',
+    ],
+
+    'cookie-policy' => [
+        'name' => 'dixlase-legal::admin/legal-pages/page-types.cookie_policy.name',
+        'description' => 'dixlase-legal::admin/legal-pages/page-types.cookie_policy.description',
+        'required' => false,
+        'icon' => 'fas fa-cookie-bite',
+    ],
+
+    'tokushoho' => [
+        'name' => 'dixlase-legal::admin/legal-pages/page-types.tokushoho.name',
+        'description' => 'dixlase-legal::admin/legal-pages/page-types.tokushoho.description',
+        'required' => false,
+        'icon' => 'fas fa-store',
+    ],
 ];

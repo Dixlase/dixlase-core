@@ -34,18 +34,53 @@ class LegalPageServiceTest extends TestCase
 
     private LegalPageService $service;
 
+    /**
+     * テスト用のページ種別設定
+     *
+     * @var array<string, array{name: string, description: string, required: bool, icon: string}>
+     */
+    private array $testPageTypes = [
+        'privacy-policy' => [
+            'name' => 'Privacy Policy',
+            'description' => 'Privacy policy page.',
+            'required' => false,
+            'icon' => 'fas fa-shield-alt',
+        ],
+        'terms-of-service' => [
+            'name' => 'Terms of Service',
+            'description' => 'Terms of service page.',
+            'required' => false,
+            'icon' => 'fas fa-file-contract',
+        ],
+        'site-policy' => [
+            'name' => 'Site Policy',
+            'description' => 'Site policy page.',
+            'required' => false,
+            'icon' => 'fas fa-globe',
+        ],
+        'cookie-policy' => [
+            'name' => 'Cookie Policy',
+            'description' => 'Cookie policy page.',
+            'required' => false,
+            'icon' => 'fas fa-cookie-bite',
+        ],
+    ];
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        // テスト用のページ種別を明示的にセット（コア config が空のため）
+        config(['admin.legal-pages' => $this->testPageTypes]);
 
         $this->repository = Mockery::mock(BaseSettingRepositoryInterface::class);
         $this->service = new LegalPageService($this->repository);
     }
 
     /**
-     * getPageTypes がコア設定の4種別を返すことを検証
+     * getPageTypes が設定されたページ種別を返すことを検証
      */
-    public function test_get_page_types_returns_core_config(): void
+    public function test_get_page_types_returns_configured_types(): void
     {
         $types = $this->service->getPageTypes();
 

@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This file is part of Dixlase.
+ * This file is part of Dixlase Legal.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -13,9 +13,6 @@
  */
 
 return [
-    'heading' => '法務ページ',
-    'description' => 'プライバシーポリシーや利用規約などの法務ページURLを管理します。',
-
     'privacy_policy' => [
         'name' => 'プライバシーポリシー',
         'description' => '個人情報の収集・利用・保護について説明するページです。',

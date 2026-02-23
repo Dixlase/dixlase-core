@@ -27,27 +27,37 @@ use Tests\TestCase;
 class LegalPagesConfigTest extends TestCase
 {
     /**
-     * 設定ファイルが4つのデフォルトページ種別を持つことを検証
+     * コアの設定ファイルがデフォルトで空配列を返すことを検証
+     *
+     * ページ種別はプラグイン（DixlaseLegal 等）から提供される。
+     * コアは空のレジストリを維持する。
      */
-    public function test_config_has_four_default_page_types(): void
+    public function test_config_returns_empty_array_by_default(): void
     {
         $config = config('admin.legal-pages');
 
         $this->assertIsArray($config);
-        $this->assertCount(4, $config);
-        $this->assertArrayHasKey('privacy-policy', $config);
-        $this->assertArrayHasKey('terms-of-service', $config);
-        $this->assertArrayHasKey('site-policy', $config);
-        $this->assertArrayHasKey('cookie-policy', $config);
+        $this->assertEmpty($config);
     }
 
     /**
-     * すべてのページ種別が必須キーを持つことを検証
+     * プラグインが追加したページ種別が必須キーを持つことを検証
      */
-    public function test_all_page_types_have_required_keys(): void
+    public function test_page_types_have_required_keys_when_provided(): void
     {
-        $config = config('admin.legal-pages');
         $requiredKeys = ['name', 'description', 'required', 'icon'];
+
+        // プラグインからページ種別が追加された場合のシミュレーション
+        config(['admin.legal-pages' => [
+            'test-page' => [
+                'name' => 'Test Page',
+                'description' => 'A test page.',
+                'required' => false,
+                'icon' => 'fas fa-file',
+            ],
+        ]]);
+
+        $config = config('admin.legal-pages');
 
         foreach ($config as $slug => $type) {
             foreach ($requiredKeys as $key) {
@@ -57,21 +67,6 @@ class LegalPagesConfigTest extends TestCase
                     "ページ種別 '{$slug}' にキー '{$key}' がありません"
                 );
             }
-        }
-    }
-
-    /**
-     * すべてのページ種別がデフォルトで required: false であることを検証
-     */
-    public function test_all_page_types_default_to_not_required(): void
-    {
-        $config = config('admin.legal-pages');
-
-        foreach ($config as $slug => $type) {
-            $this->assertFalse(
-                $type['required'],
-                "ページ種別 '{$slug}' の required がデフォルトで false ではありません"
-            );
         }
     }
 }
