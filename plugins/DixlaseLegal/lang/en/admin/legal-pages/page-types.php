@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This file is part of Dixlase.
+ * This file is part of Dixlase Legal.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -13,9 +13,6 @@
  */
 
 return [
-    'heading' => 'Legal Pages',
-    'description' => 'Manage legal page URLs such as Privacy Policy and Terms of Service.',
-
     'privacy_policy' => [
         'name' => 'Privacy Policy',
         'description' => 'Page describing how personal data is collected, used, and protected.',

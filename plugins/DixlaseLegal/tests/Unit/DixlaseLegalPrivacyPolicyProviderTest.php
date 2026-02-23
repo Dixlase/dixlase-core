@@ -100,8 +100,8 @@ class DixlaseLegalPrivacyPolicyProviderTest extends TestCase
         $mockService->method('getPageTypes')
             ->willReturn([
                 'privacy-policy' => [
-                    'name' => 'admin/settings/systems/legal-pages.privacy_policy.name',
-                    'description' => 'admin/settings/systems/legal-pages.privacy_policy.description',
+                    'name' => 'dixlase-legal::admin/legal-pages/page-types.privacy_policy.name',
+                    'description' => 'dixlase-legal::admin/legal-pages/page-types.privacy_policy.description',
                     'required' => false,
                     'icon' => 'fas fa-shield-alt',
                 ],

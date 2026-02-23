@@ -30,40 +30,8 @@ return [
     | エントリを追加またはオーバーライドできます。
     | required が true のページは URL 設定が必須となります。
     |
+    | ページ種別はプラグイン（DixlaseLegal 等）から提供されます。
+    | コアはデフォルトで空のレジストリを維持します。
+    |
     */
-
-    'privacy-policy' => [
-        'name' => 'admin/settings/systems/legal-pages.privacy_policy.name',
-        'description' => 'admin/settings/systems/legal-pages.privacy_policy.description',
-        'required' => false,
-        'icon' => 'fas fa-shield-alt',
-    ],
-
-    'terms-of-service' => [
-        'name' => 'admin/settings/systems/legal-pages.terms_of_service.name',
-        'description' => 'admin/settings/systems/legal-pages.terms_of_service.description',
-        'required' => false,
-        'icon' => 'fas fa-file-contract',
-    ],
-
-    'site-policy' => [
-        'name' => 'admin/settings/systems/legal-pages.site_policy.name',
-        'description' => 'admin/settings/systems/legal-pages.site_policy.description',
-        'required' => false,
-        'icon' => 'fas fa-globe',
-    ],
-
-    'cookie-policy' => [
-        'name' => 'admin/settings/systems/legal-pages.cookie_policy.name',
-        'description' => 'admin/settings/systems/legal-pages.cookie_policy.description',
-        'required' => false,
-        'icon' => 'fas fa-cookie-bite',
-    ],
-
-    'tokushoho' => [
-        'name' => 'admin/settings/systems/legal-pages.tokushoho.name',
-        'description' => 'admin/settings/systems/legal-pages.tokushoho.description',
-        'required' => false,
-        'icon' => 'fas fa-store',
-    ],
 ];

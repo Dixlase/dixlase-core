@@ -65,6 +65,6 @@ class DixlaseLegalPrivacyPolicyProvider implements PrivacyPolicyProviderInterfac
             return __($types['privacy-policy']['name']);
         }
 
-        return __('admin/settings/systems/legal-pages.privacy_policy.name');
+        return __('dixlase-legal::admin/legal-pages/page-types.privacy_policy.name');
     }
 }
