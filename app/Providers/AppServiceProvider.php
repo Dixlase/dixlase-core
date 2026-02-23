@@ -32,6 +32,7 @@ use App\Services\LogService;
 use App\Services\MailService;
 use App\Services\Plugin\CoreSignatureVerifier;
 use App\Services\Plugin\PluginPermissionService;
+use App\Services\RouteSlugRegistry;
 use App\Traits\CustomFilesLoaderTrait;
 use App\Traits\PluginLoaderTrait;
 use App\Traits\ThemeLoaderTrait;
@@ -69,6 +70,9 @@ class AppServiceProvider extends ServiceProvider
 
         // 署名検証サービスをバインド（DixlaseDevKit プラグインが上書き可能）
         $this->app->bind(SignatureVerifierInterface::class, CoreSignatureVerifier::class);
+
+        // ルートスラッグレジストリをシングルトンとして登録
+        $this->app->singleton(RouteSlugRegistry::class);
 
         // CSP Nonce Generatorをシングルトンとして登録（リクエストごとに同じnonce値を使用）
         $this->app->singleton(\App\Services\Csp\CspNonceGenerator::class);
