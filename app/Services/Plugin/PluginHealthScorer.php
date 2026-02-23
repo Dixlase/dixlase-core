@@ -34,7 +34,7 @@ use App\Models\PluginAudit;
  * 署名検証・権限整合性・CSP適合性・危険API検出・スキャン鮮度を評価して
  * 0-100点のスコアと健全性ステータスを返します。
  *
- * @api プラグイン/テーマから直接DIで使用可能な安定APIです
+ * @internal コア専用。プラグイン/テーマから参照しないこと
  */
 class PluginHealthScorer
 {
