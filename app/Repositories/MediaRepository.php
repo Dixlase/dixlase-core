@@ -28,6 +28,8 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * メディアリポジトリ実装
  */
 class MediaRepository implements MediaRepositoryInterface
@@ -55,7 +57,7 @@ class MediaRepository implements MediaRepositoryInterface
     {
         $query = Media::query();
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -74,30 +76,30 @@ class MediaRepository implements MediaRepositoryInterface
         $query = Media::with('member');
 
         // 検索フィルター
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('caption', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('caption', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
         // タイプフィルター
-        if (!empty($filters['type'])) {
-            $query->where('type', 'like', $filters['type'] . '%');
+        if (! empty($filters['type'])) {
+            $query->where('type', 'like', $filters['type'].'%');
         }
 
         // アップロード者フィルター
-        if (!empty($filters['uploaded_by'])) {
+        if (! empty($filters['uploaded_by'])) {
             $query->where('uploaded_by', $filters['uploaded_by']);
         }
 
         // 日付範囲フィルター
-        if (!empty($filters['date_from'])) {
+        if (! empty($filters['date_from'])) {
             $query->whereDate('created_at', '>=', $filters['date_from']);
         }
-        if (!empty($filters['date_to'])) {
+        if (! empty($filters['date_to'])) {
             $query->whereDate('created_at', '<=', $filters['date_to']);
         }
 
@@ -122,7 +124,7 @@ class MediaRepository implements MediaRepositoryInterface
     {
         $media = $this->find($id);
 
-        if (!$media) {
+        if (! $media) {
             return false;
         }
 
@@ -136,7 +138,7 @@ class MediaRepository implements MediaRepositoryInterface
     {
         $media = $this->find($id);
 
-        if (!$media) {
+        if (! $media) {
             return false;
         }
 
@@ -150,7 +152,7 @@ class MediaRepository implements MediaRepositoryInterface
     {
         $media = Media::withTrashed()->find($id);
 
-        if (!$media) {
+        if (! $media) {
             return false;
         }
 
@@ -164,7 +166,7 @@ class MediaRepository implements MediaRepositoryInterface
     {
         $media = Media::withTrashed()->find($id);
 
-        if (!$media) {
+        if (! $media) {
             return false;
         }
 
@@ -179,8 +181,8 @@ class MediaRepository implements MediaRepositoryInterface
         return Media::with($relations)
             ->where(function ($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('caption', 'like', "%{$search}%")
-                      ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('caption', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             })
             ->get();
     }
@@ -191,7 +193,7 @@ class MediaRepository implements MediaRepositoryInterface
     public function filterByType(string $type, array $relations = ['member']): Collection
     {
         return Media::with($relations)
-            ->where('type', 'like', $type . '%')
+            ->where('type', 'like', $type.'%')
             ->get();
     }
 
@@ -239,20 +241,20 @@ class MediaRepository implements MediaRepositoryInterface
         $query = Media::query();
 
         // フィルター適用
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('caption', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('caption', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
-        if (!empty($filters['type'])) {
-            $query->where('type', 'like', $filters['type'] . '%');
+        if (! empty($filters['type'])) {
+            $query->where('type', 'like', $filters['type'].'%');
         }
 
-        if (!empty($filters['uploaded_by'])) {
+        if (! empty($filters['uploaded_by'])) {
             $query->where('uploaded_by', $filters['uploaded_by']);
         }
 

@@ -26,8 +26,10 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * MIME実体検証サービス
- * 
+ *
  * ファイルの実体を検証し、拡張子偽装を検出する
  */
 class MimeValidatorService
@@ -56,9 +58,9 @@ class MimeValidatorService
     protected array $magicBytes = [
         'image/jpeg' => ["\xFF\xD8\xFF"],
         'image/png' => ["\x89\x50\x4E\x47\x0D\x0A\x1A\x0A"],
-        'image/gif' => ["GIF87a", "GIF89a"],
-        'image/webp' => ["RIFF"],
-        'application/pdf' => ["%PDF"],
+        'image/gif' => ['GIF87a', 'GIF89a'],
+        'image/webp' => ['RIFF'],
+        'application/pdf' => ['%PDF'],
         'application/zip' => ["PK\x03\x04", "PK\x05\x06", "PK\x07\x08"],
         'video/mp4' => ["\x00\x00\x00\x18ftypmp4", "\x00\x00\x00\x1Cftypisom", "\x00\x00\x00\x20ftypisom"],
     ];
@@ -69,27 +71,28 @@ class MimeValidatorService
     public function validate(UploadedFile $file): MimeValidationResult
     {
         $result = new MimeValidationResult();
-        
+
         $extension = strtolower($file->getClientOriginalExtension());
         $clientMime = $file->getClientMimeType();
         $detectedMime = $this->detectMimeType($file);
-        
+
         $result->setExtension($extension);
         $result->setClientMime($clientMime);
         $result->setDetectedMime($detectedMime);
 
         // 拡張子に対応するMIMEタイプを取得
         $expectedMimes = $this->extensionMimeMap[$extension] ?? [];
-        
+
         if (empty($expectedMimes)) {
             $result->addWarning('unknown_extension', __('admin/media.security.mime.unknown_extension', [
                 'extension' => $extension,
             ]));
+
             return $result;
         }
 
         // 検出されたMIMEタイプが期待値と一致するかチェック
-        if (!in_array($detectedMime, $expectedMimes)) {
+        if (! in_array($detectedMime, $expectedMimes)) {
             $result->addError('mime_mismatch', __('admin/media.security.mime.mime_mismatch', [
                 'extension' => $extension,
                 'expected' => implode(', ', $expectedMimes),
@@ -99,22 +102,22 @@ class MimeValidatorService
 
         // 画像ファイルの場合、実際にデコードして検証
         if ($this->isImageExtension($extension) && $extension !== 'svg') {
-            if (!$this->validateImageContent($file)) {
+            if (! $this->validateImageContent($file)) {
                 $result->addError('invalid_image', __('admin/media.security.mime.invalid_image'));
             }
         }
 
         // SVGの場合、XMLとして解析可能かチェック
         if ($extension === 'svg') {
-            if (!$this->validateSvgContent($file)) {
+            if (! $this->validateSvgContent($file)) {
                 $result->addError('invalid_svg', __('admin/media.security.mime.invalid_svg'));
             }
         }
 
         // マジックバイトチェック
-        if (!$this->validateMagicBytes($file, $detectedMime)) {
+        if (! $this->validateMagicBytes($file, $detectedMime)) {
             // SVGとテキストファイルはマジックバイトがないのでスキップ
-            if (!in_array($extension, ['svg', 'txt', 'docx'])) {
+            if (! in_array($extension, ['svg', 'txt', 'docx'])) {
                 $result->addWarning('magic_bytes_mismatch', __('admin/media.security.mime.magic_bytes_mismatch'));
             }
         }
@@ -129,7 +132,7 @@ class MimeValidatorService
     {
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
         $mime = $finfo->file($file->getPathname());
-        
+
         return $mime ?: 'application/octet-stream';
     }
 
@@ -148,9 +151,11 @@ class MimeValidatorService
     {
         try {
             $imageInfo = @getimagesize($file->getPathname());
+
             return $imageInfo !== false;
         } catch (\Exception $e) {
             Log::warning('Image validation failed', ['error' => $e->getMessage()]);
+
             return false;
         }
     }
@@ -171,15 +176,17 @@ class MimeValidatorService
             $loaded = $dom->loadXML($content, LIBXML_NONET | LIBXML_NOENT);
             libxml_clear_errors();
 
-            if (!$loaded) {
+            if (! $loaded) {
                 return false;
             }
 
             // ルート要素がsvgであることを確認
             $root = $dom->documentElement;
+
             return $root && strtolower($root->nodeName) === 'svg';
         } catch (\Exception $e) {
             Log::warning('SVG validation failed', ['error' => $e->getMessage()]);
+
             return false;
         }
     }
@@ -189,7 +196,7 @@ class MimeValidatorService
      */
     protected function validateMagicBytes(UploadedFile $file, string $mimeType): bool
     {
-        if (!isset($this->magicBytes[$mimeType])) {
+        if (! isset($this->magicBytes[$mimeType])) {
             return true; // マジックバイトが定義されていない場合はスキップ
         }
 
@@ -220,8 +227,9 @@ class MimeValidatorService
     public function getMimeTypeForExtension(string $extension): ?string
     {
         $extension = strtolower($extension);
-        return isset($this->extensionMimeMap[$extension]) 
-            ? $this->extensionMimeMap[$extension][0] 
+
+        return isset($this->extensionMimeMap[$extension])
+            ? $this->extensionMimeMap[$extension][0]
             : null;
     }
 }
@@ -232,9 +240,13 @@ class MimeValidatorService
 class MimeValidationResult
 {
     protected array $errors = [];
+
     protected array $warnings = [];
+
     protected string $extension = '';
+
     protected string $clientMime = '';
+
     protected string $detectedMime = '';
 
     public function addError(string $code, string $message): void
@@ -249,12 +261,12 @@ class MimeValidationResult
 
     public function hasErrors(): bool
     {
-        return !empty($this->errors);
+        return ! empty($this->errors);
     }
 
     public function hasWarnings(): bool
     {
-        return !empty($this->warnings);
+        return ! empty($this->warnings);
     }
 
     public function getErrors(): array
@@ -269,7 +281,7 @@ class MimeValidationResult
 
     public function isValid(): bool
     {
-        return !$this->hasErrors();
+        return ! $this->hasErrors();
     }
 
     public function setExtension(string $extension): void

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of Dixlase.
  *
@@ -23,16 +24,17 @@ namespace App\Services\Csp;
 
 use App\Models\Plugin;
 use App\Models\Theme;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * CSP Extension Loader
- * 
+ *
  * プラグイン・テーマのplugin.json/theme.jsonからCSP設定を読み取り、
  * CspPolicyRegistryに自動登録するサービス。
- * 
+ *
  * 優先順位:
  * 1. 拒否ドメイン（管理者設定） - 最優先でブロック
  * 2. plugin.json/theme.jsonの宣言 - 基本的に自動許可
@@ -78,7 +80,7 @@ class CspExtensionLoader
     {
         try {
             $plugins = Plugin::whereNotNull('enabled_at')->get();
-            
+
             foreach ($plugins as $plugin) {
                 $this->loadPlugin($plugin->slug);
             }
@@ -114,8 +116,8 @@ class CspExtensionLoader
      */
     public function loadPlugin(string $slug): array
     {
-        $pluginPath = base_path('plugins/' . $slug);
-        $jsonPath = $pluginPath . '/plugin.json';
+        $pluginPath = base_path('plugins/'.$slug);
+        $jsonPath = $pluginPath.'/plugin.json';
 
         return $this->loadFromJson($jsonPath, 'plugin', $slug);
     }
@@ -125,8 +127,8 @@ class CspExtensionLoader
      */
     public function loadTheme(string $slug): array
     {
-        $themePath = base_path('themes/' . $slug);
-        $jsonPath = $themePath . '/theme.json';
+        $themePath = base_path('themes/'.$slug);
+        $jsonPath = $themePath.'/theme.json';
 
         return $this->loadFromJson($jsonPath, 'theme', $slug);
     }
@@ -136,25 +138,25 @@ class CspExtensionLoader
      */
     protected function loadFromJson(string $jsonPath, string $type, string $slug): array
     {
-        if (!File::exists($jsonPath)) {
+        if (! File::exists($jsonPath)) {
             return [];
         }
 
         $cacheKey = "csp_extension_{$type}_{$slug}";
-        
+
         // キャッシュから取得を試みる
         $directives = Cache::remember($cacheKey, 3600, function () use ($jsonPath) {
             $content = File::get($jsonPath);
             $json = json_decode($content, true);
 
-            if (!$json || !isset($json['csp'])) {
+            if (! $json || ! isset($json['csp'])) {
                 return [];
             }
 
             return $this->parseCspConfig($json['csp']);
         });
 
-        if (!empty($directives)) {
+        if (! empty($directives)) {
             $this->registry->addDirectives($directives, "{$type}:{$slug}");
         }
 
@@ -171,7 +173,7 @@ class CspExtensionLoader
         // external_domains セクションを処理
         if (isset($cspConfig['external_domains']) && is_array($cspConfig['external_domains'])) {
             foreach ($cspConfig['external_domains'] as $key => $domains) {
-                if (!is_array($domains)) {
+                if (! is_array($domains)) {
                     continue;
                 }
 
@@ -205,9 +207,10 @@ class CspExtensionLoader
     {
         return array_map(function ($domain) {
             // プロトコルがない場合はhttpsを追加
-            if (!preg_match('/^https?:\/\//', $domain)) {
-                return 'https://' . $domain;
+            if (! preg_match('/^https?:\/\//', $domain)) {
+                return 'https://'.$domain;
             }
+
             return $domain;
         }, $domains);
     }
@@ -217,11 +220,11 @@ class CspExtensionLoader
      */
     public function getExtensionCspInfo(string $type, string $slug): array
     {
-        $path = $type === 'plugin' 
+        $path = $type === 'plugin'
             ? base_path("plugins/{$slug}/plugin.json")
             : base_path("themes/{$slug}/theme.json");
 
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             return [
                 'has_csp' => false,
                 'domains' => [],
@@ -231,7 +234,7 @@ class CspExtensionLoader
         $content = File::get($path);
         $json = json_decode($content, true);
 
-        if (!$json || !isset($json['csp'])) {
+        if (! $json || ! isset($json['csp'])) {
             return [
                 'has_csp' => false,
                 'domains' => [],
@@ -257,51 +260,51 @@ class CspExtensionLoader
 
     /**
      * 拡張機能のCSPドメインをブロックリストと照合
-     * 
-     * @param string $type 'plugin' または 'theme'
-     * @param string $slug スラッグ
+     *
+     * @param  string  $type  'plugin' または 'theme'
+     * @param  string  $slug  スラッグ
      * @return array ブロックリストにマッチしたドメインの情報
      */
     public function checkAgainstBlocklist(string $type, string $slug): array
     {
         $blocklistService = app(CspBlocklistService::class);
-        
+
         // ブロックリスト照合が無効な場合はスキップ
-        if (!$blocklistService->isBlocklistCheckEnabled()) {
+        if (! $blocklistService->isBlocklistCheckEnabled()) {
             return [];
         }
 
         // 拡張機能のCSP情報を取得
         $cspInfo = $this->getExtensionCspInfo($type, $slug);
-        
-        if (!$cspInfo['has_csp'] || empty($cspInfo['domains'])) {
+
+        if (! $cspInfo['has_csp'] || empty($cspInfo['domains'])) {
             return [];
         }
 
         // ドメインリストを抽出
         $domains = array_keys($cspInfo['domains']);
-        
+
         // ブロックリストと照合
         return $blocklistService->checkDomainsAgainstBlocklist($domains);
     }
 
     /**
      * 複数の拡張機能のCSPドメインをブロックリストと照合
-     * 
-     * @param array $extensions [['type' => 'plugin', 'slug' => 'xxx'], ...]
+     *
+     * @param  array  $extensions  [['type' => 'plugin', 'slug' => 'xxx'], ...]
      * @return array 拡張機能ごとのマッチ結果
      */
     public function checkMultipleAgainstBlocklist(array $extensions): array
     {
         $results = [];
-        
+
         foreach ($extensions as $ext) {
             $type = $ext['type'] ?? '';
             $slug = $ext['slug'] ?? '';
-            
+
             if ($type && $slug) {
                 $matches = $this->checkAgainstBlocklist($type, $slug);
-                if (!empty($matches)) {
+                if (! empty($matches)) {
                     $results[] = [
                         'type' => $type,
                         'slug' => $slug,
@@ -310,31 +313,30 @@ class CspExtensionLoader
                 }
             }
         }
-        
+
         return $results;
     }
 
     /**
      * 拡張機能がインラインJSを必要とするかチェック
-     * 
-     * @param string $type 'plugin' または 'theme'
-     * @param string $slug スラッグ
-     * @return bool
+     *
+     * @param  string  $type  'plugin' または 'theme'
+     * @param  string  $slug  スラッグ
      */
     public function requiresInlineJs(string $type, string $slug): bool
     {
-        $path = $type === 'plugin' 
+        $path = $type === 'plugin'
             ? base_path("plugins/{$slug}/plugin.json")
             : base_path("themes/{$slug}/theme.json");
 
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             return false;
         }
 
         try {
             $content = File::get($path);
             $json = json_decode($content, true);
-            
+
             return (bool) ($json['requires_inline_js'] ?? false);
         } catch (\Exception $e) {
             return false;
@@ -343,18 +345,18 @@ class CspExtensionLoader
 
     /**
      * 拡張機能のCSP対応状態を取得
-     * 
-     * @param string $type 'plugin' または 'theme'
-     * @param string $slug スラッグ
+     *
+     * @param  string  $type  'plugin' または 'theme'
+     * @param  string  $slug  スラッグ
      * @return array CSP対応情報
      */
     public function getCspCompatibility(string $type, string $slug): array
     {
-        $path = $type === 'plugin' 
+        $path = $type === 'plugin'
             ? base_path("plugins/{$slug}/plugin.json")
             : base_path("themes/{$slug}/theme.json");
 
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             return [
                 'status' => 'unknown',
                 'requires_inline_js' => false,
@@ -366,13 +368,13 @@ class CspExtensionLoader
         try {
             $content = File::get($path);
             $json = json_decode($content, true);
-            
+
             $requiresInlineJs = (bool) ($json['requires_inline_js'] ?? false);
             $hasCspConfig = isset($json['csp']);
-            
+
             // CSP Ready = インラインJS不要 かつ CSP設定がある（または外部リソースを使わない）
-            $cspReady = !$requiresInlineJs;
-            
+            $cspReady = ! $requiresInlineJs;
+
             if ($requiresInlineJs) {
                 $status = 'inline_required';
             } elseif ($hasCspConfig) {
@@ -380,7 +382,7 @@ class CspExtensionLoader
             } else {
                 $status = 'compatible';
             }
-            
+
             return [
                 'status' => $status,
                 'requires_inline_js' => $requiresInlineJs,
@@ -399,22 +401,22 @@ class CspExtensionLoader
 
     /**
      * 厳格モードで拡張機能が有効化可能かチェック
-     * 
-     * @param string $type 'plugin' または 'theme'
-     * @param string $slug スラッグ
+     *
+     * @param  string  $type  'plugin' または 'theme'
+     * @param  string  $slug  スラッグ
      * @return array ['allowed' => bool, 'reason' => string|null]
      */
     public function canEnableInStrictMode(string $type, string $slug): array
     {
         $compatibility = $this->getCspCompatibility($type, $slug);
-        
+
         if ($compatibility['requires_inline_js']) {
             return [
                 'allowed' => false,
                 'reason' => 'requires_inline_js',
             ];
         }
-        
+
         return [
             'allowed' => true,
             'reason' => null,
@@ -452,18 +454,18 @@ class CspExtensionLoader
      */
     public function updateCspConfig(string $type, string $slug, array $cspConfig): bool
     {
-        $path = $type === 'plugin' 
+        $path = $type === 'plugin'
             ? base_path("plugins/{$slug}/plugin.json")
             : base_path("themes/{$slug}/theme.json");
 
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             return false;
         }
 
         $content = File::get($path);
         $json = json_decode($content, true);
 
-        if (!$json) {
+        if (! $json) {
             return false;
         }
 

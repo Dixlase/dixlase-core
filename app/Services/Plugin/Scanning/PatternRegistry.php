@@ -27,6 +27,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * 検出パターンの一元管理レジストリ
  *
  * 登録されたDetectionPatternインスタンスを使って

@@ -25,6 +25,8 @@ namespace App\Services;
 use App\Traits\ManagesContentFiles;
 
 /**
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
+ *
  * コンテンツファイル管理サービス
  * ページ、ブログ記事などのファイルベースのコンテンツ保存を管理
  * ManagesContentFilesトレイトを使用して共通機能を提供
@@ -36,9 +38,9 @@ class ContentFileService
     /**
      * コンストラクタ
      *
-     * @param string $basePath ベースパス（例: 'pages', 'posts'）
-     * @param string $disk ディスク名
-     * @param string $defaultLocale デフォルト言語
+     * @param  string  $basePath  ベースパス（例: 'pages', 'posts'）
+     * @param  string  $disk  ディスク名
+     * @param  string  $defaultLocale  デフォルト言語
      */
     public function __construct(string $basePath = 'content', string $disk = 'local', string $defaultLocale = 'en')
     {

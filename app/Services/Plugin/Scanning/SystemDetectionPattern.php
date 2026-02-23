@@ -23,6 +23,8 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * システム関連の検出パターン
  *
  * system.register_shortcodes, system.register_commands,

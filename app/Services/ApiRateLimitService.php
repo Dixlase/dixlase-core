@@ -28,8 +28,10 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 /**
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
+ *
  * APIレートリミットサービス
- * 
+ *
  * β版でのAPIレートリミット機能の基盤として使用
  */
 class ApiRateLimitService
@@ -123,7 +125,7 @@ class ApiRateLimitService
         ?string $errorCode = null,
         ?string $errorMessage = null
     ): ApiRequestLog {
-        $rateLimitInfo = $apiKey 
+        $rateLimitInfo = $apiKey
             ? $this->checkRateLimit($apiKey)
             : $this->checkIpRateLimit($request->ip());
 
@@ -153,10 +155,10 @@ class ApiRateLimitService
     protected function extractEndpoint(Request $request): string
     {
         $path = $request->path();
-        
+
         // 数値IDを{id}に置換
         $endpoint = preg_replace('/\/\d+/', '/{id}', $path);
-        
+
         // UUIDを{uuid}に置換
         $endpoint = preg_replace(
             '/\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i',
@@ -164,7 +166,7 @@ class ApiRateLimitService
             $endpoint
         );
 
-        return '/' . ltrim($endpoint, '/');
+        return '/'.ltrim($endpoint, '/');
     }
 
     /**
@@ -207,7 +209,7 @@ class ApiRateLimitService
     public function getOverallStats(int $days = 7): array
     {
         $cutoffDate = Carbon::now()->subDays($days);
-        
+
         $logs = ApiRequestLog::where('requested_at', '>=', $cutoffDate)->get();
 
         return [
@@ -236,6 +238,7 @@ class ApiRateLimitService
     public function setDefaultRateLimit(int $limit): self
     {
         $this->defaultRateLimit = $limit;
+
         return $this;
     }
 
@@ -245,6 +248,7 @@ class ApiRateLimitService
     public function setDefaultIpRateLimit(int $limit): self
     {
         $this->defaultIpRateLimit = $limit;
+
         return $this;
     }
 
@@ -254,6 +258,7 @@ class ApiRateLimitService
     public function setWindowSeconds(int $seconds): self
     {
         $this->windowSeconds = $seconds;
+
         return $this;
     }
 

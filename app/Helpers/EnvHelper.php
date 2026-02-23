@@ -4,9 +4,11 @@ namespace App\Helpers;
 
 use Illuminate\Support\Facades\Artisan;
 
+/**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ */
 class EnvHelper
 {
-
     // snake_case => ENV_KEY
     protected static array $envMap = [
         'app_name' => 'APP_NAME',
@@ -45,13 +47,10 @@ class EnvHelper
         return static::$envMap;
     }
 
-
-
     public static function update(array $data): void
     {
         $envPath = base_path('.env');
         $envContent = file_get_contents($envPath);
-
 
         foreach ($data as $key => $value) {
             $envKey = static::toEnvKey($key);
@@ -81,9 +80,8 @@ class EnvHelper
 
     /**
      * .env用に値を適切にフォーマット
-     * 
-     * @param mixed $value
-     * @return string
+     *
+     * @param  mixed  $value
      */
     protected static function formatEnvValue($value): string
     {
@@ -109,6 +107,7 @@ class EnvHelper
         if (preg_match('/[\s#\$\(\)\[\]\{\}\|\&\;\<\>\?\*\'\"]/', $value)) {
             // 既存のダブルクォートとバックスラッシュをエスケープ
             $escaped = str_replace(['\\', '"'], ['\\\\', '\\"'], $value);
+
             return "\"{$escaped}\"";
         }
 

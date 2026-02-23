@@ -23,6 +23,8 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * 検出パターンの抽象基底クラス
  *
  * 各パターンクラスは特定の権限カテゴリに対応し、

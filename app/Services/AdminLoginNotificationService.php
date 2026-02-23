@@ -7,8 +7,10 @@ use App\Notifications\AdminLoginNotification;
 use App\Traits\LoginNotificationTrait;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * 管理画面ログイン通知サービス
- * 
+ *
  * LoginNotificationTraitを使用してメンバーのログイン通知を処理
  */
 class AdminLoginNotificationService
@@ -28,7 +30,7 @@ class AdminLoginNotificationService
      */
     protected function getSettingGetter(): callable
     {
-        return fn() => SecuritySetting::getValue($this->getGlobalSettingKey(), '0');
+        return fn () => SecuritySetting::getValue($this->getGlobalSettingKey(), '0');
     }
 
     /**

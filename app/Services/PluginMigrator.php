@@ -22,29 +22,28 @@
 
 namespace App\Services;
 
-use Illuminate\Database\Migrations\Migrator;
-use Illuminate\Database\Migrations\MigrationRepositoryInterface;
-use Illuminate\Database\Migrations\DatabaseMigrationRepository;
-use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Database\ConnectionResolverInterface;
+use Illuminate\Database\Migrations\MigrationRepositoryInterface;
+use Illuminate\Database\Migrations\Migrator;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
-
+/**
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
+ */
 class PluginMigrator
 {
     protected Migrator $migrator;
+
     protected Filesystem $files;
+
     protected MigrationRepositoryInterface $repository;
+
     protected ?string $pluginSlug;
 
     /**
      * コンストラクタ
-     *
-     * @param Filesystem $files
-     * @param ConnectionResolverInterface $resolver
-     * @param string $migrationTable
      */
     public function __construct(
         Filesystem $files,
@@ -72,9 +71,9 @@ class PluginMigrator
     /**
      * 指定プラグインのマイグレーションを実行
      *
-     * @param string $plugin プラグイン名
-     * @param string|null $path マイグレーションファイルのパス（デフォルトはプラグインディレクトリ内）
-     * @param array $options オプション（--force など）
+     * @param  string  $plugin  プラグイン名
+     * @param  string|null  $path  マイグレーションファイルのパス（デフォルトはプラグインディレクトリ内）
+     * @param  array  $options  オプション（--force など）
      * @return array 実行されたマイグレーションの詳細
      *
      * @throws \Exception
@@ -86,19 +85,19 @@ class PluginMigrator
         Log::info('PluginMigrator: Starting migration', [
             'plugin' => $plugin,
             'path' => $migrationPath,
-            'slug' => $this->pluginSlug
+            'slug' => $this->pluginSlug,
         ]);
 
-        if (!$this->files->isDirectory($migrationPath)) {
+        if (! $this->files->isDirectory($migrationPath)) {
             Log::error('PluginMigrator: Migration path does not exist', ['path' => $migrationPath]);
             throw new \Exception("Migration path does not exist: {$migrationPath}");
         }
 
         // マイグレーションファイルの一覧を取得
-        $files = $this->files->glob($migrationPath . '/*.php');
+        $files = $this->files->glob($migrationPath.'/*.php');
         Log::info('PluginMigrator: Found migration files', [
             'count' => count($files),
-            'files' => array_map('basename', $files)
+            'files' => array_map('basename', $files),
         ]);
 
         // 実行前にマイグレーションファイルを取得
@@ -119,7 +118,7 @@ class PluginMigrator
         $migrated = array_diff($after, $before);
         Log::info('PluginMigrator: Migration completed', [
             'migrated_count' => count($migrated),
-            'migrated' => array_values($migrated)
+            'migrated' => array_values($migrated),
         ]);
 
         return array_values($migrated);
@@ -128,8 +127,8 @@ class PluginMigrator
     /**
      * 指定プラグインのマイグレーションをロールバック
      *
-     * @param string $plugin プラグイン名
-     * @param array $options オプション（--step=1 など）
+     * @param  string  $plugin  プラグイン名
+     * @param  array  $options  オプション（--step=1 など）
      * @return array ロールバックされたマイグレーションのノート
      *
      * @throws \Exception
@@ -142,26 +141,26 @@ class PluginMigrator
             'plugin' => $plugin,
             'path' => $migrationPath,
             'slug' => $this->pluginSlug,
-            'options' => $options
+            'options' => $options,
         ]);
 
-        if (!$this->files->isDirectory($migrationPath)) {
+        if (! $this->files->isDirectory($migrationPath)) {
             Log::error('PluginMigrator: Migration path does not exist', ['path' => $migrationPath]);
             throw new \Exception("Migration path does not exist: {$migrationPath}");
         }
 
         // マイグレーションファイルの一覧を取得
-        $files = $this->files->glob($migrationPath . '/*.php');
+        $files = $this->files->glob($migrationPath.'/*.php');
         Log::info('PluginMigrator: Found migration files for rollback', [
             'count' => count($files),
-            'files' => array_map('basename', $files)
+            'files' => array_map('basename', $files),
         ]);
 
         // ロールバック前にマイグレーションファイルを取得
         $before = $this->repository->getRan();
         Log::info('PluginMigrator: Migrations before rollback', [
             'count' => count($before),
-            'migrations' => $before
+            'migrations' => $before,
         ]);
 
         // マイグレーターにマイグレーションパスを設定
@@ -174,14 +173,14 @@ class PluginMigrator
         $after = $this->repository->getRan();
         Log::info('PluginMigrator: Migrations after rollback', [
             'count' => count($after),
-            'migrations' => $after
+            'migrations' => $after,
         ]);
 
         // ロールバックされたマイグレーションファイルを抽出
         $rolledBack = array_diff($before, $after);
         Log::info('PluginMigrator: Rollback completed', [
             'rolled_back_count' => count($rolledBack),
-            'rolled_back' => array_values($rolledBack)
+            'rolled_back' => array_values($rolledBack),
         ]);
 
         return array_values($rolledBack);
@@ -190,8 +189,8 @@ class PluginMigrator
     /**
      * 指定プラグインのマイグレーションをリフレッシュ
      *
-     * @param string $plugin プラグイン名
-     * @param array $options オプション（--step=1 など）
+     * @param  string  $plugin  プラグイン名
+     * @param  array  $options  オプション（--step=1 など）
      * @return array リフレッシュ後に実行されたマイグレーションのノート
      *
      * @throws \Exception
@@ -210,8 +209,7 @@ class PluginMigrator
     /**
      * 指定プラグインのマイグレーションステータスを取得
      *
-     * @param string $plugin プラグイン名
-     * @return array
+     * @param  string  $plugin  プラグイン名
      *
      * @throws \Exception
      */
@@ -219,7 +217,7 @@ class PluginMigrator
     {
         $migrationPath = base_path("plugins/{$plugin}/database/migrations");
 
-        if (!$this->files->isDirectory($migrationPath)) {
+        if (! $this->files->isDirectory($migrationPath)) {
             throw new \Exception("Migration path does not exist: {$migrationPath}");
         }
 
@@ -228,7 +226,7 @@ class PluginMigrator
         $ran = $this->repository->getRan();
         $ran = array_filter($ran, function ($migration) use ($plugin) {
             // プラグイン名をプレフィックスとして含むマイグレーションのみをフィルタリング
-            return Str::startsWith($migration, Str::snake($plugin) . '_');
+            return Str::startsWith($migration, Str::snake($plugin).'_');
         });
 
         $status = [];

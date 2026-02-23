@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of Dixlase.
  *
@@ -24,31 +25,33 @@ namespace App\Services\Csp;
 use App\Contracts\CspPolicyProvider;
 
 /**
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
+ *
  * CSP Policy Registry
- * 
+ *
  * プラグイン・テーマからのCSPポリシーを収集・管理するレジストリ。
  */
 class CspPolicyRegistry
 {
     /**
      * 登録されたポリシープロバイダー
-     * 
+     *
      * @var array<string, CspPolicyProvider>
      */
     protected array $providers = [];
 
     /**
      * 直接登録されたディレクティブ
-     * 
+     *
      * @var array<string, array<string>>
      */
     protected array $directives = [];
 
     /**
      * ポリシープロバイダーを登録
-     * 
-     * @param string $name プロバイダー名（プラグイン/テーマ名）
-     * @param CspPolicyProvider $provider プロバイダーインスタンス
+     *
+     * @param  string  $name  プロバイダー名（プラグイン/テーマ名）
+     * @param  CspPolicyProvider  $provider  プロバイダーインスタンス
      */
     public function registerProvider(string $name, CspPolicyProvider $provider): void
     {
@@ -65,19 +68,19 @@ class CspPolicyRegistry
 
     /**
      * ディレクティブを直接追加
-     * 
-     * @param string $directive ディレクティブ名
-     * @param array<string> $values 値の配列
-     * @param string|null $source ソース名（デバッグ用）
+     *
+     * @param  string  $directive  ディレクティブ名
+     * @param  array<string>  $values  値の配列
+     * @param  string|null  $source  ソース名（デバッグ用）
      */
     public function addDirective(string $directive, array $values, ?string $source = null): void
     {
-        if (!isset($this->directives[$directive])) {
+        if (! isset($this->directives[$directive])) {
             $this->directives[$directive] = [];
         }
 
         foreach ($values as $value) {
-            if (!in_array($value, $this->directives[$directive], true)) {
+            if (! in_array($value, $this->directives[$directive], true)) {
                 $this->directives[$directive][] = $value;
             }
         }
@@ -85,9 +88,9 @@ class CspPolicyRegistry
 
     /**
      * 複数のディレクティブを一括追加
-     * 
-     * @param array<string, array<string>> $directives
-     * @param string|null $source ソース名（デバッグ用）
+     *
+     * @param  array<string, array<string>>  $directives
+     * @param  string|null  $source  ソース名（デバッグ用）
      */
     public function addDirectives(array $directives, ?string $source = null): void
     {
@@ -98,7 +101,7 @@ class CspPolicyRegistry
 
     /**
      * 登録されたすべてのディレクティブを収集
-     * 
+     *
      * @return array<string, array<string>>
      */
     public function collectDirectives(): array
@@ -108,14 +111,14 @@ class CspPolicyRegistry
         // プロバイダーからディレクティブを収集
         foreach ($this->providers as $name => $provider) {
             $providerDirectives = $provider->getCspDirectives();
-            
+
             foreach ($providerDirectives as $directive => $values) {
-                if (!isset($collected[$directive])) {
+                if (! isset($collected[$directive])) {
                     $collected[$directive] = [];
                 }
 
                 foreach ($values as $value) {
-                    if (!in_array($value, $collected[$directive], true)) {
+                    if (! in_array($value, $collected[$directive], true)) {
                         $collected[$directive][] = $value;
                     }
                 }
@@ -127,7 +130,7 @@ class CspPolicyRegistry
 
     /**
      * 登録されたプロバイダー一覧を取得
-     * 
+     *
      * @return array<string>
      */
     public function getProviderNames(): array

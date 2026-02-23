@@ -23,6 +23,8 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * テーマアセット関連の検出パターン（テーマ専用）
  *
  * assets.custom_css, assets.custom_js, assets.external_resources を検出します。

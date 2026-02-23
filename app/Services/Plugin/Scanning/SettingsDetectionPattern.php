@@ -23,6 +23,8 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * 設定読み取り関連の検出パターン
  *
  * settings.read_core, settings.write_own を検出します。

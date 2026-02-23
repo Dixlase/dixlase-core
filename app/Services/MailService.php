@@ -13,8 +13,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * メール送信サービス
- * 
+ *
  * Contract対応のメール送信機能を提供します。
  */
 class MailService implements MailServiceInterface
@@ -89,7 +91,6 @@ class MailService implements MailServiceInterface
             ]);
 
             return MailResultDTO::success($recipients);
-
         } catch (\Exception $e) {
             Log::channel('admin_error')->error('メール送信失敗', [
                 'to' => $message->getRecipients(),
@@ -173,7 +174,6 @@ class MailService implements MailServiceInterface
             ]);
 
             return MailResultDTO::queued($recipients);
-
         } catch (\Exception $e) {
             Log::channel('admin_error')->error('メールキュー追加失敗', [
                 'to' => $message->getRecipients(),
@@ -190,7 +190,7 @@ class MailService implements MailServiceInterface
      */
     public function testConnection(MailConfigDTO $config): MailResultDTO
     {
-        if (!$config->isSmtp()) {
+        if (! $config->isSmtp()) {
             return MailResultDTO::failed(
                 __('mail-server/test.test_functions.mailer_not_supported', ['mailer' => $config->mailer])
             );
@@ -205,11 +205,11 @@ class MailService implements MailServiceInterface
             $context = stream_context_create();
 
             if ($encryption === 'ssl') {
-                $host = 'ssl://' . $host;
+                $host = 'ssl://'.$host;
             }
 
             $socket = @stream_socket_client(
-                $host . ':' . $port,
+                $host.':'.$port,
                 $errno,
                 $errstr,
                 $config->timeout,
@@ -217,17 +217,17 @@ class MailService implements MailServiceInterface
                 $context
             );
 
-            if (!$socket) {
+            if (! $socket) {
                 throw new \Exception(__('mail-server/test.test_advanced.smtp_connection_error', [
                     'error' => $errstr,
-                    'errno' => $errno
+                    'errno' => $errno,
                 ]));
             }
 
             // SMTPレスポンスを読み取り
             $response = fgets($socket);
 
-            if (!$response || !str_starts_with($response, '220')) {
+            if (! $response || ! str_starts_with($response, '220')) {
                 fclose($socket);
                 throw new \Exception(__('mail-server/test.test_advanced.smtp_response_invalid', ['response' => trim($response)]));
             }
@@ -240,12 +240,12 @@ class MailService implements MailServiceInterface
                 fwrite($socket, "STARTTLS\r\n");
                 $response = fgets($socket);
 
-                if (!str_starts_with($response, '220')) {
+                if (! str_starts_with($response, '220')) {
                     fclose($socket);
                     throw new \Exception(__('mail-server/test.test_advanced.smtp_starttls_failed', ['response' => trim($response)]));
                 }
 
-                if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+                if (! stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
                     fclose($socket);
                     throw new \Exception(__('mail-server/test.test_advanced.smtp_tls_crypto_failed'));
                 }
@@ -259,23 +259,23 @@ class MailService implements MailServiceInterface
                 fwrite($socket, "AUTH LOGIN\r\n");
                 $response = fgets($socket);
 
-                if (!str_starts_with($response, '334')) {
+                if (! str_starts_with($response, '334')) {
                     fclose($socket);
                     throw new \Exception(__('mail-server/test.test_advanced.smtp_auth_login_failed', ['response' => trim($response)]));
                 }
 
-                fwrite($socket, base64_encode($config->username) . "\r\n");
+                fwrite($socket, base64_encode($config->username)."\r\n");
                 $response = fgets($socket);
 
-                if (!str_starts_with($response, '334')) {
+                if (! str_starts_with($response, '334')) {
                     fclose($socket);
                     throw new \Exception(__('mail-server/test.test_advanced.smtp_username_auth_failed', ['response' => trim($response)]));
                 }
 
-                fwrite($socket, base64_encode($config->password) . "\r\n");
+                fwrite($socket, base64_encode($config->password)."\r\n");
                 $response = fgets($socket);
 
-                if (!str_starts_with($response, '235')) {
+                if (! str_starts_with($response, '235')) {
                     fclose($socket);
                     throw new \Exception(__('mail-server/test.test_advanced.smtp_password_auth_failed', ['response' => trim($response)]));
                 }
@@ -286,7 +286,6 @@ class MailService implements MailServiceInterface
             fclose($socket);
 
             return MailResultDTO::success([], null, __('mail-server/test.test_functions.connection_test_success'));
-
         } catch (\Exception $e) {
             return MailResultDTO::failed($e->getMessage());
         }

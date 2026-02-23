@@ -26,6 +26,8 @@ use App\Helpers\ConfigHelper;
 use Illuminate\Support\Facades\Log;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * かんたんモードへの切り替え時に、Hidden項目の自動設定値を適用するサービス
  *
  * 各メニューの自動設定メソッドは個別に呼び出すことも、

@@ -26,6 +26,8 @@ use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Models\SecuritySetting;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * セキュリティ設定リポジトリ実装
  */
 class SecuritySettingRepository extends AbstractSettingRepository implements SecuritySettingRepositoryInterface
@@ -50,7 +52,7 @@ class SecuritySettingRepository extends AbstractSettingRepository implements Sec
 
     /**
      * boolean値を'1'/'0'に変換
-     * 
+     *
      * {@inheritDoc}
      */
     protected function transformValueForStorage(mixed $value): mixed
@@ -58,7 +60,7 @@ class SecuritySettingRepository extends AbstractSettingRepository implements Sec
         if (is_bool($value)) {
             return $value ? '1' : '0';
         }
-        
+
         return $value;
     }
 }

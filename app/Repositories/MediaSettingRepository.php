@@ -26,6 +26,8 @@ use App\Contracts\Repositories\MediaSettingRepositoryInterface;
 use App\Models\MediaSetting;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * メディア設定リポジトリ実装
  */
 class MediaSettingRepository extends AbstractSettingRepository implements MediaSettingRepositoryInterface
@@ -50,7 +52,7 @@ class MediaSettingRepository extends AbstractSettingRepository implements MediaS
 
     /**
      * 配列をJSON文字列に変換
-     * 
+     *
      * {@inheritDoc}
      */
     protected function transformValueForStorage(mixed $value): mixed
@@ -60,12 +62,13 @@ class MediaSettingRepository extends AbstractSettingRepository implements MediaS
 
     /**
      * JSON文字列を配列に変換
-     * 
+     *
      * {@inheritDoc}
      */
     protected function transformValueFromStorage(mixed $value): mixed
     {
         $decoded = json_decode($value, true);
+
         return $decoded ?? $value;
     }
 }
