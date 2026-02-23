@@ -44,6 +44,7 @@ Dixlase CMS のドキュメントへようこそ。このドキュメントで�
 - [CAPTCHA 使い方](security/captcha-usage.md) - CAPTCHA 統合ガイド
 - [CSP ガイド](security/csp-guide.md) - Content Security Policy 完全ガイド
 - [緊急ロックダウン](security/emergency-lockdown.md) - 緊急ロックダウンシステム
+- [セーフモードガイド](security/safe-mode-guide.md) - クラッシュリカバリー用マルチレベルセーフモード
 - [ファイル整合性チェック](security/file-integrity-check.md) - コアファイル改ざん検出
 - [パスワード辞書攻撃対策](security/password-dictionary-attack-protection.md) - Have I Been Pwned 連携
 - [セキュリティ設定レジストリ](security/security-settings-registry.md) - 統合セキュリティ設定管理
