@@ -28,6 +28,9 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ */
 class PluginHelper
 {
     /**

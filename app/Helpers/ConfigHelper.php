@@ -27,6 +27,9 @@ use App\Models\SecuritySetting;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ */
 class ConfigHelper
 {
     /**

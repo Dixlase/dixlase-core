@@ -25,6 +25,9 @@ namespace App\Services;
 use App\Models\BaseSetting;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ */
 class MailServerValidatorService
 {
     /**
@@ -36,13 +39,14 @@ class MailServerValidatorService
             'MAIL_MAILER',
             'MAIL_HOST',
             'MAIL_PORT',
-            'MAIL_FROM_ADDRESS'
+            'MAIL_FROM_ADDRESS',
         ];
 
         foreach ($requiredSettings as $setting) {
             $value = env($setting);
             if (empty($value)) {
                 Log::info("Mail server not configured: {$setting} is empty");
+
                 return false;
             }
         }
@@ -58,17 +62,17 @@ class MailServerValidatorService
         $connectionTested = (bool) BaseSetting::getValue('mail_connection_tested', false);
         $sendTested = (bool) BaseSetting::getValue('mail_send_tested', false);
         $receiveTested = (bool) BaseSetting::getValue('mail_receive_tested', false);
-        
+
         $allTested = $connectionTested && $sendTested && $receiveTested;
-        
-        if (!$allTested) {
+
+        if (! $allTested) {
             Log::info('Mail server tests not completed', [
                 'connection_tested' => $connectionTested,
                 'send_tested' => $sendTested,
-                'receive_tested' => $receiveTested
+                'receive_tested' => $receiveTested,
             ]);
         }
-        
+
         return $allTested;
     }
 
@@ -85,14 +89,14 @@ class MailServerValidatorService
      */
     public static function getMailDisabledReason(): string
     {
-        if (!self::isMailServerConfigured()) {
+        if (! self::isMailServerConfigured()) {
             return 'メールサーバーの設定が未完了です';
         }
-        
-        if (!self::isMailServerTested()) {
+
+        if (! self::isMailServerTested()) {
             return 'メールサーバーのテストが未完了です';
         }
-        
+
         return '';
     }
 }

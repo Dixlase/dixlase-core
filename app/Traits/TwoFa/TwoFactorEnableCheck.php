@@ -23,11 +23,13 @@
 namespace App\Traits\TwoFa;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * 二段階認証有効化条件チェック機能
- * 
+ *
  * このTraitは、二段階認証を安全に有効化できるかをチェックする機能を提供します。
  * コアのMemberモデルとユーザープラグインのUserモデルで共有されます。
- * 
+ *
  * 使用方法:
  * - モデルで使用: canEnableTwoFa(), getTwoFaEnableBlockReasons()
  * - リクエストクラスで使用: isMailServerConfigured()
@@ -36,45 +38,43 @@ trait TwoFactorEnableCheck
 {
     /**
      * 二段階認証を有効化できるかチェック
-     * 
+     *
      * 安全ルール: 以下のいずれかの条件を満たす必要がある
      * - メールサーバーが設定されている
      * - 少なくとも1つのパスキーが登録されている
      * - 回復コードが生成されている
-     * 
-     * @return bool
      */
     public function canEnableTwoFa(): bool
     {
         // メールサーバーが設定されているかチェック
         $mailConfigured = \App\Services\MailServerValidatorService::isMailServerTested();
-        
+
         // パスキーが登録されているかチェック
         $hasPasskey = $this->twoFaPasskeys()->exists();
-        
+
         // 回復コードが生成されているかチェック
         $hasRecoveryCode = $this->twoFaRecoveryCodes()->where('used_at', null)->exists();
-        
+
         return $mailConfigured || $hasPasskey || $hasRecoveryCode;
     }
 
     /**
      * 二段階認証を有効化できない理由を取得
-     * 
+     *
      * @return array 理由のリスト
      */
     public function getTwoFaEnableBlockReasons(): array
     {
         $reasons = [];
-        
+
         $mailConfigured = \App\Services\MailServerValidatorService::isMailServerTested();
         $hasPasskey = $this->twoFaPasskeys()->exists();
         $hasRecoveryCode = $this->twoFaRecoveryCodes()->where('used_at', null)->exists();
-        
-        if (!$mailConfigured && !$hasPasskey && !$hasRecoveryCode) {
+
+        if (! $mailConfigured && ! $hasPasskey && ! $hasRecoveryCode) {
             $reasons[] = 'no_backup_method';
         }
-        
+
         return $reasons;
     }
 }

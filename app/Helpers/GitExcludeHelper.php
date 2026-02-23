@@ -26,6 +26,8 @@ use App\Console\Commands\SyncGitExclude;
 use Illuminate\Support\Facades\Artisan;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * .git/info/exclude ファイル管理ヘルパー
  *
  * このヘルパーは SyncGitExclude コマンドのラッパーです。
