@@ -44,6 +44,7 @@ Welcome to the Dixlase CMS documentation. This documentation covers the architec
 - [CAPTCHA Usage](security/captcha-usage.md) - CAPTCHA integration guide
 - [CSP Guide](security/csp-guide.md) - Content Security Policy complete guide
 - [Emergency Lockdown](security/emergency-lockdown.md) - Emergency lockdown system
+- [Safe Mode Guide](security/safe-mode-guide.md) - Multi-level safe mode for crash recovery
 - [File Integrity Check](security/file-integrity-check.md) - Core file tampering detection
 - [Password Dictionary Attack Protection](security/password-dictionary-attack-protection.md) - Have I Been Pwned integration
 - [Security Settings Registry](security/security-settings-registry.md) - Unified security settings management
