@@ -22,6 +22,7 @@
 
 namespace App\Services\Plugin;
 
+use App\Contracts\Plugin\PluginPermissionServiceInterface;
 use App\Contracts\Plugin\SignatureVerifierInterface;
 use App\Models\PluginAudit;
 use Illuminate\Support\Facades\Cache;
@@ -37,7 +38,7 @@ use Illuminate\Support\Str;
  *
  * @api プラグイン/テーマから直接DIで使用可能な安定APIです
  */
-class PluginPermissionService
+class PluginPermissionService implements PluginPermissionServiceInterface
 {
     /**
      * キャッシュキーのプレフィックス

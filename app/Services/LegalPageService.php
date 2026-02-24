@@ -22,6 +22,7 @@
 
 namespace App\Services;
 
+use App\Contracts\LegalPage\LegalPageServiceInterface;
 use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -35,7 +36,7 @@ use Illuminate\Support\Facades\Log;
  * コアとプラグインの法務ページ種別を統合管理し、
  * dls_base_settings テーブルに URL を保存する。
  */
-class LegalPageService
+class LegalPageService implements LegalPageServiceInterface
 {
     /** @var string 設定キーのプレフィックス */
     private const SETTING_PREFIX = 'legal_page_url:';
