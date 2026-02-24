@@ -30,16 +30,33 @@ window.adminLayout = function() {
         sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
         sidebarReady: false,
 
+        // 右サイドバー（ページエディタ等で使用）
+        rightSidebarCollapsed: localStorage.getItem('rightSidebarCollapsed') === 'true',
+        rightSidebarReady: false,
+
         init() {
             // サイドバーの準備完了フラグを次のティックで設定
             this.$nextTick(() => {
                 this.sidebarReady = true;
+                this.rightSidebarReady = true;
             });
 
             // サイドバーの折りたたみ状態をlocalStorageに保存
             this.$watch('sidebarCollapsed', value => {
                 localStorage.setItem('sidebarCollapsed', value);
             });
+
+            // 右サイドバーの折りたたみ状態をlocalStorageに保存
+            this.$watch('rightSidebarCollapsed', value => {
+                localStorage.setItem('rightSidebarCollapsed', value);
+            });
+        },
+
+        /**
+         * 右サイドバーの開閉をトグルする
+         */
+        toggleRightSidebar() {
+            this.rightSidebarCollapsed = !this.rightSidebarCollapsed;
         }
     };
 };
