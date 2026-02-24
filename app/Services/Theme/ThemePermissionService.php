@@ -22,6 +22,7 @@
 
 namespace App\Services\Theme;
 
+use App\Contracts\Theme\ThemePermissionServiceInterface;
 use App\Models\ThemeAudit;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -36,7 +37,7 @@ use Illuminate\Support\Str;
  * theme.jsonのpermissionsセクションを読み取り、
  * テーマの権限チェックを行うサービスです。
  */
-class ThemePermissionService
+class ThemePermissionService implements ThemePermissionServiceInterface
 {
     /**
      * キャッシュキーのプレフィックス

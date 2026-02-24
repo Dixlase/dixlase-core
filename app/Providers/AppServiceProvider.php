@@ -23,16 +23,23 @@
 namespace App\Providers;
 
 use App\Contracts\FileIntegrity\FileIntegrityServiceInterface;
+use App\Contracts\LegalPage\LegalPageServiceInterface;
 use App\Contracts\Logging\LogServiceInterface;
 use App\Contracts\Mail\MailServiceInterface;
+use App\Contracts\Plugin\PluginPermissionServiceInterface;
 use App\Contracts\Plugin\SignatureVerifierInterface;
+use App\Contracts\Theme\ThemePermissionServiceInterface;
+use App\Contracts\TwoFa\TwoFaPasskeyServiceInterface;
 use App\Models\SecuritySetting;
 use App\Services\FileIntegrityService;
+use App\Services\LegalPageService;
 use App\Services\LogService;
 use App\Services\MailService;
 use App\Services\Plugin\CoreSignatureVerifier;
 use App\Services\Plugin\PluginPermissionService;
 use App\Services\RouteSlugRegistry;
+use App\Services\Theme\ThemePermissionService;
+use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Traits\CustomFilesLoaderTrait;
 use App\Traits\PluginLoaderTrait;
 use App\Traits\ThemeLoaderTrait;
@@ -78,7 +85,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Services\Csp\CspNonceGenerator::class);
 
         // 法務ページレジストリサービスをシングルトンとして登録
-        $this->app->singleton(\App\Services\LegalPageService::class);
+        $this->app->singleton(LegalPageService::class);
+
+        // Contract インターフェース → 具象クラスのバインド
+        $this->app->bind(LegalPageServiceInterface::class, LegalPageService::class);
+        $this->app->bind(TwoFaPasskeyServiceInterface::class, TwoFaPasskeyService::class);
+        $this->app->bind(PluginPermissionServiceInterface::class, PluginPermissionService::class);
+        $this->app->bind(ThemePermissionServiceInterface::class, ThemePermissionService::class);
 
         // Laragear WebAuthnのWebAuthnCredentialモデルをカスタムモデルにバインド
         $this->app->bind(

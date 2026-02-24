@@ -2,6 +2,7 @@
 
 namespace App\Services\TwoFa;
 
+use App\Contracts\TwoFa\TwoFaPasskeyServiceInterface;
 use App\Contracts\TwoFaInterface;
 use App\Models\Member;
 use App\Models\MembersTrustedDevice;
@@ -11,7 +12,7 @@ use Illuminate\Support\Str;
 /**
  * @api プラグイン/テーマから使用可能な安定APIです
  */
-class TwoFaPasskeyService
+class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
 {
     /**
      * Passkeyが利用可能かどうか
