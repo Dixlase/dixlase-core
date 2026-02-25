@@ -31,6 +31,7 @@ window.adminLayout = function() {
         sidebarReady: false,
 
         // 右サイドバー（ページエディタ等で使用）
+        rightSidebarActive: false,
         rightSidebarCollapsed: localStorage.getItem('rightSidebarCollapsed') === 'true',
         rightSidebarReady: false,
 
