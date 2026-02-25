@@ -32,7 +32,7 @@ window.adminLayout = function() {
 
         // 右サイドバー（ページエディタ等で使用）
         rightSidebarActive: false,
-        rightSidebarCollapsed: localStorage.getItem('rightSidebarCollapsed') === 'true',
+        rightSidebarCollapsed: false,
         rightSidebarReady: false,
 
         init() {
@@ -47,10 +47,6 @@ window.adminLayout = function() {
                 localStorage.setItem('sidebarCollapsed', value);
             });
 
-            // 右サイドバーの折りたたみ状態をlocalStorageに保存
-            this.$watch('rightSidebarCollapsed', value => {
-                localStorage.setItem('rightSidebarCollapsed', value);
-            });
         },
 
         /**
