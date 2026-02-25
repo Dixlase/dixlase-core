@@ -85,10 +85,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </button>
 
                 <!-- Main Content Area -->
-                <main class="ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white"
+                <main @right-sidebar-active.window="rightSidebarActive = true"
+                      class="ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white"
                       :class="{
                           'md:ml-0': sidebarCollapsed,
-                          'md:ml-64': !sidebarCollapsed
+                          'md:ml-64': !sidebarCollapsed,
+                          'lg:mr-80': rightSidebarActive && !rightSidebarCollapsed
                       }"
                       x-init="
                           (() => {
