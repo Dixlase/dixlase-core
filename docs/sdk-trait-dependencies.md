@@ -70,14 +70,28 @@ This document records the core Trait dependency analysis for future `dixlase/plu
 ### Phase 1: Low-Hanging Fruit
 - Extract `ConfigLoaderTrait` into the SDK package directly
 
-### Phase 2: Interface Abstraction
-- Define SDK interfaces:
-  - `PluginRepositoryInterface` (query enabled plugins, check plugin existence)
-  - `ThemeRepositoryInterface` (get enabled theme, query theme settings)
-  - `AdminNavigationManagerInterface` (merge navigation items)
-- Core provides concrete implementations of these interfaces
+### Phase 2: Interface Abstraction (Completed)
 
-### Phase 3: Trait Refactoring
+SDK interfaces and core implementations have been created:
+
+| Interface (`@api`) | Implementation (`@internal`) | Purpose |
+|---------------------|------------------------------|---------|
+| `App\Contracts\Repositories\PluginRepositoryInterface` | `App\Repositories\PluginRepository` | Query enabled plugins via `EnabledPluginRecord` DTO |
+| `App\Contracts\Repositories\ThemeRepositoryInterface` | `App\Repositories\ThemeRepository` | Get enabled theme ID and directory |
+| `App\Contracts\Admin\AdminNavigationManagerInterface` | `App\Services\Admin\AdminNavigationManager` | Merge plugin navigation config |
+
+Supporting DTO:
+- `App\DTO\Plugin\EnabledPluginRecord` (`@api`) — immutable value object with `name`, `directory`, `slug`
+
+All bindings registered in `App\Providers\RepositoryServiceProvider` via `bind()`.
+
+Key design decisions:
+- `EnabledPluginRecord` DTO decouples consumers from the `Plugin` Eloquent model
+- Table existence checks (`Schema::hasTable()`) are encapsulated inside repository implementations
+- `AdminNavigationManager` supports both new (`config/admin/navigation.php`) and legacy (`admin.php` nav key) structures
+- All implementations are stateless — `bind()` used instead of `singleton()`
+
+### Phase 3: Trait Refactoring (Next)
 - Refactor `PluginLoaderTrait` and `ThemeLoaderTrait` to depend on interfaces rather than concrete classes
 - Move refactored traits into the SDK package
 - Core binds its implementations via the service container
