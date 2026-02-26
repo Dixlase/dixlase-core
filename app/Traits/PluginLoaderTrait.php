@@ -22,10 +22,10 @@
 
 namespace App\Traits;
 
-use App\Models\Plugin;
+use App\Contracts\Admin\AdminNavigationManagerInterface;
+use App\Contracts\Repositories\PluginRepositoryInterface;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 
 /**
@@ -36,6 +36,22 @@ use Illuminate\Support\Facades\View;
 trait PluginLoaderTrait
 {
     use ConfigLoaderTrait;
+
+    /**
+     * PluginRepositoryInterface の遅延解決
+     */
+    protected function resolvePluginRepository(): PluginRepositoryInterface
+    {
+        return app(PluginRepositoryInterface::class);
+    }
+
+    /**
+     * AdminNavigationManagerInterface の遅延解決
+     */
+    protected function resolveAdminNavigationManager(): AdminNavigationManagerInterface
+    {
+        return app(AdminNavigationManagerInterface::class);
+    }
 
     /**
      * 有効化されたプラグインをロードする
@@ -55,13 +71,8 @@ trait PluginLoaderTrait
             return;
         }
 
-        // Pluginテーブルのenabled_atがnullでないレコードを取得
-        // テーブルが存在しているか確認
-        if (! Schema::hasTable('plugins')) {
-            return;
-        }
-
-        $plugins = Plugin::whereNotNull('enabled_at')->get();
+        // リポジトリ経由で有効化されたプラグインを取得（テーブル存在チェック含む）
+        $plugins = $this->resolvePluginRepository()->getEnabled();
 
         foreach ($plugins as $plugin) {
             $pluginName = $plugin->name;
@@ -287,7 +298,6 @@ trait PluginLoaderTrait
         if (file_exists($composerJsonPath)) {
             return json_decode(file_get_contents($composerJsonPath), true);
         }
-
     }
 
     /**
@@ -343,38 +353,7 @@ trait PluginLoaderTrait
      */
     public function mergeAdminNavigationFile($configFile)
     {
-        if (! file_exists($configFile)) {
-            return;
-        }
-
-        $pluginNavigation = require $configFile;
-
-        if (! is_array($pluginNavigation)) {
-            return;
-        }
-
-        foreach ($pluginNavigation as $key => $value) {
-            if (isset($value['_insert_before'])) {
-                $this->insertOrderedConfig('admin.navigation', $key, $value, $value['_insert_before'], 'before');
-            } elseif (isset($value['_insert_after'])) {
-                $this->insertOrderedConfig('admin.navigation', $key, $value, $value['_insert_after'], 'after');
-            } else {
-                // 既存のキーがある場合はマージ、ない場合は追加
-                $existingValue = config("admin.navigation.{$key}");
-                if ($existingValue !== null && is_array($existingValue)) {
-                    // 既存の設定がある場合、childrenのみをマージし、他のプロパティは保持
-                    if (isset($value['children']) && is_array($value['children'])) {
-                        $existingChildren = $existingValue['children'] ?? [];
-                        $existingValue['children'] = array_merge($existingChildren, $value['children']);
-                    }
-                    // 他のプロパティ（text, iconなど）は既存の設定を保持
-                    config(["admin.navigation.{$key}" => $existingValue]);
-                } else {
-                    // 新規追加
-                    config(["admin.navigation.{$key}" => $value]);
-                }
-            }
-        }
+        $this->resolveAdminNavigationManager()->mergeNavigationFile($configFile);
     }
 
     /**
@@ -384,38 +363,7 @@ trait PluginLoaderTrait
      */
     public function mergeAdminNavConfig($configFile)
     {
-        if (! file_exists($configFile)) {
-            return; // 設定ファイルが存在しない場合はスキップ
-        }
-
-        $pluginConfig = require $configFile;
-
-        if (! isset($pluginConfig['nav']) || ! is_array($pluginConfig['nav'])) {
-            return; // 無効な設定ファイルの場合はスキップ
-        }
-
-        foreach ($pluginConfig['nav'] as $key => $value) {
-            if (isset($value['_insert_before'])) {
-                $this->insertOrderedConfig('admin.navigation', $key, $value, $value['_insert_before'], 'before');
-            } elseif (isset($value['_insert_after'])) {
-                $this->insertOrderedConfig('admin.navigation', $key, $value, $value['_insert_after'], 'after');
-            } else {
-                // 既存のキーがある場合はマージ、ない場合は追加
-                $existingValue = config("admin.navigation.{$key}");
-                if ($existingValue !== null && is_array($existingValue)) {
-                    // 既存の設定がある場合、childrenのみをマージし、他のプロパティは保持
-                    if (isset($value['children']) && is_array($value['children'])) {
-                        $existingChildren = $existingValue['children'] ?? [];
-                        $existingValue['children'] = array_merge($existingChildren, $value['children']);
-                    }
-                    // 他のプロパティ（text, iconなど）は既存の設定を保持
-                    config(["admin.navigation.{$key}" => $existingValue]);
-                } else {
-                    // 新規追加
-                    config(["admin.navigation.{$key}" => $value]);
-                }
-            }
-        }
+        $this->resolveAdminNavigationManager()->mergeNavConfig($configFile);
     }
 
     /**
@@ -438,49 +386,6 @@ trait PluginLoaderTrait
         }
 
         return $base;
-    }
-
-    /**
-     * 指定されたキーの前後に要素を挿入する（ナビゲーション専用）
-     *
-     * @param  string  $configKey  config() に格納するキー
-     * @param  string  $insertKey  挿入するキー
-     * @param  array  $insertValue  挿入するデータ
-     * @param  string  $targetKey  どのキーの前後に挿入するか
-     * @param  string  $position  'before' or 'after'
-     */
-    protected function insertOrderedConfig($configKey, $insertKey, $insertValue, $targetKey, $position = 'before')
-    {
-        unset($insertValue['_insert_before'], $insertValue['_insert_after']); // `_insert_before` や `_insert_after` を削除
-
-        $existingConfig = config($configKey, []);
-
-        // 新しい配列を作成し、適切な位置に要素を挿入
-        $newConfig = [];
-        $inserted = false;
-
-        foreach ($existingConfig as $key => $value) {
-            if ($position === 'before' && $key === $targetKey) {
-                // 指定されたキーの前に挿入
-                $newConfig[$insertKey] = $insertValue;
-                $inserted = true;
-            }
-
-            $newConfig[$key] = $value;
-
-            if ($position === 'after' && $key === $targetKey) {
-                // 指定されたキーの後に挿入
-                $newConfig[$insertKey] = $insertValue;
-                $inserted = true;
-            }
-        }
-
-        // `_insert_before` や `_insert_after` に該当するキーがない場合は最後に追加
-        if (! $inserted) {
-            $newConfig[$insertKey] = $insertValue;
-        }
-
-        config([$configKey => $newConfig]);
     }
 
     /**

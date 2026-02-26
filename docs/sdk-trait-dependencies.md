@@ -91,7 +91,24 @@ Key design decisions:
 - `AdminNavigationManager` supports both new (`config/admin/navigation.php`) and legacy (`admin.php` nav key) structures
 - All implementations are stateless — `bind()` used instead of `singleton()`
 
-### Phase 3: Trait Refactoring (Next)
-- Refactor `PluginLoaderTrait` and `ThemeLoaderTrait` to depend on interfaces rather than concrete classes
-- Move refactored traits into the SDK package
-- Core binds its implementations via the service container
+### Phase 3: Trait Refactoring (Completed)
+
+Both `PluginLoaderTrait` and `ThemeLoaderTrait` have been refactored to depend on interfaces:
+
+**PluginLoaderTrait changes:**
+- Removed: `App\Models\Plugin`, `Illuminate\Support\Facades\Schema`
+- Added: `PluginRepositoryInterface`, `AdminNavigationManagerInterface`
+- `loadEnabledPlugins()` now uses `resolvePluginRepository()->getEnabled()` (returns `Collection<EnabledPluginRecord>`)
+- `mergeAdminNavigationFile()` and `mergeAdminNavConfig()` delegate to `AdminNavigationManagerInterface`
+- `insertOrderedConfig()` removed (logic moved to `AdminNavigationManager`)
+- `mergeAdminNavigation()` retained (legacy `admin.nav` path, still used by 4 plugins)
+
+**ThemeLoaderTrait changes:**
+- Removed: `App\Models\Theme`, `Illuminate\Support\Facades\DB`, `Illuminate\Support\Facades\Schema`
+- Added: `ThemeRepositoryInterface`
+- `getEnabledTheme()` delegates to `resolveThemeRepository()->getEnabledThemeId()`
+- `getEnabledThemeDirectory()` delegates to `resolveThemeRepository()->getEnabledThemeDirectory()`
+
+**DI pattern:** Lazy resolution via `app()` helper to support both ServiceProvider (`$this->app`) and Controller contexts.
+
+All public method signatures remain unchanged — zero breaking changes for consuming classes.
