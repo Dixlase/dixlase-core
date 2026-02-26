@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @api プラグイン/テーマから使用可能な安定APIです
  */
 trait MailTestTrait
 {

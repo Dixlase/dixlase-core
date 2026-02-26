@@ -27,7 +27,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @api プラグイン/テーマから使用可能な安定APIです
  */
 trait VerifiesCaptcha
 {

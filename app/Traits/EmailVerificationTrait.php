@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @api プラグイン/テーマから使用可能な安定APIです
  *
  * メール認証の共通ロジックを提供するTrait
  *

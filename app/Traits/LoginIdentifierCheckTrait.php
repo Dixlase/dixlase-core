@@ -6,7 +6,7 @@ use App\Helpers\IdentifierCheckHelper;
 use Illuminate\Http\Request;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @api プラグイン/テーマから使用可能な安定APIです
  *
  * ログイン識別子確認の共通トレイト
  *

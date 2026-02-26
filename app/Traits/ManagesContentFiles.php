@@ -25,7 +25,7 @@ namespace App\Traits;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @api プラグイン/テーマから使用可能な安定APIです
  *
  * コンテンツファイル管理トレイト
  * ファイルベースのコンテンツ保存に関する共通機能を提供
