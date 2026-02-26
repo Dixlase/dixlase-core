@@ -22,9 +22,7 @@
 
 namespace App\Traits;
 
-use App\Models\Theme;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use App\Contracts\Repositories\ThemeRepositoryInterface;
 use Illuminate\Support\Str;
 
 /**
@@ -34,6 +32,14 @@ use Illuminate\Support\Str;
  */
 trait ThemeLoaderTrait
 {
+    /**
+     * ThemeRepositoryInterface の遅延解決
+     */
+    protected function resolveThemeRepository(): ThemeRepositoryInterface
+    {
+        return app(ThemeRepositoryInterface::class);
+    }
+
     /**
      * テーマの言語ファイルを読み込む
      *
@@ -120,18 +126,7 @@ trait ThemeLoaderTrait
      */
     public function getEnabledTheme(): int
     {
-        // theme_settingsテーブルのenabled_theme_idの値を取得
-        // theme_settingsテーブルが存在しているか確認
-        if (Schema::hasTable('theme_settings')) {
-            $themeSetting = DB::table('theme_settings')
-                ->where('key', 'enabled_theme_id')
-                ->first();
-            $enabledThemeId = $themeSetting ? (int) $themeSetting->value : 1;
-        } else {
-            $enabledThemeId = 1;
-        }
-
-        return $enabledThemeId;
+        return $this->resolveThemeRepository()->getEnabledThemeId();
     }
 
     /**
@@ -139,16 +134,7 @@ trait ThemeLoaderTrait
      */
     public function getEnabledThemeDirectory(): string
     {
-        $enabledThemeId = $this->getEnabledTheme();
-
-        if (Schema::hasTable('themes')) {
-            $theme = Theme::find($enabledThemeId);
-            if ($theme) {
-                return $theme->directory ?? config('themes.default_theme', env('APP_THEME', 'DixlaseDefaultTheme'));
-            }
-        }
-
-        return config('themes.default_theme', env('APP_THEME', 'DixlaseDefaultTheme'));
+        return $this->resolveThemeRepository()->getEnabledThemeDirectory();
     }
 
     /**
