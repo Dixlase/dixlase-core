@@ -25,7 +25,7 @@ use App\Enums\AppearanceMode;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @api プラグイン/テーマから使用可能な安定APIです
  *
  * 管理画面ログイン後の共通初期化トレイト
  */
