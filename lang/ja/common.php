@@ -498,7 +498,7 @@ return [
         'database_description' => 'DBに保存します。管理画面から直接編集できます。',
         'file' => 'ファイル',
         'file_description' => 'ファイルとして保存します。ローカルエディタで直接編集できます。',
-        'file_info_title' => 'ファイル保存について',
+        'file_info_title' => 'ファイルの保存先',
         'file_info_description' => 'コンテンツはファイルとして保存されます。以下のパスで直接編集できます：',
         'gui_db_only' => 'GUIエディタはデータベース保存のみ対応',
     ],
