@@ -324,7 +324,7 @@ return [
         'database_description' => 'Store in database. Edit directly from admin panel.',
         'file' => 'File',
         'file_description' => 'Store as file. Edit directly with local editor.',
-        'file_info_title' => 'About File Storage',
+        'file_info_title' => 'File Storage Path',
         'file_info_description' => 'Content will be stored as a file. You can edit it directly at:',
         'gui_db_only' => 'GUI editor supports database storage only',
     ],
