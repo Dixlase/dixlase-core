@@ -1,319 +1,319 @@
-# Content Security Policy (CSP) 完全ガイド
+# Content Security Policy (CSP) Complete Guide
 
-## 目次
+## Table of Contents
 
-1. [概要](#概要)
-2. [CSPモード仕様](#cspモード仕様)
-3. [セーフモード](#セーフモード)
-4. [基本的な使い方](#基本的な使い方)
-5. [コマンドラインツール](#コマンドラインツール)
-6. [プラグイン・テーマ開発](#プラグインテーマ開発)
-7. [Dixlase初期化規約](#dixlase初期化規約)
-8. [トラブルシューティング](#トラブルシューティング)
+1. [Overview](#overview)
+2. [CSP Mode Specifications](#csp-mode-specifications)
+3. [Safe Mode](#safe-mode)
+4. [Basic Usage](#basic-usage)
+5. [Command Line Tools](#command-line-tools)
+6. [Plugin & Theme Development](#plugin--theme-development)
+7. [Dixlase Initialization Conventions](#dixlase-initialization-conventions)
+8. [Troubleshooting](#troubleshooting)
 9. [FAQ](#faq)
 
 ---
 
-## 概要
+## Overview
 
-DixlaseはContent Security Policy (CSP)を実装しており、XSS攻撃やデータ漏洩のリスクを軽減します。CSPはブラウザに対してどのリソースを読み込み・実行してよいかを指示するセキュリティ機能です。
+Dixlase implements Content Security Policy (CSP) to mitigate the risk of XSS attacks and data leakage. CSP is a security feature that instructs the browser which resources are allowed to be loaded and executed.
 
-### セキュリティポリシー
+### Security Policy
 
-Dixlaseは段階的なCSP実装を採用しています：
+Dixlase adopts a phased CSP implementation:
 
-- ✅ `unsafe-inline`は排除（nonce方式）
-- ⚠️ `unsafe-eval`は限定的に許可（Alpine.js使用のため）
+- ✅ `unsafe-inline` is eliminated (nonce-based approach)
+- ⚠️ `unsafe-eval` is permitted in a limited manner (due to Alpine.js usage)
 
-**なぜunsafe-evalを許可しているのか？**
+**Why is unsafe-eval permitted?**
 
-Alpine.js v3を使用するため、標準モードでは`unsafe-eval`を限定的に許可しています。これは以下の理由によります：
+To use Alpine.js v3, Standard Mode permits `unsafe-eval` in a limited manner. The reasons are:
 
-1. Alpine.jsの動的式評価機能を活用
-2. サードパーティプラグインとの互換性確保
-3. 開発者体験の向上
+1. Leveraging Alpine.js dynamic expression evaluation capabilities
+2. Ensuring compatibility with third-party plugins
+3. Improving developer experience
 
-将来のバージョン（v2.0以降）でAlpine.js CSP Buildへの移行を検討し、`unsafe-eval`の完全排除を目指します。新規コードは **[Alpine.js CSP互換コーディングルール](alpine-csp-coding-rules.md)** に従って記述してください。
+In future versions (v2.0 and beyond), migration to Alpine.js CSP Build will be considered with the goal of completely eliminating `unsafe-eval`. New code should follow the **[Alpine.js CSP-Compatible Coding Rules](alpine-csp-coding-rules.md)**.
 
-### Nonce方式
+### Nonce-Based Approach
 
-Dixlaseはnonce（使い捨てトークン）方式を採用しています。リクエストごとに一意のnonceが生成され、許可されたインラインスクリプトのみが実行されます。
+Dixlase uses a nonce (one-time token) approach. A unique nonce is generated per request, and only inline scripts with the correct nonce are allowed to execute.
 
 ```html
-<!-- nonceが付与されたスクリプトのみ実行される -->
+<!-- Only scripts with a nonce are executed -->
 <script nonce="abc123...">
-    // このスクリプトは実行される
+    // This script will be executed
 </script>
 
-<!-- nonceがないスクリプトはブロックされる -->
+<!-- Scripts without a nonce are blocked -->
 <script>
-    // このスクリプトはブロックされる
+    // This script will be blocked
 </script>
 ```
 
 ---
 
-## CSPモード仕様
+## CSP Mode Specifications
 
-Dixlaseは3つのCSPモードを提供し、開発体験とセキュリティのバランスを柔軟に調整できます。
+Dixlase provides three CSP modes, allowing flexible adjustment of the balance between developer experience and security.
 
-### モード一覧
+### Mode Overview
 
-| モード | 適用方式 | インライン実行 | onclick等 | unsafe-eval | プラグイン互換性 | 用途 |
-|--------|----------|---------------|-----------|-------------|-----------------|------|
-| **Development** | Report-Only | 許可 | 許可 | 許可 | 最大 | 開発・デバッグ |
-| **Standard** | 強制 | nonceヘルパーのみ | 警告 | 許可（Alpine.js用） | 高 | 本番推奨 |
-| **Strict** | 強制 | 完全禁止 | 禁止 | 禁止 | CSP Readyのみ | 最大セキュリティ |
-
----
-
-### 1. Development Mode（開発モード）
-
-#### 目的
-テーマ/プラグイン開発時の体験を最優先。すべて動作するが、将来の問題を可視化。
-
-#### CSP適用方式
-- **Report-Only**（ブロックせず記録のみ）
-- 拒否ドメインも警告のみ（設定で強制ブロック可）
-
-#### 許可範囲
-
-**スクリプト**
-- ✅ 外部スクリプト（`'self'` + 宣言済みドメイン）
-- ✅ インライン実行コード（`unsafe-inline`）
-- ✅ 属性イベント（`onclick` 等）
-- ✅ `unsafe-eval`（Vite/HMR対応）
-- ✅ 生の `<script>...</script>`（nonceなし）
-
-**スタイル**
-- ✅ インラインCSS（`unsafe-inline`）
-- ✅ 外部CSS
-
-**その他**
-- ✅ `type="application/json"` のJSON埋め込み
-- ✅ `data-*` 属性
-- ✅ すべてのプラグイン（`requires_inline_js: true` も動作）
-
-#### 期待される体験
-- すべて動作する
-- CSP違反は管理画面に記録される
-- 「このプラグインは標準/厳格で壊れる可能性」を事前に把握できる
+| Mode | Enforcement | Inline Execution | onclick etc. | unsafe-eval | Plugin Compatibility | Use Case |
+|------|-------------|-----------------|-------------|-------------|---------------------|----------|
+| **Development** | Report-Only | Allowed | Allowed | Allowed | Maximum | Development & Debugging |
+| **Standard** | Enforced | Nonce helper only | Warning | Allowed (for Alpine.js) | High | Recommended for Production |
+| **Strict** | Enforced | Completely forbidden | Forbidden | Forbidden | CSP Ready only | Maximum Security |
 
 ---
 
-### 2. Standard Mode（標準モード）- 本番推奨
+### 1. Development Mode
 
-#### 目的
-本番運用のデフォルト。互換性を落としすぎず、XSS耐性を実用レベルまで上げる。
+#### Purpose
+Prioritizes the developer experience when developing themes/plugins. Everything works, but future issues are made visible.
 
-#### CSP適用方式
-- **強制（ブロック）**
-- `Report-To/Report-URI` も併用（ブロック＋報告）
+#### CSP Enforcement
+- **Report-Only** (records only, does not block)
+- Denied domains only produce warnings (can be force-blocked via settings)
 
-#### 許可範囲
+#### Allowed Scope
 
-**スクリプト**
-- ✅ 外部スクリプト（`'self'` + 宣言済みドメイン）
-- ✅ インライン実行コード：**ヘルパー経由（nonce付与）のみ**
+**Scripts**
+- ✅ External scripts (`'self'` + declared domains)
+- ✅ Inline execution code (`unsafe-inline`)
+- ✅ Attribute events (`onclick` etc.)
+- ✅ `unsafe-eval` (for Vite/HMR support)
+- ✅ Raw `<script>...</script>` (without nonce)
+
+**Styles**
+- ✅ Inline CSS (`unsafe-inline`)
+- ✅ External CSS
+
+**Other**
+- ✅ JSON embedding with `type="application/json"`
+- ✅ `data-*` attributes
+- ✅ All plugins (including those with `requires_inline_js: true`)
+
+#### Expected Experience
+- Everything works
+- CSP violations are recorded in the admin panel
+- Allows advance identification of "this plugin may break in Standard/Strict mode"
+
+---
+
+### 2. Standard Mode - Recommended for Production
+
+#### Purpose
+Default for production operation. Raises XSS resistance to a practical level without sacrificing too much compatibility.
+
+#### CSP Enforcement
+- **Enforced (blocking)**
+- Also uses `Report-To/Report-URI` (block + report)
+
+#### Allowed Scope
+
+**Scripts**
+- ✅ External scripts (`'self'` + declared domains)
+- ✅ Inline execution code: **only via helpers (with nonce)**
   - `@dixScript ... @enddixScript`
   - `Dixlase::script()`
-- ❌ 生の `<script>...</script>`（nonceなし）
-- ⚠️ 属性イベント（`onclick` 等）：**警告（移行期は動作許可）**
-- ⚠️ `unsafe-eval`：**Alpine.jsのため限定的に許可**
-  - Alpine.js v3の動的式評価機能を使用するため
-  - 将来のバージョンでAlpine.js CSP Buildへの移行を検討
-- 🔄 `strict-dynamic`：任意（互換性のためデフォルトOFF）
+- ❌ Raw `<script>...</script>` (without nonce)
+- ⚠️ Attribute events (`onclick` etc.): **warning (allowed during transition period)**
+- ⚠️ `unsafe-eval`: **permitted in a limited manner for Alpine.js**
+  - Required for Alpine.js v3 dynamic expression evaluation
+  - Migration to Alpine.js CSP Build is being considered for future versions
+- 🔄 `strict-dynamic`: optional (default OFF for compatibility)
 
-**スタイル**
-- ✅ インラインCSS：ヘルパー経由（nonce） or hash
-- ✅ 外部CSS（宣言済みドメイン）
-- ❌ 無制限な `unsafe-inline` は使わない
+**Styles**
+- ✅ Inline CSS: via helper (nonce) or hash
+- ✅ External CSS (declared domains)
+- ❌ Unrestricted `unsafe-inline` is not used
 
-**データ受け渡し**
-- ✅ `type="application/json"` のJSON埋め込み
-- ✅ `data-*` 属性
+**Data Passing**
+- ✅ JSON embedding with `type="application/json"`
+- ✅ `data-*` attributes
 
-**iframe / object 等**
-- ✅ `object-src 'none'`（推奨）
-- ✅ `base-uri 'self'`（推奨）
-- ✅ `frame-ancestors`：管理画面は `'none'`（クリックジャッキング対策）
+**iframe / object etc.**
+- ✅ `object-src 'none'` (recommended)
+- ✅ `base-uri 'self'` (recommended)
+- ✅ `frame-ancestors`: `'none'` for admin panel (clickjacking protection)
 
-#### 期待される体験
-- 多くのプラグインが動作する
-- インラインを使う場合でも「Dixlase流の書き方」に寄せれば安全に動く
-- onclick等は将来的に非推奨（警告が出る）
+#### Expected Experience
+- Most plugins work
+- Even when using inline scripts, they work safely when following the "Dixlase way"
+- onclick etc. will be deprecated in the future (warnings are shown)
 
 ---
 
-### 3. Strict Mode（厳格モード）
+### 3. Strict Mode
 
-> ⚠️ **注意：厳格モードは現在未実装です**
-> 
-> 厳格モードは将来のバージョンでの実装を検討中です。
-> 現在は開発モードと標準モードのみが利用可能です。
+> ⚠️ **Note: Strict Mode is currently not implemented**
+>
+> Strict Mode is being considered for implementation in a future version.
+> Currently, only Development Mode and Standard Mode are available.
 
-#### 目的
-CSP Readyなテーマ/プラグインのみで、最大限の防御を実現。
-管理画面も含めてインライン実行を不要化し、レビュー・監査・改ざん検知と相性最大化。
+#### Purpose
+Achieves maximum protection using only CSP Ready themes/plugins.
+Eliminates the need for inline execution including in the admin panel, maximizing compatibility with reviews, audits, and tampering detection.
 
-#### CSP適用方式
-- **強制（ブロック）**
-- `Report-To` も併用
-- Dixlase側ルールで「インライン実行コードが存在したら拒否」も行う（CMSポリシー）
+#### CSP Enforcement
+- **Enforced (blocking)**
+- Also uses `Report-To`
+- Dixlase-side rules also "reject if inline execution code exists" (CMS policy)
 
-#### 許可範囲
+#### Allowed Scope
 
-**スクリプト**
-- ✅ 外部スクリプトのみ（`'self'` + 宣言済みドメイン）
-- ✅ CSPの起点スクリプト（ブートローダー）
-  - `bootstrap.js` のようなコア統制下の外部JS
-- ❌ インライン実行コード（**nonce付きであっても禁止**：Dixlaseポリシー）
-- ❌ 属性イベント（`onclick` 等）
+**Scripts**
+- ✅ External scripts only (`'self'` + declared domains)
+- ✅ CSP entry point scripts (bootloader)
+  - Core-controlled external JS like `bootstrap.js`
+- ❌ Inline execution code (**forbidden even with nonce**: Dixlase policy)
+- ❌ Attribute events (`onclick` etc.)
 - ❌ `unsafe-eval`
-- ✅ `strict-dynamic` をON（コアが起点を握る前提）
+- ✅ `strict-dynamic` is ON (assuming core controls the entry point)
 
-**"インライン"で許可されるのは「実行しないものだけ」**
-- ✅ `<script type="application/json">`（設定・初期データの受け渡し）
-- ✅ `data-*` 属性（宣言的初期化）
-- ❌ 最小限の `<style>` も原則禁止（可能なら外部CSSへ）
+**Only "non-executing" inline content is allowed**
+- ✅ `<script type="application/json">` (passing configuration/initial data)
+- ✅ `data-*` attributes (declarative initialization)
+- ❌ Even minimal `<style>` is forbidden in principle (move to external CSS when possible)
 
-**管理画面の追加ガード（厳格のみ）**
+**Additional Admin Panel Guards (Strict only)**
 - ✅ `frame-ancestors 'none'`
 - ✅ `form-action 'self'`
 - ✅ `object-src 'none'`
 - ✅ `base-uri 'none'`
-- ✅ `upgrade-insecure-requests`（可能なら）
-- 🔮 将来的に `require-trusted-types-for 'script'` も検討
+- ✅ `upgrade-insecure-requests` (when possible)
+- 🔮 `require-trusted-types-for 'script'` is being considered for the future
 
-**プラグイン・テーマの互換性ルール**
-- ❌ `requires_inline_js: true` → **有効化不可**
-- ❌ plugin.jsonに外部依存の宣言がない（または動的挿入） → **警告 or 不可**
-- ⚠️ ブロックリスト照合でヒット → 設定に従い警告/ブロック
+**Plugin & Theme Compatibility Rules**
+- ❌ `requires_inline_js: true` → **cannot be activated**
+- ❌ No external dependency declarations in plugin.json (or dynamic insertion) → **warning or blocked**
+- ⚠️ Blocklist match hit → warning/block per settings
 
-#### 期待される体験
-- 壊れるプラグインは最初から弾く
-- その代わり **CSP Readyの世界では事故が起きにくい**
-- 「インラインを書かなくてもUIが作れる」ように、コアがブート規約を提供する
+#### Expected Experience
+- Incompatible plugins are rejected from the start
+- In exchange, **accidents are unlikely in a CSP Ready world**
+- Core provides boot conventions so "UI can be built without writing inline code"
 
 ---
 
-### モード別の許可される記述 早見表
+### Mode Comparison Quick Reference
 
-| 項目 | Development | Standard | Strict |
+| Item | Development | Standard | Strict |
 |------|-------------|----------|--------|
-| **CSP適用** | Report-Only（推奨） | 強制 | 強制 |
-| **インラインJS** | 許可 | **nonceヘルパーのみ** | **禁止（nonceでも）** |
-| **onclick等** | 許可 | 原則禁止（移行期は警告可） | 禁止 |
-| **外部JS** | 許可 | 許可（宣言必須） | 許可（宣言必須） |
-| **unsafe-eval** | 許可（必要な場合） | 禁止 | 禁止 |
-| **strict-dynamic** | 任意 | 任意（推奨寄り） | 推奨（ON前提） |
-| **設定受け渡し（JSON script）** | 許可 | 許可 | 許可 |
-| **data-*初期化** | 許可 | 許可 | 推奨 |
-| **管理画面まで統一** | 任意 | 推奨 | 前提 |
+| **CSP Enforcement** | Report-Only (recommended) | Enforced | Enforced |
+| **Inline JS** | Allowed | **Nonce helper only** | **Forbidden (even with nonce)** |
+| **onclick etc.** | Allowed | Forbidden in principle (warnings allowed during transition) | Forbidden |
+| **External JS** | Allowed | Allowed (declaration required) | Allowed (declaration required) |
+| **unsafe-eval** | Allowed (when needed) | Forbidden | Forbidden |
+| **strict-dynamic** | Optional | Optional (leaning toward recommended) | Recommended (assumed ON) |
+| **Config Passing (JSON script)** | Allowed | Allowed | Allowed |
+| **data-* Initialization** | Allowed | Allowed | Recommended |
+| **Unified Across Admin Panel** | Optional | Recommended | Required |
 
 ---
 
-## セーフモード（CSP）
+## Safe Mode (CSP)
 
-CSP設定の問題で管理画面にアクセスできなくなった場合、**CSPセーフモード**（`?safe=csp`）で一時的にCSPヘッダーを無効化できます。
+If you cannot access the admin panel due to CSP configuration issues, **CSP Safe Mode** (`?safe=csp`) can temporarily disable CSP headers.
 
-CSPセーフモードは、Dixlaseのマルチレベルセーフモードシステムの一部です。プラグインやテーマのセーフモードを含む詳細は **[セーフモードガイド](safe-mode-guide.md)** を参照してください。
+CSP Safe Mode is part of the Dixlase multi-level safe mode system. For details including plugin and theme safe modes, see the **[Safe Mode Guide](safe-mode-guide.md)**.
 
-### CSPセーフモードの発動
+### Activating CSP Safe Mode
 
-- **自動:** CSP設定保存後の確認モーダルがタイムアウト（10秒）すると自動でロールバック＆セーフモード有効化
-- **手動:** URLに `?safe=csp` を追加（管理者ログイン必須）
+- **Automatic:** If the confirmation modal times out (10 seconds) after saving CSP settings, the system automatically rolls back and enables safe mode
+- **Manual:** Append `?safe=csp` to the URL (admin login required)
 
-### 解除方法
+### How to Deactivate
 
-バナーの「解除」ボタンをクリックするか、CSP設定ページから設定を修正してください。
+Click the "Deactivate" button on the banner, or fix the settings from the CSP settings page.
 
 ---
 
-## 基本的な使い方
+## Basic Usage
 
-### Bladeテンプレートでの使用
+### Using in Blade Templates
 
-#### @cspNonce ディレクティブ
+#### @cspNonce Directive
 
-インラインスクリプトにnonce属性を追加する最も簡単な方法です。
+The simplest way to add a nonce attribute to inline scripts.
 
 ```blade
 <script @cspNonce>
-    // インラインスクリプト
+    // Inline script
     console.log('Hello, World!');
 </script>
 ```
 
-#### @cspNonceValue ディレクティブ
+#### @cspNonceValue Directive
 
-nonce値のみを出力します。
+Outputs only the nonce value.
 
 ```blade
 <script nonce="@cspNonceValue">
-    // インラインスクリプト
+    // Inline script
 </script>
 ```
 
-#### ヘルパー関数
+#### Helper Functions
 
 ```php
-// nonce値を取得
+// Get the nonce value
 $nonce = csp_nonce();
 
-// nonce属性を取得（nonce="xxx" 形式）
+// Get the nonce attribute (nonce="xxx" format)
 $attr = csp_nonce_attr();
 
-// CSPが有効かどうか
+// Check if CSP is enabled
 $enabled = csp_is_enabled();
 
-// CSPモードを取得
+// Get the CSP mode
 $mode = csp_get_mode();
 ```
 
-### 動的にディレクティブを追加
+### Dynamically Adding Directives
 
-コントローラーやBladeテンプレートから動的にディレクティブを追加できます。
+Directives can be dynamically added from controllers or Blade templates.
 
 ```php
-// コントローラーで
+// In a controller
 csp_add_script_src('https://cdn.example.com');
 csp_add_style_src('https://fonts.googleapis.com');
 csp_add_connect_src('https://api.example.com');
 
-// 汎用的な追加
+// Generic addition
 csp_add_directive('frame-src', ['https://youtube.com', 'https://vimeo.com']);
 ```
 
 ---
 
-## Dixlase初期化規約
+## Dixlase Initialization Conventions
 
-厳格モードでは、インライン実行コードを書かずにUIを初期化できる仕組みをコアが提供します。
+In Strict Mode, the core provides mechanisms to initialize UI without writing inline execution code.
 
-### 1. ウィジェット登録
+### 1. Widget Registration
 
-**HTML（テンプレート）**
+**HTML (Template)**
 ```html
 <div data-dix-widget="gallery"
      data-dix-props='{"autoplay":true,"speed":400}'>
 </div>
 ```
 
-**JavaScript（プラグイン）**
+**JavaScript (Plugin)**
 ```javascript
 Dixlase.widgets.register("gallery", (el, props) => {
-  // el: 対象DOM
-  // props: data-dix-props から復元された設定
+  // el: target DOM element
+  // props: settings restored from data-dix-props
   mountGallery(el, props);
 });
 ```
 
-### 2. アクション登録（イベント委譲）
+### 2. Action Registration (Event Delegation)
 
 **HTML**
 ```html
-<button data-dix-action="contact.submit">送信</button>
+<button data-dix-action="contact.submit">Submit</button>
 ```
 
 **JavaScript**
@@ -323,7 +323,7 @@ Dixlase.actions.register("contact.submit", (ctx) => {
 });
 ```
 
-### 3. ページ固有の初期化
+### 3. Page-Specific Initialization
 
 **HTML**
 ```html
@@ -337,9 +337,9 @@ Dixlase.pages.register("admin.dashboard", () => {
 });
 ```
 
-### 4. 設定データの読み込み
+### 4. Loading Configuration Data
 
-**JSON script方式**
+**JSON script approach**
 ```html
 <script type="application/json" id="app-config">
   {"theme": "dark", "lang": "ja"}
@@ -350,7 +350,7 @@ Dixlase.pages.register("admin.dashboard", () => {
 const config = Dixlase.config.load('app-config');
 ```
 
-**data-*方式**
+**data-* approach**
 ```html
 <div id="widget" data-dix-config-theme="dark"></div>
 ```
@@ -361,17 +361,17 @@ const theme = Dixlase.config.get(element, 'theme');
 
 ---
 
-## コマンドラインツール
+## Command Line Tools
 
-### CSP設定の確認
+### Checking CSP Status
 
-現在のCSP設定を確認します：
+Check the current CSP settings:
 
 ```bash
 php artisan csp:status
 ```
 
-**出力例：**
+**Example output:**
 ```
 CSP Status
 ==========
@@ -390,76 +390,76 @@ Blocklist Categories:
   - ads (23 domains)
 ```
 
-### CSPモードの変更
+### Changing CSP Mode
 
-コマンドラインからCSPモードを変更できます：
+Change the CSP mode from the command line:
 
 ```bash
-# 開発モードに変更
+# Switch to Development Mode
 php artisan csp:mode development
 
-# 標準モードに変更
+# Switch to Standard Mode
 php artisan csp:mode standard
 
-# 厳格モードに変更
+# Switch to Strict Mode
 php artisan csp:mode strict
 ```
 
-### CSPの有効化/無効化
+### Enabling/Disabling CSP
 
 ```bash
-# CSPを有効化
+# Enable CSP
 php artisan csp:enable
 
-# CSPを無効化
+# Disable CSP
 php artisan csp:disable
 ```
 
-### セーフモードの管理
+### Managing Safe Mode
 
 ```bash
-# セーフモードを有効化
+# Enable safe mode
 php artisan csp:enable-safe-mode
 
-# セーフモードを無効化
+# Disable safe mode
 php artisan csp:disable-safe-mode
 
-# セーフモードの状態を確認
+# Check safe mode status
 php artisan csp:status
 ```
 
-### CSP違反ログの確認
+### Viewing CSP Violation Logs
 
-CSP違反ログを表示します：
+Display CSP violation logs:
 
 ```bash
-# 最新の違反ログを表示
+# Show latest violation logs
 php artisan csp:violations
 
-# 最新10件を表示
+# Show latest 10 entries
 php artisan csp:violations --limit=10
 
-# 特定のディレクティブのみ表示
+# Show only a specific directive
 php artisan csp:violations --directive=script-src
 ```
 
-### CSPキャッシュのクリア
+### Clearing CSP Cache
 
-CSP設定のキャッシュをクリアします：
+Clear the CSP settings cache:
 
 ```bash
 php artisan csp:clear
 ```
 
-### 緊急時のCSP無効化
+### Emergency CSP Disable
 
-管理画面にアクセスできない場合、`.env`ファイルで直接無効化できます：
+If you cannot access the admin panel, you can disable CSP directly in the `.env` file:
 
 ```env
 CSP_ENABLED=false
 ```
 
-または、コマンドラインから：
+Or from the command line:
 
 ```bash
 php artisan csp:disable --force
@@ -467,11 +467,11 @@ php artisan csp:disable --force
 
 ---
 
-## プラグイン・テーマ開発
+## Plugin & Theme Development
 
-### CspPolicyProviderインターフェース
+### CspPolicyProvider Interface
 
-プラグインやテーマが外部リソースを必要とする場合、`CspPolicyProvider`インターフェースを実装してCSPディレクティブを追加できます。
+When plugins or themes require external resources, they can implement the `CspPolicyProvider` interface to add CSP directives.
 
 ```php
 <?php
@@ -485,7 +485,7 @@ class MyPluginServiceProvider extends ServiceProvider implements CspPolicyProvid
 {
     public function boot(): void
     {
-        // プラグインのCSPポリシーを登録
+        // Register the plugin's CSP policy
         app(\App\Services\Csp\CspPolicyRegistry::class)
             ->registerProvider('my-plugin', $this);
     }
@@ -502,9 +502,9 @@ class MyPluginServiceProvider extends ServiceProvider implements CspPolicyProvid
 }
 ```
 
-### plugin.json でのCSP宣言
+### CSP Declarations in plugin.json
 
-プラグインのCSP要件を`plugin.json`で宣言できます：
+Plugin CSP requirements can be declared in `plugin.json`:
 
 ```json
 {
@@ -533,34 +533,34 @@ class MyPluginServiceProvider extends ServiceProvider implements CspPolicyProvid
 }
 ```
 
-### CSP Ready チェックリスト
+### CSP Ready Checklist
 
-- [ ] インライン実行コードを使用していない
-- [ ] onclick等の属性イベントを使用していない
-- [ ] 外部依存をすべてplugin.jsonに宣言している
-- [ ] 初期化は `Dixlase.widgets.register()` 等を使用
-- [ ] 設定は `data-*` または `type="application/json"` で受け渡し
-- [ ] `requires_inline_js: false` を明示
+- [ ] No inline execution code is used
+- [ ] No attribute events such as onclick are used
+- [ ] All external dependencies are declared in plugin.json
+- [ ] Initialization uses `Dixlase.widgets.register()` etc.
+- [ ] Configuration is passed via `data-*` or `type="application/json"`
+- [ ] `requires_inline_js: false` is explicitly set
 
-### CSP Readyプラグインの開発
+### Developing CSP Ready Plugins
 
-#### 1. インラインスクリプトを避ける
+#### 1. Avoid Inline Scripts
 
 ```blade
-{{-- ❌ 避けるべき --}}
+{{-- ❌ Avoid --}}
 <button onclick="doSomething()">Click</button>
 
-{{-- ✅ 推奨（標準モード） --}}
+{{-- ✅ Recommended (Standard Mode) --}}
 <button id="myButton">Click</button>
 <script @cspNonce>
     document.getElementById('myButton').addEventListener('click', doSomething);
 </script>
 
-{{-- ✅ 推奨（厳格モード） --}}
+{{-- ✅ Recommended (Strict Mode) --}}
 <button data-dix-action="my-plugin.do-something">Click</button>
 ```
 
-#### 2. 外部スクリプトはCspPolicyProviderで宣言
+#### 2. Declare External Scripts via CspPolicyProvider
 
 ```php
 class MyPluginServiceProvider extends ServiceProvider implements CspPolicyProvider
@@ -575,89 +575,89 @@ class MyPluginServiceProvider extends ServiceProvider implements CspPolicyProvid
 }
 ```
 
-#### 3. 動的スクリプト生成を避ける
+#### 3. Avoid Dynamic Script Generation
 
 ```javascript
-// ❌ 避けるべき
+// ❌ Avoid
 element.innerHTML = '<script>alert("XSS")</script>';
 
-// ✅ 推奨
+// ✅ Recommended
 const script = document.createElement('script');
 script.textContent = 'console.log("Safe")';
 document.body.appendChild(script);
 
-// ✅ より安全（DixlaseユーティリティUse）
+// ✅ Safer (using Dixlase utility)
 Dixlase.utils.setText(element, 'Safe text');
 ```
 
 ---
 
-## 管理画面での設定
+## Admin Panel Settings
 
-### セキュリティ設定
+### Security Settings
 
-管理画面の「全体設定 > セキュリティ設定」からCSPを設定できます。
+CSP can be configured from "Global Settings > Security Settings" in the admin panel.
 
-- **CSPを有効にする**: CSPヘッダーの付与を有効/無効にします
-- **CSPモード**: 
-  - 開発モード: 違反を記録するのみでブロックしない
-  - 標準モード: nonce付きインラインのみ許可
-  - 厳格モード: インライン完全禁止
-- **違反をログに記録**: CSP違反をログファイルに記録します
-- **信頼済みドメイン**: 外部リソースの読み込みを許可するドメイン
-- **カスタムディレクティブ**: JSON形式で高度な設定を指定
+- **Enable CSP**: Enable/disable CSP header delivery
+- **CSP Mode**:
+  - Development Mode: Only records violations, does not block
+  - Standard Mode: Only allows nonce-tagged inline
+  - Strict Mode: Completely forbids inline
+- **Log Violations**: Records CSP violations to log files
+- **Trusted Domains**: Domains allowed to load external resources from
+- **Custom Directives**: Specify advanced settings in JSON format
 
-### ログの確認
+### Viewing Logs
 
-CSP違反ログは「全体設定 > システム > ログ」の「CSP違反」タブで確認できます。
+CSP violation logs can be viewed under the "CSP Violations" tab in "Global Settings > System > Logs".
 
 ---
 
-## トラブルシューティング
+## Troubleshooting
 
-### インラインスクリプトがブロックされる
+### Inline Scripts Are Being Blocked
 
-1. `@cspNonce`ディレクティブを追加してください
-2. または、スクリプトを外部ファイルに移動してください
-3. 厳格モードの場合は、`Dixlase.widgets.register()` 等を使用してください
+1. Add the `@cspNonce` directive
+2. Or move the script to an external file
+3. In Strict Mode, use `Dixlase.widgets.register()` etc.
 
-### 外部リソースがブロックされる
+### External Resources Are Being Blocked
 
-1. 管理画面の「信頼済みドメイン」に該当ドメインを追加してください
-2. または、プラグインで`CspPolicyProvider`を実装してください
-3. plugin.jsonに外部依存を宣言してください
+1. Add the relevant domain to "Trusted Domains" in the admin panel
+2. Or implement `CspPolicyProvider` in the plugin
+3. Declare external dependencies in plugin.json
 
-### 開発中に問題が発生する
+### Issues During Development
 
-1. CSPモードを「開発モード」に設定してください
-2. ブラウザのコンソールで違反レポートを確認してください
-3. 必要なディレクティブを追加してください
+1. Set the CSP mode to "Development Mode"
+2. Check violation reports in the browser console
+3. Add the necessary directives
 
-### CSPを一時的に無効にする
+### Temporarily Disabling CSP
 
-#### 方法1: セーフモードを使用（推奨）
+#### Method 1: Use Safe Mode (Recommended)
 
-URLに `?safe=csp` を追加してCSPセーフモードを有効化します。詳しくは **[セーフモードガイド](safe-mode-guide.md)** を参照してください。
+Append `?safe=csp` to the URL to enable CSP Safe Mode. See the **[Safe Mode Guide](safe-mode-guide.md)** for details.
 
-#### 方法2: 管理画面から無効化
+#### Method 2: Disable from Admin Panel
 
-管理画面の「全体設定 > セキュリティ設定 > CSP設定」で「CSPを有効にする」をオフにします。
+Go to "Global Settings > Security Settings > CSP Settings" and turn off "Enable CSP".
 
-#### 方法3: コマンドラインから無効化
+#### Method 3: Disable from Command Line
 
 ```bash
 php artisan csp:disable
 ```
 
-#### 方法4: .envファイルで無効化
+#### Method 4: Disable via .env File
 
 ```env
 CSP_ENABLED=false
 ```
 
-#### 方法5: 緊急時の強制無効化
+#### Method 5: Emergency Force Disable
 
-管理画面にアクセスできない場合：
+If you cannot access the admin panel:
 
 ```bash
 php artisan csp:disable --force
@@ -667,42 +667,42 @@ php artisan csp:disable --force
 
 ## FAQ
 
-### Q1. 標準モードでnonce付きインラインを許可するとセキュリティは下がる？
-**A:** 正しく使えば下がりません。nonceは「このレスポンスでのみ有効な実行許可」であり、攻撃者は事前に知ることができません。ただし以下の条件を守る必要があります：
-- nonceはレスポンスごとにランダム
-- JSからnonceを取得できない
-- インラインJS内で危険API（innerHTML、eval等）を多用しない
+### Q1. Does allowing nonce-tagged inline scripts in Standard Mode reduce security?
+**A:** Not if used correctly. A nonce is "an execution permit valid only for this response," and attackers cannot know it in advance. However, the following conditions must be met:
+- Nonce is random per response
+- Nonce cannot be retrieved from JS
+- Dangerous APIs (innerHTML, eval, etc.) are not heavily used within inline JS
 
-### Q2. 厳格モードにするとメンテナンス性が下がる？
-**A:** 短期的には学習コストが増えますが、中長期では明確に上がります。理由：
-- インラインJS依存が消える
-- ロジックと表示が分離される
-- CSP違反で悩まされない
-- 将来のstrict-dynamic / Trusted Typesにも対応しやすい
+### Q2. Does Strict Mode reduce maintainability?
+**A:** In the short term, the learning cost increases, but it clearly improves in the medium to long term. Reasons:
+- Eliminates dependency on inline JS
+- Separates logic from presentation
+- No more CSP violation headaches
+- Easier to support future strict-dynamic / Trusted Types
 
-### Q3. onclick等はなぜ問題？
-**A:** CSP的には `script-src-attr 'unsafe-inline'` が必要になり、XSS攻撃の経路になりやすいためです。イベント委譲（`data-dix-action`）を使えば、この問題を回避できます。
+### Q3. Why are onclick etc. problematic?
+**A:** From a CSP perspective, `script-src-attr 'unsafe-inline'` is required, making it an easy attack vector for XSS. Using event delegation (`data-dix-action`) avoids this problem.
 
-### Q4. 既存のプラグインを厳格モードに対応させるには？
-**A:** 以下の手順で移行できます：
-1. インラインスクリプトを外部JSファイルに移動
-2. `Dixlase.widgets.register()` で初期化関数を登録
-3. onclick等を `data-dix-action` に置き換え
-4. plugin.jsonに `requires_inline_js: false` を明示
+### Q4. How do I make an existing plugin compatible with Strict Mode?
+**A:** You can migrate with the following steps:
+1. Move inline scripts to external JS files
+2. Register initialization functions with `Dixlase.widgets.register()`
+3. Replace onclick etc. with `data-dix-action`
+4. Explicitly set `requires_inline_js: false` in plugin.json
 
-**実装例：認証画面のCSP対応**
+**Implementation example: CSP compliance for authentication screens**
 
-Dixlaseの二段階認証画面は、CSP厳格モード対応の参考実装として以下のように外部スクリプト化されています：
+The Dixlase two-factor authentication screen has been externalized as a reference implementation for CSP Strict Mode compliance:
 
 ```html
-<!-- Before: インラインスクリプト -->
+<!-- Before: Inline script -->
 <script @cspNonce>
 document.addEventListener('DOMContentLoaded', function() {
-    // 200行以上のインラインコード...
+    // 200+ lines of inline code...
 });
 </script>
 
-<!-- After: 外部スクリプト化 -->
+<!-- After: Externalized script -->
 @push('scripts')
 <script src="{{ asset('build/assets/components/two-fa/js/email-challenge.js') }}" @cspNonce></script>
 <script @cspNonce>
@@ -718,57 +718,57 @@ document.addEventListener('DOMContentLoaded', function() {
 @endpush
 ```
 
-**対応ファイル：**
-- `resources/src/components/two-fa/js/email-challenge.js` - メール認証
-- `resources/src/components/two-fa/js/passkey-challenge.js` - パスキー認証
-- `resources/src/components/two-fa/js/recovery-code-challenge.js` - 回復コード認証
+**Related files:**
+- `resources/src/components/two-fa/js/email-challenge.js` - Email authentication
+- `resources/src/components/two-fa/js/passkey-challenge.js` - Passkey authentication
+- `resources/src/components/two-fa/js/recovery-code-challenge.js` - Recovery code authentication
 
-これらのファイルは`vite.config.js`でビルド対象に含まれ、CSP厳格モードでも動作します。
+These files are included as build targets in `vite.config.js` and work in CSP Strict Mode.
 
-### Q5. セーフモードとは何ですか？
-**A:** CSP、プラグイン、テーマの問題で管理画面やフロントエンドにアクセスできなくなった場合のリカバリー機能です。CSPセーフモード（`?safe=csp`）ではCSPが一時的に無効化され、プラグインセーフモード（`?safe=plugins`）ではプラグインのルートとアセットが無効化され、テーマセーフモード（`?safe=theme`）ではフロントエンドが最小限のレイアウトで表示されます。詳しくは **[セーフモードガイド](safe-mode-guide.md)** を参照してください。
+### Q5. What is Safe Mode?
+**A:** It is a recovery feature for when you cannot access the admin panel or frontend due to CSP, plugin, or theme issues. CSP Safe Mode (`?safe=csp`) temporarily disables CSP, Plugin Safe Mode (`?safe=plugins`) disables plugin routes and assets, and Theme Safe Mode (`?safe=theme`) renders the frontend with a minimal layout. See the **[Safe Mode Guide](safe-mode-guide.md)** for details.
 
-### Q6. CSP設定を保存後、10秒以内に確認しないとどうなる？
-**A:** 自動的に前の設定にロールバックされ、CSPセーフモードが有効になります。これにより、誤った設定で管理画面にアクセスできなくなることを防ぎます。
+### Q6. What happens if I don't confirm within 10 seconds after saving CSP settings?
+**A:** The settings are automatically rolled back to the previous configuration and CSP Safe Mode is enabled. This prevents being locked out of the admin panel due to incorrect settings.
 
-### Q7. コマンドラインからCSP設定を変更できますか？
-**A:** はい、`php artisan csp:mode [development|standard|strict]` コマンドでモードを変更できます。また、`php artisan csp:enable` / `php artisan csp:disable` でCSPの有効/無効を切り替えられます。
-
----
-
-## 移行戦略
-
-### フェーズ1: 開発モード（現在）
-- すべてのプラグインが動作
-- CSP違反を記録し、問題箇所を特定
-
-### フェーズ2: 標準モードへ移行
-- ヘルパー経由のインラインに書き換え
-- onclick等を段階的に削除
-- プラグインの互換性確認
-
-### フェーズ2.5: Alpine CSP互換コーディングルールの適用（現在）
-- 新規コードをAlpine CSP Build互換パターンで記述
-- `Alpine.data()`ベースのコンポーネント設計
-- 詳細は **[Alpine.js CSP互換コーディングルール](alpine-csp-coding-rules.md)** を参照
-
-### フェーズ3: Alpine CSP Buildへの移行（将来）
-- `@alpinejs/csp`パッケージへの切り替え
-- 既存コンポーネントのCSP互換への段階的書き換え
-- `unsafe-eval`の完全排除
-
-### フェーズ4: 厳格モード（将来）
-- コア・公式プラグインをCSP Ready化
-- 外部JSのみで完結する設計
-- 最大セキュリティ環境の実現
+### Q7. Can I change CSP settings from the command line?
+**A:** Yes, you can change the mode with the `php artisan csp:mode [development|standard|strict]` command. You can also toggle CSP on/off with `php artisan csp:enable` / `php artisan csp:disable`.
 
 ---
 
-## 参考リンク
+## Migration Strategy
 
-- [CSP Level 3 仕様](https://www.w3.org/TR/CSP3/)
+### Phase 1: Development Mode (Current)
+- All plugins work
+- Record CSP violations and identify problem areas
+
+### Phase 2: Migrate to Standard Mode
+- Rewrite to helper-based inline
+- Gradually remove onclick etc.
+- Verify plugin compatibility
+
+### Phase 2.5: Apply Alpine CSP-Compatible Coding Rules (Current)
+- Write new code using Alpine CSP Build-compatible patterns
+- `Alpine.data()`-based component design
+- See **[Alpine.js CSP-Compatible Coding Rules](alpine-csp-coding-rules.md)** for details
+
+### Phase 3: Migrate to Alpine CSP Build (Future)
+- Switch to the `@alpinejs/csp` package
+- Gradually rewrite existing components for CSP compatibility
+- Complete elimination of `unsafe-eval`
+
+### Phase 4: Strict Mode (Future)
+- Make core and official plugins CSP Ready
+- Design that relies entirely on external JS
+- Achieve maximum security environment
+
+---
+
+## Reference Links
+
+- [CSP Level 3 Specification](https://www.w3.org/TR/CSP3/)
 - [Google CSP Evaluator](https://csp-evaluator.withgoogle.com/)
 - [MDN: Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
-- [Alpine.js CSP互換コーディングルール](alpine-csp-coding-rules.md)
-- [プラグイン権限基盤ガイドライン](plugin-permission-guidelines.md)
-- [セキュリティ設定ガイド](security-settings.md)
+- [Alpine.js CSP-Compatible Coding Rules](alpine-csp-coding-rules.md)
+- [Plugin Permission Infrastructure Guidelines](plugin-permission-guidelines.md)
+- [Security Settings Guide](security-settings.md)

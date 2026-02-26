@@ -1,79 +1,79 @@
-# Alpine.js CSP互換コーディングルール
+# Alpine.js CSP-Compatible Coding Rules
 
-## 目次
+## Table of Contents
 
-1. [目的と背景](#目的と背景)
-2. [早見表](#早見表)
-3. [ルール詳細](#ルール詳細)
-4. [JSファイル規約](#jsファイル規約)
-5. [既存パターンとの対応表](#既存パターンとの対応表)
-6. [コードレビューチェックリスト](#コードレビューチェックリスト)
-
----
-
-## 目的と背景
-
-### なぜこのルールが必要か
-
-DixlaseはAlpine.jsを使用しているため、CSP（Content Security Policy）で`unsafe-eval`を許可する必要があります。これはAlpine.jsが内部的に`new Function()`でテンプレート式を評価するためです。
-
-将来的にAlpine CSP Build（`@alpinejs/csp`）に移行し、`unsafe-eval`を排除して厳格モードを実現する計画があります。
-
-**このルールの目的は、新規コードをCSP Build互換パターンで書くことで、将来の移行コストを最小化することです。** 通常版のAlpine.jsでもCSP互換パターンは問題なく動作するため、今すぐ適用できます。
-
-### Alpine CSP Buildの制限事項
-
-Alpine CSP Buildでは、テンプレート内のJavaScript式の評価に`new Function()`を使用しません。そのため、以下が使えません：
-
-- インラインのオブジェクトリテラル（`x-data="{ open: false }"`）
-- `x-model`ディレクティブ
-- `x-html`ディレクティブ
-- 引数付きメソッド呼び出し（`@click="doSomething('arg')"`）
-- 複雑なJavaScript式（三項演算子、テンプレートリテラル、代入式等）
-- グローバル変数・関数へのアクセス（`window`, `document`, `console`等）
-- `$store`のテンプレート内直接アクセス
-
-### 適用範囲
-
-- **新規作成するすべてのBladeテンプレートとJavaScriptファイル**
-- 既存コードの修正時は、**変更するファイル内で新しく書くコードのみ**が対象（既存部分の全面書き換えは不要）
+1. [Purpose and Background](#purpose-and-background)
+2. [Quick Reference](#quick-reference)
+3. [Rule Details](#rule-details)
+4. [JS File Conventions](#js-file-conventions)
+5. [Migration Table from Existing Patterns](#migration-table-from-existing-patterns)
+6. [Code Review Checklist](#code-review-checklist)
 
 ---
 
-## 早見表
+## Purpose and Background
 
-### テンプレート（Blade）のパターン
+### Why These Rules Are Needed
 
-| パターン | NG | OK |
+Dixlase uses Alpine.js, which requires allowing `unsafe-eval` in the CSP (Content Security Policy). This is because Alpine.js internally uses `new Function()` to evaluate template expressions.
+
+In the future, we plan to migrate to Alpine CSP Build (`@alpinejs/csp`) to eliminate `unsafe-eval` and achieve strict mode.
+
+**The purpose of these rules is to write new code using CSP Build-compatible patterns, minimizing the cost of future migration.** CSP-compatible patterns work perfectly fine with the standard Alpine.js build, so they can be applied immediately.
+
+### Limitations of Alpine CSP Build
+
+Alpine CSP Build does not use `new Function()` to evaluate JavaScript expressions in templates. Therefore, the following are not supported:
+
+- Inline object literals (`x-data="{ open: false }"`)
+- The `x-model` directive
+- The `x-html` directive
+- Method calls with arguments (`@click="doSomething('arg')"`)
+- Complex JavaScript expressions (ternary operators, template literals, assignment expressions, etc.)
+- Access to global variables/functions (`window`, `document`, `console`, etc.)
+- Direct access to `$store` in templates
+
+### Scope of Application
+
+- **All newly created Blade templates and JavaScript files**
+- When modifying existing code, **only newly written code within the changed file** is subject to these rules (full rewriting of existing code is not required)
+
+---
+
+## Quick Reference
+
+### Template (Blade) Patterns
+
+| Pattern | NG | OK |
 |---------|----|----|
 | **x-data** | `x-data="{ open: false }"` | `x-data="myComponent"` |
-| **@click（メソッド）** | `@click="toggle()"` | `@click="toggle"` |
-| **@click（引数）** | `@click="openModal('id')"` | `@click="openModal" data-modal-target="id"` |
-| **@click（代入）** | `@click="open = !open"` | `@click="toggle"` |
+| **@click (method)** | `@click="toggle()"` | `@click="toggle"` |
+| **@click (arguments)** | `@click="openModal('id')"` | `@click="openModal" data-modal-target="id"` |
+| **@click (assignment)** | `@click="open = !open"` | `@click="toggle"` |
 | **x-model** | `x-model="name"` | `:value="name" @input="setName"` |
-| **x-text（式）** | `x-text="count + ' items'"` | `x-text="itemCountText"` |
-| **x-text（三項）** | `x-text="ok ? 'Yes' : 'No'"` | `x-text="statusText"` |
-| **x-show（否定）** | `x-show="!open"` | `x-show="isClosed"` |
-| **:class（オブジェクト）** | `:class="{ 'active': isActive }"` | `:class="activeClass"` |
-| **$store** | `x-text="$store.notification.message"` | `x-text="message"`（getter経由） |
-| **x-html** | `x-html="htmlContent"` | サーバーサイドレンダリング使用 |
-| **グローバル変数** | `@click="window.location.reload()"` | `@click="reload"` |
+| **x-text (expression)** | `x-text="count + ' items'"` | `x-text="itemCountText"` |
+| **x-text (ternary)** | `x-text="ok ? 'Yes' : 'No'"` | `x-text="statusText"` |
+| **x-show (negation)** | `x-show="!open"` | `x-show="isClosed"` |
+| **:class (object)** | `:class="{ 'active': isActive }"` | `:class="activeClass"` |
+| **$store** | `x-text="$store.notification.message"` | `x-text="message"` (via getter) |
+| **x-html** | `x-html="htmlContent"` | Use server-side rendering |
+| **Global variables** | `@click="window.location.reload()"` | `@click="reload"` |
 
-### JavaScript側のパターン
+### JavaScript Patterns
 
-| パターン | NG（将来の移行で問題） | OK |
+| Pattern | NG (problematic for future migration) | OK |
 |---------|----|----|
-| **コンポーネント定義** | `window.func = function() {}` | `Alpine.data('name', () => ({}))` |
-| **引数受け渡し** | `window.func = function(arg) {}` | `data-*`属性 + `init()` で読み取り |
-| **算出プロパティ** | テンプレート内に式を書く | `get propName() { return ... }` |
+| **Component definition** | `window.func = function() {}` | `Alpine.data('name', () => ({}))` |
+| **Argument passing** | `window.func = function(arg) {}` | `data-*` attributes + read in `init()` |
+| **Computed properties** | Writing expressions in templates | `get propName() { return ... }` |
 
 ---
 
-## ルール詳細
+## Rule Details
 
-### ルール1: `x-data` — `Alpine.data()`で登録する
+### Rule 1: `x-data` — Register with `Alpine.data()`
 
-#### NG: インラインオブジェクトリテラル
+#### NG: Inline object literal
 
 ```html
 <div x-data="{ open: false, count: 0 }">
@@ -81,7 +81,7 @@ Alpine CSP Buildでは、テンプレート内のJavaScript式の評価に`new F
 </div>
 ```
 
-#### OK: `Alpine.data()`への参照
+#### OK: Reference to `Alpine.data()`
 
 ```html
 <div x-data="togglePanel">
@@ -103,10 +103,10 @@ document.addEventListener('alpine:init', () => {
 });
 ```
 
-#### 初期値をサーバーから渡す場合
+#### Passing initial values from the server
 
 ```html
-<!-- data-*属性で初期値を渡す -->
+<!-- Pass initial values via data-* attributes -->
 <div x-data="emailInput"
      data-original-email="{{ $user->email }}"
      data-show-confirmation="{{ $showConfirmation ? 'true' : 'false' }}">
@@ -126,7 +126,7 @@ Alpine.data('emailInput', () => ({
 }));
 ```
 
-#### JSON形式で複雑な初期データを渡す場合
+#### Passing complex initial data via JSON
 
 ```html
 <div x-data="chartWidget">
@@ -155,20 +155,20 @@ Alpine.data('chartWidget', () => ({
 
 ---
 
-### ルール2: イベントハンドラ — メソッド参照のみ使用する
+### Rule 2: Event Handlers — Use method references only
 
-#### NG: 引数付きメソッド呼び出し
+#### NG: Method calls with arguments
 
 ```html
-<button @click="openModal('deleteModal')">削除</button>
-<button @click="selectTab('settings')">設定</button>
+<button @click="openModal('deleteModal')">Delete</button>
+<button @click="selectTab('settings')">Settings</button>
 ```
 
-#### OK: `data-*`属性でデータを渡す
+#### OK: Pass data via `data-*` attributes
 
 ```html
-<button @click="openModal" data-modal-target="deleteModal">削除</button>
-<button @click="selectTab" data-tab="settings">設定</button>
+<button @click="openModal" data-modal-target="deleteModal">Delete</button>
+<button @click="selectTab" data-tab="settings">Settings</button>
 ```
 
 ```javascript
@@ -184,20 +184,20 @@ Alpine.data('myComponent', () => ({
 }));
 ```
 
-#### NG: テンプレート内での代入・式
+#### NG: Assignments and expressions in templates
 
 ```html
-<button @click="open = !open">トグル</button>
-<button @click="count++">カウント</button>
-<button @click="if (!disabled) save()">保存</button>
+<button @click="open = !open">Toggle</button>
+<button @click="count++">Count</button>
+<button @click="if (!disabled) save()">Save</button>
 ```
 
-#### OK: メソッド参照
+#### OK: Method references
 
 ```html
-<button @click="toggle">トグル</button>
-<button @click="increment">カウント</button>
-<button @click="saveIfEnabled">保存</button>
+<button @click="toggle">Toggle</button>
+<button @click="increment">Count</button>
+<button @click="saveIfEnabled">Save</button>
 ```
 
 ```javascript
@@ -222,18 +222,18 @@ Alpine.data('myComponent', () => ({
 }));
 ```
 
-#### NG: グローバル関数の直接呼び出し
+#### NG: Direct calls to global functions
 
 ```html
-<button @click="window.location.reload()">リロード</button>
-<button @click="navigator.clipboard.writeText(url)">コピー</button>
+<button @click="window.location.reload()">Reload</button>
+<button @click="navigator.clipboard.writeText(url)">Copy</button>
 ```
 
-#### OK: メソッド経由
+#### OK: Via methods
 
 ```html
-<button @click="reload">リロード</button>
-<button @click="copyUrl" data-url="{{ $url }}">コピー</button>
+<button @click="reload">Reload</button>
+<button @click="copyUrl" data-url="{{ $url }}">Copy</button>
 ```
 
 ```javascript
@@ -251,7 +251,7 @@ Alpine.data('myComponent', () => ({
 
 ---
 
-### ルール3: `x-model` — `:value` + `@input`で代替する
+### Rule 3: `x-model` — Replace with `:value` + `@input`
 
 #### NG: `x-model`
 
@@ -262,7 +262,7 @@ Alpine.data('myComponent', () => ({
 <input type="checkbox" x-model="agreed">
 ```
 
-#### OK: `:value` + `@input`（`:checked` + `@change`）
+#### OK: `:value` + `@input` (`:checked` + `@change`)
 
 ```html
 <input type="text" :value="name" @input="setName">
@@ -296,9 +296,9 @@ Alpine.data('myForm', () => ({
 }));
 ```
 
-#### 汎用セッターパターン
+#### Generic Setter Pattern
 
-フォームフィールドが多い場合、汎用的なセッターメソッドを使用できます：
+When there are many form fields, you can use a generic setter method:
 
 ```javascript
 Alpine.data('myForm', () => ({
@@ -307,7 +307,7 @@ Alpine.data('myForm', () => ({
     phone: '',
 
     /**
-     * data-field属性で指定されたプロパティにinput値をセット
+     * Set the input value to the property specified by the data-field attribute
      */
     setField(event) {
         const field = event.target.dataset.field || event.target.name;
@@ -326,18 +326,18 @@ Alpine.data('myForm', () => ({
 
 ---
 
-### ルール4: `x-text` / `x-show` / `x-bind` — プロパティ参照またはgetterを使う
+### Rule 4: `x-text` / `x-show` / `x-bind` — Use property references or getters
 
-#### NG: テンプレート内の式
+#### NG: Expressions in templates
 
 ```html
 <span x-text="count + ' items'"></span>
-<span x-text="saving ? '保存中...' : '保存'"></span>
+<span x-text="saving ? 'Saving...' : 'Save'"></span>
 <div x-show="items.length > 0"></div>
 <div x-show="!open"></div>
 ```
 
-#### OK: プロパティ参照 or getter
+#### OK: Property references or getters
 
 ```html
 <span x-text="itemCountText"></span>
@@ -358,7 +358,7 @@ Alpine.data('myComponent', () => ({
     },
 
     get saveButtonText() {
-        return this.saving ? '保存中...' : '保存';
+        return this.saving ? 'Saving...' : 'Save';
     },
 
     get hasItems() {
@@ -371,10 +371,10 @@ Alpine.data('myComponent', () => ({
 }));
 ```
 
-#### 単純なプロパティ参照はそのままOK
+#### Simple property references are OK as-is
 
 ```html
-<!-- これはCSP Buildでも問題なく動作する -->
+<!-- These work fine with CSP Build -->
 <span x-text="message"></span>
 <div x-show="open"></div>
 <input :disabled="loading">
@@ -382,15 +382,15 @@ Alpine.data('myComponent', () => ({
 
 ---
 
-### ルール5: `:class` — getterで動的クラスを返す
+### Rule 5: `:class` — Return dynamic classes via getters
 
-#### NG: オブジェクト構文
+#### NG: Object syntax
 
 ```html
 <div :class="{ 'bg-blue-500': isActive, 'bg-gray-300': !isActive, 'opacity-50': disabled }"></div>
 ```
 
-#### OK: getterメソッドで文字列を返す
+#### OK: Return a string from a getter method
 
 ```html
 <div :class="stateClass"></div>
@@ -414,23 +414,23 @@ Alpine.data('myComponent', () => ({
 
 ---
 
-### ルール6: `$store` — `Alpine.data()`ラッパー経由でアクセスする
+### Rule 6: `$store` — Access via `Alpine.data()` wrapper
 
-#### NG: テンプレートから`$store`を直接参照
+#### NG: Referencing `$store` directly from templates
 
 ```html
 <div x-data x-show="$store.notification.show">
     <span x-text="$store.notification.message"></span>
-    <button @click="$store.notification.hide()">閉じる</button>
+    <button @click="$store.notification.hide()">Close</button>
 </div>
 ```
 
-#### OK: `Alpine.data()`ラッパーを作成
+#### OK: Create an `Alpine.data()` wrapper
 
 ```html
 <div x-data="notificationDisplay" x-show="show">
     <span x-text="message"></span>
-    <button @click="hide">閉じる</button>
+    <button @click="hide">Close</button>
 </div>
 ```
 
@@ -452,9 +452,9 @@ Alpine.data('notificationDisplay', () => ({
 
 ---
 
-### ルール7: `x-html` — 使用禁止
+### Rule 7: `x-html` — Prohibited
 
-`x-html`はCSP Buildで完全に非対応です。代替手段を使用してください。
+`x-html` is completely unsupported in CSP Build. Use alternative approaches instead.
 
 #### NG: `x-html`
 
@@ -463,11 +463,11 @@ Alpine.data('notificationDisplay', () => ({
 <div x-html="marked.parse(markdown)"></div>
 ```
 
-#### OK: 代替手段
+#### OK: Alternatives
 
-**方法A: サーバーサイドレンダリング（推奨）**
+**Method A: Server-side rendering (recommended)**
 
-Bladeの`{!! !!}`やLivewireコンポーネントでHTMLを出力する。
+Output HTML using Blade's `{!! !!}` or Livewire components.
 
 ```html
 <!-- Blade -->
@@ -477,7 +477,7 @@ Bladeの`{!! !!}`やLivewireコンポーネントでHTMLを出力する。
 <livewire:markdown-preview :content="$content" />
 ```
 
-**方法B: メソッド内でDOM操作**
+**Method B: DOM manipulation within methods**
 
 ```javascript
 Alpine.data('markdownPreview', () => ({
@@ -504,9 +504,9 @@ Alpine.data('markdownPreview', () => ({
 
 ---
 
-### ルール8: グローバル変数 — テンプレート式内で直接使用しない
+### Rule 8: Global Variables — Do not use directly in template expressions
 
-#### NG: テンプレート内でグローバルオブジェクトにアクセス
+#### NG: Accessing global objects in templates
 
 ```html
 <span x-text="document.title"></span>
@@ -515,7 +515,7 @@ Alpine.data('markdownPreview', () => ({
 <button @click="console.log('debug')">Debug</button>
 ```
 
-#### OK: JavaScript側のメソッド/getterで処理する
+#### OK: Handle in JavaScript-side methods/getters
 
 ```html
 <span x-text="pageTitle"></span>
@@ -538,11 +538,11 @@ Alpine.data('myComponent', () => ({
 
 ---
 
-### ルール9: データ受け渡し — `data-*`属性 or JSON script方式
+### Rule 9: Data Passing — `data-*` attributes or JSON script approach
 
-サーバーからAlpineコンポーネントにデータを渡す方法。
+Methods for passing data from the server to Alpine components.
 
-#### 方法A: `data-*`属性（シンプルな値向け）
+#### Method A: `data-*` attributes (for simple values)
 
 ```html
 <div x-data="userCard"
@@ -566,7 +566,7 @@ Alpine.data('userCard', () => ({
 }));
 ```
 
-#### 方法B: JSON script方式（複雑なデータ向け）
+#### Method B: JSON script approach (for complex data)
 
 ```html
 <div x-data="dataTable">
@@ -597,7 +597,7 @@ Alpine.data('dataTable', () => ({
 }));
 ```
 
-#### 翻訳文字列の受け渡し
+#### Passing translation strings
 
 ```html
 <div x-data="myComponent"
@@ -617,7 +617,7 @@ Alpine.data('myComponent', () => ({
     },
 
     /**
-     * 翻訳文字列を取得
+     * Get a translation string
      */
     t(key) {
         return this.translations[key] || key;
@@ -627,25 +627,25 @@ Alpine.data('myComponent', () => ({
 
 ---
 
-## JSファイル規約
+## JS File Conventions
 
-### ファイル構成
+### File Structure
 
-新しいAlpineコンポーネントのJavaScriptファイルは、以下の構成に従います。
+JavaScript files for new Alpine components follow this structure:
 
 ```
 resources/src/
-├── components/js/          # 共通コンポーネント
+├── components/js/          # Shared components
 │   ├── ui-modal.js
 │   ├── form-email.js
-│   └── new-component.js    # ← 新規はここに
-├── admin/js/               # 管理画面固有
-├── install/js/             # インストーラー固有
+│   └── new-component.js    # ← New files go here
+├── admin/js/               # Admin panel specific
+├── install/js/             # Installer specific
 └── common/js/
-    └── app.js              # メインエントリ（ここでimport）
+    └── app.js              # Main entry point (import here)
 ```
 
-### 標準テンプレート
+### Standard Template
 
 ```javascript
 /**
@@ -654,11 +654,11 @@ resources/src/
  * Copyright (C) 2025 exc-D inc.
  * Website: https://exc-d.com
  *
- * [ライセンスヘッダー省略]
+ * [License header omitted]
  */
 
 /**
- * ComponentName - コンポーネントの説明
+ * ComponentName - Description of the component
  *
  * Usage in Blade:
  * <div x-data="componentName"
@@ -668,117 +668,117 @@ resources/src/
  */
 document.addEventListener('alpine:init', () => {
     Alpine.data('componentName', () => ({
-        // ===== データプロパティ =====
+        // ===== Data Properties =====
         value: '',
         loading: false,
 
-        // ===== 算出プロパティ（getter） =====
+        // ===== Computed Properties (getters) =====
         get isEmpty() {
             return this.value === '';
         },
 
         get displayValue() {
-            return this.value || 'デフォルト値';
+            return this.value || 'Default value';
         },
 
-        // ===== ライフサイクル =====
+        // ===== Lifecycle =====
         init() {
-            // data-*属性から初期値を読み取り
+            // Read initial values from data-* attributes
             this.value = this.$el.dataset.initialValue || '';
         },
 
-        // ===== イベントハンドラ =====
+        // ===== Event Handlers =====
         doAction() {
-            // ボタンクリック時の処理
+            // Handle button click
         },
 
-        // ===== 内部メソッド =====
+        // ===== Internal Methods =====
         _internalHelper() {
-            // プレフィックス _ で内部メソッドを示す（任意）
+            // Prefix with _ to indicate internal methods (optional)
         },
     }));
 });
 ```
 
-### `app.js`への登録
+### Registering in `app.js`
 
 ```javascript
-// resources/src/common/js/app.js にimportを追加
+// Add import in resources/src/common/js/app.js
 import '../../components/js/new-component';
 ```
 
-### 命名規約
+### Naming Conventions
 
-| 対象 | 命名規約 | 例 |
-|------|---------|-----|
-| Alpine.data()の名前 | camelCase | `emailInput`, `togglePanel`, `menuEditor` |
-| データプロパティ | camelCase | `showPassword`, `isLoading` |
-| メソッド | camelCase、動詞始まり | `toggle`, `handleClick`, `saveForm` |
-| getter | camelCase、名詞/形容詞 | `isEmpty`, `displayText`, `activeClass` |
-| イベントハンドラ（data-*経由） | camelCase、動詞始まり | `openModal`, `selectTab` |
-| JSファイル名 | kebab-case | `form-email.js`, `ui-modal.js` |
-| data-*属性 | kebab-case | `data-modal-target`, `data-user-id` |
+| Target | Convention | Example |
+|--------|-----------|---------|
+| Alpine.data() name | camelCase | `emailInput`, `togglePanel`, `menuEditor` |
+| Data properties | camelCase | `showPassword`, `isLoading` |
+| Methods | camelCase, starts with verb | `toggle`, `handleClick`, `saveForm` |
+| Getters | camelCase, noun/adjective | `isEmpty`, `displayText`, `activeClass` |
+| Event handlers (via data-*) | camelCase, starts with verb | `openModal`, `selectTab` |
+| JS file names | kebab-case | `form-email.js`, `ui-modal.js` |
+| data-* attributes | kebab-case | `data-modal-target`, `data-user-id` |
 
 ---
 
-## 既存パターンとの対応表
+## Migration Table from Existing Patterns
 
-現在のDixlaseコードベースでは2つのパターンが混在しています。新規コードでは`Alpine.data()`パターンを使用してください。
+The current Dixlase codebase has two patterns coexisting. Use the `Alpine.data()` pattern for new code.
 
-### コンポーネント登録
+### Component Registration
 
-| 現行（window関数）| 新規推奨（Alpine.data） |
+| Current (window function) | Recommended for new code (Alpine.data) |
 |---|---|
 | `window.modal = function() { return {...} }` | `Alpine.data('modal', () => ({...}))` |
 | `x-data="modal()"` | `x-data="modal"` |
 
-### 引数付きコンストラクタ
+### Constructors with Arguments
 
-| 現行 | 新規推奨 |
+| Current | Recommended for new code |
 |---|---|
 | `window.emailInput = function(config) { return {...} }` | `Alpine.data('emailInput', () => ({...}))` |
 | `x-data="emailInput({ email: '...' })"` | `x-data="emailInput" data-email="..."` |
-| `config.email` でアクセス | `this.$el.dataset.email` でアクセス |
+| Access via `config.email` | Access via `this.$el.dataset.email` |
 
-### グローバルヘルパー関数
+### Global Helper Functions
 
-グローバル関数（`openModal()`, `showSuccess()`等）は後方互換性のために残しますが、Alpine.data()コンポーネント内からのみ呼び出します。
+Global functions (`openModal()`, `showSuccess()`, etc.) are kept for backward compatibility, but should only be called from within `Alpine.data()` components.
 
-| 現行 | 新規推奨 |
+| Current | Recommended for new code |
 |---|---|
 | `@click="openModal('deleteModal')"` | `@click="openModal" data-modal-target="deleteModal"` |
-| `@click="showSuccess('保存しました')"` | メソッド内で`window.showSuccess('保存しました')`を呼ぶ |
+| `@click="showSuccess('Saved successfully')"` | Call `window.showSuccess('Saved successfully')` inside a method |
 
 ---
 
-## コードレビューチェックリスト
+## Code Review Checklist
 
-新規コードや既存コードの変更をレビューする際の確認項目です。
+Items to check when reviewing new code or changes to existing code.
 
-### 必須（MUST）
+### Required (MUST)
 
-- [ ] `x-data`にインラインオブジェクトリテラル（`x-data="{ ... }"`）を使用していない
-- [ ] `x-model`を使用していない（`:value` + `@input`を使用）
-- [ ] `x-html`を使用していない
-- [ ] `@click`等のイベントハンドラに引数付きメソッド呼び出しがない
-- [ ] `@click`等に代入式（`open = !open`、`count++`）がない
-- [ ] テンプレート式内でグローバル変数（`window`, `document`, `console`等）にアクセスしていない
-- [ ] `$store`をテンプレートから直接参照していない
-- [ ] Alpineコンポーネントは`Alpine.data()`で登録されている
-- [ ] サーバーデータの受け渡しは`data-*`属性 or JSON script方式を使用
+- [ ] No inline object literals in `x-data` (`x-data="{ ... }"`)
+- [ ] No `x-model` used (use `:value` + `@input` instead)
+- [ ] No `x-html` used
+- [ ] No method calls with arguments in event handlers like `@click`
+- [ ] No assignment expressions in `@click` etc. (`open = !open`, `count++`)
+- [ ] No access to global variables (`window`, `document`, `console`, etc.) in template expressions
+- [ ] No direct `$store` references from templates
+- [ ] Alpine components are registered with `Alpine.data()`
+- [ ] Server data passing uses `data-*` attributes or JSON script approach
 
-### 推奨（SHOULD）
+### Recommended (SHOULD)
 
-- [ ] 複雑な式はgetter（算出プロパティ）で定義している
-- [ ] `:class`のオブジェクト構文ではなくgetterで文字列を返している
-- [ ] JSファイルは標準テンプレートに従っている
-- [ ] `app.js`に新しいコンポーネントのimportが追加されている
-- [ ] JSDocコメントでUsageが記載されている
+- [ ] Complex expressions are defined as getters (computed properties)
+- [ ] `:class` returns strings from getters instead of using object syntax
+- [ ] JS files follow the standard template
+- [ ] New component imports are added to `app.js`
+- [ ] JSDoc comments include Usage examples
 
 ---
 
-## 参考リンク
+## References
 
-- [Alpine.js CSP Build 公式ドキュメント](https://alpinejs.dev/advanced/csp)
-- [Dixlase CSP完全ガイド](csp-guide.md)
-- [Hyva Alpine CSP ガイド](https://docs.hyva.io/hyva-themes/writing-code/csp/alpine-csp.html)
+- [Alpine.js CSP Build Official Documentation](https://alpinejs.dev/advanced/csp)
+- [Dixlase CSP Complete Guide](csp-guide.md)
+- [Hyva Alpine CSP Guide](https://docs.hyva.io/hyva-themes/writing-code/csp/alpine-csp.html)

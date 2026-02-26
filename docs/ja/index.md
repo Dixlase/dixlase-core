@@ -10,9 +10,9 @@ Dixlase CMS のドキュメントへようこそ。このドキュメントで�
 
 ## API
 
-- [イベント API](api/events.md) - イベントシステム仕様
-- [翻訳 API](api/translation.md) - 翻訳システム仕様
-- [Webhook](api/webhooks.md) - Webhook 連携ガイド
+- [イベント API](api-reference/events.md) - イベントシステム仕様
+- [翻訳 API](api-reference/translation.md) - 翻訳システム仕様
+- [Webhook](api-reference/webhooks.md) - Webhook 連携ガイド
 
 ## 認証
 

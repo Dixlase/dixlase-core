@@ -10,9 +10,9 @@ Welcome to the Dixlase CMS documentation. This documentation covers the architec
 
 ## API
 
-- [Events API](api/events.md) - Event system specification
-- [Translation API](api/translation.md) - Translation system specification
-- [Webhooks](api/webhooks.md) - Webhook integration guide
+- [Events API](api-reference/events.md) - Event system specification
+- [Translation API](api-reference/translation.md) - Translation system specification
+- [Webhooks](api-reference/webhooks.md) - Webhook integration guide
 
 ## Authentication
 
