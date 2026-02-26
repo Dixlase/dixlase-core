@@ -58,7 +58,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- Admin Bar (Header) -->
             <x-ui-admin-bar :isAdminLayout="true" />
 
-            <div class="min-h-screen flex relative" style="margin-top: 3rem">
+            <div class="min-h-screen flex relative">
                 <!-- Navigation Sidebar (Desktop only) -->
                 <aside class="md:fixed md:top-12 md:bottom-0 hidden sm:block w-64 flex-shrink-0 border-gray-300 @if($transitionEnabled ?? false) transition-all duration-[300ms] @else transition-transform duration-300 @endif"
                        :class="{
@@ -136,7 +136,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                       role="main">
 
                     <!-- Page Header -->
-                    <header class="mx-auto py-6 px-8 mb-2 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white @if($transitionEnabled ?? false) transition-colors duration-[500ms] @endif">
+                    <header class="mx-auto py-6 px-8 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white @if($transitionEnabled ?? false) transition-colors duration-[500ms] @endif">
                         <h1 class="font-semibold text-xl leading-tight text-gray-800 dark:text-white">
                             {{ __($heading) }}
                         </h1>
@@ -144,7 +144,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <!-- Breadcrumbs -->
                     @if(!empty($breadcrumbs) && count($breadcrumbs) > 0)
-                        <nav class="w-full px-6 lg:px-8">
+                        <nav class="w-full px-6 lg:px-8 mt-2">
                             <ol class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
                                 @foreach($breadcrumbs as $index => $breadcrumb)
                                     @if($index > 0)
@@ -166,7 +166,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <!-- Page Description -->
                     @if(!empty($description))
-                        <div class="w-full px-6 lg:px-8 mt-4">
+                        <div class="w-full px-6 lg:px-8 mt-1">
                             <p class="text-sm text-gray-600 dark:text-gray-400">
                                 {{ $description }}
                             </p>
@@ -174,7 +174,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endif
 
                     <!-- Page Content -->
-                    <article class="w-full px-6 lg:px-8 pb-8 mt-8">
+                    <article class="w-full px-6 lg:px-8 pb-8 mt-5">
                         <x-ui-flash-message />
                         @yield('content')
                     </article>
