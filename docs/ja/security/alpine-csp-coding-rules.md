@@ -780,5 +780,5 @@ import '../../components/js/new-component';
 ## 参考リンク
 
 - [Alpine.js CSP Build 公式ドキュメント](https://alpinejs.dev/advanced/csp)
-- [Dixlase CSP完全ガイド](csp-guide.md)
+- [Dixlase CSP完全ガイド](../settings/security/csp-guide.md)
 - [Hyva Alpine CSP ガイド](https://docs.hyva.io/hyva-themes/writing-code/csp/alpine-csp.html)

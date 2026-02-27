@@ -33,7 +33,7 @@ To use Alpine.js v3, Standard Mode permits `unsafe-eval` in a limited manner. Th
 2. Ensuring compatibility with third-party plugins
 3. Improving developer experience
 
-In future versions (v2.0 and beyond), migration to Alpine.js CSP Build will be considered with the goal of completely eliminating `unsafe-eval`. New code should follow the **[Alpine.js CSP-Compatible Coding Rules](alpine-csp-coding-rules.md)**.
+In future versions (v2.0 and beyond), migration to Alpine.js CSP Build will be considered with the goal of completely eliminating `unsafe-eval`. New code should follow the **[Alpine.js CSP-Compatible Coding Rules](../../security/alpine-csp-coding-rules.md)**.
 
 ### Nonce-Based Approach
 
@@ -750,7 +750,7 @@ These files are included as build targets in `vite.config.js` and work in CSP St
 ### Phase 2.5: Apply Alpine CSP-Compatible Coding Rules (Current)
 - Write new code using Alpine CSP Build-compatible patterns
 - `Alpine.data()`-based component design
-- See **[Alpine.js CSP-Compatible Coding Rules](alpine-csp-coding-rules.md)** for details
+- See **[Alpine.js CSP-Compatible Coding Rules](../../security/alpine-csp-coding-rules.md)** for details
 
 ### Phase 3: Migrate to Alpine CSP Build (Future)
 - Switch to the `@alpinejs/csp` package
@@ -769,6 +769,6 @@ These files are included as build targets in `vite.config.js` and work in CSP St
 - [CSP Level 3 Specification](https://www.w3.org/TR/CSP3/)
 - [Google CSP Evaluator](https://csp-evaluator.withgoogle.com/)
 - [MDN: Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
-- [Alpine.js CSP-Compatible Coding Rules](alpine-csp-coding-rules.md)
-- [Plugin Permission Infrastructure Guidelines](plugin-permission-guidelines.md)
-- [Security Settings Guide](security-settings.md)
+- [Alpine.js CSP-Compatible Coding Rules](../../security/alpine-csp-coding-rules.md)
+- [Plugin Permission Infrastructure Guidelines](../../plugins/permission-guidelines.md)
+- [Security Settings Guide](../../security/security-settings-registry.md)

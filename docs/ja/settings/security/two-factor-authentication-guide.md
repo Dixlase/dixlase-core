@@ -3,8 +3,8 @@
 このドキュメントは、Dixlaseの二段階認証システムをプラグインやカスタム実装で使用する際の実践的なガイドです。
 
 > **📚 関連ドキュメント**
-> - [2FAアーキテクチャ](./two-factor-authentication-architecture.md) - 技術仕様と詳細
-> - [UIコンポーネント](./two-factor-ui-components.md) - フロントエンド実装
+> - [2FAアーキテクチャ](../../two-factor/two-factor-authentication-architecture.md) - 技術仕様と詳細
+> - [UIコンポーネント](../../two-factor/two-factor-ui-components.md) - フロントエンド実装
 
 ---
 
@@ -1049,5 +1049,5 @@ Dixlaseの2FAシステムは、以下の特徴を持っています：
 
 ## 関連ドキュメント
 
-- [2FAアーキテクチャ](./two-factor-authentication-architecture.md) - 技術仕様と詳細
-- [UIコンポーネント](./two-factor-ui-components.md) - フロントエンド実装
+- [2FAアーキテクチャ](../../two-factor/two-factor-authentication-architecture.md) - 技術仕様と詳細
+- [UIコンポーネント](../../two-factor/two-factor-ui-components.md) - フロントエンド実装

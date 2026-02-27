@@ -780,5 +780,5 @@ Items to check when reviewing new code or changes to existing code.
 ## References
 
 - [Alpine.js CSP Build Official Documentation](https://alpinejs.dev/advanced/csp)
-- [Dixlase CSP Complete Guide](csp-guide.md)
+- [Dixlase CSP Complete Guide](../settings/security/csp-guide.md)
 - [Hyva Alpine CSP Guide](https://docs.hyva.io/hyva-themes/writing-code/csp/alpine-csp.html)

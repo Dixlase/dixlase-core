@@ -1,6 +1,6 @@
 # Safe Mode Guide
 
-> **[Japanese version / 日本語版](../ja/security/safe-mode-guide.md)**
+> **[Japanese version / 日本語版](../../ja/settings/security/safe-mode-guide.md)**
 
 ## Overview
 

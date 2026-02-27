@@ -4,7 +4,7 @@
 
 > **📚 関連ドキュメント**
 > - [2FAアーキテクチャ](./two-factor-authentication-architecture.md) - 技術仕様と詳細
-> - [2FA実践ガイド](./two-factor-authentication-guide.md) - バックエンド実装
+> - [2FA実践ガイド](../settings/security/two-factor-authentication-guide.md) - バックエンド実装
 
 ---
 
@@ -687,4 +687,4 @@ Dixlaseの2FA UIコンポーネントは、以下の特徴を持っています�
 ## 関連ドキュメント
 
 - [2FAアーキテクチャ](./two-factor-authentication-architecture.md) - 技術仕様と詳細
-- [2FA実践ガイド](./two-factor-authentication-guide.md) - バックエンド実装
+- [2FA実践ガイド](../settings/security/two-factor-authentication-guide.md) - バックエンド実装

@@ -432,7 +432,7 @@ echo __($translationKey, ['button_text' => $buttonText]);
 
 ## References
 
-- [LoginNotification.php](../app/Notifications/LoginNotification.php)
-- [LoginNotificationTrait.php](../app/Traits/LoginNotificationTrait.php)
-- [UserLoginNotification.php](../plugins/DixlaseUsers/app/Notifications/UserLoginNotification.php)
-- [TwoFaAuthenticationTrait.php](../app/Traits/TwoFa/TwoFaAuthenticationTrait.php)
+- [LoginNotification.php](../../../app/Notifications/LoginNotification.php)
+- [LoginNotificationTrait.php](../../../app/Traits/LoginNotificationTrait.php)
+- [UserLoginNotification.php](../../../plugins/DixlaseUsers/app/Notifications/UserLoginNotification.php)
+- [TwoFaAuthenticationTrait.php](../../../app/Traits/TwoFa/TwoFaAuthenticationTrait.php)

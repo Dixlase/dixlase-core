@@ -33,7 +33,7 @@ Alpine.js v3を使用するため、標準モードでは`unsafe-eval`を限定�
 2. サードパーティプラグインとの互換性確保
 3. 開発者体験の向上
 
-将来のバージョン（v2.0以降）でAlpine.js CSP Buildへの移行を検討し、`unsafe-eval`の完全排除を目指します。新規コードは **[Alpine.js CSP互換コーディングルール](alpine-csp-coding-rules.md)** に従って記述してください。
+将来のバージョン（v2.0以降）でAlpine.js CSP Buildへの移行を検討し、`unsafe-eval`の完全排除を目指します。新規コードは **[Alpine.js CSP互換コーディングルール](../../security/alpine-csp-coding-rules.md)** に従って記述してください。
 
 ### Nonce方式
 
@@ -750,7 +750,7 @@ document.addEventListener('DOMContentLoaded', function() {
 ### フェーズ2.5: Alpine CSP互換コーディングルールの適用（現在）
 - 新規コードをAlpine CSP Build互換パターンで記述
 - `Alpine.data()`ベースのコンポーネント設計
-- 詳細は **[Alpine.js CSP互換コーディングルール](alpine-csp-coding-rules.md)** を参照
+- 詳細は **[Alpine.js CSP互換コーディングルール](../../security/alpine-csp-coding-rules.md)** を参照
 
 ### フェーズ3: Alpine CSP Buildへの移行（将来）
 - `@alpinejs/csp`パッケージへの切り替え
@@ -769,6 +769,6 @@ document.addEventListener('DOMContentLoaded', function() {
 - [CSP Level 3 仕様](https://www.w3.org/TR/CSP3/)
 - [Google CSP Evaluator](https://csp-evaluator.withgoogle.com/)
 - [MDN: Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
-- [Alpine.js CSP互換コーディングルール](alpine-csp-coding-rules.md)
-- [プラグイン権限基盤ガイドライン](plugin-permission-guidelines.md)
-- [セキュリティ設定ガイド](security-settings.md)
+- [Alpine.js CSP互換コーディングルール](../../security/alpine-csp-coding-rules.md)
+- [プラグイン権限基盤ガイドライン](../../plugins/permission-guidelines.md)
+- [セキュリティ設定ガイド](../../security/security-settings-registry.md)
