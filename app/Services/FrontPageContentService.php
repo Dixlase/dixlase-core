@@ -80,10 +80,7 @@ class FrontPageContentService extends ContentFileService
             return $this->loadFromFile($frontPage->page_type, $locale, $editorType);
         }
 
-        // データベースから取得（エディタータイプ別カラム）
-        $contentColumn = 'content_'.$editorType;
-
-        return $frontPage->{$contentColumn} ?? $frontPage->content ?? null;
+        return $frontPage->content ?? null;
     }
 
     /**

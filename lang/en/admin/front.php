@@ -15,14 +15,99 @@
 return [
     'index' => [
         'heading' => 'Front Page Master',
-        'description' => 'You can check the front page preview.',
+        'description' => 'Manage front page content. Create, edit, or reset the front page.',
+
+        'content_exists_title' => 'Front Page Content',
+        'language' => 'Language',
+        'editor_type' => 'Editor Type',
+        'storage_type' => 'Storage Type',
+        'last_updated' => 'Last Updated',
+        'status' => 'Status',
+
+        'edit_button' => 'Edit Content',
+        'reset_button' => 'Reset',
+        'reset_confirm' => 'Are you sure you want to reset the front page content? This action cannot be undone.',
+
+        'no_content_title' => 'No Content Yet',
+        'no_content_description' => 'Front page content has not been created yet. Click the button below to create it.',
+        'create_button' => 'Create Front Page',
+
+        'reset_success' => 'Front page content has been reset.',
     ],
-    'design' => [
-        'heading' => 'Front Page Design',
-        'description' => 'Design the front page.',
+
+    'create' => [
+        'heading' => 'Create Front Page',
+        'description' => 'Set up the front page content with your preferred language and editor type.',
+
+        'lang_label' => 'Language',
+        'editor_type_label' => 'Editor Type',
+        'editor_html_description' => 'Write HTML code directly. Full control over markup.',
+        'editor_markdown_description' => 'Write in Markdown syntax. Simple and easy to learn.',
+        'editor_gui_description' => 'Visual editor with drag & drop. Coming soon.',
+        'content_label' => 'Content',
+        'content_placeholder' => 'Enter your front page content...',
+
+        'storage_section' => 'Storage',
+        'storage_type_label' => 'Storage Type',
+        'storage_file_path' => 'File path:',
+
+        'confirm_title' => 'Create Front Page',
+        'confirm_message' => 'Create the front page content with the selected settings?',
+
+        'create_success' => 'Front page content has been created.',
+
+        'sidebar_open' => 'Open sidebar',
+        'sidebar_close' => 'Close sidebar',
+
+        'validation' => [
+            'lang_required' => 'Please select a language.',
+            'lang_in' => 'The selected language is not supported.',
+            'editor_type_required' => 'Please select an editor type.',
+            'editor_type_in' => 'The selected editor type is not valid.',
+            'storage_type_required' => 'Please select a storage type.',
+            'storage_type_in' => 'The selected storage type is not valid.',
+            'content_max' => 'Content must not exceed 500,000 characters.',
+        ],
     ],
+
+    'edit' => [
+        'heading' => 'Edit Front Page',
+        'description' => 'Edit the front page content.',
+
+        'editor_type_label' => 'Editor Type',
+        'editor_type_locked_help' => 'Editor type is locked after creation. To change it, reset and recreate the content.',
+        'lang_label' => 'Language',
+        'content_label' => 'Content',
+        'content_placeholder' => 'Enter your front page content...',
+
+        'storage_section' => 'Storage',
+        'storage_type_label' => 'Storage Type',
+        'storage_file_path' => 'File path:',
+
+        'confirm_title' => 'Save Changes',
+        'confirm_message' => 'Save the changes to the front page content?',
+
+        'save_success' => 'Front page content has been updated.',
+
+        'sidebar_open' => 'Open sidebar',
+        'sidebar_close' => 'Close sidebar',
+
+        'validation' => [
+            'storage_type_required' => 'Please select a storage type.',
+            'storage_type_in' => 'The selected storage type is not valid.',
+            'content_max' => 'Content must not exceed 500,000 characters.',
+        ],
+    ],
+
     'settings' => [
         'heading' => 'Front Page Settings',
         'description' => 'Configure front page settings.',
+
+        'no_settings' => 'No additional settings are available at this time.',
+
+        'settings_updated' => 'Front page settings have been updated.',
+
+        'confirm_title' => 'Save Settings',
+        'confirm_message' => 'Save the front page settings?',
     ],
 ];
