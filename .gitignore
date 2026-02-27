@@ -47,7 +47,9 @@ custom/*
 plugins/*
 !plugins/DixlaseDeploy/
 !plugins/DixlaseInquiry/
+!plugins/DixlaseLegal/
 !plugins/DixlaseMenu/
+!plugins/DixlaseMenus/
 !plugins/DixlasePages/
 !plugins/DixlaseUsers/
 !plugins/DixlaseBlog/
@@ -57,9 +59,6 @@ plugins/*
 !plugins/DixlaseAuthority/
 !plugins/DixlaseBackup/
 !plugins/DixlaseMultilingual/
-!plugins/TestPlugin2/
-!plugins/TestPlugin3/
-!plugins/TestPluginNew/
 themes/*
 
 license-info.json
