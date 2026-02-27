@@ -22,13 +22,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Contracts\Repositories\FrontSettingRepositoryInterface;
 use App\Models\Traits\UsesSettingRepositoryTrait;
+use Illuminate\Database\Eloquent\Model;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * フロント設定モデル
- * 
+ *
  * @deprecated 静的メソッドは非推奨です。FrontSettingRepositoryを使用してください。
  */
 class FrontSetting extends Model
@@ -36,12 +38,13 @@ class FrontSetting extends Model
     use UsesSettingRepositoryTrait;
 
     protected $table = 'front_settings';
+
     protected $fillable = [
         'name',
         'value',
         'front_ogp_image_id',
     ];
-    
+
     /**
      * フロントOGP画像とのリレーション
      */
@@ -49,7 +52,7 @@ class FrontSetting extends Model
     {
         return $this->belongsTo(Media::class, 'front_ogp_image_id');
     }
-    
+
     /**
      * {@inheritDoc}
      */
