@@ -25,12 +25,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Member;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * メディアモデル
+ */
 class Media extends Model
 {
     use HasFactory, SoftDeletes;
+
     protected $table = 'media';
+
     protected $fillable = [
         'name',
         'caption',

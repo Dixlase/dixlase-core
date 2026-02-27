@@ -387,16 +387,4 @@ trait PluginLoaderTrait
 
         return $base;
     }
-
-    /**
-     * 管理画面のナビゲーション設定をマージ
-     *
-     * @param  string  $pluginName  プラグイン名（デバッグ用）
-     * @param  string  $configPath  設定ファイルのパス
-     */
-    protected function mergeAdminNavigation(string $pluginName = 'Unknown', ?string $configPath = null): void
-    {
-        // AdminHelperの共通メソッドを使用
-        \App\Helpers\AdminHelper::mergeAdminNavigation($pluginName, $configPath);
-    }
 }

@@ -8,7 +8,7 @@ This document records the core Trait dependency analysis for future `dixlase/plu
 |-------|------------------|----------------|----------|
 | ConfigLoaderTrait | None | Easy | 1st |
 | ThemeLoaderTrait | Theme model, DB, Schema | Medium-Hard | 3rd |
-| PluginLoaderTrait | Plugin model, Schema, AdminHelper, ConfigLoaderTrait | Hard | 2nd |
+| PluginLoaderTrait | Plugin model, Schema, ConfigLoaderTrait | Hard | 2nd |
 
 ## ConfigLoaderTrait
 
@@ -101,7 +101,7 @@ Both `PluginLoaderTrait` and `ThemeLoaderTrait` have been refactored to depend o
 - `loadEnabledPlugins()` now uses `resolvePluginRepository()->getEnabled()` (returns `Collection<EnabledPluginRecord>`)
 - `mergeAdminNavigationFile()` and `mergeAdminNavConfig()` delegate to `AdminNavigationManagerInterface`
 - `insertOrderedConfig()` removed (logic moved to `AdminNavigationManager`)
-- `mergeAdminNavigation()` retained (legacy `admin.nav` path, still used by 4 plugins)
+- ~~`mergeAdminNavigation()` retained (legacy `admin.nav` path, still used by 4 plugins)~~ — removed in Phase 4
 
 **ThemeLoaderTrait changes:**
 - Removed: `App\Models\Theme`, `Illuminate\Support\Facades\DB`, `Illuminate\Support\Facades\Schema`
@@ -112,3 +112,40 @@ Both `PluginLoaderTrait` and `ThemeLoaderTrait` have been refactored to depend o
 **DI pattern:** Lazy resolution via `app()` helper to support both ServiceProvider (`$this->app`) and Controller contexts.
 
 All public method signatures remain unchanged — zero breaking changes for consuming classes.
+
+### Phase 4: Legacy Navigation Removal & Contract Model References (Completed)
+
+**Legacy `mergeAdminNavigation()` removed from `PluginLoaderTrait`:**
+
+The `mergeAdminNavigation()` method was the last direct reference to `\App\Helpers\AdminHelper` in `PluginLoaderTrait`. It used the legacy `admin.nav` config path. All 6 plugin callers have been migrated:
+
+| Plugin | Action |
+|--------|--------|
+| DixlaseInquiry | Removed manual call (auto-load via `config/admin/navigation.php`) |
+| DixlasePages | Removed manual call (auto-load via `config/admin/navigation.php`) |
+| DixlaseDocs | Removed manual call (auto-load via `config/admin/navigation.php`) |
+| DixlaseMultilingual | Created `config/admin/navigation.php`, deleted `config/admin.php`, removed manual call |
+| DixlaseUsers | Removed conditional fallback (auto-load via `config/admin/navigation.php`) |
+| DixlaseMenus | Removed manual call (auto-load via `config/admin/navigation.php`) |
+
+Navigation loading is now fully handled by `loadPluginConfigs()` → `mergeAdminNavigationFile()` (auto-load path).
+
+**Note:** `DixlaseDefaultTheme` still calls `AdminHelper::mergeAdminNavigation()` directly (not via the trait). This is a separate code path — the theme doesn't use `ThemeLoaderTrait` for navigation. The `AdminHelper` static method remains available; theme migration is out of scope for this phase.
+
+**`PluginLoaderTrait` is now free of all `\App\` concrete class dependencies:**
+- Uses `PluginRepositoryInterface` (not `App\Models\Plugin`)
+- Uses `AdminNavigationManagerInterface` (not `App\Helpers\AdminHelper`)
+- Only depends on: Laravel facades (`Route`, `View`, `Lang`), `ConfigLoaderTrait`, and the two interfaces above
+
+**Contract `App\Models\*` type references — `@api` annotation added:**
+
+Four models referenced by `@api` Contracts now carry `@api` annotations, marking them as stable API for the SDK package:
+
+| Model | Contract that references it |
+|-------|-----------------------------|
+| `App\Models\BaseSetting` | `BaseSettingRepositoryInterface` |
+| `App\Models\FrontSetting` | `FrontSettingRepositoryInterface` |
+| `App\Models\Media` | `MediaRepositoryInterface` |
+| `App\Models\Member` | `TwoFaPasskeyServiceInterface` |
+
+This approach keeps Contract signatures unchanged (no DTO wrapping) while declaring the models as host-application-provided dependencies for the SDK package.
