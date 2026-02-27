@@ -317,6 +317,13 @@ return [
         'en' => 'English',
     ],
 
+    // Publish Status
+    'publish_status' => [
+        'draft' => 'Draft',
+        'published' => 'Published',
+        'scheduled' => 'Scheduled',
+    ],
+
     // Content Storage
     'content_storage' => [
         'label' => 'Content Storage Method',
