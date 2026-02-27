@@ -27,7 +27,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class AdminFrontSettingsUpdateRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * リクエストの認可判定
      */
     public function authorize(): bool
     {
@@ -35,15 +35,12 @@ class AdminFrontSettingsUpdateRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * バリデーションルール
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
-        return [
-            'front_ogp_image_id' => 'nullable|exists:media,id',
-            'front_description' => 'nullable|string|max:1000',
-        ];
+        return [];
     }
 }

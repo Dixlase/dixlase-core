@@ -21,64 +21,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-<div class="container mx-auto px-4 py-6">
-    @if(session('success'))
-        <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg dark:bg-green-900/20 dark:border-green-800 dark:text-green-400">
-            <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
-        </div>
-    @endif
-
-    <form action="{{ route('admin.front.settings.store') }}" method="POST" id="front-settings-form">
+    <form id="front-settings-form" action="{{ route('admin.front.settings.store') }}" method="POST">
         @csrf
 
-        <!-- 基本設定 -->
-        <section>
-            <h2>{{ __('admin.settings.front.basic_settings') }}</h2>
-
-            <fieldset>
-                <legend>{{ __('admin.settings.front.front_description') }}</legend>
-                <x-form-textarea
-                    name="front_description"
-                    :value="old('front_description', $settings['front_description'])"
-                    :rows="3"
-                    :placeholder="__('admin.settings.front.front_description_placeholder')"
-                />
-                @error('front_description')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-                <p>{!! __('admin.settings.front.front_description_help') !!}</p>
-            </fieldset>
-        </section>
-
-        <!-- OGP設定 -->
-        <section>
-            <h2>{{ __('admin.settings.front.ogp_settings') }}</h2>
-
-            <fieldset>
-                <legend>{{ __('admin.settings.front.front_ogp_image') }}</legend>
-                <x-media.picker
-                    name="front_ogp_image_id"
-                    :value="$settings['front_ogp_image_id']"
-                    :media="$frontOgpImage"
-                    :aspectRatio="'ogp'"
-                />
-                @error('front_ogp_image_id')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-                <p>{!! __('admin.settings.front.front_ogp_image_help') !!}</p>
-            </fieldset>
-        </section>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                {{ __('admin/front.settings.no_settings') }}
+            </p>
+        </div>
     </form>
-</div>
 @endsection
 
 @section('save')
-    <!-- 保存ボタンとモーダル -->
     <x-admin.save-button
-        id_confirmation="frontSettingsConfirmationModal"
+        id_confirmation="confirmFrontSettingsModal"
         :label="__('common.save')"
-        :title="__('admin.settings.front.save_confirmation_title')"
-        :message="__('admin.settings.front.save_confirmation_message')"
+        :title="__('admin/front.settings.confirm_title')"
+        :message="__('admin/front.settings.confirm_message')"
         :confirm_label="__('common.save')"
         :cancel_label="__('common.cancel')"
         form="front-settings-form"

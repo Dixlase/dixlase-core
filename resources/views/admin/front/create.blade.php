@@ -21,43 +21,60 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-    <form id="front-page-edit-form"
-          action="{{ route('admin.front.edit.update') }}"
+    <form id="front-page-create-form"
+          action="{{ route('admin.front.store') }}"
           method="POST"
-          x-data="frontPageEditor({
-              defaultStorageType: '{{ old('storage_type', $storageType) }}',
+          x-data="frontPageCreate({
+              defaultLang: '{{ old('lang', $defaultLang) }}',
+              defaultEditorType: '{{ old('editor_type', 'markdown') }}',
+              defaultStorageType: '{{ old('storage_type', $defaultStorageType) }}',
               fileStorageBasePath: '{{ $fileStorageBasePath }}',
-              editorType: '{{ $editorType }}',
-              langCode: '{{ $langCode }}'
+              templates: {{ Js::from($templates) }}
           })">
         @csrf
-        @method('PUT')
 
         {{-- ===== メインコンテンツエリア ===== --}}
         <div class="space-y-6">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
-                {{-- エディタータイプ（固定表示） --}}
+                {{-- 言語選択 --}}
                 <div>
-                    <x-form-label :label="__('admin/front.edit.editor_type_label')" />
-                    <p class="text-sm text-gray-700 dark:text-gray-300">{{ $editorTypeLabel }}</p>
-                    <x-form-help-text :text="__('admin/front.edit.editor_type_locked_help')" />
+                    <x-form-label :for="'lang'" :label="__('admin/front.create.lang_label')" />
+                    <x-form-select
+                        id="lang"
+                        name="lang"
+                        :options="$languages"
+                        :value="old('lang', $defaultLang)"
+                        x-model="lang"
+                    />
+                    <x-form-error name="lang" />
                 </div>
 
-                {{-- 言語（固定表示） --}}
+                {{-- エディタータイプ --}}
                 <div>
-                    <x-form-label :label="__('admin/front.edit.lang_label')" />
-                    <p class="text-sm text-gray-700 dark:text-gray-300">{{ $langName }}</p>
+                    <x-form-label :label="__('admin/front.create.editor_type_label')" class="mb-3" />
+                    <x-form-radio-card-group
+                        name="editor_type"
+                        :options="[
+                            ['value' => 'html', 'label' => $editorOptions['html'] ?? 'HTML', 'icon' => 'fas fa-code', 'description' => __('admin/front.create.editor_html_description')],
+                            ['value' => 'markdown', 'label' => $editorOptions['markdown'] ?? 'Markdown', 'icon' => 'fab fa-markdown', 'description' => __('admin/front.create.editor_markdown_description')],
+                            ['value' => 'gui', 'label' => 'GUI', 'icon' => 'fas fa-paint-brush', 'description' => __('admin/front.create.editor_gui_description'), 'disabled' => true, 'badge' => 'Coming Soon', 'badgeColor' => 'gray'],
+                        ]"
+                        :value="old('editor_type', 'markdown')"
+                        :columns="3"
+                        x-model="editorType"
+                    />
+                    <x-form-error name="editor_type" />
                 </div>
 
                 {{-- コンテンツ --}}
                 <div>
-                    <x-form-label :for="'content'" :label="__('admin/front.edit.content_label')" />
+                    <x-form-label :for="'content'" :label="__('admin/front.create.content_label')" />
                     <x-form-textarea
                         id="content"
                         name="content"
-                        :value="$body"
+                        :value="old('content', '')"
                         rows="20"
-                        :placeholder="__('admin/front.edit.content_placeholder')"
+                        :placeholder="__('admin/front.create.content_placeholder')"
                         class="font-mono text-sm"
                     />
                     <x-form-error name="content" />
@@ -75,8 +92,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 }"
                 :style="rightSidebarReady ? 'transition: transform 200ms ease-in-out' : ''"
                 :aria-label="rightSidebarCollapsed
-                    ? '{{ __('admin/front.edit.sidebar_open') }}'
-                    : '{{ __('admin/front.edit.sidebar_close') }}'">
+                    ? '{{ __('admin/front.create.sidebar_open') }}'
+                    : '{{ __('admin/front.create.sidebar_close') }}'">
             <i class="fas text-sm" :class="rightSidebarCollapsed ? 'fa-chevron-left' : 'fa-chevron-right'"></i>
         </button>
 
@@ -91,22 +108,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- 保存方法 --}}
             <div>
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                    {{ __('admin/front.edit.storage_section') }}
+                    {{ __('admin/front.create.storage_section') }}
                 </h3>
 
                 <div>
-                    <x-form-label :label="__('admin/front.edit.storage_type_label')" />
+                    <x-form-label :label="__('admin/front.create.storage_type_label')" />
                     <x-form-select
                         name="storage_type"
                         :options="collect($storageOptions)->mapWithKeys(fn ($opt, $key) => [$key => $opt['label']])->all()"
-                        :value="old('storage_type', $storageType)"
+                        :value="old('storage_type', $defaultStorageType)"
                         xModel="storageType"
                     />
                     <x-form-error name="storage_type" />
                 </div>
 
                 <div class="mt-2 text-sm" x-show="isFileStorage" x-cloak>
-                    <span class="text-gray-500 dark:text-gray-400">{{ __('admin/front.edit.storage_file_path') }}</span>
+                    <span class="text-gray-500 dark:text-gray-400">{{ __('admin/front.create.storage_file_path') }}</span>
                     <span class="font-mono text-blue-600 dark:text-blue-400 break-all" x-text="filePath"></span>
                 </div>
             </div>
@@ -117,12 +134,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('save')
     <x-admin.save-button
-        id_confirmation="confirmFrontPageEditModal"
+        id_confirmation="confirmFrontPageCreateModal"
         :label="__('common.save')"
-        :title="__('admin/front.edit.confirm_title')"
-        :message="__('admin/front.edit.confirm_message')"
+        :title="__('admin/front.create.confirm_title')"
+        :message="__('admin/front.create.confirm_message')"
         :confirm_label="__('common.save')"
         :cancel_label="__('common.cancel')"
-        form="front-page-edit-form"
+        form="front-page-create-form"
     />
 @endsection

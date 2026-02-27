@@ -117,19 +117,18 @@ Route::prefix($adminUrl)->name('admin.')
 
             // フロントページ管理（権限チェック付き）
             Route::middleware('check.menu.access:front')->group(function () {
-                // フロントページマスター
                 Route::get('/front', [AdminFrontController::class, 'index'])->name('front.index');
-                // フロントページ編集
+                Route::get('/front/create', [AdminFrontController::class, 'create'])->name('front.create');
+                Route::post('/front/create', [AdminFrontController::class, 'store'])
+                    ->middleware('check.menu.edit:front')->name('front.store');
                 Route::get('/front/edit', [AdminFrontController::class, 'edit'])->name('front.edit');
-                Route::put('/front/edit', [AdminFrontController::class, 'updateEdit'])
-                    ->middleware('check.menu.edit:front')
-                    ->name('front.edit.update');
-                Route::get('/front/edit/content/{storageType}/{editorType}', [AdminFrontController::class, 'getContent'])->name('front.edit.content');
-                // フロントページ設定
+                Route::put('/front/edit', [AdminFrontController::class, 'update'])
+                    ->middleware('check.menu.edit:front')->name('front.edit.update');
+                Route::delete('/front/reset', [AdminFrontController::class, 'destroy'])
+                    ->middleware('check.menu.edit:front')->name('front.destroy');
                 Route::get('/front/settings', [AdminFrontController::class, 'settings'])->name('front.settings');
                 Route::post('/front/settings', [AdminFrontController::class, 'updateSettings'])
-                    ->middleware('check.menu.edit:front')
-                    ->name('front.settings.store');
+                    ->middleware('check.menu.edit:front')->name('front.settings.store');
             });
 
             // メディア管理（権限チェック付き）

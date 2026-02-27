@@ -23,11 +23,15 @@
 namespace App\Models;
 
 use App\Enums\ContentEditorType;
+use App\Enums\ContentStatus;
 use App\Enums\ContentStorageType;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class FrontPage extends Model
 {
+    use HasFactory;
+
     /**
      * テーブル名
      */
@@ -40,11 +44,9 @@ class FrontPage extends Model
      */
     protected $fillable = [
         'page_type',
+        'lang',
         'title',
         'content',
-        'content_html',
-        'content_markdown',
-        'content_blade',
         'storage_type',
         'editor_type',
         'status',
@@ -53,34 +55,34 @@ class FrontPage extends Model
     /**
      * キャストする属性
      *
-     * @var array
+     * @return array<string, string>
      */
-    protected $casts = [
-        'storage_type' => ContentStorageType::class,
-        'editor_type' => ContentEditorType::class,
-    ];
-
-    /**
-     * ページタイプで取得
-     */
-    public static function findByType(string $pageType): ?self
+    protected function casts(): array
     {
-        return static::where('page_type', $pageType)->first();
+        return [
+            'storage_type' => ContentStorageType::class,
+            'editor_type' => ContentEditorType::class,
+            'status' => ContentStatus::class,
+        ];
     }
 
     /**
-     * ページタイプで取得または作成
+     * ページタイプと言語で取得
      */
-    public static function findOrCreateByType(string $pageType): self
+    public static function findByTypeAndLang(string $pageType, string $lang): ?self
     {
-        return static::firstOrCreate(
-            ['page_type' => $pageType],
-            [
-                'storage_type' => 'database',
-                'editor_type' => 'html',
-                'status' => 'published',
-            ]
-        );
+        return static::query()
+            ->where('page_type', $pageType)
+            ->where('lang', $lang)
+            ->first();
+    }
+
+    /**
+     * ページタイプで取得（後方互換）
+     */
+    public static function findByType(string $pageType): ?self
+    {
+        return static::query()->where('page_type', $pageType)->first();
     }
 
     /**
@@ -88,14 +90,17 @@ class FrontPage extends Model
      */
     public function isPublished(): bool
     {
-        return $this->status === 'published';
+        return $this->status === ContentStatus::PUBLISHED;
     }
 
     /**
      * 公開ページのスコープ
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     * @return \Illuminate\Database\Eloquent\Builder<self>
      */
     public function scopePublished($query)
     {
-        return $query->where('status', 'published');
+        return $query->where('status', ContentStatus::PUBLISHED->value);
     }
 }

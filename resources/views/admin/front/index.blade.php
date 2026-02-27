@@ -21,6 +21,78 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-    <h1>Hello Blade!</h1>
-    <p>This is an example Blade file: </p>
+    @if ($frontPage)
+        {{-- コンテンツ存在時: ステータスカード --}}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                {{ __('admin/front.index.content_exists_title') }}
+            </h2>
+
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/front.index.language') }}</dt>
+                    <dd class="mt-1 font-medium text-gray-900 dark:text-white">{{ $langName }}</dd>
+                </div>
+                <div>
+                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/front.index.editor_type') }}</dt>
+                    <dd class="mt-1 font-medium text-gray-900 dark:text-white">{{ $editorTypeLabel }}</dd>
+                </div>
+                <div>
+                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/front.index.storage_type') }}</dt>
+                    <dd class="mt-1 font-medium text-gray-900 dark:text-white">{{ $storageTypeLabel }}</dd>
+                </div>
+                <div>
+                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/front.index.last_updated') }}</dt>
+                    <dd class="mt-1 font-medium text-gray-900 dark:text-white">{{ $frontPage->updated_at->format('Y-m-d H:i') }}</dd>
+                </div>
+            </dl>
+
+            <div class="mt-6 flex flex-wrap gap-3">
+                <x-form-button
+                    variant="primary"
+                    icon="fas fa-edit"
+                    :href="route('admin.front.edit')"
+                    tag="a"
+                >
+                    {{ __('admin/front.index.edit_button') }}
+                </x-form-button>
+
+                <form action="{{ route('admin.front.destroy') }}"
+                      method="POST"
+                      x-data
+                      x-on:submit.prevent="if (confirm('{{ __('admin/front.index.reset_confirm') }}')) $el.submit()">
+                    @csrf
+                    @method('DELETE')
+                    <x-form-button
+                        type="submit"
+                        variant="danger"
+                        icon="fas fa-undo"
+                    >
+                        {{ __('admin/front.index.reset_button') }}
+                    </x-form-button>
+                </form>
+            </div>
+        </div>
+    @else
+        {{-- コンテンツ未存在時: 空ステート --}}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
+            <div class="mx-auto w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4">
+                <i class="fas fa-file-alt text-2xl text-gray-400 dark:text-gray-500"></i>
+            </div>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                {{ __('admin/front.index.no_content_title') }}
+            </h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                {{ __('admin/front.index.no_content_description') }}
+            </p>
+            <x-form-button
+                variant="primary"
+                icon="fas fa-plus"
+                :href="route('admin.front.create')"
+                tag="a"
+            >
+                {{ __('admin/front.index.create_button') }}
+            </x-form-button>
+        </div>
+    @endif
 @endsection
