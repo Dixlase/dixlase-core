@@ -30,4 +30,3 @@ import '../settings/security/js/csp';
 import '../security/js/safe-mode-banner';
 import '../security/js/integrity';
 import '../two-fa/js/passkey-prompt-modal';
-import './front-page-editor';
