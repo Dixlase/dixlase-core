@@ -225,67 +225,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @push('scripts')
-<script @cspNonce>
-function adminModeSettings() {
-    const original = '{{ $currentMode->value }}';
-
-    return {
-        selectedMode: original,
-        originalMode: original,
-        pendingMode: null,
-        _skipWatch: false,
-
-        init() {
-            this.$watch('selectedMode', (newVal, oldVal) => {
-                if (this._skipWatch) {
-                    this._skipWatch = false;
-                    return;
-                }
-                // モードが変わった場合のみモーダルを表示
-                if (newVal !== this.originalMode) {
-                    this.pendingMode = newVal;
-                    // 一旦元に戻してモーダルで確認
-                    this._skipWatch = true;
-                    this.selectedMode = this.originalMode;
-                    this.$nextTick(() => {
-                        this.openSwitchModal();
-                    });
-                }
-            });
-        },
-
-        openSwitchModal() {
-            const modal = document.getElementById('modeSwitchModal');
-            if (modal) {
-                const alpineData = Alpine.$data(modal);
-                if (alpineData) {
-                    alpineData.show = true;
-                }
-            }
-        },
-
-        closeSwitchModal() {
-            const modal = document.getElementById('modeSwitchModal');
-            if (modal) {
-                const alpineData = Alpine.$data(modal);
-                if (alpineData) {
-                    alpineData.show = false;
-                }
-            }
-        },
-
-        confirmSwitch() {
-            this._skipWatch = true;
-            this.selectedMode = this.pendingMode;
-            this.pendingMode = null;
-            this.closeSwitchModal();
-        },
-
-        cancelSwitch() {
-            this.pendingMode = null;
-            this.closeSwitchModal();
-        }
-    };
-}
-</script>
+<div id="mode-settings"
+     data-current-mode="{{ $currentMode->value }}"
+     style="display:none;"></div>
 @endpush

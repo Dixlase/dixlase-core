@@ -1,0 +1,110 @@
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * Website: https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * メンテナンスページ用スタイル
+ * Vite不使用の静的CSSファイル（メンテナンスモード中はフレームワークが利用不可のため）
+ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 100%;
+    padding: 48px 32px;
+    text-align: center;
+}
+
+.icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon svg {
+    width: 40px;
+    height: 40px;
+    fill: white;
+}
+
+h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 16px;
+}
+
+.message {
+    font-size: 18px;
+    color: #4a5568;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    white-space: pre-wrap;
+}
+
+.release-info {
+    background: #f7fafc;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 24px;
+}
+
+.release-info p {
+    font-size: 14px;
+    color: #718096;
+    margin-bottom: 8px;
+}
+
+.release-time {
+    font-size: 20px;
+    font-weight: 600;
+    color: #667eea;
+}
+
+.preview-badge {
+    display: inline-block;
+    background: #fbbf24;
+    color: #78350f;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
