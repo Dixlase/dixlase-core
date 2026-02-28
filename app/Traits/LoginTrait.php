@@ -121,6 +121,13 @@ trait LoginTrait
     abstract protected function supportsAccountNameLogin(): bool;
 
     /**
+     * メールアドレスでのログインをサポートするかどうか（継承先で実装）
+     *
+     * @return bool メールアドレスログインのサポート
+     */
+    abstract protected function supportsEmailLogin(): bool;
+
+    /**
      * pending_emailでのログインをサポートするかどうか（継承先で実装）
      *
      * @return bool pending_emailログインのサポート
@@ -322,6 +329,11 @@ trait LoginTrait
         $userModelClass = $this->getUserModelClass();
 
         if ($isEmail) {
+            // メールアドレスログインが無効な場合はnull
+            if (! $this->supportsEmailLogin()) {
+                return;
+            }
+
             // メールアドレスで検索
             $query = $userModelClass::where('email', $login);
 

@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\LoginIdentifierMode;
 use App\Models\Member;
 use App\Repositories\BaseSettingRepository;
 
 /**
  * 管理画面のログインコントローラー
- * 
+ *
  * ログイン処理と認証関連の設定を提供します。
  */
 class AdminLoginController extends AdminController
 {
-    use \App\Traits\LoginTrait;
     use \App\Traits\AccountVerificationTrait;
+    use \App\Traits\LoginTrait;
 
     protected BaseSettingRepository $baseSettingRepository;
 
@@ -160,11 +161,29 @@ class AdminLoginController extends AdminController
     }
 
     /**
+     * ログイン識別子モードを取得
+     */
+    protected function getLoginIdentifierMode(): LoginIdentifierMode
+    {
+        $value = (int) \App\Models\SecuritySetting::getValue('login_identifier_mode', LoginIdentifierMode::EmailOrAccountName->value);
+
+        return LoginIdentifierMode::tryFrom($value) ?? LoginIdentifierMode::EmailOrAccountName;
+    }
+
+    /**
      * アカウント名でのログインをサポートするかどうか
      */
     protected function supportsAccountNameLogin(): bool
     {
-        return true;
+        return $this->getLoginIdentifierMode()->supportsAccountName();
+    }
+
+    /**
+     * メールアドレスでのログインをサポートするかどうか
+     */
+    protected function supportsEmailLogin(): bool
+    {
+        return $this->getLoginIdentifierMode()->supportsEmail();
     }
 
     /**

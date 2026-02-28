@@ -42,6 +42,9 @@ class AdminSecurityLoginUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // ログイン識別子モード設定
+            'login_identifier_mode' => 'nullable|integer|in:0,1,2',
+
             // ログイン通知設定
             'login_notification_mode' => 'nullable|integer|in:0,1,2,3',
             'login_notification_send_to_system' => 'nullable|boolean',

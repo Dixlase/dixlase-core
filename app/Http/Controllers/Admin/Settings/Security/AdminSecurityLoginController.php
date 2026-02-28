@@ -22,9 +22,9 @@
 
 namespace App\Http\Controllers\Admin\Settings\Security;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
-use Illuminate\Http\Request;
+use App\Enums\LoginIdentifierMode;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Security\AdminSecurityLoginUpdateRequest;
 
 class AdminSecurityLoginController extends AdminLoggedInController
@@ -51,6 +51,11 @@ class AdminSecurityLoginController extends AdminLoggedInController
             'login_attempt_lockout_duration' => (int) $this->securitySettingRepository->get('login_attempt_lockout_duration', 30),
             'login_attempt_lockout_notification_enabled' => filter_var($this->securitySettingRepository->get('login_attempt_lockout_notification_enabled', true), FILTER_VALIDATE_BOOLEAN),
         ];
+
+        // ログイン識別子モード設定
+        $loginIdentifierMode = (int) $this->securitySettingRepository->get('login_identifier_mode', LoginIdentifierMode::EmailOrAccountName->value);
+        $this->viewParams['loginIdentifierMode'] = $loginIdentifierMode;
+        $this->viewParams['loginIdentifierModeOptions'] = LoginIdentifierMode::radioCardOptions();
 
         // ログイン通知設定
         $loginNotificationMode = (int) $this->securitySettingRepository->get('login_notification_mode', 3);
@@ -107,6 +112,11 @@ class AdminSecurityLoginController extends AdminLoggedInController
         }
         if (array_key_exists('login_attempt_lockout_notification_enabled', $validated)) {
             $this->securitySettingRepository->set('login_attempt_lockout_notification_enabled', $validated['login_attempt_lockout_notification_enabled'] ?? false);
+        }
+
+        // ログイン識別子モード設定
+        if (array_key_exists('login_identifier_mode', $validated)) {
+            $this->securitySettingRepository->set('login_identifier_mode', (int) $validated['login_identifier_mode']);
         }
 
         // ログイン通知設定

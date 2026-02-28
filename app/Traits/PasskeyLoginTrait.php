@@ -108,10 +108,7 @@ trait PasskeyLoginTrait
 
         // グローバル設定が無効（0）の場合のみ、個別設定をチェック
         if ($globalTwoFaMode == 0) {
-            $twoFaMode = $user->getTwoFaMode();
-            $twoFaModeValue = is_int($twoFaMode) ? $twoFaMode : $twoFaMode->value;
-
-            if ($twoFaModeValue === 0) {
+            if ($user->getTwoFaMode() === 0) {
                 $errorMessage = __($this->getTranslationPrefix().'.two_fa_disabled');
 
                 return response()->json([
@@ -239,17 +236,31 @@ trait PasskeyLoginTrait
      */
     protected function findUserByLogin(string $login, string $userModelClass)
     {
-        // メールアドレスで検索
-        $query = $userModelClass::where('email', $login);
+        $isEmail = filter_var($login, FILTER_VALIDATE_EMAIL) !== false;
 
-        // アカウント名カラムが存在する場合は追加
+        // アカウント名カラムが存在するか確認
+        $hasAccountNameColumn = false;
         if (method_exists($userModelClass, 'getTable')) {
             $instance = new $userModelClass();
-            if (\Illuminate\Support\Facades\Schema::hasColumn($instance->getTable(), 'account_name')) {
-                $query->orWhere('account_name', $login);
-            }
+            $hasAccountNameColumn = \Illuminate\Support\Facades\Schema::hasColumn($instance->getTable(), 'account_name');
         }
 
-        return $query->first();
+        // アカウント名カラムがある場合は LoginIdentifierMode を考慮
+        if ($hasAccountNameColumn) {
+            $mode = \App\Enums\LoginIdentifierMode::tryFrom(
+                (int) \App\Models\SecuritySetting::getValue('login_identifier_mode', \App\Enums\LoginIdentifierMode::EmailOrAccountName->value)
+            ) ?? \App\Enums\LoginIdentifierMode::EmailOrAccountName;
+
+            if ($isEmail && $mode->supportsEmail()) {
+                return $userModelClass::where('email', $login)->first();
+            } elseif (! $isEmail && $mode->supportsAccountName()) {
+                return $userModelClass::where('account_name', $login)->first();
+            }
+
+            return;
+        }
+
+        // アカウント名カラムがない場合はメールアドレスのみ
+        return $userModelClass::where('email', $login)->first();
     }
 }

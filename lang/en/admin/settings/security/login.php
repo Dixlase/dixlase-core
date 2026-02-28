@@ -15,11 +15,11 @@
 return [
     'heading' => 'Login Attempt Limit Settings',
     'description' => 'Manage login attempt limits and lockout settings.',
-    
+
     // Default Login Attempt Settings
     'default_login_attempt_settings' => 'Default Login Attempt Limit Settings',
     'default_login_attempt_description' => 'Default login attempt limits applied to members and when plugin custom settings are disabled.',
-    
+
     // Basic Settings
     'basic_settings' => 'Basic Settings',
     'enabled' => 'Enable Login Attempt Limits',
@@ -34,14 +34,19 @@ return [
     'lockout_duration_help' => 'Waiting time when locked out (1-10080 minutes)',
     'lockout_notification_enabled' => 'Enable Lockout Notifications',
     'lockout_notification_help' => 'When enabled, administrators will receive email notifications when lockouts occur',
-    
+
     // Hint
     'plugin_custom_hint' => 'Plugins (such as DixlaseUsers) can set their own login attempt limits. If a plugin has custom settings enabled, those will take precedence.',
-    
+
     // Two-Factor Authentication Detailed Settings
     'two_fa_detailed_settings' => 'Two-Factor Authentication Details',
     'two_fa_detailed_settings_description' => 'Manage detailed settings for two-factor authentication including code expiration, resend interval, attempt limits, and recovery codes.',
-    
+
+    // Login Identifier Mode Settings
+    'login_identifier_mode_settings' => 'Login Identifier Settings',
+    'login_identifier_mode_description' => 'Select which identifiers (email address / account name) are accepted for admin login.',
+    'login_identifier_mode' => 'Login Identifier Mode',
+
     'settings_updated' => 'Login settings have been updated.',
     'updated' => 'Login settings have been updated.',
 
