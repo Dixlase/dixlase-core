@@ -565,6 +565,16 @@ return [
     |--------------------------------------------------------------------------
     */
 
+    // ログイン識別子モード
+    'login_identifier_mode' => [
+        'email_only' => 'メールアドレスのみ',
+        'email_only_description' => 'ログインにメールアドレスのみを受け付けます（最もセキュア）',
+        'email_or_account_name' => 'メールアドレスまたはアカウント名',
+        'email_or_account_name_description' => 'ログインにメールアドレスとアカウント名の両方を受け付けます',
+        'account_name_only' => 'アカウント名のみ',
+        'account_name_only_description' => 'ログインにアカウント名のみを受け付けます',
+    ],
+
     'passkey_mode' => [
         'label' => 'パスキー設定',
         'options' => [

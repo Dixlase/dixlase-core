@@ -63,10 +63,28 @@ class IdentifierCheckHelper
         $delayMs = random_int(100, 300);
         usleep($delayMs * 1000);
 
-        // ユーザー検索（メールアドレスまたはアカウント名）
-        $user = $userModelClass::where('email', $login)
-            ->orWhere('account_name', $login)
-            ->first();
+        // ログイン識別子モードに基づくユーザー検索
+        $isEmail = filter_var($login, FILTER_VALIDATE_EMAIL) !== false;
+
+        if ($context === 'admin') {
+            // 管理者コンテキスト: LoginIdentifierModeに基づいて検索フィールドを制限
+            $mode = \App\Enums\LoginIdentifierMode::tryFrom(
+                (int) \App\Models\SecuritySetting::getValue('login_identifier_mode', \App\Enums\LoginIdentifierMode::EmailOrAccountName->value)
+            ) ?? \App\Enums\LoginIdentifierMode::EmailOrAccountName;
+
+            if ($isEmail && $mode->supportsEmail()) {
+                $user = $userModelClass::where('email', $login)->first();
+            } elseif (! $isEmail && $mode->supportsAccountName()) {
+                $user = $userModelClass::where('account_name', $login)->first();
+            } else {
+                $user = null;
+            }
+        } else {
+            // ユーザーコンテキスト: メールアドレスまたはアカウント名で検索
+            $user = $userModelClass::where('email', $login)
+                ->orWhere('account_name', $login)
+                ->first();
+        }
 
         if ($user) {
             // ユーザー存在確認成功

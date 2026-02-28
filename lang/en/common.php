@@ -375,6 +375,16 @@ return [
         'step_up_auth_description' => 'Additional authentication is required to perform this operation',
     ],
 
+    // Login Identifier Mode
+    'login_identifier_mode' => [
+        'email_only' => 'Email Only',
+        'email_only_description' => 'Only email address is accepted for login (most secure)',
+        'email_or_account_name' => 'Email or Account Name',
+        'email_or_account_name_description' => 'Both email address and account name are accepted for login',
+        'account_name_only' => 'Account Name Only',
+        'account_name_only_description' => 'Only account name is accepted for login',
+    ],
+
     // Passkey Mode Settings
     'passkey_mode' => [
         'label' => 'Passkey Settings',
