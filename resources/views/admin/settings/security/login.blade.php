@@ -30,15 +30,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('admin/settings/security/login.login_identifier_mode_settings') }}</h2>
             <p>{{ __('admin/settings/security/login.login_identifier_mode_description') }}</p>
 
-            <fieldset>
-                <legend>{{ __('admin/settings/security/login.login_identifier_mode') }}</legend>
-                <x-form-radio-card-group
-                    name="login_identifier_mode"
-                    :options="$loginIdentifierModeOptions"
-                    :value="old('login_identifier_mode', (string) $loginIdentifierMode)"
-                    :columns="3"
-                />
-            </fieldset>
+            <x-security.login-identifier-mode-selector
+                name="login_identifier_mode"
+                :value="old('login_identifier_mode', (string) $loginIdentifierMode)"
+                :columns="3"
+            />
         </section>
 
         <!-- ログイン通知設定 -->
