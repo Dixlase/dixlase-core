@@ -22,12 +22,12 @@
 
 namespace App\Providers;
 
+use App\Contracts\Admin\AdminNavigationManagerInterface;
 use App\Models\Theme;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\ServiceProvider;
 
 class ThemeServiceProvider extends ServiceProvider
 {
@@ -45,14 +45,14 @@ class ThemeServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // .envファイルが存在しない場合やデータベース接続ができない場合はスキップ
-        if (!file_exists(base_path('.env')) || !env('INSTALLED', false)) {
+        if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
             return;
         }
 
         try {
             // Only proceed if the themes table exists
-            if (!\Illuminate\Support\Facades\Schema::hasTable('themes') || 
-                !\Illuminate\Support\Facades\Schema::hasTable('theme_settings')) {
+            if (! \Illuminate\Support\Facades\Schema::hasTable('themes') ||
+                ! \Illuminate\Support\Facades\Schema::hasTable('theme_settings')) {
                 return;
             }
 
@@ -60,17 +60,18 @@ class ThemeServiceProvider extends ServiceProvider
             $themeSetting = \DB::table('theme_settings')
                 ->where('key', 'enabled_theme_id')
                 ->first();
-            
-            if (!$themeSetting || !$themeSetting->value) {
+
+            if (! $themeSetting || ! $themeSetting->value) {
                 Log::warning('No active theme configured in theme_settings');
+
                 return;
             }
-            
+
             $activeTheme = Theme::find($themeSetting->value);
 
             if ($activeTheme) {
                 $themePath = base_path("themes/{$activeTheme->directory}");
-                
+
                 // Load config files
                 try {
                     $this->loadThemeConfigs($activeTheme, $themePath);
@@ -78,10 +79,10 @@ class ThemeServiceProvider extends ServiceProvider
                     Log::error('Error loading theme config', [
                         'theme' => $activeTheme->directory,
                         'error' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString()
+                        'trace' => $e->getTraceAsString(),
                     ]);
                 }
-                
+
                 // Load language files
                 try {
                     $this->loadThemeLanguages($activeTheme, $themePath);
@@ -89,7 +90,7 @@ class ThemeServiceProvider extends ServiceProvider
                     Log::error('Error loading theme languages', [
                         'theme' => $activeTheme->directory,
                         'error' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString()
+                        'trace' => $e->getTraceAsString(),
                     ]);
                 }
 
@@ -100,31 +101,31 @@ class ThemeServiceProvider extends ServiceProvider
                     Log::error('Error loading theme views', [
                         'theme' => $activeTheme->directory,
                         'error' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString()
+                        'trace' => $e->getTraceAsString(),
                     ]);
                 }
             }
         } catch (\Exception $e) {
             // Log the error but don't break the application
-            Log::error('Failed to load theme configurations: ' . $e->getMessage(), [
+            Log::error('Failed to load theme configurations: '.$e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
                 'file' => $e->getFile(),
-                'line' => $e->getLine()
+                'line' => $e->getLine(),
             ]);
         }
-        
+
         // Load theme routes
         $this->loadThemeRoutes();
     }
 
     /**
-     * Load theme configuration files
+     * テーマの設定ファイルを読み込む
      */
     protected function loadThemeConfigs(Theme $theme, string $themePath): void
     {
         $configPath = "{$themePath}/config";
-        
-        if (!File::isDirectory($configPath)) {
+
+        if (! File::isDirectory($configPath)) {
             return;
         }
 
@@ -132,13 +133,16 @@ class ThemeServiceProvider extends ServiceProvider
             if ($file->getExtension() === 'php') {
                 $key = $file->getBasename('.php');
                 $config = require $file->getPathname();
-                
-                // Set the config with theme namespace
+
                 Config::set("themes.{$theme->slug}.{$key}", $config);
-                
-                // Also make the config available directly under the theme's slug
                 Config::set("{$theme->slug}.{$key}", $config);
             }
+        }
+
+        // config/admin/navigation.php が存在すればナビゲーションにマージ
+        $navConfigFile = "{$configPath}/admin/navigation.php";
+        if (File::exists($navConfigFile)) {
+            app(AdminNavigationManagerInterface::class)->mergeNavigationFile($navConfigFile);
         }
     }
 
@@ -148,12 +152,13 @@ class ThemeServiceProvider extends ServiceProvider
     protected function loadThemeLanguages(Theme $theme, string $themePath): void
     {
         $langPath = "{$themePath}/lang";
-        
-        if (!File::isDirectory($langPath)) {
+
+        if (! File::isDirectory($langPath)) {
             Log::warning('Theme language directory not found', [
                 'theme' => $theme->directory,
-                'path' => $langPath
+                'path' => $langPath,
             ]);
+
             return;
         }
 
@@ -168,8 +173,8 @@ class ThemeServiceProvider extends ServiceProvider
     protected function loadThemeViews(Theme $theme, string $themePath): void
     {
         $viewsPath = "{$themePath}/resources/views";
-        
-        if (!File::isDirectory($viewsPath)) {
+
+        if (! File::isDirectory($viewsPath)) {
             return;
         }
 
@@ -182,8 +187,8 @@ class ThemeServiceProvider extends ServiceProvider
      */
     protected function loadThemeRoutes(): void
     {
-        if (!\Illuminate\Support\Facades\Schema::hasTable('themes') || 
-            !\Illuminate\Support\Facades\Schema::hasTable('theme_settings')) {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('themes') ||
+            ! \Illuminate\Support\Facades\Schema::hasTable('theme_settings')) {
             return;
         }
 
@@ -191,30 +196,30 @@ class ThemeServiceProvider extends ServiceProvider
         $themeSetting = \DB::table('theme_settings')
             ->where('key', 'enabled_theme_id')
             ->first();
-        
-        if (!$themeSetting || !$themeSetting->value) {
+
+        if (! $themeSetting || ! $themeSetting->value) {
             return;
         }
-        
+
         $activeTheme = Theme::find($themeSetting->value);
-        if (!$activeTheme) {
+        if (! $activeTheme) {
             return;
         }
 
         $themePath = base_path("themes/{$activeTheme->directory}");
-        
+
         // Load web routes
         $webRoutePath = "{$themePath}/routes/web.php";
         if (File::exists($webRoutePath)) {
             include $webRoutePath;
         }
-        
+
         // Load admin routes within the admin route group
         $adminRoutePath = "{$themePath}/routes/admin.php";
         if (File::exists($adminRoutePath)) {
             // Get admin URL from helper
             $adminUrl = \App\Helpers\AdminHelper::getAdminUrl();
-            
+
             // Load admin routes within the secure admin group
             \Route::prefix($adminUrl)->name('admin.')
                 ->middleware(['admin.ip'])
