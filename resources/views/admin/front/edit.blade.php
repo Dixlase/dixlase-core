@@ -39,7 +39,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{-- エディタータイプ（固定表示） --}}
                 <div>
                     <x-form-label :label="__('admin/front.edit.editor_type_label')" />
-                    <p class="text-sm text-gray-700 dark:text-gray-300">{{ $editorTypeLabel }}</p>
+                    <div class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
+                        <i class="{{ $editorTypeIcon }} text-lg" style="color: {{ $editorTypeColor }}"></i>
+                        <div>
+                            <div class="font-medium text-gray-900 dark:text-white">{{ $editorTypeLabel }}</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">{{ $editorTypeDescription }}</div>
+                        </div>
+                    </div>
                     <x-form-help-text :text="__('admin/front.edit.editor_type_locked_help')" />
                 </div>
 

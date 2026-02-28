@@ -85,19 +85,19 @@ class AdminFrontController extends AdminLoggedInController
         }
 
         $languages = config('language.languages', []);
-        $formData = $this->prepareFormData();
         $templates = $this->buildTemplateData();
 
         // ユーザーのプロフィール言語をデフォルト値として使用
         $userLocale = auth()->user()?->locale?->value ?? array_key_first($languages);
 
         $this->viewParams['languages'] = $languages;
-        $this->viewParams['editorOptions'] = $formData['editorOptions'];
+        $this->viewParams['editorCardOptions'] = ContentEditorType::radioCardOptions(ContentStorageType::DATABASE);
+        $this->viewParams['editorOptions'] = ContentEditorType::optionsFor(ContentStorageType::DATABASE);
         $this->viewParams['storageOptions'] = ContentStorageType::optionsWithDescription();
         $this->viewParams['templates'] = $templates;
         $this->viewParams['defaultLang'] = $userLocale;
         $this->viewParams['defaultStorageType'] = ContentStorageType::DATABASE->value;
-        $this->viewParams['fileStorageBasePath'] = $this->contentService->getBasePath();
+        $this->viewParams['fileStorageBasePath'] = 'storage/app/private/'.$this->contentService->getBasePath();
 
         return view('admin::front/create', $this->viewParams);
     }
@@ -150,12 +150,9 @@ class AdminFrontController extends AdminLoggedInController
         }
 
         $languages = config('language.languages', []);
-        $formData = $this->prepareFormData();
 
         // エディタータイプのラベル
-        $editorTypeLabel = $frontPage->editor_type === ContentEditorType::HTML
-            ? ($formData['editorOptions']['html'] ?? 'HTML')
-            : ($formData['editorOptions']['markdown'] ?? 'Markdown');
+        $editorTypeLabel = __($frontPage->editor_type->translationKey());
 
         // ファイル保存の場合、ファイルからコンテンツを読み込む
         $body = $frontPage->content;
@@ -174,11 +171,14 @@ class AdminFrontController extends AdminLoggedInController
         $this->viewParams['body'] = old('content', $body);
         $this->viewParams['editorType'] = $frontPage->editor_type->value;
         $this->viewParams['editorTypeLabel'] = $editorTypeLabel;
+        $this->viewParams['editorTypeIcon'] = $frontPage->editor_type->iconClass();
+        $this->viewParams['editorTypeColor'] = $frontPage->editor_type->iconColor();
+        $this->viewParams['editorTypeDescription'] = __($frontPage->editor_type->descriptionKey());
         $this->viewParams['langCode'] = $frontPage->lang;
         $this->viewParams['langName'] = $languages[$frontPage->lang] ?? $frontPage->lang;
         $this->viewParams['storageOptions'] = ContentStorageType::optionsWithDescription();
         $this->viewParams['storageType'] = old('storage_type', $frontPage->storage_type->value);
-        $this->viewParams['fileStorageBasePath'] = $this->contentService->getBasePath();
+        $this->viewParams['fileStorageBasePath'] = 'storage/app/private/'.$this->contentService->getBasePath();
 
         return view('admin::front/edit', $this->viewParams);
     }
@@ -264,23 +264,6 @@ class AdminFrontController extends AdminLoggedInController
     {
         return redirect()->route('admin.front.settings')
             ->with('success', __('admin/front.settings.settings_updated'));
-    }
-
-    /**
-     * フォームデータを準備
-     *
-     * @return array{editorOptions: array<string, string>}
-     */
-    private function prepareFormData(): array
-    {
-        $editorOptions = [
-            ContentEditorType::HTML->value => __('common.content_editor.html'),
-            ContentEditorType::MARKDOWN->value => __('common.content_editor.markdown'),
-        ];
-
-        return [
-            'editorOptions' => $editorOptions,
-        ];
     }
 
     /**
