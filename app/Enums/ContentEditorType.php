@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -65,6 +65,32 @@ enum ContentEditorType: string
     case BLADE = 'blade';
 
     /**
+     * Font Awesome アイコンクラスを取得
+     */
+    public function iconClass(): string
+    {
+        return match ($this) {
+            self::GUI => 'fas fa-paint-brush',
+            self::HTML => 'fas fa-code',
+            self::MARKDOWN => 'fab fa-markdown',
+            self::BLADE => 'fas fa-file-code',
+        };
+    }
+
+    /**
+     * アイコンのカラーを取得
+     */
+    public function iconColor(): string
+    {
+        return match ($this) {
+            self::GUI => '#9333ea',
+            self::MARKDOWN => '#2563eb',
+            self::HTML => '#ea580c',
+            self::BLADE => '#16a34a',
+        };
+    }
+
+    /**
      * 翻訳キーを取得
      */
     public function translationKey(): string
@@ -101,13 +127,13 @@ enum ContentEditorType: string
         return match ($storageType) {
             ContentStorageType::DATABASE => [
                 self::GUI,      // GUIはDATABASEのみ（JSON形式で保存）
-                self::MARKDOWN, // MarkdownはDATABASEまたはFILE
                 self::HTML,     // HTMLはDATABASEまたはFILE
+                self::MARKDOWN, // MarkdownはDATABASEまたはFILE
             ],
             ContentStorageType::FILE => [
                 self::BLADE,    // BladeはFILEのみ（.blade.phpファイルが必要）
-                self::MARKDOWN, // MarkdownはDATABASEまたはFILE
                 self::HTML,     // HTMLはDATABASEまたはFILE
+                self::MARKDOWN, // MarkdownはDATABASEまたはFILE
             ],
         };
     }
@@ -168,6 +194,46 @@ enum ContentEditorType: string
                 'label' => __($type->translationKey()),
                 'description' => __($type->descriptionKey()),
             ];
+        }
+
+        return $options;
+    }
+
+    /**
+     * ラジオカードグループ用のオプション配列を取得
+     *
+     * <x-form-radio-card-group> コンポーネントに直接渡せる形式で返す。
+     * GUIエディタは将来実装のため disabled + Coming Soon バッジ付き。
+     *
+     * @param  ContentStorageType|null  $storageType  保存方法でフィルタ（nullの場合は全て）
+     * @param  array<string>  $exclude  除外するエディタータイプ値
+     * @return array<int, array{value: string, label: string, icon: string, description: string, disabled?: bool, badge?: string, badgeColor?: string}>
+     */
+    public static function radioCardOptions(?ContentStorageType $storageType = null, array $exclude = []): array
+    {
+        $types = $storageType ? self::availableFor($storageType) : self::cases();
+        $options = [];
+
+        foreach ($types as $type) {
+            if (in_array($type->value, $exclude, true)) {
+                continue;
+            }
+
+            $option = [
+                'value' => $type->value,
+                'label' => __($type->translationKey()),
+                'icon' => $type->iconClass(),
+                'description' => __($type->descriptionKey()),
+            ];
+
+            // GUIは将来実装のため無効化
+            if ($type === self::GUI) {
+                $option['disabled'] = true;
+                $option['badge'] = __('common.content_editor.coming_soon_badge');
+                $option['badgeColor'] = 'gray';
+            }
+
+            $options[] = $option;
         }
 
         return $options;
