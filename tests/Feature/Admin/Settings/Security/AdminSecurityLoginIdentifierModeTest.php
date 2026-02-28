@@ -91,7 +91,7 @@ class AdminSecurityLoginIdentifierModeTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewHas('loginIdentifierMode', LoginIdentifierMode::EmailOrAccountName->value);
-        $response->assertViewHas('loginIdentifierModeOptions');
+        $response->assertSee('login_identifier_mode');
     }
 
     public function test_login_settings_page_shows_radio_card_options(): void
@@ -100,7 +100,10 @@ class AdminSecurityLoginIdentifierModeTest extends TestCase
             ->get(route('admin.settings.security.login'));
 
         $response->assertStatus(200);
-        $options = $response->viewData('loginIdentifierModeOptions');
+
+        // ラジオカードオプションはコンポーネント内で生成されるため、
+        // enumのradioCardOptions()の構造を直接検証する
+        $options = LoginIdentifierMode::radioCardOptions();
         $this->assertCount(3, $options);
 
         foreach ($options as $option) {

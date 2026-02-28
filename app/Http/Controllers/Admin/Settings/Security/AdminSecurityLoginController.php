@@ -55,7 +55,6 @@ class AdminSecurityLoginController extends AdminLoggedInController
         // ログイン識別子モード設定
         $loginIdentifierMode = (int) $this->securitySettingRepository->get('login_identifier_mode', LoginIdentifierMode::EmailOrAccountName->value);
         $this->viewParams['loginIdentifierMode'] = $loginIdentifierMode;
-        $this->viewParams['loginIdentifierModeOptions'] = LoginIdentifierMode::radioCardOptions();
 
         // ログイン通知設定
         $loginNotificationMode = (int) $this->securitySettingRepository->get('login_notification_mode', 3);
