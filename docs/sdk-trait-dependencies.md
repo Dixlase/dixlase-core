@@ -149,3 +149,51 @@ Four models referenced by `@api` Contracts now carry `@api` annotations, marking
 | `App\Models\Member` | `TwoFaPasskeyServiceInterface` |
 
 This approach keeps Contract signatures unchanged (no DTO wrapping) while declaring the models as host-application-provided dependencies for the SDK package.
+
+### Phase 5a: Theme Legacy Navigation Migration (Completed)
+
+**DixlaseDefaultTheme migrated from `AdminHelper::mergeAdminNavigation()` to auto-load path:**
+
+The theme was the last caller of `AdminHelper::mergeAdminNavigation()` outside of AdminHelper itself.
+
+| Change | Detail |
+|--------|--------|
+| New file | `themes/DixlaseDefaultTheme/config/admin/navigation.php` (new structure) |
+| Removed | `AdminHelper::mergeAdminNavigation()` call from `DixlaseDefaultThemeServiceProvider::register()` |
+| Removed | `use App\Helpers\AdminHelper;` import from `DixlaseDefaultThemeServiceProvider` |
+| Updated | `ThemeServiceProvider::loadThemeConfigs()` — now auto-detects `config/admin/navigation.php` and merges via `AdminNavigationManagerInterface` |
+| Cleaned | `themes/DixlaseDefaultTheme/config/admin.php` — removed `nav` key (now empty) |
+
+Theme navigation auto-loading now mirrors the plugin pattern: `ThemeServiceProvider` checks for `config/admin/navigation.php` in the theme directory and delegates to `AdminNavigationManagerInterface::mergeNavigationFile()`.
+
+### Phase 5b: Plugin Concrete Dependency Audit (Completed)
+
+Audited all `App\` class imports across 13 plugins. Out of 12 target classes:
+
+- **11 already had `@api`**: `PluginHelper`, `CaptchaHelper`, `ConfigHelper`, `MemberRole`, `ContentEditorType`, `ContentStatus`, `ContentStorageType`, `AppearanceMode`, `AuthContextRegistryService`, `BaseSetting`, `Media`
+- **1 added**: `SecuritySetting` — used by DixlaseBlog and DixlaseUsers in route files. Added `@api` alongside existing `@deprecated` notice.
+
+All core classes referenced by plugins now carry the `@api` annotation, ensuring SDK package consumers can depend on these as stable host-application APIs.
+
+### Phase 5c: TwoFaInterface Enum Inline Reference Removal (Completed)
+
+`TwoFaInterface::getTwoFaMode()` had a hardcoded inline reference to `\App\Enums\AuthenticationMode`:
+
+```php
+// Before
+public function getTwoFaMode(): \App\Enums\AuthenticationMode|int;
+
+// After
+public function getTwoFaMode(): int;
+```
+
+Since `AuthenticationMode` is an `int`-backed enum, returning the raw `int` value eliminates the core namespace dependency from the `@api` Contract without losing information.
+
+| File | Change |
+|------|--------|
+| `app/Contracts/TwoFaInterface.php` | Return type `\App\Enums\AuthenticationMode\|int` → `int` |
+| `app/Models/Member.php` | `getTwoFaMode()` now extracts `->value` from the Eloquent-cast enum |
+| `app/Traits/PasskeyLoginTrait.php` | Removed defensive `is_int()` check (no longer needed) |
+| `plugins/DixlaseUsers/app/Models/DixlaseUsersUser.php` | Already returned `int` — no change |
+
+All `@api` Contracts in `app/Contracts/` are now free of `\App\Enums\*`, `\App\Models\*`, and `\App\Helpers\*` inline references.

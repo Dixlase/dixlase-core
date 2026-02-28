@@ -24,7 +24,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 @if($enabled && $widget)
-    <div class="mb-4 flex justify-center">
+    <div class="my-6 flex justify-center">
         {!! $widget !!}
     </div>
 @endif
