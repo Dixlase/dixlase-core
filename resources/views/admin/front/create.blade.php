@@ -54,14 +54,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <x-form-label :label="__('admin/front.create.editor_type_label')" class="mb-3" />
                     <x-form-radio-card-group
                         name="editor_type"
-                        :options="[
-                            ['value' => 'html', 'label' => $editorOptions['html'] ?? 'HTML', 'icon' => 'fas fa-code', 'description' => __('admin/front.create.editor_html_description')],
-                            ['value' => 'markdown', 'label' => $editorOptions['markdown'] ?? 'Markdown', 'icon' => 'fab fa-markdown', 'description' => __('admin/front.create.editor_markdown_description')],
-                            ['value' => 'gui', 'label' => 'GUI', 'icon' => 'fas fa-paint-brush', 'description' => __('admin/front.create.editor_gui_description'), 'disabled' => true, 'badge' => 'Coming Soon', 'badgeColor' => 'gray'],
-                        ]"
+                        :options="$editorCardOptions"
                         :value="old('editor_type', 'markdown')"
                         :columns="3"
-                        x-model="editorType"
+                        xModel="editorType"
                     />
                     <x-form-error name="editor_type" />
                 </div>

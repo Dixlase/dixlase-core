@@ -41,9 +41,6 @@ return [
 
         'lang_label' => '言語',
         'editor_type_label' => 'エディタータイプ',
-        'editor_html_description' => 'HTMLコードを直接記述します。マークアップを完全に制御できます。',
-        'editor_markdown_description' => 'Markdown記法で記述します。シンプルで習得が容易です。',
-        'editor_gui_description' => 'ドラッグ＆ドロップのビジュアルエディタ。近日公開予定。',
         'content_label' => 'コンテンツ',
         'content_placeholder' => 'フロントページのコンテンツを入力...',
 
