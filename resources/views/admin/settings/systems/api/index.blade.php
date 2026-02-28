@@ -374,27 +374,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @push('scripts')
 <script id="api-settings-config" type="application/json">
-    @json([
-        'apiEnabled' => old('api_enabled', $settings['api_enabled']) ? '1' : '0',
-        'apiKeys' => $apiKeys,
-        'translations' => [
-            'key_name' => __('admin/settings/systems/api.key_name'),
-            'environment' => __('admin/settings/systems/api.environment'),
-            'key_prefix' => __('admin/settings/systems/api.key_prefix'),
-            'rate_limit' => __('admin/settings/systems/api.rate_limit'),
-            'requests_per_minute' => __('admin/settings/systems/api.requests_per_minute'),
-            'unlimited' => __('admin/settings/systems/api.unlimited'),
-            'expires_at' => __('admin/settings/systems/api.expires_at'),
-            'no_expiry' => __('admin/settings/systems/api.no_expiry'),
-            'usage_count' => __('admin/settings/systems/api.usage_count'),
-            'created_at' => __('admin/settings/systems/api.created_at'),
-            'scopes' => __('admin/settings/systems/api.scopes'),
-            'no_scopes' => __('admin/settings/systems/api.no_scopes'),
-            'allowed_ips' => __('admin/settings/systems/api.allowed_ips'),
-            'all_ips_allowed' => __('admin/settings/systems/api.all_ips_allowed'),
-            'key_description' => __('admin/settings/systems/api.key_description'),
-            'copied_to_clipboard' => __('admin/settings/systems/api.copied_to_clipboard'),
-        ],
-    ])
+    @json($apiConfig)
 </script>
 @endpush
