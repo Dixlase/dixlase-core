@@ -1,21 +1,41 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\Events;
 
 /**
  * Dixlase Core Events
- * 
+ *
  * This class defines all core event names that plugins can listen to.
  * These events provide extension points for backup, deploy, translation,
  * and other core functionalities.
- * 
+ *
  * Usage:
  * ```php
  * // Listen to an event
  * Event::listen(DixlaseEvents::BACKUP_STARTED, function ($backup) {
  *     // Handle backup started
  * });
- * 
+ *
  * // Or in EventServiceProvider
  * protected $listen = [
  *     DixlaseEvents::BACKUP_COMPLETED => [
@@ -23,7 +43,7 @@ namespace App\Events;
  *     ],
  * ];
  * ```
- * 
+ *
  * @see docs/events-api-spec.md
  */
 final class DixlaseEvents
@@ -312,20 +332,18 @@ final class DixlaseEvents
 
     /**
      * Get all event names
-     *
-     * @return array
      */
     public static function all(): array
     {
         $reflection = new \ReflectionClass(self::class);
+
         return array_values($reflection->getConstants());
     }
 
     /**
      * Get events by category
      *
-     * @param string $category (backup, deploy, translation, plugin, theme, cache, maintenance, security)
-     * @return array
+     * @param  string  $category  (backup, deploy, translation, plugin, theme, cache, maintenance, security)
      */
     public static function byCategory(string $category): array
     {
@@ -343,6 +361,6 @@ final class DixlaseEvents
             default => $category,
         };
 
-        return array_filter(self::all(), fn($event) => str_starts_with($event, $prefix));
+        return array_filter(self::all(), fn ($event) => str_starts_with($event, $prefix));
     }
 }

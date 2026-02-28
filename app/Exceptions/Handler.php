@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -60,23 +60,19 @@ class Handler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param \Throwable $exception
+     * @param  \Illuminate\Http\Request  $request
      * @return \Symfony\Component\HttpFoundation\Response
      *
      * @throws \Throwable
      */
-
     public function render($request, Throwable $exception)
     {
-
         // 404エラーの場合は、カスタムビューを読み込む
         /*
         if ($this->isHttpException($exception)) {
             return response()->view('errors.minimal', ['exception' => $exception], $exception->getStatusCode());
         }
         */
-
 
         // 特定のHTTPステータスコードのカスタムビューを読み込む
         $status = $this->isHttpException($exception) ? $exception->getStatusCode() : 500;
