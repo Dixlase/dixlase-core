@@ -49,10 +49,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <div class="mt-6 flex flex-wrap gap-3">
                 <x-form-button
+                    type="link"
                     variant="primary"
                     icon="fas fa-edit"
                     :href="route('admin.front.edit')"
-                    tag="a"
                 >
                     {{ __('admin/front.index.edit_button') }}
                 </x-form-button>
@@ -86,10 +86,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{ __('admin/front.index.no_content_description') }}
             </p>
             <x-form-button
+                type="link"
                 variant="primary"
                 icon="fas fa-plus"
                 :href="route('admin.front.create')"
-                tag="a"
             >
                 {{ __('admin/front.index.create_button') }}
             </x-form-button>

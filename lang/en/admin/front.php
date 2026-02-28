@@ -41,9 +41,6 @@ return [
 
         'lang_label' => 'Language',
         'editor_type_label' => 'Editor Type',
-        'editor_html_description' => 'Write HTML code directly. Full control over markup.',
-        'editor_markdown_description' => 'Write in Markdown syntax. Simple and easy to learn.',
-        'editor_gui_description' => 'Visual editor with drag & drop. Coming soon.',
         'content_label' => 'Content',
         'content_placeholder' => 'Enter your front page content...',
 

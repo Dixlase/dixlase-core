@@ -110,6 +110,7 @@ class AdminFrontPageTest extends TestCase
         $response->assertOk();
         $response->assertViewIs('admin::front.create');
         $response->assertViewHas('languages');
+        $response->assertViewHas('editorCardOptions');
         $response->assertViewHas('editorOptions');
         $response->assertViewHas('storageOptions');
         $response->assertViewHas('templates');
