@@ -252,6 +252,23 @@ enum CspMode: int
             $options[] = $option;
         }
 
+        // 厳格モード（将来実装予定の disabled カード）
+        $options[] = [
+            'value' => '2',
+            'label' => 'admin/settings/security/csp.mode_strict',
+            'description' => 'admin/settings/security/csp.mode_strict_desc',
+            'icon' => 'fas fa-lock',
+            'color' => 'purple',
+            'disabled' => true,
+            'badge' => 'admin/settings/security/csp.coming_soon',
+            'badgeColor' => 'gray',
+            'features' => [
+                __('admin/settings/security/csp.mode_strict_feature1'),
+                __('admin/settings/security/csp.mode_strict_feature2'),
+                __('admin/settings/security/csp.mode_strict_feature3'),
+            ],
+        ];
+
         return $options;
     }
 }

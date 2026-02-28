@@ -25,7 +25,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div x-data="cspSettings()"
      data-csp-enabled="{{ old('csp_enabled', $settings['csp_enabled']) ? '1' : '0' }}"
      data-csp-mode="{{ old('csp_mode', $settings['csp_mode'] ?? $cspModeDefaultValue) }}"
-     data-app-env="{{ config('app.env') }}">
+     data-app-env="{{ config('app.env') }}"
+     data-directive-mode="{{ old('csp_custom_directives_mode', $settings['csp_custom_directives_mode'] ?? 'form') }}">
     <form id="security-csp-form" method="POST" action="{{ route('admin.settings.security.csp.update') }}">
         @csrf
         
@@ -72,7 +73,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :options="$cspModeOptions"
                         :value="old('csp_mode', $settings['csp_mode'] ?? $cspModeDefaultValue)"
                         xModel="cspMode"
-                        :columns="2"
+                        :columns="3"
                     />
                 </fieldset>
 
@@ -228,16 +229,67 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- カスタムディレクティブ -->
                 <fieldset class="mb-4">
                     <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.custom_directives') }}</legend>
-                    
-                    <x-form-textarea
-                        id="csp_custom_directives"
-                        name="csp_custom_directives"
-                        :value="old('csp_custom_directives', $settings['csp_custom_directives'] ?? '')"
-                        :placeholder="__('admin/settings/security/csp.custom_directives_placeholder')"
-                        rows="4"
-                        class="input-xl font-mono text-sm"
-                    />
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/security/csp.custom_directives_help') }}</p>
+
+                    <!-- 入力モード選択 -->
+                    <div class="mb-4">
+                        <x-form-radio-card-group
+                            name="csp_custom_directives_mode"
+                            :options="[
+                                [
+                                    'value' => 'form',
+                                    'label' => __('admin/settings/security/csp.custom_directives_mode_form'),
+                                    'description' => __('admin/settings/security/csp.custom_directives_mode_form_desc'),
+                                    'icon' => 'fas fa-list-alt',
+                                    'color' => 'blue',
+                                ],
+                                [
+                                    'value' => 'json',
+                                    'label' => __('admin/settings/security/csp.custom_directives_mode_json'),
+                                    'description' => __('admin/settings/security/csp.custom_directives_mode_json_desc'),
+                                    'icon' => 'fas fa-code',
+                                    'color' => 'gray',
+                                ],
+                            ]"
+                            :value="old('csp_custom_directives_mode', $settings['csp_custom_directives_mode'] ?? 'form')"
+                            xModel="directiveMode"
+                            :columns="2"
+                        />
+                    </div>
+
+                    <!-- フォームベース入力 -->
+                    <div x-show="directiveMode === 'form'" x-transition>
+                        <div class="space-y-4">
+                            @foreach(['script_src', 'style_src', 'img_src', 'connect_src', 'font_src', 'frame_src'] as $directive)
+                                <div>
+                                    <x-form-label :for="'csp_directive_' . $directive">
+                                        {{ __('admin/settings/security/csp.directive_' . $directive) }}
+                                    </x-form-label>
+                                    <x-form-textarea
+                                        :id="'csp_directive_' . $directive"
+                                        :name="'csp_directive_' . $directive"
+                                        :value="old('csp_directive_' . $directive, $directiveFields[str_replace('_', '-', $directive)] ?? '')"
+                                        :placeholder="__('admin/settings/security/csp.directive_placeholder')"
+                                        rows="2"
+                                        class="input-xl font-mono text-sm"
+                                    />
+                                </div>
+                            @endforeach
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/csp.directive_help') }}</p>
+                        </div>
+                    </div>
+
+                    <!-- JSON入力 -->
+                    <div x-show="directiveMode === 'json'" x-transition>
+                        <x-form-textarea
+                            id="csp_custom_directives"
+                            name="csp_custom_directives"
+                            :value="old('csp_custom_directives', $settings['csp_custom_directives'] ?? '')"
+                            :placeholder="__('admin/settings/security/csp.custom_directives_placeholder')"
+                            rows="6"
+                            class="input-xl font-mono text-sm"
+                        />
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/security/csp.custom_directives_help') }}</p>
+                    </div>
                 </fieldset>
             </div>
         </section>
