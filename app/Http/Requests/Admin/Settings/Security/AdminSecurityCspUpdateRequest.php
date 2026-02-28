@@ -22,8 +22,8 @@
 
 namespace App\Http\Requests\Admin\Settings\Security;
 
-use App\Enums\CspMode;
 use App\Enums\CspBlocklistAction;
+use App\Enums\CspMode;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AdminSecurityCspUpdateRequest extends FormRequest
@@ -44,17 +44,24 @@ class AdminSecurityCspUpdateRequest extends FormRequest
     public function rules(): array
     {
         $cspEnabled = filter_var($this->input('csp_enabled'), FILTER_VALIDATE_BOOLEAN);
-        
+
         return [
             'csp_enabled' => 'boolean',
-            'csp_mode' => $cspEnabled ? 'required|' . CspMode::validationRule() : 'nullable|' . CspMode::validationRule(),
+            'csp_mode' => $cspEnabled ? 'required|'.CspMode::validationRule() : 'nullable|'.CspMode::validationRule(),
             'csp_log_violations' => 'boolean',
             'csp_exclude_dev_tools' => 'boolean',
             'csp_trusted_domains' => 'nullable|string',
             'csp_denied_domains' => 'nullable|string',
+            'csp_custom_directives_mode' => 'nullable|string|in:form,json',
             'csp_custom_directives' => 'nullable|string',
+            'csp_directive_script_src' => 'nullable|string',
+            'csp_directive_style_src' => 'nullable|string',
+            'csp_directive_img_src' => 'nullable|string',
+            'csp_directive_connect_src' => 'nullable|string',
+            'csp_directive_font_src' => 'nullable|string',
+            'csp_directive_frame_src' => 'nullable|string',
             'csp_blocklist_check_enabled' => 'boolean',
-            'csp_blocklist_action' => $cspEnabled ? 'required|' . CspBlocklistAction::validationRule() : 'nullable|' . CspBlocklistAction::validationRule(),
+            'csp_blocklist_action' => $cspEnabled ? 'required|'.CspBlocklistAction::validationRule() : 'nullable|'.CspBlocklistAction::validationRule(),
             'csp_blocklist_categories' => 'nullable|array',
             'csp_blocklist_categories.*' => 'string',
         ];
