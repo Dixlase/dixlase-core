@@ -146,7 +146,7 @@ function initEmailChallenge(config) {
 
     // Resend functionality
     if (config.showResend && config.resendAction) {
-        window.resendCode = function () {
+        resendButton.addEventListener('click', function () {
             if (resendCountdown > 0) return;
 
             fetch(config.resendAction, {
@@ -182,7 +182,7 @@ function initEmailChallenge(config) {
                     console.error('Resend error:', error);
                     showFlashMessage(config.translations.network_error, 'error');
                 });
-        };
+        });
 
         function startResendCountdown(seconds) {
             resendCountdown = seconds;
