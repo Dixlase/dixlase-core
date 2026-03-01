@@ -54,15 +54,10 @@ import '../../admin/settings/security/js/captcha';
 import '../../admin/settings/systems/js/api';
 import '../../admin/settings/plugins/js/audit';
 import '../../admin/settings/themes/js/audit';
-import { createLoginFlow } from '../../admin/js/login-flow';
-import { createFrontPageCreate, createFrontPageEditor } from '../../admin/js/front-page-editor';
+import '../../admin/js/login-flow';
+import '../../admin/js/front-page-editor';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
-
-// Alpine.jsのグローバルスコープに登録（Alpine起動前に実行）
-window.loginFlow = createLoginFlow;
-window.frontPageCreate = createFrontPageCreate;
-window.frontPageEditor = createFrontPageEditor;
 
 Alpine.plugin(collapse)
 window.Alpine = Alpine;

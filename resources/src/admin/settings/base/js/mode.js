@@ -20,7 +20,9 @@
  * 管理画面モード設定ページ用JavaScript（Alpine.jsコンポーネント）
  */
 
-window.adminModeSettings = function () {
+import Alpine from 'alpinejs';
+
+Alpine.data('adminModeSettings', () => {
     const el = document.getElementById('mode-settings');
     const original = el ? el.dataset.currentMode : '0';
 
@@ -81,4 +83,4 @@ window.adminModeSettings = function () {
             this.closeSwitchModal();
         },
     };
-};
+});

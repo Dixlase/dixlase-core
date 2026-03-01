@@ -20,7 +20,9 @@
  * API設定ページ用JavaScript（Alpine.jsコンポーネント）
  */
 
-window.apiSettings = function () {
+import Alpine from 'alpinejs';
+
+Alpine.data('apiSettings', () => {
     const configEl = document.getElementById('api-settings-config');
     const config = configEl ? JSON.parse(configEl.textContent) : {};
 
@@ -96,7 +98,7 @@ window.apiSettings = function () {
             openModal('viewKeyModal');
         }
     };
-};
+});
 
 window.copyToClipboard = function (elementId) {
     const configEl = document.getElementById('api-settings-config');

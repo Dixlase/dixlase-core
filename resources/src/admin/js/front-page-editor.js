@@ -7,11 +7,14 @@
  * フロントページ作成・編集画面の Alpine.js コンポーネント
  * テンプレート切り替え + 右サイドバー起動 + 保存方法選択
  */
+
+import Alpine from 'alpinejs';
+
 /**
  * フロントページ作成画面
  * 言語・エディタータイプ切り替えでテンプレートを自動適用
  */
-export function createFrontPageCreate(config) {
+function createFrontPageCreate(config) {
     return {
         lang: config.defaultLang,
         editorType: config.defaultEditorType,
@@ -70,7 +73,7 @@ export function createFrontPageCreate(config) {
  * フロントページ編集画面
  * 保存方法選択 + 右サイドバー起動
  */
-export function createFrontPageEditor(config) {
+function createFrontPageEditor(config) {
     return {
         storageType: config.defaultStorageType || 'database',
         fileStorageBasePath: config.fileStorageBasePath || '',
@@ -111,5 +114,5 @@ export function createFrontPageEditor(config) {
     };
 }
 
-// common/js/app.js で import → window 登録 → Alpine.start() の順で実行される
-// （loginFlow パターンと同様）
+Alpine.data('frontPageCreate', createFrontPageCreate);
+Alpine.data('frontPageEditor', createFrontPageEditor);
