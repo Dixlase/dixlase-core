@@ -9,7 +9,7 @@ https://exc-d.com
 
 @push('scripts')
 <script id="theme-audit-config" type="application/json">
-    @json([
+    <?php echo json_encode([
         'auditUrl' => route('admin.settings.themes.audit'),
         'messages' => [
             'scanning' => __('admin/settings/themes/index.permissions.audit_scanning'),
@@ -33,6 +33,6 @@ https://exc-d.com
         'statsLabel' => __('admin/settings/themes/index.permissions.audit_stats'),
         'matchesLabel' => __('admin/settings/themes/index.permissions.audit_matches'),
         'mismatchesLabel' => __('admin/settings/themes/index.permissions.audit_mismatches'),
-    ])
+    ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>
 </script>
 @endpush
