@@ -22,6 +22,7 @@
 
 namespace App\Http\Controllers\Admin\Settings;
 
+use App\Enums\PluginEnableAction;
 use App\Helpers\ComposerLocalHelper;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\GitIgnoreHelper;
@@ -35,6 +36,7 @@ use App\Presenters\Admin\ExtensionCardPresenter;
 use App\Services\Csp\CspDiagnosticService;
 use App\Services\Csp\CspExtensionLoader;
 use App\Services\ExtensionOperationService;
+use App\Services\Plugin\PluginHealthScorer;
 use App\Services\Plugin\PluginPermissionService;
 use App\Traits\PluginLoaderTrait;
 use Illuminate\Http\Request;
@@ -189,6 +191,9 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 $cspLoader = app(\App\Services\Csp\CspExtensionLoader::class);
                 $cspCompatibility = $cspLoader->getCspCompatibility('plugin', $pluginSlug);
 
+                // ファイルハッシュを算出（再スキャン判定用）
+                $filesHash = app(PluginHealthScorer::class)->computeFilesHash($pluginSlug);
+
                 $auditData = [
                     'has_mismatches' => ! empty($result['mismatches'] ?? []),
                     'mismatches' => $result['mismatches'] ?? [],
@@ -201,6 +206,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                     'csp_status' => $cspCompatibility['status'] ?? 'not_checked',
                     'csp_requires_inline_js' => $cspCompatibility['requires_inline_js'] ?? false,
                     'csp_requires_inline_css' => $cspCompatibility['requires_inline_css'] ?? false,
+                    'files_hash' => $filesHash,
                 ];
 
                 Log::info('Plugin audit data', ['plugin' => $pluginSlug, 'data' => $auditData]);
@@ -334,6 +340,21 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
                 // composer.local.jsonを更新
                 ComposerLocalHelper::syncAutoload();
+
+                // アップロード後に自動監査を実行
+                $pluginJsonPath = base_path("plugins/{$pluginDir}/plugin.json");
+                if (File::exists($pluginJsonPath)) {
+                    try {
+                        $pluginData = json_decode(File::get($pluginJsonPath), true);
+                        $pluginSlug = $pluginData['slug'] ?? Str::slug($pluginDir);
+                        $this->runPluginAudit($pluginSlug);
+                    } catch (\Exception $e) {
+                        Log::warning('Auto-audit after upload failed', [
+                            'directory' => $pluginDir,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
 
                 return redirect()->route('admin.settings.plugins.index')
                     ->with('success', __('admin/settings/plugins/add.messages.upload_success'))
@@ -485,6 +506,22 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         try {
             // 有効化前に監査を実行（最新の状態を確認）
             $this->runPluginAudit($plugin->slug);
+
+            // 再スキャンが必要な場合は自動再監査
+            $healthScorer = app(PluginHealthScorer::class);
+            if ($healthScorer->needsRescan($plugin->slug)) {
+                Log::info('Plugin files changed, re-scanning', ['plugin' => $plugin->slug]);
+                $this->runPluginAudit($plugin->slug);
+            }
+
+            // 健全性スコアを算出し、有効化ポリシーを判定
+            $healthResult = $healthScorer->calculate($plugin->slug);
+            $enableAction = $healthScorer->determineEnableAction($healthResult);
+
+            // Blockedの場合は有効化を拒否
+            if ($enableAction === PluginEnableAction::Blocked) {
+                return back()->with('error', __('admin/settings/plugins/index.enable_action.blocked_message'));
+            }
 
             // コマンドを使用して有効化
             Artisan::call('dls:plugin:enable', [

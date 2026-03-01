@@ -132,6 +132,26 @@ enum PluginTrustLevel: string
     }
 
     /**
+     * 署名検証結果から信頼度を判定
+     *
+     * 署名が有効でなければ信頼度を降格する:
+     * - unsigned/pending_verification → Local
+     * - invalid/expired/error → Community
+     * - valid → fromSignatureType() で正しい Trust Level を算出
+     */
+    public static function fromSignatureVerification(?string $signatureType, string $signatureStatus): self
+    {
+        if ($signatureStatus !== 'valid') {
+            return match ($signatureStatus) {
+                'unsigned', 'pending_verification' => self::Local,
+                default => self::Community, // invalid, expired, error, unknown_key
+            };
+        }
+
+        return self::fromSignatureType($signatureType);
+    }
+
+    /**
      * 署名タイプから信頼度を判定
      */
     public static function fromSignatureType(?string $signatureType): self

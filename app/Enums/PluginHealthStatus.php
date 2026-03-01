@@ -196,11 +196,16 @@ enum PluginHealthStatus: string
             'permission_unused' => -2,
             'permission_undefined' => -10,
 
+            // 署名関連（環境別）
+            'signature_unsigned_production' => -15,
+
             // CSP関連（モード別）
             'csp_violation_dev' => 0,
             'csp_violation_standard' => -5,
             'csp_violation_strict' => -15,
             'csp_inline_js_required' => -10,
+            'csp_inline_css_required' => -5,
+            'csp_external_resources' => -3,
 
             // スキャン関連
             'scan_outdated' => -5,

@@ -54,6 +54,14 @@ final readonly class HealthScoreResult implements JsonSerializable
     }
 
     /**
+     * 未確認かどうか（監査未実行・権限未定義）
+     */
+    public function isNotVerified(): bool
+    {
+        return $this->status === PluginHealthStatus::NotVerified;
+    }
+
+    /**
      * 有効化可能かどうかの簡易チェック
      */
     public function needsAttention(): bool

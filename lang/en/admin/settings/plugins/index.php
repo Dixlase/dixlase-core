@@ -63,6 +63,28 @@ return [
         'failed' => 'Plugin scan failed.',
     ],
 
+    // Enable Action (PluginEnableAction Enum)
+    'enable_action' => [
+        'allowed' => 'Activation Allowed',
+        'warning' => 'Warning: Minor Issues Detected',
+        'ack' => 'Confirmation Required: Important Issues Detected',
+        'blocked' => 'Activation Blocked: Critical Issues Detected',
+        'blocked_message' => 'This plugin cannot be activated due to critical health issues. Please resolve the issues and re-scan.',
+    ],
+
+    // Rescan
+    'rescan' => [
+        'files_changed' => 'Plugin files have changed since the last scan. Re-scanning...',
+        'auto_triggered' => 'Automatic security scan triggered.',
+    ],
+
+    // Health Issue Descriptions
+    'health_issue' => [
+        'csp_inline_css_required' => 'Inline CSS required. May not work in strict mode.',
+        'csp_external_resources' => 'External resources detected. Review for security.',
+        'signature_unsigned_production' => 'No signature in production environment. Signing is strongly recommended.',
+    ],
+
     // Badge Labels (for card display)
     'badge_labels' => [
         'health' => 'Health',

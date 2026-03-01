@@ -84,6 +84,9 @@ class PatternRegistry
         $registry->register(new DangerousApiPattern('exec'));
         $registry->register(new DangerousApiPattern('env_access'));
 
+        // 外部リソース（プラグイン・テーマ共通）
+        $registry->register(new ExternalResourceDetectionPattern());
+
         // テーマアセット
         $registry->register(new ThemeAssetDetectionPattern('custom_css'));
         $registry->register(new ThemeAssetDetectionPattern('custom_js'));
