@@ -1,5 +1,25 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\Traits;
 
 use Illuminate\Http\Request;
@@ -65,6 +85,16 @@ trait PasskeyLoginTrait
      * @return string 翻訳プレフィックス（例: 'auth', 'dixlase-users::auth'）
      */
     abstract protected function getTranslationPrefix(): string;
+
+    /**
+     * メールアドレスでのログインをサポートするかどうか（継承先で実装）
+     */
+    abstract protected function supportsEmailLogin(): bool;
+
+    /**
+     * アカウント名でのログインをサポートするかどうか（継承先で実装）
+     */
+    abstract protected function supportsAccountNameLogin(): bool;
 
     /**
      * パスキー認証のチャレンジを取得
@@ -230,6 +260,8 @@ trait PasskeyLoginTrait
     /**
      * ログイン入力値からユーザーを検索
      *
+     * 委譲パターン: supportsEmailLogin() / supportsAccountNameLogin() の結果に基づいて検索
+     *
      * @param  string  $login  ログイン入力値
      * @param  string  $userModelClass  ユーザーモデルクラス名
      * @return mixed ユーザーモデルまたはnull
@@ -238,29 +270,17 @@ trait PasskeyLoginTrait
     {
         $isEmail = filter_var($login, FILTER_VALIDATE_EMAIL) !== false;
 
-        // アカウント名カラムが存在するか確認
-        $hasAccountNameColumn = false;
-        if (method_exists($userModelClass, 'getTable')) {
-            $instance = new $userModelClass();
-            $hasAccountNameColumn = \Illuminate\Support\Facades\Schema::hasColumn($instance->getTable(), 'account_name');
-        }
-
-        // アカウント名カラムがある場合は LoginIdentifierMode を考慮
-        if ($hasAccountNameColumn) {
-            $mode = \App\Enums\LoginIdentifierMode::tryFrom(
-                (int) \App\Models\SecuritySetting::getValue('login_identifier_mode', \App\Enums\LoginIdentifierMode::EmailOrAccountName->value)
-            ) ?? \App\Enums\LoginIdentifierMode::EmailOrAccountName;
-
-            if ($isEmail && $mode->supportsEmail()) {
-                return $userModelClass::where('email', $login)->first();
-            } elseif (! $isEmail && $mode->supportsAccountName()) {
-                return $userModelClass::where('account_name', $login)->first();
+        if ($isEmail) {
+            if (! $this->supportsEmailLogin()) {
+                return;
             }
 
-            return;
+            return $userModelClass::where('email', $login)->first();
         }
 
-        // アカウント名カラムがない場合はメールアドレスのみ
-        return $userModelClass::where('email', $login)->first();
+        if ($this->supportsAccountNameLogin()) {
+            return $userModelClass::where('account_name', $login)->first();
+        }
+
     }
 }
