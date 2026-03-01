@@ -22,6 +22,9 @@
 
 namespace App\Presenters\Admin;
 
+use App\Enums\PluginEnableAction;
+use App\Enums\PluginTrustLevel;
+use App\Services\Plugin\PluginHealthScorer;
 use Carbon\Carbon;
 
 class ExtensionCardPresenter
@@ -166,6 +169,24 @@ class ExtensionCardPresenter
         $enableWarnings = $isModel ? self::computePluginEnableWarnings($plugin, $permissionSummary) : [];
         $installWarnings = ! $isModel ? self::computeInstallWarnings($permissionSummary, 'admin/settings/plugins/index') : [];
 
+        // 有効化ポリシーと信頼レベルを算出（インストール済みプラグインのみ）
+        $enableAction = PluginEnableAction::Allowed;
+        $trustLevel = null;
+        if ($isModel) {
+            try {
+                $healthScorer = app(PluginHealthScorer::class);
+                $healthResult = $healthScorer->calculate($slug);
+                $enableAction = $healthScorer->determineEnableAction($healthResult);
+            } catch (\Exception $e) {
+                // 算出失敗時はデフォルト値を維持
+            }
+
+            // 署名情報からTrustLevelを算出
+            $signatureType = $badge['signature']['type'] ?? null;
+            $signatureStatus = $badge['signatureStatus'];
+            $trustLevel = PluginTrustLevel::fromSignatureVerification($signatureType, $signatureStatus);
+        }
+
         $settingsUrl = null;
         if ($isModel && $isEnabled && ($plugin->has_settings ?? false)) {
             $settingsUrl = app(\App\Http\Controllers\Admin\Settings\AdminPluginsSettingsController::class)->getPluginSettingsUrl($plugin);
@@ -212,6 +233,10 @@ class ExtensionCardPresenter
             'hasInstallWarnings' => ! empty($installWarnings),
             'settingsUrl' => $settingsUrl,
             'translatedName' => $isModel ? ($plugin->translated_name ?? $plugin->name) : ($plugin['name'] ?? ''),
+            'enableAction' => $enableAction->value,
+            'isBlocked' => $enableAction === PluginEnableAction::Blocked,
+            'trustLevel' => $trustLevel?->value,
+            'trustLevelLabel' => $trustLevel?->label(),
         ];
     }
 

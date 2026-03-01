@@ -63,6 +63,28 @@ return [
         'failed' => 'プラグインのスキャンに失敗しました。',
     ],
 
+    // 有効化アクション（PluginEnableAction Enum）
+    'enable_action' => [
+        'allowed' => '有効化可能',
+        'warning' => '警告：軽微な問題が検出されました',
+        'ack' => '確認必須：重要な問題が検出されました',
+        'blocked' => '有効化ブロック：致命的な問題が検出されました',
+        'blocked_message' => '致命的な健全性の問題があるため、このプラグインを有効化できません。問題を解消して再スキャンしてください。',
+    ],
+
+    // 再スキャン
+    'rescan' => [
+        'files_changed' => '前回のスキャン以降にプラグインファイルが変更されています。再スキャンします...',
+        'auto_triggered' => '自動セキュリティスキャンを実行しました。',
+    ],
+
+    // 健全性指摘の説明
+    'health_issue' => [
+        'csp_inline_css_required' => 'インラインCSSが必要です。厳格モードでは動作しない可能性があります。',
+        'csp_external_resources' => '外部リソースが検出されました。セキュリティ上の確認を推奨します。',
+        'signature_unsigned_production' => '本番環境で署名がありません。署名を強く推奨します。',
+    ],
+
     // バッジラベル（カード表示用）
     'badge_labels' => [
         'health' => '健全性',

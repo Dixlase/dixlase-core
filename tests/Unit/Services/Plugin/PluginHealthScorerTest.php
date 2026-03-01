@@ -42,21 +42,25 @@ class PluginHealthScorerTest extends TestCase
             ->with('test-plugin')
             ->andReturn(['database' => ['own_tables' => true]]);
 
-        // 監査結果なし（問題なし扱い）
-        // PluginAudit::getBySlug は DB から取得するので、レコードがなければ null
+        // 監査結果を作成（問題なし）
+        PluginAudit::saveAuditResult('test-plugin', [
+            'has_mismatches' => false,
+            'mismatches' => [],
+            'matches_count' => 0,
+            'total_checked' => 5,
+        ]);
 
         $result = $this->scorer->calculate('test-plugin');
 
         $this->assertInstanceOf(HealthScoreResult::class, $result);
-        // 署名valid + 権限定義あり + 監査データなし（CSP/危険API/鮮度は null → scan_not_performed のみ）
-        // scan_not_performed: -10 → score = 90
-        $this->assertEquals(90, $result->score);
+        // 署名valid + 権限定義あり + 監査あり + 問題なし → 100点
+        $this->assertEquals(100, $result->score);
         $this->assertEquals(PluginHealthStatus::Healthy, $result->status);
         $this->assertFalse($result->hasCriticalIssue);
     }
 
     /**
-     * 署名未設定の場合の減点テスト
+     * 署名未設定の場合の減点テスト（非本番環境）
      */
     public function test_unsigned_signature_deduction(): void
     {
@@ -70,11 +74,19 @@ class PluginHealthScorerTest extends TestCase
             ->with('test-plugin')
             ->andReturn(['database' => ['own_tables' => true]]);
 
+        // 監査結果を作成（前提条件充足）
+        PluginAudit::saveAuditResult('test-plugin', [
+            'has_mismatches' => false,
+            'mismatches' => [],
+            'matches_count' => 0,
+            'total_checked' => 5,
+        ]);
+
         $result = $this->scorer->calculate('test-plugin');
 
-        // signature_unsigned: -5, scan_not_performed: -10 → score = 85
-        $this->assertEquals(85, $result->score);
-        $this->assertEquals(PluginHealthStatus::Advisory, $result->status);
+        // signature_unsigned: -5 → score = 95
+        $this->assertEquals(95, $result->score);
+        $this->assertEquals(PluginHealthStatus::Healthy, $result->status);
 
         $types = array_map(fn ($i) => $i->type, $result->issues);
         $this->assertContains('signature_unsigned', $types);
@@ -95,10 +107,18 @@ class PluginHealthScorerTest extends TestCase
             ->with('test-plugin')
             ->andReturn(['database' => ['own_tables' => true]]);
 
+        // 監査結果を作成（前提条件充足）
+        PluginAudit::saveAuditResult('test-plugin', [
+            'has_mismatches' => false,
+            'mismatches' => [],
+            'matches_count' => 0,
+            'total_checked' => 5,
+        ]);
+
         $result = $this->scorer->calculate('test-plugin');
 
-        // signature_invalid: -50, scan_not_performed: -10 → score = 40
-        $this->assertEquals(40, $result->score);
+        // signature_invalid: -50 → score = 50
+        $this->assertEquals(50, $result->score);
         $this->assertEquals(PluginHealthStatus::NeedsAttention, $result->status);
         $this->assertTrue($result->hasCriticalIssue);
 
@@ -107,27 +127,32 @@ class PluginHealthScorerTest extends TestCase
     }
 
     /**
-     * 権限未定義の場合の減点テスト
+     * 権限未定義の場合はNotVerifiedを返すテスト
      */
-    public function test_undefined_permissions_deduction(): void
+    public function test_undefined_permissions_returns_not_verified(): void
     {
-        $this->permissionService
-            ->shouldReceive('getSignatureInfo')
-            ->with('test-plugin')
-            ->andReturn(['status' => 'valid']);
-
         $this->permissionService
             ->shouldReceive('getPermissions')
             ->with('test-plugin')
             ->andReturn(null);
 
+        // 監査結果は存在するが、permissionsがnull → NotVerified
+        PluginAudit::saveAuditResult('test-plugin', [
+            'has_mismatches' => false,
+            'mismatches' => [],
+            'matches_count' => 0,
+            'total_checked' => 5,
+        ]);
+
         $result = $this->scorer->calculate('test-plugin');
 
-        // permission_undefined: -10, scan_not_performed: -10 → score = 80
-        $this->assertEquals(80, $result->score);
+        // permissions null → 即 NotVerified（score=0）
+        $this->assertEquals(0, $result->score);
+        $this->assertEquals(PluginHealthStatus::NotVerified, $result->status);
+        $this->assertFalse($result->hasCriticalIssue);
 
         $types = array_map(fn ($i) => $i->type, $result->issues);
-        $this->assertContains('permission_undefined', $types);
+        $this->assertContains('not_verified_no_permissions', $types);
     }
 
     /**
@@ -392,7 +417,12 @@ class PluginHealthScorerTest extends TestCase
         $this->permissionService
             ->shouldReceive('getPermissions')
             ->with('test-plugin')
-            ->andReturn(null);
+            ->andReturn(['database' => ['own_tables' => true]]);
+
+        $this->permissionService
+            ->shouldReceive('getOptionalPermissions')
+            ->with('test-plugin')
+            ->andReturn([]);
 
         // 多数の問題を含む監査結果
         PluginAudit::saveAuditResult('test-plugin', [
@@ -455,7 +485,15 @@ class PluginHealthScorerTest extends TestCase
 
         $this->permissionService
             ->shouldReceive('getPermissions')
-            ->andReturn([]);
+            ->andReturn(['database' => ['own_tables' => true]]);
+
+        // 監査結果を作成（前提条件充足）
+        PluginAudit::saveAuditResult('any-plugin', [
+            'has_mismatches' => false,
+            'mismatches' => [],
+            'matches_count' => 0,
+            'total_checked' => 5,
+        ]);
 
         $result = $this->scorer->calculate('any-plugin');
 
@@ -489,5 +527,355 @@ class PluginHealthScorerTest extends TestCase
             PluginHealthStatus::NeedsAttention,
             PluginHealthStatus::fromScore(100, hasCriticalIssue: true)
         );
+    }
+
+    // ====================================================================
+    // 新規テスト: NotVerified 前提条件
+    // ====================================================================
+
+    /**
+     * 監査未実行の場合はNotVerifiedを返すテスト
+     */
+    public function test_not_verified_when_no_audit(): void
+    {
+        $this->permissionService
+            ->shouldReceive('getPermissions')
+            ->with('test-plugin')
+            ->andReturn(['database' => ['own_tables' => true]]);
+
+        // 監査レコードなし → NotVerified
+        $result = $this->scorer->calculate('test-plugin');
+
+        $this->assertEquals(0, $result->score);
+        $this->assertEquals(PluginHealthStatus::NotVerified, $result->status);
+        $this->assertFalse($result->hasCriticalIssue);
+        $this->assertTrue($result->isNotVerified());
+
+        $types = array_map(fn ($i) => $i->type, $result->issues);
+        $this->assertContains('not_verified_no_scan', $types);
+    }
+
+    /**
+     * permissions未定義の場合はNotVerifiedを返すテスト
+     */
+    public function test_not_verified_when_no_permissions(): void
+    {
+        $this->permissionService
+            ->shouldReceive('getPermissions')
+            ->with('test-plugin')
+            ->andReturn(null);
+
+        // 監査は存在するがpermissions null → NotVerified
+        PluginAudit::saveAuditResult('test-plugin', [
+            'has_mismatches' => false,
+            'mismatches' => [],
+            'matches_count' => 0,
+            'total_checked' => 5,
+        ]);
+
+        $result = $this->scorer->calculate('test-plugin');
+
+        $this->assertEquals(0, $result->score);
+        $this->assertEquals(PluginHealthStatus::NotVerified, $result->status);
+        $this->assertTrue($result->isNotVerified());
+
+        $types = array_map(fn ($i) => $i->type, $result->issues);
+        $this->assertContains('not_verified_no_permissions', $types);
+    }
+
+    // ====================================================================
+    // 新規テスト: Trust Level 署名連動
+    // ====================================================================
+
+    /**
+     * 署名無効時のTrustLevel降格テスト
+     */
+    public function test_trust_level_downgrade_on_invalid_signature(): void
+    {
+        $this->assertEquals(
+            \App\Enums\PluginTrustLevel::Community,
+            \App\Enums\PluginTrustLevel::fromSignatureVerification('official', 'invalid')
+        );
+
+        $this->assertEquals(
+            \App\Enums\PluginTrustLevel::Community,
+            \App\Enums\PluginTrustLevel::fromSignatureVerification('official', 'expired')
+        );
+
+        $this->assertEquals(
+            \App\Enums\PluginTrustLevel::Community,
+            \App\Enums\PluginTrustLevel::fromSignatureVerification('verified', 'error')
+        );
+    }
+
+    /**
+     * 署名未設定時のTrustLevel降格テスト
+     */
+    public function test_trust_level_local_on_unsigned_signature(): void
+    {
+        $this->assertEquals(
+            \App\Enums\PluginTrustLevel::Local,
+            \App\Enums\PluginTrustLevel::fromSignatureVerification('official', 'unsigned')
+        );
+
+        $this->assertEquals(
+            \App\Enums\PluginTrustLevel::Local,
+            \App\Enums\PluginTrustLevel::fromSignatureVerification('verified', 'pending_verification')
+        );
+    }
+
+    /**
+     * 署名有効時のTrustLevel維持テスト
+     */
+    public function test_trust_level_preserved_on_valid_signature(): void
+    {
+        $result = \App\Enums\PluginTrustLevel::fromSignatureVerification('official', 'valid');
+        $this->assertNotEquals(\App\Enums\PluginTrustLevel::Community, $result);
+        $this->assertNotEquals(\App\Enums\PluginTrustLevel::Local, $result);
+    }
+
+    // ====================================================================
+    // 新規テスト: 環境依存ペナルティ
+    // ====================================================================
+
+    /**
+     * 本番環境での署名未署名ペナルティ -15 のテスト
+     */
+    public function test_signature_unsigned_production_penalty(): void
+    {
+        $this->app->detectEnvironment(fn () => 'production');
+
+        $this->permissionService
+            ->shouldReceive('getSignatureInfo')
+            ->with('test-plugin')
+            ->andReturn(['status' => 'unsigned']);
+
+        $this->permissionService
+            ->shouldReceive('getPermissions')
+            ->with('test-plugin')
+            ->andReturn(['database' => ['own_tables' => true]]);
+
+        PluginAudit::saveAuditResult('test-plugin', [
+            'has_mismatches' => false,
+            'mismatches' => [],
+            'matches_count' => 0,
+            'total_checked' => 5,
+        ]);
+
+        $result = $this->scorer->calculate('test-plugin');
+
+        // signature_unsigned_production: -15 → score = 85
+        $this->assertEquals(85, $result->score);
+        $this->assertEquals(PluginHealthStatus::Advisory, $result->status);
+
+        $types = array_map(fn ($i) => $i->type, $result->issues);
+        $this->assertContains('signature_unsigned_production', $types);
+        $this->assertNotContains('signature_unsigned', $types);
+    }
+
+    /**
+     * 非本番環境での署名未署名ペナルティ -5 のテスト
+     */
+    public function test_signature_unsigned_non_production_penalty(): void
+    {
+        $this->app->detectEnvironment(fn () => 'local');
+
+        $this->permissionService
+            ->shouldReceive('getSignatureInfo')
+            ->with('test-plugin')
+            ->andReturn(['status' => 'unsigned']);
+
+        $this->permissionService
+            ->shouldReceive('getPermissions')
+            ->with('test-plugin')
+            ->andReturn(['database' => ['own_tables' => true]]);
+
+        PluginAudit::saveAuditResult('test-plugin', [
+            'has_mismatches' => false,
+            'mismatches' => [],
+            'matches_count' => 0,
+            'total_checked' => 5,
+        ]);
+
+        $result = $this->scorer->calculate('test-plugin');
+
+        // signature_unsigned: -5 → score = 95
+        $this->assertEquals(95, $result->score);
+        $this->assertEquals(PluginHealthStatus::Healthy, $result->status);
+
+        $types = array_map(fn ($i) => $i->type, $result->issues);
+        $this->assertContains('signature_unsigned', $types);
+        $this->assertNotContains('signature_unsigned_production', $types);
+    }
+
+    // ====================================================================
+    // 新規テスト: CSP インラインCSS減点
+    // ====================================================================
+
+    /**
+     * インラインCSS必須時の減点テスト
+     */
+    public function test_csp_inline_css_deduction(): void
+    {
+        $this->permissionService
+            ->shouldReceive('getSignatureInfo')
+            ->with('test-plugin')
+            ->andReturn(['status' => 'valid']);
+
+        $this->permissionService
+            ->shouldReceive('getPermissions')
+            ->with('test-plugin')
+            ->andReturn(['database' => ['own_tables' => true]]);
+
+        PluginAudit::saveAuditResult('test-plugin', [
+            'has_mismatches' => false,
+            'mismatches' => [],
+            'matches_count' => 0,
+            'total_checked' => 5,
+            'csp_requires_inline_css' => true,
+        ]);
+
+        $result = $this->scorer->calculate('test-plugin');
+
+        // csp_inline_css_required: -5 → score = 95
+        $this->assertEquals(95, $result->score);
+
+        $types = array_map(fn ($i) => $i->type, $result->issues);
+        $this->assertContains('csp_inline_css_required', $types);
+    }
+
+    // ====================================================================
+    // 新規テスト: EnableAction 判定
+    // ====================================================================
+
+    /**
+     * 致命的問題時にBlockedを返すテスト
+     */
+    public function test_enable_action_blocked_on_critical(): void
+    {
+        $result = new HealthScoreResult(
+            score: 80,
+            status: PluginHealthStatus::NeedsAttention,
+            issues: [],
+            hasCriticalIssue: true,
+        );
+
+        $action = $this->scorer->determineEnableAction($result);
+
+        $this->assertEquals(\App\Enums\PluginEnableAction::Blocked, $action);
+    }
+
+    /**
+     * 低スコア時にBlockedを返すテスト
+     */
+    public function test_enable_action_blocked_on_low_score(): void
+    {
+        $result = new HealthScoreResult(
+            score: 40,
+            status: PluginHealthStatus::NeedsAttention,
+            issues: [],
+            hasCriticalIssue: false,
+        );
+
+        $action = $this->scorer->determineEnableAction($result);
+
+        $this->assertEquals(\App\Enums\PluginEnableAction::Blocked, $action);
+    }
+
+    /**
+     * 健全時にAllowedを返すテスト
+     */
+    public function test_enable_action_allowed(): void
+    {
+        $result = new HealthScoreResult(
+            score: 95,
+            status: PluginHealthStatus::Healthy,
+            issues: [],
+            hasCriticalIssue: false,
+        );
+
+        $action = $this->scorer->determineEnableAction($result);
+
+        $this->assertEquals(\App\Enums\PluginEnableAction::Allowed, $action);
+    }
+
+    /**
+     * 軽微問題時にWarningRequiredを返すテスト
+     */
+    public function test_enable_action_warning_required(): void
+    {
+        $result = new HealthScoreResult(
+            score: 80,
+            status: PluginHealthStatus::Advisory,
+            issues: [],
+            hasCriticalIssue: false,
+        );
+
+        $action = $this->scorer->determineEnableAction($result);
+
+        $this->assertEquals(\App\Enums\PluginEnableAction::WarningRequired, $action);
+    }
+
+    /**
+     * 中程度の問題時にAcknowledgementRequiredを返すテスト
+     */
+    public function test_enable_action_acknowledgement_required(): void
+    {
+        $result = new HealthScoreResult(
+            score: 55,
+            status: PluginHealthStatus::NeedsAttention,
+            issues: [],
+            hasCriticalIssue: false,
+        );
+
+        $action = $this->scorer->determineEnableAction($result);
+
+        $this->assertEquals(\App\Enums\PluginEnableAction::AcknowledgementRequired, $action);
+    }
+
+    // ====================================================================
+    // 新規テスト: ファイルハッシュ再スキャン判定
+    // ====================================================================
+
+    /**
+     * 監査結果がない場合はneedsRescanがtrueを返すテスト
+     */
+    public function test_needs_rescan_when_no_audit(): void
+    {
+        $this->assertTrue($this->scorer->needsRescan('nonexistent-plugin'));
+    }
+
+    /**
+     * files_hashがnullの場合はneedsRescanがtrueを返すテスト
+     */
+    public function test_needs_rescan_when_no_hash(): void
+    {
+        PluginAudit::saveAuditResult('test-plugin', [
+            'has_mismatches' => false,
+            'mismatches' => [],
+            'matches_count' => 0,
+            'total_checked' => 5,
+            'files_hash' => null,
+        ]);
+
+        $this->assertTrue($this->scorer->needsRescan('test-plugin'));
+    }
+
+    /**
+     * ファイルハッシュ不一致の場合はneedsRescanがtrueを返すテスト
+     */
+    public function test_needs_rescan_detects_file_changes(): void
+    {
+        PluginAudit::saveAuditResult('test-plugin', [
+            'has_mismatches' => false,
+            'mismatches' => [],
+            'matches_count' => 0,
+            'total_checked' => 5,
+            'files_hash' => 'old_hash_value_that_does_not_match',
+        ]);
+
+        // プラグインディレクトリが存在しない場合、computeFilesHash は空文字を返す
+        // 'old_hash_value...' !== '' → true
+        $this->assertTrue($this->scorer->needsRescan('test-plugin'));
     }
 }

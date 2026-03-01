@@ -24,8 +24,13 @@ namespace App\Services\Plugin;
 
 use App\DTO\Plugin\HealthIssue;
 use App\DTO\Plugin\HealthScoreResult;
+use App\Enums\PluginEnableAction;
 use App\Enums\PluginHealthStatus;
 use App\Models\PluginAudit;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 /**
  * プラグイン健全性スコアの唯一の計算元
@@ -57,6 +62,38 @@ class PluginHealthScorer
      */
     public function calculate(string $pluginSlug): HealthScoreResult
     {
+        // 前提条件チェック: NotVerified判定
+        $audit = PluginAudit::getBySlug($pluginSlug);
+        $permissions = $this->permissionService->getPermissions($pluginSlug);
+
+        if ($audit === null || $audit->audited_at === null) {
+            return new HealthScoreResult(
+                score: 0,
+                status: PluginHealthStatus::NotVerified,
+                issues: [new HealthIssue(
+                    type: 'not_verified_no_scan',
+                    severity: 'warning',
+                    description: '監査スキャンが未実行です。',
+                    deduction: 0,
+                )],
+                hasCriticalIssue: false,
+            );
+        }
+
+        if ($permissions === null) {
+            return new HealthScoreResult(
+                score: 0,
+                status: PluginHealthStatus::NotVerified,
+                issues: [new HealthIssue(
+                    type: 'not_verified_no_permissions',
+                    severity: 'warning',
+                    description: 'permissions セクションが未定義です。',
+                    deduction: 0,
+                )],
+                hasCriticalIssue: false,
+            );
+        }
+
         $deductionRules = PluginHealthStatus::getDeductionRules();
         $issues = [];
 
@@ -104,11 +141,18 @@ class PluginHealthScorer
         $signatureInfo = $this->permissionService->getSignatureInfo($pluginSlug);
 
         if ($signatureInfo['status'] === 'unsigned') {
+            $isProduction = app()->environment('production');
+            $deduction = $isProduction
+                ? ($deductionRules['signature_unsigned_production'] ?? -15)
+                : ($deductionRules['signature_unsigned'] ?? -5);
+
             $issues[] = new HealthIssue(
-                type: 'signature_unsigned',
-                severity: 'info',
-                description: '署名がありません。本番配布時は署名を推奨します。',
-                deduction: $deductionRules['signature_unsigned'] ?? -5,
+                type: $isProduction ? 'signature_unsigned_production' : 'signature_unsigned',
+                severity: $isProduction ? 'warning' : 'info',
+                description: $isProduction
+                    ? '本番環境で署名がありません。署名を強く推奨します。'
+                    : '署名がありません。本番配布時は署名を推奨します。',
+                deduction: $deduction,
             );
         } elseif ($signatureInfo['status'] === 'invalid') {
             $issues[] = new HealthIssue(
@@ -198,6 +242,16 @@ class PluginHealthScorer
 
         if ($audit === null) {
             return $issues;
+        }
+
+        // インラインCSS必須の場合
+        if ($audit->csp_requires_inline_css) {
+            $issues[] = new HealthIssue(
+                type: 'csp_inline_css_required',
+                severity: 'info',
+                description: 'インラインCSSが必要です。厳格モードでは動作しない可能性があります。',
+                deduction: $deductionRules['csp_inline_css_required'] ?? -5,
+            );
         }
 
         // インラインJS必須の場合
@@ -336,5 +390,73 @@ class PluginHealthScorer
     protected function isDangerousApiPermission(string $permission): bool
     {
         return str_starts_with($permission, 'dangerous_api.');
+    }
+
+    /**
+     * 健全性スコアに基づいて有効化アクションを判定
+     */
+    public function determineEnableAction(HealthScoreResult $result): PluginEnableAction
+    {
+        if ($result->hasCriticalIssue || $result->score < 50) {
+            return PluginEnableAction::Blocked;
+        }
+
+        return match (true) {
+            $result->score >= 90 => PluginEnableAction::Allowed,
+            $result->score >= 70 => PluginEnableAction::WarningRequired,
+            default => PluginEnableAction::AcknowledgementRequired,
+        };
+    }
+
+    /**
+     * プラグインのコードファイルのハッシュを計算（再スキャン判定用）
+     */
+    public function computeFilesHash(string $pluginSlug): string
+    {
+        $pluginName = Str::studly(str_replace('-', '_', $pluginSlug));
+        $pluginPath = base_path("plugins/{$pluginName}");
+
+        if (! File::isDirectory($pluginPath)) {
+            return '';
+        }
+
+        $hashes = [];
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($pluginPath, RecursiveDirectoryIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if (! $file->isFile()) {
+                continue;
+            }
+
+            $ext = $file->getExtension();
+            $filename = $file->getFilename();
+
+            // PHP, JS, Blade ファイルを対象
+            if ($ext === 'php' || $ext === 'js' || str_ends_with($filename, '.blade.php')) {
+                $hashes[] = md5_file($file->getPathname());
+            }
+        }
+
+        sort($hashes);
+
+        return md5(implode('', $hashes));
+    }
+
+    /**
+     * プラグインが再スキャンを必要とするかどうか
+     */
+    public function needsRescan(string $pluginSlug): bool
+    {
+        $audit = PluginAudit::getBySlug($pluginSlug);
+
+        if ($audit === null || $audit->files_hash === null) {
+            return true;
+        }
+
+        $currentHash = $this->computeFilesHash($pluginSlug);
+
+        return $currentHash !== $audit->files_hash;
     }
 }

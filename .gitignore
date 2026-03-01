@@ -60,6 +60,7 @@ plugins/*
 !plugins/DixlaseBackup/
 !plugins/DixlaseMultilingual/
 themes/*
+!themes/DixlaseDefaultTheme/
 
 license-info.json
 license.txt
