@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,8 +18,6 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
- *
- * @internal コア専用。プラグイン/テーマから参照しないこと
  */
 
 use App\Services\Plugin\PluginPermissionService;

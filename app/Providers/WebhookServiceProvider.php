@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -69,7 +69,7 @@ class WebhookServiceProvider extends ServiceProvider
         foreach ($events as $event) {
             Event::listen($event, function ($payload = []) use ($event) {
                 // Ensure payload is an array
-                if (!is_array($payload)) {
+                if (! is_array($payload)) {
                     $payload = ['data' => $payload];
                 }
 
