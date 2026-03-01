@@ -1,6 +1,6 @@
 # セーフモードガイド
 
-> **[English version](../../settings/security/safe-mode-guide.md)**
+> **[English version](../../operations/emergency/safe-mode-guide.md)**
 
 ## 概要
 

@@ -541,7 +541,7 @@ docker exec dixlase-laravel.test-1 php artisan dls:admin:captcha-bypass status
 
 ## 7. 関連ドキュメント
 
-- [CAPTCHA実装ガイド](../settings/security/captcha-usage.md) - CAPTCHA機能の基本的な使い方
+- [CAPTCHA実装ガイド](../security/captcha-usage.md) - CAPTCHA機能の基本的な使い方
 - [セキュリティ設定ガイド](./security-settings.md) - 管理画面でのCAPTCHA設定
 - [監査ログガイド](./audit-logs.md) - 監査ログの確認方法
 
