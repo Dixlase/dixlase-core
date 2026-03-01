@@ -33,7 +33,7 @@ To use Alpine.js v3, Standard Mode permits `unsafe-eval` in a limited manner. Th
 2. Ensuring compatibility with third-party plugins
 3. Improving developer experience
 
-In future versions (v2.0 and beyond), migration to Alpine.js CSP Build will be considered with the goal of completely eliminating `unsafe-eval`. New code should follow the **[Alpine.js CSP-Compatible Coding Rules](../../security/alpine-csp-coding-rules.md)**.
+In future versions (v2.0 and beyond), migration to Alpine.js CSP Build will be considered with the goal of completely eliminating `unsafe-eval`. New code should follow the **[Alpine.js CSP-Compatible Coding Rules](../../development/security/alpine-csp-coding-rules.md)**.
 
 ### Nonce-Based Approach
 
@@ -217,7 +217,7 @@ Eliminates the need for inline execution including in the admin panel, maximizin
 
 If you cannot access the admin panel due to CSP configuration issues, **CSP Safe Mode** (`?safe=csp`) can temporarily disable CSP headers.
 
-CSP Safe Mode is part of the Dixlase multi-level safe mode system. For details including plugin and theme safe modes, see the **[Safe Mode Guide](safe-mode-guide.md)**.
+CSP Safe Mode is part of the Dixlase multi-level safe mode system. For details including plugin and theme safe modes, see the **[Safe Mode Guide](../emergency/safe-mode-guide.md)**.
 
 ### Activating CSP Safe Mode
 
@@ -637,7 +637,7 @@ CSP violation logs can be viewed under the "CSP Violations" tab in "Global Setti
 
 #### Method 1: Use Safe Mode (Recommended)
 
-Append `?safe=csp` to the URL to enable CSP Safe Mode. See the **[Safe Mode Guide](safe-mode-guide.md)** for details.
+Append `?safe=csp` to the URL to enable CSP Safe Mode. See the **[Safe Mode Guide](../emergency/safe-mode-guide.md)** for details.
 
 #### Method 2: Disable from Admin Panel
 
@@ -726,7 +726,7 @@ document.addEventListener('DOMContentLoaded', function() {
 These files are included as build targets in `vite.config.js` and work in CSP Strict Mode.
 
 ### Q5. What is Safe Mode?
-**A:** It is a recovery feature for when you cannot access the admin panel or frontend due to CSP, plugin, or theme issues. CSP Safe Mode (`?safe=csp`) temporarily disables CSP, Plugin Safe Mode (`?safe=plugins`) disables plugin routes and assets, and Theme Safe Mode (`?safe=theme`) renders the frontend with a minimal layout. See the **[Safe Mode Guide](safe-mode-guide.md)** for details.
+**A:** It is a recovery feature for when you cannot access the admin panel or frontend due to CSP, plugin, or theme issues. CSP Safe Mode (`?safe=csp`) temporarily disables CSP, Plugin Safe Mode (`?safe=plugins`) disables plugin routes and assets, and Theme Safe Mode (`?safe=theme`) renders the frontend with a minimal layout. See the **[Safe Mode Guide](../emergency/safe-mode-guide.md)** for details.
 
 ### Q6. What happens if I don't confirm within 10 seconds after saving CSP settings?
 **A:** The settings are automatically rolled back to the previous configuration and CSP Safe Mode is enabled. This prevents being locked out of the admin panel due to incorrect settings.
@@ -750,7 +750,7 @@ These files are included as build targets in `vite.config.js` and work in CSP St
 ### Phase 2.5: Apply Alpine CSP-Compatible Coding Rules (Current)
 - Write new code using Alpine CSP Build-compatible patterns
 - `Alpine.data()`-based component design
-- See **[Alpine.js CSP-Compatible Coding Rules](../../security/alpine-csp-coding-rules.md)** for details
+- See **[Alpine.js CSP-Compatible Coding Rules](../../development/security/alpine-csp-coding-rules.md)** for details
 
 ### Phase 3: Migrate to Alpine CSP Build (Future)
 - Switch to the `@alpinejs/csp` package
@@ -769,6 +769,6 @@ These files are included as build targets in `vite.config.js` and work in CSP St
 - [CSP Level 3 Specification](https://www.w3.org/TR/CSP3/)
 - [Google CSP Evaluator](https://csp-evaluator.withgoogle.com/)
 - [MDN: Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
-- [Alpine.js CSP-Compatible Coding Rules](../../security/alpine-csp-coding-rules.md)
-- [Plugin Permission Infrastructure Guidelines](../../plugins/permission-guidelines.md)
-- [Security Settings Guide](../../security/security-settings-registry.md)
+- [Alpine.js CSP-Compatible Coding Rules](../../development/security/alpine-csp-coding-rules.md)
+- [Plugin Permission Infrastructure Guidelines](../../development/plugins/permission-guidelines.md)
+- [Security Settings Guide](../../development/security/security-settings-registry.md)

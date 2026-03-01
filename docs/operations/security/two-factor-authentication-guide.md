@@ -3,8 +3,8 @@
 This document is a practical guide for using Dixlase's two-factor authentication system in plugins and custom implementations.
 
 > **Related Documentation**
-> - [2FA Architecture](../../two-factor/two-factor-authentication-architecture.md) - Technical specifications and details
-> - [UI Components](../../two-factor/two-factor-ui-components.md) - Frontend implementation
+> - [2FA Architecture](../../development/two-factor/two-factor-authentication-architecture.md) - Technical specifications and details
+> - [UI Components](../../development/two-factor/two-factor-ui-components.md) - Frontend implementation
 
 ---
 
@@ -1049,5 +1049,5 @@ By following this guide, you can easily add secure and user-friendly 2FA functio
 
 ## Related Documentation
 
-- [2FA Architecture](../../two-factor/two-factor-authentication-architecture.md) - Technical specifications and details
-- [UI Components](../../two-factor/two-factor-ui-components.md) - Frontend implementation
+- [2FA Architecture](../../development/two-factor/two-factor-authentication-architecture.md) - Technical specifications and details
+- [UI Components](../../development/two-factor/two-factor-ui-components.md) - Frontend implementation

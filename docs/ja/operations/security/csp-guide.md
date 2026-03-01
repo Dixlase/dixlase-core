@@ -33,7 +33,7 @@ Alpine.js v3を使用するため、標準モードでは`unsafe-eval`を限定�
 2. サードパーティプラグインとの互換性確保
 3. 開発者体験の向上
 
-将来のバージョン（v2.0以降）でAlpine.js CSP Buildへの移行を検討し、`unsafe-eval`の完全排除を目指します。新規コードは **[Alpine.js CSP互換コーディングルール](../../security/alpine-csp-coding-rules.md)** に従って記述してください。
+将来のバージョン（v2.0以降）でAlpine.js CSP Buildへの移行を検討し、`unsafe-eval`の完全排除を目指します。新規コードは **[Alpine.js CSP互換コーディングルール](../../development/security/alpine-csp-coding-rules.md)** に従って記述してください。
 
 ### Nonce方式
 
@@ -217,7 +217,7 @@ CSP Readyなテーマ/プラグインのみで、最大限の防御を実現。
 
 CSP設定の問題で管理画面にアクセスできなくなった場合、**CSPセーフモード**（`?safe=csp`）で一時的にCSPヘッダーを無効化できます。
 
-CSPセーフモードは、Dixlaseのマルチレベルセーフモードシステムの一部です。プラグインやテーマのセーフモードを含む詳細は **[セーフモードガイド](safe-mode-guide.md)** を参照してください。
+CSPセーフモードは、Dixlaseのマルチレベルセーフモードシステムの一部です。プラグインやテーマのセーフモードを含む詳細は **[セーフモードガイド](../emergency/safe-mode-guide.md)** を参照してください。
 
 ### CSPセーフモードの発動
 
@@ -637,7 +637,7 @@ CSP違反ログは「全体設定 > システム > ログ」の「CSP違反」�
 
 #### 方法1: セーフモードを使用（推奨）
 
-URLに `?safe=csp` を追加してCSPセーフモードを有効化します。詳しくは **[セーフモードガイド](safe-mode-guide.md)** を参照してください。
+URLに `?safe=csp` を追加してCSPセーフモードを有効化します。詳しくは **[セーフモードガイド](../emergency/safe-mode-guide.md)** を参照してください。
 
 #### 方法2: 管理画面から無効化
 
@@ -726,7 +726,7 @@ document.addEventListener('DOMContentLoaded', function() {
 これらのファイルは`vite.config.js`でビルド対象に含まれ、CSP厳格モードでも動作します。
 
 ### Q5. セーフモードとは何ですか？
-**A:** Dixlaseにはマルチレベルセーフモードがあります。CSPセーフモード（`?safe=csp`）はCSPヘッダーを一時的に無効化し、プラグインセーフモード（`?safe=plugins`）はプラグインルート/アセットを無効化し、テーマセーフモード（`?safe=theme`）はテーマを無効化します。詳しくは **[セーフモードガイド](safe-mode-guide.md)** を参照してください。
+**A:** Dixlaseにはマルチレベルセーフモードがあります。CSPセーフモード（`?safe=csp`）はCSPヘッダーを一時的に無効化し、プラグインセーフモード（`?safe=plugins`）はプラグインルート/アセットを無効化し、テーマセーフモード（`?safe=theme`）はテーマを無効化します。詳しくは **[セーフモードガイド](../emergency/safe-mode-guide.md)** を参照してください。
 
 ### Q6. CSP設定を保存後、10秒以内に確認しないとどうなる？
 **A:** 自動的に前の設定にロールバックされ、CSPセーフモードが有効になります。これにより、誤った設定で管理画面にアクセスできなくなることを防ぎます。
@@ -750,7 +750,7 @@ document.addEventListener('DOMContentLoaded', function() {
 ### フェーズ2.5: Alpine CSP互換コーディングルールの適用（現在）
 - 新規コードをAlpine CSP Build互換パターンで記述
 - `Alpine.data()`ベースのコンポーネント設計
-- 詳細は **[Alpine.js CSP互換コーディングルール](../../security/alpine-csp-coding-rules.md)** を参照
+- 詳細は **[Alpine.js CSP互換コーディングルール](../../development/security/alpine-csp-coding-rules.md)** を参照
 
 ### フェーズ3: Alpine CSP Buildへの移行（将来）
 - `@alpinejs/csp`パッケージへの切り替え
@@ -769,6 +769,6 @@ document.addEventListener('DOMContentLoaded', function() {
 - [CSP Level 3 仕様](https://www.w3.org/TR/CSP3/)
 - [Google CSP Evaluator](https://csp-evaluator.withgoogle.com/)
 - [MDN: Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
-- [Alpine.js CSP互換コーディングルール](../../security/alpine-csp-coding-rules.md)
-- [プラグイン権限基盤ガイドライン](../../plugins/permission-guidelines.md)
-- [セキュリティ設定ガイド](../../security/security-settings-registry.md)
+- [Alpine.js CSP互換コーディングルール](../../development/security/alpine-csp-coding-rules.md)
+- [プラグイン権限基盤ガイドライン](../../development/plugins/permission-guidelines.md)
+- [セキュリティ設定ガイド](../../development/security/security-settings-registry.md)

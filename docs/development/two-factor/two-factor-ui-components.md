@@ -4,7 +4,7 @@ This document explains how to use the UI components for Dixlase's two-factor aut
 
 > **Related Documentation**
 > - [2FA Architecture](./two-factor-authentication-architecture.md) - Technical specifications and details
-> - [2FA Practical Guide](../settings/security/two-factor-authentication-guide.md) - Backend implementation
+> - [2FA Practical Guide](../../operations/security/two-factor-authentication-guide.md) - Backend implementation
 
 ---
 
@@ -687,4 +687,4 @@ By using these components, you can easily implement beautiful, consistent 2FA au
 ## Related Documentation
 
 - [2FA Architecture](./two-factor-authentication-architecture.md) - Technical specifications and details
-- [2FA Practical Guide](../settings/security/two-factor-authentication-guide.md) - Backend implementation
+- [2FA Practical Guide](../../operations/security/two-factor-authentication-guide.md) - Backend implementation
