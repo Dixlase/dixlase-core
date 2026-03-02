@@ -47,6 +47,8 @@ class FrontPage extends Model
         'lang',
         'title',
         'content',
+        'custom_js',
+        'custom_css',
         'storage_type',
         'editor_type',
         'status',

@@ -44,6 +44,12 @@ return [
         'content_label' => 'Content',
         'content_placeholder' => 'Enter your front page content...',
 
+        'tab_content' => 'Content',
+        'tab_css' => 'CSS',
+        'tab_js' => 'JavaScript',
+        'custom_css_placeholder' => 'Enter custom CSS styles...',
+        'custom_js_placeholder' => 'Enter custom JavaScript...',
+
         'storage_section' => 'Storage',
         'storage_type_label' => 'Storage Type',
         'storage_file_path' => 'File path:',
@@ -64,6 +70,8 @@ return [
             'storage_type_required' => 'Please select a storage type.',
             'storage_type_in' => 'The selected storage type is not valid.',
             'content_max' => 'Content must not exceed 500,000 characters.',
+            'custom_js_max' => 'JavaScript must not exceed 500,000 characters.',
+            'custom_css_max' => 'CSS must not exceed 500,000 characters.',
         ],
     ],
 
@@ -76,6 +84,12 @@ return [
         'lang_label' => 'Language',
         'content_label' => 'Content',
         'content_placeholder' => 'Enter your front page content...',
+
+        'tab_content' => 'Content',
+        'tab_css' => 'CSS',
+        'tab_js' => 'JavaScript',
+        'custom_css_placeholder' => 'Enter custom CSS styles...',
+        'custom_js_placeholder' => 'Enter custom JavaScript...',
 
         'storage_section' => 'Storage',
         'storage_type_label' => 'Storage Type',
@@ -93,6 +107,8 @@ return [
             'storage_type_required' => 'Please select a storage type.',
             'storage_type_in' => 'The selected storage type is not valid.',
             'content_max' => 'Content must not exceed 500,000 characters.',
+            'custom_js_max' => 'JavaScript must not exceed 500,000 characters.',
+            'custom_css_max' => 'CSS must not exceed 500,000 characters.',
         ],
     ],
 

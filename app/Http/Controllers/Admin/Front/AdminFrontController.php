@@ -24,6 +24,7 @@ namespace App\Http\Controllers\Admin\Front;
 
 use App\Contracts\Repositories\FrontSettingRepositoryInterface;
 use App\Enums\ContentEditorType;
+use App\Enums\ContentStatus;
 use App\Enums\ContentStorageType;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Front\AdminFrontCreateRequest;
@@ -96,7 +97,7 @@ class AdminFrontController extends AdminLoggedInController
         $this->viewParams['storageOptions'] = ContentStorageType::optionsWithDescription();
         $this->viewParams['templates'] = $templates;
         $this->viewParams['defaultLang'] = $userLocale;
-        $this->viewParams['defaultStorageType'] = ContentStorageType::DATABASE->value;
+        $this->viewParams['defaultStorageType'] = ContentStorageType::DATABASE->slug();
         $this->viewParams['fileStorageBasePath'] = 'storage/app/private/'.$this->contentService->getBasePath();
 
         return view('admin::front/create', $this->viewParams);
@@ -109,17 +110,37 @@ class AdminFrontController extends AdminLoggedInController
     {
         $validated = $request->validated();
 
-        $storageType = $validated['storage_type'];
+        $storageTypeEnum = ContentStorageType::fromSlug($validated['storage_type']);
+        $editorTypeEnum = ContentEditorType::fromSlug($validated['editor_type']);
+        $editorTypeSlug = $editorTypeEnum->slug();
         $content = $validated['content'] ?? '';
+        $customJs = $validated['custom_js'] ?? null;
+        $customCss = $validated['custom_css'] ?? null;
+
+        // HTML エディタ以外は JS/CSS を無視
+        if ($editorTypeEnum !== ContentEditorType::HTML) {
+            $customJs = null;
+            $customCss = null;
+        }
 
         // ファイル保存の場合はファイルにも保存
-        if ($storageType === ContentStorageType::FILE->value) {
+        if ($storageTypeEnum === ContentStorageType::FILE) {
             $this->contentService->saveToFile(
                 'main_content',
                 $validated['lang'],
-                $validated['editor_type'],
+                $editorTypeSlug,
                 $content
             );
+
+            // HTML エディタ時は JS/CSS ファイルも保存
+            if ($editorTypeEnum === ContentEditorType::HTML) {
+                if ($customJs !== null && $customJs !== '') {
+                    $this->contentService->saveJsToFile('main_content', $validated['lang'], $customJs);
+                }
+                if ($customCss !== null && $customCss !== '') {
+                    $this->contentService->saveCssToFile('main_content', $validated['lang'], $customCss);
+                }
+            }
         }
 
         // コンテンツ作成（常にDBにもコンテンツを保存 = バックアップ）
@@ -127,9 +148,11 @@ class AdminFrontController extends AdminLoggedInController
             'page_type' => 'main_content',
             'lang' => $validated['lang'],
             'content' => $content,
-            'editor_type' => $validated['editor_type'],
-            'storage_type' => $storageType,
-            'status' => 'published',
+            'custom_js' => $customJs,
+            'custom_css' => $customCss,
+            'editor_type' => $editorTypeEnum,
+            'storage_type' => $storageTypeEnum,
+            'status' => ContentStatus::PUBLISHED,
         ]);
 
         return redirect()
@@ -160,16 +183,28 @@ class AdminFrontController extends AdminLoggedInController
             $fileContents = $this->contentService->loadFromFile(
                 'main_content',
                 $frontPage->lang,
-                $frontPage->editor_type->value
+                $frontPage->editor_type->slug()
             );
             if ($fileContents !== null) {
                 $body = $fileContents;
             }
         }
 
+        // HTML エディタ時は JS/CSS コンテンツも読み込む
+        $isHtmlEditor = $frontPage->editor_type === ContentEditorType::HTML;
+        $customJs = null;
+        $customCss = null;
+        if ($isHtmlEditor) {
+            $customJs = $this->contentService->getJsContent($frontPage, $frontPage->lang);
+            $customCss = $this->contentService->getCssContent($frontPage, $frontPage->lang);
+        }
+
         $this->viewParams['frontPage'] = $frontPage;
         $this->viewParams['body'] = old('content', $body);
-        $this->viewParams['editorType'] = $frontPage->editor_type->value;
+        $this->viewParams['customJs'] = old('custom_js', $customJs);
+        $this->viewParams['customCss'] = old('custom_css', $customCss);
+        $this->viewParams['isHtmlEditor'] = $isHtmlEditor;
+        $this->viewParams['editorType'] = $frontPage->editor_type->slug();
         $this->viewParams['editorTypeLabel'] = $editorTypeLabel;
         $this->viewParams['editorTypeIcon'] = $frontPage->editor_type->iconClass();
         $this->viewParams['editorTypeColor'] = $frontPage->editor_type->iconColor();
@@ -177,7 +212,7 @@ class AdminFrontController extends AdminLoggedInController
         $this->viewParams['langCode'] = $frontPage->lang;
         $this->viewParams['langName'] = $languages[$frontPage->lang] ?? $frontPage->lang;
         $this->viewParams['storageOptions'] = ContentStorageType::optionsWithDescription();
-        $this->viewParams['storageType'] = old('storage_type', $frontPage->storage_type->value);
+        $this->viewParams['storageType'] = old('storage_type', $frontPage->storage_type->slug());
         $this->viewParams['fileStorageBasePath'] = 'storage/app/private/'.$this->contentService->getBasePath();
 
         return view('admin::front/edit', $this->viewParams);
@@ -194,30 +229,56 @@ class AdminFrontController extends AdminLoggedInController
         }
 
         $validated = $request->validated();
-        $storageType = $validated['storage_type'];
-        $oldStorageType = $frontPage->storage_type->value;
-        $editorType = $frontPage->editor_type->value;
+        $newStorageTypeEnum = ContentStorageType::fromSlug($validated['storage_type']);
+        $oldStorageTypeEnum = $frontPage->storage_type;
+        $editorTypeSlug = $frontPage->editor_type->slug();
         $locale = $frontPage->lang;
         $content = $validated['content'] ?? '';
+        $isHtmlEditor = $frontPage->editor_type === ContentEditorType::HTML;
+        $customJs = $isHtmlEditor ? ($validated['custom_js'] ?? null) : null;
+        $customCss = $isHtmlEditor ? ($validated['custom_css'] ?? null) : null;
 
         // 保存方法が変更された場合の処理
-        if ($oldStorageType !== $storageType) {
-            if ($oldStorageType === ContentStorageType::FILE->value && $storageType === ContentStorageType::DATABASE->value) {
+        if ($oldStorageTypeEnum !== $newStorageTypeEnum) {
+            if ($oldStorageTypeEnum === ContentStorageType::FILE && $newStorageTypeEnum === ContentStorageType::DATABASE) {
                 // ファイル→DB: ファイルを削除（DBには常にバックアップがあるため読み込み不要）
-                $this->contentService->deleteFile('main_content', $locale, $editorType);
+                $this->contentService->deleteFile('main_content', $locale, $editorTypeSlug);
+                if ($isHtmlEditor) {
+                    $this->contentService->deleteJsFile('main_content', $locale);
+                    $this->contentService->deleteCssFile('main_content', $locale);
+                }
             }
         }
 
         // ファイル保存の場合はファイルにも保存
-        if ($storageType === ContentStorageType::FILE->value) {
-            $this->contentService->saveToFile('main_content', $locale, $editorType, $content);
+        if ($newStorageTypeEnum === ContentStorageType::FILE) {
+            $this->contentService->saveToFile('main_content', $locale, $editorTypeSlug, $content);
+
+            // HTML エディタ時は JS/CSS ファイルも保存
+            if ($isHtmlEditor) {
+                if ($customJs !== null && $customJs !== '') {
+                    $this->contentService->saveJsToFile('main_content', $locale, $customJs);
+                } else {
+                    $this->contentService->deleteJsFile('main_content', $locale);
+                }
+                if ($customCss !== null && $customCss !== '') {
+                    $this->contentService->saveCssToFile('main_content', $locale, $customCss);
+                } else {
+                    $this->contentService->deleteCssFile('main_content', $locale);
+                }
+            }
         }
 
         // ページを更新（常にDBにもコンテンツを保存 = バックアップ）
-        $frontPage->update([
+        $updateData = [
             'content' => $content,
-            'storage_type' => $storageType,
-        ]);
+            'storage_type' => $newStorageTypeEnum,
+        ];
+        if ($isHtmlEditor) {
+            $updateData['custom_js'] = $customJs;
+            $updateData['custom_css'] = $customCss;
+        }
+        $frontPage->update($updateData);
 
         return redirect()
             ->route('admin.front.edit')
@@ -237,8 +298,14 @@ class AdminFrontController extends AdminLoggedInController
                 $this->contentService->deleteFile(
                     'main_content',
                     $frontPage->lang,
-                    $frontPage->editor_type->value
+                    $frontPage->editor_type->slug()
                 );
+
+                // HTML エディタ時は JS/CSS ファイルも削除
+                if ($frontPage->editor_type === ContentEditorType::HTML) {
+                    $this->contentService->deleteJsFile('main_content', $frontPage->lang);
+                    $this->contentService->deleteCssFile('main_content', $frontPage->lang);
+                }
             }
 
             $frontPage->delete();

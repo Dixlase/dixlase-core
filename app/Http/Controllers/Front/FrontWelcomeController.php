@@ -22,6 +22,7 @@
 
 namespace App\Http\Controllers\Front;
 
+use App\Enums\ContentEditorType;
 use App\Models\FrontPage;
 use App\Services\FrontPageContentService;
 use Illuminate\Support\Facades\App;
@@ -49,14 +50,25 @@ class FrontWelcomeController extends FrontController
         $frontContent = null;
         $frontEditorType = 'html';
 
+        $frontCustomJs = null;
+        $frontCustomCss = null;
+
         if ($frontPage) {
             $locale = App::getLocale();
             $frontContent = $this->contentService->getContent($frontPage, $locale);
             $frontEditorType = $frontPage->editor_type->value ?? 'html';
+
+            // HTML エディタ時は JS/CSS コンテンツも取得
+            if ($frontPage->editor_type === ContentEditorType::HTML) {
+                $frontCustomJs = $this->contentService->getJsContent($frontPage, $locale);
+                $frontCustomCss = $this->contentService->getCssContent($frontPage, $locale);
+            }
         }
 
         $this->viewParams['frontContent'] = $frontContent;
         $this->viewParams['frontEditorType'] = $frontEditorType;
+        $this->viewParams['frontCustomJs'] = $frontCustomJs;
+        $this->viewParams['frontCustomCss'] = $frontCustomCss;
 
         return view('themes::index', $this->viewParams);
     }
