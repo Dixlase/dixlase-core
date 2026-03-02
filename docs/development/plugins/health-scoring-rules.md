@@ -14,9 +14,9 @@ Risk scoring evaluates the declared permissions in `plugin.json` / `theme.json`.
 
 | Total Score | Risk Level |
 |-------------|------------|
-| 0 – 1       | `low`      |
-| 2 – 4       | `medium`   |
-| 5+          | `high`     |
+| 0 – 2       | `low`      |
+| 3 – 6       | `medium`   |
+| 7+          | `high`     |
 
 ### Plugin Permission Scores
 
@@ -31,26 +31,21 @@ Risk scoring evaluates the declared permissions in `plugin.json` / `theme.json`.
 | `storage.public_uploads`        | +2    | Upload to public directory     |
 | `content.write_other_plugins`   | +2    | Write other plugin content     |
 
-#### Medium-Risk Permissions (score = 1)
-
-| Permission                      | Score | Description                    |
-|---------------------------------|-------|--------------------------------|
-| `mail.send`                     | +1    | Send individual emails         |
-| `settings.read_core`            | +1    | Read core settings             |
-| `system.register_middleware`    | +1    | Register middleware             |
-| `database.core_tables`          | +1    | Access core database tables    |
-
 #### Low-Risk Permissions (score = 0)
 
 | Permission                       | Score | Description                   |
 |----------------------------------|-------|-------------------------------|
 | `database.own_tables`            | 0     | Own database tables           |
+| `database.core_tables`           | 0     | Access core database tables   |
 | `storage.own_directory`          | 0     | Own storage directory         |
 | `storage.temp_files`             | 0     | Temporary files               |
+| `settings.read_core`             | 0     | Read core settings            |
 | `settings.write_own`             | 0     | Write own settings            |
 | `members.read`                   | 0     | Read member data              |
+| `mail.send`                      | 0     | Send individual emails        |
 | `content.read_other_plugins`     | 0     | Read other plugin content     |
 | `system.register_shortcodes`     | 0     | Register shortcodes           |
+| `system.register_middleware`     | 0     | Register middleware           |
 | `system.register_commands`       | 0     | Register commands             |
 | `system.register_blade_directives` | 0   | Register Blade directives     |
 | `system.modify_routes`           | 0     | Modify routes                 |
@@ -72,14 +67,11 @@ Themes use a different set of permissions with different scores.
 |---------------------------------|-------|--------------------------------|
 | `storage.public_uploads`        | +2    | Upload to public directory     |
 | `assets.external_resources`     | +3    | Load external resources        |
-| `database.core_tables`          | +2    | Access core database tables    |
 
 #### Medium-Risk Permissions (score = 1)
 
 | Permission                           | Score | Description                    |
 |--------------------------------------|-------|--------------------------------|
-| `settings.read_core`                 | +1    | Read core settings             |
-| `system.register_middleware`         | +1    | Register middleware             |
 | `system.register_commands`           | +1    | Register commands               |
 | `system.register_blade_directives`   | +1    | Register Blade directives       |
 | `system.modify_routes`              | +1    | Modify routes                   |
@@ -89,12 +81,15 @@ Themes use a different set of permissions with different scores.
 | Permission                  | Score | Description                   |
 |-----------------------------|-------|-------------------------------|
 | `database.own_tables`       | 0     | Own database tables           |
+| `database.core_tables`      | 0     | Access core database tables   |
 | `storage.own_directory`     | 0     | Own storage directory         |
 | `storage.temp_files`        | 0     | Temporary files               |
+| `settings.read_core`        | 0     | Read core settings            |
 | `settings.write_own`        | 0     | Write own settings            |
 | `assets.custom_css`         | 0     | Custom CSS                    |
 | `assets.custom_js`          | 0     | Custom JS                     |
 | `system.register_shortcodes`| 0     | Register shortcodes           |
+| `system.register_middleware`| 0     | Register middleware            |
 
 ---
 

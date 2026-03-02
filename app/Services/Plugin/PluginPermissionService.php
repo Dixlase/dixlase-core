@@ -512,11 +512,11 @@ class PluginPermissionService implements PluginPermissionServiceInterface
             $reasons[] = ['key' => 'mismatch.undeclared_usage', 'severity' => 'high', 'score' => $penalty, 'count' => $undeclaredCount];
         }
 
-        // 閾値判定
+        // しきい値判定
         $level = 'low';
-        if ($score >= 5) {
+        if ($score >= 7) {
             $level = 'high';
-        } elseif ($score >= 2) {
+        } elseif ($score >= 3) {
             $level = 'medium';
         }
 
@@ -565,28 +565,10 @@ class PluginPermissionService implements PluginPermissionServiceInterface
             $reasons[] = ['key' => 'content.write_other_plugins', 'severity' => 'high', 'score' => 2];
         }
 
-        // 中リスク権限（スコア1）
-        if ($permissions['mail']['send'] ?? false) {
-            $score += 1;
-            $reasons[] = ['key' => 'mail.send', 'severity' => 'medium', 'score' => 1];
-        }
-        if ($permissions['settings']['read_core'] ?? false) {
-            $score += 1;
-            $reasons[] = ['key' => 'settings.read_core', 'severity' => 'medium', 'score' => 1];
-        }
-        if ($permissions['system']['register_middleware'] ?? false) {
-            $score += 1;
-            $reasons[] = ['key' => 'system.register_middleware', 'severity' => 'medium', 'score' => 1];
-        }
-        if (! empty($permissions['database']['core_tables'] ?? [])) {
-            $score += 1;
-            $reasons[] = ['key' => 'database.core_tables', 'severity' => 'medium', 'score' => 1];
-        }
-
         $level = 'low';
-        if ($score >= 5) {
+        if ($score >= 7) {
             $level = 'high';
-        } elseif ($score >= 2) {
+        } elseif ($score >= 3) {
             $level = 'medium';
         }
 
