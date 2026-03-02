@@ -64,7 +64,7 @@ https://exc-d.com
         :dismissible="false"
         :closeOnly="true"
     >
-        <div id="themeAuditResultContent"></div>
+        <div id="themeAuditResultContent" class="text-left"></div>
         <x-slot:footer>
             <x-form-button
                 type="button"
