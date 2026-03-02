@@ -38,7 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
                 {{-- 言語選択 --}}
                 <div>
-                    <x-form-label :for="'lang'" :label="__('admin/front.create.lang_label')" />
+                    <x-form-label :for="'lang'" :text="__('admin/front.create.lang_label')" />
                     <x-form-select
                         id="lang"
                         name="lang"
@@ -51,7 +51,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 {{-- エディタータイプ --}}
                 <div>
-                    <x-form-label :label="__('admin/front.create.editor_type_label')" class="mb-3" />
+                    <x-form-label :text="__('admin/front.create.editor_type_label')" class="mb-3" />
                     <x-form-radio-card-group
                         name="editor_type"
                         :options="$editorCardOptions"
@@ -64,7 +64,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 {{-- コンテンツ --}}
                 <div>
-                    <x-form-label :for="'content'" :label="__('admin/front.create.content_label')" />
+                    <x-form-label :for="'content'" :text="__('admin/front.create.content_label')" />
                     <x-form-textarea
                         id="content"
                         name="content"
@@ -108,7 +108,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </h3>
 
                 <div>
-                    <x-form-label :label="__('admin/front.create.storage_type_label')" />
+                    <x-form-label :text="__('admin/front.create.storage_type_label')" />
                     <x-form-select
                         name="storage_type"
                         :options="collect($storageOptions)->mapWithKeys(fn ($opt, $key) => [$key => $opt['label']])->all()"
