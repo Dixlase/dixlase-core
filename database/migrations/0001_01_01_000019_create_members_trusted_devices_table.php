@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * 信頼済みデバイス管理テーブル
      * ゼロトラスト基盤の一部として、デバイスを識別し既知/未知を判定
      */
@@ -36,39 +36,39 @@ return new class extends Migration
     {
         Schema::create('members_trusted_devices', function (Blueprint $table) {
             $table->id();
-            
+
             // 所有者
             $table->unsignedBigInteger('member_id')->index();
-            
+
             // デバイス識別トークン（ハッシュ化して保存）
             $table->string('token', 255)->nullable()->index();
-            
+
             // デバイス名（ユーザーが識別しやすい名前）
             $table->string('device_name', 100)->nullable();
-            
+
             // アクセス元情報
             $table->string('ip_address', 45)->nullable(); // IPv6対応
             $table->text('user_agent')->nullable();
             $table->string('user_agent_hash', 64)->nullable(); // インデックス用ハッシュ
-            
+
             // 信頼レベル
             // trusted: 信頼済み（2FA完了後に登録）
             // unknown: 未知（初回アクセス）
             // blocked: ブロック済み（ユーザーが明示的にブロック）
             $table->string('trust_level', 20)->default('trusted');
-            
+
             // 初回アクセス時のIP（変更検知用）
             $table->string('first_ip', 45)->nullable();
-            
+
             // 最終アクセス時のIP
             $table->string('last_ip', 45)->nullable();
-            
+
             // 最終使用日時
             $table->timestamp('last_used_at')->nullable();
-            
+
             // 標準タイムスタンプ
             $table->timestamps();
-            
+
             // インデックス
             $table->index(['member_id', 'trust_level'], 'mtd_member_trust_idx');
             $table->index(['member_id', 'ip_address', 'user_agent_hash'], 'mtd_member_ip_ua_idx');

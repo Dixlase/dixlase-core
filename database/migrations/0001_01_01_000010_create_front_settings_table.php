@@ -3,8 +3,8 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -20,7 +20,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -32,21 +31,19 @@ return new class extends Migration
      *
      * @return void
      */
-
     protected $table = 'front_settings';
 
     public function up()
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string("name", 255);
-            $table->text("value")->nullable();
+            $table->string('name', 255);
+            $table->text('value')->nullable();
             $table->unsignedBigInteger('front_ogp_image_id')->nullable();
             $table->unsignedBigInteger('header_logo_id')->nullable();
             $table->unsignedBigInteger('favicon_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
-            
         });
     }
 
