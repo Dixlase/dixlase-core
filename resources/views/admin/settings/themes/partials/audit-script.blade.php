@@ -31,6 +31,8 @@ https://exc-d.com
             'unknown' => __('admin/settings/themes/index.permissions.health_not_verified'),
         ],
         'attentionReasonsTitle' => __('admin/settings/themes/index.permissions.attention_reasons_title'),
+        'permissionConsistencyTitle' => __('admin/settings/themes/index.permissions.permission_consistency_title'),
+        'totalRiskScoreLabel' => __('admin/settings/themes/index.permissions.total_risk_score'),
         'healthBadgeLabel' => __('admin/settings/themes/index.badge_labels.health'),
         'statsLabel' => __('admin/settings/themes/index.permissions.audit_stats'),
         'matchesLabel' => __('admin/settings/themes/index.permissions.audit_matches'),

@@ -162,6 +162,8 @@ return [
         'attention_reason_system_register_blade_directives' => 'Blade指令の登録権限を使用します',
         'attention_reason_system_modify_routes' => 'ルートの変更権限を使用します',
         'attention_reason_mismatch_undeclared_usage' => '未宣言の権限使用が検出されました（:count件）',
+        'permission_consistency_title' => '権限定義の整合性',
+        'total_risk_score' => 'リスクスコア合計',
         'install_warning_title' => 'インストール前の確認',
         'install_warning_notice' => 'このテーマには以下の確認事項があります：',
         'install_warning_undefined' => '権限情報が未定義です',

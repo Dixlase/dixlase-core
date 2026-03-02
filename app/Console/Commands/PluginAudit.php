@@ -253,6 +253,7 @@ class PluginAudit extends Command
             'matches' => $matches,
             'total_checked' => count($detectedPerms),
             'risk_level' => $riskResult['level'],
+            'risk_score' => $riskResult['score'],
             'risk_reasons' => $riskResult['reasons'],
         ];
     }

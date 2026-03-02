@@ -285,6 +285,8 @@ return [
         'audit_matches' => '一致',
         'audit_mismatches' => '不一致',
         'audit_mismatch_badge' => '不一致',
+        'permission_consistency_title' => '権限定義の整合性',
+        'total_risk_score' => 'リスクスコア合計',
         'no_permissions' => '権限情報が定義されていません',
         'details_title' => 'プラグイン詳細',
         'no_special_permissions' => '特別な権限はありません',

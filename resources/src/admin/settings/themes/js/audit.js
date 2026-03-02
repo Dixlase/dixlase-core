@@ -92,12 +92,30 @@ document.addEventListener('DOMContentLoaded', function () {
                             <li class="${r.color || 'text-yellow-700 dark:text-yellow-300'}">
                                 <i class="${r.icon || 'fas fa-info-circle'} mr-1"></i>
                                 ${r.text || ''}
+                                ${r.score ? `<span class="inline-flex items-center ml-1 px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200">+${r.score}</span>` : ''}
                             </li>
                         `).join('')}
                     </ul>
+                    ${(() => {
+                        const totalScore = attentionReasons.reduce((sum, r) => sum + (r.score || 0), 0);
+                        return totalScore > 0 ? `
+                            <div class="mt-2 pt-2 border-t border-yellow-200 dark:border-yellow-700 flex items-center justify-between">
+                                <span class="text-xs font-medium text-yellow-700 dark:text-yellow-300">${config.totalRiskScoreLabel || ''}</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${riskLevel === 'high' ? 'bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200' : riskLevel === 'medium' ? 'bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200' : 'bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200'}">${totalScore}</span>
+                            </div>
+                        ` : '';
+                    })()}
                 </div>
             `;
         }
+
+        // 権限定義の整合性セクション見出し
+        contentHtml += `
+            <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 mt-1">
+                <i class="fas fa-balance-scale mr-1"></i>
+                ${config.permissionConsistencyTitle || ''}
+            </p>
+        `;
 
         // 権限不一致の警告
         if (hasIssues) {
