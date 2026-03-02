@@ -51,4 +51,6 @@ return [
     'two_fa_disabled_notice' => '二段階認証管理を行うには、プロフィール設定で二段階認証を有効にしてください。',
     'passkey_disabled_notice' => 'パスキーが有効になっていないため、パスキーデバイスの管理はできません。',
     'passkey_no_devices_notice' => 'Passkey認証が有効になっていますが、まだデバイスが登録されていません。<a href=":url" class="underline font-semibold">二段階認証管理</a>でPasskeyデバイスを登録してください。',
+    'passkey_registered' => 'Passkeyデバイスが正常に登録されました。',
+    'passkey_deleted' => 'Passkeyデバイスを削除しました。',
 ];

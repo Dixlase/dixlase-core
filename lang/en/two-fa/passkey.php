@@ -24,7 +24,7 @@ return [
     // Passkey device not registered warning
     'device_not_registered_title' => 'No Passkey Device Registered',
     'device_not_registered_message' => 'You need to register a device to use Passkey authentication.<br>Please register a device from your profile page.<br>Until then, please use other authentication methods.',
-    
+
     // Passkey Authentication
     'title' => 'Passkey Authentication (Biometric)',
     'prompt' => 'Please use Passkey (biometric) authentication to log in.',
@@ -45,7 +45,7 @@ return [
     'auth_cancelled' => 'Authentication was cancelled',
     'invalid_state' => 'Authentication state is invalid',
     'auth_failed' => 'Biometric authentication failed',
-    
+
     // Biometric Authentication (Passkey)
     'https_required' => 'HTTPS connection required.',
     'challenge_generation_failed' => 'Failed to generate challenge.',
@@ -56,7 +56,12 @@ return [
     'revocation_failed' => 'Failed to delete biometric authentication.',
     'all_revoked_successfully' => 'All biometric authentications deleted (:count).',
     'revoke_all_failed' => 'Failed to delete all biometric authentications.',
-    
+
+    // Passkey device name modal
+    'device_name_title' => 'Register Passkey Device',
+    'device_name_message' => 'Please enter a name for this device to help identify it later.',
+    'device_name_label' => 'Device Name',
+
     // Passkey registration prompt modal
     'prompt_modal' => [
         'title' => 'We Recommend Registering Passkey (Biometric)',

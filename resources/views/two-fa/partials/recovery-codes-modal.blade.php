@@ -31,7 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $nextModal = $nextModal ?? null; // 次に開くモーダルのID
 @endphp
 
-<x-ui-modal :id="$modalId" :title="$error ? __('common.error') : ($title ?? __('two_fa.recovery_codes.title'))" :icon_type="$error ? 'danger' : 'warning'" :dismissible="false">
+<x-ui-modal :id="$modalId" :title="$error ? __('common.error') : ($title ?? __('two-fa/recovery-code.title'))" :icon_type="$error ? 'danger' : 'warning'" :dismissible="false">
     <div class="space-y-4" x-data="recoveryCodesModal(@js($modalId), @js($codes), @js($autoOpen), @js($clearSessionRoute), @js($nextModal))">
         @if($error)
             {{-- エラー表示モード --}}
@@ -47,7 +47,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                 <p class="text-sm text-blue-800 dark:text-blue-200">
                     <i class="fas fa-info-circle mr-2"></i>
-                    {{ __('two_fa.recovery_codes.auto_generated_message') }}
+                    {{ __('two-fa/recovery-code.auto_generated_message') }}
                 </p>
             </div>
             @endif
@@ -55,7 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
                 <p class="text-sm text-yellow-800 dark:text-yellow-200">
                     <i class="fas fa-exclamation-triangle mr-2"></i>
-                    {!! __('two_fa.recovery_codes.warning') !!}
+                    {!! __('two-fa/recovery-code.warning') !!}
                 </p>
             </div>
             
@@ -102,7 +102,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                     <span class="ml-3 text-sm text-red-800 dark:text-red-200 font-semibold">
                         <i class="fas fa-exclamation-circle mr-1"></i>
-                        {{ __('two_fa.recovery_codes.confirm_saved') }}
+                        {{ __('two-fa/recovery-code.confirm_saved') }}
                     </span>
                 </label>
             </div>

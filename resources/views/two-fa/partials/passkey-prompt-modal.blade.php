@@ -26,7 +26,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div x-data="passkeyPromptModal('{{ route('admin.profile.passkey-prompt.dismiss') }}', '{{ $modalId }}')">
     <x-ui-modal 
         :id="$modalId"
-        :title="__('two_fa.passkey_prompt.title')"
+        :title="__('two-fa/passkey.prompt_modal.title')"
         message=""
         icon-type="info"
         :dismissible="true"
@@ -35,13 +35,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @close="handleClose()">
         
         <div class="modal-message">
-            <p>{{ __('two_fa.passkey_prompt.message') }}</p>
+            <p>{{ __('two-fa/passkey.prompt_modal.message') }}</p>
         </div>
 
         <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <x-form-toggle
                 name="dont_show_again"
-                :label="__('two_fa.passkey_prompt.dont_show_again')"
+                :label="__('two-fa/passkey.prompt_modal.dont_show_again')"
                 x-model="dontShowAgain"
             />
         </div>
@@ -57,7 +57,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <x-form-button
                 type="link"
                 variant="primary"
-                :label="__('two_fa.passkey_prompt.register_now')"
+                :label="__('two-fa/passkey.prompt_modal.register_now')"
                 :href="route('admin.profile.two-fa-management')"
                 icon="fas fa-key"
                 class="mx-2"
