@@ -44,6 +44,12 @@ return [
         'content_label' => 'コンテンツ',
         'content_placeholder' => 'フロントページのコンテンツを入力...',
 
+        'tab_content' => 'コンテンツ',
+        'tab_css' => 'CSS',
+        'tab_js' => 'JavaScript',
+        'custom_css_placeholder' => 'カスタムCSSスタイルを入力...',
+        'custom_js_placeholder' => 'カスタムJavaScriptを入力...',
+
         'storage_section' => '保存設定',
         'storage_type_label' => '保存方法',
         'storage_file_path' => 'ファイルパス:',
@@ -64,6 +70,8 @@ return [
             'storage_type_required' => '保存方法を選択してください。',
             'storage_type_in' => '選択された保存方法は無効です。',
             'content_max' => 'コンテンツは500,000文字以内で入力してください。',
+            'custom_js_max' => 'JavaScriptは500,000文字以内で入力してください。',
+            'custom_css_max' => 'CSSは500,000文字以内で入力してください。',
         ],
     ],
 
@@ -76,6 +84,12 @@ return [
         'lang_label' => '言語',
         'content_label' => 'コンテンツ',
         'content_placeholder' => 'フロントページのコンテンツを入力...',
+
+        'tab_content' => 'コンテンツ',
+        'tab_css' => 'CSS',
+        'tab_js' => 'JavaScript',
+        'custom_css_placeholder' => 'カスタムCSSスタイルを入力...',
+        'custom_js_placeholder' => 'カスタムJavaScriptを入力...',
 
         'storage_section' => '保存設定',
         'storage_type_label' => '保存方法',
@@ -93,6 +107,8 @@ return [
             'storage_type_required' => '保存方法を選択してください。',
             'storage_type_in' => '選択された保存方法は無効です。',
             'content_max' => 'コンテンツは500,000文字以内で入力してください。',
+            'custom_js_max' => 'JavaScriptは500,000文字以内で入力してください。',
+            'custom_css_max' => 'CSSは500,000文字以内で入力してください。',
         ],
     ],
 

@@ -21,10 +21,11 @@ function createFrontPageCreate(config) {
         templates: config.templates,
         storageType: config.defaultStorageType || 'database',
         fileStorageBasePath: config.fileStorageBasePath || '',
+        activeTab: 'content',
 
-        // 右サイドバー制御
-        rightSidebarCollapsed: false,
-        rightSidebarReady: false,
+        get isHtmlEditor() {
+            return this.editorType === 'html';
+        },
 
         get isFileStorage() {
             return this.storageType === 'file';
@@ -41,20 +42,39 @@ function createFrontPageCreate(config) {
             return this.fileStorageBasePath + '/content.' + this.lang + '.' + ext;
         },
 
+        get jsFilePath() {
+            if (!this.isFileStorage || !this.isHtmlEditor) {
+                return '';
+            }
+            if (this.lang === 'en') {
+                return this.fileStorageBasePath + '/script.js';
+            }
+            return this.fileStorageBasePath + '/script.' + this.lang + '.js';
+        },
+
+        get cssFilePath() {
+            if (!this.isFileStorage || !this.isHtmlEditor) {
+                return '';
+            }
+            if (this.lang === 'en') {
+                return this.fileStorageBasePath + '/style.css';
+            }
+            return this.fileStorageBasePath + '/style.' + this.lang + '.css';
+        },
+
         init() {
             this.$dispatch('right-sidebar-active');
             this.$watch('lang', () => this.applyTemplate());
-            this.$watch('editorType', () => this.applyTemplate());
+            this.$watch('editorType', (value) => {
+                this.applyTemplate();
+                if (value !== 'html') {
+                    this.activeTab = 'content';
+                }
+            });
 
-            // 右サイドバーのトランジションを有効化
             this.$nextTick(() => {
-                this.rightSidebarReady = true;
                 this.applyTemplate();
             });
-        },
-
-        toggleRightSidebar() {
-            this.rightSidebarCollapsed = !this.rightSidebarCollapsed;
         },
 
         applyTemplate() {
@@ -79,10 +99,11 @@ function createFrontPageEditor(config) {
         fileStorageBasePath: config.fileStorageBasePath || '',
         editorType: config.editorType || 'html',
         langCode: config.langCode || 'en',
+        activeTab: 'content',
 
-        // 右サイドバー制御
-        rightSidebarCollapsed: false,
-        rightSidebarReady: false,
+        get isHtmlEditor() {
+            return this.editorType === 'html';
+        },
 
         get isFileStorage() {
             return this.storageType === 'file';
@@ -99,17 +120,28 @@ function createFrontPageEditor(config) {
             return this.fileStorageBasePath + '/content.' + this.langCode + '.' + ext;
         },
 
-        init() {
-            this.$dispatch('right-sidebar-active');
-
-            // 右サイドバーのトランジションを有効化
-            this.$nextTick(() => {
-                this.rightSidebarReady = true;
-            });
+        get jsFilePath() {
+            if (!this.isFileStorage || !this.isHtmlEditor) {
+                return '';
+            }
+            if (this.langCode === 'en') {
+                return this.fileStorageBasePath + '/script.js';
+            }
+            return this.fileStorageBasePath + '/script.' + this.langCode + '.js';
         },
 
-        toggleRightSidebar() {
-            this.rightSidebarCollapsed = !this.rightSidebarCollapsed;
+        get cssFilePath() {
+            if (!this.isFileStorage || !this.isHtmlEditor) {
+                return '';
+            }
+            if (this.langCode === 'en') {
+                return this.fileStorageBasePath + '/style.css';
+            }
+            return this.fileStorageBasePath + '/style.' + this.langCode + '.css';
+        },
+
+        init() {
+            this.$dispatch('right-sidebar-active');
         },
     };
 }

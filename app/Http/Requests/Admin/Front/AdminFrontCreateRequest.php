@@ -49,6 +49,8 @@ class AdminFrontCreateRequest extends FormRequest
             'editor_type' => ['required', 'string', Rule::in(['html', 'markdown'])],
             'storage_type' => ['required', 'string', Rule::in(['database', 'file'])],
             'content' => ['nullable', 'string', 'max:500000'],
+            'custom_js' => ['nullable', 'string', 'max:500000'],
+            'custom_css' => ['nullable', 'string', 'max:500000'],
         ];
     }
 
@@ -67,6 +69,8 @@ class AdminFrontCreateRequest extends FormRequest
             'storage_type.required' => __('admin/front.create.validation.storage_type_required'),
             'storage_type.in' => __('admin/front.create.validation.storage_type_in'),
             'content.max' => __('admin/front.create.validation.content_max'),
+            'custom_js.max' => __('admin/front.create.validation.custom_js_max'),
+            'custom_css.max' => __('admin/front.create.validation.custom_css_max'),
         ];
     }
 }

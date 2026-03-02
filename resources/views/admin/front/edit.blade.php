@@ -55,8 +55,37 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <p class="text-sm text-gray-700 dark:text-gray-300">{{ $langName }}</p>
                 </div>
 
-                {{-- コンテンツ --}}
-                <div>
+                {{-- タブナビゲーション（HTML エディタ時のみ） --}}
+                @if ($isHtmlEditor)
+                    <div class="border-b border-gray-200 dark:border-gray-600">
+                        <nav class="flex -mb-px space-x-4">
+                            <button type="button" @click="activeTab = 'content'"
+                                    class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+                                    :class="activeTab === 'content'
+                                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'">
+                                <i class="fas fa-code mr-1.5"></i>{{ __('admin/front.edit.tab_content') }}
+                            </button>
+                            <button type="button" @click="activeTab = 'css'"
+                                    class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+                                    :class="activeTab === 'css'
+                                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'">
+                                <i class="fab fa-css3-alt mr-1.5"></i>{{ __('admin/front.edit.tab_css') }}
+                            </button>
+                            <button type="button" @click="activeTab = 'js'"
+                                    class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+                                    :class="activeTab === 'js'
+                                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'">
+                                <i class="fab fa-js mr-1.5"></i>{{ __('admin/front.edit.tab_js') }}
+                            </button>
+                        </nav>
+                    </div>
+                @endif
+
+                {{-- Content タブ --}}
+                <div x-show="activeTab === 'content'">
                     <x-form-label :for="'content'" :text="__('admin/front.edit.content_label')" />
                     <x-form-textarea
                         id="content"
@@ -68,6 +97,36 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     />
                     <x-form-error name="content" />
                 </div>
+
+                @if ($isHtmlEditor)
+                    {{-- CSS タブ --}}
+                    <div x-show="activeTab === 'css'" x-cloak>
+                        <x-form-label :for="'custom_css'" :text="__('admin/front.edit.tab_css')" />
+                        <x-form-textarea
+                            id="custom_css"
+                            name="custom_css"
+                            :value="$customCss ?? ''"
+                            rows="20"
+                            :placeholder="__('admin/front.edit.custom_css_placeholder')"
+                            class="font-mono text-sm"
+                        />
+                        <x-form-error name="custom_css" />
+                    </div>
+
+                    {{-- JavaScript タブ --}}
+                    <div x-show="activeTab === 'js'" x-cloak>
+                        <x-form-label :for="'custom_js'" :text="__('admin/front.edit.tab_js')" />
+                        <x-form-textarea
+                            id="custom_js"
+                            name="custom_js"
+                            :value="$customJs ?? ''"
+                            rows="20"
+                            :placeholder="__('admin/front.edit.custom_js_placeholder')"
+                            class="font-mono text-sm"
+                        />
+                        <x-form-error name="custom_js" />
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -111,9 +170,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <x-form-error name="storage_type" />
                 </div>
 
-                <div class="mt-2 text-sm" x-show="isFileStorage" x-cloak>
-                    <span class="text-gray-500 dark:text-gray-400">{{ __('admin/front.edit.storage_file_path') }}</span>
-                    <span class="font-mono text-blue-600 dark:text-blue-400 break-all" x-text="filePath"></span>
+                <div class="mt-2 text-sm space-y-1" x-show="isFileStorage" x-cloak>
+                    <div>
+                        <span class="text-gray-500 dark:text-gray-400">{{ __('admin/front.edit.storage_file_path') }}</span>
+                        <span class="font-mono text-blue-600 dark:text-blue-400 break-all" x-text="filePath"></span>
+                    </div>
+                    <div x-show="isHtmlEditor && jsFilePath" x-cloak>
+                        <span class="text-gray-500 dark:text-gray-400">JS:</span>
+                        <span class="font-mono text-blue-600 dark:text-blue-400 break-all" x-text="jsFilePath"></span>
+                    </div>
+                    <div x-show="isHtmlEditor && cssFilePath" x-cloak>
+                        <span class="text-gray-500 dark:text-gray-400">CSS:</span>
+                        <span class="font-mono text-blue-600 dark:text-blue-400 break-all" x-text="cssFilePath"></span>
+                    </div>
                 </div>
             </div>
 

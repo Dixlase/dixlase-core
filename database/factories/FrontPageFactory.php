@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -47,6 +47,8 @@ class FrontPageFactory extends Factory
             'lang' => 'en',
             'title' => null,
             'content' => '<h1>Welcome</h1><p>This is the front page.</p>',
+            'custom_js' => null,
+            'custom_css' => null,
             'storage_type' => ContentStorageType::DATABASE->value,
             'editor_type' => ContentEditorType::HTML->value,
             'status' => ContentStatus::PUBLISHED->value,
@@ -81,6 +83,18 @@ class FrontPageFactory extends Factory
     {
         return $this->state(fn () => [
             'status' => ContentStatus::DRAFT->value,
+        ]);
+    }
+
+    /**
+     * カスタム JS/CSS 付きで作成
+     */
+    public function withCustomAssets(): static
+    {
+        return $this->state(fn () => [
+            'editor_type' => ContentEditorType::HTML->value,
+            'custom_js' => 'console.log("hello");',
+            'custom_css' => 'body { color: red; }',
         ]);
     }
 

@@ -11,6 +11,9 @@
 
 namespace Tests\Feature\Admin\Front;
 
+use App\Enums\ContentEditorType;
+use App\Enums\ContentStatus;
+use App\Enums\ContentStorageType;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use App\Http\Middleware\EnsureEmailIsVerified;
@@ -83,9 +86,9 @@ class AdminFrontPageTest extends TestCase
             'page_type' => 'main_content',
             'lang' => 'en',
             'content' => '<h1>Test</h1>',
-            'editor_type' => 'html',
-            'storage_type' => 'database',
-            'status' => 'published',
+            'editor_type' => ContentEditorType::HTML,
+            'storage_type' => ContentStorageType::DATABASE,
+            'status' => ContentStatus::PUBLISHED,
         ]);
 
         $response = $this->actingAs($this->admin, 'member')
@@ -122,9 +125,9 @@ class AdminFrontPageTest extends TestCase
             'page_type' => 'main_content',
             'lang' => 'en',
             'content' => '<h1>Test</h1>',
-            'editor_type' => 'html',
-            'storage_type' => 'database',
-            'status' => 'published',
+            'editor_type' => ContentEditorType::HTML,
+            'storage_type' => ContentStorageType::DATABASE,
+            'status' => ContentStatus::PUBLISHED,
         ]);
 
         $response = $this->actingAs($this->admin, 'member')
@@ -154,9 +157,9 @@ class AdminFrontPageTest extends TestCase
             'page_type' => 'main_content',
             'lang' => 'en',
             'content' => '<h1>Hello World</h1>',
-            'editor_type' => 'html',
-            'storage_type' => 'database',
-            'status' => 'published',
+            'editor_type' => ContentEditorType::HTML,
+            'storage_type' => ContentStorageType::DATABASE,
+            'status' => ContentStatus::PUBLISHED,
         ]);
     }
 
@@ -178,8 +181,8 @@ class AdminFrontPageTest extends TestCase
         $this->assertDatabaseHas('front_pages', [
             'page_type' => 'main_content',
             'lang' => 'en',
-            'editor_type' => 'markdown',
-            'storage_type' => 'file',
+            'editor_type' => ContentEditorType::MARKDOWN,
+            'storage_type' => ContentStorageType::FILE,
         ]);
 
         Storage::disk('local')->assertExists('front/content.md');
@@ -215,9 +218,9 @@ class AdminFrontPageTest extends TestCase
             'page_type' => 'main_content',
             'lang' => 'en',
             'content' => '<h1>Test Content</h1>',
-            'editor_type' => 'html',
-            'storage_type' => 'database',
-            'status' => 'published',
+            'editor_type' => ContentEditorType::HTML,
+            'storage_type' => ContentStorageType::DATABASE,
+            'status' => ContentStatus::PUBLISHED,
         ]);
 
         $response = $this->actingAs($this->admin, 'member')
@@ -248,9 +251,9 @@ class AdminFrontPageTest extends TestCase
             'page_type' => 'main_content',
             'lang' => 'en',
             'content' => '<h1>Old Content</h1>',
-            'editor_type' => 'html',
-            'storage_type' => 'database',
-            'status' => 'published',
+            'editor_type' => ContentEditorType::HTML,
+            'storage_type' => ContentStorageType::DATABASE,
+            'status' => ContentStatus::PUBLISHED,
         ]);
 
         $response = $this->actingAs($this->admin, 'member')
@@ -276,9 +279,9 @@ class AdminFrontPageTest extends TestCase
             'page_type' => 'main_content',
             'lang' => 'en',
             'content' => '<h1>Test</h1>',
-            'editor_type' => 'html',
-            'storage_type' => 'file',
-            'status' => 'published',
+            'editor_type' => ContentEditorType::HTML,
+            'storage_type' => ContentStorageType::FILE,
+            'status' => ContentStatus::PUBLISHED,
         ]);
 
         // ファイルを事前作成
@@ -294,7 +297,7 @@ class AdminFrontPageTest extends TestCase
 
         $this->assertDatabaseHas('front_pages', [
             'page_type' => 'main_content',
-            'storage_type' => 'database',
+            'storage_type' => ContentStorageType::DATABASE,
             'content' => '<h1>Updated in DB</h1>',
         ]);
 
@@ -323,9 +326,9 @@ class AdminFrontPageTest extends TestCase
             'page_type' => 'main_content',
             'lang' => 'en',
             'content' => '<h1>Test</h1>',
-            'editor_type' => 'html',
-            'storage_type' => 'database',
-            'status' => 'published',
+            'editor_type' => ContentEditorType::HTML,
+            'storage_type' => ContentStorageType::DATABASE,
+            'status' => ContentStatus::PUBLISHED,
         ]);
 
         $response = $this->actingAs($this->admin, 'member')
@@ -347,9 +350,9 @@ class AdminFrontPageTest extends TestCase
             'page_type' => 'main_content',
             'lang' => 'en',
             'content' => '# Test',
-            'editor_type' => 'markdown',
-            'storage_type' => 'file',
-            'status' => 'published',
+            'editor_type' => ContentEditorType::MARKDOWN,
+            'storage_type' => ContentStorageType::FILE,
+            'status' => ContentStatus::PUBLISHED,
         ]);
 
         Storage::disk('local')->put('front/content.md', '# Test');
@@ -373,6 +376,252 @@ class AdminFrontPageTest extends TestCase
 
         $response->assertRedirect(route('admin.front.index'));
         $response->assertSessionHas('success');
+    }
+
+    // =========================================================
+    // Store - JS/CSS (HTML editor)
+    // =========================================================
+
+    public function test_store_saves_custom_js_and_css_for_html_editor(): void
+    {
+        $response = $this->actingAs($this->admin, 'member')
+            ->post(route('admin.front.store'), [
+                'lang' => 'en',
+                'editor_type' => 'html',
+                'storage_type' => 'database',
+                'content' => '<h1>Hello</h1>',
+                'custom_js' => 'console.log("test");',
+                'custom_css' => 'body { color: red; }',
+            ]);
+
+        $response->assertRedirect(route('admin.front.edit'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('front_pages', [
+            'page_type' => 'main_content',
+            'editor_type' => ContentEditorType::HTML,
+            'custom_js' => 'console.log("test");',
+            'custom_css' => 'body { color: red; }',
+        ]);
+    }
+
+    public function test_store_ignores_custom_js_and_css_for_markdown_editor(): void
+    {
+        $response = $this->actingAs($this->admin, 'member')
+            ->post(route('admin.front.store'), [
+                'lang' => 'en',
+                'editor_type' => 'markdown',
+                'storage_type' => 'database',
+                'content' => '# Hello',
+                'custom_js' => 'console.log("test");',
+                'custom_css' => 'body { color: red; }',
+            ]);
+
+        $response->assertRedirect(route('admin.front.edit'));
+
+        $this->assertDatabaseHas('front_pages', [
+            'page_type' => 'main_content',
+            'editor_type' => ContentEditorType::MARKDOWN,
+            'custom_js' => null,
+            'custom_css' => null,
+        ]);
+    }
+
+    public function test_store_saves_js_css_files_for_html_editor_with_file_storage(): void
+    {
+        Storage::fake('local');
+
+        $response = $this->actingAs($this->admin, 'member')
+            ->post(route('admin.front.store'), [
+                'lang' => 'en',
+                'editor_type' => 'html',
+                'storage_type' => 'file',
+                'content' => '<h1>Hello</h1>',
+                'custom_js' => 'alert("hi");',
+                'custom_css' => '.test { display: none; }',
+            ]);
+
+        $response->assertRedirect(route('admin.front.edit'));
+
+        Storage::disk('local')->assertExists('front/content.html');
+        Storage::disk('local')->assertExists('front/script.js');
+        Storage::disk('local')->assertExists('front/style.css');
+    }
+
+    // =========================================================
+    // Edit - JS/CSS view data
+    // =========================================================
+
+    public function test_edit_passes_js_css_for_html_editor(): void
+    {
+        FrontPage::create([
+            'page_type' => 'main_content',
+            'lang' => 'en',
+            'content' => '<h1>Test</h1>',
+            'custom_js' => 'console.log("edit");',
+            'custom_css' => 'h1 { color: blue; }',
+            'editor_type' => ContentEditorType::HTML,
+            'storage_type' => ContentStorageType::DATABASE,
+            'status' => ContentStatus::PUBLISHED,
+        ]);
+
+        $response = $this->actingAs($this->admin, 'member')
+            ->get(route('admin.front.edit'));
+
+        $response->assertOk();
+        $response->assertViewHas('isHtmlEditor', true);
+        $response->assertViewHas('customJs', 'console.log("edit");');
+        $response->assertViewHas('customCss', 'h1 { color: blue; }');
+    }
+
+    public function test_edit_does_not_pass_js_css_for_markdown_editor(): void
+    {
+        FrontPage::create([
+            'page_type' => 'main_content',
+            'lang' => 'en',
+            'content' => '# Test',
+            'editor_type' => ContentEditorType::MARKDOWN,
+            'storage_type' => ContentStorageType::DATABASE,
+            'status' => ContentStatus::PUBLISHED,
+        ]);
+
+        $response = $this->actingAs($this->admin, 'member')
+            ->get(route('admin.front.edit'));
+
+        $response->assertOk();
+        $response->assertViewHas('isHtmlEditor', false);
+        $response->assertViewHas('customJs', null);
+        $response->assertViewHas('customCss', null);
+    }
+
+    // =========================================================
+    // Update - JS/CSS
+    // =========================================================
+
+    public function test_update_saves_custom_js_and_css_for_html_editor(): void
+    {
+        FrontPage::create([
+            'page_type' => 'main_content',
+            'lang' => 'en',
+            'content' => '<h1>Old</h1>',
+            'editor_type' => ContentEditorType::HTML,
+            'storage_type' => ContentStorageType::DATABASE,
+            'status' => ContentStatus::PUBLISHED,
+        ]);
+
+        $response = $this->actingAs($this->admin, 'member')
+            ->put(route('admin.front.edit.update'), [
+                'storage_type' => 'database',
+                'content' => '<h1>New</h1>',
+                'custom_js' => 'console.log("updated");',
+                'custom_css' => 'body { margin: 0; }',
+            ]);
+
+        $response->assertRedirect(route('admin.front.edit'));
+
+        $this->assertDatabaseHas('front_pages', [
+            'page_type' => 'main_content',
+            'content' => '<h1>New</h1>',
+            'custom_js' => 'console.log("updated");',
+            'custom_css' => 'body { margin: 0; }',
+        ]);
+    }
+
+    public function test_update_ignores_js_css_for_markdown_editor(): void
+    {
+        FrontPage::create([
+            'page_type' => 'main_content',
+            'lang' => 'en',
+            'content' => '# Old',
+            'editor_type' => ContentEditorType::MARKDOWN,
+            'storage_type' => ContentStorageType::DATABASE,
+            'status' => ContentStatus::PUBLISHED,
+        ]);
+
+        $response = $this->actingAs($this->admin, 'member')
+            ->put(route('admin.front.edit.update'), [
+                'storage_type' => 'database',
+                'content' => '# New',
+                'custom_js' => 'should be ignored',
+                'custom_css' => 'should be ignored',
+            ]);
+
+        $response->assertRedirect(route('admin.front.edit'));
+
+        $frontPage = FrontPage::findByType('main_content');
+        $this->assertNull($frontPage->custom_js);
+        $this->assertNull($frontPage->custom_css);
+    }
+
+    public function test_update_deletes_js_css_files_when_switching_to_database(): void
+    {
+        Storage::fake('local');
+
+        FrontPage::create([
+            'page_type' => 'main_content',
+            'lang' => 'en',
+            'content' => '<h1>Test</h1>',
+            'custom_js' => 'alert("hi");',
+            'custom_css' => '.test {}',
+            'editor_type' => ContentEditorType::HTML,
+            'storage_type' => ContentStorageType::FILE,
+            'status' => ContentStatus::PUBLISHED,
+        ]);
+
+        Storage::disk('local')->put('front/content.html', '<h1>Test</h1>');
+        Storage::disk('local')->put('front/script.js', 'alert("hi");');
+        Storage::disk('local')->put('front/style.css', '.test {}');
+
+        $response = $this->actingAs($this->admin, 'member')
+            ->put(route('admin.front.edit.update'), [
+                'storage_type' => 'database',
+                'content' => '<h1>Updated</h1>',
+                'custom_js' => 'console.log("db");',
+                'custom_css' => 'body {}',
+            ]);
+
+        $response->assertRedirect(route('admin.front.edit'));
+
+        Storage::disk('local')->assertMissing('front/content.html');
+        Storage::disk('local')->assertMissing('front/script.js');
+        Storage::disk('local')->assertMissing('front/style.css');
+    }
+
+    // =========================================================
+    // Destroy - JS/CSS files
+    // =========================================================
+
+    public function test_destroy_deletes_js_css_files_for_html_editor(): void
+    {
+        Storage::fake('local');
+
+        FrontPage::create([
+            'page_type' => 'main_content',
+            'lang' => 'en',
+            'content' => '<h1>Test</h1>',
+            'custom_js' => 'alert("hi");',
+            'custom_css' => '.test {}',
+            'editor_type' => ContentEditorType::HTML,
+            'storage_type' => ContentStorageType::FILE,
+            'status' => ContentStatus::PUBLISHED,
+        ]);
+
+        Storage::disk('local')->put('front/content.html', '<h1>Test</h1>');
+        Storage::disk('local')->put('front/script.js', 'alert("hi");');
+        Storage::disk('local')->put('front/style.css', '.test {}');
+
+        $response = $this->actingAs($this->admin, 'member')
+            ->delete(route('admin.front.destroy'));
+
+        $response->assertRedirect(route('admin.front.index'));
+
+        Storage::disk('local')->assertMissing('front/content.html');
+        Storage::disk('local')->assertMissing('front/script.js');
+        Storage::disk('local')->assertMissing('front/style.css');
+
+        $this->assertDatabaseMissing('front_pages', [
+            'page_type' => 'main_content',
+        ]);
     }
 
     // =========================================================
