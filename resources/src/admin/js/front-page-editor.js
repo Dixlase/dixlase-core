@@ -36,30 +36,21 @@ function createFrontPageCreate(config) {
                 return '';
             }
             const ext = this.editorType === 'markdown' ? 'md' : 'html';
-            if (this.lang === 'en') {
-                return this.fileStorageBasePath + '/content.' + ext;
-            }
-            return this.fileStorageBasePath + '/content.' + this.lang + '.' + ext;
+            return this.fileStorageBasePath + '/content.' + ext;
         },
 
         get jsFilePath() {
             if (!this.isFileStorage || !this.isHtmlEditor) {
                 return '';
             }
-            if (this.lang === 'en') {
-                return this.fileStorageBasePath + '/script.js';
-            }
-            return this.fileStorageBasePath + '/script.' + this.lang + '.js';
+            return this.fileStorageBasePath + '/script.js';
         },
 
         get cssFilePath() {
             if (!this.isFileStorage || !this.isHtmlEditor) {
                 return '';
             }
-            if (this.lang === 'en') {
-                return this.fileStorageBasePath + '/style.css';
-            }
-            return this.fileStorageBasePath + '/style.' + this.lang + '.css';
+            return this.fileStorageBasePath + '/style.css';
         },
 
         init() {
@@ -114,30 +105,21 @@ function createFrontPageEditor(config) {
                 return '';
             }
             const ext = this.editorType === 'markdown' ? 'md' : 'html';
-            if (this.langCode === 'en') {
-                return this.fileStorageBasePath + '/content.' + ext;
-            }
-            return this.fileStorageBasePath + '/content.' + this.langCode + '.' + ext;
+            return this.fileStorageBasePath + '/content.' + ext;
         },
 
         get jsFilePath() {
             if (!this.isFileStorage || !this.isHtmlEditor) {
                 return '';
             }
-            if (this.langCode === 'en') {
-                return this.fileStorageBasePath + '/script.js';
-            }
-            return this.fileStorageBasePath + '/script.' + this.langCode + '.js';
+            return this.fileStorageBasePath + '/script.js';
         },
 
         get cssFilePath() {
             if (!this.isFileStorage || !this.isHtmlEditor) {
                 return '';
             }
-            if (this.langCode === 'en') {
-                return this.fileStorageBasePath + '/style.css';
-            }
-            return this.fileStorageBasePath + '/style.' + this.langCode + '.css';
+            return this.fileStorageBasePath + '/style.css';
         },
 
         init() {

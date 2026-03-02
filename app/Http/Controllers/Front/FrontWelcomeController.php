@@ -56,7 +56,7 @@ class FrontWelcomeController extends FrontController
         if ($frontPage) {
             $locale = App::getLocale();
             $frontContent = $this->contentService->getContent($frontPage, $locale);
-            $frontEditorType = $frontPage->editor_type->value ?? 'html';
+            $frontEditorType = $frontPage->editor_type->slug() ?? 'html';
 
             // HTML エディタ時は JS/CSS コンテンツも取得
             if ($frontPage->editor_type === ContentEditorType::HTML) {

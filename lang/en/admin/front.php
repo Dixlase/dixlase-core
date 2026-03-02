@@ -26,6 +26,7 @@ return [
 
         'edit_button' => 'Edit Content',
         'reset_button' => 'Reset',
+        'reset_confirm_title' => 'Reset Front Page',
         'reset_confirm' => 'Are you sure you want to reset the front page content? This action cannot be undone.',
 
         'no_content_title' => 'No Content Yet',
@@ -44,15 +45,8 @@ return [
         'content_label' => 'Content',
         'content_placeholder' => 'Enter your front page content...',
 
-        'tab_content' => 'Content',
-        'tab_css' => 'CSS',
-        'tab_js' => 'JavaScript',
         'custom_css_placeholder' => 'Enter custom CSS styles...',
         'custom_js_placeholder' => 'Enter custom JavaScript...',
-
-        'storage_section' => 'Storage',
-        'storage_type_label' => 'Storage Type',
-        'storage_file_path' => 'File path:',
 
         'confirm_title' => 'Create Front Page',
         'confirm_message' => 'Create the front page content with the selected settings?',
@@ -80,20 +74,12 @@ return [
         'description' => 'Edit the front page content.',
 
         'editor_type_label' => 'Editor Type',
-        'editor_type_locked_help' => 'Editor type is locked after creation. To change it, reset and recreate the content.',
         'lang_label' => 'Language',
         'content_label' => 'Content',
         'content_placeholder' => 'Enter your front page content...',
 
-        'tab_content' => 'Content',
-        'tab_css' => 'CSS',
-        'tab_js' => 'JavaScript',
         'custom_css_placeholder' => 'Enter custom CSS styles...',
         'custom_js_placeholder' => 'Enter custom JavaScript...',
-
-        'storage_section' => 'Storage',
-        'storage_type_label' => 'Storage Type',
-        'storage_file_path' => 'File path:',
 
         'confirm_title' => 'Save Changes',
         'confirm_message' => 'Save the changes to the front page content?',

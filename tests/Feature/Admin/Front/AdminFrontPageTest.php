@@ -185,7 +185,7 @@ class AdminFrontPageTest extends TestCase
             'storage_type' => ContentStorageType::FILE,
         ]);
 
-        Storage::disk('local')->assertExists('front/content.md');
+        Storage::disk('local')->assertExists('core/front/content.md');
     }
 
     public function test_store_validates_required_fields(): void
@@ -285,7 +285,7 @@ class AdminFrontPageTest extends TestCase
         ]);
 
         // ファイルを事前作成
-        Storage::disk('local')->put('front/content.html', '<h1>Test</h1>');
+        Storage::disk('local')->put('core/front/content.html', '<h1>Test</h1>');
 
         $response = $this->actingAs($this->admin, 'member')
             ->put(route('admin.front.edit.update'), [
@@ -302,7 +302,7 @@ class AdminFrontPageTest extends TestCase
         ]);
 
         // ファイルが削除されていること
-        Storage::disk('local')->assertMissing('front/content.html');
+        Storage::disk('local')->assertMissing('core/front/content.html');
     }
 
     public function test_update_redirects_when_no_content_exists(): void
@@ -355,7 +355,7 @@ class AdminFrontPageTest extends TestCase
             'status' => ContentStatus::PUBLISHED,
         ]);
 
-        Storage::disk('local')->put('front/content.md', '# Test');
+        Storage::disk('local')->put('core/front/content.md', '# Test');
 
         $response = $this->actingAs($this->admin, 'member')
             ->delete(route('admin.front.destroy'));
@@ -363,7 +363,7 @@ class AdminFrontPageTest extends TestCase
         $response->assertRedirect(route('admin.front.index'));
         $response->assertSessionHas('success');
 
-        Storage::disk('local')->assertMissing('front/content.md');
+        Storage::disk('local')->assertMissing('core/front/content.md');
         $this->assertDatabaseMissing('front_pages', [
             'page_type' => 'main_content',
         ]);
@@ -443,9 +443,9 @@ class AdminFrontPageTest extends TestCase
 
         $response->assertRedirect(route('admin.front.edit'));
 
-        Storage::disk('local')->assertExists('front/content.html');
-        Storage::disk('local')->assertExists('front/script.js');
-        Storage::disk('local')->assertExists('front/style.css');
+        Storage::disk('local')->assertExists('core/front/content.html');
+        Storage::disk('local')->assertExists('core/front/script.js');
+        Storage::disk('local')->assertExists('core/front/style.css');
     }
 
     // =========================================================
@@ -568,9 +568,9 @@ class AdminFrontPageTest extends TestCase
             'status' => ContentStatus::PUBLISHED,
         ]);
 
-        Storage::disk('local')->put('front/content.html', '<h1>Test</h1>');
-        Storage::disk('local')->put('front/script.js', 'alert("hi");');
-        Storage::disk('local')->put('front/style.css', '.test {}');
+        Storage::disk('local')->put('core/front/content.html', '<h1>Test</h1>');
+        Storage::disk('local')->put('core/front/script.js', 'alert("hi");');
+        Storage::disk('local')->put('core/front/style.css', '.test {}');
 
         $response = $this->actingAs($this->admin, 'member')
             ->put(route('admin.front.edit.update'), [
@@ -582,9 +582,9 @@ class AdminFrontPageTest extends TestCase
 
         $response->assertRedirect(route('admin.front.edit'));
 
-        Storage::disk('local')->assertMissing('front/content.html');
-        Storage::disk('local')->assertMissing('front/script.js');
-        Storage::disk('local')->assertMissing('front/style.css');
+        Storage::disk('local')->assertMissing('core/front/content.html');
+        Storage::disk('local')->assertMissing('core/front/script.js');
+        Storage::disk('local')->assertMissing('core/front/style.css');
     }
 
     // =========================================================
@@ -606,18 +606,18 @@ class AdminFrontPageTest extends TestCase
             'status' => ContentStatus::PUBLISHED,
         ]);
 
-        Storage::disk('local')->put('front/content.html', '<h1>Test</h1>');
-        Storage::disk('local')->put('front/script.js', 'alert("hi");');
-        Storage::disk('local')->put('front/style.css', '.test {}');
+        Storage::disk('local')->put('core/front/content.html', '<h1>Test</h1>');
+        Storage::disk('local')->put('core/front/script.js', 'alert("hi");');
+        Storage::disk('local')->put('core/front/style.css', '.test {}');
 
         $response = $this->actingAs($this->admin, 'member')
             ->delete(route('admin.front.destroy'));
 
         $response->assertRedirect(route('admin.front.index'));
 
-        Storage::disk('local')->assertMissing('front/content.html');
-        Storage::disk('local')->assertMissing('front/script.js');
-        Storage::disk('local')->assertMissing('front/style.css');
+        Storage::disk('local')->assertMissing('core/front/content.html');
+        Storage::disk('local')->assertMissing('core/front/script.js');
+        Storage::disk('local')->assertMissing('core/front/style.css');
 
         $this->assertDatabaseMissing('front_pages', [
             'page_type' => 'main_content',

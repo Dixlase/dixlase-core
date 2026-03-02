@@ -30,7 +30,7 @@ namespace App\Enums;
  * ページコンテンツやフロントページのデザインなど、
  * 編集可能なコンテンツの保存方法を定義します。
  */
-enum ContentStorageType: string
+enum ContentStorageType: int
 {
     /**
      * データベースに保存
@@ -38,7 +38,7 @@ enum ContentStorageType: string
      * - 管理画面から直接編集
      * - バックアップはDB経由
      */
-    case DATABASE = 'database';
+    case DATABASE = 0;
 
     /**
      * ファイルとして保存
@@ -46,7 +46,51 @@ enum ContentStorageType: string
      * - ローカルエディタで直接編集可能
      * - Gitでバージョン管理可能
      */
-    case FILE = 'file';
+    case FILE = 1;
+
+    /**
+     * 旧文字列識別子（スラッグ）を取得
+     *
+     * JS/Alpine.jsとの互換性維持に使用。
+     * フォームの値やJSに渡す場合はこのメソッドを使用する。
+     */
+    public function slug(): string
+    {
+        return match ($this) {
+            self::DATABASE => 'database',
+            self::FILE => 'file',
+        };
+    }
+
+    /**
+     * スラッグ文字列からEnumインスタンスを取得
+     *
+     * @throws \ValueError スラッグが見つからない場合
+     */
+    public static function fromSlug(string $slug): self
+    {
+        foreach (self::cases() as $case) {
+            if ($case->slug() === $slug) {
+                return $case;
+            }
+        }
+
+        throw new \ValueError("\"$slug\" is not a valid slug for ".self::class);
+    }
+
+    /**
+     * スラッグ文字列からEnumインスタンスを取得（失敗時はnull）
+     */
+    public static function tryFromSlug(string $slug): ?self
+    {
+        foreach (self::cases() as $case) {
+            if ($case->slug() === $slug) {
+                return $case;
+            }
+        }
+
+        return null;
+    }
 
     /**
      * 翻訳キーを取得
@@ -76,8 +120,8 @@ enum ContentStorageType: string
     public static function options(): array
     {
         return [
-            self::DATABASE->value => __('common.content_storage.database'),
-            self::FILE->value => __('common.content_storage.file'),
+            self::DATABASE->slug() => __('common.content_storage.database'),
+            self::FILE->slug() => __('common.content_storage.file'),
         ];
     }
 
@@ -87,11 +131,11 @@ enum ContentStorageType: string
     public static function optionsWithDescription(): array
     {
         return [
-            self::DATABASE->value => [
+            self::DATABASE->slug() => [
                 'label' => __('common.content_storage.database'),
                 'description' => __('common.content_storage.database_description'),
             ],
-            self::FILE->value => [
+            self::FILE->slug() => [
                 'label' => __('common.content_storage.file'),
                 'description' => __('common.content_storage.file_description'),
             ],

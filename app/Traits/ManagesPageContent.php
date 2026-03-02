@@ -69,11 +69,11 @@ trait ManagesPageContent
         $service = $this->getContentService($baseDirectory);
 
         $storageType = is_string($storageType)
-            ? ContentStorageType::from($storageType)
+            ? ContentStorageType::fromSlug($storageType)
             : $storageType;
 
         $editorType = is_string($editorType)
-            ? ContentEditorType::from($editorType)
+            ? ContentEditorType::fromSlug($editorType)
             : $editorType;
 
         return $service->saveContent($identifier, $content, $storageType, $editorType);
@@ -98,11 +98,11 @@ trait ManagesPageContent
         $service = $this->getContentService($baseDirectory);
 
         $storageType = is_string($storageType)
-            ? ContentStorageType::from($storageType)
+            ? ContentStorageType::fromSlug($storageType)
             : $storageType;
 
         $editorType = is_string($editorType)
-            ? ContentEditorType::from($editorType)
+            ? ContentEditorType::fromSlug($editorType)
             : $editorType;
 
         return $service->loadContent($identifier, $storageType, $editorType, $dbContent);
@@ -123,11 +123,11 @@ trait ManagesPageContent
         $service = $this->getContentService();
 
         $editorType = is_string($editorType)
-            ? ContentEditorType::from($editorType)
+            ? ContentEditorType::fromSlug($editorType)
             : $editorType;
 
         $storageType = is_string($storageType)
-            ? ContentStorageType::from($storageType)
+            ? ContentStorageType::fromSlug($storageType)
             : $storageType;
 
         return $service->renderContent($content, $editorType, $storageType);
@@ -165,7 +165,7 @@ trait ManagesPageContent
         $service = $this->getContentService($baseDirectory);
 
         $editorType = is_string($editorType)
-            ? ContentEditorType::from($editorType)
+            ? ContentEditorType::fromSlug($editorType)
             : $editorType;
 
         return $service->fileExists($identifier, $editorType);
@@ -186,7 +186,7 @@ trait ManagesPageContent
         $service = $this->getContentService($baseDirectory);
 
         $editorType = is_string($editorType)
-            ? ContentEditorType::from($editorType)
+            ? ContentEditorType::fromSlug($editorType)
             : $editorType;
 
         return $service->getFilePath($identifier, $editorType);
@@ -207,7 +207,7 @@ trait ManagesPageContent
         $service = $this->getContentService($baseDirectory);
 
         $editorType = is_string($editorType)
-            ? ContentEditorType::from($editorType)
+            ? ContentEditorType::fromSlug($editorType)
             : $editorType;
 
         return $service->deleteFile($identifier, $editorType);
@@ -234,15 +234,15 @@ trait ManagesPageContent
         $service = $this->getContentService($baseDirectory);
 
         $fromStorage = is_string($fromStorage)
-            ? ContentStorageType::from($fromStorage)
+            ? ContentStorageType::fromSlug($fromStorage)
             : $fromStorage;
 
         $toStorage = is_string($toStorage)
-            ? ContentStorageType::from($toStorage)
+            ? ContentStorageType::fromSlug($toStorage)
             : $toStorage;
 
         $editorType = is_string($editorType)
-            ? ContentEditorType::from($editorType)
+            ? ContentEditorType::fromSlug($editorType)
             : $editorType;
 
         return $service->migrateStorage(
@@ -262,7 +262,7 @@ trait ManagesPageContent
     protected function getAvailableEditorTypes(string|ContentStorageType $storageType): array
     {
         $storageType = is_string($storageType)
-            ? ContentStorageType::from($storageType)
+            ? ContentStorageType::fromSlug($storageType)
             : $storageType;
 
         return ContentEditorType::optionsFor($storageType);
@@ -276,7 +276,7 @@ trait ManagesPageContent
     protected function getAvailableEditorTypesWithDescription(string|ContentStorageType $storageType): array
     {
         $storageType = is_string($storageType)
-            ? ContentStorageType::from($storageType)
+            ? ContentStorageType::fromSlug($storageType)
             : $storageType;
 
         return ContentEditorType::optionsWithDescriptionFor($storageType);

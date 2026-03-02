@@ -30,7 +30,7 @@ namespace App\Enums;
  * ページコンテンツやフロントページのデザインなど、
  * 編集可能なコンテンツの編集方法を定義します。
  */
-enum ContentEditorType: string
+enum ContentEditorType: int
 {
     /**
      * GUIエディタ（将来実装）
@@ -38,7 +38,7 @@ enum ContentEditorType: string
      * - ドラッグ&ドロップでレイアウト構築
      * - 技術知識不要
      */
-    case GUI = 'gui';
+    case GUI = 1;
 
     /**
      * Markdown形式
@@ -46,7 +46,7 @@ enum ContentEditorType: string
      * - プレビュー機能付き
      * - シンプルで学習コスト低
      */
-    case MARKDOWN = 'markdown';
+    case MARKDOWN = 2;
 
     /**
      * HTML直接編集
@@ -54,7 +54,7 @@ enum ContentEditorType: string
      * - 完全な制御が可能
      * - 技術知識必要
      */
-    case HTML = 'html';
+    case HTML = 3;
 
     /**
      * Bladeテンプレート（FILE保存時のみ）
@@ -62,7 +62,55 @@ enum ContentEditorType: string
      * - 動的コンテンツ対応
      * - 最も柔軟だが技術知識必須
      */
-    case BLADE = 'blade';
+    case BLADE = 4;
+
+    /**
+     * 旧文字列識別子（スラッグ）を取得
+     *
+     * JS/Alpine.jsとの互換性維持に使用。
+     * フォームの値やJSに渡す場合はこのメソッドを使用する。
+     */
+    public function slug(): string
+    {
+        return match ($this) {
+            self::GUI => 'gui',
+            self::MARKDOWN => 'markdown',
+            self::HTML => 'html',
+            self::BLADE => 'blade',
+        };
+    }
+
+    /**
+     * スラッグ文字列からEnumインスタンスを取得
+     *
+     * フォーム送信値やJSから送られる文字列をEnumに変換する。
+     *
+     * @throws \ValueError スラッグが見つからない場合
+     */
+    public static function fromSlug(string $slug): self
+    {
+        foreach (self::cases() as $case) {
+            if ($case->slug() === $slug) {
+                return $case;
+            }
+        }
+
+        throw new \ValueError("\"$slug\" is not a valid slug for ".self::class);
+    }
+
+    /**
+     * スラッグ文字列からEnumインスタンスを取得（失敗時はnull）
+     */
+    public static function tryFromSlug(string $slug): ?self
+    {
+        foreach (self::cases() as $case) {
+            if ($case->slug() === $slug) {
+                return $case;
+            }
+        }
+
+        return null;
+    }
 
     /**
      * Font Awesome アイコンクラスを取得
@@ -159,10 +207,10 @@ enum ContentEditorType: string
     public static function options(): array
     {
         return [
-            self::GUI->value => __('common.content_editor.gui'),
-            self::MARKDOWN->value => __('common.content_editor.markdown'),
-            self::HTML->value => __('common.content_editor.html'),
-            self::BLADE->value => __('common.content_editor.blade'),
+            self::GUI->slug() => __('common.content_editor.gui'),
+            self::MARKDOWN->slug() => __('common.content_editor.markdown'),
+            self::HTML->slug() => __('common.content_editor.html'),
+            self::BLADE->slug() => __('common.content_editor.blade'),
         ];
     }
 
@@ -175,7 +223,7 @@ enum ContentEditorType: string
         $options = [];
 
         foreach ($available as $type) {
-            $options[$type->value] = __($type->translationKey());
+            $options[$type->slug()] = __($type->translationKey());
         }
 
         return $options;
@@ -190,7 +238,7 @@ enum ContentEditorType: string
         $options = [];
 
         foreach ($available as $type) {
-            $options[$type->value] = [
+            $options[$type->slug()] = [
                 'label' => __($type->translationKey()),
                 'description' => __($type->descriptionKey()),
             ];
@@ -215,12 +263,12 @@ enum ContentEditorType: string
         $options = [];
 
         foreach ($types as $type) {
-            if (in_array($type->value, $exclude, true)) {
+            if (in_array($type->slug(), $exclude, true)) {
                 continue;
             }
 
             $option = [
-                'value' => $type->value,
+                'value' => $type->slug(),
                 'label' => __($type->translationKey()),
                 'icon' => $type->iconClass(),
                 'description' => __($type->descriptionKey()),
