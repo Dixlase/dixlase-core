@@ -89,7 +89,7 @@ class UniqueRouteSlugTest extends TestCase
     {
         $conflicting = new RegisteredSlug(
             slug: 'pages',
-            owner: 'dixlase-pages:url_directory',
+            owner: 'dixlase-pages:route_slug',
             label: 'validation/route-slug.owners.core_admin_url',
         );
 
@@ -183,10 +183,10 @@ class UniqueRouteSlugTest extends TestCase
         );
 
         $this->registry->shouldReceive('findConflict')
-            ->with('admin', 'dixlase-pages:url_directory')
+            ->with('admin', 'dixlase-pages:route_slug')
             ->andReturn($conflicting);
 
-        $rule = UniqueRouteSlug::for('dixlase-pages:url_directory');
+        $rule = UniqueRouteSlug::for('dixlase-pages:route_slug');
         $message = null;
 
         $rule->validate('slug', 'admin', function ($msg) use (&$message) {

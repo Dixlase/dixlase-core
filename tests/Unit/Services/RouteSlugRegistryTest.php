@@ -115,7 +115,7 @@ class RouteSlugRegistryTest extends TestCase
             ->andReturn([
                 new RegisteredSlug(
                     slug: 'pages',
-                    owner: 'dixlase-pages:url_directory',
+                    owner: 'dixlase-pages:route_slug',
                     label: 'Pages Directory',
                 ),
             ]);
@@ -139,7 +139,7 @@ class RouteSlugRegistryTest extends TestCase
             ->andReturn([
                 new RegisteredSlug(
                     slug: 'pages',
-                    owner: 'dixlase-pages:url_directory',
+                    owner: 'dixlase-pages:route_slug',
                     label: 'Pages Directory',
                 ),
             ]);

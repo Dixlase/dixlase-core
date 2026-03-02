@@ -466,7 +466,7 @@ class ExtensionCardPresenter
      *
      * @param  array<int, mixed>  $reasons
      * @param  string  $translationPrefix  e.g. 'admin/settings/themes/index'
-     * @return array<int, array{text: string, color: string, icon: string}>
+     * @return array<int, array{text: string, color: string, icon: string, score: int}>
      */
     public static function formatAttentionReasons(array $reasons, string $translationPrefix): array
     {
@@ -477,6 +477,7 @@ class ExtensionCardPresenter
                     'text' => $reason,
                     'color' => 'text-yellow-600 dark:text-yellow-400',
                     'icon' => 'fas fa-info-circle',
+                    'score' => 0,
                 ];
             } else {
                 $reasonKey = str_replace('.', '_', $reason['key'] ?? '');
@@ -488,6 +489,7 @@ class ExtensionCardPresenter
                     'icon' => ($reason['severity'] ?? 'medium') === 'high'
                         ? 'fas fa-exclamation-circle'
                         : 'fas fa-info-circle',
+                    'score' => $reason['score'] ?? 0,
                 ];
             }
         }

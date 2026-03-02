@@ -285,6 +285,8 @@ return [
         'audit_matches' => 'Matches',
         'audit_mismatches' => 'Mismatches',
         'audit_mismatch_badge' => 'Mismatch',
+        'permission_consistency_title' => 'Permission Consistency',
+        'total_risk_score' => 'Total Risk Score',
         'no_permissions' => 'Permission information is not defined',
         'details_title' => 'Plugin Details',
         'no_special_permissions' => 'No special permissions',
