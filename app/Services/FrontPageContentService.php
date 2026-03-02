@@ -38,17 +38,17 @@ class FrontPageContentService extends ContentFileService
      */
     public function __construct()
     {
-        // storage/app/private/front/
-        parent::__construct('front', 'local', 'en');
+        // storage/app/private/core/front/
+        parent::__construct('core/front', 'local', 'en');
     }
 
     /**
      * ファイルパスを取得する（フロントページ用にオーバーライド）
-     * 構造: {basePath}/content.{locale}.{extension}
-     * デフォルト言語はファイル名に言語コードを付けない
+     * コアでは1言語運用のため、ファイル名に言語コードを付けない
+     * 多言語対応は多言語プラグインが担う
      *
      * @param  string  $slug  スラッグ（フロントページでは使用しない）
-     * @param  string  $locale  言語コード
+     * @param  string  $locale  言語コード（コアでは未使用、プラグイン拡張用に残す）
      * @param  string  $editorType  エディタータイプ
      * @return string ファイルパス
      */
@@ -56,12 +56,7 @@ class FrontPageContentService extends ContentFileService
     {
         $extension = $this->extensions[$editorType] ?? 'txt';
 
-        // デフォルト言語はファイル名に言語コードを付けない
-        if ($locale === $this->defaultLocale) {
-            return "{$this->basePath}/content.{$extension}";
-        }
-
-        return "{$this->basePath}/content.{$locale}.{$extension}";
+        return "{$this->basePath}/content.{$extension}";
     }
 
     /**
@@ -104,34 +99,28 @@ class FrontPageContentService extends ContentFileService
 
     /**
      * JS ファイルパスを取得する
+     * コアでは1言語運用のため、ファイル名に言語コードを付けない
      *
      * @param  string  $slug  スラッグ（フロントページでは使用しない）
-     * @param  string  $locale  言語コード
+     * @param  string  $locale  言語コード（コアでは未使用、プラグイン拡張用に残す）
      * @return string ファイルパス
      */
     public function getJsFilePath(string $slug, string $locale): string
     {
-        if ($locale === $this->defaultLocale) {
-            return "{$this->basePath}/script.js";
-        }
-
-        return "{$this->basePath}/script.{$locale}.js";
+        return "{$this->basePath}/script.js";
     }
 
     /**
      * CSS ファイルパスを取得する
+     * コアでは1言語運用のため、ファイル名に言語コードを付けない
      *
      * @param  string  $slug  スラッグ（フロントページでは使用しない）
-     * @param  string  $locale  言語コード
+     * @param  string  $locale  言語コード（コアでは未使用、プラグイン拡張用に残す）
      * @return string ファイルパス
      */
     public function getCssFilePath(string $slug, string $locale): string
     {
-        if ($locale === $this->defaultLocale) {
-            return "{$this->basePath}/style.css";
-        }
-
-        return "{$this->basePath}/style.{$locale}.css";
+        return "{$this->basePath}/style.css";
     }
 
     /**

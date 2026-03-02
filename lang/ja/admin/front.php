@@ -26,6 +26,7 @@ return [
 
         'edit_button' => 'コンテンツを編集',
         'reset_button' => 'リセット',
+        'reset_confirm_title' => 'フロントページのリセット',
         'reset_confirm' => 'フロントページのコンテンツをリセットしますか？この操作は元に戻せません。',
 
         'no_content_title' => 'コンテンツがありません',
@@ -44,15 +45,8 @@ return [
         'content_label' => 'コンテンツ',
         'content_placeholder' => 'フロントページのコンテンツを入力...',
 
-        'tab_content' => 'コンテンツ',
-        'tab_css' => 'CSS',
-        'tab_js' => 'JavaScript',
         'custom_css_placeholder' => 'カスタムCSSスタイルを入力...',
         'custom_js_placeholder' => 'カスタムJavaScriptを入力...',
-
-        'storage_section' => '保存設定',
-        'storage_type_label' => '保存方法',
-        'storage_file_path' => 'ファイルパス:',
 
         'confirm_title' => 'フロントページを作成',
         'confirm_message' => '選択した設定でフロントページのコンテンツを作成しますか？',
@@ -80,20 +74,12 @@ return [
         'description' => 'フロントページのコンテンツを編集します。',
 
         'editor_type_label' => 'エディタータイプ',
-        'editor_type_locked_help' => 'エディタータイプは作成後に変更できません。変更するにはリセットして再作成してください。',
         'lang_label' => '言語',
         'content_label' => 'コンテンツ',
         'content_placeholder' => 'フロントページのコンテンツを入力...',
 
-        'tab_content' => 'コンテンツ',
-        'tab_css' => 'CSS',
-        'tab_js' => 'JavaScript',
         'custom_css_placeholder' => 'カスタムCSSスタイルを入力...',
         'custom_js_placeholder' => 'カスタムJavaScriptを入力...',
-
-        'storage_section' => '保存設定',
-        'storage_type_label' => '保存方法',
-        'storage_file_path' => 'ファイルパス:',
 
         'confirm_title' => '変更を保存',
         'confirm_message' => 'フロントページのコンテンツへの変更を保存しますか？',

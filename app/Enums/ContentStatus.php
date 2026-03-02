@@ -28,11 +28,56 @@ namespace App\Enums;
  * コンテンツステータス
  * ページ、ブログ記事などの公開状態を管理
  */
-enum ContentStatus: string
+enum ContentStatus: int
 {
-    case DRAFT = 'draft';           // 下書き
-    case PUBLISHED = 'published';   // 公開
-    case SCHEDULED = 'scheduled';   // 日付指定
+    case DRAFT = 0;       // 下書き
+    case PUBLISHED = 1;   // 公開
+    case SCHEDULED = 2;   // 日付指定
+
+    /**
+     * 旧文字列識別子（スラッグ）を取得
+     *
+     * JS/Alpine.jsとの互換性維持に使用。
+     * フォームの値やJSに渡す場合はこのメソッドを使用する。
+     */
+    public function slug(): string
+    {
+        return match ($this) {
+            self::DRAFT => 'draft',
+            self::PUBLISHED => 'published',
+            self::SCHEDULED => 'scheduled',
+        };
+    }
+
+    /**
+     * スラッグ文字列からEnumインスタンスを取得
+     *
+     * @throws \ValueError スラッグが見つからない場合
+     */
+    public static function fromSlug(string $slug): self
+    {
+        foreach (self::cases() as $case) {
+            if ($case->slug() === $slug) {
+                return $case;
+            }
+        }
+
+        throw new \ValueError("\"$slug\" is not a valid slug for ".self::class);
+    }
+
+    /**
+     * スラッグ文字列からEnumインスタンスを取得（失敗時はnull）
+     */
+    public static function tryFromSlug(string $slug): ?self
+    {
+        foreach (self::cases() as $case) {
+            if ($case->slug() === $slug) {
+                return $case;
+            }
+        }
+
+        return null;
+    }
 
     /**
      * ステータスの表示名を取得
@@ -76,9 +121,9 @@ enum ContentStatus: string
     public static function toArray(): array
     {
         return [
-            self::DRAFT->value => self::DRAFT->label(),
-            self::PUBLISHED->value => self::PUBLISHED->label(),
-            self::SCHEDULED->value => self::SCHEDULED->label(),
+            self::DRAFT->slug() => self::DRAFT->label(),
+            self::PUBLISHED->slug() => self::PUBLISHED->label(),
+            self::SCHEDULED->slug() => self::SCHEDULED->label(),
         ];
     }
 
@@ -99,15 +144,15 @@ enum ContentStatus: string
     public static function optionsWithDescription(): array
     {
         return [
-            self::DRAFT->value => [
+            self::DRAFT->slug() => [
                 'label' => self::DRAFT->label(),
                 'description' => self::DRAFT->description(),
             ],
-            self::PUBLISHED->value => [
+            self::PUBLISHED->slug() => [
                 'label' => self::PUBLISHED->label(),
                 'description' => self::PUBLISHED->description(),
             ],
-            self::SCHEDULED->value => [
+            self::SCHEDULED->slug() => [
                 'label' => self::SCHEDULED->label(),
                 'description' => self::SCHEDULED->description(),
             ],

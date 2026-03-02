@@ -39,14 +39,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{-- エディタータイプ（固定表示） --}}
                 <div>
                     <x-form-label :text="__('admin/front.edit.editor_type_label')" />
-                    <div class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
-                        <i class="{{ $editorTypeIcon }} text-lg" style="color: {{ $editorTypeColor }}"></i>
-                        <div>
-                            <div class="font-medium text-gray-900 dark:text-white">{{ $editorTypeLabel }}</div>
-                            <div class="text-sm text-gray-500 dark:text-gray-400">{{ $editorTypeDescription }}</div>
-                        </div>
-                    </div>
-                    <x-form-help-text :text="__('admin/front.edit.editor_type_locked_help')" />
+                    <x-content-editor.type-badge
+                        :icon="$editorTypeIcon"
+                        :color="$editorTypeColor"
+                        :label="$editorTypeLabel"
+                        :description="$editorTypeDescription"
+                    />
                 </div>
 
                 {{-- 言語（固定表示） --}}
@@ -57,31 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 {{-- タブナビゲーション（HTML エディタ時のみ） --}}
                 @if ($isHtmlEditor)
-                    <div class="border-b border-gray-200 dark:border-gray-600">
-                        <nav class="flex -mb-px space-x-4">
-                            <button type="button" @click="activeTab = 'content'"
-                                    class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
-                                    :class="activeTab === 'content'
-                                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'">
-                                <i class="fas fa-code mr-1.5"></i>{{ __('admin/front.edit.tab_content') }}
-                            </button>
-                            <button type="button" @click="activeTab = 'css'"
-                                    class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
-                                    :class="activeTab === 'css'
-                                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'">
-                                <i class="fab fa-css3-alt mr-1.5"></i>{{ __('admin/front.edit.tab_css') }}
-                            </button>
-                            <button type="button" @click="activeTab = 'js'"
-                                    class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
-                                    :class="activeTab === 'js'
-                                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'">
-                                <i class="fab fa-js mr-1.5"></i>{{ __('admin/front.edit.tab_js') }}
-                            </button>
-                        </nav>
-                    </div>
+                    <x-content-editor.tabs />
                 @endif
 
                 {{-- Content タブ --}}
@@ -101,7 +75,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if ($isHtmlEditor)
                     {{-- CSS タブ --}}
                     <div x-show="activeTab === 'css'" x-cloak>
-                        <x-form-label :for="'custom_css'" :text="__('admin/front.edit.tab_css')" />
+                        <x-form-label :for="'custom_css'" :text="__('components/content-editor.tab_css')" />
                         <x-form-textarea
                             id="custom_css"
                             name="custom_css"
@@ -115,7 +89,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     {{-- JavaScript タブ --}}
                     <div x-show="activeTab === 'js'" x-cloak>
-                        <x-form-label :for="'custom_js'" :text="__('admin/front.edit.tab_js')" />
+                        <x-form-label :for="'custom_js'" :text="__('components/content-editor.tab_js')" />
                         <x-form-textarea
                             id="custom_js"
                             name="custom_js"
@@ -154,37 +128,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
              :style="rightSidebarReady ? 'transition: transform 300ms ease-in-out' : ''">
 
             {{-- 保存方法 --}}
-            <div>
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                    {{ __('admin/front.edit.storage_section') }}
-                </h3>
-
-                <div>
-                    <x-form-label :text="__('admin/front.edit.storage_type_label')" />
-                    <x-form-select
-                        name="storage_type"
-                        :options="collect($storageOptions)->mapWithKeys(fn ($opt, $key) => [$key => $opt['label']])->all()"
-                        :value="old('storage_type', $storageType)"
-                        xModel="storageType"
-                    />
-                    <x-form-error name="storage_type" />
-                </div>
-
-                <div class="mt-2 text-sm space-y-1" x-show="isFileStorage" x-cloak>
-                    <div>
-                        <span class="text-gray-500 dark:text-gray-400">{{ __('admin/front.edit.storage_file_path') }}</span>
-                        <span class="font-mono text-blue-600 dark:text-blue-400 break-all" x-text="filePath"></span>
-                    </div>
-                    <div x-show="isHtmlEditor && jsFilePath" x-cloak>
-                        <span class="text-gray-500 dark:text-gray-400">JS:</span>
-                        <span class="font-mono text-blue-600 dark:text-blue-400 break-all" x-text="jsFilePath"></span>
-                    </div>
-                    <div x-show="isHtmlEditor && cssFilePath" x-cloak>
-                        <span class="text-gray-500 dark:text-gray-400">CSS:</span>
-                        <span class="font-mono text-blue-600 dark:text-blue-400 break-all" x-text="cssFilePath"></span>
-                    </div>
-                </div>
-            </div>
+            <x-content-editor.storage-info
+                :storageOptions="$storageOptions"
+                :storageType="old('storage_type', $storageType)"
+                :showJsCss="true"
+            />
 
         </div>
     </form>

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,33 +28,30 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
-        // front_pagesテーブル作成
         Schema::create('front_pages', function (Blueprint $table) {
             $table->id();
-            $table->string('page_type', 50)->default('main_content')->unique();
+            $table->string('page_type', 50)->default('main_content');
+            $table->string('lang', 10)->default('en');
             $table->string('title')->nullable();
             $table->text('content')->nullable();
-            $table->text('content_html')->nullable();
-            $table->text('content_markdown')->nullable();
-            $table->text('content_blade')->nullable();
-            $table->string('storage_type', 20)->default('database');
-            $table->string('editor_type', 20)->default('html');
-            $table->enum('status', ['draft', 'published'])->default('published');
+            $table->text('custom_js')->nullable();
+            $table->text('custom_css')->nullable();
+            $table->tinyInteger('storage_type')->default(0);
+            $table->tinyInteger('editor_type')->default(3);
+            $table->tinyInteger('status')->default(1);
             $table->timestamps();
+
+            $table->unique(['page_type', 'lang']);
         });
     }
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('front_pages');
     }

@@ -34,8 +34,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 use App\Enums\ContentStorageType;
 use App\Enums\ContentEditorType;
 
-$storageTypeEnum = is_string($storageType) ? ContentStorageType::from($storageType) : $storageType;
-$editorTypeEnum = is_string($editorType) ? ContentEditorType::from($editorType) : $editorType;
+$storageTypeEnum = is_string($storageType) ? ContentStorageType::fromSlug($storageType) : $storageType;
+$editorTypeEnum = is_string($editorType) ? ContentEditorType::fromSlug($editorType) : $editorType;
 @endphp
 
 @php
@@ -53,8 +53,8 @@ $editorTranslations = [
 
 <div data-translations='@json($editorTranslations)'
      x-data="{
-    storageType: '{{ $storageTypeEnum->value }}',
-    editorType: '{{ $editorTypeEnum->value }}',
+    storageType: '{{ $storageTypeEnum->slug() }}',
+    editorType: '{{ $editorTypeEnum->slug() }}',
     content: @js($content),
     identifier: @js($identifier),
     
@@ -113,7 +113,7 @@ $editorTranslations = [
         <x-form-radio-card-group
             :name="$storageFieldName"
             :options="$storageOptions"
-            :value="$storageTypeEnum->value"
+            :value="$storageTypeEnum->slug()"
             xModel="storageType"
             :columns="2"
             color="blue"

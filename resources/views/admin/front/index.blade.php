@@ -57,20 +57,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ __('admin/front.index.edit_button') }}
                 </x-form-button>
 
-                <form action="{{ route('admin.front.destroy') }}"
-                      method="POST"
-                      x-data
-                      x-on:submit.prevent="if (confirm('{{ __('admin/front.index.reset_confirm') }}')) $el.submit()">
-                    @csrf
-                    @method('DELETE')
-                    <x-form-button
-                        type="submit"
-                        variant="danger"
-                        icon="fas fa-undo"
-                    >
-                        {{ __('admin/front.index.reset_button') }}
-                    </x-form-button>
-                </form>
+                <x-form-button
+                    type="button"
+                    variant="danger"
+                    icon="fas fa-undo"
+                    @click="openModal('resetFrontPageModal')"
+                >
+                    {{ __('admin/front.index.reset_button') }}
+                </x-form-button>
             </div>
         </div>
     @else
@@ -94,5 +88,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{ __('admin/front.index.create_button') }}
             </x-form-button>
         </div>
+    @endif
+
+    @if ($frontPage)
+        <x-ui-modal
+            id="resetFrontPageModal"
+            :title="__('admin/front.index.reset_confirm_title')"
+            :message="__('admin/front.index.reset_confirm')"
+            :confirm-label="__('admin/front.index.reset_button')"
+            :cancel-label="__('common.cancel')"
+            icon-type="danger"
+            confirm-color="red"
+            form="front-page-reset-form"
+        />
+
+        <form id="front-page-reset-form"
+              action="{{ route('admin.front.destroy') }}"
+              method="POST"
+              style="display: none;">
+            @csrf
+            @method('DELETE')
+        </form>
     @endif
 @endsection
