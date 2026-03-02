@@ -196,12 +196,22 @@ class PatternRegistry
             return $files;
         }
 
+        // スキャン対象から除外するディレクトリ
+        $excludeDirs = ['tests', 'vendor', 'node_modules'];
+
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS)
         );
 
         foreach ($iterator as $file) {
             if (! $file->isFile()) {
+                continue;
+            }
+
+            // 除外ディレクトリ内のファイルをスキップ
+            $relativePath = str_replace($dir.'/', '', $file->getPathname());
+            $topDir = explode('/', $relativePath)[0] ?? '';
+            if (in_array($topDir, $excludeDirs, true)) {
                 continue;
             }
 
