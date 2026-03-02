@@ -339,6 +339,7 @@ return [
         'attention_reason_system_register_middleware' => 'ミドルウェアの登録権限を使用します',
         'attention_reason_database_core_tables' => 'コアテーブルへのアクセス権限を使用します',
         'attention_reason_undeclared_usage' => '未宣言の権限を使用しています',
+        'attention_reason_mismatch_undeclared_usage' => '未宣言の権限使用が検出されました（:count件）',
         'attention_reason_system_modify_routes' => 'ルートの変更権限を使用します',
         'csp_status' => 'CSP対応',
         'csp_compliant' => '対応済み',

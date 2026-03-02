@@ -387,7 +387,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
             $riskReasons = $auditData['risk_reasons'] ?? [];
             $riskScore = $this->calculateRiskScore($riskLevel);
         } else {
-            $riskResult = $this->calculateRiskLevelWithReasons($permissions);
+            $riskResult = $this->calculateUnifiedRiskLevel($permissions);
             $riskLevel = $riskResult['level'];
             $riskReasons = $riskResult['reasons'];
             $riskScore = $riskResult['score'];
@@ -488,10 +488,49 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
+     * 宣言された権限と不一致情報からリスクレベルを統一計算
+     *
+     * 宣言ベースのスコアリングに加え、未宣言使用（undeclared_usage）の
+     * 不一致ペナルティを加算して統一的なリスクレベルを返します。
+     *
+     * @param  array  $declaredPermissions  plugin.json の permissions
+     * @param  array  $mismatches  権限の不一致リスト（comparePermissions() の結果）
+     * @return array{level: string, reasons: array, score: int}
+     */
+    public function calculateUnifiedRiskLevel(array $declaredPermissions, array $mismatches = []): array
+    {
+        // 宣言ベースのスコアリング
+        $result = $this->calculateRiskLevelWithReasons($declaredPermissions);
+        $score = $result['score'];
+        $reasons = $result['reasons'];
+
+        // 未宣言使用の不一致ペナルティ
+        $undeclaredCount = count(array_filter($mismatches, fn ($m) => ($m['type'] ?? '') === 'undeclared_usage'));
+        if ($undeclaredCount > 0) {
+            $penalty = $undeclaredCount * 2;
+            $score += $penalty;
+            $reasons[] = ['key' => 'mismatch.undeclared_usage', 'severity' => 'high', 'score' => $penalty, 'count' => $undeclaredCount];
+        }
+
+        // 閾値判定
+        $level = 'low';
+        if ($score >= 5) {
+            $level = 'high';
+        } elseif ($score >= 2) {
+            $level = 'medium';
+        }
+
+        return [
+            'level' => $level,
+            'reasons' => $reasons,
+            'score' => $score,
+        ];
+    }
+
+    /**
      * リスクレベルと理由を計算
      *
-     * @deprecated PluginHealthScorer::calculate() を使用してください。
-     *             リスクスコア（0-10）は非推奨です。健全性スコア（0-100）に移行してください。
+     * @deprecated calculateUnifiedRiskLevel() を使用してください。
      *
      * @return array ['level' => string, 'reasons' => array, 'score' => int]
      */
