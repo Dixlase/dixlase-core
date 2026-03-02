@@ -276,6 +276,7 @@ return [
         'audit_button' => 'スキャン',
         'audit_button_rescan' => '再スキャン',
         'audit_scanning' => 'スキャン中...',
+        'audit_scanning_description' => 'プラグインのセキュリティスキャンを実行しています。完了するまでお待ちください。',
         'audit_not_scanned' => '未スキャン',
         'audit_last_scanned' => '最終スキャン',
         'audit_result_title' => 'スキャン結果',

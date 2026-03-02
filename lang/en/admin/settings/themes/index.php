@@ -107,6 +107,7 @@ return [
         'audit_button' => 'Scan',
         'audit_button_rescan' => 'Rescan',
         'audit_scanning' => 'Scanning...',
+        'audit_scanning_description' => 'Running a security scan on the theme. Please wait until it completes.',
         'audit_not_scanned' => 'Not Scanned',
         'audit_last_scanned' => 'Last Scanned',
         'audit_result_title' => 'Scan Results',
