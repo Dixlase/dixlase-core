@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -39,7 +39,7 @@ class CaptchaResult
 
     public function hasErrors(): bool
     {
-        return !empty($this->errors);
+        return ! empty($this->errors);
     }
 
     public function getErrors(): array
@@ -72,7 +72,7 @@ class CaptchaResult
         if (empty($this->errors)) {
             return 'CAPTCHA verification failed.';
         }
-        
+
         return implode(', ', $this->errors);
     }
 }
