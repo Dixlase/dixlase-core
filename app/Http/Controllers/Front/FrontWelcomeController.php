@@ -50,25 +50,26 @@ class FrontWelcomeController extends FrontController
         $frontContent = null;
         $frontEditorType = 'html';
 
-        $frontCustomJs = null;
-        $frontCustomCss = null;
+        $hasCustomJs = false;
+        $hasCustomCss = false;
 
         if ($frontPage) {
             $locale = App::getLocale();
             $frontContent = $this->contentService->getContent($frontPage, $locale);
             $frontEditorType = $frontPage->editor_type->slug() ?? 'html';
 
-            // HTML エディタ時は JS/CSS コンテンツも取得
+            // HTML editor: check if custom JS/CSS exists for external file delivery
             if ($frontPage->editor_type === ContentEditorType::HTML) {
-                $frontCustomJs = $this->contentService->getJsContent($frontPage, $locale);
-                $frontCustomCss = $this->contentService->getCssContent($frontPage, $locale);
+                $hasCustomJs = ! empty($this->contentService->getJsContent($frontPage, $locale));
+                $hasCustomCss = ! empty($this->contentService->getCssContent($frontPage, $locale));
             }
         }
 
         $this->viewParams['frontContent'] = $frontContent;
         $this->viewParams['frontEditorType'] = $frontEditorType;
-        $this->viewParams['frontCustomJs'] = $frontCustomJs;
-        $this->viewParams['frontCustomCss'] = $frontCustomCss;
+        $this->viewParams['hasCustomJs'] = $hasCustomJs;
+        $this->viewParams['hasCustomCss'] = $hasCustomCss;
+        $this->viewParams['customAssetVersion'] = $frontPage?->updated_at?->timestamp ?? 0;
 
         return view('themes::index', $this->viewParams);
     }

@@ -22,6 +22,7 @@
 
 use App\Helpers\PluginHelper;
 use App\Http\Controllers\CspReportController;
+use App\Http\Controllers\Front\FrontCustomAssetController;
 use App\Http\Controllers\Front\FrontWelcomeController;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -41,6 +42,15 @@ Route::post('/csp-report', [CspReportController::class, 'report'])
 Route::middleware(['web', 'front.ip'])->group(
     function () {
         Route::get('/', [FrontWelcomeController::class, 'index'])->name('welcome');
+
+        // Front page custom JS/CSS external file delivery (CSP middleware excluded for non-HTML responses)
+        Route::get('/front/custom-script.js', [FrontCustomAssetController::class, 'script'])
+            ->name('front.custom-script')
+            ->withoutMiddleware([\App\Http\Middleware\ContentSecurityPolicy::class]);
+
+        Route::get('/front/custom-style.css', [FrontCustomAssetController::class, 'style'])
+            ->name('front.custom-style')
+            ->withoutMiddleware([\App\Http\Middleware\ContentSecurityPolicy::class]);
 
         // フロントログテスト用ルート（開発用）
         Route::get('/test-front-log', function () {
