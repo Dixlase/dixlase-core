@@ -10,13 +10,13 @@ Dixlase がプラグイン・テーマの安全性を評価する2つのスコ�
 
 `plugin.json` / `theme.json` で宣言された権限を評価します。スキャン結果の確認理由や注意レベルの判定に使用されます。
 
-### 閾値
+### しきい値
 
 | 合計スコア | リスクレベル |
 |-----------|-------------|
-| 0 – 1     | `low`（低）  |
-| 2 – 4     | `medium`（中）|
-| 5以上      | `high`（高） |
+| 0 – 2     | `low`（低）  |
+| 3 – 6     | `medium`（中）|
+| 7以上      | `high`（高） |
 
 ### プラグイン権限スコア
 
@@ -31,26 +31,21 @@ Dixlase がプラグイン・テーマの安全性を評価する2つのスコ�
 | `storage.public_uploads`        | +2     | 公開ディレクトリへのアップロード  |
 | `content.write_other_plugins`   | +2     | 他プラグインのコンテンツ書き込み  |
 
-#### 中リスク権限（スコア 1）
-
-| 権限                            | スコア | 説明                           |
-|---------------------------------|--------|-------------------------------|
-| `mail.send`                     | +1     | 個別メールの送信                |
-| `settings.read_core`            | +1     | コア設定の読み取り              |
-| `system.register_middleware`    | +1     | ミドルウェアの登録              |
-| `database.core_tables`          | +1     | コアデータベーステーブルへのアクセス |
-
 #### 低リスク権限（スコア 0）
 
 | 権限                              | スコア | 説明                          |
 |-----------------------------------|--------|-------------------------------|
 | `database.own_tables`             | 0      | 専用テーブル                   |
+| `database.core_tables`            | 0      | コアデータベーステーブルへのアクセス |
 | `storage.own_directory`           | 0      | 専用ディレクトリ               |
 | `storage.temp_files`              | 0      | 一時ファイル                   |
+| `settings.read_core`              | 0      | コア設定の読み取り             |
 | `settings.write_own`              | 0      | 自己設定の書き込み             |
 | `members.read`                    | 0      | メンバーデータの読み取り        |
+| `mail.send`                       | 0      | 個別メールの送信               |
 | `content.read_other_plugins`      | 0      | 他プラグインのコンテンツ読取    |
 | `system.register_shortcodes`      | 0      | ショートコードの登録            |
+| `system.register_middleware`      | 0      | ミドルウェアの登録              |
 | `system.register_commands`        | 0      | コマンドの登録                 |
 | `system.register_blade_directives`| 0      | Blade指令の登録                |
 | `system.modify_routes`            | 0      | ルートの変更                   |
@@ -72,14 +67,11 @@ Dixlase がプラグイン・テーマの安全性を評価する2つのスコ�
 |---------------------------------|--------|-------------------------------|
 | `storage.public_uploads`        | +2     | 公開ディレクトリへのアップロード  |
 | `assets.external_resources`     | +3     | 外部リソースの読み込み          |
-| `database.core_tables`          | +2     | コアデータベーステーブルへのアクセス |
 
 #### 中リスク権限（スコア 1）
 
 | 権限                                 | スコア | 説明                           |
 |--------------------------------------|--------|-------------------------------|
-| `settings.read_core`                 | +1     | コア設定の読み取り              |
-| `system.register_middleware`         | +1     | ミドルウェアの登録              |
 | `system.register_commands`           | +1     | コマンドの登録                  |
 | `system.register_blade_directives`   | +1     | Blade指令の登録                |
 | `system.modify_routes`              | +1     | ルートの変更                   |
@@ -89,12 +81,15 @@ Dixlase がプラグイン・テーマの安全性を評価する2つのスコ�
 | 権限                        | スコア | 説明                          |
 |-----------------------------|--------|-------------------------------|
 | `database.own_tables`       | 0      | 専用テーブル                   |
+| `database.core_tables`      | 0      | コアデータベーステーブルへのアクセス |
 | `storage.own_directory`     | 0      | 専用ディレクトリ               |
 | `storage.temp_files`        | 0      | 一時ファイル                   |
+| `settings.read_core`        | 0      | コア設定の読み取り             |
 | `settings.write_own`        | 0      | 自己設定の書き込み             |
 | `assets.custom_css`         | 0      | カスタムCSS                   |
 | `assets.custom_js`          | 0      | カスタムJS                    |
 | `system.register_shortcodes`| 0      | ショートコードの登録            |
+| `system.register_middleware`| 0      | ミドルウェアの登録              |
 
 ---
 
@@ -104,7 +99,7 @@ Dixlase がプラグイン・テーマの安全性を評価する2つのスコ�
 
 ソース: `PluginHealthScorer`（`PluginHealthStatus::getDeductionRules()` を使用）
 
-### 健全性ステータスの閾値
+### 健全性ステータスのしきい値
 
 | スコア範囲 | ステータス        | 表示ラベル  |
 |-----------|------------------|------------|
@@ -207,7 +202,7 @@ Dixlase がプラグイン・テーマの安全性を評価する2つのスコ�
 | ファイル | 説明 |
 |---------|------|
 | `app/Services/Plugin/PluginHealthScorer.php` | 健全性スコア計算 |
-| `app/Enums/PluginHealthStatus.php` | ステータス閾値と減点ルール |
+| `app/Enums/PluginHealthStatus.php` | ステータスしきい値と減点ルール |
 | `app/Services/Plugin/PluginPermissionService.php` | プラグインリスクスコア |
 | `app/Services/Theme/ThemePermissionService.php` | テーマリスクスコア |
 | `app/Contracts/Plugin/PluginPermissionServiceInterface.php` | サービスコントラクト |

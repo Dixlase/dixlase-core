@@ -402,11 +402,11 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             $reasons[] = ['key' => 'mismatch.undeclared_usage', 'severity' => 'high', 'score' => $penalty, 'count' => $undeclaredCount];
         }
 
-        // 閾値判定
+        // しきい値判定
         $level = 'low';
-        if ($score >= 5) {
+        if ($score >= 7) {
             $level = 'high';
-        } elseif ($score >= 2) {
+        } elseif ($score >= 3) {
             $level = 'medium';
         }
 
@@ -438,20 +438,8 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             $score += 3;
             $reasons[] = ['key' => 'assets.external_resources', 'severity' => 'high', 'score' => 3];
         }
-        if (! empty($permissions['database']['core_tables'] ?? [])) {
-            $score += 2;
-            $reasons[] = ['key' => 'database.core_tables', 'severity' => 'high', 'score' => 2];
-        }
 
         // 中リスク権限（スコア1）
-        if ($permissions['settings']['read_core'] ?? false) {
-            $score += 1;
-            $reasons[] = ['key' => 'settings.read_core', 'severity' => 'medium', 'score' => 1];
-        }
-        if ($permissions['system']['register_middleware'] ?? false) {
-            $score += 1;
-            $reasons[] = ['key' => 'system.register_middleware', 'severity' => 'medium', 'score' => 1];
-        }
         if ($permissions['system']['register_commands'] ?? false) {
             $score += 1;
             $reasons[] = ['key' => 'system.register_commands', 'severity' => 'medium', 'score' => 1];
@@ -466,9 +454,9 @@ class ThemePermissionService implements ThemePermissionServiceInterface
         }
 
         $level = 'low';
-        if ($score >= 5) {
+        if ($score >= 7) {
             $level = 'high';
-        } elseif ($score >= 2) {
+        } elseif ($score >= 3) {
             $level = 'medium';
         }
 

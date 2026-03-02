@@ -77,7 +77,7 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
             'settings' => ['read_core' => false, 'write_own' => true],
             'members' => ['read' => true, 'write' => false, 'create' => false, 'delete' => false],
             'mail' => ['send' => false, 'bulk_send' => false],
-            'content' => ['read_other_plugins' => false, 'write_other_plugins' => []],
+            'content' => ['read_other_plugins' => false, 'write_other_plugins' => true],
             'system' => [
                 'register_shortcodes' => false,
                 'register_middleware' => false,
@@ -89,8 +89,9 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
 
         $result = $this->service->calculateUnifiedRiskLevel($permissions);
 
+        // storage.public_uploads (+2) + content.write_other_plugins (+2) = 4 → medium
         $this->assertEquals('medium', $result['level']);
-        $this->assertEquals(2, $result['score']);
+        $this->assertEquals(4, $result['score']);
         $this->assertNotEmpty($result['reasons']);
     }
 
@@ -101,7 +102,7 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
     {
         $permissions = [
             'database' => ['own_tables' => true, 'core_tables' => []],
-            'storage' => ['own_directory' => false, 'public_uploads' => false, 'temp_files' => false],
+            'storage' => ['own_directory' => false, 'public_uploads' => true, 'temp_files' => false],
             'settings' => ['read_core' => false, 'write_own' => false],
             'members' => ['read' => true, 'write' => true, 'create' => true, 'delete' => false],
             'mail' => ['send' => false, 'bulk_send' => false],
@@ -118,8 +119,8 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
         $result = $this->service->calculateUnifiedRiskLevel($permissions);
 
         $this->assertEquals('high', $result['level']);
-        // members.write (+3) + members.create (+3) = 6 >= 5
-        $this->assertGreaterThanOrEqual(5, $result['score']);
+        // members.write (+3) + members.create (+3) + storage.public_uploads (+2) = 8 >= 7
+        $this->assertGreaterThanOrEqual(7, $result['score']);
     }
 
     /**
@@ -179,17 +180,18 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
             ],
         ];
 
-        // 未宣言使用が3件（+2 * 3 = +6 >= 5）
+        // 未宣言使用が4件（+2 * 4 = +8 >= 7）
         $mismatches = [
             ['type' => 'undeclared_usage', 'permission' => 'mail.send'],
             ['type' => 'undeclared_usage', 'permission' => 'members.read'],
             ['type' => 'undeclared_usage', 'permission' => 'storage.public_uploads'],
+            ['type' => 'undeclared_usage', 'permission' => 'members.write'],
         ];
 
         $result = $this->service->calculateUnifiedRiskLevel($permissions, $mismatches);
 
         $this->assertEquals('high', $result['level']);
-        $this->assertGreaterThanOrEqual(5, $result['score']);
+        $this->assertGreaterThanOrEqual(7, $result['score']);
     }
 
     /**
@@ -200,7 +202,7 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
         $permissions = [
             'database' => ['own_tables' => true, 'core_tables' => []],
             'storage' => ['own_directory' => false, 'public_uploads' => true, 'temp_files' => false],
-            'settings' => ['read_core' => true, 'write_own' => false],
+            'settings' => ['read_core' => false, 'write_own' => false],
             'members' => ['read' => false, 'write' => false, 'create' => false, 'delete' => false],
             'mail' => ['send' => false, 'bulk_send' => false],
             'content' => ['read_other_plugins' => false, 'write_other_plugins' => []],
@@ -281,10 +283,10 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
     {
         $permissions = [
             'database' => ['own_tables' => true, 'core_tables' => []],
-            'storage' => ['own_directory' => false, 'public_uploads' => false, 'temp_files' => false],
-            'settings' => ['read_core' => true, 'write_own' => false],
-            'members' => ['read' => false, 'write' => false, 'create' => false, 'delete' => false],
-            'mail' => ['send' => true, 'bulk_send' => false],
+            'storage' => ['own_directory' => false, 'public_uploads' => true, 'temp_files' => false],
+            'settings' => ['read_core' => false, 'write_own' => false],
+            'members' => ['read' => false, 'write' => true, 'create' => false, 'delete' => false],
+            'mail' => ['send' => false, 'bulk_send' => false],
             'content' => ['read_other_plugins' => false, 'write_other_plugins' => []],
             'system' => [
                 'register_shortcodes' => false,
@@ -302,8 +304,8 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
         $this->assertEquals($resultWithout['level'], $resultWith['level']);
         $this->assertEquals($resultWithout['score'], $resultWith['score']);
 
-        // settings.read_core (+1) + mail.send (+1) = 2 → medium
+        // storage.public_uploads (+2) + members.write (+3) = 5 → medium
         $this->assertEquals('medium', $resultWithout['level']);
-        $this->assertEquals(2, $resultWithout['score']);
+        $this->assertEquals(5, $resultWithout['score']);
     }
 }
