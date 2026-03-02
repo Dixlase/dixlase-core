@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,11 +22,11 @@
 
 namespace App\Captcha;
 
+use App\Helpers\CaptchaHelper;
+use App\Services\CaptchaFailoverService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Helpers\CaptchaHelper;
-use App\Services\CaptchaFailoverService;
 
 class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
 {
@@ -45,7 +45,7 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
 
     public function renderScript(): string
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return '';
         }
 
@@ -53,31 +53,32 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
         $nonce = '';
         if (function_exists('csp_nonce')) {
             $nonceValue = csp_nonce();
-            $nonce = $nonceValue ? ' nonce="' . $nonceValue . '"' : '';
+            $nonce = $nonceValue ? ' nonce="'.$nonceValue.'"' : '';
         }
 
         $siteKey = $this->config['site_key'];
+
         return "<script src=\"https://www.google.com/recaptcha/enterprise.js?render={$siteKey}\"{$nonce}></script>";
     }
 
     public function renderWidget(array $options = []): string
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return '';
         }
 
         $siteKey = $this->config['site_key'];
         $action = $options['action'] ?? 'submit';
         $scriptTag = $this->renderScript();
-        
+
         // Get CSP nonce for inline script
         $nonce = '';
         if (function_exists('csp_nonce')) {
             $nonceValue = csp_nonce();
-            $nonce = $nonceValue ? ' nonce="' . $nonceValue . '"' : '';
+            $nonce = $nonceValue ? ' nonce="'.$nonceValue.'"' : '';
         }
-        
-        return $scriptTag . "
+
+        return $scriptTag."
             <input type=\"hidden\" id=\"g-recaptcha-response\" name=\"g-recaptcha-response\" value=\"\">
             <script{$nonce}>
                 document.addEventListener('DOMContentLoaded', function() {
@@ -97,12 +98,12 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
 
     public function verify(Request $request): CaptchaResult
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return new CaptchaResult(true, null, null, [], ['bypass' => true]);
         }
 
         $token = $request->input('g-recaptcha-response');
-        
+
         if (empty($token)) {
             return new CaptchaResult(false, null, null, ['captcha' => 'reCAPTCHA response is required']);
         }
@@ -113,41 +114,39 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
     protected function verifyWithEnterpriseAPI(Request $request, string $token): CaptchaResult
     {
         try {
-            
             // Enterprise REST APIを使用（APIキーベース認証）
             $apiUrl = "https://recaptchaenterprise.googleapis.com/v1/projects/{$this->config['project_id']}/assessments?key={$this->config['api_key']}";
-            
+
             $payload = [
                 'event' => [
                     'token' => $token,
                     'siteKey' => $this->config['site_key'],
                     'userIpAddress' => $request->ip(),
                     'userAgent' => $request->userAgent() ?? '',
-                    'expectedAction' => 'admin_login'
-                ]
+                    'expectedAction' => 'admin_login',
+                ],
             ];
 
-            
             $timeout = config('security.external_services.captcha_timeout', 10);
-            
+
             $httpResponse = Http::timeout($timeout)
                 ->withHeaders([
                     'Content-Type' => 'application/json',
                 ])->post($apiUrl, $payload);
-            
-            if (!$httpResponse->successful()) {
+
+            if (! $httpResponse->successful()) {
                 Log::error('reCAPTCHA Enterprise API HTTP error', [
                     'status' => $httpResponse->status(),
                     'body' => $httpResponse->body(),
-                    'ip' => $request->ip()
+                    'ip' => $request->ip(),
                 ]);
-                
-                throw new \Exception('Enterprise API request failed: ' . $httpResponse->body());
+
+                throw new \Exception('Enterprise API request failed: '.$httpResponse->body());
             }
-            
+
             $result = $httpResponse->json();
-            
-            if (!($result['tokenProperties']['valid'] ?? false)) {
+
+            if (! ($result['tokenProperties']['valid'] ?? false)) {
                 Log::warning('reCAPTCHA Enterprise verification failed', [
                     'reason' => $result['tokenProperties']['invalidReason'] ?? 'unknown',
                     'ip' => $request->ip(),
@@ -184,9 +183,8 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
 
             // 成功を記録
             CaptchaFailoverService::recordSuccess('google_enterprise');
-            
-            return new CaptchaResult(true, $score, $action, [], ['score' => $score]);
 
+            return new CaptchaResult(true, $score, $action, [], ['score' => $score]);
         } catch (\Exception $e) {
             Log::error('reCAPTCHA Enterprise verification error', [
                 'error' => $e->getMessage(),
@@ -194,8 +192,8 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
                 'error_code' => $e->getCode(),
                 'ip' => $request->ip(),
                 'project_id' => $this->config['project_id'] ?? 'not_set',
-                'site_key' => substr($this->config['site_key'] ?? '', 0, 10) . '...',
-                'token_length' => strlen($token)
+                'site_key' => substr($this->config['site_key'] ?? '', 0, 10).'...',
+                'token_length' => strlen($token),
             ]);
 
             // 失敗を記録（自動フェイルオーバーのトリガー）
@@ -203,11 +201,12 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
 
             // 障害時の挙動を設定から取得
             $onFailure = config('security.external_services.captcha_on_failure', 'fail_closed');
-            
+
             if ($onFailure === 'fail_open') {
                 Log::warning('CAPTCHA verification failed but fail_open is configured, allowing request', [
                     'ip' => $request->ip(),
                 ]);
+
                 return new CaptchaResult(
                     true,
                     null,
@@ -221,7 +220,7 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
                 false,
                 null,
                 null,
-                ['captcha' => 'reCAPTCHA verification error: ' . $e->getMessage()],
+                ['captcha' => 'reCAPTCHA verification error: '.$e->getMessage()],
                 ['exception' => $e->getMessage(), 'exception_class' => get_class($e)]
             );
         }
@@ -229,7 +228,7 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
 
     public function rules(): array
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return [];
         }
 

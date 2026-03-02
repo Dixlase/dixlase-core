@@ -1,14 +1,31 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\Logging;
 
 use App\Services\SystemNotificationService;
-use App\Models\SecuritySetting;
 use Illuminate\Support\Facades\DB;
-use App\Enums\LogLevel;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\LogRecord;
-use Illuminate\Support\Facades\Log;
 
 class SystemNotificationLogHandler extends AbstractProcessingHandler
 {
@@ -27,25 +44,24 @@ class SystemNotificationLogHandler extends AbstractProcessingHandler
     {
         try {
             // 通知機能が有効かチェック
-            if (!$this->shouldSendNotification($record)) {
+            if (! $this->shouldSendNotification($record)) {
                 return;
             }
 
             // 件名を生成
             $subject = $this->generateSubject($record);
-            
+
             // メッセージを生成
             $message = $this->generateMessage($record);
-            
+
             // コンテキスト情報を準備
             $context = $this->prepareContext($record);
 
             // 通知送信
             $this->notificationService->sendErrorNotification($subject, $message, $context);
-
         } catch (\Exception $e) {
             // 通知送信エラーは別のログに記録（無限ループを避けるため）
-            error_log("SystemNotificationLogHandler error: " . $e->getMessage());
+            error_log('SystemNotificationLogHandler error: '.$e->getMessage());
         }
     }
 
@@ -55,7 +71,7 @@ class SystemNotificationLogHandler extends AbstractProcessingHandler
     private function shouldSendNotification(LogRecord $record): bool
     {
         // 通知機能が有効かチェック
-        if (!$this->notificationService->isNotificationEnabled()) {
+        if (! $this->notificationService->isNotificationEnabled()) {
             return false;
         }
 
@@ -85,7 +101,7 @@ class SystemNotificationLogHandler extends AbstractProcessingHandler
             $levels = DB::table('security_settings')
                 ->where('name', 'notification_log_levels')
                 ->value('value');
-            
+
             if (empty($levels)) {
                 return [];
             }
@@ -123,7 +139,7 @@ class SystemNotificationLogHandler extends AbstractProcessingHandler
     {
         $levelName = $record->level->name;
         $appName = env('APP_NAME', 'Dixlase');
-        
+
         return "【{$levelName}】システムエラーが発生しました - {$appName}";
     }
 
@@ -148,7 +164,7 @@ class SystemNotificationLogHandler extends AbstractProcessingHandler
         ];
 
         // 既存のコンテキスト情報をマージ
-        if (!empty($record->context)) {
+        if (! empty($record->context)) {
             $context = array_merge($context, $record->context);
         }
 

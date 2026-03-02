@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,10 +22,10 @@
 
 namespace App\Captcha;
 
+use App\Helpers\CaptchaHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Helpers\CaptchaHelper;
 
 class GoogleRecaptchaV2Driver implements CaptchaDriver
 {
@@ -43,7 +43,7 @@ class GoogleRecaptchaV2Driver implements CaptchaDriver
 
     public function renderScript(): string
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return '';
         }
 
@@ -51,7 +51,7 @@ class GoogleRecaptchaV2Driver implements CaptchaDriver
         $nonce = '';
         if (function_exists('csp_nonce')) {
             $nonceValue = csp_nonce();
-            $nonce = $nonceValue ? ' nonce="' . $nonceValue . '"' : '';
+            $nonce = $nonceValue ? ' nonce="'.$nonceValue.'"' : '';
         }
 
         return "<script src=\"https://www.google.com/recaptcha/api.js\" async defer{$nonce}></script>";
@@ -59,7 +59,7 @@ class GoogleRecaptchaV2Driver implements CaptchaDriver
 
     public function renderWidget(array $options = []): string
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return '';
         }
 
@@ -68,10 +68,10 @@ class GoogleRecaptchaV2Driver implements CaptchaDriver
         $action = $options['action'] ?? 'submit';
         $callback = $options['callback'] ?? 'onRecaptchaCallback';
         $scriptTag = $this->renderScript();
-        
+
         if ($version === 'v2_invisible') {
             // v2 Invisible: チェックボックスなし、フォーム送信時に自動実行
-            return $scriptTag . "
+            return $scriptTag."
                 <div id=\"recaptcha-container\" style=\"display:none;\"></div>
                 <script>
                     var recaptchaWidgetId;
@@ -142,20 +142,21 @@ class GoogleRecaptchaV2Driver implements CaptchaDriver
             ";
         } else {
             // v2 Checkbox: チェックボックス表示
-            return $scriptTag . "<div class=\"g-recaptcha\" data-sitekey=\"$siteKey\" data-callback=\"$callback\"></div>";
+            return $scriptTag."<div class=\"g-recaptcha\" data-sitekey=\"$siteKey\" data-callback=\"$callback\"></div>";
         }
     }
 
     public function verify(Request $request): CaptchaResult
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return new CaptchaResult(true, null, null, [], ['bypass' => true]);
         }
 
         $response = $request->input('g-recaptcha-response');
-        
+
         if (empty($response)) {
             Log::warning('GoogleRecaptchaV2Driver verify - No token provided');
+
             return new CaptchaResult(false, null, null, ['captcha' => 'reCAPTCHA response is required']);
         }
 
@@ -179,7 +180,6 @@ class GoogleRecaptchaV2Driver implements CaptchaDriver
                 ['captcha' => 'reCAPTCHA verification failed'],
                 ['error_codes' => $result['error-codes'] ?? []]
             );
-
         } catch (\Exception $e) {
             Log::error('GoogleRecaptchaV2Driver verification error', [
                 'error' => $e->getMessage(),
@@ -198,7 +198,7 @@ class GoogleRecaptchaV2Driver implements CaptchaDriver
 
     public function rules(): array
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return [];
         }
 
@@ -210,8 +210,9 @@ class GoogleRecaptchaV2Driver implements CaptchaDriver
     public function isEnabled(): bool
     {
         $version = CaptchaHelper::getGoogleVersion();
-        return CaptchaHelper::isEnabled() && 
-               CaptchaHelper::getDriver() === 'google' && 
+
+        return CaptchaHelper::isEnabled() &&
+               CaptchaHelper::getDriver() === 'google' &&
                ($version === 'v2_checkbox' || $version === 'v2_invisible');
     }
 }

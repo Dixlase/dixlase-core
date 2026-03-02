@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,10 +23,8 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Lang;
 
 class AdminResetPasswordNotification extends Notification
 {
@@ -99,15 +97,15 @@ class AdminResetPasswordNotification extends Notification
     protected function buildMailMessage($url)
     {
         $expireMinutes = config('auth.passwords.members.expire', 60);
-        
-        return (new MailMessage)
+
+        return (new MailMessage())
             ->subject(__('mail.password-reset.subject'))
             ->greeting(__('mail.password-reset.greeting'))
             ->line(__('mail.password-reset.line1'))
             ->action(__('mail.password-reset.action'), $url)
             ->line(__('mail.password-reset.line2', ['count' => $expireMinutes]))
             ->line(__('mail.password-reset.line3'))
-            ->salutation(__('mail.password-reset.regards') . ",\n\n" . config('app.name'));
+            ->salutation(__('mail.password-reset.regards').",\n\n".config('app.name'));
     }
 
     /**
@@ -124,7 +122,7 @@ class AdminResetPasswordNotification extends Notification
 
         // 管理画面用のパスワードリセットURLを生成
         $adminUrl = config('admin.url.admin_url', 'admin');
-        
+
         // url()ヘルパーを使用してリクエストのスキーム（http/https）を自動検出
         return url($adminUrl.'/reset-password/'.$this->token.'?email='.urlencode($notifiable->getEmailForPasswordReset()));
     }

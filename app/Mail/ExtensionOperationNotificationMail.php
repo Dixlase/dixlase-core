@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -34,15 +33,17 @@ class ExtensionOperationNotificationMail extends Mailable
     use Queueable, SerializesModels;
 
     public array $details;
+
     public string $operation;
+
     public bool $isUnhealthyWarning;
 
     /**
      * Create a new message instance.
      *
-     * @param array $details 拡張機能操作の詳細情報
-     * @param string $operation 操作種別 (installed, uninstalled, enabled, disabled)
-     * @param bool $isUnhealthyWarning 健全性警告メールかどうか
+     * @param  array  $details  拡張機能操作の詳細情報
+     * @param  string  $operation  操作種別 (installed, uninstalled, enabled, disabled)
+     * @param  bool  $isUnhealthyWarning  健全性警告メールかどうか
      */
     public function __construct(array $details, string $operation, bool $isUnhealthyWarning = false)
     {
@@ -55,7 +56,7 @@ class ExtensionOperationNotificationMail extends Mailable
     {
         $appName = config('app.name', 'Dixlase');
         $type = $this->details['type'] ?? 'plugin';
-        $typeLabel = __('mail.extension.type_' . $type);
+        $typeLabel = __('mail.extension.type_'.$type);
         $name = $this->details['name'] ?? 'Unknown';
 
         if ($this->isUnhealthyWarning) {
@@ -64,7 +65,7 @@ class ExtensionOperationNotificationMail extends Mailable
                 'type' => $typeLabel,
             ]);
         } else {
-            $subject = __('mail.extension.subject_' . $this->operation, [
+            $subject = __('mail.extension.subject_'.$this->operation, [
                 'app_name' => $appName,
                 'type' => $typeLabel,
                 'name' => $name,

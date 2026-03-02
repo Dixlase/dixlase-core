@@ -1,4 +1,25 @@
 <?php
+
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 /*
 This file is part of Dixlase.
 
@@ -21,17 +42,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 namespace App\Captcha;
 
-use Illuminate\Http\Client\Response;
+use App\Helpers\CaptchaHelper;
+use App\Services\CaptchaFailoverService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Models\SecuritySetting;
-use App\Helpers\CaptchaHelper;
-use App\Services\CaptchaFailoverService;
 
 class TurnstileCaptchaDriver implements CaptchaDriver
 {
     private string $siteKey;
+
     private string $secretKey;
 
     public function __construct(array $config = [])
@@ -44,17 +64,17 @@ class TurnstileCaptchaDriver implements CaptchaDriver
     {
         try {
             // Turnstileトークンを複数のキー名で試行
-            $token = $request->input('cf-turnstile-response') 
-                  ?? $request->input('turnstile-response') 
+            $token = $request->input('cf-turnstile-response')
+                  ?? $request->input('turnstile-response')
                   ?? $request->input('g-recaptcha-response');
             $remoteIp = $request->ip();
-            
+
             if (empty($token)) {
                 return new CaptchaResult(false, null, null, ['CAPTCHA token is missing']);
             }
-            
+
             $timeout = config('security.external_services.captcha_timeout', 10);
-            
+
             $response = Http::timeout($timeout)
                 ->asForm()
                 ->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
@@ -63,41 +83,43 @@ class TurnstileCaptchaDriver implements CaptchaDriver
                     'remoteip' => $remoteIp,
                 ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::error('Turnstile API request failed', [
                     'status' => $response->status(),
-                    'body' => $response->body()
+                    'body' => $response->body(),
                 ]);
+
                 return new CaptchaResult(false, null, null, ['API request failed']);
             }
 
             $data = $response->json();
 
-            if (!isset($data['success'])) {
+            if (! isset($data['success'])) {
                 Log::error('Invalid Turnstile API response format', ['response' => $data]);
+
                 return new CaptchaResult(false, null, null, ['Invalid API response format']);
             }
 
             if ($data['success']) {
                 // 成功を記録
                 CaptchaFailoverService::recordSuccess('turnstile');
+
                 return new CaptchaResult(true);
             }
 
             $errorCodes = $data['error-codes'] ?? [];
             $errorMessage = $this->getErrorMessage($errorCodes);
-            
+
             Log::warning('Turnstile verification failed', [
                 'error_codes' => $errorCodes,
-                'error_message' => $errorMessage
+                'error_message' => $errorMessage,
             ]);
 
             return new CaptchaResult(false, null, null, [$errorMessage]);
-
         } catch (\Exception $e) {
             Log::error('Turnstile verification exception', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             // 失敗を記録（自動フェイルオーバーのトリガー）
@@ -105,9 +127,10 @@ class TurnstileCaptchaDriver implements CaptchaDriver
 
             // 障害時の挙動を設定から取得
             $onFailure = config('security.external_services.captcha_on_failure', 'fail_closed');
-            
+
             if ($onFailure === 'fail_open') {
                 Log::warning('Turnstile verification failed but fail_open is configured, allowing request');
+
                 return new CaptchaResult(
                     true,
                     null,
@@ -133,7 +156,7 @@ class TurnstileCaptchaDriver implements CaptchaDriver
 
     public function renderWidget(array $attributes = []): string
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return '';
         }
 
@@ -145,7 +168,7 @@ class TurnstileCaptchaDriver implements CaptchaDriver
         ];
 
         $attributes = array_merge($defaultAttributes, $attributes);
-        
+
         $attributeString = '';
         foreach ($attributes as $key => $value) {
             $attributeString .= sprintf(' %s="%s"', $key, htmlspecialchars($value));
@@ -155,13 +178,13 @@ class TurnstileCaptchaDriver implements CaptchaDriver
         $nonce = '';
         if (function_exists('csp_nonce')) {
             $nonceValue = csp_nonce();
-            $nonce = $nonceValue ? ' nonce="' . $nonceValue . '"' : '';
+            $nonce = $nonceValue ? ' nonce="'.$nonceValue.'"' : '';
         }
 
-        $scriptTag = '<script src="' . $this->getScriptUrl() . '" async defer' . $nonce . '></script>';
+        $scriptTag = '<script src="'.$this->getScriptUrl().'" async defer'.$nonce.'></script>';
         $widgetTag = sprintf('<div%s></div>', $attributeString);
-        
-        return $scriptTag . "\n" . $widgetTag;
+
+        return $scriptTag."\n".$widgetTag;
     }
 
     public function getScriptUrl(): string
@@ -186,11 +209,11 @@ class TurnstileCaptchaDriver implements CaptchaDriver
 
     public function renderScript(): string
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return '';
         }
 
-        return '<script src="' . $this->getScriptUrl() . '" async defer></script>';
+        return '<script src="'.$this->getScriptUrl().'" async defer></script>';
     }
 
     public function rules(): array
@@ -203,8 +226,8 @@ class TurnstileCaptchaDriver implements CaptchaDriver
     public function isEnabled(): bool
     {
         $captchaDriver = CaptchaHelper::getDriver();
-        
-        return CaptchaHelper::isEnabled() && 
+
+        return CaptchaHelper::isEnabled() &&
                $captchaDriver === 'turnstile';
     }
 }

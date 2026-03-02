@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,10 +22,10 @@
 
 namespace App\Captcha;
 
+use App\Helpers\CaptchaHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Helpers\CaptchaHelper;
 
 class GoogleRecaptchaV3Driver implements CaptchaDriver
 {
@@ -43,7 +43,7 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
 
     public function renderScript(): string
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return '';
         }
 
@@ -51,31 +51,32 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
         $nonce = '';
         if (function_exists('csp_nonce')) {
             $nonceValue = csp_nonce();
-            $nonce = $nonceValue ? ' nonce="' . $nonceValue . '"' : '';
+            $nonce = $nonceValue ? ' nonce="'.$nonceValue.'"' : '';
         }
 
         $siteKey = $this->config['site_key'];
+
         return "<script src=\"https://www.google.com/recaptcha/api.js?render={$siteKey}\"{$nonce}></script>";
     }
 
     public function renderWidget(array $options = []): string
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return '';
         }
 
         $siteKey = $this->config['site_key'];
         $action = $options['action'] ?? 'submit';
         $scriptTag = $this->renderScript();
-        
+
         // Get CSP nonce for inline script
         $nonce = '';
         if (function_exists('csp_nonce')) {
             $nonceValue = csp_nonce();
-            $nonce = $nonceValue ? ' nonce="' . $nonceValue . '"' : '';
+            $nonce = $nonceValue ? ' nonce="'.$nonceValue.'"' : '';
         }
-        
-        return $scriptTag . "
+
+        return $scriptTag."
             <input type=\"hidden\" id=\"g-recaptcha-response\" name=\"g-recaptcha-response\" value=\"\">
             <script{$nonce}>
                 console.log('CAPTCHA v3 Debug - Site Key:', '$siteKey');
@@ -101,14 +102,15 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
 
     public function verify(Request $request): CaptchaResult
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return new CaptchaResult(true, null, null, [], ['bypass' => true]);
         }
 
         $response = $request->input('g-recaptcha-response');
-        
+
         if (empty($response)) {
             Log::warning('GoogleRecaptchaV3Driver verify - No token provided');
+
             return new CaptchaResult(false, null, null, ['captcha' => 'reCAPTCHA response is required']);
         }
 
@@ -121,7 +123,7 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
 
             $result = $httpResponse->json();
 
-            if (!$result['success']) {
+            if (! $result['success']) {
                 Log::warning('GoogleRecaptchaV3Driver verification failed', [
                     'errors' => $result['error-codes'] ?? [],
                     'ip' => $request->ip(),
@@ -161,7 +163,6 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
             }
 
             return new CaptchaResult(true, $score, $action, [], ['score' => $score]);
-
         } catch (\Exception $e) {
             Log::error('GoogleRecaptchaV3Driver verification error', [
                 'error' => $e->getMessage(),
@@ -180,7 +181,7 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
 
     public function rules(): array
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return [];
         }
 
@@ -191,8 +192,8 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
 
     public function isEnabled(): bool
     {
-        return CaptchaHelper::isEnabled() && 
-               CaptchaHelper::getDriver() === 'google' && 
+        return CaptchaHelper::isEnabled() &&
+               CaptchaHelper::getDriver() === 'google' &&
                CaptchaHelper::getGoogleVersion() === 'v3';
     }
 }

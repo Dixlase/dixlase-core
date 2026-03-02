@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -49,23 +49,23 @@ class MemberVerifiedNotification extends Notification
         $frontUrl = url('/');
         $adminUrl = route('admin.login');
 
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject(__('mail.verify-email.member_verification_completed.subject'))
             ->greeting(__('mail.verify-email.member_verification_completed.greeting', ['name' => $notifiable->name]))
             ->line(__('mail.verify-email.member_verification_completed.message'))
             ->line('') // 空白行
             ->line(__('mail.verify-email.member_verification_completed.member_info'))
-            ->line(__('mail.verify-email.member_verification_completed.name') . ': ' . $notifiable->name)
-            ->line(__('mail.verify-email.member_verification_completed.email') . ': ' . $notifiable->email)
+            ->line(__('mail.verify-email.member_verification_completed.name').': '.$notifiable->name)
+            ->line(__('mail.verify-email.member_verification_completed.email').': '.$notifiable->email)
             ->line('') // 空白行
             ->line(__('mail.verify-email.member_verification_completed.login_info'))
             ->line('') // 空白行
             ->line(__('mail.verify-email.member_verification_completed.url_info'))
-            ->line(__('mail.verify-email.member_verification_completed.front_url') . ': ' . $frontUrl)
-            ->line(__('mail.verify-email.member_verification_completed.admin_url') . ': ' . $adminUrl)
+            ->line(__('mail.verify-email.member_verification_completed.front_url').': '.$frontUrl)
+            ->line(__('mail.verify-email.member_verification_completed.admin_url').': '.$adminUrl)
             ->action(__('common.login'), $adminUrl)
             ->line('') // 空白行
             ->line(__('mail.verify-email.member_verification_completed.thanks'))
-            ->salutation(__('mail.verify-email.member_verification_completed.regards') . "\n\n{$appName}");
+            ->salutation(__('mail.verify-email.member_verification_completed.regards')."\n\n{$appName}");
     }
 }
