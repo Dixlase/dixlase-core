@@ -252,6 +252,12 @@ class AdminThemesSettingsController extends AdminLoggedInController
         try {
             $result = $this->runThemeAudit($slug);
 
+            // スキャン結果モーダル用に確認理由を翻訳済みで付与
+            $result['formatted_attention_reasons'] = ExtensionCardPresenter::formatAttentionReasons(
+                $result['risk_reasons'] ?? [],
+                'admin/settings/themes/index'
+            );
+
             return response()->json([
                 'success' => true,
                 'message' => __('admin/settings/themes.audit.completed'),

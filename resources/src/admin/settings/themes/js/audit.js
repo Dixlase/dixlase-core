@@ -78,6 +78,27 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
         `;
 
+        // 確認が必要な理由（attention reasons）
+        const attentionReasons = audit.formatted_attention_reasons || [];
+        if (attentionReasons.length > 0) {
+            contentHtml += `
+                <div class="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 mb-3">
+                    <p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        ${config.attentionReasonsTitle || ''}
+                    </p>
+                    <ul class="text-sm space-y-1 ml-5 list-disc">
+                        ${attentionReasons.map(r => `
+                            <li class="${r.color || 'text-yellow-700 dark:text-yellow-300'}">
+                                <i class="${r.icon || 'fas fa-info-circle'} mr-1"></i>
+                                ${r.text || ''}
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
         // 権限不一致の警告
         if (hasIssues) {
             contentHtml += `

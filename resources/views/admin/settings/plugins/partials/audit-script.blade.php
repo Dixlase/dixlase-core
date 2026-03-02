@@ -30,6 +30,7 @@ https://exc-d.com
             'high' => __('admin/settings/plugins/index.permissions.health_needs_attention'),
             'unknown' => __('admin/settings/plugins/index.permissions.health_not_verified'),
         ],
+        'attentionReasonsTitle' => __('admin/settings/plugins/index.permissions.attention_reasons_title'),
         'healthBadgeLabel' => __('admin/settings/plugins/index.badge_labels.health'),
         'statsLabel' => __('admin/settings/plugins/index.permissions.audit_stats'),
         'matchesLabel' => __('admin/settings/plugins/index.permissions.audit_matches'),
