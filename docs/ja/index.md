@@ -4,6 +4,11 @@
 
 Dixlase CMS のドキュメントへようこそ。このドキュメントでは、Dixlase プラットフォームのアーキテクチャ、機能、開発ガイドを紹介します。
 
+## はじめに
+
+- [インストールガイド](installation/index.md) - Docker または手動インストールで Dixlase をセットアップ
+- [初心者ガイド](beginners-guide/index.md) - 管理パネルとコア機能を学ぶ
+
 ## 運用者向け
 
 Dixlase を管理するサイト管理者・運用者向けのガイドです。

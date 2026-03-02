@@ -4,6 +4,11 @@
 
 Welcome to the Dixlase CMS documentation. This documentation covers the architecture, features, and development guides for the Dixlase platform.
 
+## Getting Started
+
+- [Installation Guide](installation/index.md) - Set up Dixlase using Docker or manual installation
+- [Beginner's Guide](beginners-guide/index.md) - Learn the admin panel and core features
+
 ## For Operators
 
 Guides for site administrators and operators who manage Dixlase installations.
