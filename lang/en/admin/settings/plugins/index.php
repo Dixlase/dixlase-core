@@ -339,6 +339,7 @@ return [
         'attention_reason_system_register_middleware' => 'Uses middleware registration permission',
         'attention_reason_database_core_tables' => 'Uses core table access permission',
         'attention_reason_undeclared_usage' => 'Uses undeclared permissions',
+        'attention_reason_mismatch_undeclared_usage' => 'Undeclared permission usage detected (:count occurrences)',
         'attention_reason_system_modify_routes' => 'Uses route modification permission',
         'csp_status' => 'CSP Compliance',
         'csp_compliant' => 'Compliant',

@@ -161,6 +161,7 @@ return [
         'attention_reason_system_register_commands' => 'Uses command registration permission',
         'attention_reason_system_register_blade_directives' => 'Uses Blade directive registration permission',
         'attention_reason_system_modify_routes' => 'Uses route modification permission',
+        'attention_reason_mismatch_undeclared_usage' => 'Undeclared permission usage detected (:count occurrences)',
         'install_warning_title' => 'Pre-Installation Confirmation',
         'install_warning_notice' => 'This theme has the following items to confirm:',
         'install_warning_undefined' => 'Permission information is undefined',

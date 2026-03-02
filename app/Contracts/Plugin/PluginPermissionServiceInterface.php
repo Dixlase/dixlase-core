@@ -96,9 +96,18 @@ interface PluginPermissionServiceInterface
     public function getSignatureInfo(string $pluginSlug): array;
 
     /**
+     * 宣言された権限と不一致情報からリスクレベルを統一計算
+     *
+     * @param  array  $declaredPermissions  plugin.json の permissions
+     * @param  array  $mismatches  権限の不一致リスト
+     * @return array{level: string, reasons: array, score: int}
+     */
+    public function calculateUnifiedRiskLevel(array $declaredPermissions, array $mismatches = []): array;
+
+    /**
      * リスクレベルと理由を計算
      *
-     * @deprecated PluginHealthScorer::calculate() を使用してください。
+     * @deprecated calculateUnifiedRiskLevel() を使用してください。
      *
      * @return array{level: string, reasons: array, score: int}
      */
