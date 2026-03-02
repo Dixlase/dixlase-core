@@ -24,9 +24,11 @@ namespace App\Services\Plugin;
 
 use App\DTO\Plugin\HealthIssue;
 use App\DTO\Plugin\HealthScoreResult;
+use App\Enums\ExtensionSecurityLevel;
 use App\Enums\PluginEnableAction;
 use App\Enums\PluginHealthStatus;
 use App\Models\PluginAudit;
+use App\Services\SecuritySettingsRegistry;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use RecursiveDirectoryIterator;
@@ -393,12 +395,28 @@ class PluginHealthScorer
     }
 
     /**
-     * 健全性スコアに基づいて有効化アクションを判定
+     * 健全性スコアとセキュリティ設定に基づいて有効化アクションを判定
+     *
+     * セキュリティ設定（extension_plugin_max_health_level）で許可された
+     * 健全性レベル内であれば、致命的問題があっても確認付きで有効化可能。
+     * 許可範囲外のステータスの場合のみブロックする。
      */
-    public function determineEnableAction(HealthScoreResult $result): PluginEnableAction
+    public function determineEnableAction(HealthScoreResult $result, ?ExtensionSecurityLevel $maxAllowedLevel = null): PluginEnableAction
     {
-        if ($result->hasCriticalIssue || $result->score < 50) {
+        if ($maxAllowedLevel === null) {
+            $maxAllowedLevel = ExtensionSecurityLevel::from(
+                (int) SecuritySettingsRegistry::get('extension_plugin_max_health_level', ExtensionSecurityLevel::Warning->value)
+            );
+        }
+
+        // セキュリティ設定で許可されていないステータスはブロック
+        if (! $result->status->canActivate($maxAllowedLevel)) {
             return PluginEnableAction::Blocked;
+        }
+
+        // セキュリティ設定で許可されている場合はスコアに基づいて判定
+        if ($result->hasCriticalIssue || $result->score < 50) {
+            return PluginEnableAction::AcknowledgementRequired;
         }
 
         return match (true) {

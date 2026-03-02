@@ -3,6 +3,7 @@
 namespace Tests\Unit\Services\Plugin;
 
 use App\DTO\Plugin\HealthScoreResult;
+use App\Enums\ExtensionSecurityLevel;
 use App\Enums\PluginHealthStatus;
 use App\Models\PluginAudit;
 use App\Services\Plugin\PluginHealthScorer;
@@ -749,9 +750,9 @@ class PluginHealthScorerTest extends TestCase
     // ====================================================================
 
     /**
-     * 致命的問題時にBlockedを返すテスト
+     * セキュリティ設定で許可されていないステータスはBlockedを返すテスト
      */
-    public function test_enable_action_blocked_on_critical(): void
+    public function test_enable_action_blocked_when_status_not_allowed(): void
     {
         $result = new HealthScoreResult(
             score: 80,
@@ -760,15 +761,16 @@ class PluginHealthScorerTest extends TestCase
             hasCriticalIssue: true,
         );
 
-        $action = $this->scorer->determineEnableAction($result);
+        // Warning レベルでは NeedsAttention は許可されない → Blocked
+        $action = $this->scorer->determineEnableAction($result, ExtensionSecurityLevel::Warning);
 
         $this->assertEquals(\App\Enums\PluginEnableAction::Blocked, $action);
     }
 
     /**
-     * 低スコア時にBlockedを返すテスト
+     * セキュリティ設定で許可されていない低スコアはBlockedを返すテスト
      */
-    public function test_enable_action_blocked_on_low_score(): void
+    public function test_enable_action_blocked_on_low_score_when_status_not_allowed(): void
     {
         $result = new HealthScoreResult(
             score: 40,
@@ -777,7 +779,8 @@ class PluginHealthScorerTest extends TestCase
             hasCriticalIssue: false,
         );
 
-        $action = $this->scorer->determineEnableAction($result);
+        // Warning レベルでは NeedsAttention は許可されない → Blocked
+        $action = $this->scorer->determineEnableAction($result, ExtensionSecurityLevel::Warning);
 
         $this->assertEquals(\App\Enums\PluginEnableAction::Blocked, $action);
     }
@@ -794,7 +797,7 @@ class PluginHealthScorerTest extends TestCase
             hasCriticalIssue: false,
         );
 
-        $action = $this->scorer->determineEnableAction($result);
+        $action = $this->scorer->determineEnableAction($result, ExtensionSecurityLevel::NotVerified);
 
         $this->assertEquals(\App\Enums\PluginEnableAction::Allowed, $action);
     }
@@ -811,7 +814,7 @@ class PluginHealthScorerTest extends TestCase
             hasCriticalIssue: false,
         );
 
-        $action = $this->scorer->determineEnableAction($result);
+        $action = $this->scorer->determineEnableAction($result, ExtensionSecurityLevel::NotVerified);
 
         $this->assertEquals(\App\Enums\PluginEnableAction::WarningRequired, $action);
     }
@@ -828,9 +831,65 @@ class PluginHealthScorerTest extends TestCase
             hasCriticalIssue: false,
         );
 
-        $action = $this->scorer->determineEnableAction($result);
+        $action = $this->scorer->determineEnableAction($result, ExtensionSecurityLevel::NotVerified);
 
         $this->assertEquals(\App\Enums\PluginEnableAction::AcknowledgementRequired, $action);
+    }
+
+    /**
+     * 開発モード（NotVerified許可）では致命的問題があってもAcknowledgementRequiredを返すテスト
+     */
+    public function test_enable_action_development_mode_allows_critical(): void
+    {
+        $result = new HealthScoreResult(
+            score: 80,
+            status: PluginHealthStatus::NeedsAttention,
+            issues: [],
+            hasCriticalIssue: true,
+        );
+
+        // 開発モード（NotVerified）ではすべてのステータスが許可される
+        $action = $this->scorer->determineEnableAction($result, ExtensionSecurityLevel::NotVerified);
+
+        // 致命的問題があっても Blocked ではなく AcknowledgementRequired
+        $this->assertEquals(\App\Enums\PluginEnableAction::AcknowledgementRequired, $action);
+    }
+
+    /**
+     * 開発モード（NotVerified許可）では低スコアでもAcknowledgementRequiredを返すテスト
+     */
+    public function test_enable_action_development_mode_allows_low_score(): void
+    {
+        $result = new HealthScoreResult(
+            score: 40,
+            status: PluginHealthStatus::NeedsAttention,
+            issues: [],
+            hasCriticalIssue: false,
+        );
+
+        // 開発モード（NotVerified）ではすべてのステータスが許可される
+        $action = $this->scorer->determineEnableAction($result, ExtensionSecurityLevel::NotVerified);
+
+        // 低スコアでも Blocked ではなく AcknowledgementRequired
+        $this->assertEquals(\App\Enums\PluginEnableAction::AcknowledgementRequired, $action);
+    }
+
+    /**
+     * 厳格モード（Healthyのみ）ではAdvisoryもBlockedになるテスト
+     */
+    public function test_enable_action_strict_blocks_advisory(): void
+    {
+        $result = new HealthScoreResult(
+            score: 80,
+            status: PluginHealthStatus::Advisory,
+            issues: [],
+            hasCriticalIssue: false,
+        );
+
+        // 厳格モード（Healthy のみ）では Advisory は許可されない → Blocked
+        $action = $this->scorer->determineEnableAction($result, ExtensionSecurityLevel::Healthy);
+
+        $this->assertEquals(\App\Enums\PluginEnableAction::Blocked, $action);
     }
 
     // ====================================================================
