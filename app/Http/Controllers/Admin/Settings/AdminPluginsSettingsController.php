@@ -251,6 +251,12 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
         $result = $this->runPluginAudit($slug);
 
+        // スキャン結果モーダル用に確認理由を翻訳済みで付与
+        $result['formatted_attention_reasons'] = ExtensionCardPresenter::formatAttentionReasons(
+            $result['risk_reasons'] ?? [],
+            'admin/settings/plugins/index'
+        );
+
         return response()->json([
             'success' => true,
             'message' => __('admin/settings/plugins/index.audit.completed'),
