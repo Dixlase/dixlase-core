@@ -28,20 +28,35 @@ document.addEventListener('DOMContentLoaded', function () {
     const auditMessages = config.messages || {};
     const auditUrl = config.auditUrl || '';
 
-    function showThemeAuditResultModal(slug, audit) {
-        const modalId = 'themeAuditResultModal';
-        let modal = document.getElementById(modalId);
-
-        if (modal) {
-            modal.remove();
+    /**
+     * スキャン中モーダルを開く（submitting=true で閉じ操作をブロック）
+     */
+    function openScanningModal() {
+        window.openModal('themeAuditScanningModal');
+        const el = document.getElementById('themeAuditScanningModal');
+        if (el && el._x_dataStack && el._x_dataStack[0]) {
+            el._x_dataStack[0].submitting = true;
         }
+    }
 
+    /**
+     * スキャン中モーダルを閉じる（submitting を解除してから閉じる）
+     */
+    function closeScanningModal() {
+        const el = document.getElementById('themeAuditScanningModal');
+        if (el && el._x_dataStack && el._x_dataStack[0]) {
+            el._x_dataStack[0].submitting = false;
+            el._x_dataStack[0].close();
+        }
+    }
+
+    /**
+     * スキャン結果のHTMLを生成して結果モーダルのコンテンツ領域に挿入する
+     */
+    function populateResultContent(audit) {
         const hasIssues = audit.has_mismatches && audit.mismatches && audit.mismatches.length > 0;
         const riskLevel = audit.risk_level || 'low';
 
-        let contentHtml = '';
-
-        // 健全性ステータス
         const healthColors = {
             'low': { bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-700 dark:text-green-300', icon: 'fa-check-circle' },
             'medium': { bg: 'bg-yellow-50 dark:bg-yellow-900/20', border: 'border-yellow-200 dark:border-yellow-800', text: 'text-yellow-700 dark:text-yellow-300', icon: 'fa-exclamation-circle' },
@@ -51,6 +66,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const healthStyle = healthColors[riskLevel] || healthColors['unknown'];
         const healthLabels = config.healthLabels || {};
 
+        let contentHtml = '';
+
+        // 健全性ステータス
         contentHtml += `
             <div class="p-3 rounded-lg ${healthStyle.bg} border ${healthStyle.border} mb-3">
                 <div class="flex items-center gap-2 ${healthStyle.text}">
@@ -98,30 +116,18 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
         `;
 
-        const modalHtml = `
-            <div id="${modalId}" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.5);">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
-                    <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            <i class="fas fa-search mr-2"></i>${auditMessages.resultTitle || ''}
-                        </h3>
-                        <button type="button" onclick="window.location.reload()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="p-4">
-                        ${contentHtml}
-                    </div>
-                    <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-                        <button type="button" onclick="window.location.reload()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700">
-                            ${auditMessages.close || ''}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
+        const container = document.getElementById('themeAuditResultContent');
+        if (container) {
+            container.innerHTML = contentHtml;
+        }
+    }
 
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    // 結果モーダルの閉じるボタン（CSP対応: インラインonclickではなくイベントリスナーで登録）
+    const resultCloseBtn = document.getElementById('themeAuditResultCloseBtn');
+    if (resultCloseBtn) {
+        resultCloseBtn.addEventListener('click', function () {
+            window.location.reload();
+        });
     }
 
     document.querySelectorAll('.theme-audit-btn').forEach(function (btn) {
@@ -143,6 +149,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 icon.className = 'fas fa-spinner fa-spin mr-2';
             }
 
+            // スキャン中モーダルを開く
+            openScanningModal();
+
             fetch(auditUrl, {
                 method: 'POST',
                 headers: {
@@ -154,6 +163,9 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .then(response => response.json())
             .then(data => {
+                // スキャン中モーダルを閉じる
+                closeScanningModal();
+
                 button.disabled = false;
                 if (textNodes.length > 0) {
                     textNodes[0].textContent = ' ' + (auditMessages.rescan || '');
@@ -163,13 +175,22 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 if (data.success) {
-                    showThemeAuditResultModal(slug, data.audit);
+                    // 結果コンテンツを挿入して結果モーダルを開く
+                    populateResultContent(data.audit);
+                    // スキャン中モーダルが完全に閉じるのを待つ
+                    setTimeout(function () {
+                        window.openModal('themeAuditResultModal');
+                    }, 150);
                 } else {
                     alert(data.message || auditMessages.failed || '');
                 }
             })
             .catch(error => {
                 console.error('Audit error:', error);
+
+                // スキャン中モーダルを閉じる
+                closeScanningModal();
+
                 alert(auditMessages.failed || '');
                 button.disabled = false;
                 if (textNodes.length > 0) {
