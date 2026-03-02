@@ -38,7 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 // 権限判定用のキーを生成（このメニュー項目のキー）
                 $role_key = $key;
                 // 開くべきアコーディオンを判定
-                $open_key = 'open_' . $key;
+                $open_key = 'open_' . str_replace('-', '_', $key);
                 
                 // プラグインルートの場合の判定を改善
                 $is_open = false;
@@ -242,7 +242,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 @else
                                     @php
                                         // 親キーを含めて変数名の競合を回避（例: open_users_settings）
-                                        $open_child_key = 'open_' . $key . '_' . $child_key;
+                                        $open_child_key = 'open_' . str_replace('-', '_', $key) . '_' . str_replace('-', '_', $child_key);
                                         $is_open_child = false;
                                         
                                         // プラグインルートの場合の判定
@@ -307,7 +307,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                     {{-- 4階層目: 孫項目がさらに子を持つ場合 --}}
                                                     @elseif (isset($grand_child_item['children']) && is_array($grand_child_item['children']) && isset($grand_child_item['icon']) && isset($grand_child_item['text']))
                                                         @php
-                                                            $open_grand_child_key = 'open_' . $grand_child_key;
+                                                            $open_grand_child_key = 'open_' . str_replace('-', '_', $grand_child_key);
                                                             $is_open_grand_child = false;
                                                             // 曾孫要素のルートが現在のルートと一致する場合は開く
                                                             foreach ($grand_child_item['children'] as $ggc_item) {
