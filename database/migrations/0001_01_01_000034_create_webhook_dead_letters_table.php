@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,9 +28,9 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * Webhookデッドレターキューテーブル
-     * 
+     *
      * 目的：
      * - 最大リトライ回数を超えて失敗したWebhookの詳細記録
      * - 手動リトライや調査のための情報保持

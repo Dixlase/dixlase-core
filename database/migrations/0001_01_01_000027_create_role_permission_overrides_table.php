@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,7 +30,7 @@ return new class extends Migration
 
     /**
      * Run the migrations.
-     * 
+     *
      * 権限設定のオーバーライドテーブル
      * デフォルト権限（config/roles.php）と異なる設定のみを保存
      */
@@ -38,30 +38,30 @@ return new class extends Migration
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
-            
+
             // ソース種別: core / plugin
             $table->string('source_type', 20)->default('core');
-            
+
             // ソースID: coreはnull、pluginはslug
             $table->string('source_id', 100)->nullable();
-            
+
             // メニューキー（例：settings.base, pages.index）
             $table->string('menu_key', 255);
-            
+
             // 編集権限（この値以上の権限を持つユーザーがアクセス可能）
             $table->unsignedTinyInteger('access_roles')->nullable();
-            
+
             // 閲覧権限（この値以上の権限を持つユーザーが閲覧可能）
             $table->unsignedTinyInteger('view_roles')->nullable();
-            
+
             // 更新者（外部キー制約は add_foreign_key_constraints で追加）
             $table->unsignedBigInteger('updated_by')->nullable();
-            
+
             $table->timestamps();
-            
+
             // source_type + source_id + menu_key でユニーク
             $table->unique(['source_type', 'source_id', 'menu_key'], 'role_override_unique');
-            
+
             // インデックス
             $table->index(['source_type', 'source_id'], 'role_override_source_idx');
             $table->index('menu_key', 'role_override_menu_key_idx');

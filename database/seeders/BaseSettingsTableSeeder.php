@@ -3,8 +3,8 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -20,10 +20,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -39,11 +37,11 @@ class BaseSettingsTableSeeder extends Seeder
             ['name' => 'app_name', 'value' => config('app.name', 'MySoftware')],
             ['name' => 'locale', 'value' => config('app.locale', 'ja')],
             ['name' => 'timezone', 'value' => config('app.timezone', 'Asia/Tokyo')],
-            
+
             // 管理画面URL設定
             ['name' => 'admin_url', 'value' => 'admin'],
             ['name' => 'force_ssl', 'value' => '0'],
-            
+
             // メンテナンスモード
             ['name' => 'maintenance_mode', 'value' => config('app.maintenance_mode', false) ? '1' : '0'],
             ['name' => 'maintenance_message', 'value' => '現在メンテナンス中です。しばらくお待ちください。'],
@@ -59,7 +57,7 @@ class BaseSettingsTableSeeder extends Seeder
             ['name' => 'mail_password', 'value' => config('mail.mailers.smtp.password', '')],
             ['name' => 'mail_encryption', 'value' => config('mail.mailers.smtp.encryption', 'tls')],
             ['name' => 'mail_from_address', 'value' => config('mail.from.address', 'no-reply@example.com')],
-            
+
             // メール接続テスト関連
             ['name' => 'mail_connection_tested', 'value' => 0],
             ['name' => 'mail_connection_test_date', 'value' => null],
@@ -68,10 +66,10 @@ class BaseSettingsTableSeeder extends Seeder
             ['name' => 'mail_receive_tested', 'value' => 0],
             ['name' => 'mail_receive_test_date', 'value' => null],
             ['name' => 'mail_verification_token', 'value' => null],
-            
+
             // システム管理者メールアドレス
             ['name' => 'system_admin_email', 'value' => ''],
-            
+
             // OGP・SEO設定
             ['name' => 'default_ogp_image_id', 'value' => null],
             ['name' => 'site_description', 'value' => ''],

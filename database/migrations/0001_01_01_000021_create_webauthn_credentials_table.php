@@ -3,8 +3,8 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -20,14 +20,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-
     /**
      * テーブル名
      */
@@ -41,17 +39,17 @@ return new class extends Migration
         Schema::create($this->table, function (Blueprint $table) {
             // WebAuthn標準フィールド
             $table->string('id', 510)->primary(); // credential_id
-            
+
             // Laragear\WebAuthn用ポリモーフィックリレーション
             $table->string('authenticatable_type')->default('App\\Models\\Member');
             $table->unsignedBigInteger('authenticatable_id');
-            
+
             // Dixlase用メンバーID（既存互換性のため）
             $table->unsignedBigInteger('member_id');
-            
+
             // Laragear\WebAuthn用ユーザーID（UUID）
             $table->uuid('user_id');
-            
+
             // WebAuthn標準フィールド
             $table->string('alias')->nullable();
             $table->unsignedBigInteger('counter')->nullable();
@@ -64,13 +62,13 @@ return new class extends Migration
             $table->json('certificates')->nullable();
             $table->timestamp('disabled_at')->nullable();
             $table->timestamps();
-            
+
             // Dixlaseカスタムフィールド
             $table->string('name'); // デバイス名（必須）
-            
+
             // 外部キー制約
             $table->foreign('member_id')->references('id')->on('members')->onDelete('cascade');
-            
+
             // インデックス（名前を短く指定）
             $table->index(['authenticatable_type', 'authenticatable_id'], 'passkeys_authenticatable_index');
             $table->index('member_id');

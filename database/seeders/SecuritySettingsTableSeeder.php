@@ -3,8 +3,8 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -20,18 +20,17 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\SecuritySetting;
-use App\Enums\LogLevel;
+use App\Enums\CaptchaProvider;
+use App\Enums\CspBlocklistAction;
+use App\Enums\CspMode;
 use App\Enums\ExtensionSecurityLevel;
 use App\Enums\ExtensionSecurityPreset;
-use App\Enums\CspMode;
-use App\Enums\CspBlocklistAction;
+use App\Enums\LogLevel;
 use App\Enums\SecurityAction;
-use App\Enums\CaptchaProvider;
+use App\Models\SecuritySetting;
+use Illuminate\Database\Seeder;
 
 class SecuritySettingsTableSeeder extends Seeder
 {
@@ -40,7 +39,6 @@ class SecuritySettingsTableSeeder extends Seeder
      */
     public function run(): void
     {
-        
         // System error notification settings
         SecuritySetting::updateOrCreate(
             ['name' => 'notification_enabled'],
@@ -51,8 +49,6 @@ class SecuritySettingsTableSeeder extends Seeder
             ['name' => 'notification_log_levels'],
             ['value' => implode(',', LogLevel::getDefaultNotificationLevels())]
         );
-
-
 
         // Default password policy settings (moved from MembersSettingsSeeder)
         SecuritySetting::updateOrCreate(
@@ -121,7 +117,6 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '']
         );
 
-        
         // Two-factor authentication basic settings (moved from MembersSettingsSeeder)
         SecuritySetting::updateOrCreate(
             ['name' => 'two_fa_mode'],
@@ -195,21 +190,16 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '0.5']
         );
 
-
-
         SecuritySetting::updateOrCreate(
             ['name' => 'captcha_google_project_id'],
             ['value' => '']
         );
-
-
 
         // CAPTCHA authentication result (boolean型、常にレコード保持)
         SecuritySetting::updateOrCreate(
             ['name' => 'captcha_authentication_result'],
             ['value' => '0']
         );
-
 
         // Google reCAPTCHA プロバイダー固有設定
         SecuritySetting::updateOrCreate(
@@ -480,6 +470,5 @@ class SecuritySettingsTableSeeder extends Seeder
             ['name' => 'csp_exclude_dev_tools'],
             ['value' => '1']
         );
-
     }
 }
