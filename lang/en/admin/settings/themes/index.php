@@ -173,7 +173,7 @@ return [
         'install_warning_mismatch' => 'Permission declaration and code do not match',
         'install_warning_confirm' => 'Do you want to install understanding the above?',
         'install_warning_risk' => 'This theme has the following notes:',
-        'warning_not_scanned' => 'Code scan has not been run',
+        'warning_not_scanned' => 'Scan has not been run',
         'risk_medium' => 'Medium health risk',
         'risk_high' => 'High health risk',
         'enable_warning_title' => 'Pre-Activation Confirmation',

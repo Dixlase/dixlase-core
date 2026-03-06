@@ -173,7 +173,7 @@ return [
         'install_warning_mismatch' => '権限宣言とコードが一致しません',
         'install_warning_confirm' => '上記を理解した上でインストールしますか？',
         'install_warning_risk' => 'このテーマには以下の注意点があります：',
-        'warning_not_scanned' => 'コードスキャンが実行されていません',
+        'warning_not_scanned' => 'スキャンが実行されていません',
         'risk_medium' => '中程度の健全性リスク',
         'risk_high' => '高い健全性リスク',
         'enable_warning_title' => '有効化前の確認',

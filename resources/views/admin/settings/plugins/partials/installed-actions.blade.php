@@ -67,10 +67,8 @@ https://exc-d.com
             <x-ui-modal
                 :id="$card['enableModalId']"
                 :title="__('admin/settings/plugins/index.permissions.enable_warning_title')"
+                message=""
                 icon_type="warning"
-                :confirm_label="__('common.enable')"
-                :cancel_label="__('common.cancel')"
-                form="enableForm-{{ $card['id'] }}"
                 confirm_color="yellow">
                 <div class="text-left">
                     <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
@@ -83,10 +81,42 @@ https://exc-d.com
                             @endforeach
                         </ul>
                     </div>
+                    @if(!$card['auditedAt'])
+                        <p class="text-sm text-blue-600 dark:text-blue-400 mb-3">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            {{ __('admin/settings/plugins/index.permissions.scan_recommendation') }}
+                        </p>
+                    @endif
                     <p class="text-sm text-gray-600 dark:text-gray-400">
                         {{ __('admin/settings/plugins/index.permissions.enable_warning_confirm') }}
                     </p>
                 </div>
+
+                <x-slot:footer>
+                    <x-form-button
+                        type="button"
+                        :label="__('common.cancel')"
+                        variant="secondary"
+                        @click="close()"
+                    />
+                    @if(!$card['auditedAt'])
+                        <x-form-button
+                            type="button"
+                            :label="__('admin/settings/plugins/index.permissions.audit_button')"
+                            variant="primary"
+                            icon="fas fa-search"
+                            class="audit-btn"
+                            data-slug="{{ $card['slug'] }}"
+                            @click="close()"
+                        />
+                    @endif
+                    <x-form-button
+                        type="submit"
+                        :label="__('common.enable')"
+                        variant="warning"
+                        form="enableForm-{{ $card['id'] }}"
+                    />
+                </x-slot:footer>
             </x-ui-modal>
         @else
             <x-form-button
