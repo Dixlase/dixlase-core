@@ -62,6 +62,7 @@ https://exc-d.com
     <x-ui-modal
         id="pluginAuditResultModal"
         :title="__('admin/settings/plugins/index.permissions.audit_result_title')"
+        message=""
         iconType="info"
         :dismissible="false"
         :closeOnly="true"

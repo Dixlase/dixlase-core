@@ -162,6 +162,16 @@ class ExtensionCardPresenter
 
         $auditResult = $permissionSummary['audit'] ?? [];
         $auditedAt = $auditResult['audited_at'] ?? null;
+
+        // 監査結果にCSP情報がある場合はそちらを優先（plugin.jsonの静的情報より実際のスキャン結果を反映）
+        if (! empty($auditResult['csp_status'])) {
+            $cspCompatibility = [
+                'status' => $auditResult['csp_status'],
+                'requires_inline_js' => $auditResult['csp_requires_inline_js'] ?? false,
+                'has_csp_config' => $cspCompatibility['has_csp_config'] ?? false,
+                'csp_ready' => ! ($auditResult['csp_requires_inline_js'] ?? false),
+            ];
+        }
         $auditedAtFormatted = $auditedAt ? Carbon::parse($auditedAt)->format('Y/m/d H:i') : null;
 
         $permissionModalId = 'permissionModal-'.($isModel ? $plugin->id : $directory);

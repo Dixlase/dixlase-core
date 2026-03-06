@@ -24,9 +24,7 @@ https://exc-d.com
     <x-ui-modal
         id="installModal-{{ $card['directory'] }}"
         :title="$card['installWarnings']['hasWarnings'] ? __('admin/settings/plugins/index.permissions.install_warning_title') : __('admin/settings/plugins/index.install.confirm_title')"
-        :confirm_label="__('common.install')"
-        :cancel_label="__('common.cancel')"
-        form="installForm-{{ $card['directory'] }}"
+        message=""
         :icon_type="$card['installWarnings']['hasWarnings'] ? 'warning' : 'info'"
         :confirm_color="$card['installWarnings']['hasWarnings'] ? 'yellow' : 'green'"
     >
@@ -58,6 +56,12 @@ https://exc-d.com
                         @endif
                     </ul>
                 </div>
+                @if($card['installWarnings']['isNotScanned'])
+                    <p class="text-sm text-blue-600 dark:text-blue-400 mb-3">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        {{ __('admin/settings/plugins/index.permissions.scan_recommendation') }}
+                    </p>
+                @endif
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                     {{ __('admin/settings/plugins/index.permissions.install_warning_confirm') }}
                 </p>
@@ -67,6 +71,32 @@ https://exc-d.com
                 {{ str_replace('{name}', $card['name'], __('admin/settings/plugins/index.install.confirm_message')) }}
             </p>
         @endif
+
+        <x-slot:footer>
+            <x-form-button
+                type="button"
+                :label="__('common.cancel')"
+                variant="secondary"
+                @click="close()"
+            />
+            @if($card['installWarnings']['isNotScanned'] ?? false)
+                <x-form-button
+                    type="button"
+                    :label="__('admin/settings/plugins/index.permissions.audit_button')"
+                    variant="primary"
+                    icon="fas fa-search"
+                    class="audit-btn"
+                    data-slug="{{ $card['slug'] }}"
+                    @click="close()"
+                />
+            @endif
+            <x-form-button
+                type="submit"
+                :label="__('common.install')"
+                :variant="$card['installWarnings']['hasWarnings'] ? 'warning' : 'success'"
+                form="installForm-{{ $card['directory'] }}"
+            />
+        </x-slot:footer>
     </x-ui-modal>
 </form>
 
