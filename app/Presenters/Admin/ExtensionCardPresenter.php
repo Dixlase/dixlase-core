@@ -408,7 +408,7 @@ class ExtensionCardPresenter
         $prefix = 'admin/settings/plugins/index';
         $signatureStatus = $permissionSummary['signature']['status'] ?? 'unsigned';
         $riskLevel = $permissionSummary['risk_level'] ?? 'low';
-        $hasPermissions = ! empty($permissionSummary['permissions'] ?? []);
+        $hasPermissions = $permissionSummary['has_permissions'] ?? false;
         $hasMismatches = $permissionSummary['audit']['has_mismatches'] ?? false;
         $auditedAt = $permissionSummary['audit']['audited_at'] ?? null;
 

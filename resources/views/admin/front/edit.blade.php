@@ -134,7 +134,39 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :showJsCss="true"
             />
 
+            {{-- リセット --}}
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-red-300 dark:border-red-700/50 p-6">
+                <h3 class="text-sm font-semibold text-red-600 dark:text-red-400 mb-2">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    {{ __('admin/front.edit.reset_section_title') }}
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    {{ __('admin/front.edit.reset_description') }}
+                </p>
+                <x-form-button type="button" variant="danger" size="sm" icon="fas fa-undo"
+                    @click="openModal('resetFrontPageEditModal')">
+                    {{ __('admin/front.edit.reset_button') }}
+                </x-form-button>
+            </div>
+
         </div>
+    </form>
+
+    {{-- リセット確認モーダル --}}
+    <x-ui-modal id="resetFrontPageEditModal"
+        :title="__('admin/front.edit.reset_confirm_title')"
+        :message="__('admin/front.edit.reset_confirm')"
+        :confirm-label="__('admin/front.edit.reset_button')"
+        :cancel-label="__('common.cancel')"
+        icon-type="danger"
+        confirm-color="red"
+        form="front-page-reset-form" />
+
+    <form id="front-page-reset-form"
+          action="{{ route('admin.front.destroy') }}"
+          method="POST" style="display: none;">
+        @csrf
+        @method('DELETE')
     </form>
 @endsection
 
