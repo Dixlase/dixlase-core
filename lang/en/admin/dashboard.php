@@ -58,6 +58,11 @@ return [
     // Content overview
     'content_overview' => 'Content Overview',
 
+    // Plugin notifications
+    'plugin_notifications' => 'Plugin Notifications',
+    'view_settings' => 'View Settings',
+    'status_info' => 'Info',
+
     // Status labels
     'status_ok' => 'OK',
     'status_warning' => 'Warning',

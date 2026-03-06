@@ -22,8 +22,10 @@
 
 namespace App\Presenters\Admin;
 
+use App\Contracts\PluginIntegration\DashboardNotificationProviderInterface;
 use App\Contracts\PluginIntegration\DashboardWidgetProviderInterface;
 use App\DTO\Mail\MailConfigDTO;
+use App\DTO\PluginIntegration\DashboardNotificationDTO;
 use App\DTO\PluginIntegration\DashboardWidgetDTO;
 use App\Enums\TwoFaMethod;
 use App\Helpers\ConfigHelper;
@@ -226,5 +228,27 @@ class DashboardPresenter
         }
 
         return $widgets;
+    }
+
+    /**
+     * プラグイン通知を取得
+     *
+     * @return DashboardNotificationDTO[]
+     */
+    public static function pluginNotifications(): array
+    {
+        $resolver = app(PluginServiceResolver::class);
+        $results = $resolver->resolveAll(DashboardNotificationProviderInterface::class);
+
+        $notifications = [];
+        foreach ($results as $result) {
+            if ($result->isResolved() && $result->instance instanceof DashboardNotificationProviderInterface) {
+                foreach ($result->instance->getNotifications() as $notification) {
+                    $notifications[] = $notification;
+                }
+            }
+        }
+
+        return $notifications;
     }
 }

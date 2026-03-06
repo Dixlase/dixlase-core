@@ -29,7 +29,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if($item['status'] === 'warning')
                     border-yellow-300 dark:border-yellow-600 bg-yellow-50 dark:bg-yellow-900/20
                 @elseif($item['status'] === 'recommendation')
-                    border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20
+                    border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20
                 @else
                     border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20
                 @endif
@@ -38,7 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @if($item['status'] === 'warning')
                         text-yellow-600 dark:text-yellow-400
                     @elseif($item['status'] === 'recommendation')
-                        text-blue-600 dark:text-blue-400
+                        text-amber-600 dark:text-amber-400
                     @else
                         text-green-600 dark:text-green-400
                     @endif
@@ -55,7 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             {{ __('admin/dashboard.status_warning') }}
                         </span>
                     @elseif($item['status'] === 'recommendation')
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
                             {{ __('admin/dashboard.status_recommendation') }}
                         </span>
                     @else
@@ -104,14 +104,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{-- CAPTCHA状態 --}}
         <div class="flex items-start gap-3 p-4 rounded-lg border
             @if($captchaStatus['status'] === 'recommendation')
-                border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20
+                border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20
             @else
                 border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20
             @endif
         ">
             <span class="mt-0.5 text-lg
                 @if($captchaStatus['status'] === 'recommendation')
-                    text-blue-600 dark:text-blue-400
+                    text-amber-600 dark:text-amber-400
                 @else
                     text-green-600 dark:text-green-400
                 @endif
@@ -124,7 +124,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
             <span class="ml-auto flex-shrink-0">
                 @if($captchaStatus['status'] === 'recommendation')
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
                         {{ __('admin/dashboard.status_recommendation') }}
                     </span>
                 @else

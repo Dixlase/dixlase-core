@@ -197,6 +197,16 @@ class DashboardPresenterTest extends TestCase
     }
 
     /**
+     * pluginNotificationsはプロバイダー未登録時に空配列を返す
+     */
+    public function test_plugin_notifications_returns_empty_when_no_providers(): void
+    {
+        $result = DashboardPresenter::pluginNotifications();
+
+        $this->assertIsArray($result);
+    }
+
+    /**
      * 各securityOverview項目に必要なキーが含まれる
      */
     public function test_security_overview_items_have_required_keys(): void

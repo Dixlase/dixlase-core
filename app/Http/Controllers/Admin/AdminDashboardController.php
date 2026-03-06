@@ -76,6 +76,7 @@ class AdminDashboardController extends AdminLoggedInController
         $this->viewParams['captchaStatus'] = DashboardPresenter::captchaStatus();
         $this->viewParams['systemInfo'] = DashboardPresenter::systemInfo();
         $this->viewParams['pluginWidgets'] = DashboardPresenter::pluginWidgets();
+        $this->viewParams['pluginNotifications'] = DashboardPresenter::pluginNotifications();
 
         return view('admin::dashboard', $this->viewParams);
     }
