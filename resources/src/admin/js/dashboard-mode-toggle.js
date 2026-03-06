@@ -1,7 +1,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,15 +18,17 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import '../scss/style.scss';
-//import './layout';
-import './layout-vanilla';
-import './login-flow';
-import '../media/js/index';
-import '../media/js/preview';
-import '../profile/js/appearance-mode';
-import '../../components/mail-server/js/settings-admin';
-import '../security/js/safe-mode-banner';
-import '../security/js/integrity';
-import '../two-fa/js/passkey-prompt-modal';
-import './dashboard-mode-toggle';
+import Alpine from 'alpinejs';
+
+Alpine.data('dashboardModeToggle', () => ({
+    mode: localStorage.getItem('dls_dashboard_mode') || 'simple',
+
+    toggle() {
+        this.mode = this.mode === 'simple' ? 'detailed' : 'simple';
+        localStorage.setItem('dls_dashboard_mode', this.mode);
+    },
+
+    get isDetailed() {
+        return this.mode === 'detailed';
+    },
+}));

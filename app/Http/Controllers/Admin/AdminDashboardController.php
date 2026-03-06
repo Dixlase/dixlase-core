@@ -23,13 +23,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Services\TwoFa\TwoFaRecoveryCodeService;
+use App\Presenters\Admin\DashboardPresenter;
 use App\Services\TwoFa\TwoFaPasskeyService;
+use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use App\Services\TwoFa\TwoFaStatusService;
-use App\Enums\TwoFaMethod;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
 
 class AdminDashboardController extends AdminLoggedInController
 {
@@ -70,6 +69,13 @@ class AdminDashboardController extends AdminLoggedInController
         if ($twoFaStatusService->shouldPromptPasskeyRegistration($user, $twoFaPasskeyService)) {
             $this->viewParams['prompt_passkey_registration'] = true;
         }
+
+        // ダッシュボード表示データ
+        $this->viewParams['securityOverview'] = DashboardPresenter::securityOverview($user);
+        $this->viewParams['mailStatus'] = DashboardPresenter::mailServerStatus();
+        $this->viewParams['captchaStatus'] = DashboardPresenter::captchaStatus();
+        $this->viewParams['systemInfo'] = DashboardPresenter::systemInfo();
+        $this->viewParams['pluginWidgets'] = DashboardPresenter::pluginWidgets();
 
         return view('admin::dashboard', $this->viewParams);
     }
