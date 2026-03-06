@@ -89,6 +89,12 @@ return [
         'sidebar_open' => 'サイドバーを開く',
         'sidebar_close' => 'サイドバーを閉じる',
 
+        'reset_section_title' => '危険な操作',
+        'reset_description' => 'フロントページのコンテンツをリセットします。この操作は元に戻せません。',
+        'reset_button' => 'リセット',
+        'reset_confirm_title' => 'フロントページのリセット',
+        'reset_confirm' => 'フロントページのコンテンツをリセットしますか？すべてのコンテンツ、CSS、JavaScriptが完全に削除されます。',
+
         'validation' => [
             'storage_type_required' => '保存方法を選択してください。',
             'storage_type_in' => '選択された保存方法は無効です。',

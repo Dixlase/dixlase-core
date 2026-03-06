@@ -22,7 +22,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Presenters\Admin\DashboardPresenter;
 use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
@@ -32,11 +31,12 @@ use Illuminate\Support\Facades\Log;
 
 class AdminDashboardController extends AdminLoggedInController
 {
-    //初期設定を行う
+    // 初期設定を行う
     public function __construct()
     {
         parent::__construct();
     }
+
     //
     public function index()
     {
@@ -50,7 +50,7 @@ class AdminDashboardController extends AdminLoggedInController
 
         // TwoFaStatusServiceを使用して判定
         $twoFaStatusService = new TwoFaStatusService();
-        
+
         // 2FAが有効かつ回復コード未生成の場合、自動生成してモーダル表示
         if ($twoFaStatusService->shouldGenerateRecoveryCodes($user, $twoFaRecoveryCodeService)) {
             try {
@@ -59,11 +59,11 @@ class AdminDashboardController extends AdminLoggedInController
             } catch (\Exception $e) {
                 Log::error('[Dashboard] Failed to auto-generate recovery codes', [
                     'member_id' => $user->id,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
-        
+
         // パスキーが有効かつデバイス未登録の場合、促進モーダルを表示
         $twoFaPasskeyService = new TwoFaPasskeyService();
         if ($twoFaStatusService->shouldPromptPasskeyRegistration($user, $twoFaPasskeyService)) {

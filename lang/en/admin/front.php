@@ -89,6 +89,12 @@ return [
         'sidebar_open' => 'Open sidebar',
         'sidebar_close' => 'Close sidebar',
 
+        'reset_section_title' => 'Danger Zone',
+        'reset_description' => 'Reset the front page content. This action cannot be undone.',
+        'reset_button' => 'Reset',
+        'reset_confirm_title' => 'Reset Front Page',
+        'reset_confirm' => 'Are you sure you want to reset the front page content? All content, CSS, and JavaScript will be permanently deleted.',
+
         'validation' => [
             'storage_type_required' => 'Please select a storage type.',
             'storage_type_in' => 'The selected storage type is not valid.',

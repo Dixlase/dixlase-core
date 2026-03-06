@@ -51,6 +51,7 @@ plugins/*
 !plugins/DixlaseMenu/
 !plugins/DixlaseMenus/
 !plugins/DixlasePages/
+!plugins/DixlaseSEO/
 !plugins/DixlaseUsers/
 !plugins/DixlaseBlog/
 !plugins/DixlaseDocs/
