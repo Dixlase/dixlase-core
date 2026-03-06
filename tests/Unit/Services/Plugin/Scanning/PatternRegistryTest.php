@@ -19,7 +19,8 @@ class PatternRegistryTest extends TestCase
 
         // 主要な権限キーが存在することを確認
         $this->assertArrayHasKey('database.own_tables', $all);
-        $this->assertArrayHasKey('database.core_tables', $all);
+        $this->assertArrayHasKey('database.core_tables_read', $all);
+        $this->assertArrayHasKey('database.core_tables_write', $all);
         $this->assertArrayHasKey('storage.own_directory', $all);
         $this->assertArrayHasKey('members.read', $all);
         $this->assertArrayHasKey('mail.send', $all);

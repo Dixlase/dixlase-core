@@ -25,7 +25,7 @@ class PluginPermissionServiceOptionalTest extends TestCase
     public function test_get_optional_permissions(): void
     {
         $pluginDir = $this->createTempPlugin([
-            'database' => ['own_tables' => true, 'core_tables' => []],
+            'database' => ['own_tables' => true, 'core_tables_read' => [], 'core_tables_write' => []],
             'mail' => ['send' => true, 'bulk_send' => false],
             '_optional' => ['mail.send'],
             '_notes' => ['ja' => 'テスト', 'en' => 'Test'],
@@ -46,7 +46,7 @@ class PluginPermissionServiceOptionalTest extends TestCase
     public function test_get_permission_notes(): void
     {
         $pluginDir = $this->createTempPlugin([
-            'database' => ['own_tables' => true, 'core_tables' => []],
+            'database' => ['own_tables' => true, 'core_tables_read' => [], 'core_tables_write' => []],
             '_optional' => [],
             '_notes' => ['ja' => 'テスト説明', 'en' => 'Test description'],
         ]);
@@ -67,7 +67,7 @@ class PluginPermissionServiceOptionalTest extends TestCase
     public function test_get_optional_returns_empty_when_not_defined(): void
     {
         $pluginDir = $this->createTempPlugin([
-            'database' => ['own_tables' => true, 'core_tables' => []],
+            'database' => ['own_tables' => true, 'core_tables_read' => [], 'core_tables_write' => []],
         ]);
 
         try {
@@ -85,7 +85,7 @@ class PluginPermissionServiceOptionalTest extends TestCase
     public function test_is_optional_permission(): void
     {
         $pluginDir = $this->createTempPlugin([
-            'database' => ['own_tables' => true, 'core_tables' => []],
+            'database' => ['own_tables' => true, 'core_tables_read' => [], 'core_tables_write' => []],
             'mail' => ['send' => true, 'bulk_send' => false],
             '_optional' => ['mail.send', 'storage.temp_files'],
         ]);
@@ -105,7 +105,7 @@ class PluginPermissionServiceOptionalTest extends TestCase
     public function test_merge_preserves_optional_and_notes(): void
     {
         $pluginDir = $this->createTempPlugin([
-            'database' => ['own_tables' => true, 'core_tables' => []],
+            'database' => ['own_tables' => true, 'core_tables_read' => [], 'core_tables_write' => []],
             '_optional' => ['mail.send'],
             '_notes' => ['ja' => 'テスト', 'en' => 'Test'],
         ]);
@@ -134,7 +134,7 @@ class PluginPermissionServiceOptionalTest extends TestCase
     public function test_get_summary_includes_optional_and_notes(): void
     {
         $pluginDir = $this->createTempPlugin([
-            'database' => ['own_tables' => true, 'core_tables' => []],
+            'database' => ['own_tables' => true, 'core_tables_read' => [], 'core_tables_write' => []],
             '_optional' => ['mail.send'],
             '_notes' => ['ja' => 'テスト', 'en' => 'Test'],
         ]);
@@ -157,7 +157,7 @@ class PluginPermissionServiceOptionalTest extends TestCase
     public function test_get_summary_categories_exclude_metadata(): void
     {
         $pluginDir = $this->createTempPlugin([
-            'database' => ['own_tables' => true, 'core_tables' => []],
+            'database' => ['own_tables' => true, 'core_tables_read' => [], 'core_tables_write' => []],
             'mail' => ['send' => true, 'bulk_send' => false],
             '_optional' => ['mail.send'],
             '_notes' => ['ja' => 'テスト', 'en' => 'Test'],

@@ -44,7 +44,7 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
     public function test_unified_risk_level_low_with_no_high_permissions(): void
     {
         $permissions = [
-            'database' => ['own_tables' => true, 'core_tables' => []],
+            'database' => ['own_tables' => true, 'core_tables_read' => [], 'core_tables_write' => []],
             'storage' => ['own_directory' => true, 'public_uploads' => false, 'temp_files' => false],
             'settings' => ['read_core' => false, 'write_own' => true],
             'members' => ['read' => true, 'write' => false, 'create' => false, 'delete' => false],
@@ -72,7 +72,7 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
     public function test_unified_risk_level_medium_with_medium_permissions(): void
     {
         $permissions = [
-            'database' => ['own_tables' => true, 'core_tables' => []],
+            'database' => ['own_tables' => true, 'core_tables_read' => [], 'core_tables_write' => []],
             'storage' => ['own_directory' => true, 'public_uploads' => true, 'temp_files' => false],
             'settings' => ['read_core' => false, 'write_own' => true],
             'members' => ['read' => true, 'write' => false, 'create' => false, 'delete' => false],
@@ -101,7 +101,7 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
     public function test_unified_risk_level_high_with_high_permissions(): void
     {
         $permissions = [
-            'database' => ['own_tables' => true, 'core_tables' => []],
+            'database' => ['own_tables' => true, 'core_tables_read' => [], 'core_tables_write' => []],
             'storage' => ['own_directory' => false, 'public_uploads' => true, 'temp_files' => false],
             'settings' => ['read_core' => false, 'write_own' => false],
             'members' => ['read' => true, 'write' => true, 'create' => true, 'delete' => false],
@@ -130,7 +130,7 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
     {
         // 低リスク宣言のみ（スコア0）
         $permissions = [
-            'database' => ['own_tables' => true, 'core_tables' => []],
+            'database' => ['own_tables' => true, 'core_tables_read' => [], 'core_tables_write' => []],
             'storage' => ['own_directory' => true, 'public_uploads' => false, 'temp_files' => false],
             'settings' => ['read_core' => false, 'write_own' => true],
             'members' => ['read' => false, 'write' => false, 'create' => false, 'delete' => false],
@@ -165,7 +165,7 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
     public function test_unified_risk_level_mismatch_penalty_reaches_high(): void
     {
         $permissions = [
-            'database' => ['own_tables' => false, 'core_tables' => []],
+            'database' => ['own_tables' => false, 'core_tables_read' => [], 'core_tables_write' => []],
             'storage' => ['own_directory' => false, 'public_uploads' => false, 'temp_files' => false],
             'settings' => ['read_core' => false, 'write_own' => false],
             'members' => ['read' => false, 'write' => false, 'create' => false, 'delete' => false],
@@ -200,7 +200,7 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
     public function test_unified_risk_level_reason_format(): void
     {
         $permissions = [
-            'database' => ['own_tables' => true, 'core_tables' => []],
+            'database' => ['own_tables' => true, 'core_tables_read' => [], 'core_tables_write' => []],
             'storage' => ['own_directory' => false, 'public_uploads' => true, 'temp_files' => false],
             'settings' => ['read_core' => false, 'write_own' => false],
             'members' => ['read' => false, 'write' => false, 'create' => false, 'delete' => false],
@@ -249,7 +249,7 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
     public function test_unified_risk_level_ignores_unused_declaration(): void
     {
         $permissions = [
-            'database' => ['own_tables' => false, 'core_tables' => []],
+            'database' => ['own_tables' => false, 'core_tables_read' => [], 'core_tables_write' => []],
             'storage' => ['own_directory' => false, 'public_uploads' => false, 'temp_files' => false],
             'settings' => ['read_core' => false, 'write_own' => false],
             'members' => ['read' => false, 'write' => false, 'create' => false, 'delete' => false],
@@ -282,7 +282,7 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
     public function test_unified_risk_level_without_mismatches(): void
     {
         $permissions = [
-            'database' => ['own_tables' => true, 'core_tables' => []],
+            'database' => ['own_tables' => true, 'core_tables_read' => [], 'core_tables_write' => []],
             'storage' => ['own_directory' => false, 'public_uploads' => true, 'temp_files' => false],
             'settings' => ['read_core' => false, 'write_own' => false],
             'members' => ['read' => false, 'write' => true, 'create' => false, 'delete' => false],

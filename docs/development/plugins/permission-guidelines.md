@@ -293,7 +293,8 @@ Category-based structure with all items explicitly stated as `true`/`false`.
   "permissions": {
     "database": {
       "own_tables": true,
-      "core_tables": []
+      "core_tables_read": [],
+      "core_tables_write": []
     },
     "storage": {
       "own_directory": true,
@@ -339,7 +340,8 @@ Category-based structure with all items explicitly stated as `true`/`false`.
 | Category | Field | Type | Description |
 |----------|-------|------|-------------|
 | `database` | `own_tables` | bool | Uses plugin-specific tables |
-| `database` | `core_tables` | array | Core tables accessed (e.g., `["members:read"]`) |
+| `database` | `core_tables_read` | array | Core tables read (e.g., `["members", "settings"]`) |
+| `database` | `core_tables_write` | array | Core tables written (e.g., `["members"]`) |
 | `storage` | `own_directory` | bool | Uses plugin-specific storage |
 | `storage` | `public_uploads` | bool | Accesses public upload area |
 | `storage` | `temp_files` | bool | Uses temporary files |
@@ -502,7 +504,8 @@ Scan targets corresponding to the category-based permissions structure:
 | Category | Scan Target | Description |
 |----------|-------------|-------------|
 | `database.own_tables` | Migrations, Schema::create | Plugin-specific tables |
-| `database.core_tables` | Direct core model references | Core table access |
+| `database.core_tables_read` | Core model use/references | Core table read access |
+| `database.core_tables_write` | Core model save/create/update/delete | Core table write access |
 | `storage.own_directory` | Storage facade usage | Plugin-specific storage |
 | `storage.public_uploads` | Public disk writes | Public upload area |
 | `storage.temp_files` | Temp file operations | Temporary files |

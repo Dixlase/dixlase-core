@@ -16,11 +16,11 @@ use Tests\TestCase;
 class DetectionPatternTest extends TestCase
 {
     /**
-     * DatabaseDetectionPattern: コアテーブルのuse文のみは除外
+     * DatabaseDetectionPattern: コアテーブル読み取りのuse文のみは除外
      */
-    public function test_database_core_tables_excludes_use_import(): void
+    public function test_database_core_tables_read_excludes_use_import(): void
     {
-        $pattern = new DatabaseDetectionPattern('core_tables');
+        $pattern = new DatabaseDetectionPattern('core_tables_read');
         $content = "<?php\nuse App\\Models\\Member;\n\nclass Test {}\n";
 
         $results = $pattern->scan($content, 'app/Test.php');
@@ -28,15 +28,39 @@ class DetectionPatternTest extends TestCase
     }
 
     /**
-     * DatabaseDetectionPattern: コアテーブルの実使用を検出
+     * DatabaseDetectionPattern: コアテーブル読み取りの実使用を検出
      */
-    public function test_database_core_tables_detects_actual_usage(): void
+    public function test_database_core_tables_read_detects_actual_usage(): void
     {
-        $pattern = new DatabaseDetectionPattern('core_tables');
+        $pattern = new DatabaseDetectionPattern('core_tables_read');
         $content = "<?php\n\$users = DB::table('members')->get();\n";
 
         $results = $pattern->scan($content, 'app/Service.php');
         $this->assertNotEmpty($results);
+    }
+
+    /**
+     * DatabaseDetectionPattern: コアテーブル書き込みの検出
+     */
+    public function test_database_core_tables_write_detects_write_operations(): void
+    {
+        $pattern = new DatabaseDetectionPattern('core_tables_write');
+        $content = "<?php\nDB::table('members')->update(['name' => 'test']);\n";
+
+        $results = $pattern->scan($content, 'app/Service.php');
+        $this->assertNotEmpty($results);
+    }
+
+    /**
+     * DatabaseDetectionPattern: コアテーブル書き込みは読み取りのみでは検出しない
+     */
+    public function test_database_core_tables_write_ignores_read_only(): void
+    {
+        $pattern = new DatabaseDetectionPattern('core_tables_write');
+        $content = "<?php\n\$users = DB::table('members')->get();\n";
+
+        $results = $pattern->scan($content, 'app/Service.php');
+        $this->assertEmpty($results);
     }
 
     /**

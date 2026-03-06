@@ -61,7 +61,8 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     protected array $defaultPermissions = [
         'database' => [
             'own_tables' => true,
-            'core_tables' => [],
+            'core_tables_read' => [],
+            'core_tables_write' => [],
         ],
         'storage' => [
             'own_directory' => true,
@@ -304,27 +305,17 @@ class PluginPermissionService implements PluginPermissionServiceInterface
             return false;
         }
 
-        $coreTables = $permissions['database']['core_tables'] ?? [];
+        // 書き込みの場合は core_tables_write をチェック
+        if ($access === 'write') {
+            $writeTables = $permissions['database']['core_tables_write'] ?? [];
 
-        foreach ($coreTables as $tablePermission) {
-            // "members:read" 形式をパース
-            if (is_string($tablePermission)) {
-                $parts = explode(':', $tablePermission);
-                $tableName = $parts[0];
-                $allowedAccess = $parts[1] ?? 'read';
-
-                if ($tableName === $table) {
-                    if ($access === 'read') {
-                        return true;
-                    }
-                    if ($access === 'write' && $allowedAccess === 'write') {
-                        return true;
-                    }
-                }
-            }
+            return in_array($table, $writeTables, true);
         }
 
-        return false;
+        // 読み取りの場合は core_tables_read をチェック
+        $readTables = $permissions['database']['core_tables_read'] ?? [];
+
+        return in_array($table, $readTables, true);
     }
 
     /**
@@ -381,17 +372,13 @@ class PluginPermissionService implements PluginPermissionServiceInterface
             ];
         }
 
-        // リスクレベルと理由を計算（監査結果があればそちらを優先）
-        if (! empty($auditData['risk_level'])) {
-            $riskLevel = $auditData['risk_level'];
-            $riskReasons = $auditData['risk_reasons'] ?? [];
-            $riskScore = $this->calculateRiskScore($riskLevel);
-        } else {
-            $riskResult = $this->calculateUnifiedRiskLevel($permissions);
-            $riskLevel = $riskResult['level'];
-            $riskReasons = $riskResult['reasons'];
-            $riskScore = $riskResult['score'];
-        }
+        // リスクレベルと理由を常に現在のスコアリングルールで再計算
+        // （監査DBのキャッシュはスコアリングルール変更後に陳腐化するため）
+        $mismatches = $auditData['mismatches'] ?? [];
+        $riskResult = $this->calculateUnifiedRiskLevel($permissions, $mismatches);
+        $riskLevel = $riskResult['level'];
+        $riskReasons = $riskResult['reasons'];
+        $riskScore = $riskResult['score'];
 
         $baseSummary = [
             'has_permissions' => true,
@@ -563,6 +550,12 @@ class PluginPermissionService implements PluginPermissionServiceInterface
         if (! empty($permissions['content']['write_other_plugins'] ?? [])) {
             $score += 2;
             $reasons[] = ['key' => 'content.write_other_plugins', 'severity' => 'high', 'score' => 2];
+        }
+
+        // 中リスク権限（スコア1）
+        if (! empty($permissions['database']['core_tables_write'] ?? [])) {
+            $score += 1;
+            $reasons[] = ['key' => 'database.core_tables_write', 'severity' => 'medium', 'score' => 1];
         }
 
         $level = 'low';

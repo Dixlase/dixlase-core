@@ -52,7 +52,8 @@ class PatternRegistry
 
         // データベース
         $registry->register(new DatabaseDetectionPattern('own_tables'));
-        $registry->register(new DatabaseDetectionPattern('core_tables'));
+        $registry->register(new DatabaseDetectionPattern('core_tables_read'));
+        $registry->register(new DatabaseDetectionPattern('core_tables_write'));
 
         // ストレージ
         $registry->register(new StorageDetectionPattern('own_directory'));

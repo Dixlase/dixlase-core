@@ -293,7 +293,8 @@ Dixlaseのプラグイン・テーマ権限基盤は、拡張機能の**健全�
   "permissions": {
     "database": {
       "own_tables": true,
-      "core_tables": []
+      "core_tables_read": [],
+      "core_tables_write": []
     },
     "storage": {
       "own_directory": true,
@@ -339,7 +340,8 @@ Dixlaseのプラグイン・テーマ権限基盤は、拡張機能の**健全�
 | カテゴリ | フィールド | 型 | 説明 |
 |---------|-----------|------|------|
 | `database` | `own_tables` | bool | プラグイン専用テーブルの使用 |
-| `database` | `core_tables` | array | アクセスするコアテーブル（例: `["members:read"]`） |
+| `database` | `core_tables_read` | array | 読み取りするコアテーブル（例: `["members", "settings"]`） |
+| `database` | `core_tables_write` | array | 書き込みするコアテーブル（例: `["members"]`） |
 | `storage` | `own_directory` | bool | プラグイン専用ストレージの使用 |
 | `storage` | `public_uploads` | bool | 公開アップロード領域へのアクセス |
 | `storage` | `temp_files` | bool | 一時ファイルの使用 |
@@ -502,7 +504,8 @@ permissions のカテゴリ別構造に対応するスキャン対象:
 | カテゴリ | スキャン対象 | 説明 |
 |----------|-------------|------|
 | `database.own_tables` | マイグレーション、Schema::create | プラグイン専用テーブル |
-| `database.core_tables` | コアモデルの直接参照 | コアテーブルへのアクセス |
+| `database.core_tables_read` | コアモデルの use/参照 | コアテーブルの読み取り |
+| `database.core_tables_write` | コアモデルの save/create/update/delete | コアテーブルへの書き込み |
 | `storage.own_directory` | Storage facade の使用 | プラグイン専用ストレージ |
 | `storage.public_uploads` | public ディスクへの書き込み | 公開アップロード領域 |
 | `storage.temp_files` | temp ファイル操作 | 一時ファイル |
