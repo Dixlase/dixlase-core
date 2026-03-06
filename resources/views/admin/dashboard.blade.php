@@ -49,6 +49,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @include('admin.dashboard._security-overview')
         </div>
 
+        {{-- プラグイン通知（両モード） --}}
+        @if(count($pluginNotifications) > 0)
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                @include('admin.dashboard._plugin-notifications')
+            </div>
+        @endif
+
         {{-- プラグインウィジェット（両モード） --}}
         @if(count($pluginWidgets) > 0)
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">

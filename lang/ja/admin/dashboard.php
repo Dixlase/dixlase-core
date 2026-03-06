@@ -58,6 +58,11 @@ return [
     // コンテンツ概要
     'content_overview' => 'コンテンツ概要',
 
+    // プラグイン通知
+    'plugin_notifications' => 'プラグイン通知',
+    'view_settings' => '設定を見る',
+    'status_info' => '情報',
+
     // ステータスラベル
     'status_ok' => 'OK',
     'status_warning' => '警告',
