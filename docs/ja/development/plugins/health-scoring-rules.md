@@ -36,7 +36,8 @@ Dixlase がプラグイン・テーマの安全性を評価する2つのスコ�
 | 権限                              | スコア | 説明                          |
 |-----------------------------------|--------|-------------------------------|
 | `database.own_tables`             | 0      | 専用テーブル                   |
-| `database.core_tables`            | 0      | コアデータベーステーブルへのアクセス |
+| `database.core_tables_read`       | 0      | コアテーブルの読み取り          |
+| `database.core_tables_write`      | 1      | コアテーブルへの書き込み        |
 | `storage.own_directory`           | 0      | 専用ディレクトリ               |
 | `storage.temp_files`              | 0      | 一時ファイル                   |
 | `settings.read_core`              | 0      | コア設定の読み取り             |
@@ -75,13 +76,14 @@ Dixlase がプラグイン・テーマの安全性を評価する2つのスコ�
 | `system.register_commands`           | +1     | コマンドの登録                  |
 | `system.register_blade_directives`   | +1     | Blade指令の登録                |
 | `system.modify_routes`              | +1     | ルートの変更                   |
+| `database.core_tables_write`        | +1     | コアテーブルへの書き込み        |
 
 #### 低リスク権限（スコア 0）
 
 | 権限                        | スコア | 説明                          |
 |-----------------------------|--------|-------------------------------|
 | `database.own_tables`       | 0      | 専用テーブル                   |
-| `database.core_tables`      | 0      | コアデータベーステーブルへのアクセス |
+| `database.core_tables_read` | 0      | コアテーブルの読み取り          |
 | `storage.own_directory`     | 0      | 専用ディレクトリ               |
 | `storage.temp_files`        | 0      | 一時ファイル                   |
 | `settings.read_core`        | 0      | コア設定の読み取り             |

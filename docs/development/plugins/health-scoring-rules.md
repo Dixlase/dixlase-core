@@ -36,7 +36,8 @@ Risk scoring evaluates the declared permissions in `plugin.json` / `theme.json`.
 | Permission                       | Score | Description                   |
 |----------------------------------|-------|-------------------------------|
 | `database.own_tables`            | 0     | Own database tables           |
-| `database.core_tables`           | 0     | Access core database tables   |
+| `database.core_tables_read`      | 0     | Read core database tables     |
+| `database.core_tables_write`     | 1     | Write core database tables    |
 | `storage.own_directory`          | 0     | Own storage directory         |
 | `storage.temp_files`             | 0     | Temporary files               |
 | `settings.read_core`             | 0     | Read core settings            |
@@ -75,13 +76,14 @@ Themes use a different set of permissions with different scores.
 | `system.register_commands`           | +1    | Register commands               |
 | `system.register_blade_directives`   | +1    | Register Blade directives       |
 | `system.modify_routes`              | +1    | Modify routes                   |
+| `database.core_tables_write`        | +1    | Write core database tables      |
 
 #### Low-Risk Permissions (score = 0)
 
 | Permission                  | Score | Description                   |
 |-----------------------------|-------|-------------------------------|
 | `database.own_tables`       | 0     | Own database tables           |
-| `database.core_tables`      | 0     | Access core database tables   |
+| `database.core_tables_read` | 0     | Read core database tables     |
 | `storage.own_directory`     | 0     | Own storage directory         |
 | `storage.temp_files`        | 0     | Temporary files               |
 | `settings.read_core`        | 0     | Read core settings            |

@@ -27,11 +27,27 @@ namespace App\Services\Plugin\Scanning;
  *
  * データベース関連の検出パターン
  *
- * database.own_tables と database.core_tables を検出します。
+ * database.own_tables, database.core_tables_read, database.core_tables_write を検出します。
+ * core_tables_read: コアテーブルへの参照（読み取り）を検出
+ * core_tables_write: コアテーブルへの書き込み操作を検出
  * use文のインポートのみの場合は除外します。
  */
 class DatabaseDetectionPattern extends DetectionPattern
 {
+    /**
+     * 書き込み操作を検出する正規表現パターン
+     */
+    protected const WRITE_PATTERNS = [
+        '/->save\s*\(/i',
+        '/->create\s*\(/i',
+        '/->update\s*\(/i',
+        '/->delete\s*\(/i',
+        '/->forceDelete\s*\(/i',
+        '/->insert\s*\(/i',
+        '/->upsert\s*\(/i',
+        '/DB::table\s*\([\'"][^"\']+[\'"]\)\s*->\s*(insert|update|delete|upsert)\s*\(/i',
+    ];
+
     public function __construct(
         protected string $subKey = 'own_tables',
     ) {}
@@ -56,7 +72,7 @@ class DatabaseDetectionPattern extends DetectionPattern
             'own_tables' => [
                 '/Schema::(create|table)\s*\(\s*[\'"](\w+)[\'"]/i',
             ],
-            'core_tables' => [
+            'core_tables_read', 'core_tables_write' => [
                 '/\\\\App\\\\Models\\\\(User|Member|Plugin|Media|Setting|BaseSetting|SecuritySetting)/i',
                 '/DB::table\s*\(\s*[\'"](users|members|plugins|media|settings|base_settings|security_settings)[\'"]\)/i',
             ],
@@ -66,6 +82,7 @@ class DatabaseDetectionPattern extends DetectionPattern
 
     /**
      * use文のインポートのみの場合は除外
+     * core_tables_write の場合はファイル内に書き込み操作が存在するかも検証
      */
     public function validateMatch(string $match, string $line, string $fileContent, string $filePath): bool
     {
@@ -73,16 +90,34 @@ class DatabaseDetectionPattern extends DetectionPattern
             return false;
         }
 
-        // use文のインポートのみは除外しない（core_tablesの場合、use + 実際の使用が必要）
-        if ($this->subKey === 'core_tables') {
+        // core_tables_read / core_tables_write 共通: use文のインポートのみは除外
+        if (in_array($this->subKey, ['core_tables_read', 'core_tables_write'], true)) {
             $trimmedLine = ltrim($line);
 
-            // use文のインポートのみは除外
             if (str_starts_with($trimmedLine, 'use ')) {
                 return false;
             }
         }
 
+        // core_tables_write: ファイル内に書き込み操作が存在する場合のみ検出
+        if ($this->subKey === 'core_tables_write') {
+            return $this->hasWriteOperations($fileContent);
+        }
+
         return true;
+    }
+
+    /**
+     * ファイル内にコアテーブルへの書き込み操作が存在するか判定
+     */
+    protected function hasWriteOperations(string $fileContent): bool
+    {
+        foreach (self::WRITE_PATTERNS as $pattern) {
+            if (preg_match($pattern, $fileContent)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

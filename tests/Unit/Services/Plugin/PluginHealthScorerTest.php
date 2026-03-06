@@ -182,7 +182,7 @@ class PluginHealthScorerTest extends TestCase
             'mismatches' => [
                 [
                     'type' => 'undeclared_usage',
-                    'permission' => 'database.core_tables',
+                    'permission' => 'database.core_tables_write',
                     'evidence' => [['file' => 'src/Service.php', 'line' => 10]],
                 ],
             ],
@@ -429,7 +429,7 @@ class PluginHealthScorerTest extends TestCase
         PluginAudit::saveAuditResult('test-plugin', [
             'has_mismatches' => true,
             'mismatches' => [
-                ['type' => 'undeclared_usage', 'permission' => 'database.core_tables', 'evidence' => []],
+                ['type' => 'undeclared_usage', 'permission' => 'database.core_tables_write', 'evidence' => []],
                 ['type' => 'undeclared_usage', 'permission' => 'members.write', 'evidence' => []],
                 ['type' => 'undeclared_usage', 'permission' => 'members.delete', 'evidence' => []],
             ],

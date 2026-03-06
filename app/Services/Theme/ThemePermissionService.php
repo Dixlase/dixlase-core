@@ -60,7 +60,8 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     protected array $defaultPermissions = [
         'database' => [
             'own_tables' => false,
-            'core_tables' => [],
+            'core_tables_read' => [],
+            'core_tables_write' => [],
         ],
         'storage' => [
             'own_directory' => false,
@@ -237,17 +238,13 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             ];
         }
 
-        // リスクレベルと理由を計算（監査結果があればそちらを優先）
-        if (! empty($auditData['risk_level'])) {
-            $riskLevel = $auditData['risk_level'];
-            $riskReasons = $auditData['risk_reasons'] ?? [];
-            $riskScore = $this->calculateRiskScore($riskLevel);
-        } else {
-            $riskResult = $this->calculateUnifiedRiskLevel($permissions);
-            $riskLevel = $riskResult['level'];
-            $riskReasons = $riskResult['reasons'];
-            $riskScore = $riskResult['score'];
-        }
+        // リスクレベルと理由を常に現在のスコアリングルールで再計算
+        // （監査DBのキャッシュはスコアリングルール変更後に陳腐化するため）
+        $mismatches = $auditData['mismatches'] ?? [];
+        $riskResult = $this->calculateUnifiedRiskLevel($permissions, $mismatches);
+        $riskLevel = $riskResult['level'];
+        $riskReasons = $riskResult['reasons'];
+        $riskScore = $riskResult['score'];
 
         $baseSummary = [
             'has_permissions' => true,
@@ -440,6 +437,10 @@ class ThemePermissionService implements ThemePermissionServiceInterface
         }
 
         // 中リスク権限（スコア1）
+        if (! empty($permissions['database']['core_tables_write'] ?? [])) {
+            $score += 1;
+            $reasons[] = ['key' => 'database.core_tables_write', 'severity' => 'medium', 'score' => 1];
+        }
         if ($permissions['system']['register_commands'] ?? false) {
             $score += 1;
             $reasons[] = ['key' => 'system.register_commands', 'severity' => 'medium', 'score' => 1];

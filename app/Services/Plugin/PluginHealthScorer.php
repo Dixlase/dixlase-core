@@ -377,7 +377,7 @@ class PluginHealthScorer
     protected function isHighRiskPermission(string $permission): bool
     {
         $highRiskPermissions = [
-            'database.core_tables',
+            'database.core_tables_write',
             'members.write',
             'members.delete',
             'system.modify_routes',
