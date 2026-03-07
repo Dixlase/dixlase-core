@@ -17,7 +17,12 @@ https://exc-d.com
     :title="__('admin/settings/plugins/index.permissions.enable_warning_title')"
     message=""
     icon_type="warning"
-    confirm_color="yellow">
+    confirm_color="yellow"
+    data-needs-scan="{{ $card['needsScan'] ? '1' : '0' }}"
+    data-plugin-slug="{{ $card['slug'] }}"
+    data-plugin-name="{{ $card['translatedName'] }}"
+    data-action-type="enable"
+    data-form-id="quickEnableForm">
     <div class="text-left">
         @if($card['hasEnableWarnings'])
             <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
@@ -51,6 +56,7 @@ https://exc-d.com
             type="button"
             :label="__('common.cancel')"
             variant="secondary"
+            class="mx-2"
             @click="close()"
         />
         @if(!$card['auditedAt'])
@@ -59,7 +65,7 @@ https://exc-d.com
                 :label="__('admin/settings/plugins/index.permissions.audit_button')"
                 variant="primary"
                 icon="fas fa-search"
-                class="audit-btn"
+                class="audit-btn mx-2"
                 data-slug="{{ $card['slug'] }}"
                 @click="close()"
             />
@@ -69,6 +75,7 @@ https://exc-d.com
             :label="__('common.enable')"
             variant="warning"
             form="quickEnableForm"
+            class="mx-2"
         />
     </x-slot:footer>
 </x-ui-modal>

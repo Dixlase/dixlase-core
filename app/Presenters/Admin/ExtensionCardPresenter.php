@@ -247,6 +247,7 @@ class ExtensionCardPresenter
             'isBlocked' => $enableAction === PluginEnableAction::Blocked,
             'trustLevel' => $trustLevel?->value,
             'trustLevelLabel' => $trustLevel?->label(),
+            'needsScan' => self::computeNeedsScan($slug, $auditedAt),
         ];
     }
 
@@ -505,5 +506,25 @@ class ExtensionCardPresenter
         }
 
         return $formatted;
+    }
+
+    /**
+     * プラグインがスキャン（再スキャン含む）を必要とするかどうか
+     */
+    private static function computeNeedsScan(string $slug, ?string $auditedAt): bool
+    {
+        // 未スキャンの場合は常にtrue
+        if ($auditedAt === null) {
+            return true;
+        }
+
+        // PluginHealthScorerでファイルハッシュ変更を検知
+        try {
+            $healthScorer = app(PluginHealthScorer::class);
+
+            return $healthScorer->needsRescan($slug);
+        } catch (\Exception $e) {
+            return true;
+        }
     }
 }

@@ -356,4 +356,26 @@ return [
         'csp_warning_message' => 'このプラグインにはCSP非対応のインラインスクリプト/スタイルが含まれています。CSPを強制モードで有効にすると、一部の機能が動作しない可能性があります。',
         'csp_fix_suggestion' => '修正方法: <script> を <script @cspNonce> に、<style> を <style @cspNonce> に変更してください。',
     ],
+
+    // 2段階モーダルフロー
+    'two_stage' => [
+        'stage1_scan_required_title' => 'セキュリティスキャンが必要です',
+        'stage1_scan_required_message' => 'このプラグインを:actionするにはスキャンが必要です。',
+        'stage1_scan_optional_title' => 'スキャンしますか？',
+        'stage1_scan_optional_message' => ':actionの前にこのプラグインをスキャンしますか？',
+        'stage1_scanning' => 'スキャン中...',
+        'stage1_scanning_description' => 'セキュリティスキャンを実行しています。しばらくお待ちください。',
+        'stage1_skip_scan' => 'スキップ',
+        'stage1_start_scan' => 'スキャン開始',
+        'stage2_confirm_install' => 'このプラグインをインストールしますか？',
+        'stage2_confirm_enable' => 'このプラグインを有効化しますか？',
+        'stage2_blocked_title' => ':actionできません',
+        'stage2_blocked_message' => 'このプラグインはセキュリティ要件を満たしていないため、:actionできません。',
+        'stage2_warning_message' => 'このプラグインには以下の警告があります:',
+        'action_install' => 'インストール',
+        'action_enable' => '有効化',
+        'action_installed' => 'インストール',
+        'action_enabled' => '有効化',
+        'install_blocked' => 'このプラグインはセキュリティ要件を満たしていないため、インストールできません。',
+    ],
 ];
