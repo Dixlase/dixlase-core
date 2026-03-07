@@ -22,15 +22,20 @@
 
 namespace Tests\Unit\Presenters\Admin;
 
+use App\Enums\MemberStatus;
 use App\Enums\TwoFaMethod;
 use App\Models\Member;
+use App\Models\Plugin;
 use App\Presenters\Admin\DashboardPresenter;
 use App\Services\SafeModeService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
 
 class DashboardPresenterTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * securityOverview は5項目を返すことを確認
      */
@@ -228,5 +233,95 @@ class DashboardPresenterTest extends TestCase
             $this->assertArrayHasKey('description', $item);
             $this->assertContains($item['status'], ['ok', 'warning', 'recommendation']);
         }
+    }
+
+    /**
+     * extensionOverview は正しい構造を返す
+     */
+    public function test_extension_overview_returns_correct_structure(): void
+    {
+        $result = DashboardPresenter::extensionOverview();
+
+        $this->assertArrayHasKey('plugins', $result);
+        $this->assertArrayHasKey('themes', $result);
+        $this->assertArrayHasKey('health', $result);
+
+        $this->assertArrayHasKey('installed', $result['plugins']);
+        $this->assertArrayHasKey('enabled', $result['plugins']);
+        $this->assertArrayHasKey('installed', $result['themes']);
+        $this->assertArrayHasKey('enabled', $result['themes']);
+
+        foreach ($result['health'] as $statusKey => $info) {
+            $this->assertArrayHasKey('count', $info);
+            $this->assertArrayHasKey('label', $info);
+            $this->assertArrayHasKey('color', $info);
+            $this->assertArrayHasKey('icon', $info);
+        }
+    }
+
+    /**
+     * extensionOverview はプラグイン数を正しくカウントする
+     */
+    public function test_extension_overview_counts_plugins_correctly(): void
+    {
+        $base = ['directory' => 'TestPlugin', 'namespace' => 'Plugins\\TestPlugin', 'version' => '1.0.0'];
+        Plugin::create(array_merge($base, ['name' => 'Test1', 'slug' => 'test-1', 'installed_at' => now(), 'enabled_at' => now()]));
+        Plugin::create(array_merge($base, ['name' => 'Test2', 'slug' => 'test-2', 'installed_at' => now(), 'enabled_at' => null]));
+        Plugin::create(array_merge($base, ['name' => 'Test3', 'slug' => 'test-3', 'installed_at' => null, 'enabled_at' => null]));
+
+        $result = DashboardPresenter::extensionOverview();
+
+        $this->assertEquals(2, $result['plugins']['installed']);
+        $this->assertEquals(1, $result['plugins']['enabled']);
+    }
+
+    /**
+     * memberOverview は正しい構造を返す
+     */
+    public function test_member_overview_returns_correct_structure(): void
+    {
+        $result = DashboardPresenter::memberOverview();
+
+        $this->assertArrayHasKey('total', $result);
+        $this->assertArrayHasKey('active', $result);
+        $this->assertArrayHasKey('inactive', $result);
+        $this->assertArrayHasKey('by_role', $result);
+        $this->assertArrayHasKey('two_fa_enabled', $result);
+        $this->assertArrayHasKey('two_fa_rate', $result);
+        $this->assertArrayHasKey('recent_logins', $result);
+    }
+
+    /**
+     * memberOverview は2FA有効率を正しく計算する
+     */
+    public function test_member_overview_calculates_two_fa_rate(): void
+    {
+        Member::factory()->create(['two_fa_mode' => 2, 'status' => MemberStatus::Active->value]);
+        Member::factory()->create(['two_fa_mode' => 1, 'status' => MemberStatus::Active->value]);
+        Member::factory()->create(['two_fa_mode' => 0, 'status' => MemberStatus::Active->value]);
+        Member::factory()->create(['two_fa_mode' => 0, 'status' => MemberStatus::Active->value]);
+
+        $result = DashboardPresenter::memberOverview();
+
+        $this->assertEquals(4, $result['total']);
+        $this->assertEquals(2, $result['two_fa_enabled']);
+        $this->assertEquals(50.0, $result['two_fa_rate']);
+    }
+
+    /**
+     * memberOverview の最近ログインは最大5件に制限される
+     */
+    public function test_member_overview_recent_logins_limited_to_five(): void
+    {
+        for ($i = 0; $i < 8; $i++) {
+            Member::factory()->create([
+                'last_login_at' => now()->subMinutes($i),
+                'status' => MemberStatus::Active->value,
+            ]);
+        }
+
+        $result = DashboardPresenter::memberOverview();
+
+        $this->assertCount(5, $result['recent_logins']);
     }
 }

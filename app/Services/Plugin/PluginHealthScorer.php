@@ -440,8 +440,10 @@ class PluginHealthScorer
 
         $hashes = [];
         $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($pluginPath, RecursiveDirectoryIterator::SKIP_DOTS)
+            new RecursiveDirectoryIterator($pluginPath, RecursiveDirectoryIterator::SKIP_DOTS | RecursiveDirectoryIterator::FOLLOW_SYMLINKS),
         );
+        // Prevent infinite recursion from circular directory structures
+        $iterator->setMaxDepth(20);
 
         foreach ($iterator as $file) {
             if (! $file->isFile()) {

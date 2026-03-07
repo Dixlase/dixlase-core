@@ -49,6 +49,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @include('admin.dashboard._security-overview')
         </div>
 
+        {{-- 拡張機能概要 & メンバー概要（両モード） --}}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            @include('admin.dashboard._extension-overview', ['extensionOverview' => $extensionOverview])
+            @include('admin.dashboard._member-overview', ['memberOverview' => $memberOverview])
+        </div>
+
         {{-- プラグイン通知（両モード） --}}
         @if(count($pluginNotifications) > 0)
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">

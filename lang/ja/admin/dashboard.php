@@ -63,6 +63,27 @@ return [
     'view_settings' => '設定を見る',
     'status_info' => '情報',
 
+    // 拡張機能概要
+    'extension_overview' => '拡張機能の概要',
+    'plugins' => 'プラグイン',
+    'themes' => 'テーマ',
+    'installed' => 'インストール済み',
+    'enabled' => '有効',
+    'health_overview' => '健全性の概要',
+    'manage_plugins' => 'プラグイン管理',
+    'no_audits' => 'プラグインの監査はまだ実行されていません。',
+
+    // メンバー概要
+    'member_overview' => 'メンバー概要',
+    'total_members' => '合計',
+    'active' => 'アクティブ',
+    'inactive' => '非アクティブ',
+    'role_distribution' => 'ロール分布',
+    'two_fa_rate_label' => '2FA有効率',
+    'recent_logins' => '最近のログイン',
+    'no_recent_logins' => '最近のログイン記録がありません。',
+    'manage_members' => 'メンバー管理',
+
     // ステータスラベル
     'status_ok' => 'OK',
     'status_warning' => '警告',
