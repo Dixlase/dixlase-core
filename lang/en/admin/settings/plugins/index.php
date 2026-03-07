@@ -356,4 +356,26 @@ return [
         'csp_warning_message' => 'This plugin contains CSP non-compliant inline scripts/styles. Some features may not work when CSP is enabled in enforce mode.',
         'csp_fix_suggestion' => 'Fix: Change <script> to <script @cspNonce> and <style> to <style @cspNonce>.',
     ],
+
+    // 2段階モーダルフロー
+    'two_stage' => [
+        'stage1_scan_required_title' => 'Security Scan Required',
+        'stage1_scan_required_message' => 'This plugin must be scanned before :action.',
+        'stage1_scan_optional_title' => 'Scan Plugin?',
+        'stage1_scan_optional_message' => 'Would you like to scan this plugin before :action?',
+        'stage1_scanning' => 'Scanning...',
+        'stage1_scanning_description' => 'Running security scan. Please wait.',
+        'stage1_skip_scan' => 'Skip Scan',
+        'stage1_start_scan' => 'Start Scan',
+        'stage2_confirm_install' => 'Install this plugin?',
+        'stage2_confirm_enable' => 'Enable this plugin?',
+        'stage2_blocked_title' => 'Cannot :action',
+        'stage2_blocked_message' => 'This plugin does not meet the security requirements and cannot be :action.',
+        'stage2_warning_message' => 'This plugin has the following warnings:',
+        'action_install' => 'install',
+        'action_enable' => 'enable',
+        'action_installed' => 'installed',
+        'action_enabled' => 'enabled',
+        'install_blocked' => 'This plugin cannot be installed because it does not meet the security requirements.',
+    ],
 ];

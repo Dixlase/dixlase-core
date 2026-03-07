@@ -38,6 +38,7 @@ use App\Services\Csp\CspExtensionLoader;
 use App\Services\ExtensionOperationService;
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\Plugin\PluginPermissionService;
+use App\Services\SecuritySettingsRegistry;
 use App\Traits\PluginLoaderTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -119,14 +120,39 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $installedPluginCard = collect($pluginCards)->firstWhere('id', $installedPluginId);
         }
 
+        // セキュリティモードに基づくスキャン必須判定
+        $scanRequired = self::isScanRequired();
+
         $this->viewParams['plugins'] = $plugins;
         $this->viewParams['uninstalledPlugins'] = $uninstalledPlugins;
         $this->viewParams['pluginCards'] = $pluginCards;
         $this->viewParams['uninstalledPluginCards'] = $uninstalledPluginCards;
         $this->viewParams['installedPluginCard'] = $installedPluginCard;
+        $this->viewParams['scanRequired'] = $scanRequired;
         $this->viewParams['heading'] = __('admin/settings/plugins/index.heading');
 
         return view('admin::settings.plugins.index', $this->viewParams);
+    }
+
+    /**
+     * セキュリティモードに基づいてスキャン必須かどうかを判定
+     *
+     * Strict/Balanced → true
+     * Development → false
+     * Custom → require_signature or require_permission_definition or permission_mismatch_action=block なら true
+     */
+    public static function isScanRequired(): bool
+    {
+        $preset = SecuritySettingsRegistry::get('extension_security_preset', 'balanced');
+
+        return match ($preset) {
+            'strict', 'balanced' => true,
+            'development' => false,
+            'custom' => SecuritySettingsRegistry::get('extension_require_signature', false)
+                || SecuritySettingsRegistry::get('extension_require_permission_definition', false)
+                || SecuritySettingsRegistry::get('extension_permission_mismatch_action', 'warn') === 'block',
+            default => true,
+        };
     }
 
     /**
@@ -257,10 +283,25 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             'admin/settings/plugins/index'
         );
 
+        // 2段階モーダル用: 有効化アクションとインストール許可を算出
+        $enableAction = PluginEnableAction::Allowed;
+        $installAllowed = true;
+        try {
+            $healthScorer = app(PluginHealthScorer::class);
+            $healthResult = $healthScorer->calculate($slug);
+            $enableAction = $healthScorer->determineEnableAction($healthResult);
+            $installAllowed = $enableAction !== PluginEnableAction::Blocked;
+        } catch (\Exception $e) {
+            // 算出失敗時はデフォルト値を維持
+        }
+
         return response()->json([
             'success' => true,
             'message' => __('admin/settings/plugins/index.audit.completed'),
             'audit' => $result,
+            'enableAction' => $enableAction->value,
+            'enableActionLabel' => $enableAction->label(),
+            'installAllowed' => $installAllowed,
         ]);
     }
 
@@ -404,6 +445,49 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
         if (! File::exists($pluginPath)) {
             return redirect()->back()->with('error', __('admin/settings/plugins/index.messages.install_directory_not_found'));
+        }
+
+        // サーバーサイド防御: スキャン必須モードでの事前チェック
+        if (self::isScanRequired()) {
+            $pluginJsonPath = base_path("plugins/{$pluginDir}/plugin.json");
+            $slug = null;
+
+            if (File::exists($pluginJsonPath)) {
+                try {
+                    $pluginData = json_decode(File::get($pluginJsonPath), true);
+                    $slug = $pluginData['slug'] ?? null;
+                } catch (\Exception $e) {
+                    // plugin.json読み込み失敗時はslug取得をスキップ
+                }
+            }
+
+            if ($slug) {
+                $latestAudit = PluginAudit::where('plugin_slug', $slug)
+                    ->latest('audited_at')
+                    ->first();
+
+                // 未スキャンの場合はインストールを拒否
+                if (! $latestAudit) {
+                    return redirect()->back()->with('error', __('admin/settings/plugins/index.two_stage.install_blocked'));
+                }
+
+                // スキャン済みでもブロック状態の場合はインストールを拒否
+                try {
+                    $healthScorer = app(PluginHealthScorer::class);
+                    $healthResult = $healthScorer->calculate($slug);
+                    $enableAction = $healthScorer->determineEnableAction($healthResult);
+
+                    if ($enableAction === PluginEnableAction::Blocked) {
+                        return redirect()->back()->with('error', __('admin/settings/plugins/index.two_stage.install_blocked'));
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Pre-install health check failed', [
+                        'directory' => $pluginDir,
+                        'slug' => $slug,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
         }
 
         try {

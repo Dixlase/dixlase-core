@@ -60,8 +60,12 @@ https://exc-d.com
                 variant="success"
                 size="xs"
                 icon="fas fa-play"
-                @click="openModal('{{ $card['enableModalId'] }}')"
-                class="py-2 px-3"
+                class="py-2 px-3 two-stage-action-btn"
+                data-action-type="enable"
+                data-needs-scan="{{ $card['needsScan'] ? '1' : '0' }}"
+                data-plugin-slug="{{ $card['slug'] }}"
+                data-plugin-name="{{ $card['translatedName'] }}"
+                data-form-id="enableForm-{{ $card['id'] }}"
             />
 
             <x-ui-modal
@@ -97,6 +101,7 @@ https://exc-d.com
                         type="button"
                         :label="__('common.cancel')"
                         variant="secondary"
+                        class="mx-2"
                         @click="close()"
                     />
                     @if(!$card['auditedAt'])
@@ -105,7 +110,7 @@ https://exc-d.com
                             :label="__('admin/settings/plugins/index.permissions.audit_button')"
                             variant="primary"
                             icon="fas fa-search"
-                            class="audit-btn"
+                            class="audit-btn mx-2"
                             data-slug="{{ $card['slug'] }}"
                             @click="close()"
                         />
@@ -115,17 +120,23 @@ https://exc-d.com
                         :label="__('common.enable')"
                         variant="warning"
                         form="enableForm-{{ $card['id'] }}"
+                        class="mx-2"
                     />
                 </x-slot:footer>
             </x-ui-modal>
         @else
             <x-form-button
-                type="submit"
+                type="button"
                 :label="__('common.enable')"
                 variant="success"
                 size="xs"
                 icon="fas fa-play"
-                class="py-2 px-3"
+                class="py-2 px-3 mx-2 two-stage-action-btn"
+                data-action-type="enable"
+                data-needs-scan="{{ $card['needsScan'] ? '1' : '0' }}"
+                data-plugin-slug="{{ $card['slug'] }}"
+                data-plugin-name="{{ $card['translatedName'] }}"
+                data-form-id="enableForm-{{ $card['id'] }}"
             />
         @endif
     </form>
@@ -139,7 +150,7 @@ https://exc-d.com
             size="xs"
             icon="fas fa-trash"
             @click="openModal('uninstallModal-{{ $card['id'] }}')"
-            class="py-2 px-3"
+            class="py-2 px-3 mx-2"
         />
 
         <x-ui-modal

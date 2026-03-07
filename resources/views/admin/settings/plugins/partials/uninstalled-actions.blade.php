@@ -16,9 +16,13 @@ https://exc-d.com
         :label="__('common.install')"
         variant="success"
         size="xs"
-        class="py-2 px-3"
+        class="py-2 px-3 two-stage-action-btn"
         icon="fas fa-download"
-        @click="openModal('installModal-{{ $card['directory'] }}')"
+        data-action-type="install"
+        data-needs-scan="{{ $card['needsScan'] ? '1' : '0' }}"
+        data-plugin-slug="{{ $card['slug'] }}"
+        data-plugin-name="{{ $card['name'] }}"
+        data-form-id="installForm-{{ $card['directory'] }}"
     />
 
     <x-ui-modal
@@ -77,6 +81,7 @@ https://exc-d.com
                 type="button"
                 :label="__('common.cancel')"
                 variant="secondary"
+                class="mx-2"
                 @click="close()"
             />
             @if($card['installWarnings']['isNotScanned'] ?? false)
@@ -85,7 +90,7 @@ https://exc-d.com
                     :label="__('admin/settings/plugins/index.permissions.audit_button')"
                     variant="primary"
                     icon="fas fa-search"
-                    class="audit-btn"
+                    class="audit-btn mx-2"
                     data-slug="{{ $card['slug'] }}"
                     @click="close()"
                 />
@@ -95,6 +100,7 @@ https://exc-d.com
                 :label="__('common.install')"
                 :variant="$card['installWarnings']['hasWarnings'] ? 'warning' : 'success'"
                 form="installForm-{{ $card['directory'] }}"
+                class="mx-2"
             />
         </x-slot:footer>
     </x-ui-modal>

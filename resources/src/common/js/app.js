@@ -53,6 +53,7 @@ import '../../admin/settings/base/js/mode';
 import '../../admin/settings/security/js/captcha';
 import '../../admin/settings/systems/js/api';
 import '../../admin/settings/plugins/js/audit';
+import '../../admin/settings/plugins/js/two-stage-modal';
 import '../../admin/settings/themes/js/audit';
 import '../../admin/js/login-flow';
 import '../../admin/js/front-page-editor';
