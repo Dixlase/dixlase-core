@@ -1,0 +1,53 @@
+name: Deploy Dixlase Core
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set deploy target
+        id: target
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "env=production" >> $GITHUB_OUTPUT
+            echo "base_dir=/srv/dixlase" >> $GITHUB_OUTPUT
+          else
+            echo "env=staging" >> $GITHUB_OUTPUT
+            echo "base_dir=/srv/dixlase/staging" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            set -e
+            BASE="${{ steps.target.outputs.base_dir }}"
+            BRANCH="${{ github.ref_name }}"
+
+            for SITE in brand docs demo; do
+              echo "=== Deploying $SITE (${{ steps.target.outputs.env }}) ==="
+              cd "$BASE/$SITE"
+              git fetch origin
+              git reset --hard "origin/$BRANCH"
+
+              if [ -f composer.json ]; then
+                composer install --no-dev --no-interaction --optimize-autoloader
+              fi
+
+              if [ -f artisan ]; then
+                php artisan config:cache
+                php artisan route:cache
+                php artisan view:cache
+              fi
+            done
+
+            echo "=== Deploy complete ==="
