@@ -63,6 +63,27 @@ return [
     'view_settings' => 'View Settings',
     'status_info' => 'Info',
 
+    // Extension overview
+    'extension_overview' => 'Extension Overview',
+    'plugins' => 'Plugins',
+    'themes' => 'Themes',
+    'installed' => 'Installed',
+    'enabled' => 'Enabled',
+    'health_overview' => 'Health Overview',
+    'manage_plugins' => 'Manage Plugins',
+    'no_audits' => 'No plugin audits have been performed yet.',
+
+    // Member overview
+    'member_overview' => 'Member Overview',
+    'total_members' => 'Total',
+    'active' => 'Active',
+    'inactive' => 'Inactive',
+    'role_distribution' => 'Role Distribution',
+    'two_fa_rate_label' => '2FA Enabled',
+    'recent_logins' => 'Recent Logins',
+    'no_recent_logins' => 'No recent login records.',
+    'manage_members' => 'Manage Members',
+
     // Status labels
     'status_ok' => 'OK',
     'status_warning' => 'Warning',

@@ -27,11 +27,18 @@ use App\Contracts\PluginIntegration\DashboardWidgetProviderInterface;
 use App\DTO\Mail\MailConfigDTO;
 use App\DTO\PluginIntegration\DashboardNotificationDTO;
 use App\DTO\PluginIntegration\DashboardWidgetDTO;
+use App\Enums\MemberRole;
+use App\Enums\MemberStatus;
+use App\Enums\PluginHealthStatus;
 use App\Enums\TwoFaMethod;
 use App\Helpers\ConfigHelper;
 use App\Models\Member;
+use App\Models\Plugin;
+use App\Models\PluginAudit;
+use App\Models\Theme;
 use App\Services\Plugin\PluginServiceResolver;
 use App\Services\SafeModeService;
+use Illuminate\Support\Carbon;
 
 /**
  * ダッシュボード表示データのPresenter
@@ -250,5 +257,123 @@ class DashboardPresenter
         }
 
         return $notifications;
+    }
+
+    /**
+     * 拡張機能（プラグイン/テーマ）の概要を取得
+     *
+     * @return array{
+     *   plugins: array{installed: int, enabled: int},
+     *   themes: array{installed: int, enabled: int},
+     *   health: array<string, array{count: int, label: string, color: string, icon: string}>
+     * }
+     */
+    public static function extensionOverview(): array
+    {
+        // プラグイン数
+        $pluginsInstalled = Plugin::query()->installed()->count();
+        $pluginsEnabled = Plugin::query()->enabled()->count();
+
+        // テーマ数
+        $themesInstalled = Theme::query()->installed()->count();
+        $themesEnabled = Theme::query()->installed()->get()->filter(fn (Theme $t) => $t->isEnabled())->count();
+
+        // 健全性ステータス別カウント（監査済みプラグインのみ）
+        $healthCounts = [];
+        foreach (PluginHealthStatus::cases() as $status) {
+            $count = PluginAudit::query()
+                ->where('health_status', $status->value)
+                ->count();
+
+            $healthCounts[$status->value] = [
+                'count' => $count,
+                'label' => $status->label(),
+                'color' => $status->colorName(),
+                'icon' => $status->iconClass(),
+            ];
+        }
+
+        return [
+            'plugins' => [
+                'installed' => $pluginsInstalled,
+                'enabled' => $pluginsEnabled,
+            ],
+            'themes' => [
+                'installed' => $themesInstalled,
+                'enabled' => $themesEnabled,
+            ],
+            'health' => $healthCounts,
+        ];
+    }
+
+    /**
+     * メンバー概要を取得
+     *
+     * @return array{
+     *   total: int,
+     *   active: int,
+     *   inactive: int,
+     *   by_role: array<string, array{count: int, label: string}>,
+     *   two_fa_enabled: int,
+     *   two_fa_rate: float,
+     *   recent_logins: array<int, array{display_name: string, role: string, role_label: string, last_login_at: string}>
+     * }
+     */
+    public static function memberOverview(): array
+    {
+        $total = Member::query()->count();
+        $active = Member::query()->where('status', MemberStatus::Active->value)->count();
+        $inactive = Member::query()->where('status', MemberStatus::Inactive->value)->count();
+
+        // ロール分布
+        $roleRows = Member::query()
+            ->selectRaw('role, count(*) as count')
+            ->groupBy('role')
+            ->pluck('count', 'role');
+
+        $byRole = [];
+        foreach ($roleRows as $roleValue => $count) {
+            $roleEnum = MemberRole::tryFrom((int) $roleValue);
+            if ($roleEnum) {
+                $byRole[$roleEnum->name] = [
+                    'count' => $count,
+                    'label' => $roleEnum->label(),
+                ];
+            }
+        }
+
+        // 2FA有効者数（two_fa_mode > 0 = 何らかの2FAが有効）
+        $twoFaEnabled = Member::query()->where('two_fa_mode', '>', 0)->count();
+        $twoFaRate = $total > 0 ? round(($twoFaEnabled / $total) * 100, 1) : 0.0;
+
+        // 最近ログインした5名
+        $recentLogins = Member::query()
+            ->whereNotNull('last_login_at')
+            ->latest('last_login_at')
+            ->limit(5)
+            ->get(['display_name', 'account_name', 'role', 'last_login_at'])
+            ->map(function (Member $member) {
+                $roleEnum = $member->role;
+
+                return [
+                    'display_name' => $member->display_name ?? $member->account_name,
+                    'role' => $roleEnum->name ?? '',
+                    'role_label' => $roleEnum->label() ?? '',
+                    'last_login_at' => $member->last_login_at
+                        ? Carbon::parse($member->last_login_at)->diffForHumans()
+                        : '',
+                ];
+            })
+            ->toArray();
+
+        return [
+            'total' => $total,
+            'active' => $active,
+            'inactive' => $inactive,
+            'by_role' => $byRole,
+            'two_fa_enabled' => $twoFaEnabled,
+            'two_fa_rate' => $twoFaRate,
+            'recent_logins' => $recentLogins,
+        ];
     }
 }
