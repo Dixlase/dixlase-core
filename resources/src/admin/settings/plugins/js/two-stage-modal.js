@@ -20,7 +20,7 @@
  * 2段階モーダルフロー（プラグインインストール/有効化）
  */
 
-import { getAuditConfig, runPluginScan, populateResultContent } from './audit';
+import { getAuditConfig, runPluginScan } from './audit';
 
 /**
  * モーダルを開く
@@ -59,6 +59,26 @@ function setModalIconType(id, iconType) {
     }
 }
 
+/**
+ * モーダルのメッセージを設定
+ */
+function setModalMessage(id, message) {
+    const el = document.getElementById(id);
+    if (el && el._x_dataStack && el._x_dataStack[0]) {
+        el._x_dataStack[0].message = message;
+    }
+}
+
+/**
+ * モーダルのsubmitting状態を設定
+ */
+function setModalSubmitting(id, submitting) {
+    const el = document.getElementById(id);
+    if (el && el._x_dataStack && el._x_dataStack[0]) {
+        el._x_dataStack[0].submitting = submitting;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const config = getAuditConfig();
     if (!config) return;
@@ -80,8 +100,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Stage 2 要素
     const stage2Content = document.getElementById('pluginActionStage2Content');
+    const stage2ConfirmMessage = document.getElementById('pluginActionStage2ConfirmMessage');
     const stage2CancelBtn = document.getElementById('pluginActionStage2CancelBtn');
     const stage2ConfirmBtn = document.getElementById('pluginActionStage2ConfirmBtn');
+    const stage2ConfirmLabel = document.getElementById('pluginActionStage2ConfirmLabel');
 
     if (!stage1Message || !stage2Content) return;
 
@@ -139,18 +161,11 @@ document.addEventListener('DOMContentLoaded', function () {
         stage1Message.textContent = ts.stage1ScanningDescription || '';
 
         // submitting=true でモーダルを閉じられないようにする
-        const stage1El = document.getElementById('pluginActionStage1Modal');
-        if (stage1El && stage1El._x_dataStack && stage1El._x_dataStack[0]) {
-            stage1El._x_dataStack[0].submitting = true;
-        }
+        setModalSubmitting('pluginActionStage1Modal', true);
 
         runPluginScan(currentAction.pluginSlug, auditUrl)
             .then(data => {
-                // submitting を解除
-                if (stage1El && stage1El._x_dataStack && stage1El._x_dataStack[0]) {
-                    stage1El._x_dataStack[0].submitting = false;
-                }
-
+                setModalSubmitting('pluginActionStage1Modal', false);
                 closeModal('pluginActionStage1Modal');
 
                 if (data.success) {
@@ -163,11 +178,7 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(error => {
                 console.error('Two-stage scan error:', error);
-
-                if (stage1El && stage1El._x_dataStack && stage1El._x_dataStack[0]) {
-                    stage1El._x_dataStack[0].submitting = false;
-                }
-
+                setModalSubmitting('pluginActionStage1Modal', false);
                 closeModal('pluginActionStage1Modal');
                 alert((config.messages || {}).failed || '');
             });
@@ -237,30 +248,41 @@ document.addEventListener('DOMContentLoaded', function () {
 
         stage2Content.innerHTML = contentHtml;
 
+        // 確認メッセージ表示
+        if (stage2ConfirmMessage) {
+            if (isBlocked) {
+                stage2ConfirmMessage.classList.add('hidden');
+                stage2ConfirmMessage.textContent = '';
+            } else {
+                const confirmMsg = (ts.stage2ConfirmActionMessage || '').replace(':action', actionLabel);
+                stage2ConfirmMessage.textContent = confirmMsg;
+                stage2ConfirmMessage.classList.remove('hidden');
+            }
+        }
+
         // ボタン設定
         if (isBlocked) {
             stage2ConfirmBtn.classList.add('hidden');
         } else {
             stage2ConfirmBtn.classList.remove('hidden');
-            // ラベルとスタイル設定
+            stage2ConfirmBtn.disabled = false;
+            // ラベル設定
             const btnLabel = currentAction.actionType === 'install' ? ts.install : ts.enable;
-            const btnTextNode = stage2ConfirmBtn.querySelector('span') || stage2ConfirmBtn;
-            if (btnTextNode.tagName === 'SPAN') {
-                btnTextNode.textContent = btnLabel;
-            } else {
-                // span がない場合はテキストノードを探す
-                const textNodes = Array.from(stage2ConfirmBtn.childNodes).filter(n => n.nodeType === Node.TEXT_NODE);
-                if (textNodes.length > 0) {
-                    textNodes[0].textContent = ' ' + btnLabel;
-                }
+            if (stage2ConfirmLabel) {
+                stage2ConfirmLabel.textContent = btnLabel;
             }
+        }
+
+        // キャンセルボタンをリセット
+        if (stage2CancelBtn) {
+            stage2CancelBtn.disabled = false;
         }
 
         openModal('pluginActionStage2Modal');
     }
 
     /**
-     * スキャン結果の概要HTMLを生成
+     * スキャン結果の詳細HTMLを生成（署名・権限整合性・CSP含む）
      */
     function buildScanResultHtml(audit) {
         const riskLevel = audit.risk_level || 'low';
@@ -272,8 +294,14 @@ document.addEventListener('DOMContentLoaded', function () {
         };
         const healthStyle = healthColors[riskLevel] || healthColors['unknown'];
         const healthLabels = config.healthLabels || {};
+        const signatureLabels = config.signatureLabels || {};
+        const cspLabels = config.cspLabels || {};
+        const auditMessages = config.messages || {};
 
-        let html = `
+        let html = '';
+
+        // 健全性ステータス
+        html += `
             <div class="p-3 rounded-lg ${healthStyle.bg} border ${healthStyle.border} mb-3">
                 <div class="flex items-center gap-2 ${healthStyle.text}">
                     <i class="fas ${healthStyle.icon}"></i>
@@ -282,24 +310,201 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
         `;
 
+        // 署名ステータス
+        html += buildSignatureHtml(audit, signatureLabels);
+
         // attention reasons
         const attentionReasons = audit.formatted_attention_reasons || [];
         if (attentionReasons.length > 0) {
             html += `
                 <div class="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 mb-3">
-                    <ul class="text-sm space-y-1 ml-4 list-disc">
+                    <p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        ${config.attentionReasonsTitle || ''}
+                    </p>
+                    <ul class="text-sm space-y-1 ml-5 list-disc">
                         ${attentionReasons.map(r => `
                             <li class="${r.color || 'text-yellow-700 dark:text-yellow-300'}">
                                 <i class="${r.icon || 'fas fa-info-circle'} mr-1"></i>
                                 ${r.text || ''}
+                                ${r.score ? `<span class="inline-flex items-center ml-1 px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200">+${r.score}</span>` : ''}
                             </li>
                         `).join('')}
                     </ul>
+                    ${(() => {
+                        const totalScore = attentionReasons.reduce((sum, r) => sum + (r.score || 0), 0);
+                        return totalScore > 0 ? `
+                            <div class="mt-2 pt-2 border-t border-yellow-200 dark:border-yellow-700 flex items-center justify-between">
+                                <span class="text-xs font-medium text-yellow-700 dark:text-yellow-300">${config.totalRiskScoreLabel || ''}</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${riskLevel === 'high' ? 'bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200' : riskLevel === 'medium' ? 'bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200' : 'bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200'}">${totalScore}</span>
+                            </div>
+                        ` : '';
+                    })()}
                 </div>
             `;
         }
 
+        // 権限定義の整合性セクション
+        const hasIssues = audit.has_mismatches && audit.mismatches && audit.mismatches.length > 0;
+        html += `
+            <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 mt-1">
+                <i class="fas fa-balance-scale mr-1"></i>
+                ${config.permissionConsistencyTitle || ''}
+            </p>
+        `;
+
+        if (hasIssues) {
+            html += `
+                <div class="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 mb-3">
+                    <p class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">
+                        <i class="fas fa-code-branch mr-1"></i>
+                        ${auditMessages.mismatchFound || ''}
+                    </p>
+                    <ul class="text-sm text-red-700 dark:text-red-300 space-y-1 ml-5 list-disc">
+                        ${audit.mismatches.slice(0, 10).map(m => `
+                            <li>
+                                <code class="bg-red-100 dark:bg-red-800 px-1 rounded">${m.permission}</code>
+                                - ${m.type === 'undeclared_usage' ? (auditMessages.undeclaredUsage || '') : (auditMessages.unusedDeclaration || '')}
+                            </li>
+                        `).join('')}
+                    </ul>
+                    ${audit.mismatches.length > 10 ? `<p class="text-xs text-red-600 dark:text-red-400 mt-2">...+${audit.mismatches.length - 10}</p>` : ''}
+                </div>
+            `;
+        } else {
+            html += `
+                <div class="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 mb-3">
+                    <p class="text-sm text-green-700 dark:text-green-300">
+                        <i class="fas fa-check-circle mr-1"></i>
+                        ${auditMessages.noIssues || ''}
+                    </p>
+                </div>
+            `;
+        }
+
+        // CSPステータス
+        html += buildCspHtml(audit, cspLabels);
+
+        // 統計情報
+        html += `
+            <div class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                ${config.statsLabel || ''}: ${audit.total_checked || 0} /
+                ${config.matchesLabel || ''}: ${audit.matches_count || 0} /
+                ${config.mismatchesLabel || ''}: ${(audit.mismatches || []).length}
+            </div>
+        `;
+
         return html;
+    }
+
+    /**
+     * 署名ステータスのHTMLを生成
+     */
+    function buildSignatureHtml(audit, labels) {
+        const status = audit.signature_status || 'unsigned';
+        const signer = audit.signature_signer || '';
+
+        // 署名ステータス別の色とアイコン
+        const styles = {
+            'official': { bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-700 dark:text-blue-300', icon: 'fa-shield-alt' },
+            'verified': { bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-700 dark:text-green-300', icon: 'fa-check-circle' },
+            'partner': { bg: 'bg-indigo-50 dark:bg-indigo-900/20', border: 'border-indigo-200 dark:border-indigo-800', text: 'text-indigo-700 dark:text-indigo-300', icon: 'fa-handshake' },
+            'signed': { bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-700 dark:text-green-300', icon: 'fa-check' },
+            'invalid': { bg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-200 dark:border-red-800', text: 'text-red-700 dark:text-red-300', icon: 'fa-times-circle' },
+            'unsigned': { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', text: 'text-amber-700 dark:text-amber-300', icon: 'fa-exclamation-triangle' },
+            'pending': { bg: 'bg-gray-50 dark:bg-gray-900/20', border: 'border-gray-200 dark:border-gray-800', text: 'text-gray-700 dark:text-gray-300', icon: 'fa-clock' },
+        };
+        const style = styles[status] || styles['unsigned'];
+        const statusLabel = labels[status] || status;
+
+        let html = `
+            <div class="p-3 rounded-lg ${style.bg} border ${style.border} mb-3">
+                <div class="flex items-center gap-2 ${style.text}">
+                    <i class="fas ${style.icon}"></i>
+                    <span class="font-semibold">${labels.title || ''}: ${statusLabel}</span>
+                </div>
+        `;
+
+        if (signer) {
+            html += `
+                <p class="text-xs mt-1 ${style.text}">${labels.signedBy || ''}: ${signer}</p>
+            `;
+        }
+
+        // 未署名・無効の警告メッセージ
+        if (status === 'unsigned' && labels.unsignedInfo) {
+            html += `
+                <p class="text-xs mt-1 ${style.text}">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    ${labels.unsignedInfo}
+                </p>
+            `;
+        } else if (status === 'invalid' && labels.invalidWarning) {
+            html += `
+                <p class="text-xs mt-1 ${style.text}">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    ${labels.invalidWarning}
+                </p>
+            `;
+        }
+
+        html += '</div>';
+        return html;
+    }
+
+    /**
+     * CSPステータスのHTMLを生成
+     */
+    function buildCspHtml(audit, labels) {
+        const cspStatus = audit.csp_status || 'unknown';
+        const requiresInlineJs = audit.csp_requires_inline_js || false;
+        const requiresInlineCss = audit.csp_requires_inline_css || false;
+
+        if (cspStatus === 'unknown') return '';
+
+        const isCompliant = cspStatus === 'compliant';
+        const style = isCompliant
+            ? { bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-700 dark:text-green-300', icon: 'fa-check-circle' }
+            : { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', text: 'text-amber-700 dark:text-amber-300', icon: 'fa-exclamation-triangle' };
+
+        let html = `
+            <div class="p-3 rounded-lg ${style.bg} border ${style.border} mb-3">
+                <div class="flex items-center gap-2 ${style.text}">
+                    <i class="fas ${style.icon}"></i>
+                    <span class="font-semibold">${labels.title || ''}: ${isCompliant ? (labels.compliant || '') : (labels.notCompliant || '')}</span>
+                </div>
+        `;
+
+        if (!isCompliant) {
+            const issues = [];
+            if (requiresInlineJs) issues.push(labels.inlineScripts || 'Inline Scripts');
+            if (requiresInlineCss) issues.push(labels.inlineStyles || 'Inline Styles');
+            if (issues.length > 0) {
+                html += `
+                    <p class="text-xs mt-1 ${style.text}">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        ${issues.join(', ')}
+                    </p>
+                `;
+            }
+        }
+
+        html += '</div>';
+        return html;
+    }
+
+    /**
+     * 処理中モーダルを表示
+     */
+    function showProcessingModal() {
+        const actionLabel = currentAction.actionType === 'install' ? ts.processingInstall : ts.processingEnable;
+        const actionDescription = currentAction.actionType === 'install' ? ts.processingInstallDescription : ts.processingEnableDescription;
+
+        setModalTitle('pluginActionProcessingModal', actionLabel || '');
+        setModalMessage('pluginActionProcessingModal', actionDescription || '');
+        setModalIconType('pluginActionProcessingModal', 'info');
+        setModalSubmitting('pluginActionProcessingModal', true);
+        openModal('pluginActionProcessingModal');
     }
 
     /**
@@ -309,7 +514,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!currentAction || !currentAction.formId) return;
         const form = document.getElementById(currentAction.formId);
         if (form) {
-            form.submit();
+            // 処理中モーダルを表示してからサブミット
+            showProcessingModal();
+            setTimeout(function () {
+                form.submit();
+            }, 100);
         }
     }
 
@@ -364,6 +573,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // Stage 2: 確認ボタン（フォーム送信）
     if (stage2ConfirmBtn) {
         stage2ConfirmBtn.addEventListener('click', function () {
+            // ボタンを無効化してスピナーを表示
+            stage2ConfirmBtn.disabled = true;
+            if (stage2CancelBtn) stage2CancelBtn.disabled = true;
+
             closeModal('pluginActionStage2Modal');
             submitForm();
         });

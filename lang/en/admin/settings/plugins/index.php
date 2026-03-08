@@ -377,5 +377,10 @@ return [
         'action_installed' => 'installed',
         'action_enabled' => 'enabled',
         'install_blocked' => 'This plugin cannot be installed because it does not meet the security requirements.',
+        'stage2_confirm_action_message' => 'Do you want to proceed with :action?',
+        'processing_install' => 'Installing...',
+        'processing_enable' => 'Enabling...',
+        'processing_install_description' => 'Installing the plugin. Please wait.',
+        'processing_enable_description' => 'Enabling the plugin. Please wait.',
     ],
 ];
