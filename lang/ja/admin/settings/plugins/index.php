@@ -377,5 +377,10 @@ return [
         'action_installed' => 'インストール',
         'action_enabled' => '有効化',
         'install_blocked' => 'このプラグインはセキュリティ要件を満たしていないため、インストールできません。',
+        'stage2_confirm_action_message' => ':actionを実行しますか？',
+        'processing_install' => 'インストール中...',
+        'processing_enable' => '有効化中...',
+        'processing_install_description' => 'プラグインをインストールしています。しばらくお待ちください。',
+        'processing_enable_description' => 'プラグインを有効化しています。しばらくお待ちください。',
     ],
 ];

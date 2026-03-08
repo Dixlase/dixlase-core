@@ -91,6 +91,9 @@ export function populateResultContent(audit, config) {
 
     let contentHtml = '';
 
+    const signatureLabels = config.signatureLabels || {};
+    const cspLabels = config.cspLabels || {};
+
     // 健全性ステータス
     contentHtml += `
         <div class="p-3 rounded-lg ${healthStyle.bg} border ${healthStyle.border} mb-3">
@@ -100,6 +103,9 @@ export function populateResultContent(audit, config) {
             </div>
         </div>
     `;
+
+    // 署名ステータス
+    contentHtml += buildSignatureStatusHtml(audit, signatureLabels);
 
     // 確認が必要な理由（attention reasons）
     const attentionReasons = audit.formatted_attention_reasons || [];
@@ -170,6 +176,9 @@ export function populateResultContent(audit, config) {
         `;
     }
 
+    // CSPステータス
+    contentHtml += buildCspStatusHtml(audit, cspLabels);
+
     contentHtml += `
         <div class="mt-3 text-xs text-gray-500 dark:text-gray-400">
             ${config.statsLabel || ''}: ${audit.total_checked || 0} /
@@ -182,6 +191,98 @@ export function populateResultContent(audit, config) {
     if (container) {
         container.innerHTML = contentHtml;
     }
+}
+
+/**
+ * 署名ステータスのHTMLを生成
+ */
+function buildSignatureStatusHtml(audit, labels) {
+    const status = audit.signature_status || 'unsigned';
+    const signer = audit.signature_signer || '';
+
+    const styles = {
+        'official': { bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-700 dark:text-blue-300', icon: 'fa-shield-alt' },
+        'verified': { bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-700 dark:text-green-300', icon: 'fa-check-circle' },
+        'partner': { bg: 'bg-indigo-50 dark:bg-indigo-900/20', border: 'border-indigo-200 dark:border-indigo-800', text: 'text-indigo-700 dark:text-indigo-300', icon: 'fa-handshake' },
+        'signed': { bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-700 dark:text-green-300', icon: 'fa-check' },
+        'invalid': { bg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-200 dark:border-red-800', text: 'text-red-700 dark:text-red-300', icon: 'fa-times-circle' },
+        'unsigned': { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', text: 'text-amber-700 dark:text-amber-300', icon: 'fa-exclamation-triangle' },
+        'pending': { bg: 'bg-gray-50 dark:bg-gray-900/20', border: 'border-gray-200 dark:border-gray-800', text: 'text-gray-700 dark:text-gray-300', icon: 'fa-clock' },
+    };
+    const style = styles[status] || styles['unsigned'];
+    const statusLabel = labels[status] || status;
+
+    let html = `
+        <div class="p-3 rounded-lg ${style.bg} border ${style.border} mb-3">
+            <div class="flex items-center gap-2 ${style.text}">
+                <i class="fas ${style.icon}"></i>
+                <span class="font-semibold">${labels.title || ''}: ${statusLabel}</span>
+            </div>
+    `;
+
+    if (signer) {
+        html += `<p class="text-xs mt-1 ${style.text}">${labels.signedBy || ''}: ${signer}</p>`;
+    }
+
+    if (status === 'unsigned' && labels.unsignedInfo) {
+        html += `
+            <p class="text-xs mt-1 ${style.text}">
+                <i class="fas fa-info-circle mr-1"></i>
+                ${labels.unsignedInfo}
+            </p>
+        `;
+    } else if (status === 'invalid' && labels.invalidWarning) {
+        html += `
+            <p class="text-xs mt-1 ${style.text}">
+                <i class="fas fa-exclamation-triangle mr-1"></i>
+                ${labels.invalidWarning}
+            </p>
+        `;
+    }
+
+    html += '</div>';
+    return html;
+}
+
+/**
+ * CSPステータスのHTMLを生成
+ */
+function buildCspStatusHtml(audit, labels) {
+    const cspStatus = audit.csp_status || 'unknown';
+    const requiresInlineJs = audit.csp_requires_inline_js || false;
+    const requiresInlineCss = audit.csp_requires_inline_css || false;
+
+    if (cspStatus === 'unknown') return '';
+
+    const isCompliant = cspStatus === 'compliant';
+    const style = isCompliant
+        ? { bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-700 dark:text-green-300', icon: 'fa-check-circle' }
+        : { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', text: 'text-amber-700 dark:text-amber-300', icon: 'fa-exclamation-triangle' };
+
+    let html = `
+        <div class="p-3 rounded-lg ${style.bg} border ${style.border} mb-3">
+            <div class="flex items-center gap-2 ${style.text}">
+                <i class="fas ${style.icon}"></i>
+                <span class="font-semibold">${labels.title || ''}: ${isCompliant ? (labels.compliant || '') : (labels.notCompliant || '')}</span>
+            </div>
+    `;
+
+    if (!isCompliant) {
+        const issues = [];
+        if (requiresInlineJs) issues.push(labels.inlineScripts || 'Inline Scripts');
+        if (requiresInlineCss) issues.push(labels.inlineStyles || 'Inline Styles');
+        if (issues.length > 0) {
+            html += `
+                <p class="text-xs mt-1 ${style.text}">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    ${issues.join(', ')}
+                </p>
+            `;
+        }
+    }
+
+    html += '</div>';
+    return html;
 }
 
 document.addEventListener('DOMContentLoaded', function () {

@@ -60,6 +60,30 @@ https://exc-d.com
             'install' => __('common.install'),
             'enable' => __('common.enable'),
             'cancel' => __('common.cancel'),
+            'stage2ConfirmActionMessage' => __('admin/settings/plugins/index.two_stage.stage2_confirm_action_message'),
+            'processingInstall' => __('admin/settings/plugins/index.two_stage.processing_install'),
+            'processingEnable' => __('admin/settings/plugins/index.two_stage.processing_enable'),
+            'processingInstallDescription' => __('admin/settings/plugins/index.two_stage.processing_install_description'),
+            'processingEnableDescription' => __('admin/settings/plugins/index.two_stage.processing_enable_description'),
+        ],
+        'signatureLabels' => [
+            'title' => __('admin/settings/plugins/index.permissions.signature_status'),
+            'official' => __('admin/settings/plugins/index.permissions.signature_official'),
+            'verified' => __('admin/settings/plugins/index.permissions.signature_verified'),
+            'partner' => __('admin/settings/plugins/index.permissions.signature_partner'),
+            'signed' => __('admin/settings/plugins/index.permissions.signature_signed'),
+            'invalid' => __('admin/settings/plugins/index.permissions.signature_invalid'),
+            'unsigned' => __('admin/settings/plugins/index.permissions.signature_unsigned'),
+            'invalidWarning' => __('admin/settings/plugins/index.permissions.signature_invalid_warning'),
+            'unsignedInfo' => __('admin/settings/plugins/index.permissions.signature_unsigned_info'),
+            'signedBy' => __('admin/settings/plugins/index.permissions.signed_by'),
+        ],
+        'cspLabels' => [
+            'title' => __('admin/settings/plugins/index.permissions.csp_status'),
+            'compliant' => __('admin/settings/plugins/index.permissions.csp_compliant'),
+            'notCompliant' => __('admin/settings/plugins/index.permissions.csp_not_compliant'),
+            'inlineScripts' => __('admin/settings/plugins/index.permissions.csp_inline_scripts'),
+            'inlineStyles' => __('admin/settings/plugins/index.permissions.csp_inline_styles'),
         ],
     ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>
 </script>
@@ -112,12 +136,12 @@ https://exc-d.com
         :dismissible="false"
         :closeOnly="true"
     >
-        <div id="pluginActionStage1Content" class="text-left">
+        <div id="pluginActionStage1Content" class="text-center">
             <p id="pluginActionStage1Message" class="text-sm text-gray-700 dark:text-gray-300"></p>
         </div>
-        <div id="pluginActionStage1Spinner" class="hidden flex items-center justify-center w-full py-3">
-            <i class="fas fa-spinner fa-spin text-indigo-500 text-xl mr-2"></i>
-            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/settings/plugins/index.two_stage.stage1_scanning') }}</span>
+        <div id="pluginActionStage1Spinner" class="hidden flex flex-col items-center justify-center w-full py-3">
+            <i class="fas fa-spinner fa-spin text-indigo-500 text-xl mb-2"></i>
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/settings/plugins/index.two_stage.stage1_scanning_description') }}</span>
         </div>
         <x-slot:footer>
             <div id="pluginActionStage1Buttons" class="flex gap-2">
@@ -155,6 +179,7 @@ https://exc-d.com
         :closeOnly="true"
     >
         <div id="pluginActionStage2Content" class="text-left"></div>
+        <p id="pluginActionStage2ConfirmMessage" class="text-sm text-gray-700 dark:text-gray-300 mt-3 text-center font-medium"></p>
         <x-slot:footer>
             <div id="pluginActionStage2Buttons" class="flex gap-2">
                 <x-form-button
@@ -168,7 +193,25 @@ https://exc-d.com
                     label=""
                     variant="success"
                     id="pluginActionStage2ConfirmBtn"
-                />
+                >
+                    <span id="pluginActionStage2ConfirmLabel"></span>
+                </x-form-button>
+            </div>
+        </x-slot:footer>
+    </x-ui-modal>
+
+    {{-- 処理中モーダル（インストール/有効化） --}}
+    <x-ui-modal
+        id="pluginActionProcessingModal"
+        title=""
+        message=""
+        iconType="info"
+        :dismissible="false"
+        :closeOnly="true"
+    >
+        <x-slot:footer>
+            <div class="flex items-center justify-center w-full py-1">
+                <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
             </div>
         </x-slot:footer>
     </x-ui-modal>
