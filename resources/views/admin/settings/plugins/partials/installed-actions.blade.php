@@ -66,6 +66,10 @@ https://exc-d.com
                 data-plugin-slug="{{ $card['slug'] }}"
                 data-plugin-name="{{ $card['translatedName'] }}"
                 data-form-id="enableForm-{{ $card['id'] }}"
+                data-enable-action="{{ $card['enableAction'] }}"
+                data-health-score="{{ $card['healthScore'] ?? '' }}"
+                data-health-status="{{ $card['healthStatus'] ?? '' }}"
+                data-health-issues="{{ json_encode($card['healthIssues'] ?? []) }}"
             />
 
             <x-ui-modal
@@ -137,6 +141,10 @@ https://exc-d.com
                 data-plugin-slug="{{ $card['slug'] }}"
                 data-plugin-name="{{ $card['translatedName'] }}"
                 data-form-id="enableForm-{{ $card['id'] }}"
+                data-enable-action="{{ $card['enableAction'] }}"
+                data-health-score="{{ $card['healthScore'] ?? '' }}"
+                data-health-status="{{ $card['healthStatus'] ?? '' }}"
+                data-health-issues="{{ json_encode($card['healthIssues'] ?? []) }}"
             />
         @endif
     </form>

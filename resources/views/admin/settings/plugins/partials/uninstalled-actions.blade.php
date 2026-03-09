@@ -23,6 +23,10 @@ https://exc-d.com
         data-plugin-slug="{{ $card['slug'] }}"
         data-plugin-name="{{ $card['name'] }}"
         data-form-id="installForm-{{ $card['directory'] }}"
+        data-enable-action="{{ $card['enableAction'] ?? 'allowed' }}"
+        data-health-score="{{ $card['healthScore'] ?? '' }}"
+        data-health-status="{{ $card['healthStatus'] ?? '' }}"
+        data-health-issues="{{ json_encode($card['healthIssues'] ?? []) }}"
     />
 
     <x-ui-modal
