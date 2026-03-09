@@ -24,6 +24,7 @@ namespace Tests\Unit\Presenters\Admin;
 
 use App\Enums\AuthenticationMode;
 use App\Enums\MemberStatus;
+use App\Models\AuditLog;
 use App\Models\BaseSetting;
 use App\Models\Member;
 use App\Models\Plugin;
@@ -375,5 +376,129 @@ class DashboardPresenterTest extends TestCase
         $result = DashboardPresenter::memberOverview();
 
         $this->assertCount(5, $result['recent_logins']);
+    }
+
+    /**
+     * recentActivity は正しい構造を返す
+     */
+    public function test_recent_activity_returns_correct_structure(): void
+    {
+        $result = DashboardPresenter::recentActivity();
+
+        $this->assertArrayHasKey('entries', $result);
+        $this->assertArrayHasKey('summary', $result);
+        $this->assertArrayHasKey('failed_count', $result['summary']);
+        $this->assertArrayHasKey('warning_count', $result['summary']);
+        $this->assertIsArray($result['entries']);
+    }
+
+    /**
+     * recentActivity はエントリに必要なキーが含まれる
+     */
+    public function test_recent_activity_entries_have_required_keys(): void
+    {
+        AuditLog::log([
+            'category' => AuditLog::CATEGORY_AUTH,
+            'action' => AuditLog::ACTION_LOGIN,
+            'actor_name' => 'Test User',
+            'outcome' => AuditLog::OUTCOME_SUCCESS,
+            'severity' => AuditLog::SEVERITY_INFO,
+        ]);
+
+        $result = DashboardPresenter::recentActivity();
+
+        $this->assertCount(1, $result['entries']);
+
+        $entry = $result['entries'][0];
+        $this->assertArrayHasKey('action', $entry);
+        $this->assertArrayHasKey('category', $entry);
+        $this->assertArrayHasKey('actor_name', $entry);
+        $this->assertArrayHasKey('outcome', $entry);
+        $this->assertArrayHasKey('outcome_color', $entry);
+        $this->assertArrayHasKey('severity', $entry);
+        $this->assertArrayHasKey('severity_color', $entry);
+        $this->assertArrayHasKey('target_label', $entry);
+        $this->assertArrayHasKey('occurred_at', $entry);
+        $this->assertEquals('login', $entry['action']);
+        $this->assertEquals('Test User', $entry['actor_name']);
+    }
+
+    /**
+     * recentActivity は最大10件に制限される
+     */
+    public function test_recent_activity_limited_to_ten(): void
+    {
+        for ($i = 0; $i < 15; $i++) {
+            AuditLog::log([
+                'category' => AuditLog::CATEGORY_AUTH,
+                'action' => AuditLog::ACTION_LOGIN,
+                'actor_name' => "User {$i}",
+                'occurred_at' => now()->subMinutes($i),
+            ]);
+        }
+
+        $result = DashboardPresenter::recentActivity();
+
+        $this->assertCount(10, $result['entries']);
+    }
+
+    /**
+     * recentActivity は24時間以前のエントリを除外する
+     */
+    public function test_recent_activity_excludes_old_entries(): void
+    {
+        AuditLog::log([
+            'category' => AuditLog::CATEGORY_AUTH,
+            'action' => AuditLog::ACTION_LOGIN,
+            'actor_name' => 'Recent',
+            'occurred_at' => now()->subHours(1),
+        ]);
+
+        AuditLog::log([
+            'category' => AuditLog::CATEGORY_AUTH,
+            'action' => AuditLog::ACTION_LOGOUT,
+            'actor_name' => 'Old',
+            'occurred_at' => now()->subHours(25),
+        ]);
+
+        $result = DashboardPresenter::recentActivity();
+
+        $this->assertCount(1, $result['entries']);
+        $this->assertEquals('Recent', $result['entries'][0]['actor_name']);
+    }
+
+    /**
+     * recentActivity のサマリーは失敗と警告を正しくカウントする
+     */
+    public function test_recent_activity_summary_counts_correctly(): void
+    {
+        // 成功
+        AuditLog::log([
+            'category' => AuditLog::CATEGORY_AUTH,
+            'action' => AuditLog::ACTION_LOGIN,
+            'outcome' => AuditLog::OUTCOME_SUCCESS,
+            'severity' => AuditLog::SEVERITY_INFO,
+        ]);
+
+        // 失敗
+        AuditLog::log([
+            'category' => AuditLog::CATEGORY_AUTH,
+            'action' => AuditLog::ACTION_LOGIN_FAILED,
+            'outcome' => AuditLog::OUTCOME_FAILURE,
+            'severity' => AuditLog::SEVERITY_WARNING,
+        ]);
+
+        // 拒否
+        AuditLog::log([
+            'category' => AuditLog::CATEGORY_SECURITY,
+            'action' => AuditLog::ACTION_IP_BLOCKED,
+            'outcome' => AuditLog::OUTCOME_DENIED,
+            'severity' => AuditLog::SEVERITY_ERROR,
+        ]);
+
+        $result = DashboardPresenter::recentActivity();
+
+        $this->assertEquals(2, $result['summary']['failed_count']);
+        $this->assertEquals(2, $result['summary']['warning_count']);
     }
 }

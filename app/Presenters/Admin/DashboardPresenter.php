@@ -32,6 +32,7 @@ use App\Enums\MemberStatus;
 use App\Enums\PluginHealthStatus;
 use App\Helpers\CaptchaHelper;
 use App\Helpers\ConfigHelper;
+use App\Models\AuditLog;
 use App\Models\BaseSetting;
 use App\Models\Member;
 use App\Models\Plugin;
@@ -338,6 +339,52 @@ class DashboardPresenter
             ],
             'health' => $healthCounts,
             'has_audits' => $hasAudits,
+        ];
+    }
+
+    /**
+     * 最近の管理者アクティビティを取得
+     *
+     * @return array{
+     *   entries: array<int, array{action: string, category: string, actor_name: string, outcome: string, outcome_color: string, severity: string, severity_color: string, target_label: string|null, occurred_at: string}>,
+     *   summary: array{failed_count: int, warning_count: int}
+     * }
+     */
+    public static function recentActivity(): array
+    {
+        // 直近24時間のアクティビティ（最新10件）
+        $entries = AuditLog::query()
+            ->recent(24)
+            ->latest('occurred_at')
+            ->limit(10)
+            ->get()
+            ->map(function (AuditLog $log) {
+                return [
+                    'action' => $log->action,
+                    'category' => $log->category,
+                    'actor_name' => $log->actor_name ?? __('admin/dashboard.activity_system'),
+                    'outcome' => $log->outcome,
+                    'outcome_color' => $log->getOutcomeColorClass(),
+                    'severity' => $log->severity,
+                    'severity_color' => $log->getSeverityColorClass(),
+                    'target_label' => $log->target_label,
+                    'occurred_at' => $log->occurred_at
+                        ? Carbon::parse($log->occurred_at)->diffForHumans()
+                        : '',
+                ];
+            })
+            ->toArray();
+
+        // 24時間のセキュリティサマリー
+        $failedCount = AuditLog::query()->recent(24)->failed()->count();
+        $warningCount = AuditLog::query()->recent(24)->warningOrAbove()->count();
+
+        return [
+            'entries' => $entries,
+            'summary' => [
+                'failed_count' => $failedCount,
+                'warning_count' => $warningCount,
+            ],
         ];
     }
 
