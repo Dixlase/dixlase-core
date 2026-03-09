@@ -145,7 +145,7 @@ class AdminModeViewControlsTest extends TestCase
         $response->assertDontSee(__('components/admin/mode-partial-notice.message'));
     }
 
-    public function test_captcha_page_shows_partial_notice_in_simple_mode(): void
+    public function test_captcha_page_no_partial_notice_in_simple_mode(): void
     {
         BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
         AdminModeHelper::clearCache();
@@ -154,7 +154,8 @@ class AdminModeViewControlsTest extends TestCase
             ->get(route('admin.settings.security.captcha'));
 
         $response->assertStatus(200);
-        $response->assertSee(__('components/admin/mode-partial-notice.message'));
+        // CAPTCHAはFullなのでPartial通知は表示しない
+        $response->assertDontSee(__('components/admin/mode-partial-notice.message'));
     }
 
     public function test_two_fa_page_shows_partial_notice_in_simple_mode(): void
@@ -167,6 +168,62 @@ class AdminModeViewControlsTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee(__('components/admin/mode-partial-notice.message'));
+    }
+
+    // ========================================
+    // Partial ページ: 自動設定項目の非表示
+    // ========================================
+
+    public function test_login_page_hides_attempt_limit_section_in_simple_mode(): void
+    {
+        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
+        AdminModeHelper::clearCache();
+
+        $response = $this->actingAs($this->superAdmin, 'member')
+            ->get(route('admin.settings.security.login'));
+
+        $response->assertStatus(200);
+        // 自動設定されるログイン試行制限セクションが非表示
+        $response->assertDontSee(__('admin/settings/security/login.default_login_attempt_settings'));
+    }
+
+    public function test_login_page_shows_attempt_limit_section_in_advanced_mode(): void
+    {
+        BaseSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
+        AdminModeHelper::clearCache();
+
+        $response = $this->actingAs($this->superAdmin, 'member')
+            ->get(route('admin.settings.security.login'));
+
+        $response->assertStatus(200);
+        // 詳細モードではログイン試行制限セクションが表示
+        $response->assertSee(__('admin/settings/security/login.default_login_attempt_settings'));
+    }
+
+    public function test_two_fa_page_hides_detailed_settings_in_simple_mode(): void
+    {
+        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
+        AdminModeHelper::clearCache();
+
+        $response = $this->actingAs($this->superAdmin, 'member')
+            ->get(route('admin.settings.security.two-fa'));
+
+        $response->assertStatus(200);
+        // 自動設定される詳細設定セクションが非表示
+        $response->assertDontSee(__('admin/settings/security/two-fa.two_fa_detailed_settings'));
+    }
+
+    public function test_two_fa_page_shows_detailed_settings_in_advanced_mode(): void
+    {
+        BaseSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
+        AdminModeHelper::clearCache();
+
+        $response = $this->actingAs($this->superAdmin, 'member')
+            ->get(route('admin.settings.security.two-fa'));
+
+        $response->assertStatus(200);
+        // 詳細モードでは詳細設定セクションが表示
+        $response->assertSee(__('admin/settings/security/two-fa.two_fa_detailed_settings'));
     }
 
     // ========================================

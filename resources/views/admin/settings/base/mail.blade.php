@@ -22,10 +22,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-    @if($modeData['isPartial'] ?? false)
-        <x-admin.mode-partial-notice />
-    @endif
-
 <form id="base-mail-form" action="{{ route('admin.settings.base.mail.update') }}" method="POST" class="overflow-x-hidden">
     @csrf
 
