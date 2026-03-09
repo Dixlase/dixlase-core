@@ -245,6 +245,15 @@ function buildCspSection(audit, labels) {
         : { bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-300', icon: 'fa-exclamation-triangle' };
 
     let html = `<div class="p-3 ${style.bg}">`;
+
+    // セクションヘッダー
+    html += `
+        <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+            <i class="fas fa-shield-alt mr-1"></i>
+            ${labels.sectionLabel || labels.title || ''}
+        </p>
+    `;
+
     html += `
         <div class="flex items-center gap-2 ${style.text}">
             <i class="fas ${style.icon}"></i>
@@ -253,11 +262,37 @@ function buildCspSection(audit, labels) {
     `;
 
     if (!isCompliant) {
-        const issues = [];
-        if (audit.csp_requires_inline_js) issues.push(labels.inlineScripts || 'Inline Scripts');
-        if (audit.csp_requires_inline_css) issues.push(labels.inlineStyles || 'Inline Styles');
-        if (issues.length > 0) {
-            html += `<p class="text-xs mt-1 ${style.text}"><i class="fas fa-info-circle mr-1"></i>${issues.join(', ')}</p>`;
+        // サマリー表示
+        const summary = audit.csp_summary || {};
+        const summaryItems = [];
+        if (summary.inline_scripts > 0) summaryItems.push(`${labels.inlineScripts || 'Inline Scripts'}: ${summary.inline_scripts}`);
+        if (summary.inline_styles > 0) summaryItems.push(`${labels.inlineStyles || 'Inline Styles'}: ${summary.inline_styles}`);
+        if (summary.event_handlers > 0) summaryItems.push(`${labels.eventHandlers || 'Event Handlers'}: ${summary.event_handlers}`);
+        if (summary.javascript_urls > 0) summaryItems.push(`${labels.javascriptUrls || 'JavaScript URLs'}: ${summary.javascript_urls}`);
+
+        if (summaryItems.length > 0) {
+            html += `<p class="text-xs mt-1 ${style.text}"><i class="fas fa-info-circle mr-1"></i>${summaryItems.join(' / ')}</p>`;
+        }
+
+        // 違反詳細（最大10件）
+        const violations = audit.csp_violations || [];
+        if (violations.length > 0) {
+            const severityStyles = {
+                'critical': 'text-red-700 dark:text-red-300',
+                'warning': 'text-amber-700 dark:text-amber-300',
+                'info': 'text-blue-700 dark:text-blue-300',
+            };
+            const typeLabels = labels.violationTypes || {};
+            html += '<ul class="text-xs mt-2 space-y-1 ml-5 list-disc">';
+            violations.slice(0, 10).forEach(v => {
+                const typeLabel = typeLabels[v.type] || v.type;
+                const sevStyle = severityStyles[v.severity] || style.text;
+                html += `<li class="${sevStyle}"><code class="bg-amber-100 dark:bg-amber-800 px-1 rounded">${v.file}:${v.line}</code> - ${typeLabel}</li>`;
+            });
+            html += '</ul>';
+            if (violations.length > 10) {
+                html += `<p class="text-xs ${style.text} mt-1 ml-5">...+${violations.length - 10}</p>`;
+            }
         }
     }
 
