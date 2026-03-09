@@ -25,6 +25,7 @@ namespace App\Http\Controllers\Admin\Settings\Security;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Enums\CspBlocklistAction;
 use App\Enums\CspMode;
+use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Security\AdminSecurityCspUpdateRequest;
 use Illuminate\Http\Request;
@@ -74,6 +75,7 @@ class AdminSecurityCspController extends AdminLoggedInController
             'phishing' => 'fas fa-fish',
             'cryptominer' => 'fas fa-coins',
         ];
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.csp');
 
         return view('admin.settings.security.csp', $this->viewParams);
     }

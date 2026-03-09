@@ -22,13 +22,13 @@
 
 namespace App\Http\Controllers\Admin\Settings\Base;
 
-use App\Helpers\AdminHelper;
-use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Contracts\Repositories\BaseSettingRepositoryInterface;
-use Illuminate\Http\Request;
+use App\Helpers\AdminHelper;
+use App\Helpers\AdminModeHelper;
+use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Http\Requests\Admin\Settings\Base\AdminBaseAdminUpdateRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
-use App\Http\Requests\Admin\Settings\Base\AdminBaseAdminUpdateRequest;
 
 class AdminBaseAdminController extends AdminLoggedInController
 {
@@ -45,13 +45,13 @@ class AdminBaseAdminController extends AdminLoggedInController
      */
     public function index()
     {
-        
         $settings = [
             'admin_url' => $this->baseSettingRepository->get('admin_url', config('admin.admin_url')),
             'force_ssl' => (bool) $this->baseSettingRepository->get('force_ssl', false),
         ];
 
         $this->viewParams['settings'] = $settings;
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.base.admin');
 
         return view('admin.settings.base.admin', $this->viewParams);
     }
@@ -78,7 +78,7 @@ class AdminBaseAdminController extends AdminLoggedInController
             Auth::guard('admin')->logout();
             Session::flush();
 
-            $newAdminLoginUrl = url($newAdminUrl . '/login');
+            $newAdminLoginUrl = url($newAdminUrl.'/login');
 
             // SSL強制の場合、HTTPSにリダイレクト
             if ($forceSsl) {
@@ -90,7 +90,7 @@ class AdminBaseAdminController extends AdminLoggedInController
         }
 
         // 通常のリダイレクト
-        $baseUrl = url($newAdminUrl . '/settings/base/admin');
+        $baseUrl = url($newAdminUrl.'/settings/base/admin');
 
         if ($forceSsl) {
             $baseUrl = str_replace('http://', 'https://', $baseUrl);

@@ -23,6 +23,7 @@
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
 use App\Enums\LogLevel;
+use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
@@ -468,6 +469,8 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function index(Request $request)
     {
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.logs');
+
         return $this->auditLogsDb($request);
     }
 

@@ -22,6 +22,7 @@
 
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
+use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use Illuminate\Support\Facades\DB;
 
@@ -37,7 +38,7 @@ class AdminSystemInfoController extends AdminLoggedInController
      */
     public function index()
     {
-        $databaseVersion = DB::select("select version() as version")[0]->version ?? 'N/A';
+        $databaseVersion = DB::select('select version() as version')[0]->version ?? 'N/A';
 
         $info = [
             'software' => [
@@ -69,8 +70,8 @@ class AdminSystemInfoController extends AdminLoggedInController
             ],
             'Database' => [
                 'driver' => config('database.default'),
-                'host' => config('database.connections.' . config('database.default') . '.host'),
-                'database' => config('database.connections.' . config('database.default') . '.database'),
+                'host' => config('database.connections.'.config('database.default').'.host'),
+                'database' => config('database.connections.'.config('database.default').'.database'),
                 'version' => $databaseVersion,
             ],
             'Cache' => [
@@ -85,6 +86,7 @@ class AdminSystemInfoController extends AdminLoggedInController
         ];
 
         $this->viewParams['info'] = $info;
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.info');
 
         return view('admin::settings.systems.info', $this->viewParams);
     }

@@ -22,6 +22,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
      <div class="max-w-5xl mx-auto px-4 py-8">
+        @if($modeData['isReadOnly'] ?? false)
+            <x-admin.mode-readonly-banner />
+        @endif
+
         @foreach ($info as $category => $items)
             <div class="bg-white dark:bg-gray-800 shadow rounded-2xl mb-6">
                 <div class="bg-gray-100 dark:bg-gray-700 px-4 py-3 rounded-t-2xl border-b border-gray-200 dark:border-gray-600">

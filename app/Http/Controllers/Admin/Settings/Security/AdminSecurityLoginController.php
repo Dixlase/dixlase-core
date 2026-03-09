@@ -24,6 +24,7 @@ namespace App\Http\Controllers\Admin\Settings\Security;
 
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Enums\LoginIdentifierMode;
+use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Security\AdminSecurityLoginUpdateRequest;
 
@@ -83,6 +84,7 @@ class AdminSecurityLoginController extends AdminLoggedInController
         $this->viewParams['twoFaLockoutNotificationEnabled'] = $twoFaLockoutNotificationEnabled;
         $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodesCount;
         $this->viewParams['twoFaRecoveryCodeRegenerateInterval'] = $twoFaRecoveryCodeRegenerateInterval;
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.login');
 
         return view('admin.settings.security.login', $this->viewParams);
     }

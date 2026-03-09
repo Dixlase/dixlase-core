@@ -62,13 +62,19 @@ return [
         'front' => MenuVisibility::Full,
 
         // メディア管理
-        'media' => MenuVisibility::Full,
+        'media' => MenuVisibility::Partial,
+        'media.index' => MenuVisibility::Full,
+        'media.upload' => MenuVisibility::Full,
+        'media.settings' => MenuVisibility::Partial,
 
         // プロフィール設定
         'profile' => MenuVisibility::Full,
 
         // メンバー管理
         'members' => MenuVisibility::Partial,
+        'members.index' => MenuVisibility::Full,
+        'members.create_edit' => MenuVisibility::Full,
+        'members.roles' => MenuVisibility::Hidden,
 
         // 全体設定
         'settings' => MenuVisibility::Partial,
@@ -78,20 +84,21 @@ return [
         'settings.base.index' => MenuVisibility::Full,
         'settings.base.site' => MenuVisibility::Full,
         'settings.base.admin' => MenuVisibility::GuideOnly,
-        'settings.base.mail' => MenuVisibility::Full,
+        'settings.base.mail' => MenuVisibility::Partial,
         'settings.base.maintenance' => MenuVisibility::Full,
+        'settings.base.mode' => MenuVisibility::Full,
 
         // 全体設定 > セキュリティ設定
         'settings.security' => MenuVisibility::ReadOnly,
         'settings.security.index' => MenuVisibility::ReadOnly,
         'settings.security.password' => MenuVisibility::Hidden,
-        'settings.security.login' => MenuVisibility::Hidden,
-        'settings.security.two-fa' => MenuVisibility::Hidden,
+        'settings.security.login' => MenuVisibility::Partial,
+        'settings.security.two-fa' => MenuVisibility::Partial,
         'settings.security.notifications' => MenuVisibility::Hidden,
-        'settings.security.captcha' => MenuVisibility::Hidden,
+        'settings.security.captcha' => MenuVisibility::Partial,
         'settings.security.session' => MenuVisibility::Hidden,
         'settings.security.csp' => MenuVisibility::Hidden,
-        'settings.security.extensions' => MenuVisibility::Hidden,
+        'settings.security.extensions' => MenuVisibility::ReadOnly,
         'settings.security.ip' => MenuVisibility::Hidden,
         'settings.security.integrity' => MenuVisibility::Hidden,
         'settings.security.environment' => MenuVisibility::Hidden,
@@ -103,7 +110,12 @@ return [
         'settings.plugins' => MenuVisibility::Full,
 
         // 全体設定 > システム
-        'settings.systems' => MenuVisibility::Hidden,
+        'settings.systems' => MenuVisibility::Partial,
+        'settings.systems.cache' => MenuVisibility::Full,
+        'settings.systems.database' => MenuVisibility::Hidden,
+        'settings.systems.api' => MenuVisibility::Hidden,
+        'settings.systems.logs' => MenuVisibility::ReadOnly,
+        'settings.systems.info' => MenuVisibility::ReadOnly,
     ],
 
     /*

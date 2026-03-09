@@ -26,6 +26,7 @@ use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Enums\ExtensionSecurityLevel;
 use App\Enums\ExtensionSecurityPreset;
 use App\Enums\SecurityAction;
+use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Security\AdminSecurityExtensionsUpdateRequest;
 use App\Models\BaseSetting;
@@ -77,6 +78,7 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
         $this->viewParams['presetOptions'] = ExtensionSecurityPreset::getRadioCardOptions();
         $this->viewParams['securityLevelRangeLabels'] = ExtensionSecurityLevel::getRangeLabels();
         $this->viewParams['securityLevelRangeLabelColors'] = ExtensionSecurityLevel::getRangeLabelColors();
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.extensions');
 
         return view('admin.settings.security.extensions', $this->viewParams);
     }

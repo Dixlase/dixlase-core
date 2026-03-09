@@ -24,6 +24,7 @@ namespace App\Http\Controllers\Admin\Media;
 
 use App\Contracts\Repositories\MediaRepositoryInterface;
 use App\Contracts\Repositories\MediaSettingRepositoryInterface;
+use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Media\AdminMediaSettingsUpdateRequest;
 use App\Http\Requests\Admin\Media\AdminMediaStoreRequest;
@@ -306,6 +307,8 @@ class AdminMediaController extends AdminLoggedInController
             'docx' => ['icon' => 'fas fa-file-word text-blue-400', 'title' => __('admin/media/settings.docx_warning')],
             'tex' => ['icon' => 'fas fa-file-alt text-gray-400', 'title' => __('admin/media/settings.tex_warning')],
         ];
+
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('media.settings');
 
         return view('admin.media.settings', $this->viewParams);
     }

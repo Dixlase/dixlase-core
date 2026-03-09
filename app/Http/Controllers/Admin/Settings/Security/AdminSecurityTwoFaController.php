@@ -22,12 +22,12 @@
 
 namespace App\Http\Controllers\Admin\Settings\Security;
 
+use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
+use App\Enums\AuthenticationMode;
+use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Security\AdminSecurityTwoFaUpdateRequest;
 use App\Models\BaseSetting;
-use App\Models\SecuritySetting;
-use App\Enums\AuthenticationMode;
-use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 
 class AdminSecurityTwoFaController extends AdminLoggedInController
 {
@@ -50,10 +50,11 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
         if (old('two_fa_mode') !== null) {
             $twoFaMode = (int) old('two_fa_mode');
         }
-        
+
         $twoFactorGlobalOptions = collect(config('admin.global_two_factor_mode'))
             ->map(function ($value) {
                 $mode = AuthenticationMode::tryFrom($value);
+
                 return [
                     'value' => (string) $value,
                     'label' => $mode ? $mode->twoFactorLabel() : '',
@@ -61,7 +62,7 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
             })
             ->values()
             ->toArray();
-        
+
         // パスキーモード設定（セキュリティ設定から取得）
         // 0=無効, 1=有効（デフォルト: 有効）
         $twoFaPasskeyMode = (int) $this->securitySettingRepository->get('two_fa_passkey_mode', '1');
@@ -104,6 +105,7 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
         $this->viewParams['twoFaRecoveryCodeRegenerateInterval'] = $twoFaRecoveryCodeRegenerateInterval;
         $this->viewParams['isMailServerTested'] = $isMailServerTested;
         $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.two-fa');
 
         return view('admin.settings.security.two-fa', $this->viewParams);
     }
@@ -161,7 +163,7 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
         $connectionTested = (bool) BaseSetting::getValue('mail_connection_tested', false);
         $sendTested = (bool) BaseSetting::getValue('mail_send_tested', false);
         $receiveTested = (bool) BaseSetting::getValue('mail_receive_tested', false);
-        
+
         return $connectionTested && $sendTested && $receiveTested;
     }
 }

@@ -23,6 +23,7 @@
 namespace App\Http\Controllers\Admin\Settings\Base;
 
 use App\Contracts\Repositories\BaseSettingRepositoryInterface;
+use App\Helpers\AdminModeHelper;
 use App\Helpers\ConfigHelper;
 use App\Helpers\EnvHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
@@ -103,6 +104,7 @@ class AdminBaseMailController extends AdminLoggedInController
                 'mailTestIncomplete' => __('admin/settings/base/mail.mail_test_incomplete'),
             ],
         ];
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.base.mail');
 
         return view('admin.settings.base.mail', $this->viewParams);
     }
