@@ -30,6 +30,16 @@ https://exc-d.com
             'high' => __('admin/settings/plugins/index.permissions.health_needs_attention'),
             'unknown' => __('admin/settings/plugins/index.permissions.health_not_verified'),
         ],
+        'totalEvaluationLabel' => __('admin/settings/plugins/index.permissions.total_evaluation'),
+        'healthScoreDisplay' => __('admin/settings/plugins/index.permissions.health_score_display'),
+        'signatureDeduction' => __('admin/settings/plugins/index.permissions.signature_deduction'),
+        'healthStatusLabels' => [
+            'healthy' => __('admin/settings/plugins/index.permissions.health_status_healthy'),
+            'advisory' => __('admin/settings/plugins/index.permissions.health_status_advisory'),
+            'needs_attention' => __('admin/settings/plugins/index.permissions.health_status_needs_attention'),
+            'not_verified' => __('admin/settings/plugins/index.permissions.health_status_not_verified'),
+        ],
+        'signatureSectionLabel' => __('admin/settings/plugins/index.permissions.signature_section_label'),
         'attentionReasonsTitle' => __('admin/settings/plugins/index.permissions.attention_reasons_title'),
         'permissionConsistencyTitle' => __('admin/settings/plugins/index.permissions.permission_consistency_title'),
         'totalRiskScoreLabel' => __('admin/settings/plugins/index.permissions.total_risk_score'),
@@ -139,9 +149,8 @@ https://exc-d.com
         <div id="pluginActionStage1Content" class="text-center">
             <p id="pluginActionStage1Message" class="text-sm text-gray-700 dark:text-gray-300"></p>
         </div>
-        <div id="pluginActionStage1Spinner" class="hidden flex flex-col items-center justify-center w-full py-3">
-            <i class="fas fa-spinner fa-spin text-indigo-500 text-xl mb-2"></i>
-            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/settings/plugins/index.two_stage.stage1_scanning_description') }}</span>
+        <div id="pluginActionStage1Spinner" class="hidden flex items-center justify-center w-full py-3">
+            <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
         </div>
         <x-slot:footer>
             <div id="pluginActionStage1Buttons" class="flex gap-2">

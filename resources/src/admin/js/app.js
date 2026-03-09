@@ -29,4 +29,3 @@ import '../../components/mail-server/js/settings-admin';
 import '../security/js/safe-mode-banner';
 import '../security/js/integrity';
 import '../two-fa/js/passkey-prompt-modal';
-import './dashboard-mode-toggle';
