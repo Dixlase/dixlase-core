@@ -27,6 +27,8 @@ return [
     'csp_mode' => 'Mode',
     'csp_disabled' => 'Disabled',
     'extensions_desc' => 'Plugin/Theme Security Policy',
+    'extensions_preset' => 'Security Preset',
+    'auto_configured' => 'This setting is automatically configured in Simple Mode.',
     'notifications_active' => 'Notifications Active',
     'notifications_disabled' => 'Notifications Disabled',
     'mail_test_required' => 'Mail Test Required',

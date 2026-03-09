@@ -108,6 +108,7 @@ class AdminModeSecurityIndexTest extends TestCase
         $response->assertDontSee(route('admin.settings.security.csp'));
         $response->assertDontSee(route('admin.settings.security.ip'));
         $response->assertDontSee(route('admin.settings.security.integrity'));
+        $response->assertDontSee(route('admin.settings.security.extensions'));
         $response->assertDontSee(route('admin.settings.security.environment'));
     }
 
@@ -121,11 +122,10 @@ class AdminModeSecurityIndexTest extends TestCase
 
         $response->assertStatus(200);
 
-        // Partial/ReadOnly設定のサブページカードは表示
+        // Partial/Full設定のサブページカードは表示
         $response->assertSee(route('admin.settings.security.login'));
         $response->assertSee(route('admin.settings.security.two-fa'));
         $response->assertSee(route('admin.settings.security.captcha'));
-        $response->assertSee(route('admin.settings.security.extensions'));
     }
 
     public function test_simple_mode_shows_readonly_banner(): void

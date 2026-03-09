@@ -41,6 +41,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </a>
 
         <!-- 管理画面設定 -->
+        @if($subPageVisible['admin'] ?? true)
         <a href="{{ route('admin.settings.base.admin') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
@@ -52,7 +53,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="text-sm text-gray-600 dark:text-gray-400">
                 <p>{{ __('admin/settings/base/index.admin_url') }}: /{{ $adminUrl }}</p>
                 <p class="text-xs mt-1">
-                    SSL: 
+                    SSL:
                     @if($forceSsl)
                         <span class="text-green-600 dark:text-green-400">{{ __('common.enabled') }}</span>
                     @else
@@ -61,6 +62,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </p>
             </div>
         </a>
+        @else
+        <div class="block p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center mb-3">
+                <i class="fas fa-cog text-purple-500 text-xl mr-3"></i>
+                <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/base/index.nav.admin') }}</h3>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                <p>{{ __('admin/settings/base/index.admin_url') }}: /{{ $adminUrl }}</p>
+                <p class="text-xs mt-1">
+                    SSL:
+                    @if($forceSsl)
+                        <span class="text-green-600 dark:text-green-400">{{ __('common.enabled') }}</span>
+                    @else
+                        <span class="text-gray-500">{{ __('common.disabled') }}</span>
+                    @endif
+                </p>
+                <p class="text-xs mt-2 text-blue-500 dark:text-blue-400">
+                    <i class="fas fa-info-circle mr-1"></i>{{ __('admin/settings/base/index.auto_configured') }}
+                </p>
+            </div>
+        </div>
+        @endif
 
         <!-- メール設定 -->
         <a href="{{ route('admin.settings.base.mail') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">

@@ -88,36 +88,6 @@ class AdminModeViewControlsTest extends TestCase
     }
 
     // ========================================
-    // ReadOnly ページ: バナー表示 + フォーム無効化
-    // ========================================
-
-    public function test_extensions_page_shows_readonly_banner_in_simple_mode(): void
-    {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
-        AdminModeHelper::clearCache();
-
-        $response = $this->actingAs($this->superAdmin, 'member')
-            ->get(route('admin.settings.security.extensions'));
-
-        $response->assertStatus(200);
-        $response->assertSee(__('components/admin/mode-readonly-banner.message'));
-        // フォームが無効化されている
-        $response->assertSee('disabled');
-    }
-
-    public function test_extensions_page_no_readonly_banner_in_advanced_mode(): void
-    {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
-        AdminModeHelper::clearCache();
-
-        $response = $this->actingAs($this->superAdmin, 'member')
-            ->get(route('admin.settings.security.extensions'));
-
-        $response->assertStatus(200);
-        $response->assertDontSee(__('components/admin/mode-readonly-banner.message'));
-    }
-
-    // ========================================
     // Partial ページ: パーシャル通知表示
     // ========================================
 
@@ -224,35 +194,5 @@ class AdminModeViewControlsTest extends TestCase
         $response->assertStatus(200);
         // 詳細モードでは詳細設定セクションが表示
         $response->assertSee(__('admin/settings/security/two-fa.two_fa_detailed_settings'));
-    }
-
-    // ========================================
-    // GuideOnly ページ: ガイドバナー表示 + フォーム無効化
-    // ========================================
-
-    public function test_admin_page_shows_guide_banner_in_simple_mode(): void
-    {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
-        AdminModeHelper::clearCache();
-
-        $response = $this->actingAs($this->superAdmin, 'member')
-            ->get(route('admin.settings.base.admin'));
-
-        $response->assertStatus(200);
-        $response->assertSee(__('components/admin/mode-guide-banner.message'));
-        // フォームが無効化されている
-        $response->assertSee('disabled');
-    }
-
-    public function test_admin_page_no_guide_banner_in_advanced_mode(): void
-    {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
-        AdminModeHelper::clearCache();
-
-        $response = $this->actingAs($this->superAdmin, 'member')
-            ->get(route('admin.settings.base.admin'));
-
-        $response->assertStatus(200);
-        $response->assertDontSee(__('components/admin/mode-guide-banner.message'));
     }
 }

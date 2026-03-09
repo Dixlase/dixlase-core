@@ -22,11 +22,12 @@
 
 namespace App\Http\Controllers\Admin\Settings\Base;
 
+use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 use App\Enums\AdminMode;
+use App\Enums\MenuVisibility;
+use App\Helpers\AdminModeHelper;
 use App\Helpers\ConfigHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Models\BaseSetting;
-use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 
 class AdminBaseIndexController extends AdminLoggedInController
 {
@@ -43,7 +44,6 @@ class AdminBaseIndexController extends AdminLoggedInController
      */
     public function index()
     {
-        
         // サイト設定
         $appName = ConfigHelper::getAppName();
         $siteDescription = $this->baseSettingRepository->get('site_description', '');
@@ -80,6 +80,15 @@ class AdminBaseIndexController extends AdminLoggedInController
         $this->viewParams['mailTestComplete'] = $mailTestComplete;
         $this->viewParams['maintenanceMode'] = $maintenanceMode;
         $this->viewParams['adminMode'] = $adminMode;
+
+        // サブページの表示可否を判定（Hiddenのサブページはカード非表示）
+        $subPageKeys = ['site', 'admin', 'mail', 'maintenance', 'mode'];
+        $subPageVisible = [];
+        foreach ($subPageKeys as $key) {
+            $visibility = AdminModeHelper::getMenuVisibility("settings.base.{$key}");
+            $subPageVisible[$key] = $visibility !== MenuVisibility::Hidden;
+        }
+        $this->viewParams['subPageVisible'] = $subPageVisible;
 
         return view('admin.settings.base.index', $this->viewParams);
     }

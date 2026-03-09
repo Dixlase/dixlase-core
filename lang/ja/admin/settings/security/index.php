@@ -27,6 +27,8 @@ return [
     'csp_mode' => 'モード',
     'csp_disabled' => '無効',
     'extensions_desc' => 'プラグイン・テーマのセキュリティポリシー',
+    'extensions_preset' => 'セキュリティプリセット',
+    'auto_configured' => 'この設定はかんたんモードでは自動で構成されます。',
     'notifications_active' => '通知有効',
     'notifications_disabled' => '通知無効',
     'mail_test_required' => 'メールテスト未完了',

@@ -24,6 +24,7 @@ namespace App\Http\Controllers\Admin\Settings\Security;
 
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Enums\CspMode;
+use App\Enums\ExtensionSecurityPreset;
 use App\Enums\MenuVisibility;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
@@ -119,6 +120,11 @@ class AdminSecurityIndexController extends AdminLoggedInController
             $subPageVisible[$key] = $visibility !== MenuVisibility::Hidden;
         }
         $this->viewParams['subPageVisible'] = $subPageVisible;
+
+        // 拡張機能プリセットラベル（概要カードで使用）
+        $extensionPresetValue = $this->securitySettingRepository->get('extension_security_preset', ExtensionSecurityPreset::Balanced->value);
+        $extensionPreset = ExtensionSecurityPreset::tryFrom($extensionPresetValue) ?? ExtensionSecurityPreset::Balanced;
+        $this->viewParams['extensionPresetLabel'] = $extensionPreset->label();
 
         return view('admin.settings.security.index', $this->viewParams);
     }
