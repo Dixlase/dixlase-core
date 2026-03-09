@@ -179,18 +179,29 @@ class ExtensionCardPresenter
         $enableWarnings = $isModel ? self::computePluginEnableWarnings($plugin, $permissionSummary) : [];
         $installWarnings = ! $isModel ? self::computeInstallWarnings($permissionSummary, 'admin/settings/plugins/index') : [];
 
-        // 有効化ポリシーと信頼レベルを算出（インストール済みプラグインのみ）
+        // 有効化ポリシーと健全性スコアを算出
         $enableAction = PluginEnableAction::Allowed;
+        $healthScore = null;
+        $healthStatus = null;
+        $healthIssues = [];
         $trustLevel = null;
-        if ($isModel) {
-            try {
-                $healthScorer = app(PluginHealthScorer::class);
-                $healthResult = $healthScorer->calculate($slug);
+        try {
+            $healthScorer = app(PluginHealthScorer::class);
+            $healthResult = $healthScorer->calculate($slug);
+            $healthScore = $healthResult->score;
+            $healthStatus = $healthResult->status->value;
+            $healthIssues = array_values(array_filter(
+                array_map(fn ($i) => $i->jsonSerialize(), $healthResult->issues),
+                fn ($i) => ($i['deduction'] ?? 0) !== 0,
+            ));
+            if ($isModel) {
                 $enableAction = $healthScorer->determineEnableAction($healthResult);
-            } catch (\Exception $e) {
-                // 算出失敗時はデフォルト値を維持
             }
+        } catch (\Exception $e) {
+            // 算出失敗時はデフォルト値を維持
+        }
 
+        if ($isModel) {
             // 署名情報からTrustLevelを算出
             $signatureType = $badge['signature']['type'] ?? null;
             $signatureStatus = $badge['signatureStatus'];
@@ -245,6 +256,9 @@ class ExtensionCardPresenter
             'translatedName' => $isModel ? ($plugin->translated_name ?? $plugin->name) : ($plugin['name'] ?? ''),
             'enableAction' => $enableAction->value,
             'isBlocked' => $enableAction === PluginEnableAction::Blocked,
+            'healthScore' => $healthScore,
+            'healthStatus' => $healthStatus,
+            'healthIssues' => $healthIssues,
             'trustLevel' => $trustLevel?->value,
             'trustLevelLabel' => $trustLevel?->label(),
             'needsScan' => self::computeNeedsScan($slug, $auditedAt),

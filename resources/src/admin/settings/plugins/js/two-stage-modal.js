@@ -21,7 +21,7 @@
  */
 
 import { getAuditConfig, runPluginScan } from './audit';
-import { buildUnifiedScanResultHtml } from './scan-result-builder';
+import { buildUnifiedScanResultHtml, buildHealthBadgeHtml } from './scan-result-builder';
 
 /**
  * モーダルを開く
@@ -111,12 +111,12 @@ document.addEventListener('DOMContentLoaded', function () {
     /**
      * 2段階フローを開始
      */
-    function startPluginAction(actionType, pluginName, pluginSlug, needsScan, formId) {
+    function startPluginAction(actionType, pluginName, pluginSlug, needsScan, formId, storedHealthData) {
         currentAction = { actionType, pluginName, pluginSlug, needsScan, formId };
 
-        // スキャン不要（既にスキャン済みでファイル変更なし）の場合、直接 Stage 2
+        // スキャン不要（既にスキャン済みでファイル変更なし）の場合、保存済みデータで Stage 2
         if (!needsScan) {
-            showStage2(null);
+            showStage2(storedHealthData || null);
             return;
         }
 
@@ -217,6 +217,8 @@ document.addEventListener('DOMContentLoaded', function () {
             // スキャン結果の詳細も表示
             if (scanData.audit) {
                 contentHtml += buildUnifiedScanResultHtml(scanData, config);
+            } else if (scanData.healthIssues && scanData.healthIssues.length > 0) {
+                contentHtml += buildHealthBadgeHtml(scanData, null, config);
             }
         } else if (scanData && (scanData.enableAction === 'warning' || scanData.enableAction === 'ack')) {
             // 警告あり: 確認して続行可能
@@ -230,16 +232,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (scanData.audit) {
                 contentHtml += buildUnifiedScanResultHtml(scanData, config);
+            } else if (scanData.healthIssues && scanData.healthIssues.length > 0) {
+                contentHtml += buildHealthBadgeHtml(scanData, null, config);
             }
         } else {
-            // 問題なし or スキャンスキップ: シンプルな確認
+            // 問題なし or スキャンスキップ
             const confirmTitle = currentAction.actionType === 'install' ? ts.stage2ConfirmInstall : ts.stage2ConfirmEnable;
             setModalTitle('pluginActionStage2Modal', confirmTitle);
-            setModalIconType('pluginActionStage2Modal', 'info');
 
             if (scanData && scanData.audit) {
+                setModalIconType('pluginActionStage2Modal', 'info');
                 contentHtml += buildUnifiedScanResultHtml(scanData, config);
+            } else if (scanData && scanData.healthIssues && scanData.healthIssues.length > 0) {
+                // スキャン済みで減点項目あり: 健全性バッジで警告表示
+                setModalIconType('pluginActionStage2Modal', 'warning');
+                contentHtml = `
+                    <p class="text-sm text-gray-700 dark:text-gray-300 mb-1">
+                        <strong>${currentAction.pluginName}</strong>
+                    </p>
+                `;
+                contentHtml += buildHealthBadgeHtml(scanData, null, config);
             } else {
+                setModalIconType('pluginActionStage2Modal', 'info');
                 contentHtml = `
                     <p class="text-sm text-gray-700 dark:text-gray-300">
                         <strong>${currentAction.pluginName}</strong>
@@ -329,7 +343,31 @@ document.addEventListener('DOMContentLoaded', function () {
             const pluginName = this.dataset.pluginName;
             const formId = this.dataset.formId;
 
-            startPluginAction(actionType, pluginName, pluginSlug, needsScan, formId);
+            // 保存済み健全性データを解析（スキャン不要時に使用）
+            let storedHealthData = null;
+            const healthIssuesRaw = this.dataset.healthIssues;
+            if (healthIssuesRaw) {
+                try {
+                    const healthIssues = JSON.parse(healthIssuesRaw);
+                    const healthScore = this.dataset.healthScore ? parseInt(this.dataset.healthScore) : null;
+                    const healthStatus = this.dataset.healthStatus || null;
+                    const enableAction = this.dataset.enableAction || 'allowed';
+
+                    if (healthIssues.length > 0 || enableAction !== 'allowed') {
+                        storedHealthData = {
+                            healthIssues,
+                            healthScore,
+                            healthStatus,
+                            enableAction,
+                            audit: null,
+                        };
+                    }
+                } catch (e) {
+                    // JSON解析失敗時はnullのまま
+                }
+            }
+
+            startPluginAction(actionType, pluginName, pluginSlug, needsScan, formId, storedHealthData);
         });
     });
 

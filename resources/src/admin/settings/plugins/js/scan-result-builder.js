@@ -262,7 +262,7 @@ function buildCspSection(audit, labels) {
 /**
  * 総合評価バッジのHTMLを生成（別ボックス）
  */
-function buildHealthBadgeHtml(scanData, audit, config) {
+export function buildHealthBadgeHtml(scanData, audit, config) {
     const healthScore = scanData.healthScore;
     const healthStatus = scanData.healthStatus || 'not_verified';
     const healthStatusLabels = config.healthStatusLabels || {};
