@@ -53,6 +53,8 @@ window.modal = function () {
                                 container.style.opacity = '1';
                             });
                         });
+                        // スクロール状態を検出してフッターボーダーを切り替え
+                        requestAnimationFrame(() => this._updateScrollBorder());
                     } else {
                         // 閉じる: 下に移動
                         container.style.transform = 'translateY(1rem)';
@@ -60,6 +62,43 @@ window.modal = function () {
                     }
                 }
             });
+
+            // コンテンツの変更を監視してスクロール状態を更新
+            this._setupScrollObserver();
+        },
+
+        /**
+         * スクロール状態に基づいてフッターボーダーを更新
+         */
+        _updateScrollBorder() {
+            const content = this.$el.querySelector('.modal-content');
+            const actions = this.$el.querySelector('.modal-actions');
+            if (!content || !actions) return;
+
+            const hasScroll = content.scrollHeight > content.clientHeight;
+            actions.classList.toggle('modal-actions--has-scroll', hasScroll);
+        },
+
+        /**
+         * ResizeObserver + MutationObserver でコンテンツ変更を監視
+         */
+        _setupScrollObserver() {
+            const content = this.$el.querySelector('.modal-content');
+            if (!content) return;
+
+            const update = () => {
+                if (this.show) {
+                    this._updateScrollBorder();
+                }
+            };
+
+            if (typeof ResizeObserver !== 'undefined') {
+                const ro = new ResizeObserver(update);
+                ro.observe(content);
+            }
+
+            const mo = new MutationObserver(update);
+            mo.observe(content, { childList: true, subtree: true, characterData: true });
         },
 
         /**
