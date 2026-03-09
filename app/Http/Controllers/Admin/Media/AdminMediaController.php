@@ -141,6 +141,24 @@ class AdminMediaController extends AdminLoggedInController
         $allowedFileTypes = $this->mediaSettingRepository->get('allowed_file_types', []);
         $this->viewParams['allowedFileTypes'] = $allowedFileTypes;
 
+        // かんたんモードでは自動設定のサマリーを表示
+        $isSimpleMode = AdminModeHelper::isSimpleMode();
+        $this->viewParams['isSimpleMode'] = $isSimpleMode;
+        if ($isSimpleMode) {
+            $securitySettings = $this->mediaSecurityService->getSecuritySettings();
+            $this->viewParams['fileSizeLimits'] = [
+                'image' => round(($securitySettings['max_file_size_image'] ?? 10240) / 1024),
+                'video' => round(($securitySettings['max_file_size_video'] ?? 307200) / 1024),
+                'document' => round(($securitySettings['max_file_size_document'] ?? 30720) / 1024),
+                'archive' => round(($securitySettings['max_file_size_archive'] ?? 102400) / 1024),
+            ];
+            $this->viewParams['securityStatus'] = [
+                'mime_validation' => (bool) ($securitySettings['mime_validation_enabled'] ?? true),
+                'svg_sanitization' => (bool) ($securitySettings['svg_sanitization_enabled'] ?? true),
+                'zip_security' => (bool) ($securitySettings['zip_security_enabled'] ?? true),
+            ];
+        }
+
         return view('admin.media.upload', $this->viewParams);
     }
 
