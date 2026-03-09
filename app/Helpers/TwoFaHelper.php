@@ -50,12 +50,13 @@ class TwoFaHelper
 
     /**
      * メール設定が完了しているかチェック
+     * DB（管理画面）の設定を優先して確認する
      *
      * @return bool メール設定が完了しているか
      */
     public function isMailConfigured(): bool
     {
-        $mailer = config('mail.default');
+        $mailer = ConfigHelper::getMailMailer();
 
         // メール設定が存在しない場合
         if (! $mailer) {
@@ -64,17 +65,16 @@ class TwoFaHelper
 
         // SMTPの場合、必須設定をチェック
         if ($mailer === 'smtp') {
-            $host = config('mail.mailers.smtp.host');
-            $port = config('mail.mailers.smtp.port');
-            $username = config('mail.mailers.smtp.username');
+            $host = ConfigHelper::getMailHost();
+            $port = ConfigHelper::getMailPort();
 
-            if (empty($host) || empty($port)) {
+            if (empty($host) || $port <= 0) {
                 return false;
             }
         }
 
         // 送信元アドレスが設定されているかチェック
-        $fromAddress = config('mail.from.address');
+        $fromAddress = ConfigHelper::getMailFromAddress();
         if (empty($fromAddress) || $fromAddress === 'hello@example.com') {
             return false;
         }
