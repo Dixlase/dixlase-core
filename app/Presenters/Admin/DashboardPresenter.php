@@ -26,10 +26,10 @@ use App\Contracts\PluginIntegration\DashboardNotificationProviderInterface;
 use App\Contracts\PluginIntegration\DashboardWidgetProviderInterface;
 use App\DTO\PluginIntegration\DashboardNotificationDTO;
 use App\DTO\PluginIntegration\DashboardWidgetDTO;
+use App\Enums\AuthenticationMode;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use App\Enums\PluginHealthStatus;
-use App\Enums\TwoFaMethod;
 use App\Helpers\CaptchaHelper;
 use App\Helpers\ConfigHelper;
 use App\Models\BaseSetting;
@@ -39,6 +39,7 @@ use App\Models\PluginAudit;
 use App\Models\Theme;
 use App\Services\Plugin\PluginServiceResolver;
 use App\Services\SafeModeService;
+use App\Services\TwoFa\TwoFaStatusService;
 use Illuminate\Support\Carbon;
 
 /**
@@ -109,20 +110,20 @@ class DashboardPresenter
                 : __('admin/dashboard.debug_mode_ok'),
         ];
 
-        // 2FA状態
-        $twoFaMethod = $user->two_fa_method !== null
-            ? TwoFaMethod::from($user->two_fa_method)
+        // 2FA状態（全体設定 + プロフィール設定を考慮した実際の状態）
+        $twoFaStatusService = app(TwoFaStatusService::class);
+        $twoFaEnabled = $twoFaStatusService->isTwoFaEnabled($user);
+        $actualMode = $twoFaEnabled
+            ? AuthenticationMode::from($twoFaStatusService->getActualTwoFaMode($user))
             : null;
-        $twoFaEnabled = $twoFaMethod !== null;
-        $twoFaRecommended = $twoFaMethod?->isRecommended() ?? false;
 
         $items[] = [
             'key' => 'two_fa',
-            'status' => $twoFaEnabled ? ($twoFaRecommended ? 'ok' : 'recommendation') : 'recommendation',
+            'status' => $twoFaEnabled ? 'ok' : 'recommendation',
             'icon' => 'fas fa-user-shield',
             'label' => __('admin/dashboard.two_fa_status'),
             'description' => $twoFaEnabled
-                ? __('admin/dashboard.two_fa_enabled', ['method' => $twoFaMethod->label()])
+                ? __('admin/dashboard.two_fa_enabled', ['method' => $actualMode->twoFactorLabel()])
                 : __('admin/dashboard.two_fa_disabled'),
         ];
 

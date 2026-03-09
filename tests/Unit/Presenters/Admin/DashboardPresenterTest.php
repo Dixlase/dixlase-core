@@ -22,14 +22,15 @@
 
 namespace Tests\Unit\Presenters\Admin;
 
+use App\Enums\AuthenticationMode;
 use App\Enums\MemberStatus;
-use App\Enums\TwoFaMethod;
 use App\Models\BaseSetting;
 use App\Models\Member;
 use App\Models\Plugin;
 use App\Models\SecuritySetting;
 use App\Presenters\Admin\DashboardPresenter;
 use App\Services\SafeModeService;
+use App\Services\TwoFa\TwoFaStatusService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
@@ -47,8 +48,12 @@ class DashboardPresenterTest extends TestCase
         $safeModeService->shouldReceive('hasAnyActive')->andReturn(false);
         $this->app->instance(SafeModeService::class, $safeModeService);
 
+        $twoFaStatusService = Mockery::mock(TwoFaStatusService::class);
+        $twoFaStatusService->shouldReceive('isTwoFaEnabled')->andReturn(false);
+        $this->app->instance(TwoFaStatusService::class, $twoFaStatusService);
+
         $user = new Member();
-        $user->two_fa_method = null;
+        $user->two_fa_mode = AuthenticationMode::Disabled->value;
 
         $result = DashboardPresenter::securityOverview($user);
 
@@ -63,7 +68,7 @@ class DashboardPresenterTest extends TestCase
     }
 
     /**
-     * 2FAが未設定の場合、recommendationステータスを返す
+     * 2FAが無効の場合、recommendationステータスを返す
      */
     public function test_security_overview_two_fa_recommendation_when_disabled(): void
     {
@@ -71,8 +76,12 @@ class DashboardPresenterTest extends TestCase
         $safeModeService->shouldReceive('hasAnyActive')->andReturn(false);
         $this->app->instance(SafeModeService::class, $safeModeService);
 
+        $twoFaStatusService = Mockery::mock(TwoFaStatusService::class);
+        $twoFaStatusService->shouldReceive('isTwoFaEnabled')->andReturn(false);
+        $this->app->instance(TwoFaStatusService::class, $twoFaStatusService);
+
         $user = new Member();
-        $user->two_fa_method = null;
+        $user->two_fa_mode = AuthenticationMode::Disabled->value;
 
         $result = DashboardPresenter::securityOverview($user);
 
@@ -81,16 +90,21 @@ class DashboardPresenterTest extends TestCase
     }
 
     /**
-     * 2FAがパスキー有効の場合、okステータスを返す
+     * 2FAが有効（常に有効）の場合、okステータスを返す
      */
-    public function test_security_overview_two_fa_ok_when_passkey_enabled(): void
+    public function test_security_overview_two_fa_ok_when_always_enabled(): void
     {
         $safeModeService = Mockery::mock(SafeModeService::class);
         $safeModeService->shouldReceive('hasAnyActive')->andReturn(false);
         $this->app->instance(SafeModeService::class, $safeModeService);
 
+        $twoFaStatusService = Mockery::mock(TwoFaStatusService::class);
+        $twoFaStatusService->shouldReceive('isTwoFaEnabled')->andReturn(true);
+        $twoFaStatusService->shouldReceive('getActualTwoFaMode')->andReturn(AuthenticationMode::Always->value);
+        $this->app->instance(TwoFaStatusService::class, $twoFaStatusService);
+
         $user = new Member();
-        $user->two_fa_method = TwoFaMethod::PASSKEY->value;
+        $user->two_fa_mode = AuthenticationMode::Always->value;
 
         $result = DashboardPresenter::securityOverview($user);
 
@@ -254,8 +268,12 @@ class DashboardPresenterTest extends TestCase
         $safeModeService->shouldReceive('hasAnyActive')->andReturn(false);
         $this->app->instance(SafeModeService::class, $safeModeService);
 
+        $twoFaStatusService = Mockery::mock(TwoFaStatusService::class);
+        $twoFaStatusService->shouldReceive('isTwoFaEnabled')->andReturn(false);
+        $this->app->instance(TwoFaStatusService::class, $twoFaStatusService);
+
         $user = new Member();
-        $user->two_fa_method = null;
+        $user->two_fa_mode = AuthenticationMode::Disabled->value;
 
         $result = DashboardPresenter::securityOverview($user);
 
