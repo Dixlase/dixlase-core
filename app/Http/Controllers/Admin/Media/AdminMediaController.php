@@ -286,6 +286,11 @@ class AdminMediaController extends AdminLoggedInController
 
     public function settings()
     {
+        // かんたんモードではメディア設定は自動設定のため非表示
+        if (AdminModeHelper::isSimpleMode()) {
+            return redirect()->route('admin.media.index');
+        }
+
         $allowedFileTypes = $this->mediaSettingRepository->get('allowed_file_types', []);
         $maxFileSize = $this->mediaSettingRepository->get('max_file_size', '2048');
 
@@ -307,8 +312,6 @@ class AdminMediaController extends AdminLoggedInController
             'docx' => ['icon' => 'fas fa-file-word text-blue-400', 'title' => __('admin/media/settings.docx_warning')],
             'tex' => ['icon' => 'fas fa-file-alt text-gray-400', 'title' => __('admin/media/settings.tex_warning')],
         ];
-
-        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('media.settings');
 
         return view('admin.media.settings', $this->viewParams);
     }
@@ -360,6 +363,11 @@ class AdminMediaController extends AdminLoggedInController
      */
     public function update(AdminMediaSettingsUpdateRequest $request)
     {
+        // かんたんモードではメディア設定の変更を禁止
+        if (AdminModeHelper::isSimpleMode()) {
+            return redirect()->route('admin.media.index');
+        }
+
         $selectedTypes = $request->input('allowed_file_types', []);
         $maxFileSizeMB = $request->input('max_file_size');
         $maxFileSize = round($maxFileSizeMB * 1024);

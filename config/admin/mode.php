@@ -65,7 +65,7 @@ return [
         'media' => MenuVisibility::Partial,
         'media.index' => MenuVisibility::Full,
         'media.upload' => MenuVisibility::Full,
-        'media.settings' => MenuVisibility::Partial,
+        'media.settings' => MenuVisibility::Hidden,
 
         // プロフィール設定
         'profile' => MenuVisibility::Full,
