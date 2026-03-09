@@ -123,9 +123,10 @@ class DashboardPresenterTest extends TestCase
             'mail.from.address' => 'admin@example.com',
         ]);
 
-        // Mail tests must be completed for 'ok' status
+        // All mail tests must be completed for 'ok' status
         BaseSetting::set('mail_connection_tested', true);
         BaseSetting::set('mail_send_tested', true);
+        BaseSetting::set('mail_receive_tested', true);
 
         $result = DashboardPresenter::mailServerStatus();
 

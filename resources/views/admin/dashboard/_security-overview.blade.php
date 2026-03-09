@@ -71,6 +71,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="flex items-start gap-3 p-4 rounded-lg border
             @if($mailStatus['status'] === 'warning')
                 border-yellow-300 dark:border-yellow-600 bg-yellow-50 dark:bg-yellow-900/20
+            @elseif($mailStatus['status'] === 'recommendation')
+                border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20
             @else
                 border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20
             @endif
@@ -78,6 +80,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <span class="mt-0.5 text-lg
                 @if($mailStatus['status'] === 'warning')
                     text-yellow-600 dark:text-yellow-400
+                @elseif($mailStatus['status'] === 'recommendation')
+                    text-amber-600 dark:text-amber-400
                 @else
                     text-green-600 dark:text-green-400
                 @endif
@@ -92,6 +96,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if($mailStatus['status'] === 'warning')
                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
                         {{ __('admin/dashboard.status_warning') }}
+                    </span>
+                @elseif($mailStatus['status'] === 'recommendation')
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                        {{ __('admin/dashboard.status_recommendation') }}
                     </span>
                 @else
                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">

@@ -164,11 +164,12 @@ class DashboardPresenter
             ];
         }
 
-        // メール接続テスト・送信テストの結果を確認
+        // メール接続テスト・送信テスト・受信テストの結果を確認
         $connectionTested = (bool) BaseSetting::get('mail_connection_tested', false);
         $sendTested = (bool) BaseSetting::get('mail_send_tested', false);
+        $receiveTested = (bool) BaseSetting::get('mail_receive_tested', false);
 
-        if (! $connectionTested || ! $sendTested) {
+        if (! $connectionTested || ! $sendTested || ! $receiveTested) {
             return [
                 'status' => 'recommendation',
                 'icon' => 'fas fa-envelope',
