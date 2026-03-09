@@ -58,9 +58,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <i class="fas fa-heartbeat mr-1"></i>{{ __('admin/dashboard.health_overview') }}
         </h3>
 
-        @php $hasAudits = collect($extensionOverview['health'])->sum('count') > 0; @endphp
-
-        @if($hasAudits)
+        @if($extensionOverview['has_audits'])
             <div class="flex flex-wrap gap-2">
                 @foreach($extensionOverview['health'] as $statusKey => $info)
                     @if($info['count'] > 0)

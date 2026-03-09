@@ -293,6 +293,8 @@ class DashboardPresenter
             ];
         }
 
+        $hasAudits = collect($healthCounts)->sum('count') > 0;
+
         return [
             'plugins' => [
                 'installed' => $pluginsInstalled,
@@ -303,6 +305,7 @@ class DashboardPresenter
                 'enabled' => $themesEnabled,
             ],
             'health' => $healthCounts,
+            'has_audits' => $hasAudits,
         ];
     }
 
