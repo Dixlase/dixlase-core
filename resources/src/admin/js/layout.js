@@ -41,6 +41,13 @@ window.adminLayout = function() {
                 this.rightSidebarCollapsed = true;
             }
 
+            // ウィンドウリサイズ時にモバイル幅になったら右サイドバーを折りたたむ
+            window.addEventListener('resize', () => {
+                if (window.innerWidth < 1024 && !this.rightSidebarCollapsed) {
+                    this.rightSidebarCollapsed = true;
+                }
+            });
+
             // サイドバーの準備完了フラグを次のティックで設定
             this.$nextTick(() => {
                 this.sidebarReady = true;

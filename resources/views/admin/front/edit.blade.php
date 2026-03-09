@@ -107,7 +107,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{-- ===== 右サイドバートグルボタン ===== --}}
         <button type="button"
                 @click="toggleRightSidebar()"
-                class="flex fixed top-14 right-0 z-40 items-center backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-l-lg shadow-md border border-r-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                class="hidden sm:flex fixed top-14 right-0 z-40 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-l-lg shadow-md border border-r-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
                 :class="{
                     'translate-x-0': rightSidebarCollapsed,
                     '-translate-x-80': !rightSidebarCollapsed
@@ -120,7 +120,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </button>
 
         {{-- ===== 右サイドバー ===== --}}
-        <div class="space-y-6 fixed top-12 right-0 bottom-0 w-80 z-30 overflow-y-auto bg-white/75 dark:bg-gray-900/75 backdrop-blur-sm border-l border-gray-200 dark:border-gray-600 shadow-md px-6 py-6"
+        <div class="space-y-6 fixed top-12 right-0 bottom-0 w-80 z-40 overflow-y-auto bg-white/75 dark:bg-gray-900/75 backdrop-blur-sm border-l border-gray-200 dark:border-gray-600 shadow-md px-6 py-6"
              :class="{
                  'translate-x-80': rightSidebarCollapsed,
                  'translate-x-0': !rightSidebarCollapsed
