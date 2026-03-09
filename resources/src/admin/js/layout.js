@@ -36,6 +36,11 @@ window.adminLayout = function() {
         rightSidebarReady: false,
 
         init() {
+            // モバイル（< lg ブレークポイント）では右サイドバーをデフォルトで折りたたむ
+            if (window.innerWidth < 1024) {
+                this.rightSidebarCollapsed = true;
+            }
+
             // サイドバーの準備完了フラグを次のティックで設定
             this.$nextTick(() => {
                 this.sidebarReady = true;

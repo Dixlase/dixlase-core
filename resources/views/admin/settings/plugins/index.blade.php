@@ -38,7 +38,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     variant="success"
                     size="xs"
                     icon="fas fa-play"
-                    @click="openModal('quickEnableModal')"
+                    class="two-stage-action-btn"
+                    data-action-type="enable"
+                    data-needs-scan="{{ $installedPluginCard['needsScan'] ? '1' : '0' }}"
+                    data-plugin-slug="{{ $installedPluginCard['slug'] }}"
+                    data-plugin-name="{{ $installedPluginCard['translatedName'] }}"
+                    data-form-id="quickEnableForm"
+                    data-enable-action="{{ $installedPluginCard['enableAction'] }}"
+                    data-health-score="{{ $installedPluginCard['healthScore'] ?? '' }}"
+                    data-health-status="{{ $installedPluginCard['healthStatus'] ?? '' }}"
+                    data-health-issues="{{ json_encode($installedPluginCard['healthIssues'] ?? []) }}"
                 />
             </div>
         </div>

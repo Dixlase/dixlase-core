@@ -393,6 +393,7 @@ return [
         'stage2_confirm_enable' => 'このプラグインを有効化しますか？',
         'stage2_blocked_title' => ':actionできません',
         'stage2_blocked_message' => 'このプラグインはセキュリティ要件を満たしていないため、:actionできません。',
+        'stage2_scan_result_heading' => ':name のスキャン結果',
         'stage2_warning_message' => 'このプラグインには以下の警告があります:',
         'action_install' => 'インストール',
         'action_enable' => '有効化',

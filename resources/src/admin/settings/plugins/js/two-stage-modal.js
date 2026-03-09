@@ -198,6 +198,10 @@ document.addEventListener('DOMContentLoaded', function () {
         let contentHtml = '';
         let isBlocked = false;
 
+        // スキャン結果の見出し
+        const scanResultHeading = (ts.stage2ScanResultHeading || ':name')
+            .replace(':name', currentAction.pluginName);
+
         if (scanData && scanData.enableAction === 'blocked') {
             // ブロック: インストール/有効化不可
             isBlocked = true;
@@ -206,6 +210,7 @@ document.addEventListener('DOMContentLoaded', function () {
             setModalIconType('pluginActionStage2Modal', 'danger');
 
             contentHtml = `
+                <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-3 text-center">${scanResultHeading}</h3>
                 <div class="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 mb-3">
                     <p class="text-sm text-red-700 dark:text-red-300">
                         <i class="fas fa-ban mr-1"></i>
@@ -227,7 +232,8 @@ document.addEventListener('DOMContentLoaded', function () {
             setModalIconType('pluginActionStage2Modal', 'warning');
 
             contentHtml = `
-                <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">${ts.stage2WarningMessage || ''}</p>
+                <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-3 text-center">${scanResultHeading}</h3>
+                <p class="text-sm text-gray-700 dark:text-gray-300 mb-3 text-center">${ts.stage2WarningMessage || ''}</p>
             `;
 
             if (scanData.audit) {
@@ -242,14 +248,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (scanData && scanData.audit) {
                 setModalIconType('pluginActionStage2Modal', 'info');
+                contentHtml += `<h3 class="text-base font-semibold text-gray-900 dark:text-white mb-3 text-center">${scanResultHeading}</h3>`;
                 contentHtml += buildUnifiedScanResultHtml(scanData, config);
             } else if (scanData && scanData.healthIssues && scanData.healthIssues.length > 0) {
                 // スキャン済みで減点項目あり: 健全性バッジで警告表示
                 setModalIconType('pluginActionStage2Modal', 'warning');
                 contentHtml = `
-                    <p class="text-sm text-gray-700 dark:text-gray-300 mb-1">
-                        <strong>${currentAction.pluginName}</strong>
-                    </p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-3 text-center">${scanResultHeading}</h3>
                 `;
                 contentHtml += buildHealthBadgeHtml(scanData, null, config);
             } else {
@@ -416,14 +421,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Quick-enable フォーム送信時に確認モーダルを閉じて処理中モーダルを表示
+    // Quick-enable フォーム送信時に処理中モーダルを表示
     const quickEnableForm = document.getElementById('quickEnableForm');
     if (quickEnableForm) {
         quickEnableForm.addEventListener('submit', function () {
             // enable用の処理中モーダルを表示
-            currentAction = { actionType: 'enable' };
-            // 確認モーダルを閉じてから処理中モーダルを表示
-            closeModal('quickEnableModal');
+            if (!currentAction) {
+                currentAction = { actionType: 'enable' };
+            }
             showProcessingModal();
         });
     }

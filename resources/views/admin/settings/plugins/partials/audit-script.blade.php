@@ -77,6 +77,7 @@ https://exc-d.com
             'stage2ConfirmEnable' => __('admin/settings/plugins/index.two_stage.stage2_confirm_enable'),
             'stage2BlockedTitle' => __('admin/settings/plugins/index.two_stage.stage2_blocked_title'),
             'stage2BlockedMessage' => __('admin/settings/plugins/index.two_stage.stage2_blocked_message'),
+            'stage2ScanResultHeading' => __('admin/settings/plugins/index.two_stage.stage2_scan_result_heading'),
             'stage2WarningMessage' => __('admin/settings/plugins/index.two_stage.stage2_warning_message'),
             'actionInstall' => __('admin/settings/plugins/index.two_stage.action_install'),
             'actionEnable' => __('admin/settings/plugins/index.two_stage.action_enable'),
