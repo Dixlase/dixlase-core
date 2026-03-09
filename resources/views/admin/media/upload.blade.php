@@ -59,57 +59,71 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </form>
     </div>
 
-    @if($isSimpleMode ?? false)
-        <div class="mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-5">
-            <h3 class="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-3">
-                <i class="fas fa-cog mr-1"></i>{{ __('admin/media/upload.auto_config_heading') }}
-            </h3>
+    <div class="mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-5">
+        <h3 class="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-3">
+            <i class="fas fa-cog mr-1"></i>
+            {{ ($isSimpleMode ?? false) ? __('admin/media/upload.settings_heading_auto') : __('admin/media/upload.settings_heading') }}
+        </h3>
 
-            {{-- ファイルタイプ別サイズ上限 --}}
-            <section class="mb-4">
-                <h4 class="text-xs font-medium text-blue-700 dark:text-blue-400 mb-2">{{ __('admin/media/upload.size_limits') }}</h4>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    <div class="bg-white dark:bg-gray-800 rounded px-3 py-2 text-center">
-                        <i class="fas fa-image text-green-500"></i>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/media/settings.category.image') }}</p>
-                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $fileSizeLimits['image'] }} MB</p>
-                    </div>
-                    <div class="bg-white dark:bg-gray-800 rounded px-3 py-2 text-center">
-                        <i class="fas fa-video text-purple-500"></i>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/media/settings.category.video') }}</p>
-                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $fileSizeLimits['video'] }} MB</p>
-                    </div>
-                    <div class="bg-white dark:bg-gray-800 rounded px-3 py-2 text-center">
-                        <i class="fas fa-file-alt text-blue-500"></i>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/media/settings.category.document') }}</p>
-                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $fileSizeLimits['document'] }} MB</p>
-                    </div>
-                    <div class="bg-white dark:bg-gray-800 rounded px-3 py-2 text-center">
-                        <i class="fas fa-file-archive text-orange-500"></i>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/media/settings.category.archive') }}</p>
-                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $fileSizeLimits['archive'] }} MB</p>
-                    </div>
+        {{-- 許可されたファイルタイプ --}}
+        <section class="mb-4">
+            <h4 class="text-xs font-medium text-blue-700 dark:text-blue-400 mb-2">{{ __('admin/media/upload.allowed_file_types') }}</h4>
+            <div class="flex flex-wrap gap-2">
+                @foreach($allowedFileTypes as $extension)
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+                        .{{ $extension }}
+                        @if(isset($fileExtensionNames[$extension]))
+                            <span class="text-gray-400 dark:text-gray-500 ml-1">({{ $fileExtensionNames[$extension] }})</span>
+                        @endif
+                    </span>
+                @endforeach
+            </div>
+        </section>
+
+        {{-- ファイルタイプ別サイズ上限 --}}
+        <section class="mb-4">
+            <h4 class="text-xs font-medium text-blue-700 dark:text-blue-400 mb-2">{{ __('admin/media/upload.size_limits') }}</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div class="bg-white dark:bg-gray-800 rounded px-3 py-2 text-center">
+                    <i class="fas fa-image text-green-500"></i>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/media/settings.category.image') }}</p>
+                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $fileSizeLimits['image'] }} MB</p>
                 </div>
-            </section>
+                <div class="bg-white dark:bg-gray-800 rounded px-3 py-2 text-center">
+                    <i class="fas fa-video text-purple-500"></i>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/media/settings.category.video') }}</p>
+                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $fileSizeLimits['video'] }} MB</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded px-3 py-2 text-center">
+                    <i class="fas fa-file-alt text-blue-500"></i>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/media/settings.category.document') }}</p>
+                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $fileSizeLimits['document'] }} MB</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded px-3 py-2 text-center">
+                    <i class="fas fa-file-archive text-orange-500"></i>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/media/settings.category.archive') }}</p>
+                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $fileSizeLimits['archive'] }} MB</p>
+                </div>
+            </div>
+        </section>
 
-            {{-- セキュリティ設定 --}}
-            <section>
-                <h4 class="text-xs font-medium text-blue-700 dark:text-blue-400 mb-2">{{ __('admin/media/upload.security_status') }}</h4>
-                <ul class="space-y-1">
-                    <li class="flex items-center text-xs text-gray-700 dark:text-gray-300">
-                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                        {{ __('admin/media/settings.mime_validation') }}
-                    </li>
-                    <li class="flex items-center text-xs text-gray-700 dark:text-gray-300">
-                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                        {{ __('admin/media/settings.svg_sanitization') }}
-                    </li>
-                    <li class="flex items-center text-xs text-gray-700 dark:text-gray-300">
-                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                        {{ __('admin/media/settings.zip_security') }}
-                    </li>
-                </ul>
-            </section>
-        </div>
-    @endif
+        {{-- セキュリティ設定 --}}
+        <section>
+            <h4 class="text-xs font-medium text-blue-700 dark:text-blue-400 mb-2">{{ __('admin/media/upload.security_status') }}</h4>
+            <ul class="space-y-1">
+                <li class="flex items-center text-xs text-gray-700 dark:text-gray-300">
+                    <i class="fas {{ ($securityStatus['mime_validation'] ?? true) ? 'fa-check-circle text-green-500' : 'fa-times-circle text-red-500' }} mr-2"></i>
+                    {{ __('admin/media/settings.mime_validation') }}
+                </li>
+                <li class="flex items-center text-xs text-gray-700 dark:text-gray-300">
+                    <i class="fas {{ ($securityStatus['svg_sanitization'] ?? true) ? 'fa-check-circle text-green-500' : 'fa-times-circle text-red-500' }} mr-2"></i>
+                    {{ __('admin/media/settings.svg_sanitization') }}
+                </li>
+                <li class="flex items-center text-xs text-gray-700 dark:text-gray-300">
+                    <i class="fas {{ ($securityStatus['zip_security'] ?? true) ? 'fa-check-circle text-green-500' : 'fa-times-circle text-red-500' }} mr-2"></i>
+                    {{ __('admin/media/settings.zip_security') }}
+                </li>
+            </ul>
+        </section>
+    </div>
 @endsection

@@ -19,7 +19,9 @@ return [
     'drag_drop_text' => 'ここにファイルをドラッグするか、クリックしてアップロード',
     'supported_formats' => '対応形式:',
 
-    'auto_config_heading' => '現在のメディア設定（自動設定）',
+    'settings_heading' => '現在のメディア設定',
+    'settings_heading_auto' => '現在のメディア設定（自動設定）',
+    'allowed_file_types' => '許可されたファイルタイプ',
     'size_limits' => 'ファイルサイズ上限',
     'security_status' => 'セキュリティ',
 
