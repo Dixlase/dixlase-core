@@ -94,13 +94,45 @@ document.addEventListener('DOMContentLoaded', function () {
     const auditMessages = config.messages || {};
     const auditUrl = config.auditUrl || '';
 
+    // 結果モーダルの閉じる動作を管理するフラグ
+    // true: スキャン実行後（ページリロード） / false: バッジクリック（単純に閉じる）
+    let resultModalReloadOnClose = false;
+
     // 結果モーダルの閉じるボタン（CSP対応: インラインonclickではなくイベントリスナーで登録）
     const resultCloseBtn = document.getElementById('pluginAuditResultCloseBtn');
     if (resultCloseBtn) {
         resultCloseBtn.addEventListener('click', function () {
-            window.location.reload();
+            if (resultModalReloadOnClose) {
+                window.location.reload();
+            } else {
+                window.closeModal('pluginAuditResultModal');
+            }
         });
     }
+
+    // バッジ詳細ボタン: data-scan-data からスキャンデータを読み取り結果モーダルに表示
+    document.querySelectorAll('.badge-detail-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const container = this.closest('[data-scan-data]');
+            if (!container) return;
+
+            const scanData = JSON.parse(container.dataset.scanData);
+            const pluginName = container.dataset.pluginName || '';
+
+            // リロードなしモードに設定
+            resultModalReloadOnClose = false;
+
+            // モーダルタイトルにプラグイン名を設定
+            const titleEl = document.querySelector('#pluginAuditResultModal .modal-title');
+            if (titleEl) {
+                titleEl.textContent = (auditMessages.resultTitle || '') + (pluginName ? ' - ' + pluginName : '');
+            }
+
+            // 結果コンテンツを挿入して結果モーダルを開く
+            populateResultContent(scanData, config);
+            window.openModal('pluginAuditResultModal');
+        });
+    });
 
     document.querySelectorAll('.audit-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
@@ -138,6 +170,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 if (data.success) {
+                    // スキャン実行後はリロードモードに設定
+                    resultModalReloadOnClose = true;
+
                     // 結果コンテンツを挿入して結果モーダルを開く
                     populateResultContent(data, config);
                     // スキャン中モーダルが完全に閉じるのを待つ

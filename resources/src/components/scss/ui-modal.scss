@@ -103,8 +103,12 @@
     &-actions {
         @apply flex items-center justify-center px-4 sm:px-6 py-3 sm:py-4;
         flex-shrink: 0;
-        border-top: 1px solid;
-        @apply border-gray-200 dark:border-gray-700;
+        border-top: 1px solid transparent;
+
+        // コンテンツがスクロール可能な場合のみボーダーを表示
+        &--has-scroll {
+            @apply border-gray-200 dark:border-gray-700;
+        }
     }
 
     &-button {

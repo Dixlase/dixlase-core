@@ -238,7 +238,7 @@ https://exc-d.com
         :closeOnly="true"
     >
         <div id="pluginActionStage2Content" class="text-left"></div>
-        <p id="pluginActionStage2ConfirmMessage" class="text-sm text-gray-700 dark:text-gray-300 mt-3 text-center font-medium"></p>
+        <p id="pluginActionStage2ConfirmMessage" class="text-sm text-gray-700 dark:text-gray-300 mt-3 mb-4 text-center font-medium"></p>
         <x-slot:footer>
             <div id="pluginActionStage2Buttons" class="flex gap-2">
                 <x-form-button

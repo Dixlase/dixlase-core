@@ -213,6 +213,18 @@ class ExtensionCardPresenter
             $settingsUrl = app(\App\Http\Controllers\Admin\Settings\AdminPluginsSettingsController::class)->getPluginSettingsUrl($plugin);
         }
 
+        // バッジクリック用のスキャンデータ（JS buildUnifiedScanResultHtml互換）
+        $scanData = self::buildScanDataForBadge(
+            $auditResult,
+            $badge,
+            $cspCompatibility,
+            $healthScore,
+            $healthStatus,
+            $healthIssues,
+            $permissionSummary['categories'] ?? [],
+            $permissionSummary['risk_reasons'] ?? [],
+        );
+
         return [
             'isModel' => $isModel,
             'id' => $id,
@@ -262,6 +274,7 @@ class ExtensionCardPresenter
             'trustLevel' => $trustLevel?->value,
             'trustLevelLabel' => $trustLevel?->label(),
             'needsScan' => self::computeNeedsScan($slug, $auditedAt),
+            'scanData' => $scanData,
         ];
     }
 
@@ -531,6 +544,70 @@ class ExtensionCardPresenter
         }
 
         return $formatted;
+    }
+
+    /**
+     * バッジクリック用のスキャンデータを構築（JS buildUnifiedScanResultHtml互換）
+     *
+     * @param  array<string, mixed>  $auditResult
+     * @param  array<string, mixed>  $badge
+     * @param  array<string, mixed>  $cspCompatibility
+     * @param  array<int, array<string, mixed>>  $healthIssues
+     * @param  array<string, array<int, string>>  $categories
+     * @param  array<int, mixed>  $attentionReasons
+     * @return array<string, mixed>
+     */
+    private static function buildScanDataForBadge(
+        array $auditResult,
+        array $badge,
+        array $cspCompatibility,
+        ?int $healthScore,
+        ?string $healthStatus,
+        array $healthIssues,
+        array $categories,
+        array $attentionReasons,
+    ): array {
+        // 署名情報をaudit互換形式に変換
+        $signatureStatus = $badge['signatureStatus'] ?? 'unsigned';
+        $signatureSigner = $badge['signature']['signed_by'] ?? '';
+        $signatureType = $badge['signature']['type'] ?? null;
+
+        // 署名ステータスのマッピング（presenter → scan-result-builder互換）
+        $sigStatusMap = [
+            'valid' => $signatureType ?? 'signed',
+            'pending_verification' => $signatureType ?? 'signed',
+            'invalid' => 'invalid',
+            'unsigned' => 'unsigned',
+        ];
+
+        // attention reasonsをフォーマット（JS互換）
+        $formattedReasons = self::formatAttentionReasons($attentionReasons, 'admin/settings/plugins/index');
+
+        // CSPステータスのマッピング
+        $cspStatus = $cspCompatibility['status'] ?? 'unknown';
+        $cspStatusMap = [
+            'csp_ready' => 'compliant',
+            'compatible' => 'compliant',
+        ];
+
+        return [
+            'audit' => [
+                'signature_status' => $sigStatusMap[$signatureStatus] ?? 'unsigned',
+                'signature_signer' => $signatureSigner,
+                'has_mismatches' => $badge['hasMismatches'],
+                'mismatches' => $auditResult['mismatches'] ?? [],
+                'formatted_attention_reasons' => $formattedReasons,
+                'total_checked' => $auditResult['total_checked'] ?? 0,
+                'matches_count' => $auditResult['matches_count'] ?? 0,
+                'csp_status' => $cspStatusMap[$cspStatus] ?? $cspStatus,
+                'csp_requires_inline_js' => $cspCompatibility['requires_inline_js'] ?? false,
+                'csp_requires_inline_css' => false,
+            ],
+            'healthScore' => $healthScore,
+            'healthStatus' => $healthStatus ?? 'not_verified',
+            'healthIssues' => $healthIssues,
+            'categories' => $categories,
+        ];
     }
 
     /**
