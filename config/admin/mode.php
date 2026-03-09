@@ -115,7 +115,8 @@ return [
         'settings.systems.database' => MenuVisibility::Hidden,
         'settings.systems.api' => MenuVisibility::Hidden,
         'settings.systems.logs' => MenuVisibility::Full,
-        'settings.systems.info' => MenuVisibility::Full,
+        'settings.systems.logs.files' => MenuVisibility::Hidden,
+        'settings.systems.info' => MenuVisibility::Hidden,
     ],
 
     /*

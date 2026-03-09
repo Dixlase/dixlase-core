@@ -22,7 +22,6 @@
 
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
-use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use Illuminate\Support\Facades\DB;
 
@@ -86,7 +85,6 @@ class AdminSystemInfoController extends AdminLoggedInController
         ];
 
         $this->viewParams['info'] = $info;
-        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.info');
 
         return view('admin::settings.systems.info', $this->viewParams);
     }

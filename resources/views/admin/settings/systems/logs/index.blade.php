@@ -22,10 +22,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-    @if($modeData['isReadOnly'] ?? false)
-        <x-admin.mode-readonly-banner />
-    @endif
-
     <!-- Success/Error Messages -->
     @if(session('success'))
         <x-ui-message
