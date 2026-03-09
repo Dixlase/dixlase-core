@@ -19,7 +19,9 @@ return [
     'drag_drop_text' => 'Drag files here or click to upload',
     'supported_formats' => 'Supported formats:',
 
-    'auto_config_heading' => 'Current Media Settings (Auto-configured)',
+    'settings_heading' => 'Current Media Settings',
+    'settings_heading_auto' => 'Current Media Settings (Auto-configured)',
+    'allowed_file_types' => 'Allowed File Types',
     'size_limits' => 'File Size Limits',
     'security_status' => 'Security',
 
