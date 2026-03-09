@@ -203,6 +203,11 @@ if (! function_exists('load_assets_from_manifest')) {
             $manifestKey = $sourceBasePath ? "{$sourceBasePath}/{$file}" : $file;
             $keysToTry = [$manifestKey, ...$alternativeKeys, $file];
 
+            // プラグイン/テーマのマニフェストキーは resources/src/ からの相対パスの場合がある
+            if ($sourceBasePath && preg_match('#(?:plugins|themes)/[^/]+/(resources/src.*)$#', $sourceBasePath, $m)) {
+                $keysToTry[] = "{$m[1]}/{$file}";
+            }
+
             foreach ($keysToTry as $key) {
                 if (isset($manifest[$key])) {
                     $entry = $manifest[$key];
@@ -306,6 +311,11 @@ if (! function_exists('load_assets')) {
             };
 
             $output .= load_assets_from_manifest($manifestPath, $assetBasePath, $files, $basePath);
+
+            // マニフェストが存在しない場合は静的アセットにフォールバック
+            if ($output === '' && ! file_exists($manifestPath)) {
+                $output .= load_static_assets(rtrim($assetBasePath, '/'), $files);
+            }
         }
 
         return $output;
