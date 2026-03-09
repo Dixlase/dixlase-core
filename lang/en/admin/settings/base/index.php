@@ -22,6 +22,7 @@ return [
     'mail_test_required' => 'Mail Test Required',
     'maintenance_active' => 'Maintenance Mode Active',
     'maintenance_inactive' => 'Normal Operation',
+    'auto_configured' => 'This setting is automatically configured in Simple Mode.',
 
     'nav' => [
         'site' => 'Site Settings',

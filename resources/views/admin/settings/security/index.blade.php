@@ -190,6 +190,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{ __('admin/settings/security/index.extensions_desc') }}
             </div>
         </a>
+        @else
+        <div class="block p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center mb-3">
+                <i class="fas fa-puzzle-piece text-pink-500 text-xl mr-3"></i>
+                <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.extensions') }}</h3>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                <p>{{ __('admin/settings/security/index.extensions_preset') }}: <span class="font-medium">{{ $extensionPresetLabel }}</span></p>
+                <p class="text-xs mt-2 text-blue-500 dark:text-blue-400">
+                    <i class="fas fa-info-circle mr-1"></i>{{ __('admin/settings/security/index.auto_configured') }}
+                </p>
+            </div>
+        </div>
         @endif
 
         <!-- IPアクセス制御 -->
