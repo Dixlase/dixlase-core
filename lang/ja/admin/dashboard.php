@@ -43,11 +43,13 @@ return [
     'mail_not_configured' => 'メールサーバーの設定が不完全です。メール送信に失敗する可能性があります。',
     'mail_using_log_driver' => '「:driver」ドライバーを使用中です。メールは実際には配信されません。',
     'mail_configured' => 'メールサーバーは正しく設定されています。',
+    'mail_test_not_completed' => 'メールサーバーは設定済みですが、接続・送信テストがまだ完了していません。',
 
     // CAPTCHA状態
     'captcha_status' => 'CAPTCHA',
     'captcha_not_configured' => 'CAPTCHAが未設定です。スパム防止のため設定を推奨します。',
     'captcha_configured' => 'CAPTCHAは正しく設定されています。',
+    'captcha_test_not_completed' => 'CAPTCHAは設定済みですが、認証テストがまだ完了していません。',
 
     // システム情報
     'system_info' => 'システム情報',

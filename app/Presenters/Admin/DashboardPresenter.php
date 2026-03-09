@@ -24,14 +24,15 @@ namespace App\Presenters\Admin;
 
 use App\Contracts\PluginIntegration\DashboardNotificationProviderInterface;
 use App\Contracts\PluginIntegration\DashboardWidgetProviderInterface;
-use App\DTO\Mail\MailConfigDTO;
 use App\DTO\PluginIntegration\DashboardNotificationDTO;
 use App\DTO\PluginIntegration\DashboardWidgetDTO;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use App\Enums\PluginHealthStatus;
 use App\Enums\TwoFaMethod;
+use App\Helpers\CaptchaHelper;
 use App\Helpers\ConfigHelper;
+use App\Models\BaseSetting;
 use App\Models\Member;
 use App\Models\Plugin;
 use App\Models\PluginAudit;
@@ -84,7 +85,7 @@ class DashboardPresenter
 
         // CSPモード不整合（本番環境 + 開発用CSP）
         $isProduction = app()->environment('production');
-        $cspMode = config('csp.mode', 'development');
+        $cspMode = ConfigHelper::get('csp.base.mode', 'csp_mode', 'development');
         $cspMismatch = $isProduction && $cspMode === 'development';
         $items[] = [
             'key' => 'csp_mode',
@@ -135,11 +136,13 @@ class DashboardPresenter
      */
     public static function mailServerStatus(): array
     {
-        $mailConfig = MailConfigDTO::fromSystemConfig();
-        $mailer = $mailConfig->mailer;
+        $mailer = ConfigHelper::getMailMailer();
+        $host = ConfigHelper::getMailHost();
+        $port = ConfigHelper::getMailPort();
+        $fromAddress = ConfigHelper::getMailFromAddress();
 
-        // log / array ドライバーは警告
-        if (in_array($mailer, ['log', 'array'], true)) {
+        // log / array / mailpit ドライバーは警告（開発用）
+        if (in_array($mailer, ['log', 'array', 'mailpit'], true)) {
             return [
                 'status' => 'warning',
                 'icon' => 'fas fa-envelope',
@@ -149,13 +152,28 @@ class DashboardPresenter
             ];
         }
 
-        // SMTP設定が不完全
-        if (! $mailConfig->isValid()) {
+        // SMTP設定が不完全（ホスト・ポート・送信元アドレスが最低限必要）
+        $isValid = ! empty($host) && $port > 0 && ! empty($fromAddress);
+        if (! $isValid) {
             return [
                 'status' => 'warning',
                 'icon' => 'fas fa-envelope',
                 'label' => __('admin/dashboard.mail_status'),
                 'description' => __('admin/dashboard.mail_not_configured'),
+                'mailer' => $mailer,
+            ];
+        }
+
+        // メール接続テスト・送信テストの結果を確認
+        $connectionTested = (bool) BaseSetting::get('mail_connection_tested', false);
+        $sendTested = (bool) BaseSetting::get('mail_send_tested', false);
+
+        if (! $connectionTested || ! $sendTested) {
+            return [
+                'status' => 'recommendation',
+                'icon' => 'fas fa-envelope',
+                'label' => __('admin/dashboard.mail_status'),
+                'description' => __('admin/dashboard.mail_test_not_completed'),
                 'mailer' => $mailer,
             ];
         }
@@ -176,11 +194,23 @@ class DashboardPresenter
      */
     public static function captchaStatus(): array
     {
-        $driver = config('captcha.default', 'google');
-        $siteKey = config("captcha.drivers.{$driver}.site_key", '');
-        $secretKey = config("captcha.drivers.{$driver}.secret_key", '');
+        $settings = CaptchaHelper::getSettings();
 
-        $isConfigured = ! empty($siteKey) && ! empty($secretKey);
+        $isConfigured = $settings['enabled']
+            && ! empty($settings['site_key'])
+            && ! empty($settings['secret_key']);
+
+        // Authentication test not yet completed
+        $testPending = $isConfigured && ! $settings['authentication_result'];
+
+        if ($testPending) {
+            return [
+                'status' => 'recommendation',
+                'icon' => 'fas fa-robot',
+                'label' => __('admin/dashboard.captcha_status'),
+                'description' => __('admin/dashboard.captcha_test_not_completed'),
+            ];
+        }
 
         return [
             'status' => $isConfigured ? 'ok' : 'recommendation',

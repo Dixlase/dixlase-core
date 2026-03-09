@@ -24,8 +24,10 @@ namespace Tests\Unit\Presenters\Admin;
 
 use App\Enums\MemberStatus;
 use App\Enums\TwoFaMethod;
+use App\Models\BaseSetting;
 use App\Models\Member;
 use App\Models\Plugin;
+use App\Models\SecuritySetting;
 use App\Presenters\Admin\DashboardPresenter;
 use App\Services\SafeModeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -110,7 +112,7 @@ class DashboardPresenterTest extends TestCase
     }
 
     /**
-     * メールステータス: 正しいSMTP設定時はOK
+     * メールステータス: 正しいSMTP設定時でテスト完了済みはOK
      */
     public function test_mail_status_ok_for_valid_smtp(): void
     {
@@ -121,9 +123,30 @@ class DashboardPresenterTest extends TestCase
             'mail.from.address' => 'admin@example.com',
         ]);
 
+        // Mail tests must be completed for 'ok' status
+        BaseSetting::set('mail_connection_tested', true);
+        BaseSetting::set('mail_send_tested', true);
+
         $result = DashboardPresenter::mailServerStatus();
 
         $this->assertEquals('ok', $result['status']);
+    }
+
+    /**
+     * メールステータス: SMTP設定済みだがテスト未完了時はrecommendation
+     */
+    public function test_mail_status_recommendation_when_tests_not_completed(): void
+    {
+        config([
+            'mail.default' => 'smtp',
+            'mail.mailers.smtp.host' => 'smtp.example.com',
+            'mail.mailers.smtp.port' => 587,
+            'mail.from.address' => 'admin@example.com',
+        ]);
+
+        $result = DashboardPresenter::mailServerStatus();
+
+        $this->assertEquals('recommendation', $result['status']);
     }
 
     /**
@@ -144,35 +167,45 @@ class DashboardPresenterTest extends TestCase
     }
 
     /**
-     * CAPTCHA: site_key未設定時はrecommendation
+     * CAPTCHA: 未設定時はrecommendation
      */
     public function test_captcha_status_recommendation_when_not_configured(): void
     {
-        config([
-            'captcha.default' => 'google',
-            'captcha.drivers.google.site_key' => '',
-            'captcha.drivers.google.secret_key' => '',
-        ]);
-
         $result = DashboardPresenter::captchaStatus();
 
         $this->assertEquals('recommendation', $result['status']);
     }
 
     /**
-     * CAPTCHA: site_key設定済みはOK
+     * CAPTCHA: 設定済み・認証テスト完了時はOK
      */
     public function test_captcha_status_ok_when_configured(): void
     {
-        config([
-            'captcha.default' => 'google',
-            'captcha.drivers.google.site_key' => 'test-site-key',
-            'captcha.drivers.google.secret_key' => 'test-secret-key',
-        ]);
+        SecuritySetting::set('captcha_enabled', true);
+        SecuritySetting::set('captcha_driver', 'google');
+        SecuritySetting::set('captcha_google_site_key', 'test-site-key');
+        SecuritySetting::set('captcha_google_secret_key', 'test-secret-key');
+        SecuritySetting::set('captcha_authentication_result', true);
 
         $result = DashboardPresenter::captchaStatus();
 
         $this->assertEquals('ok', $result['status']);
+    }
+
+    /**
+     * CAPTCHA: 設定済みだが認証テスト未完了時はrecommendation
+     */
+    public function test_captcha_status_recommendation_when_test_not_completed(): void
+    {
+        SecuritySetting::set('captcha_enabled', true);
+        SecuritySetting::set('captcha_driver', 'google');
+        SecuritySetting::set('captcha_google_site_key', 'test-site-key');
+        SecuritySetting::set('captcha_google_secret_key', 'test-secret-key');
+        SecuritySetting::set('captcha_authentication_result', false);
+
+        $result = DashboardPresenter::captchaStatus();
+
+        $this->assertEquals('recommendation', $result['status']);
     }
 
     /**
