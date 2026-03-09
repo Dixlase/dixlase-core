@@ -74,44 +74,68 @@ export function runPluginScan(slug, auditUrl) {
 
 /**
  * スキャン結果のHTMLを生成して結果モーダルのコンテンツ領域に挿入する
+ *
+ * @param {object} scanData - APIレスポンス全体（audit, healthScore, healthStatus等を含む）
+ * @param {object} config - 設定オブジェクト
  */
-export function populateResultContent(audit, config) {
+export function populateResultContent(scanData, config) {
+    const audit = scanData.audit || {};
     const auditMessages = config.messages || {};
     const hasIssues = audit.has_mismatches && audit.mismatches && audit.mismatches.length > 0;
-    const riskLevel = audit.risk_level || 'low';
-
-    const healthColors = {
-        'low': { bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-700 dark:text-green-300', icon: 'fa-check-circle' },
-        'medium': { bg: 'bg-yellow-50 dark:bg-yellow-900/20', border: 'border-yellow-200 dark:border-yellow-800', text: 'text-yellow-700 dark:text-yellow-300', icon: 'fa-exclamation-circle' },
-        'high': { bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-700 dark:text-orange-300', icon: 'fa-exclamation-triangle' },
-        'unknown': { bg: 'bg-gray-50 dark:bg-gray-900/20', border: 'border-gray-200 dark:border-gray-800', text: 'text-gray-700 dark:text-gray-300', icon: 'fa-question-circle' }
-    };
-    const healthStyle = healthColors[riskLevel] || healthColors['unknown'];
-    const healthLabels = config.healthLabels || {};
-
-    let contentHtml = '';
+    const attentionReasons = audit.formatted_attention_reasons || [];
 
     const signatureLabels = config.signatureLabels || {};
     const cspLabels = config.cspLabels || {};
 
-    // 健全性ステータス
-    contentHtml += `
-        <div class="p-3 rounded-lg ${healthStyle.bg} border ${healthStyle.border} mb-3">
-            <div class="flex items-center gap-2 ${healthStyle.text}">
-                <i class="fas ${healthStyle.icon}"></i>
-                <span class="font-semibold">${config.healthBadgeLabel || ''}: ${healthLabels[riskLevel] || healthLabels['unknown'] || ''}</span>
-            </div>
-        </div>
-    `;
+    let contentHtml = '';
 
-    // 署名ステータス
+    // 署名セクション（Adj 4a: セクションラベル追加）
+    contentHtml += `
+        <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            <i class="fas fa-file-signature mr-1"></i>
+            ${config.signatureSectionLabel || ''}
+        </p>
+    `;
     contentHtml += buildSignatureStatusHtml(audit, signatureLabels);
 
-    // 確認が必要な理由（attention reasons）
-    const attentionReasons = audit.formatted_attention_reasons || [];
-    if (attentionReasons.length > 0) {
-        contentHtml += `
-            <div class="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 mb-3">
+    // 権限定義の整合性セクション（Adj 8: attention reasonsを統合）
+    contentHtml += `
+        <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 mt-1">
+            <i class="fas fa-balance-scale mr-1"></i>
+            ${config.permissionConsistencyTitle || ''}
+        </p>
+    `;
+
+    if (hasIssues || attentionReasons.length > 0) {
+        const boxBg = hasIssues ? 'bg-red-50 dark:bg-red-900/20' : 'bg-yellow-50 dark:bg-yellow-900/20';
+        const boxBorder = hasIssues ? 'border-red-200 dark:border-red-800' : 'border-yellow-200 dark:border-yellow-800';
+        contentHtml += `<div class="p-3 rounded-lg ${boxBg} border ${boxBorder} mb-3">`;
+
+        // 不一致の詳細
+        if (hasIssues) {
+            contentHtml += `
+                <p class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">
+                    <i class="fas fa-code-branch mr-1"></i>
+                    ${auditMessages.mismatchFound || ''}
+                </p>
+                <ul class="text-sm text-red-700 dark:text-red-300 space-y-1 ml-5 list-disc">
+                    ${audit.mismatches.slice(0, 10).map(m => `
+                        <li>
+                            <code class="bg-red-100 dark:bg-red-800 px-1 rounded">${m.permission}</code>
+                            - ${m.type === 'undeclared_usage' ? (auditMessages.undeclaredUsage || '') : (auditMessages.unusedDeclaration || '')}
+                        </li>
+                    `).join('')}
+                </ul>
+                ${audit.mismatches.length > 10 ? `<p class="text-xs text-red-600 dark:text-red-400 mt-2">...+${audit.mismatches.length - 10}</p>` : ''}
+            `;
+        }
+
+        // attention reasons（統合表示）
+        if (attentionReasons.length > 0) {
+            if (hasIssues) {
+                contentHtml += `<div class="mt-2 pt-2 border-t ${hasIssues ? 'border-red-200 dark:border-red-700' : 'border-yellow-200 dark:border-yellow-700'}"></div>`;
+            }
+            contentHtml += `
                 <p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
                     <i class="fas fa-exclamation-triangle mr-1"></i>
                     ${config.attentionReasonsTitle || ''}
@@ -125,46 +149,10 @@ export function populateResultContent(audit, config) {
                         </li>
                     `).join('')}
                 </ul>
-                ${(() => {
-                    const totalScore = attentionReasons.reduce((sum, r) => sum + (r.score || 0), 0);
-                    return totalScore > 0 ? `
-                        <div class="mt-2 pt-2 border-t border-yellow-200 dark:border-yellow-700 flex items-center justify-between">
-                            <span class="text-xs font-medium text-yellow-700 dark:text-yellow-300">${config.totalRiskScoreLabel || ''}</span>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${riskLevel === 'high' ? 'bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200' : riskLevel === 'medium' ? 'bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200' : 'bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200'}">${totalScore}</span>
-                        </div>
-                    ` : '';
-                })()}
-            </div>
-        `;
-    }
+            `;
+        }
 
-    // 権限定義の整合性セクション見出し
-    contentHtml += `
-        <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 mt-1">
-            <i class="fas fa-balance-scale mr-1"></i>
-            ${config.permissionConsistencyTitle || ''}
-        </p>
-    `;
-
-    // 権限不一致の警告
-    if (hasIssues) {
-        contentHtml += `
-            <div class="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 mb-3">
-                <p class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">
-                    <i class="fas fa-code-branch mr-1"></i>
-                    ${auditMessages.mismatchFound || ''}
-                </p>
-                <ul class="text-sm text-red-700 dark:text-red-300 space-y-1 ml-5 list-disc">
-                    ${audit.mismatches.slice(0, 10).map(m => `
-                        <li>
-                            <code class="bg-red-100 dark:bg-red-800 px-1 rounded">${m.permission}</code>
-                            - ${m.type === 'undeclared_usage' ? (auditMessages.undeclaredUsage || '') : (auditMessages.unusedDeclaration || '')}
-                        </li>
-                    `).join('')}
-                </ul>
-                ${audit.mismatches.length > 10 ? `<p class="text-xs text-red-600 dark:text-red-400 mt-2">...他 ${audit.mismatches.length - 10} 件</p>` : ''}
-            </div>
-        `;
+        contentHtml += `</div>`;
     } else {
         contentHtml += `
             <div class="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 mb-3">
@@ -179,6 +167,7 @@ export function populateResultContent(audit, config) {
     // CSPステータス
     contentHtml += buildCspStatusHtml(audit, cspLabels);
 
+    // 統計情報
     contentHtml += `
         <div class="mt-3 text-xs text-gray-500 dark:text-gray-400">
             ${config.statsLabel || ''}: ${audit.total_checked || 0} /
@@ -187,10 +176,63 @@ export function populateResultContent(audit, config) {
         </div>
     `;
 
+    // 総合評価（Adj 2, 3, 7: 下部に移動、実スコア表示、PluginHealthScorerのステータス使用）
+    contentHtml += buildHealthBadgeHtml(scanData, audit, config);
+
     const container = document.getElementById('pluginAuditResultContent');
     if (container) {
         container.innerHTML = contentHtml;
     }
+}
+
+/**
+ * 総合評価バッジのHTMLを生成
+ */
+function buildHealthBadgeHtml(scanData, audit, config) {
+    const healthScore = scanData.healthScore;
+    const healthStatus = scanData.healthStatus || 'not_verified';
+    const healthStatusLabels = config.healthStatusLabels || {};
+    const signatureLabels = config.signatureLabels || {};
+
+    // ステータス別の色とアイコン
+    const statusColors = {
+        'healthy': { bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-700 dark:text-green-300', icon: 'fa-check-circle' },
+        'advisory': { bg: 'bg-yellow-50 dark:bg-yellow-900/20', border: 'border-yellow-200 dark:border-yellow-800', text: 'text-yellow-700 dark:text-yellow-300', icon: 'fa-exclamation-circle' },
+        'needs_attention': { bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-700 dark:text-orange-300', icon: 'fa-exclamation-triangle' },
+        'not_verified': { bg: 'bg-gray-50 dark:bg-gray-900/20', border: 'border-gray-200 dark:border-gray-800', text: 'text-gray-700 dark:text-gray-300', icon: 'fa-question-circle' },
+    };
+    const style = statusColors[healthStatus] || statusColors['not_verified'];
+    const statusLabel = healthStatusLabels[healthStatus] || healthStatus;
+
+    // スコア表示テキスト
+    const scoreText = healthScore !== null && healthScore !== undefined
+        ? (config.healthScoreDisplay || '').replace(':score', healthScore)
+        : '';
+
+    // 署名による減点表示
+    let deductionText = '';
+    const sigStatus = audit.signature_status || 'unsigned';
+    if (sigStatus === 'unsigned' || sigStatus === 'invalid') {
+        const deductionPoints = sigStatus === 'unsigned' ? 5 : 15;
+        deductionText = (config.signatureDeduction || '').replace(':points', deductionPoints);
+    }
+
+    let html = `
+        <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 mt-3">
+            <i class="fas fa-chart-bar mr-1"></i>
+            ${config.totalEvaluationLabel || ''}
+        </p>
+        <div class="p-3 rounded-lg ${style.bg} border ${style.border}">
+            <div class="flex items-center gap-2 ${style.text}">
+                <i class="fas ${style.icon}"></i>
+                <span class="font-semibold">${config.healthBadgeLabel || ''}: ${statusLabel}</span>
+                ${scoreText ? `<span class="text-xs ml-1">${scoreText}</span>` : ''}
+            </div>
+            ${deductionText ? `<p class="text-xs mt-1 ${style.text}"><i class="fas fa-minus-circle mr-1"></i>${signatureLabels.title || ''} ${deductionText}</p>` : ''}
+        </div>
+    `;
+
+    return html;
 }
 
 /**
@@ -337,7 +379,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (data.success) {
                     // 結果コンテンツを挿入して結果モーダルを開く
-                    populateResultContent(data.audit, config);
+                    populateResultContent(data, config);
                     // スキャン中モーダルが完全に閉じるのを待つ
                     setTimeout(function () {
                         window.openModal('pluginAuditResultModal');

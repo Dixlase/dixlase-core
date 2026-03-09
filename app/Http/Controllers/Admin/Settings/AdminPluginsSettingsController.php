@@ -286,11 +286,15 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         // 2段階モーダル用: 有効化アクションとインストール許可を算出
         $enableAction = PluginEnableAction::Allowed;
         $installAllowed = true;
+        $healthScore = null;
+        $healthStatus = null;
         try {
             $healthScorer = app(PluginHealthScorer::class);
             $healthResult = $healthScorer->calculate($slug);
             $enableAction = $healthScorer->determineEnableAction($healthResult);
             $installAllowed = $enableAction !== PluginEnableAction::Blocked;
+            $healthScore = $healthResult->score;
+            $healthStatus = $healthResult->status->value;
         } catch (\Exception $e) {
             // 算出失敗時はデフォルト値を維持
         }
@@ -302,6 +306,8 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             'enableAction' => $enableAction->value,
             'enableActionLabel' => $enableAction->label(),
             'installAllowed' => $installAllowed,
+            'healthScore' => $healthScore,
+            'healthStatus' => $healthStatus,
         ]);
     }
 

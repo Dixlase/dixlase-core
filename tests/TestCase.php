@@ -32,13 +32,21 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(function (string $modelName) {
-            $pluginFactory = 'Plugins\\DixlaseDevKit\\Database\\Factories\\' . class_basename($modelName) . 'Factory';
+            $basename = class_basename($modelName);
 
-            if (class_exists($pluginFactory)) {
-                return $pluginFactory;
+            // Check DixlaseCoreDev factories first (core model factories for testing)
+            $coreDevFactory = 'Plugins\\DixlaseCoreDev\\Database\\Factories\\'.$basename.'Factory';
+            if (class_exists($coreDevFactory)) {
+                return $coreDevFactory;
             }
 
-            return 'Database\\Factories\\' . class_basename($modelName) . 'Factory';
+            // Check DixlaseDevKit factories
+            $devKitFactory = 'Plugins\\DixlaseDevKit\\Database\\Factories\\'.$basename.'Factory';
+            if (class_exists($devKitFactory)) {
+                return $devKitFactory;
+            }
+
+            return 'Database\\Factories\\'.$basename.'Factory';
         });
     }
 }

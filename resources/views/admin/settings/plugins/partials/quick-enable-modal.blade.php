@@ -28,6 +28,10 @@ https://exc-d.com
             <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
                 {{ __('admin/settings/plugins/index.permissions.enable_warning_message', ['name' => $card['translatedName']]) }}
             </p>
+            <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <i class="fas fa-file-signature mr-1"></i>
+                {{ __('admin/settings/plugins/index.permissions.signature_section_label') }}
+            </p>
             <div class="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 mb-3">
                 <ul class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1 ml-4 list-disc">
                     @foreach($card['enableWarnings'] as $warning)

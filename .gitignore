@@ -9,8 +9,12 @@
 /public/hot
 /public/storage
 
+/public/assets/admin
 # ただし画像など手動管理アセットは残す
 !public/assets/images/
+
+# テスト用SQLiteデータベース
+database.sqlite
 
 # Laravel / PHP 関連
 /storage/*.key
