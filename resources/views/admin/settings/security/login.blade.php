@@ -22,6 +22,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
+    @if($modeData['isPartial'] ?? false)
+        <x-admin.mode-partial-notice />
+    @endif
+
     <form id="security-login-form" method="POST" action="{{ route('admin.settings.security.login.update') }}">
         @csrf
         

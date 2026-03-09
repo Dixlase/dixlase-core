@@ -22,8 +22,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
+    @if($modeData['isGuideOnly'] ?? false)
+        <x-admin.mode-guide-banner />
+    @endif
 <form id="base-admin-form" action="{{ route('admin.settings.base.admin.update') }}" method="POST">
     @csrf
+    <fieldset {{ ($modeData['isGuideOnly'] ?? false) ? 'disabled' : '' }}>
 
     <!-- 管理画面設定 -->
     <section>
@@ -50,11 +54,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </fieldset>
     </section>
 
+    </fieldset>
 </form>
 </div>
 @endsection
 
 @section('save')
+@if($modeData['isEditable'] ?? true)
     <x-admin.save-button
         id_confirmation="confirmationModal"
         :label="__('common.save')"
@@ -64,4 +70,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :cancel_label="__('common.cancel')"
         form="base-admin-form"
     />
+@endif
 @endsection

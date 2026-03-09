@@ -153,10 +153,10 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::put('/media/{media}', [AdminMediaController::class, 'updateMedia'])
                     ->middleware('check.menu.edit:media')
                     ->name('media.update');
-                // メディア設定
+                // メディア設定（かんたんモード: Partial — セキュリティ項目は自動設定）
                 Route::get('/media/settings', [AdminMediaController::class, 'settings'])->name('media.settings');
                 Route::post('/media/settings', [AdminMediaController::class, 'update'])
-                    ->middleware('check.menu.edit:media')
+                    ->middleware('check.menu.edit:media.settings')
                     ->name('media.settings.update');
             });
 
@@ -262,19 +262,19 @@ Route::prefix($adminUrl)->name('admin.')
                 // サイト設定
                 Route::get('/site', [Base\AdminBaseSiteController::class, 'index'])->name('site');
                 Route::post('/site', [Base\AdminBaseSiteController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.base')
+                    ->middleware('check.menu.edit:settings.base.site')
                     ->name('site.update');
 
                 // 管理画面設定
                 Route::get('/admin', [Base\AdminBaseAdminController::class, 'index'])->name('admin');
                 Route::post('/admin', [Base\AdminBaseAdminController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.base')
+                    ->middleware('check.menu.edit:settings.base.admin')
                     ->name('admin.update');
 
                 // メール設定
                 Route::get('/mail', [Base\AdminBaseMailController::class, 'index'])->name('mail');
                 Route::post('/mail', [Base\AdminBaseMailController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.base')
+                    ->middleware('check.menu.edit:settings.base.mail')
                     ->name('mail.update');
                 Route::post('/mail/test-mail', [Base\AdminBaseMailController::class, 'testMail'])->name('mail.test-mail');
                 Route::post('/mail/test-connection', [Base\AdminBaseMailController::class, 'testConnection'])->name('mail.test-connection');
@@ -287,13 +287,13 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::get('/maintenance', [Base\AdminBaseMaintenanceController::class, 'index'])->name('maintenance');
                 Route::get('/maintenance/preview', [Base\AdminBaseMaintenanceController::class, 'preview'])->name('maintenance.preview');
                 Route::post('/maintenance', [Base\AdminBaseMaintenanceController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.base')
+                    ->middleware('check.menu.edit:settings.base.maintenance')
                     ->name('maintenance.update');
 
                 // モード設定
                 Route::get('/mode', [Base\AdminBaseModeController::class, 'index'])->name('mode');
                 Route::post('/mode', [Base\AdminBaseModeController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.base')
+                    ->middleware('check.menu.edit:settings.base.mode')
                     ->name('mode.update');
             });
 
@@ -303,15 +303,19 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::get('/', [Security\AdminSecurityIndexController::class, 'index'])->name('index');
 
                 // パスワードセキュリティ
-                Route::get('/password', [Security\AdminSecurityPasswordController::class, 'index'])->name('password');
+                Route::get('/password', [Security\AdminSecurityPasswordController::class, 'index'])
+                    ->middleware('check.menu.access:settings.security.password')
+                    ->name('password');
                 Route::post('/password', [Security\AdminSecurityPasswordController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.security')
+                    ->middleware('check.menu.edit:settings.security.password')
                     ->name('password.update');
 
                 // ログイン試行制限
-                Route::get('/login', [Security\AdminSecurityLoginController::class, 'index'])->name('login');
+                Route::get('/login', [Security\AdminSecurityLoginController::class, 'index'])
+                    ->middleware('check.menu.access:settings.security.login')
+                    ->name('login');
                 Route::post('/login', [Security\AdminSecurityLoginController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.security')
+                    ->middleware('check.menu.edit:settings.security.login')
                     ->name('login.update');
 
                 // セッション管理
@@ -319,73 +323,96 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.access:settings.security.session')
                     ->name('session');
                 Route::post('/session', [Security\AdminSecuritySessionController::class, 'update'])
-                    ->middleware(['check.menu.access:settings.security.session', 'check.menu.edit:settings.security'])
+                    ->middleware('check.menu.edit:settings.security.session')
                     ->name('session.update');
 
                 // 二段階認証設定
-                Route::get('/two-fa', [Security\AdminSecurityTwoFaController::class, 'index'])->name('two-fa');
+                Route::get('/two-fa', [Security\AdminSecurityTwoFaController::class, 'index'])
+                    ->middleware('check.menu.access:settings.security.two-fa')
+                    ->name('two-fa');
                 Route::post('/two-fa', [Security\AdminSecurityTwoFaController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.security')
+                    ->middleware('check.menu.edit:settings.security.two-fa')
                     ->name('two-fa.update');
 
                 // CAPTCHA
-                Route::get('/captcha', [Security\AdminSecurityCaptchaController::class, 'index'])->name('captcha');
+                Route::get('/captcha', [Security\AdminSecurityCaptchaController::class, 'index'])
+                    ->middleware('check.menu.access:settings.security.captcha')
+                    ->name('captcha');
                 Route::post('/captcha', [Security\AdminSecurityCaptchaController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.security')
+                    ->middleware('check.menu.edit:settings.security.captcha')
                     ->name('captcha.update');
-                Route::post('/captcha/validate-widget', [Security\AdminSecurityCaptchaController::class, 'validateWidget'])->name('captcha.validate-widget');
-                Route::post('/captcha/clear-test', [Security\AdminSecurityCaptchaController::class, 'clearTest'])->name('captcha.clear-test');
+                Route::post('/captcha/validate-widget', [Security\AdminSecurityCaptchaController::class, 'validateWidget'])
+                    ->middleware('check.menu.access:settings.security.captcha')
+                    ->name('captcha.validate-widget');
+                Route::post('/captcha/clear-test', [Security\AdminSecurityCaptchaController::class, 'clearTest'])
+                    ->middleware('check.menu.access:settings.security.captcha')
+                    ->name('captcha.clear-test');
 
                 // IPアクセス制御
-                Route::get('/ip', [Security\AdminSecurityIpController::class, 'index'])->name('ip');
+                Route::get('/ip', [Security\AdminSecurityIpController::class, 'index'])
+                    ->middleware('check.menu.access:settings.security.ip')
+                    ->name('ip');
                 Route::post('/ip', [Security\AdminSecurityIpController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.security')
+                    ->middleware('check.menu.edit:settings.security.ip')
                     ->name('ip.update');
 
                 // 拡張機能セキュリティ
-                Route::get('/extensions', [Security\AdminSecurityExtensionsController::class, 'index'])->name('extensions');
+                Route::get('/extensions', [Security\AdminSecurityExtensionsController::class, 'index'])
+                    ->middleware('check.menu.access:settings.security.extensions')
+                    ->name('extensions');
                 Route::post('/extensions', [Security\AdminSecurityExtensionsController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.security')
+                    ->middleware('check.menu.edit:settings.security.extensions')
                     ->name('extensions.update');
 
                 // CSP
-                Route::get('/csp', [Security\AdminSecurityCspController::class, 'index'])->name('csp');
+                Route::get('/csp', [Security\AdminSecurityCspController::class, 'index'])
+                    ->middleware('check.menu.access:settings.security.csp')
+                    ->name('csp');
                 Route::post('/csp', [Security\AdminSecurityCspController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.security')
+                    ->middleware('check.menu.edit:settings.security.csp')
                     ->name('csp.update');
                 Route::post('/csp/confirm', [Security\AdminSecurityCspController::class, 'confirm'])
-                    ->middleware('check.menu.edit:settings.security')
+                    ->middleware('check.menu.edit:settings.security.csp')
                     ->name('csp.confirm');
                 Route::post('/csp/rollback', [Security\AdminSecurityCspController::class, 'rollback'])
-                    ->middleware('check.menu.edit:settings.security')
+                    ->middleware('check.menu.edit:settings.security.csp')
                     ->name('csp.rollback');
+
                 // 通知
-                Route::get('/notifications', [Security\AdminSecurityNotificationsController::class, 'index'])->name('notifications');
+                Route::get('/notifications', [Security\AdminSecurityNotificationsController::class, 'index'])
+                    ->middleware('check.menu.access:settings.security.notifications')
+                    ->name('notifications');
                 Route::post('/notifications', [Security\AdminSecurityNotificationsController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.security')
+                    ->middleware('check.menu.edit:settings.security.notifications')
                     ->name('notifications.update');
 
                 // 環境設定
-                Route::get('/environment', [Security\AdminSecurityEnvironmentController::class, 'index'])->name('environment');
+                Route::get('/environment', [Security\AdminSecurityEnvironmentController::class, 'index'])
+                    ->middleware('check.menu.access:settings.security.environment')
+                    ->name('environment');
                 Route::post('/environment', [Security\AdminSecurityEnvironmentController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.security')
+                    ->middleware('check.menu.edit:settings.security.environment')
                     ->name('environment.update');
 
                 // ファイル整合性
-                Route::get('/integrity', [Security\AdminSecurityIntegrityController::class, 'index'])->name('integrity');
+                Route::get('/integrity', [Security\AdminSecurityIntegrityController::class, 'index'])
+                    ->middleware('check.menu.access:settings.security.integrity')
+                    ->name('integrity');
                 Route::post('/integrity/scan', [Security\AdminSecurityIntegrityController::class, 'scan'])
-                    ->middleware('check.menu.edit:settings.security')
+                    ->middleware('check.menu.edit:settings.security.integrity')
                     ->name('integrity.scan');
                 Route::post('/integrity/regenerate-baseline', [Security\AdminSecurityIntegrityController::class, 'regenerateBaseline'])
-                    ->middleware('check.menu.edit:settings.security')
+                    ->middleware('check.menu.edit:settings.security.integrity')
                     ->name('integrity.regenerate-baseline');
                 Route::delete('/integrity/{audit}', [Security\AdminSecurityIntegrityController::class, 'destroy'])
-                    ->middleware('check.menu.edit:settings.security')
+                    ->middleware('check.menu.edit:settings.security.integrity')
                     ->name('integrity.destroy');
                 Route::post('/integrity/bulk-delete', [Security\AdminSecurityIntegrityController::class, 'bulkDelete'])
-                    ->middleware('check.menu.edit:settings.security')
+                    ->middleware('check.menu.edit:settings.security.integrity')
                     ->name('integrity.bulk-delete');
-                Route::get('/integrity/{audit}', [Security\AdminSecurityIntegrityController::class, 'show'])->name('integrity.show');
+                Route::get('/integrity/{audit}', [Security\AdminSecurityIntegrityController::class, 'show'])
+                    ->middleware('check.menu.access:settings.security.integrity')
+                    ->name('integrity.show');
             });
 
             // テーマ設定（権限チェック付き）
@@ -441,54 +468,78 @@ Route::prefix($adminUrl)->name('admin.')
 
             // システム設定（権限チェック付き）
             Route::middleware('check.menu.access:settings.systems')->prefix('settings/systems')->name('settings.systems.')->group(function () {
-                // API管理
-                Route::get('/api', [Systems\AdminSystemApiController::class, 'index'])->name('api');
+                // API管理（かんたんモード: Hidden）
+                Route::get('/api', [Systems\AdminSystemApiController::class, 'index'])
+                    ->middleware('check.menu.access:settings.systems.api')
+                    ->name('api');
                 Route::post('/api', [Systems\AdminSystemApiController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.systems')
+                    ->middleware('check.menu.edit:settings.systems.api')
                     ->name('api.update');
                 Route::post('/api/generate-key', [Systems\AdminSystemApiController::class, 'generateKey'])
-                    ->middleware('check.menu.edit:settings.systems')
+                    ->middleware('check.menu.edit:settings.systems.api')
                     ->name('api.generate-key');
                 Route::delete('/api/revoke-key/{id}', [Systems\AdminSystemApiController::class, 'revokeKey'])
-                    ->middleware('check.menu.edit:settings.systems')
+                    ->middleware('check.menu.edit:settings.systems.api')
                     ->name('api.revoke-key');
                 Route::post('/api/regenerate-key/{id}', [Systems\AdminSystemApiController::class, 'regenerateKey'])
-                    ->middleware('check.menu.edit:settings.systems')
+                    ->middleware('check.menu.edit:settings.systems.api')
                     ->name('api.regenerate-key');
 
-                // キャッシュ管理
+                // キャッシュ管理（かんたんモード: Full）
                 Route::get('/cache', [Systems\AdminSystemCacheController::class, 'index'])->name('cache');
                 Route::post('/cache/clear', [Systems\AdminSystemCacheController::class, 'clear'])
-                    ->middleware('check.menu.edit:settings.systems')
+                    ->middleware('check.menu.edit:settings.systems.cache')
                     ->name('cache.clear');
 
-                // データベース管理
-                Route::get('/database', [Systems\AdminSystemDatabaseController::class, 'index'])->name('database');
+                // データベース管理（かんたんモード: Hidden）
+                Route::get('/database', [Systems\AdminSystemDatabaseController::class, 'index'])
+                    ->middleware('check.menu.access:settings.systems.database')
+                    ->name('database');
                 Route::post('/database/cleanup', [Systems\AdminSystemDatabaseController::class, 'cleanup'])
-                    ->middleware('check.menu.edit:settings.systems')
+                    ->middleware('check.menu.edit:settings.systems.database')
                     ->name('database.cleanup');
 
-                // 監査ログ（/logs/ がデフォルト）
-                Route::get('/logs', [Systems\AdminSystemLogsController::class, 'index'])->name('logs.index');
+                // 監査ログ（かんたんモード: ReadOnly）
+                Route::get('/logs', [Systems\AdminSystemLogsController::class, 'index'])
+                    ->middleware('check.menu.access:settings.systems.logs')
+                    ->name('logs.index');
 
                 // ファイルログ
-                Route::get('/logs/files/{type?}', [Systems\AdminSystemLogsController::class, 'files'])->name('logs.files');
-                Route::get('/logs/files/{type}/download', [Systems\AdminSystemLogsController::class, 'download'])->name('logs.download');
+                Route::get('/logs/files/{type?}', [Systems\AdminSystemLogsController::class, 'files'])
+                    ->middleware('check.menu.access:settings.systems.logs')
+                    ->name('logs.files');
+                Route::get('/logs/files/{type}/download', [Systems\AdminSystemLogsController::class, 'download'])
+                    ->middleware('check.menu.access:settings.systems.logs')
+                    ->name('logs.download');
                 Route::post('/logs/files/{type}/clear', [Systems\AdminSystemLogsController::class, 'clear'])
-                    ->middleware('check.menu.edit:settings.systems')
+                    ->middleware('check.menu.edit:settings.systems.logs')
                     ->name('logs.clear');
-                Route::post('/logs/files/test', [Systems\AdminSystemLogsController::class, 'test'])->name('logs.test');
-                Route::post('/logs/files/test-error', [Systems\AdminSystemLogsController::class, 'testError'])->name('logs.test-error');
-                Route::post('/logs/files/test-front', [Systems\AdminSystemLogsController::class, 'testFront'])->name('logs.test-front');
-                Route::post('/logs/files/test-front-error', [Systems\AdminSystemLogsController::class, 'testFrontError'])->name('logs.test-front-error');
-                Route::get('/logs/audit/{id}', [Systems\AdminSystemLogsController::class, 'show'])->name('logs.audit.show');
-                Route::get('/logs/audit-export', [Systems\AdminSystemLogsController::class, 'auditExport'])->name('logs.audit.export');
+                Route::post('/logs/files/test', [Systems\AdminSystemLogsController::class, 'test'])
+                    ->middleware('check.menu.edit:settings.systems.logs')
+                    ->name('logs.test');
+                Route::post('/logs/files/test-error', [Systems\AdminSystemLogsController::class, 'testError'])
+                    ->middleware('check.menu.edit:settings.systems.logs')
+                    ->name('logs.test-error');
+                Route::post('/logs/files/test-front', [Systems\AdminSystemLogsController::class, 'testFront'])
+                    ->middleware('check.menu.edit:settings.systems.logs')
+                    ->name('logs.test-front');
+                Route::post('/logs/files/test-front-error', [Systems\AdminSystemLogsController::class, 'testFrontError'])
+                    ->middleware('check.menu.edit:settings.systems.logs')
+                    ->name('logs.test-front-error');
+                Route::get('/logs/audit/{id}', [Systems\AdminSystemLogsController::class, 'show'])
+                    ->middleware('check.menu.access:settings.systems.logs')
+                    ->name('logs.audit.show');
+                Route::get('/logs/audit-export', [Systems\AdminSystemLogsController::class, 'auditExport'])
+                    ->middleware('check.menu.access:settings.systems.logs')
+                    ->name('logs.audit.export');
                 Route::post('/logs/audit/cleanup', [Systems\AdminSystemLogsController::class, 'auditCleanup'])
-                    ->middleware('check.menu.edit:settings.systems')
+                    ->middleware('check.menu.edit:settings.systems.logs')
                     ->name('logs.audit.cleanup');
 
-                // システム情報
-                Route::get('/info', [Systems\AdminSystemInfoController::class, 'index'])->name('info');
+                // システム情報（かんたんモード: ReadOnly）
+                Route::get('/info', [Systems\AdminSystemInfoController::class, 'index'])
+                    ->middleware('check.menu.access:settings.systems.info')
+                    ->name('info');
             });
 
             // ログアウト

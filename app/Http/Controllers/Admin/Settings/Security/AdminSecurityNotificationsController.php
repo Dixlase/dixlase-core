@@ -24,6 +24,7 @@ namespace App\Http\Controllers\Admin\Settings\Security;
 
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Enums\LogLevel;
+use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\BaseSetting;
 
@@ -72,6 +73,7 @@ class AdminSecurityNotificationsController extends AdminLoggedInController
         $this->viewParams['mailSendTested'] = $mailSendTested;
         $this->viewParams['mailReceiveTested'] = $mailReceiveTested;
         $this->viewParams['hasSystemAdminEmail'] = $hasSystemAdminEmail;
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.notifications');
 
         return view('admin.settings.security.notifications', $this->viewParams);
     }

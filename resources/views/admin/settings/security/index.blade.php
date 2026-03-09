@@ -22,10 +22,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
+    @if($modeData['isReadOnly'] ?? false)
+        <x-admin.mode-readonly-banner />
+    @endif
 
     <!-- セキュリティステータスカード -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         <!-- パスワード -->
+        @if($subPageVisible['password'] ?? true)
         <a href="{{ route('admin.settings.security.password') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
@@ -38,8 +42,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p>{{ __('admin/settings/security/index.password_security') }}</p>
             </div>
         </a>
+        @endif
 
         <!-- ログイン試行制限 -->
+        @if($subPageVisible['login'] ?? true)
         <a href="{{ route('admin.settings.security.login') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
@@ -52,8 +58,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p>{{ __('admin/settings/security/index.login_attempt_desc') }}</p>
             </div>
         </a>
+        @endif
 
         <!-- 二段階認証設定 -->
+        @if($subPageVisible['two-fa'] ?? true)
         <a href="{{ route('admin.settings.security.two-fa') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
@@ -66,8 +74,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p>{{ __('admin/settings/security/index.two_fa_desc') }}</p>
             </div>
         </a>
+        @endif
 
         <!-- CAPTCHA -->
+        @if($subPageVisible['captcha'] ?? true)
         <a href="{{ route('admin.settings.security.captcha') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
@@ -94,8 +104,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
         </a>
+        @endif
 
         <!-- セッション -->
+        @if($subPageVisible['session'] ?? true)
         <a href="{{ route('admin.settings.security.session') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
@@ -108,8 +120,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p>{{ __('admin/settings/security/index.session_driver') }}: <span class="font-medium">{{ $sessionDriver }}</span></p>
             </div>
         </a>
+        @endif
 
         <!-- 通知 -->
+        @if($subPageVisible['notifications'] ?? true)
         <a href="{{ route('admin.settings.security.notifications') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
@@ -136,8 +150,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
         </a>
+        @endif
 
         <!-- CSP -->
+        @if($subPageVisible['csp'] ?? true)
         <a href="{{ route('admin.settings.security.csp') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
@@ -158,8 +174,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
         </a>
+        @endif
 
         <!-- 拡張機能 -->
+        @if($subPageVisible['extensions'] ?? true)
         <a href="{{ route('admin.settings.security.extensions') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
@@ -172,8 +190,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{ __('admin/settings/security/index.extensions_desc') }}
             </div>
         </a>
+        @endif
 
         <!-- IPアクセス制御 -->
+        @if($subPageVisible['ip'] ?? true)
         <a href="{{ route('admin.settings.security.ip') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
@@ -194,8 +214,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
         </a>
+        @endif
 
         <!-- ファイル整合性 -->
+        @if($subPageVisible['integrity'] ?? true)
         <a href="{{ route('admin.settings.security.integrity') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
@@ -230,8 +252,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
         </a>
+        @endif
 
         <!-- 環境設定 -->
+        @if($subPageVisible['environment'] ?? true)
         <a href="{{ route('admin.settings.security.environment') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
@@ -251,10 +275,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
         </a>
+        @endif
     </div>
 
     <!-- 最新のファイル整合性スキャン結果 -->
-    @if($latestIntegrityAudit)
+    @if(($subPageVisible['integrity'] ?? true) && $latestIntegrityAudit)
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ __('admin/settings/security/index.latest_integrity_scan') }}</h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">

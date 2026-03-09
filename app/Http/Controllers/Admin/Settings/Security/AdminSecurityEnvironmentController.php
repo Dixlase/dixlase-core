@@ -23,6 +23,7 @@
 namespace App\Http\Controllers\Admin\Settings\Security;
 
 use App\Enums\AppEnvironment;
+use App\Helpers\AdminModeHelper;
 use App\Helpers\EnvHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Security\AdminSecurityEnvironmentUpdateRequest;
@@ -47,6 +48,7 @@ class AdminSecurityEnvironmentController extends AdminLoggedInController
             'staging' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
             'production' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
         ];
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.environment');
 
         return view('admin.settings.security.environment', $this->viewParams);
     }

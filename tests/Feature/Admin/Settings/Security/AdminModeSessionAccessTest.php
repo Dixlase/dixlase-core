@@ -29,7 +29,6 @@ use App\Helpers\AdminModeHelper;
 use App\Helpers\ConfigHelper;
 use App\Models\BaseSetting;
 use App\Models\Member;
-use App\Models\SecuritySetting;
 use App\Services\AdminModeAutoConfigService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -178,7 +177,7 @@ class AdminModeSessionAccessTest extends TestCase
         ConfigHelper::setSessionEncrypt(true);
 
         // 自動設定を適用
-        $service = new AdminModeAutoConfigService();
+        $service = app(AdminModeAutoConfigService::class);
         $service->applySessionDefaults();
 
         // デフォルト値に戻っていることを確認
@@ -188,7 +187,7 @@ class AdminModeSessionAccessTest extends TestCase
 
     public function test_auto_config_service_apply_all_returns_results(): void
     {
-        $service = new AdminModeAutoConfigService();
+        $service = app(AdminModeAutoConfigService::class);
         $results = $service->applyAll();
 
         $this->assertIsArray($results);

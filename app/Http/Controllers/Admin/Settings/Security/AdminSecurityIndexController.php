@@ -24,6 +24,8 @@ namespace App\Http\Controllers\Admin\Settings\Security;
 
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Enums\CspMode;
+use App\Enums\MenuVisibility;
+use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\BaseSetting;
 use App\Models\FileIntegrityAudit;
@@ -107,6 +109,16 @@ class AdminSecurityIndexController extends AdminLoggedInController
             'staging' => 'fa-flask',
             'production' => 'fa-server',
         ];
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.index');
+
+        // サブページの表示可否を判定（Hiddenのサブページはカード非表示）
+        $subPageKeys = ['password', 'login', 'two-fa', 'captcha', 'session', 'notifications', 'csp', 'extensions', 'ip', 'integrity', 'environment'];
+        $subPageVisible = [];
+        foreach ($subPageKeys as $key) {
+            $visibility = AdminModeHelper::getMenuVisibility("settings.security.{$key}");
+            $subPageVisible[$key] = $visibility !== MenuVisibility::Hidden;
+        }
+        $this->viewParams['subPageVisible'] = $subPageVisible;
 
         return view('admin.settings.security.index', $this->viewParams);
     }

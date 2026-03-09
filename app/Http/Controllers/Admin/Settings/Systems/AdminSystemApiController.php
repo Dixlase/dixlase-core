@@ -23,6 +23,7 @@
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
 use App\Contracts\Repositories\ApiSettingRepositoryInterface;
+use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Systems\AdminSystemApiGenerateKeyRequest;
 use App\Http\Requests\Admin\Settings\Systems\AdminSystemApiUpdateRequest;
@@ -94,6 +95,7 @@ class AdminSystemApiController extends AdminLoggedInController
         $this->viewParams['settings'] = $settings;
         $this->viewParams['availableScopes'] = $availableScopes;
         $this->viewParams['apiConfig'] = $apiConfig;
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.api');
 
         return view('admin/settings/systems/api.index', $this->viewParams);
     }

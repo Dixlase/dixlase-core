@@ -202,6 +202,35 @@ class AdminModeHelper
     }
 
     /**
+     * ビュー用のモード関連データを一括取得
+     *
+     * コントローラーからビューへ渡すモードデータをまとめて返す。
+     * 返却キー:
+     *   - isSimpleMode: かんたんモードかどうか
+     *   - visibility: MenuVisibility enum値（int）
+     *   - isEditable: 編集可能か（Full/Partial）
+     *   - isReadOnly: 読み取り専用か
+     *   - isGuideOnly: 導線のみか
+     *   - isPartial: Partialモードか（一部フィールド制限あり）
+     *
+     * @param  string  $menuKey  ドット記法のメニューキー
+     * @return array{isSimpleMode: bool, visibility: int, isEditable: bool, isReadOnly: bool, isGuideOnly: bool, isPartial: bool}
+     */
+    public static function getViewModeData(string $menuKey): array
+    {
+        $visibility = self::getMenuVisibility($menuKey);
+
+        return [
+            'isSimpleMode' => self::isSimpleMode(),
+            'visibility' => $visibility->value,
+            'isEditable' => $visibility === MenuVisibility::Full || $visibility === MenuVisibility::Partial,
+            'isReadOnly' => $visibility === MenuVisibility::ReadOnly,
+            'isGuideOnly' => $visibility === MenuVisibility::GuideOnly,
+            'isPartial' => $visibility === MenuVisibility::Partial,
+        ];
+    }
+
+    /**
      * キャッシュをクリア
      */
     public static function clearCache(): void

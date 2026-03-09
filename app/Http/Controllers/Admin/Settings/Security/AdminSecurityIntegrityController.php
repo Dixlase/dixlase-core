@@ -23,6 +23,7 @@
 namespace App\Http\Controllers\Admin\Settings\Security;
 
 use App\DTO\FileIntegrity\ScanTargetDTO;
+use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\FileIntegrityAudit;
 use App\Services\FileIntegrityService;
@@ -67,6 +68,7 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
         $this->viewParams['baselineMeta'] = $baselineMeta;
         $this->viewParams['recentAudits'] = $recentAudits;
         $this->addIntegrityConstants();
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.integrity');
 
         return view('admin.settings.security.integrity', $this->viewParams);
     }

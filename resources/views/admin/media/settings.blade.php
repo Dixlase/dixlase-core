@@ -21,6 +21,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
+    @if($modeData['isPartial'] ?? false)
+        <x-admin.mode-partial-notice />
+    @endif
+
     <form id="media-settings-form" action="{{ route('admin.media.settings.update') }}" method="POST" 
           x-data="{ 
               showZipSettings: {{ ($securitySettings['zip_security_enabled'] ?? true) ? 'true' : 'false' }},

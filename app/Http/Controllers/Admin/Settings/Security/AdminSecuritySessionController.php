@@ -22,9 +22,9 @@
 
 namespace App\Http\Controllers\Admin\Settings\Security;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Helpers\AdminModeHelper;
 use App\Helpers\ConfigHelper;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Security\AdminSecuritySessionUpdateRequest;
 
 class AdminSecuritySessionController extends AdminLoggedInController
@@ -45,6 +45,7 @@ class AdminSecuritySessionController extends AdminLoggedInController
         ];
 
         $this->viewParams['settings'] = $settings;
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.session');
 
         return view('admin.settings.security.session', $this->viewParams);
     }
