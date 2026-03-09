@@ -58,7 +58,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- Admin Bar (Header) -->
             <x-ui-admin-bar :isAdminLayout="true" />
 
-            <div class="min-h-screen flex relative pt-2">
+            <div class="min-h-screen flex relative pt-12">
                 <!-- Navigation Sidebar (Desktop only) -->
                 <aside class="md:fixed md:top-12 md:bottom-0 hidden sm:block w-64 flex-shrink-0 border-gray-300 @if($transitionEnabled ?? false) transition-all duration-[300ms] @else transition-transform duration-300 @endif"
                        :class="{
@@ -136,7 +136,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                       role="main">
 
                     <!-- Page Header -->
-                    <header class="mx-auto pt-4 pb-5 px-8 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white @if($transitionEnabled ?? false) transition-colors duration-[500ms] @endif">
+                    <header class="mx-auto pt-6 pb-6 px-8 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white @if($transitionEnabled ?? false) transition-colors duration-[500ms] @endif">
                         <h1 class="font-semibold text-xl leading-tight text-gray-800 dark:text-white">
                             {{ __($heading) }}
                         </h1>

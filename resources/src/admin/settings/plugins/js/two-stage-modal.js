@@ -158,6 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // スピナー表示、ボタン非表示
         stage1Buttons.classList.add('hidden');
         stage1Spinner.classList.remove('hidden');
+        setModalTitle('pluginActionStage1Modal', ts.stage1Scanning || '');
         stage1Message.textContent = ts.stage1ScanningDescription || '';
 
         // submitting=true でモーダルを閉じられないようにする

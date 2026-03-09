@@ -130,14 +130,19 @@ class PluginHealthScorerTest extends TestCase
     /**
      * 権限未定義の場合はNotVerifiedを返すテスト
      */
-    public function test_undefined_permissions_returns_not_verified(): void
+    public function test_undefined_permissions_deducts_points_and_continues(): void
     {
         $this->permissionService
             ->shouldReceive('getPermissions')
             ->with('test-plugin')
             ->andReturn(null);
 
-        // 監査結果は存在するが、permissionsがnull → NotVerified
+        $this->permissionService
+            ->shouldReceive('getSignatureInfo')
+            ->with('test-plugin')
+            ->andReturn(['status' => 'valid']);
+
+        // 監査結果は存在するが、permissionsがnull → 減点して評価継続
         PluginAudit::saveAuditResult('test-plugin', [
             'has_mismatches' => false,
             'mismatches' => [],
@@ -147,13 +152,13 @@ class PluginHealthScorerTest extends TestCase
 
         $result = $this->scorer->calculate('test-plugin');
 
-        // permissions null → 即 NotVerified（score=0）
-        $this->assertEquals(0, $result->score);
-        $this->assertEquals(PluginHealthStatus::NotVerified, $result->status);
+        // permissions null → 減点(-10)して評価継続、NotVerifiedにはならない
+        $this->assertGreaterThan(0, $result->score);
+        $this->assertNotEquals(PluginHealthStatus::NotVerified, $result->status);
         $this->assertFalse($result->hasCriticalIssue);
 
         $types = array_map(fn ($i) => $i->type, $result->issues);
-        $this->assertContains('not_verified_no_permissions', $types);
+        $this->assertContains('permission_undefined', $types);
     }
 
     /**
@@ -557,16 +562,21 @@ class PluginHealthScorerTest extends TestCase
     }
 
     /**
-     * permissions未定義の場合はNotVerifiedを返すテスト
+     * permissions未定義の場合は減点して評価継続するテスト
      */
-    public function test_not_verified_when_no_permissions(): void
+    public function test_permission_undefined_deduction_when_no_permissions(): void
     {
         $this->permissionService
             ->shouldReceive('getPermissions')
             ->with('test-plugin')
             ->andReturn(null);
 
-        // 監査は存在するがpermissions null → NotVerified
+        $this->permissionService
+            ->shouldReceive('getSignatureInfo')
+            ->with('test-plugin')
+            ->andReturn(['status' => 'valid']);
+
+        // 監査は存在するがpermissions null → 減点して評価継続
         PluginAudit::saveAuditResult('test-plugin', [
             'has_mismatches' => false,
             'mismatches' => [],
@@ -576,12 +586,13 @@ class PluginHealthScorerTest extends TestCase
 
         $result = $this->scorer->calculate('test-plugin');
 
-        $this->assertEquals(0, $result->score);
-        $this->assertEquals(PluginHealthStatus::NotVerified, $result->status);
-        $this->assertTrue($result->isNotVerified());
+        // NotVerifiedではなく、減点(-10)して他の評価も継続
+        $this->assertGreaterThan(0, $result->score);
+        $this->assertNotEquals(PluginHealthStatus::NotVerified, $result->status);
+        $this->assertFalse($result->isNotVerified());
 
         $types = array_map(fn ($i) => $i->type, $result->issues);
-        $this->assertContains('not_verified_no_permissions', $types);
+        $this->assertContains('permission_undefined', $types);
     }
 
     // ====================================================================

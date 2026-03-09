@@ -82,28 +82,26 @@ class PluginHealthScorer
             );
         }
 
-        if ($permissions === null) {
-            return new HealthScoreResult(
-                score: 0,
-                status: PluginHealthStatus::NotVerified,
-                issues: [new HealthIssue(
-                    type: 'not_verified_no_permissions',
-                    severity: 'warning',
-                    description: 'permissions セクションが未定義です。',
-                    deduction: 0,
-                )],
-                hasCriticalIssue: false,
-            );
-        }
-
         $deductionRules = PluginHealthStatus::getDeductionRules();
         $issues = [];
+
+        // permissions セクションが未定義の場合は減点して評価継続
+        if ($permissions === null) {
+            $issues[] = new HealthIssue(
+                type: 'permission_undefined',
+                severity: 'warning',
+                description: 'permissions セクションが未定義です。',
+                deduction: $deductionRules['permission_undefined'] ?? -10,
+            );
+        }
 
         // 1. 署名検証の評価
         $issues = array_merge($issues, $this->evaluateSignature($pluginSlug, $deductionRules));
 
-        // 2. 権限整合性の評価
-        $issues = array_merge($issues, $this->evaluatePermissions($pluginSlug, $deductionRules));
+        // 2. 権限整合性の評価（permissions 未定義時はスキップ）
+        if ($permissions !== null) {
+            $issues = array_merge($issues, $this->evaluatePermissions($pluginSlug, $deductionRules));
+        }
 
         // 3. CSP適合性の評価
         $issues = array_merge($issues, $this->evaluateCsp($pluginSlug, $deductionRules));
