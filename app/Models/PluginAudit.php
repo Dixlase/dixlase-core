@@ -42,6 +42,8 @@ class PluginAudit extends Model
         'csp_status',
         'csp_requires_inline_js',
         'csp_requires_inline_css',
+        'csp_violations',
+        'csp_summary',
         'audited_at',
     ];
 
@@ -52,6 +54,8 @@ class PluginAudit extends Model
         'health_score' => 'integer',
         'csp_requires_inline_js' => 'boolean',
         'csp_requires_inline_css' => 'boolean',
+        'csp_violations' => 'array',
+        'csp_summary' => 'array',
         'audited_at' => 'datetime',
     ];
 
@@ -85,6 +89,8 @@ class PluginAudit extends Model
                 'csp_status' => $result['csp_status'] ?? null,
                 'csp_requires_inline_js' => $result['csp_requires_inline_js'] ?? false,
                 'csp_requires_inline_css' => $result['csp_requires_inline_css'] ?? false,
+                'csp_violations' => $result['csp_violations'] ?? [],
+                'csp_summary' => $result['csp_summary'] ?? [],
                 'audited_at' => now(),
             ]
         );
@@ -110,6 +116,8 @@ class PluginAudit extends Model
             'csp_status' => $this->csp_status,
             'csp_requires_inline_js' => $this->csp_requires_inline_js,
             'csp_requires_inline_css' => $this->csp_requires_inline_css,
+            'csp_violations' => $this->csp_violations ?? [],
+            'csp_summary' => $this->csp_summary ?? [],
             'audited_at' => $this->audited_at?->toDateTimeString(),
         ];
     }

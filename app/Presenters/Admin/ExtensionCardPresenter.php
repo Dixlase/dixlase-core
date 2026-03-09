@@ -166,8 +166,11 @@ class ExtensionCardPresenter
             $cspCompatibility = [
                 'status' => $auditResult['csp_status'],
                 'requires_inline_js' => $auditResult['csp_requires_inline_js'] ?? false,
+                'requires_inline_css' => $auditResult['csp_requires_inline_css'] ?? false,
                 'has_csp_config' => $cspCompatibility['has_csp_config'] ?? false,
                 'csp_ready' => ! ($auditResult['csp_requires_inline_js'] ?? false),
+                'violations' => $auditResult['csp_violations'] ?? [],
+                'summary' => $auditResult['csp_summary'] ?? [],
             ];
         }
         $auditedAtFormatted = $auditedAt ? Carbon::parse($auditedAt)->format('Y/m/d H:i') : null;
@@ -601,7 +604,9 @@ class ExtensionCardPresenter
                 'matches_count' => $auditResult['matches_count'] ?? 0,
                 'csp_status' => $cspStatusMap[$cspStatus] ?? $cspStatus,
                 'csp_requires_inline_js' => $cspCompatibility['requires_inline_js'] ?? false,
-                'csp_requires_inline_css' => false,
+                'csp_requires_inline_css' => $cspCompatibility['requires_inline_css'] ?? false,
+                'csp_violations' => $cspCompatibility['violations'] ?? [],
+                'csp_summary' => $cspCompatibility['summary'] ?? [],
             ],
             'healthScore' => $healthScore,
             'healthStatus' => $healthStatus ?? 'not_verified',

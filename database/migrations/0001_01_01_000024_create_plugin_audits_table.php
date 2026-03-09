@@ -54,6 +54,10 @@ return new class extends Migration
                 ->comment('インラインJSが必要か');
             $table->boolean('csp_requires_inline_css')->default(false)
                 ->comment('インラインCSSが必要か');
+            $table->json('csp_violations')->nullable()
+                ->comment('CSP違反の詳細リスト');
+            $table->json('csp_summary')->nullable()
+                ->comment('CSP違反のサマリー（カテゴリ別件数）');
 
             // 健全性スコア
             $table->integer('health_score')->nullable()->comment('健全性スコア（0-100）');

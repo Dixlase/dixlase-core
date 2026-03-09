@@ -213,9 +213,9 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 $summary = $permissionService->getSummary($pluginSlug);
                 $signature = $summary['signature'] ?? [];
 
-                // CSP情報を取得
-                $cspLoader = app(\App\Services\Csp\CspExtensionLoader::class);
-                $cspCompatibility = $cspLoader->getCspCompatibility('plugin', $pluginSlug);
+                // CSP準拠状況をコードスキャンで検証
+                $cspScanner = app(\App\Services\Csp\CspComplianceScanner::class);
+                $cspCompatibility = $cspScanner->scanPlugin($pluginSlug);
 
                 // ファイルハッシュを算出（再スキャン判定用）
                 $filesHash = app(PluginHealthScorer::class)->computeFilesHash($pluginSlug);
@@ -232,6 +232,8 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                     'csp_status' => $cspCompatibility['status'] ?? 'not_checked',
                     'csp_requires_inline_js' => $cspCompatibility['requires_inline_js'] ?? false,
                     'csp_requires_inline_css' => $cspCompatibility['requires_inline_css'] ?? false,
+                    'csp_violations' => $cspCompatibility['violations'] ?? [],
+                    'csp_summary' => $cspCompatibility['summary'] ?? [],
                     'files_hash' => $filesHash,
                 ];
 

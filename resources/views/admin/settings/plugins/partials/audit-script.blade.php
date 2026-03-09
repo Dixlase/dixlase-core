@@ -107,10 +107,19 @@ https://exc-d.com
         ],
         'cspLabels' => [
             'title' => __('admin/settings/plugins/index.permissions.csp_status'),
+            'sectionLabel' => __('admin/settings/plugins/index.permissions.csp_section_label'),
             'compliant' => __('admin/settings/plugins/index.permissions.csp_compliant'),
             'notCompliant' => __('admin/settings/plugins/index.permissions.csp_not_compliant'),
             'inlineScripts' => __('admin/settings/plugins/index.permissions.csp_inline_scripts'),
             'inlineStyles' => __('admin/settings/plugins/index.permissions.csp_inline_styles'),
+            'eventHandlers' => __('admin/settings/plugins/index.permissions.csp_event_handlers'),
+            'javascriptUrls' => __('admin/settings/plugins/index.permissions.csp_javascript_urls'),
+            'violationTypes' => [
+                'inline_script' => __('admin/settings/plugins/index.permissions.csp_violation_inline_script'),
+                'inline_style' => __('admin/settings/plugins/index.permissions.csp_violation_inline_style'),
+                'event_handler' => __('admin/settings/plugins/index.permissions.csp_violation_event_handler'),
+                'javascript_url' => __('admin/settings/plugins/index.permissions.csp_violation_javascript_url'),
+            ],
         ],
         'permissionCategoriesTitle' => __('admin/settings/plugins/index.permissions.permission_info'),
         'categoryLabels' => [
