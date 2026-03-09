@@ -31,6 +31,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
+        {{-- FOUC防止: CSSやAlpine.jsの読み込み前に即座にダークモードクラスを適用 --}}
+        <script @cspNonce>
+            (function(){
+                var a='{{ $appearance }}';
+                var d=a==='2'||(a==='0'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.classList.add(d?'dark':'light');
+            })();
+        </script>
+
         <title>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Fonts -->
@@ -186,6 +195,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </div>
                         </div>
                     @endif
+
+                {{-- モバイル時の右サイドバーオーバーレイ --}}
+                <div x-show="!rightSidebarCollapsed"
+                     @click="rightSidebarCollapsed = true"
+                     x-cloak
+                     class="fixed inset-0 bg-black/50 dark:bg-black/60 z-40 lg:hidden"
+                     aria-hidden="true"></div>
 
                 </main>
             </div>
