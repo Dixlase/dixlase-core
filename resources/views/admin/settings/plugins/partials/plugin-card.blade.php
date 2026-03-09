@@ -90,20 +90,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center gap-2">
                 <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/plugins/index.badge_labels.signature') }}</span>
                 @if($card['signatureStatus'] === 'valid' || $card['signatureStatus'] === 'pending_verification')
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    <button type="button"
+                            class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 cursor-pointer hover:opacity-80 transition-opacity"
+                            @click="openModal('{{ $card['permissionModalId'] }}')">
                         <i class="fas fa-check-circle mr-1"></i>
                         {{ __('admin/settings/plugins/index.verification.signature_valid') }}
-                    </span>
+                        <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
+                    </button>
                 @elseif($card['signatureStatus'] === 'invalid')
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                    <button type="button"
+                            class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 cursor-pointer hover:opacity-80 transition-opacity"
+                            @click="openModal('{{ $card['permissionModalId'] }}')">
                         <i class="fas fa-times-circle mr-1"></i>
                         {{ __('admin/settings/plugins/index.verification.signature_invalid') }}
-                    </span>
+                        <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
+                    </button>
                 @else
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                    <button type="button"
+                            class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 cursor-pointer hover:opacity-80 transition-opacity"
+                            @click="openModal('{{ $card['permissionModalId'] }}')">
                         <i class="fas fa-file-signature mr-1"></i>
                         {{ __('admin/settings/plugins/index.verification.signature_unsigned') }}
-                    </span>
+                        <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
+                    </button>
                 @endif
             </div>
 
@@ -112,21 +121,31 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/plugins/index.badge_labels.permission') }}</span>
                 @if($card['hasPermissions'])
                     @if($card['hasMismatches'])
-                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" title="{{ __('admin/settings/plugins/index.permissions.audit_mismatch_warning') }}">
+                        <button type="button"
+                                class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 cursor-pointer hover:opacity-80 transition-opacity"
+                                title="{{ __('admin/settings/plugins/index.permissions.audit_mismatch_warning') }}"
+                                @click="openModal('{{ $card['permissionModalId'] }}')">
                             <i class="fas fa-code-branch mr-1"></i>
                             {{ __('admin/settings/plugins/index.verification.permission_mismatch') }}
-                        </span>
+                            <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
+                        </button>
                     @else
-                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                        <button type="button"
+                                class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 cursor-pointer hover:opacity-80 transition-opacity"
+                                @click="openModal('{{ $card['permissionModalId'] }}')">
                             <i class="fas fa-check-circle mr-1"></i>
                             {{ __('admin/settings/plugins/index.verification.permission_ok') }}
-                        </span>
+                            <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
+                        </button>
                     @endif
                 @else
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                    <button type="button"
+                            class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 cursor-pointer hover:opacity-80 transition-opacity"
+                            @click="openModal('{{ $card['permissionModalId'] }}')">
                         <i class="fas fa-question-circle mr-1"></i>
                         {{ __('admin/settings/plugins/index.verification.permission_undefined') }}
-                    </span>
+                        <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
+                    </button>
                 @endif
             </div>
 
@@ -134,20 +153,31 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center gap-2">
                 <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/plugins/index.badge_labels.csp') }}</span>
                 @if($card['cspCompatibility']['status'] === 'csp_ready' || $card['cspCompatibility']['status'] === 'compatible')
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" title="{{ __('admin/settings/plugins/index.csp.ready_tooltip') }}">
+                    <button type="button"
+                            class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 cursor-pointer hover:opacity-80 transition-opacity"
+                            title="{{ __('admin/settings/plugins/index.csp.ready_tooltip') }}"
+                            @click="openModal('{{ $card['permissionModalId'] }}')">
                         <i class="fas fa-shield-alt mr-1"></i>
                         {{ __('admin/settings/plugins/index.verification.csp_ready') }}
-                    </span>
+                        <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
+                    </button>
                 @elseif($card['cspCompatibility']['requires_inline_js'])
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" title="{{ __('admin/settings/plugins/index.csp.inline_required_tooltip') }}">
+                    <button type="button"
+                            class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 cursor-pointer hover:opacity-80 transition-opacity"
+                            title="{{ __('admin/settings/plugins/index.csp.inline_required_tooltip') }}"
+                            @click="openModal('{{ $card['permissionModalId'] }}')">
                         <i class="fas fa-exclamation-triangle mr-1"></i>
                         {{ __('admin/settings/plugins/index.verification.csp_inline_required') }}
-                    </span>
+                        <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
+                    </button>
                 @else
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                    <button type="button"
+                            class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 cursor-pointer hover:opacity-80 transition-opacity"
+                            @click="openModal('{{ $card['permissionModalId'] }}')">
                         <i class="fas fa-question mr-1"></i>
                         {{ __('admin/settings/plugins/index.verification.csp_not_checked') }}
-                    </span>
+                        <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
+                    </button>
                 @endif
             </div>
 

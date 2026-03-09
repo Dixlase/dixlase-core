@@ -89,6 +89,12 @@ export function buildUnifiedScanResultHtml(scanData, config) {
 
     html += '</div>';
 
+    // 権限カテゴリ（APIレスポンスのcategoriesから表示）
+    const categoriesHtml = buildCategoriesSection(scanData.categories, config);
+    if (categoriesHtml) {
+        html += categoriesHtml;
+    }
+
     // 統計情報
     html += `
         <div class="text-xs text-gray-500 dark:text-gray-400">
@@ -253,6 +259,46 @@ function buildCspSection(audit, labels) {
         if (issues.length > 0) {
             html += `<p class="text-xs mt-1 ${style.text}"><i class="fas fa-info-circle mr-1"></i>${issues.join(', ')}</p>`;
         }
+    }
+
+    html += '</div>';
+    return html;
+}
+
+/**
+ * 権限カテゴリセクションのHTMLを生成
+ *
+ * @param {object|null} categories - カテゴリ別権限オブジェクト（例: { database: ['own_tables'], system: ['register_shortcodes'] }）
+ * @param {object} config - 設定オブジェクト
+ * @returns {string} HTMLまたは空文字列（カテゴリがない場合）
+ */
+function buildCategoriesSection(categories, config) {
+    if (!categories || Object.keys(categories).length === 0) return '';
+
+    const categoryLabels = config.categoryLabels || {};
+    const permissionLabels = config.permissionLabels || {};
+
+    let html = `
+        <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 mt-3">
+            <i class="fas fa-key mr-1"></i>
+            ${config.permissionCategoriesTitle || ''}
+        </p>
+        <div class="space-y-2">
+    `;
+
+    for (const [category, permissions] of Object.entries(categories)) {
+        const catLabel = categoryLabels[category] || category;
+        const permBadges = (permissions || []).map(perm => {
+            const permLabel = permissionLabels[perm] || perm;
+            return `<span class="inline-block bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded text-xs">${permLabel}</span>`;
+        }).join('');
+
+        html += `
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-2 last:border-0">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">${catLabel}:</span>
+                <div class="mt-1 flex flex-wrap gap-1">${permBadges}</div>
+            </div>
+        `;
     }
 
     html += '</div>';

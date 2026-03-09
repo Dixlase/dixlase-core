@@ -307,6 +307,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             ))
             : [];
 
+        // 権限カテゴリ情報を取得
+        $permissionService = app(PluginPermissionService::class);
+        $summary = $permissionService->getSummary($slug);
+        $categories = $summary['categories'] ?? [];
+
         return response()->json([
             'success' => true,
             'message' => __('admin/settings/plugins/index.audit.completed'),
@@ -317,6 +322,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             'healthScore' => $healthScore,
             'healthStatus' => $healthStatus,
             'healthIssues' => $healthIssues,
+            'categories' => $categories,
         ]);
     }
 
