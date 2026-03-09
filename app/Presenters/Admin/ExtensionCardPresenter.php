@@ -108,9 +108,9 @@ class ExtensionCardPresenter
             'auditedAtFormatted' => $auditedAtFormatted,
             'categories' => $permissionSummary['categories'] ?? [],
             'attentionReasons' => $permissionSummary['risk_reasons'] ?? [],
-            'healthColors' => self::getHealthColors(),
-            'healthIcons' => self::getHealthIcons(),
-            'healthLabels' => self::getHealthLabels(),
+            'healthStatusColors' => self::getHealthStatusColors(),
+            'healthStatusIcons' => self::getHealthStatusIcons(),
+            'healthStatusLabelKeys' => self::getHealthStatusLabelKeys(),
             'enableWarnings' => $enableWarnings,
             'hasEnableWarnings' => ! empty($enableWarnings),
             'enableModalId' => $isModel ? 'enableThemeModal-'.$theme->id : null,
@@ -155,8 +155,6 @@ class ExtensionCardPresenter
             ? ($plugin->permission_summary ?? null)
             : ($plugin['permission_summary'] ?? null);
 
-        $badge = self::computeBadge($permissionSummary, 'admin/settings/plugins/index');
-
         $cspCompatibility = $isModel ? ($plugin->csp_compatibility ?? []) : ($plugin['csp_compatibility'] ?? []);
         $cspDiagnostic = $isModel ? ($plugin->csp_diagnostic ?? null) : ($plugin['csp_diagnostic'] ?? null);
 
@@ -179,7 +177,7 @@ class ExtensionCardPresenter
         $enableWarnings = $isModel ? self::computePluginEnableWarnings($plugin, $permissionSummary) : [];
         $installWarnings = ! $isModel ? self::computeInstallWarnings($permissionSummary, 'admin/settings/plugins/index') : [];
 
-        // 有効化ポリシーと健全性スコアを算出
+        // 有効化ポリシーと健全性スコアを算出（computeBadgeより先に実行）
         $enableAction = PluginEnableAction::Allowed;
         $healthScore = null;
         $healthStatus = null;
@@ -200,6 +198,8 @@ class ExtensionCardPresenter
         } catch (\Exception $e) {
             // 算出失敗時はデフォルト値を維持
         }
+
+        $badge = self::computeBadge($permissionSummary, 'admin/settings/plugins/index', $healthStatus);
 
         if ($isModel) {
             // 署名情報からTrustLevelを算出
@@ -243,9 +243,9 @@ class ExtensionCardPresenter
             'auditedAtFormatted' => $auditedAtFormatted,
             'categories' => $permissionSummary['categories'] ?? [],
             'attentionReasons' => $permissionSummary['risk_reasons'] ?? [],
-            'healthColors' => self::getHealthColors(),
-            'healthIcons' => self::getHealthIcons(),
-            'healthLabels' => self::getHealthLabels(),
+            'healthStatusColors' => self::getHealthStatusColors(),
+            'healthStatusIcons' => self::getHealthStatusIcons(),
+            'healthStatusLabelKeys' => self::getHealthStatusLabelKeys(),
             'enableWarnings' => $enableWarnings,
             'hasEnableWarnings' => ! empty($enableWarnings),
             'enableModalId' => $isModel ? 'enableModal-'.$plugin->id : null,
@@ -266,38 +266,47 @@ class ExtensionCardPresenter
     }
 
     /**
+     * 健全性ステータスに基づくバッジカラーを返す
+     *
      * @return array<string, string>
      */
-    private static function getHealthColors(): array
+    private static function getHealthStatusColors(): array
     {
         return [
-            'low' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-            'medium' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-            'high' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+            'healthy' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+            'advisory' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+            'needs_attention' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+            'not_verified' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
         ];
     }
 
     /**
+     * 健全性ステータスに基づくバッジアイコンを返す
+     *
      * @return array<string, string>
      */
-    private static function getHealthIcons(): array
+    private static function getHealthStatusIcons(): array
     {
         return [
-            'low' => 'fas fa-check-circle',
-            'medium' => 'fas fa-info-circle',
-            'high' => 'fas fa-exclamation-circle',
+            'healthy' => 'fas fa-check-circle',
+            'advisory' => 'fas fa-info-circle',
+            'needs_attention' => 'fas fa-exclamation-circle',
+            'not_verified' => 'fas fa-question-circle',
         ];
     }
 
     /**
+     * 健全性ステータスに基づくバッジラベルキーを返す
+     *
      * @return array<string, string>
      */
-    private static function getHealthLabels(): array
+    private static function getHealthStatusLabelKeys(): array
     {
         return [
-            'low' => 'health_healthy',
-            'medium' => 'health_warning',
-            'high' => 'health_needs_attention',
+            'healthy' => 'health_status_healthy',
+            'advisory' => 'health_status_advisory',
+            'needs_attention' => 'health_status_needs_attention',
+            'not_verified' => 'health_status_not_verified',
         ];
     }
 
@@ -307,7 +316,7 @@ class ExtensionCardPresenter
      * @param  array<string, mixed>|null  $permissionSummary
      * @return array{hasPermissions: bool, riskLevel: string, signature: array<string, mixed>, signatureStatus: string, hasMismatches: bool, badgeColor: string, badgeIcon: string, badgeLabel: string}
      */
-    private static function computeBadge(?array $permissionSummary, string $translationPrefix): array
+    private static function computeBadge(?array $permissionSummary, string $translationPrefix, ?string $healthStatus = null): array
     {
         $hasPermissions = $permissionSummary['has_permissions'] ?? false;
         $riskLevel = $permissionSummary['risk_level'] ?? 'unknown';
@@ -341,12 +350,14 @@ class ExtensionCardPresenter
             $badgeIcon = 'fas fa-times-circle';
             $badgeLabel = __($translationPrefix.'.permissions.signature_invalid');
         } elseif ($hasPermissions) {
-            $healthColors = self::getHealthColors();
-            $healthIcons = self::getHealthIcons();
-            $healthLabels = self::getHealthLabels();
-            $badgeColor = $healthColors[$riskLevel] ?? $healthColors['low'];
-            $badgeIcon = $healthIcons[$riskLevel] ?? $healthIcons['low'];
-            $badgeLabel = __($translationPrefix.'.permissions.'.($healthLabels[$riskLevel] ?? 'health_healthy'));
+            // 健全性ステータスに基づくバッジ表示（新システム）
+            $statusColors = self::getHealthStatusColors();
+            $statusIcons = self::getHealthStatusIcons();
+            $statusLabelKeys = self::getHealthStatusLabelKeys();
+            $status = $healthStatus ?? 'not_verified';
+            $badgeColor = $statusColors[$status] ?? $statusColors['not_verified'];
+            $badgeIcon = $statusIcons[$status] ?? $statusIcons['not_verified'];
+            $badgeLabel = __($translationPrefix.'.permissions.'.($statusLabelKeys[$status] ?? 'health_status_not_verified'));
         } else {
             $badgeColor = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
             $badgeIcon = 'fas fa-exclamation-triangle';

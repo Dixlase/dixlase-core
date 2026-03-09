@@ -81,7 +81,7 @@ https://exc-d.com
                 </p>
             @else
                 <div class="flex items-center mb-2">
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
                         <i class="fas fa-file-signature mr-1"></i>
                         {{ __('admin/settings/plugins/index.permissions.signature_unsigned') }}
                     </span>
@@ -99,15 +99,15 @@ https://exc-d.com
                 {{-- 健全性レベル表示 --}}
                 <div class="mb-3 flex items-center">
                     <span class="text-sm text-gray-700 dark:text-gray-300 mr-2">{{ __('admin/settings/plugins/index.permissions.health_status') }}:</span>
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $card['healthColors'][$card['riskLevel']] ?? $card['healthColors']['low'] }}">
-                        <i class="{{ $card['healthIcons'][$card['riskLevel']] ?? $card['healthIcons']['low'] }} mr-1"></i>
-                        {{ __('admin/settings/plugins/index.permissions.' . ($card['healthLabels'][$card['riskLevel']] ?? 'health_healthy')) }}
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $card['healthStatusColors'][$card['healthStatus'] ?? 'not_verified'] ?? $card['healthStatusColors']['not_verified'] }}">
+                        <i class="{{ $card['healthStatusIcons'][$card['healthStatus'] ?? 'not_verified'] ?? $card['healthStatusIcons']['not_verified'] }} mr-1"></i>
+                        {{ __('admin/settings/plugins/index.permissions.' . ($card['healthStatusLabelKeys'][$card['healthStatus'] ?? 'not_verified'] ?? 'health_status_not_verified')) }}
                     </span>
                 </div>
 
                 {{-- 確認が必要な理由 --}}
                 @if(!empty($card['attentionReasons']))
-                    <div class="mb-4 p-3 rounded-lg {{ $card['riskLevel'] === 'high' ? 'bg-orange-50 dark:bg-orange-900/20' : ($card['riskLevel'] === 'medium' ? 'bg-yellow-50 dark:bg-yellow-900/20' : 'bg-gray-50 dark:bg-gray-800') }}">
+                    <div class="mb-4 p-3 rounded-lg {{ ($card['healthStatus'] ?? 'not_verified') === 'needs_attention' ? 'bg-orange-50 dark:bg-orange-900/20' : (($card['healthStatus'] ?? 'not_verified') === 'advisory' ? 'bg-yellow-50 dark:bg-yellow-900/20' : 'bg-gray-50 dark:bg-gray-800') }}">
                         <h5 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
                             <i class="fas fa-info-circle mr-1"></i>
                             {{ __('admin/settings/plugins/index.permissions.attention_reasons_title') }}
