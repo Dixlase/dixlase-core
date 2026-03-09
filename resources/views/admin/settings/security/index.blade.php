@@ -22,10 +22,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-    @if($modeData['isReadOnly'] ?? false)
-        <x-admin.mode-readonly-banner />
-    @endif
-
     <!-- セキュリティステータスカード -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         <!-- パスワード -->
@@ -42,6 +38,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p>{{ __('admin/settings/security/index.password_security') }}</p>
             </div>
         </a>
+        @else
+        <div class="block p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center mb-3">
+                <i class="fas fa-key text-blue-500 text-xl mr-3"></i>
+                <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.password') }}</h3>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                <p>{{ __('admin/settings/security/index.password_security') }}</p>
+                <p class="text-xs mt-2 text-blue-500 dark:text-blue-400">
+                    <i class="fas fa-info-circle mr-1"></i>{{ __('admin/settings/security/index.auto_configured') }}
+                </p>
+            </div>
+        </div>
         @endif
 
         <!-- ログイン試行制限 -->
@@ -120,6 +129,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p>{{ __('admin/settings/security/index.session_driver') }}: <span class="font-medium">{{ $sessionDriver }}</span></p>
             </div>
         </a>
+        @else
+        <div class="block p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center mb-3">
+                <i class="fas fa-clock text-green-500 text-xl mr-3"></i>
+                <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.session') }}</h3>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                <p>{{ __('admin/settings/security/index.session_driver') }}: <span class="font-medium">{{ $sessionDriver }}</span></p>
+                <p class="text-xs mt-2 text-blue-500 dark:text-blue-400">
+                    <i class="fas fa-info-circle mr-1"></i>{{ __('admin/settings/security/index.auto_configured') }}
+                </p>
+            </div>
+        </div>
         @endif
 
         <!-- 通知 -->
@@ -150,6 +172,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
         </a>
+        @else
+        <div class="block p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center mb-3">
+                <i class="fas fa-bell text-yellow-500 text-xl mr-3"></i>
+                <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.notifications') }}</h3>
+            </div>
+            <div class="text-sm">
+                @if($notificationEnabled)
+                    <span class="inline-flex items-center text-green-600 dark:text-green-400">
+                        <i class="fas fa-check-circle mr-1"></i>{{ __('admin/settings/security/index.notifications_active') }}
+                    </span>
+                @else
+                    <span class="inline-flex items-center text-gray-500">
+                        <i class="fas fa-times-circle mr-1"></i>{{ __('admin/settings/security/index.notifications_disabled') }}
+                    </span>
+                @endif
+                <p class="text-xs mt-2 text-blue-500 dark:text-blue-400">
+                    <i class="fas fa-info-circle mr-1"></i>{{ __('admin/settings/security/index.auto_configured') }}
+                </p>
+            </div>
+        </div>
         @endif
 
         <!-- CSP -->
@@ -174,6 +217,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
         </a>
+        @else
+        <div class="block p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center mb-3">
+                <i class="fas fa-code text-orange-500 text-xl mr-3"></i>
+                <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.csp') }}</h3>
+            </div>
+            <div class="text-sm">
+                @if($cspEnabled)
+                    <span class="inline-flex items-center text-green-600 dark:text-green-400">
+                        <i class="fas fa-check-circle mr-1"></i>{{ __('admin/settings/security/index.csp_mode') }}: {{ $cspMode }}
+                    </span>
+                @else
+                    <span class="inline-flex items-center text-gray-500">
+                        <i class="fas fa-times-circle mr-1"></i>{{ __('admin/settings/security/index.csp_disabled') }}
+                    </span>
+                @endif
+                <p class="text-xs mt-2 text-blue-500 dark:text-blue-400">
+                    <i class="fas fa-info-circle mr-1"></i>{{ __('admin/settings/security/index.auto_configured') }}
+                </p>
+            </div>
+        </div>
         @endif
 
         <!-- 拡張機能 -->
@@ -227,6 +291,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
         </a>
+        @else
+        <div class="block p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center mb-3">
+                <i class="fas fa-network-wired text-cyan-500 text-xl mr-3"></i>
+                <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.ip') }}</h3>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                @if($enableAllowedAdminIps || $enableBlockedAdminIps)
+                    <span class="inline-flex items-center text-green-600 dark:text-green-400">
+                        <i class="fas fa-check-circle mr-1"></i>{{ __('admin/settings/security/index.ip_active') }}
+                    </span>
+                @else
+                    <span class="inline-flex items-center text-gray-500">
+                        <i class="fas fa-minus-circle mr-1"></i>{{ __('admin/settings/security/index.ip_inactive') }}
+                    </span>
+                @endif
+                <p class="text-xs mt-2 text-blue-500 dark:text-blue-400">
+                    <i class="fas fa-info-circle mr-1"></i>{{ __('admin/settings/security/index.auto_configured') }}
+                </p>
+            </div>
+        </div>
         @endif
 
         <!-- ファイル整合性 -->
@@ -265,6 +350,41 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
         </a>
+        @else
+        <div class="block p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center mb-3">
+                <i class="fas fa-file-shield text-red-500 text-xl mr-3"></i>
+                <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.integrity') }}</h3>
+            </div>
+            <div class="text-sm">
+                @if($latestIntegrityAudit)
+                    @if($latestIntegrityAudit->status === $integrityStatusOk)
+                        <span class="inline-flex items-center text-green-600 dark:text-green-400">
+                            <i class="fas fa-check-circle mr-1"></i>{{ __('admin/settings/security/index.integrity_ok') }}
+                        </span>
+                    @elseif($latestIntegrityAudit->status === $integrityStatusWarning)
+                        <span class="inline-flex items-center text-yellow-600 dark:text-yellow-400">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>{{ __('admin/settings/security/index.integrity_warning') }}
+                        </span>
+                    @else
+                        <span class="inline-flex items-center text-red-600 dark:text-red-400">
+                            <i class="fas fa-times-circle mr-1"></i>{{ __('admin/settings/security/index.integrity_critical') }}
+                        </span>
+                    @endif
+                @elseif(!$hasBaseline)
+                    <span class="inline-flex items-center text-gray-500">
+                        <i class="fas fa-minus-circle mr-1"></i>{{ __('admin/settings/security/index.integrity_no_baseline') }}
+                    </span>
+                @else
+                    <span class="inline-flex items-center text-gray-500">
+                        <i class="fas fa-minus-circle mr-1"></i>{{ __('admin/settings/security/index.integrity_not_scanned') }}
+                    </span>
+                @endif
+                <p class="text-xs mt-2 text-blue-500 dark:text-blue-400">
+                    <i class="fas fa-info-circle mr-1"></i>{{ __('admin/settings/security/index.auto_configured') }}
+                </p>
+            </div>
+        </div>
         @endif
 
         <!-- 環境設定 -->
@@ -288,6 +408,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
         </a>
+        @else
+        <div class="block p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center mb-3">
+                <i class="fas fa-cog text-gray-500 text-xl mr-3"></i>
+                <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/index.nav.environment') }}</h3>
+            </div>
+            <div class="text-sm">
+                <span class="inline-flex items-center {{ $envColors[$appEnv] ?? $envColors['local'] }}">
+                    <i class="fas {{ $envIcons[$appEnv] ?? $envIcons['local'] }} mr-1"></i>{{ __('admin/settings/security/environment.env_options.' . $appEnv) }}
+                </span>
+                @if($appDebug)
+                    <span class="inline-flex items-center text-red-600 dark:text-red-400 ml-2">
+                        <i class="fas fa-bug mr-1"></i>{{ __('admin/settings/security/index.debug_enabled') }}
+                    </span>
+                @endif
+                <p class="text-xs mt-2 text-blue-500 dark:text-blue-400">
+                    <i class="fas fa-info-circle mr-1"></i>{{ __('admin/settings/security/index.auto_configured') }}
+                </p>
+            </div>
+        </div>
         @endif
     </div>
 

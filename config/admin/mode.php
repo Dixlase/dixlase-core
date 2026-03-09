@@ -89,8 +89,8 @@ return [
         'settings.base.mode' => MenuVisibility::Full,
 
         // 全体設定 > セキュリティ設定
-        'settings.security' => MenuVisibility::ReadOnly,
-        'settings.security.index' => MenuVisibility::ReadOnly,
+        'settings.security' => MenuVisibility::Partial,
+        'settings.security.index' => MenuVisibility::Full,
         'settings.security.password' => MenuVisibility::Hidden,
         'settings.security.login' => MenuVisibility::Partial,
         'settings.security.two-fa' => MenuVisibility::Partial,
@@ -114,8 +114,8 @@ return [
         'settings.systems.cache' => MenuVisibility::Full,
         'settings.systems.database' => MenuVisibility::Hidden,
         'settings.systems.api' => MenuVisibility::Hidden,
-        'settings.systems.logs' => MenuVisibility::ReadOnly,
-        'settings.systems.info' => MenuVisibility::ReadOnly,
+        'settings.systems.logs' => MenuVisibility::Full,
+        'settings.systems.info' => MenuVisibility::Full,
     ],
 
     /*
