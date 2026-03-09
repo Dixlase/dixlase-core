@@ -504,8 +504,6 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function index(Request $request)
     {
-        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.logs');
-
         return $this->auditLogsDb($request);
     }
 
