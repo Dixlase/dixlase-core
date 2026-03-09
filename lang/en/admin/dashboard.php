@@ -43,11 +43,13 @@ return [
     'mail_not_configured' => 'Mail server settings are incomplete. Email delivery may fail.',
     'mail_using_log_driver' => 'Using ":driver" driver. Emails will not be delivered.',
     'mail_configured' => 'Mail server is properly configured.',
+    'mail_test_not_completed' => 'Mail server is configured, but connection/send tests have not been completed yet.',
 
     // CAPTCHA status
     'captcha_status' => 'CAPTCHA',
     'captcha_not_configured' => 'CAPTCHA is not configured. Setting it up is recommended to prevent spam.',
     'captcha_configured' => 'CAPTCHA is properly configured.',
+    'captcha_test_not_completed' => 'CAPTCHA is configured, but authentication test has not been completed yet.',
 
     // System info
     'system_info' => 'System Information',
