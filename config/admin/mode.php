@@ -84,7 +84,7 @@ return [
         'settings.base.index' => MenuVisibility::Full,
         'settings.base.site' => MenuVisibility::Full,
         'settings.base.admin' => MenuVisibility::GuideOnly,
-        'settings.base.mail' => MenuVisibility::Partial,
+        'settings.base.mail' => MenuVisibility::Full,
         'settings.base.maintenance' => MenuVisibility::Full,
         'settings.base.mode' => MenuVisibility::Full,
 
@@ -95,7 +95,7 @@ return [
         'settings.security.login' => MenuVisibility::Partial,
         'settings.security.two-fa' => MenuVisibility::Partial,
         'settings.security.notifications' => MenuVisibility::Hidden,
-        'settings.security.captcha' => MenuVisibility::Partial,
+        'settings.security.captcha' => MenuVisibility::Full,
         'settings.security.session' => MenuVisibility::Hidden,
         'settings.security.csp' => MenuVisibility::Hidden,
         'settings.security.extensions' => MenuVisibility::ReadOnly,

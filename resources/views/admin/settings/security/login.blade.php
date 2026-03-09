@@ -58,6 +58,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
         </section>
 
+        @if(!($modeData['isPartial'] ?? false))
         <!-- デフォルトログイン試行制限設定 -->
         <section>
             <h2>{{ __('admin/settings/security/login.default_login_attempt_settings') }}</h2>
@@ -161,6 +162,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
         </section>
+        @endif
     </form>
 </div>
 @endsection

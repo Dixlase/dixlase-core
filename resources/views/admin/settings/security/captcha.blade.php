@@ -22,10 +22,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-    @if($modeData['isPartial'] ?? false)
-        <x-admin.mode-partial-notice />
-    @endif
-
 <div x-data="{
     captchaEnabled: {{ old('captcha_enabled', $settings['captcha_enabled']) ? 'true' : 'false' }},
     captchaDriver: '{{ old('captcha_driver', $settings['captcha_driver']) }}',
