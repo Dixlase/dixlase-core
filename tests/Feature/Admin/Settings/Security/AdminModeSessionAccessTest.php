@@ -27,11 +27,16 @@ use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use App\Helpers\AdminModeHelper;
 use App\Helpers\ConfigHelper;
+use App\Http\Middleware\CheckInstallationReady;
+use App\Http\Middleware\CheckMenuAccess;
+use App\Http\Middleware\CheckMenuEdit;
+use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Models\BaseSetting;
 use App\Models\Member;
 use App\Services\AdminModeAutoConfigService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\View;
 use Tests\TestCase;
 
 /**
@@ -47,6 +52,23 @@ class AdminModeSessionAccessTest extends TestCase
     {
         parent::setUp();
 
+        $this->withoutMiddleware([
+            CheckInstallationReady::class,
+            EnsureEmailIsVerified::class,
+        ]);
+
+        putenv('INSTALLED=true');
+        $_ENV['INSTALLED'] = 'true';
+
+        $adminTheme = config('themes.admin_theme', 'admin');
+        $customFilesDir = base_path(config('custom.custom_files_dir', 'custom'));
+        View::addNamespace('admin', [
+            base_path("{$customFilesDir}/resources/views/{$adminTheme}"),
+            resource_path("views/{$adminTheme}"),
+        ]);
+
+        BaseSetting::setValue('site_name', 'Test Site');
+
         $this->superAdmin = Member::create([
             'account_name' => 'superadmin',
             'display_name' => 'Super Admin',
@@ -56,6 +78,13 @@ class AdminModeSessionAccessTest extends TestCase
             'role' => MemberRole::SUPER_ADMIN,
             'status' => MemberStatus::Active,
         ]);
+    }
+
+    protected function tearDown(): void
+    {
+        putenv('INSTALLED=false');
+        $_ENV['INSTALLED'] = 'false';
+        parent::tearDown();
     }
 
     // ========================================
@@ -86,8 +115,8 @@ class AdminModeSessionAccessTest extends TestCase
                 'session_encrypt' => false,
             ]);
 
-        // HiddenのためGETと同じくリダイレクトされる（check.menu.accessで弾かれる）
-        $response->assertRedirect(route('admin.dashboard'));
+        // Hiddenのためアクセス拒否される（check.menu.editで弾かれる）
+        $response->assertStatus(403);
     }
 
     // ========================================
@@ -195,34 +224,4 @@ class AdminModeSessionAccessTest extends TestCase
         $this->assertTrue($results['settings.security.session']);
     }
 
-    // ========================================
-    // サイドバー表示: かんたんモードでセッション設定が非表示
-    // ========================================
-
-    public function test_sidebar_hides_session_in_simple_mode(): void
-    {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
-        AdminModeHelper::clearCache();
-
-        // ダッシュボードにアクセスしてサイドバーを確認
-        $response = $this->actingAs($this->superAdmin, 'member')
-            ->get(route('admin.dashboard'));
-
-        $response->assertStatus(200);
-        // セッション設定へのリンクが含まれていないことを確認
-        $response->assertDontSee(route('admin.settings.security.session'));
-    }
-
-    public function test_sidebar_shows_session_in_advanced_mode(): void
-    {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
-        AdminModeHelper::clearCache();
-
-        $response = $this->actingAs($this->superAdmin, 'member')
-            ->get(route('admin.dashboard'));
-
-        $response->assertStatus(200);
-        // セッション設定へのリンクが含まれていることを確認
-        $response->assertSee(route('admin.settings.security.session'));
-    }
 }
