@@ -79,6 +79,7 @@ class AdminDashboardController extends AdminLoggedInController
         $this->viewParams['pluginNotifications'] = DashboardPresenter::pluginNotifications();
         $this->viewParams['extensionOverview'] = DashboardPresenter::extensionOverview();
         $this->viewParams['memberOverview'] = DashboardPresenter::memberOverview();
+        $this->viewParams['recentActivity'] = DashboardPresenter::recentActivity();
 
         return view('admin::dashboard', $this->viewParams);
     }
