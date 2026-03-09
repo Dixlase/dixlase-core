@@ -55,6 +55,11 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function files(Request $request, $type = 'activity')
     {
+        // かんたんモードではファイルログにアクセス不可
+        if (AdminModeHelper::isSimpleMode()) {
+            return redirect()->route('admin.settings.systems.logs.index');
+        }
+
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
         $selectedDate = $request->input('date');
 
@@ -191,6 +196,11 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function download(Request $request, $type = 'activity')
     {
+        // かんたんモードではファイルログにアクセス不可
+        if (AdminModeHelper::isSimpleMode()) {
+            return redirect()->route('admin.settings.systems.logs.index');
+        }
+
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
         $selectedDate = $request->input('date');
 
@@ -219,6 +229,11 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function clear(Request $request, $type = 'activity')
     {
+        // かんたんモードではファイルログにアクセス不可
+        if (AdminModeHelper::isSimpleMode()) {
+            return redirect()->route('admin.settings.systems.logs.index');
+        }
+
         $days = (int) $request->input('days', 0);
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
 
@@ -305,6 +320,11 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function test(Request $request)
     {
+        // かんたんモードではファイルログ操作不可
+        if (AdminModeHelper::isSimpleMode()) {
+            return redirect()->route('admin.settings.systems.logs.index');
+        }
+
         $type = $request->input('type', 'all');
         $results = [];
 
@@ -356,6 +376,11 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function testError(Request $request)
     {
+        // かんたんモードではファイルログ操作不可
+        if (AdminModeHelper::isSimpleMode()) {
+            return redirect()->route('admin.settings.systems.logs.index');
+        }
+
         $errorType = $request->input('error_type', 'exception');
 
         try {
@@ -410,6 +435,11 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function testFront(Request $request)
     {
+        // かんたんモードではファイルログ操作不可
+        if (AdminModeHelper::isSimpleMode()) {
+            return redirect()->route('admin.settings.systems.logs.index');
+        }
+
         try {
             Log::channel('front_activity')->info('フロント操作テスト', [
                 'action' => 'テスト操作',
@@ -439,6 +469,11 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function testFrontError(Request $request)
     {
+        // かんたんモードではファイルログ操作不可
+        if (AdminModeHelper::isSimpleMode()) {
+            return redirect()->route('admin.settings.systems.logs.index');
+        }
+
         try {
             Log::channel('front_error')->error('フロントエラーテスト', [
                 'error' => 'テストエラー',

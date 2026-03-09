@@ -88,10 +88,10 @@ class AdminModeSecurityIndexTest extends TestCase
     }
 
     // ========================================
-    // かんたんモード: Hiddenサブページのカードが非表示
+    // かんたんモード: Hiddenサブページはサマリーカード（リンクなし）
     // ========================================
 
-    public function test_simple_mode_hides_hidden_subpage_cards(): void
+    public function test_simple_mode_shows_summary_cards_without_links_for_hidden_subpages(): void
     {
         BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
         AdminModeHelper::clearCache();
@@ -101,7 +101,7 @@ class AdminModeSecurityIndexTest extends TestCase
 
         $response->assertStatus(200);
 
-        // Hidden設定のサブページカードが非表示
+        // Hiddenサブページはリンクなしサマリーカードとして表示
         $response->assertDontSee(route('admin.settings.security.password'));
         $response->assertDontSee(route('admin.settings.security.session'));
         $response->assertDontSee(route('admin.settings.security.notifications'));
@@ -110,6 +110,9 @@ class AdminModeSecurityIndexTest extends TestCase
         $response->assertDontSee(route('admin.settings.security.integrity'));
         $response->assertDontSee(route('admin.settings.security.extensions'));
         $response->assertDontSee(route('admin.settings.security.environment'));
+
+        // サマリーカードには自動設定テキストが表示される
+        $response->assertSee(__('admin/settings/security/index.auto_configured'));
     }
 
     public function test_simple_mode_shows_visible_subpage_cards(): void
@@ -122,13 +125,13 @@ class AdminModeSecurityIndexTest extends TestCase
 
         $response->assertStatus(200);
 
-        // Partial/Full設定のサブページカードは表示
+        // Partial/Full設定のサブページカードはリンク付きで表示
         $response->assertSee(route('admin.settings.security.login'));
         $response->assertSee(route('admin.settings.security.two-fa'));
         $response->assertSee(route('admin.settings.security.captcha'));
     }
 
-    public function test_simple_mode_shows_readonly_banner(): void
+    public function test_simple_mode_does_not_show_readonly_banner(): void
     {
         BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
         AdminModeHelper::clearCache();
@@ -138,12 +141,12 @@ class AdminModeSecurityIndexTest extends TestCase
 
         $response->assertStatus(200);
 
-        // セキュリティ概要ページはReadOnlyなのでバナー表示
-        $response->assertSee(__('components/admin/mode-readonly-banner.message'));
+        // セキュリティ概要ページはFullなのでReadOnlyバナー非表示
+        $response->assertDontSee(__('components/admin/mode-readonly-banner.message'));
     }
 
     // ========================================
-    // 詳細モード: 全サブページカードが表示
+    // 詳細モード: 全サブページカードがリンク付きで表示
     // ========================================
 
     public function test_advanced_mode_shows_all_subpage_cards(): void
@@ -156,7 +159,7 @@ class AdminModeSecurityIndexTest extends TestCase
 
         $response->assertStatus(200);
 
-        // 全サブページカードが表示
+        // 全サブページカードがリンク付きで表示
         $response->assertSee(route('admin.settings.security.password'));
         $response->assertSee(route('admin.settings.security.login'));
         $response->assertSee(route('admin.settings.security.two-fa'));
@@ -170,7 +173,7 @@ class AdminModeSecurityIndexTest extends TestCase
         $response->assertSee(route('admin.settings.security.environment'));
     }
 
-    public function test_advanced_mode_does_not_show_readonly_banner(): void
+    public function test_advanced_mode_does_not_show_auto_configured_text(): void
     {
         BaseSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
         AdminModeHelper::clearCache();
@@ -180,7 +183,7 @@ class AdminModeSecurityIndexTest extends TestCase
 
         $response->assertStatus(200);
 
-        // 詳細モードではバナー非表示
-        $response->assertDontSee(__('components/admin/mode-readonly-banner.message'));
+        // 詳細モードでは自動設定テキスト非表示
+        $response->assertDontSee(__('admin/settings/security/index.auto_configured'));
     }
 }

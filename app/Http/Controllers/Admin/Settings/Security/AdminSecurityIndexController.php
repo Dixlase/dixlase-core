@@ -110,9 +110,7 @@ class AdminSecurityIndexController extends AdminLoggedInController
             'staging' => 'fa-flask',
             'production' => 'fa-server',
         ];
-        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.index');
-
-        // サブページの表示可否を判定（Hiddenのサブページはカード非表示）
+        // サブページの表示可否を判定（Hiddenのサブページはサマリーカード表示）
         $subPageKeys = ['password', 'login', 'two-fa', 'captcha', 'session', 'notifications', 'csp', 'extensions', 'ip', 'integrity', 'environment'];
         $subPageVisible = [];
         foreach ($subPageKeys as $key) {

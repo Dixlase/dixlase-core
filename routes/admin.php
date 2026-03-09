@@ -499,7 +499,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.systems.database')
                     ->name('database.cleanup');
 
-                // 監査ログ（かんたんモード: ReadOnly）
+                // 監査ログ（かんたんモード: Full）
                 Route::get('/logs', [Systems\AdminSystemLogsController::class, 'index'])
                     ->middleware('check.menu.access:settings.systems.logs')
                     ->name('logs.index');
