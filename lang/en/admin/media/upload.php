@@ -18,7 +18,11 @@ return [
     'select_file' => 'Select Media File:',
     'drag_drop_text' => 'Drag files here or click to upload',
     'supported_formats' => 'Supported formats:',
-    
+
+    'auto_config_heading' => 'Current Media Settings (Auto-configured)',
+    'size_limits' => 'File Size Limits',
+    'security_status' => 'Security',
+
     'error' => [
         'file_not_found' => 'File not found.',
     ],
