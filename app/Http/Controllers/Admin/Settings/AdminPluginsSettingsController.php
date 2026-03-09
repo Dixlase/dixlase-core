@@ -299,6 +299,14 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             // 算出失敗時はデフォルト値を維持
         }
 
+        // 減点項目を取得（0減点の項目は除外）
+        $healthIssues = isset($healthResult)
+            ? array_values(array_filter(
+                array_map(fn ($i) => $i->jsonSerialize(), $healthResult->issues),
+                fn ($i) => ($i['deduction'] ?? 0) !== 0,
+            ))
+            : [];
+
         return response()->json([
             'success' => true,
             'message' => __('admin/settings/plugins/index.audit.completed'),
@@ -308,6 +316,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             'installAllowed' => $installAllowed,
             'healthScore' => $healthScore,
             'healthStatus' => $healthStatus,
+            'healthIssues' => $healthIssues,
         ]);
     }
 

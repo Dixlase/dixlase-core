@@ -276,12 +276,17 @@ function buildHealthBadgeHtml(scanData, audit, config) {
         ? (config.healthScoreDisplay || '').replace(':score', healthScore)
         : '';
 
-    // 署名による減点表示
-    let deductionText = '';
-    const sigStatus = audit.signature_status || 'unsigned';
-    if (sigStatus === 'unsigned' || sigStatus === 'invalid') {
-        const deductionPoints = sigStatus === 'unsigned' ? 5 : 15;
-        deductionText = (config.signatureDeduction || '').replace(':points', deductionPoints);
+    // 減点項目の表示（APIから返されたhealthIssuesを使用）
+    const healthIssues = scanData.healthIssues || [];
+    const issueTypeLabels = config.healthIssueTypeLabels || {};
+    let deductionHtml = '';
+
+    if (healthIssues.length > 0) {
+        deductionHtml = healthIssues.map(issue => {
+            const label = issueTypeLabels[issue.type] || issue.description || issue.type;
+            const points = Math.abs(issue.deduction || 0);
+            return `<p class="text-xs mt-1 ${style.text}"><i class="fas fa-minus-circle mr-1"></i>${label} <span class="font-medium">(-${points})</span></p>`;
+        }).join('');
     }
 
     return `
@@ -295,7 +300,7 @@ function buildHealthBadgeHtml(scanData, audit, config) {
                 <span class="font-semibold">${config.healthBadgeLabel || ''}: ${statusLabel}</span>
                 ${scoreText ? `<span class="text-xs ml-1">${scoreText}</span>` : ''}
             </div>
-            ${deductionText ? `<p class="text-xs mt-1 ${style.text}"><i class="fas fa-minus-circle mr-1"></i>${signatureLabels.title || ''} ${deductionText}</p>` : ''}
+            ${deductionHtml}
         </div>
     `;
 }
