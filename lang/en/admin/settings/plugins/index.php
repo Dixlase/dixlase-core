@@ -400,7 +400,7 @@ return [
         'stage2_confirm_enable' => 'Enable this plugin?',
         'stage2_blocked_title' => 'Cannot :action',
         'stage2_blocked_message' => 'This plugin does not meet the security requirements and cannot be :action.',
-        'stage2_scan_result_heading' => 'Scan Results for :name',
+        'stage2_scan_result_heading' => 'Pre-:action Confirmation',
         'stage2_warning_message' => 'This plugin has the following warnings:',
         'action_install' => 'install',
         'action_enable' => 'enable',
