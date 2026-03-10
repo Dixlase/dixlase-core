@@ -237,9 +237,10 @@ function buildPermissionsSection(audit, auditMessages, config) {
  */
 function buildCspSection(audit, labels) {
     const cspStatus = audit.csp_status || 'unknown';
-    if (cspStatus === 'unknown') return '';
+    if (cspStatus === 'unknown' || cspStatus === 'not_checked') return '';
 
-    const isCompliant = cspStatus === 'compliant';
+    // compatible / csp_ready はスキャナーの値（compliant に正規化済みだが念のためフォールバック）
+    const isCompliant = cspStatus === 'compliant' || cspStatus === 'compatible' || cspStatus === 'csp_ready';
     const style = isCompliant
         ? { bg: 'bg-green-50 dark:bg-green-900/20', text: 'text-green-700 dark:text-green-300', icon: 'fa-check-circle' }
         : { bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-300', icon: 'fa-exclamation-triangle' };

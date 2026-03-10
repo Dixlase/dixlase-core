@@ -43,7 +43,7 @@
                     </a>
                     
                     {{-- フロントページデザイン --}}
-                    <a href="{{ url('/admin/front/design') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm">
+                    <a href="{{ route('admin.front.edit') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm">
                         <i class="fas fa-paint-brush mr-1"></i>
                         <span class="hidden md:inline">{{ __('common.design') }}</span>
                     </a>

@@ -26,6 +26,7 @@ use App\Enums\MemberRole;
 use App\Models\BaseSetting;
 use App\Models\Member;
 use App\Services\PermissionRegistry;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 
@@ -46,6 +47,17 @@ class AdminHelper
     public static function getMember(): ?Member
     {
         return Auth::guard('member')->user();
+    }
+
+    /**
+     * リクエストが管理画面URLに一致するかチェック
+     * 動的に生成されたadmin URLにも対応
+     */
+    public static function isAdminRequest(Request $request): bool
+    {
+        $adminUrl = self::getAdminUrl();
+
+        return $request->is($adminUrl) || $request->is($adminUrl.'/*');
     }
 
     public static function getAdminUrl()

@@ -23,6 +23,7 @@
 namespace App\Services\Csp;
 
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
@@ -70,7 +71,7 @@ class CspComplianceScanner
      */
     public function scanPlugin(string $slug): array
     {
-        $dir = base_path("plugins/{$slug}");
+        $dir = $this->resolveDirectory('plugins', $slug);
 
         return $this->scan($dir, 'plugin', $slug);
     }
@@ -82,9 +83,44 @@ class CspComplianceScanner
      */
     public function scanTheme(string $slug): array
     {
-        $dir = base_path("themes/{$slug}");
+        $dir = $this->resolveDirectory('themes', $slug);
 
         return $this->scan($dir, 'theme', $slug);
+    }
+
+    /**
+     * スラッグから実際のディレクトリパスを解決する
+     *
+     * スラッグはkebab-case（例: dixlase-legal）だが、
+     * ディレクトリ名はPascalCase（例: DixlaseLegal）のため変換が必要
+     */
+    protected function resolveDirectory(string $baseDir, string $slug): string
+    {
+        // StudlyCase変換を試行（dixlase-legal → DixlaseLegal）
+        $studlyName = Str::studly(str_replace('-', '_', $slug));
+        $path = base_path("{$baseDir}/{$studlyName}");
+        if (File::isDirectory($path)) {
+            return $path;
+        }
+
+        // スラッグそのままを試行
+        $path = base_path("{$baseDir}/{$slug}");
+        if (File::isDirectory($path)) {
+            return $path;
+        }
+
+        // ディレクトリ一覧からkebab-case比較で検索
+        $parentDir = base_path($baseDir);
+        if (File::isDirectory($parentDir)) {
+            foreach (File::directories($parentDir) as $dir) {
+                if (Str::kebab(basename($dir)) === $slug) {
+                    return $dir;
+                }
+            }
+        }
+
+        // 見つからない場合はスラッグのままのパスを返す（scan()側でunknownになる）
+        return base_path("{$baseDir}/{$slug}");
     }
 
     /**
