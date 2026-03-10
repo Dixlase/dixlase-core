@@ -40,7 +40,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'description' => __('admin/settings/base/mode.simple_mode_description'),
                     'icon' => 'fas fa-magic',
                     'color' => 'green',
-                    'badge' => __('admin/settings/base/mode.recommended'),
                     'badgeColor' => 'green',
                     'features' => [
                         __('admin/settings/base/mode.simple_feature_auto'),

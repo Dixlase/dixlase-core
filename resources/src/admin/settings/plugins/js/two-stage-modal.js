@@ -198,9 +198,10 @@ document.addEventListener('DOMContentLoaded', function () {
         let contentHtml = '';
         let isBlocked = false;
 
-        // スキャン結果の見出し
-        const scanResultHeading = (ts.stage2ScanResultHeading || ':name')
-            .replace(':name', currentAction.pluginName);
+        // Stage 2 見出し（プラグイン名 + アクション前の確認）
+        const scanResultSubheading = (ts.stage2ScanResultHeading || ':action')
+            .replace(':action', actionLabel);
+        const scanResultHeading = `${currentAction.pluginName}<br><span class="text-sm font-normal text-gray-500 dark:text-gray-400">${scanResultSubheading}</span>`;
 
         if (scanData && scanData.enableAction === 'blocked') {
             // ブロック: インストール/有効化不可
