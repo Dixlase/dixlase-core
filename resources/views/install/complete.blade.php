@@ -15,36 +15,48 @@
 
 @section('content')
 
-    <div class="flex flex-col justify-center items-center space-y-6">
-        <!-- ✅ フロントページURL -->
+    <div class="flex flex-col justify-center items-center space-y-6" x-data="{ copiedSite: false, copiedAdmin: false }">
+        <!-- フロントページURL -->
         <div class="flex flex-col justify-center items-center space-y-2">
             <p class="text-gray-700 dark:text-gray-300 font-semibold">{{ __('install/complete.site_url') }}</p>
             <div class="flex items-center space-x-2">
                 <strong id="site-url" class="text-blue-600 dark:text-white px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded break-words">{{ $appUrl }}</strong>
-                <button type="button" 
-                    class="px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded transition" 
-                    title="コピー"
-                    x-on:click="navigator.clipboard.writeText(document.getElementById('site-url').textContent)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
+                <button type="button"
+                    class="px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded transition"
+                    :title="copiedSite ? '{{ __('install/complete.copied') }}' : '{{ __('install/complete.copy') }}'"
+                    x-on:click="navigator.clipboard.writeText(document.getElementById('site-url').textContent); copiedSite = true; setTimeout(() => copiedSite = false, 2000)">
+                    <i x-show="!copiedSite" class="fas fa-copy text-gray-700 dark:text-gray-300"></i>
+                    <i x-show="copiedSite" x-cloak class="fas fa-check text-green-600 dark:text-green-400"></i>
                 </button>
             </div>
         </div>
 
-        <!-- ✅ 管理者ログインページURL -->
+        <!-- 管理者ログインページURL -->
         <div class="flex flex-col justify-center items-center space-y-2">
             <p class="text-gray-700 dark:text-gray-300 font-semibold">{{ __('install/complete.admin_login_url') }}</p>
             <div class="flex items-center space-x-2">
                 <strong id="admin-url" class="text-gray-600 dark:text-white px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded break-words">{{ $adminLoginUrl }}</strong>
-                <button type="button" 
-                    class="px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded transition" 
-                    title="コピー"
-                    x-on:click="navigator.clipboard.writeText(document.getElementById('admin-url').textContent)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
+                <button type="button"
+                    class="px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded transition"
+                    :title="copiedAdmin ? '{{ __('install/complete.copied') }}' : '{{ __('install/complete.copy') }}'"
+                    x-on:click="navigator.clipboard.writeText(document.getElementById('admin-url').textContent); copiedAdmin = true; setTimeout(() => copiedAdmin = false, 2000)">
+                    <i x-show="!copiedAdmin" class="fas fa-copy text-gray-700 dark:text-gray-300"></i>
+                    <i x-show="copiedAdmin" x-cloak class="fas fa-check text-green-600 dark:text-green-400"></i>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 管理画面URLのブックマーク推奨メッセージ -->
+    <div class="mt-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+        <div class="flex items-start gap-3">
+            <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 mt-0.5"></i>
+            <div>
+                <h3 class="text-sm font-semibold text-yellow-800 dark:text-yellow-300 mb-1">{{ __('install/complete.admin_url_notice_title') }}</h3>
+                <p class="text-sm text-yellow-700 dark:text-yellow-400">{{ __('install/complete.admin_url_notice_message') }}</p>
+                @if($isSimpleMode)
+                    <p class="text-sm text-yellow-700 dark:text-yellow-400 mt-1">{{ __('install/complete.admin_url_random_notice') }}</p>
+                @endif
             </div>
         </div>
     </div>
@@ -56,8 +68,8 @@
         <ul class="text-sm text-blue-700 dark:text-blue-400 space-y-1 mb-3">
             <li>{{ __('install/step2.app_env') }}: {{ __('install/mode.app_env_production') }}</li>
             <li>{{ __('install/step2.app_debug') }}: {{ __('install/mode.debug_off') }}</li>
-            <li>{{ __('install/step2.admin_url') }}: /admin</li>
-            <li>{{ __('install/step2.force_ssl') }}: {{ __('install/mode.ssl_on') }}</li>
+            <li>{{ __('install/step2.admin_url') }}: /{{ $adminSlug }}</li>
+            <li>{{ __('install/step2.force_ssl') }}: {{ $forceSslEnabled ? __('install/common.enabled') : __('install/common.disabled') }}</li>
         </ul>
         <p class="text-xs text-blue-600 dark:text-blue-500">{{ __('install/mode.auto_configured_changeable') }}</p>
     </div>

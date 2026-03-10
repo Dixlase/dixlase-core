@@ -57,8 +57,18 @@ class InstallCompleteController extends BaseInstallController
 
         Log::channel('install')->info('インストール完了画面を表示（ボタン押下待ち）');
 
-        // セッションデータから管理画面URLを先に取得
-        $adminSlug = session('install_data.admin_url', 'admin');
+        // base_settingsから管理画面URLを取得（セッションはconfirm処理後にクリアされている可能性がある）
+        $adminSlug = 'admin';
+        try {
+            $dbAdminUrl = DB::table('base_settings')
+                ->where('name', 'admin_url')
+                ->value('value');
+            if ($dbAdminUrl) {
+                $adminSlug = $dbAdminUrl;
+            }
+        } catch (\Exception $e) {
+            Log::channel('install')->warning('admin_url設定の取得に失敗: '.$e->getMessage());
+        }
 
         // force_ssl設定を確認
         $forceSsl = false;
@@ -129,7 +139,9 @@ class InstallCompleteController extends BaseInstallController
         Log::channel('install')->info('=== InstallCompleteController::show() 終了 ===');
 
         // 完了画面を表示（INSTALLED=trueの設定はfinalizeメソッドで行う）
-        return view('install.complete', compact('appUrl', 'adminUrl', 'adminLoginUrl', 'isSimpleMode'));
+        $forceSslEnabled = $forceSsl;
+
+        return view('install.complete', compact('appUrl', 'adminUrl', 'adminLoginUrl', 'isSimpleMode', 'adminSlug', 'forceSslEnabled'));
     }
 
     /**

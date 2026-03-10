@@ -52,6 +52,7 @@ return [
     // 管理画面URL
     'admin_url' => '管理画面URL',
     'admin_url_security_note' => '本番環境では管理画面URLは「admin」以外の予想されにくいURLを設定することを推奨します。',
+    'admin_url_auto_generated' => '管理画面URLはセキュリティのためランダムな文字列で自動生成されます。',
 
     // SSL設定
     'force_ssl' => 'SSL（HTTPS）を強制する',

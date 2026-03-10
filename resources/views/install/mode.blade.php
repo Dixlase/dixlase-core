@@ -24,14 +24,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('header', __('install/mode.mode_header'))
 @section('description', __('install/mode.mode_description'))
 
-@section('container-width', 'max-w-3xl')
-
 @section('content')
 
 <form action="{{ route('install.mode.store') }}" method="POST" x-data="{ selectedMode: {{ $selectedMode }} }">
     @csrf
 
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-2 gap-8">
         {{-- かんたんモード --}}
         <label class="block cursor-pointer">
             <input type="radio" name="install_mode" value="0" x-model="selectedMode" class="sr-only peer">
@@ -85,15 +83,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </p>
 
     {{-- ナビゲーション --}}
-    <nav aria-label="{{ __('install.form_navigation') }}" class="flex justify-between mt-6">
+    <nav aria-label="{{ __('install.form_navigation') }}" class="flex justify-center mt-6">
         <a href="{{ route('install.index') }}"
-            class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
+            class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 mx-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
             {{ __('install/common.back') }}
         </a>
         <x-form-button
             type="submit"
             variant="primary"
             :label="__('install/common.next')"
+            class="mx-4"
         />
     </nav>
 </form>
