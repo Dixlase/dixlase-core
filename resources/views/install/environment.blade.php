@@ -53,7 +53,7 @@
                     id="app_env"
                     name="app_env"
                     :options="$envOptions"
-                    :value="old('app_env', session('install_data.app_env', 'local'))"
+                    :value="old('app_env', session('install_data.app_env', 'production'))"
                     class="input-lg"
                 />
             </div>
@@ -63,7 +63,7 @@
                 <x-form-toggle
                     name="app_debug"
                     id="app_debug"
-                    :checked="old('app_debug', session('install_data.app_debug', '1')) == '1'"
+                    :checked="old('app_debug', session('install_data.app_debug', '0')) == '1'"
                     :label="__('install/step2.enable_debug')"
                 />
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1" id="debug-note">{{ __('install/step2.app_debug_note') }}</p>
@@ -100,15 +100,28 @@
             <x-form-toggle
                 name="force_ssl"
                 id="force_ssl"
-                :checked="session('install_data.force_ssl', false)"
+                :checked="session('install_data.force_ssl', $isHttps)"
                 :label="__('install/step2.force_ssl')"
             />
             @endif
         </fieldset>
     </section>
 
-    @if(!$isSimpleMode)
-    <!-- 管理画面URL設定セクション（詳細モードのみ） -->
+    @if($isSimpleMode)
+    <!-- 管理画面URL表示セクション（簡単モード：読み取り専用） -->
+    <section aria-labelledby="admin-url-heading">
+        <h2 id="admin-url-heading" class="sr-only">{{ __('install/step2.admin_url_configuration') }}</h2>
+
+        <div>
+            <x-form-label :text="__('install/step2.admin_url')" />
+            <div class="flex items-center">
+                <span class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 text-sm">{{ $protocol }}{{ $hostAndPort }}/{{ session('install_data.admin_url', 'admin') }}</span>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('install/step2.admin_url_auto_generated') }}</p>
+        </div>
+    </section>
+    @else
+    <!-- 管理画面URL設定セクション（詳細モード） -->
     <section aria-labelledby="admin-url-heading">
         <h2 id="admin-url-heading" class="sr-only">{{ __('install/step2.admin_url_configuration') }}</h2>
 
@@ -122,7 +135,7 @@
                     <x-form-text
                         name="admin_url"
                         id="admin_url"
-                        :value="old('admin_url', session('install_data.admin_url', 'admin'))"
+                        :value="old('admin_url', session('install_data.admin_url'))"
                         class="input-full rounded-r-lg rounded-l-none"
                     />
                 </div>
@@ -191,15 +204,16 @@
     </section>
 
     <!-- フォームナビゲーション -->
-    <nav aria-label="{{ __('install/common.form_navigation') }}" class="flex justify-between mt-6">
+    <nav aria-label="{{ __('install/common.form_navigation') }}" class="flex justify-center mt-6">
         <a href="{{ route('install.settings') }}"
-            class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
+            class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 mx-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
             {{ __('install/common.back') }}
         </a>
         <x-form-button
             type="submit"
             variant="primary"
             :label="__('install/common.next')"
+            class="mx-4"
         />
     </nav>
 </form>

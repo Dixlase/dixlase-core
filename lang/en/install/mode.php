@@ -40,7 +40,7 @@ return [
     // Confirm & complete screen
     'auto_configured_title' => 'Auto-configured Settings',
     'auto_configured_description' => 'The following settings were automatically configured by Simple Mode.',
-    'auto_configured_changeable' => 'You can change these settings anytime from Admin Panel > Settings.',
+    'auto_configured_changeable' => 'You can change these settings anytime from Admin Panel > General Settings.',
     'app_env_production' => 'Production',
     'debug_off' => 'OFF',
     'ssl_on' => 'ON',

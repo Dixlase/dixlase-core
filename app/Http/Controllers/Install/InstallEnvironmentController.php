@@ -50,7 +50,7 @@ class InstallEnvironmentController extends BaseInstallController
         if ($isSimpleMode) {
             $data['app_env'] = 'production';
             $data['app_debug'] = false;
-            $data['admin_url'] = 'admin';
+            $data['admin_url'] = session('install_data.admin_url', 'admin');
             // アクセス中のプロトコルからSSL強制を自動判定
             $data['force_ssl'] = $request->isSecure()
                 || $request->header('X-Forwarded-Proto') === 'https';

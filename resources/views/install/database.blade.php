@@ -180,13 +180,13 @@
 
 
     <!-- フォームナビゲーション -->
-    <nav aria-label="{{ __('install.form_navigation') }}" class="flex justify-between mt-6">
+    <nav aria-label="{{ __('install.form_navigation') }}" class="flex justify-center mt-6">
         <a href="{{ route('install.environment') }}"
-            class="inline-flex items-center justify-center font-semibold rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 px-4 py-2 text-sm bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500">
+            class="inline-flex items-center justify-center font-semibold rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 px-4 py-2 text-sm bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500 mx-4">
             {{ __('install/common.back') }}
         </a>
 
-        <div class="relative group">
+        <div class="relative group mx-4">
             <button
                 type="submit"
                 id="next-button"

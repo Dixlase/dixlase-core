@@ -109,15 +109,16 @@
     </section>
 
     <!-- フォームナビゲーション -->
-    <nav aria-label="{{ __('install/common.form_navigation') }}" class="flex justify-between mt-6">
+    <nav aria-label="{{ __('install/common.form_navigation') }}" class="flex justify-center mt-6">
         <a href="{{ route('install.mode') }}"
-           class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
+           class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 mx-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
             {{ __('install/common.back') }}
         </a>
         <x-form-button
             type="submit"
             variant="primary"
             :label="__('install/common.next')"
+            class="mx-4"
         />
     </nav>
 </form>
