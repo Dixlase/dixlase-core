@@ -43,7 +43,7 @@ class CheckMaintenanceMode
         }
 
         // 管理画面とインストール画面は常にアクセス可能
-        if ($request->is('admin/*') || $request->is('install') || $request->is('install/*')) {
+        if (\App\Helpers\AdminHelper::isAdminRequest($request) || $request->is('install') || $request->is('install/*')) {
             return $next($request);
         }
 

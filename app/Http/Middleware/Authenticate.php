@@ -22,15 +22,12 @@
 
 namespace App\Http\Middleware;
 
+use Closure;
 use Illuminate\Auth\Middleware\Authenticate as BaseAuthenticate;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Closure;
-use Illuminate\Support\Facades\Log;
 
 class Authenticate extends BaseAuthenticate
 {
-
     /**
      * Handle an incoming request.
      *
@@ -43,12 +40,10 @@ class Authenticate extends BaseAuthenticate
         // 親クラスでは「$this->authenticate($request, $guards)」をコールし、未認証なら unauthenticated() を呼ぶ
         // → unauthenticated() は redirectTo($request) を呼びだす
 
-
         $this->authenticate($request, $guards);
 
         return $next($request);
     }
-
 
     /**
      * 指定ガードで未認証だった場合にどこへリダイレクトするか
@@ -56,20 +51,17 @@ class Authenticate extends BaseAuthenticate
      * 親クラスの unauthenticated() が呼ぶ
      *  → throw new AuthenticationException(..., $this->redirectTo($request));
      */
-
     protected function redirectTo(Request $request)
     {
         // JSONリクエストなら 401 (Unauthorized) レスポンスにする
         if ($request->expectsJson()) {
-            return null;
+            return;
         }
 
-        // 管理画面URL("/admin"等)へアクセス時は "admin.login" へ
-
-        if ($request->is('admin') || $request->is('admin/*')) {
+        // 管理画面URL（動的に生成された管理画面URLにも対応）へアクセス時は "admin.login" へ
+        if (\App\Helpers\AdminHelper::isAdminRequest($request)) {
             return route('admin.login');
         }
-
 
         // それ以外は "/login" へ
         return route('admin.login');

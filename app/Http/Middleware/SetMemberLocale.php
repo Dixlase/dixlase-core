@@ -22,19 +22,18 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\Locale;
+use App\Helpers\ConfigHelper;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\App;
-use App\Helpers\ConfigHelper;
-use App\Enums\Locale;
+use Illuminate\Support\Facades\Auth;
 
 class SetMemberLocale
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
@@ -42,27 +41,25 @@ class SetMemberLocale
     {
         try {
             // .envファイルが存在し、インストール済みかつ管理画面の場合のみ処理
-            if (file_exists(base_path('.env')) && env('INSTALLED', false) && $request->is('admin*')) {
-                
+            if (file_exists(base_path('.env')) && env('INSTALLED', false) && \App\Helpers\AdminHelper::isAdminRequest($request)) {
                 // 認証状態を確認
                 $isAuthenticated = Auth::guard('member')->check();
                 $member = Auth::guard('member')->user();
-                
-                
+
                 if ($isAuthenticated && $member) {
                     // メンバーの個別言語設定を優先、nullまたは空の場合はシステムデフォルト
                     $memberLocale = $member->locale;
-                    
+
                     // Enumの場合は値を取得、文字列の場合はそのまま使用
                     if ($memberLocale instanceof \App\Enums\Locale) {
                         $locale = $memberLocale->value;
-                    } elseif (is_string($memberLocale) && !empty($memberLocale)) {
+                    } elseif (is_string($memberLocale) && ! empty($memberLocale)) {
                         $locale = $memberLocale;
                     } else {
                         // メンバー設定がない場合はシステムデフォルト
                         $locale = ConfigHelper::getAppLocale();
                     }
-                    
+
                     // 利用可能な言語かチェック
                     if (Locale::isValid($locale)) {
                         App::setLocale($locale);
@@ -86,8 +83,8 @@ class SetMemberLocale
             }
         } catch (\Exception $e) {
             // データベースエラーやその他のエラーが発生した場合はログに記録してスキップ
-            \Log::warning('SetMemberLocale middleware error: ' . $e->getMessage());
-            
+            \Log::warning('SetMemberLocale middleware error: '.$e->getMessage());
+
             // フォールバック: デフォルト言語を設定
             App::setLocale(config('app.locale', 'ja'));
         }

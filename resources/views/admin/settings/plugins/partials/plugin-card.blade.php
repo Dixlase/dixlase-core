@@ -147,7 +147,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- CSP互換性 --}}
             <div class="flex items-center gap-2">
                 <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/plugins/index.badge_labels.csp') }}</span>
-                @if($card['cspCompatibility']['status'] === 'csp_ready' || $card['cspCompatibility']['status'] === 'compatible')
+                @if(in_array($card['cspCompatibility']['status'], ['csp_ready', 'compatible', 'compliant']))
                     <button type="button"
                             class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 cursor-pointer hover:opacity-80 transition-opacity"
                             title="{{ __('admin/settings/plugins/index.csp.ready_tooltip') }}">

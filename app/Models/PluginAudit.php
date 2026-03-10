@@ -97,6 +97,20 @@ class PluginAudit extends Model
     }
 
     /**
+     * スキャナーのCSPステータスをJS互換の正規化値に変換
+     *
+     * スキャナー: compatible, csp_ready, inline_required, inline_css_only, unknown
+     * 正規化後: compliant, inline_required, inline_css_only, unknown
+     */
+    protected function normalizedCspStatus(): string
+    {
+        return match ($this->csp_status) {
+            'compatible', 'csp_ready' => 'compliant',
+            default => $this->csp_status ?? 'unknown',
+        };
+    }
+
+    /**
      * 監査結果を配列で取得
      */
     public function toAuditArray(): array
@@ -113,7 +127,7 @@ class PluginAudit extends Model
             'files_hash' => $this->files_hash,
             'signature_status' => $this->signature_status,
             'signature_signer' => $this->signature_signer,
-            'csp_status' => $this->csp_status,
+            'csp_status' => $this->normalizedCspStatus(),
             'csp_requires_inline_js' => $this->csp_requires_inline_js,
             'csp_requires_inline_css' => $this->csp_requires_inline_css,
             'csp_violations' => $this->csp_violations ?? [],
