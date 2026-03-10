@@ -31,7 +31,7 @@
 
 </head>
 <body class="bg-gray-100 dark:bg-black flex items-center justify-center min-h-screen">
-    <div class="flex flex-col items-center w-full max-w-xl min-w-[400px] my-10">
+    <div class="flex flex-col items-center w-full @yield('container-width', 'max-w-xl') min-w-[400px] my-10">
 
         <!-- Site Logo -->
         <div class="mb-4">
@@ -39,7 +39,7 @@
         </div>
 
         <!-- Main Installation Container -->
-        <main class="bg-white dark:bg-gray-900 shadow-lg rounded-lg p-8 max-w-xl w-full" role="main">
+        <main class="bg-white dark:bg-gray-900 shadow-lg rounded-lg p-8 w-full" role="main">
 
             <!-- Installation Header -->
             <header class="mb-6">
