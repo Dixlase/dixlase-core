@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,18 +23,19 @@
 namespace App\Http\Controllers\Front;
 
 use Illuminate\Routing\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class FrontController extends Controller
 {
     //
 
-    //変数を宣言する
+    // 変数を宣言する
     protected $siteName;
+
     protected $appearance = 'light';
+
     protected $viewParams = [];
-    //protected $currentTheme = 'default';
+    // protected $currentTheme = 'default';
 
     public function __construct()
     {
@@ -53,21 +54,23 @@ class FrontController extends Controller
                 ->where('key', 'enabled_theme_id')
                 ->value('value');
 
-            if (!$activeThemeId) {
+            if (! $activeThemeId) {
                 $this->viewParams['themeSettings'] = (object) [];
+
                 return;
             }
 
             // テーマ情報を取得
             $theme = DB::table('themes')->find($activeThemeId);
-            if (!$theme) {
+            if (! $theme) {
                 $this->viewParams['themeSettings'] = (object) [];
+
                 return;
             }
 
             // テーマ固有の設定テーブル名を生成
-            $settingsTableName = 'thm_' . strtolower(str_replace('-', '_', $theme->slug)) . '_settings';
-            
+            $settingsTableName = 'thm_'.strtolower(str_replace('-', '_', $theme->slug)).'_settings';
+
             // テーマ設定を取得（カラム名は'name'と'value'）
             $settings = DB::table($settingsTableName)
                 ->get()
@@ -77,7 +80,7 @@ class FrontController extends Controller
             $this->viewParams['themeSettings'] = (object) $settings->toArray();
         } catch (\Exception $e) {
             // エラーが発生した場合は空のオブジェクトを渡す
-            \Log::error('Failed to load theme settings: ' . $e->getMessage());
+            \Log::error('Failed to load theme settings: '.$e->getMessage());
             $this->viewParams['themeSettings'] = (object) [];
         }
     }

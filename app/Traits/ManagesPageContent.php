@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,8 +27,10 @@ use App\Enums\ContentStorageType;
 use App\Services\PageContentService;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * ページコンテンツ管理トレイト
- * 
+ *
  * コントローラーで使用し、ページコンテンツの保存・読み込み・レンダリングを簡単に行えます。
  * DixlasePagesプラグインやフロントページ編集機能で共通使用します。
  */
@@ -40,23 +42,22 @@ trait ManagesPageContent
     protected function getContentService(?string $baseDirectory = null): PageContentService
     {
         $service = app(PageContentService::class);
-        
+
         if ($baseDirectory) {
             $service->setBaseDirectory($baseDirectory);
         }
-        
+
         return $service;
     }
 
     /**
      * コンテンツを保存
-     * 
-     * @param string $identifier ページのスラッグやID
-     * @param string $content コンテンツ
-     * @param string|ContentStorageType $storageType 保存方法
-     * @param string|ContentEditorType $editorType エディタータイプ
-     * @param string|null $baseDirectory ベースディレクトリ（FILE保存時）
-     * @return array
+     *
+     * @param  string  $identifier  ページのスラッグやID
+     * @param  string  $content  コンテンツ
+     * @param  string|ContentStorageType  $storageType  保存方法
+     * @param  string|ContentEditorType  $editorType  エディタータイプ
+     * @param  string|null  $baseDirectory  ベースディレクトリ（FILE保存時）
      */
     protected function savePageContent(
         string $identifier,
@@ -66,13 +67,13 @@ trait ManagesPageContent
         ?string $baseDirectory = null
     ): array {
         $service = $this->getContentService($baseDirectory);
-        
-        $storageType = is_string($storageType) 
-            ? ContentStorageType::from($storageType) 
+
+        $storageType = is_string($storageType)
+            ? ContentStorageType::fromSlug($storageType)
             : $storageType;
-            
-        $editorType = is_string($editorType) 
-            ? ContentEditorType::from($editorType) 
+
+        $editorType = is_string($editorType)
+            ? ContentEditorType::fromSlug($editorType)
             : $editorType;
 
         return $service->saveContent($identifier, $content, $storageType, $editorType);
@@ -80,13 +81,12 @@ trait ManagesPageContent
 
     /**
      * コンテンツを読み込み
-     * 
-     * @param string $identifier ページのスラッグやID
-     * @param string|ContentStorageType $storageType 保存方法
-     * @param string|ContentEditorType $editorType エディタータイプ
-     * @param string|null $dbContent DB保存の場合のコンテンツ
-     * @param string|null $baseDirectory ベースディレクトリ（FILE保存時）
-     * @return string|null
+     *
+     * @param  string  $identifier  ページのスラッグやID
+     * @param  string|ContentStorageType  $storageType  保存方法
+     * @param  string|ContentEditorType  $editorType  エディタータイプ
+     * @param  string|null  $dbContent  DB保存の場合のコンテンツ
+     * @param  string|null  $baseDirectory  ベースディレクトリ（FILE保存時）
      */
     protected function loadPageContent(
         string $identifier,
@@ -96,13 +96,13 @@ trait ManagesPageContent
         ?string $baseDirectory = null
     ): ?string {
         $service = $this->getContentService($baseDirectory);
-        
-        $storageType = is_string($storageType) 
-            ? ContentStorageType::from($storageType) 
+
+        $storageType = is_string($storageType)
+            ? ContentStorageType::fromSlug($storageType)
             : $storageType;
-            
-        $editorType = is_string($editorType) 
-            ? ContentEditorType::from($editorType) 
+
+        $editorType = is_string($editorType)
+            ? ContentEditorType::fromSlug($editorType)
             : $editorType;
 
         return $service->loadContent($identifier, $storageType, $editorType, $dbContent);
@@ -110,11 +110,10 @@ trait ManagesPageContent
 
     /**
      * コンテンツをレンダリング
-     * 
-     * @param string $content コンテンツ
-     * @param string|ContentEditorType $editorType エディタータイプ
-     * @param string|ContentStorageType $storageType 保存方法
-     * @return string
+     *
+     * @param  string  $content  コンテンツ
+     * @param  string|ContentEditorType  $editorType  エディタータイプ
+     * @param  string|ContentStorageType  $storageType  保存方法
      */
     protected function renderPageContent(
         string $content,
@@ -122,13 +121,13 @@ trait ManagesPageContent
         string|ContentStorageType $storageType
     ): string {
         $service = $this->getContentService();
-        
-        $editorType = is_string($editorType) 
-            ? ContentEditorType::from($editorType) 
+
+        $editorType = is_string($editorType)
+            ? ContentEditorType::fromSlug($editorType)
             : $editorType;
-            
-        $storageType = is_string($storageType) 
-            ? ContentStorageType::from($storageType) 
+
+        $storageType = is_string($storageType)
+            ? ContentStorageType::fromSlug($storageType)
             : $storageType;
 
         return $service->renderContent($content, $editorType, $storageType);
@@ -136,11 +135,10 @@ trait ManagesPageContent
 
     /**
      * Bladeビューとしてレンダリング
-     * 
-     * @param string $identifier ページのスラッグやID
-     * @param array $data ビューに渡すデータ
-     * @param string|null $baseDirectory ベースディレクトリ
-     * @return string
+     *
+     * @param  string  $identifier  ページのスラッグやID
+     * @param  array  $data  ビューに渡すデータ
+     * @param  string|null  $baseDirectory  ベースディレクトリ
      */
     protected function renderBladeView(
         string $identifier,
@@ -148,16 +146,16 @@ trait ManagesPageContent
         ?string $baseDirectory = null
     ): string {
         $service = $this->getContentService($baseDirectory);
+
         return $service->renderBladeView($identifier, $data);
     }
 
     /**
      * ファイルが存在するか確認
-     * 
-     * @param string $identifier ページのスラッグやID
-     * @param string|ContentEditorType $editorType エディタータイプ
-     * @param string|null $baseDirectory ベースディレクトリ
-     * @return bool
+     *
+     * @param  string  $identifier  ページのスラッグやID
+     * @param  string|ContentEditorType  $editorType  エディタータイプ
+     * @param  string|null  $baseDirectory  ベースディレクトリ
      */
     protected function contentFileExists(
         string $identifier,
@@ -165,9 +163,9 @@ trait ManagesPageContent
         ?string $baseDirectory = null
     ): bool {
         $service = $this->getContentService($baseDirectory);
-        
-        $editorType = is_string($editorType) 
-            ? ContentEditorType::from($editorType) 
+
+        $editorType = is_string($editorType)
+            ? ContentEditorType::fromSlug($editorType)
             : $editorType;
 
         return $service->fileExists($identifier, $editorType);
@@ -175,11 +173,10 @@ trait ManagesPageContent
 
     /**
      * ファイルパスを取得
-     * 
-     * @param string $identifier ページのスラッグやID
-     * @param string|ContentEditorType $editorType エディタータイプ
-     * @param string|null $baseDirectory ベースディレクトリ
-     * @return string
+     *
+     * @param  string  $identifier  ページのスラッグやID
+     * @param  string|ContentEditorType  $editorType  エディタータイプ
+     * @param  string|null  $baseDirectory  ベースディレクトリ
      */
     protected function getContentFilePath(
         string $identifier,
@@ -187,9 +184,9 @@ trait ManagesPageContent
         ?string $baseDirectory = null
     ): string {
         $service = $this->getContentService($baseDirectory);
-        
-        $editorType = is_string($editorType) 
-            ? ContentEditorType::from($editorType) 
+
+        $editorType = is_string($editorType)
+            ? ContentEditorType::fromSlug($editorType)
             : $editorType;
 
         return $service->getFilePath($identifier, $editorType);
@@ -197,11 +194,10 @@ trait ManagesPageContent
 
     /**
      * ファイルを削除
-     * 
-     * @param string $identifier ページのスラッグやID
-     * @param string|ContentEditorType $editorType エディタータイプ
-     * @param string|null $baseDirectory ベースディレクトリ
-     * @return bool
+     *
+     * @param  string  $identifier  ページのスラッグやID
+     * @param  string|ContentEditorType  $editorType  エディタータイプ
+     * @param  string|null  $baseDirectory  ベースディレクトリ
      */
     protected function deleteContentFile(
         string $identifier,
@@ -209,9 +205,9 @@ trait ManagesPageContent
         ?string $baseDirectory = null
     ): bool {
         $service = $this->getContentService($baseDirectory);
-        
-        $editorType = is_string($editorType) 
-            ? ContentEditorType::from($editorType) 
+
+        $editorType = is_string($editorType)
+            ? ContentEditorType::fromSlug($editorType)
             : $editorType;
 
         return $service->deleteFile($identifier, $editorType);
@@ -219,14 +215,13 @@ trait ManagesPageContent
 
     /**
      * 保存方法を変更（マイグレーション）
-     * 
-     * @param string $identifier ページのスラッグやID
-     * @param string|ContentStorageType $fromStorage 元の保存方法
-     * @param string|ContentStorageType $toStorage 新しい保存方法
-     * @param string|ContentEditorType $editorType エディタータイプ
-     * @param string|null $dbContent DB保存の場合のコンテンツ
-     * @param string|null $baseDirectory ベースディレクトリ
-     * @return array
+     *
+     * @param  string  $identifier  ページのスラッグやID
+     * @param  string|ContentStorageType  $fromStorage  元の保存方法
+     * @param  string|ContentStorageType  $toStorage  新しい保存方法
+     * @param  string|ContentEditorType  $editorType  エディタータイプ
+     * @param  string|null  $dbContent  DB保存の場合のコンテンツ
+     * @param  string|null  $baseDirectory  ベースディレクトリ
      */
     protected function migrateContentStorage(
         string $identifier,
@@ -237,17 +232,17 @@ trait ManagesPageContent
         ?string $baseDirectory = null
     ): array {
         $service = $this->getContentService($baseDirectory);
-        
-        $fromStorage = is_string($fromStorage) 
-            ? ContentStorageType::from($fromStorage) 
+
+        $fromStorage = is_string($fromStorage)
+            ? ContentStorageType::fromSlug($fromStorage)
             : $fromStorage;
-            
-        $toStorage = is_string($toStorage) 
-            ? ContentStorageType::from($toStorage) 
+
+        $toStorage = is_string($toStorage)
+            ? ContentStorageType::fromSlug($toStorage)
             : $toStorage;
-            
-        $editorType = is_string($editorType) 
-            ? ContentEditorType::from($editorType) 
+
+        $editorType = is_string($editorType)
+            ? ContentEditorType::fromSlug($editorType)
             : $editorType;
 
         return $service->migrateStorage(
@@ -261,14 +256,13 @@ trait ManagesPageContent
 
     /**
      * 利用可能なエディタータイプを取得
-     * 
-     * @param string|ContentStorageType $storageType 保存方法
-     * @return array
+     *
+     * @param  string|ContentStorageType  $storageType  保存方法
      */
     protected function getAvailableEditorTypes(string|ContentStorageType $storageType): array
     {
-        $storageType = is_string($storageType) 
-            ? ContentStorageType::from($storageType) 
+        $storageType = is_string($storageType)
+            ? ContentStorageType::fromSlug($storageType)
             : $storageType;
 
         return ContentEditorType::optionsFor($storageType);
@@ -276,14 +270,13 @@ trait ManagesPageContent
 
     /**
      * 利用可能なエディタータイプを説明付きで取得
-     * 
-     * @param string|ContentStorageType $storageType 保存方法
-     * @return array
+     *
+     * @param  string|ContentStorageType  $storageType  保存方法
      */
     protected function getAvailableEditorTypesWithDescription(string|ContentStorageType $storageType): array
     {
-        $storageType = is_string($storageType) 
-            ? ContentStorageType::from($storageType) 
+        $storageType = is_string($storageType)
+            ? ContentStorageType::fromSlug($storageType)
             : $storageType;
 
         return ContentEditorType::optionsWithDescriptionFor($storageType);

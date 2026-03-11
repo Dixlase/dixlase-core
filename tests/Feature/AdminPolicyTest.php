@@ -20,60 +20,47 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Tests\TestCase;
+use App\Enums\MemberRole;
 use App\Models\Member;
 use App\Policies\AdminPolicy;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class AdminPolicyTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
-    public function super_admin_can_access_viewer()
+    public function test_super_admin_can_access_guest(): void
     {
-        // 特権管理者を作成
-        $member = Member::factory()->create(['role' => 'super_admin']);
+        $member = Member::factory()->create(['role' => MemberRole::SUPER_ADMIN->value]);
         $policy = new AdminPolicy();
 
-        // 特権管理者は viewer の権限を持つ
-        $this->assertTrue($policy->viewer($member));
+        $this->assertTrue($policy->guest($member));
     }
 
-    /** @test */
-    public function manager_can_access_receptionist()
+    public function test_admin_can_access_receptionist(): void
     {
-        // 管理者を作成
-        $member = Member::factory()->create(['role' => 'manager']);
+        $member = Member::factory()->create(['role' => MemberRole::ADMIN->value]);
         $policy = new AdminPolicy();
 
-        // 管理者は receptionist の権限を持つ
         $this->assertTrue($policy->receptionist($member));
     }
 
-    /** @test */
-    public function editor_cannot_access_manager()
+    public function test_editor_cannot_access_admin(): void
     {
-        // 編集者を作成
-        $member = Member::factory()->create(['role' => 'editor']);
+        $member = Member::factory()->create(['role' => MemberRole::EDITOR->value]);
         $policy = new AdminPolicy();
 
-        // 編集者は manager の権限を持たない
-        $this->assertFalse($policy->manager($member));
+        $this->assertFalse($policy->admin($member));
     }
 
-    /** @test */
-    public function receptionist_cannot_access_editor()
+    public function test_receptionist_cannot_access_editor(): void
     {
-        // 受付を作成
-        $member = Member::factory()->create(['role' => 'receptionist']);
+        $member = Member::factory()->create(['role' => MemberRole::RECEPTIONIST->value]);
         $policy = new AdminPolicy();
 
-        // 受付は editor の権限を持たない
         $this->assertFalse($policy->editor($member));
     }
 }

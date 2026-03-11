@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,6 +31,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 /**
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
+ *
  * Permission Service
  *
  * Centralized permission checking for the application.
@@ -45,14 +47,11 @@ class PermissionService
 
     /**
      * Check if the current user has a permission
-     *
-     * @param Permission|string $permission
-     * @return bool
      */
     public static function can(Permission|string $permission): bool
     {
         $member = Auth::guard('member')->user();
-        if (!$member) {
+        if (! $member) {
             return false;
         }
 
@@ -61,17 +60,13 @@ class PermissionService
 
     /**
      * Check if a member has a permission
-     *
-     * @param Member $member
-     * @param Permission|string $permission
-     * @return bool
      */
     public static function memberCan(Member $member, Permission|string $permission): bool
     {
         // Convert string to Permission enum if needed
         if (is_string($permission)) {
             $permission = Permission::tryFrom($permission);
-            if (!$permission) {
+            if (! $permission) {
                 return false;
             }
         }
@@ -81,7 +76,7 @@ class PermissionService
             ? $member->role
             : MemberRole::tryFrom($member->role);
 
-        if (!$role) {
+        if (! $role) {
             return false;
         }
 
@@ -111,8 +106,7 @@ class PermissionService
     /**
      * Check if the current user has any of the given permissions
      *
-     * @param array<Permission|string> $permissions
-     * @return bool
+     * @param  array<Permission|string>  $permissions
      */
     public static function canAny(array $permissions): bool
     {
@@ -121,35 +115,33 @@ class PermissionService
                 return true;
             }
         }
+
         return false;
     }
 
     /**
      * Check if the current user has all of the given permissions
      *
-     * @param array<Permission|string> $permissions
-     * @return bool
+     * @param  array<Permission|string>  $permissions
      */
     public static function canAll(array $permissions): bool
     {
         foreach ($permissions as $permission) {
-            if (!self::can($permission)) {
+            if (! self::can($permission)) {
                 return false;
             }
         }
+
         return true;
     }
 
     /**
      * Check if the current user has a minimum role
-     *
-     * @param MemberRole $role
-     * @return bool
      */
     public static function hasRole(MemberRole $role): bool
     {
         $member = Auth::guard('member')->user();
-        if (!$member) {
+        if (! $member) {
             return false;
         }
 
@@ -158,10 +150,6 @@ class PermissionService
 
     /**
      * Check if a member has a minimum role
-     *
-     * @param Member $member
-     * @param MemberRole $role
-     * @return bool
      */
     public static function memberHasRole(Member $member, MemberRole $role): bool
     {
@@ -169,7 +157,7 @@ class PermissionService
             ? $member->role
             : MemberRole::tryFrom($member->role);
 
-        if (!$memberRole) {
+        if (! $memberRole) {
             return false;
         }
 
@@ -178,8 +166,6 @@ class PermissionService
 
     /**
      * Check if the current user is a super admin
-     *
-     * @return bool
      */
     public static function isSuperAdmin(): bool
     {
@@ -188,8 +174,6 @@ class PermissionService
 
     /**
      * Check if the current user is at least an admin
-     *
-     * @return bool
      */
     public static function isAdmin(): bool
     {
@@ -204,7 +188,7 @@ class PermissionService
     public static function getPermissions(): array
     {
         $member = Auth::guard('member')->user();
-        if (!$member) {
+        if (! $member) {
             return [];
         }
 
@@ -214,7 +198,6 @@ class PermissionService
     /**
      * Get all permissions a member has
      *
-     * @param Member $member
      * @return array<Permission>
      */
     public static function getMemberPermissions(Member $member): array
@@ -223,7 +206,7 @@ class PermissionService
             ? $member->role
             : MemberRole::tryFrom($member->role);
 
-        if (!$role) {
+        if (! $role) {
             return [];
         }
 
@@ -232,9 +215,6 @@ class PermissionService
 
     /**
      * Get menu permission from PermissionRegistry
-     *
-     * @param string $menuKey
-     * @return array|null
      */
     protected static function getMenuPermission(string $menuKey): ?array
     {
@@ -243,9 +223,6 @@ class PermissionService
 
     /**
      * Convert a Permission enum to a menu key
-     *
-     * @param Permission $permission
-     * @return string|null
      */
     protected static function permissionToMenuKey(Permission $permission): ?string
     {
@@ -298,8 +275,6 @@ class PermissionService
 
     /**
      * Clear permission cache for a menu key
-     *
-     * @param string $menuKey
      */
     public static function clearMenuCache(string $menuKey): void
     {
@@ -317,12 +292,11 @@ class PermissionService
     /**
      * Authorize or throw exception
      *
-     * @param Permission|string $permission
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public static function authorize(Permission|string $permission): void
     {
-        if (!self::can($permission)) {
+        if (! self::can($permission)) {
             abort(403, __('common.errors.unauthorized'));
         }
     }
@@ -330,12 +304,11 @@ class PermissionService
     /**
      * Authorize role or throw exception
      *
-     * @param MemberRole $role
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public static function authorizeRole(MemberRole $role): void
     {
-        if (!self::hasRole($role)) {
+        if (! self::hasRole($role)) {
             abort(403, __('common.errors.unauthorized'));
         }
     }

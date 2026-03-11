@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,8 +30,10 @@ use Illuminate\Support\Str;
 use Parsedown;
 
 /**
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
+ *
  * ページコンテンツ管理サービス
- * 
+ *
  * ページコンテンツやフロントページのデザインなど、
  * 編集可能なコンテンツの保存・読み込み・変換を管理します。
  */
@@ -48,16 +50,17 @@ class PageContentService
     public function setBaseDirectory(string $directory): self
     {
         $this->baseDirectory = $directory;
+
         return $this;
     }
 
     /**
      * コンテンツを保存
-     * 
-     * @param string $identifier ページのスラッグやID
-     * @param string $content コンテンツ
-     * @param ContentStorageType $storageType 保存方法
-     * @param ContentEditorType $editorType エディタータイプ
+     *
+     * @param  string  $identifier  ページのスラッグやID
+     * @param  string  $content  コンテンツ
+     * @param  ContentStorageType  $storageType  保存方法
+     * @param  ContentEditorType  $editorType  エディタータイプ
      * @return array ['success' => bool, 'path' => string|null, 'message' => string]
      */
     public function saveContent(
@@ -95,12 +98,11 @@ class PageContentService
 
     /**
      * コンテンツを読み込み
-     * 
-     * @param string $identifier ページのスラッグやID
-     * @param ContentStorageType $storageType 保存方法
-     * @param ContentEditorType $editorType エディタータイプ
-     * @param string|null $dbContent DB保存の場合のコンテンツ
-     * @return string|null
+     *
+     * @param  string  $identifier  ページのスラッグやID
+     * @param  ContentStorageType  $storageType  保存方法
+     * @param  ContentEditorType  $editorType  エディタータイプ
+     * @param  string|null  $dbContent  DB保存の場合のコンテンツ
      */
     public function loadContent(
         string $identifier,
@@ -129,11 +131,10 @@ class PageContentService
 
     /**
      * コンテンツをレンダリング用に変換
-     * 
-     * @param string $content コンテンツ
-     * @param ContentEditorType $editorType エディタータイプ
-     * @param ContentStorageType $storageType 保存方法
-     * @return string
+     *
+     * @param  string  $content  コンテンツ
+     * @param  ContentEditorType  $editorType  エディタータイプ
+     * @param  ContentStorageType  $storageType  保存方法
      */
     public function renderContent(
         string $content,
@@ -141,10 +142,10 @@ class PageContentService
         ContentStorageType $storageType
     ): string {
         try {
-            return match($editorType) {
+            return match ($editorType) {
                 ContentEditorType::MARKDOWN => $this->renderMarkdown($content),
                 ContentEditorType::HTML => $content,
-                ContentEditorType::BLADE => $storageType === ContentStorageType::FILE 
+                ContentEditorType::BLADE => $storageType === ContentStorageType::FILE
                     ? $content // Bladeファイルは別途レンダリング
                     : $content,
                 ContentEditorType::GUI => $this->renderGui($content),
@@ -169,10 +170,10 @@ class PageContentService
     ): array {
         $filename = $this->generateFilename($identifier, $editorType);
         $path = storage_path("app/{$this->baseDirectory}/{$filename}");
-        
+
         // ディレクトリが存在しない場合は作成
         $directory = dirname($path);
-        if (!File::exists($directory)) {
+        if (! File::exists($directory)) {
             File::makeDirectory($directory, 0755, true);
         }
 
@@ -196,7 +197,7 @@ class PageContentService
         $filename = $this->generateFilename($identifier, $editorType);
         $path = storage_path("app/{$this->baseDirectory}/{$filename}");
 
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             return null;
         }
 
@@ -214,6 +215,7 @@ class PageContentService
 
             if (File::exists($path)) {
                 File::delete($path);
+
                 return true;
             }
 
@@ -236,7 +238,7 @@ class PageContentService
     {
         $slug = Str::slug($identifier);
         $extension = $editorType->fileExtension();
-        
+
         return "{$slug}.{$extension}";
     }
 
@@ -246,6 +248,7 @@ class PageContentService
     public function getFilePath(string $identifier, ContentEditorType $editorType): string
     {
         $filename = $this->generateFilename($identifier, $editorType);
+
         return storage_path("app/{$this->baseDirectory}/{$filename}");
     }
 
@@ -255,6 +258,7 @@ class PageContentService
     public function fileExists(string $identifier, ContentEditorType $editorType): bool
     {
         $path = $this->getFilePath($identifier, $editorType);
+
         return File::exists($path);
     }
 
@@ -265,6 +269,7 @@ class PageContentService
     {
         $parsedown = new Parsedown();
         $parsedown->setSafeMode(false); // HTMLタグを許可
+
         return $parsedown->text($content);
     }
 
@@ -280,16 +285,15 @@ class PageContentService
 
     /**
      * Bladeビューとしてレンダリング
-     * 
-     * @param string $identifier ページのスラッグやID
-     * @param array $data ビューに渡すデータ
-     * @return string
+     *
+     * @param  string  $identifier  ページのスラッグやID
+     * @param  array  $data  ビューに渡すデータ
      */
     public function renderBladeView(string $identifier, array $data = []): string
     {
         try {
-            $viewPath = "{$this->baseDirectory}." . str_replace('/', '.', Str::slug($identifier));
-            
+            $viewPath = "{$this->baseDirectory}.".str_replace('/', '.', Str::slug($identifier));
+
             if (view()->exists($viewPath)) {
                 return view($viewPath, $data)->render();
             }
@@ -307,12 +311,12 @@ class PageContentService
 
     /**
      * 保存方法を変更（マイグレーション）
-     * 
-     * @param string $identifier ページのスラッグやID
-     * @param ContentStorageType $fromStorage 元の保存方法
-     * @param ContentStorageType $toStorage 新しい保存方法
-     * @param ContentEditorType $editorType エディタータイプ
-     * @param string|null $dbContent DB保存の場合のコンテンツ
+     *
+     * @param  string  $identifier  ページのスラッグやID
+     * @param  ContentStorageType  $fromStorage  元の保存方法
+     * @param  ContentStorageType  $toStorage  新しい保存方法
+     * @param  ContentEditorType  $editorType  エディタータイプ
+     * @param  string|null  $dbContent  DB保存の場合のコンテンツ
      * @return array ['success' => bool, 'content' => string|null, 'message' => string]
      */
     public function migrateStorage(

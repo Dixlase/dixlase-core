@@ -18,7 +18,13 @@ return [
     'select_file' => 'メディアファイルを選択:',
     'drag_drop_text' => 'ここにファイルをドラッグするか、クリックしてアップロード',
     'supported_formats' => '対応形式:',
-    
+
+    'settings_heading' => '現在のメディア設定',
+    'settings_heading_auto' => '現在のメディア設定（自動設定）',
+    'allowed_file_types' => '許可されたファイルタイプ',
+    'size_limits' => 'ファイルサイズ上限',
+    'security_status' => 'セキュリティ',
+
     'error' => [
         'file_not_found' => 'ファイルが見つかりません。',
     ],

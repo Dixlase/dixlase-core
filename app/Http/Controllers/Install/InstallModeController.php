@@ -3,8 +3,8 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -24,6 +24,7 @@ namespace App\Http\Controllers\Install;
 
 use App\Enums\AdminMode;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 /**
  * インストール - モード選択
@@ -55,6 +56,11 @@ class InstallModeController extends BaseInstallController
         ]);
 
         session(['install_data.install_mode' => (int) $validated['install_mode']]);
+
+        // ランダムな管理画面URLを初回のみ生成（セッションに未設定の場合）
+        if (! session()->has('install_data.admin_url')) {
+            session(['install_data.admin_url' => 'admin-'.strtolower(Str::random(4))]);
+        }
 
         return redirect()->route('install.settings');
     }

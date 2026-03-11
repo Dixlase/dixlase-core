@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,48 +22,50 @@
 
 namespace App\Traits;
 
+use App\Captcha\CaptchaDriver;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use App\Captcha\CaptchaDriver;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ */
 trait VerifiesCaptcha
 {
     /**
      * Verify captcha for the given request
      *
-     * @param Request $request
-     * @param string|null $formType Optional form type for specific captcha settings
+     * @param  string|null  $formType  Optional form type for specific captcha settings
+     *
      * @throws ValidationException
      */
     protected function verifyCaptcha(Request $request, ?string $formType = null): void
     {
         $captcha = app(CaptchaDriver::class);
-        
+
         // Check if captcha is enabled for this form type
-        if ($formType && !config("captcha.forms.{$formType}", true)) {
+        if ($formType && ! config("captcha.forms.{$formType}", true)) {
             return;
         }
 
         // Skip verification if captcha is not enabled
-        if (!$captcha->isEnabled()) {
+        if (! $captcha->isEnabled()) {
             return;
         }
 
         $result = $captcha->verify($request);
-        
-        if (!$result->isSuccess()) {
+
+        if (! $result->isSuccess()) {
             throw ValidationException::withMessages($result->getErrors());
         }
     }
 
     /**
      * Get captcha validation rules
-     *
-     * @return array
      */
     protected function getCaptchaRules(): array
     {
         $captcha = app(CaptchaDriver::class);
+
         return $captcha->rules();
     }
 }

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,18 +22,20 @@
 
 namespace App\Http\Controllers\Admin\Settings\Security;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
-use App\Services\CaptchaTestService;
+use App\Helpers\AdminModeHelper;
+use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Http\Requests\Admin\Settings\Security\AdminSecurityCaptchaUpdateRequest;
 use App\Services\CaptchaService;
+use App\Services\CaptchaTestService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Http\Requests\Admin\Settings\Security\AdminSecurityCaptchaUpdateRequest;
 
 class AdminSecurityCaptchaController extends AdminLoggedInController
 {
     protected SecuritySettingRepositoryInterface $securitySettingRepository;
+
     protected CaptchaService $captchaService;
 
     public function __construct(
@@ -51,10 +53,10 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
     public function index()
     {
         $currentDriver = $this->securitySettingRepository->get('captcha_driver', 'google');
-        
+
         // プロバイダごとのキーを取得
         $providerKeys = $this->getProviderKeys();
-        
+
         $settings = [
             'captcha_enabled' => filter_var($this->securitySettingRepository->get('captcha_enabled', false), FILTER_VALIDATE_BOOLEAN),
             'captcha_driver' => $currentDriver,
@@ -70,12 +72,12 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
 
         // CAPTCHAテスト結果を取得
         $captchaTestService = app(CaptchaTestService::class);
-        
+
         // バリデーションエラーがない場合はセッションをクリアしてDBから読み込み
-        if (!session()->has('errors') || !session('errors')->any()) {
+        if (! session()->has('errors') || ! session('errors')->any()) {
             session()->forget('captcha_authentication_result');
         }
-        
+
         $captchaTestResult = $captchaTestService->getTestResult();
         $captchaTestDetails = $captchaTestService->getCaptchaTestResult($settings['captcha_driver']);
 
@@ -83,11 +85,11 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         $allForms = $this->captchaService->getAllForms();
         $enabledForms = [];
         $formsByCategory = [];
-        
+
         // カテゴリ別にグループ化しつつ、元のキーを保持
         foreach ($allForms as $formKey => $form) {
             $category = $form['category'] ?? 'other';
-            if (!isset($formsByCategory[$category])) {
+            if (! isset($formsByCategory[$category])) {
                 $formsByCategory[$category] = [];
             }
             $formsByCategory[$category][$formKey] = $form;
@@ -99,6 +101,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         $this->viewParams['captchaTestDetails'] = $captchaTestDetails;
         $this->viewParams['formsByCategory'] = $formsByCategory;
         $this->viewParams['enabledForms'] = $enabledForms;
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.captcha');
 
         return view('admin.settings.security.captcha', $this->viewParams);
     }
@@ -116,32 +119,32 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         $currentSecretKey = $this->securitySettingRepository->get('captcha_secret_key', '');
         $currentVersion = $this->securitySettingRepository->get('captcha_google_version', 'v3');
         $currentMinScore = $this->securitySettingRepository->get('captcha_google_min_score', '0.5');
-        
+
         // 新しいCAPTCHA設定
         $newDriver = $validated['captcha_driver'] ?? 'google';
         $newSiteKey = $validated['captcha_site_key'] ?? '';
         $newSecretKey = $validated['captcha_secret_key'] ?? '';
         $newVersion = $validated['captcha_google_version'] ?? 'v3';
         $newMinScore = $validated['captcha_google_min_score'] ?? '0.5';
-        
+
         // CAPTCHA設定が変更されたかチェック
         $captchaSettingsChanged = (
             $currentDriver !== $newDriver ||
             $currentSiteKey !== $newSiteKey ||
             $currentSecretKey !== $newSecretKey ||
             $currentVersion !== $newVersion ||
-            (string)$currentMinScore !== (string)$newMinScore
+            (string) $currentMinScore !== (string) $newMinScore
         );
-        
+
         // フォームから送信されたテスト結果を確認
         $submittedTestResult = $request->boolean('captcha_authentication_result');
-        
+
         // CAPTCHAテストサービス
         $captchaTestService = app(CaptchaTestService::class);
-        
+
         // CAPTCHA設定が変更された場合のテスト結果リセット処理
         // ただし、フォームでテスト成功状態が送信された場合は保持
-        if ($captchaSettingsChanged && !$submittedTestResult) {
+        if ($captchaSettingsChanged && ! $submittedTestResult) {
             $captchaTestService->resetCaptchaTestResults();
         } elseif ($submittedTestResult) {
             // テスト結果をデータベースに保存（フォームから送信された値を使用）
@@ -151,10 +154,10 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         // CAPTCHA設定を更新
         $this->securitySettingRepository->set('captcha_enabled', $validated['captcha_enabled'] ?? false);
         $this->securitySettingRepository->set('captcha_driver', $newDriver);
-        
+
         // プロバイダごとにキーを保存
         $this->saveProviderKeys($newDriver, $newSiteKey, $newSecretKey);
-        
+
         $this->securitySettingRepository->set('captcha_google_version', $validated['captcha_google_version'] ?? 'v3');
         $this->securitySettingRepository->set('captcha_google_min_score', $validated['captcha_google_min_score'] ?? '0.5');
         $this->securitySettingRepository->set('captcha_google_project_id', $validated['captcha_google_project_id'] ?? '');
@@ -175,7 +178,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
     {
         $token = $request->input('token');
         $driver = $request->input('driver', 'google');
-        
+
         if (empty($token)) {
             return response()->json([
                 'success' => false,
@@ -189,37 +192,37 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
             $minScore = (float) ($request->input('min_score') ?: $this->securitySettingRepository->get('captcha_google_min_score', '0.5'));
             $siteKey = $request->input('site_key') ?: $this->securitySettingRepository->get('captcha_site_key', '');
             $projectId = $request->input('project_id') ?: $this->securitySettingRepository->get('captcha_google_project_id', '');
-            
+
             if (empty($secretKey)) {
                 return response()->json([
                     'success' => false,
                     'message' => __('admin/settings/security/captcha.secret_key_required'),
                 ]);
             }
-            
+
             $result = $this->verifyCaptchaToken($token, $secretKey, $driver, $minScore, $siteKey, $projectId);
-            
+
             if ($result['success']) {
                 // テスト結果を保存
                 $captchaTestService = app(CaptchaTestService::class);
                 $captchaTestService->saveCaptchaTestResult($driver, true);
-                
+
                 return response()->json([
                     'success' => true,
                     'message' => __('admin/settings/security/captcha.validation_success_with_score', [
-                        'score' => $result['score'] ?? 'N/A'
+                        'score' => $result['score'] ?? 'N/A',
                     ]),
                     'score' => $result['score'] ?? null,
                 ]);
             }
-            
+
             return response()->json([
                 'success' => false,
                 'message' => $result['message'] ?? __('admin/settings/security/captcha.validation_failed'),
             ]);
-            
         } catch (\Exception $e) {
             Log::error('CAPTCHA validation error', ['error' => $e->getMessage()]);
+
             return response()->json([
                 'success' => false,
                 'message' => __('admin/settings/security/captcha.api_connection_failed'),
@@ -234,7 +237,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
     {
         $captchaTestService = app(CaptchaTestService::class);
         $captchaTestService->resetCaptchaTestResults();
-        
+
         return response()->json(['success' => true]);
     }
 
@@ -247,7 +250,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         if ($driver === 'google_enterprise') {
             return $this->verifyEnterpriseToken($token, $secretKey, $siteKey, $projectId, $minScore);
         }
-        
+
         $verifyUrl = match ($driver) {
             'google' => 'https://www.google.com/recaptcha/api/siteverify',
             'turnstile' => 'https://challenges.cloudflare.com/turnstile/v0/siteverify',
@@ -261,11 +264,11 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
 
         $data = $response->json();
 
-        if (!($data['success'] ?? false)) {
+        if (! ($data['success'] ?? false)) {
             return [
                 'success' => false,
                 'message' => __('admin/settings/security/captcha.validation_failed_with_errors', [
-                    'errors' => implode(', ', $data['error-codes'] ?? ['unknown'])
+                    'errors' => implode(', ', $data['error-codes'] ?? ['unknown']),
                 ]),
             ];
         }
@@ -287,7 +290,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
             'score' => $data['score'] ?? null,
         ];
     }
-    
+
     /**
      * Google reCAPTCHA Enterpriseトークンを検証
      */
@@ -299,14 +302,14 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
                 'message' => __('admin/settings/security/captcha.test_enterprise_keys_missing'),
             ];
         }
-        
+
         if (empty($projectId)) {
             return [
                 'success' => false,
                 'message' => __('admin/settings/security/captcha.enterprise_project_id_required'),
             ];
         }
-        
+
         // Google reCAPTCHA Enterprise API呼び出し
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
@@ -314,40 +317,42 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
             'event' => [
                 'token' => $token,
                 'siteKey' => $siteKey ?? '',
-            ]
+            ],
         ]);
-        
-        if (!$response->successful()) {
+
+        if (! $response->successful()) {
             Log::error('Google reCAPTCHA Enterprise API Error', [
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
+
             return [
                 'success' => false,
                 'message' => __('admin/settings/security/captcha.api_connection_failed'),
             ];
         }
-        
+
         $data = $response->json();
-        
+
         Log::info('Google reCAPTCHA Enterprise API Response', [
             'token_valid' => $data['tokenProperties']['valid'] ?? false,
             'score' => $data['riskAnalysis']['score'] ?? 'not_provided',
             'reasons' => $data['riskAnalysis']['reasons'] ?? [],
         ]);
-        
-        if (!($data['tokenProperties']['valid'] ?? false)) {
+
+        if (! ($data['tokenProperties']['valid'] ?? false)) {
             $reasons = $data['tokenProperties']['invalidReason'] ?? 'unknown';
+
             return [
                 'success' => false,
                 'message' => __('admin/settings/security/captcha.validation_failed_with_errors', [
-                    'errors' => is_array($reasons) ? implode(', ', $reasons) : $reasons
+                    'errors' => is_array($reasons) ? implode(', ', $reasons) : $reasons,
                 ]),
             ];
         }
-        
+
         $score = $data['riskAnalysis']['score'] ?? 0;
-        
+
         if ($score < $minScore) {
             return [
                 'success' => false,
@@ -358,13 +363,13 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
                 'score' => $score,
             ];
         }
-        
+
         return [
             'success' => true,
             'score' => $score,
         ];
     }
-    
+
     /**
      * プロバイダごとのキーを取得
      */
@@ -385,7 +390,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
             ],
         ];
     }
-    
+
     /**
      * プロバイダごとにキーを保存
      */
@@ -397,7 +402,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
             'turnstile' => 'captcha_turnstile',
             default => 'captcha_google',
         };
-        
+
         $this->securitySettingRepository->set("{$keyPrefix}_site_key", $siteKey);
         $this->securitySettingRepository->set("{$keyPrefix}_secret_key", $secretKey);
     }

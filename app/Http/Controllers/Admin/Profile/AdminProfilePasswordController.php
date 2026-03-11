@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -44,7 +44,7 @@ class AdminProfilePasswordController extends AdminLoggedInController
         $this->viewParams['passwordMinLength'] = (int) SecuritySetting::getValue('password_min_length', 8);
         $this->viewParams['passwordRequireUppercase'] = (bool) SecuritySetting::getValue('password_require_uppercase', true);
         $this->viewParams['passwordRequireSymbol'] = (bool) SecuritySetting::getValue('password_require_symbol', false);
-        
+
         return view('admin.profile.password', $this->viewParams);
     }
 
@@ -55,12 +55,12 @@ class AdminProfilePasswordController extends AdminLoggedInController
     {
         $member = Auth::guard('member')->user();
         $validated = $request->validated();
-        
-        if (!empty($validated['password'])) {
+
+        if (! empty($validated['password'])) {
             $member->password = PasswordService::hash($validated['password']);
             $member->save();
         }
-        
-        return redirect()->route('admin.profile.password')->with('success', __('admin/profile.updated'));
+
+        return redirect()->route('admin.profile.password')->with('success', __('admin/profile/common.updated'));
     }
 }

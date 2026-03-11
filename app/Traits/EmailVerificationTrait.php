@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,8 +27,10 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * メール認証の共通ロジックを提供するTrait
- * 
+ *
  * このTraitは、メンバーとユーザーのメール認証通知で共通する
  * 最小限のロジックのみを提供します。
  */
@@ -42,7 +44,7 @@ trait EmailVerificationTrait
     /**
      * コンテキストに応じた件名キーを取得
      *
-     * @param string $prefix 翻訳キーのプレフィックス（例: 'mail.member_verify_email', 'dixlase-users::mail.verify_email'）
+     * @param  string  $prefix  翻訳キーのプレフィックス（例: 'mail.member_verify_email', 'dixlase-users::mail.verify_email'）
      * @return string 件名の翻訳キー
      */
     protected function getSubjectKey(string $prefix): string
@@ -55,12 +57,12 @@ trait EmailVerificationTrait
     /**
      * コンテキストに応じたメッセージキーを取得
      *
-     * @param string $prefix 翻訳キーのプレフィックス
+     * @param  string  $prefix  翻訳キーのプレフィックス
      * @return string メッセージの翻訳キー
      */
     protected function getMessageKey(string $prefix): string
     {
-        return match($this->context) {
+        return match ($this->context) {
             'email_change' => "{$prefix}.message_email_change",
             'resend' => "{$prefix}.message_resend",
             default => "{$prefix}.message_create",
@@ -70,12 +72,12 @@ trait EmailVerificationTrait
     /**
      * コンテキストに応じたアクションキーを取得
      *
-     * @param string $prefix 翻訳キーのプレフィックス
+     * @param  string  $prefix  翻訳キーのプレフィックス
      * @return string アクションボタンの翻訳キー
      */
     protected function getActionKey(string $prefix): string
     {
-        return $this->context === 'email_change' 
+        return $this->context === 'email_change'
             ? "{$prefix}.action_change_email"
             : "{$prefix}.action_verify_account";
     }
@@ -83,9 +85,9 @@ trait EmailVerificationTrait
     /**
      * メール認証用の署名付き一時URLを生成
      *
-     * @param object $notifiable 通知対象のモデル
-     * @param string $routeName ルート名
-     * @param string $logContext ログ用のコンテキスト名（例: 'member', 'user'）
+     * @param  object  $notifiable  通知対象のモデル
+     * @param  string  $routeName  ルート名
+     * @param  string  $logContext  ログ用のコンテキスト名（例: 'member', 'user'）
      * @return string 署名付きURL
      */
     protected function generateVerificationUrl(object $notifiable, string $routeName, string $logContext = 'entity'): string
@@ -98,14 +100,14 @@ trait EmailVerificationTrait
                 'hash' => sha1($notifiable->getEmailForVerification()),
             ]
         );
-        
+
         \Log::info("Email verification URL generated for {$logContext}", [
             "{$logContext}_id" => $notifiable->getKey(),
             'email' => $notifiable->getEmailForVerification(),
             'url' => $url,
-            'context' => $this->context
+            'context' => $this->context,
         ]);
-        
+
         return $url;
     }
 

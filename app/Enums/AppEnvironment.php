@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,11 @@
 
 namespace App\Enums;
 
+/**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
+ * アプリケーション環境定義
+ */
 enum AppEnvironment: string
 {
     case Local = 'local';
@@ -107,6 +112,7 @@ enum AppEnvironment: string
                 'color' => $env->colorName(),
             ];
         }
+
         return $options;
     }
 

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,8 +23,10 @@
 namespace App\Contracts\Repositories;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * API設定リポジトリインターフェース
- * 
+ *
  * API関連の設定を管理します。
  * boolean値は自動的に'1'/'0'に変換されます。
  */

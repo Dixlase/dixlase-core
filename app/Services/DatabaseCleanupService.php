@@ -3,8 +3,8 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -26,6 +26,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
+ */
 class DatabaseCleanupService
 {
     /**
@@ -34,9 +37,9 @@ class DatabaseCleanupService
     public function getCoreCleanupConfig(): array
     {
         $config = config('admin.database-cleanup', []);
-        
+
         return collect($config)
-            ->filter(fn($item) => $item['enabled'] ?? true)
+            ->filter(fn ($item) => $item['enabled'] ?? true)
             ->toArray();
     }
 
@@ -46,31 +49,32 @@ class DatabaseCleanupService
     public function getPluginCleanupConfig(): array
     {
         $pluginCleanupConfig = [];
-        
+
         $plugins = DB::table('plugins')
             ->whereNotNull('enabled_at')
             ->get();
-        
+
         foreach ($plugins as $plugin) {
             $configPath = base_path("plugins/{$plugin->directory}/config/database-cleanup.php");
-            
-            if (!File::exists($configPath)) {
+
+            if (! File::exists($configPath)) {
                 continue;
             }
-            
+
             try {
                 $pluginConfig = require $configPath;
-                
-                if (!is_array($pluginConfig)) {
+
+                if (! is_array($pluginConfig)) {
                     Log::warning("Invalid database-cleanup.php format in plugin: {$plugin->slug}");
+
                     continue;
                 }
-                
+
                 foreach ($pluginConfig as $key => $tableConfig) {
-                    if (!isset($tableConfig['table']) || !($tableConfig['enabled'] ?? true)) {
+                    if (! isset($tableConfig['table']) || ! ($tableConfig['enabled'] ?? true)) {
                         continue;
                     }
-                    
+
                     $pluginCleanupConfig["plugin:{$plugin->slug}:{$key}"] = array_merge($tableConfig, [
                         'plugin_name' => $plugin->name,
                         'plugin_slug' => $plugin->slug,
@@ -79,10 +83,11 @@ class DatabaseCleanupService
                 }
             } catch (\Exception $e) {
                 Log::error("Failed to load database-cleanup.php from plugin {$plugin->slug}: {$e->getMessage()}");
+
                 continue;
             }
         }
-        
+
         return $pluginCleanupConfig;
     }
 
@@ -104,10 +109,12 @@ class DatabaseCleanupService
     {
         if (str_starts_with($type, 'plugin:')) {
             $pluginConfig = $this->getPluginCleanupConfig();
+
             return $pluginConfig[$type] ?? null;
         }
-        
+
         $coreConfig = $this->getCoreCleanupConfig();
+
         return $coreConfig[$type] ?? null;
     }
 
@@ -117,24 +124,24 @@ class DatabaseCleanupService
     public function cleanup(string $type, int $days, bool $force = false): array
     {
         $config = $this->getCleanupConfig($type);
-        
-        if (!$config) {
+
+        if (! $config) {
             return [
                 'success' => false,
                 'message' => "Cleanup configuration not found for type: {$type}",
                 'count' => 0,
             ];
         }
-        
+
         try {
             $table = $config['table'];
             $dateColumn = $config['date_column'];
             $dateColumnType = $config['date_column_type'] ?? 'datetime';
-            
+
             $query = DB::table($table);
-            
+
             if ($days === 0) {
-                if (!$force) {
+                if (! $force) {
                     return [
                         'success' => false,
                         'message' => 'Force flag required to delete all records',
@@ -147,10 +154,10 @@ class DatabaseCleanupService
                 } else {
                     $cutoffDate = now()->subDays($days);
                 }
-                
+
                 $query->where($dateColumn, '<', $cutoffDate);
             }
-            
+
             // 追加条件の適用
             if (isset($config['additional_conditions'])) {
                 if (is_callable($config['additional_conditions'])) {
@@ -159,27 +166,27 @@ class DatabaseCleanupService
                     $query = $this->applyAdditionalCondition($query, $config['additional_conditions'], $table);
                 }
             }
-            
+
             $count = $query->delete();
-            
-            Log::info("Database cleanup executed", [
+
+            Log::info('Database cleanup executed', [
                 'type' => $type,
                 'table' => $table,
                 'days' => $days,
                 'deleted_count' => $count,
             ]);
-            
+
             return [
                 'success' => true,
                 'message' => "Successfully deleted {$count} records",
                 'count' => $count,
             ];
         } catch (\Exception $e) {
-            Log::error("Database cleanup failed", [
+            Log::error('Database cleanup failed', [
                 'type' => $type,
                 'error' => $e->getMessage(),
             ]);
-            
+
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
@@ -196,17 +203,17 @@ class DatabaseCleanupService
         $results = [];
         $totalCount = 0;
         $coreConfig = $this->getCoreCleanupConfig();
-        
+
         foreach ($coreConfig as $type => $config) {
             if ($type === 'cache_data' && $days > 0) {
                 continue;
             }
-            
+
             $result = $this->cleanup($type, $days, $force);
             $results[$type] = $result;
             $totalCount += $result['count'];
         }
-        
+
         return [
             'success' => true,
             'message' => "Successfully deleted {$totalCount} records from all tables",
@@ -223,7 +230,7 @@ class DatabaseCleanupService
         $locale = app()->getLocale();
         $coreConfig = $this->getCoreCleanupConfig();
         $info = [];
-        
+
         foreach ($coreConfig as $key => $config) {
             // 名前を取得
             $name = $config['name'] ?? '';
@@ -232,7 +239,7 @@ class DatabaseCleanupService
             } elseif (is_array($name)) {
                 $name = $name[$locale] ?? $name['en'] ?? $name['ja'] ?? '';
             }
-            
+
             // 説明を取得
             $description = $config['description'] ?? '';
             if (is_string($description) && str_contains($description, '.')) {
@@ -240,7 +247,7 @@ class DatabaseCleanupService
             } elseif (is_array($description)) {
                 $description = $description[$locale] ?? $description['en'] ?? $description['ja'] ?? '';
             }
-            
+
             $info[$key] = [
                 'name' => $name,
                 'description' => $description,
@@ -248,7 +255,7 @@ class DatabaseCleanupService
                 'table' => $config['table'],
             ];
         }
-        
+
         return $info;
     }
 
@@ -260,7 +267,7 @@ class DatabaseCleanupService
         $locale = app()->getLocale();
         $pluginConfig = $this->getPluginCleanupConfig();
         $info = [];
-        
+
         foreach ($pluginConfig as $key => $config) {
             // 名前を取得
             $name = $config['name'] ?? '';
@@ -269,7 +276,7 @@ class DatabaseCleanupService
             } elseif (is_array($name)) {
                 $name = $name[$locale] ?? $name['en'] ?? $name['ja'] ?? '';
             }
-            
+
             // 説明を取得
             $description = $config['description'] ?? '';
             if (is_string($description) && str_contains($description, '.')) {
@@ -277,7 +284,7 @@ class DatabaseCleanupService
             } elseif (is_array($description)) {
                 $description = $description[$locale] ?? $description['en'] ?? $description['ja'] ?? '';
             }
-            
+
             $info[$key] = [
                 'plugin_name' => $config['plugin_name'],
                 'plugin_slug' => $config['plugin_slug'],
@@ -287,10 +294,10 @@ class DatabaseCleanupService
                 'table' => $config['table'],
             ];
         }
-        
+
         return $info;
     }
-    
+
     /**
      * 追加条件を適用
      */
@@ -303,24 +310,24 @@ class DatabaseCleanupService
                     $query->orWhere('expires_at', '<', now());
                 }
                 break;
-                
+
             case 'used':
                 // リカバリーコード: 使用済みも削除
                 if ($table === 'members_recovery_codes') {
                     $query->orWhereNotNull('used_at');
                 }
                 break;
-                
+
             case 'unused':
                 // パスキー: 未使用かつ90日以上経過したものも削除
                 if ($table === 'webauthn_credentials') {
-                    $query->orWhere(function($q) {
+                    $query->orWhere(function ($q) {
                         $q->whereNull('last_used_at')
-                          ->where('created_at', '<', now()->subDays(90));
+                            ->where('created_at', '<', now()->subDays(90));
                     });
                 }
                 break;
-                
+
             case 'expired_cache':
                 // キャッシュ: 有効期限切れのみ削除
                 if ($table === 'cache') {
@@ -328,7 +335,7 @@ class DatabaseCleanupService
                 }
                 break;
         }
-        
+
         return $query;
     }
 }

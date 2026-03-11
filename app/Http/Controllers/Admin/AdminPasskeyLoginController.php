@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,15 +22,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Member;
-use App\Traits\PasskeyLoginTrait;
-use App\Services\TwoFa\TwoFaPasskeyService;
+use App\Enums\LoginIdentifierMode;
 use App\Helpers\TwoFaHelper;
+use App\Models\Member;
+use App\Services\TwoFa\TwoFaPasskeyService;
+use App\Traits\PasskeyLoginTrait;
 use Illuminate\Http\Request;
 
 /**
  * パスキーログインコントローラー
- * 
+ *
  * WebAuthnを使用したパスキー認証によるログイン処理
  */
 class AdminPasskeyLoginController extends AdminController
@@ -47,20 +48,19 @@ class AdminPasskeyLoginController extends AdminController
 
     /**
      * パスキー認証のチャレンジを取得（オーバーライド）
-     * 
+     *
      * メールサーバー設定のチェックを追加
-     * 
-     * @param Request $request
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function getChallenge(Request $request)
     {
         // メールサーバー設定チェック
         $twoFaHelper = app(TwoFaHelper::class);
-        if (!$twoFaHelper->isMailConfigured()) {
+        if (! $twoFaHelper->isMailConfigured()) {
             return response()->json([
                 'success' => false,
-                'error' => __($this->getTranslationPrefix() . '.two_fa_disabled'),
+                'error' => __($this->getTranslationPrefix().'.two_fa_disabled'),
             ], 422);
         }
 
@@ -122,5 +122,31 @@ class AdminPasskeyLoginController extends AdminController
     protected function getTranslationPrefix(): string
     {
         return 'auth';
+    }
+
+    /**
+     * ログイン識別子モードを取得
+     */
+    protected function getLoginIdentifierMode(): LoginIdentifierMode
+    {
+        $value = (int) \App\Models\SecuritySetting::getValue('login_identifier_mode', LoginIdentifierMode::EmailOrAccountName->value);
+
+        return LoginIdentifierMode::tryFrom($value) ?? LoginIdentifierMode::EmailOrAccountName;
+    }
+
+    /**
+     * メールアドレスでのログインをサポートするかどうか
+     */
+    protected function supportsEmailLogin(): bool
+    {
+        return $this->getLoginIdentifierMode()->supportsEmail();
+    }
+
+    /**
+     * アカウント名でのログインをサポートするかどうか
+     */
+    protected function supportsAccountNameLogin(): bool
+    {
+        return $this->getLoginIdentifierMode()->supportsAccountName();
     }
 }

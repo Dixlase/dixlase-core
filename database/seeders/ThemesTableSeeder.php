@@ -3,8 +3,8 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -22,10 +22,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use App\Models\Theme;
+use Illuminate\Database\Seeder;
 
 class ThemesTableSeeder extends Seeder
 {
@@ -36,13 +34,13 @@ class ThemesTableSeeder extends Seeder
     {
         // theme.jsonから情報を読み込む
         $themeJsonPath = base_path('themes/DixlaseDefaultTheme/theme.json');
-        
+
         if (file_exists($themeJsonPath)) {
             $themeJson = json_decode(file_get_contents($themeJsonPath), true);
-            
+
             // 日本語の説明を取得（フォールバック: 英語）
             $description = $themeJson['description']['ja'] ?? $themeJson['description']['en'] ?? null;
-            
+
             Theme::create([
                 'name' => $themeJson['name'] ?? 'DixlaseDefaultTheme',
                 'package_name' => $themeJson['package_name'] ?? null,
@@ -64,7 +62,7 @@ class ThemesTableSeeder extends Seeder
                 ],
                 'installed_at' => now(),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
         } else {
             // theme.jsonが存在しない場合は最小限の情報で作成
@@ -76,7 +74,7 @@ class ThemesTableSeeder extends Seeder
                 'has_settings' => true,
                 'installed_at' => now(),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
         }
     }

@@ -71,20 +71,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <legend>{{ __('admin/settings/security/notifications.log_levels') }}</legend>
                 
                 <div class="my-3" :class="{ 'opacity-50 pointer-events-none': notificationEnabled === '0' }">
-                    <input type="hidden" name="notification_log_levels" :value="notificationEnabled === '1' ? null : '{{ implode(',', $settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels()) }}'" x-show="notificationEnabled === '0'">
-                    
-                    @php
-                        $logLevelOptions = [];
-                        foreach (\App\Enums\LogLevel::getNotificationLevels() as $level) {
-                            $levelString = \App\Enums\LogLevel::from($level)->toString();
-                            $logLevelOptions[$level] = 'admin/settings/security/notifications.log_level_options.' . $levelString;
-                        }
-                    @endphp
+                    <input type="hidden" name="notification_log_levels" :value="notificationEnabled === '1' ? null : '{{ implode(',', $settings['notification_log_levels'] ?? $defaultNotificationLevels) }}'" x-show="notificationEnabled === '0'">
                     
                     <x-form-toggle-group
                         name="notification_log_levels"
                         :options="$logLevelOptions"
-                        :values="$settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels()"
+                        :values="$settings['notification_log_levels'] ?? $defaultNotificationLevels"
                         xBindDisabled="notificationEnabled === '0'"
                         flexDirection="col"
                     />

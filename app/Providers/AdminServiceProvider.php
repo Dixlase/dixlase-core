@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,27 +22,25 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use App\Policies\AdminPolicy;
-use Illuminate\Support\Facades\Gate;
-use App\Services\TwoFa\TwoFaService;
 use App\Models\SecuritySetting;
+use App\Policies\AdminPolicy;
 use App\Services\AdminLoginLockoutService;
+use App\Services\TwoFa\TwoFaService;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\ServiceProvider;
 use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 
 class AdminServiceProvider extends ServiceProvider
 {
-
     /**
      * Register services.
      */
     public function register(): void
     {
-
         $this->app->singleton(TwoFactorAuthenticationProvider::class, function ($app) {
             return $app->make(TwoFaService::class, [
                 'settingModelClass' => SecuritySetting::class,
-                'context' => 'admin'
+                'context' => 'admin',
             ]);
         });
 
@@ -54,7 +52,6 @@ class AdminServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-
         // Super Admin権限
 
         Gate::define('super_admin', [AdminPolicy::class, 'superAdmin']);

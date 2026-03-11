@@ -38,11 +38,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.status') }}</p>
-                @if($audit->status === \App\Models\FileIntegrityAudit::STATUS_OK)
+                @if($audit->status === $integrityStatusOk)
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                         <i class="fas fa-check-circle mr-1"></i>{{ __('admin/settings/security/integrity.status_ok') }}
                     </span>
-                @elseif($audit->status === \App\Models\FileIntegrityAudit::STATUS_WARNING)
+                @elseif($audit->status === $integrityStatusWarning)
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
                         <i class="fas fa-exclamation-triangle mr-1"></i>{{ __('admin/settings/security/integrity.status_warning') }}
                     </span>
@@ -60,10 +60,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.trigger') }}</p>
                 <p class="font-medium text-gray-900 dark:text-white">
                     @switch($audit->trigger)
-                        @case(\App\Models\FileIntegrityAudit::TRIGGER_MANUAL)
+                        @case($triggerManual)
                             {{ __('admin/settings/security/integrity.trigger_manual') }}
                             @break
-                        @case(\App\Models\FileIntegrityAudit::TRIGGER_SCHEDULE)
+                        @case($triggerSchedule)
                             {{ __('admin/settings/security/integrity.trigger_schedule') }}
                             @break
                         @default

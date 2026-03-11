@@ -1,5 +1,25 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\Services;
 
 use App\Contracts\Logging\LogServiceInterface;
@@ -7,8 +27,10 @@ use App\DTO\Logging\LogContextDTO;
 use Illuminate\Support\Facades\Log;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * ログ出力サービス
- * 
+ *
  * Contract対応の統一的なログ出力機能を提供します。
  */
 class LogService implements LogServiceInterface
@@ -147,8 +169,7 @@ class LogService implements LogServiceInterface
 
     /**
      * コンテキストを配列に正規化
-     * 
-     * @param LogContextDTO|array $context
+     *
      * @return array<string,mixed>
      */
     protected function normalizeContext(LogContextDTO|array $context): array
@@ -162,12 +183,11 @@ class LogService implements LogServiceInterface
 
     /**
      * プラグイン用のログを出力
-     * 
-     * @param string $pluginSlug プラグインスラッグ
-     * @param string $level ログレベル
-     * @param string $message メッセージ
-     * @param array<string,mixed> $context コンテキスト
-     * @return void
+     *
+     * @param  string  $pluginSlug  プラグインスラッグ
+     * @param  string  $level  ログレベル
+     * @param  string  $message  メッセージ
+     * @param  array<string,mixed>  $context  コンテキスト
      */
     public function pluginLog(string $pluginSlug, string $level, string $message, array $context = []): void
     {
@@ -179,11 +199,10 @@ class LogService implements LogServiceInterface
 
     /**
      * プラグイン用の情報ログを出力
-     * 
-     * @param string $pluginSlug プラグインスラッグ
-     * @param string $message メッセージ
-     * @param array<string,mixed> $context コンテキスト
-     * @return void
+     *
+     * @param  string  $pluginSlug  プラグインスラッグ
+     * @param  string  $message  メッセージ
+     * @param  array<string,mixed>  $context  コンテキスト
      */
     public function pluginInfo(string $pluginSlug, string $message, array $context = []): void
     {
@@ -192,11 +211,10 @@ class LogService implements LogServiceInterface
 
     /**
      * プラグイン用のエラーログを出力
-     * 
-     * @param string $pluginSlug プラグインスラッグ
-     * @param string $message メッセージ
-     * @param array<string,mixed> $context コンテキスト
-     * @return void
+     *
+     * @param  string  $pluginSlug  プラグインスラッグ
+     * @param  string  $message  メッセージ
+     * @param  array<string,mixed>  $context  コンテキスト
      */
     public function pluginError(string $pluginSlug, string $message, array $context = []): void
     {
@@ -208,11 +226,10 @@ class LogService implements LogServiceInterface
 
     /**
      * 例外をログに記録
-     * 
-     * @param \Throwable $exception 例外
-     * @param LogContextDTO|array $context 追加コンテキスト
-     * @param string|null $channel チャンネル名
-     * @return void
+     *
+     * @param  \Throwable  $exception  例外
+     * @param  LogContextDTO|array  $context  追加コンテキスト
+     * @param  string|null  $channel  チャンネル名
      */
     public function exception(\Throwable $exception, LogContextDTO|array $context = [], ?string $channel = null): void
     {

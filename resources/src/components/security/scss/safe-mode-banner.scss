@@ -1,0 +1,11 @@
+/**
+ * Safe Mode Banner Styles
+ *
+ * セーフモードバナーのスタイル定義
+ */
+
+/* セーフモードバナー内のフォームのmarginをリセット */
+.safe-mode-banner form {
+    margin-block-end: 0 !important;
+    margin-block-start: 0 !important;
+}

@@ -22,9 +22,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
+    @if($modeData['isPartial'] ?? false)
+        <x-admin.mode-partial-notice />
+    @endif
+
     <form id="security-login-form" method="POST" action="{{ route('admin.settings.security.login.update') }}">
         @csrf
         
+        <!-- ログイン識別子モード設定 -->
+        <section>
+            <h2>{{ __('admin/settings/security/login.login_identifier_mode_settings') }}</h2>
+            <p>{{ __('admin/settings/security/login.login_identifier_mode_description') }}</p>
+
+            <x-security.login-identifier-mode-selector
+                name="login_identifier_mode"
+                :value="old('login_identifier_mode', (string) $loginIdentifierMode)"
+                :columns="3"
+            />
+        </section>
+
         <!-- ログイン通知設定 -->
         <section>
             <h2>{{ __('admin/settings/security/login.login_notification_settings') }}</h2>
@@ -42,6 +58,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
         </section>
 
+        @if(!($modeData['isPartial'] ?? false))
         <!-- デフォルトログイン試行制限設定 -->
         <section>
             <h2>{{ __('admin/settings/security/login.default_login_attempt_settings') }}</h2>
@@ -145,6 +162,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
         </section>
+        @endif
     </form>
 </div>
 @endsection

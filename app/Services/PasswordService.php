@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,19 +22,20 @@
 
 namespace App\Services;
 
+use App\Rules\NotPwnedPassword;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
-use App\Rules\NotPwnedPassword;
-use App\Services\MailServerValidatorService;
 
 /**
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
+ *
  * パスワードサービス
- * 
+ *
  * パスワードに関する包括的な機能を提供：
  * - ハッシュ化・検証
  * - バリデーションルール構築
  * - パスワードリセット関連機能
- * 
+ *
  * メンバー管理とユーザー管理の両方で使用可能
  */
 class PasswordService
@@ -46,7 +47,7 @@ class PasswordService
     /**
      * パスワードをハッシュ化（文字列を直接ハッシュ化）
      *
-     * @param string $password 平文パスワード
+     * @param  string  $password  平文パスワード
      * @return string ハッシュ化されたパスワード
      */
     public static function hash(string $password): string
@@ -56,17 +57,16 @@ class PasswordService
 
     /**
      * パスワードをハッシュ化（配列内のパスワードフィールドを処理）
-     * 
+     *
      * パスワードが空の場合は配列から削除します。
      * パスワードが存在する場合はハッシュ化します。
      *
-     * @param array &$data パスワードフィールドを含む配列（参照渡し）
-     * @param string $field パスワードフィールド名（デフォルト: 'password'）
-     * @return void
+     * @param  array  &$data  パスワードフィールドを含む配列（参照渡し）
+     * @param  string  $field  パスワードフィールド名（デフォルト: 'password'）
      */
     public static function hashPasswordIfPresent(array &$data, string $field = 'password'): void
     {
-        if (!empty($data[$field])) {
+        if (! empty($data[$field])) {
             $data[$field] = Hash::make($data[$field]);
         } else {
             unset($data[$field]);
@@ -76,9 +76,8 @@ class PasswordService
     /**
      * パスワードを検証
      *
-     * @param string $password 平文パスワード
-     * @param string $hashedPassword ハッシュ化されたパスワード
-     * @return bool
+     * @param  string  $password  平文パスワード
+     * @param  string  $hashedPassword  ハッシュ化されたパスワード
      */
     public static function verify(string $password, string $hashedPassword): bool
     {
@@ -88,8 +87,7 @@ class PasswordService
     /**
      * パスワードの再ハッシュ化が必要かチェック
      *
-     * @param string $hashedPassword ハッシュ化されたパスワード
-     * @return bool
+     * @param  string  $hashedPassword  ハッシュ化されたパスワード
      */
     public static function needsRehash(string $hashedPassword): bool
     {
@@ -102,15 +100,15 @@ class PasswordService
 
     /**
      * パスワードバリデーションルールを構築
-     * 
+     *
      * 漏洩パスワードチェックはセキュリティ設定から自動的に取得されます
-     * 
-     * @param int $minLength 最小文字数
-     * @param bool $requireUppercase 大文字を必須にするか
-     * @param bool $requireLowercase 小文字を必須にするか
-     * @param bool $requireNumber 数字を必須にするか
-     * @param bool $requireSymbol 記号を必須にするか
-     * @param bool $isRequired パスワード入力を必須にするか
+     *
+     * @param  int  $minLength  最小文字数
+     * @param  bool  $requireUppercase  大文字を必須にするか
+     * @param  bool  $requireLowercase  小文字を必須にするか
+     * @param  bool  $requireNumber  数字を必須にするか
+     * @param  bool  $requireSymbol  記号を必須にするか
+     * @param  bool  $isRequired  パスワード入力を必須にするか
      * @return array バリデーションルール配列
      */
     public static function buildPasswordRules(
@@ -122,7 +120,7 @@ class PasswordService
         bool $isRequired = true
     ): array {
         $rules = $isRequired ? ['required'] : ['nullable'];
-        
+
         // Laravelのパスワードルールビルダーを使用
         $passwordRule = Password::min($minLength);
 
@@ -151,7 +149,7 @@ class PasswordService
             \App\Models\SecuritySetting::get('pwned_password_check_enabled', false),
             FILTER_VALIDATE_BOOLEAN
         );
-        
+
         if ($checkPwned) {
             $rules[] = new NotPwnedPassword();
         }
@@ -161,12 +159,12 @@ class PasswordService
 
     /**
      * パスワード要件の説明文を生成
-     * 
-     * @param int $minLength 最小文字数
-     * @param bool $requireUppercase 大文字・小文字の混在を必須にするか
-     * @param bool $requireNumber 数字を必須にするか
-     * @param bool $requireSymbol 記号を必須にするか
-     * @param string $locale ロケール（'ja' または 'en'）
+     *
+     * @param  int  $minLength  最小文字数
+     * @param  bool  $requireUppercase  大文字・小文字の混在を必須にするか
+     * @param  bool  $requireNumber  数字を必須にするか
+     * @param  bool  $requireSymbol  記号を必須にするか
+     * @param  string  $locale  ロケール（'ja' または 'en'）
      * @return string パスワード要件の説明文
      */
     public static function getPasswordRequirementsDescription(
@@ -179,15 +177,15 @@ class PasswordService
         $descriptions = [];
 
         $descriptions[] = __('validation.password_requirements.min_length', ['length' => $minLength]);
-        
+
         if ($requireUppercase) {
             $descriptions[] = __('validation.password_requirements.mixed_case');
         }
-        
+
         if ($requireNumber) {
             $descriptions[] = __('validation.password_requirements.numbers');
         }
-        
+
         if ($requireSymbol) {
             $descriptions[] = __('validation.password_requirements.symbols');
         }
@@ -197,39 +195,37 @@ class PasswordService
 
     /**
      * パスワードリセットが利用可能かチェック
-     * 
-     * @param callable $settingGetter 設定取得用のコールバック関数
-     * @return bool
+     *
+     * @param  callable  $settingGetter  設定取得用のコールバック関数
      */
     public static function isPasswordResetAvailable(callable $settingGetter): bool
     {
         $passwordResetEnabled = (bool) $settingGetter('password_reset_enabled', true);
+
         return $passwordResetEnabled && MailServerValidatorService::canSendMail();
     }
 
     /**
      * パスワードリセットが利用不可の場合404エラーを返す
-     * 
-     * @param callable $settingGetter 設定取得用のコールバック関数
-     * @return void
+     *
+     * @param  callable  $settingGetter  設定取得用のコールバック関数
      */
     public static function abortIfPasswordResetUnavailable(callable $settingGetter): void
     {
-        if (!self::isPasswordResetAvailable($settingGetter)) {
+        if (! self::isPasswordResetAvailable($settingGetter)) {
             abort(404);
         }
     }
 
     /**
      * パスワードリセット用のバリデーションルールを取得
-     * 
+     *
      * 漏洩パスワードチェックはセキュリティ設定から自動的に取得されます
-     * 
-     * @param int $minLength 最小文字数
-     * @param bool $requireUppercase 大文字・小文字の混在を必須にするか
-     * @param bool $requireNumber 数字を必須にするか
-     * @param bool $requireSymbol 記号を必須にするか
-     * @return array
+     *
+     * @param  int  $minLength  最小文字数
+     * @param  bool  $requireUppercase  大文字・小文字の混在を必須にするか
+     * @param  bool  $requireNumber  数字を必須にするか
+     * @param  bool  $requireSymbol  記号を必須にするか
      */
     public static function getPasswordResetValidationRules(
         int $minLength,
@@ -253,8 +249,6 @@ class PasswordService
 
     /**
      * パスワードリセットリンク送信用のバリデーションルールを取得
-     *
-     * @return array
      */
     public static function getPasswordResetLinkValidationRules(): array
     {

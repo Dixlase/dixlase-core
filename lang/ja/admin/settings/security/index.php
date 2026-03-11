@@ -27,6 +27,8 @@ return [
     'csp_mode' => 'モード',
     'csp_disabled' => '無効',
     'extensions_desc' => 'プラグイン・テーマのセキュリティポリシー',
+    'extensions_preset' => 'セキュリティプリセット',
+    'auto_configured' => 'この設定はかんたんモードでは自動で構成されます。',
     'notifications_active' => '通知有効',
     'notifications_disabled' => '通知無効',
     'mail_test_required' => 'メールテスト未完了',
@@ -41,4 +43,18 @@ return [
     'files_scanned' => 'スキャンファイル数',
     'status' => 'ステータス',
     'view_details' => '詳細を見る',
+
+    'nav' => [
+        'password' => 'パスワード',
+        'login_attempt' => 'ログイン',
+        'two_fa' => '二段階認証',
+        'captcha' => 'CAPTCHA',
+        'session' => 'セッション',
+        'notifications' => 'エラー通知',
+        'csp' => 'CSP',
+        'extensions' => '拡張機能',
+        'ip' => 'IPアクセス制御',
+        'integrity' => 'ファイル整合性',
+        'environment' => '環境設定',
+    ],
 ];

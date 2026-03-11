@@ -3,8 +3,8 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -20,7 +20,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -30,7 +29,6 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-
     protected $table = 'members';
 
     public function up(): void
@@ -40,7 +38,7 @@ return new class extends Migration
             $table->string('account_name'); // ログイン用アカウント名（半角英数字）
             $table->string('display_name')->nullable(); // 表示名（管理バー等に表示）
             $table->string('description')->nullable();
-            $table->string('email'); 
+            $table->string('email');
             $table->timestamp('email_verified_at')->nullable(); // メール認証日時
             $table->string('pending_email')->nullable(); // 認証待ちの新メールアドレス
             $table->string('locale')->nullable(); // 個別言語設定（nullの場合はシステムデフォルト）
@@ -58,7 +56,7 @@ return new class extends Migration
 
             $table->timestamps();
             $table->softDeletes();
-            
+
             // 検索パフォーマンス向上のためのインデックス（ユニーク制約なし）
             $table->index('email');
         });

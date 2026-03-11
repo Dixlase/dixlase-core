@@ -24,16 +24,7 @@
 @endphp
 
 @if($showBanner)
-@php
-    // CSPバナーが表示されているかチェック
-    $cspBannerActive = session('csp_safe_mode');
-    $cspBannerHeight = 68; // CSPバナーの高さ
-    $maintenanceBannerHeight = 68; // メンテナンスバナーの高さ
-    $topPosition = $cspBannerActive ? $cspBannerHeight : 0;
-    $totalHeight = $cspBannerActive ? ($cspBannerHeight + $maintenanceBannerHeight) : $maintenanceBannerHeight;
-@endphp
-
-<div id="admin-maintenance-banner" class="fixed left-0 right-0 bg-yellow-500 dark:bg-yellow-600 text-white px-4 py-3 shadow-md z-[9999]" style="top: {{ $topPosition }}px;">
+<div id="admin-maintenance-banner" class="fixed left-0 right-0 bg-yellow-500 dark:bg-yellow-600 text-white px-4 py-3 shadow-md z-[9999]" style="top: 0;">
     <div class="max-w-full mx-auto flex items-center justify-between">
         <div class="flex items-center space-x-3">
             <i class="fas fa-exclamation-triangle text-xl"></i>
@@ -56,14 +47,5 @@
         </a>
     </div>
 </div>
-
-{{-- 管理バーの位置を調整 --}}
-<style>
-    /*
-    #admin-bar {
-        top: {{ $totalHeight }}px !important;
-    }
-        */
-</style>
 
 @endif

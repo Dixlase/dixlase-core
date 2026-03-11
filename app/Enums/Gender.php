@@ -3,8 +3,8 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -23,6 +23,8 @@
 namespace App\Enums;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * Gender Enum
  *
  * 性別を表す列挙型。データベースには数値として保存される。
@@ -38,12 +40,10 @@ enum Gender: int
 
     /**
      * 翻訳キーを取得
-     *
-     * @return string
      */
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::MALE => __('common.gender_male'),
             self::FEMALE => __('common.gender_female'),
             self::NON_BINARY => __('common.gender_non_binary'),
@@ -54,12 +54,10 @@ enum Gender: int
 
     /**
      * 翻訳キーの文字列を取得（__()なし）
-     *
-     * @return string
      */
     public function translationKey(): string
     {
-        return match($this) {
+        return match ($this) {
             self::MALE => 'common.gender_male',
             self::FEMALE => 'common.gender_female',
             self::NON_BINARY => 'common.gender_non_binary',
@@ -70,8 +68,6 @@ enum Gender: int
 
     /**
      * 値から名前を取得（デバッグ用）
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -124,9 +120,6 @@ enum Gender: int
 
     /**
      * 値から対応するEnumケースを取得（nullセーフ）
-     *
-     * @param int|null $value
-     * @return self|null
      */
     public static function fromValue(?int $value): ?self
     {
@@ -139,13 +132,10 @@ enum Gender: int
 
     /**
      * 文字列名からEnumケースを取得
-     *
-     * @param string $name
-     * @return self|null
      */
     public static function fromName(string $name): ?self
     {
-        return match(strtoupper($name)) {
+        return match (strtoupper($name)) {
             'MALE' => self::MALE,
             'FEMALE' => self::FEMALE,
             'NON_BINARY', 'NONBINARY' => self::NON_BINARY,
@@ -172,6 +162,6 @@ enum Gender: int
      */
     public static function values(): array
     {
-        return array_map(fn($case) => $case->value, self::cases());
+        return array_map(fn ($case) => $case->value, self::cases());
     }
 }

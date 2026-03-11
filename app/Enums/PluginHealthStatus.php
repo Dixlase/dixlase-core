@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -13,7 +13,8 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
@@ -22,11 +23,13 @@
 namespace App\Enums;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * プラグイン・テーマの健全性ステータス
- * 
+ *
  * 健全性は「中身の整合性・状態」を表します。
  * 宣言された権限と実態の一致、署名の有効性、CSP適合性などを評価します。
- * 
+ *
  * 点数化ルール:
  * - 初期スコア: 100
  * - 指摘ごとに減点
@@ -79,7 +82,7 @@ enum PluginHealthStatus: string
      */
     public function translationKey(): string
     {
-        return 'admin/settings/plugins.health_status.' . $this->value;
+        return 'admin/settings/plugins.health_status.'.$this->value;
     }
 
     /**
@@ -95,7 +98,7 @@ enum PluginHealthStatus: string
      */
     public function description(): string
     {
-        return __($this->translationKey() . '_description');
+        return __($this->translationKey().'_description');
     }
 
     /**
@@ -103,7 +106,7 @@ enum PluginHealthStatus: string
      */
     public function tooltip(): string
     {
-        return __($this->translationKey() . '_tooltip');
+        return __($this->translationKey().'_tooltip');
     }
 
     /**
@@ -193,11 +196,16 @@ enum PluginHealthStatus: string
             'permission_unused' => -2,
             'permission_undefined' => -10,
 
+            // 署名関連（環境別）
+            'signature_unsigned_production' => -15,
+
             // CSP関連（モード別）
             'csp_violation_dev' => 0,
             'csp_violation_standard' => -5,
             'csp_violation_strict' => -15,
             'csp_inline_js_required' => -10,
+            'csp_inline_css_required' => -5,
+            'csp_external_resources' => -3,
 
             // スキャン関連
             'scan_outdated' => -5,

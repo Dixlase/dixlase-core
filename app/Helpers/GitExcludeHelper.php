@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,15 +22,17 @@
 
 namespace App\Helpers;
 
-use Illuminate\Support\Facades\Artisan;
 use App\Console\Commands\SyncGitExclude;
+use Illuminate\Support\Facades\Artisan;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * .git/info/exclude ファイル管理ヘルパー
- * 
+ *
  * このヘルパーは SyncGitExclude コマンドのラッパーです。
  * 管理画面からの呼び出しや、プログラム内での簡易利用に使用します。
- * 
+ *
  * @see \App\Console\Commands\SyncGitExclude
  */
 class GitExcludeHelper
@@ -38,7 +40,7 @@ class GitExcludeHelper
     /**
      * プラグインの除外ルールを追加
      *
-     * @param string $pluginName プラグイン名（例: DixlaseMenu）
+     * @param  string  $pluginName  プラグイン名（例: DixlaseMenus）
      * @return bool 成功したかどうか
      */
     public static function addPluginExclusion(string $pluginName): bool
@@ -48,9 +50,11 @@ class GitExcludeHelper
                 '--add-plugin' => $pluginName,
                 '--force' => true,
             ]);
+
             return $exitCode === 0;
         } catch (\Exception $e) {
-            \Log::error("Failed to add plugin exclusion: " . $e->getMessage());
+            \Log::error('Failed to add plugin exclusion: '.$e->getMessage());
+
             return false;
         }
     }
@@ -58,7 +62,7 @@ class GitExcludeHelper
     /**
      * プラグインの除外ルールを削除
      *
-     * @param string $pluginName プラグイン名
+     * @param  string  $pluginName  プラグイン名
      * @return bool 成功したかどうか
      */
     public static function removePluginExclusion(string $pluginName): bool
@@ -68,9 +72,11 @@ class GitExcludeHelper
                 '--remove-plugin' => $pluginName,
                 '--force' => true,
             ]);
+
             return $exitCode === 0;
         } catch (\Exception $e) {
-            \Log::error("Failed to remove plugin exclusion: " . $e->getMessage());
+            \Log::error('Failed to remove plugin exclusion: '.$e->getMessage());
+
             return false;
         }
     }
@@ -78,7 +84,7 @@ class GitExcludeHelper
     /**
      * テーマの除外ルールを追加
      *
-     * @param string $themeName テーマ名
+     * @param  string  $themeName  テーマ名
      * @return bool 成功したかどうか
      */
     public static function addThemeExclusion(string $themeName): bool
@@ -88,9 +94,11 @@ class GitExcludeHelper
                 '--add-theme' => $themeName,
                 '--force' => true,
             ]);
+
             return $exitCode === 0;
         } catch (\Exception $e) {
-            \Log::error("Failed to add theme exclusion: " . $e->getMessage());
+            \Log::error('Failed to add theme exclusion: '.$e->getMessage());
+
             return false;
         }
     }
@@ -98,7 +106,7 @@ class GitExcludeHelper
     /**
      * テーマの除外ルールを削除
      *
-     * @param string $themeName テーマ名
+     * @param  string  $themeName  テーマ名
      * @return bool 成功したかどうか
      */
     public static function removeThemeExclusion(string $themeName): bool
@@ -108,9 +116,11 @@ class GitExcludeHelper
                 '--remove-theme' => $themeName,
                 '--force' => true,
             ]);
+
             return $exitCode === 0;
         } catch (\Exception $e) {
-            \Log::error("Failed to remove theme exclusion: " . $e->getMessage());
+            \Log::error('Failed to remove theme exclusion: '.$e->getMessage());
+
             return false;
         }
     }
@@ -126,9 +136,11 @@ class GitExcludeHelper
             $exitCode = Artisan::call('dls:sync-git-exclude', [
                 '--force' => true,
             ]);
+
             return $exitCode === 0;
         } catch (\Exception $e) {
-            \Log::error("Failed to sync git exclude: " . $e->getMessage());
+            \Log::error('Failed to sync git exclude: '.$e->getMessage());
+
             return false;
         }
     }
@@ -136,8 +148,7 @@ class GitExcludeHelper
     /**
      * プラグインの除外ルールが存在するか確認
      *
-     * @param string $pluginName プラグイン名
-     * @return bool
+     * @param  string  $pluginName  プラグイン名
      */
     public static function hasPluginExclusion(string $pluginName): bool
     {
@@ -147,8 +158,7 @@ class GitExcludeHelper
     /**
      * テーマの除外ルールが存在するか確認
      *
-     * @param string $themeName テーマ名
-     * @return bool
+     * @param  string  $themeName  テーマ名
      */
     public static function hasThemeExclusion(string $themeName): bool
     {

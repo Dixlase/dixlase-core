@@ -3,29 +3,29 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 namespace App\Http\Controllers\Install;
 
 use App\Http\Requests\Install\InstallDatabaseRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
 
 /**
  * インストール - ステップ3: データベース設定
@@ -81,7 +81,7 @@ class InstallDatabaseController extends BaseInstallController
             $password = $request->input('db_password');
 
             config([
-                "database.connections.test_connection" => [
+                'database.connections.test_connection' => [
                     'driver' => $connection,
                     'host' => $host,
                     'port' => $port,
@@ -93,7 +93,7 @@ class InstallDatabaseController extends BaseInstallController
                     'prefix' => '',
                     'strict' => true,
                     'engine' => null,
-                ]
+                ],
             ]);
 
             DB::connection('test_connection')->getPdo();
@@ -101,12 +101,12 @@ class InstallDatabaseController extends BaseInstallController
 
             return response()->json([
                 'success' => true,
-                'message' => __('install/step3.db_connection_success')
+                'message' => __('install/step3.db_connection_success'),
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('install/step3.db_connection_error', ['error' => $e->getMessage()])
+                'message' => __('install/step3.db_connection_error', ['error' => $e->getMessage()]),
             ], 500);
         }
     }

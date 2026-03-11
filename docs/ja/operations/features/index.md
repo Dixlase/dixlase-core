@@ -1,0 +1,9 @@
+# 機能ガイド
+
+> **[English version](../../../operations/features/index.md)**
+
+個別の管理機能の詳細ガイドです。
+
+## ガイド
+
+- [管理モード仕様](admin-mode-specification.md) - 管理モード機能の詳細と動作

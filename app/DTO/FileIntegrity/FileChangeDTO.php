@@ -1,29 +1,52 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\DTO\FileIntegrity;
 
 use JsonSerializable;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * ファイル変更DTO
- * 
+ *
  * ファイルの変更情報を保持する不変データオブジェクトです。
- * 
- * @package App\DTO\FileIntegrity
  */
 final readonly class FileChangeDTO implements JsonSerializable
 {
     public const TYPE_CHANGED = 'changed';
+
     public const TYPE_ADDED = 'added';
+
     public const TYPE_REMOVED = 'removed';
+
     public const TYPE_SUSPICIOUS = 'suspicious';
 
     /**
-     * @param string $path ファイルパス
-     * @param string $type 変更タイプ（changed, added, removed, suspicious）
-     * @param string|null $oldHash 変更前ハッシュ
-     * @param string|null $newHash 変更後ハッシュ
-     * @param string|null $reason 理由（suspiciousの場合）
+     * @param  string  $path  ファイルパス
+     * @param  string  $type  変更タイプ（changed, added, removed, suspicious）
+     * @param  string|null  $oldHash  変更前ハッシュ
+     * @param  string|null  $newHash  変更後ハッシュ
+     * @param  string|null  $reason  理由（suspiciousの場合）
      */
     public function __construct(
         public string $path,
@@ -35,11 +58,10 @@ final readonly class FileChangeDTO implements JsonSerializable
 
     /**
      * 変更されたファイルを生成
-     * 
-     * @param string $path ファイルパス
-     * @param string $oldHash 変更前ハッシュ
-     * @param string $newHash 変更後ハッシュ
-     * @return self
+     *
+     * @param  string  $path  ファイルパス
+     * @param  string  $oldHash  変更前ハッシュ
+     * @param  string  $newHash  変更後ハッシュ
      */
     public static function changed(string $path, string $oldHash, string $newHash): self
     {
@@ -53,10 +75,9 @@ final readonly class FileChangeDTO implements JsonSerializable
 
     /**
      * 追加されたファイルを生成
-     * 
-     * @param string $path ファイルパス
-     * @param string $newHash ハッシュ
-     * @return self
+     *
+     * @param  string  $path  ファイルパス
+     * @param  string  $newHash  ハッシュ
      */
     public static function added(string $path, string $newHash): self
     {
@@ -69,10 +90,9 @@ final readonly class FileChangeDTO implements JsonSerializable
 
     /**
      * 削除されたファイルを生成
-     * 
-     * @param string $path ファイルパス
-     * @param string $oldHash 削除前ハッシュ
-     * @return self
+     *
+     * @param  string  $path  ファイルパス
+     * @param  string  $oldHash  削除前ハッシュ
      */
     public static function removed(string $path, string $oldHash): self
     {
@@ -85,11 +105,10 @@ final readonly class FileChangeDTO implements JsonSerializable
 
     /**
      * 疑わしいファイルを生成
-     * 
-     * @param string $path ファイルパス
-     * @param string $hash ハッシュ
-     * @param string $reason 理由
-     * @return self
+     *
+     * @param  string  $path  ファイルパス
+     * @param  string  $hash  ハッシュ
+     * @param  string  $reason  理由
      */
     public static function suspicious(string $path, string $hash, string $reason): self
     {
@@ -103,8 +122,6 @@ final readonly class FileChangeDTO implements JsonSerializable
 
     /**
      * 変更タイプか
-     * 
-     * @return bool
      */
     public function isChanged(): bool
     {
@@ -113,8 +130,6 @@ final readonly class FileChangeDTO implements JsonSerializable
 
     /**
      * 追加タイプか
-     * 
-     * @return bool
      */
     public function isAdded(): bool
     {
@@ -123,8 +138,6 @@ final readonly class FileChangeDTO implements JsonSerializable
 
     /**
      * 削除タイプか
-     * 
-     * @return bool
      */
     public function isRemoved(): bool
     {
@@ -133,8 +146,6 @@ final readonly class FileChangeDTO implements JsonSerializable
 
     /**
      * 疑わしいタイプか
-     * 
-     * @return bool
      */
     public function isSuspicious(): bool
     {
@@ -143,7 +154,7 @@ final readonly class FileChangeDTO implements JsonSerializable
 
     /**
      * JSON形式にシリアライズ
-     * 
+     *
      * @return array<string,mixed>
      */
     public function jsonSerialize(): array
@@ -154,12 +165,12 @@ final readonly class FileChangeDTO implements JsonSerializable
             'old_hash' => $this->oldHash,
             'new_hash' => $this->newHash,
             'reason' => $this->reason,
-        ], fn($v) => $v !== null);
+        ], fn ($v) => $v !== null);
     }
 
     /**
      * 配列形式に変換
-     * 
+     *
      * @return array<string,mixed>
      */
     public function toArray(): array
@@ -169,9 +180,8 @@ final readonly class FileChangeDTO implements JsonSerializable
 
     /**
      * 配列からDTOを生成
-     * 
-     * @param array<string,mixed> $data
-     * @return self
+     *
+     * @param  array<string,mixed>  $data
      */
     public static function fromArray(array $data): self
     {

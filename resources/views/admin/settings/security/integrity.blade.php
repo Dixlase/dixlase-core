@@ -50,14 +50,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.baseline_generated_at') }}</p>
                     <p class="font-medium text-gray-900 dark:text-white">
-                        @if(isset($baselineMeta['generated_at']))
-                            @php
-                                $generatedAt = \Carbon\Carbon::parse($baselineMeta['generated_at']);
-                                $formattedDate = app()->getLocale() === 'ja' 
-                                    ? $generatedAt->format('Y年n月j日 H:i')
-                                    : $generatedAt->format('Y-m-d H:i');
-                            @endphp
-                            {{ $formattedDate }}
+                        @if(isset($baselineMeta['formatted_generated_at']))
+                            {{ $baselineMeta['formatted_generated_at'] }}
                         @else
                             N/A
                         @endif
@@ -108,12 +102,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.scan_date') }}</p>
                     <p class="font-medium text-gray-900 dark:text-white">
-                        @php
-                            $formattedScanDate = app()->getLocale() === 'ja' 
-                                ? $latestAudit->created_at->format('Y年n月j日 H:i')
-                                : $latestAudit->created_at->format('Y-m-d H:i');
-                        @endphp
-                        {{ $formattedScanDate }}
+                        {{ $latestAudit->created_at->format($dateFormat) }}
                     </p>
                 </div>
                 <div>
@@ -122,11 +111,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.status') }}</p>
-                    @if($latestAudit->status === \App\Models\FileIntegrityAudit::STATUS_OK)
+                    @if($latestAudit->status === $integrityStatusOk)
                         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                             <i class="fas fa-check-circle mr-1"></i>{{ __('admin/settings/security/integrity.status_ok') }}
                         </span>
-                    @elseif($latestAudit->status === \App\Models\FileIntegrityAudit::STATUS_WARNING)
+                    @elseif($latestAudit->status === $integrityStatusWarning)
                         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
                             <i class="fas fa-exclamation-triangle mr-1"></i>{{ __('admin/settings/security/integrity.status_warning') }}
                         </span>
@@ -140,16 +129,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.trigger') }}</p>
                     <p class="font-medium text-gray-900 dark:text-white">
                         @switch($latestAudit->trigger)
-                            @case(\App\Models\FileIntegrityAudit::TRIGGER_MANUAL)
+                            @case($triggerManual)
                                 {{ __('admin/settings/security/integrity.trigger_manual') }}
                                 @break
-                            @case(\App\Models\FileIntegrityAudit::TRIGGER_SCHEDULE)
+                            @case($triggerSchedule)
                                 {{ __('admin/settings/security/integrity.trigger_schedule') }}
                                 @break
-                            @case(\App\Models\FileIntegrityAudit::TRIGGER_INSTALL)
+                            @case($triggerInstall)
                                 {{ __('admin/settings/security/integrity.trigger_install') }}
                                 @break
-                            @case(\App\Models\FileIntegrityAudit::TRIGGER_UPDATE)
+                            @case($triggerUpdate)
                                 {{ __('admin/settings/security/integrity.trigger_update') }}
                                 @break
                             @default
@@ -249,19 +238,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @foreach($recentAudits as $audit)
                             <tr>
                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                    @php
-                                        $formattedDate = app()->getLocale() === 'ja' 
-                                            ? $audit->created_at->format('Y年n月j日 H:i')
-                                            : $audit->created_at->format('Y-m-d H:i');
-                                    @endphp
-                                    {{ $formattedDate }}
+                                    {{ $audit->created_at->format($dateFormat) }}
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap">
-                                    @if($audit->status === \App\Models\FileIntegrityAudit::STATUS_OK)
+                                    @if($audit->status === $integrityStatusOk)
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                                             {{ __('admin/settings/security/integrity.status_ok') }}
                                         </span>
-                                    @elseif($audit->status === \App\Models\FileIntegrityAudit::STATUS_WARNING)
+                                    @elseif($audit->status === $integrityStatusWarning)
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
                                             {{ __('admin/settings/security/integrity.status_warning') }}
                                         </span>
@@ -276,10 +260,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                     @switch($audit->trigger)
-                                        @case(\App\Models\FileIntegrityAudit::TRIGGER_MANUAL)
+                                        @case($triggerManual)
                                             {{ __('admin/settings/security/integrity.trigger_manual') }}
                                             @break
-                                        @case(\App\Models\FileIntegrityAudit::TRIGGER_SCHEDULE)
+                                        @case($triggerSchedule)
                                             {{ __('admin/settings/security/integrity.trigger_schedule') }}
                                             @break
                                         @default

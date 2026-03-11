@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,52 +27,41 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * 設定リポジトリ抽象ベースクラス
- * 
+ *
  * すべての設定系リポジトリの共通実装を提供します。
  */
 abstract class AbstractSettingRepository
 {
     /**
      * キャッシュキーのプレフィックス
-     * 
-     * @var string
      */
     protected string $cachePrefix;
 
     /**
      * 全設定のキャッシュキー
-     * 
-     * @var string
      */
     protected string $cacheAllKey;
 
     /**
      * キャッシュの有効期限（分）
-     * 
-     * @var int
      */
     protected int $cacheTtl = 10;
 
     /**
      * 設定のキーカラム名（'key' または 'name'）
-     * 
-     * @var string
      */
     protected string $keyColumn = 'name';
 
     /**
      * Eloquentモデルクラス名を取得
-     * 
-     * @return string
      */
     abstract protected function getModelClass(): string;
 
     /**
      * 値を保存前に変換（オーバーライド可能）
-     * 
-     * @param mixed $value
-     * @return mixed
      */
     protected function transformValueForStorage(mixed $value): mixed
     {
@@ -81,9 +70,6 @@ abstract class AbstractSettingRepository
 
     /**
      * 値を取得後に変換（オーバーライド可能）
-     * 
-     * @param mixed $value
-     * @return mixed
      */
     protected function transformValueFromStorage(mixed $value): mixed
     {
@@ -103,10 +89,10 @@ abstract class AbstractSettingRepository
             function () {
                 $modelClass = $this->getModelClass();
                 $settings = $modelClass::pluck('value', $this->keyColumn)->toArray();
-                
+
                 // 値を変換
                 return array_map(
-                    fn($value) => $this->transformValueFromStorage($value),
+                    fn ($value) => $this->transformValueFromStorage($value),
                     $settings
                 );
             }
@@ -116,23 +102,22 @@ abstract class AbstractSettingRepository
     /**
      * 特定のキーの値を取得
      *
-     * @param string $name 設定名
-     * @param mixed $default デフォルト値
-     * @return mixed
+     * @param  string  $name  設定名
+     * @param  mixed  $default  デフォルト値
      */
     public function get(string $name, mixed $default = null): mixed
     {
         return Cache::remember(
-            $this->cachePrefix . $name,
+            $this->cachePrefix.$name,
             now()->addMinutes($this->cacheTtl),
             function () use ($name, $default) {
                 $modelClass = $this->getModelClass();
                 $value = $modelClass::where($this->keyColumn, $name)->value('value');
-                
+
                 if ($value === null) {
                     return $default;
                 }
-                
+
                 return $this->transformValueFromStorage($value);
             }
         );
@@ -141,34 +126,33 @@ abstract class AbstractSettingRepository
     /**
      * 複数のキーの値を一括取得
      *
-     * @param array<string> $names 設定名の配列
-     * @param mixed $default デフォルト値
+     * @param  array<string>  $names  設定名の配列
+     * @param  mixed  $default  デフォルト値
      * @return array<string, mixed>
      */
     public function getMultiple(array $names, mixed $default = null): array
     {
         $settings = [];
-        
+
         foreach ($names as $name) {
             $settings[$name] = $this->get($name, $default);
         }
-        
+
         return $settings;
     }
 
     /**
      * 設定値を保存
      *
-     * @param string $name 設定名
-     * @param mixed $value 設定値
-     * @return Model
+     * @param  string  $name  設定名
+     * @param  mixed  $value  設定値
      */
     public function set(string $name, mixed $value): Model
     {
         $modelClass = $this->getModelClass();
-        
+
         $transformedValue = $this->transformValueForStorage($value);
-        
+
         $record = $modelClass::updateOrCreate(
             [$this->keyColumn => $name],
             ['value' => $transformedValue]
@@ -182,8 +166,7 @@ abstract class AbstractSettingRepository
     /**
      * 複数の設定値を一括保存
      *
-     * @param array<string, mixed> $settings 設定の配列
-     * @return bool
+     * @param  array<string, mixed>  $settings  設定の配列
      */
     public function setMultiple(array $settings): bool
     {
@@ -199,7 +182,7 @@ abstract class AbstractSettingRepository
             Log::error('Failed to set multiple settings', [
                 'repository' => static::class,
                 'error' => $e->getMessage(),
-                'settings' => array_keys($settings)
+                'settings' => array_keys($settings),
             ]);
 
             return false;
@@ -209,20 +192,19 @@ abstract class AbstractSettingRepository
     /**
      * 設定が存在するか確認
      *
-     * @param string $name 設定名
-     * @return bool
+     * @param  string  $name  設定名
      */
     public function has(string $name): bool
     {
         $modelClass = $this->getModelClass();
+
         return $modelClass::where($this->keyColumn, $name)->exists();
     }
 
     /**
      * 設定を削除
      *
-     * @param string $name 設定名
-     * @return bool
+     * @param  string  $name  設定名
      */
     public function delete(string $name): bool
     {
@@ -239,22 +221,19 @@ abstract class AbstractSettingRepository
     /**
      * キャッシュをクリア
      *
-     * @param string|null $name 特定のキーのみクリアする場合は指定
-     * @return void
+     * @param  string|null  $name  特定のキーのみクリアする場合は指定
      */
     public function clearCache(?string $name = null): void
     {
         if ($name !== null) {
-            Cache::forget($this->cachePrefix . $name);
+            Cache::forget($this->cachePrefix.$name);
         }
-        
+
         Cache::forget($this->cacheAllKey);
     }
 
     /**
      * すべてのキャッシュをクリア
-     *
-     * @return void
      */
     public function clearAllCache(): void
     {

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,35 +22,40 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Laravel\Fortify\TwoFactorAuthenticatable;
-use App\Enums\AuthenticationMode;
+use App\Contracts\TwoFaInterface;
 use App\Enums\AppearanceMode;
+use App\Enums\AuthenticationMode;
+use App\Enums\Locale;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
-use App\Enums\Locale;
 use App\Traits\HasPermissions;
 use App\Traits\TwoFa\TwoFactorEnableCheck;
-use App\Contracts\TwoFaInterface;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Laragear\WebAuthn\Contracts\WebAuthnAuthenticatable;
 use Laragear\WebAuthn\WebAuthnData;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 use Ramsey\Uuid\Uuid;
 
-
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * メンバーモデル
+ */
 class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface, WebAuthnAuthenticatable
 {
-    use HasFactory, Notifiable, SoftDeletes, TwoFactorAuthenticatable, HasPermissions, TwoFactorEnableCheck;
-
+    use HasFactory, HasPermissions, Notifiable, SoftDeletes, TwoFactorAuthenticatable, TwoFactorEnableCheck;
 
     /**
      * テーブル名の定義
      */
     protected $table = 'members';
+
     protected $primaryKey = 'id';
+
     protected $casts = [
         'password' => 'hashed',
         'role' => MemberRole::class,
@@ -60,7 +65,6 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
         'appearance' => AppearanceMode::class,
         'locale' => Locale::class,
     ];
-
 
     /**
      * The attributes that are mass assignable.
@@ -116,7 +120,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     /**
      * Send the email verification notification.
      *
-     * @param string|null $context 'create', 'email_change', または 'resend'。null の場合は pending_email の有無で自動判定
+     * @param  string|null  $context  'create', 'email_change', または 'resend'。null の場合は pending_email の有無で自動判定
      * @return void
      */
     public function sendEmailVerificationNotification(?string $context = null)
@@ -125,7 +129,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
         if ($context === null) {
             $context = $this->pending_email ? 'email_change' : 'create';
         }
-        
+
         $this->notify(new \App\Notifications\MemberVerifyEmailNotification($context));
     }
 
@@ -190,9 +194,11 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     /**
      * 二段階認証モードを取得
      */
-    public function getTwoFaMode(): AuthenticationMode|int
+    public function getTwoFaMode(): int
     {
-        return $this->two_fa_mode ?? 0;
+        $mode = $this->two_fa_mode;
+
+        return $mode instanceof AuthenticationMode ? $mode->value : (int) ($mode ?? 0);
     }
 
     /**
@@ -260,19 +266,19 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
 
     /**
      * WebAuthn用の匿名化されたユーザーID（UUID）を返す
-     * 
+     *
      * ユーザーIDから一貫したUUIDを生成（UUID v5を使用）
      */
     public function webAuthnId(): \Ramsey\Uuid\UuidInterface
     {
         // ユーザーIDから一貫したUUIDを生成
         // 名前空間にDNS名前空間を使用し、ユーザーIDを名前として使用
-        return Uuid::uuid5(Uuid::NAMESPACE_DNS, 'dixlase.member.' . $this->id);
+        return Uuid::uuid5(Uuid::NAMESPACE_DNS, 'dixlase.member.'.$this->id);
     }
 
     /**
      * WebAuthn認証情報のリレーション
-     * 
+     *
      * webauthn_credentialsテーブルを使用
      */
     public function webAuthnCredentials(): \Illuminate\Database\Eloquent\Relations\MorphMany
@@ -286,7 +292,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     public function flushCredentials(string ...$except): void
     {
         $this->webAuthnCredentials()
-            ->when($except, fn($query) => $query->whereNotIn('id', $except))
+            ->when($except, fn ($query) => $query->whereNotIn('id', $except))
             ->delete();
     }
 
@@ -296,7 +302,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     public function disableAllCredentials(string ...$except): void
     {
         $this->webAuthnCredentials()
-            ->when($except, fn($query) => $query->whereNotIn('id', $except))
+            ->when($except, fn ($query) => $query->whereNotIn('id', $except))
             ->update(['disabled_at' => now()]);
     }
 

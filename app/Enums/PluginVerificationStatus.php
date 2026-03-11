@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -13,7 +13,8 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
@@ -22,8 +23,10 @@
 namespace App\Enums;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * プラグイン・テーマの検証状態
- * 
+ *
  * 署名と権限定義の検証状態を表します。
  */
 enum PluginVerificationStatus: string
@@ -119,7 +122,7 @@ enum PluginVerificationStatus: string
      */
     public function translationKey(): string
     {
-        return 'admin/settings/plugins.verification.' . $this->value;
+        return 'admin/settings/plugins.verification.'.$this->value;
     }
 
     /**
@@ -269,7 +272,7 @@ enum PluginVerificationStatus: string
      */
     public function canActivateWithCspMode(string $cspMode): bool
     {
-        if (!$this->isCspStatus()) {
+        if (! $this->isCspStatus()) {
             return true;
         }
 

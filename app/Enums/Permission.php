@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,8 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * Permission Enum
  *
  * Defines all available permissions in the system.
@@ -138,8 +140,7 @@ enum Permission: string
             self::API_KEYS_DELETE,
             self::MEMBERS_MANAGE_ROLES,
             self::MEMBERS_DELETE,
-            self::AUDIT_LOGS_EXPORT,
-            => MemberRole::SUPER_ADMIN,
+            self::AUDIT_LOGS_EXPORT, => MemberRole::SUPER_ADMIN,
 
             // Admin
             self::SETTINGS_BASE,
@@ -155,8 +156,7 @@ enum Permission: string
             self::WEBHOOKS_CREATE,
             self::WEBHOOKS_UPDATE,
             self::WEBHOOKS_DELETE,
-            self::API_KEYS_VIEW,
-            => MemberRole::ADMIN,
+            self::API_KEYS_VIEW, => MemberRole::ADMIN,
 
             // Editor
             self::SETTINGS_VIEW,
@@ -167,20 +167,16 @@ enum Permission: string
             self::WEBHOOKS_VIEW,
             self::AUDIT_LOGS_VIEW,
             self::SYSTEM_LOGS_VIEW,
-            self::SYSTEM_CACHE_CLEAR,
-            => MemberRole::EDITOR,
+            self::SYSTEM_CACHE_CLEAR, => MemberRole::EDITOR,
 
             // Author
-            self::MEDIA_UPLOAD,
-            => MemberRole::AUTHOR,
+            self::MEDIA_UPLOAD, => MemberRole::AUTHOR,
 
             // Contributor
-            self::MEDIA_VIEW,
-            => MemberRole::CONTRIBUTOR,
+            self::MEDIA_VIEW, => MemberRole::CONTRIBUTOR,
 
             // Guest (everyone)
-            self::DASHBOARD_VIEW,
-            => MemberRole::GUEST,
+            self::DASHBOARD_VIEW, => MemberRole::GUEST,
         };
     }
 
@@ -189,7 +185,7 @@ enum Permission: string
      */
     public function translationKey(): string
     {
-        return 'permissions.' . $this->value;
+        return 'permissions.'.$this->value;
     }
 
     /**
@@ -244,7 +240,7 @@ enum Permission: string
     {
         return array_filter(
             self::cases(),
-            fn(Permission $p) => $p->resource() === $resource
+            fn (Permission $p) => $p->resource() === $resource
         );
     }
 
@@ -256,11 +252,12 @@ enum Permission: string
         $grouped = [];
         foreach (self::cases() as $permission) {
             $resource = $permission->resource();
-            if (!isset($grouped[$resource])) {
+            if (! isset($grouped[$resource])) {
                 $grouped[$resource] = [];
             }
             $grouped[$resource][] = $permission;
         }
+
         return $grouped;
     }
 
@@ -271,7 +268,7 @@ enum Permission: string
     {
         return array_filter(
             self::cases(),
-            fn(Permission $p) => $role->value >= $p->minimumRole()->value
+            fn (Permission $p) => $role->value >= $p->minimumRole()->value
         );
     }
 
@@ -282,7 +279,7 @@ enum Permission: string
     {
         return array_filter(
             self::cases(),
-            fn(Permission $p) => $p->isDangerous()
+            fn (Permission $p) => $p->isDangerous()
         );
     }
 }

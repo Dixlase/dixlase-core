@@ -13,8 +13,6 @@
         @vite(['resources/src/install/js/dark-mode-init.js'], 'assets/build')
     @endif
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js" crossorigin="anonymous"></script>
-
     <!-- メインスクリプト -->
     @if (app()->environment('local'))
         {{-- 開発環境ではリソースを直接読み込み --}}
@@ -31,7 +29,7 @@
 
 </head>
 <body class="bg-gray-100 dark:bg-black flex items-center justify-center min-h-screen">
-    <div class="flex flex-col items-center w-full max-w-xl min-w-[400px] my-10">
+    <div class="flex flex-col items-center w-full max-w-3xl min-w-[400px] my-10">
 
         <!-- Site Logo -->
         <div class="mb-4">
@@ -39,12 +37,12 @@
         </div>
 
         <!-- Main Installation Container -->
-        <main class="bg-white dark:bg-gray-900 shadow-lg rounded-lg p-8 max-w-xl w-full" role="main">
+        <main class="bg-white dark:bg-gray-900 shadow-lg rounded-lg p-8 w-full" role="main">
 
             <!-- Installation Header -->
             <header class="mb-6">
                 <!-- Step Progress and Language Selector -->
-                <div class="flex justify-between items-center w-full max-w-xl mb-4">
+                <div class="flex justify-between items-center w-full mb-4">
                     <!-- Step Progress Indicator -->
                     @if(isset($current_step) && isset($total_steps))
                         <nav aria-label="{{ __('install/common.installation_progress') }}" class="text-gray-600 dark:text-gray-300">

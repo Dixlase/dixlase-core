@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,9 +28,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ */
 class AdminModeHelper
 {
     private static ?AdminMode $currentMode = null;
+
     private static ?array $visibilities = null;
 
     /**
@@ -43,8 +47,9 @@ class AdminModeHelper
         }
 
         try {
-            if (!Schema::hasTable('base_settings')) {
+            if (! Schema::hasTable('base_settings')) {
                 self::$currentMode = AdminMode::default();
+
                 return self::$currentMode;
             }
 
@@ -54,7 +59,7 @@ class AdminModeHelper
 
             self::$currentMode = AdminMode::fromInt($value !== null ? (int) $value : null);
         } catch (\Exception $e) {
-            Log::warning('admin_mode取得に失敗: ' . $e->getMessage());
+            Log::warning('admin_mode取得に失敗: '.$e->getMessage());
             self::$currentMode = AdminMode::default();
         }
 
@@ -89,6 +94,7 @@ class AdminModeHelper
         // 詳細モードではすべてFull
         if (self::isAdvancedMode()) {
             self::$visibilities = [];
+
             return self::$visibilities;
         }
 
@@ -106,28 +112,29 @@ class AdminModeHelper
                     ->where('name', 'admin_mode_visibilities')
                     ->value('value');
 
-                if (!empty($json)) {
+                if (! empty($json)) {
                     $saved = json_decode($json, true);
                     if (is_array($saved)) {
                         // 保存済み設定でデフォルトを上書き
                         self::$visibilities = array_merge($defaultValues, $saved);
+
                         return self::$visibilities;
                     }
                 }
             }
         } catch (\Exception $e) {
-            Log::warning('admin_mode_visibilities取得に失敗: ' . $e->getMessage());
+            Log::warning('admin_mode_visibilities取得に失敗: '.$e->getMessage());
         }
 
         self::$visibilities = $defaultValues;
+
         return self::$visibilities;
     }
 
     /**
      * 指定メニューキーの表示レベルを取得
      *
-     * @param string $menuKey ドット記法のメニューキー (例: 'settings.security')
-     * @return MenuVisibility
+     * @param  string  $menuKey  ドット記法のメニューキー (例: 'settings.security')
      */
     public static function getMenuVisibility(string $menuKey): MenuVisibility
     {
@@ -174,6 +181,7 @@ class AdminModeHelper
     public static function isMenuEditable(string $menuKey): bool
     {
         $vis = self::getMenuVisibility($menuKey);
+
         return $vis === MenuVisibility::Full || $vis === MenuVisibility::Partial;
     }
 
@@ -191,6 +199,35 @@ class AdminModeHelper
     public static function isMenuGuideOnly(string $menuKey): bool
     {
         return self::getMenuVisibility($menuKey) === MenuVisibility::GuideOnly;
+    }
+
+    /**
+     * ビュー用のモード関連データを一括取得
+     *
+     * コントローラーからビューへ渡すモードデータをまとめて返す。
+     * 返却キー:
+     *   - isSimpleMode: かんたんモードかどうか
+     *   - visibility: MenuVisibility enum値（int）
+     *   - isEditable: 編集可能か（Full/Partial）
+     *   - isReadOnly: 読み取り専用か
+     *   - isGuideOnly: 導線のみか
+     *   - isPartial: Partialモードか（一部フィールド制限あり）
+     *
+     * @param  string  $menuKey  ドット記法のメニューキー
+     * @return array{isSimpleMode: bool, visibility: int, isEditable: bool, isReadOnly: bool, isGuideOnly: bool, isPartial: bool}
+     */
+    public static function getViewModeData(string $menuKey): array
+    {
+        $visibility = self::getMenuVisibility($menuKey);
+
+        return [
+            'isSimpleMode' => self::isSimpleMode(),
+            'visibility' => $visibility->value,
+            'isEditable' => $visibility === MenuVisibility::Full || $visibility === MenuVisibility::Partial,
+            'isReadOnly' => $visibility === MenuVisibility::ReadOnly,
+            'isGuideOnly' => $visibility === MenuVisibility::GuideOnly,
+            'isPartial' => $visibility === MenuVisibility::Partial,
+        ];
     }
 
     /**

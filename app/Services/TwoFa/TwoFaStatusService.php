@@ -1,21 +1,43 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\Services\TwoFa;
 
-use App\Models\SecuritySetting;
 use App\Enums\AuthenticationMode;
+use App\Models\SecuritySetting;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * 二段階認証の状態判定サービス
- * 
+ *
  * 全体設定とプロフィール設定を考慮した二段階認証の実際の状態を判定します。
  */
 class TwoFaStatusService
 {
     /**
      * 実際の二段階認証モードを取得
-     * 
-     * @param \App\Models\Member $user
+     *
+     * @param  \App\Models\Member  $user
      * @return int 実際の二段階認証モード
      */
     public function getActualTwoFaMode($user): int
@@ -23,7 +45,7 @@ class TwoFaStatusService
         // 全体設定を取得
         $twoFaForceMode = (int) SecuritySetting::getValue('two_fa_mode', AuthenticationMode::UseProfileSetting->value);
         $profileTwoFaMode = is_int($user->two_fa_mode) ? $user->two_fa_mode : $user->two_fa_mode->value;
-        
+
         // 実際の二段階認証モードを判定
         if ($twoFaForceMode === AuthenticationMode::UseProfileSetting->value) {
             // プロフィール設定に従う場合はプロフィールの値を使用
@@ -33,31 +55,32 @@ class TwoFaStatusService
             return $twoFaForceMode;
         }
     }
-    
+
     /**
      * 二段階認証が有効かどうかを判定
-     * 
-     * @param \App\Models\Member $user
+     *
+     * @param  \App\Models\Member  $user
      * @return bool 二段階認証が有効な場合true
      */
     public function isTwoFaEnabled($user): bool
     {
         $actualTwoFaMode = $this->getActualTwoFaMode($user);
-        return ($actualTwoFaMode === AuthenticationMode::Always->value || 
-                $actualTwoFaMode === AuthenticationMode::DifferentDevice->value);
+
+        return $actualTwoFaMode === AuthenticationMode::Always->value ||
+                $actualTwoFaMode === AuthenticationMode::DifferentDevice->value;
     }
-    
+
     /**
      * 実際のパスキー有効状態を取得
-     * 
-     * @param \App\Models\Member $user
+     *
+     * @param  \App\Models\Member  $user
      * @return bool パスキーが有効な場合true
      */
     public function isPasskeyEnabled($user): bool
     {
         // 全体設定のパスキーモードを取得
         $twoFaPasskeyMode = (int) SecuritySetting::getValue('two_fa_passkey_mode', '2');
-        
+
         // 実際のパスキー有効状態を判定
         if ($twoFaPasskeyMode === 0) {
             // 全体設定で無効
@@ -70,24 +93,22 @@ class TwoFaStatusService
             return $user->two_fa_passkey_enabled ?? true;
         }
     }
-    
+
     /**
      * 回復コードの自動生成が必要かどうかを判定
-     * 
-     * @param \App\Models\Member $user
-     * @param \App\Services\TwoFa\TwoFaRecoveryCodeService $recoveryCodeService
+     *
+     * @param  \App\Models\Member  $user
      * @return bool 回復コードの自動生成が必要な場合true
      */
     public function shouldGenerateRecoveryCodes($user, TwoFaRecoveryCodeService $recoveryCodeService): bool
     {
-        return $this->isTwoFaEnabled($user) && !$recoveryCodeService->hasRecoveryCodes($user);
+        return $this->isTwoFaEnabled($user) && ! $recoveryCodeService->hasRecoveryCodes($user);
     }
-    
+
     /**
      * パスキー登録促進モーダルを表示すべきかどうかを判定
-     * 
-     * @param \App\Models\Member $user
-     * @param \App\Services\TwoFa\TwoFaPasskeyService $passkeyService
+     *
+     * @param  \App\Models\Member  $user
      * @return bool パスキー登録促進モーダルを表示すべき場合true
      */
     public function shouldPromptPasskeyRegistration($user, TwoFaPasskeyService $passkeyService): bool
@@ -96,42 +117,43 @@ class TwoFaStatusService
         if ($user->passkey_prompt_dismissed ?? false) {
             return false;
         }
-        
-        if (!$this->isTwoFaEnabled($user)) {
+
+        if (! $this->isTwoFaEnabled($user)) {
             return false;
         }
-        
-        if (!$this->isPasskeyEnabled($user)) {
+
+        if (! $this->isPasskeyEnabled($user)) {
             return false;
         }
-        
+
         $passkeyDevices = $passkeyService->getDevices($user);
+
         return $passkeyDevices->isEmpty();
     }
-    
+
     /**
      * 全体設定の二段階認証モードを取得
-     * 
+     *
      * @return int 全体設定の二段階認証モード
      */
     public function getGlobalTwoFaMode(): int
     {
         return (int) SecuritySetting::getValue('two_fa_mode', AuthenticationMode::UseProfileSetting->value);
     }
-    
+
     /**
      * 全体設定のパスキーモードを取得
-     * 
+     *
      * @return int 全体設定のパスキーモード（0=無効、1=有効、2=プロフィールに従う）
      */
     public function getGlobalPasskeyMode(): int
     {
         return (int) SecuritySetting::getValue('two_fa_passkey_mode', '2');
     }
-    
+
     /**
      * パスキーが全体設定で有効かどうかを判定（プロフィール設定を考慮しない）
-     * 
+     *
      * @return bool パスキーが全体設定で有効な場合true
      */
     public function isPasskeyEnabledGlobally(): bool

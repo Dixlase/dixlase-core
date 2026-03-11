@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,8 +24,6 @@ namespace App\Listeners;
 
 use App\Facades\Audit;
 use App\Models\AuditLog;
-use Illuminate\Auth\Events\Attempting;
-use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Auth\Events\Login;
@@ -33,7 +31,6 @@ use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\OtherDeviceLogout;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Auth\Events\Validated;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Events\Dispatcher;
 

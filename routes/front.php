@@ -3,8 +3,8 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -20,9 +20,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 use App\Helpers\PluginHelper;
 use App\Http\Controllers\CspReportController;
+use App\Http\Controllers\Front\FrontCustomAssetController;
 use App\Http\Controllers\Front\FrontWelcomeController;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -42,7 +42,16 @@ Route::post('/csp-report', [CspReportController::class, 'report'])
 Route::middleware(['web', 'front.ip'])->group(
     function () {
         Route::get('/', [FrontWelcomeController::class, 'index'])->name('welcome');
-        
+
+        // Front page custom JS/CSS external file delivery (CSP middleware excluded for non-HTML responses)
+        Route::get('/front/custom-script.js', [FrontCustomAssetController::class, 'script'])
+            ->name('front.custom-script')
+            ->withoutMiddleware([\App\Http\Middleware\ContentSecurityPolicy::class]);
+
+        Route::get('/front/custom-style.css', [FrontCustomAssetController::class, 'style'])
+            ->name('front.custom-style')
+            ->withoutMiddleware([\App\Http\Middleware\ContentSecurityPolicy::class]);
+
         // フロントログテスト用ルート（開発用）
         Route::get('/test-front-log', function () {
             \Illuminate\Support\Facades\Log::channel('front_activity')->info('フロント操作ログテスト', [
@@ -55,7 +64,7 @@ Route::middleware(['web', 'front.ip'])->group(
                 'method' => request()->method(),
                 'timestamp' => now()->toDateTimeString(),
             ]);
-            
+
             \Illuminate\Support\Facades\Log::channel('front_error')->error('フロントエラーログテスト', [
                 'error' => 'テストエラー',
                 'error_type' => 'test_error',
@@ -66,29 +75,29 @@ Route::middleware(['web', 'front.ip'])->group(
                 'method' => request()->method(),
                 'timestamp' => now()->toDateTimeString(),
             ]);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'フロントログを出力しました',
                 'logs' => [
-                    'front_activity' => 'storage/logs/front_activity.log または front_activity-' . now()->format('Y-m-d') . '.log',
-                    'front_error' => 'storage/logs/front_error.log または front_error-' . now()->format('Y-m-d') . '.log',
+                    'front_activity' => 'storage/logs/front_activity.log または front_activity-'.now()->format('Y-m-d').'.log',
+                    'front_error' => 'storage/logs/front_error.log または front_error-'.now()->format('Y-m-d').'.log',
                 ],
                 'admin_url' => route('admin.settings.systems.logs.files', ['type' => 'front_activity']),
             ]);
         })->name('test.front.log');
 
-        //テーマのアセットファイル
+        // テーマのアセットファイル
         Route::get('assets/{type}/{file}', function ($type, $file) {
             $basePath = match ($type) {
-                'theme' => base_path('themes/' . getActiveThemeDirectory() . '/assets'), // アクティブテーマのディレクトリ名を取得
+                'theme' => base_path('themes/'.getActiveThemeDirectory().'/assets'), // アクティブテーマのディレクトリ名を取得
                 'admin' => base_path('resources/admin/assets'),
                 'plugin' => base_path("plugins/{$file}/assets"), // `file` をプラグイン名として扱う
                 default => abort(404),
             };
 
             $filePath = "{$basePath}/{$file}";
-            if (!File::exists($filePath)) {
+            if (! File::exists($filePath)) {
                 abort(404);
             }
 

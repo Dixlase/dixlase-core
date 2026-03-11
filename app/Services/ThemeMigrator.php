@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,29 +22,28 @@
 
 namespace App\Services;
 
-use Illuminate\Database\Migrations\Migrator;
-use Illuminate\Database\Migrations\MigrationRepositoryInterface;
-use Illuminate\Database\Migrations\DatabaseMigrationRepository;
-use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Database\ConnectionResolverInterface;
+use Illuminate\Database\Migrations\MigrationRepositoryInterface;
+use Illuminate\Database\Migrations\Migrator;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
-
+/**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ */
 class ThemeMigrator
 {
     protected Migrator $migrator;
+
     protected Filesystem $files;
+
     protected MigrationRepositoryInterface $repository;
+
     protected ?string $themeSlug;
 
     /**
      * コンストラクタ
-     *
-     * @param Filesystem $files
-     * @param ConnectionResolverInterface $resolver
-     * @param string $migrationTable
      */
     public function __construct(
         Filesystem $files,
@@ -72,9 +71,9 @@ class ThemeMigrator
     /**
      * 指定テーマのマイグレーションを実行
      *
-     * @param string $theme テーマ名
-     * @param string|null $path マイグレーションファイルのパス（デフォルトはテーマディレクトリ内）
-     * @param array $options オプション（--force など）
+     * @param  string  $theme  テーマ名
+     * @param  string|null  $path  マイグレーションファイルのパス（デフォルトはテーマディレクトリ内）
+     * @param  array  $options  オプション（--force など）
      * @return array 実行されたマイグレーションの詳細
      *
      * @throws \Exception
@@ -86,19 +85,19 @@ class ThemeMigrator
         Log::info('ThemeMigrator: Starting migration', [
             'theme' => $theme,
             'path' => $migrationPath,
-            'slug' => $this->themeSlug
+            'slug' => $this->themeSlug,
         ]);
 
-        if (!$this->files->isDirectory($migrationPath)) {
+        if (! $this->files->isDirectory($migrationPath)) {
             Log::error('ThemeMigrator: Migration path does not exist', ['path' => $migrationPath]);
             throw new \Exception("Migration path does not exist: {$migrationPath}");
         }
 
         // マイグレーションファイルの一覧を取得
-        $files = $this->files->glob($migrationPath . '/*.php');
+        $files = $this->files->glob($migrationPath.'/*.php');
         Log::info('ThemeMigrator: Found migration files', [
             'count' => count($files),
-            'files' => array_map('basename', $files)
+            'files' => array_map('basename', $files),
         ]);
 
         // 実行前にマイグレーションファイルを取得
@@ -119,7 +118,7 @@ class ThemeMigrator
         $migrated = array_diff($after, $before);
         Log::info('ThemeMigrator: Migration completed', [
             'migrated_count' => count($migrated),
-            'migrated' => array_values($migrated)
+            'migrated' => array_values($migrated),
         ]);
 
         return array_values($migrated);
@@ -128,8 +127,8 @@ class ThemeMigrator
     /**
      * 指定テーマのマイグレーションをロールバック
      *
-     * @param string $theme テーマ名
-     * @param array $options オプション（--step=1 など）
+     * @param  string  $theme  テーマ名
+     * @param  array  $options  オプション（--step=1 など）
      * @return array ロールバックされたマイグレーションのノート
      *
      * @throws \Exception
@@ -142,26 +141,26 @@ class ThemeMigrator
             'theme' => $theme,
             'path' => $migrationPath,
             'slug' => $this->themeSlug,
-            'options' => $options
+            'options' => $options,
         ]);
 
-        if (!$this->files->isDirectory($migrationPath)) {
+        if (! $this->files->isDirectory($migrationPath)) {
             Log::error('ThemeMigrator: Migration path does not exist', ['path' => $migrationPath]);
             throw new \Exception("Migration path does not exist: {$migrationPath}");
         }
 
         // マイグレーションファイルの一覧を取得
-        $files = $this->files->glob($migrationPath . '/*.php');
+        $files = $this->files->glob($migrationPath.'/*.php');
         Log::info('ThemeMigrator: Found migration files for rollback', [
             'count' => count($files),
-            'files' => array_map('basename', $files)
+            'files' => array_map('basename', $files),
         ]);
 
         // ロールバック前にマイグレーションファイルを取得
         $before = $this->repository->getRan();
         Log::info('ThemeMigrator: Migrations before rollback', [
             'count' => count($before),
-            'migrations' => $before
+            'migrations' => $before,
         ]);
 
         // マイグレーターにマイグレーションパスを設定
@@ -174,14 +173,14 @@ class ThemeMigrator
         $after = $this->repository->getRan();
         Log::info('ThemeMigrator: Migrations after rollback', [
             'count' => count($after),
-            'migrations' => $after
+            'migrations' => $after,
         ]);
 
         // ロールバックされたマイグレーションファイルを抽出
         $rolledBack = array_diff($before, $after);
         Log::info('ThemeMigrator: Rollback completed', [
             'rolled_back_count' => count($rolledBack),
-            'rolled_back' => array_values($rolledBack)
+            'rolled_back' => array_values($rolledBack),
         ]);
 
         return array_values($rolledBack);
@@ -190,8 +189,8 @@ class ThemeMigrator
     /**
      * 指定テーマのマイグレーションをリフレッシュ
      *
-     * @param string $theme テーマ名
-     * @param array $options オプション（--step=1 など）
+     * @param  string  $theme  テーマ名
+     * @param  array  $options  オプション（--step=1 など）
      * @return array リフレッシュ後に実行されたマイグレーションのノート
      *
      * @throws \Exception
@@ -210,8 +209,7 @@ class ThemeMigrator
     /**
      * 指定テーマのマイグレーションステータスを取得
      *
-     * @param string $theme テーマ名
-     * @return array
+     * @param  string  $theme  テーマ名
      *
      * @throws \Exception
      */
@@ -219,7 +217,7 @@ class ThemeMigrator
     {
         $migrationPath = base_path("themes/{$theme}/database/migrations");
 
-        if (!$this->files->isDirectory($migrationPath)) {
+        if (! $this->files->isDirectory($migrationPath)) {
             throw new \Exception("Migration path does not exist: {$migrationPath}");
         }
 
@@ -228,7 +226,7 @@ class ThemeMigrator
         $ran = $this->repository->getRan();
         $ran = array_filter($ran, function ($migration) use ($theme) {
             // テーマ名をプレフィックスとして含むマイグレーションのみをフィルタリング
-            return Str::startsWith($migration, Str::snake($theme) . '_');
+            return Str::startsWith($migration, Str::snake($theme).'_');
         });
 
         $status = [];

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 namespace App\Http\Controllers\Admin\Settings\Base;
 
 use App\Contracts\Repositories\BaseSettingRepositoryInterface;
+use App\Helpers\AdminModeHelper;
 use App\Helpers\ConfigHelper;
 use App\Helpers\EnvHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
@@ -93,6 +94,17 @@ class AdminBaseMailController extends AdminLoggedInController
         $this->viewParams['mailReceiveTestDate'] = $mailReceiveTestDate;
         $this->viewParams['mailers'] = __('mail-server/config.mailers');
         $this->viewParams['encryptions'] = __('mail-server/config.encryptions');
+        $this->viewParams['mailSettingsConfig'] = [
+            'routes' => [
+                'checkTestSession' => route('admin.settings.base.mail.check-test-session'),
+                'clearTestSession' => route('admin.settings.base.mail.clear-test-session'),
+            ],
+            'translations' => [
+                'mailReceiveTestCompleted' => __('admin/settings/base/mail.mail_receive_test_completed'),
+                'mailTestIncomplete' => __('admin/settings/base/mail.mail_test_incomplete'),
+            ],
+        ];
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.base.mail');
 
         return view('admin.settings.base.mail', $this->viewParams);
     }

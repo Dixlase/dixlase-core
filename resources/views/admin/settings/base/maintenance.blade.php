@@ -109,35 +109,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @push('scripts')
-<script nonce="{{ csp_nonce() }}">
-// ラジオボタン変更時にAlpineデータを更新
-document.addEventListener('alpine:init', () => {
-    document.querySelectorAll('input[name="maintenance_auto_release"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            const container = document.querySelector('[x-data]');
-            if (container && container.__x) {
-                container.__x.$data.autoRelease = e.target.value;
-            }
-        });
-    });
-});
-
-// プレビュー機能をグローバルスコープに定義
-window.previewMaintenance = function() {
-    const message = document.querySelector('[name="maintenance_message"]').value;
-    const releaseAt = document.querySelector('[name="maintenance_release_at"]').value;
-    
-    const params = new URLSearchParams({
-        message: message || '{{ __('admin/settings/base/maintenance.default_message') }}'
-    });
-    
-    if (releaseAt) {
-        params.append('release_at', releaseAt);
-    }
-    
-    window.open('{{ route('admin.settings.base.maintenance.preview') }}?' + params.toString(), '_blank');
-};
-</script>
+<div id="maintenance-settings"
+     data-preview-url="{{ route('admin.settings.base.maintenance.preview') }}"
+     data-default-message="{{ __('admin/settings/base/maintenance.default_message') }}"
+     style="display:none;"></div>
 @endpush
 
 @section('save')

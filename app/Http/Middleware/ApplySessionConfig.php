@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,11 +22,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Helpers\ConfigHelper;
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
-use App\Helpers\ConfigHelper;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class ApplySessionConfig
 {
@@ -45,7 +45,7 @@ class ApplySessionConfig
         // Determine the guard from the request context if not provided
         if ($guard === null) {
             // Check if this is an admin route
-            if ($request->is('admin/*') || $request->is('admin')) {
+            if (\App\Helpers\AdminHelper::isAdminRequest($request)) {
                 $guard = 'member';
             } else {
                 // For future user management plugins

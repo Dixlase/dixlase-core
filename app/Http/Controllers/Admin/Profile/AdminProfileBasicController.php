@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,9 +22,9 @@
 
 namespace App\Http\Controllers\Admin\Profile;
 
+use App\Enums\Locale;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Profile\ProfileBasicUpdateRequest;
-use App\Enums\Locale;
 use App\Services\MailServerValidatorService;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,17 +41,17 @@ class AdminProfileBasicController extends AdminLoggedInController
     public function index()
     {
         $member = Auth::guard('member')->user();
-        
+
         // 言語オプションの取得
         $this->viewParams['localeOptions'] = Locale::availableOptions();
-        
+
         // pending_email がある場合の情報を渡す
-        $this->viewParams['hasPendingEmail'] = !empty($member->pending_email);
+        $this->viewParams['hasPendingEmail'] = ! empty($member->pending_email);
         $this->viewParams['pendingEmail'] = $member->pending_email;
-        
+
         // メールサーバー設定状態を渡す
         $this->viewParams['isMailServerTested'] = MailServerValidatorService::isMailServerTested();
-        
+
         return view('admin.profile.basic', $this->viewParams);
     }
 
@@ -62,13 +62,13 @@ class AdminProfileBasicController extends AdminLoggedInController
     {
         $member = Auth::guard('member')->user();
         $validated = $request->validated();
-        
+
         // メールアドレスの変更を検知
         $emailChanged = $member->email !== $validated['email'];
-        
+
         // メールサーバー設定状態を確認
         $isMailServerTested = MailServerValidatorService::isMailServerTested();
-        
+
         // プロフィール更新
         $updateData = [
             'account_name' => $validated['account_name'],
@@ -76,7 +76,7 @@ class AdminProfileBasicController extends AdminLoggedInController
             'description' => $validated['description'] ?? '',
             'locale' => $validated['locale'] ?? null,
         ];
-        
+
         // メールアドレス変更の処理
         if ($emailChanged) {
             if ($isMailServerTested) {
@@ -89,9 +89,9 @@ class AdminProfileBasicController extends AdminLoggedInController
         } else {
             $updateData['pending_email'] = null;
         }
-        
+
         $member->update($updateData);
-        
+
         // メールアドレス変更時に認証メールを送信
         if ($emailChanged && $isMailServerTested) {
             try {
@@ -99,25 +99,25 @@ class AdminProfileBasicController extends AdminLoggedInController
             } catch (\Exception $e) {
                 \Log::error('Failed to send email verification', [
                     'member_id' => $member->id,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
-        
+
         // 言語設定が変更された場合、即座に適用
         if (isset($validated['locale']) && $validated['locale']) {
             \Illuminate\Support\Facades\App::setLocale($validated['locale']);
         }
-        
+
         // メッセージ
         if ($emailChanged && $isMailServerTested) {
-            $message = __('admin/profile.updated_with_email_verification');
-        } elseif ($emailChanged && !$isMailServerTested) {
-            $message = __('admin/profile.updated_email_immediate');
+            $message = __('admin/profile/common.updated_with_email_verification');
+        } elseif ($emailChanged && ! $isMailServerTested) {
+            $message = __('admin/profile/common.updated_email_immediate');
         } else {
-            $message = __('admin/profile.updated');
+            $message = __('admin/profile/common.updated');
         }
-        
+
         return redirect()->route('admin.profile.basic')->with('success', $message);
     }
 }

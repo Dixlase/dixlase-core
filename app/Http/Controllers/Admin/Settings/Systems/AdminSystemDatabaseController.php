@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,9 +22,8 @@
 
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
+use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 use App\Http\Requests\Admin\Settings\Systems\AdminSystemDatabaseCleanupRequest;
 use App\Services\DatabaseCleanupService;
 
@@ -48,7 +47,8 @@ class AdminSystemDatabaseController extends AdminLoggedInController
 
         $this->viewParams['cleanupInfo'] = $cleanupInfo;
         $this->viewParams['pluginCleanupInfo'] = $pluginCleanupInfo;
-        
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.database');
+
         return view('admin::settings.systems.database', $this->viewParams);
     }
 
@@ -71,15 +71,17 @@ class AdminSystemDatabaseController extends AdminLoggedInController
 
             if ($result['success']) {
                 $message = __('admin/settings/systems/database.cleanup_success', ['count' => $result['count']]);
+
                 return redirect()->route('admin.settings.systems.database')->with('success', $message);
             } else {
                 $message = __('admin/settings/systems/database.cleanup_error', ['error' => $result['message']]);
+
                 return redirect()->route('admin.settings.systems.database')->with('error', $message);
             }
         } catch (\Exception $e) {
             $message = __('admin/settings/systems/database.cleanup_error', ['error' => $e->getMessage()]);
+
             return redirect()->route('admin.settings.systems.database')->with('error', $message);
         }
     }
-
 }

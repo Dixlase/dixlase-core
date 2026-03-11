@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,12 +22,13 @@
 
 namespace App\Services\Media;
 
-use Illuminate\Support\Facades\Log;
 use ZipArchive;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * ZIPセキュリティサービス
- * 
+ *
  * ZIPファイルのセキュリティチェック（ZIP爆弾対策、圧縮率チェック等）
  */
 class ZipSecurityService
@@ -70,8 +71,9 @@ class ZipSecurityService
     {
         $result = new ZipCheckResult();
 
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             $result->addError('file_not_found', __('admin/media.security.zip.file_not_found'));
+
             return $result;
         }
 
@@ -80,6 +82,7 @@ class ZipSecurityService
 
         if ($opened !== true) {
             $result->addError('invalid_zip', __('admin/media.security.zip.invalid_zip'));
+
             return $result;
         }
 
@@ -100,7 +103,7 @@ class ZipSecurityService
         // 各ファイルをチェック
         for ($i = 0; $i < $fileCount; $i++) {
             $stat = $zip->statIndex($i);
-            
+
             if ($stat === false) {
                 continue;
             }
@@ -188,13 +191,13 @@ class ZipSecurityService
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
         $i = 0;
-        
+
         while ($bytes >= 1024 && $i < count($units) - 1) {
             $bytes /= 1024;
             $i++;
         }
-        
-        return round($bytes, 2) . ' ' . $units[$i];
+
+        return round($bytes, 2).' '.$units[$i];
     }
 
     /**
@@ -203,6 +206,7 @@ class ZipSecurityService
     public function setMaxCompressionRatio(int $ratio): self
     {
         $this->maxCompressionRatio = $ratio;
+
         return $this;
     }
 
@@ -212,6 +216,7 @@ class ZipSecurityService
     public function setMaxFileCount(int $count): self
     {
         $this->maxFileCount = $count;
+
         return $this;
     }
 
@@ -221,6 +226,7 @@ class ZipSecurityService
     public function setMaxUncompressedSize(int $size): self
     {
         $this->maxUncompressedSize = $size;
+
         return $this;
     }
 
@@ -230,6 +236,7 @@ class ZipSecurityService
     public function addForbiddenExtension(string $extension): self
     {
         $this->forbiddenExtensions[] = strtolower($extension);
+
         return $this;
     }
 }
@@ -240,10 +247,15 @@ class ZipSecurityService
 class ZipCheckResult
 {
     protected array $errors = [];
+
     protected array $warnings = [];
+
     protected int $fileCount = 0;
+
     protected int $uncompressedSize = 0;
+
     protected int $compressedSize = 0;
+
     protected float $compressionRatio = 0;
 
     public function addError(string $code, string $message): void
@@ -258,12 +270,12 @@ class ZipCheckResult
 
     public function hasErrors(): bool
     {
-        return !empty($this->errors);
+        return ! empty($this->errors);
     }
 
     public function hasWarnings(): bool
     {
-        return !empty($this->warnings);
+        return ! empty($this->warnings);
     }
 
     public function getErrors(): array
@@ -278,7 +290,7 @@ class ZipCheckResult
 
     public function isValid(): bool
     {
-        return !$this->hasErrors();
+        return ! $this->hasErrors();
     }
 
     public function setFileCount(int $count): void

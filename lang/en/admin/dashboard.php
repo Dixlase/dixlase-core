@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,4 +15,141 @@
 return [
     'heading' => 'Dashboard',
     'description' => 'You can check the site overview.',
+
+    // Mode toggle
+    'simple_mode' => 'Simple',
+    'detailed_mode' => 'Detailed',
+
+    // Security overview
+    'security_overview' => 'Security Overview',
+    'maintenance_mode' => 'Maintenance Mode',
+    'maintenance_mode_active' => 'Maintenance mode is currently active. The site is not accessible to visitors.',
+    'maintenance_mode_inactive' => 'Maintenance mode is off. The site is accessible.',
+    'safe_mode' => 'Safe Mode',
+    'safe_mode_active' => 'Safe mode is currently active. Some features are restricted.',
+    'safe_mode_inactive' => 'Safe mode is off. All features are available.',
+    'csp_mode' => 'CSP Mode',
+    'csp_development_warning' => 'Production environment is using development CSP mode (Report-Only). Consider switching to standard mode.',
+    'csp_mode_ok' => 'CSP mode is properly configured.',
+    'debug_mode' => 'Debug Mode',
+    'debug_mode_warning' => 'Debug mode is enabled in production. This may expose sensitive information.',
+    'debug_mode_ok' => 'Debug mode is disabled.',
+    'two_fa_status' => 'Two-Factor Authentication',
+    'two_fa_enabled' => 'Enabled (:method)',
+    'two_fa_disabled' => 'Not configured. Setting up 2FA is recommended.',
+
+    // Mail status
+    'mail_status' => 'Mail Server',
+    'mail_not_configured' => 'Mail server settings are incomplete. Email delivery may fail.',
+    'mail_using_log_driver' => 'Using ":driver" driver. Emails will not be delivered.',
+    'mail_configured' => 'Mail server is properly configured.',
+    'mail_test_not_completed' => 'Mail server is configured, but connection/send tests have not been completed yet.',
+
+    // CAPTCHA status
+    'captcha_status' => 'CAPTCHA',
+    'captcha_not_configured' => 'CAPTCHA is not configured. Setting it up is recommended to prevent spam.',
+    'captcha_configured' => 'CAPTCHA is properly configured.',
+    'captcha_test_not_completed' => 'CAPTCHA is configured, but authentication test has not been completed yet.',
+
+    // System info
+    'system_info' => 'System Information',
+    'php_version' => 'PHP Version',
+    'laravel_version' => 'Laravel Version',
+    'dixlase_version' => 'Dixlase Version',
+
+    // Content overview
+    'content_overview' => 'Content Overview',
+
+    // Plugin notifications
+    'plugin_notifications' => 'Plugin Notifications',
+    'view_settings' => 'View Settings',
+    'status_info' => 'Info',
+
+    // Extension overview
+    'extension_overview' => 'Extension Overview',
+    'plugins' => 'Plugins',
+    'themes' => 'Themes',
+    'installed' => 'Installed',
+    'enabled' => 'Enabled',
+    'health_overview' => 'Health Overview',
+    'manage_plugins' => 'Manage Plugins',
+    'no_audits' => 'No plugin audits have been performed yet.',
+
+    // Member overview
+    'member_overview' => 'Member Overview',
+    'total_members' => 'Total',
+    'active' => 'Active',
+    'inactive' => 'Inactive',
+    'role_distribution' => 'Role Distribution',
+    'two_fa_rate_label' => '2FA Enabled',
+    'recent_logins' => 'Recent Logins',
+    'no_recent_logins' => 'No recent login records.',
+    'manage_members' => 'Manage Members',
+
+    // Recent activity
+    'recent_activity' => 'Recent Activity',
+    'activity_system' => 'System',
+    'activity_no_entries' => 'No activity recorded in the last 24 hours.',
+    'activity_failed_count' => ':count failed',
+    'activity_warning_count' => ':count warnings',
+    'activity_last_24h' => 'Last 24 hours',
+    'view_logs' => 'View Logs',
+    'outcome_success' => 'Success',
+    'outcome_failure' => 'Failure',
+    'outcome_denied' => 'Denied',
+    'outcome_pending' => 'Pending',
+    'outcome_unknown' => 'Unknown',
+
+    // Action labels
+    'action_login' => 'Login',
+    'action_logout' => 'Logout',
+    'action_login_failed' => 'Login Failed',
+    'action_login_identifier_check' => 'Identifier Check',
+    'action_login_identifier_not_found' => 'Identifier Not Found',
+    'action_passkey_auth_success' => 'Passkey Auth',
+    'action_passkey_auth_failed' => 'Passkey Auth Failed',
+    'action_new_device_login' => 'New Device Login',
+    'action_password_changed' => 'Password Changed',
+    'action_password_reset' => 'Password Reset',
+    'action_email_changed' => 'Email Changed',
+    'action_two_fa_enabled' => '2FA Enabled',
+    'action_two_fa_disabled' => '2FA Disabled',
+    'action_two_fa_code_sent' => '2FA Code Sent',
+    'action_two_fa_code_verified' => '2FA Verified',
+    'action_two_fa_code_failed' => '2FA Code Failed',
+    'action_recovery_code_used' => 'Recovery Code Used',
+    'action_passkey_registered' => 'Passkey Registered',
+    'action_passkey_revoked' => 'Passkey Revoked',
+    'action_device_trusted' => 'Device Trusted',
+    'action_device_blocked' => 'Device Blocked',
+    'action_device_removed' => 'Device Removed',
+    'action_ip_blocked' => 'IP Blocked',
+    'action_ip_allowed' => 'IP Allowed',
+    'action_lockout_triggered' => 'Lockout Triggered',
+    'action_lockout_released' => 'Lockout Released',
+    'action_step_up_auth_required' => 'Step-up Auth Required',
+    'action_step_up_auth_completed' => 'Step-up Auth Completed',
+    'action_session_created' => 'Session Created',
+    'action_session_destroyed' => 'Session Destroyed',
+    'action_forced_logout' => 'Forced Logout',
+    'action_plugin_installed' => 'Plugin Installed',
+    'action_plugin_enabled' => 'Plugin Enabled',
+    'action_plugin_disabled' => 'Plugin Disabled',
+    'action_plugin_uninstalled' => 'Plugin Uninstalled',
+    'action_plugin_updated' => 'Plugin Updated',
+    'action_theme_installed' => 'Theme Installed',
+    'action_theme_enabled' => 'Theme Enabled',
+    'action_theme_disabled' => 'Theme Disabled',
+    'action_theme_uninstalled' => 'Theme Uninstalled',
+    'action_theme_updated' => 'Theme Updated',
+    'action_settings_updated' => 'Settings Updated',
+    'action_member_created' => 'Member Created',
+    'action_member_updated' => 'Member Updated',
+    'action_member_deleted' => 'Member Deleted',
+    'action_role_changed' => 'Role Changed',
+
+    // Status labels
+    'status_ok' => 'OK',
+    'status_warning' => 'Warning',
+    'status_recommendation' => 'Recommended',
 ];

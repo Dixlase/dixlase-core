@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,14 +22,14 @@
 
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Models\ApiKey;
 use App\Contracts\Repositories\ApiSettingRepositoryInterface;
-use Illuminate\Http\Request;
+use App\Helpers\AdminModeHelper;
+use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Http\Requests\Admin\Settings\Systems\AdminSystemApiGenerateKeyRequest;
+use App\Http\Requests\Admin\Settings\Systems\AdminSystemApiUpdateRequest;
+use App\Models\ApiKey;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use App\Http\Requests\Admin\Settings\Systems\AdminSystemApiUpdateRequest;
-use App\Http\Requests\Admin\Settings\Systems\AdminSystemApiGenerateKeyRequest;
 
 class AdminSystemApiController extends AdminLoggedInController
 {
@@ -56,21 +56,47 @@ class AdminSystemApiController extends AdminLoggedInController
         $apiKeys = ApiKey::with('creator')
             ->orderBy('created_at', 'desc')
             ->get();
-        
+
         // API設定を取得
         $settings = [
             'api_enabled' => filter_var($this->apiSettingRepository->get('api_enabled', false), FILTER_VALIDATE_BOOLEAN),
             'api_rate_limit' => (int) $this->apiSettingRepository->get('api_rate_limit', 60),
             'api_signature_required' => filter_var($this->apiSettingRepository->get('api_signature_required', true), FILTER_VALIDATE_BOOLEAN),
         ];
-        
+
         // 利用可能なスコープ
         $availableScopes = ApiKey::availableScopes();
-        
+
+        // Alpine.js用のJSON設定データ
+        $apiConfig = [
+            'apiEnabled' => old('api_enabled', $settings['api_enabled']) ? '1' : '0',
+            'apiKeys' => $apiKeys,
+            'translations' => [
+                'key_name' => __('admin/settings/systems/api.key_name'),
+                'environment' => __('admin/settings/systems/api.environment'),
+                'key_prefix' => __('admin/settings/systems/api.key_prefix'),
+                'rate_limit' => __('admin/settings/systems/api.rate_limit'),
+                'requests_per_minute' => __('admin/settings/systems/api.requests_per_minute'),
+                'unlimited' => __('admin/settings/systems/api.unlimited'),
+                'expires_at' => __('admin/settings/systems/api.expires_at'),
+                'no_expiry' => __('admin/settings/systems/api.no_expiry'),
+                'usage_count' => __('admin/settings/systems/api.usage_count'),
+                'created_at' => __('admin/settings/systems/api.created_at'),
+                'scopes' => __('admin/settings/systems/api.scopes'),
+                'no_scopes' => __('admin/settings/systems/api.no_scopes'),
+                'allowed_ips' => __('admin/settings/systems/api.allowed_ips'),
+                'all_ips_allowed' => __('admin/settings/systems/api.all_ips_allowed'),
+                'key_description' => __('admin/settings/systems/api.key_description'),
+                'copied_to_clipboard' => __('admin/settings/systems/api.copied_to_clipboard'),
+            ],
+        ];
+
         $this->viewParams['apiKeys'] = $apiKeys;
         $this->viewParams['settings'] = $settings;
         $this->viewParams['availableScopes'] = $availableScopes;
-        
+        $this->viewParams['apiConfig'] = $apiConfig;
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.api');
+
         return view('admin/settings/systems/api.index', $this->viewParams);
     }
 
@@ -80,16 +106,16 @@ class AdminSystemApiController extends AdminLoggedInController
     public function update(AdminSystemApiUpdateRequest $request)
     {
         $validated = $request->validated();
-        
+
         $this->apiSettingRepository->set('api_enabled', $validated['api_enabled'] ?? false);
         $this->apiSettingRepository->set('api_rate_limit', $validated['api_rate_limit'] ?? 60);
         $this->apiSettingRepository->set('api_signature_required', $validated['api_signature_required'] ?? true);
-        
+
         Log::channel('admin_activity')->info('API設定を更新しました', [
             'member_id' => Auth::guard('member')->id(),
             'settings' => $validated,
         ]);
-        
+
         return redirect()->route('admin.settings.systems.api')
             ->with('success', __('admin/settings/systems/api.update_success'));
     }
@@ -100,15 +126,15 @@ class AdminSystemApiController extends AdminLoggedInController
     public function generateKey(AdminSystemApiGenerateKeyRequest $request)
     {
         $validated = $request->validated();
-        
+
         // 許可IPリストをパース
         $allowedIps = null;
-        if (!empty($validated['allowed_ips'])) {
+        if (! empty($validated['allowed_ips'])) {
             $allowedIps = array_filter(
                 array_map('trim', explode(',', $validated['allowed_ips']))
             );
         }
-        
+
         // APIキー生成
         $result = ApiKey::generate(
             name: $validated['name'],
@@ -122,18 +148,18 @@ class AdminSystemApiController extends AdminLoggedInController
                 'description' => $validated['description'] ?? null,
             ]
         );
-        
+
         Log::channel('admin_activity')->info('APIキーを生成しました', [
             'member_id' => Auth::guard('member')->id(),
             'api_key_id' => $result['model']->id,
             'name' => $validated['name'],
             'environment' => $validated['environment'],
         ]);
-        
+
         // 生成されたキーをセッションに保存（一度だけ表示）
         session()->flash('generated_key', $result['plain_key']);
         session()->flash('generated_key_id', $result['model']->id);
-        
+
         return redirect()->route('admin.settings.systems.api')
             ->with('success', __('admin/settings/systems/api.key_generated'));
     }
@@ -144,16 +170,16 @@ class AdminSystemApiController extends AdminLoggedInController
     public function revokeKey(int $id)
     {
         $apiKey = ApiKey::findOrFail($id);
-        
+
         $keyName = $apiKey->name;
         $apiKey->delete();
-        
+
         Log::channel('admin_activity')->info('APIキーを削除しました', [
             'member_id' => Auth::guard('member')->id(),
             'api_key_id' => $id,
             'name' => $keyName,
         ]);
-        
+
         return redirect()->route('admin.settings.systems.api')
             ->with('success', __('admin/settings/systems/api.key_revoked'));
     }
@@ -164,7 +190,7 @@ class AdminSystemApiController extends AdminLoggedInController
     public function regenerateKey(int $id)
     {
         $apiKey = ApiKey::findOrFail($id);
-        
+
         // 新しいキーを生成
         $result = ApiKey::generate(
             name: $apiKey->name,
@@ -178,21 +204,21 @@ class AdminSystemApiController extends AdminLoggedInController
                 'description' => $apiKey->description,
             ]
         );
-        
+
         // 古いキーを削除
         $apiKey->delete();
-        
+
         Log::channel('admin_activity')->info('APIキーを再生成しました', [
             'member_id' => Auth::guard('member')->id(),
             'old_api_key_id' => $id,
             'new_api_key_id' => $result['model']->id,
             'name' => $result['model']->name,
         ]);
-        
+
         // 生成されたキーをセッションに保存（一度だけ表示）
         session()->flash('generated_key', $result['plain_key']);
         session()->flash('generated_key_id', $result['model']->id);
-        
+
         return redirect()->route('admin.settings.systems.api')
             ->with('success', __('admin/settings/systems/api.key_regenerated'));
     }

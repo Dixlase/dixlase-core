@@ -1,23 +1,39 @@
 <?php
+
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 namespace App\Services\Csp;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * CSP Blocklist Service
- * 
+ *
  * 外部のブロックリストソースから悪意あるドメインや
  * トラッキングドメインを取得するサービス。
- * 
+ *
  * ブロックリストのソースはconfig/csp.phpで設定可能。
  */
 class CspBlocklistService
@@ -45,21 +61,22 @@ class CspBlocklistService
     {
         $locale = app()->getLocale();
         $categories = [];
-        
+
         foreach ($this->sources as $key => $source) {
             // 言語に応じた名前と説明を取得（フォールバック付き）
-            $name = $locale === 'en' && isset($source['name_en']) 
-                ? $source['name_en'] 
+            $name = $locale === 'en' && isset($source['name_en'])
+                ? $source['name_en']
                 : ($source['name'] ?? $key);
-            $description = $locale === 'en' && isset($source['description_en']) 
-                ? $source['description_en'] 
+            $description = $locale === 'en' && isset($source['description_en'])
+                ? $source['description_en']
                 : ($source['description'] ?? '');
-            
+
             $categories[$key] = [
                 'name' => $name,
                 'description' => $description,
             ];
         }
+
         return $categories;
     }
 
@@ -68,13 +85,13 @@ class CspBlocklistService
      */
     public function getBlocklist(string $category, bool $forceRefresh = false): array
     {
-        if (!isset($this->sources[$category])) {
+        if (! isset($this->sources[$category])) {
             return [];
         }
 
         $cacheKey = "csp_blocklist_{$category}";
 
-        if (!$forceRefresh && Cache::has($cacheKey)) {
+        if (! $forceRefresh && Cache::has($cacheKey)) {
             return Cache::get($cacheKey);
         }
 
@@ -108,6 +125,7 @@ class CspBlocklistService
         foreach (array_keys($this->sources) as $category) {
             $all[$category] = $this->getBlocklist($category, $forceRefresh);
         }
+
         return $all;
     }
 
@@ -120,34 +138,35 @@ class CspBlocklistService
         foreach ($categories as $category) {
             $domains = array_merge($domains, $this->getBlocklist($category, $forceRefresh));
         }
+
         return array_unique($domains);
     }
 
     /**
      * 指定されたドメインがブロックリストに含まれているかチェック
-     * 
-     * @param array $domainsToCheck チェックするドメインの配列
-     * @param array|null $categories チェックするカテゴリ（nullの場合は有効な全カテゴリ）
+     *
+     * @param  array  $domainsToCheck  チェックするドメインの配列
+     * @param  array|null  $categories  チェックするカテゴリ（nullの場合は有効な全カテゴリ）
      * @return array マッチしたドメインとカテゴリの情報
      */
     public function checkDomainsAgainstBlocklist(array $domainsToCheck, ?array $categories = null): array
     {
         // 有効なカテゴリを取得
         $enabledCategories = $categories ?? $this->getEnabledCategories();
-        
+
         if (empty($enabledCategories)) {
             return [];
         }
 
         $matches = [];
-        
+
         foreach ($enabledCategories as $category) {
             $blocklist = $this->getBlocklist($category);
-            
+
             foreach ($domainsToCheck as $domain) {
                 // ドメインを正規化
                 $normalizedDomain = $this->normalizeDomain($domain);
-                
+
                 if (in_array($normalizedDomain, $blocklist, true)) {
                     $matches[] = [
                         'domain' => $domain,
@@ -171,6 +190,7 @@ class CspBlocklistService
             if (empty($enabled)) {
                 return [];
             }
+
             return array_filter(explode(',', $enabled));
         } catch (\Exception $e) {
             return [];
@@ -187,10 +207,10 @@ class CspBlocklistService
             $parsed = parse_url($domain);
             $domain = $parsed['host'] ?? $domain;
         }
-        
+
         // www.を除去
         $domain = preg_replace('/^www\./', '', $domain);
-        
+
         return strtolower(trim($domain));
     }
 
@@ -201,13 +221,13 @@ class CspBlocklistService
     {
         $locale = app()->getLocale();
         $source = $this->sources[$category] ?? null;
-        
-        if (!$source) {
+
+        if (! $source) {
             return $category;
         }
 
-        return $locale === 'en' && isset($source['name_en']) 
-            ? $source['name_en'] 
+        return $locale === 'en' && isset($source['name_en'])
+            ? $source['name_en']
             : ($source['name'] ?? $category);
     }
 
@@ -225,7 +245,7 @@ class CspBlocklistService
 
     /**
      * ブロックリスト検出時のアクションを取得
-     * 
+     *
      * @return string 'warn' または 'block'
      */
     public function getBlocklistAction(): string
@@ -233,6 +253,7 @@ class CspBlocklistService
         try {
             $actionValue = \App\Models\SecuritySetting::get('csp_blocklist_action', (string) \App\Enums\CspBlocklistAction::default()->value);
             $action = \App\Enums\CspBlocklistAction::fromValue($actionValue);
+
             return $action ? $action->toString() : \App\Enums\CspBlocklistAction::default()->toString();
         } catch (\Exception $e) {
             return \App\Enums\CspBlocklistAction::default()->toString();
@@ -254,11 +275,12 @@ class CspBlocklistService
     {
         $response = Http::timeout(30)->get($url);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             throw new \Exception("HTTP {$response->status()}");
         }
 
         $content = $response->body();
+
         return $this->parseHostsFile($content);
     }
 
@@ -284,10 +306,11 @@ class CspBlocklistService
                 // コメント部分を除去
                 $domain = preg_replace('/#.*$/', '', $domain);
                 $domain = trim($domain);
-                
+
                 if ($this->isValidDomain($domain)) {
                     $domains[] = $domain;
                 }
+
                 continue;
             }
 
@@ -316,7 +339,7 @@ class CspBlocklistService
         }
 
         // 基本的なドメイン形式チェック
-        if (!preg_match('/^[a-z0-9]([a-z0-9\-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9\-]*[a-z0-9])?)*$/i', $domain)) {
+        if (! preg_match('/^[a-z0-9]([a-z0-9\-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9\-]*[a-z0-9])?)*$/i', $domain)) {
             return false;
         }
 
@@ -332,7 +355,7 @@ class CspBlocklistService
         foreach (array_keys($this->sources) as $category) {
             $cacheKey = "csp_blocklist_{$category}";
             $cached = Cache::get($cacheKey);
-            
+
             $stats[$category] = [
                 'name' => $this->sources[$category]['name'],
                 'count' => $cached ? count($cached) : 0,
@@ -340,6 +363,7 @@ class CspBlocklistService
                 'last_updated' => $cached ? Cache::get("{$cacheKey}_updated") : null,
             ];
         }
+
         return $stats;
     }
 

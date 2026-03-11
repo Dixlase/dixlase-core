@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,36 +22,41 @@
 
 namespace App\Helpers;
 
-use App\Models\SecuritySetting;
 use App\Models\BaseSetting;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Schema;
+use App\Models\SecuritySetting;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ */
 class ConfigHelper
 {
     /**
-     * Get configuration value with priority: config(.env) -> database -> default
-     * 
-     * @param string $configKey Config key (e.g., 'session.driver', 'app.name', 'mail.host')
-     * @param string $dbKey Database key for model (e.g., 'session_driver', 'app_name', 'mail_host')
-     * @param mixed $default Default value if neither config nor database has the value
-     * @param string $type Return type: 'string', 'bool', 'int', 'float'
-     * @param string $model Model class to use: 'SecuritySetting', 'BaseSetting'
+     * Get configuration value with priority: database -> config(.env) -> default
+     *
+     * Database values (set via admin UI) take priority over config/.env defaults.
+     * This ensures admin-set values are always respected in the CMS.
+     *
+     * @param  string  $configKey  Config key (e.g., 'session.driver', 'app.name', 'mail.host')
+     * @param  string  $dbKey  Database key for model (e.g., 'session_driver', 'app_name', 'mail_host')
+     * @param  mixed  $default  Default value if neither database nor config has the value
+     * @param  string  $type  Return type: 'string', 'bool', 'int', 'float'
+     * @param  string  $model  Model class to use: 'SecuritySetting', 'BaseSetting'
      * @return mixed
      */
     public static function get(string $configKey, string $dbKey, $default, string $type = 'string', string $model = 'SecuritySetting')
     {
-        // Priority 1: config(.env)
-        $configValue = config($configKey);
-        if ($configValue !== null) {
-            return self::castValue($configValue, $type);
-        }
-
-        // Priority 2: database
+        // Priority 1: database (admin UI setting)
         $dbValue = self::getFromDatabase($dbKey, $model);
         if ($dbValue !== null) {
             return self::castValue($dbValue, $type);
+        }
+
+        // Priority 2: config(.env)
+        $configValue = config($configKey);
+        if ($configValue !== null) {
+            return self::castValue($configValue, $type);
         }
 
         // Priority 3: default
@@ -60,16 +65,14 @@ class ConfigHelper
 
     /**
      * Get value from database using specified model
-     * 
-     * @param string $key
-     * @param string $model
+     *
      * @return mixed|null
      */
     private static function getFromDatabase(string $key, string $model = 'SecuritySetting')
     {
         // インストール前やデータベース接続エラーの場合はnullを返す
-        if (!file_exists(base_path('.env')) || !env('INSTALLED', false)) {
-            return null;
+        if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
+            return;
         }
 
         try {
@@ -89,17 +92,10 @@ class ConfigHelper
         } catch (\Exception $e) {
             // If there's any database error (e.g., during installation), return null
         }
-        
-        return null;
     }
 
     /**
      * Set value to database using specified model
-     * 
-     * @param string $key
-     * @param string $value
-     * @param string $model
-     * @return void
      */
     private static function setToDatabase(string $key, string $value, string $model = 'SecuritySetting'): void
     {
@@ -118,15 +114,14 @@ class ConfigHelper
                     break;
             }
         } catch (\Exception $e) {
-            Log::error("Database write failed for {$model}::{$key}: " . $e->getMessage());
+            Log::error("Database write failed for {$model}::{$key}: ".$e->getMessage());
         }
     }
 
     /**
      * Cast value to specified type
-     * 
-     * @param mixed $value
-     * @param string $type
+     *
+     * @param  mixed  $value
      * @return mixed
      */
     private static function castValue($value, string $type)
@@ -148,48 +143,20 @@ class ConfigHelper
 
     /**
      * Get effective session lifetime for the current user context
-     * 
-     * @param string|null $guard Guard name (e.g., 'member' for admin)
+     *
+     * All guards share the same session_lifetime setting.
+     *
+     * @param  string|null  $guard  Guard name (unused, kept for API compatibility)
      * @return int Session lifetime in minutes
      */
     public static function getEffectiveSessionLifetime(?string $guard = null): int
     {
-        // Determine the guard if not provided
-        if ($guard === null) {
-            $guard = Auth::getDefaultDriver();
-        }
-
-        // For admin members, check if custom session lifetime is enabled
-        if ($guard === 'member') {
-            try {
-                // セキュリティ設定からセッション設定を取得
-                if (Schema::hasTable('security_settings')) {
-                    $sessionLifetime = (int) SecuritySetting::getValue('session_member_lifetime', 120);
-                    if ($sessionLifetime > 0) {
-                        return $sessionLifetime;
-                    }
-                }
-            } catch (\Exception $e) {
-                // If there's any database error (e.g., during installation), fall back to config
-            }
-        }
-
-        // For user management plugins or other contexts, add similar logic here
-        // Example:
-        // if ($guard === 'user') {
-        //     $userSessionEnabled = (bool) UserSetting::getValue('user_session_lifetime_enabled', false);
-        //     if ($userSessionEnabled) {
-        //         return (int) UserSetting::getValue('user_session_lifetime', 120);
-        //     }
-        // }
-
-        // Fall back to base session lifetime
         return self::getSessionLifetime();
     }
 
     /**
      * Get session driver (fixed to guard-aware-database)
-     * 
+     *
      * @return string Session driver name
      */
     public static function getSessionDriver(): string
@@ -199,7 +166,7 @@ class ConfigHelper
 
     /**
      * Get session encryption setting
-     * 
+     *
      * @return bool Whether session should be encrypted
      */
     public static function getSessionEncrypt(): bool
@@ -209,7 +176,7 @@ class ConfigHelper
 
     /**
      * Get session lifetime (base value without admin member override)
-     * 
+     *
      * @return int Session lifetime in minutes
      */
     public static function getSessionLifetime(): int
@@ -217,12 +184,10 @@ class ConfigHelper
         return self::get('session.lifetime', 'session_lifetime', 120, 'int', 'SecuritySetting');
     }
 
-
     /**
      * Set session encryption setting
-     * 
-     * @param bool $encrypt Whether session should be encrypted
-     * @return void
+     *
+     * @param  bool  $encrypt  Whether session should be encrypted
      */
     public static function setSessionEncrypt(bool $encrypt): void
     {
@@ -231,9 +196,8 @@ class ConfigHelper
 
     /**
      * Set session lifetime
-     * 
-     * @param int $lifetime Session lifetime in minutes
-     * @return void
+     *
+     * @param  int  $lifetime  Session lifetime in minutes
      */
     public static function setSessionLifetime(int $lifetime): void
     {
@@ -244,8 +208,6 @@ class ConfigHelper
 
     /**
      * Get application name
-     * 
-     * @return string
      */
     public static function getAppName(): string
     {
@@ -254,8 +216,6 @@ class ConfigHelper
 
     /**
      * Get application locale
-     * 
-     * @return string
      */
     public static function getAppLocale(): string
     {
@@ -264,8 +224,6 @@ class ConfigHelper
 
     /**
      * Get application timezone
-     * 
-     * @return string
      */
     public static function getAppTimezone(): string
     {
@@ -274,8 +232,6 @@ class ConfigHelper
 
     /**
      * Get maintenance mode status
-     * 
-     * @return bool
      */
     public static function getMaintenanceMode(): bool
     {
@@ -284,8 +240,6 @@ class ConfigHelper
 
     /**
      * Get maintenance message
-     * 
-     * @return string
      */
     public static function getMaintenanceMessage(): string
     {
@@ -294,8 +248,6 @@ class ConfigHelper
 
     /**
      * Get notification enabled status
-     * 
-     * @return bool
      */
     public static function getNotificationEnabled(): bool
     {
@@ -304,8 +256,6 @@ class ConfigHelper
 
     /**
      * Get notification email
-     * 
-     * @return string
      */
     public static function getNotificationEmail(): string
     {
@@ -316,8 +266,6 @@ class ConfigHelper
 
     /**
      * Get mail mailer
-     * 
-     * @return string
      */
     public static function getMailMailer(): string
     {
@@ -326,8 +274,6 @@ class ConfigHelper
 
     /**
      * Get mail host
-     * 
-     * @return string
      */
     public static function getMailHost(): string
     {
@@ -336,8 +282,6 @@ class ConfigHelper
 
     /**
      * Get mail port
-     * 
-     * @return int
      */
     public static function getMailPort(): int
     {
@@ -346,8 +290,6 @@ class ConfigHelper
 
     /**
      * Get mail username
-     * 
-     * @return string
      */
     public static function getMailUsername(): string
     {
@@ -356,8 +298,6 @@ class ConfigHelper
 
     /**
      * Get mail password
-     * 
-     * @return string
      */
     public static function getMailPassword(): string
     {
@@ -366,8 +306,6 @@ class ConfigHelper
 
     /**
      * Get mail encryption
-     * 
-     * @return string
      */
     public static function getMailEncryption(): string
     {
@@ -376,8 +314,6 @@ class ConfigHelper
 
     /**
      * Get mail from address
-     * 
-     * @return string
      */
     public static function getMailFromAddress(): string
     {
@@ -389,9 +325,8 @@ class ConfigHelper
     /**
      * Apply session configuration dynamically
      * This method can be called from middleware or service providers
-     * 
-     * @param string|null $guard Guard name
-     * @return void
+     *
+     * @param  string|null  $guard  Guard name
      */
     public static function applySessionConfig(?string $guard = null): void
     {
@@ -404,7 +339,7 @@ class ConfigHelper
             ]);
         } catch (\Exception $e) {
             // If there's any error (e.g., during installation or DB issues), use defaults
-            
+
             // Set safe defaults
             config([
                 'session.lifetime' => config('session.lifetime', 120),
@@ -416,34 +351,18 @@ class ConfigHelper
 
     /**
      * Get session configuration summary for debugging
-     * 
-     * @param string|null $guard Guard name
+     *
+     * @param  string|null  $guard  Guard name
      * @return array Configuration summary
      */
     public static function getSessionConfigSummary(?string $guard = null): array
     {
-        $membersSessionEnabled = false;
-        $membersSessionLifetime = null;
-        
-        if ($guard === 'member') {
-            try {
-                // セキュリティ設定からセッション設定を取得
-                if (Schema::hasTable('security_settings')) {
-                    $membersSessionLifetime = (int) SecuritySetting::getValue('session_member_lifetime', 120);
-                }
-            } catch (\Exception $e) {
-                // If there's any database error (e.g., during installation), use default values
-            }
-        }
-
         return [
             'guard' => $guard,
             'effective_lifetime' => self::getEffectiveSessionLifetime($guard),
             'effective_driver' => self::getSessionDriver(),
             'effective_encrypt' => self::getSessionEncrypt(),
-            'members_session_enabled' => $membersSessionEnabled,
-            'members_session_lifetime' => $membersSessionLifetime,
-            'security_default_lifetime' => self::getSessionLifetime(),
+            'session_lifetime' => self::getSessionLifetime(),
             'config_default_lifetime' => config('session.lifetime', 120),
         ];
     }

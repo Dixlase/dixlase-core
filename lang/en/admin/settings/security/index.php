@@ -27,6 +27,8 @@ return [
     'csp_mode' => 'Mode',
     'csp_disabled' => 'Disabled',
     'extensions_desc' => 'Plugin/Theme Security Policy',
+    'extensions_preset' => 'Security Preset',
+    'auto_configured' => 'This setting is automatically configured in Simple Mode.',
     'notifications_active' => 'Notifications Active',
     'notifications_disabled' => 'Notifications Disabled',
     'mail_test_required' => 'Mail Test Required',
@@ -41,4 +43,18 @@ return [
     'files_scanned' => 'Files Scanned',
     'status' => 'Status',
     'view_details' => 'View Details',
+
+    'nav' => [
+        'password' => 'Password',
+        'login_attempt' => 'Login',
+        'two_fa' => 'Two-Factor Authentication',
+        'captcha' => 'CAPTCHA',
+        'session' => 'Session',
+        'notifications' => 'Error Notifications',
+        'csp' => 'CSP',
+        'extensions' => 'Extensions',
+        'ip' => 'IP Access Control',
+        'integrity' => 'File Integrity',
+        'environment' => 'Environment',
+    ],
 ];

@@ -1,32 +1,54 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\DTO\Mail;
 
 use JsonSerializable;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * メール送信結果DTO
- * 
+ *
  * メール送信の結果を保持する不変データオブジェクトです。
- * 
- * @package App\DTO\Mail
  */
 final readonly class MailResultDTO implements JsonSerializable
 {
     public const STATUS_SUCCESS = 'success';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_QUEUED = 'queued';
 
     /**
-     * @param bool $success 成功したかどうか
-     * @param string $status ステータス（success, failed, queued）
-     * @param string|null $message メッセージ
-     * @param string|null $messageId メッセージID（送信成功時）
-     * @param string|null $error エラーメッセージ（失敗時）
-     * @param string|null $errorCode エラーコード（失敗時）
-     * @param array<string> $recipients 送信先
-     * @param string $sentAt 送信日時
-     * @param array<string,mixed> $meta メタデータ
+     * @param  bool  $success  成功したかどうか
+     * @param  string  $status  ステータス（success, failed, queued）
+     * @param  string|null  $message  メッセージ
+     * @param  string|null  $messageId  メッセージID（送信成功時）
+     * @param  string|null  $error  エラーメッセージ（失敗時）
+     * @param  string|null  $errorCode  エラーコード（失敗時）
+     * @param  array<string>  $recipients  送信先
+     * @param  string  $sentAt  送信日時
+     * @param  array<string,mixed>  $meta  メタデータ
      */
     public function __construct(
         public bool $success,
@@ -42,11 +64,10 @@ final readonly class MailResultDTO implements JsonSerializable
 
     /**
      * 成功結果を生成
-     * 
-     * @param array<string> $recipients 送信先
-     * @param string|null $messageId メッセージID
-     * @param string|null $message メッセージ
-     * @return self
+     *
+     * @param  array<string>  $recipients  送信先
+     * @param  string|null  $messageId  メッセージID
+     * @param  string|null  $message  メッセージ
      */
     public static function success(array $recipients, ?string $messageId = null, ?string $message = null): self
     {
@@ -62,11 +83,10 @@ final readonly class MailResultDTO implements JsonSerializable
 
     /**
      * 失敗結果を生成
-     * 
-     * @param string $error エラーメッセージ
-     * @param string|null $errorCode エラーコード
-     * @param array<string> $recipients 送信先
-     * @return self
+     *
+     * @param  string  $error  エラーメッセージ
+     * @param  string|null  $errorCode  エラーコード
+     * @param  array<string>  $recipients  送信先
      */
     public static function failed(string $error, ?string $errorCode = null, array $recipients = []): self
     {
@@ -82,10 +102,9 @@ final readonly class MailResultDTO implements JsonSerializable
 
     /**
      * キュー追加結果を生成
-     * 
-     * @param array<string> $recipients 送信先
-     * @param string|null $message メッセージ
-     * @return self
+     *
+     * @param  array<string>  $recipients  送信先
+     * @param  string|null  $message  メッセージ
      */
     public static function queued(array $recipients, ?string $message = null): self
     {
@@ -100,8 +119,6 @@ final readonly class MailResultDTO implements JsonSerializable
 
     /**
      * 成功したか
-     * 
-     * @return bool
      */
     public function isSuccess(): bool
     {
@@ -110,18 +127,14 @@ final readonly class MailResultDTO implements JsonSerializable
 
     /**
      * 失敗したか
-     * 
-     * @return bool
      */
     public function isFailed(): bool
     {
-        return !$this->success;
+        return ! $this->success;
     }
 
     /**
      * キューに追加されたか
-     * 
-     * @return bool
      */
     public function isQueued(): bool
     {
@@ -130,7 +143,7 @@ final readonly class MailResultDTO implements JsonSerializable
 
     /**
      * JSON形式にシリアライズ
-     * 
+     *
      * @return array<string,mixed>
      */
     public function jsonSerialize(): array
@@ -145,12 +158,12 @@ final readonly class MailResultDTO implements JsonSerializable
             'recipients' => $this->recipients,
             'sent_at' => $this->sentAt,
             'meta' => $this->meta,
-        ], fn($v) => $v !== null && $v !== []);
+        ], fn ($v) => $v !== null && $v !== []);
     }
 
     /**
      * 配列形式に変換
-     * 
+     *
      * @return array<string,mixed>
      */
     public function toArray(): array

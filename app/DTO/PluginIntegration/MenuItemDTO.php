@@ -1,31 +1,51 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\DTO\PluginIntegration;
 
 use JsonSerializable;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * メニューアイテムのDTO
- * 
+ *
  * メニュープラグインで使用するメニューアイテムの
  * 不変データオブジェクトです。
- * 
- * @package App\DTO\PluginIntegration
  */
 final readonly class MenuItemDTO implements JsonSerializable
 {
     /**
-     * @param string $label メニューラベル（表示名）
-     * @param string $url メニューURL
-     * @param string $target リンクターゲット（'_self', '_blank', '_parent', '_top'）
-     * @param string|null $sourceType ソースタイプ（'custom', 'page', 'post', etc.）
-     * @param string|null $sourceId ソースID（プラグインコンテンツのID）
-     * @param string|null $sourceProvider ソースプロバイダー（プラグインスラッグ）
-     * @param string|null $iconClass アイコンクラス（例: 'fas fa-home'）
-     * @param string|null $cssClass CSSクラス
-     * @param int $displayOrder 表示順
-     * @param bool $isActive 有効/無効
-     * @param array<string,mixed> $meta 追加メタデータ
+     * @param  string  $label  メニューラベル（表示名）
+     * @param  string  $url  メニューURL
+     * @param  string  $target  リンクターゲット（'_self', '_blank', '_parent', '_top'）
+     * @param  string|null  $sourceType  ソースタイプ（'custom', 'page', 'post', etc.）
+     * @param  string|null  $sourceId  ソースID（プラグインコンテンツのID）
+     * @param  string|null  $sourceProvider  ソースプロバイダー（プラグインスラッグ）
+     * @param  string|null  $iconClass  アイコンクラス（例: 'fas fa-home'）
+     * @param  string|null  $cssClass  CSSクラス
+     * @param  int  $displayOrder  表示順
+     * @param  bool  $isActive  有効/無効
+     * @param  array<string,mixed>  $meta  追加メタデータ
      */
     public function __construct(
         public string $label,
@@ -43,7 +63,7 @@ final readonly class MenuItemDTO implements JsonSerializable
 
     /**
      * JSON形式にシリアライズ
-     * 
+     *
      * @return array<string,mixed>
      */
     public function jsonSerialize(): array
@@ -65,7 +85,7 @@ final readonly class MenuItemDTO implements JsonSerializable
 
     /**
      * 配列形式に変換
-     * 
+     *
      * @return array<string,mixed>
      */
     public function toArray(): array
@@ -75,9 +95,8 @@ final readonly class MenuItemDTO implements JsonSerializable
 
     /**
      * 配列からDTOを生成
-     * 
-     * @param array<string,mixed> $data
-     * @return self
+     *
+     * @param  array<string,mixed>  $data
      */
     public static function fromArray(array $data): self
     {
@@ -98,10 +117,8 @@ final readonly class MenuItemDTO implements JsonSerializable
 
     /**
      * LinkableDTOからMenuItemDTOを生成
-     * 
-     * @param LinkableDTO $linkable
-     * @param string $target リンクターゲット
-     * @return self
+     *
+     * @param  string  $target  リンクターゲット
      */
     public static function fromLinkable(LinkableDTO $linkable, string $target = '_self'): self
     {
@@ -117,8 +134,6 @@ final readonly class MenuItemDTO implements JsonSerializable
 
     /**
      * カスタムURLかどうか判定
-     * 
-     * @return bool
      */
     public function isCustomUrl(): bool
     {
@@ -127,8 +142,6 @@ final readonly class MenuItemDTO implements JsonSerializable
 
     /**
      * プラグインコンテンツかどうか判定
-     * 
-     * @return bool
      */
     public function isPluginContent(): bool
     {
@@ -137,9 +150,8 @@ final readonly class MenuItemDTO implements JsonSerializable
 
     /**
      * ターゲットを変更した新しいDTOを生成
-     * 
-     * @param string $target 新しいターゲット
-     * @return self
+     *
+     * @param  string  $target  新しいターゲット
      */
     public function withTarget(string $target): self
     {
@@ -160,9 +172,8 @@ final readonly class MenuItemDTO implements JsonSerializable
 
     /**
      * ラベルを変更した新しいDTOを生成
-     * 
-     * @param string $label 新しいラベル
-     * @return self
+     *
+     * @param  string  $label  新しいラベル
      */
     public function withLabel(string $label): self
     {

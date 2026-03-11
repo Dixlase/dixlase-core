@@ -1,12 +1,34 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\Helpers;
 
 use Illuminate\Support\Facades\Artisan;
 
+/**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ */
 class EnvHelper
 {
-
     // snake_case => ENV_KEY
     protected static array $envMap = [
         'app_name' => 'APP_NAME',
@@ -45,13 +67,10 @@ class EnvHelper
         return static::$envMap;
     }
 
-
-
     public static function update(array $data): void
     {
         $envPath = base_path('.env');
         $envContent = file_get_contents($envPath);
-
 
         foreach ($data as $key => $value) {
             $envKey = static::toEnvKey($key);
@@ -81,9 +100,8 @@ class EnvHelper
 
     /**
      * .env用に値を適切にフォーマット
-     * 
-     * @param mixed $value
-     * @return string
+     *
+     * @param  mixed  $value
      */
     protected static function formatEnvValue($value): string
     {
@@ -109,6 +127,7 @@ class EnvHelper
         if (preg_match('/[\s#\$\(\)\[\]\{\}\|\&\;\<\>\?\*\'\"]/', $value)) {
             // 既存のダブルクォートとバックスラッシュをエスケープ
             $escaped = str_replace(['\\', '"'], ['\\\\', '\\"'], $value);
+
             return "\"{$escaped}\"";
         }
 

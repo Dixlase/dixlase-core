@@ -35,7 +35,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'formAction' => null,        // フォームのaction URL
     'formMethod' => 'POST',      // フォームのメソッド
     'formId' => 'member-form',   // フォームのID
-    'includeForm' => true        // フォームタグを含めるかどうか
+    'includeForm' => true,       // フォームタグを含めるかどうか
+    'roleLabels' => [],
+    'currentLoginNotification' => '2',
+    'currentTwoFaMode' => '2',
+    'isTwoFaEditable' => null,
+    'isPasskeyEditable' => null,
+    'forcedPasskeyValue' => null,
+    'twoFaModeOptionsWithIcons' => null,
+    'twoFaGlobalModeName' => null,
 ])
 
 @if($includeForm && $formAction)
@@ -127,7 +135,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <h2>{{ __('common.password_settings') }}</h2>
         
         <fieldset>
-            <legend>{{ $requirePassword ? __('common.password') : __('admin/profile.password_change_only') }}</legend>
+            <legend>{{ $requirePassword ? __('common.password') : __('admin/profile/common.password_change_only') }}</legend>
             <x-form-password-tools
                 id="password"
                 name="password"
@@ -217,20 +225,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <input type="hidden" name="role" value="{{ $roleSuperAdminValue }}">
                 <p class="description-text">{{ __('admin/members/form.initial_admin_role_fixed') }}</p>
             @else
-                @php
-                    $roleValue = old('role', $member->role->value ?? $roleAdminValue);
-                    $roleOptions = [];
-                    foreach ($roles as $role) {
-                        $roleOptions[] = [
-                            'value' => $role->value,
-                            'label' => $role->label(),
-                            'icon' => 'fas fa-user-shield',
-                        ];
-                    }
-                @endphp
                 <x-form-radio-card-group
                     name="role"
-                    :options="$roleOptions"
+                    :options="$roleCardOptions"
                     :value="$roleValue"
                     :columns="4"
                 />
@@ -241,25 +238,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <x-slot name="message">
                             <strong>{{ __('admin/members/form.role_permissions_info') }}</strong>
                             <dl class="mt-3">
-                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::SUPER_ADMIN->label() }}</dt>
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['SUPER_ADMIN'] }}</dt>
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_super_admin_description') }}</dd>
-                                
-                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::ADMIN->label() }}</dt>
+
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['ADMIN'] }}</dt>
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_admin_description') }}</dd>
-                                
-                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::EDITOR->label() }}</dt>
+
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['EDITOR'] }}</dt>
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_editor_description') }}</dd>
-                                
-                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::AUTHOR->label() }}</dt>
+
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['AUTHOR'] }}</dt>
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_author_description') }}</dd>
-                                
-                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::CONTRIBUTOR->label() }}</dt>
+
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['CONTRIBUTOR'] }}</dt>
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_contributor_description') }}</dd>
-                                
-                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::RECEPTIONIST->label() }}</dt>
+
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['RECEPTIONIST'] }}</dt>
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_receptionist_description') }}</dd>
-                                
-                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::GUEST->label() }}</dt>
+
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['GUEST'] }}</dt>
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_guest_description') }}</dd>
                             </dl>
                         </x-slot>
@@ -282,13 +279,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
         @endif
 
-        @php
-            $currentLoginNotification = $member->login_notification_mode ?? \App\Enums\AuthenticationMode::Always->value;
-            if ($currentLoginNotification instanceof \App\Enums\AuthenticationMode) {
-                $currentLoginNotification = $currentLoginNotification->value;
-            }
-        @endphp
-        
         <x-security.login-notification-selector
             name="login_notification_mode"
             :value="old('login_notification_mode', (string)$currentLoginNotification)"
@@ -300,20 +290,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 二段階認証設定セクション -->
     <section>
-        <h2>{{ __('auth.two_fa_settings') }}</h2>
+        <h2>{{ __('common.two_fa_settings') }}</h2>
         @if(!$isMailServerTested)
             <x-ui-message
                 type="warning"
                 :message="__('admin/members/form.mail_server_not_tested')"
             />
         @endif
-        
-        @php
-            $currentTwoFaMode = $member->two_fa_mode ?? \App\Enums\AuthenticationMode::Always->value;
-            if ($currentTwoFaMode instanceof \App\Enums\AuthenticationMode) {
-                $currentTwoFaMode = $currentTwoFaMode->value;
-            }
-        @endphp
         
         <x-two-fa.individual-settings
             name="two_fa_mode"
@@ -322,6 +305,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :excludeUseProfileSetting="true"
             :columns="3"
             :globalSettingsUrl="route('admin.settings.security.two-fa')"
+            :isTwoFaEditable="$isTwoFaEditable"
+            :isPasskeyEditable="$isPasskeyEditable"
+            :forcedPasskeyValue="$forcedPasskeyValue"
+            :twoFaModeOptionsWithIcons="$twoFaModeOptionsWithIcons"
+            :twoFaGlobalModeName="$twoFaGlobalModeName"
         />
     </section>
 
@@ -330,7 +318,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @if(isset($member) && $member->exists)
     <!-- 2FA管理セクション -->
     <section class="mt-8">
-        <h2>{{ __('admin/profile.two_fa_management') }}</h2>
+        <h2>{{ __('admin/profile/common.two_fa_management') }}</h2>
         
         <div class="mb-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
             <p class="text-sm text-yellow-800 dark:text-yellow-200">

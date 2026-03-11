@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,23 +22,29 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use App\Contracts\Repositories\BaseSettingRepositoryInterface;
-use App\Repositories\BaseSettingRepository;
-use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
-use App\Repositories\SecuritySettingRepository;
-use App\Contracts\Repositories\MediaSettingRepositoryInterface;
-use App\Repositories\MediaSettingRepository;
-use App\Contracts\Repositories\FrontSettingRepositoryInterface;
-use App\Repositories\FrontSettingRepository;
-use App\Contracts\Repositories\MediaRepositoryInterface;
-use App\Repositories\MediaRepository;
+use App\Contracts\Admin\AdminNavigationManagerInterface;
 use App\Contracts\Repositories\ApiSettingRepositoryInterface;
+use App\Contracts\Repositories\BaseSettingRepositoryInterface;
+use App\Contracts\Repositories\FrontSettingRepositoryInterface;
+use App\Contracts\Repositories\MediaRepositoryInterface;
+use App\Contracts\Repositories\MediaSettingRepositoryInterface;
+use App\Contracts\Repositories\PluginRepositoryInterface;
+use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
+use App\Contracts\Repositories\ThemeRepositoryInterface;
 use App\Repositories\ApiSettingRepository;
+use App\Repositories\BaseSettingRepository;
+use App\Repositories\FrontSettingRepository;
+use App\Repositories\MediaRepository;
+use App\Repositories\MediaSettingRepository;
+use App\Repositories\PluginRepository;
+use App\Repositories\SecuritySettingRepository;
+use App\Repositories\ThemeRepository;
+use App\Services\Admin\AdminNavigationManager;
+use Illuminate\Support\ServiceProvider;
 
 /**
  * リポジトリサービスプロバイダー
- * 
+ *
  * リポジトリパターンの依存性注入を管理
  */
 class RepositoryServiceProvider extends ServiceProvider
@@ -84,12 +90,23 @@ class RepositoryServiceProvider extends ServiceProvider
             ApiSettingRepository::class
         );
 
-        // 今後、他のリポジトリもここに追加
-        // 例:
-        // $this->app->bind(
-        //     MemberRepositoryInterface::class,
-        //     MemberRepository::class
-        // );
+        // Plugin リポジトリのバインディング
+        $this->app->bind(
+            PluginRepositoryInterface::class,
+            PluginRepository::class
+        );
+
+        // Theme リポジトリのバインディング
+        $this->app->bind(
+            ThemeRepositoryInterface::class,
+            ThemeRepository::class
+        );
+
+        // AdminNavigationManager のバインディング
+        $this->app->bind(
+            AdminNavigationManagerInterface::class,
+            AdminNavigationManager::class
+        );
     }
 
     /**

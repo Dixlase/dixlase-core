@@ -7,23 +7,16 @@ https://exc-d.com
 プラグイン権限詳細モーダル
 --}}
 
-@php
-    $pluginName = $isModel ? $plugin->translated_name : ($plugin['name'] ?? '');
-    $categories = $permissionSummary['categories'] ?? [];
-    $attentionReasons = $permissionSummary['risk_reasons'] ?? [];
-    $cspDiagnostic = $isModel ? ($plugin->csp_diagnostic ?? null) : ($plugin['csp_diagnostic'] ?? null);
-@endphp
-
 <x-ui-modal
-    :id="$permissionModalId"
-    :title="__('admin/settings/plugins/index.permissions.details_title') . ' - ' . $pluginName"
+    :id="$card['permissionModalId']"
+    :title="__('admin/settings/plugins/index.permissions.details_title') . ' - ' . $card['name']"
     icon_type="info"
     :close_only="true"
     :close_label="__('common.close')"
 >
     <div class="text-left">
         {{-- 監査警告 --}}
-        @if($hasMismatches)
+        @if($card['hasMismatches'])
             <div class="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
                 <h5 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">
                     <i class="fas fa-code-branch mr-1"></i>
@@ -31,7 +24,7 @@ https://exc-d.com
                 </h5>
                 <p class="text-xs text-red-700 dark:text-red-300 mb-2">{{ __('admin/settings/plugins/index.permissions.audit_mismatch_warning') }}</p>
                 <ul class="text-xs text-red-600 dark:text-red-400 space-y-1 ml-4 list-disc">
-                    @foreach(array_slice($auditResult['mismatches'] ?? [], 0, 5) as $mismatch)
+                    @foreach(array_slice($card['auditResult']['mismatches'] ?? [], 0, 5) as $mismatch)
                         <li>
                             <code class="bg-red-100 dark:bg-red-800 px-1 rounded">{{ $mismatch['permission'] }}</code>
                             @if($mismatch['type'] === 'undeclared_usage')
@@ -44,9 +37,9 @@ https://exc-d.com
                 </ul>
             </div>
         @endif
-        
+
         {{-- CSP診断警告 --}}
-        @if($cspDiagnostic && !($cspDiagnostic['compliant'] ?? true))
+        @if($card['cspDiagnostic'] && !($card['cspDiagnostic']['compliant'] ?? true))
             <div class="mb-4 p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
                 <h5 class="text-sm font-semibold text-orange-800 dark:text-orange-200 mb-2">
                     <i class="fas fa-shield-alt mr-1"></i>
@@ -54,29 +47,29 @@ https://exc-d.com
                 </h5>
                 <p class="text-xs text-orange-700 dark:text-orange-300 mb-2">{{ __('admin/settings/plugins/index.permissions.csp_warning_message') }}</p>
                 <div class="text-xs text-orange-600 dark:text-orange-400 space-y-1">
-                    <p><i class="fas fa-code mr-1"></i> {{ __('admin/settings/plugins/index.permissions.csp_inline_scripts') }}: {{ $cspDiagnostic['summary']['inline_scripts'] ?? 0 }}</p>
-                    <p><i class="fas fa-paint-brush mr-1"></i> {{ __('admin/settings/plugins/index.permissions.csp_inline_styles') }}: {{ $cspDiagnostic['summary']['inline_styles'] ?? 0 }}</p>
+                    <p><i class="fas fa-code mr-1"></i> {{ __('admin/settings/plugins/index.permissions.csp_inline_scripts') }}: {{ $card['cspDiagnostic']['summary']['inline_scripts'] ?? 0 }}</p>
+                    <p><i class="fas fa-paint-brush mr-1"></i> {{ __('admin/settings/plugins/index.permissions.csp_inline_styles') }}: {{ $card['cspDiagnostic']['summary']['inline_styles'] ?? 0 }}</p>
                 </div>
                 <p class="text-xs text-orange-600 dark:text-orange-400 mt-2 italic">{{ __('admin/settings/plugins/index.permissions.csp_fix_suggestion') }}</p>
             </div>
         @endif
-        
+
         {{-- 署名ステータス --}}
         <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
             <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin/settings/plugins/index.permissions.signature_status') }}</h4>
-            @if($signatureStatus === 'valid' || $signatureStatus === 'pending_verification')
+            @if($card['signatureStatus'] === 'valid' || $card['signatureStatus'] === 'pending_verification')
                 <div class="flex items-center mb-2">
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $badgeColor }}">
-                        <i class="{{ $badgeIcon }} mr-1"></i>
-                        {{ $badgeLabel }}
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $card['badgeColor'] }}">
+                        <i class="{{ $card['badgeIcon'] }} mr-1"></i>
+                        {{ $card['badgeLabel'] }}
                     </span>
                 </div>
-                @if($signature['signed_by'] ?? null)
+                @if($card['signature']['signed_by'] ?? null)
                     <p class="text-sm text-gray-600 dark:text-gray-400">
-                        {{ __('admin/settings/plugins/index.permissions.signed_by') }}: {{ $signature['signed_by'] }}
+                        {{ __('admin/settings/plugins/index.permissions.signed_by') }}: {{ $card['signature']['signed_by'] }}
                     </p>
                 @endif
-            @elseif($signatureStatus === 'invalid')
+            @elseif($card['signatureStatus'] === 'invalid')
                 <div class="flex items-center mb-2">
                     <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
                         <i class="fas fa-times-circle mr-1"></i>
@@ -88,7 +81,7 @@ https://exc-d.com
                 </p>
             @else
                 <div class="flex items-center mb-2">
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
                         <i class="fas fa-file-signature mr-1"></i>
                         {{ __('admin/settings/plugins/index.permissions.signature_unsigned') }}
                     </span>
@@ -98,78 +91,42 @@ https://exc-d.com
                 </p>
             @endif
         </div>
-        
+
         {{-- 権限情報 --}}
         <div>
             <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin/settings/plugins/index.permissions.permission_info') }}</h4>
-            @if($hasPermissions)
+            @if($card['hasPermissions'])
                 {{-- 健全性レベル表示 --}}
-                @php
-                    $healthColors = [
-                        'low' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-                        'medium' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                        'high' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-                    ];
-                    $healthIcons = [
-                        'low' => 'fas fa-check-circle',
-                        'medium' => 'fas fa-info-circle',
-                        'high' => 'fas fa-exclamation-circle',
-                    ];
-                    $healthLabels = [
-                        'low' => 'health_healthy',
-                        'medium' => 'health_warning',
-                        'high' => 'health_needs_attention',
-                    ];
-                @endphp
                 <div class="mb-3 flex items-center">
                     <span class="text-sm text-gray-700 dark:text-gray-300 mr-2">{{ __('admin/settings/plugins/index.permissions.health_status') }}:</span>
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $healthColors[$riskLevel] ?? $healthColors['low'] }}">
-                        <i class="{{ $healthIcons[$riskLevel] ?? $healthIcons['low'] }} mr-1"></i>
-                        {{ __('admin/settings/plugins/index.permissions.' . ($healthLabels[$riskLevel] ?? 'health_healthy')) }}
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $card['healthStatusColors'][$card['healthStatus'] ?? 'not_verified'] ?? $card['healthStatusColors']['not_verified'] }}">
+                        <i class="{{ $card['healthStatusIcons'][$card['healthStatus'] ?? 'not_verified'] ?? $card['healthStatusIcons']['not_verified'] }} mr-1"></i>
+                        {{ __('admin/settings/plugins/index.permissions.' . ($card['healthStatusLabelKeys'][$card['healthStatus'] ?? 'not_verified'] ?? 'health_status_not_verified')) }}
                     </span>
                 </div>
-                
+
                 {{-- 確認が必要な理由 --}}
-                @if(!empty($attentionReasons))
-                    <div class="mb-4 p-3 rounded-lg {{ $riskLevel === 'high' ? 'bg-orange-50 dark:bg-orange-900/20' : ($riskLevel === 'medium' ? 'bg-yellow-50 dark:bg-yellow-900/20' : 'bg-gray-50 dark:bg-gray-800') }}">
+                @if(!empty($card['attentionReasons']))
+                    <div class="mb-4 p-3 rounded-lg {{ ($card['healthStatus'] ?? 'not_verified') === 'needs_attention' ? 'bg-orange-50 dark:bg-orange-900/20' : (($card['healthStatus'] ?? 'not_verified') === 'advisory' ? 'bg-yellow-50 dark:bg-yellow-900/20' : 'bg-gray-50 dark:bg-gray-800') }}">
                         <h5 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
                             <i class="fas fa-info-circle mr-1"></i>
                             {{ __('admin/settings/plugins/index.permissions.attention_reasons_title') }}
                         </h5>
                         <ul class="space-y-1">
-                            @foreach($attentionReasons as $reason)
-                                @php
-                                    // 後方互換性: 文字列の場合と配列の場合の両方に対応
-                                    if (is_string($reason)) {
-                                        // 古い形式（文字列）
-                                        $reasonText = $reason;
-                                        $severityColor = 'text-yellow-600 dark:text-yellow-400';
-                                        $severityIcon = 'fas fa-info-circle';
-                                    } else {
-                                        // 新しい形式（配列）
-                                        $reasonKey = str_replace('.', '_', $reason['key'] ?? '');
-                                        $reasonText = __('admin/settings/plugins/index.permissions.attention_reason_' . $reasonKey);
-                                        $severityColor = ($reason['severity'] ?? 'medium') === 'high' 
-                                            ? 'text-orange-600 dark:text-orange-400' 
-                                            : 'text-yellow-600 dark:text-yellow-400';
-                                        $severityIcon = ($reason['severity'] ?? 'medium') === 'high' 
-                                            ? 'fas fa-exclamation-circle' 
-                                            : 'fas fa-info-circle';
-                                    }
-                                @endphp
-                                <li class="flex items-start text-xs {{ $severityColor }}">
-                                    <i class="{{ $severityIcon }} mr-2 mt-0.5 flex-shrink-0"></i>
-                                    <span>{{ $reasonText }}</span>
+                            @foreach(\App\Presenters\Admin\ExtensionCardPresenter::formatAttentionReasons($card['attentionReasons'], 'admin/settings/plugins/index') as $reason)
+                                <li class="flex items-start text-xs {{ $reason['color'] }}">
+                                    <i class="{{ $reason['icon'] }} mr-2 mt-0.5 flex-shrink-0"></i>
+                                    <span>{{ $reason['text'] }}</span>
                                 </li>
                             @endforeach
                         </ul>
                     </div>
                 @endif
-                
+
                 {{-- 権限カテゴリ一覧 --}}
-                @if(!empty($categories))
+                @if(!empty($card['categories']))
                     <div class="space-y-3">
-                        @foreach($categories as $category => $permissions)
+                        @foreach($card['categories'] as $category => $permissions)
                             <div class="border-b border-gray-200 dark:border-gray-700 pb-2 last:border-0">
                                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('admin/settings/plugins/index.permissions.category_' . $category) }}:</span>
                                 <div class="mt-1 flex flex-wrap gap-1">
@@ -186,7 +143,7 @@ https://exc-d.com
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/index.permissions.no_special_permissions') }}</p>
                 @endif
             @else
-                {{-- 権限未定義 → 警告 --}}
+                {{-- 権限未定義 --}}
                 <div class="p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
                     <div class="flex items-start">
                         <i class="fas fa-exclamation-triangle text-orange-500 dark:text-orange-400 mr-2 mt-0.5"></i>
@@ -196,4 +153,4 @@ https://exc-d.com
             @endif
         </div>
     </div>
-</x-modal>
+</x-ui-modal>

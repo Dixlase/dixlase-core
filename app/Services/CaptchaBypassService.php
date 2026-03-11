@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,16 +23,18 @@
 namespace App\Services;
 
 use App\Models\AuditLog;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Collection;
 
 /**
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
+ *
  * CAPTCHA緊急バイパスサービス（ブレークグラス）
- * 
+ *
  * CAPTCHAプロバイダ障害時に、管理者がログインできるよう
  * 一時的にCAPTCHA検証をバイパスする緊急復旧機能
- * 
+ *
  * 特徴:
  * - 時間制限付き（最大60分）
  * - スコープ指定可能（admin_login, all）
@@ -45,6 +47,7 @@ class CaptchaBypassService
      * キャッシュキー
      */
     private const CACHE_KEY_BYPASS = 'captcha_bypass';
+
     private const CACHE_KEY_BYPASS_DATA = 'captcha_bypass_data';
 
     /**
@@ -59,9 +62,9 @@ class CaptchaBypassService
     {
         // 最大時間を制限
         $minutes = min($minutes, self::MAX_BYPASS_MINUTES);
-        
+
         $expiresAt = now()->addMinutes($minutes);
-        
+
         $data = [
             'active' => true,
             'scope' => $scope,
@@ -91,6 +94,7 @@ class CaptchaBypassService
             Log::channel('admin_error')->error('Failed to enable CAPTCHA bypass', [
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -111,7 +115,7 @@ class CaptchaBypassService
      */
     public static function isActive(?string $scope = null): bool
     {
-        if (!Cache::get(self::CACHE_KEY_BYPASS, false)) {
+        if (! Cache::get(self::CACHE_KEY_BYPASS, false)) {
             return false;
         }
 
@@ -119,12 +123,12 @@ class CaptchaBypassService
         if ($scope !== null) {
             $data = Cache::get(self::CACHE_KEY_BYPASS_DATA, []);
             $bypassScope = $data['scope'] ?? 'admin_login';
-            
+
             // 'all' スコープは全てにマッチ
             if ($bypassScope === 'all') {
                 return true;
             }
-            
+
             return $bypassScope === $scope;
         }
 
@@ -133,8 +137,8 @@ class CaptchaBypassService
 
     /**
      * 指定されたスコープでCAPTCHAをスキップすべきかチェック
-     * 
-     * @param string $scope チェックするスコープ（例: 'admin_login'）
+     *
+     * @param  string  $scope  チェックするスコープ（例: 'admin_login'）
      * @return bool CAPTCHAをスキップすべきならtrue
      */
     public static function shouldSkipCaptcha(string $scope = 'admin_login'): bool
@@ -150,7 +154,7 @@ class CaptchaBypassService
         $isActive = Cache::get(self::CACHE_KEY_BYPASS, false);
         $data = Cache::get(self::CACHE_KEY_BYPASS_DATA, []);
 
-        if (!$isActive || empty($data)) {
+        if (! $isActive || empty($data)) {
             return [
                 'active' => false,
                 'scope' => null,

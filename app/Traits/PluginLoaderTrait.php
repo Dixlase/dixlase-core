@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,16 +22,36 @@
 
 namespace App\Traits;
 
-use App\Models\Plugin;
+use App\Contracts\Admin\AdminNavigationManagerInterface;
+use App\Contracts\Repositories\PluginRepositoryInterface;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\Lang;
-use Illuminate\Support\Facades\Schema;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * プラグインリソースローディング機構
+ */
 trait PluginLoaderTrait
 {
-
     use ConfigLoaderTrait;
+
+    /**
+     * PluginRepositoryInterface の遅延解決
+     */
+    protected function resolvePluginRepository(): PluginRepositoryInterface
+    {
+        return app(PluginRepositoryInterface::class);
+    }
+
+    /**
+     * AdminNavigationManagerInterface の遅延解決
+     */
+    protected function resolveAdminNavigationManager(): AdminNavigationManagerInterface
+    {
+        return app(AdminNavigationManagerInterface::class);
+    }
 
     /**
      * 有効化されたプラグインをロードする
@@ -51,20 +71,15 @@ trait PluginLoaderTrait
             return;
         }
 
-        //Pluginテーブルのenabled_atがnullでないレコードを取得
-        //テーブルが存在しているか確認
-        if (!Schema::hasTable('plugins')) {
-            return;
-        }
-
-        $plugins = Plugin::whereNotNull('enabled_at')->get();
+        // リポジトリ経由で有効化されたプラグインを取得（テーブル存在チェック含む）
+        $plugins = $this->resolvePluginRepository()->getEnabled();
 
         foreach ($plugins as $plugin) {
             $pluginName = $plugin->name;
             $pluginDirectory = $plugin->directory;
             $pluginSlug = $plugin->slug;
-            $pluginPath = base_path('plugins/' . $pluginDirectory);
-            $customPluginPath = base_path('custom/plugins/' . $pluginDirectory);
+            $pluginPath = base_path('plugins/'.$pluginDirectory);
+            $customPluginPath = base_path('custom/plugins/'.$pluginDirectory);
 
             // プラグインのファイルをロード
             $this->loadPluginFiles($pluginName, $pluginPath, $customPluginPath, $pluginSlug);
@@ -84,20 +99,20 @@ trait PluginLoaderTrait
     private function getUninstallingPluginFromArgs(): ?string
     {
         $argv = $_SERVER['argv'] ?? [];
-        
+
         // プラグイン管理コマンドの場合はプラグインローダーをスキップ
         if (count($argv) >= 2) {
             $pluginCommands = [
                 'plugin:install',
                 'plugin:uninstall',
                 'plugin:enable',
-                'plugin:disable'
+                'plugin:disable',
             ];
             if (in_array($argv[1], $pluginCommands)) {
                 return 'PLUGIN_MANAGEMENT_COMMAND';
             }
         }
-        
+
         return null;
     }
 
@@ -106,12 +121,9 @@ trait PluginLoaderTrait
      */
     protected function loadPluginFiles($pluginName, $pluginPath, $customPluginPath, $pluginSlug = null)
     {
-
         $fileTypes = config('app.file_types', []);
 
-
         foreach ($fileTypes as $type => $settings) {
-
             $coreSubPath = "{$pluginPath}/{$settings['path']}";
             $customSubPath = "{$customPluginPath}/{$settings['path']}";
 
@@ -121,12 +133,11 @@ trait PluginLoaderTrait
 
     /**
      * ファイルタイプごとのロード処理
-     * 
+     *
      * 注: routesはPluginServiceProvider::loadPluginRoutes()で読み込むため除外
      */
     protected function loadFilesByType($type, $defaultPath, $customPath, $pluginSlug)
     {
-
         switch ($type) {
             case 'config':
                 $this->loadPluginConfigs($defaultPath, $customPath, $pluginSlug);
@@ -154,7 +165,6 @@ trait PluginLoaderTrait
      */
     protected function loadPluginConfigs($corePath, $customPath, $pluginSlug)
     {
-
         // プラグインの設定を個別の名前空間に格納
         $pluginConfigs = $this->loadConfigFiles($corePath);
         $customConfigs = $this->loadConfigFiles($customPath);
@@ -173,24 +183,24 @@ trait PluginLoaderTrait
         }
 
         // 新しい構造: config/admin/navigation.php を優先的に読み込む
-        $adminNavConfigFile = $corePath . '/admin/navigation.php';
+        $adminNavConfigFile = $corePath.'/admin/navigation.php';
         if (file_exists($adminNavConfigFile)) {
             $this->mergeAdminNavigationFile($adminNavConfigFile);
         } else {
             // 旧構造: admin.php ファイルが存在する場合、ナビゲーションをマージ
-            $adminConfigFile = $corePath . '/admin.php';
+            $adminConfigFile = $corePath.'/admin.php';
             if (file_exists($adminConfigFile)) {
                 $this->mergeAdminNavConfig($adminConfigFile);
             }
         }
 
         // カスタムのadmin/navigation.phpファイルも確認
-        $customAdminNavConfigFile = $customPath . '/admin/navigation.php';
+        $customAdminNavConfigFile = $customPath.'/admin/navigation.php';
         if (file_exists($customAdminNavConfigFile)) {
             $this->mergeAdminNavigationFile($customAdminNavConfigFile);
         } else {
             // カスタムのadmin.phpファイルも確認
-            $customAdminConfigFile = $customPath . '/admin.php';
+            $customAdminConfigFile = $customPath.'/admin.php';
             if (file_exists($customAdminConfigFile)) {
                 $this->mergeAdminNavConfig($customAdminConfigFile);
             }
@@ -199,7 +209,7 @@ trait PluginLoaderTrait
 
     /**
      * ルートの読み込み
-     * 
+     *
      * 注: admin.phpはPluginServiceProvider::loadPluginRoutes()で読み込むため除外
      */
     protected function loadPluginRoutes($customPath, $defaultPath)
@@ -237,16 +247,14 @@ trait PluginLoaderTrait
      */
     protected function loadPluginTranslations($customPath, $corePath, $namespace)
     {
-
         $paths = array_filter([$customPath, $corePath]);
         foreach ($paths as $path) {
             if (is_dir($path)) {
-
                 $this->loadTranslationsFrom($path, $namespace);
             }
         }
 
-        //$translations = Lang::getLoader()->load(app()->getLocale(), 'admin');
+        // $translations = Lang::getLoader()->load(app()->getLocale(), 'admin');
     }
 
     /**
@@ -262,6 +270,7 @@ trait PluginLoaderTrait
             }
         }
     }
+
     /**
      * プラグインのサービスプロバイダを解決する
      */
@@ -284,13 +293,11 @@ trait PluginLoaderTrait
      */
     protected function getPluginMetadata($pluginDirectory)
     {
-        $composerJsonPath = $pluginDirectory . '/composer.json';
+        $composerJsonPath = $pluginDirectory.'/composer.json';
 
         if (file_exists($composerJsonPath)) {
             return json_decode(file_get_contents($composerJsonPath), true);
         }
-
-        return null;
     }
 
     /**
@@ -314,18 +321,18 @@ trait PluginLoaderTrait
     /**
      * 任意のプラグイン設定をマージする
      *
-     * @param string $configFile プラグインの config ファイルのパス
-     * @param string $configKey config() に格納するキー (例: 'auth', 'admin.nav')
+     * @param  string  $configFile  プラグインの config ファイルのパス
+     * @param  string  $configKey  config() に格納するキー (例: 'auth', 'admin.nav')
      */
     public function mergePluginConfig($configFile, $configKey)
     {
-        if (!file_exists($configFile)) {
+        if (! file_exists($configFile)) {
             return; // 設定ファイルが存在しない場合はスキップ
         }
 
         $pluginConfig = require $configFile;
 
-        if (!is_array($pluginConfig)) {
+        if (! is_array($pluginConfig)) {
             return; // 無効な設定ファイルの場合はスキップ
         }
 
@@ -342,91 +349,28 @@ trait PluginLoaderTrait
     /**
      * 新しい構造のナビゲーションファイル (config/admin/navigation.php) をマージする
      *
-     * @param string $configFile プラグインのナビゲーション設定ファイル
+     * @param  string  $configFile  プラグインのナビゲーション設定ファイル
      */
     public function mergeAdminNavigationFile($configFile)
     {
-        if (!file_exists($configFile)) {
-            return;
-        }
-
-        $pluginNavigation = require $configFile;
-
-        if (!is_array($pluginNavigation)) {
-            return;
-        }
-
-        foreach ($pluginNavigation as $key => $value) {
-            if (isset($value['_insert_before'])) {
-                $this->insertOrderedConfig('admin.navigation', $key, $value, $value['_insert_before'], 'before');
-            } elseif (isset($value['_insert_after'])) {
-                $this->insertOrderedConfig('admin.navigation', $key, $value, $value['_insert_after'], 'after');
-            } else {
-                // 既存のキーがある場合はマージ、ない場合は追加
-                $existingValue = config("admin.navigation.{$key}");
-                if ($existingValue !== null && is_array($existingValue)) {
-                    // 既存の設定がある場合、childrenのみをマージし、他のプロパティは保持
-                    if (isset($value['children']) && is_array($value['children'])) {
-                        $existingChildren = $existingValue['children'] ?? [];
-                        $existingValue['children'] = array_merge($existingChildren, $value['children']);
-                    }
-                    // 他のプロパティ（text, iconなど）は既存の設定を保持
-                    config(["admin.navigation.{$key}" => $existingValue]);
-                } else {
-                    // 新規追加
-                    config(["admin.navigation.{$key}" => $value]);
-                }
-            }
-        }
+        $this->resolveAdminNavigationManager()->mergeNavigationFile($configFile);
     }
 
     /**
      * 管理画面のナビゲーション (`admin.nav`) をマージする（旧構造用）
      *
-     * @param string $configFile プラグインのナビゲーション設定ファイル
+     * @param  string  $configFile  プラグインのナビゲーション設定ファイル
      */
     public function mergeAdminNavConfig($configFile)
     {
-        if (!file_exists($configFile)) {
-            return; // 設定ファイルが存在しない場合はスキップ
-        }
-
-        $pluginConfig = require $configFile;
-
-        if (!isset($pluginConfig['nav']) || !is_array($pluginConfig['nav'])) {
-            return; // 無効な設定ファイルの場合はスキップ
-        }
-
-        foreach ($pluginConfig['nav'] as $key => $value) {
-            if (isset($value['_insert_before'])) {
-                $this->insertOrderedConfig('admin.navigation', $key, $value, $value['_insert_before'], 'before');
-            } elseif (isset($value['_insert_after'])) {
-                $this->insertOrderedConfig('admin.navigation', $key, $value, $value['_insert_after'], 'after');
-            } else {
-                // 既存のキーがある場合はマージ、ない場合は追加
-                $existingValue = config("admin.navigation.{$key}");
-                if ($existingValue !== null && is_array($existingValue)) {
-                    // 既存の設定がある場合、childrenのみをマージし、他のプロパティは保持
-                    if (isset($value['children']) && is_array($value['children'])) {
-                        $existingChildren = $existingValue['children'] ?? [];
-                        $existingValue['children'] = array_merge($existingChildren, $value['children']);
-                    }
-                    // 他のプロパティ（text, iconなど）は既存の設定を保持
-                    config(["admin.navigation.{$key}" => $existingValue]);
-                } else {
-                    // 新規追加
-                    config(["admin.navigation.{$key}" => $value]);
-                }
-            }
-        }
+        $this->resolveAdminNavigationManager()->mergeNavConfig($configFile);
     }
-
 
     /**
      * 配列を再帰的にマージする（同じキーがある場合は上書き）
      *
-     * @param array $base 元の設定
-     * @param array $override 追加の設定
+     * @param  array  $base  元の設定
+     * @param  array  $override  追加の設定
      * @return array マージ後の配列
      */
     protected function recursiveArrayMergeOverwrite(array $base, array $override): array
@@ -440,61 +384,7 @@ trait PluginLoaderTrait
                 $base[$key] = $value;
             }
         }
+
         return $base;
-    }
-
-    /**
-     * 指定されたキーの前後に要素を挿入する（ナビゲーション専用）
-     *
-     * @param string $configKey config() に格納するキー
-     * @param string $insertKey 挿入するキー
-     * @param array $insertValue 挿入するデータ
-     * @param string $targetKey どのキーの前後に挿入するか
-     * @param string $position 'before' or 'after'
-     */
-    protected function insertOrderedConfig($configKey, $insertKey, $insertValue, $targetKey, $position = 'before')
-    {
-        unset($insertValue['_insert_before'], $insertValue['_insert_after']); // `_insert_before` や `_insert_after` を削除
-
-        $existingConfig = config($configKey, []);
-
-        // 新しい配列を作成し、適切な位置に要素を挿入
-        $newConfig = [];
-        $inserted = false;
-
-        foreach ($existingConfig as $key => $value) {
-            if ($position === 'before' && $key === $targetKey) {
-                // 指定されたキーの前に挿入
-                $newConfig[$insertKey] = $insertValue;
-                $inserted = true;
-            }
-
-            $newConfig[$key] = $value;
-
-            if ($position === 'after' && $key === $targetKey) {
-                // 指定されたキーの後に挿入
-                $newConfig[$insertKey] = $insertValue;
-                $inserted = true;
-            }
-        }
-
-        // `_insert_before` や `_insert_after` に該当するキーがない場合は最後に追加
-        if (!$inserted) {
-            $newConfig[$insertKey] = $insertValue;
-        }
-
-        config([$configKey => $newConfig]);
-    }
-
-    /**
-     * 管理画面のナビゲーション設定をマージ
-     * 
-     * @param string $pluginName プラグイン名（デバッグ用）
-     * @param string $configPath 設定ファイルのパス
-     */
-    protected function mergeAdminNavigation(string $pluginName = 'Unknown', string $configPath = null): void
-    {
-        // AdminHelperの共通メソッドを使用
-        \App\Helpers\AdminHelper::mergeAdminNavigation($pluginName, $configPath);
     }
 }

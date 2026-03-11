@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,11 +22,12 @@
 
 namespace App\Http\Controllers\Admin\Settings\Security;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Enums\AppEnvironment;
+use App\Helpers\AdminModeHelper;
 use App\Helpers\EnvHelper;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Security\AdminSecurityEnvironmentUpdateRequest;
+use Illuminate\Support\Facades\Log;
 
 class AdminSecurityEnvironmentController extends AdminLoggedInController
 {
@@ -35,13 +36,19 @@ class AdminSecurityEnvironmentController extends AdminLoggedInController
      */
     public function index()
     {
-        
         $settings = [
             'app_env' => config('app.env', 'local'),
             'app_debug' => config('app.debug', false),
         ];
 
         $this->viewParams['settings'] = $settings;
+        $this->viewParams['environmentOptions'] = AppEnvironment::getRadioCardOptions();
+        $this->viewParams['envColors'] = [
+            'local' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+            'staging' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+            'production' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+        ];
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.environment');
 
         return view('admin.settings.security.environment', $this->viewParams);
     }

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -42,6 +42,9 @@ class AdminSecurityLoginUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // ログイン識別子モード設定
+            'login_identifier_mode' => 'nullable|integer|in:0,1,2',
+
             // ログイン通知設定
             'login_notification_mode' => 'nullable|integer|in:0,1,2,3',
             'login_notification_send_to_system' => 'nullable|boolean',

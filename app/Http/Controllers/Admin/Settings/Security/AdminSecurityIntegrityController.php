@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 namespace App\Http\Controllers\Admin\Settings\Security;
 
 use App\DTO\FileIntegrity\ScanTargetDTO;
+use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\FileIntegrityAudit;
 use App\Services\FileIntegrityService;
@@ -44,20 +45,30 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
      */
     public function index()
     {
-        
         $latestAudit = FileIntegrityAudit::getLatestCore();
         $hasBaseline = $this->fileIntegrityService->hasBaseline();
         $baselineMeta = $hasBaseline ? $this->fileIntegrityService->getBaselineMeta() : null;
-        
+
         // 直近のスキャン履歴を取得（ページネーション付き）
         $recentAudits = FileIntegrityAudit::where('scope', FileIntegrityAudit::SCOPE_CORE)
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
+        // ロケールに応じた日付フォーマット
+        $dateFormat = app()->getLocale() === 'ja' ? 'Y年n月j日 H:i' : 'Y-m-d H:i';
+
+        // ベースライン日付をフォーマット
+        if (isset($baselineMeta['generated_at'])) {
+            $baselineMeta['formatted_generated_at'] = \Carbon\Carbon::parse($baselineMeta['generated_at'])->format($dateFormat);
+        }
+
+        $this->viewParams['dateFormat'] = $dateFormat;
         $this->viewParams['latestAudit'] = $latestAudit;
         $this->viewParams['hasBaseline'] = $hasBaseline;
         $this->viewParams['baselineMeta'] = $baselineMeta;
         $this->viewParams['recentAudits'] = $recentAudits;
+        $this->addIntegrityConstants();
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.integrity');
 
         return view('admin.settings.security.integrity', $this->viewParams);
     }
@@ -124,6 +135,7 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
     public function show(FileIntegrityAudit $audit)
     {
         $this->viewParams['audit'] = $audit;
+        $this->addIntegrityConstants();
 
         return view('admin.settings.security.integrity-show', $this->viewParams);
     }
@@ -149,12 +161,22 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
         ]);
 
         $cutoffDate = now()->subDays($request->days);
-        
+
         $count = FileIntegrityAudit::where('scope', FileIntegrityAudit::SCOPE_CORE)
             ->where('created_at', '<', $cutoffDate)
             ->delete();
 
         return redirect()->route('admin.settings.security.integrity')
             ->with('success', __('admin/settings/security/integrity.audits_deleted', ['count' => $count]));
+    }
+
+    private function addIntegrityConstants(): void
+    {
+        $this->viewParams['integrityStatusOk'] = FileIntegrityAudit::STATUS_OK;
+        $this->viewParams['integrityStatusWarning'] = FileIntegrityAudit::STATUS_WARNING;
+        $this->viewParams['triggerManual'] = FileIntegrityAudit::TRIGGER_MANUAL;
+        $this->viewParams['triggerSchedule'] = FileIntegrityAudit::TRIGGER_SCHEDULE;
+        $this->viewParams['triggerInstall'] = FileIntegrityAudit::TRIGGER_INSTALL;
+        $this->viewParams['triggerUpdate'] = FileIntegrityAudit::TRIGGER_UPDATE;
     }
 }

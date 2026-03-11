@@ -137,47 +137,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section>
         @forelse ($logs as $log)
             @if ($log['parsed'])
-                @php
-                    // ログレベルに応じた色を設定
-                    $level = strtolower($log['level'] ?? '');
-                    $levelColors = match(true) {
-                        str_contains($level, 'error'), str_contains($level, 'critical'), str_contains($level, 'alert'), str_contains($level, 'emergency') => [
-                            'bg' => 'bg-red-50 dark:bg-red-900/20',
-                            'border' => 'border-l-red-400',
-                            'dot' => 'bg-red-500',
-                            'label' => 'text-red-700 dark:text-red-300',
-                            'text' => 'text-red-600 dark:text-red-200',
-                        ],
-                        str_contains($level, 'warning'), str_contains($level, 'notice') => [
-                            'bg' => 'bg-yellow-50 dark:bg-yellow-900/20',
-                            'border' => 'border-l-yellow-400',
-                            'dot' => 'bg-yellow-500',
-                            'label' => 'text-yellow-700 dark:text-yellow-300',
-                            'text' => 'text-yellow-600 dark:text-yellow-200',
-                        ],
-                        str_contains($level, 'debug') => [
-                            'bg' => 'bg-gray-50 dark:bg-gray-800/50',
-                            'border' => 'border-l-gray-400',
-                            'dot' => 'bg-gray-500',
-                            'label' => 'text-gray-700 dark:text-gray-300',
-                            'text' => 'text-gray-600 dark:text-gray-400',
-                        ],
-                        default => [
-                            'bg' => 'bg-blue-50 dark:bg-blue-900/20',
-                            'border' => 'border-l-blue-400',
-                            'dot' => 'bg-blue-500',
-                            'label' => 'text-blue-700 dark:text-blue-300',
-                            'text' => 'text-blue-600 dark:text-blue-200',
-                        ],
-                    };
-                @endphp
-                <div class="border-b px-2 py-4 border-b-gray-600 border-l-4 {{ $levelColors['border'] }}">
+                <div class="border-b px-2 py-4 border-b-gray-600 border-l-4 {{ $log['levelColors']['border'] }}">
                     <div class="text-sm space-y-2">
                         <!-- 操作 (Action) - レベルに応じた色 -->
                         <div class="flex items-start">
                             <div class="flex-1 break-all">
-                                <span class="font-semibold {{ $levelColors['label'] }}">{{ __('common.operation') }}:</span>
-                                <span class="{{ $levelColors['text'] }} ml-2">{{ $log['message'] }}</span>
+                                <span class="font-semibold {{ $log['levelColors']['label'] }}">{{ __('common.operation') }}:</span>
+                                <span class="{{ $log['levelColors']['text'] }} ml-2">{{ $log['message'] }}</span>
                             </div>
                         </div>
                         

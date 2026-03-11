@@ -3,8 +3,8 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -43,7 +43,7 @@ class CheckMaintenanceMode
         }
 
         // 管理画面とインストール画面は常にアクセス可能
-        if ($request->is('admin/*') || $request->is('install') || $request->is('install/*')) {
+        if (\App\Helpers\AdminHelper::isAdminRequest($request) || $request->is('install') || $request->is('install/*')) {
             return $next($request);
         }
 

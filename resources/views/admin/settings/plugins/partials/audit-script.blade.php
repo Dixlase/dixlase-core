@@ -8,180 +8,279 @@ https://exc-d.com
 --}}
 
 @push('scripts')
-<script @cspNonce>
-document.addEventListener('DOMContentLoaded', function() {
-    const auditMessages = {
-        scanning: @json(__('admin/settings/plugins/index.permissions.audit_scanning')),
-        rescan: @json(__('admin/settings/plugins/index.permissions.audit_button_rescan')),
-        completed: @json(__('admin/settings/plugins/index.audit.completed')),
-        failed: @json(__('admin/settings/plugins/index.audit.failed')),
-        resultTitle: @json(__('admin/settings/plugins/index.permissions.audit_result_title') ?? 'スキャン結果'),
-        noIssues: @json(__('admin/settings/plugins/index.permissions.audit_no_issues') ?? '問題は検出されませんでした'),
-        mismatchFound: @json(__('admin/settings/plugins/index.permissions.audit_mismatch_title')),
-        undeclaredUsage: @json(__('admin/settings/plugins/index.permissions.audit_undeclared_usage')),
-        unusedDeclaration: @json(__('admin/settings/plugins/index.permissions.audit_unused_declaration')),
-        close: @json(__('common.close')),
-    };
-    
-    function showAuditResultModal(slug, audit) {
-        const modalId = 'auditResultModal';
-        let modal = document.getElementById(modalId);
-        
-        if (modal) {
-            modal.remove();
-        }
-        
-        const hasIssues = audit.has_mismatches && audit.mismatches && audit.mismatches.length > 0;
-        const riskLevel = audit.risk_level || 'low';
-        const isHighRisk = riskLevel === 'high' || riskLevel === 'medium';
-        
-        let contentHtml = '';
-        
-        // 健全性ステータス
-        const healthColors = {
-            'low': { bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-700 dark:text-green-300', icon: 'fa-check-circle' },
-            'medium': { bg: 'bg-yellow-50 dark:bg-yellow-900/20', border: 'border-yellow-200 dark:border-yellow-800', text: 'text-yellow-700 dark:text-yellow-300', icon: 'fa-exclamation-circle' },
-            'high': { bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-700 dark:text-orange-300', icon: 'fa-exclamation-triangle' },
-            'unknown': { bg: 'bg-gray-50 dark:bg-gray-900/20', border: 'border-gray-200 dark:border-gray-800', text: 'text-gray-700 dark:text-gray-300', icon: 'fa-question-circle' }
-        };
-        const healthStyle = healthColors[riskLevel] || healthColors['unknown'];
-        const healthLabels = {
-            'low': @json(__('admin/settings/plugins/index.permissions.health_healthy')),
-            'medium': @json(__('admin/settings/plugins/index.permissions.health_warning')),
-            'high': @json(__('admin/settings/plugins/index.permissions.health_needs_attention')),
-            'unknown': @json(__('admin/settings/plugins/index.permissions.health_not_verified'))
-        };
-        
-        contentHtml += `
-            <div class="p-3 rounded-lg ${healthStyle.bg} border ${healthStyle.border} mb-3">
-                <div class="flex items-center gap-2 ${healthStyle.text}">
-                    <i class="fas ${healthStyle.icon}"></i>
-                    <span class="font-semibold">${@json(__('admin/settings/plugins/index.badge_labels.health'))}: ${healthLabels[riskLevel] || healthLabels['unknown']}</span>
-                </div>
-            </div>
-        `;
-        
-        // 権限不一致の警告
-        if (hasIssues) {
-            contentHtml += `
-                <div class="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 mb-3">
-                    <p class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">
-                        <i class="fas fa-code-branch mr-1"></i>
-                        ${auditMessages.mismatchFound}
-                    </p>
-                    <ul class="text-sm text-red-700 dark:text-red-300 space-y-1 ml-5 list-disc">
-                        ${audit.mismatches.slice(0, 10).map(m => `
-                            <li>
-                                <code class="bg-red-100 dark:bg-red-800 px-1 rounded">${m.permission}</code>
-                                - ${m.type === 'undeclared_usage' ? auditMessages.undeclaredUsage : auditMessages.unusedDeclaration}
-                            </li>
-                        `).join('')}
-                    </ul>
-                    ${audit.mismatches.length > 10 ? `<p class="text-xs text-red-600 dark:text-red-400 mt-2">...他 ${audit.mismatches.length - 10} 件</p>` : ''}
-                </div>
-            `;
-        } else {
-            contentHtml += `
-                <div class="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 mb-3">
-                    <p class="text-sm text-green-700 dark:text-green-300">
-                        <i class="fas fa-check-circle mr-1"></i>
-                        ${auditMessages.noIssues}
-                    </p>
-                </div>
-            `;
-        }
-        
-        contentHtml += `
-            <div class="mt-3 text-xs text-gray-500 dark:text-gray-400">
-                ${@json(__('admin/settings/plugins/index.permissions.audit_stats'))}: ${audit.total_checked || 0} / 
-                ${@json(__('admin/settings/plugins/index.permissions.audit_matches'))}: ${audit.matches_count || 0} / 
-                ${@json(__('admin/settings/plugins/index.permissions.audit_mismatches'))}: ${(audit.mismatches || []).length}
-            </div>
-        `;
-        
-        const modalHtml = `
-            <div id="${modalId}" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.5);">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
-                    <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            <i class="fas fa-search mr-2"></i>${auditMessages.resultTitle}
-                        </h3>
-                        <button type="button" @click="window.location.reload()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="p-4">
-                        ${contentHtml}
-                    </div>
-                    <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-                        <button type="button" @click="window.location.reload()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700">
-                            ${auditMessages.close}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-    }
-    
-    document.querySelectorAll('.audit-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            const slug = this.dataset.slug;
-            const icon = this.querySelector('i');
-            const button = this;
-            
-            // ボタンのテキストノードを取得（アイコン以外のテキスト）
-            const textNodes = Array.from(button.childNodes).filter(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
-            const originalText = textNodes.length > 0 ? textNodes[0].textContent.trim() : '';
-            const originalIcon = icon ? icon.className : '';
-            
-            button.disabled = true;
-            if (textNodes.length > 0) {
-                textNodes[0].textContent = ' ' + auditMessages.scanning;
-            }
-            if (icon) {
-                icon.className = 'fas fa-spinner fa-spin mr-2';
-            }
-            
-            fetch('{{ route("admin.settings.plugins.audit") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({ slug: slug }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                button.disabled = false;
-                if (textNodes.length > 0) {
-                    textNodes[0].textContent = ' ' + auditMessages.rescan;
-                }
-                if (icon) {
-                    icon.className = originalIcon;
-                }
-                
-                if (data.success) {
-                    showAuditResultModal(slug, data.audit);
-                } else {
-                    alert(data.message || auditMessages.failed);
-                }
-            })
-            .catch(error => {
-                console.error('Audit error:', error);
-                alert(auditMessages.failed);
-                button.disabled = false;
-                if (textNodes.length > 0) {
-                    textNodes[0].textContent = ' ' + originalText;
-                }
-                if (icon) {
-                    icon.className = originalIcon;
-                }
-            });
-        });
-    });
-});
+<script id="plugin-audit-config" type="application/json">
+    <?php echo json_encode([
+        'auditUrl' => route('admin.settings.plugins.audit'),
+        'messages' => [
+            'scanning' => __('admin/settings/plugins/index.permissions.audit_scanning'),
+            'scanningDescription' => __('admin/settings/plugins/index.permissions.audit_scanning_description'),
+            'rescan' => __('admin/settings/plugins/index.permissions.audit_button_rescan'),
+            'completed' => __('admin/settings/plugins/index.audit.completed'),
+            'failed' => __('admin/settings/plugins/index.audit.failed'),
+            'resultTitle' => __('admin/settings/plugins/index.permissions.audit_result_title') ?? 'スキャン結果',
+            'noIssues' => __('admin/settings/plugins/index.permissions.audit_no_issues') ?? '問題は検出されませんでした',
+            'mismatchFound' => __('admin/settings/plugins/index.permissions.audit_mismatch_title'),
+            'undeclaredUsage' => __('admin/settings/plugins/index.permissions.audit_undeclared_usage'),
+            'unusedDeclaration' => __('admin/settings/plugins/index.permissions.audit_unused_declaration'),
+            'close' => __('common.close'),
+        ],
+        'healthLabels' => [
+            'low' => __('admin/settings/plugins/index.permissions.health_healthy'),
+            'medium' => __('admin/settings/plugins/index.permissions.health_warning'),
+            'high' => __('admin/settings/plugins/index.permissions.health_needs_attention'),
+            'unknown' => __('admin/settings/plugins/index.permissions.health_not_verified'),
+        ],
+        'totalEvaluationLabel' => __('admin/settings/plugins/index.permissions.total_evaluation'),
+        'healthScoreDisplay' => __('admin/settings/plugins/index.permissions.health_score_display'),
+        'signatureDeduction' => __('admin/settings/plugins/index.permissions.signature_deduction'),
+        'healthStatusLabels' => [
+            'healthy' => __('admin/settings/plugins/index.permissions.health_status_healthy'),
+            'advisory' => __('admin/settings/plugins/index.permissions.health_status_advisory'),
+            'needs_attention' => __('admin/settings/plugins/index.permissions.health_status_needs_attention'),
+            'not_verified' => __('admin/settings/plugins/index.permissions.health_status_not_verified'),
+        ],
+        'signatureSectionLabel' => __('admin/settings/plugins/index.permissions.signature_section_label'),
+        'attentionReasonsTitle' => __('admin/settings/plugins/index.permissions.attention_reasons_title'),
+        'permissionConsistencyTitle' => __('admin/settings/plugins/index.permissions.permission_consistency_title'),
+        'totalRiskScoreLabel' => __('admin/settings/plugins/index.permissions.total_risk_score'),
+        'healthBadgeLabel' => __('admin/settings/plugins/index.badge_labels.health'),
+        'statsLabel' => __('admin/settings/plugins/index.permissions.audit_stats'),
+        'matchesLabel' => __('admin/settings/plugins/index.permissions.audit_matches'),
+        'mismatchesLabel' => __('admin/settings/plugins/index.permissions.audit_mismatches'),
+        'healthIssueTypeLabels' => [
+            'signature_unsigned' => __('admin/settings/plugins/index.permissions.health_issue_signature_unsigned'),
+            'signature_unsigned_production' => __('admin/settings/plugins/index.permissions.health_issue_signature_unsigned_production'),
+            'signature_invalid' => __('admin/settings/plugins/index.permissions.health_issue_signature_invalid'),
+            'permission_undefined' => __('admin/settings/plugins/index.permissions.health_issue_permission_undefined'),
+            'permission_undeclared_minor' => __('admin/settings/plugins/index.permissions.health_issue_permission_undeclared_minor'),
+            'permission_undeclared_major' => __('admin/settings/plugins/index.permissions.health_issue_permission_undeclared_major'),
+            'permission_unused' => __('admin/settings/plugins/index.permissions.health_issue_permission_unused'),
+            'csp_inline_css_required' => __('admin/settings/plugins/index.permissions.health_issue_csp_inline_css_required'),
+            'csp_inline_js_required' => __('admin/settings/plugins/index.permissions.health_issue_csp_inline_js_required'),
+            'csp_violation_strict' => __('admin/settings/plugins/index.permissions.health_issue_csp_violation_strict'),
+            'csp_violation_standard' => __('admin/settings/plugins/index.permissions.health_issue_csp_violation_standard'),
+            'dangerous_api_exec' => __('admin/settings/plugins/index.permissions.health_issue_dangerous_api_exec'),
+            'scan_not_performed' => __('admin/settings/plugins/index.permissions.health_issue_scan_not_performed'),
+            'scan_outdated' => __('admin/settings/plugins/index.permissions.health_issue_scan_outdated'),
+        ],
+        'scanRequired' => $scanRequired ?? false,
+        'twoStage' => [
+            'stage1ScanRequiredTitle' => __('admin/settings/plugins/index.two_stage.stage1_scan_required_title'),
+            'stage1ScanRequiredMessage' => __('admin/settings/plugins/index.two_stage.stage1_scan_required_message'),
+            'stage1ScanOptionalTitle' => __('admin/settings/plugins/index.two_stage.stage1_scan_optional_title'),
+            'stage1ScanOptionalMessage' => __('admin/settings/plugins/index.two_stage.stage1_scan_optional_message'),
+            'stage1Scanning' => __('admin/settings/plugins/index.two_stage.stage1_scanning'),
+            'stage1ScanningDescription' => __('admin/settings/plugins/index.two_stage.stage1_scanning_description'),
+            'stage1SkipScan' => __('admin/settings/plugins/index.two_stage.stage1_skip_scan'),
+            'stage1StartScan' => __('admin/settings/plugins/index.two_stage.stage1_start_scan'),
+            'stage2ConfirmInstall' => __('admin/settings/plugins/index.two_stage.stage2_confirm_install'),
+            'stage2ConfirmEnable' => __('admin/settings/plugins/index.two_stage.stage2_confirm_enable'),
+            'stage2BlockedTitle' => __('admin/settings/plugins/index.two_stage.stage2_blocked_title'),
+            'stage2BlockedMessage' => __('admin/settings/plugins/index.two_stage.stage2_blocked_message'),
+            'stage2ScanResultHeading' => __('admin/settings/plugins/index.two_stage.stage2_scan_result_heading'),
+            'stage2WarningMessage' => __('admin/settings/plugins/index.two_stage.stage2_warning_message'),
+            'actionInstall' => __('admin/settings/plugins/index.two_stage.action_install'),
+            'actionEnable' => __('admin/settings/plugins/index.two_stage.action_enable'),
+            'actionInstalled' => __('admin/settings/plugins/index.two_stage.action_installed'),
+            'actionEnabled' => __('admin/settings/plugins/index.two_stage.action_enabled'),
+            'installBlocked' => __('admin/settings/plugins/index.two_stage.install_blocked'),
+            'install' => __('common.install'),
+            'enable' => __('common.enable'),
+            'cancel' => __('common.cancel'),
+            'stage2ConfirmActionMessage' => __('admin/settings/plugins/index.two_stage.stage2_confirm_action_message'),
+            'processingInstall' => __('admin/settings/plugins/index.two_stage.processing_install'),
+            'processingEnable' => __('admin/settings/plugins/index.two_stage.processing_enable'),
+            'processingInstallDescription' => __('admin/settings/plugins/index.two_stage.processing_install_description'),
+            'processingEnableDescription' => __('admin/settings/plugins/index.two_stage.processing_enable_description'),
+        ],
+        'signatureLabels' => [
+            'title' => __('admin/settings/plugins/index.permissions.signature_status'),
+            'official' => __('admin/settings/plugins/index.permissions.signature_official'),
+            'verified' => __('admin/settings/plugins/index.permissions.signature_verified'),
+            'partner' => __('admin/settings/plugins/index.permissions.signature_partner'),
+            'signed' => __('admin/settings/plugins/index.permissions.signature_signed'),
+            'invalid' => __('admin/settings/plugins/index.permissions.signature_invalid'),
+            'unsigned' => __('admin/settings/plugins/index.permissions.signature_unsigned'),
+            'invalidWarning' => __('admin/settings/plugins/index.permissions.signature_invalid_warning'),
+            'unsignedInfo' => __('admin/settings/plugins/index.permissions.signature_unsigned_info'),
+            'signedBy' => __('admin/settings/plugins/index.permissions.signed_by'),
+        ],
+        'cspLabels' => [
+            'title' => __('admin/settings/plugins/index.permissions.csp_status'),
+            'sectionLabel' => __('admin/settings/plugins/index.permissions.csp_section_label'),
+            'compliant' => __('admin/settings/plugins/index.permissions.csp_compliant'),
+            'notCompliant' => __('admin/settings/plugins/index.permissions.csp_not_compliant'),
+            'inlineScripts' => __('admin/settings/plugins/index.permissions.csp_inline_scripts'),
+            'inlineStyles' => __('admin/settings/plugins/index.permissions.csp_inline_styles'),
+            'eventHandlers' => __('admin/settings/plugins/index.permissions.csp_event_handlers'),
+            'javascriptUrls' => __('admin/settings/plugins/index.permissions.csp_javascript_urls'),
+            'violationTypes' => [
+                'inline_script' => __('admin/settings/plugins/index.permissions.csp_violation_inline_script'),
+                'inline_style' => __('admin/settings/plugins/index.permissions.csp_violation_inline_style'),
+                'event_handler' => __('admin/settings/plugins/index.permissions.csp_violation_event_handler'),
+                'javascript_url' => __('admin/settings/plugins/index.permissions.csp_violation_javascript_url'),
+            ],
+        ],
+        'permissionCategoriesTitle' => __('admin/settings/plugins/index.permissions.permission_info'),
+        'categoryLabels' => [
+            'database' => __('admin/settings/plugins/index.permissions.category_database'),
+            'storage' => __('admin/settings/plugins/index.permissions.category_storage'),
+            'settings' => __('admin/settings/plugins/index.permissions.category_settings'),
+            'members' => __('admin/settings/plugins/index.permissions.category_members'),
+            'mail' => __('admin/settings/plugins/index.permissions.category_mail'),
+            'content' => __('admin/settings/plugins/index.permissions.category_content'),
+            'system' => __('admin/settings/plugins/index.permissions.category_system'),
+        ],
+        'permissionLabels' => [
+            'own_tables' => __('admin/settings/plugins/index.permissions.perm_own_tables'),
+            'core_tables_read' => __('admin/settings/plugins/index.permissions.perm_core_tables_read'),
+            'core_tables_write' => __('admin/settings/plugins/index.permissions.perm_core_tables_write'),
+            'own_directory' => __('admin/settings/plugins/index.permissions.perm_own_directory'),
+            'public_uploads' => __('admin/settings/plugins/index.permissions.perm_public_uploads'),
+            'temp_files' => __('admin/settings/plugins/index.permissions.perm_temp_files'),
+            'read_core' => __('admin/settings/plugins/index.permissions.perm_read_core'),
+            'write_own' => __('admin/settings/plugins/index.permissions.perm_write_own'),
+            'read' => __('admin/settings/plugins/index.permissions.perm_read'),
+            'write' => __('admin/settings/plugins/index.permissions.perm_write'),
+            'create' => __('admin/settings/plugins/index.permissions.perm_create'),
+            'delete' => __('admin/settings/plugins/index.permissions.perm_delete'),
+            'send' => __('admin/settings/plugins/index.permissions.perm_send'),
+            'bulk_send' => __('admin/settings/plugins/index.permissions.perm_bulk_send'),
+            'read_other_plugins' => __('admin/settings/plugins/index.permissions.perm_read_other_plugins'),
+            'write_other_plugins' => __('admin/settings/plugins/index.permissions.perm_write_other_plugins'),
+            'register_shortcodes' => __('admin/settings/plugins/index.permissions.perm_register_shortcodes'),
+            'register_middleware' => __('admin/settings/plugins/index.permissions.perm_register_middleware'),
+            'register_commands' => __('admin/settings/plugins/index.permissions.perm_register_commands'),
+            'register_blade_directives' => __('admin/settings/plugins/index.permissions.perm_register_blade_directives'),
+            'modify_routes' => __('admin/settings/plugins/index.permissions.perm_modify_routes'),
+        ],
+    ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>
 </script>
+@endpush
+
+@push('modals')
+    {{-- スキャン中モーダル --}}
+    <x-ui-modal
+        id="pluginAuditScanningModal"
+        :title="__('admin/settings/plugins/index.permissions.audit_scanning')"
+        :message="__('admin/settings/plugins/index.permissions.audit_scanning_description')"
+        iconType="info"
+        :dismissible="false"
+        :closeOnly="true"
+    >
+        <x-slot:footer>
+            <div class="flex items-center justify-center w-full py-1">
+                <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
+            </div>
+        </x-slot:footer>
+    </x-ui-modal>
+
+    {{-- スキャン結果モーダル --}}
+    <x-ui-modal
+        id="pluginAuditResultModal"
+        :title="__('admin/settings/plugins/index.permissions.audit_result_title')"
+        message=""
+        iconType="info"
+        :dismissible="false"
+        :closeOnly="true"
+    >
+        <div id="pluginAuditResultContent" class="text-left"></div>
+        <x-slot:footer>
+            <x-form-button
+                type="button"
+                variant="primary"
+                id="pluginAuditResultCloseBtn"
+            >
+                {{ __('common.close') }}
+            </x-form-button>
+        </x-slot:footer>
+    </x-ui-modal>
+
+    {{-- 2段階モーダル: Stage 1（スキャン判定/進捗） --}}
+    <x-ui-modal
+        id="pluginActionStage1Modal"
+        :title="__('admin/settings/plugins/index.two_stage.stage1_scan_required_title')"
+        message=""
+        iconType="info"
+        :dismissible="false"
+        :closeOnly="true"
+    >
+        <div id="pluginActionStage1Content" class="text-center">
+            <p id="pluginActionStage1Message" class="text-sm text-gray-700 dark:text-gray-300"></p>
+        </div>
+        <div id="pluginActionStage1Spinner" class="hidden flex items-center justify-center w-full py-3">
+            <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
+        </div>
+        <x-slot:footer>
+            <div id="pluginActionStage1Buttons" class="flex gap-2">
+                <x-form-button
+                    type="button"
+                    :label="__('common.cancel')"
+                    variant="secondary"
+                    id="pluginActionStage1CancelBtn"
+                />
+                <x-form-button
+                    type="button"
+                    :label="__('admin/settings/plugins/index.two_stage.stage1_skip_scan')"
+                    variant="secondary"
+                    id="pluginActionStage1SkipBtn"
+                    class="hidden"
+                />
+                <x-form-button
+                    type="button"
+                    :label="__('admin/settings/plugins/index.two_stage.stage1_start_scan')"
+                    variant="primary"
+                    icon="fas fa-search"
+                    id="pluginActionStage1ScanBtn"
+                />
+            </div>
+        </x-slot:footer>
+    </x-ui-modal>
+
+    {{-- 2段階モーダル: Stage 2（アクション確認またはブロック） --}}
+    <x-ui-modal
+        id="pluginActionStage2Modal"
+        title=""
+        message=""
+        iconType="info"
+        :dismissible="false"
+        :closeOnly="true"
+    >
+        <div id="pluginActionStage2Content" class="text-left"></div>
+        <p id="pluginActionStage2ConfirmMessage" class="text-sm text-gray-700 dark:text-gray-300 mt-3 mb-4 text-center font-medium"></p>
+        <x-slot:footer>
+            <div id="pluginActionStage2Buttons" class="flex gap-2">
+                <x-form-button
+                    type="button"
+                    :label="__('common.cancel')"
+                    variant="secondary"
+                    id="pluginActionStage2CancelBtn"
+                />
+                <x-form-button
+                    type="button"
+                    label=""
+                    variant="success"
+                    id="pluginActionStage2ConfirmBtn"
+                >
+                    <span id="pluginActionStage2ConfirmLabel"></span>
+                </x-form-button>
+            </div>
+        </x-slot:footer>
+    </x-ui-modal>
+
+    {{-- 処理中モーダル（インストール/有効化） --}}
+    <x-ui-modal
+        id="pluginActionProcessingModal"
+        title=""
+        message=""
+        iconType="info"
+        :dismissible="false"
+        :closeOnly="true"
+    >
+        <x-slot:footer>
+            <div class="flex items-center justify-center w-full py-1">
+                <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
+            </div>
+        </x-slot:footer>
+    </x-ui-modal>
 @endpush

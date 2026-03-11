@@ -52,6 +52,7 @@ return [
     // Admin URL
     'admin_url' => 'Admin Panel URL',
     'admin_url_security_note' => 'For production, it is recommended to use a URL other than "admin" that is harder to guess.',
+    'admin_url_auto_generated' => 'The admin URL is automatically generated with a random suffix for security.',
 
     // SSL Settings
     'force_ssl' => 'Force SSL (HTTPS)',

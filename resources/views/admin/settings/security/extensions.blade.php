@@ -22,9 +22,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
+    @if($modeData['isReadOnly'] ?? false)
+        <x-admin.mode-readonly-banner />
+    @endif
+
     <form id="security-extensions-form" method="POST" action="{{ route('admin.settings.security.extensions.update') }}">
         @csrf
-        
+        <fieldset {{ ($modeData['isReadOnly'] ?? false) ? 'disabled' : '' }}>
+
         <!-- 拡張機能セキュリティ設定 -->
         <section x-data="{
             preset: '{{ old('extension_security_preset', $settings['extension_security_preset']) }}',
@@ -95,7 +100,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="mt-3">
                     <x-form-radio-card-group
                         name="extension_security_preset"
-                        :options="\App\Enums\ExtensionSecurityPreset::getRadioCardOptions()"
+                        :options="$presetOptions"
                         :value="old('extension_security_preset', $settings['extension_security_preset'])"
                         xModel="preset"
                         :columns="2"
@@ -165,8 +170,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :min="0"
                             :max="3"
                             :step="1"
-                            :labels="\App\Enums\ExtensionSecurityLevel::getRangeLabels()"
-                            :labelColors="\App\Enums\ExtensionSecurityLevel::getRangeLabelColors()"
+                            :labels="$securityLevelRangeLabels"
+                            :labelColors="$securityLevelRangeLabelColors"
                             xModel="pluginMaxHealthLevel"
                         />
                     </div>
@@ -205,8 +210,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :min="0"
                             :max="3"
                             :step="1"
-                            :labels="\App\Enums\ExtensionSecurityLevel::getRangeLabels()"
-                            :labelColors="\App\Enums\ExtensionSecurityLevel::getRangeLabelColors()"
+                            :labels="$securityLevelRangeLabels"
+                            :labelColors="$securityLevelRangeLabelColors"
                             xModel="themeMaxHealthLevel"
                         />
                     </div>
@@ -387,11 +392,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
         </section>
 
+        </fieldset>
     </form>
 </div>
 @endsection
 
 @section('save')
+@if($modeData['isEditable'] ?? true)
     <x-admin.save-button
         id_confirmation="confirmationModal"
         :label="__('common.save')"
@@ -401,4 +408,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :cancel_label="__('common.cancel')"
         form="security-extensions-form"
     />
+@endif
 @endsection

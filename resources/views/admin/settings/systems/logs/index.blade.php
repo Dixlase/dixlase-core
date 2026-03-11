@@ -281,31 +281,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 {{ $log->action }}
                             </span>
                             {{-- 重要度バッジ --}}
-                            @php
-                                $severityColors = [
-                                    'debug' => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-                                    'info' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-                                    'notice' => 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200',
-                                    'warning' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                                    'error' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-                                    'critical' => 'bg-red-200 text-red-900 dark:bg-red-800 dark:text-red-100',
-                                    'alert' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-                                    'emergency' => 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-                                ];
-                            @endphp
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $severityColors[$log->severity] ?? $severityColors['info'] }}">
                                 {{ __('admin/settings/systems/logs/index.severities.' . $log->severity) }}
                             </span>
                             {{-- 結果バッジ --}}
-                            @php
-                                $outcomeColors = [
-                                    'success' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-                                    'failure' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-                                    'denied' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-                                    'pending' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                                    'unknown' => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-                                ];
-                            @endphp
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $outcomeColors[$log->outcome] ?? $outcomeColors['unknown'] }}">
                                 {{ __('admin/settings/systems/logs/index.outcomes.' . $log->outcome) }}
                             </span>

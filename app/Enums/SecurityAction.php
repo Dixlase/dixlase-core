@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,8 +23,10 @@
 namespace App\Enums;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * セキュリティ検出時のアクション（汎用）
- * 
+ *
  * 権限不一致、ポリシー違反などの検出時に取るアクションを定義
  */
 enum SecurityAction: int
@@ -50,7 +52,7 @@ enum SecurityAction: int
      */
     public function translationKeyBase(): string
     {
-        return 'admin.settings.security.action_' . $this->toString();
+        return 'admin.settings.security.action_'.$this->toString();
     }
 
     /**
@@ -66,7 +68,7 @@ enum SecurityAction: int
      */
     public function description(): string
     {
-        return __($this->translationKeyBase() . '_desc');
+        return __($this->translationKeyBase().'_desc');
     }
 
     /**
@@ -146,7 +148,7 @@ enum SecurityAction: int
      */
     public static function getAllStrings(): array
     {
-        return array_map(fn($case) => $case->toString(), self::cases());
+        return array_map(fn ($case) => $case->toString(), self::cases());
     }
 
     /**
@@ -154,6 +156,6 @@ enum SecurityAction: int
      */
     public static function validationRule(): string
     {
-        return 'in:' . implode(',', self::getAllStrings());
+        return 'in:'.implode(',', self::getAllStrings());
     }
 }

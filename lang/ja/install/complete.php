@@ -28,4 +28,9 @@ return [
     'go_to_admin' => '管理画面へログイン',
     'admin_login_url' => '管理画面ログインURL',
     'site_url' => 'フロントページURL',
+    'admin_url_notice_title' => '重要：管理画面URLを保存してください',
+    'admin_url_notice_message' => '管理画面のログインURLをブックマークするかメモしてください。管理画面へのアクセスに必要です。',
+    'admin_url_random_notice' => '管理画面URLにはセキュリティのためランダムな文字列が含まれています。簡単に復元できないため、必ず保存してください。',
+    'copy' => 'コピー',
+    'copied' => 'コピーしました！',
 ];

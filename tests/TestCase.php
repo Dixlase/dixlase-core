@@ -22,9 +22,31 @@
 
 namespace Tests;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
-    //
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Factory::guessFactoryNamesUsing(function (string $modelName) {
+            $basename = class_basename($modelName);
+
+            // Check DixlaseCoreDev factories first (core model factories for testing)
+            $coreDevFactory = 'Plugins\\DixlaseCoreDev\\Database\\Factories\\'.$basename.'Factory';
+            if (class_exists($coreDevFactory)) {
+                return $coreDevFactory;
+            }
+
+            // Check DixlaseDevKit factories
+            $devKitFactory = 'Plugins\\DixlaseDevKit\\Database\\Factories\\'.$basename.'Factory';
+            if (class_exists($devKitFactory)) {
+                return $devKitFactory;
+            }
+
+            return 'Database\\Factories\\'.$basename.'Factory';
+        });
+    }
 }

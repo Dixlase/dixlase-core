@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,16 +24,17 @@ namespace App\Traits;
 
 use App\Services\PasswordService;
 use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * パスワードリセットの共通ロジックを提供するTrait
- * 
+ *
  * このTraitは、メンバーとユーザーのパスワードリセット処理で共通する
  * ロジックを提供します。
- * 
+ *
  * 使用するコントローラーは以下の抽象メソッドを実装する必要があります：
  * - getSettingsGetter(): 設定取得用のクロージャを返す
  * - getPasswordResetBroker(): Password brokerの名前を返す
@@ -48,64 +49,52 @@ trait PasswordResetTrait
 {
     /**
      * 設定取得用のクロージャを取得
-     * 
+     *
      * @return callable function($key, $default)
      */
     abstract protected function getSettingsGetter(): callable;
 
     /**
      * Password brokerの名前を取得
-     * 
+     *
      * @return string 'members' または 'users'
      */
     abstract protected function getPasswordResetBroker(): string;
 
     /**
      * ユーザーモデルのクラス名を取得
-     * 
-     * @return string
      */
     abstract protected function getUserModelClass(): string;
 
     /**
      * パスワードリセットリンク要求画面のビュー名を取得
-     * 
-     * @return string
      */
     abstract protected function getForgotPasswordViewName(): string;
 
     /**
      * パスワードリセット画面のビュー名を取得
-     * 
-     * @return string
      */
     abstract protected function getResetPasswordViewName(): string;
 
     /**
      * パスワードリセット処理のルート名を取得
-     * 
-     * @return string
      */
     abstract protected function getPasswordResetRoute(): string;
 
     /**
      * ログイン画面のルート名を取得
-     * 
-     * @return string
      */
     abstract protected function getLoginRoute(): string;
 
     /**
      * CAPTCHAアクション名を取得
-     * 
-     * @return string
      */
     abstract protected function getCaptchaAction(): string;
 
     /**
      * パスワード設定を取得
      *
-     * @param callable $settingsGetter 設定取得用のクロージャ function($key, $default)
+     * @param  callable  $settingsGetter  設定取得用のクロージャ function($key, $default)
      * @return array パスワード設定の配列
      */
     protected function getPasswordSettings(callable $settingsGetter): array
@@ -122,8 +111,8 @@ trait PasswordResetTrait
     /**
      * パスワードリセット機能の有効性をチェック
      *
-     * @param callable $settingsGetter 設定取得用のクロージャ
-     * @return void
+     * @param  callable  $settingsGetter  設定取得用のクロージャ
+     *
      * @throws \Symfony\Component\HttpKernel\Exception\HttpException
      */
     protected function validatePasswordResetAvailability(callable $settingsGetter): void
@@ -134,7 +123,7 @@ trait PasswordResetTrait
     /**
      * パスワードリセット用のバリデーションルールを取得
      *
-     * @param array $passwordSettings getPasswordSettings()で取得した設定
+     * @param  array  $passwordSettings  getPasswordSettings()で取得した設定
      * @return array バリデーションルール
      */
     protected function getPasswordResetValidationRules(array $passwordSettings): array
@@ -158,13 +147,11 @@ trait PasswordResetTrait
         return PasswordService::getPasswordResetLinkValidationRules();
     }
 
-
     /**
      * パスワードリセット処理を実行
      *
-     * @param object $user ユーザーまたはメンバーモデル
-     * @param string $newPassword 新しいパスワード
-     * @return void
+     * @param  object  $user  ユーザーまたはメンバーモデル
+     * @param  string  $newPassword  新しいパスワード
      */
     protected function performPasswordReset(object $user, string $newPassword): void
     {
@@ -179,17 +166,17 @@ trait PasswordResetTrait
     /**
      * メール認証済みかチェック（必要に応じて）
      *
-     * @param object|null $user ユーザーまたはメンバーモデル
+     * @param  object|null  $user  ユーザーまたはメンバーモデル
      * @return bool メール認証が必要かつ未認証の場合true
      */
     protected function requiresEmailVerification(?object $user): bool
     {
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
         // hasVerifiedEmailメソッドが存在し、かつ未認証の場合
-        if (method_exists($user, 'hasVerifiedEmail') && !$user->hasVerifiedEmail()) {
+        if (method_exists($user, 'hasVerifiedEmail') && ! $user->hasVerifiedEmail()) {
             return true;
         }
 
@@ -198,19 +185,17 @@ trait PasswordResetTrait
 
     /**
      * パスワードリセットリンク要求画面を表示（共通処理）
-     * 
-     * @return \Illuminate\View\View
      */
     protected function showForgotPasswordForm(): \Illuminate\View\View
     {
         $settingsGetter = $this->getSettingsGetter();
         $this->validatePasswordResetAvailability($settingsGetter);
-        
+
         // CAPTCHA設定を取得
         $captchaAction = $this->getCaptchaAction();
         $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
         $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
-        
+
         return view($this->getForgotPasswordViewName(), array_merge(
             $this->getForgotPasswordViewData(),
             [
@@ -223,8 +208,6 @@ trait PasswordResetTrait
 
     /**
      * パスワードリセットリンク要求画面用の追加データを取得
-     * 
-     * @return array
      */
     protected function getForgotPasswordViewData(): array
     {
@@ -234,20 +217,17 @@ trait PasswordResetTrait
 
     /**
      * パスワードリセットリンク送信処理（共通処理）
-     * 
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
      */
     protected function sendPasswordResetLink(\Illuminate\Http\Request $request): \Illuminate\Http\RedirectResponse
     {
         $settingsGetter = $this->getSettingsGetter();
         $this->validatePasswordResetAvailability($settingsGetter);
-        
+
         // CAPTCHA検証
         $captchaAction = $this->getCaptchaAction();
         $captchaResult = \App\Helpers\CaptchaHelper::verify($request, $captchaAction);
-        
-        if ($captchaResult && !$captchaResult->isValid()) {
+
+        if ($captchaResult && ! $captchaResult->isValid()) {
             return back()->withErrors([
                 'captcha' => $captchaResult->getErrorMessage(),
             ])->withInput($request->only('email'));
@@ -259,7 +239,7 @@ trait PasswordResetTrait
         // メールアドレスに対応するユーザーを確認
         $userModelClass = $this->getUserModelClass();
         $user = $userModelClass::where('email', $request->email)->first();
-        
+
         // ユーザーが存在し、メール認証が未完了の場合はエラー
         if ($this->requiresEmailVerification($user)) {
             return back()
@@ -280,18 +260,15 @@ trait PasswordResetTrait
 
     /**
      * パスワードリセット画面を表示（共通処理）
-     * 
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\View\View
      */
     protected function showResetPasswordForm(\Illuminate\Http\Request $request): \Illuminate\View\View
     {
         $settingsGetter = $this->getSettingsGetter();
         $this->validatePasswordResetAvailability($settingsGetter);
-        
+
         // パスワード設定を取得
         $passwordSettings = $this->getPasswordSettings($settingsGetter);
-        
+
         return view($this->getResetPasswordViewName(), array_merge(
             $this->getResetPasswordViewData($request),
             [
@@ -305,9 +282,6 @@ trait PasswordResetTrait
 
     /**
      * パスワードリセット画面用の追加データを取得
-     * 
-     * @param \Illuminate\Http\Request $request
-     * @return array
      */
     protected function getResetPasswordViewData(\Illuminate\Http\Request $request): array
     {
@@ -317,14 +291,11 @@ trait PasswordResetTrait
 
     /**
      * パスワードリセット処理（共通処理）
-     * 
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
      */
     protected function resetPassword(\Illuminate\Http\Request $request): \Illuminate\Http\RedirectResponse
     {
         $settingsGetter = $this->getSettingsGetter();
-        
+
         // パスワード設定を取得してバリデーション
         $passwordSettings = $this->getPasswordSettings($settingsGetter);
         $request->validate($this->getPasswordResetValidationRules($passwordSettings));

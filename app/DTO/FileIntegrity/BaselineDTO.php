@@ -1,27 +1,47 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\DTO\FileIntegrity;
 
 use JsonSerializable;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * ベースラインDTO
- * 
+ *
  * ファイル整合性チェックの基準となるハッシュ情報を保持する不変データオブジェクトです。
- * 
- * @package App\DTO\FileIntegrity
  */
 final readonly class BaselineDTO implements JsonSerializable
 {
     /**
-     * @param string $generatedAt 生成日時（ISO8601）
-     * @param string $appVersion アプリケーションバージョン
-     * @param string $hashAlgo ハッシュアルゴリズム
-     * @param string $scope スコープ
-     * @param string|null $identifier プラグイン/テーマのスラッグ
-     * @param array<string> $paths スキャン対象パス
-     * @param array<string> $ignorePatterns 除外パターン
-     * @param array<string,string> $files ファイルパス => ハッシュ値
+     * @param  string  $generatedAt  生成日時（ISO8601）
+     * @param  string  $appVersion  アプリケーションバージョン
+     * @param  string  $hashAlgo  ハッシュアルゴリズム
+     * @param  string  $scope  スコープ
+     * @param  string|null  $identifier  プラグイン/テーマのスラッグ
+     * @param  array<string>  $paths  スキャン対象パス
+     * @param  array<string>  $ignorePatterns  除外パターン
+     * @param  array<string,string>  $files  ファイルパス => ハッシュ値
      */
     public function __construct(
         public string $generatedAt,
@@ -36,8 +56,6 @@ final readonly class BaselineDTO implements JsonSerializable
 
     /**
      * ファイル数を取得
-     * 
-     * @return int
      */
     public function getFileCount(): int
     {
@@ -46,9 +64,8 @@ final readonly class BaselineDTO implements JsonSerializable
 
     /**
      * 特定のファイルのハッシュを取得
-     * 
-     * @param string $path ファイルパス
-     * @return string|null
+     *
+     * @param  string  $path  ファイルパス
      */
     public function getFileHash(string $path): ?string
     {
@@ -57,9 +74,8 @@ final readonly class BaselineDTO implements JsonSerializable
 
     /**
      * ファイルが存在するか
-     * 
-     * @param string $path ファイルパス
-     * @return bool
+     *
+     * @param  string  $path  ファイルパス
      */
     public function hasFile(string $path): bool
     {
@@ -68,7 +84,7 @@ final readonly class BaselineDTO implements JsonSerializable
 
     /**
      * JSON形式にシリアライズ
-     * 
+     *
      * @return array<string,mixed>
      */
     public function jsonSerialize(): array
@@ -89,7 +105,7 @@ final readonly class BaselineDTO implements JsonSerializable
 
     /**
      * 配列形式に変換
-     * 
+     *
      * @return array<string,mixed>
      */
     public function toArray(): array
@@ -99,9 +115,8 @@ final readonly class BaselineDTO implements JsonSerializable
 
     /**
      * 配列からDTOを生成
-     * 
-     * @param array<string,mixed> $data
-     * @return self
+     *
+     * @param  array<string,mixed>  $data
      */
     public static function fromArray(array $data): self
     {
@@ -121,7 +136,7 @@ final readonly class BaselineDTO implements JsonSerializable
 
     /**
      * メタ情報のみを取得
-     * 
+     *
      * @return array<string,mixed>
      */
     public function getMeta(): array

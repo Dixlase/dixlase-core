@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,7 +26,7 @@ use Exception;
 
 /**
  * プラグイン権限違反例外
- * 
+ *
  * プラグインが宣言していない権限を使用しようとした場合にスローされます。
  */
 class PluginPermissionException extends Exception
@@ -43,12 +43,6 @@ class PluginPermissionException extends Exception
 
     /**
      * コンストラクタ
-     *
-     * @param string $message
-     * @param string $pluginSlug
-     * @param string $permission
-     * @param int $code
-     * @param \Throwable|null $previous
      */
     public function __construct(
         string $message = '',
@@ -64,8 +58,6 @@ class PluginPermissionException extends Exception
 
     /**
      * プラグインスラッグを取得
-     *
-     * @return string
      */
     public function getPluginSlug(): string
     {
@@ -74,8 +66,6 @@ class PluginPermissionException extends Exception
 
     /**
      * 違反した権限を取得
-     *
-     * @return string
      */
     public function getPermission(): string
     {

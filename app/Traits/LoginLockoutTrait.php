@@ -1,16 +1,38 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\Traits;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * ログイン試行制限の共通ロジックを提供するTrait
- * 
+ *
  * このTraitは、メンバーとユーザーのログイン試行制限処理で共通する
  * ロジックを提供します。
- * 
+ *
  * 使用するコントローラーは以下の抽象メソッドを実装する必要があります：
  * - getLoginAttemptModelClass(): ログイン試行モデルのクラス名を返す
  * - getSetting(): 設定値を取得
@@ -19,15 +41,13 @@ trait LoginLockoutTrait
 {
     /**
      * ログイン試行モデルのクラス名を取得
-     * 
-     * @return string
      */
     abstract protected function getLoginAttemptModelClass(): string;
+
     /**
      * ログイン試行制限が有効かどうかを確認
      *
-     * @param string $settingKey デフォルト: 'login_attempt_limit_enabled'
-     * @return bool
+     * @param  string  $settingKey  デフォルト: 'login_attempt_limit_enabled'
      */
     public function isLockoutEnabled(string $settingKey = 'login_attempt_limit_enabled'): bool
     {
@@ -37,8 +57,7 @@ trait LoginLockoutTrait
     /**
      * ロックアウト通知が有効かどうかを確認
      *
-     * @param string $settingKey デフォルト: 'lockout_notification_enabled'
-     * @return bool
+     * @param  string  $settingKey  デフォルト: 'lockout_notification_enabled'
      */
     public function isNotificationEnabled(string $settingKey = 'lockout_notification_enabled'): bool
     {
@@ -48,8 +67,7 @@ trait LoginLockoutTrait
     /**
      * 最大試行回数を取得
      *
-     * @param string $settingKey デフォルト: 'login_attempt_max_attempts'
-     * @return int
+     * @param  string  $settingKey  デフォルト: 'login_attempt_max_attempts'
      */
     public function getMaxAttempts(string $settingKey = 'login_attempt_max_attempts'): int
     {
@@ -59,8 +77,7 @@ trait LoginLockoutTrait
     /**
      * 時間窓（分）を取得
      *
-     * @param string $settingKey デフォルト: 'login_attempt_time_window'
-     * @return int
+     * @param  string  $settingKey  デフォルト: 'login_attempt_time_window'
      */
     public function getTimeWindow(string $settingKey = 'login_attempt_time_window'): int
     {
@@ -70,8 +87,7 @@ trait LoginLockoutTrait
     /**
      * ロックアウト時間（分）を取得
      *
-     * @param string $settingKey デフォルト: 'login_attempt_lockout_duration'
-     * @return int
+     * @param  string  $settingKey  デフォルト: 'login_attempt_lockout_duration'
      */
     public function getLockoutDuration(string $settingKey = 'login_attempt_lockout_duration'): int
     {
@@ -81,9 +97,7 @@ trait LoginLockoutTrait
     /**
      * 指定した識別子がロックアウトされているかを確認
      *
-     * @param string $identifier
-     * @param array $settings 設定配列（オプション）
-     * @return bool
+     * @param  array  $settings  設定配列（オプション）
      */
     public function isLockedOut(string $identifier, array $settings = []): bool
     {
@@ -91,7 +105,7 @@ trait LoginLockoutTrait
         $maxAttemptsKey = $settings['max_attempts_key'] ?? 'login_attempt_max_attempts';
         $timeWindowKey = $settings['time_window_key'] ?? 'login_attempt_time_window';
 
-        if (!$this->isLockoutEnabled($enabledKey)) {
+        if (! $this->isLockoutEnabled($enabledKey)) {
             return false;
         }
 
@@ -107,9 +121,7 @@ trait LoginLockoutTrait
     /**
      * IPアドレスがロックアウトされているかを確認
      *
-     * @param string $ipAddress
-     * @param array $settings 設定配列（オプション）
-     * @return bool
+     * @param  array  $settings  設定配列（オプション）
      */
     public function isIpLockedOut(string $ipAddress, array $settings = []): bool
     {
@@ -117,7 +129,7 @@ trait LoginLockoutTrait
         $maxAttemptsKey = $settings['max_attempts_key'] ?? 'login_attempt_max_attempts';
         $timeWindowKey = $settings['time_window_key'] ?? 'login_attempt_time_window';
 
-        if (!$this->isLockoutEnabled($enabledKey)) {
+        if (! $this->isLockoutEnabled($enabledKey)) {
             return false;
         }
 
@@ -136,21 +148,19 @@ trait LoginLockoutTrait
     /**
      * ロックアウト解除までの残り時間（分）を取得
      *
-     * @param string $identifier
-     * @param array $settings 設定配列（オプション）
-     * @return int|null
+     * @param  array  $settings  設定配列（オプション）
      */
     public function getLockoutRemainingMinutes(string $identifier, array $settings = []): ?int
     {
         $lockoutDurationKey = $settings['lockout_duration_key'] ?? 'login_attempt_lockout_duration';
 
-        if (!$this->isLockedOut($identifier, $settings)) {
+        if (! $this->isLockedOut($identifier, $settings)) {
             return null;
         }
 
         $modelClass = $this->getLoginAttemptModelClass();
         $lastFailedAttempt = $modelClass::getLastFailedAttempt($identifier);
-        if (!$lastFailedAttempt) {
+        if (! $lastFailedAttempt) {
             return null;
         }
 
@@ -167,14 +177,12 @@ trait LoginLockoutTrait
     /**
      * ログイン試行を記録
      *
-     * @param Request $request
-     * @param string $identifier
-     * @param bool $successful
      * @return MemberLoginAttempt
      */
     public function recordLoginAttempt(Request $request, string $identifier, bool $successful = false)
     {
         $modelClass = $this->getLoginAttemptModelClass();
+
         return $modelClass::recordAttempt(
             $identifier,
             $request->ip(),
@@ -185,14 +193,11 @@ trait LoginLockoutTrait
 
     /**
      * 成功したログイン後の処理
-     *
-     * @param string $identifier
-     * @return void
      */
     public function handleSuccessfulLogin(string $identifier): void
     {
         $modelClass = $this->getLoginAttemptModelClass();
-        
+
         // 成功したログインを記録
         $modelClass::recordAttempt(
             $identifier,
@@ -208,9 +213,7 @@ trait LoginLockoutTrait
     /**
      * 失敗したログイン後の処理
      *
-     * @param Request $request
-     * @param string $identifier
-     * @param array $settings 設定配列（オプション）
+     * @param  array  $settings  設定配列（オプション）
      * @return array ロックアウト情報
      */
     public function handleFailedLogin(Request $request, string $identifier, array $settings = []): array
@@ -229,12 +232,12 @@ trait LoginLockoutTrait
         $maxAttemptsKey = $settings['max_attempts_key'] ?? 'login_attempt_max_attempts';
         $timeWindowKey = $settings['time_window_key'] ?? 'login_attempt_time_window';
 
-        if (!$this->isLockoutEnabled($enabledKey)) {
+        if (! $this->isLockoutEnabled($enabledKey)) {
             return $lockoutInfo;
         }
 
         $modelClass = $this->getLoginAttemptModelClass();
-        
+
         // 現在の失敗回数を取得
         $failedAttempts = $modelClass::getFailedAttemptsCount(
             $identifier,
@@ -260,10 +263,7 @@ trait LoginLockoutTrait
     /**
      * ロックアウト状態の詳細情報を取得
      *
-     * @param string $identifier
-     * @param string $ipAddress
-     * @param array $settings 設定配列（オプション）
-     * @return array
+     * @param  array  $settings  設定配列（オプション）
      */
     public function getLockoutStatus(string $identifier, string $ipAddress, array $settings = []): array
     {
@@ -280,19 +280,14 @@ trait LoginLockoutTrait
 
     /**
      * 設定値を取得する抽象メソッド（実装クラスで定義）
-     * 
-     * @param string $key
-     * @param mixed $default
+     *
+     * @param  mixed  $default
      * @return mixed
      */
     abstract protected function getSetting(string $key, $default = null);
 
     /**
      * Boolean設定値を取得
-     *
-     * @param string $key
-     * @param bool $default
-     * @return bool
      */
     protected function getBooleanSetting(string $key, bool $default = false): bool
     {
@@ -301,10 +296,6 @@ trait LoginLockoutTrait
 
     /**
      * Integer設定値を取得
-     *
-     * @param string $key
-     * @param int $default
-     * @return int
      */
     protected function getIntegerSetting(string $key, int $default = 0): int
     {

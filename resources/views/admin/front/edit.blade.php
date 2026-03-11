@@ -21,59 +21,163 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-<div class="mx-auto">
-    @php
-    // コンテンツの取得
-    $editorType = $frontPage->editor_type->value ?? 'html';
-    $contentColumn = 'content_' . $editorType;
-    
-    // ファイル保存の場合はファイルから、DB保存の場合はカラムから
-    if ($fileContents !== null) {
-        $content = old('content', $fileContents);
-    } else {
-        $content = old('content', $frontPage->{$contentColumn} ?? $frontPage->content ?? '');
-    }
-    @endphp
-
-    @if(session('success'))
-    <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-        {{ session('success') }}
-    </div>
-    @endif
-
-    <form id="frontEditForm" action="{{ route('admin.front.edit.update') }}" method="POST">
+    <form id="front-page-edit-form"
+          action="{{ route('admin.front.edit.update') }}"
+          method="POST"
+          x-data="frontPageEditor({
+              defaultStorageType: '{{ old('storage_type', $storageType) }}',
+              fileStorageBasePath: '{{ $fileStorageBasePath }}',
+              editorType: '{{ $editorType }}',
+              langCode: '{{ $langCode }}'
+          })">
         @csrf
         @method('PUT')
 
-        <!-- コンテンツエディタ -->
-        <x-form-content-editor
-            :storageType="old('storage_type', $frontPage->storage_type->value ?? 'database')"
-            :editorType="old('editor_type', $frontPage->editor_type->value ?? 'html')"
-            :title="old('title', $frontPage->title ?? '')"
-            :content="$content"
-            :identifier="'front-main-content'"
-            :pageId="$frontPage->id"
-            :contentApiUrl="url('admin/front/edit/content/{storageType}/{editorType}')"
-            :showTitle="false"
-            :showMetaDescription="false"
-            :showOgpImage="false"
-            :fileBasePath="'storage/app/private/front'"
-            :fileNamePrefix="'content'"
-        />
+        {{-- ===== メインコンテンツエリア ===== --}}
+        <div class="space-y-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
+                {{-- エディタータイプ（固定表示） --}}
+                <div>
+                    <x-form-label :text="__('admin/front.edit.editor_type_label')" />
+                    <x-content-editor.type-badge
+                        :icon="$editorTypeIcon"
+                        :color="$editorTypeColor"
+                        :label="$editorTypeLabel"
+                        :description="$editorTypeDescription"
+                    />
+                </div>
+
+                {{-- 言語（固定表示） --}}
+                <div>
+                    <x-form-label :text="__('admin/front.edit.lang_label')" />
+                    <p class="text-sm text-gray-700 dark:text-gray-300">{{ $langName }}</p>
+                </div>
+
+                {{-- タブナビゲーション（HTML エディタ時のみ） --}}
+                @if ($isHtmlEditor)
+                    <x-content-editor.tabs />
+                @endif
+
+                {{-- Content タブ --}}
+                <div x-show="activeTab === 'content'">
+                    <x-form-label :for="'content'" :text="__('admin/front.edit.content_label')" />
+                    <x-form-textarea
+                        id="content"
+                        name="content"
+                        :value="$body"
+                        rows="20"
+                        :placeholder="__('admin/front.edit.content_placeholder')"
+                        class="font-mono text-sm"
+                    />
+                    <x-form-error name="content" />
+                </div>
+
+                @if ($isHtmlEditor)
+                    {{-- CSS タブ --}}
+                    <div x-show="activeTab === 'css'" x-cloak>
+                        <x-form-label :for="'custom_css'" :text="__('components/content-editor.tab_css')" />
+                        <x-form-textarea
+                            id="custom_css"
+                            name="custom_css"
+                            :value="$customCss ?? ''"
+                            rows="20"
+                            :placeholder="__('admin/front.edit.custom_css_placeholder')"
+                            class="font-mono text-sm"
+                        />
+                        <x-form-error name="custom_css" />
+                    </div>
+
+                    {{-- JavaScript タブ --}}
+                    <div x-show="activeTab === 'js'" x-cloak>
+                        <x-form-label :for="'custom_js'" :text="__('components/content-editor.tab_js')" />
+                        <x-form-textarea
+                            id="custom_js"
+                            name="custom_js"
+                            :value="$customJs ?? ''"
+                            rows="20"
+                            :placeholder="__('admin/front.edit.custom_js_placeholder')"
+                            class="font-mono text-sm"
+                        />
+                        <x-form-error name="custom_js" />
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        {{-- ===== 右サイドバートグルボタン ===== --}}
+        <button type="button"
+                @click="toggleRightSidebar()"
+                class="hidden sm:flex fixed top-14 right-0 z-50 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-l-lg shadow-md border border-r-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                :class="{
+                    'translate-x-0': rightSidebarCollapsed,
+                    '-translate-x-80': !rightSidebarCollapsed
+                }"
+                :style="rightSidebarReady ? 'transition: transform 200ms ease-in-out' : ''"
+                :aria-label="rightSidebarCollapsed
+                    ? '{{ __('admin/front.edit.sidebar_open') }}'
+                    : '{{ __('admin/front.edit.sidebar_close') }}'">
+            <i class="fas text-sm" :class="rightSidebarCollapsed ? 'fa-chevron-left' : 'fa-chevron-right'"></i>
+        </button>
+
+        {{-- ===== 右サイドバー ===== --}}
+        <div class="space-y-6 fixed top-12 right-0 bottom-0 w-80 z-50 overflow-y-auto bg-white/75 dark:bg-gray-900/75 backdrop-blur-sm border-l border-gray-200 dark:border-gray-600 shadow-md px-6 py-6"
+             :class="{
+                 'translate-x-80': rightSidebarCollapsed,
+                 'translate-x-0': !rightSidebarCollapsed
+             }"
+             :style="rightSidebarReady ? 'transition: transform 300ms ease-in-out' : ''">
+
+            {{-- 保存方法 --}}
+            <x-content-editor.storage-info
+                :storageOptions="$storageOptions"
+                :storageType="old('storage_type', $storageType)"
+                :showJsCss="true"
+            />
+
+            {{-- リセット --}}
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-red-300 dark:border-red-700/50 p-6">
+                <h3 class="text-sm font-semibold text-red-600 dark:text-red-400 mb-2">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    {{ __('admin/front.edit.reset_section_title') }}
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    {{ __('admin/front.edit.reset_description') }}
+                </p>
+                <x-form-button type="button" variant="danger" size="sm" icon="fas fa-undo"
+                    @click="openModal('resetFrontPageEditModal')">
+                    {{ __('admin/front.edit.reset_button') }}
+                </x-form-button>
+            </div>
+
+        </div>
     </form>
-</div>
+
+    {{-- リセット確認モーダル --}}
+    <x-ui-modal id="resetFrontPageEditModal"
+        :title="__('admin/front.edit.reset_confirm_title')"
+        :message="__('admin/front.edit.reset_confirm')"
+        :confirm-label="__('admin/front.edit.reset_button')"
+        :cancel-label="__('common.cancel')"
+        icon-type="danger"
+        confirm-color="red"
+        form="front-page-reset-form" />
+
+    <form id="front-page-reset-form"
+          action="{{ route('admin.front.destroy') }}"
+          method="POST" style="display: none;">
+        @csrf
+        @method('DELETE')
+    </form>
 @endsection
 
-<!-- 保存ボタンとモーダル -->
 @section('save')
-    @include('components.save', [
-        'id' => 'confirmationModal',
-        'onclick' => "openModal('confirmationModal')",
-        'title' => __('admin.settings.front.save_confirmation_title'),
-        'label' => __('common.save'),
-        'message' => __('admin.settings.front.save_confirmation_message'),
-        'confirm_label' => __('common.save'),
-        'cancel_label' => __('common.back'),
-        'form' => 'frontEditForm',
-    ])
+    <x-admin.save-button
+        id_confirmation="confirmFrontPageEditModal"
+        :label="__('common.save')"
+        :title="__('admin/front.edit.confirm_title')"
+        :message="__('admin/front.edit.confirm_message')"
+        :confirm_label="__('common.save')"
+        :cancel_label="__('common.cancel')"
+        form="front-page-edit-form"
+    />
 @endsection

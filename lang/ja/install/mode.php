@@ -40,7 +40,7 @@ return [
     // 確認画面・完了画面用
     'auto_configured_title' => '自動設定された項目',
     'auto_configured_description' => 'かんたんモードにより、以下の項目が自動的に設定されました。',
-    'auto_configured_changeable' => 'これらの設定は管理画面 > 設定 からいつでも変更できます。',
+    'auto_configured_changeable' => 'これらの設定は管理画面 > 全体設定 からいつでも変更できます。',
     'app_env_production' => '本番環境',
     'debug_off' => 'OFF',
     'ssl_on' => 'ON',

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -33,6 +33,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * 緊急ロックダウンサービス
  *
  * セキュリティインシデント時の即座のシステム保護を提供
@@ -43,18 +45,18 @@ class LockdownService
      * キャッシュキー
      */
     protected const CACHE_KEY = 'lockdown_status';
+
     protected const CACHE_TTL = 60; // 1分
 
     /**
      * ロックダウンを発動
      *
-     * @param string $type ロックダウンタイプ
-     * @param string $reason 理由
-     * @param int|null $triggeredBy 発動者ID（null=システム自動）
-     * @param int|null $autoReleaseMinutes 自動解除までの分数
-     * @param array|null $allowedIps 許可するIPアドレス
-     * @param array|null $allowedMembers 許可するメンバーID
-     * @return LockdownStatus
+     * @param  string  $type  ロックダウンタイプ
+     * @param  string  $reason  理由
+     * @param  int|null  $triggeredBy  発動者ID（null=システム自動）
+     * @param  int|null  $autoReleaseMinutes  自動解除までの分数
+     * @param  array|null  $allowedIps  許可するIPアドレス
+     * @param  array|null  $allowedMembers  許可するメンバーID
      */
     public static function activate(
         string $type = LockdownStatus::TYPE_FULL,
@@ -122,14 +124,13 @@ class LockdownService
     /**
      * ロックダウンを解除
      *
-     * @param int|null $releasedBy 解除者ID
-     * @param string|null $reason 解除理由
-     * @return bool
+     * @param  int|null  $releasedBy  解除者ID
+     * @param  string|null  $reason  解除理由
      */
     public static function deactivate(?int $releasedBy = null, ?string $reason = null): bool
     {
         $lockdown = LockdownStatus::getActive();
-        if (!$lockdown) {
+        if (! $lockdown) {
             return false;
         }
 
@@ -190,7 +191,7 @@ class LockdownService
     public static function checkAutoRelease(): bool
     {
         $lockdown = LockdownStatus::getActive();
-        if (!$lockdown || !$lockdown->shouldAutoRelease()) {
+        if (! $lockdown || ! $lockdown->shouldAutoRelease()) {
             return false;
         }
 
@@ -244,7 +245,7 @@ class LockdownService
     public static function isLocked(?string $type = null): bool
     {
         $status = self::getStatus();
-        if (!$status) {
+        if (! $status) {
             return false;
         }
 
@@ -263,15 +264,14 @@ class LockdownService
     /**
      * アクセスが許可されているかチェック
      *
-     * @param string|null $ip IPアドレス
-     * @param Member|null $member メンバー
-     * @param string|null $type チェックするロックダウンタイプ
-     * @return bool
+     * @param  string|null  $ip  IPアドレス
+     * @param  Member|null  $member  メンバー
+     * @param  string|null  $type  チェックするロックダウンタイプ
      */
     public static function isAccessAllowed(?string $ip = null, ?Member $member = null, ?string $type = null): bool
     {
         $status = self::getStatus();
-        if (!$status) {
+        if (! $status) {
             return true; // ロックダウンなし
         }
 
@@ -301,14 +301,13 @@ class LockdownService
     /**
      * ロックダウンを延長
      *
-     * @param int $additionalMinutes 追加する分数
-     * @param int|null $performedBy 実行者ID
-     * @return bool
+     * @param  int  $additionalMinutes  追加する分数
+     * @param  int|null  $performedBy  実行者ID
      */
     public static function extend(int $additionalMinutes, ?int $performedBy = null): bool
     {
         $lockdown = LockdownStatus::getActive();
-        if (!$lockdown) {
+        if (! $lockdown) {
             return false;
         }
 
@@ -340,11 +339,6 @@ class LockdownService
 
     /**
      * 許可リストを更新
-     *
-     * @param array|null $allowedIps
-     * @param array|null $allowedMembers
-     * @param int|null $performedBy
-     * @return bool
      */
     public static function updateAllowList(
         ?array $allowedIps = null,
@@ -352,7 +346,7 @@ class LockdownService
         ?int $performedBy = null
     ): bool {
         $lockdown = LockdownStatus::getActive();
-        if (!$lockdown) {
+        if (! $lockdown) {
             return false;
         }
 

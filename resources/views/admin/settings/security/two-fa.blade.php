@@ -22,6 +22,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="max-w-7xl mx-auto">
+    @if($modeData['isPartial'] ?? false)
+        <x-admin.mode-partial-notice />
+    @endif
+
     <form method="POST" action="{{ route('admin.settings.security.two-fa.update') }}" id="two-fa-settings-form">
         @csrf
 
@@ -57,6 +61,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
             </section>
 
+            @if(!($modeData['isPartial'] ?? false))
             <x-security.passkey-device-settings
                 :maxDevices="$twoFaPasskeyMaxDevices"
                 :twoFaEnabled="true"
@@ -78,6 +83,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :recoveryCodeRegenerateInterval="$twoFaRecoveryCodeRegenerateInterval"
                 />
             </section>
+            @endif
         </div>
     </form>
 </div>

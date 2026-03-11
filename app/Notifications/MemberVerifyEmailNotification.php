@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,12 +29,12 @@ use Illuminate\Notifications\Notification;
 
 class MemberVerifyEmailNotification extends Notification
 {
-    use Queueable, EmailVerificationTrait;
+    use EmailVerificationTrait, Queueable;
 
     /**
      * Create a new notification instance.
      *
-     * @param string $context 'create', 'email_change', または 'resend'
+     * @param  string  $context  'create', 'email_change', または 'resend'
      */
     public function __construct(string $context = 'create')
     {
@@ -63,7 +63,7 @@ class MemberVerifyEmailNotification extends Notification
         $messageKey = $this->getMessageKey($prefix);
         $actionKey = $this->getActionKey($prefix);
 
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject(__($subjectKey))
             ->greeting(__('mail.verify-email.member.greeting', ['name' => $notifiable->name]))
             ->line(__($messageKey))
@@ -75,5 +75,4 @@ class MemberVerifyEmailNotification extends Notification
             ->line(__('mail.verify-email.member.security_notice'))
             ->salutation(__('mail.verify-email.member.regards'));
     }
-
 }

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -13,7 +13,8 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
@@ -22,12 +23,14 @@
 namespace App\Enums;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * 拡張機能（プラグイン・テーマ）の健全性レベル
- * 
+ *
  * 健全性レベルは、拡張機能がシステムに与える影響の範囲を示します。
  * 「リスク」ではなく「健全性」という表現を使用することで、
  * 開発者に対してより前向きで建設的なフィードバックを提供します。
- * 
+ *
  * プリセットモード:
  * - Strict (厳格): 署名必須、権限定義必須、健全性「良好」のみ許可
  * - Balanced (バランス): 署名または信頼済みソース由来ならOK、「注意」まで許可
@@ -153,6 +156,7 @@ enum ExtensionSecurityLevel: int
         foreach (self::cases() as $case) {
             $labels[$case->value] = $case->translationKey();
         }
+
         return $labels;
     }
 

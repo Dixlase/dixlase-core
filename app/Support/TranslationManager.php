@@ -1,5 +1,25 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\Support;
 
 use App\Contracts\TranslationResolver;
@@ -9,51 +29,46 @@ use Illuminate\Support\Facades\Event;
 
 /**
  * Translation Manager
- * 
+ *
  * Provides a facade-like interface for managing translations.
  * Plugins can use this to register custom translation resolvers
  * and manage locale settings.
- * 
+ *
  * Usage:
  * ```php
  * // Register a custom resolver
  * TranslationManager::resolveUsing(MyTranslationResolver::class);
- * 
+ *
  * // Or with a closure
  * TranslationManager::resolveUsing(function ($model, $field, $locale) {
  *     return MyTranslation::get($model, $field, $locale);
  * });
- * 
+ *
  * // Change locale with event firing
  * TranslationManager::setLocale('ja');
- * 
+ *
  * // Get available locales
  * $locales = TranslationManager::getAvailableLocales();
  * ```
- * 
+ *
  * @see docs/translation-api-spec.md
  */
 class TranslationManager
 {
     /**
      * Available locales (can be extended by plugins)
-     *
-     * @var array
      */
     protected static array $availableLocales = [];
 
     /**
      * Locale names for display
-     *
-     * @var array
      */
     protected static array $localeNames = [];
 
     /**
      * Register a custom translation resolver
      *
-     * @param string|callable $resolver Class name or closure
-     * @return void
+     * @param  string|callable  $resolver  Class name or closure
      */
     public static function resolveUsing(string|callable $resolver): void
     {
@@ -61,7 +76,8 @@ class TranslationManager
             App::singleton(TranslationResolver::class, $resolver);
         } else {
             App::singleton(TranslationResolver::class, function () use ($resolver) {
-                return new class($resolver) implements TranslationResolver {
+                return new class($resolver) implements TranslationResolver
+                {
                     public function __construct(
                         protected $resolver
                     ) {}
@@ -107,8 +123,6 @@ class TranslationManager
 
     /**
      * Check if a translation resolver is registered
-     *
-     * @return bool
      */
     public static function hasResolver(): bool
     {
@@ -117,22 +131,18 @@ class TranslationManager
 
     /**
      * Get the registered translation resolver
-     *
-     * @return TranslationResolver|null
      */
     public static function getResolver(): ?TranslationResolver
     {
         if (self::hasResolver()) {
             return App::make(TranslationResolver::class);
         }
+
         return null;
     }
 
     /**
      * Set the current locale with event firing
-     *
-     * @param string $locale
-     * @return void
      */
     public static function setLocale(string $locale): void
     {
@@ -150,8 +160,6 @@ class TranslationManager
 
     /**
      * Get the current locale
-     *
-     * @return string
      */
     public static function getLocale(): string
     {
@@ -160,8 +168,6 @@ class TranslationManager
 
     /**
      * Get the fallback locale
-     *
-     * @return string
      */
     public static function getFallbackLocale(): string
     {
@@ -171,8 +177,7 @@ class TranslationManager
     /**
      * Register available locales
      *
-     * @param array $locales ['en' => 'English', 'ja' => '日本語', ...]
-     * @return void
+     * @param  array  $locales  ['en' => 'English', 'ja' => '日本語', ...]
      */
     public static function registerLocales(array $locales): void
     {
@@ -186,8 +191,6 @@ class TranslationManager
 
     /**
      * Get all available locales
-     *
-     * @return array
      */
     public static function getAvailableLocales(): array
     {
@@ -204,9 +207,6 @@ class TranslationManager
 
     /**
      * Get locale display name
-     *
-     * @param string $locale
-     * @return string
      */
     public static function getLocaleName(string $locale): string
     {
@@ -225,9 +225,6 @@ class TranslationManager
 
     /**
      * Check if a locale is available
-     *
-     * @param string $locale
-     * @return bool
      */
     public static function isLocaleAvailable(string $locale): bool
     {
@@ -236,8 +233,6 @@ class TranslationManager
 
     /**
      * Get the default locale for new content
-     *
-     * @return string
      */
     public static function getDefaultLocale(): string
     {
@@ -246,8 +241,6 @@ class TranslationManager
 
     /**
      * Reset the manager state (useful for testing)
-     *
-     * @return void
      */
     public static function reset(): void
     {

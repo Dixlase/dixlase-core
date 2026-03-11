@@ -1,30 +1,50 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\DTO\Logging;
 
 use Illuminate\Http\Request;
 use JsonSerializable;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * ログコンテキストDTO
- * 
+ *
  * ログ出力時のコンテキスト情報を保持する不変データオブジェクトです。
- * 
- * @package App\DTO\Logging
  */
 final readonly class LogContextDTO implements JsonSerializable
 {
     /**
-     * @param string|null $userId ユーザーID
-     * @param string|null $userType ユーザータイプ（member, user, guest）
-     * @param string|null $ipAddress IPアドレス
-     * @param string|null $userAgent ユーザーエージェント
-     * @param string|null $url リクエストURL
-     * @param string|null $method HTTPメソッド
-     * @param string|null $action 操作内容
-     * @param string|null $source ソース（core, プラグインスラッグ）
-     * @param array<string,mixed> $details 詳細情報
-     * @param array<string,mixed> $meta メタデータ
+     * @param  string|null  $userId  ユーザーID
+     * @param  string|null  $userType  ユーザータイプ（member, user, guest）
+     * @param  string|null  $ipAddress  IPアドレス
+     * @param  string|null  $userAgent  ユーザーエージェント
+     * @param  string|null  $url  リクエストURL
+     * @param  string|null  $method  HTTPメソッド
+     * @param  string|null  $action  操作内容
+     * @param  string|null  $source  ソース（core, プラグインスラッグ）
+     * @param  array<string,mixed>  $details  詳細情報
+     * @param  array<string,mixed>  $meta  メタデータ
      */
     public function __construct(
         public ?string $userId = null,
@@ -41,12 +61,11 @@ final readonly class LogContextDTO implements JsonSerializable
 
     /**
      * リクエストからコンテキストを生成
-     * 
-     * @param Request|null $request リクエスト
-     * @param string|null $userId ユーザーID
-     * @param string|null $userType ユーザータイプ
-     * @param string $source ソース
-     * @return self
+     *
+     * @param  Request|null  $request  リクエスト
+     * @param  string|null  $userId  ユーザーID
+     * @param  string|null  $userType  ユーザータイプ
+     * @param  string  $source  ソース
      */
     public static function fromRequest(
         ?Request $request = null,
@@ -69,10 +88,9 @@ final readonly class LogContextDTO implements JsonSerializable
 
     /**
      * 管理者コンテキストを生成
-     * 
-     * @param int|string|null $memberId メンバーID
-     * @param string $source ソース
-     * @return self
+     *
+     * @param  int|string|null  $memberId  メンバーID
+     * @param  string  $source  ソース
      */
     public static function forAdmin(?int $memberId = null, string $source = 'core'): self
     {
@@ -92,11 +110,10 @@ final readonly class LogContextDTO implements JsonSerializable
 
     /**
      * プラグインコンテキストを生成
-     * 
-     * @param string $pluginSlug プラグインスラッグ
-     * @param string|null $userId ユーザーID
-     * @param string|null $userType ユーザータイプ
-     * @return self
+     *
+     * @param  string  $pluginSlug  プラグインスラッグ
+     * @param  string|null  $userId  ユーザーID
+     * @param  string|null  $userType  ユーザータイプ
      */
     public static function forPlugin(string $pluginSlug, ?string $userId = null, ?string $userType = null): self
     {
@@ -105,9 +122,8 @@ final readonly class LogContextDTO implements JsonSerializable
 
     /**
      * 詳細情報を追加した新しいDTOを生成
-     * 
-     * @param array<string,mixed> $details 追加する詳細情報
-     * @return self
+     *
+     * @param  array<string,mixed>  $details  追加する詳細情報
      */
     public function withDetails(array $details): self
     {
@@ -127,9 +143,8 @@ final readonly class LogContextDTO implements JsonSerializable
 
     /**
      * 操作を設定した新しいDTOを生成
-     * 
-     * @param string $action 操作内容
-     * @return self
+     *
+     * @param  string  $action  操作内容
      */
     public function withAction(string $action): self
     {
@@ -149,7 +164,7 @@ final readonly class LogContextDTO implements JsonSerializable
 
     /**
      * JSON形式にシリアライズ
-     * 
+     *
      * @return array<string,mixed>
      */
     public function jsonSerialize(): array
@@ -166,12 +181,12 @@ final readonly class LogContextDTO implements JsonSerializable
             'details' => $this->details,
             'meta' => $this->meta,
             'timestamp' => now()->toDateTimeString(),
-        ], fn($v) => $v !== null && $v !== []);
+        ], fn ($v) => $v !== null && $v !== []);
     }
 
     /**
      * 配列形式に変換
-     * 
+     *
      * @return array<string,mixed>
      */
     public function toArray(): array
@@ -181,9 +196,8 @@ final readonly class LogContextDTO implements JsonSerializable
 
     /**
      * 配列からDTOを生成
-     * 
-     * @param array<string,mixed> $data
-     * @return self
+     *
+     * @param  array<string,mixed>  $data
      */
     public static function fromArray(array $data): self
     {
@@ -203,8 +217,8 @@ final readonly class LogContextDTO implements JsonSerializable
 
     /**
      * 機密情報をフィルタリング
-     * 
-     * @param array<string,mixed> $data フィルタ対象データ
+     *
+     * @param  array<string,mixed>  $data  フィルタ対象データ
      * @return array<string,mixed>
      */
     public static function sanitize(array $data): array

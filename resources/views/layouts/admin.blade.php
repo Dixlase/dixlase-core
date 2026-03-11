@@ -31,6 +31,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
+        {{-- FOUC防止: CSSやAlpine.jsの読み込み前に即座にダークモードクラスを適用 --}}
+        <script @cspNonce>
+            (function(){
+                var a='{{ $appearance }}';
+                var d=a==='2'||(a==='0'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.classList.add(d?'dark':'light');
+            })();
+        </script>
+
         <title>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Fonts -->
@@ -52,37 +61,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- Maintenance Mode Banner (Sticky at top) -->
             <x-ui-admin-maintenance-banner />
             
-            <!-- CSP Safe Mode Banner -->
-            <x-security.csp-safe-mode-banner />
+            <!-- Safe Mode Banner -->
+            <x-security.safe-mode-banner />
             
             <!-- Admin Bar (Header) -->
             <x-ui-admin-bar :isAdminLayout="true" />
 
-            @php
-                // バナーの高さを計算
-                $bannerHeight = 68; // 各バナーの高さ(px)
-                $adminBarHeight = 48; // 管理バーの高さ(px)
-
-                $cspBannerActive = session('csp_safe_mode');
-                try {
-                    $maintenanceBannerActive = DB::table('base_settings')
-                        ->where('name', 'maintenance_mode')
-                        ->value('value') === '1';
-                } catch (\Exception $e) {
-                    $maintenanceBannerActive = false;
-                }
-
-                $totalBannerHeight = 0;
-                if ($cspBannerActive) $totalBannerHeight += $bannerHeight;
-                if ($maintenanceBannerActive) $totalBannerHeight += $bannerHeight;
-
-                $contentTop = $totalBannerHeight + $adminBarHeight;
-            @endphp
-
-            <div class="min-h-screen flex relative" style="margin-top: {{ $contentTop}}px">
+            <div class="min-h-screen flex relative pt-12">
                 <!-- Navigation Sidebar (Desktop only) -->
-                <aside class="md:fixed hidden sm:block w-64 flex-shrink-0 border-gray-300 @if($transitionEnabled ?? false) transition-all duration-[300ms] @else transition-transform duration-300 @endif"
-                       style="height: calc(100vh - {{ $contentTop }}px);"
+                <aside class="md:fixed md:top-12 md:bottom-0 hidden sm:block w-64 flex-shrink-0 border-gray-300 @if($transitionEnabled ?? false) transition-all duration-[300ms] @else transition-transform duration-300 @endif"
                        :class="{
                            '-translate-x-64': sidebarCollapsed,
                            'translate-x-0': !sidebarCollapsed
@@ -107,10 +94,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </button>
 
                 <!-- Main Content Area -->
-                <main class="ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white"
+                <main @right-sidebar-active.window="rightSidebarActive = true"
+                      class="ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white"
                       :class="{
                           'md:ml-0': sidebarCollapsed,
-                          'md:ml-64': !sidebarCollapsed
+                          'md:ml-64': !sidebarCollapsed,
+                          'lg:mr-80': rightSidebarActive && !rightSidebarCollapsed
                       }"
                       x-init="
                           (() => {
@@ -156,7 +145,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                       role="main">
 
                     <!-- Page Header -->
-                    <header class="mx-auto py-6 px-8 mb-2 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white @if($transitionEnabled ?? false) transition-colors duration-[500ms] @endif">
+                    <header class="mx-auto pt-6 pb-6 px-8 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white @if($transitionEnabled ?? false) transition-colors duration-[500ms] @endif">
                         <h1 class="font-semibold text-xl leading-tight text-gray-800 dark:text-white">
                             {{ __($heading) }}
                         </h1>
@@ -164,7 +153,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <!-- Breadcrumbs -->
                     @if(!empty($breadcrumbs) && count($breadcrumbs) > 0)
-                        <nav class="w-full px-6 lg:px-8">
+                        <nav class="w-full px-6 lg:px-8 mt-2">
                             <ol class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
                                 @foreach($breadcrumbs as $index => $breadcrumb)
                                     @if($index > 0)
@@ -186,7 +175,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <!-- Page Description -->
                     @if(!empty($description))
-                        <div class="w-full px-6 lg:px-8 mt-4">
+                        <div class="w-full px-6 lg:px-8 mt-1">
                             <p class="text-sm text-gray-600 dark:text-gray-400">
                                 {{ $description }}
                             </p>
@@ -194,7 +183,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endif
 
                     <!-- Page Content -->
-                    <article class="w-full px-6 lg:px-8 pb-8 mt-8">
+                    <article class="w-full px-6 lg:px-8 pb-8 mt-5">
                         <x-ui-flash-message />
                         @yield('content')
                     </article>
@@ -206,6 +195,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </div>
                         </div>
                     @endif
+
+                {{-- モバイル時の右サイドバーオーバーレイ --}}
+                <div x-show="!rightSidebarCollapsed"
+                     @click="rightSidebarCollapsed = true"
+                     x-cloak
+                     class="fixed inset-0 bg-black/50 dark:bg-black/60 z-40 lg:hidden"
+                     aria-hidden="true"></div>
 
                 </main>
             </div>

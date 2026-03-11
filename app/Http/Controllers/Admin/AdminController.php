@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,18 +22,22 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Routing\Controller;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Traits\AdminInterfaceTrait;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Routing\Controller;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * 管理画面基底コントローラー
+ */
 class AdminController extends Controller
 {
-
+    use AdminInterfaceTrait;
     // トレイト
     use AuthorizesRequests;
-    use AdminInterfaceTrait;
 
-    //初期設定を行う
+    // 初期設定を行う
     public function __construct()
     {
         $this->initialize();

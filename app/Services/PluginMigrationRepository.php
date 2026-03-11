@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,10 +22,12 @@
 
 namespace App\Services;
 
-use Illuminate\Database\Migrations\DatabaseMigrationRepository;
 use Illuminate\Database\ConnectionResolverInterface;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Migrations\DatabaseMigrationRepository;
 
+/**
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
+ */
 class PluginMigrationRepository extends DatabaseMigrationRepository
 {
     protected $plugin;
@@ -54,7 +56,6 @@ class PluginMigrationRepository extends DatabaseMigrationRepository
      */
     public function log($file, $batch, $plugin = null)
     {
-
         $plugin = $plugin ?? $this->plugin; // プラグインが明示的に渡されなかった場合、インスタンス変数を使用
 
         $this->table()->insert([
