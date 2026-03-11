@@ -139,9 +139,9 @@ return [
         'scan_outdated' => 'スキャン：期限切れ',
         'scan_completed' => 'スキャン：完了',
         // CSP
-        'csp_ready' => 'CSP Ready',
+        'csp_ready' => 'CSP対応済み',
         'csp_compatible' => 'CSP互換',
-        'csp_inline_required' => 'インラインJS必須',
+        'csp_inline_required' => 'CSP未対応',
         'csp_not_checked' => 'CSP未検証',
     ],
 
@@ -205,12 +205,12 @@ return [
     // CSP適合性
     'csp' => [
         'status_label' => 'CSP適合性',
-        'ready' => 'CSP Ready',
+        'ready' => 'CSP対応済み',
         'ready_tooltip' => 'このプラグインはCSP完全対応です。すべてのCSPモードで動作します。',
         'inline_required_tooltip' => 'このプラグインはインラインJavaScriptを必要とします。CSP厳格モードでは動作しません。',
         'compatible' => 'CSP互換',
         'compatible_tooltip' => 'このプラグインはnonce付きで動作します。標準モード以上で動作します。',
-        'inline_required' => 'インラインJS必須',
+        'inline_required' => 'CSP未対応',
         'inline_required_tooltip' => 'このプラグインはインラインJavaScriptを必要とします。CSP厳格モードでは動作しません。',
         'not_checked' => '未検証',
         'not_checked_tooltip' => 'CSP適合性は検証されていません。',

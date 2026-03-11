@@ -141,7 +141,7 @@ return [
         // CSP
         'csp_ready' => 'CSP Ready',
         'csp_compatible' => 'CSP Compatible',
-        'csp_inline_required' => 'Inline JS Required',
+        'csp_inline_required' => 'CSP Not Ready',
         'csp_not_checked' => 'CSP Not Checked',
     ],
 
@@ -210,7 +210,7 @@ return [
         'inline_required_tooltip' => 'This plugin requires inline JavaScript. Will not work in CSP strict mode.',
         'compatible' => 'CSP Compatible',
         'compatible_tooltip' => 'This plugin works with nonce. Works in standard mode and above.',
-        'inline_required' => 'Inline JS Required',
+        'inline_required' => 'CSP Not Ready',
         'inline_required_tooltip' => 'This plugin requires inline JavaScript. Will not work in CSP strict mode.',
         'not_checked' => 'Not Checked',
         'not_checked_tooltip' => 'CSP compliance has not been verified.',
