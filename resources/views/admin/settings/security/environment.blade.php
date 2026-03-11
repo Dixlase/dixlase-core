@@ -41,7 +41,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="my-3">
                     <x-form-radio-card-group
                         name="app_env"
-                        :options="\App\Enums\AppEnvironment::getRadioCardOptions()"
+                        :options="$environmentOptions"
                         :value="old('app_env', $settings['app_env'])"
                         xModel="appEnv"
                         columns="3"
@@ -92,13 +92,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                         <div class="flex items-center justify-between">
                             <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/settings/security/environment.current_env') }}</span>
-                            @php
-                                $envColors = [
-                                    'local' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                                    'staging' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-                                    'production' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-                                ];
-                            @endphp
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $envColors[$settings['app_env']] ?? $envColors['local'] }}">
                                 {{ __('admin/settings/security/environment.env_options.' . $settings['app_env']) }}
                             </span>

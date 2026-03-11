@@ -1,23 +1,43 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\DTO\PluginIntegration;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 検索クエリDTO
- * 
+ *
  * プラグイン間でコンテンツ検索を行う際の
  * 検索条件を表現する不変データオブジェクトです。
- * 
- * @package App\DTO\PluginIntegration
  */
 final readonly class SearchQueryDTO
 {
     /**
-     * @param string $q 検索キーワード
-     * @param int $page ページ番号（1始まり）
-     * @param int $perPage 1ページあたりの件数
-     * @param array<string,scalar|array|null> $filters フィルタ条件
-     * @param array<string,'asc'|'desc'> $sort ソート条件
+     * @param  string  $q  検索キーワード
+     * @param  int  $page  ページ番号（1始まり）
+     * @param  int  $perPage  1ページあたりの件数
+     * @param  array<string,scalar|array|null>  $filters  フィルタ条件
+     * @param  array<string,'asc'|'desc'>  $sort  ソート条件
      */
     public function __construct(
         public string $q = '',
@@ -29,8 +49,6 @@ final readonly class SearchQueryDTO
 
     /**
      * 検索キーワードが指定されているか
-     * 
-     * @return bool
      */
     public function hasQuery(): bool
     {
@@ -39,9 +57,8 @@ final readonly class SearchQueryDTO
 
     /**
      * 特定のフィルタが指定されているか
-     * 
-     * @param string $key フィルタキー
-     * @return bool
+     *
+     * @param  string  $key  フィルタキー
      */
     public function hasFilter(string $key): bool
     {
@@ -50,10 +67,9 @@ final readonly class SearchQueryDTO
 
     /**
      * フィルタ値を取得
-     * 
-     * @param string $key フィルタキー
-     * @param mixed $default デフォルト値
-     * @return mixed
+     *
+     * @param  string  $key  フィルタキー
+     * @param  mixed  $default  デフォルト値
      */
     public function getFilter(string $key, mixed $default = null): mixed
     {
@@ -62,51 +78,45 @@ final readonly class SearchQueryDTO
 
     /**
      * ソート条件が指定されているか
-     * 
-     * @return bool
      */
     public function hasSort(): bool
     {
-        return !empty($this->sort);
+        return ! empty($this->sort);
     }
 
     /**
      * 配列からDTOを生成
-     * 
-     * @param array<string,mixed> $data
-     * @return self
+     *
+     * @param  array<string,mixed>  $data
      */
     public static function fromArray(array $data): self
     {
         return new self(
-            q: (string)($data['q'] ?? ''),
-            page: (int)($data['page'] ?? 1),
-            perPage: (int)($data['per_page'] ?? 20),
-            filters: (array)($data['filters'] ?? []),
-            sort: (array)($data['sort'] ?? []),
+            q: (string) ($data['q'] ?? ''),
+            page: (int) ($data['page'] ?? 1),
+            perPage: (int) ($data['per_page'] ?? 20),
+            filters: (array) ($data['filters'] ?? []),
+            sort: (array) ($data['sort'] ?? []),
         );
     }
 
     /**
      * リクエストからDTOを生成
-     * 
-     * @param \Illuminate\Http\Request $request
-     * @return self
      */
     public static function fromRequest(\Illuminate\Http\Request $request): self
     {
         return new self(
-            q: (string)$request->query('q', ''),
-            page: (int)$request->query('page', 1),
-            perPage: (int)$request->query('per_page', 20),
-            filters: (array)$request->query('filters', []),
-            sort: (array)$request->query('sort', []),
+            q: (string) $request->query('q', ''),
+            page: (int) $request->query('page', 1),
+            perPage: (int) $request->query('per_page', 20),
+            filters: (array) $request->query('filters', []),
+            sort: (array) $request->query('sort', []),
         );
     }
 
     /**
      * 配列形式に変換
-     * 
+     *
      * @return array<string,mixed>
      */
     public function toArray(): array
@@ -122,9 +132,8 @@ final readonly class SearchQueryDTO
 
     /**
      * 検索キーワードを変更した新しいDTOを生成
-     * 
-     * @param string $q 新しい検索キーワード
-     * @return self
+     *
+     * @param  string  $q  新しい検索キーワード
      */
     public function withQuery(string $q): self
     {
@@ -139,9 +148,8 @@ final readonly class SearchQueryDTO
 
     /**
      * ページ番号を変更した新しいDTOを生成
-     * 
-     * @param int $page 新しいページ番号
-     * @return self
+     *
+     * @param  int  $page  新しいページ番号
      */
     public function withPage(int $page): self
     {
@@ -156,9 +164,8 @@ final readonly class SearchQueryDTO
 
     /**
      * フィルタを追加した新しいDTOを生成
-     * 
-     * @param array<string,mixed> $filters 追加するフィルタ
-     * @return self
+     *
+     * @param  array<string,mixed>  $filters  追加するフィルタ
      */
     public function withFilters(array $filters): self
     {
@@ -173,9 +180,8 @@ final readonly class SearchQueryDTO
 
     /**
      * ソート条件を変更した新しいDTOを生成
-     * 
-     * @param array<string,'asc'|'desc'> $sort 新しいソート条件
-     * @return self
+     *
+     * @param  array<string,'asc'|'desc'>  $sort  新しいソート条件
      */
     public function withSort(array $sort): self
     {

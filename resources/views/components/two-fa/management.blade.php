@@ -356,7 +356,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <!-- 回復コード表示モーダル（手動生成用・エラー表示兼用） -->
 @include('two-fa.partials.recovery-codes-modal', [
     'modalId' => 'manualRecoveryCodesModal',
-    'title' => __('two_fa.recovery_codes.title'),
+    'title' => __('two-fa/recovery-code.title'),
     'codes' => [],
     'isDynamic' => true
 ])

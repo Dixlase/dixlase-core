@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,26 +22,36 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Facades\DB;
-use App\Models\Theme;
-use Illuminate\Support\Facades\Schema;
+use App\Contracts\Repositories\ThemeRepositoryInterface;
 use Illuminate\Support\Str;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * テーマリソースローディング機構
+ */
 trait ThemeLoaderTrait
 {
     /**
+     * ThemeRepositoryInterface の遅延解決
+     */
+    protected function resolveThemeRepository(): ThemeRepositoryInterface
+    {
+        return app(ThemeRepositoryInterface::class);
+    }
+
+    /**
      * テーマの言語ファイルを読み込む
      *
-     * @param string $themePath テーマのベースパス
-     * @param string $customThemePath カスタムテーマのベースパス
-     * @param string $namespace 言語ファイルの名前空間
-     * @return void
+     * @param  string  $themePath  テーマのベースパス
+     * @param  string  $customThemePath  カスタムテーマのベースパス
+     * @param  string  $namespace  言語ファイルの名前空間
      */
     protected function loadThemeTranslations(string $themePath, string $customThemePath, string $namespace): void
     {
         // カスタムパスを優先
-        $paths = array_filter([$customThemePath . '/lang', $themePath . '/lang']);
-        
+        $paths = array_filter([$customThemePath.'/lang', $themePath.'/lang']);
+
         foreach ($paths as $path) {
             if (is_dir($path)) {
                 $this->loadTranslationsFrom($path, $namespace);
@@ -52,15 +62,14 @@ trait ThemeLoaderTrait
     /**
      * テーマのビューを読み込む
      *
-     * @param string $themePath テーマのベースパス
-     * @param string $customThemePath カスタムテーマのベースパス
-     * @param string $namespace ビューの名前空間
-     * @return void
+     * @param  string  $themePath  テーマのベースパス
+     * @param  string  $customThemePath  カスタムテーマのベースパス
+     * @param  string  $namespace  ビューの名前空間
      */
     protected function loadThemeViews(string $themePath, string $customThemePath, string $namespace): void
     {
-        $paths = array_filter([$customThemePath . '/resources/views', $themePath . '/resources/views']);
-        
+        $paths = array_filter([$customThemePath.'/resources/views', $themePath.'/resources/views']);
+
         foreach ($paths as $path) {
             if (is_dir($path)) {
                 \Illuminate\Support\Facades\View::addNamespace($namespace, $path);
@@ -71,17 +80,16 @@ trait ThemeLoaderTrait
     /**
      * テーマの設定ファイルを読み込む
      *
-     * @param string $themePath テーマのベースパス
-     * @param string $customThemePath カスタムテーマのベースパス
-     * @param string $themeSlug テーマのスラッグ
-     * @return void
+     * @param  string  $themePath  テーマのベースパス
+     * @param  string  $customThemePath  カスタムテーマのベースパス
+     * @param  string  $themeSlug  テーマのスラッグ
      */
     protected function loadThemeConfig(string $themePath, string $customThemePath, string $themeSlug): void
     {
         // カスタムパスを優先
-        $customConfigPath = $customThemePath . '/config';
-        $coreConfigPath = $themePath . '/config';
-        
+        $customConfigPath = $customThemePath.'/config';
+        $coreConfigPath = $themePath.'/config';
+
         $configPaths = [];
         if (is_dir($customConfigPath)) {
             $configPaths[] = $customConfigPath;
@@ -89,14 +97,14 @@ trait ThemeLoaderTrait
         if (is_dir($coreConfigPath)) {
             $configPaths[] = $coreConfigPath;
         }
-        
+
         foreach ($configPaths as $configPath) {
-            foreach (glob($configPath . '/*.php') as $configFile) {
+            foreach (glob($configPath.'/*.php') as $configFile) {
                 $configName = basename($configFile, '.php');
                 $key = "theme.{$themeSlug}.{$configName}";
-                
+
                 // 既に設定されていなければマージ
-                if (!config()->has($key)) {
+                if (! config()->has($key)) {
                     config([$key => require $configFile]);
                 }
             }
@@ -106,8 +114,7 @@ trait ThemeLoaderTrait
     /**
      * テーマの名前空間を生成
      *
-     * @param string $themeDirectory テーマのディレクトリ名
-     * @return string
+     * @param  string  $themeDirectory  テーマのディレクトリ名
      */
     protected function getThemeNamespace(string $themeDirectory): string
     {
@@ -116,52 +123,27 @@ trait ThemeLoaderTrait
 
     /**
      * 有効なテーマIDを取得
-     *
-     * @return int
      */
     public function getEnabledTheme(): int
     {
-        //theme_settingsテーブルのenabled_theme_idの値を取得
-        //theme_settingsテーブルが存在しているか確認
-        if (Schema::hasTable('theme_settings')) {
-            $themeSetting = DB::table('theme_settings')
-                ->where('key', 'enabled_theme_id')
-                ->first();
-            $enabledThemeId = $themeSetting ? (int)$themeSetting->value : 1;
-        } else {
-            $enabledThemeId = 1;
-        }
-        return $enabledThemeId;
+        return $this->resolveThemeRepository()->getEnabledThemeId();
     }
 
     /**
      * 現在有効なテーマのディレクトリ名を取得
-     *
-     * @return string
      */
     public function getEnabledThemeDirectory(): string
     {
-        $enabledThemeId = $this->getEnabledTheme();
-        
-        if (Schema::hasTable('themes')) {
-            $theme = Theme::find($enabledThemeId);
-            if ($theme) {
-                return $theme->directory ?? config('themes.default_theme', env('APP_THEME', 'DixlaseDefaultTheme'));
-            }
-        }
-        
-        return config('themes.default_theme', env('APP_THEME', 'DixlaseDefaultTheme'));
+        return $this->resolveThemeRepository()->getEnabledThemeDirectory();
     }
 
     /**
      * テーマアセットの完全URLを生成
-     *
-     * @param string $path
-     * @return string
      */
     public function themeAsset(string $path): string
     {
         $themeDirectory = $this->getEnabledThemeDirectory();
+
         return asset("themes/{$themeDirectory}/{$path}");
     }
 }

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,9 +22,9 @@
 
 namespace App\Http\Controllers\Admin\Settings\Security;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
-use Illuminate\Http\Request;
+use App\Helpers\AdminModeHelper;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Security\AdminSecurityIpUpdateRequest;
 
 class AdminSecurityIpController extends AdminLoggedInController
@@ -42,7 +42,6 @@ class AdminSecurityIpController extends AdminLoggedInController
      */
     public function index()
     {
-        
         $settings = [
             'enable_allowed_admin_ips' => filter_var($this->securitySettingRepository->get('enable_allowed_admin_ips', false), FILTER_VALIDATE_BOOLEAN),
             'allowed_admin_ips' => $this->securitySettingRepository->get('allowed_admin_ips', ''),
@@ -55,6 +54,7 @@ class AdminSecurityIpController extends AdminLoggedInController
         ];
 
         $this->viewParams['settings'] = $settings;
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.ip');
 
         return view('admin.settings.security.ip', $this->viewParams);
     }

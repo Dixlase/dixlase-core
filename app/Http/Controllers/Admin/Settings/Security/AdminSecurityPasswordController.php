@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,9 +22,9 @@
 
 namespace App\Http\Controllers\Admin\Settings\Security;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
-use Illuminate\Http\Request;
+use App\Helpers\AdminModeHelper;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Security\AdminSecurityPasswordUpdateRequest;
 
 class AdminSecurityPasswordController extends AdminLoggedInController
@@ -45,7 +45,7 @@ class AdminSecurityPasswordController extends AdminLoggedInController
         $settings = [
             // 共通設定
             'pwned_password_check_enabled' => filter_var($this->securitySettingRepository->get('pwned_password_check_enabled', false), FILTER_VALIDATE_BOOLEAN),
-            
+
             // デフォルトパスワードポリシー
             'password_min_length' => (int) $this->securitySettingRepository->get('password_min_length', 8),
             'password_require_uppercase' => filter_var($this->securitySettingRepository->get('password_require_uppercase', true), FILTER_VALIDATE_BOOLEAN),
@@ -55,12 +55,13 @@ class AdminSecurityPasswordController extends AdminLoggedInController
         ];
 
         $minLengthOptions = collect(__('passwords.requirements.password_min_length_options'))
-            ->map(fn($label, $key) => ['value' => (string) $key, 'label' => $label])
+            ->map(fn ($label, $key) => ['value' => (string) $key, 'label' => $label])
             ->values()
             ->toArray();
 
         $this->viewParams['settings'] = $settings;
         $this->viewParams['minLengthOptions'] = $minLengthOptions;
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.password');
 
         return view('admin.settings.security.password', $this->viewParams);
     }

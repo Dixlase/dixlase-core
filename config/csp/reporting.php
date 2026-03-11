@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of Dixlase.
  *
@@ -70,15 +71,26 @@ return [
                 'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers.txt',
             ],
         ],
-        // マルウェア・フィッシング
+        // マルウェア
         'malware' => [
-            'name' => 'マルウェア・フィッシング',
-            'name_en' => 'Malware & Phishing',
-            'description' => '既知のマルウェア配布サイト、フィッシングサイト',
-            'description_en' => 'Known malware distribution sites, phishing sites',
+            'name' => 'マルウェア',
+            'name_en' => 'Malware',
+            'description' => '既知のマルウェア配布サイト',
+            'description_en' => 'Known malware distribution sites',
             'lists' => [
                 // URLhaus Malware URLs (domains only)
                 'https://urlhaus.abuse.ch/downloads/hostfile/',
+            ],
+        ],
+        // フィッシング
+        'phishing' => [
+            'name' => 'フィッシング',
+            'name_en' => 'Phishing',
+            'description' => 'フィッシング詐欺サイト',
+            'description_en' => 'Phishing scam sites',
+            'lists' => [
+                // OpenPhish feed
+                'https://openphish.com/feed.txt',
             ],
         ],
         // 暗号通貨マイニング

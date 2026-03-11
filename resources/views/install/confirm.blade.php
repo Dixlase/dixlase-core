@@ -168,8 +168,8 @@
         <ul class="space-y-1 text-gray-700 dark:text-gray-300">
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/step2.app_env') }}:</strong> {{ __('install/mode.app_env_production') }}</li>
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/step2.app_debug') }}:</strong> {{ __('install/mode.debug_off') }}</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/step2.admin_url') }}:</strong> /admin</li>
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/step2.force_ssl') }}:</strong> {{ __('install/mode.ssl_on') }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/step2.admin_url') }}:</strong> /{{ $data['admin_url'] }}</li>
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/step2.force_ssl') }}:</strong> {{ $data['force_ssl'] ? __('install/common.enabled') : __('install/common.disabled') }}</li>
         </ul>
     </article>
     @endif
@@ -181,15 +181,16 @@
 <!-- インストール実行フォーム -->
 <form action="{{ route('install.confirm.store') }}" method="POST" class="space-y-4">
     @csrf
-    <nav aria-label="{{ __('install/common.form_navigation') }}" class="flex justify-between">
+    <nav aria-label="{{ __('install/common.form_navigation') }}" class="flex justify-center">
         <a href="{{ route('install.mail') }}"
-           class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
+           class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 mx-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
             {{ __('install/common.back_button') }}
         </a>
         <x-form-button
             type="submit"
             variant="primary"
             :label="__('install/confirm.confirm_button')"
+            class="mx-4"
         />
     </nav>
 </form>

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,203 +22,338 @@
 
 namespace App\Http\Controllers\Admin\Front;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Models\FrontSetting;
-use App\Models\FrontPage;
-use App\Models\Media;
-use App\Services\FrontPageContentService;
-use Illuminate\Http\Request;
 use App\Contracts\Repositories\FrontSettingRepositoryInterface;
+use App\Enums\ContentEditorType;
+use App\Enums\ContentStatus;
+use App\Enums\ContentStorageType;
+use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Http\Requests\Admin\Front\AdminFrontCreateRequest;
 use App\Http\Requests\Admin\Front\AdminFrontEditUpdateRequest;
 use App\Http\Requests\Admin\Front\AdminFrontSettingsUpdateRequest;
+use App\Models\FrontPage;
+use App\Services\FrontPageContentService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
-class AdminFrontController extends AdminLoggedinController
+class AdminFrontController extends AdminLoggedInController
 {
-    /**
-     * フロント設定リポジトリ
-     */
-    protected FrontSettingRepositoryInterface $frontSettingRepository;
-
-    /**
-     * フロントページコンテンツサービス
-     */
-    protected FrontPageContentService $contentService;
-
     /**
      * コンストラクタ
      */
     public function __construct(
-        FrontSettingRepositoryInterface $frontSettingRepository,
-        FrontPageContentService $contentService
+        protected FrontSettingRepositoryInterface $frontSettingRepository,
+        protected FrontPageContentService $contentService,
     ) {
         parent::__construct();
-        $this->frontSettingRepository = $frontSettingRepository;
-        $this->contentService = $contentService;
     }
+
     /**
-     * Display a listing of the resource.
+     * フロントページマスター（一覧）
      */
-    public function index()
+    public function index(): View
     {
+        $frontPage = FrontPage::findByType('main_content');
+        $languages = config('language.languages', []);
+
+        // エディタータイプのラベル
+        $editorTypeLabel = null;
+        $storageTypeLabel = null;
+        $langName = null;
+
+        if ($frontPage) {
+            $editorTypeLabel = __($frontPage->editor_type->translationKey());
+            $storageTypeLabel = __($frontPage->storage_type->translationKey());
+            $langName = $languages[$frontPage->lang] ?? $frontPage->lang;
+        }
+
+        $this->viewParams['frontPage'] = $frontPage;
+        $this->viewParams['editorTypeLabel'] = $editorTypeLabel;
+        $this->viewParams['storageTypeLabel'] = $storageTypeLabel;
+        $this->viewParams['langName'] = $langName;
 
         return view('admin::front/index', $this->viewParams);
     }
 
     /**
-     * フロントページ編集画面
+     * フロントページ作成フォーム
      */
-    public function edit()
+    public function create(): View|RedirectResponse
     {
-        // フロントページのメインコンテンツを取得または作成
-        $frontPage = FrontPage::findOrCreateByType('main_content');
-        
-        // ファイル保存の場合、ファイルからコンテンツを読み込む
-        $fileContents = null;
-        if ($frontPage->storage_type->value === 'file') {
-            $fileContents = $this->contentService->loadFromFile(
-                $frontPage->page_type,
-                app()->getLocale(),
-                $frontPage->editor_type->value
-            );
+        // コンテンツ存在時は edit にリダイレクト
+        $existing = FrontPage::findByType('main_content');
+        if ($existing) {
+            return redirect()->route('admin.front.edit');
         }
-        
+
+        $languages = config('language.languages', []);
+        $templates = $this->buildTemplateData();
+
+        // ユーザーのプロフィール言語をデフォルト値として使用
+        $userLocale = auth()->user()?->locale?->value ?? array_key_first($languages);
+
+        $this->viewParams['languages'] = $languages;
+        $this->viewParams['editorCardOptions'] = ContentEditorType::radioCardOptions(ContentStorageType::DATABASE);
+        $this->viewParams['editorOptions'] = ContentEditorType::optionsFor(ContentStorageType::DATABASE);
+        $this->viewParams['storageOptions'] = ContentStorageType::optionsWithDescription();
+        $this->viewParams['templates'] = $templates;
+        $this->viewParams['defaultLang'] = $userLocale;
+        $this->viewParams['defaultStorageType'] = ContentStorageType::DATABASE->slug();
+        $this->viewParams['fileStorageBasePath'] = 'storage/app/private/'.$this->contentService->getBasePath();
+
+        return view('admin::front/create', $this->viewParams);
+    }
+
+    /**
+     * フロントページ作成保存
+     */
+    public function store(AdminFrontCreateRequest $request): RedirectResponse
+    {
+        $validated = $request->validated();
+
+        $storageTypeEnum = ContentStorageType::fromSlug($validated['storage_type']);
+        $editorTypeEnum = ContentEditorType::fromSlug($validated['editor_type']);
+        $editorTypeSlug = $editorTypeEnum->slug();
+        $content = $validated['content'] ?? '';
+        $customJs = $validated['custom_js'] ?? null;
+        $customCss = $validated['custom_css'] ?? null;
+
+        // HTML エディタ以外は JS/CSS を無視
+        if ($editorTypeEnum !== ContentEditorType::HTML) {
+            $customJs = null;
+            $customCss = null;
+        }
+
+        // ファイル保存の場合はファイルにも保存
+        if ($storageTypeEnum === ContentStorageType::FILE) {
+            $this->contentService->saveToFile(
+                'main_content',
+                $validated['lang'],
+                $editorTypeSlug,
+                $content
+            );
+
+            // HTML エディタ時は JS/CSS ファイルも保存
+            if ($editorTypeEnum === ContentEditorType::HTML) {
+                if ($customJs !== null && $customJs !== '') {
+                    $this->contentService->saveJsToFile('main_content', $validated['lang'], $customJs);
+                }
+                if ($customCss !== null && $customCss !== '') {
+                    $this->contentService->saveCssToFile('main_content', $validated['lang'], $customCss);
+                }
+            }
+        }
+
+        // コンテンツ作成（常にDBにもコンテンツを保存 = バックアップ）
+        FrontPage::create([
+            'page_type' => 'main_content',
+            'lang' => $validated['lang'],
+            'content' => $content,
+            'custom_js' => $customJs,
+            'custom_css' => $customCss,
+            'editor_type' => $editorTypeEnum,
+            'storage_type' => $storageTypeEnum,
+            'status' => ContentStatus::PUBLISHED,
+        ]);
+
+        return redirect()
+            ->route('admin.front.edit')
+            ->with('success', __('admin/front.create.create_success'));
+    }
+
+    /**
+     * フロントページ編集フォーム
+     */
+    public function edit(): View|RedirectResponse
+    {
+        $frontPage = FrontPage::findByType('main_content');
+
+        // コンテンツ未存在時は create にリダイレクト
+        if (! $frontPage) {
+            return redirect()->route('admin.front.create');
+        }
+
+        $languages = config('language.languages', []);
+
+        // エディタータイプのラベル
+        $editorTypeLabel = __($frontPage->editor_type->translationKey());
+
+        // ファイル保存の場合、ファイルからコンテンツを読み込む
+        $body = $frontPage->content;
+        if ($frontPage->storage_type === ContentStorageType::FILE) {
+            $fileContents = $this->contentService->loadFromFile(
+                'main_content',
+                $frontPage->lang,
+                $frontPage->editor_type->slug()
+            );
+            if ($fileContents !== null) {
+                $body = $fileContents;
+            }
+        }
+
+        // HTML エディタ時は JS/CSS コンテンツも読み込む
+        $isHtmlEditor = $frontPage->editor_type === ContentEditorType::HTML;
+        $customJs = null;
+        $customCss = null;
+        if ($isHtmlEditor) {
+            $customJs = $this->contentService->getJsContent($frontPage, $frontPage->lang);
+            $customCss = $this->contentService->getCssContent($frontPage, $frontPage->lang);
+        }
+
         $this->viewParams['frontPage'] = $frontPage;
-        $this->viewParams['fileContents'] = $fileContents;
-        
+        $this->viewParams['body'] = old('content', $body);
+        $this->viewParams['customJs'] = old('custom_js', $customJs);
+        $this->viewParams['customCss'] = old('custom_css', $customCss);
+        $this->viewParams['isHtmlEditor'] = $isHtmlEditor;
+        $this->viewParams['editorType'] = $frontPage->editor_type->slug();
+        $this->viewParams['editorTypeLabel'] = $editorTypeLabel;
+        $this->viewParams['editorTypeIcon'] = $frontPage->editor_type->iconClass();
+        $this->viewParams['editorTypeColor'] = $frontPage->editor_type->iconColor();
+        $this->viewParams['editorTypeDescription'] = __($frontPage->editor_type->descriptionKey());
+        $this->viewParams['langCode'] = $frontPage->lang;
+        $this->viewParams['langName'] = $languages[$frontPage->lang] ?? $frontPage->lang;
+        $this->viewParams['storageOptions'] = ContentStorageType::optionsWithDescription();
+        $this->viewParams['storageType'] = old('storage_type', $frontPage->storage_type->slug());
+        $this->viewParams['fileStorageBasePath'] = 'storage/app/private/'.$this->contentService->getBasePath();
+
         return view('admin::front/edit', $this->viewParams);
     }
 
     /**
      * フロントページ編集の保存
      */
-    public function updateEdit(AdminFrontEditUpdateRequest $request)
+    public function update(AdminFrontEditUpdateRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
-        
-        // GUIエディタの場合は強制的にDBに
-        $storageType = $validated['storage_type'];
-        if ($validated['editor_type'] === 'gui') {
-            $storageType = 'database';
+        $frontPage = FrontPage::findByType('main_content');
+        if (! $frontPage) {
+            return redirect()->route('admin.front.create');
         }
-        
-        // フロントページを取得または作成
-        $frontPage = FrontPage::findOrCreateByType('main_content');
-        $oldStorageType = $frontPage->storage_type->value;
-        $oldEditorType = $frontPage->editor_type->value;
-        $locale = app()->getLocale();
-        
+
+        $validated = $request->validated();
+        $newStorageTypeEnum = ContentStorageType::fromSlug($validated['storage_type']);
+        $oldStorageTypeEnum = $frontPage->storage_type;
+        $editorTypeSlug = $frontPage->editor_type->slug();
+        $locale = $frontPage->lang;
         $content = $validated['content'] ?? '';
-        
-        // コンテンツカラムの準備
-        $contentData = [
-            'content' => null,
-            'content_markdown' => null,
-            'content_html' => null,
-            'content_blade' => null,
-        ];
-        
+        $isHtmlEditor = $frontPage->editor_type === ContentEditorType::HTML;
+        $customJs = $isHtmlEditor ? ($validated['custom_js'] ?? null) : null;
+        $customCss = $isHtmlEditor ? ($validated['custom_css'] ?? null) : null;
+
         // 保存方法が変更された場合の処理
-        if ($oldStorageType !== $storageType) {
-            if ($oldStorageType === 'file' && $storageType === 'database') {
-                // ファイル→DB: ファイルからコンテンツを読み込んでDBに保存、ファイルを削除
-                $fileContent = $this->contentService->loadFromFile($frontPage->page_type, $locale, $oldEditorType);
-                if ($fileContent !== null) {
-                    $content = $fileContent;
+        if ($oldStorageTypeEnum !== $newStorageTypeEnum) {
+            if ($oldStorageTypeEnum === ContentStorageType::FILE && $newStorageTypeEnum === ContentStorageType::DATABASE) {
+                // ファイル→DB: ファイルを削除（DBには常にバックアップがあるため読み込み不要）
+                $this->contentService->deleteFile('main_content', $locale, $editorTypeSlug);
+                if ($isHtmlEditor) {
+                    $this->contentService->deleteJsFile('main_content', $locale);
+                    $this->contentService->deleteCssFile('main_content', $locale);
                 }
-                $this->contentService->deleteFile($frontPage->page_type, $locale, $oldEditorType);
             }
         }
-        
-        if ($storageType === 'file') {
-            // ファイル保存の場合はコンテンツをファイルに保存
-            $this->contentService->saveToFile(
-                $frontPage->page_type,
-                $locale,
-                $validated['editor_type'],
-                $content
-            );
-        } else {
-            // DB保存の場合はエディタータイプ別のカラムに保存
-            $contentColumn = 'content_' . $validated['editor_type'];
-            $contentData[$contentColumn] = $content;
+
+        // ファイル保存の場合はファイルにも保存
+        if ($newStorageTypeEnum === ContentStorageType::FILE) {
+            $this->contentService->saveToFile('main_content', $locale, $editorTypeSlug, $content);
+
+            // HTML エディタ時は JS/CSS ファイルも保存
+            if ($isHtmlEditor) {
+                if ($customJs !== null && $customJs !== '') {
+                    $this->contentService->saveJsToFile('main_content', $locale, $customJs);
+                } else {
+                    $this->contentService->deleteJsFile('main_content', $locale);
+                }
+                if ($customCss !== null && $customCss !== '') {
+                    $this->contentService->saveCssToFile('main_content', $locale, $customCss);
+                } else {
+                    $this->contentService->deleteCssFile('main_content', $locale);
+                }
+            }
         }
-        
-        // フロントページを更新
-        $frontPage->update([
-            'title' => $validated['title'] ?? null,
-            'storage_type' => $storageType,
-            'editor_type' => $validated['editor_type'],
-            ...$contentData,
-        ]);
+
+        // ページを更新（常にDBにもコンテンツを保存 = バックアップ）
+        $updateData = [
+            'content' => $content,
+            'storage_type' => $newStorageTypeEnum,
+        ];
+        if ($isHtmlEditor) {
+            $updateData['custom_js'] = $customJs;
+            $updateData['custom_css'] = $customCss;
+        }
+        $frontPage->update($updateData);
 
         return redirect()
             ->route('admin.front.edit')
-            ->with('success', __('admin/front.design_updated'));
+            ->with('success', __('admin/front.edit.save_success'));
     }
 
     /**
-     * コンテンツ取得API（保存方法・エディタータイプ変更時）
+     * フロントページリセット（レコード削除 + ファイル削除）
      */
-    public function getContent(string $storageType, string $editorType)
+    public function destroy(): RedirectResponse
     {
-        $frontPage = FrontPage::findOrCreateByType('main_content');
-        $content = '';
+        $frontPage = FrontPage::findByType('main_content');
 
-        if ($storageType === 'file') {
-            // ファイルからコンテンツを読み込む
-            $content = $this->contentService->loadFromFile(
-                $frontPage->page_type,
-                app()->getLocale(),
-                $editorType
-            ) ?? '';
-        } else {
-            // DBからエディタータイプ別のカラムを読み込む
-            $contentColumn = 'content_' . $editorType;
-            $content = $frontPage->{$contentColumn} ?? '';
+        if ($frontPage) {
+            // ファイル保存の場合、関連ファイルも削除
+            if ($frontPage->storage_type === ContentStorageType::FILE) {
+                $this->contentService->deleteFile(
+                    'main_content',
+                    $frontPage->lang,
+                    $frontPage->editor_type->slug()
+                );
+
+                // HTML エディタ時は JS/CSS ファイルも削除
+                if ($frontPage->editor_type === ContentEditorType::HTML) {
+                    $this->contentService->deleteJsFile('main_content', $frontPage->lang);
+                    $this->contentService->deleteCssFile('main_content', $frontPage->lang);
+                }
+            }
+
+            $frontPage->delete();
         }
 
-        return response()->json(['content' => $content]);
+        return redirect()
+            ->route('admin.front.index')
+            ->with('success', __('admin/front.index.reset_success'));
     }
 
     /**
      * フロントページ設定画面
      */
-    public function settings()
+    public function settings(): View
     {
-        // 設定値を取得
-        $settings = [
-            'front_ogp_image_id' => $this->frontSettingRepository->get('front_ogp_image_id'),
-            'front_description' => $this->frontSettingRepository->get('front_description'),
-        ];
-        
-        // メディア情報を取得
-        $frontOgpImage = $settings['front_ogp_image_id'] ? Media::find($settings['front_ogp_image_id']) : null;
-        
-        $this->viewParams['settings'] = $settings;
-        $this->viewParams['frontOgpImage'] = $frontOgpImage;
-        
         return view('admin::front/settings', $this->viewParams);
     }
 
     /**
      * フロントページ設定の保存
      */
-    public function updateSettings(AdminFrontSettingsUpdateRequest $request)
+    public function updateSettings(AdminFrontSettingsUpdateRequest $request): RedirectResponse
     {
-        
-        // 設定を保存
-        $this->frontSettingRepository->set('front_ogp_image_id', $request->input('front_ogp_image_id'));
-        $this->frontSettingRepository->set('front_description', $request->input('front_description'));
-        
         return redirect()->route('admin.front.settings')
-            ->with('success', __('admin/front.settings_updated'));
+            ->with('success', __('admin/front.settings.settings_updated'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * テンプレートデータを構築（Alpine.js 用）
+     *
+     * @return array<string, array<string, array{content: string}>>
      */
-    public function store(Request $request)
+    private function buildTemplateData(): array
     {
-        //
+        $languages = array_keys(config('language.languages', []));
+        $templates = [];
+
+        foreach ($languages as $lang) {
+            $templates[$lang] = [
+                'markdown' => [
+                    'content' => trans('admin/front/templates.main_content.content_markdown', [], $lang),
+                ],
+                'html' => [
+                    'content' => trans('admin/front/templates.main_content.content_html', [], $lang),
+                ],
+            ];
+        }
+
+        return $templates;
     }
 }

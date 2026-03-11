@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,15 +22,17 @@
 
 namespace App\Helpers;
 
-use Illuminate\Support\Facades\Artisan;
 use App\Console\Commands\SyncGitIgnore;
+use Illuminate\Support\Facades\Artisan;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * .gitignore ファイル管理ヘルパー
- * 
+ *
  * このヘルパーは SyncGitIgnore コマンドのラッパーです。
  * 管理画面からの呼び出しや、プログラム内での簡易利用に使用します。
- * 
+ *
  * @see \App\Console\Commands\SyncGitIgnore
  */
 class GitIgnoreHelper
@@ -38,7 +40,7 @@ class GitIgnoreHelper
     /**
      * プラグインの除外ルール（!plugins/PluginName/）を追加
      *
-     * @param string $pluginName プラグイン名（例: DixlaseBackup）
+     * @param  string  $pluginName  プラグイン名（例: DixlaseBackup）
      * @return bool 成功したかどうか
      */
     public static function addPluginExclusion(string $pluginName): bool
@@ -48,9 +50,11 @@ class GitIgnoreHelper
                 '--add-plugin' => $pluginName,
                 '--force' => true,
             ]);
+
             return $exitCode === 0;
         } catch (\Exception $e) {
-            \Log::error("Failed to add plugin exclusion to .gitignore: " . $e->getMessage());
+            \Log::error('Failed to add plugin exclusion to .gitignore: '.$e->getMessage());
+
             return false;
         }
     }
@@ -58,7 +62,7 @@ class GitIgnoreHelper
     /**
      * プラグインの除外ルールを削除
      *
-     * @param string $pluginName プラグイン名
+     * @param  string  $pluginName  プラグイン名
      * @return bool 成功したかどうか
      */
     public static function removePluginExclusion(string $pluginName): bool
@@ -68,9 +72,11 @@ class GitIgnoreHelper
                 '--remove-plugin' => $pluginName,
                 '--force' => true,
             ]);
+
             return $exitCode === 0;
         } catch (\Exception $e) {
-            \Log::error("Failed to remove plugin exclusion from .gitignore: " . $e->getMessage());
+            \Log::error('Failed to remove plugin exclusion from .gitignore: '.$e->getMessage());
+
             return false;
         }
     }
@@ -78,7 +84,7 @@ class GitIgnoreHelper
     /**
      * テーマの除外ルール（!themes/ThemeName/）を追加
      *
-     * @param string $themeName テーマ名
+     * @param  string  $themeName  テーマ名
      * @return bool 成功したかどうか
      */
     public static function addThemeExclusion(string $themeName): bool
@@ -88,9 +94,11 @@ class GitIgnoreHelper
                 '--add-theme' => $themeName,
                 '--force' => true,
             ]);
+
             return $exitCode === 0;
         } catch (\Exception $e) {
-            \Log::error("Failed to add theme exclusion to .gitignore: " . $e->getMessage());
+            \Log::error('Failed to add theme exclusion to .gitignore: '.$e->getMessage());
+
             return false;
         }
     }
@@ -98,7 +106,7 @@ class GitIgnoreHelper
     /**
      * テーマの除外ルールを削除
      *
-     * @param string $themeName テーマ名
+     * @param  string  $themeName  テーマ名
      * @return bool 成功したかどうか
      */
     public static function removeThemeExclusion(string $themeName): bool
@@ -108,9 +116,11 @@ class GitIgnoreHelper
                 '--remove-theme' => $themeName,
                 '--force' => true,
             ]);
+
             return $exitCode === 0;
         } catch (\Exception $e) {
-            \Log::error("Failed to remove theme exclusion from .gitignore: " . $e->getMessage());
+            \Log::error('Failed to remove theme exclusion from .gitignore: '.$e->getMessage());
+
             return false;
         }
     }
@@ -126,9 +136,11 @@ class GitIgnoreHelper
             $exitCode = Artisan::call('dls:sync-gitignore', [
                 '--force' => true,
             ]);
+
             return $exitCode === 0;
         } catch (\Exception $e) {
-            \Log::error("Failed to sync gitignore: " . $e->getMessage());
+            \Log::error('Failed to sync gitignore: '.$e->getMessage());
+
             return false;
         }
     }
@@ -136,8 +148,7 @@ class GitIgnoreHelper
     /**
      * プラグインの除外ルールが存在するか確認
      *
-     * @param string $pluginName プラグイン名
-     * @return bool
+     * @param  string  $pluginName  プラグイン名
      */
     public static function hasPluginExclusion(string $pluginName): bool
     {
@@ -147,8 +158,7 @@ class GitIgnoreHelper
     /**
      * テーマの除外ルールが存在するか確認
      *
-     * @param string $themeName テーマ名
-     * @return bool
+     * @param  string  $themeName  テーマ名
      */
     public static function hasThemeExclusion(string $themeName): bool
     {

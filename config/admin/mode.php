@@ -62,13 +62,19 @@ return [
         'front' => MenuVisibility::Full,
 
         // メディア管理
-        'media' => MenuVisibility::Full,
+        'media' => MenuVisibility::Partial,
+        'media.index' => MenuVisibility::Full,
+        'media.upload' => MenuVisibility::Full,
+        'media.settings' => MenuVisibility::Hidden,
 
         // プロフィール設定
         'profile' => MenuVisibility::Full,
 
         // メンバー管理
         'members' => MenuVisibility::Partial,
+        'members.index' => MenuVisibility::Full,
+        'members.create_edit' => MenuVisibility::Full,
+        'members.roles' => MenuVisibility::Hidden,
 
         // 全体設定
         'settings' => MenuVisibility::Partial,
@@ -77,18 +83,19 @@ return [
         'settings.base' => MenuVisibility::Partial,
         'settings.base.index' => MenuVisibility::Full,
         'settings.base.site' => MenuVisibility::Full,
-        'settings.base.admin' => MenuVisibility::GuideOnly,
+        'settings.base.admin' => MenuVisibility::Hidden,
         'settings.base.mail' => MenuVisibility::Full,
         'settings.base.maintenance' => MenuVisibility::Full,
+        'settings.base.mode' => MenuVisibility::Full,
 
         // 全体設定 > セキュリティ設定
-        'settings.security' => MenuVisibility::ReadOnly,
-        'settings.security.index' => MenuVisibility::ReadOnly,
+        'settings.security' => MenuVisibility::Partial,
+        'settings.security.index' => MenuVisibility::Full,
         'settings.security.password' => MenuVisibility::Hidden,
-        'settings.security.login' => MenuVisibility::Hidden,
-        'settings.security.two-fa' => MenuVisibility::Hidden,
+        'settings.security.login' => MenuVisibility::Partial,
+        'settings.security.two-fa' => MenuVisibility::Partial,
         'settings.security.notifications' => MenuVisibility::Hidden,
-        'settings.security.captcha' => MenuVisibility::Hidden,
+        'settings.security.captcha' => MenuVisibility::Full,
         'settings.security.session' => MenuVisibility::Hidden,
         'settings.security.csp' => MenuVisibility::Hidden,
         'settings.security.extensions' => MenuVisibility::Hidden,
@@ -103,7 +110,13 @@ return [
         'settings.plugins' => MenuVisibility::Full,
 
         // 全体設定 > システム
-        'settings.systems' => MenuVisibility::Hidden,
+        'settings.systems' => MenuVisibility::Partial,
+        'settings.systems.cache' => MenuVisibility::Full,
+        'settings.systems.database' => MenuVisibility::Hidden,
+        'settings.systems.api' => MenuVisibility::Hidden,
+        'settings.systems.logs' => MenuVisibility::Full,
+        'settings.systems.logs.files' => MenuVisibility::Hidden,
+        'settings.systems.info' => MenuVisibility::Hidden,
     ],
 
     /*
@@ -118,59 +131,59 @@ return [
 
     'menu_items' => [
         'dashboard' => [
-            'text_key' => 'admin/nav.dashboard',
+            'text_key' => 'admin/navigation.dashboard',
             'icon' => 'fas fa-tachometer-alt',
             'allowed_visibilities' => [MenuVisibility::Full],
             'locked' => true,
         ],
         'front' => [
-            'text_key' => 'admin/nav.front.text',
+            'text_key' => 'admin/navigation.front.text',
             'icon' => 'fas fa-desktop',
             'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Partial, MenuVisibility::Hidden],
         ],
         'media' => [
-            'text_key' => 'admin/nav.media.text',
+            'text_key' => 'admin/navigation.media.text',
             'icon' => 'fas fa-photo-video',
             'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Partial, MenuVisibility::Hidden],
         ],
         'profile' => [
-            'text_key' => 'admin/nav.profile.text',
+            'text_key' => 'admin/navigation.profile.text',
             'icon' => 'fas fa-id-badge',
             'allowed_visibilities' => [MenuVisibility::Full],
             'locked' => true,
         ],
         'members' => [
-            'text_key' => 'admin/nav.settings.members.text',
+            'text_key' => 'admin/navigation.settings.members.text',
             'icon' => 'fas fa-users-cog',
             'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Partial, MenuVisibility::Hidden, MenuVisibility::ReadOnly],
         ],
         'settings' => [
-            'text_key' => 'admin/nav.settings.text',
+            'text_key' => 'admin/navigation.settings.text',
             'icon' => 'fas fa-cogs',
             'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Partial],
             'children' => [
                 'base' => [
-                    'text_key' => 'admin/nav.settings.base.text',
+                    'text_key' => 'admin/navigation.settings.base.text',
                     'icon' => 'fas fa-gear',
                     'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Partial],
                 ],
                 'security' => [
-                    'text_key' => 'admin/nav.settings.security.text',
+                    'text_key' => 'admin/navigation.settings.security.text',
                     'icon' => 'fas fa-shield-alt',
                     'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Partial, MenuVisibility::Hidden, MenuVisibility::ReadOnly, MenuVisibility::GuideOnly],
                 ],
                 'themes' => [
-                    'text_key' => 'admin/nav.settings.themes.text',
+                    'text_key' => 'admin/navigation.settings.themes.text',
                     'icon' => 'fas fa-palette',
                     'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Partial, MenuVisibility::Hidden],
                 ],
                 'plugins' => [
-                    'text_key' => 'admin/nav.settings.plugins.text',
+                    'text_key' => 'admin/navigation.settings.plugins.text',
                     'icon' => 'fas fa-puzzle-piece',
                     'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Partial, MenuVisibility::Hidden],
                 ],
                 'systems' => [
-                    'text_key' => 'admin/nav.settings.systems.text',
+                    'text_key' => 'admin/navigation.settings.systems.text',
                     'icon' => 'fas fa-server',
                     'allowed_visibilities' => [MenuVisibility::Full, MenuVisibility::Hidden, MenuVisibility::ReadOnly, MenuVisibility::GuideOnly],
                 ],

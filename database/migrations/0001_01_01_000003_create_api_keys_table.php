@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * APIキー管理テーブル
      * 外部システム連携用のAPIキーを管理
      */
@@ -36,51 +36,51 @@ return new class extends Migration
     {
         Schema::create('api_keys', function (Blueprint $table) {
             $table->id();
-            
+
             // キー名（識別用）
             $table->string('name', 100);
-            
+
             // APIキー（ハッシュ化して保存）
             // 生成時のみ平文を表示、以降はハッシュのみ保存
             $table->string('key_hash', 255)->unique();
-            
+
             // キープレフィックス（識別用、例: dxl_live_, dxl_test_）
             $table->string('key_prefix', 20);
-            
+
             // 作成者
             $table->unsignedBigInteger('created_by')->nullable()->index();
-            
+
             // 有効/無効
             $table->boolean('is_active')->default(true);
-            
+
             // 環境（live/test）
             $table->string('environment', 10)->default('live');
-            
+
             // 権限スコープ（JSON配列）
             // 例: ["read:events", "write:events", "read:translations"]
             $table->json('scopes')->nullable();
-            
+
             // レート制限（1分あたりのリクエスト数、nullは無制限）
             $table->unsignedInteger('rate_limit')->nullable();
-            
+
             // 許可IPリスト（JSON配列、nullは全IP許可）
             $table->json('allowed_ips')->nullable();
-            
+
             // 有効期限（nullは無期限）
             $table->timestamp('expires_at')->nullable();
-            
+
             // 最終使用日時
             $table->timestamp('last_used_at')->nullable();
-            
+
             // 使用回数
             $table->unsignedBigInteger('usage_count')->default(0);
-            
+
             // メモ
             $table->text('description')->nullable();
-            
+
             // 標準タイムスタンプ
             $table->timestamps();
-            
+
             // インデックス
             $table->index(['is_active', 'environment']);
             $table->index('expires_at');

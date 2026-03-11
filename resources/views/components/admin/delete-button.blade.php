@@ -18,6 +18,15 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
+@props([
+    'id_confirmation',
+    'form' => null,
+    'title' => null,
+    'message' => null,
+    'label' => null,
+    'cancel_label' => null,
+])
+
 <!-- 削除ボタン -->
 <x-form-button
     type="button"

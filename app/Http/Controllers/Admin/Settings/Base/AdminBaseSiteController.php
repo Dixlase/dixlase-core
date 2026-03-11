@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,12 +22,12 @@
 
 namespace App\Http\Controllers\Admin\Settings\Base;
 
+use App\Contracts\Repositories\BaseSettingRepositoryInterface;
+use App\Helpers\AdminModeHelper;
 use App\Helpers\ConfigHelper;
 use App\Helpers\EnvHelper;
 use App\Helpers\TimezoneHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Contracts\Repositories\BaseSettingRepositoryInterface;
-use Illuminate\Http\Request;
 use App\Http\Requests\Admin\Settings\Base\AdminBaseSiteUpdateRequest;
 
 class AdminBaseSiteController extends AdminLoggedInController
@@ -45,7 +45,6 @@ class AdminBaseSiteController extends AdminLoggedInController
      */
     public function index()
     {
-        
         $settings = [
             'app_name' => ConfigHelper::getAppName(),
             'site_description' => $this->baseSettingRepository->get('site_description', ''),
@@ -57,7 +56,7 @@ class AdminBaseSiteController extends AdminLoggedInController
         ];
 
         $timezones = TimezoneHelper::getTimezonesWithUtcOffset();
-        
+
         $defaultOgpImage = null;
         if ($settings['default_ogp_image_id']) {
             $defaultOgpImage = \App\Models\Media::find($settings['default_ogp_image_id']);
@@ -69,6 +68,7 @@ class AdminBaseSiteController extends AdminLoggedInController
             return [$key => $locale['name']];
         })->toArray();
         $this->viewParams['defaultOgpImage'] = $defaultOgpImage;
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.base.site');
 
         return view('admin.settings.base.site', $this->viewParams);
     }

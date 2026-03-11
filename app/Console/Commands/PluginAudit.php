@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,17 +22,17 @@
 
 namespace App\Console\Commands;
 
+use App\Models\PluginAudit as PluginAuditModel;
+use App\Services\Plugin\PluginHealthScorer;
+use App\Services\Plugin\PluginPermissionService;
+use App\Services\Plugin\Scanning\PatternRegistry;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use App\Services\Plugin\PluginPermissionService;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use SplFileInfo;
 
 /**
  * プラグイン権限監査コマンド
- * 
+ *
  * プラグインのコードを解析し、plugin.json で宣言された権限と
  * 実際に使用されている機能を照合します。
  */
@@ -41,134 +41,10 @@ class PluginAudit extends Command
     protected $signature = 'dls:plugin:audit
                             {plugin : The plugin slug or directory name}
                             {--json : Output as JSON}
-                            {--fix : Suggest fixes for plugin.json}';
+                            {--fix : Suggest fixes for plugin.json}
+                            {--calculate-health : Calculate and save health score}';
 
     protected $description = 'Audit plugin code and compare with declared permissions in plugin.json';
-
-    /**
-     * 検出パターン定義
-     */
-    protected array $detectionPatterns = [
-        'database.own_tables' => [
-            'files' => ['database/migrations/*.php'],
-            'patterns' => [
-                '/Schema::(create|table)\s*\(\s*[\'"](\w+)[\'"]/i',
-            ],
-        ],
-        'database.core_tables' => [
-            'patterns' => [
-                // コアテーブルへのアクセス（モデル経由）
-                '/\\\\App\\\\Models\\\\(User|Member|Plugin|Media|Setting|BaseSetting|SecuritySetting)/i',
-                // 直接テーブル名指定
-                '/DB::table\s*\(\s*[\'"](users|members|plugins|media|settings|base_settings|security_settings)[\'"]\)/i',
-            ],
-        ],
-        'storage.own_directory' => [
-            'patterns' => [
-                '/Storage::(put|get|delete|exists|disk)/i',
-                '/File::(put|get|delete|exists|copy|move)/i',
-            ],
-        ],
-        'storage.public_uploads' => [
-            'patterns' => [
-                '/Storage::disk\s*\(\s*[\'"]public[\'"]\)/i',
-                '/->store\s*\(\s*[\'"]uploads/i',
-                '/public_path\s*\(\s*[\'"]uploads/i',
-            ],
-        ],
-        'storage.temp_files' => [
-            'patterns' => [
-                '/tempnam\s*\(/i',
-                '/sys_get_temp_dir\s*\(/i',
-                '/Storage::disk\s*\(\s*[\'"]temp[\'"]\)/i',
-            ],
-        ],
-        'settings.read_core' => [
-            'patterns' => [
-                '/BaseSetting::(get|find|first|all)/i',
-                '/SecuritySetting::(get|find|first|all)/i',
-                '/config\s*\(\s*[\'"]app\./i',
-                '/config\s*\(\s*[\'"]mail\./i',
-                '/config\s*\(\s*[\'"]database\./i',
-            ],
-        ],
-        'members.read' => [
-            'patterns' => [
-                '/\\\\App\\\\Models\\\\Member::(get|find|first|all|where|query)/i',
-                '/Member::(get|find|first|all|where|query)/i',
-            ],
-        ],
-        'members.write' => [
-            'patterns' => [
-                '/\\\\App\\\\Models\\\\Member[^;]*->(save|update)\s*\(/i',
-                '/Member::(update|create)\s*\(/i',
-            ],
-        ],
-        'members.create' => [
-            'patterns' => [
-                '/Member::create\s*\(/i',
-                '/new\s+Member\s*\(/i',
-                '/Member::(firstOrCreate|updateOrCreate)/i',
-            ],
-        ],
-        'members.delete' => [
-            'patterns' => [
-                '/Member::(delete|destroy)\s*\(/i',
-                '/->delete\s*\(\s*\).*Member/i',
-            ],
-        ],
-        'mail.send' => [
-            'patterns' => [
-                '/Mail::(send|to|queue|later)/i',
-                '/Notification::(send|route)/i',
-                '/->notify\s*\(/i',
-                '/Mailable/i',
-            ],
-        ],
-        'mail.bulk_send' => [
-            'patterns' => [
-                '/Mail::queue\s*\(/i',
-                '/Mail::later\s*\(/i',
-                '/->each\s*\(\s*function.*Mail::/is',
-                '/foreach.*Mail::(send|to)/is',
-            ],
-        ],
-        'system.register_shortcodes' => [
-            'files' => ['app/Shortcodes/*.php'],
-            'patterns' => [
-                '/PluginHelper::registerShortcode/i',
-                '/app\s*\(\s*[\'"]shortcode[\'"]\s*\)/i',
-            ],
-        ],
-        'system.register_middleware' => [
-            'patterns' => [
-                '/\$this->app\[.*Router.*\]->pushMiddleware/i',
-                '/Route::middleware/i',
-                '/->middleware\s*\(/i',
-            ],
-            'files' => ['app/Http/Middleware/*.php'],
-        ],
-        'system.register_commands' => [
-            'files' => ['app/Console/Commands/*.php', 'app/Console/*.php'],
-            'patterns' => [
-                '/\$this->commands\s*\(/i',
-                '/Artisan::command/i',
-            ],
-        ],
-        'system.register_blade_directives' => [
-            'patterns' => [
-                '/Blade::directive\s*\(/i',
-                '/Blade::if\s*\(/i',
-                '/Blade::component\s*\(/i',
-            ],
-        ],
-        'system.modify_routes' => [
-            'patterns' => [
-                '/Route::macro/i',
-                '/Router::macro/i',
-            ],
-        ],
-    ];
 
     /**
      * コアテーブル一覧
@@ -181,9 +57,12 @@ class PluginAudit extends Command
     ];
 
     public function __construct(
-        protected PluginPermissionService $permissionService
+        protected PluginPermissionService $permissionService,
+        protected PluginHealthScorer $healthScorer,
+        protected ?PatternRegistry $patternRegistry = null,
     ) {
         parent::__construct();
+        $this->patternRegistry ??= PatternRegistry::createDefault();
     }
 
     public function handle(): int
@@ -192,12 +71,13 @@ class PluginAudit extends Command
         $pluginDir = $this->resolvePluginDirectory($pluginInput);
         $isJson = $this->option('json');
 
-        if (!$pluginDir) {
+        if (! $pluginDir) {
             if ($isJson) {
                 $this->line(json_encode(['error' => "Plugin not found: {$pluginInput}"], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
             } else {
                 $this->error("Plugin not found: {$pluginInput}");
             }
+
             return Command::FAILURE;
         }
 
@@ -205,29 +85,61 @@ class PluginAudit extends Command
         $pluginJsonPath = "{$pluginDir}/plugin.json";
 
         // JSONモードでない場合のみヘッダーを表示
-        if (!$isJson) {
+        if (! $isJson) {
             $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            $this->info("🔍 Auditing plugin: " . basename($pluginDir));
+            $this->info('🔍 Auditing plugin: '.basename($pluginDir));
             $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             $this->newLine();
         }
 
         // plugin.json から宣言された権限を取得
         $declaredPermissions = $this->getDeclaredPermissions($pluginJsonPath);
-        
+
         // コードを解析して実際に使用されている権限を検出
         $detectedPermissions = $this->analyzePluginCode($pluginDir);
 
         // 比較結果を生成
         $auditResult = $this->comparePermissions($declaredPermissions, $detectedPermissions);
 
+        // 結果をDBに永続化（JSONモード時はコントローラーが保存するためスキップ）
+        if (! $isJson) {
+            $saveData = [
+                'has_mismatches' => ! empty($auditResult['mismatches']),
+                'mismatches' => $auditResult['mismatches'] ?? [],
+                'matches_count' => count($auditResult['matches'] ?? []),
+                'total_checked' => $auditResult['total_checked'] ?? 0,
+                'risk_level' => $auditResult['risk_level'] ?? null,
+                'risk_reasons' => $auditResult['risk_reasons'] ?? [],
+            ];
+
+            PluginAuditModel::saveAuditResult($pluginSlug, $saveData);
+        }
+
+        // 健全性スコアの計算（オプション）
+        if ($this->option('calculate-health')) {
+            $healthResult = $this->healthScorer->calculate($pluginSlug);
+
+            PluginAuditModel::where('plugin_slug', $pluginSlug)->update([
+                'health_score' => $healthResult->score,
+                'health_status' => $healthResult->status->value,
+            ]);
+
+            $auditResult['health_score'] = $healthResult->score;
+            $auditResult['health_status'] = $healthResult->status->value;
+        }
+
         if ($isJson) {
             $this->outputJson($auditResult);
         } else {
             $this->outputReport($auditResult);
+
+            if (isset($auditResult['health_score'])) {
+                $this->newLine();
+                $this->info("Health Score: {$auditResult['health_score']}/100 ({$auditResult['health_status']})");
+            }
         }
 
-        if ($this->option('fix') && !empty($auditResult['mismatches'])) {
+        if ($this->option('fix') && ! empty($auditResult['mismatches'])) {
             $this->suggestFixes($pluginJsonPath, $auditResult);
         }
 
@@ -267,7 +179,7 @@ class PluginAudit extends Command
      */
     protected function getDeclaredPermissions(string $pluginJsonPath): array
     {
-        if (!File::exists($pluginJsonPath)) {
+        if (! File::exists($pluginJsonPath)) {
             return [];
         }
 
@@ -278,119 +190,11 @@ class PluginAudit extends Command
     }
 
     /**
-     * プラグインコードを解析
+     * プラグインコードを解析（PatternRegistryベース）
      */
     protected function analyzePluginCode(string $pluginDir): array
     {
-        $detected = [];
-        $evidence = [];
-
-        foreach ($this->detectionPatterns as $permission => $config) {
-            $found = false;
-            $foundEvidence = [];
-
-            // 特定ファイルパターンの存在確認
-            if (isset($config['files'])) {
-                foreach ($config['files'] as $filePattern) {
-                    $files = $this->globRecursive("{$pluginDir}/{$filePattern}");
-                    if (!empty($files)) {
-                        $found = true;
-                        foreach ($files as $file) {
-                            $foundEvidence[] = [
-                                'type' => 'file_exists',
-                                'file' => str_replace($pluginDir . '/', '', $file),
-                            ];
-                        }
-                    }
-                }
-            }
-
-            // パターンマッチング
-            if (isset($config['patterns'])) {
-                $phpFiles = $this->getPhpFiles($pluginDir);
-                foreach ($phpFiles as $file) {
-                    $content = File::get($file);
-                    foreach ($config['patterns'] as $pattern) {
-                        if (preg_match($pattern, $content, $matches)) {
-                            $found = true;
-                            $lineNumber = $this->findLineNumber($content, $matches[0]);
-                            $foundEvidence[] = [
-                                'type' => 'pattern_match',
-                                'file' => str_replace($pluginDir . '/', '', $file),
-                                'line' => $lineNumber,
-                                'match' => trim($matches[0]),
-                            ];
-                        }
-                    }
-                }
-            }
-
-            $detected[$permission] = $found;
-            if (!empty($foundEvidence)) {
-                $evidence[$permission] = $foundEvidence;
-            }
-        }
-
-        return [
-            'permissions' => $detected,
-            'evidence' => $evidence,
-        ];
-    }
-
-    /**
-     * PHPファイル一覧を取得
-     */
-    protected function getPhpFiles(string $dir): array
-    {
-        $files = [];
-        
-        if (!File::isDirectory($dir)) {
-            return $files;
-        }
-
-        $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS)
-        );
-
-        foreach ($iterator as $file) {
-            if ($file->isFile() && $file->getExtension() === 'php') {
-                $files[] = $file->getPathname();
-            }
-        }
-
-        return $files;
-    }
-
-    /**
-     * glob パターンを再帰的に展開
-     */
-    protected function globRecursive(string $pattern): array
-    {
-        $files = glob($pattern);
-        
-        // ワイルドカードディレクトリの処理
-        $dir = dirname($pattern);
-        $filename = basename($pattern);
-        
-        if (File::isDirectory($dir)) {
-            foreach (File::directories($dir) as $subdir) {
-                $files = array_merge($files, $this->globRecursive("{$subdir}/{$filename}"));
-            }
-        }
-
-        return $files ?: [];
-    }
-
-    /**
-     * マッチした文字列の行番号を取得
-     */
-    protected function findLineNumber(string $content, string $match): int
-    {
-        $pos = strpos($content, $match);
-        if ($pos === false) {
-            return 0;
-        }
-        return substr_count(substr($content, 0, $pos), "\n") + 1;
+        return $this->patternRegistry->scan($pluginDir, 'plugin');
     }
 
     /**
@@ -413,12 +217,12 @@ class PluginAudit extends Command
 
             // 配列の場合は空でないかチェック
             if (is_array($declaredValue)) {
-                $declaredValue = !empty($declaredValue);
+                $declaredValue = ! empty($declaredValue);
             }
 
             $isDeclared = (bool) $declaredValue;
 
-            if ($isDetected && !$isDeclared) {
+            if ($isDetected && ! $isDeclared) {
                 $mismatches[] = [
                     'permission' => $permission,
                     'declared' => $isDeclared,
@@ -427,7 +231,7 @@ class PluginAudit extends Command
                     'evidence' => $evidence[$permission] ?? [],
                     'recommendation' => "Set '{$permission}' to true",
                 ];
-            } elseif (!$isDetected && $isDeclared) {
+            } elseif (! $isDetected && $isDeclared) {
                 $mismatches[] = [
                     'permission' => $permission,
                     'declared' => $isDeclared,
@@ -441,77 +245,16 @@ class PluginAudit extends Command
             }
         }
 
-        // リスクレベルと理由を計算
-        $riskResult = $this->calculateRiskLevel($detectedPerms, $mismatches);
+        // リスクレベルと理由を統一計算（サービスに委譲）
+        $riskResult = $this->permissionService->calculateUnifiedRiskLevel($declared, $mismatches);
 
         return [
             'mismatches' => $mismatches,
             'matches' => $matches,
             'total_checked' => count($detectedPerms),
             'risk_level' => $riskResult['level'],
+            'risk_score' => $riskResult['score'],
             'risk_reasons' => $riskResult['reasons'],
-        ];
-    }
-
-    /**
-     * リスクレベルを計算
-     * 
-     * @param array $detectedPerms 検出された権限
-     * @param array $mismatches 不一致リスト
-     * @return array ['level' => string, 'reasons' => array]
-     */
-    protected function calculateRiskLevel(array $detectedPerms, array $mismatches): array
-    {
-        $reasons = [];
-        $level = 'low'; // デフォルトは良好
-
-        // 高リスク権限（使用されている場合）
-        $highRiskPermissions = [
-            'database.core_tables' => 'コアテーブルへのアクセス',
-            'members.write' => 'メンバー情報の書き込み',
-            'members.delete' => 'メンバーの削除',
-            'system.modify_routes' => 'ルートの変更',
-        ];
-
-        // 中リスク権限
-        $mediumRiskPermissions = [
-            'storage.public_uploads' => 'パブリックアップロード',
-            'settings.read_core' => 'コア設定の読み取り',
-            'mail.bulk_send' => '一括メール送信',
-            'system.register_middleware' => 'ミドルウェアの登録',
-            'system.register_blade_directives' => 'Blade指令の登録',
-        ];
-
-        // 高リスク権限のチェック
-        foreach ($highRiskPermissions as $perm => $description) {
-            if ($detectedPerms[$perm] ?? false) {
-                $level = 'high';
-                $reasons[] = $description;
-            }
-        }
-
-        // 中リスク権限のチェック（まだhighでない場合のみ）
-        if ($level !== 'high') {
-            foreach ($mediumRiskPermissions as $perm => $description) {
-                if ($detectedPerms[$perm] ?? false) {
-                    $level = 'medium';
-                    $reasons[] = $description;
-                }
-            }
-        }
-
-        // 未宣言の権限使用がある場合はリスクを上げる
-        $undeclaredCount = count(array_filter($mismatches, fn($m) => $m['type'] === 'undeclared_usage'));
-        if ($undeclaredCount > 0) {
-            if ($level === 'low') {
-                $level = 'medium';
-            }
-            $reasons[] = "未宣言の権限使用: {$undeclaredCount}件";
-        }
-
-        return [
-            'level' => $level,
-            'reasons' => $reasons,
         ];
     }
 
@@ -526,19 +269,20 @@ class PluginAudit extends Command
         if (empty($mismatches)) {
             $this->info("✅ All permissions match! ({$result['total_checked']} checked)");
             $this->newLine();
+
             return;
         }
 
-        $this->warn("⚠️  Permission Mismatches Found:");
+        $this->warn('⚠️  Permission Mismatches Found:');
         $this->newLine();
 
         foreach ($mismatches as $mismatch) {
             $this->line("<fg=yellow>[{$mismatch['permission']}]</>");
-            $this->line("  Declared: " . ($mismatch['declared'] ? '<fg=green>true</>' : '<fg=red>false</>'));
-            $this->line("  Detected: " . ($mismatch['detected'] ? '<fg=green>true</>' : '<fg=red>false</>'));
-            
-            if (!empty($mismatch['evidence'])) {
-                $this->line("  Evidence:");
+            $this->line('  Declared: '.($mismatch['declared'] ? '<fg=green>true</>' : '<fg=red>false</>'));
+            $this->line('  Detected: '.($mismatch['detected'] ? '<fg=green>true</>' : '<fg=red>false</>'));
+
+            if (! empty($mismatch['evidence'])) {
+                $this->line('  Evidence:');
                 foreach (array_slice($mismatch['evidence'], 0, 3) as $ev) {
                     if ($ev['type'] === 'file_exists') {
                         $this->line("    - File: <fg=cyan>{$ev['file']}</>");
@@ -551,14 +295,14 @@ class PluginAudit extends Command
                     $this->line("    ... and {$more} more");
                 }
             }
-            
+
             $this->line("  <fg=blue>→ {$mismatch['recommendation']}</>");
             $this->newLine();
         }
 
-        $this->line("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        $this->line("✅ Matching: <fg=green>" . count($matches) . "</>");
-        $this->line("⚠️  Mismatches: <fg=yellow>" . count($mismatches) . "</>");
+        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->line('✅ Matching: <fg=green>'.count($matches).'</>');
+        $this->line('⚠️  Mismatches: <fg=yellow>'.count($mismatches).'</>');
     }
 
     /**
@@ -575,7 +319,7 @@ class PluginAudit extends Command
     protected function suggestFixes(string $pluginJsonPath, array $result): void
     {
         $this->newLine();
-        $this->info("📝 Suggested fixes for plugin.json:");
+        $this->info('📝 Suggested fixes for plugin.json:');
         $this->newLine();
 
         foreach ($result['mismatches'] as $mismatch) {
@@ -583,11 +327,11 @@ class PluginAudit extends Command
                 $parts = explode('.', $mismatch['permission']);
                 $this->line("  \"{$parts[0]}\": {");
                 $this->line("    \"{$parts[1]}\": <fg=green>true</>  // Currently: false");
-                $this->line("  }");
+                $this->line('  }');
             }
         }
 
         $this->newLine();
-        $this->info("Run 'php artisan dls:plugin:update-json " . basename(dirname($pluginJsonPath)) . " --all' to add missing sections.");
+        $this->info("Run 'php artisan dls:plugin:update-json ".basename(dirname($pluginJsonPath))." --all' to add missing sections.");
     }
 }

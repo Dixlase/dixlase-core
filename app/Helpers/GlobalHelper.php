@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,20 +19,19 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
-if (!function_exists('shortcode_parse')) {
+if (! function_exists('shortcode_parse')) {
     /**
      * ショートコードをパースして実行
      *
-     * @param string $content パース対象のコンテンツ
+     * @param  string  $content  パース対象のコンテンツ
      * @return string パース後のコンテンツ
      */
     function shortcode_parse($content)
     {
-        if (!app()->bound('shortcode')) {
+        if (! app()->bound('shortcode')) {
             return $content;
         }
-        
+
         return app('shortcode')->parse($content);
     }
 }

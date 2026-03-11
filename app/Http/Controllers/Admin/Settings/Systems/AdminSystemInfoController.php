@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -37,7 +37,7 @@ class AdminSystemInfoController extends AdminLoggedInController
      */
     public function index()
     {
-        $databaseVersion = DB::select("select version() as version")[0]->version ?? 'N/A';
+        $databaseVersion = DB::select('select version() as version')[0]->version ?? 'N/A';
 
         $info = [
             'software' => [
@@ -69,8 +69,8 @@ class AdminSystemInfoController extends AdminLoggedInController
             ],
             'Database' => [
                 'driver' => config('database.default'),
-                'host' => config('database.connections.' . config('database.default') . '.host'),
-                'database' => config('database.connections.' . config('database.default') . '.database'),
+                'host' => config('database.connections.'.config('database.default').'.host'),
+                'database' => config('database.connections.'.config('database.default').'.database'),
                 'version' => $databaseVersion,
             ],
             'Cache' => [

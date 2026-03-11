@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of Dixlase.
  *
@@ -36,7 +37,7 @@ return [
     'all' => 'All',
     'none' => 'None',
     'or' => 'or',
-    
+
     // Labels
     'required' => 'Required',
     'optional' => 'Optional',
@@ -117,7 +118,7 @@ return [
     'contact_info' => 'Contact Information',
     'other_info' => 'Other Information',
     'account_settings' => 'Account Settings',
-    
+
     // Theme
     'auto' => 'Auto',
     'light' => 'Light',
@@ -126,7 +127,7 @@ return [
     // Language
     'ja' => 'Japanese',
     'en' => 'English',
-    
+
     // Account Types
     'account_types' => [
         'member' => 'Member',
@@ -135,7 +136,6 @@ return [
     // Roles & Permissions
     'permissions' => 'Permissions',
     'role' => 'Role',
-
 
     // Basic Attributes
     // Basic Information
@@ -171,7 +171,7 @@ return [
     'prefer_not_to_say' => 'Prefer not to say',
     'birthday' => 'Birthday',
     'name_info' => 'Name Information',
-    
+
     // Dangerous Operations
     'danger_zone' => 'Danger Zone',
     'send_password_reset_link' => 'Send Password Reset Link',
@@ -181,7 +181,7 @@ return [
     'file_type' => 'File Type',
     'upload_date' => 'Upload Date',
     'uploaded_by' => 'Uploaded By',
-    
+
     // Media Related
     'select_media' => 'Select Media',
     'all_types' => 'All Types',
@@ -228,12 +228,14 @@ return [
     'info' => 'Information',
     'error' => 'Error',
     'unknown' => 'Unknown',
-    
+
     // Time Units
     'created_at' => 'Created At',
     'updated_at' => 'Updated At',
     'deleted_at' => 'Deleted At',
     'minutes' => 'minutes',
+    'seconds' => 'seconds',
+    'times' => 'times',
     'hours' => 'hours',
     'days' => 'days',
     // Search & Filter Related
@@ -241,7 +243,7 @@ return [
     'role_filter' => 'Role',
     'status_filter' => 'Status',
     'clear_button' => 'Clear',
-    
+
     // Filter Options
     'filters' => [
         'all_roles' => 'All Roles',
@@ -282,6 +284,8 @@ return [
     // Profile & Settings Common Items
     'account_verification_success' => 'Account verification completed.',
     'account_settings' => 'Account Settings',
+    'notification_settings' => 'Notification Settings',
+    'two_fa_settings' => 'Two-Factor Authentication Settings',
     'management_operations' => 'Management Operations',
     'appearance_settings' => 'Appearance Settings',
     'language_settings' => 'Language Settings',
@@ -313,6 +317,13 @@ return [
         'en' => 'English',
     ],
 
+    // Publish Status
+    'publish_status' => [
+        'draft' => 'Draft',
+        'published' => 'Published',
+        'scheduled' => 'Scheduled',
+    ],
+
     // Content Storage
     'content_storage' => [
         'label' => 'Content Storage Method',
@@ -320,7 +331,7 @@ return [
         'database_description' => 'Store in database. Edit directly from admin panel.',
         'file' => 'File',
         'file_description' => 'Store as file. Edit directly with local editor.',
-        'file_info_title' => 'About File Storage',
+        'file_info_title' => 'File Storage Path',
         'file_info_description' => 'Content will be stored as a file. You can edit it directly at:',
         'gui_db_only' => 'GUI editor supports database storage only',
     ],
@@ -362,6 +373,16 @@ return [
         'critical_operation' => 'Critical Operation',
         'requires_step_up_auth' => 'Additional Authentication Required',
         'step_up_auth_description' => 'Additional authentication is required to perform this operation',
+    ],
+
+    // Login Identifier Mode
+    'login_identifier_mode' => [
+        'email_only' => 'Email Only',
+        'email_only_description' => 'Only email address is accepted for login (most secure)',
+        'email_or_account_name' => 'Email or Account Name',
+        'email_or_account_name_description' => 'Both email address and account name are accepted for login',
+        'account_name_only' => 'Account Name Only',
+        'account_name_only_description' => 'Only account name is accepted for login',
     ],
 
     // Passkey Mode Settings

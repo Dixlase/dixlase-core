@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @php
     // メニューキーを生成
     $menuKey = $prefix ? $prefix . '.' . $key : $key;
-    
+
     // ナビゲーション設定からアイコンとテキストを取得
     $navItem = null;
     $navParts = explode('.', $menuKey);
@@ -35,41 +35,37 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             break;
         }
     }
-    
+
     $icon = $navItem['icon'] ?? 'fas fa-folder';
     $text = $navItem['text'] ?? $key;
-    
+
     // ナビゲーションにないキーの場合、翻訳ファイルからラベルを取得
     if ($navItem === null) {
-        // プラグイン固有の翻訳キーを試す
-        // DixlaseUsers -> users-plugin のように変換
         $pluginNamespace = strtolower(str_replace('Dixlase', '', $pluginSlug)) . '-plugin';
-        $pluginTransKey = $pluginNamespace . '::admin/nav.permission_labels.' . $key;
+        $pluginTransKey = $pluginNamespace . '::permissions.' . $key;
         $pluginLabel = __($pluginTransKey);
-        
-        // プラグイン翻訳が見つかった場合
+
         if ($pluginLabel !== $pluginTransKey) {
             $title = $pluginLabel;
         } else {
-            // コアの翻訳を試す
             $permissionLabel = __('admin/members/roles.permission_labels.' . $key);
-            $title = $permissionLabel !== 'admin/members/roles.permission_labels.' . $key 
-                ? $permissionLabel 
+            $title = $permissionLabel !== 'admin/members/roles.permission_labels.' . $key
+                ? $permissionLabel
                 : $key;
         }
     } else {
         $title = __($text);
     }
-    
+
     // 権限定義があるかどうか
     $hasPermission = isset($item['access_roles']);
-    
+
     // 子要素があるかどうか
     $hasChildren = isset($item['children']) && !empty($item['children']);
-    
+
     // ユニークID
     $accordionId = 'plugin_perm_' . $pluginSlug . '_' . str_replace('.', '_', $menuKey);
-    
+
     // 深さに応じたインデント
     $indentClass = match($depth) {
         0 => '',
@@ -78,40 +74,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         3 => 'ml-12',
         default => 'ml-16'
     };
-    
-    // ログインユーザーの権限を取得
-    $currentUserRole = auth()->user()->role;
-    $currentUserRoleValue = $currentUserRole->value;
-    $isSuperAdmin = $currentUserRoleValue === \App\Enums\MemberRole::SUPER_ADMIN->value;
-    
-    // 選択可能な最大値
-    $maxSelectableRole = $isSuperAdmin 
-        ? \App\Enums\MemberRole::SUPER_ADMIN->value 
-        : $currentUserRoleValue;
-    
-    // 最小値はGUEST
-    $minSelectableRole = \App\Enums\MemberRole::GUEST->value;
-    
-    // 権限オプションを作成
-    $roleOptions = [];
-    $roleValues = [];
-    $roleLabelsForRange = [];
-    $index = 0;
-    foreach ($roles as $role) {
-        if ($role->value <= $maxSelectableRole) {
-            $roleOptions[$role->value] = $role->label();
-        }
-    }
-    ksort($roleOptions);
-    
-    foreach ($roleOptions as $value => $label) {
-        $roleValues[$index] = $value;
-        $roleLabelsForRange[$index] = $label;
-        $index++;
-    }
-    
-    $valueToIndex = array_flip($roleValues);
-    $maxIndex = count($roleValues) - 1;
 @endphp
 
 <div class="permission-accordion {{ $indentClass }}" x-data="{ open: false }">
@@ -141,11 +103,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @php
                     // 現在の設定値を取得
                     $permission = $permissionsFlat[$menuKey] ?? null;
-                    $accessRoleValue = $permission['access_roles'] ?? \App\Enums\MemberRole::ADMIN->value;
-                    $viewRoleValue = $permission['view_roles'] ?? \App\Enums\MemberRole::ADMIN->value;
+                    $accessRoleValue = $permission['access_roles'] ?? $adminDefaultValue;
+                    $viewRoleValue = $permission['view_roles'] ?? $adminDefaultValue;
                     $isOverridden = $permission['is_overridden'] ?? false;
-                    $defaultAccessRoles = $permission['default_access_roles'] ?? \App\Enums\MemberRole::ADMIN->value;
-                    $defaultViewRoles = $permission['default_view_roles'] ?? \App\Enums\MemberRole::ADMIN->value;
+                    $defaultAccessRoles = $permission['default_access_roles'] ?? $adminDefaultValue;
+                    $defaultViewRoles = $permission['default_view_roles'] ?? $adminDefaultValue;
                     
                     // 設定値がログインユーザーの権限を超えている場合は、最大値に制限
                     $accessRoleValue = min($accessRoleValue, $maxSelectableRole);

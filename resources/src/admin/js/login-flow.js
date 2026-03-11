@@ -10,11 +10,13 @@
  * (at your option) any later version.
  */
 
+import Alpine from 'alpinejs';
+
 /**
  * ログインフローの管理
  * 2段階ログイン（識別子入力 → 認証方法選択）を実装
  */
-export function createLoginFlow() {
+function createLoginFlow() {
     return {
         // data属性から値を取得
         init() {
@@ -272,7 +274,4 @@ export function createLoginFlow() {
     }
 }
 
-// Alpine.jsに登録
-if (typeof window.Alpine !== 'undefined') {
-    window.Alpine.data('loginFlow', createLoginFlow);
-}
+Alpine.data('loginFlow', createLoginFlow);

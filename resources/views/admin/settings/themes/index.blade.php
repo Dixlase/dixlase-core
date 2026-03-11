@@ -34,8 +34,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         @if($themes->count() > 0)
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                @foreach ($themes as $theme)
-                    @include('admin.settings.themes.partials.theme-card', ['theme' => $theme, 'activeThemeId' => $activeThemeId])
+                @foreach ($themeCards as $card)
+                    @include('admin.settings.themes.partials.theme-card', ['card' => $card])
                 @endforeach
             </div>
         @else
@@ -62,8 +62,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <p class="text-gray-600 dark:text-gray-400 mb-6">{{ __('admin/settings/themes/index.uninstalled_description') }}</p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            @foreach ($uninstalledThemes as $theme)
-                @include('admin.settings.themes.partials.theme-card', ['theme' => $theme, 'activeThemeId' => $activeThemeId])
+            @foreach ($uninstalledThemeCards as $card)
+                @include('admin.settings.themes.partials.theme-card', ['card' => $card])
             @endforeach
         </div>
     </section>

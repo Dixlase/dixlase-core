@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,13 +22,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 use App\Models\Traits\UsesSettingRepositoryTrait;
+use Illuminate\Database\Eloquent\Model;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 基本設定モデル
- * 
+ *
  * @deprecated 静的メソッドは非推奨です。BaseSettingRepositoryを使用してください。
  */
 class BaseSetting extends Model

@@ -38,7 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 // 権限判定用のキーを生成（このメニュー項目のキー）
                 $role_key = $key;
                 // 開くべきアコーディオンを判定
-                $open_key = 'open_' . $key;
+                $open_key = 'open_' . str_replace('-', '_', $key);
                 
                 // プラグインルートの場合の判定を改善
                 $is_open = false;
@@ -242,7 +242,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 @else
                                     @php
                                         // 親キーを含めて変数名の競合を回避（例: open_users_settings）
-                                        $open_child_key = 'open_' . $key . '_' . $child_key;
+                                        $open_child_key = 'open_' . str_replace('-', '_', $key) . '_' . str_replace('-', '_', $child_key);
                                         $is_open_child = false;
                                         
                                         // プラグインルートの場合の判定
@@ -307,7 +307,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                     {{-- 4階層目: 孫項目がさらに子を持つ場合 --}}
                                                     @elseif (isset($grand_child_item['children']) && is_array($grand_child_item['children']) && isset($grand_child_item['icon']) && isset($grand_child_item['text']))
                                                         @php
-                                                            $open_grand_child_key = 'open_' . $grand_child_key;
+                                                            $open_grand_child_key = 'open_' . str_replace('-', '_', $grand_child_key);
                                                             $is_open_grand_child = false;
                                                             // 曾孫要素のルートが現在のルートと一致する場合は開く
                                                             foreach ($grand_child_item['children'] as $ggc_item) {
@@ -329,12 +329,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                                 @foreach ($grand_child_item['children'] as $great_grand_child_key => $great_grand_child_item)
                                                                     @php
                                                                         $great_grand_child_role_key = $key . '.' . $child_key . '.' . $grand_child_key . '.' . $great_grand_child_key;
+                                                                        // 曾孫メニューのモード表示レベルチェック
+                                                                        $__ggcMenuVis = $__isSimpleMode
+                                                                            ? \App\Helpers\AdminModeHelper::getMenuVisibility($great_grand_child_role_key)
+                                                                            : \App\Enums\MenuVisibility::Full;
+                                                                        $__ggcMenuHidden = $__ggcMenuVis === \App\Enums\MenuVisibility::Hidden;
                                                                     @endphp
-                                                                    @if (isset($great_grand_child_item['route']) && Route::has($great_grand_child_item['route']) && isset($great_grand_child_item['icon']) && isset($great_grand_child_item['text']) && (\App\Helpers\AdminHelper::canEditMenu($great_grand_child_role_key) || \App\Helpers\AdminHelper::canViewMenu($great_grand_child_role_key)))
+                                                                    @if (!$__ggcMenuHidden && isset($great_grand_child_item['route']) && Route::has($great_grand_child_item['route']) && isset($great_grand_child_item['icon']) && isset($great_grand_child_item['text']) && (\App\Helpers\AdminHelper::canEditMenu($great_grand_child_role_key) || \App\Helpers\AdminHelper::canViewMenu($great_grand_child_role_key)))
                                                                         <a href="{{ route($great_grand_child_item['route']) }}"
                                                                         class="{{ $button_class }} {{ $great_grand_child_item['route'] === $route_name ? 'sidebar-link-active' : 'sidebar-link' }}">
                                                                             <i class="{{ $great_grand_child_item['icon'] }} mr-3"></i>
                                                                             <span>{{ __($great_grand_child_item['text']) }}</span>
+                                                                            @if ($__ggcMenuVis === \App\Enums\MenuVisibility::ReadOnly)
+                                                                                <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
+                                                                            @elseif ($__ggcMenuVis === \App\Enums\MenuVisibility::GuideOnly)
+                                                                                <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
+                                                                            @endif
                                                                         </a>
                                                                     @endif
                                                                 @endforeach

@@ -22,4 +22,13 @@ return [
     'mail_test_required' => 'メールテスト未完了',
     'maintenance_active' => 'メンテナンス中',
     'maintenance_inactive' => '通常運用中',
+    'auto_configured' => 'この設定はかんたんモードでは自動で構成されます。',
+
+    'nav' => [
+        'site' => 'サイト設定',
+        'admin' => '管理画面設定',
+        'mail' => 'メール設定',
+        'maintenance' => 'メンテナンス設定',
+        'mode' => 'モード設定',
+    ],
 ];

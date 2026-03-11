@@ -1,9 +1,10 @@
 <?php
+
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -22,12 +23,14 @@
 namespace App\Contracts;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * CSP Policy Provider Interface
- * 
+ *
  * プラグイン・テーマがCSPポリシーを提供するためのインターフェース。
  * このインターフェースを実装することで、拡張機能が必要とする
  * 外部リソースをCSPに追加できる。
- * 
+ *
  * @example
  * class MyPluginServiceProvider implements CspPolicyProvider
  * {
@@ -45,9 +48,9 @@ interface CspPolicyProvider
 {
     /**
      * CSPディレクティブを取得
-     * 
+     *
      * @return array<string, array<string>> ディレクティブ名 => 値の配列
-     * 
+     *
      * 使用可能なディレクティブ:
      * - default-src: デフォルトのフォールバック
      * - script-src: スクリプトソース

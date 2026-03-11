@@ -30,7 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('common.password_settings') }}</h2>
             
             <fieldset>
-                <legend>{{ __('admin/profile.password_change_only') }}</legend>
+                <legend>{{ __('admin/profile/common.password_change_only') }}</legend>
                 <x-form-password-tools
                     name="password"
                     id="profile_password"
@@ -54,8 +54,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <x-admin.save-button
         id_confirmation="confirmProfilePasswordModal"
         :label="__('common.update')"
-        :title="__('admin/profile.confirm_title')"
-        :message="__('admin/profile.confirm_message')"
+        :title="__('admin/profile/common.confirm_title')"
+        :message="__('admin/profile/common.confirm_message')"
         :confirm_label="__('common.update')"
         :cancel_label="__('common.cancel')"
         form="profile-password-form"

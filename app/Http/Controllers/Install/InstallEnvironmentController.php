@@ -3,20 +3,20 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
@@ -50,8 +50,10 @@ class InstallEnvironmentController extends BaseInstallController
         if ($isSimpleMode) {
             $data['app_env'] = 'production';
             $data['app_debug'] = false;
-            $data['admin_url'] = 'admin';
-            $data['force_ssl'] = true;
+            $data['admin_url'] = session('install_data.admin_url', 'admin');
+            // アクセス中のプロトコルからSSL強制を自動判定
+            $data['force_ssl'] = $request->isSecure()
+                || $request->header('X-Forwarded-Proto') === 'https';
         }
 
         // プロトコル除去

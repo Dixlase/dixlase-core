@@ -119,14 +119,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
          @click.stop
          style="transition: opacity 300ms ease-out, transform 300ms ease-out;">
         <div class="modal-content">
-            @if(!$hasCustomContent)
-                {{-- 標準モード：既存の確認ダイアログ --}}
-                <div class="flex items-center justify-center w-16 h-16 mx-auto rounded-full {{ $iconColorClass }}">
-                    <i class="{{ $iconClass }} text-3xl" aria-hidden="true"></i>
-                </div>
-                
-                <div class="modal-body">
-                    <h2 class="modal-title">{{ $title }}</h2>
+            {{-- アイコンは常に表示 --}}
+            <div class="flex items-center justify-center w-16 h-16 mx-auto rounded-full {{ $iconColorClass }}">
+                <i class="{{ $iconClass }} text-3xl" aria-hidden="true"></i>
+            </div>
+
+            <div class="modal-body">
+                <h2 class="modal-title">{{ $title }}</h2>
+
+                @if(!$hasCustomContent)
+                    {{-- 標準モード：メッセージ + チェックボックス --}}
                     <div class="modal-message">
                         <p>{!! $message !!}</p>
                     </div>
@@ -139,11 +141,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </label>
                         </div>
                     @endif
-                </div>
-            @else
-                {{-- カスタムモード：slotコンテンツを使用 --}}
-                {{ $slot }}
-            @endif
+                @else
+                    {{-- カスタムモード：メッセージ（あれば） + slotコンテンツ --}}
+                    @if(!empty($message))
+                        <div class="modal-message">
+                            <p>{!! $message !!}</p>
+                        </div>
+                    @endif
+                    {{ $slot }}
+
+                    @if($checkbox)
+                        <div class="modal-checkbox">
+                            <label>
+                                <input type="checkbox" name="{{ $checkboxName }}" value="1" />
+                                <span class="text-left">{!! $checkboxLabel !!}</span>
+                            </label>
+                        </div>
+                    @endif
+                @endif
+            </div>
         </div>
         
         <div class="modal-actions">
@@ -162,26 +178,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <x-form-button
                         type="button"
                         variant="secondary"
-                        label="{{ $cancelLabel ?? __('common.cancel') }}"
+                        icon="fas fa-times"
+                        xDisabled="submitting"
                         @click="close()"
                         class="mx-2"
-                    />
+                    >{{ $cancelLabel ?? __('common.cancel') }}</x-form-button>
                     @if($form)
                         <x-form-button
                             type="submit"
                             variant="{{ $confirm_variant ?? 'primary' }}"
-                            label="{{ $confirmLabel ?? __('common.confirm') }}"
                             form="{{ $form }}"
-                            @click="submitModalForm('{{ $form }}')"
+                            xDisabled="submitting"
+                            @click="submitting = true; submitModalForm('{{ $form }}')"
                             class="mx-2"
-                        />
+                        >
+                            <i x-show="!submitting" class="fas fa-check mr-2"></i>
+                            <i x-show="submitting" class="fas fa-spinner fa-spin mr-2" x-cloak></i>
+                            {{ $confirmLabel ?? __('common.confirm') }}
+                        </x-form-button>
                     @else
                         <x-form-button
                             type="button"
                             variant="{{ $confirm_variant ?? 'primary' }}"
-                            label="{{ $confirmLabel ?? __('common.confirm') }}"
+                            xDisabled="submitting"
                             class="mx-2"
-                        />
+                        >
+                            <i x-show="!submitting" class="fas fa-check mr-2"></i>
+                            <i x-show="submitting" class="fas fa-spinner fa-spin mr-2" x-cloak></i>
+                            {{ $confirmLabel ?? __('common.confirm') }}
+                        </x-form-button>
                     @endif
                 @endif
             @else

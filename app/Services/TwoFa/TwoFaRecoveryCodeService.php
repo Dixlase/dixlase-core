@@ -1,12 +1,35 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\Services\TwoFa;
 
 use App\Contracts\TwoFaInterface;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ */
 class TwoFaRecoveryCodeService
 {
     protected string $settingModelClass;
@@ -15,10 +38,10 @@ class TwoFaRecoveryCodeService
     {
         $this->settingModelClass = $settingModelClass;
     }
+
     /**
      * 回復コードを生成
-     * 
-     * @param TwoFaInterface $user
+     *
      * @return array 生成された回復コード（平文）の配列
      */
     public function generate(TwoFaInterface $user): array
@@ -60,15 +83,12 @@ class TwoFaRecoveryCodeService
         for ($i = 0; $i < 4; $i++) {
             $blocks[] = str_pad((string) random_int(0, 99999), 5, '0', STR_PAD_LEFT);
         }
+
         return implode('', $blocks);
     }
 
     /**
      * 回復コードを検証
-     * 
-     * @param TwoFaInterface $user
-     * @param string $code
-     * @return bool
      */
     public function validate(TwoFaInterface $user, string $code): bool
     {
@@ -115,9 +135,6 @@ class TwoFaRecoveryCodeService
 
     /**
      * 回復コードを再生成可能かチェック
-     * 
-     * @param TwoFaInterface $user
-     * @return bool
      */
     public function canRegenerate(TwoFaInterface $user): bool
     {
@@ -126,7 +143,7 @@ class TwoFaRecoveryCodeService
             ->orderBy('created_at', 'desc')
             ->first();
 
-        if (!$lastGenerated) {
+        if (! $lastGenerated) {
             return true; // 未生成の場合は生成可能
         }
 
@@ -146,11 +163,12 @@ class TwoFaRecoveryCodeService
             ->orderBy('created_at', 'desc')
             ->first();
 
-        if (!$lastGenerated) {
+        if (! $lastGenerated) {
             return null;
         }
 
         $interval = (int) $this->settingModelClass::getValue('two_fa_recovery_code_regenerate_interval', 24);
+
         return $lastGenerated->created_at->addHours($interval);
     }
 
@@ -172,13 +190,13 @@ class TwoFaRecoveryCodeService
     {
         // 20桁を5桁ずつに分割
         $blocks = str_split($code, 5);
+
         return implode('-', $blocks);
     }
 
     /**
      * 全ての回復コードを削除（無効化）
-     * 
-     * @param TwoFaInterface $user
+     *
      * @return int 削除された回復コード数
      */
     public function revokeAll(TwoFaInterface $user): int

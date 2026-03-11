@@ -1,9 +1,10 @@
 <?php
+
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -21,11 +22,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Blade;
+use App\Services\Csp\CspBuilder;
 use App\Services\Csp\CspNonceGenerator;
 use App\Services\Csp\CspPolicyRegistry;
-use App\Services\Csp\CspBuilder;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\ServiceProvider;
 
 class CspServiceProvider extends ServiceProvider
 {
@@ -93,7 +94,8 @@ class CspServiceProvider extends ServiceProvider
         // 使用例: @dixScript console.log('hello'); @enddixScript
         Blade::directive('dixScript', function ($expression) {
             $options = $expression ? ", {$expression}" : '';
-            return "<?php ob_start(); ?>";
+
+            return '<?php ob_start(); ?>';
         });
         Blade::directive('enddixScript', function () {
             return "<?php echo \App\Helpers\ExtensionHelper::script(ob_get_clean()); ?>";
@@ -102,7 +104,7 @@ class CspServiceProvider extends ServiceProvider
         // @dixStyle / @enddixStyle - CSP対応インラインスタイル
         // 使用例: @dixStyle body { color: red; } @enddixStyle
         Blade::directive('dixStyle', function ($expression) {
-            return "<?php ob_start(); ?>";
+            return '<?php ob_start(); ?>';
         });
         Blade::directive('enddixStyle', function () {
             return "<?php echo \App\Helpers\ExtensionHelper::style(ob_get_clean()); ?>";

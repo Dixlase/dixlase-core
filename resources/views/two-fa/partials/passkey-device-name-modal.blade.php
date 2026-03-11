@@ -45,14 +45,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
             
             <div class="modal-body">
-                <h2 class="modal-title">{{ $title ?? __('admin/profile.passkey_device_name_title') }}</h2>
+                <h2 class="modal-title">{{ $title ?? __('two-fa/passkey.device_name_title') }}</h2>
                 <div class="modal-message">
-                    <p>{{ $message ?? __('admin/profile.passkey_device_name_message') }}</p>
+                    <p>{{ $message ?? __('two-fa/passkey.device_name_message') }}</p>
                 </div>
 
                 <div class="mt-4">
                     <label for="{{ $modalId }}_input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {{ $inputLabel ?? __('admin/profile.passkey_device_name_label') }}
+                        {{ $inputLabel ?? __('two-fa/passkey.device_name_label') }}
                     </label>
                     <input 
                         type="text" 

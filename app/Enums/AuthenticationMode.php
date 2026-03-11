@@ -1,10 +1,32 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\Enums;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 認証モード（二段階認証・通知設定共通）
- * 
+ *
  * メンバーとユーザーの両方で使用可能
  * 二段階認証と通知設定の両方で使用可能
  */
@@ -76,6 +98,7 @@ enum AuthenticationMode: int
         foreach (self::cases() as $case) {
             $options[$case->value] = $case->twoFactorLabel();
         }
+
         return $options;
     }
 
@@ -88,6 +111,7 @@ enum AuthenticationMode: int
         foreach (self::cases() as $case) {
             $options[$case->value] = $case->twoFactorTranslationKey();
         }
+
         return $options;
     }
 
@@ -100,6 +124,7 @@ enum AuthenticationMode: int
         foreach (self::cases() as $case) {
             $options[$case->value] = $case->notificationLabel();
         }
+
         return $options;
     }
 
@@ -112,6 +137,7 @@ enum AuthenticationMode: int
         foreach (self::cases() as $case) {
             $options[$case->value] = $case->notificationTranslationKey();
         }
+
         return $options;
     }
 
@@ -120,7 +146,7 @@ enum AuthenticationMode: int
      */
     public static function forProfile(): array
     {
-        return array_filter(self::cases(), fn(self $case) => $case !== self::UseProfileSetting);
+        return array_filter(self::cases(), fn (self $case) => $case !== self::UseProfileSetting);
     }
 
     /**
@@ -132,6 +158,7 @@ enum AuthenticationMode: int
         foreach (self::forProfile() as $case) {
             $options[$case->value] = $case->twoFactorLabel();
         }
+
         return $options;
     }
 
@@ -144,6 +171,7 @@ enum AuthenticationMode: int
         foreach (self::forProfile() as $case) {
             $options[$case->value] = $case->notificationLabel();
         }
+
         return $options;
     }
 

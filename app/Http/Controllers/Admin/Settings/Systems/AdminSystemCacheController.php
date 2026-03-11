@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,10 +22,10 @@
 
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
+use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 use App\Http\Requests\Admin\Settings\Systems\AdminSystemCacheClearRequest;
+use Illuminate\Support\Facades\Artisan;
 
 class AdminSystemCacheController extends AdminLoggedInController
 {
@@ -43,27 +43,28 @@ class AdminSystemCacheController extends AdminLoggedInController
             'config' => [
                 'name' => __('admin/settings/systems/cache.config_cache.name'),
                 'description' => __('admin/settings/systems/cache.config_cache.description'),
-                'command' => 'config:clear'
+                'command' => 'config:clear',
             ],
             'route' => [
                 'name' => __('admin/settings/systems/cache.route_cache.name'),
                 'description' => __('admin/settings/systems/cache.route_cache.description'),
-                'command' => 'route:clear'
+                'command' => 'route:clear',
             ],
             'view' => [
                 'name' => __('admin/settings/systems/cache.view_cache.name'),
                 'description' => __('admin/settings/systems/cache.view_cache.description'),
-                'command' => 'view:clear'
+                'command' => 'view:clear',
             ],
             'application' => [
                 'name' => __('admin/settings/systems/cache.application_cache.name'),
                 'description' => __('admin/settings/systems/cache.application_cache.description'),
-                'command' => 'cache:clear'
-            ]
+                'command' => 'cache:clear',
+            ],
         ];
 
         $this->viewParams['cacheInfo'] = $cacheInfo;
-        
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.cache');
+
         return view('admin::settings.systems.cache', $this->viewParams);
     }
 

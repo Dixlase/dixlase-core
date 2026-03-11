@@ -24,7 +24,7 @@ return [
     // Passkeyデバイス未登録警告
     'device_not_registered_title' => 'Passkeyデバイスが登録されていません',
     'device_not_registered_message' => 'Passkey認証を使用するにはデバイスの登録が必要です。<br>プロフィール画面からデバイスを登録してください。<br>それまでは他の認証方法をご利用ください。',
-    
+
     // Passkey認証
     'title' => 'Passkey認証(生体認証)',
     'prompt' => 'Passkey(生体認証)を使用してログインしてください。',
@@ -45,7 +45,7 @@ return [
     'auth_cancelled' => '認証がキャンセルされました',
     'invalid_state' => '認証の状態が無効です',
     'auth_failed' => '生体認証に失敗しました',
-    
+
     // 生体認証（Passkey）
     'https_required' => 'HTTPS接続が必要です。',
     'challenge_generation_failed' => 'チャレンジの生成に失敗しました。',
@@ -56,7 +56,12 @@ return [
     'revocation_failed' => '生体認証の削除に失敗しました。',
     'all_revoked_successfully' => 'すべての生体認証を削除しました（:count件）。',
     'revoke_all_failed' => '生体認証の一括削除に失敗しました。',
-    
+
+    // パスキーデバイス名入力モーダル
+    'device_name_title' => 'Passkeyデバイスの登録',
+    'device_name_message' => 'このデバイスを識別するための名前を入力してください。',
+    'device_name_label' => 'デバイス名',
+
     // パスキー登録促進モーダル
     'prompt_modal' => [
         'title' => 'Passkey(生体認証)の登録をおすすめします',

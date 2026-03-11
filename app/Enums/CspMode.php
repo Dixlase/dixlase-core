@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,6 +23,8 @@
 namespace App\Enums;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * CSP (Content Security Policy) モード
  */
 enum CspMode: int
@@ -57,7 +59,7 @@ enum CspMode: int
      */
     public function translationKey(): string
     {
-        return 'admin/settings/security/csp.mode_' . $this->toString();
+        return 'admin/settings/security/csp.mode_'.$this->toString();
     }
 
     /**
@@ -73,7 +75,7 @@ enum CspMode: int
      */
     public function description(): string
     {
-        return __($this->translationKey() . '_desc');
+        return __($this->translationKey().'_desc');
     }
 
     /**
@@ -107,6 +109,7 @@ enum CspMode: int
     public static function fromValue(int|string $value): ?self
     {
         $intValue = (int) $value;
+
         return match ($intValue) {
             0 => self::Development,
             1 => self::Standard,
@@ -184,7 +187,7 @@ enum CspMode: int
      */
     public static function getAllStrings(): array
     {
-        return array_map(fn($case) => $case->toString(), self::cases());
+        return array_map(fn ($case) => $case->toString(), self::cases());
     }
 
     /**
@@ -192,7 +195,7 @@ enum CspMode: int
      */
     public static function validationRule(): string
     {
-        return 'in:' . implode(',', self::getAllValues());
+        return 'in:'.implode(',', self::getAllValues());
     }
 
     /**
@@ -200,7 +203,7 @@ enum CspMode: int
      */
     public static function getAllValues(): array
     {
-        return array_map(fn($case) => (string) $case->value, self::cases());
+        return array_map(fn ($case) => (string) $case->value, self::cases());
     }
 
     /**
@@ -210,17 +213,17 @@ enum CspMode: int
     {
         $baseKey = $this->translationKey();
         $features = [
-            __($baseKey . '_feature1'),
-            __($baseKey . '_feature2'),
-            __($baseKey . '_feature3'),
+            __($baseKey.'_feature1'),
+            __($baseKey.'_feature2'),
+            __($baseKey.'_feature3'),
         ];
-        
+
         // feature4が存在する場合は追加
-        $feature4Key = $baseKey . '_feature4';
+        $feature4Key = $baseKey.'_feature4';
         if (__($feature4Key) !== $feature4Key) {
             $features[] = __($feature4Key);
         }
-        
+
         return $features;
     }
 
@@ -234,20 +237,38 @@ enum CspMode: int
             $option = [
                 'value' => (string) $mode->value,
                 'label' => $mode->translationKey(),
-                'description' => $mode->translationKey() . '_desc',
+                'description' => $mode->translationKey().'_desc',
                 'icon' => $mode->iconClass(),
                 'color' => $mode->colorName(),
                 'features' => $mode->features(),
             ];
-            
+
             // 標準モードには推奨バッジを追加
             if ($mode === self::Standard) {
                 $option['badge'] = 'admin/settings/security/csp.recommended';
                 $option['badgeColor'] = 'blue';
             }
-            
+
             $options[] = $option;
         }
+
+        // 厳格モード（将来実装予定の disabled カード）
+        $options[] = [
+            'value' => '2',
+            'label' => 'admin/settings/security/csp.mode_strict',
+            'description' => 'admin/settings/security/csp.mode_strict_desc',
+            'icon' => 'fas fa-lock',
+            'color' => 'purple',
+            'disabled' => true,
+            'badge' => 'admin/settings/security/csp.coming_soon',
+            'badgeColor' => 'gray',
+            'features' => [
+                __('admin/settings/security/csp.mode_strict_feature1'),
+                __('admin/settings/security/csp.mode_strict_feature2'),
+                __('admin/settings/security/csp.mode_strict_feature3'),
+            ],
+        ];
+
         return $options;
     }
 }

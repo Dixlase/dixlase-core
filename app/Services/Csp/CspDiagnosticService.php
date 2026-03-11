@@ -3,13 +3,21 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 namespace App\Services\Csp;
@@ -18,8 +26,10 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * CSP診断サービス
- * 
+ *
  * テーマやプラグインのBladeファイルをスキャンして、
  * CSP非対応のインラインスクリプト/スタイルを検出します。
  */
@@ -54,7 +64,7 @@ class CspDiagnosticService
     /**
      * ディレクトリをスキャンしてCSP問題を検出
      *
-     * @param string $directory スキャン対象ディレクトリ
+     * @param  string  $directory  スキャン対象ディレクトリ
      * @return array 検出結果
      */
     public function scanDirectory(string $directory): array
@@ -71,7 +81,7 @@ class CspDiagnosticService
             ],
         ];
 
-        if (!File::isDirectory($directory)) {
+        if (! File::isDirectory($directory)) {
             return $results;
         }
 
@@ -85,13 +95,13 @@ class CspDiagnosticService
 
         foreach ($bladeFiles as $file) {
             $fileIssues = $this->scanFile($file->getPathname());
-            
-            if (!empty($fileIssues)) {
-                $relativePath = Str::after($file->getPathname(), $directory . '/');
+
+            if (! empty($fileIssues)) {
+                $relativePath = Str::after($file->getPathname(), $directory.'/');
                 $results['issues'][$relativePath] = $fileIssues;
                 $results['summary']['files_with_issues']++;
                 $results['summary']['total_issues'] += count($fileIssues);
-                
+
                 foreach ($fileIssues as $issue) {
                     if ($issue['type'] === 'script') {
                         $results['summary']['inline_scripts']++;
@@ -110,14 +120,14 @@ class CspDiagnosticService
     /**
      * 単一ファイルをスキャン
      *
-     * @param string $filePath ファイルパス
+     * @param  string  $filePath  ファイルパス
      * @return array 検出された問題
      */
     public function scanFile(string $filePath): array
     {
         $issues = [];
 
-        if (!File::exists($filePath)) {
+        if (! File::exists($filePath)) {
             return $issues;
         }
 
@@ -127,7 +137,7 @@ class CspDiagnosticService
         foreach ($lines as $lineNumber => $line) {
             // スクリプトタグをチェック
             if (preg_match($this->inlinePatterns['script'], $line)) {
-                if (!$this->isCspCompliant($line, 'script') && !$this->isExternalResource($line, 'script')) {
+                if (! $this->isCspCompliant($line, 'script') && ! $this->isExternalResource($line, 'script')) {
                     $issues[] = [
                         'type' => 'script',
                         'line' => $lineNumber + 1,
@@ -139,7 +149,7 @@ class CspDiagnosticService
 
             // スタイルタグをチェック
             if (preg_match($this->inlinePatterns['style'], $line)) {
-                if (!$this->isCspCompliant($line, 'style') && !$this->isExternalResource($line, 'style')) {
+                if (! $this->isCspCompliant($line, 'style') && ! $this->isExternalResource($line, 'style')) {
                     $issues[] = [
                         'type' => 'style',
                         'line' => $lineNumber + 1,
@@ -156,9 +166,8 @@ class CspDiagnosticService
     /**
      * CSP対応済みかチェック
      *
-     * @param string $line 行内容
-     * @param string $type タイプ（script/style）
-     * @return bool
+     * @param  string  $line  行内容
+     * @param  string  $type  タイプ（script/style）
      */
     protected function isCspCompliant(string $line, string $type): bool
     {
@@ -174,9 +183,8 @@ class CspDiagnosticService
     /**
      * 外部リソースかチェック
      *
-     * @param string $line 行内容
-     * @param string $type タイプ（script/style）
-     * @return bool
+     * @param  string  $line  行内容
+     * @param  string  $type  タイプ（script/style）
      */
     protected function isExternalResource(string $line, string $type): bool
     {
@@ -190,14 +198,14 @@ class CspDiagnosticService
     /**
      * プラグインのCSP対応状況を診断
      *
-     * @param string $pluginPath プラグインのパス
+     * @param  string  $pluginPath  プラグインのパス
      * @return array 診断結果
      */
     public function diagnosePlugin(string $pluginPath): array
     {
-        $viewsPath = $pluginPath . '/resources/views';
-        
-        if (!File::isDirectory($viewsPath)) {
+        $viewsPath = $pluginPath.'/resources/views';
+
+        if (! File::isDirectory($viewsPath)) {
             return [
                 'compliant' => true,
                 'issues' => [],
@@ -218,14 +226,14 @@ class CspDiagnosticService
     /**
      * テーマのCSP対応状況を診断
      *
-     * @param string $themePath テーマのパス
+     * @param  string  $themePath  テーマのパス
      * @return array 診断結果
      */
     public function diagnoseTheme(string $themePath): array
     {
-        $viewsPath = $themePath . '/resources/views';
-        
-        if (!File::isDirectory($viewsPath)) {
+        $viewsPath = $themePath.'/resources/views';
+
+        if (! File::isDirectory($viewsPath)) {
             return [
                 'compliant' => true,
                 'issues' => [],
@@ -246,7 +254,7 @@ class CspDiagnosticService
     /**
      * 健全度スコアに影響するかどうかを判定
      *
-     * @param array $diagnosticResult 診断結果
+     * @param  array  $diagnosticResult  診断結果
      * @return array 健全度への影響
      */
     public function getHealthImpact(array $diagnosticResult): array

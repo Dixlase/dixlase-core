@@ -1,12 +1,35 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\Services;
 
-use App\Services\TwoFa\TwoFaCodeService;
 use App\Mail\TwoFaCodeMail;
-use Illuminate\Support\Facades\Mail;
+use App\Services\TwoFa\TwoFaCodeService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
+/**
+ * @api プラグイン/テーマから直接DIで使用可能な安定APIです
+ */
 class EmailAuthenticationService
 {
     protected TwoFaCodeService $codeService;
@@ -19,12 +42,12 @@ class EmailAuthenticationService
     /**
      * メール認証コードを生成してメール送信
      *
-     * @param mixed $user ユーザーモデル
-     * @param string $context コンテキスト（admin, user等）
-     * @param int|null $expireMinutes 有効期限（分）
+     * @param  mixed  $user  ユーザーモデル
+     * @param  string  $context  コンテキスト（admin, user等）
+     * @param  int|null  $expireMinutes  有効期限（分）
      * @return string 生成されたコード
      */
-    public function generateAndSendCode($user, string $context = 'admin', int $expireMinutes = null): string
+    public function generateAndSendCode($user, string $context = 'admin', ?int $expireMinutes = null): string
     {
         return $this->codeService->generateAndSend(
             $user,
@@ -37,8 +60,8 @@ class EmailAuthenticationService
     /**
      * メール認証コードを検証
      *
-     * @param mixed $user ユーザーモデル
-     * @param string $inputCode 入力されたコード
+     * @param  mixed  $user  ユーザーモデル
+     * @param  string  $inputCode  入力されたコード
      * @return bool 検証結果
      */
     public function validateCode($user, string $inputCode): bool
@@ -49,12 +72,12 @@ class EmailAuthenticationService
     /**
      * カスタムメールクラスを使用してコードを生成・送信
      *
-     * @param mixed $user ユーザーモデル
-     * @param string $mailClass メールクラス名
-     * @param int|null $expireMinutes 有効期限（分）
+     * @param  mixed  $user  ユーザーモデル
+     * @param  string  $mailClass  メールクラス名
+     * @param  int|null  $expireMinutes  有効期限（分）
      * @return string 生成されたコード
      */
-    public function generateAndSendCodeWithCustomMail($user, string $mailClass, int $expireMinutes = null): string
+    public function generateAndSendCodeWithCustomMail($user, string $mailClass, ?int $expireMinutes = null): string
     {
         $code = $this->codeService->generate($user, $expireMinutes);
 
@@ -63,7 +86,7 @@ class EmailAuthenticationService
             Mail::to($user->email)->send(new $mailClass($code));
             Log::info("[Email Auth] カスタムメール送信成功: ユーザーID {$user->id}, メールクラス: {$mailClass}");
         } catch (\Exception $e) {
-            Log::error("[Email Auth] カスタムメール送信失敗: ユーザーID {$user->id}, エラー: " . $e->getMessage());
+            Log::error("[Email Auth] カスタムメール送信失敗: ユーザーID {$user->id}, エラー: ".$e->getMessage());
             throw $e;
         }
 
@@ -72,25 +95,23 @@ class EmailAuthenticationService
 
     /**
      * メール認証が利用可能かどうかを確認
-     *
-     * @return bool
      */
     public function isAvailable(): bool
     {
         // メールサーバーの設定状況を確認
         try {
             $mailConfig = config('mail');
-            return !empty($mailConfig['default']) && !empty($mailConfig['mailers'][$mailConfig['default']]);
+
+            return ! empty($mailConfig['default']) && ! empty($mailConfig['mailers'][$mailConfig['default']]);
         } catch (\Exception $e) {
-            Log::error("[Email Auth] 設定確認エラー: " . $e->getMessage());
+            Log::error('[Email Auth] 設定確認エラー: '.$e->getMessage());
+
             return false;
         }
     }
 
     /**
      * メール認証の統計情報を取得
-     *
-     * @return array
      */
     public function getStats(): array
     {
@@ -106,7 +127,8 @@ class EmailAuthenticationService
                 'success_rate' => $totalTokens > 0 ? round(($activeTokens / $totalTokens) * 100, 2) : 0,
             ];
         } catch (\Exception $e) {
-            Log::error("[Email Auth] 統計取得エラー: " . $e->getMessage());
+            Log::error('[Email Auth] 統計取得エラー: '.$e->getMessage());
+
             return [
                 'total_tokens' => 0,
                 'active_tokens' => 0,
@@ -126,9 +148,11 @@ class EmailAuthenticationService
         try {
             $deleted = \App\Models\MemberTwoFaToken::where('expires_at', '<', now())->delete();
             Log::info("[Email Auth] 期限切れトークンクリーンアップ: {$deleted}件削除");
+
             return $deleted;
         } catch (\Exception $e) {
-            Log::error("[Email Auth] クリーンアップエラー: " . $e->getMessage());
+            Log::error('[Email Auth] クリーンアップエラー: '.$e->getMessage());
+
             return 0;
         }
     }
@@ -136,7 +160,7 @@ class EmailAuthenticationService
     /**
      * 特定ユーザーのアクティブなトークンを取得
      *
-     * @param mixed $user ユーザーモデル
+     * @param  mixed  $user  ユーザーモデル
      * @return \App\Models\MemberTwoFaToken|null
      */
     public function getActiveToken($user)
@@ -150,7 +174,7 @@ class EmailAuthenticationService
     /**
      * 特定ユーザーのトークンを無効化
      *
-     * @param mixed $user ユーザーモデル
+     * @param  mixed  $user  ユーザーモデル
      * @return int 削除されたトークン数
      */
     public function revokeUserTokens($user): int
@@ -158,9 +182,11 @@ class EmailAuthenticationService
         try {
             $deleted = \App\Models\MemberTwoFaToken::where('member_id', $user->id)->delete();
             Log::info("[Email Auth] ユーザートークン無効化: ユーザーID {$user->id}, {$deleted}件削除");
+
             return $deleted;
         } catch (\Exception $e) {
-            Log::error("[Email Auth] トークン無効化エラー: ユーザーID {$user->id}, エラー: " . $e->getMessage());
+            Log::error("[Email Auth] トークン無効化エラー: ユーザーID {$user->id}, エラー: ".$e->getMessage());
+
             return 0;
         }
     }
@@ -168,8 +194,8 @@ class EmailAuthenticationService
     /**
      * コード再送信の制限チェック
      *
-     * @param mixed $user ユーザーモデル
-     * @param int $limitMinutes 制限時間（分）
+     * @param  mixed  $user  ユーザーモデル
+     * @param  int  $limitMinutes  制限時間（分）
      * @return bool 再送信可能かどうか
      */
     public function canResendCode($user, int $limitMinutes = 1): bool
@@ -178,26 +204,28 @@ class EmailAuthenticationService
             ->latest()
             ->first();
 
-        if (!$lastToken) {
+        if (! $lastToken) {
             return true;
         }
 
         $limitTime = now()->subMinutes($limitMinutes);
+
         return $lastToken->created_at->lessThan($limitTime);
     }
 
     /**
      * コード再送信（制限チェック付き）
      *
-     * @param mixed $user ユーザーモデル
-     * @param string $context コンテキスト（admin, user等）
-     * @param int $limitMinutes 制限時間（分）
+     * @param  mixed  $user  ユーザーモデル
+     * @param  string  $context  コンテキスト（admin, user等）
+     * @param  int  $limitMinutes  制限時間（分）
      * @return string|null 生成されたコード（制限に引っかかった場合はnull）
      */
     public function resendCode($user, string $context = 'admin', int $limitMinutes = 1): ?string
     {
-        if (!$this->canResendCode($user, $limitMinutes)) {
+        if (! $this->canResendCode($user, $limitMinutes)) {
             Log::warning("[Email Auth] コード再送信制限: ユーザーID {$user->id}");
+
             return null;
         }
 

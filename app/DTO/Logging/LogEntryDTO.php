@@ -1,35 +1,62 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\DTO\Logging;
 
 use JsonSerializable;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * ログエントリDTO
- * 
+ *
  * ログファイルから読み取ったエントリを保持する不変データオブジェクトです。
- * 
- * @package App\DTO\Logging
  */
 final readonly class LogEntryDTO implements JsonSerializable
 {
     public const LEVEL_DEBUG = 'debug';
+
     public const LEVEL_INFO = 'info';
+
     public const LEVEL_NOTICE = 'notice';
+
     public const LEVEL_WARNING = 'warning';
+
     public const LEVEL_ERROR = 'error';
+
     public const LEVEL_CRITICAL = 'critical';
+
     public const LEVEL_ALERT = 'alert';
+
     public const LEVEL_EMERGENCY = 'emergency';
 
     /**
-     * @param string $level ログレベル
-     * @param string $message メッセージ
-     * @param string $channel チャンネル名
-     * @param string $timestamp タイムスタンプ
-     * @param array<string,mixed> $context コンテキスト
-     * @param string|null $source ソース（ファイル名など）
-     * @param int|null $line 行番号
+     * @param  string  $level  ログレベル
+     * @param  string  $message  メッセージ
+     * @param  string  $channel  チャンネル名
+     * @param  string  $timestamp  タイムスタンプ
+     * @param  array<string,mixed>  $context  コンテキスト
+     * @param  string|null  $source  ソース（ファイル名など）
+     * @param  int|null  $line  行番号
      */
     public function __construct(
         public string $level,
@@ -43,8 +70,6 @@ final readonly class LogEntryDTO implements JsonSerializable
 
     /**
      * エラーレベルかどうか
-     * 
-     * @return bool
      */
     public function isError(): bool
     {
@@ -58,8 +83,6 @@ final readonly class LogEntryDTO implements JsonSerializable
 
     /**
      * 警告レベルかどうか
-     * 
-     * @return bool
      */
     public function isWarning(): bool
     {
@@ -68,8 +91,6 @@ final readonly class LogEntryDTO implements JsonSerializable
 
     /**
      * 情報レベルかどうか
-     * 
-     * @return bool
      */
     public function isInfo(): bool
     {
@@ -78,8 +99,6 @@ final readonly class LogEntryDTO implements JsonSerializable
 
     /**
      * デバッグレベルかどうか
-     * 
-     * @return bool
      */
     public function isDebug(): bool
     {
@@ -88,8 +107,6 @@ final readonly class LogEntryDTO implements JsonSerializable
 
     /**
      * ログレベルの重要度を取得（数値）
-     * 
-     * @return int
      */
     public function getSeverity(): int
     {
@@ -108,7 +125,7 @@ final readonly class LogEntryDTO implements JsonSerializable
 
     /**
      * JSON形式にシリアライズ
-     * 
+     *
      * @return array<string,mixed>
      */
     public function jsonSerialize(): array
@@ -126,7 +143,7 @@ final readonly class LogEntryDTO implements JsonSerializable
 
     /**
      * 配列形式に変換
-     * 
+     *
      * @return array<string,mixed>
      */
     public function toArray(): array
@@ -136,9 +153,8 @@ final readonly class LogEntryDTO implements JsonSerializable
 
     /**
      * 配列からDTOを生成
-     * 
-     * @param array<string,mixed> $data
-     * @return self
+     *
+     * @param  array<string,mixed>  $data
      */
     public static function fromArray(array $data): self
     {
@@ -155,10 +171,9 @@ final readonly class LogEntryDTO implements JsonSerializable
 
     /**
      * ログ行をパースしてDTOを生成
-     * 
-     * @param string $line ログ行
-     * @param string $channel チャンネル名
-     * @return self|null
+     *
+     * @param  string  $line  ログ行
+     * @param  string  $channel  チャンネル名
      */
     public static function fromLogLine(string $line, string $channel = 'default'): ?self
     {
@@ -166,7 +181,7 @@ final readonly class LogEntryDTO implements JsonSerializable
         // [2025-01-15 12:34:56] local.INFO: Message {"context":"value"}
         $pattern = '/^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] (\w+)\.(\w+): (.+)$/';
 
-        if (!preg_match($pattern, $line, $matches)) {
+        if (! preg_match($pattern, $line, $matches)) {
             return null;
         }
 

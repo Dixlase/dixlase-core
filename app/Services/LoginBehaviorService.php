@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,8 +27,10 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * ログイン行動分析サービス
- * 
+ *
  * β版での行動分析機能の基盤として使用
  * ログイン時のコンテキスト収集と異常検知を担当
  */
@@ -40,7 +42,7 @@ class LoginBehaviorService
     public function collectLoginContext(Request $request): array
     {
         $now = Carbon::now();
-        
+
         return [
             'login_hour' => $now->hour,
             'login_day_of_week' => $now->dayOfWeek,
@@ -51,7 +53,7 @@ class LoginBehaviorService
 
     /**
      * デバイスフィンガープリントを生成
-     * 
+     *
      * UserAgent + Accept-Language + Accept-Encoding のハッシュ
      */
     public function generateDeviceFingerprint(Request $request): string
@@ -68,7 +70,7 @@ class LoginBehaviorService
 
     /**
      * IPアドレスから国コードを取得
-     * 
+     *
      * β版でGeoIPライブラリを統合予定
      * 現在はnullを返す（プレースホルダー）
      */
@@ -89,7 +91,7 @@ class LoginBehaviorService
         array $additionalData = []
     ): MemberLoginAttempt {
         $context = $this->collectLoginContext($request);
-        
+
         $behaviorData = array_merge($context, $additionalData);
 
         return MemberLoginAttempt::recordAttemptWithBehavior(
@@ -122,6 +124,7 @@ class LoginBehaviorService
         array $additionalData = []
     ): MemberLoginAttempt {
         $additionalData['failure_reason'] = $failureReason;
+
         return $this->recordLoginAttempt($identifier, $request, false, $additionalData);
     }
 
@@ -131,7 +134,7 @@ class LoginBehaviorService
     public function detectAnomaly(string $identifier, Request $request): array
     {
         $context = $this->collectLoginContext($request);
-        
+
         return MemberLoginAttempt::detectAnomaly(
             $identifier,
             $context['login_hour'],
@@ -156,9 +159,7 @@ class LoginBehaviorService
 
     /**
      * リスクスコアを計算（β版で拡張予定）
-     * 
-     * @param string $identifier
-     * @param Request $request
+     *
      * @return int 0-100のリスクスコア
      */
     public function calculateRiskScore(string $identifier, Request $request): int
@@ -211,7 +212,7 @@ class LoginBehaviorService
     public function generateBehaviorReport(int $days = 7): array
     {
         $cutoffDate = Carbon::now()->subDays($days);
-        
+
         $attempts = MemberLoginAttempt::where('attempted_at', '>=', $cutoffDate)->get();
 
         return [

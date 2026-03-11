@@ -1,10 +1,32 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\Contracts;
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 二段階認証機能を持つユーザーのインターフェース
  */
 interface TwoFaInterface
@@ -32,7 +54,7 @@ interface TwoFaInterface
     /**
      * 二段階認証モードを取得
      */
-    public function getTwoFaMode(): \App\Enums\AuthenticationMode|int;
+    public function getTwoFaMode(): int;
 
     /**
      * パスキーが有効かどうか

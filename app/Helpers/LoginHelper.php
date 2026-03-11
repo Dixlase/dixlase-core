@@ -1,20 +1,43 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\Helpers;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ */
 class LoginHelper
 {
     /**
      * ユーザーを認証（メールアドレスとパスワード）
      *
-     * @param string $email メールアドレス
-     * @param string $password パスワード
-     * @param string $userModel ユーザーモデルクラス名
+     * @param  string  $email  メールアドレス
+     * @param  string  $password  パスワード
+     * @param  string  $userModel  ユーザーモデルクラス名
      * @return array ['success' => bool, 'user' => mixed|null, 'error' => string|null]
      */
     public function authenticateUser(string $email, string $password, string $userModel): array
@@ -24,7 +47,7 @@ class LoginHelper
             ->orWhere('pending_email', $email)
             ->first();
 
-        if (!$user || !Hash::check($password, $user->password)) {
+        if (! $user || ! Hash::check($password, $user->password)) {
             Log::info('[Login] Authentication failed', [
                 'email' => $email,
                 'user_found' => (bool) $user,
@@ -52,24 +75,24 @@ class LoginHelper
     /**
      * Two-FAが必要かチェック
      *
-     * @param mixed $user ユーザーモデル
-     * @param string $twoFactorServiceClass Two-FAサービスクラス名
+     * @param  mixed  $user  ユーザーモデル
+     * @param  string  $twoFactorServiceClass  Two-FAサービスクラス名
      * @return array ['needs_two_fa' => bool, 'lockout_status' => array|null]
      */
     public function check2FARequired($user, string $twoFactorServiceClass): array
     {
         $twoFactorService = app($twoFactorServiceClass);
-        
+
         // メールサーバーのテストが完了していない場合はTwo-FAをスキップ
         $mailServerTested = \App\Services\MailServerValidatorService::isMailServerTested();
-        
+
         Log::info('[Login] Two-FA check', [
             'user_id' => $user->id,
             'has_two_fa' => $twoFactorService->has($user),
             'mail_server_tested' => $mailServerTested,
         ]);
 
-        if (!$twoFactorService->has($user) || !$mailServerTested) {
+        if (! $twoFactorService->has($user) || ! $mailServerTested) {
             return [
                 'needs_two_fa' => false,
                 'lockout_status' => null,
@@ -78,7 +101,7 @@ class LoginHelper
 
         // Two-FAロックアウトチェック
         $lockoutStatus = $twoFactorService->checkLockout($user);
-        
+
         if ($lockoutStatus['locked_out']) {
             Log::warning('[Login] User is locked out from Two-FA', [
                 'user_id' => $user->id,
@@ -95,9 +118,8 @@ class LoginHelper
     /**
      * Two-FAセッションを準備
      *
-     * @param mixed $user ユーザーモデル
-     * @param bool $remember Remember me
-     * @return void
+     * @param  mixed  $user  ユーザーモデル
+     * @param  bool  $remember  Remember me
      */
     public function prepare2FASession($user, bool $remember): void
     {
@@ -115,13 +137,12 @@ class LoginHelper
     /**
      * ログインを完了（Two-FAなし）
      *
-     * @param mixed $user ユーザーモデル
-     * @param bool $remember Remember me
-     * @param string $guard ガード名
-     * @param Request $request リクエスト
-     * @param string $lockoutServiceClass ロックアウトサービスクラス名
-     * @param string|null $notificationServiceClass 通知サービスクラス名
-     * @return void
+     * @param  mixed  $user  ユーザーモデル
+     * @param  bool  $remember  Remember me
+     * @param  string  $guard  ガード名
+     * @param  Request  $request  リクエスト
+     * @param  string  $lockoutServiceClass  ロックアウトサービスクラス名
+     * @param  string|null  $notificationServiceClass  通知サービスクラス名
      */
     public function completeLogin(
         $user,
@@ -150,12 +171,11 @@ class LoginHelper
         ]);
     }
 
-
     /**
      * ログイン失敗時のエラーメッセージを生成
      *
-     * @param array $lockoutInfo ロックアウト情報
-     * @param string $translationPrefix 翻訳キープレフィックス
+     * @param  array  $lockoutInfo  ロックアウト情報
+     * @param  string  $translationPrefix  翻訳キープレフィックス
      * @return string エラーメッセージ
      */
     public function getLoginFailedMessage(array $lockoutInfo, string $translationPrefix = 'auth'): string
@@ -163,7 +183,7 @@ class LoginHelper
         if ($lockoutInfo['is_locked_out']) {
             return __("{$translationPrefix}.lockout", ['minutes' => $lockoutInfo['lockout_minutes']]);
         }
-        
+
         if ($lockoutInfo['remaining_attempts'] > 0) {
             return __("{$translationPrefix}.failed_with_attempts", ['attempts' => $lockoutInfo['remaining_attempts']]);
         }
@@ -174,21 +194,21 @@ class LoginHelper
     /**
      * 2FAロックアウトエラーメッセージを生成
      *
-     * @param array $lockoutStatus ロックアウトステータス
-     * @param string $translationPrefix 翻訳キープレフィックス
+     * @param  array  $lockoutStatus  ロックアウトステータス
+     * @param  string  $translationPrefix  翻訳キープレフィックス
      * @return string エラーメッセージ
      */
     public function get2FALockoutMessage(array $lockoutStatus, string $translationPrefix = 'auth'): string
     {
         return __("{$translationPrefix}.two_fa_locked_out", [
-            'minutes' => $lockoutStatus['remaining_minutes']
+            'minutes' => $lockoutStatus['remaining_minutes'],
         ]);
     }
 
     /**
      * パスワードリセットが有効かチェック
      *
-     * @param string $settingKey 設定キー
+     * @param  string  $settingKey  設定キー
      * @return bool パスワードリセットが有効かどうか
      */
     public function isPasswordResetEnabled(string $settingKey = 'password_reset_enabled'): bool
@@ -202,7 +222,7 @@ class LoginHelper
     /**
      * CAPTCHAが必要かチェック
      *
-     * @param string $formKey フォームキー
+     * @param  string  $formKey  フォームキー
      * @return bool CAPTCHAが必要かどうか
      */
     public function isCaptchaRequired(string $formKey): bool
@@ -213,19 +233,20 @@ class LoginHelper
     /**
      * CAPTCHAウィジェットを生成
      *
-     * @param string $action アクション名
+     * @param  string  $action  アクション名
      * @return string CAPTCHAウィジェットHTML
      */
     public function generateCaptchaWidget(string $action): string
     {
         $captchaDriver = app(\App\Captcha\CaptchaDriver::class);
+
         return $captchaDriver->renderWidget(['action' => $action]);
     }
 
     /**
      * CAPTCHAを検証
      *
-     * @param Request $request リクエスト
+     * @param  Request  $request  リクエスト
      * @return array ['valid' => bool, 'error_message' => string|null]
      */
     public function verifyCaptcha(Request $request): array
@@ -248,13 +269,12 @@ class LoginHelper
     /**
      * セッションをクリーンアップ
      *
-     * @param array $keys クリアするセッションキー
-     * @return void
+     * @param  array  $keys  クリアするセッションキー
      */
     public function cleanupSession(array $keys = ['login.id', 'login.remember']): void
     {
         session()->forget($keys);
-        
+
         Log::info('[Login] Session cleaned up', [
             'keys' => $keys,
         ]);

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,8 +25,10 @@ namespace App\Contracts\Repositories;
 use App\Models\BaseSetting;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 基本設定リポジトリインターフェース
- * 
+ *
  * サイトの基本設定（サイト名、OGP画像など）を管理します。
  */
 interface BaseSettingRepositoryInterface extends SettingRepositoryInterface
@@ -34,8 +36,7 @@ interface BaseSettingRepositoryInterface extends SettingRepositoryInterface
     /**
      * リレーションを含めて設定を取得
      *
-     * @param string $name 設定名
-     * @return BaseSetting|null
+     * @param  string  $name  設定名
      */
     public function findWithRelations(string $name): ?BaseSetting;
 }

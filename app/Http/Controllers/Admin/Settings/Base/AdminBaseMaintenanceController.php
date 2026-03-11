@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,11 +22,11 @@
 
 namespace App\Http\Controllers\Admin\Settings\Base;
 
+use App\Contracts\Repositories\BaseSettingRepositoryInterface;
+use App\Helpers\AdminModeHelper;
 use App\Helpers\ConfigHelper;
 use App\Helpers\EnvHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Contracts\Repositories\BaseSettingRepositoryInterface;
-use Illuminate\Http\Request;
 use App\Http\Requests\Admin\Settings\Base\AdminBaseMaintenanceUpdateRequest;
 
 class AdminBaseMaintenanceController extends AdminLoggedInController
@@ -53,6 +53,7 @@ class AdminBaseMaintenanceController extends AdminLoggedInController
         ];
 
         $this->viewParams['settings'] = $settings;
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.base.maintenance');
 
         return view('admin.settings.base.maintenance', $this->viewParams);
     }

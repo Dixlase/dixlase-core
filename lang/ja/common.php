@@ -1,7 +1,5 @@
 <?php
 
-
-
 /**
  * This file is part of Dixlase.
  *
@@ -162,7 +160,6 @@ return [
     | 状態・ステータス表示
     |--------------------------------------------------------------------------
     */
-
 
     'default_method' => 'デフォルト',
     'enabled' => '有効',
@@ -359,6 +356,8 @@ return [
     'updated_at' => '更新日時',
     'deleted_at' => '削除日時',
     'minutes' => '分',
+    'seconds' => '秒',
+    'times' => '回',
     'hours' => '時間',
     'days' => '日',
 
@@ -428,6 +427,8 @@ return [
     */
 
     'account_verification_success' => 'アカウント認証が完了しました。',
+    'notification_settings' => '通知設定',
+    'two_fa_settings' => '二段階認証設定',
     'password_settings' => 'パスワード設定',
     'security_settings' => 'セキュリティ設定',
     'management_operations' => '管理操作',
@@ -491,13 +492,20 @@ return [
     |--------------------------------------------------------------------------
     */
 
+    // 公開ステータス
+    'publish_status' => [
+        'draft' => '下書き',
+        'published' => '公開',
+        'scheduled' => '日付指定',
+    ],
+
     'content_storage' => [
         'label' => 'コンテンツの保存方法',
         'database' => 'データベース',
         'database_description' => 'DBに保存します。管理画面から直接編集できます。',
         'file' => 'ファイル',
         'file_description' => 'ファイルとして保存します。ローカルエディタで直接編集できます。',
-        'file_info_title' => 'ファイル保存について',
+        'file_info_title' => 'ファイルの保存先',
         'file_info_description' => 'コンテンツはファイルとして保存されます。以下のパスで直接編集できます：',
         'gui_db_only' => 'GUIエディタはデータベース保存のみ対応',
     ],
@@ -556,6 +564,16 @@ return [
     | パスキー認証設定
     |--------------------------------------------------------------------------
     */
+
+    // ログイン識別子モード
+    'login_identifier_mode' => [
+        'email_only' => 'メールアドレスのみ',
+        'email_only_description' => 'ログインにメールアドレスのみを受け付けます（最もセキュア）',
+        'email_or_account_name' => 'メールアドレスまたはアカウント名',
+        'email_or_account_name_description' => 'ログインにメールアドレスとアカウント名の両方を受け付けます',
+        'account_name_only' => 'アカウント名のみ',
+        'account_name_only_description' => 'ログインにアカウント名のみを受け付けます',
+    ],
 
     'passkey_mode' => [
         'label' => 'パスキー設定',

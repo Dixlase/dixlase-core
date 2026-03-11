@@ -32,6 +32,7 @@
 window.modal = function () {
     return {
         show: false,
+        submitting: false,
 
         /**
          * 初期化
@@ -52,6 +53,8 @@ window.modal = function () {
                                 container.style.opacity = '1';
                             });
                         });
+                        // スクロール状態を検出してフッターボーダーを切り替え
+                        requestAnimationFrame(() => this._updateScrollBorder());
                     } else {
                         // 閉じる: 下に移動
                         container.style.transform = 'translateY(1rem)';
@@ -59,6 +62,43 @@ window.modal = function () {
                     }
                 }
             });
+
+            // コンテンツの変更を監視してスクロール状態を更新
+            this._setupScrollObserver();
+        },
+
+        /**
+         * スクロール状態に基づいてフッターボーダーを更新
+         */
+        _updateScrollBorder() {
+            const content = this.$el.querySelector('.modal-content');
+            const actions = this.$el.querySelector('.modal-actions');
+            if (!content || !actions) return;
+
+            const hasScroll = content.scrollHeight > content.clientHeight;
+            actions.classList.toggle('modal-actions--has-scroll', hasScroll);
+        },
+
+        /**
+         * ResizeObserver + MutationObserver でコンテンツ変更を監視
+         */
+        _setupScrollObserver() {
+            const content = this.$el.querySelector('.modal-content');
+            if (!content) return;
+
+            const update = () => {
+                if (this.show) {
+                    this._updateScrollBorder();
+                }
+            };
+
+            if (typeof ResizeObserver !== 'undefined') {
+                const ro = new ResizeObserver(update);
+                ro.observe(content);
+            }
+
+            const mo = new MutationObserver(update);
+            mo.observe(content, { childList: true, subtree: true, characterData: true });
         },
 
         /**
@@ -66,29 +106,33 @@ window.modal = function () {
          */
         open() {
             this.show = true;
+            this.submitting = false;
         },
 
         /**
-         * モーダルを閉じる
+         * モーダルを閉じる（送信中は無効）
          */
         close() {
+            if (this.submitting) {
+                return;
+            }
             this.show = false;
         },
 
         /**
-         * ESCキーでモーダルを閉じる
+         * ESCキーでモーダルを閉じる（送信中は無効）
          */
         handleEscape(event) {
-            if (event.key === 'Escape' && this.show) {
+            if (event.key === 'Escape' && this.show && !this.submitting) {
                 this.close();
             }
         },
 
         /**
-         * 背景クリックでモーダルを閉じる
+         * 背景クリックでモーダルを閉じる（送信中は無効）
          */
         closeOnBackdrop(dismissible) {
-            if (dismissible) {
+            if (dismissible && !this.submitting) {
                 this.close();
             }
         }

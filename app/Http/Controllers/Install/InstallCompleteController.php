@@ -3,20 +3,20 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
@@ -57,8 +57,18 @@ class InstallCompleteController extends BaseInstallController
 
         Log::channel('install')->info('インストール完了画面を表示（ボタン押下待ち）');
 
-        // セッションデータから管理画面URLを先に取得
-        $adminSlug = session('install_data.admin_url', 'admin');
+        // base_settingsから管理画面URLを取得（セッションはconfirm処理後にクリアされている可能性がある）
+        $adminSlug = 'admin';
+        try {
+            $dbAdminUrl = DB::table('base_settings')
+                ->where('name', 'admin_url')
+                ->value('value');
+            if ($dbAdminUrl) {
+                $adminSlug = $dbAdminUrl;
+            }
+        } catch (\Exception $e) {
+            Log::channel('install')->warning('admin_url設定の取得に失敗: '.$e->getMessage());
+        }
 
         // force_ssl設定を確認
         $forceSsl = false;
@@ -129,7 +139,9 @@ class InstallCompleteController extends BaseInstallController
         Log::channel('install')->info('=== InstallCompleteController::show() 終了 ===');
 
         // 完了画面を表示（INSTALLED=trueの設定はfinalizeメソッドで行う）
-        return view('install.complete', compact('appUrl', 'adminUrl', 'adminLoginUrl', 'isSimpleMode'));
+        $forceSslEnabled = $forceSsl;
+
+        return view('install.complete', compact('appUrl', 'adminUrl', 'adminLoginUrl', 'isSimpleMode', 'adminSlug', 'forceSslEnabled'));
     }
 
     /**

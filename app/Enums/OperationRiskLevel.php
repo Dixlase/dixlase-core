@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -13,7 +13,8 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
@@ -22,8 +23,10 @@
 namespace App\Enums;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 操作リスクレベル
- * 
+ *
  * β版での「強制再認証」機能の基盤として使用
  * 重大操作（Danger Zone）の判定に使用
  */
@@ -52,7 +55,7 @@ enum OperationRiskLevel: int
      */
     public function translationKey(): string
     {
-        return 'common.operation_risk_level.' . $this->toString();
+        return 'common.operation_risk_level.'.$this->toString();
     }
 
     /**
@@ -68,7 +71,7 @@ enum OperationRiskLevel: int
      */
     public function descriptionKey(): string
     {
-        return 'common.operation_risk_level.' . $this->toString() . '_description';
+        return 'common.operation_risk_level.'.$this->toString().'_description';
     }
 
     /**

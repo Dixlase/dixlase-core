@@ -20,71 +20,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('layouts.admin')
 
-@php
-    /**
-     * アップロード出来るファイルサイズの上限を取得
-     * @param string $sizeStr PHPの設定値 (例: "2M")
-     * @return int バイト数
-     */
-    function parsePhpSize($sizeStr) {
-        $sizeStr = trim($sizeStr);
-        $unit = strtoupper(substr($sizeStr, -1)); // 末尾1文字 (K, M, G)
-        $value = (int) substr($sizeStr, 0, -1);
-
-        switch ($unit) {
-            case 'G':
-                $value *= 1024;
-                // no break
-            case 'M':
-                $value *= 1024;
-                // no break
-            case 'K':
-                $value *= 1024;
-                break;
-            default:
-                $value = (int)$sizeStr; // 単位なしの場合
-        }
-        return $value;
-    }
-
-    // PHPの設定から取得
-    $uploadMaxFilesize = ini_get('upload_max_filesize');  // 例: "2M"
-    $postMaxSize       = ini_get('post_max_size');        // 例: "8M"
-
-    // バイト数に変換
-    $uploadMaxBytes = parsePhpSize($uploadMaxFilesize);
-    $postMaxBytes   = parsePhpSize($postMaxSize);
-
-    // 画面表示用に "2M" 形式でそのまま表示しても良いし、
-    // あるいは数値(MB)を小数込みで表示したい場合は:
-    $uploadMaxMB = number_format($uploadMaxBytes / 1048576, 2); // 1MB = 1048576 bytes
-    $postMaxMB   = number_format($postMaxBytes / 1048576, 2);
-@endphp
-
-
 @section('content')
 <div class="mx-auto">
-
-    <!-- Flash message for success or error -->
-    @if(session('success'))
-        <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50">
-            {{ session('success') }}
-
-            @if(session('installed_plugin_id'))
-                <!-- 有効化フォーム -->
-                <br>{{ __('admin/settings/plugins/add.enable_plugin_text') }}
-                <form action="{{ route('admin.settings.plugins.enable', session('installed_plugin_id')) }}"
-                    method="POST" class="inline-block ml-3">
-                    @csrf
-                    <button type="submit"
-                            class="bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded text-sm">
-                        {{ __('admin/settings/plugins/add.enable_from_here') }}
-                    </button>
-                </form>
-                {{ __('admin/settings/plugins/add.enable_instruction') }}
-            @endif
-        </div>
-    @endif
 
     @if ($errors->any())
         <div class="mb-4 p-4 text-red-800 bg-red-100 border border-red-200 rounded-lg">

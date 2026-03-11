@@ -18,50 +18,6 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@php
-    // ログインユーザーの権限を取得
-    $currentUserRole = auth()->user()->role;
-    $currentUserRoleValue = $currentUserRole->value;
-    $isSuperAdmin = $currentUserRoleValue === \App\Enums\MemberRole::SUPER_ADMIN->value;
-    
-    // 選択可能な最大値
-    // SUPER_ADMINの場合はSUPER_ADMINまで選択可能（特権管理者専用の設定ができる）
-    // それ以外は自分の権限まで
-    $maxSelectableRole = $isSuperAdmin 
-        ? \App\Enums\MemberRole::SUPER_ADMIN->value 
-        : $currentUserRoleValue;
-    
-    // 最小値はGUEST
-    $minSelectableRole = \App\Enums\MemberRole::GUEST->value;
-    
-    // 権限オプションを作成（値 => ラベル）- 権限が低い順にソート（rangeスライダー用）
-    // SUPER_ADMINの場合は全権限を表示、それ以外は自分の権限以下のみ
-    $roleOptions = [];
-    $roleValues = []; // インデックス => 実際の値のマッピング
-    $roleLabelsForRange = []; // インデックス => ラベルのマッピング
-    $index = 0;
-    foreach ($roles as $role) {
-        if ($role->value <= $maxSelectableRole) {
-            $roleOptions[$role->value] = $role->label();
-        }
-    }
-    // 権限値の昇順でソート（低い権限が左に来るように）
-    ksort($roleOptions);
-    
-    // インデックスベースのマッピングを作成
-    foreach ($roleOptions as $value => $label) {
-        $roleValues[$index] = $value;
-        $roleLabelsForRange[$index] = $label;
-        $index++;
-    }
-    
-    // 実際の値からインデックスへの逆マッピング
-    $valueToIndex = array_flip($roleValues);
-    
-    // rangeの最大インデックス
-    $maxIndex = count($roleValues) - 1;
-@endphp
-
 <div class="accordion-section bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm"
      x-init="
         if (typeof openSections['{{ $sectionId }}'] === 'undefined') {

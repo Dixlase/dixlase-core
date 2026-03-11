@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,18 +22,19 @@
 
 namespace App\Http\Controllers\Admin\Members;
 
+use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
+use App\Enums\AppearanceMode;
+use App\Enums\AuthenticationMode;
+use App\Enums\MemberRole;
+use App\Enums\MemberStatus;
+use App\Enums\PasskeyMode;
+use App\Enums\TwoFaMethod;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\AdminSettingsMemberStoreRequest;
 use App\Models\Member;
-use App\Enums\MemberRole;
-use App\Enums\MemberStatus;
-use App\Enums\AppearanceMode;
-use App\Enums\AuthenticationMode;
-use App\Enums\TwoFaMethod;
-use App\Services\PasswordService;
 use App\Services\MailServerValidatorService;
+use App\Services\PasswordService;
 use App\Services\TwoFa\TwoFaStatusService;
-use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 
 class AdminMemberFormController extends AdminLoggedInController
 {
@@ -61,16 +62,19 @@ class AdminMemberFormController extends AdminLoggedInController
         $this->viewParams['roleValue'] = (int) request()->old('role', MemberRole::ADMIN->value);
         $this->viewParams['appearanceOptions'] = AppearanceMode::translationOptions();
         $this->viewParams['localeOptions'] = \App\Enums\Locale::availableOptions();
-        
+
+        $this->viewParams['currentLoginNotification'] = (string) AuthenticationMode::Always->value;
+        $this->viewParams['currentTwoFaMode'] = (string) AuthenticationMode::Always->value;
+
         // ステータスオプションをコンポーネント用の形式に変換
         $this->viewParams['statusOptions'] = [
-            ['value' => '1', 'label' => 'components.status.active', 'icon' => 'fas fa-check-circle', 'color' => 'green'],
-            ['value' => '0', 'label' => 'components.status.inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
+            ['value' => '1', 'label' => 'components/ui-status-badge.active', 'icon' => 'fas fa-check-circle', 'color' => 'green'],
+            ['value' => '0', 'label' => 'components/ui-status-badge.inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
         ];
 
         $statusOld = request()->old('status');
         $statusValue = null;
-        if (!is_null($statusOld)) {
+        if (! is_null($statusOld)) {
             $statusValue = is_numeric($statusOld) ? (int) $statusOld : null;
         } else {
             $statusValue = MemberStatus::Active->value;
@@ -98,15 +102,15 @@ class AdminMemberFormController extends AdminLoggedInController
 
         $isMailServerTested = MailServerValidatorService::isMailServerTested();
         $emailVerified = (string) $request->input('email_verified', $isMailServerTested ? '0' : '1');
-        
-        if (!$isMailServerTested) {
+
+        if (! $isMailServerTested) {
             $validated['email_verified_at'] = now();
         } elseif ($emailVerified === '1') {
             $validated['email_verified_at'] = now();
         } else {
             $validated['email_verified_at'] = null;
         }
-        
+
         unset($validated['email_verified']);
 
         $member = Member::create($validated);
@@ -118,7 +122,7 @@ class AdminMemberFormController extends AdminLoggedInController
             } catch (\Exception $e) {
                 \Log::error('Failed to send verification email', [
                     'member_id' => $member->id,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
                 $message = __('admin/members/create.messages.created_but_email_failed');
             }
@@ -146,16 +150,28 @@ class AdminMemberFormController extends AdminLoggedInController
         $this->viewParams['roleValue'] = (int) request()->old('role', $member->role?->value ?? MemberRole::ADMIN->value);
         $this->viewParams['appearanceOptions'] = AppearanceMode::translationOptions();
         $this->viewParams['localeOptions'] = \App\Enums\Locale::availableOptions();
-        
+
+        $loginNotification = $member->login_notification_mode;
+        if ($loginNotification instanceof AuthenticationMode) {
+            $loginNotification = $loginNotification->value;
+        }
+        $this->viewParams['currentLoginNotification'] = (string) ($loginNotification ?? AuthenticationMode::Always->value);
+
+        $twoFaModeValue = $member->two_fa_mode;
+        if ($twoFaModeValue instanceof AuthenticationMode) {
+            $twoFaModeValue = $twoFaModeValue->value;
+        }
+        $this->viewParams['currentTwoFaMode'] = (string) ($twoFaModeValue ?? AuthenticationMode::Always->value);
+
         // ステータスオプションをコンポーネント用の形式に変換
         $this->viewParams['statusOptions'] = [
-            ['value' => '1', 'label' => 'components.status.active', 'icon' => 'fas fa-check-circle', 'color' => 'green'],
-            ['value' => '0', 'label' => 'components.status.inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
+            ['value' => '1', 'label' => 'components/ui-status-badge.active', 'icon' => 'fas fa-check-circle', 'color' => 'green'],
+            ['value' => '0', 'label' => 'components/ui-status-badge.inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
         ];
 
         $statusOld = request()->old('status');
         $statusValue = null;
-        if (!is_null($statusOld)) {
+        if (! is_null($statusOld)) {
             $statusValue = is_numeric($statusOld) ? (int) $statusOld : null;
         } else {
             $statusValue = $member->status?->value ?? MemberStatus::Active->value;
@@ -169,7 +185,7 @@ class AdminMemberFormController extends AdminLoggedInController
         // TwoFaStatusServiceを使用してパスキーモード判定
         $twoFaStatusService = new TwoFaStatusService();
         $twoFaPasskeyEnabled = $twoFaStatusService->isPasskeyEnabledGlobally();
-        
+
         $twoFaPasskeyService = new \App\Services\TwoFa\TwoFaPasskeyService();
         $this->viewParams['twoFaPasskeyDevices'] = $twoFaPasskeyService->getDevices($member);
         $this->viewParams['twoFaPasskeyEnabled'] = $twoFaPasskeyEnabled;
@@ -180,14 +196,14 @@ class AdminMemberFormController extends AdminLoggedInController
 
         // 編集時は、メールサーバーが設定されていて、かつメールアドレスが認証済みなら2FA有効化可能
         $isMailServerTested = \App\Services\MailServerValidatorService::isMailServerTested();
-        $isEmailVerified = !is_null($member->email_verified_at);
+        $isEmailVerified = ! is_null($member->email_verified_at);
         $this->viewParams['canEnableTwoFa'] = $isMailServerTested && $isEmailVerified;
-        
+
         $blockReasons = [];
-        if (!$isMailServerTested) {
+        if (! $isMailServerTested) {
             $blockReasons[] = 'no_mail_server';
         }
-        if (!$isEmailVerified) {
+        if (! $isEmailVerified) {
             $blockReasons[] = 'email_not_verified';
         }
         $this->viewParams['twoFaEnableBlockReasons'] = $blockReasons;
@@ -201,8 +217,8 @@ class AdminMemberFormController extends AdminLoggedInController
     public function update(AdminSettingsMemberStoreRequest $request, Member $member)
     {
         $validated = $request->validated();
-        
-        if (!empty($validated['password'])) {
+
+        if (! empty($validated['password'])) {
             $validated['password'] = PasswordService::hash($validated['password']);
         } else {
             unset($validated['password']);
@@ -235,6 +251,17 @@ class AdminMemberFormController extends AdminLoggedInController
      */
     private function loadMemberFormParams(): void
     {
+        // radio-card-group用のロールオプション配列を生成
+        $roleCardOptions = [];
+        foreach (MemberRole::cases() as $role) {
+            $roleCardOptions[] = [
+                'value' => $role->value,
+                'label' => $role->label(),
+                'icon' => 'fas fa-user-shield',
+            ];
+        }
+        $this->viewParams['roleCardOptions'] = $roleCardOptions;
+
         // パスワード設定（セキュリティ設定から）
         $this->viewParams['passwordMinLength'] = (int) $this->securitySettingRepository->get('password_min_length', 8);
         $this->viewParams['passwordRequireUppercase'] = (bool) $this->securitySettingRepository->get('password_require_uppercase', true);
@@ -247,12 +274,12 @@ class AdminMemberFormController extends AdminLoggedInController
         $this->viewParams['loginNotificationMode'] = $loginNotificationMode;
         $loginNotificationEnum = AuthenticationMode::tryFrom($loginNotificationMode);
         $this->viewParams['loginNotificationModeLabel'] = $loginNotificationEnum ? $loginNotificationEnum->notificationLabel() : '';
-        
+
         // radio-card-group用の通知設定オプション配列を生成
         $loginNotificationOptions = [];
         foreach (AuthenticationMode::forProfile() as $case) {
             $loginNotificationOptions[] = [
-                'value' => (string)$case->value,
+                'value' => (string) $case->value,
                 'label' => $case->notificationLabel(),
             ];
         }
@@ -262,23 +289,47 @@ class AdminMemberFormController extends AdminLoggedInController
         $twoFaStatusService = new TwoFaStatusService();
         $twoFaForceMode = $twoFaStatusService->getGlobalTwoFaMode();
         $this->viewParams['forceTwoFa'] = $twoFaForceMode;
-        
+
         // パスキーモード設定を追加
         $twoFaPasskeyMode = $twoFaStatusService->getGlobalPasskeyMode();
         $this->viewParams['twoFaPasskeyMode'] = $twoFaPasskeyMode;
-        
+
         $twoFactorEnum = AuthenticationMode::tryFrom($twoFaForceMode);
         $this->viewParams['twoFactorModeLabel'] = $twoFactorEnum ? $twoFactorEnum->twoFactorLabel() : '';
-        
+
         // radio-card-group用の二段階認証オプション配列を生成
         $twoFaModeOptions = [];
         foreach (AuthenticationMode::forProfile() as $case) {
             $twoFaModeOptions[] = [
-                'value' => (string)$case->value,
+                'value' => (string) $case->value,
                 'label' => $case->twoFactorLabel(),
             ];
         }
         $this->viewParams['twoFactorModeOptions'] = $twoFaModeOptions;
+
+        // two-fa.individual-settings コンポーネント用の事前計算値
+        $this->viewParams['isTwoFaEditable'] = $twoFaForceMode === AuthenticationMode::UseProfileSetting->value;
+        $this->viewParams['isPasskeyEditable'] = PasskeyMode::isProfileEditable($twoFaPasskeyMode);
+        $forcedPasskeyValue = PasskeyMode::getForcedProfileValue($twoFaPasskeyMode);
+        $this->viewParams['forcedPasskeyValue'] = $forcedPasskeyValue;
+
+        $this->viewParams['twoFaGlobalModeName'] = strtolower($twoFactorEnum?->name ?? 'disabled');
+
+        // アイコン付きモードオプション（individual-settings用）
+        $twoFaModeOptionsWithIcons = [];
+        foreach (AuthenticationMode::forProfile() as $case) {
+            $twoFaModeOptionsWithIcons[] = [
+                'value' => (string) $case->value,
+                'label' => $case->twoFactorLabel(),
+                'icon' => match ($case) {
+                    AuthenticationMode::Disabled => 'fas fa-ban',
+                    AuthenticationMode::DifferentDevice => 'fas fa-shield-alt',
+                    AuthenticationMode::Always => 'fas fa-lock',
+                    default => 'fas fa-cog',
+                },
+            ];
+        }
+        $this->viewParams['twoFaModeOptionsWithIcons'] = $twoFaModeOptionsWithIcons;
 
         // 二段階認証方法の選択肢を作成
         $twoFaMethodOptions = [
@@ -290,10 +341,10 @@ class AdminMemberFormController extends AdminLoggedInController
         if ($twoFaPasskeyEnabled) {
             $twoFaMethodOptions[TwoFaMethod::PASSKEY->value] = TwoFaMethod::PASSKEY->translationKey();
         }
-        
+
         // デフォルトの認証方法を取得
         $twoFaDefaultMethod = (int) $this->securitySettingRepository->get('default_two_fa_method', TwoFaMethod::EMAIL->value);
-        
+
         $this->viewParams['twoFaEnabledMethods'] = $twoFaMethodOptions;
         $this->viewParams['twoFaDefaultMethod'] = $twoFaDefaultMethod;
         $this->viewParams['twoFaPasskeyEnabled'] = $twoFaPasskeyEnabled;
@@ -301,5 +352,11 @@ class AdminMemberFormController extends AdminLoggedInController
         $this->viewParams['twoFaUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
         $this->viewParams['loginNotificationUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
         $this->viewParams['isMailServerTested'] = MailServerValidatorService::isMailServerTested();
+
+        $roleLabels = [];
+        foreach (MemberRole::cases() as $role) {
+            $roleLabels[$role->name] = $role->label();
+        }
+        $this->viewParams['roleLabels'] = $roleLabels;
     }
 }

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,11 +23,14 @@
 namespace App\Helpers;
 
 use App\Models\SecuritySetting;
-use App\Services\CaptchaTestService;
-use App\Services\CaptchaFailoverService;
 use App\Services\CaptchaBypassService;
+use App\Services\CaptchaFailoverService;
+use App\Services\CaptchaTestService;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ */
 class CaptchaHelper
 {
     /**
@@ -36,11 +39,11 @@ class CaptchaHelper
     public static function getSettings(): array
     {
         $driver = SecuritySetting::get('captcha_driver', 'google');
-        
+
         // プロバイダー別のキーを取得
         $siteKey = '';
         $secretKey = '';
-        
+
         switch ($driver) {
             case 'google':
                 $siteKey = SecuritySetting::get('captcha_google_site_key', '');
@@ -55,7 +58,7 @@ class CaptchaHelper
                 $secretKey = SecuritySetting::get('captcha_turnstile_secret_key', '');
                 break;
         }
-        
+
         return [
             'enabled' => filter_var(SecuritySetting::get('captcha_enabled', false), FILTER_VALIDATE_BOOLEAN),
             'driver' => $driver,
@@ -76,27 +79,27 @@ class CaptchaHelper
         // 緊急バイパスがアクティブな場合はCAPTCHAを表示しない
         $scope = self::getBypassScopeForForm($formName);
         $bypassActive = CaptchaBypassService::shouldSkipCaptcha($scope);
-        
+
         $settings = self::getSettings();
-        
+
         // フォーム固有の設定チェック
         $formCaptchaEnabled = $formName ? self::isEnabledForForm($formName) : true;
-        
+
         if ($bypassActive) {
             return false;
         }
-        
+
         // 基本的なCAPTCHA有効性チェック
-        if (!$settings['enabled']) {
+        if (! $settings['enabled']) {
             return false;
         }
 
-        if (!$formCaptchaEnabled) {
+        if (! $formCaptchaEnabled) {
             return false;
         }
 
         // 認証テスト結果チェック
-        if (!$settings['authentication_result']) {
+        if (! $settings['authentication_result']) {
             return false;
         }
 
@@ -128,9 +131,10 @@ class CaptchaHelper
     public static function isEnabled(): bool
     {
         $settings = self::getSettings();
-        return $settings['enabled'] && 
-               !empty($settings['site_key']) && 
-               !empty($settings['secret_key']) &&
+
+        return $settings['enabled'] &&
+               ! empty($settings['site_key']) &&
+               ! empty($settings['secret_key']) &&
                $settings['authentication_result'];
     }
 
@@ -151,12 +155,12 @@ class CaptchaHelper
     {
         $activeProvider = CaptchaFailoverService::getActiveProvider();
         $config = CaptchaFailoverService::getProviderConfig($activeProvider);
-        
+
         // プロバイダー固有のキーがあればそれを使用
-        if (!empty($config['site_key'])) {
+        if (! empty($config['site_key'])) {
             return $config['site_key'];
         }
-        
+
         // フォールバック: 統一キー
         return SecuritySetting::get('captcha_site_key', '');
     }
@@ -169,12 +173,12 @@ class CaptchaHelper
     {
         $activeProvider = CaptchaFailoverService::getActiveProvider();
         $config = CaptchaFailoverService::getProviderConfig($activeProvider);
-        
+
         // プロバイダー固有のキーがあればそれを使用
-        if (!empty($config['secret_key'])) {
+        if (! empty($config['secret_key'])) {
             return $config['secret_key'];
         }
-        
+
         // フォールバック: 統一キー
         return SecuritySetting::get('captcha_secret_key', '');
     }
@@ -209,12 +213,13 @@ class CaptchaHelper
     public static function getTestResult(): bool
     {
         $captchaTestService = app(CaptchaTestService::class);
+
         return $captchaTestService->getTestResult();
     }
 
     /**
      * 指定されたフォームでCAPTCHAが有効かチェック
-     * 
+     *
      * admin_login, admin_password_resetの場合はSecuritySettingから読み込む
      * user_login, user_register, user_password_resetの場合はDixlaseUsersUserSettingから読み込む
      * その他のフォームはプラグイン側で独自に管理する
@@ -223,46 +228,47 @@ class CaptchaHelper
     {
         // CaptchaServiceを使用してフォームの有効状態をチェック
         $captchaService = app(\App\Services\CaptchaService::class);
-        
+
         return $captchaService->isEnabled($formName);
     }
-    
+
     /**
      * 旧バージョンとの互換性のため残す（非推奨）
+     *
      * @deprecated Use isEnabledForForm() instead
      */
     protected static function isEnabledForFormLegacy(string $formName): bool
     {
         // 管理画面のフォーム
         if (in_array($formName, ['admin_login', 'admin_password_reset'])) {
-            $settingKey = match($formName) {
+            $settingKey = match ($formName) {
                 'admin_login' => 'captcha_admin_login_enabled',
                 'admin_password_reset' => 'captcha_password_reset_enabled',
             };
-            
+
             return filter_var(
                 SecuritySetting::get($settingKey, false),
                 FILTER_VALIDATE_BOOLEAN
             );
         }
-        
+
         // ユーザープラグインのフォーム
         if (in_array($formName, ['user_login', 'user_register', 'user_password_reset'])) {
             // DixlaseUsersUserSettingモデルが存在するか確認
             if (class_exists('\Plugins\DixlaseUsers\App\Models\DixlaseUsersUserSetting')) {
-                $settingKey = match($formName) {
+                $settingKey = match ($formName) {
                     'user_login' => 'captcha_login_enabled',
                     'user_register' => 'captcha_register_enabled',
                     'user_password_reset' => 'captcha_password_reset_enabled',
                 };
-                
+
                 return filter_var(
                     \Plugins\DixlaseUsers\App\Models\DixlaseUsersUserSetting::getValue($settingKey, false),
                     FILTER_VALIDATE_BOOLEAN
                 );
             }
         }
-        
+
         // その他のフォームはプラグイン側で独自に管理するため、ここではfalseを返す
         // プラグインは独自の設定テーブルからCAPTCHA有効/無効を判定すること
         return false;
@@ -270,12 +276,11 @@ class CaptchaHelper
 
     /**
      * 汎用的なCAPTCHA有効チェック（設定モデルクラスとキーを指定）
-     * 
-     * @param string $formName フォーム名（バイパススコープ判定用）
-     * @param string $settingModelClass 設定モデルのクラス名
-     * @param string $settingKey 設定キー名
-     * @param mixed $defaultValue デフォルト値
-     * @return bool
+     *
+     * @param  string  $formName  フォーム名（バイパススコープ判定用）
+     * @param  string  $settingModelClass  設定モデルのクラス名
+     * @param  string  $settingKey  設定キー名
+     * @param  mixed  $defaultValue  デフォルト値
      */
     public static function isEnabledForFormWithModel(
         string $formName,
@@ -284,7 +289,7 @@ class CaptchaHelper
         $defaultValue = false
     ): bool {
         // 基本的なCAPTCHA設定をチェック
-        if (!self::isEnabled()) {
+        if (! self::isEnabled()) {
             return false;
         }
 
@@ -296,7 +301,7 @@ class CaptchaHelper
 
         // 認証テスト結果チェック
         $settings = self::getSettings();
-        if (!$settings['authentication_result']) {
+        if (! $settings['authentication_result']) {
             return false;
         }
 
@@ -309,56 +314,59 @@ class CaptchaHelper
             } else {
                 return false;
             }
-            
+
             return filter_var($value, FILTER_VALIDATE_BOOLEAN);
         }
-        
+
         return false;
     }
 
     /**
      * CAPTCHAウィジェットを生成
-     * 
-     * @param string $action CAPTCHAアクション名
+     *
+     * @param  string  $action  CAPTCHAアクション名
      * @return string|null ウィジェットHTML（CAPTCHAが無効な場合はnull）
      */
     public static function renderWidget(string $action): ?string
     {
         try {
             $captchaDriverInstance = app(\App\Captcha\CaptchaDriver::class);
+
             return $captchaDriverInstance->renderWidget(['action' => $action]);
         } catch (\Exception $e) {
             Log::error('Failed to render CAPTCHA widget', [
                 'action' => $action,
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
 
     /**
      * CAPTCHAを検証
-     * 
-     * @param \Illuminate\Http\Request $request リクエスト
-     * @param string $action CAPTCHAアクション名
+     *
+     * @param  \Illuminate\Http\Request  $request  リクエスト
+     * @param  string  $action  CAPTCHAアクション名
      * @return \App\Captcha\CaptchaResult|null 検証結果（CAPTCHAが無効な場合はnull）
      */
     public static function verify(\Illuminate\Http\Request $request, string $action): ?\App\Captcha\CaptchaResult
     {
         // CAPTCHAが無効な場合はnullを返す（検証スキップ）
-        if (!self::shouldShowCaptcha($action)) {
+        if (! self::shouldShowCaptcha($action)) {
             return null;
         }
 
         try {
             $captchaDriverInstance = app(\App\Captcha\CaptchaDriver::class);
+
             return $captchaDriverInstance->verify($request);
         } catch (\Exception $e) {
             Log::error('Failed to verify CAPTCHA', [
                 'action' => $action,
                 'error' => $e->getMessage(),
             ]);
-            
+
             // エラー時は失敗として扱う
             return new \App\Captcha\CaptchaResult(
                 false,
@@ -369,15 +377,14 @@ class CaptchaHelper
 
     /**
      * 指定されたフォームでCAPTCHAが有効かチェック（設定取得関数を指定）
-     * 
-     * @param string $formName フォーム名
-     * @param callable $settingGetter 設定取得関数
-     * @return bool
+     *
+     * @param  string  $formName  フォーム名
+     * @param  callable  $settingGetter  設定取得関数
      */
     public static function isEnabledForFormWithSettings(string $formName, callable $settingGetter): bool
     {
         // 基本的なCAPTCHA設定をチェック
-        if (!self::isEnabled()) {
+        if (! self::isEnabled()) {
             return false;
         }
 
@@ -389,7 +396,7 @@ class CaptchaHelper
 
         // フォーム固有の設定をチェック
         $formEnabled = $settingGetter($formName);
-        
+
         return filter_var($formEnabled, FILTER_VALIDATE_BOOLEAN);
     }
 
@@ -410,7 +417,7 @@ class CaptchaHelper
                 $errors[] = 'Secret key is required when CAPTCHA is enabled';
             }
 
-            if (!$settings['authentication_result']) {
+            if (! $settings['authentication_result']) {
                 $errors[] = 'CAPTCHA authentication test must be completed';
             }
 
@@ -428,12 +435,12 @@ class CaptchaHelper
     public static function getSettingsForLogging(): array
     {
         $settings = self::getSettings();
-        
+
         return [
             'enabled' => $settings['enabled'],
             'driver' => $settings['driver'],
-            'site_key' => $settings['site_key'] ? substr($settings['site_key'], 0, 10) . '...' : 'Not set',
-            'secret_key' => $settings['secret_key'] ? substr($settings['secret_key'], 0, 10) . '...' : 'Not set',
+            'site_key' => $settings['site_key'] ? substr($settings['site_key'], 0, 10).'...' : 'Not set',
+            'secret_key' => $settings['secret_key'] ? substr($settings['secret_key'], 0, 10).'...' : 'Not set',
             'google_version' => $settings['google_version'],
             'google_min_score' => $settings['google_min_score'],
             'authentication_result' => $settings['authentication_result'],

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,18 +22,23 @@
 
 namespace App\View\Components;
 
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\Component;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Config;
 
 class GuestLayout extends Component
 {
     protected $site_name;
+
     protected $appearance = 'light';
+
     protected $theme_class;
+
     protected $title = '';
+
     protected $view_params = [];
+
     protected $theme = '';
 
     /**
@@ -43,7 +48,7 @@ class GuestLayout extends Component
     {
         try {
             // インストール前やデータベース接続エラーの場合はデフォルト値を使用
-            if (!file_exists(base_path('.env')) || !env('INSTALLED', false)) {
+            if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
                 $this->site_name = env('APP_NAME', 'Dixlase');
                 $this->theme = Config::get('admin.theme', 'light');
             } else {
@@ -61,7 +66,7 @@ class GuestLayout extends Component
             $this->theme = Config::get('admin.theme', 'light');
         }
 
-        //テーマクラスを設定する
+        // テーマクラスを設定する
         if ($this->theme == 'light') {
             $this->theme_class = config('admin.theme_class_light');
         } else {
@@ -69,14 +74,12 @@ class GuestLayout extends Component
         }
         $isDark = $this->theme === 'dark';
 
-
         $this->view_params = [
             'site_name' => $this->site_name,
             'theme' => $this->theme,
             'theme_class' => $this->theme_class,
             'isDark' => $isDark,
         ];
-
 
         return view(
             'layouts.guest',

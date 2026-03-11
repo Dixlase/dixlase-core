@@ -4,27 +4,29 @@
  * This file is part of Dixlase.
  *
  * Copyright (C) 2026 exc-D inc.
- * Website: https://exc-d.com
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 namespace App\Services\Auth;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * 認証コンテキストレジストリ
- * 
+ *
  * プラグインが独自の認証コンテキスト（ルート、翻訳プレフィックスなど）を
  * 登録できるようにするためのレジストリサービス
  */
@@ -39,8 +41,6 @@ class AuthContextRegistryService
 
     /**
      * デフォルトの管理者コンテキスト
-     *
-     * @var array
      */
     protected static array $defaultAdminContext = [
         'guard' => 'member',
@@ -57,9 +57,8 @@ class AuthContextRegistryService
     /**
      * 認証コンテキストを登録
      *
-     * @param string $context コンテキスト名（例: 'user', 'admin'）
-     * @param array $config 設定配列
-     * @return void
+     * @param  string  $context  コンテキスト名（例: 'user', 'admin'）
+     * @param  array  $config  設定配列
      */
     public static function register(string $context, array $config): void
     {
@@ -74,8 +73,7 @@ class AuthContextRegistryService
     /**
      * 登録されたコンテキストを取得
      *
-     * @param string $context コンテキスト名
-     * @return array|null
+     * @param  string  $context  コンテキスト名
      */
     public static function get(string $context): ?array
     {
@@ -90,56 +88,54 @@ class AuthContextRegistryService
     /**
      * ルート名を取得
      *
-     * @param string $context コンテキスト名
-     * @param string $routeKey ルートキー（例: 'login', 'dashboard'）
-     * @return string|null
+     * @param  string  $context  コンテキスト名
+     * @param  string  $routeKey  ルートキー（例: 'login', 'dashboard'）
      */
     public static function getRoute(string $context, string $routeKey): ?string
     {
         $config = static::get($context);
+
         return $config['routes'][$routeKey] ?? null;
     }
 
     /**
      * 翻訳プレフィックスを取得
      *
-     * @param string $context コンテキスト名
-     * @return string|null
+     * @param  string  $context  コンテキスト名
      */
     public static function getTranslationPrefix(string $context): ?string
     {
         $config = static::get($context);
+
         return $config['translation_prefix'] ?? null;
     }
 
     /**
      * エンティティタイプを取得
      *
-     * @param string $context コンテキスト名
-     * @return string|null
+     * @param  string  $context  コンテキスト名
      */
     public static function getEntityType(string $context): ?string
     {
         $config = static::get($context);
+
         return $config['entity_type'] ?? null;
     }
 
     /**
      * ガード名を取得
      *
-     * @param string $context コンテキスト名
-     * @return string|null
+     * @param  string  $context  コンテキスト名
      */
     public static function getGuard(string $context): ?string
     {
         $config = static::get($context);
+
         return $config['guard'] ?? null;
     }
 
     /**
      * すべての登録済みコンテキストを取得
-     *
-     * @return array
      */
     public static function all(): array
     {
@@ -152,8 +148,7 @@ class AuthContextRegistryService
     /**
      * コンテキストが登録されているか確認
      *
-     * @param string $context コンテキスト名
-     * @return bool
+     * @param  string  $context  コンテキスト名
      */
     public static function has(string $context): bool
     {
@@ -162,8 +157,6 @@ class AuthContextRegistryService
 
     /**
      * すべてのコンテキストをクリア（テスト用）
-     *
-     * @return void
      */
     public static function clear(): void
     {

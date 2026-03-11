@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,8 @@ namespace App\Traits;
 use Illuminate\Support\Facades\Storage;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * コンテンツファイル管理トレイト
  * ファイルベースのコンテンツ保存に関する共通機能を提供
  * コアとプラグインの両方で使用可能
@@ -61,6 +63,7 @@ trait ManagesContentFiles
     public function setBasePath(string $basePath): self
     {
         $this->basePath = $basePath;
+
         return $this;
     }
 
@@ -70,6 +73,7 @@ trait ManagesContentFiles
     public function setDisk(string $disk): self
     {
         $this->disk = $disk;
+
         return $this;
     }
 
@@ -79,15 +83,16 @@ trait ManagesContentFiles
     public function setDefaultLocale(string $locale): self
     {
         $this->defaultLocale = $locale;
+
         return $this;
     }
 
     /**
      * ファイルからコンテンツを読み込む
      *
-     * @param string $slug スラッグ
-     * @param string $locale 言語コード
-     * @param string $editorType エディタータイプ
+     * @param  string  $slug  スラッグ
+     * @param  string  $locale  言語コード
+     * @param  string  $editorType  エディタータイプ
      * @return string|null ファイルの内容、存在しない場合はnull
      */
     public function loadFromFile(string $slug, string $locale, string $editorType): ?string
@@ -104,10 +109,10 @@ trait ManagesContentFiles
     /**
      * コンテンツをファイルに保存する
      *
-     * @param string $slug スラッグ
-     * @param string $locale 言語コード
-     * @param string $editorType エディタータイプ
-     * @param string $content コンテンツ
+     * @param  string  $slug  スラッグ
+     * @param  string  $locale  言語コード
+     * @param  string  $editorType  エディタータイプ
+     * @param  string  $content  コンテンツ
      * @return bool 保存成功時はtrue
      */
     public function saveToFile(string $slug, string $locale, string $editorType, string $content): bool
@@ -116,7 +121,7 @@ trait ManagesContentFiles
 
         // ディレクトリが存在しない場合は作成
         $directory = dirname($filePath);
-        if (!Storage::disk($this->disk)->exists($directory)) {
+        if (! Storage::disk($this->disk)->exists($directory)) {
             Storage::disk($this->disk)->makeDirectory($directory);
         }
 
@@ -126,9 +131,9 @@ trait ManagesContentFiles
     /**
      * ファイルを削除する
      *
-     * @param string $slug スラッグ
-     * @param string $locale 言語コード
-     * @param string $editorType エディタータイプ
+     * @param  string  $slug  スラッグ
+     * @param  string  $locale  言語コード
+     * @param  string  $editorType  エディタータイプ
      * @return bool 削除成功時はtrue
      */
     public function deleteFile(string $slug, string $locale, string $editorType): bool
@@ -145,29 +150,30 @@ trait ManagesContentFiles
     /**
      * 全言語のファイルを削除する
      *
-     * @param string $slug スラッグ
-     * @param string $editorType エディタータイプ
-     * @param array $locales 言語コードの配列
+     * @param  string  $slug  スラッグ
+     * @param  string  $editorType  エディタータイプ
+     * @param  array  $locales  言語コードの配列
      * @return bool すべて削除成功時はtrue
      */
     public function deleteAllFiles(string $slug, string $editorType, array $locales): bool
     {
         $success = true;
         foreach ($locales as $locale) {
-            if (!$this->deleteFile($slug, $locale, $editorType)) {
+            if (! $this->deleteFile($slug, $locale, $editorType)) {
                 $success = false;
             }
         }
+
         return $success;
     }
 
     /**
      * スラッグ変更時にディレクトリをリネームする
      *
-     * @param string $oldSlug 旧スラッグ
-     * @param string $newSlug 新スラッグ
-     * @param string $editorType エディタータイプ（未使用、互換性のため残す）
-     * @param array $locales 言語コードの配列（未使用、互換性のため残す）
+     * @param  string  $oldSlug  旧スラッグ
+     * @param  string  $newSlug  新スラッグ
+     * @param  string  $editorType  エディタータイプ（未使用、互換性のため残す）
+     * @param  array  $locales  言語コードの配列（未使用、互換性のため残す）
      * @return bool リネーム成功時はtrue
      */
     public function renameFiles(string $oldSlug, string $newSlug, string $editorType, array $locales): bool
@@ -179,24 +185,24 @@ trait ManagesContentFiles
         if (Storage::disk($this->disk)->exists($oldDir)) {
             return Storage::disk($this->disk)->move($oldDir, $newDir);
         }
-        
+
         return true;
     }
 
     /**
      * スラッグのディレクトリを削除する
      *
-     * @param string $slug スラッグ
+     * @param  string  $slug  スラッグ
      * @return bool 削除成功時はtrue
      */
     public function deleteDirectory(string $slug): bool
     {
         $directory = "{$this->basePath}/{$slug}";
-        
+
         if (Storage::disk($this->disk)->exists($directory)) {
             return Storage::disk($this->disk)->deleteDirectory($directory);
         }
-        
+
         return true;
     }
 
@@ -205,61 +211,63 @@ trait ManagesContentFiles
      * 構造: {basePath}/{slug}/content.{locale}.{extension}
      * デフォルト言語はファイル名に言語コードを付けない
      *
-     * @param string $slug スラッグ
-     * @param string $locale 言語コード
-     * @param string $editorType エディタータイプ
+     * @param  string  $slug  スラッグ
+     * @param  string  $locale  言語コード
+     * @param  string  $editorType  エディタータイプ
      * @return string ファイルパス
      */
     public function getFilePath(string $slug, string $locale, string $editorType): string
     {
         $extension = $this->extensions[$editorType] ?? 'txt';
-        
+
         // デフォルト言語はファイル名に言語コードを付けない
         if ($locale === $this->defaultLocale) {
             return "{$this->basePath}/{$slug}/content.{$extension}";
         }
-        
+
         return "{$this->basePath}/{$slug}/content.{$locale}.{$extension}";
     }
 
     /**
      * ファイルの絶対パスを取得する
      *
-     * @param string $slug スラッグ
-     * @param string $locale 言語コード
-     * @param string $editorType エディタータイプ
+     * @param  string  $slug  スラッグ
+     * @param  string  $locale  言語コード
+     * @param  string  $editorType  エディタータイプ
      * @return string 絶対ファイルパス
      */
     public function getAbsoluteFilePath(string $slug, string $locale, string $editorType): string
     {
         $relativePath = $this->getFilePath($slug, $locale, $editorType);
+
         return Storage::disk($this->disk)->path($relativePath);
     }
 
     /**
      * ファイルが存在するか確認する
      *
-     * @param string $slug スラッグ
-     * @param string $locale 言語コード
-     * @param string $editorType エディタータイプ
+     * @param  string  $slug  スラッグ
+     * @param  string  $locale  言語コード
+     * @param  string  $editorType  エディタータイプ
      * @return bool ファイルが存在する場合はtrue
      */
     public function fileExists(string $slug, string $locale, string $editorType): bool
     {
         $filePath = $this->getFilePath($slug, $locale, $editorType);
+
         return Storage::disk($this->disk)->exists($filePath);
     }
 
     /**
      * 拡張子を追加または上書き
      *
-     * @param string $editorType エディタータイプ
-     * @param string $extension 拡張子
-     * @return self
+     * @param  string  $editorType  エディタータイプ
+     * @param  string  $extension  拡張子
      */
     public function addExtension(string $editorType, string $extension): self
     {
         $this->extensions[$editorType] = $extension;
+
         return $this;
     }
 

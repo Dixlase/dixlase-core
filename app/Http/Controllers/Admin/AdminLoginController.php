@@ -1,19 +1,40 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\LoginIdentifierMode;
 use App\Models\Member;
 use App\Repositories\BaseSettingRepository;
 
 /**
  * 管理画面のログインコントローラー
- * 
+ *
  * ログイン処理と認証関連の設定を提供します。
  */
 class AdminLoginController extends AdminController
 {
-    use \App\Traits\LoginTrait;
     use \App\Traits\AccountVerificationTrait;
+    use \App\Traits\LoginTrait;
 
     protected BaseSettingRepository $baseSettingRepository;
 
@@ -160,11 +181,29 @@ class AdminLoginController extends AdminController
     }
 
     /**
+     * ログイン識別子モードを取得
+     */
+    protected function getLoginIdentifierMode(): LoginIdentifierMode
+    {
+        $value = (int) \App\Models\SecuritySetting::getValue('login_identifier_mode', LoginIdentifierMode::EmailOrAccountName->value);
+
+        return LoginIdentifierMode::tryFrom($value) ?? LoginIdentifierMode::EmailOrAccountName;
+    }
+
+    /**
      * アカウント名でのログインをサポートするかどうか
      */
     protected function supportsAccountNameLogin(): bool
     {
-        return true;
+        return $this->getLoginIdentifierMode()->supportsAccountName();
+    }
+
+    /**
+     * メールアドレスでのログインをサポートするかどうか
+     */
+    protected function supportsEmailLogin(): bool
+    {
+        return $this->getLoginIdentifierMode()->supportsEmail();
     }
 
     /**

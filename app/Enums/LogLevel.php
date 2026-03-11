@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -13,7 +13,8 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
@@ -21,6 +22,11 @@
 
 namespace App\Enums;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * ログレベル定義
+ */
 enum LogLevel: int
 {
     case Emergency = 8;
@@ -89,7 +95,7 @@ enum LogLevel: int
      */
     public static function getAllLevels(): array
     {
-        return array_map(fn($case) => $case->value, self::cases());
+        return array_map(fn ($case) => $case->value, self::cases());
     }
 
     /**
@@ -97,7 +103,7 @@ enum LogLevel: int
      */
     public static function getAllLevelStrings(): array
     {
-        return array_map(fn($case) => $case->toString(), self::cases());
+        return array_map(fn ($case) => $case->toString(), self::cases());
     }
 
     /**
@@ -178,10 +184,11 @@ enum LogLevel: int
     public static function getLevelStringsForGroup(string $group): array
     {
         $groups = self::getFilterGroups();
-        if (!isset($groups[$group])) {
+        if (! isset($groups[$group])) {
             return [];
         }
-        return array_map(fn($level) => $level->toString(), $groups[$group]);
+
+        return array_map(fn ($level) => $level->toString(), $groups[$group]);
     }
 
     /**
@@ -190,6 +197,7 @@ enum LogLevel: int
     public static function levelBelongsToGroup(string $levelString, string $group): bool
     {
         $levelStrings = self::getLevelStringsForGroup($group);
+
         return in_array(strtolower($levelString), $levelStrings);
     }
 }

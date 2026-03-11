@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,8 +23,10 @@
 namespace App\Contracts\Repositories;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * メディア設定リポジトリインターフェース
- * 
+ *
  * メディア関連の設定（許可ファイルタイプ、最大サイズなど）を管理します。
  * 配列値は自動的にJSON形式で保存されます。
  */

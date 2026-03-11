@@ -31,7 +31,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // セッション開始後に実行するミドルウェア
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\CheckMaintenanceMode::class, // メンテナンスモードチェック（認証状態を参照するためセッション後に実行）
-            \App\Http\Middleware\CspSafeMode::class, // CSPセーフモード検出（認証後に実行）
+            \App\Http\Middleware\SafeMode::class, // セーフモード検出（認証後に実行、CSP/プラグイン/テーマ対応）
+            \App\Http\Middleware\BlockPluginRoutes::class, // プラグインセーフモード時のルートブロック
             \App\Http\Middleware\SetLocale::class, // フロントページ言語設定（管理メンバー優先）
             \App\Http\Middleware\SetMemberLocale::class, // 管理メンバー個別言語設定（管理画面用）
         ]);
@@ -46,6 +47,26 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.menu.access' => \App\Http\Middleware\CheckMenuAccess::class, // 管理画面メニューアクセス権限
             'check.menu.edit' => \App\Http\Middleware\CheckMenuEdit::class, // 管理画面メニュー編集権限
             'install.steps' => \App\Http\Middleware\CheckInstallationSteps::class, // インストールステップチェック
+            'auth.api' => \App\Http\Middleware\AuthenticateApiKey::class, // APIキー認証
+            'throttle.api' => \App\Http\Middleware\ThrottleApiRequest::class, // APIレートリミット
+            'log.api' => \App\Http\Middleware\LogApiRequest::class, // APIリクエストログ
+        ]);
+
+        // プラグインAPI用（APIキー認証 + レートリミット + ログ）
+        $middleware->group('plugin.api', [
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\CheckLockdown::class,
+            \App\Http\Middleware\AuthenticateApiKey::class,
+            \App\Http\Middleware\ThrottleApiRequest::class,
+            \App\Http\Middleware\LogApiRequest::class,
+        ]);
+
+        // プラグインAPI公開用（認証不要、レートリミット + ログのみ）
+        $middleware->group('plugin.api.public', [
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\CheckLockdown::class,
+            \App\Http\Middleware\ThrottleApiRequest::class,
+            \App\Http\Middleware\LogApiRequest::class,
         ]);
 
         // プラグイン用ミドルウェアグループ（基本）

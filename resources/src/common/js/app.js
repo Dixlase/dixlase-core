@@ -39,6 +39,7 @@ import '../../components/two-fa/js/recovery-code-challenge';
 import '../../components/two-fa/js/passkey-result';
 import '../../components/two-fa/js/recovery-codes';
 import '../../components/two-fa/js/passkey-prompt';
+import '../../admin/two-fa/js/passkey-prompt-modal';
 import '../../components/two-fa/js/two-fa-profile-settings';
 import '../../components/two-fa/js/webauthn-utils';
 import '../../components/two-fa/js/two-fa-management';
@@ -48,12 +49,18 @@ import '../../components/mail-server/js/test';
 import '../../components/mail-server/js/verification';
 import '../../admin/js/layout';
 import '../../admin/settings/security/js/csp';
-import { createLoginFlow } from '../../admin/js/login-flow';
+import '../../admin/settings/base/js/maintenance';
+import '../../admin/settings/base/js/mode';
+import '../../admin/settings/security/js/captcha';
+import '../../admin/settings/systems/js/api';
+import '../../admin/settings/plugins/js/audit';
+import '../../admin/settings/plugins/js/two-stage-modal';
+import '../../admin/settings/themes/js/audit';
+import '../../admin/js/login-flow';
+import '../../admin/js/front-page-editor';
+import '../../admin/js/dashboard-mode-toggle';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
-
-// Alpine.jsのグローバルスコープに登録（Alpine起動前に実行）
-window.loginFlow = createLoginFlow;
 
 Alpine.plugin(collapse)
 window.Alpine = Alpine;

@@ -28,4 +28,9 @@ return [
     'go_to_admin' => 'Log in to Admin Panel',
     'admin_login_url' => 'Admin Login URL',
     'site_url' => 'Site URL',
+    'admin_url_notice_title' => 'Important: Save Your Admin URL',
+    'admin_url_notice_message' => 'Please bookmark or write down your admin login URL. You will need it to access the admin panel.',
+    'admin_url_random_notice' => 'Your admin URL includes a randomly generated suffix for security. Make sure to save it as you will not be able to recover it easily.',
+    'copy' => 'Copy',
+    'copied' => 'Copied!',
 ];

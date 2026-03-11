@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,9 +22,13 @@
 
 namespace App\Traits;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * 設定ファイルローディングユーティリティ
+ */
 trait ConfigLoaderTrait
 {
-
     /**
      * コンフィグファイルを読み込む
      */
@@ -33,7 +37,7 @@ trait ConfigLoaderTrait
         $configs = [];
 
         if (is_dir($path)) {
-            foreach (glob($path . '/*.php') as $file) {
+            foreach (glob($path.'/*.php') as $file) {
                 $key = basename($file, '.php');
                 $configs[$key] = require $file;
             }
@@ -45,7 +49,6 @@ trait ConfigLoaderTrait
     /**
      * 全体のコンフィグ配列を再帰的に走査し、各配列内で _insert_before / _insert_after を反映する
      */
-
     public function reorderAllConfig(): void
     {
         // 現在の全コンフィグを取得
@@ -74,9 +77,10 @@ trait ConfigLoaderTrait
             }
             $new[$k] = $v;
         }
-        if (!$inserted) {
+        if (! $inserted) {
             $new[$newKey] = $newValue;
         }
+
         return $new;
     }
 
@@ -94,16 +98,17 @@ trait ConfigLoaderTrait
                 $inserted = true;
             }
         }
-        if (!$inserted) {
+        if (! $inserted) {
             $new[$newKey] = $newValue;
         }
+
         return $new;
     }
 
     /**
      * 配列を再帰的に走査し、各配列内で _insert_before / _insert_after の指定に従って並び替える
      *
-     * @param array $config 再配置対象の配列
+     * @param  array  $config  再配置対象の配列
      * @return array 再配置後の配列
      */
     public function reorderConfigArray(array $config): array
@@ -132,6 +137,7 @@ trait ConfigLoaderTrait
                 }
             }
         }
+
         return $reordered;
     }
 }

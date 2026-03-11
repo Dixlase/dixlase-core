@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -13,7 +13,8 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
@@ -22,15 +23,17 @@
 namespace App\Enums;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * プラグイン・テーマの信頼度レベル
- * 
+ *
  * 信頼度は「出どころ・供給経路の確からしさ」を表します。
  * 署名鍵の発行元、配布経路、作者の認証などを評価します。
- * 
+ *
  * Health（健全性）との違い:
  * - Trust: 「誰から来たか」
  * - Health: 「中身が今どうか」
- * 
+ *
  * 例:
  * - Trust: Official / Health: NeedsAttention → 公式でも改ざん疑い
  * - Trust: Local / Health: Healthy → 自作でも整合性OK
@@ -67,7 +70,7 @@ enum PluginTrustLevel: string
      */
     public function translationKey(): string
     {
-        return 'admin/settings/plugins.trust_level.' . $this->value;
+        return 'admin/settings/plugins.trust_level.'.$this->value;
     }
 
     /**
@@ -83,7 +86,7 @@ enum PluginTrustLevel: string
      */
     public function description(): string
     {
-        return __($this->translationKey() . '_description');
+        return __($this->translationKey().'_description');
     }
 
     /**
@@ -126,6 +129,26 @@ enum PluginTrustLevel: string
             self::Community => 'gray',
             self::Local => 'gray',
         };
+    }
+
+    /**
+     * 署名検証結果から信頼度を判定
+     *
+     * 署名が有効でなければ信頼度を降格する:
+     * - unsigned/pending_verification → Local
+     * - invalid/expired/error → Community
+     * - valid → fromSignatureType() で正しい Trust Level を算出
+     */
+    public static function fromSignatureVerification(?string $signatureType, string $signatureStatus): self
+    {
+        if ($signatureStatus !== 'valid') {
+            return match ($signatureStatus) {
+                'unsigned', 'pending_verification' => self::Local,
+                default => self::Community, // invalid, expired, error, unknown_key
+            };
+        }
+
+        return self::fromSignatureType($signatureType);
     }
 
     /**
@@ -180,6 +203,6 @@ enum PluginTrustLevel: string
      */
     public static function productionRecommended(): array
     {
-        return array_filter(self::cases(), fn($level) => $level->isProductionRecommended());
+        return array_filter(self::cases(), fn ($level) => $level->isProductionRecommended());
     }
 }

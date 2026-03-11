@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,13 +25,15 @@ namespace App\Services;
 use App\Enums\OperationRiskLevel;
 use App\Models\AuditLog;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * 監査ログサービス
- * 
+ *
  * 統一APIを提供し、プラグインからも利用可能
  */
 class AuditService
@@ -45,6 +47,7 @@ class AuditService
      * 現在のプラグインコンテキスト
      */
     protected ?string $currentPlugin = null;
+
     protected ?string $currentPluginVersion = null;
 
     /**
@@ -64,18 +67,18 @@ class AuditService
     {
         try {
             // リクエストIDを自動設定
-            if (!isset($data['request_id'])) {
+            if (! isset($data['request_id'])) {
                 $data['request_id'] = $this->getRequestId();
             }
 
             // プラグインコンテキストを自動設定
-            if (!isset($data['plugin_name']) && $this->currentPlugin) {
+            if (! isset($data['plugin_name']) && $this->currentPlugin) {
                 $data['plugin_name'] = $this->currentPlugin;
                 $data['plugin_version'] = $this->currentPluginVersion;
             }
 
             // なりすましIDを自動設定
-            if (!isset($data['impersonated_by_id']) && $this->impersonatedById) {
+            if (! isset($data['impersonated_by_id']) && $this->impersonatedById) {
                 $data['impersonated_by_id'] = $this->impersonatedById;
             }
 
@@ -98,6 +101,7 @@ class AuditService
                 'error' => $e->getMessage(),
                 'data' => $data,
             ]);
+
             return null;
         }
     }
@@ -111,9 +115,9 @@ class AuditService
             // actorの情報を取得
             $actorInfo = 'system';
             if (isset($data['actor']) && $data['actor'] instanceof Model) {
-                $actorInfo = class_basename($data['actor']) . ':' . $data['actor']->getKey();
+                $actorInfo = class_basename($data['actor']).':'.$data['actor']->getKey();
                 if ($data['actor']->name ?? $data['actor']->email ?? null) {
-                    $actorInfo .= '(' . ($data['actor']->name ?? $data['actor']->email) . ')';
+                    $actorInfo .= '('.($data['actor']->name ?? $data['actor']->email).')';
                 }
             } elseif ($auditLog && $auditLog->actor_name) {
                 $actorInfo = $auditLog->actor_name;
@@ -122,7 +126,7 @@ class AuditService
             // targetの情報を取得
             $targetInfo = null;
             if (isset($data['target']) && $data['target'] instanceof Model) {
-                $targetInfo = class_basename($data['target']) . ':' . $data['target']->getKey();
+                $targetInfo = class_basename($data['target']).':'.$data['target']->getKey();
             } elseif ($auditLog && $auditLog->target_label) {
                 $targetInfo = $auditLog->target_label;
             }
@@ -150,7 +154,7 @@ class AuditService
             Log::channel('audit')->info(json_encode($logData, JSON_UNESCAPED_UNICODE));
         } catch (\Throwable $e) {
             // ファイル出力失敗は無視（DBには記録済み）
-            Log::warning('Audit file log failed: ' . $e->getMessage());
+            Log::warning('Audit file log failed: '.$e->getMessage());
         }
     }
 
@@ -245,6 +249,7 @@ class AuditService
         if ($this->requestId === null) {
             $this->requestId = request()->header('X-Request-ID') ?? (string) Str::uuid();
         }
+
         return $this->requestId;
     }
 
@@ -254,6 +259,7 @@ class AuditService
     public function setRequestId(string $requestId): self
     {
         $this->requestId = $requestId;
+
         return $this;
     }
 
@@ -264,6 +270,7 @@ class AuditService
     {
         $this->currentPlugin = $pluginName;
         $this->currentPluginVersion = $version;
+
         return $this;
     }
 
@@ -274,6 +281,7 @@ class AuditService
     {
         $this->currentPlugin = null;
         $this->currentPluginVersion = null;
+
         return $this;
     }
 
@@ -283,6 +291,7 @@ class AuditService
     public function setImpersonatedBy(?int $memberId): self
     {
         $this->impersonatedById = $memberId;
+
         return $this;
     }
 
@@ -292,6 +301,7 @@ class AuditService
     public function enableFileLogging(): self
     {
         $this->fileLoggingEnabled = true;
+
         return $this;
     }
 
@@ -301,6 +311,7 @@ class AuditService
     public function disableFileLogging(): self
     {
         $this->fileLoggingEnabled = false;
+
         return $this;
     }
 
@@ -472,13 +483,13 @@ class AuditService
 
     /**
      * 危険な操作をログ（High/Criticalレベル）
-     * 
+     *
      * β版で強制再認証を実装する際の基盤
      */
     public function logDangerousOperation(string $action, array $data = []): ?AuditLog
     {
         $riskLevel = AuditLog::getRiskLevelForAction($action);
-        
+
         // contextにリスクレベル情報を追加
         $context = $data['context'] ?? [];
         $context['risk_level'] = $riskLevel->toString();
@@ -487,9 +498,9 @@ class AuditService
         $data['context'] = $context;
 
         // 危険な操作は警告レベル以上で記録
-        if ($riskLevel->isDangerous() && !isset($data['severity'])) {
-            $data['severity'] = $riskLevel->isCritical() 
-                ? AuditLog::SEVERITY_CRITICAL 
+        if ($riskLevel->isDangerous() && ! isset($data['severity'])) {
+            $data['severity'] = $riskLevel->isCritical()
+                ? AuditLog::SEVERITY_CRITICAL
                 : AuditLog::SEVERITY_WARNING;
         }
 
@@ -504,6 +515,7 @@ class AuditService
     public function logCriticalOperation(string $action, array $data = []): ?AuditLog
     {
         $data['severity'] = $data['severity'] ?? AuditLog::SEVERITY_CRITICAL;
+
         return $this->logDangerousOperation($action, $data);
     }
 
@@ -589,7 +601,7 @@ class AuditService
 
         foreach ($logs as $log) {
             $riskLevel = $log->getRiskLevel();
-            
+
             // リスクレベル別
             if ($riskLevel->isCritical()) {
                 $stats['by_risk_level']['critical']++;

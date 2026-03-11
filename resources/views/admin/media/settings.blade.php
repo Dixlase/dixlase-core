@@ -47,26 +47,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('admin/media/settings.allowed_file_types') }}</h2>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                 @foreach($fileExtensions as $extension)
-                    @php
-                        $warningIcon = '';
-                        $warningTitle = '';
-                        if ($extension === 'svg') {
-                            $warningIcon = 'fas fa-exclamation-triangle text-yellow-500';
-                            $warningTitle = __('admin/media/settings.svg_warning');
-                        } elseif ($extension === 'zip') {
-                            $warningIcon = 'fas fa-file-archive text-orange-500';
-                            $warningTitle = __('admin/media/settings.zip_warning');
-                        } elseif ($extension === 'pdf') {
-                            $warningIcon = 'fas fa-file-pdf text-red-400';
-                            $warningTitle = __('admin/media/settings.pdf_warning');
-                        } elseif ($extension === 'docx') {
-                            $warningIcon = 'fas fa-file-word text-blue-400';
-                            $warningTitle = __('admin/media/settings.docx_warning');
-                        } elseif ($extension === 'tex') {
-                            $warningIcon = 'fas fa-file-alt text-gray-400';
-                            $warningTitle = __('admin/media/settings.tex_warning');
-                        }
-                    @endphp
                     <div class="flex items-center justify-start bg-gray-100 dark:bg-gray-700 p-3 rounded-lg shadow-sm">
                         <label for="file-type-{{ $extension }}" class="flex items-center cursor-pointer w-full">
                             <div class="relative inline-flex items-center flex-shrink-0">
@@ -85,8 +65,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <span class="ml-3 text-sm text-gray-800 dark:text-gray-200">
                                 {{ $fileExtensionNames[$extension] ?? strtoupper($extension) }}(.{{ $extension }})
                             </span>
-                            @if($warningIcon)
-                                <i class="{{ $warningIcon }} text-sm ml-1" title="{{ $warningTitle }}"></i>
+                            @if(isset($fileExtensionWarnings[$extension]))
+                                <i class="{{ $fileExtensionWarnings[$extension]['icon'] }} text-sm ml-1" title="{{ $fileExtensionWarnings[$extension]['title'] }}"></i>
                             @endif
                         </label>
                     </div>

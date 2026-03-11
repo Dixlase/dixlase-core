@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * プラグイン権限ファサード
- * 
+ *
  * @method static bool check(string $pluginSlug, string $permission)
  * @method static bool has(string $pluginSlug, string $permission)
  * @method static array|null getPermissions(string $pluginSlug)
@@ -36,15 +36,13 @@ use Illuminate\Support\Facades\Facade;
  * @method static void clearCache(?string $pluginSlug = null)
  * @method static void logViolation(string $pluginSlug, string $permission, string $action = '')
  * @method static void enforce(string $pluginSlug, string $permission, string $action = '')
- * 
+ *
  * @see \App\Services\Plugin\PluginPermissionService
  */
 class PluginPermission extends Facade
 {
     /**
      * Get the registered name of the component.
-     *
-     * @return string
      */
     protected static function getFacadeAccessor(): string
     {

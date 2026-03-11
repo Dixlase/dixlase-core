@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,11 +23,12 @@
 namespace App\Http\Requests\Admin\Front;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class AdminFrontEditUpdateRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * リクエストの認可判定
      */
     public function authorize(): bool
     {
@@ -35,17 +36,33 @@ class AdminFrontEditUpdateRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * バリデーションルール
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'storage_type' => 'required|in:database,file',
-            'editor_type' => 'required|in:gui,markdown,html,blade',
-            'title' => 'nullable|string|max:255',
-            'content' => 'nullable|string',
+            'storage_type' => ['required', 'string', Rule::in(['database', 'file'])],
+            'content' => ['nullable', 'string', 'max:500000'],
+            'custom_js' => ['nullable', 'string', 'max:500000'],
+            'custom_css' => ['nullable', 'string', 'max:500000'],
+        ];
+    }
+
+    /**
+     * バリデーションエラーメッセージ
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'storage_type.required' => __('admin/front.edit.validation.storage_type_required'),
+            'storage_type.in' => __('admin/front.edit.validation.storage_type_in'),
+            'content.max' => __('admin/front.edit.validation.content_max'),
+            'custom_js.max' => __('admin/front.edit.validation.custom_js_max'),
+            'custom_css.max' => __('admin/front.edit.validation.custom_css_max'),
         ];
     }
 }

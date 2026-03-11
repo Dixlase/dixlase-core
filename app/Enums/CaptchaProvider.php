@@ -3,8 +3,8 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -22,12 +22,16 @@
 
 namespace App\Enums;
 
+/**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
+ * CAPTCHAプロバイダー定義
+ */
 enum CaptchaProvider: string
 {
     case TURNSTILE = 'turnstile';
     case GOOGLE = 'google';
     case GOOGLE_ENTERPRISE = 'google_enterprise';
-
 
     public function label(): string
     {
@@ -49,8 +53,8 @@ enum CaptchaProvider: string
 
     public static function options(): array
     {
-        return collect(self::cases())->mapWithKeys(fn($provider) => [
-            $provider->value => $provider->label()
+        return collect(self::cases())->mapWithKeys(fn ($provider) => [
+            $provider->value => $provider->label(),
         ])->toArray();
     }
 
@@ -70,7 +74,6 @@ enum CaptchaProvider: string
             self::TURNSTILE => 'https://dash.cloudflare.com/?to=/:account/turnstile',
             self::GOOGLE => 'https://www.google.com/recaptcha/admin/create',
             self::GOOGLE_ENTERPRISE => 'https://cloud.google.com/recaptcha-enterprise/docs/create-key',
-
         };
     }
 }

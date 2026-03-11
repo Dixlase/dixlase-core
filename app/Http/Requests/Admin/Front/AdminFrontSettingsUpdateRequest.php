@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class AdminFrontSettingsUpdateRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * リクエストの認可判定
      */
     public function authorize(): bool
     {
@@ -35,15 +35,12 @@ class AdminFrontSettingsUpdateRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * バリデーションルール
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
-        return [
-            'front_ogp_image_id' => 'nullable|exists:media,id',
-            'front_description' => 'nullable|string|max:1000',
-        ];
+        return [];
     }
 }

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,9 +28,9 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * Webhook配信ログテーブル
-     * 
+     *
      * 目的：
      * - Webhook配信の履歴・状態管理
      * - リトライ制御
@@ -41,13 +41,13 @@ return new class extends Migration
     {
         Schema::create('webhook_deliveries', function (Blueprint $table) {
             $table->id();
-            
+
             // 冪等性のためのイベントID（UUID）
             $table->uuid('event_id')->nullable();
-            
+
             // リプレイ防止のためのnonce
             $table->string('nonce', 64)->nullable();
-            
+
             $table->unsignedBigInteger('webhook_id');
             $table->string('event', 100);
             $table->json('payload');
@@ -58,12 +58,12 @@ return new class extends Migration
             $table->unsignedTinyInteger('attempt')->default(1);
             $table->unsignedTinyInteger('max_attempts')->default(3);
             $table->text('error_message')->nullable();
-            
+
             // デッドレター関連
             $table->boolean('is_dead_letter')->default(false);
             $table->timestamp('dead_letter_at')->nullable();
             $table->boolean('dead_letter_notified')->default(false);
-            
+
             $table->timestamp('next_retry_at')->nullable();
             $table->timestamp('delivered_at')->nullable();
             $table->timestamps();

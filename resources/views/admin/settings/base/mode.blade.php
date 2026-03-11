@@ -40,7 +40,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'description' => __('admin/settings/base/mode.simple_mode_description'),
                     'icon' => 'fas fa-magic',
                     'color' => 'green',
-                    'badge' => __('admin/settings/base/mode.recommended'),
                     'badgeColor' => 'green',
                     'features' => [
                         __('admin/settings/base/mode.simple_feature_auto'),
@@ -143,61 +142,53 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     confirmColor="yellow"
     :dismissible="true"
 >
-    <div class="text-center mb-4">
-        <div class="flex items-center justify-center w-16 h-16 mx-auto rounded-full bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-400">
-            <i class="fas fa-exclamation-triangle text-3xl"></i>
-        </div>
-    </div>
-    <div class="modal-body">
-        <h2 class="modal-title">{{ __('admin/settings/base/mode.switch_modal_title') }}</h2>
-        <div class="modal-message text-left">
-            {{-- かんたんモードへの切替 --}}
-            <template x-if="pendingMode === '0'">
-                <div>
-                    <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">{{ __('admin/settings/base/mode.switch_to_simple_warning') }}</p>
-                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        <li class="flex items-start gap-2">
-                            <i class="fas fa-exclamation-circle text-yellow-500 mt-0.5"></i>
-                            {{ __('admin/settings/base/mode.switch_to_simple_warn_1') }}
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i class="fas fa-eye-slash text-yellow-500 mt-0.5"></i>
-                            {{ __('admin/settings/base/mode.switch_to_simple_warn_2') }}
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i class="fas fa-magic text-yellow-500 mt-0.5"></i>
-                            {{ __('admin/settings/base/mode.switch_to_simple_warn_3') }}
-                        </li>
-                    </ul>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
-                        <i class="fas fa-info-circle mr-1"></i>{{ __('admin/settings/base/mode.switch_to_simple_note') }}
-                    </p>
-                </div>
-            </template>
-            {{-- 詳細モードへの切替 --}}
-            <template x-if="pendingMode === '1'">
-                <div>
-                    <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">{{ __('admin/settings/base/mode.switch_to_advanced_warning') }}</p>
-                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        <li class="flex items-start gap-2">
-                            <i class="fas fa-eye text-yellow-500 mt-0.5"></i>
-                            {{ __('admin/settings/base/mode.switch_to_advanced_warn_1') }}
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i class="fas fa-eraser text-yellow-500 mt-0.5"></i>
-                            {{ __('admin/settings/base/mode.switch_to_advanced_warn_2') }}
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i class="fas fa-wrench text-yellow-500 mt-0.5"></i>
-                            {{ __('admin/settings/base/mode.switch_to_advanced_warn_3') }}
-                        </li>
-                    </ul>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
-                        <i class="fas fa-info-circle mr-1"></i>{{ __('admin/settings/base/mode.switch_to_advanced_note') }}
-                    </p>
-                </div>
-            </template>
-        </div>
+    <div class="modal-message text-left">
+        {{-- かんたんモードへの切替 --}}
+        <template x-if="pendingMode === '0'">
+            <div>
+                <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">{{ __('admin/settings/base/mode.switch_to_simple_warning') }}</p>
+                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    <li class="flex items-start gap-2">
+                        <i class="fas fa-exclamation-circle text-yellow-500 mt-0.5"></i>
+                        {{ __('admin/settings/base/mode.switch_to_simple_warn_1') }}
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i class="fas fa-eye-slash text-yellow-500 mt-0.5"></i>
+                        {{ __('admin/settings/base/mode.switch_to_simple_warn_2') }}
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i class="fas fa-magic text-yellow-500 mt-0.5"></i>
+                        {{ __('admin/settings/base/mode.switch_to_simple_warn_3') }}
+                    </li>
+                </ul>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <i class="fas fa-info-circle mr-1"></i>{{ __('admin/settings/base/mode.switch_to_simple_note') }}
+                </p>
+            </div>
+        </template>
+        {{-- 詳細モードへの切替 --}}
+        <template x-if="pendingMode === '1'">
+            <div>
+                <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">{{ __('admin/settings/base/mode.switch_to_advanced_warning') }}</p>
+                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    <li class="flex items-start gap-2">
+                        <i class="fas fa-eye text-yellow-500 mt-0.5"></i>
+                        {{ __('admin/settings/base/mode.switch_to_advanced_warn_1') }}
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i class="fas fa-eraser text-yellow-500 mt-0.5"></i>
+                        {{ __('admin/settings/base/mode.switch_to_advanced_warn_2') }}
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i class="fas fa-wrench text-yellow-500 mt-0.5"></i>
+                        {{ __('admin/settings/base/mode.switch_to_advanced_warn_3') }}
+                    </li>
+                </ul>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <i class="fas fa-info-circle mr-1"></i>{{ __('admin/settings/base/mode.switch_to_advanced_note') }}
+                </p>
+            </div>
+        </template>
     </div>
     <x-slot name="footer">
         <x-form-button
@@ -233,67 +224,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @push('scripts')
-<script @cspNonce>
-function adminModeSettings() {
-    const original = '{{ $currentMode->value }}';
-
-    return {
-        selectedMode: original,
-        originalMode: original,
-        pendingMode: null,
-        _skipWatch: false,
-
-        init() {
-            this.$watch('selectedMode', (newVal, oldVal) => {
-                if (this._skipWatch) {
-                    this._skipWatch = false;
-                    return;
-                }
-                // モードが変わった場合のみモーダルを表示
-                if (newVal !== this.originalMode) {
-                    this.pendingMode = newVal;
-                    // 一旦元に戻してモーダルで確認
-                    this._skipWatch = true;
-                    this.selectedMode = this.originalMode;
-                    this.$nextTick(() => {
-                        this.openSwitchModal();
-                    });
-                }
-            });
-        },
-
-        openSwitchModal() {
-            const modal = document.getElementById('modeSwitchModal');
-            if (modal) {
-                const alpineData = Alpine.$data(modal);
-                if (alpineData) {
-                    alpineData.show = true;
-                }
-            }
-        },
-
-        closeSwitchModal() {
-            const modal = document.getElementById('modeSwitchModal');
-            if (modal) {
-                const alpineData = Alpine.$data(modal);
-                if (alpineData) {
-                    alpineData.show = false;
-                }
-            }
-        },
-
-        confirmSwitch() {
-            this._skipWatch = true;
-            this.selectedMode = this.pendingMode;
-            this.pendingMode = null;
-            this.closeSwitchModal();
-        },
-
-        cancelSwitch() {
-            this.pendingMode = null;
-            this.closeSwitchModal();
-        }
-    };
-}
-</script>
+<div id="mode-settings"
+     data-current-mode="{{ $currentMode->value }}"
+     style="display:none;"></div>
 @endpush

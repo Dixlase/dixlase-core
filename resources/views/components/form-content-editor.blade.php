@@ -34,8 +34,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 use App\Enums\ContentStorageType;
 use App\Enums\ContentEditorType;
 
-$storageTypeEnum = is_string($storageType) ? ContentStorageType::from($storageType) : $storageType;
-$editorTypeEnum = is_string($editorType) ? ContentEditorType::from($editorType) : $editorType;
+$storageTypeEnum = is_string($storageType) ? ContentStorageType::fromSlug($storageType) : $storageType;
+$editorTypeEnum = is_string($editorType) ? ContentEditorType::fromSlug($editorType) : $editorType;
 @endphp
 
 @php
@@ -53,8 +53,8 @@ $editorTranslations = [
 
 <div data-translations='@json($editorTranslations)'
      x-data="{
-    storageType: '{{ $storageTypeEnum->value }}',
-    editorType: '{{ $editorTypeEnum->value }}',
+    storageType: '{{ $storageTypeEnum->slug() }}',
+    editorType: '{{ $editorTypeEnum->slug() }}',
     content: @js($content),
     identifier: @js($identifier),
     
@@ -93,7 +93,7 @@ $editorTranslations = [
     {{-- 保存方法選択 --}}
     @if($showStorageSelector)
     <div class="mb-4">
-        @include('components::form.label', [
+        @include('components::form-label', [
             'for' => $storageFieldName,
             'text' => __('common.content_storage.label'),
         ])
@@ -113,7 +113,7 @@ $editorTranslations = [
         <x-form-radio-card-group
             :name="$storageFieldName"
             :options="$storageOptions"
-            :value="$storageTypeEnum->value"
+            :value="$storageTypeEnum->slug()"
             xModel="storageType"
             :columns="2"
             color="blue"
@@ -128,7 +128,7 @@ $editorTranslations = [
     {{-- エディタータイプ選択 --}}
     @if($showEditorSelector)
     <div class="mb-4">
-        @include('components::form.label', [
+        @include('components::form-label', [
             'for' => $editorFieldName,
             'text' => __('common.content_editor.label'),
         ])
@@ -234,7 +234,7 @@ $editorTranslations = [
 
     {{-- コンテンツエディタ --}}
     <div class="mb-4">
-        @include('components::form.label', [
+        @include('components::form-label', [
             'for' => $contentFieldName,
             'text' => __('common.content'),
         ])
@@ -257,7 +257,7 @@ $editorTranslations = [
                     <div class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {{ __('common.content_editor.markdown_editor') }}
                     </div>
-                    @include('components::form.textarea', [
+                    @include('components::form-textarea', [
                         'id' => $contentFieldName . '_markdown',
                         'name' => $contentFieldName,
                         'value' => $content,
@@ -277,7 +277,7 @@ $editorTranslations = [
 
         {{-- HTML エディタ --}}
         <div x-show="editorType === 'html'" x-cloak>
-            @include('components::form.textarea', [
+            @include('components::form-textarea', [
                 'id' => $contentFieldName . '_html',
                 'name' => $contentFieldName,
                 'value' => $content,
@@ -288,7 +288,7 @@ $editorTranslations = [
 
         {{-- Blade エディタ --}}
         <div x-show="editorType === 'blade'" x-cloak>
-            @include('components::form.textarea', [
+            @include('components::form-textarea', [
                 'id' => $contentFieldName . '_blade',
                 'name' => $contentFieldName,
                 'value' => $content,

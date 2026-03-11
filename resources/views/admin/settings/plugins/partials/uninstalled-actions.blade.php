@@ -7,44 +7,39 @@ https://exc-d.com
 未インストールプラグインのアクションボタン
 --}}
 
-@php
-    $audit = $plugin['permission_summary']['audit'] ?? [];
-    $hasMismatches = $audit['has_mismatches'] ?? false;
-    $auditedAt = $audit['audited_at'] ?? null;
-    $isNotScanned = empty($auditedAt);
-    $isUnsigned = ($plugin['permission_summary']['signature']['status'] ?? 'unsigned') === 'unsigned';
-    $isUndefined = !($plugin['permission_summary']['has_permissions'] ?? false);
-    $riskLevel = $plugin['permission_summary']['risk_level'] ?? 'unknown';
-    $hasWarnings = $hasMismatches || $isUnsigned || $isUndefined || $isNotScanned || in_array($riskLevel, ['medium', 'high']);
-@endphp
-
 {{-- インストールボタン --}}
-<form action="{{ route('admin.settings.plugins.install') }}" method="POST" class="inline-block" id="installForm-{{ $plugin['directory'] }}">
+<form action="{{ route('admin.settings.plugins.install') }}" method="POST" class="inline-block" id="installForm-{{ $card['directory'] }}">
     @csrf
-    <input type="hidden" name="directory" value="{{ $plugin['directory'] }}">
+    <input type="hidden" name="directory" value="{{ $card['directory'] }}">
     <x-form-button
         type="button"
         :label="__('common.install')"
         variant="success"
         size="xs"
-        class="py-2 px-3"
+        class="py-2 px-3 two-stage-action-btn"
         icon="fas fa-download"
-        @click="openModal('installModal-{{ $plugin['directory'] }}')"
+        data-action-type="install"
+        data-needs-scan="{{ $card['needsScan'] ? '1' : '0' }}"
+        data-plugin-slug="{{ $card['slug'] }}"
+        data-plugin-name="{{ $card['name'] }}"
+        data-form-id="installForm-{{ $card['directory'] }}"
+        data-enable-action="{{ $card['enableAction'] ?? 'allowed' }}"
+        data-health-score="{{ $card['healthScore'] ?? '' }}"
+        data-health-status="{{ $card['healthStatus'] ?? '' }}"
+        data-health-issues="{{ json_encode($card['healthIssues'] ?? []) }}"
     />
 
     <x-ui-modal
-        id="installModal-{{ $plugin['directory'] }}"
-        :title="$hasWarnings ? __('admin/settings/plugins/index.permissions.install_warning_title') : __('admin/settings/plugins/index.install.confirm_title')"
-        :confirm_label="__('common.install')"
-        :cancel_label="__('common.cancel')"
-        form="installForm-{{ $plugin['directory'] }}"
-        :icon_type="$hasWarnings ? 'warning' : 'info'"
-        :confirm_color="$hasWarnings ? 'yellow' : 'green'"
+        id="installModal-{{ $card['directory'] }}"
+        :title="$card['installWarnings']['hasWarnings'] ? __('admin/settings/plugins/index.permissions.install_warning_title') : __('admin/settings/plugins/index.install.confirm_title')"
+        message=""
+        :icon_type="$card['installWarnings']['hasWarnings'] ? 'warning' : 'info'"
+        :confirm_color="$card['installWarnings']['hasWarnings'] ? 'yellow' : 'green'"
     >
-        @if($hasWarnings)
+        @if($card['installWarnings']['hasWarnings'])
             <div class="text-left">
                 <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
-                    {{ str_replace('{name}', $plugin['name'], __('admin/settings/plugins/index.install.confirm_message')) }}
+                    {{ str_replace('{name}', $card['name'], __('admin/settings/plugins/index.install.confirm_message')) }}
                 </p>
                 <div class="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 mb-3">
                     <p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
@@ -52,39 +47,73 @@ https://exc-d.com
                         {{ __('admin/settings/plugins/index.permissions.install_warning_risk') }}
                     </p>
                     <ul class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1 ml-5 list-disc">
-                        @if($isUndefined)
+                        @if($card['installWarnings']['isUndefined'])
                             <li>{{ __('admin/settings/plugins/index.permissions.install_warning_undefined') }}</li>
                         @endif
-                        @if($isUnsigned)
+                        @if($card['installWarnings']['isUnsigned'])
                             <li>{{ __('admin/settings/plugins/index.permissions.install_warning_unsigned') }}</li>
                         @endif
-                        @if($hasMismatches)
+                        @if($card['installWarnings']['hasMismatches'])
                             <li>{{ __('admin/settings/plugins/index.permissions.install_warning_mismatch') }}</li>
                         @endif
-                        @if($isNotScanned)
+                        @if($card['installWarnings']['isNotScanned'])
                             <li>{{ __('admin/settings/plugins/index.permissions.warning_not_scanned') }}</li>
                         @endif
-                        @if(in_array($riskLevel, ['medium', 'high']))
-                            <li>{{ __('admin/settings/plugins/index.permissions.risk_' . $riskLevel) }}</li>
+                        @if(in_array($card['installWarnings']['riskLevel'], ['medium', 'high']))
+                            <li>{{ __('admin/settings/plugins/index.permissions.risk_' . $card['installWarnings']['riskLevel']) }}</li>
                         @endif
                     </ul>
                 </div>
+                @if($card['installWarnings']['isNotScanned'])
+                    <p class="text-sm text-blue-600 dark:text-blue-400 mb-3">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        {{ __('admin/settings/plugins/index.permissions.scan_recommendation') }}
+                    </p>
+                @endif
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                     {{ __('admin/settings/plugins/index.permissions.install_warning_confirm') }}
                 </p>
             </div>
         @else
             <p class="text-sm text-gray-700 dark:text-gray-300">
-                {{ str_replace('{name}', $plugin['name'], __('admin/settings/plugins/index.install.confirm_message')) }}
+                {{ str_replace('{name}', $card['name'], __('admin/settings/plugins/index.install.confirm_message')) }}
             </p>
         @endif
-    </x-modal>
+
+        <x-slot:footer>
+            <x-form-button
+                type="button"
+                :label="__('common.cancel')"
+                variant="secondary"
+                class="mx-2"
+                @click="close()"
+            />
+            @if($card['installWarnings']['isNotScanned'] ?? false)
+                <x-form-button
+                    type="button"
+                    :label="__('admin/settings/plugins/index.permissions.audit_button')"
+                    variant="primary"
+                    icon="fas fa-search"
+                    class="audit-btn mx-2"
+                    data-slug="{{ $card['slug'] }}"
+                    @click="close()"
+                />
+            @endif
+            <x-form-button
+                type="submit"
+                :label="__('common.install')"
+                :variant="$card['installWarnings']['hasWarnings'] ? 'warning' : 'success'"
+                form="installForm-{{ $card['directory'] }}"
+                class="mx-2"
+            />
+        </x-slot:footer>
+    </x-ui-modal>
 </form>
 
 {{-- 削除ボタン --}}
-<form action="{{ route('admin.settings.plugins.delete') }}" method="POST" class="inline-block" id="deleteForm-{{ $plugin['directory'] }}">
+<form action="{{ route('admin.settings.plugins.delete') }}" method="POST" class="inline-block" id="deleteForm-{{ $card['directory'] }}">
     @csrf
-    <input type="hidden" name="directory" value="{{ $plugin['directory'] }}">
+    <input type="hidden" name="directory" value="{{ $card['directory'] }}">
     <x-form-button
         type="button"
         :label="__('common.delete')"
@@ -92,16 +121,16 @@ https://exc-d.com
         size="xs"
         icon="fas fa-trash"
         class="py-2 px-3"
-        @click="openModal('deleteModal-{{ $plugin['directory'] }}')"
+        @click="openModal('deleteModal-{{ $card['directory'] }}')"
     />
 
     <x-ui-modal
-        id="deleteModal-{{ $plugin['directory'] }}"
+        id="deleteModal-{{ $card['directory'] }}"
         :title="__('admin/settings/plugins/index.delete.confirm_title')"
-        :message="str_replace('{name}', $plugin['name'], __('admin/settings/plugins/index.delete.confirm_message'))"
+        :message="str_replace('{name}', $card['name'], __('admin/settings/plugins/index.delete.confirm_message'))"
         :confirm_label="__('common.delete')"
         :cancel_label="__('common.cancel')"
-        form="deleteForm-{{ $plugin['directory'] }}"
+        form="deleteForm-{{ $card['directory'] }}"
         icon_type="danger"
         confirm_color="red"
     />

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,10 +22,10 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use App\Services\PluginMigrator;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Database\ConnectionResolverInterface;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\ServiceProvider;
 
 class PluginMigrationServiceProvider extends ServiceProvider
 {

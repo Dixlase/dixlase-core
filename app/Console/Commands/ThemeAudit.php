@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,17 +22,15 @@
 
 namespace App\Console\Commands;
 
+use App\Services\Plugin\Scanning\PatternRegistry;
+use App\Services\Theme\ThemePermissionService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use App\Services\Theme\ThemePermissionService;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use SplFileInfo;
 
 /**
  * テーマ権限監査コマンド
- * 
+ *
  * テーマのコードを解析し、theme.json で宣言された権限と
  * 実際に使用されている機能を照合します。
  */
@@ -45,111 +43,12 @@ class ThemeAudit extends Command
 
     protected $description = 'Audit theme code and compare with declared permissions in theme.json';
 
-    /**
-     * 検出パターン定義
-     */
-    protected array $detectionPatterns = [
-        'database.own_tables' => [
-            'files' => ['database/migrations/*.php'],
-            'patterns' => [
-                '/Schema::(create|table)\s*\(\s*[\'"](\w+)[\'"]/i',
-            ],
-        ],
-        'database.core_tables' => [
-            'patterns' => [
-                // コアテーブルへのアクセス（モデル経由）
-                '/\\\\App\\\\Models\\\\(User|Member|Plugin|Media|Setting|BaseSetting|SecuritySetting)/i',
-                // 直接テーブル名指定
-                '/DB::table\s*\(\s*[\'"](users|members|plugins|media|settings|base_settings|security_settings)[\'"]\)/i',
-            ],
-        ],
-        'storage.own_directory' => [
-            'patterns' => [
-                '/Storage::(put|get|delete|exists|disk)/i',
-                '/File::(put|get|delete|exists|copy|move)/i',
-            ],
-        ],
-        'storage.public_uploads' => [
-            'patterns' => [
-                '/Storage::disk\s*\(\s*[\'"]public[\'"]\)/i',
-                '/->store\s*\(\s*[\'"]uploads/i',
-                '/public_path\s*\(\s*[\'"]uploads/i',
-            ],
-        ],
-        'storage.temp_files' => [
-            'patterns' => [
-                '/tempnam\s*\(/i',
-                '/sys_get_temp_dir\s*\(/i',
-                '/Storage::disk\s*\(\s*[\'"]temp[\'"]\)/i',
-            ],
-        ],
-        'settings.read_core' => [
-            'patterns' => [
-                '/BaseSetting::(get|find|first|all)/i',
-                '/SecuritySetting::(get|find|first|all)/i',
-                '/config\s*\(\s*[\'"]app\./i',
-                '/config\s*\(\s*[\'"]mail\./i',
-                '/config\s*\(\s*[\'"]database\./i',
-            ],
-        ],
-        'assets.custom_css' => [
-            'files' => ['resources/src/css/*.css', 'resources/src/scss/*.scss', 'resources/assets/css/*.css'],
-            'patterns' => [],
-        ],
-        'assets.custom_js' => [
-            'files' => ['resources/src/js/*.js', 'resources/assets/js/*.js'],
-            'patterns' => [],
-        ],
-        'assets.external_resources' => [
-            'patterns' => [
-                // 外部CDNやリソースの読み込み
-                '/https?:\/\/[^\s\'"]+\.(js|css)/i',
-                '/<script[^>]+src=[\'"]https?:\/\//i',
-                '/<link[^>]+href=[\'"]https?:\/\//i',
-                '/import\s+.*from\s+[\'"]https?:\/\//i',
-            ],
-        ],
-        'system.register_shortcodes' => [
-            'files' => ['app/Shortcodes/*.php'],
-            'patterns' => [
-                '/ThemeHelper::registerShortcode/i',
-                '/app\s*\(\s*[\'"]shortcode[\'"]\s*\)/i',
-            ],
-        ],
-        'system.register_middleware' => [
-            'patterns' => [
-                '/\$this->app\[.*Router.*\]->pushMiddleware/i',
-                '/Route::middleware/i',
-                '/->middleware\s*\(/i',
-            ],
-            'files' => ['app/Http/Middleware/*.php'],
-        ],
-        'system.register_commands' => [
-            'files' => ['app/Console/Commands/*.php', 'app/Console/*.php'],
-            'patterns' => [
-                '/\$this->commands\s*\(/i',
-                '/Artisan::command/i',
-            ],
-        ],
-        'system.register_blade_directives' => [
-            'patterns' => [
-                '/Blade::directive\s*\(/i',
-                '/Blade::if\s*\(/i',
-                '/Blade::component\s*\(/i',
-            ],
-        ],
-        'system.modify_routes' => [
-            'patterns' => [
-                '/Route::macro/i',
-                '/Router::macro/i',
-            ],
-        ],
-    ];
-
     public function __construct(
-        protected ThemePermissionService $permissionService
+        protected ThemePermissionService $permissionService,
+        protected ?PatternRegistry $patternRegistry = null,
     ) {
         parent::__construct();
+        $this->patternRegistry ??= PatternRegistry::createDefault();
     }
 
     public function handle(): int
@@ -158,12 +57,13 @@ class ThemeAudit extends Command
         $themeDir = $this->resolveThemeDirectory($themeInput);
         $isJson = $this->option('json');
 
-        if (!$themeDir) {
+        if (! $themeDir) {
             if ($isJson) {
                 $this->line(json_encode(['error' => "Theme not found: {$themeInput}"], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
             } else {
                 $this->error("Theme not found: {$themeInput}");
             }
+
             return Command::FAILURE;
         }
 
@@ -171,16 +71,16 @@ class ThemeAudit extends Command
         $themeJsonPath = "{$themeDir}/theme.json";
 
         // JSONモードでない場合のみヘッダーを表示
-        if (!$isJson) {
+        if (! $isJson) {
             $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            $this->info("🔍 Auditing theme: " . basename($themeDir));
+            $this->info('🔍 Auditing theme: '.basename($themeDir));
             $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             $this->newLine();
         }
 
         // theme.json から宣言された権限を取得
         $declaredPermissions = $this->getDeclaredPermissions($themeJsonPath);
-        
+
         // コードを解析して実際に使用されている権限を検出
         $detectedPermissions = $this->analyzeThemeCode($themeDir);
 
@@ -193,7 +93,7 @@ class ThemeAudit extends Command
             $this->outputReport($auditResult);
         }
 
-        if ($this->option('fix') && !empty($auditResult['mismatches'])) {
+        if ($this->option('fix') && ! empty($auditResult['mismatches'])) {
             $this->suggestFixes($themeJsonPath, $auditResult);
         }
 
@@ -233,7 +133,7 @@ class ThemeAudit extends Command
      */
     protected function getDeclaredPermissions(string $themeJsonPath): array
     {
-        if (!File::exists($themeJsonPath)) {
+        if (! File::exists($themeJsonPath)) {
             return [];
         }
 
@@ -244,127 +144,11 @@ class ThemeAudit extends Command
     }
 
     /**
-     * テーマコードを解析
+     * テーマコードを解析（PatternRegistryベース）
      */
     protected function analyzeThemeCode(string $themeDir): array
     {
-        $detected = [];
-        $evidence = [];
-
-        foreach ($this->detectionPatterns as $permission => $config) {
-            $found = false;
-            $foundEvidence = [];
-
-            // 特定ファイルパターンの存在確認
-            if (isset($config['files'])) {
-                foreach ($config['files'] as $filePattern) {
-                    $files = $this->globRecursive("{$themeDir}/{$filePattern}");
-                    if (!empty($files)) {
-                        $found = true;
-                        foreach ($files as $file) {
-                            $foundEvidence[] = [
-                                'type' => 'file_exists',
-                                'file' => str_replace($themeDir . '/', '', $file),
-                            ];
-                        }
-                    }
-                }
-            }
-
-            // パターンマッチング
-            if (isset($config['patterns']) && !empty($config['patterns'])) {
-                $phpFiles = $this->getCodeFiles($themeDir);
-                foreach ($phpFiles as $file) {
-                    $content = File::get($file);
-                    foreach ($config['patterns'] as $pattern) {
-                        if (preg_match($pattern, $content, $matches)) {
-                            $found = true;
-                            $lineNumber = $this->findLineNumber($content, $matches[0]);
-                            $foundEvidence[] = [
-                                'type' => 'pattern_match',
-                                'file' => str_replace($themeDir . '/', '', $file),
-                                'line' => $lineNumber,
-                                'match' => trim($matches[0]),
-                            ];
-                        }
-                    }
-                }
-            }
-
-            $detected[$permission] = $found;
-            if (!empty($foundEvidence)) {
-                $evidence[$permission] = $foundEvidence;
-            }
-        }
-
-        return [
-            'permissions' => $detected,
-            'evidence' => $evidence,
-        ];
-    }
-
-    /**
-     * コードファイル一覧を取得（PHP, JS, Blade）
-     */
-    protected function getCodeFiles(string $dir): array
-    {
-        $files = [];
-        
-        if (!File::isDirectory($dir)) {
-            return $files;
-        }
-
-        $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS)
-        );
-
-        $extensions = ['php', 'js', 'blade.php'];
-
-        foreach ($iterator as $file) {
-            if ($file->isFile()) {
-                $filename = $file->getFilename();
-                $ext = $file->getExtension();
-                
-                // blade.phpファイルの特別処理
-                if (str_ends_with($filename, '.blade.php') || in_array($ext, $extensions)) {
-                    $files[] = $file->getPathname();
-                }
-            }
-        }
-
-        return $files;
-    }
-
-    /**
-     * glob パターンを再帰的に展開
-     */
-    protected function globRecursive(string $pattern): array
-    {
-        $files = glob($pattern);
-        
-        // ワイルドカードディレクトリの処理
-        $dir = dirname($pattern);
-        $filename = basename($pattern);
-        
-        if (File::isDirectory($dir)) {
-            foreach (File::directories($dir) as $subdir) {
-                $files = array_merge($files, $this->globRecursive("{$subdir}/{$filename}"));
-            }
-        }
-
-        return $files ?: [];
-    }
-
-    /**
-     * マッチした文字列の行番号を取得
-     */
-    protected function findLineNumber(string $content, string $match): int
-    {
-        $pos = strpos($content, $match);
-        if ($pos === false) {
-            return 0;
-        }
-        return substr_count(substr($content, 0, $pos), "\n") + 1;
+        return $this->patternRegistry->scan($themeDir, 'theme');
     }
 
     /**
@@ -387,12 +171,12 @@ class ThemeAudit extends Command
 
             // 配列の場合は空でないかチェック
             if (is_array($declaredValue)) {
-                $declaredValue = !empty($declaredValue);
+                $declaredValue = ! empty($declaredValue);
             }
 
             $isDeclared = (bool) $declaredValue;
 
-            if ($isDetected && !$isDeclared) {
+            if ($isDetected && ! $isDeclared) {
                 $mismatches[] = [
                     'permission' => $permission,
                     'declared' => $isDeclared,
@@ -401,7 +185,7 @@ class ThemeAudit extends Command
                     'evidence' => $evidence[$permission] ?? [],
                     'recommendation' => "Set '{$permission}' to true",
                 ];
-            } elseif (!$isDetected && $isDeclared) {
+            } elseif (! $isDetected && $isDeclared) {
                 $mismatches[] = [
                     'permission' => $permission,
                     'declared' => $isDeclared,
@@ -415,75 +199,16 @@ class ThemeAudit extends Command
             }
         }
 
-        // リスクレベルと理由を計算
-        $riskResult = $this->calculateRiskLevel($detectedPerms, $mismatches);
+        // リスクレベルと理由を統一計算（サービスに委譲）
+        $riskResult = $this->permissionService->calculateUnifiedRiskLevel($declared, $mismatches);
 
         return [
             'mismatches' => $mismatches,
             'matches' => $matches,
             'total_checked' => count($detectedPerms),
             'risk_level' => $riskResult['level'],
+            'risk_score' => $riskResult['score'],
             'risk_reasons' => $riskResult['reasons'],
-        ];
-    }
-
-    /**
-     * リスクレベルを計算
-     * 
-     * @param array $detectedPerms 検出された権限
-     * @param array $mismatches 不一致リスト
-     * @return array ['level' => string, 'reasons' => array]
-     */
-    protected function calculateRiskLevel(array $detectedPerms, array $mismatches): array
-    {
-        $reasons = [];
-        $level = 'low'; // デフォルトは良好
-
-        // 高リスク権限（使用されている場合）
-        $highRiskPermissions = [
-            'database.core_tables' => 'コアテーブルへのアクセス',
-            'settings.read_core' => 'コア設定の読み取り',
-            'system.modify_routes' => 'ルートの変更',
-        ];
-
-        // 中リスク権限
-        $mediumRiskPermissions = [
-            'storage.public_uploads' => 'パブリックアップロード',
-            'assets.external_resources' => '外部リソースの読み込み',
-            'system.register_middleware' => 'ミドルウェアの登録',
-            'system.register_blade_directives' => 'Blade指令の登録',
-        ];
-
-        // 高リスク権限のチェック
-        foreach ($highRiskPermissions as $perm => $description) {
-            if ($detectedPerms[$perm] ?? false) {
-                $level = 'high';
-                $reasons[] = $description;
-            }
-        }
-
-        // 中リスク権限のチェック（まだhighでない場合のみ）
-        if ($level !== 'high') {
-            foreach ($mediumRiskPermissions as $perm => $description) {
-                if ($detectedPerms[$perm] ?? false) {
-                    $level = 'medium';
-                    $reasons[] = $description;
-                }
-            }
-        }
-
-        // 未宣言の権限使用がある場合はリスクを上げる
-        $undeclaredCount = count(array_filter($mismatches, fn($m) => $m['type'] === 'undeclared_usage'));
-        if ($undeclaredCount > 0) {
-            if ($level === 'low') {
-                $level = 'medium';
-            }
-            $reasons[] = "未宣言の権限使用: {$undeclaredCount}件";
-        }
-
-        return [
-            'level' => $level,
-            'reasons' => $reasons,
         ];
     }
 
@@ -498,19 +223,20 @@ class ThemeAudit extends Command
         if (empty($mismatches)) {
             $this->info("✅ All permissions match! ({$result['total_checked']} checked)");
             $this->newLine();
+
             return;
         }
 
-        $this->warn("⚠️  Permission Mismatches Found:");
+        $this->warn('⚠️  Permission Mismatches Found:');
         $this->newLine();
 
         foreach ($mismatches as $mismatch) {
             $this->line("<fg=yellow>[{$mismatch['permission']}]</>");
-            $this->line("  Declared: " . ($mismatch['declared'] ? '<fg=green>true</>' : '<fg=red>false</>'));
-            $this->line("  Detected: " . ($mismatch['detected'] ? '<fg=green>true</>' : '<fg=red>false</>'));
-            
-            if (!empty($mismatch['evidence'])) {
-                $this->line("  Evidence:");
+            $this->line('  Declared: '.($mismatch['declared'] ? '<fg=green>true</>' : '<fg=red>false</>'));
+            $this->line('  Detected: '.($mismatch['detected'] ? '<fg=green>true</>' : '<fg=red>false</>'));
+
+            if (! empty($mismatch['evidence'])) {
+                $this->line('  Evidence:');
                 foreach (array_slice($mismatch['evidence'], 0, 3) as $ev) {
                     if ($ev['type'] === 'file_exists') {
                         $this->line("    - File: <fg=cyan>{$ev['file']}</>");
@@ -523,14 +249,14 @@ class ThemeAudit extends Command
                     $this->line("    ... and {$more} more");
                 }
             }
-            
+
             $this->line("  <fg=blue>→ {$mismatch['recommendation']}</>");
             $this->newLine();
         }
 
-        $this->line("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        $this->line("✅ Matching: <fg=green>" . count($matches) . "</>");
-        $this->line("⚠️  Mismatches: <fg=yellow>" . count($mismatches) . "</>");
+        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->line('✅ Matching: <fg=green>'.count($matches).'</>');
+        $this->line('⚠️  Mismatches: <fg=yellow>'.count($mismatches).'</>');
     }
 
     /**
@@ -547,7 +273,7 @@ class ThemeAudit extends Command
     protected function suggestFixes(string $themeJsonPath, array $result): void
     {
         $this->newLine();
-        $this->info("📝 Suggested fixes for theme.json:");
+        $this->info('📝 Suggested fixes for theme.json:');
         $this->newLine();
 
         foreach ($result['mismatches'] as $mismatch) {
@@ -555,11 +281,11 @@ class ThemeAudit extends Command
                 $parts = explode('.', $mismatch['permission']);
                 $this->line("  \"{$parts[0]}\": {");
                 $this->line("    \"{$parts[1]}\": <fg=green>true</>  // Currently: false");
-                $this->line("  }");
+                $this->line('  }');
             }
         }
 
         $this->newLine();
-        $this->info("Run 'php artisan dls:theme:update-json " . basename(dirname($themeJsonPath)) . " --all' to add missing sections.");
+        $this->info("Run 'php artisan dls:theme:update-json ".basename(dirname($themeJsonPath))." --all' to add missing sections.");
     }
 }

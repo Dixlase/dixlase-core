@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,74 +26,73 @@ use App\Models\CaptchaEnabledForm;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 
+/**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ */
 class CaptchaService
 {
     /**
      * Get all form definitions from core and plugins.
-     *
-     * @return Collection
      */
     public function getAllForms(): Collection
     {
         $forms = collect(config('captcha.forms', []));
-        
+
         // Get plugin forms
         $pluginForms = $this->getPluginForms();
         $forms = $forms->merge($pluginForms);
-        
+
         return $forms->sortBy('priority');
     }
 
     /**
      * Get form definitions from all plugins.
-     *
-     * @return array
      */
     protected function getPluginForms(): array
     {
         $pluginForms = [];
         $pluginsPath = base_path('plugins');
-        
-        if (!File::exists($pluginsPath)) {
+
+        if (! File::exists($pluginsPath)) {
             return $pluginForms;
         }
-        
+
         // Get only installed and enabled plugins (use directory column)
         $enabledPlugins = \App\Models\Plugin::whereNotNull('installed_at')
             ->whereNotNull('enabled_at')
             ->pluck('directory')
             ->toArray();
-        
+
         $pluginDirs = File::directories($pluginsPath);
-        
+
         foreach ($pluginDirs as $pluginDir) {
             $pluginName = basename($pluginDir);
-            
+
             // Skip if plugin is not installed or not enabled
-            if (!in_array($pluginName, $enabledPlugins)) {
+            if (! in_array($pluginName, $enabledPlugins)) {
                 continue;
             }
-            
+
             // plugin.jsonからslugを取得（フォールバック: ディレクトリ名）
-            $pluginJsonPath = $pluginDir . '/plugin.json';
+            $pluginJsonPath = $pluginDir.'/plugin.json';
             $pluginSlug = $pluginName; // デフォルトはディレクトリ名
-            
+
             if (File::exists($pluginJsonPath)) {
                 $pluginJson = json_decode(File::get($pluginJsonPath), true);
                 if (isset($pluginJson['slug'])) {
                     $pluginSlug = $pluginJson['slug'];
                 }
             }
-            
-            $captchaConfigPath = $pluginDir . '/config/captcha.php';
-            
+
+            $captchaConfigPath = $pluginDir.'/config/captcha.php';
+
             if (File::exists($captchaConfigPath)) {
                 $config = include $captchaConfigPath;
-                
+
                 if (isset($config['forms']) && is_array($config['forms'])) {
                     foreach ($config['forms'] as $key => $form) {
                         // Use slug as prefix (fallback to directory name)
-                        $formKey = $pluginSlug . '.' . $key;
+                        $formKey = $pluginSlug.'.'.$key;
                         $pluginForms[$formKey] = array_merge($form, [
                             'plugin' => $pluginName,
                             'plugin_slug' => $pluginSlug,
@@ -102,14 +101,12 @@ class CaptchaService
                 }
             }
         }
-        
+
         return $pluginForms;
     }
 
     /**
      * Get forms grouped by category.
-     *
-     * @return Collection
      */
     public function getFormsByCategory(): Collection
     {
@@ -119,9 +116,6 @@ class CaptchaService
     /**
      * Check if CAPTCHA is enabled for a specific form.
      * Returns true only if the form exists in the database.
-     *
-     * @param string $formKey
-     * @return bool
      */
     public function isEnabled(string $formKey): bool
     {
@@ -134,11 +128,6 @@ class CaptchaService
     /**
      * Update CAPTCHA setting for a form.
      * Enabled forms are saved to database, disabled forms are deleted.
-     *
-     * @param string $formKey
-     * @param bool $enabled
-     * @param string|null $provider
-     * @return void
      */
     public function updateFormSetting(string $formKey, bool $enabled, ?string $provider = null): void
     {
@@ -159,9 +148,6 @@ class CaptchaService
 
     /**
      * Bulk update form settings.
-     *
-     * @param array $formSettings
-     * @return void
      */
     public function bulkUpdateFormSettings(array $formSettings): void
     {
@@ -172,14 +158,12 @@ class CaptchaService
 
     /**
      * Get enabled forms with their details.
-     *
-     * @return Collection
      */
     public function getEnabledForms(): Collection
     {
         $enabledKeys = CaptchaEnabledForm::getEnabledFormKeys();
         $allForms = $this->getAllForms();
-        
+
         return collect($enabledKeys)->map(function ($key) use ($allForms) {
             return $allForms->get($key);
         })->filter();
@@ -187,22 +171,16 @@ class CaptchaService
 
     /**
      * Get form definition by key.
-     *
-     * @param string $formKey
-     * @return array|null
      */
     public function getFormDefinition(string $formKey): ?array
     {
         $allForms = $this->getAllForms();
-        
+
         return $allForms->get($formKey);
     }
 
     /**
      * Check if a form key exists in definitions.
-     *
-     * @param string $formKey
-     * @return bool
      */
     public function formExists(string $formKey): bool
     {

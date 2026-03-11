@@ -14,9 +14,13 @@
  * @returns {Object} Alpine.jsコンポーネント
  */
 window.appearanceMode = function (defaultValue) {
+    // FOUC防止: Alpine初期化時に正しいdark/lightクラスが設定されるよう事前計算
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialIsDark = defaultValue === '2' || (defaultValue === '0' && prefersDark);
+
     return {
         theme: defaultValue,
-        isDark: false,
+        isDark: initialIsDark,
         themeReady: false,
 
         applyTheme(enableTransition = false) {

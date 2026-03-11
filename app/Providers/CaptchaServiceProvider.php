@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,13 +22,13 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use App\Captcha\CaptchaDriver;
+use App\Captcha\GoogleRecaptchaEnterpriseDriver;
 use App\Captcha\GoogleRecaptchaV2Driver;
 use App\Captcha\GoogleRecaptchaV3Driver;
-use App\Captcha\GoogleRecaptchaEnterpriseDriver;
 use App\Captcha\TurnstileCaptchaDriver;
 use App\Helpers\CaptchaHelper;
+use Illuminate\Support\ServiceProvider;
 
 class CaptchaServiceProvider extends ServiceProvider
 {
@@ -39,7 +39,7 @@ class CaptchaServiceProvider extends ServiceProvider
     {
         $this->app->singleton(CaptchaDriver::class, function ($app) {
             $driver = CaptchaHelper::getDriver();
-            
+
             switch ($driver) {
                 case 'google':
                     // バージョンに応じてv2/v3を選択

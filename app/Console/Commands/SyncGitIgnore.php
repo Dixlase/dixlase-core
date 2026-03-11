@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -64,8 +64,9 @@ class SyncGitIgnore extends Command
     public function handle(): int
     {
         // .gitignoreが存在しない場合はエラー
-        if (!File::exists($this->getGitIgnorePath())) {
+        if (! File::exists($this->getGitIgnorePath())) {
             $this->error(__('admin/command.git_sync.gitignore_not_found'));
+
             return self::FAILURE;
         }
 
@@ -103,15 +104,15 @@ class SyncGitIgnore extends Command
 
         // 現在の.gitignoreの内容を取得
         $currentContent = File::get($gitIgnorePath);
-        
+
         // 現在登録されているプラグインとテーマを抽出
         $currentPlugins = [];
         $currentThemes = [];
-        
+
         // !plugins/PluginName/ 形式を検出
         preg_match_all('/!plugins\/([^\s\/]+)\//', $currentContent, $matches);
         $currentPlugins = $matches[1] ?? [];
-        
+
         preg_match_all('/!themes\/([^\s\/]+)\//', $currentContent, $matches);
         $currentThemes = $matches[1] ?? [];
 
@@ -129,20 +130,21 @@ class SyncGitIgnore extends Command
         $this->displayCurrentState($currentPlugins, $currentThemes, $actualPlugins, $actualThemes);
 
         // 変更内容を表示
-        $hasPluginChanges = !empty($pluginsToAdd) || !empty($pluginsToRemove);
-        $hasThemeChanges = !empty($themesToAdd) || !empty($themesToRemove);
+        $hasPluginChanges = ! empty($pluginsToAdd) || ! empty($pluginsToRemove);
+        $hasThemeChanges = ! empty($themesToAdd) || ! empty($themesToRemove);
 
-        if (!$themesOnly && $hasPluginChanges) {
+        if (! $themesOnly && $hasPluginChanges) {
             $this->displayChanges('plugins', $pluginsToAdd, $pluginsToRemove);
         }
 
-        if (!$pluginsOnly && $hasThemeChanges) {
+        if (! $pluginsOnly && $hasThemeChanges) {
             $this->displayChanges('themes', $themesToAdd, $themesToRemove);
         }
 
         // 変更がない場合
-        if ((!$hasPluginChanges || $themesOnly) && (!$hasThemeChanges || $pluginsOnly)) {
+        if ((! $hasPluginChanges || $themesOnly) && (! $hasThemeChanges || $pluginsOnly)) {
             $this->info(__('admin/command.git_sync.gitignore_in_sync'));
+
             return self::SUCCESS;
         }
 
@@ -150,12 +152,14 @@ class SyncGitIgnore extends Command
         if ($dryRun) {
             $this->newLine();
             $this->warn(__('admin/command.git_sync.dry_run'));
+
             return self::SUCCESS;
         }
 
         // 確認
-        if (!$force && !$this->confirm(__('admin/command.git_sync.confirm_apply'), true)) {
+        if (! $force && ! $this->confirm(__('admin/command.git_sync.confirm_apply'), true)) {
             $this->info(__('admin/command.git_sync.cancelled'));
+
             return self::SUCCESS;
         }
 
@@ -215,8 +219,9 @@ class SyncGitIgnore extends Command
         try {
             $gitIgnorePath = $this->getGitIgnorePath();
 
-            if (!File::exists($gitIgnorePath)) {
+            if (! File::exists($gitIgnorePath)) {
                 $this->warn(__('admin/command.git_sync.gitignore_not_found'));
+
                 return false;
             }
 
@@ -226,6 +231,7 @@ class SyncGitIgnore extends Command
             // 既に追加されている場合はスキップ
             if (str_contains($content, $exclusionLine)) {
                 $this->info(__('admin/command.git_sync.already_exists', ['path' => $exclusionLine]));
+
                 return true;
             }
 
@@ -234,20 +240,19 @@ class SyncGitIgnore extends Command
             $insertIndex = $this->findInsertIndex($lines, $type, $name);
 
             if ($insertIndex === -1) {
-                $content = rtrim($content) . "\n{$exclusionLine}\n";
+                $content = rtrim($content)."\n{$exclusionLine}\n";
             } else {
                 array_splice($lines, $insertIndex, 0, [$exclusionLine]);
                 $content = implode("\n", $lines);
             }
 
             File::put($gitIgnorePath, $content);
-            $newContent = implode("\n", $lines);
-            file_put_contents($gitignorePath, $newContent);
 
             return true;
         } catch (\Exception $e) {
             $this->error(__('admin/command.git_sync.failed', ['error' => $e->getMessage()]));
-            Log::error("Failed to add {$type} exclusion to .gitignore: " . $e->getMessage());
+            Log::error("Failed to add {$type} exclusion to .gitignore: ".$e->getMessage());
+
             return false;
         }
     }
@@ -260,7 +265,7 @@ class SyncGitIgnore extends Command
         try {
             $gitIgnorePath = $this->getGitIgnorePath();
 
-            if (!File::exists($gitIgnorePath)) {
+            if (! File::exists($gitIgnorePath)) {
                 return true;
             }
 
@@ -268,18 +273,16 @@ class SyncGitIgnore extends Command
             $exclusionLine = "!{$type}/{$name}/";
 
             $lines = explode("\n", $content);
-            $filteredLines = array_filter($lines, fn($line) => trim($line) !== $exclusionLine);
+            $filteredLines = array_filter($lines, fn ($line) => trim($line) !== $exclusionLine);
 
             $content = implode("\n", array_values($filteredLines));
             File::put($gitIgnorePath, $content);
 
-            $newContent = implode("\n", $lines);
-            file_put_contents($gitignorePath, $newContent);
-
             return true;
         } catch (\Exception $e) {
             $this->error(__('admin/command.git_sync.failed', ['error' => $e->getMessage()]));
-            Log::error("Failed to remove {$type} exclusion from .gitignore: " . $e->getMessage());
+            Log::error("Failed to remove {$type} exclusion from .gitignore: ".$e->getMessage());
+
             return false;
         }
     }
@@ -291,7 +294,7 @@ class SyncGitIgnore extends Command
     {
         $basePattern = "{$type}/*";
         $nextSectionPattern = ($type === 'plugins') ? 'themes/*' : null;
-        
+
         $baseIndex = -1;
         $lastExclusionIndex = -1;
         $nextSectionIndex = -1;
@@ -333,7 +336,7 @@ class SyncGitIgnore extends Command
         for ($i = $startIndex + 1; $i < $endIndex; $i++) {
             $line = trim($lines[$i]);
 
-            if (!str_starts_with($line, "!{$type}/")) {
+            if (! str_starts_with($line, "!{$type}/")) {
                 return $i;
             }
 
@@ -350,7 +353,7 @@ class SyncGitIgnore extends Command
      */
     protected function detectDirectories(string $path, array $exclude = []): array
     {
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             return [];
         }
 
@@ -359,13 +362,14 @@ class SyncGitIgnore extends Command
 
         foreach ($directories as $directory) {
             $name = basename($directory);
-            
-            if (!str_starts_with($name, '.') && !in_array($name, $exclude)) {
+
+            if (! str_starts_with($name, '.') && ! in_array($name, $exclude)) {
                 $names[] = $name;
             }
         }
 
         sort($names);
+
         return $names;
     }
 
@@ -383,7 +387,7 @@ class SyncGitIgnore extends Command
         );
         $this->newLine();
 
-        if (!empty($actualPlugins)) {
+        if (! empty($actualPlugins)) {
             $this->info(__('admin/command.git_sync.plugins_found'));
             foreach ($actualPlugins as $plugin) {
                 $status = in_array($plugin, $currentPlugins) ? '<fg=green>✓</>' : '<fg=yellow>○</>';
@@ -392,7 +396,7 @@ class SyncGitIgnore extends Command
             $this->newLine();
         }
 
-        if (!empty($actualThemes)) {
+        if (! empty($actualThemes)) {
             $this->info(__('admin/command.git_sync.themes_found'));
             foreach ($actualThemes as $theme) {
                 $status = in_array($theme, $currentThemes) ? '<fg=green>✓</>' : '<fg=yellow>○</>';
@@ -408,22 +412,22 @@ class SyncGitIgnore extends Command
     protected function displayChanges(string $type, array $toAdd, array $toRemove): void
     {
         $typeName = ucfirst($type);
-        
-        if (!empty($toAdd)) {
-            $this->info("{$typeName} " . __('admin/command.git_sync.to_add'));
+
+        if (! empty($toAdd)) {
+            $this->info("{$typeName} ".__('admin/command.git_sync.to_add'));
             foreach ($toAdd as $name) {
                 $this->line("  <fg=green>+ !{$type}/{$name}/</>");
             }
         }
 
-        if (!empty($toRemove)) {
-            $this->warn("{$typeName} " . __('admin/command.git_sync.to_remove'));
+        if (! empty($toRemove)) {
+            $this->warn("{$typeName} ".__('admin/command.git_sync.to_remove'));
             foreach ($toRemove as $name) {
                 $this->line("  <fg=red>- !{$type}/{$name}/</>");
             }
         }
 
-        if (!empty($toAdd) || !empty($toRemove)) {
+        if (! empty($toAdd) || ! empty($toRemove)) {
             $this->newLine();
         }
     }
@@ -443,21 +447,21 @@ class SyncGitIgnore extends Command
 
         // 削除処理
         foreach ($pluginsToRemove as $plugin) {
-            $lines = array_filter($lines, fn($line) => trim($line) !== "!plugins/{$plugin}/");
+            $lines = array_filter($lines, fn ($line) => trim($line) !== "!plugins/{$plugin}/");
         }
         foreach ($themesToRemove as $theme) {
-            $lines = array_filter($lines, fn($line) => trim($line) !== "!themes/{$theme}/");
+            $lines = array_filter($lines, fn ($line) => trim($line) !== "!themes/{$theme}/");
         }
 
         $lines = array_values($lines);
 
         // プラグインを追加
-        if (!empty($pluginsToAdd)) {
+        if (! empty($pluginsToAdd)) {
             $this->addExclusions($lines, 'plugins', $pluginsToAdd);
         }
 
         // テーマを追加
-        if (!empty($themesToAdd)) {
+        if (! empty($themesToAdd)) {
             $this->addExclusions($lines, 'themes', $themesToAdd);
         }
 
@@ -496,7 +500,7 @@ class SyncGitIgnore extends Command
         }
 
         $insertIndex = -1;
-        
+
         if ($lastExclusionIndex !== -1) {
             $insertIndex = $lastExclusionIndex + 1;
         } elseif ($baseIndex !== -1) {
@@ -522,11 +526,12 @@ class SyncGitIgnore extends Command
     {
         $gitIgnorePath = base_path('.gitignore');
 
-        if (!File::exists($gitIgnorePath)) {
+        if (! File::exists($gitIgnorePath)) {
             return false;
         }
 
         $content = File::get($gitIgnorePath);
+
         return str_contains($content, "!plugins/{$pluginName}/");
     }
 
@@ -537,11 +542,12 @@ class SyncGitIgnore extends Command
     {
         $gitIgnorePath = base_path('.gitignore');
 
-        if (!File::exists($gitIgnorePath)) {
+        if (! File::exists($gitIgnorePath)) {
             return false;
         }
 
         $content = File::get($gitIgnorePath);
+
         return str_contains($content, "!themes/{$themeName}/");
     }
 }

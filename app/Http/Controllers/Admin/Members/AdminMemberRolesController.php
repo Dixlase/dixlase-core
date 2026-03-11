@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,11 +22,11 @@
 
 namespace App\Http\Controllers\Admin\Members;
 
+use App\Enums\MemberRole;
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use Illuminate\Http\Request;
 use App\Models\RolePermissionOverride;
 use App\Services\PermissionRegistry;
-use App\Enums\MemberRole;
+use Illuminate\Http\Request;
 
 class AdminMemberRolesController extends AdminLoggedInController
 {
@@ -45,26 +45,61 @@ class AdminMemberRolesController extends AdminLoggedInController
 
         // コア権限（デフォルト＋オーバーライド合成済み）- ネスト構造
         $corePermissions = PermissionRegistry::getAllCorePermissions();
-        
+
         // コア権限（フラット形式）- フォーム送信用
         $corePermissionsFlat = PermissionRegistry::getAllCorePermissionsFlat();
-        
+
         // プラグイン権限グループを収集
         $pluginPermissionGroups = $this->collectPluginPermissions();
-        
+
+        // ロールマッピングデータを事前計算（各アコーディオンビューで共有）
+        $currentUserRole = auth()->user()->role;
+        $currentUserRoleValue = $currentUserRole->value;
+        $isSuperAdmin = $currentUserRoleValue === MemberRole::SUPER_ADMIN->value;
+        $maxSelectableRole = $isSuperAdmin ? MemberRole::SUPER_ADMIN->value : $currentUserRoleValue;
+        $minSelectableRole = MemberRole::GUEST->value;
+
+        $roleOptions = [];
+        foreach ($roles as $role) {
+            if ($role->value <= $maxSelectableRole) {
+                $roleOptions[$role->value] = $role->label();
+            }
+        }
+        ksort($roleOptions);
+
+        $roleValues = [];
+        $roleLabelsForRange = [];
+        $index = 0;
+        foreach ($roleOptions as $value => $label) {
+            $roleValues[$index] = $value;
+            $roleLabelsForRange[$index] = $label;
+            $index++;
+        }
+        $valueToIndex = array_flip($roleValues);
+        $maxIndex = count($roleValues) - 1;
 
         $this->viewParams['permissions'] = $corePermissions;
         $this->viewParams['permissionsFlat'] = $corePermissionsFlat;
         $this->viewParams['roles'] = $roles;
         $this->viewParams['menuList'] = $menuList;
         $this->viewParams['pluginPermissionGroups'] = $pluginPermissionGroups;
+        $this->viewParams['superAdminValue'] = MemberRole::SUPER_ADMIN->value;
+        $this->viewParams['guestValue'] = MemberRole::GUEST->value;
+        $this->viewParams['adminDefaultValue'] = MemberRole::ADMIN->value;
+        $this->viewParams['isSuperAdmin'] = $isSuperAdmin;
+        $this->viewParams['maxSelectableRole'] = $maxSelectableRole;
+        $this->viewParams['minSelectableRole'] = $minSelectableRole;
+        $this->viewParams['roleValues'] = $roleValues;
+        $this->viewParams['roleLabelsForRange'] = $roleLabelsForRange;
+        $this->viewParams['valueToIndex'] = $valueToIndex;
+        $this->viewParams['maxIndex'] = $maxIndex;
 
         return view('admin.members.roles', $this->viewParams);
     }
 
     /**
      * 権限設定更新
-     * 
+     *
      * デフォルト値と異なる場合のみオーバーライドとして保存
      * デフォルト値に戻す場合はオーバーライドを削除
      */
@@ -74,7 +109,7 @@ class AdminMemberRolesController extends AdminLoggedInController
 
         $memberId = auth()->id();
         $data = $request->input('permissions', []);
-        
+
         // バリデーションエラーを収集
         $errors = [];
 
@@ -82,17 +117,17 @@ class AdminMemberRolesController extends AdminLoggedInController
         foreach ($data as $menuKey => $values) {
             $accessRoles = isset($values['access_roles']) ? (int) $values['access_roles'] : MemberRole::GUEST->value;
             $viewRoles = isset($values['view_roles']) ? (int) $values['view_roles'] : MemberRole::GUEST->value;
-            
+
             // 編集権限が閲覧権限より下でないかチェック
             if ($accessRoles < $viewRoles) {
                 $errors[] = __('admin/members/settings/roles.validation.access_must_be_greater_than_view', [
                     'menu_key' => $menuKey,
                 ]);
             }
-            
+
             // デフォルト値を取得（ネスト構造対応）
             $default = PermissionRegistry::getEffective($menuKey);
-            
+
             if ($default) {
                 // デフォルト値と同じ場合はオーバーライドを削除
                 if ($accessRoles === $default['default_access_roles'] && $viewRoles === $default['default_view_roles']) {
@@ -111,17 +146,17 @@ class AdminMemberRolesController extends AdminLoggedInController
             foreach ($menuItems as $menuKey => $values) {
                 $accessRoles = isset($values['access_roles']) ? (int) $values['access_roles'] : MemberRole::ADMIN->value;
                 $viewRoles = isset($values['view_roles']) ? (int) $values['view_roles'] : MemberRole::ADMIN->value;
-                
+
                 // 編集権限が閲覧権限より下でないかチェック
                 if ($accessRoles < $viewRoles) {
                     $errors[] = __('admin/members/settings/roles.validation.access_must_be_greater_than_view', [
                         'menu_key' => "{$pluginSlug}.{$menuKey}",
                     ]);
                 }
-                
+
                 // PermissionRegistryを使ってデフォルト値を取得（ネスト構造対応）
                 $effective = PermissionRegistry::getPluginEffective($pluginSlug, $menuKey);
-                
+
                 if ($effective) {
                     // デフォルト値と同じ場合はオーバーライドを削除
                     if ($accessRoles === $effective['default_access_roles'] && $viewRoles === $effective['default_view_roles']) {
@@ -135,7 +170,7 @@ class AdminMemberRolesController extends AdminLoggedInController
         }
 
         // バリデーションエラーがある場合はリダイレクト
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             return redirect()->back()->withErrors($errors)->withInput();
         }
 
@@ -173,52 +208,52 @@ class AdminMemberRolesController extends AdminLoggedInController
     private function collectPluginPermissions(): array
     {
         $pluginGroups = [];
-        
+
         $pluginsPath = base_path('plugins');
-        if (!is_dir($pluginsPath)) {
+        if (! is_dir($pluginsPath)) {
             return $pluginGroups;
         }
 
-        $pluginDirs = array_filter(glob($pluginsPath . '/*'), 'is_dir');
-        
+        $pluginDirs = array_filter(glob($pluginsPath.'/*'), 'is_dir');
+
         foreach ($pluginDirs as $pluginDir) {
-            $pluginJsonPath = $pluginDir . '/plugin.json';
-            $dixlaseJsonPath = $pluginDir . '/dixlase.json';
-            
+            $pluginJsonPath = $pluginDir.'/plugin.json';
+            $dixlaseJsonPath = $pluginDir.'/dixlase.json';
+
             $pluginInfo = null;
             if (file_exists($pluginJsonPath)) {
                 $pluginInfo = json_decode(file_get_contents($pluginJsonPath), true);
             } elseif (file_exists($dixlaseJsonPath)) {
                 $pluginInfo = json_decode(file_get_contents($dixlaseJsonPath), true);
             }
-            
-            if (!$pluginInfo) {
+
+            if (! $pluginInfo) {
                 continue;
             }
 
             // PermissionRegistryはディレクトリ名をスラッグとして使用するため、basename($pluginDir)を使用
             $pluginSlug = basename($pluginDir);
             $pluginName = $pluginInfo['name'] ?? $pluginSlug;
-            
+
             // roles.phpが存在するプラグインのみ対象
-            $rolesConfigPath = $pluginDir . '/config/roles.php';
-            if (!file_exists($rolesConfigPath)) {
+            $rolesConfigPath = $pluginDir.'/config/roles.php';
+            if (! file_exists($rolesConfigPath)) {
                 continue;
             }
-            
+
             // admin.phpからナビゲーション情報を取得（アイコン・テキスト用）
-            $adminConfigPath = $pluginDir . '/config/admin.php';
+            $adminConfigPath = $pluginDir.'/config/admin.php';
             $adminNav = [];
             if (file_exists($adminConfigPath)) {
                 $adminConfig = require $adminConfigPath;
                 $adminNav = $adminConfig['nav'] ?? [];
             }
-            
+
             // 権限設定を取得（ネスト構造）
             $permissions = PermissionRegistry::getAllPluginPermissions($pluginSlug);
             $permissionsFlat = PermissionRegistry::getAllPluginPermissionsFlat($pluginSlug);
-            
-            if (!empty($permissions)) {
+
+            if (! empty($permissions)) {
                 $pluginGroups[] = [
                     'slug' => $pluginSlug,
                     'name' => $pluginName,
@@ -229,7 +264,7 @@ class AdminMemberRolesController extends AdminLoggedInController
                 ];
             }
         }
-        
+
         return $pluginGroups;
     }
 
@@ -239,10 +274,10 @@ class AdminMemberRolesController extends AdminLoggedInController
     private function collectPluginMenuPermissions(array $navConfig, string $pluginSlug, string $parentKey = ''): array
     {
         $items = [];
-        
+
         foreach ($navConfig as $key => $item) {
-            $menuKey = $parentKey ? $parentKey . '.' . $key : $key;
-            
+            $menuKey = $parentKey ? $parentKey.'.'.$key : $key;
+
             if (isset($item['route'])) {
                 $items[] = [
                     'type' => 'permission',
@@ -251,13 +286,13 @@ class AdminMemberRolesController extends AdminLoggedInController
                     'pluginSlug' => $pluginSlug,
                 ];
             }
-            
+
             if (isset($item['children'])) {
                 $childItems = $this->collectPluginMenuPermissions($item['children'], $pluginSlug, $menuKey);
                 $items = array_merge($items, $childItems);
             }
         }
-        
+
         return $items;
     }
 
@@ -267,12 +302,12 @@ class AdminMemberRolesController extends AdminLoggedInController
     private function collectMenuPermissions($menuList, $parentKey = '', &$currentSection = '')
     {
         $items = [];
-        
-        foreach ($menuList as $key => $item) {
-            $menuKey = $parentKey ? $parentKey . '.' . $key : $key;
 
-            $isTarget = isset($item['route']) && !in_array($menuKey, ['dashboard', 'front', 'media', 'settings']);
-            $isHeadingOnly = !$isTarget && isset($item['children']) && !in_array($menuKey, ['dashboard']);
+        foreach ($menuList as $key => $item) {
+            $menuKey = $parentKey ? $parentKey.'.'.$key : $key;
+
+            $isTarget = isset($item['route']) && ! in_array($menuKey, ['dashboard', 'front', 'media', 'settings']);
+            $isHeadingOnly = ! $isTarget && isset($item['children']) && ! in_array($menuKey, ['dashboard']);
 
             if ($isHeadingOnly) {
                 $sectionTitle = __($item['text']);
@@ -280,7 +315,7 @@ class AdminMemberRolesController extends AdminLoggedInController
                     $currentSection = $sectionTitle;
                     $items[] = [
                         'type' => 'heading',
-                        'title' => $sectionTitle
+                        'title' => $sectionTitle,
                     ];
                 }
             }
@@ -289,7 +324,7 @@ class AdminMemberRolesController extends AdminLoggedInController
                 $items[] = [
                     'type' => 'permission',
                     'title' => __($item['text']),
-                    'menuKey' => $menuKey
+                    'menuKey' => $menuKey,
                 ];
             }
 
@@ -298,13 +333,13 @@ class AdminMemberRolesController extends AdminLoggedInController
                 $items = array_merge($items, $childItems);
             }
         }
-        
+
         return $items;
     }
 
     protected function authorizeEdit(string $menuKey)
     {
-        if (!\App\Helpers\AdminHelper::canEditMenu($menuKey)) {
+        if (! \App\Helpers\AdminHelper::canEditMenu($menuKey)) {
             abort(403, __('admin/members/index.messages.insufficient_permissions'));
         }
     }

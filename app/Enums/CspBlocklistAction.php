@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,6 +23,8 @@
 namespace App\Enums;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * CSPブロックリスト検出時のアクション
  */
 enum CspBlocklistAction: int
@@ -48,7 +50,7 @@ enum CspBlocklistAction: int
      */
     public function translationKey(): string
     {
-        return 'admin/settings/security/csp.blocklist_action_' . $this->toString();
+        return 'admin/settings/security/csp.blocklist_action_'.$this->toString();
     }
 
     /**
@@ -64,7 +66,7 @@ enum CspBlocklistAction: int
      */
     public function description(): string
     {
-        return __($this->translationKey() . '_desc');
+        return __($this->translationKey().'_desc');
     }
 
     /**
@@ -144,7 +146,7 @@ enum CspBlocklistAction: int
      */
     public static function getAllStrings(): array
     {
-        return array_map(fn($case) => $case->toString(), self::cases());
+        return array_map(fn ($case) => $case->toString(), self::cases());
     }
 
     /**
@@ -153,6 +155,7 @@ enum CspBlocklistAction: int
     public static function fromValue(int|string $value): ?self
     {
         $intValue = (int) $value;
+
         return match ($intValue) {
             0 => self::Warn,
             1 => self::Block,
@@ -165,7 +168,7 @@ enum CspBlocklistAction: int
      */
     public static function getAllValues(): array
     {
-        return array_map(fn($case) => (string) $case->value, self::cases());
+        return array_map(fn ($case) => (string) $case->value, self::cases());
     }
 
     /**
@@ -173,6 +176,6 @@ enum CspBlocklistAction: int
      */
     public static function validationRule(): string
     {
-        return 'in:' . implode(',', self::getAllValues());
+        return 'in:'.implode(',', self::getAllValues());
     }
 }

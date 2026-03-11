@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * Audit Facade
- * 
+ *
  * @method static \App\Models\AuditLog|null log(array $data)
  * @method static \App\Models\AuditLog|null logAuth(string $action, array $data = [])
  * @method static \App\Models\AuditLog|null logSecurity(string $action, array $data = [])
@@ -48,7 +48,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Illuminate\Database\Eloquent\Collection getLogsForRequest(string $requestId)
  * @method static \Illuminate\Database\Eloquent\Collection getRecentWarnings(int $hours = 24, int $limit = 100)
  * @method static \Illuminate\Database\Eloquent\Collection getRecentFailures(int $hours = 24, int $limit = 100)
- * 
+ *
  * @see \App\Services\AuditService
  */
 class Audit extends Facade

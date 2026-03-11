@@ -1,11 +1,34 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\Services\TwoFa;
 
 use App\Contracts\TwoFaInterface;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
+/**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ */
 class TwoFaAttemptService
 {
     protected string $settingModelClass;
@@ -43,11 +66,12 @@ class TwoFaAttemptService
         $lockoutDuration = $this->getLockoutDuration();
         $lastLockout = $this->getLastLockoutTime($user);
 
-        if (!$lastLockout) {
+        if (! $lastLockout) {
             return false;
         }
 
         $unlockAt = $lastLockout->addMinutes($lockoutDuration);
+
         return Carbon::now()->lessThan($unlockAt);
     }
 
@@ -56,7 +80,7 @@ class TwoFaAttemptService
      */
     public function getRemainingLockoutTime(TwoFaInterface $user): ?int
     {
-        if (!$this->isLockedOut($user)) {
+        if (! $this->isLockedOut($user)) {
             return null;
         }
 

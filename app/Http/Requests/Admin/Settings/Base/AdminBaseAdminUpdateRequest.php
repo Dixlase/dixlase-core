@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,7 @@
 
 namespace App\Http\Requests\Admin\Settings\Base;
 
+use App\Rules\UniqueRouteSlug;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AdminBaseAdminUpdateRequest extends FormRequest
@@ -42,7 +43,7 @@ class AdminBaseAdminUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'admin_url' => 'required|string|max:100|regex:/^[a-zA-Z0-9_-]+$/',
+            'admin_url' => ['required', 'string', 'max:100', 'regex:/^[a-zA-Z0-9_-]+$/', UniqueRouteSlug::for('core:admin_url')],
         ];
     }
 }

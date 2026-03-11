@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,11 +23,12 @@
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
 use App\Enums\LogLevel;
+use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
@@ -35,8 +36,8 @@ class AdminSystemLogsController extends AdminLoggedInController
 {
     protected $logPaths = [
         'activity' => 'admin_activity.log',
-        'error'    => 'admin_error.log',
-        'dixlase'  => 'dixlase.log',
+        'error' => 'admin_error.log',
+        'dixlase' => 'dixlase.log',
         'front_activity' => 'front_activity.log',
         'front_error' => 'front_error.log',
         'browser' => 'browser.log',
@@ -54,34 +55,39 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function files(Request $request, $type = 'activity')
     {
+        // かんたんモードではファイルログにアクセス不可
+        if (AdminModeHelper::isSimpleMode()) {
+            return redirect()->route('admin.settings.systems.logs.index');
+        }
+
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
         $selectedDate = $request->input('date');
-        
+
         // 利用可能な日付一覧を取得
         $availableDates = $this->getAvailableLogDates($fileName);
         $this->viewParams['availableDates'] = $availableDates;
         $this->viewParams['selectedDate'] = $selectedDate;
-        
+
         // 日付が指定されている場合はその日付のファイルを使用
         if ($selectedDate) {
             $filePath = $this->getLogFilePathByDate($fileName, $selectedDate);
         } else {
             $filePath = storage_path("logs/{$fileName}");
             // dailyドライバーの場合、日付付きファイル名を探す
-            if (!File::exists($filePath)) {
+            if (! File::exists($filePath)) {
                 $filePath = $this->findDailyLogFile($fileName);
             }
         }
 
         $this->viewParams['logType'] = $type;
 
-        if (!$filePath || !File::exists($filePath)) {
+        if (! $filePath || ! File::exists($filePath)) {
             $this->viewParams['logs'] = [[
                 'timestamp' => '',
                 'level' => '',
                 'message' => __('admin/settings/systems/logs/files.messages.file_not_found', ['filename' => $fileName]),
                 'context' => [],
-                'parsed' => false
+                'parsed' => false,
             ]];
             $this->viewParams['pagination'] = [
                 'current_page' => 1,
@@ -103,19 +109,20 @@ class AdminSystemLogsController extends AdminLoggedInController
                 'debug' => __('admin/settings/systems/logs/files.level_filter.debug'),
             ];
             $this->viewParams['tableExists'] = true; // ファイルログの場合は常にtrue
+            $this->addNavigationData($type);
 
             return response()->view('admin::settings.systems.logs.files', $this->viewParams);
         }
 
         $perPage = $request->input('per_page', 50);
         $allowedPerPage = [25, 50, 100, 200];
-        if (!in_array($perPage, $allowedPerPage)) {
+        if (! in_array($perPage, $allowedPerPage)) {
             $perPage = 50;
         }
-        
+
         // ログレベルフィルター（複数選択可能）
         $levelFilters = $request->input('levels', ['error', 'warning', 'normal', 'debug']);
-        if (!is_array($levelFilters)) {
+        if (! is_array($levelFilters)) {
             $levelFilters = [$levelFilters];
         }
         $this->viewParams['levelFilters'] = $levelFilters;
@@ -125,27 +132,27 @@ class AdminSystemLogsController extends AdminLoggedInController
             'normal' => __('admin/settings/systems/logs/files.level_filter.normal'),
             'debug' => __('admin/settings/systems/logs/files.level_filter.debug'),
         ];
-        
+
         $currentPage = $request->get('page', 1);
         $maxLinesToRead = 5000;
         $lines = $this->readLogFileLines($filePath, $maxLinesToRead);
 
         $parsedLogs = [];
-        
+
         foreach ($lines as $line) {
             $parsedLog = $this->parseLogLine($line);
             if ($parsedLog) {
                 // ログレベルフィルタリング
                 $logLevel = strtolower($parsedLog['level'] ?? '');
                 $shouldInclude = false;
-                
+
                 foreach ($levelFilters as $filter) {
                     if (LogLevel::levelBelongsToGroup($logLevel, $filter)) {
                         $shouldInclude = true;
                         break;
                     }
                 }
-                
+
                 if ($shouldInclude) {
                     $parsedLogs[] = $parsedLog;
                 }
@@ -168,9 +175,18 @@ class AdminSystemLogsController extends AdminLoggedInController
             'next_page' => $currentPage < ceil($totalLogs / $perPage) ? $currentPage + 1 : null,
         ];
 
+        // 各ログエントリにレベル別カラーを事前計算
+        foreach ($paginatedLogs as &$log) {
+            if ($log['parsed']) {
+                $log['levelColors'] = self::getLevelColors(strtolower($log['level'] ?? ''));
+            }
+        }
+        unset($log);
+
         $this->viewParams['logs'] = $paginatedLogs;
         $this->viewParams['pagination'] = $pagination;
         $this->viewParams['logTypes'] = array_keys($this->logPaths);
+        $this->addNavigationData($type);
 
         return view('admin::settings.systems.logs.files', $this->viewParams);
     }
@@ -180,25 +196,31 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function download(Request $request, $type = 'activity')
     {
+        // かんたんモードではファイルログにアクセス不可
+        if (AdminModeHelper::isSimpleMode()) {
+            return redirect()->route('admin.settings.systems.logs.index');
+        }
+
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
         $selectedDate = $request->input('date');
-        
+
         // 日付が指定されている場合はその日付のファイルを使用
         if ($selectedDate) {
             $filePath = $this->getLogFilePathByDate($fileName, $selectedDate);
         } else {
             $filePath = storage_path("logs/{$fileName}");
-            if (!File::exists($filePath)) {
+            if (! File::exists($filePath)) {
                 $filePath = $this->findDailyLogFile($fileName);
             }
         }
 
-        if (!$filePath || !File::exists($filePath)) {
+        if (! $filePath || ! File::exists($filePath)) {
             return redirect()->route('admin.settings.systems.logs.files', ['type' => $type])
                 ->with('error', __('admin/settings/systems/logs/files.messages.download_error', ['filename' => $fileName]));
         }
 
         $downloadFileName = basename($filePath);
+
         return response()->download($filePath, $downloadFileName);
     }
 
@@ -207,20 +229,25 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function clear(Request $request, $type = 'activity')
     {
+        // かんたんモードではファイルログにアクセス不可
+        if (AdminModeHelper::isSimpleMode()) {
+            return redirect()->route('admin.settings.systems.logs.index');
+        }
+
         $days = (int) $request->input('days', 0);
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
-        
+
         try {
             if ($days === 0) {
                 // 0日の場合は全ログファイルを削除
                 $clearedCount = $this->clearAllLogFiles($fileName);
-                
+
                 return redirect()->route('admin.settings.systems.logs.files', ['type' => $type])
                     ->with('success', __('admin/settings/systems/logs/files.clear_all_success', ['count' => $clearedCount]));
             } else {
                 // 指定日数以前のログファイルを削除
                 $clearedCount = $this->clearOldLogFiles($fileName, $days);
-                
+
                 return redirect()->route('admin.settings.systems.logs.files', ['type' => $type])
                     ->with('success', __('admin/settings/systems/logs/files.clear_old_success', ['days' => $days, 'count' => $clearedCount]));
             }
@@ -239,26 +266,26 @@ class AdminSystemLogsController extends AdminLoggedInController
         $baseName = pathinfo($fileName, PATHINFO_FILENAME);
         $extension = pathinfo($fileName, PATHINFO_EXTENSION);
         $clearedCount = 0;
-        
+
         // 日付なしのファイルをクリア
         $baseFilePath = "{$logsPath}/{$fileName}";
         if (File::exists($baseFilePath)) {
             File::put($baseFilePath, '');
             $clearedCount++;
         }
-        
+
         // 日付付きファイルをクリア（過去90日分）
         for ($i = 0; $i < 90; $i++) {
             $date = now()->subDays($i)->format('Y-m-d');
             $dailyFileName = "{$baseName}-{$date}.{$extension}";
             $dailyFilePath = "{$logsPath}/{$dailyFileName}";
-            
+
             if (File::exists($dailyFilePath)) {
                 File::put($dailyFilePath, '');
                 $clearedCount++;
             }
         }
-        
+
         return $clearedCount;
     }
 
@@ -272,19 +299,19 @@ class AdminSystemLogsController extends AdminLoggedInController
         $extension = pathinfo($fileName, PATHINFO_EXTENSION);
         $cutoffDate = now()->subDays($days);
         $clearedCount = 0;
-        
+
         // 日付付きファイルを検索して削除（過去90日分）
         for ($i = $days; $i < 90; $i++) {
             $date = now()->subDays($i)->format('Y-m-d');
             $dailyFileName = "{$baseName}-{$date}.{$extension}";
             $dailyFilePath = "{$logsPath}/{$dailyFileName}";
-            
+
             if (File::exists($dailyFilePath)) {
                 File::delete($dailyFilePath);
                 $clearedCount++;
             }
         }
-        
+
         return $clearedCount;
     }
 
@@ -293,6 +320,11 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function test(Request $request)
     {
+        // かんたんモードではファイルログ操作不可
+        if (AdminModeHelper::isSimpleMode()) {
+            return redirect()->route('admin.settings.systems.logs.index');
+        }
+
         $type = $request->input('type', 'all');
         $results = [];
 
@@ -327,15 +359,15 @@ class AdminSystemLogsController extends AdminLoggedInController
             }
 
             $message = __('admin/settings/systems/logs.system.test_success', ['results' => implode(', ', array_keys($results))]);
-            return redirect()->back()->with('success', $message);
 
+            return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
             Log::error('ログ出力テストでエラーが発生しました', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            return redirect()->back()->with('error', 'ログ出力テストでエラーが発生しました: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'ログ出力テストでエラーが発生しました: '.$e->getMessage());
         }
     }
 
@@ -344,25 +376,29 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function testError(Request $request)
     {
+        // かんたんモードではファイルログ操作不可
+        if (AdminModeHelper::isSimpleMode()) {
+            return redirect()->route('admin.settings.systems.logs.index');
+        }
+
         $errorType = $request->input('error_type', 'exception');
 
         try {
             switch ($errorType) {
                 case 'exception':
                     throw new \Exception('テスト用の例外エラーです - admin_error.logに記録されるかテスト中');
-                    
                 case 'database':
                     DB::table('non_existent_table')->get();
                     break;
-                    
+
                 case 'file':
                     $content = file_get_contents('/path/to/non/existent/file.txt');
                     break;
-                    
+
                 case 'division':
                     $result = 10 / 0;
                     break;
-                    
+
                 case 'manual_log':
                     Log::channel('admin_error')->error('手動エラーログテスト', [
                         'test_type' => 'manual_error_test',
@@ -372,13 +408,12 @@ class AdminSystemLogsController extends AdminLoggedInController
                         'error_details' => 'これは手動で記録したテスト用エラーです',
                         'ip' => request()->ip(),
                     ]);
-                    
+
                     return redirect()->back()->with('success', '手動エラーログをadmin_error.logに記録しました');
-                    
+
                 default:
-                    throw new \InvalidArgumentException('無効なエラータイプです: ' . $errorType);
+                    throw new \InvalidArgumentException('無効なエラータイプです: '.$errorType);
             }
-            
         } catch (\Exception $e) {
             Log::channel('admin_error')->error('テストエラーが発生しました', [
                 'error_type' => $errorType,
@@ -390,8 +425,8 @@ class AdminSystemLogsController extends AdminLoggedInController
                 'timestamp' => now()->toDateTimeString(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            return redirect()->back()->with('success', 'エラーが発生し、admin_error.logに記録されました: ' . $e->getMessage());
+
+            return redirect()->back()->with('success', 'エラーが発生し、admin_error.logに記録されました: '.$e->getMessage());
         }
     }
 
@@ -400,6 +435,11 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function testFront(Request $request)
     {
+        // かんたんモードではファイルログ操作不可
+        if (AdminModeHelper::isSimpleMode()) {
+            return redirect()->route('admin.settings.systems.logs.index');
+        }
+
         try {
             Log::channel('front_activity')->info('フロント操作テスト', [
                 'action' => 'テスト操作',
@@ -415,13 +455,12 @@ class AdminSystemLogsController extends AdminLoggedInController
                     'page' => 'テストページ',
                     'form_type' => 'お問い合わせ',
                     'search_query' => 'テスト検索',
-                ]
+                ],
             ]);
 
             return redirect()->back()->with('success', 'フロント操作ログをfront_activity.logに記録しました');
-            
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'フロントログテストでエラーが発生しました: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'フロントログテストでエラーが発生しました: '.$e->getMessage());
         }
     }
 
@@ -430,6 +469,11 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function testFrontError(Request $request)
     {
+        // かんたんモードではファイルログ操作不可
+        if (AdminModeHelper::isSimpleMode()) {
+            return redirect()->route('admin.settings.systems.logs.index');
+        }
+
         try {
             Log::channel('front_error')->error('フロントエラーテスト', [
                 'error' => 'テストエラー',
@@ -446,13 +490,12 @@ class AdminSystemLogsController extends AdminLoggedInController
                     'form_data' => ['email' => 'invalid-email', 'name' => ''],
                     'database_error' => false,
                     'api_error' => false,
-                ]
+                ],
             ]);
 
             return redirect()->back()->with('success', 'フロントエラーログをfront_error.logに記録しました');
-            
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'フロントエラーログテストでエラーが発生しました: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'フロントエラーログテストでエラーが発生しました: '.$e->getMessage());
         }
     }
 
@@ -472,13 +515,14 @@ class AdminSystemLogsController extends AdminLoggedInController
         $this->viewParams['logType'] = 'audit';
         $this->viewParams['auditView'] = 'db';
 
-        if (!Schema::hasTable('audit_logs')) {
+        if (! Schema::hasTable('audit_logs')) {
             $this->viewParams['auditLogs'] = collect();
             $this->viewParams['categories'] = [];
             $this->viewParams['actions'] = [];
             $this->viewParams['severities'] = [];
             $this->viewParams['outcomes'] = [];
             $this->viewParams['tableExists'] = false;
+
             return view('admin::settings.systems.logs.audit', $this->viewParams);
         }
 
@@ -497,33 +541,33 @@ class AdminSystemLogsController extends AdminLoggedInController
             $query->where('outcome', $request->outcome);
         }
         if ($request->filled('actor_name')) {
-            $query->where('actor_name', 'like', '%' . $request->actor_name . '%');
+            $query->where('actor_name', 'like', '%'.$request->actor_name.'%');
         }
         if ($request->filled('ip_address')) {
-            $query->where('ip_address', 'like', '%' . $request->ip_address . '%');
+            $query->where('ip_address', 'like', '%'.$request->ip_address.'%');
         }
         if ($request->filled('plugin_name')) {
             $query->where('plugin_name', $request->plugin_name);
         }
         if ($request->filled('date_from')) {
-            $query->where('occurred_at', '>=', $request->date_from . ' 00:00:00');
+            $query->where('occurred_at', '>=', $request->date_from.' 00:00:00');
         }
         if ($request->filled('date_to')) {
-            $query->where('occurred_at', '<=', $request->date_to . ' 23:59:59');
+            $query->where('occurred_at', '<=', $request->date_to.' 23:59:59');
         }
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('actor_name', 'like', '%' . $search . '%')
-                  ->orWhere('target_label', 'like', '%' . $search . '%')
-                  ->orWhere('action', 'like', '%' . $search . '%')
-                  ->orWhere('ip_address', 'like', '%' . $search . '%');
+                $q->where('actor_name', 'like', '%'.$search.'%')
+                    ->orWhere('target_label', 'like', '%'.$search.'%')
+                    ->orWhere('action', 'like', '%'.$search.'%')
+                    ->orWhere('ip_address', 'like', '%'.$search.'%');
             });
         }
 
         $perPage = $request->input('per_page', 50);
         $allowedPerPage = [25, 50, 100, 200];
-        if (!in_array($perPage, $allowedPerPage)) {
+        if (! in_array($perPage, $allowedPerPage)) {
             $perPage = 50;
         }
 
@@ -533,6 +577,7 @@ class AdminSystemLogsController extends AdminLoggedInController
         $this->viewParams['severities'] = ['debug', 'info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency'];
         $this->viewParams['outcomes'] = ['success', 'failure', 'denied', 'pending', 'unknown'];
         $this->viewParams['tableExists'] = true;
+        $this->addLogColorMaps();
 
         return view('admin::settings.systems.logs.index', $this->viewParams);
     }
@@ -545,13 +590,13 @@ class AdminSystemLogsController extends AdminLoggedInController
         $this->viewParams['logType'] = 'audit';
         $this->viewParams['auditView'] = 'db';
 
-        if (!Schema::hasTable('audit_logs')) {
+        if (! Schema::hasTable('audit_logs')) {
             return redirect()->route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db'])
                 ->with('error', __('admin/settings/systems/logs.audit.table_not_exists'));
         }
 
         $auditLog = AuditLog::findOrFail($id);
-        
+
         $relatedLogs = collect();
         if ($auditLog->request_id) {
             $relatedLogs = AuditLog::where('request_id', $auditLog->request_id)
@@ -562,6 +607,7 @@ class AdminSystemLogsController extends AdminLoggedInController
 
         $this->viewParams['auditLog'] = $auditLog;
         $this->viewParams['relatedLogs'] = $relatedLogs;
+        $this->addLogColorMaps();
 
         return view('admin::settings.systems.logs.show', $this->viewParams);
     }
@@ -571,7 +617,7 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function auditExport(Request $request)
     {
-        if (!Schema::hasTable('audit_logs')) {
+        if (! Schema::hasTable('audit_logs')) {
             return redirect()->route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db'])
                 ->with('error', __('admin/settings/systems/logs.audit.table_not_exists'));
         }
@@ -591,43 +637,43 @@ class AdminSystemLogsController extends AdminLoggedInController
             $query->where('outcome', $request->outcome);
         }
         if ($request->filled('ip_address')) {
-            $query->where('ip_address', 'like', '%' . $request->ip_address . '%');
+            $query->where('ip_address', 'like', '%'.$request->ip_address.'%');
         }
         if ($request->filled('date_from')) {
-            $query->where('occurred_at', '>=', $request->date_from . ' 00:00:00');
+            $query->where('occurred_at', '>=', $request->date_from.' 00:00:00');
         }
         if ($request->filled('date_to')) {
-            $query->where('occurred_at', '<=', $request->date_to . ' 23:59:59');
+            $query->where('occurred_at', '<=', $request->date_to.' 23:59:59');
         }
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('actor_name', 'like', '%' . $search . '%')
-                  ->orWhere('target_label', 'like', '%' . $search . '%')
-                  ->orWhere('action', 'like', '%' . $search . '%')
-                  ->orWhere('ip_address', 'like', '%' . $search . '%');
+                $q->where('actor_name', 'like', '%'.$search.'%')
+                    ->orWhere('target_label', 'like', '%'.$search.'%')
+                    ->orWhere('action', 'like', '%'.$search.'%')
+                    ->orWhere('ip_address', 'like', '%'.$search.'%');
             });
         }
 
         $logs = $query->limit(10000)->get();
 
-        $filename = 'audit_logs_' . now()->format('Y-m-d_His') . '.csv';
-        
+        $filename = 'audit_logs_'.now()->format('Y-m-d_His').'.csv';
+
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
         $callback = function () use ($logs) {
             $file = fopen('php://output', 'w');
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            
+
             fputcsv($file, [
-                'ID', 'Category', 'Action', 'Severity', 'Outcome', 
+                'ID', 'Category', 'Action', 'Severity', 'Outcome',
                 'Actor Type', 'Actor ID', 'Actor Name',
                 'Target Type', 'Target ID', 'Target Label',
                 'IP Address', 'User Agent', 'Plugin', 'Request ID',
-                'Message', 'Occurred At'
+                'Message', 'Occurred At',
             ]);
 
             foreach ($logs as $log) {
@@ -663,13 +709,13 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function auditCleanup(Request $request)
     {
-        if (!Schema::hasTable('audit_logs')) {
+        if (! Schema::hasTable('audit_logs')) {
             return redirect()->route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db'])
                 ->with('error', __('admin/settings/systems/logs.audit.table_not_exists'));
         }
 
         $days = (int) $request->input('days', 90);
-        
+
         if ($days === 0) {
             $count = AuditLog::count();
             AuditLog::truncate();
@@ -691,17 +737,17 @@ class AdminSystemLogsController extends AdminLoggedInController
         $logsPath = storage_path('logs');
         $baseName = pathinfo($baseFileName, PATHINFO_FILENAME);
         $extension = pathinfo($baseFileName, PATHINFO_EXTENSION);
-        
+
         for ($i = 0; $i < 30; $i++) {
             $date = now()->subDays($i)->format('Y-m-d');
             $dailyFileName = "{$baseName}-{$date}.{$extension}";
             $dailyFilePath = "{$logsPath}/{$dailyFileName}";
-            
+
             if (File::exists($dailyFilePath)) {
                 return $dailyFilePath;
             }
         }
-        
+
         return null;
     }
 
@@ -713,28 +759,28 @@ class AdminSystemLogsController extends AdminLoggedInController
         $logsPath = storage_path('logs');
         $baseName = pathinfo($baseFileName, PATHINFO_FILENAME);
         $extension = pathinfo($baseFileName, PATHINFO_EXTENSION);
-        
+
         $dates = [];
-        
+
         // 日付なしのファイルが存在する場合は「最新」として追加
         $baseFilePath = "{$logsPath}/{$baseFileName}";
         if (File::exists($baseFilePath)) {
             $dates[''] = __('admin/settings/systems/logs/files.date_latest');
         }
-        
+
         // 日付付きファイルを検索（過去90日分）
         for ($i = 0; $i < 90; $i++) {
             $date = now()->subDays($i)->format('Y-m-d');
             $dailyFileName = "{$baseName}-{$date}.{$extension}";
             $dailyFilePath = "{$logsPath}/{$dailyFileName}";
-            
+
             if (File::exists($dailyFilePath)) {
                 $fileSize = File::size($dailyFilePath);
                 $sizeLabel = $this->formatFileSize($fileSize);
-                $dates[$date] = $date . " ({$sizeLabel})";
+                $dates[$date] = $date." ({$sizeLabel})";
             }
         }
-        
+
         return $dates;
     }
 
@@ -746,14 +792,14 @@ class AdminSystemLogsController extends AdminLoggedInController
         $logsPath = storage_path('logs');
         $baseName = pathinfo($baseFileName, PATHINFO_FILENAME);
         $extension = pathinfo($baseFileName, PATHINFO_EXTENSION);
-        
+
         $dailyFileName = "{$baseName}-{$date}.{$extension}";
         $dailyFilePath = "{$logsPath}/{$dailyFileName}";
-        
+
         if (File::exists($dailyFilePath)) {
             return $dailyFilePath;
         }
-        
+
         return null;
     }
 
@@ -764,13 +810,13 @@ class AdminSystemLogsController extends AdminLoggedInController
     {
         $units = ['B', 'KB', 'MB', 'GB'];
         $unitIndex = 0;
-        
+
         while ($bytes >= 1024 && $unitIndex < count($units) - 1) {
             $bytes /= 1024;
             $unitIndex++;
         }
-        
-        return round($bytes, 1) . ' ' . $units[$unitIndex];
+
+        return round($bytes, 1).' '.$units[$unitIndex];
     }
 
     /**
@@ -779,21 +825,22 @@ class AdminSystemLogsController extends AdminLoggedInController
     protected function readLogFileLines(string $filePath, int $maxLines = 5000): array
     {
         $fileSize = filesize($filePath);
-        
+
         if ($fileSize < 1024 * 1024) {
             $lines = array_reverse(
                 array_filter(
                     explode("\n", File::get($filePath)),
-                    fn($line) => trim($line) !== ''
+                    fn ($line) => trim($line) !== ''
                 )
             );
+
             return array_slice($lines, 0, $maxLines);
         }
 
         $lines = [];
         $handle = fopen($filePath, 'r');
-        
-        if (!$handle) {
+
+        if (! $handle) {
             return [];
         }
 
@@ -804,14 +851,14 @@ class AdminSystemLogsController extends AdminLoggedInController
         while ($position > 0 && count($lines) < $maxLines) {
             $readSize = min($bufferSize, $position);
             $position -= $readSize;
-            
+
             fseek($handle, $position);
             $chunk = fread($handle, $readSize);
-            $buffer = $chunk . $buffer;
-            
+            $buffer = $chunk.$buffer;
+
             $bufferLines = explode("\n", $buffer);
             $buffer = array_shift($bufferLines);
-            
+
             foreach (array_reverse($bufferLines) as $line) {
                 if (trim($line) !== '' && count($lines) < $maxLines) {
                     $lines[] = $line;
@@ -824,7 +871,7 @@ class AdminSystemLogsController extends AdminLoggedInController
         }
 
         fclose($handle);
-        
+
         return $lines;
     }
 
@@ -836,14 +883,14 @@ class AdminSystemLogsController extends AdminLoggedInController
         // パターン: [timestamp] level: message {json}
         // JSONは行末に存在する場合のみキャプチャ
         $pattern = '/^\[([^\]]+)\]\s+([^:]+):\s+(.+?)(\s+\{.+\})?\s*$/';
-        
-        if (!preg_match($pattern, $line, $matches)) {
+
+        if (! preg_match($pattern, $line, $matches)) {
             return [
                 'timestamp' => '',
                 'level' => '',
                 'message' => $line,
                 'context' => [],
-                'parsed' => false
+                'parsed' => false,
             ];
         }
 
@@ -851,7 +898,7 @@ class AdminSystemLogsController extends AdminLoggedInController
         $levelRaw = $matches[2];
         $messageWithContext = $matches[3];
         $contextJson = isset($matches[4]) ? trim($matches[4]) : '';
-        
+
         // Extract level from "local.INFO" format
         $level = $levelRaw;
         if (strpos($levelRaw, '.') !== false) {
@@ -863,14 +910,14 @@ class AdminSystemLogsController extends AdminLoggedInController
         // メッセージ部分からJSONを分離
         $message = $messageWithContext;
         $context = [];
-        
+
         // メッセージ内に{で始まるJSONがある場合
         if (preg_match('/^(.+?)\s+(\{.+\})$/', $messageWithContext, $jsonMatches)) {
             $message = trim($jsonMatches[1]);
             $contextJson = $jsonMatches[2];
         }
-        
-        if (!empty($contextJson)) {
+
+        if (! empty($contextJson)) {
             $decoded = json_decode($contextJson, true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
                 $context = $decoded;
@@ -882,7 +929,93 @@ class AdminSystemLogsController extends AdminLoggedInController
             'level' => $level,
             'message' => $message,
             'context' => $context,
-            'parsed' => true
+            'parsed' => true,
         ];
+    }
+
+    /**
+     * 監査ログ用のカラーマップをviewParamsに追加
+     */
+    private function addLogColorMaps(): void
+    {
+        $this->viewParams['severityColors'] = [
+            'debug' => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+            'info' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+            'notice' => 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200',
+            'warning' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+            'error' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+            'critical' => 'bg-red-200 text-red-900 dark:bg-red-800 dark:text-red-100',
+            'alert' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+            'emergency' => 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+        ];
+        $this->viewParams['outcomeColors'] = [
+            'success' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+            'failure' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+            'denied' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+            'pending' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+            'unknown' => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+        ];
+    }
+
+    /**
+     * ファイルログ用のレベル別カラーを計算
+     *
+     * @return array{bg: string, border: string, dot: string, label: string, text: string}
+     */
+    private static function getLevelColors(string $level): array
+    {
+        return match (true) {
+            str_contains($level, 'error'), str_contains($level, 'critical'), str_contains($level, 'alert'), str_contains($level, 'emergency') => [
+                'bg' => 'bg-red-50 dark:bg-red-900/20',
+                'border' => 'border-l-red-400',
+                'dot' => 'bg-red-500',
+                'label' => 'text-red-700 dark:text-red-300',
+                'text' => 'text-red-600 dark:text-red-200',
+            ],
+            str_contains($level, 'warning'), str_contains($level, 'notice') => [
+                'bg' => 'bg-yellow-50 dark:bg-yellow-900/20',
+                'border' => 'border-l-yellow-400',
+                'dot' => 'bg-yellow-500',
+                'label' => 'text-yellow-700 dark:text-yellow-300',
+                'text' => 'text-yellow-600 dark:text-yellow-200',
+            ],
+            str_contains($level, 'debug') => [
+                'bg' => 'bg-gray-50 dark:bg-gray-800/50',
+                'border' => 'border-l-gray-400',
+                'dot' => 'bg-gray-500',
+                'label' => 'text-gray-700 dark:text-gray-300',
+                'text' => 'text-gray-600 dark:text-gray-400',
+            ],
+            default => [
+                'bg' => 'bg-blue-50 dark:bg-blue-900/20',
+                'border' => 'border-l-blue-400',
+                'dot' => 'bg-blue-500',
+                'label' => 'text-blue-700 dark:text-blue-300',
+                'text' => 'text-blue-600 dark:text-blue-200',
+            ],
+        };
+    }
+
+    /**
+     * ナビゲーション用のカテゴリデータをviewParamsに追加
+     */
+    private function addNavigationData(string $logType): void
+    {
+        $adminTypes = ['activity', 'error', 'dixlase'];
+        $frontTypes = ['front_activity', 'front_error'];
+        $securityTypes = ['csp', 'audit'];
+        $browserTypes = ['browser'];
+
+        $this->viewParams['adminTypes'] = $adminTypes;
+        $this->viewParams['frontTypes'] = $frontTypes;
+        $this->viewParams['securityTypes'] = $securityTypes;
+        $this->viewParams['browserTypes'] = $browserTypes;
+        $this->viewParams['currentCategory'] = match (true) {
+            in_array($logType, $adminTypes) => 'admin',
+            in_array($logType, $frontTypes) => 'front',
+            in_array($logType, $securityTypes) => 'security',
+            in_array($logType, $browserTypes) => 'browser',
+            default => 'admin',
+        };
     }
 }

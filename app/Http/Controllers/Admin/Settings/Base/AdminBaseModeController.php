@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,10 +22,10 @@
 
 namespace App\Http\Controllers\Admin\Settings\Base;
 
+use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 use App\Enums\AdminMode;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 use App\Services\AdminModeAutoConfigService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -50,6 +50,7 @@ class AdminBaseModeController extends AdminLoggedInController
         );
 
         $this->viewParams['currentMode'] = $currentMode;
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.base.mode');
 
         return view('admin.settings.base.mode', $this->viewParams);
     }

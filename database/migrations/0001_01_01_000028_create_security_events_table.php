@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * セキュリティイベントの構造化保存テーブル
      * ゼロトラスト基盤の一部として、重要なセキュリティイベントをDBに保存
      */
@@ -36,38 +36,38 @@ return new class extends Migration
     {
         Schema::create('security_events', function (Blueprint $table) {
             $table->id();
-            
+
             // イベント発生者（nullable: システムイベントの場合はnull）
             $table->unsignedBigInteger('member_id')->nullable()->index();
-            
+
             // イベント種別
             $table->string('event_type', 50)->index();
-            
+
             // イベントカテゴリ（フィルタリング用）
             $table->string('category', 20)->index();
-            
+
             // リスクレベル
             $table->string('risk_level', 10)->default('low')->index();
-            
+
             // アクセス元情報
             $table->string('ip_address', 45)->nullable()->index();
             $table->text('user_agent')->nullable();
-            
+
             // デバイス情報
             $table->unsignedBigInteger('device_id')->nullable()->index();
-            
+
             // セッション情報
             $table->string('session_id', 255)->nullable()->index();
-            
+
             // イベント詳細（JSON）
             $table->json('meta')->nullable();
-            
+
             // イベント発生日時
             $table->timestamp('occurred_at')->useCurrent()->index();
-            
+
             // 標準タイムスタンプ
             $table->timestamps();
-            
+
             // 複合インデックス
             $table->index(['member_id', 'event_type', 'occurred_at']);
             $table->index(['ip_address', 'event_type', 'occurred_at']);

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -50,8 +50,6 @@ class AdminLoginNotification extends Notification
     /**
      * Create a new notification instance.
      *
-     * @param  array  $loginDetails
-     * @param  bool  $isSystemNotification
      * @return void
      */
     public function __construct(array $loginDetails, bool $isSystemNotification = false)
@@ -90,12 +88,12 @@ class AdminLoginNotification extends Notification
      */
     protected function buildMailMessage($notifiable)
     {
-        $message = new MailMessage;
+        $message = new MailMessage();
 
         // Determine display name with fallback priority
         $displayName = $notifiable->display_name
             ?? $notifiable->name
-            ?? $notifiable->account_name 
+            ?? $notifiable->account_name
             ?? $notifiable->email;
 
         $contextKey = $this->getContextKey();
@@ -107,28 +105,28 @@ class AdminLoginNotification extends Notification
         } else {
             $message->subject(__('mail.login-notification.subject_user', [
                 'name' => $displayName,
-                'context' => __($contextKey)
+                'context' => __($contextKey),
             ]));
             $message->greeting(__('mail.login-notification.user_message', [
                 'name' => $displayName,
-                'context' => __($contextKey)
+                'context' => __($contextKey),
             ]));
         }
 
         // Add login details
         if ($this->isSystemNotification) {
-            $message->line('**' . __('mail.login-notification.details_title') . '**');
-            $message->line('**' . __('mail.login-notification.datetime') . '** ' . $this->loginDetails['datetime']);
-            $message->line('**' . __('mail.login-notification.ip_address') . '** ' . $this->loginDetails['ip']);
-            
+            $message->line('**'.__('mail.login-notification.details_title').'**');
+            $message->line('**'.__('mail.login-notification.datetime').'** '.$this->loginDetails['datetime']);
+            $message->line('**'.__('mail.login-notification.ip_address').'** '.$this->loginDetails['ip']);
+
             // Add User-Agent for system notifications only
             if (isset($this->loginDetails['user_agent'])) {
-                $message->line('**' . __('mail.login-notification.user_agent') . '** ' . $this->loginDetails['user_agent']);
+                $message->line('**'.__('mail.login-notification.user_agent').'** '.$this->loginDetails['user_agent']);
             }
         } else {
-            $message->line(__('mail.login-notification.datetime') . ' ' . $this->loginDetails['datetime']);
-            $message->line(__('mail.login-notification.ip_address') . ' ' . $this->loginDetails['ip']);
-            $message->line(__('mail.login-notification.user_agent') . ' ' . $this->loginDetails['user_agent']);
+            $message->line(__('mail.login-notification.datetime').' '.$this->loginDetails['datetime']);
+            $message->line(__('mail.login-notification.ip_address').' '.$this->loginDetails['ip']);
+            $message->line(__('mail.login-notification.user_agent').' '.$this->loginDetails['user_agent']);
             $message->line('');
             $message->line(__('mail.login-notification.security_notice'));
         }
@@ -143,8 +141,6 @@ class AdminLoginNotification extends Notification
 
     /**
      * Get the context translation key.
-     *
-     * @return string
      */
     protected function getContextKey(): string
     {

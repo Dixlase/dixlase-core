@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,13 +24,15 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\SecuritySetting;
 use App\Models\BaseSetting;
+use App\Models\SecuritySetting;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 /**
+ * @internal コア専用。プラグイン/テーマから参照しないこと
+ *
  * セキュリティ設定統一レジストリ
  *
  * 散らばったセキュリティ設定を一元管理するサービス
@@ -52,14 +54,23 @@ class SecuritySettingsRegistry
      * 設定カテゴリ
      */
     public const CATEGORY_AUTH = 'auth';
+
     public const CATEGORY_LOGIN = 'login';
+
     public const CATEGORY_SESSION = 'session';
+
     public const CATEGORY_CAPTCHA = 'captcha';
+
     public const CATEGORY_IP = 'ip';
+
     public const CATEGORY_CSP = 'csp';
+
     public const CATEGORY_EXTENSION = 'extension';
+
     public const CATEGORY_NOTIFICATION = 'notification';
+
     public const CATEGORY_API = 'api';
+
     public const CATEGORY_LOCKDOWN = 'lockdown';
 
     /**
@@ -505,8 +516,8 @@ class SecuritySettingsRegistry
     /**
      * 設定値を取得
      *
-     * @param string $key 設定キー
-     * @param mixed $default デフォルト値（nullの場合は定義のデフォルトを使用）
+     * @param  string  $key  設定キー
+     * @param  mixed  $default  デフォルト値（nullの場合は定義のデフォルトを使用）
      * @return mixed
      */
     public static function get(string $key, $default = null)
@@ -514,7 +525,7 @@ class SecuritySettingsRegistry
         self::initialize();
 
         // キャッシュから取得
-        $cacheKey = self::CACHE_PREFIX . $key;
+        $cacheKey = self::CACHE_PREFIX.$key;
         $cached = Cache::get($cacheKey);
         if ($cached !== null) {
             return $cached;
@@ -522,7 +533,7 @@ class SecuritySettingsRegistry
 
         // 定義を取得
         $definition = self::$definitions[$key] ?? null;
-        if (!$definition) {
+        if (! $definition) {
             return $default;
         }
 
@@ -544,16 +555,15 @@ class SecuritySettingsRegistry
     /**
      * 設定値を設定
      *
-     * @param string $key 設定キー
-     * @param mixed $value 値
-     * @return bool
+     * @param  string  $key  設定キー
+     * @param  mixed  $value  値
      */
     public static function set(string $key, $value): bool
     {
         self::initialize();
 
         $definition = self::$definitions[$key] ?? null;
-        if (!$definition) {
+        if (! $definition) {
             return false;
         }
 
@@ -572,7 +582,7 @@ class SecuritySettingsRegistry
     /**
      * 複数の設定値を一括設定
      *
-     * @param array $settings [key => value]
+     * @param  array  $settings  [key => value]
      * @return int 設定された件数
      */
     public static function setMultiple(array $settings): int
@@ -583,14 +593,14 @@ class SecuritySettingsRegistry
                 $count++;
             }
         }
+
         return $count;
     }
 
     /**
      * カテゴリ別に設定を取得
      *
-     * @param string $category カテゴリ
-     * @return array
+     * @param  string  $category  カテゴリ
      */
     public static function getByCategory(string $category): array
     {
@@ -602,14 +612,14 @@ class SecuritySettingsRegistry
                 $settings[$key] = self::get($key);
             }
         }
+
         return $settings;
     }
 
     /**
      * 全設定を取得
      *
-     * @param bool $includeSensitive 機密情報を含めるか
-     * @return array
+     * @param  bool  $includeSensitive  機密情報を含めるか
      */
     public static function getAll(bool $includeSensitive = false): array
     {
@@ -617,19 +627,19 @@ class SecuritySettingsRegistry
 
         $settings = [];
         foreach (self::$definitions as $key => $definition) {
-            if (!$includeSensitive && ($definition['sensitive'] ?? false)) {
+            if (! $includeSensitive && ($definition['sensitive'] ?? false)) {
                 continue;
             }
             $settings[$key] = self::get($key);
         }
+
         return $settings;
     }
 
     /**
      * カテゴリ別にグループ化した全設定を取得
      *
-     * @param bool $includeSensitive 機密情報を含めるか
-     * @return array
+     * @param  bool  $includeSensitive  機密情報を含めるか
      */
     public static function getAllGrouped(bool $includeSensitive = false): array
     {
@@ -637,11 +647,11 @@ class SecuritySettingsRegistry
 
         $grouped = [];
         foreach (self::$definitions as $key => $definition) {
-            if (!$includeSensitive && ($definition['sensitive'] ?? false)) {
+            if (! $includeSensitive && ($definition['sensitive'] ?? false)) {
                 continue;
             }
             $category = $definition['category'];
-            if (!isset($grouped[$category])) {
+            if (! isset($grouped[$category])) {
                 $grouped[$category] = [];
             }
             $grouped[$category][$key] = [
@@ -651,14 +661,14 @@ class SecuritySettingsRegistry
                 'description' => $definition['description'],
             ];
         }
+
         return $grouped;
     }
 
     /**
      * 設定定義を取得
      *
-     * @param string|null $key 特定のキー（nullで全て）
-     * @return array|null
+     * @param  string|null  $key  特定のキー（nullで全て）
      */
     public static function getDefinition(?string $key = null): ?array
     {
@@ -673,38 +683,35 @@ class SecuritySettingsRegistry
 
     /**
      * 設定が存在するか
-     *
-     * @param string $key
-     * @return bool
      */
     public static function has(string $key): bool
     {
         self::initialize();
+
         return isset(self::$definitions[$key]);
     }
 
     /**
      * キャッシュをクリア
      *
-     * @param string|null $key 特定のキー（nullで全て）
+     * @param  string|null  $key  特定のキー（nullで全て）
      */
     public static function clearCache(?string $key = null): void
     {
         if ($key !== null) {
-            Cache::forget(self::CACHE_PREFIX . $key);
+            Cache::forget(self::CACHE_PREFIX.$key);
+
             return;
         }
 
         self::initialize();
         foreach (array_keys(self::$definitions) as $k) {
-            Cache::forget(self::CACHE_PREFIX . $k);
+            Cache::forget(self::CACHE_PREFIX.$k);
         }
     }
 
     /**
      * 利用可能なカテゴリ一覧を取得
-     *
-     * @return array
      */
     public static function getCategories(): array
     {
@@ -758,18 +765,20 @@ class SecuritySettingsRegistry
                 case 'security_settings':
                     if (Schema::hasTable('security_settings')) {
                         SecuritySetting::set($key, $stringValue);
+
                         return true;
                     }
                     break;
                 case 'base_settings':
                     if (Schema::hasTable('base_settings')) {
                         BaseSetting::setValue($key, $stringValue);
+
                         return true;
                     }
                     break;
             }
         } catch (\Exception $e) {
-            Log::error("SecuritySettingsRegistry: Failed to set {$key} to {$source}: " . $e->getMessage());
+            Log::error("SecuritySettingsRegistry: Failed to set {$key} to {$source}: ".$e->getMessage());
         }
 
         return false;
@@ -791,6 +800,7 @@ class SecuritySettingsRegistry
                 if (is_array($value)) {
                     return $value;
                 }
+
                 return $value ? explode(',', $value) : [];
             case 'string':
             default:
@@ -801,8 +811,7 @@ class SecuritySettingsRegistry
     /**
      * 設定のエクスポート（バックアップ用）
      *
-     * @param bool $includeSensitive 機密情報を含めるか
-     * @return array
+     * @param  bool  $includeSensitive  機密情報を含めるか
      */
     public static function export(bool $includeSensitive = false): array
     {
@@ -816,12 +825,12 @@ class SecuritySettingsRegistry
     /**
      * 設定のインポート（リストア用）
      *
-     * @param array $data エクスポートされたデータ
+     * @param  array  $data  エクスポートされたデータ
      * @return int インポートされた件数
      */
     public static function import(array $data): int
     {
-        if (!isset($data['settings']) || !is_array($data['settings'])) {
+        if (! isset($data['settings']) || ! is_array($data['settings'])) {
             return 0;
         }
 

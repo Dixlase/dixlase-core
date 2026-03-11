@@ -1,11 +1,28 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 namespace App\Session;
 
-use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Session\DatabaseSessionHandler;
-use Illuminate\Support\Facades\Auth;
-use Log;
 
 class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
 {
@@ -32,10 +49,6 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
 
     /**
      * ガード別のテーブル設定を登録
-     *
-     * @param string $guard
-     * @param string $table
-     * @return void
      */
     public function setGuardTable(string $guard, string $table): void
     {
@@ -44,9 +57,6 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
 
     /**
      * ガード判定ロジックを登録
-     *
-     * @param callable $resolver
-     * @return void
      */
     public function addGuardResolver(callable $resolver): void
     {
@@ -55,8 +65,6 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
 
     /**
      * 現在のガードに基づいてテーブル名を取得
-     *
-     * @return string
      */
     protected function getTable(): string
     {
@@ -74,8 +82,6 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
 
     /**
      * 現在のガード名を取得
-     *
-     * @return string|null
      */
     protected function getCurrentGuard(): ?string
     {
@@ -92,34 +98,38 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
             $guard = $resolver(request());
             if ($guard !== null) {
                 $this->currentGuard = $guard;
+
                 return $guard;
             }
         }
 
         // パスベースのガード判定（優先順位が高い）
-        
+
         // 管理画面の場合はmemberガード
         if (str_starts_with($path, 'admin')) {
             $this->currentGuard = 'member';
+
             return 'member';
         }
-        
+
         // Mypageの場合はuserガード
         if (str_starts_with($path, 'mypage')) {
             $this->currentGuard = 'user';
+
             return 'user';
         }
 
         // その他のパスはデフォルトテーブル（sessions）を使用
         // 認証状態チェックは循環参照を引き起こすため削除
         $this->currentGuard = null;
+
         return null;
     }
 
     /**
      * セッションデータを読み込む
      *
-     * @param string $sessionId
+     * @param  string  $sessionId
      * @return string|null
      */
     public function read($sessionId): string|false
@@ -130,11 +140,13 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
 
         if ($this->expired($session)) {
             $this->exists = true;
+
             return '';
         }
 
         if (isset($session->payload)) {
             $this->exists = true;
+
             return base64_decode($session->payload);
         }
 
@@ -154,15 +166,14 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     /**
      * セッションデータを書き込む
      *
-     * @param string $sessionId
-     * @param string $data
-     * @return bool
+     * @param  string  $sessionId
+     * @param  string  $data
      */
     public function write($sessionId, $data): bool
     {
         $payload = $this->getDefaultPayload($data);
 
-        if (!$this->exists) {
+        if (! $this->exists) {
             $this->read($sessionId);
         }
 
@@ -182,9 +193,8 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     /**
      * 他のガードテーブルにセッションを同期
      *
-     * @param string $sessionId
-     * @param string $data
-     * @return void
+     * @param  string  $sessionId
+     * @param  string  $data
      */
     protected function syncToOtherTables($sessionId, $data): void
     {
@@ -217,10 +227,9 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     /**
      * 指定テーブルにセッションを同期
      *
-     * @param string $table
-     * @param string $sessionId
-     * @param array $payload
-     * @return void
+     * @param  string  $table
+     * @param  string  $sessionId
+     * @param  array  $payload
      */
     protected function syncToTable($table, $sessionId, $payload): void
     {
@@ -250,7 +259,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     /**
      * デフォルトのペイロードを取得（テーブルに応じてカラム名を調整）
      *
-     * @param string $data
+     * @param  string  $data
      * @return array
      */
     protected function getDefaultPayload($data)
@@ -266,7 +275,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
 
         $table = $this->getTable();
         $guard = $this->getCurrentGuard();
-        
+
         // ゲスト用テーブルの場合（guardがnull）はuser_id/member_idを含めない
         if ($guard === null) {
             return array_merge($payload, [
@@ -274,7 +283,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
                 'user_agent' => $this->userAgent(),
             ]);
         }
-        
+
         // メンバー用テーブルの場合はmember_idを使用
         if ($guard === 'member') {
             return array_merge($payload, [
@@ -283,7 +292,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
                 'user_agent' => $this->userAgent(),
             ]);
         }
-        
+
         // その他（ユーザープラグインなど）はuser_idを使用
         return array_merge($payload, [
             'user_id' => $this->userId(),
@@ -295,8 +304,8 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     /**
      * セッションデータを更新
      *
-     * @param string $sessionId
-     * @param array $payload
+     * @param  string  $sessionId
+     * @param  array  $payload
      * @return int
      */
     protected function performUpdate($sessionId, $payload)
@@ -309,8 +318,8 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     /**
      * セッションデータを挿入
      *
-     * @param string $sessionId
-     * @param array $payload
+     * @param  string  $sessionId
+     * @param  array  $payload
      * @return bool
      */
     protected function performInsert($sessionId, $payload)
@@ -327,14 +336,11 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
 
     /**
      * テーブルに応じてペイロードをフィルタリング
-     *
-     * @param array $payload
-     * @return array
      */
     protected function filterPayloadForTable(array $payload): array
     {
         $table = $this->getTable();
-        
+
         // ゲスト用テーブル（sessions）の場合はuser_idを除外
         if ($table === 'sessions') {
             unset($payload['user_id']);
@@ -344,15 +350,14 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
             $payload['member_id'] = $payload['user_id'];
             unset($payload['user_id']);
         }
-        
+
         return $payload;
     }
 
     /**
      * セッションを削除
      *
-     * @param string $sessionId
-     * @return bool
+     * @param  string  $sessionId
      */
     public function destroy($sessionId): bool
     {
@@ -364,8 +369,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     /**
      * 期限切れセッションをガベージコレクション
      *
-     * @param int $lifetime
-     * @return int
+     * @param  int  $lifetime
      */
     public function gc($lifetime): int
     {

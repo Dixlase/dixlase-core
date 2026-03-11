@@ -31,9 +31,10 @@ return [
     'invalid_with_attempts' => '回復コードが無効です。残り試行回数: :attempts回',
     'use_recovery_code' => '回復コード',
     'back_to_two_fa' => '二段階認証に戻る',
-    
+
     // 回復コード表示モーダル
     'warning' => 'これらの回復コードは安全な場所に保管してください。<br>デバイスにアクセスできない場合、これらのコードを使用してアカウントにアクセスできます。',
     'confirm_saved' => '回復コードを安全な場所に保存したことを確認しました',
+    'auto_generated_title' => '回復コードが生成されました',
     'auto_generated_message' => '二段階認証が有効になったため、回復コードが自動生成されました。',
 ];
