@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 現在のアクション情報を保持
     let currentAction = null;
+    let scanWasPerformed = false;
 
     // Stage 1 要素
     const stage1Message = document.getElementById('pluginActionStage1Message');
@@ -171,6 +172,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 closeModal('pluginActionStage1Modal');
 
                 if (data.success) {
+                    scanWasPerformed = true;
                     setTimeout(function () {
                         showStage2(data);
                     }, 150);
@@ -402,10 +404,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Stage 2: キャンセルボタン
+    // Stage 2: キャンセルボタン（スキャン実行後はページリロードしてバッジを更新）
     if (stage2CancelBtn) {
         stage2CancelBtn.addEventListener('click', function () {
             closeModal('pluginActionStage2Modal');
+            if (scanWasPerformed) {
+                window.location.reload();
+            }
             currentAction = null;
         });
     }
