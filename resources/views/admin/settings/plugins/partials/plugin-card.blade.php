@@ -144,33 +144,55 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
 
-            {{-- CSP互換性 --}}
+            {{-- CSPモード別互換性 --}}
             <div class="flex items-center gap-2">
                 <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/plugins/index.badge_labels.csp') }}</span>
-                @if(in_array($card['cspCompatibility']['status'], ['csp_ready', 'compatible', 'compliant']))
-                    <button type="button"
-                            class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 cursor-pointer hover:opacity-80 transition-opacity"
-                            title="{{ __('admin/settings/plugins/index.csp.ready_tooltip') }}">
-                        <i class="fas fa-shield-alt mr-1"></i>
-                        {{ __('admin/settings/plugins/index.verification.csp_ready') }}
-                        <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
-                    </button>
-                @elseif($card['cspCompatibility']['requires_inline_js'])
-                    <button type="button"
-                            class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 cursor-pointer hover:opacity-80 transition-opacity"
-                            title="{{ __('admin/settings/plugins/index.csp.inline_required_tooltip') }}">
-                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                        {{ __('admin/settings/plugins/index.verification.csp_inline_required') }}
-                        <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
-                    </button>
-                @else
-                    <button type="button"
-                            class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 cursor-pointer hover:opacity-80 transition-opacity">
-                        <i class="fas fa-question mr-1"></i>
-                        {{ __('admin/settings/plugins/index.verification.csp_not_checked') }}
-                        <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
-                    </button>
-                @endif
+                <div class="flex items-center gap-1">
+                    @foreach(['development', 'standard', 'strict'] as $cspMode)
+                        @if($card['cspModeBadges'][$cspMode]['checked'])
+                            @if($card['cspModeBadges'][$cspMode]['compatible'])
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                    <i class="fas fa-check mr-0.5 text-[10px]"></i>{{ __('admin/settings/plugins/index.csp_mode.' . $cspMode) }}
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                    <i class="fas fa-times mr-0.5 text-[10px]"></i>{{ __('admin/settings/plugins/index.csp_mode.' . $cspMode) }}
+                                </span>
+                            @endif
+                        @else
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+                                <i class="fas fa-question mr-0.5 text-[10px]"></i>{{ __('admin/settings/plugins/index.csp_mode.' . $cspMode) }}
+                            </span>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- セキュリティプリセット互換性 --}}
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/plugins/index.badge_labels.preset') }}</span>
+                <div class="flex items-center gap-1">
+                    @foreach(['development', 'balanced', 'strict'] as $presetKey)
+                        @if($card['presetBadges'][$presetKey]['compatible'] === null)
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+                                <i class="fas fa-question mr-0.5 text-[10px]"></i>{{ __('admin/settings/plugins/index.preset_badge.' . $presetKey) }}
+                            </span>
+                        @elseif($card['presetBadges'][$presetKey]['compatible'])
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                <i class="fas fa-check mr-0.5 text-[10px]"></i>{{ __('admin/settings/plugins/index.preset_badge.' . $presetKey) }}
+                            </span>
+                        @else
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                <i class="fas fa-times mr-0.5 text-[10px]"></i>{{ __('admin/settings/plugins/index.preset_badge.' . $presetKey) }}
+                            </span>
+                        @endif
+                    @endforeach
+                    @if($card['presetBadges']['custom']['compatible'] !== null)
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium border {{ $card['presetBadges']['custom']['compatible'] ? 'border-green-300 text-green-700 dark:border-green-700 dark:text-green-300' : 'border-red-300 text-red-700 dark:border-red-700 dark:text-red-300' }}">
+                            <i class="fas {{ $card['presetBadges']['custom']['compatible'] ? 'fa-check' : 'fa-times' }} mr-0.5 text-[10px]"></i>{{ __('admin/settings/plugins/index.preset_badge.custom') }}
+                        </span>
+                    @endif
+                </div>
             </div>
 
             {{-- スキャンボタン --}}

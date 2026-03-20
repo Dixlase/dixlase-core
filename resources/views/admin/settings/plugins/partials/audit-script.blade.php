@@ -49,7 +49,6 @@ https://exc-d.com
         'mismatchesLabel' => __('admin/settings/plugins/index.permissions.audit_mismatches'),
         'healthIssueTypeLabels' => [
             'signature_unsigned' => __('admin/settings/plugins/index.permissions.health_issue_signature_unsigned'),
-            'signature_unsigned_production' => __('admin/settings/plugins/index.permissions.health_issue_signature_unsigned_production'),
             'signature_invalid' => __('admin/settings/plugins/index.permissions.health_issue_signature_invalid'),
             'permission_undefined' => __('admin/settings/plugins/index.permissions.health_issue_permission_undefined'),
             'permission_undeclared_minor' => __('admin/settings/plugins/index.permissions.health_issue_permission_undeclared_minor'),

@@ -22,9 +22,13 @@
 
 namespace App\Presenters\Admin;
 
+use App\Enums\ExtensionSecurityLevel;
+use App\Enums\ExtensionSecurityPreset;
 use App\Enums\PluginEnableAction;
+use App\Enums\PluginHealthStatus;
 use App\Enums\PluginTrustLevel;
 use App\Services\Plugin\PluginHealthScorer;
+use App\Services\SecuritySettingsRegistry;
 use Carbon\Carbon;
 
 class ExtensionCardPresenter
@@ -278,6 +282,8 @@ class ExtensionCardPresenter
             'trustLevelLabel' => $trustLevel?->label(),
             'needsScan' => self::computeNeedsScan($slug, $auditedAt),
             'scanData' => $scanData,
+            'cspModeBadges' => self::buildCspModeBadges($cspCompatibility),
+            'presetBadges' => self::buildPresetCompatibilityBadges($healthStatus),
         ];
     }
 
@@ -511,6 +517,88 @@ class ExtensionCardPresenter
             'riskLevel' => $riskLevel,
             'hasWarnings' => $hasWarnings,
         ];
+    }
+
+    /**
+     * CSP モード別互換性バッジデータを生成
+     *
+     * @param  array<string, mixed>  $cspCompatibility
+     * @return array<string, array{compatible: bool, label: string, icon: string, color: string}>
+     */
+    private static function buildCspModeBadges(array $cspCompatibility): array
+    {
+        $status = $cspCompatibility['status'] ?? 'unknown';
+        $requiresInlineJs = $cspCompatibility['requires_inline_js'] ?? false;
+        $requiresInlineCss = $cspCompatibility['requires_inline_css'] ?? false;
+        $isChecked = in_array($status, ['csp_ready', 'compatible', 'compliant', 'inline_required', 'inline_css_only'], true);
+
+        if (! $isChecked) {
+            // Not checked: all modes unknown (gray)
+            return [
+                'development' => ['compatible' => null, 'checked' => false],
+                'standard' => ['compatible' => null, 'checked' => false],
+                'strict' => ['compatible' => null, 'checked' => false],
+            ];
+        }
+
+        // Development mode: always compatible (inline is allowed)
+        $devCompatible = true;
+
+        // Standard mode: inline JS is blocked (nonce-less inline)
+        $standardCompatible = ! $requiresInlineJs;
+
+        // Strict mode: all inline (JS and CSS) is blocked
+        $strictCompatible = ! $requiresInlineJs && ! $requiresInlineCss;
+
+        return [
+            'development' => ['compatible' => $devCompatible, 'checked' => true],
+            'standard' => ['compatible' => $standardCompatible, 'checked' => true],
+            'strict' => ['compatible' => $strictCompatible, 'checked' => true],
+        ];
+    }
+
+    /**
+     * セキュリティプリセット別互換性バッジデータを生成
+     *
+     * @return array<string, array{compatible: bool}>
+     */
+    private static function buildPresetCompatibilityBadges(?string $healthStatus): array
+    {
+        if ($healthStatus === null) {
+            return [
+                'development' => ['compatible' => null],
+                'balanced' => ['compatible' => null],
+                'strict' => ['compatible' => null],
+                'custom' => ['compatible' => null],
+            ];
+        }
+
+        $status = PluginHealthStatus::from($healthStatus);
+
+        $presets = [
+            'development' => ExtensionSecurityPreset::Development,
+            'balanced' => ExtensionSecurityPreset::Balanced,
+            'strict' => ExtensionSecurityPreset::Strict,
+        ];
+
+        $badges = [];
+        foreach ($presets as $key => $preset) {
+            $settings = $preset->getDefaultSettings();
+            $maxLevel = ExtensionSecurityLevel::from($settings['plugin_max_health_level']);
+            $badges[$key] = ['compatible' => $status->canActivate($maxLevel)];
+        }
+
+        // Custom mode: use actual current settings
+        try {
+            $customMaxLevel = ExtensionSecurityLevel::from(
+                (int) SecuritySettingsRegistry::get('extension_plugin_max_health_level', ExtensionSecurityLevel::Warning->value)
+            );
+            $badges['custom'] = ['compatible' => $status->canActivate($customMaxLevel)];
+        } catch (\Exception $e) {
+            $badges['custom'] = ['compatible' => null];
+        }
+
+        return $badges;
     }
 
     /**
