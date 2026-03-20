@@ -197,7 +197,7 @@ class CheckInstallationReady
             
         } else {
             // インストール済みの場合、インストール画面にはアクセスできないようにする
-            if ($request->is('install*') || $request->is('install/*')) {
+            if ($request->is('install') || $request->is('install/*')) {
                 return redirect('/')->with('message', 'このアプリケーションは既にインストールされています。');
             }
         }
