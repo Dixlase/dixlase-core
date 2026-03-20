@@ -41,10 +41,11 @@ This project has domain-specific skills available. Always activate the relevant 
 - Use conventional commit format (e.g. `feat:`, `fix:`, `refactor:`).
 - Write the commit message in **bilingual format**.
 - Place both English and Japanese titles consecutively at the top, followed by English bullet points, a `----` separator, then Japanese bullet points.
+- The Japanese title line does **not** include the conventional commit prefix (e.g. no `feat:` / `fix:`).
 - Example:
   ```
   feat: add user profile page
-  feat: ユーザープロフィールページを追加
+  ユーザープロフィールページを追加
 
   - Add ProfileController with show/edit actions
   - Create profile Blade views with avatar upload
