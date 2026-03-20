@@ -1,10 +1,9 @@
-name: Deploy Dixlase Core
+name: Deploy Dixlase
 
 on:
   push:
     branches:
       - main
-      - staging
 
 jobs:
   deploy:
@@ -14,7 +13,7 @@ jobs:
       - name: Set deploy target
         id: target
         run: |
-          if [ "${{ github.ref_name }}" = "main" ]; then
+          if [ "${{ github.repository }}" = "Dixlase/dixlase" ]; then
             echo "env=production" >> $GITHUB_OUTPUT
             echo "base_dir=/srv/dixlase" >> $GITHUB_OUTPUT
           else
@@ -31,13 +30,12 @@ jobs:
           script: |
             set -e
             BASE="${{ steps.target.outputs.base_dir }}"
-            BRANCH="${{ github.ref_name }}"
 
             for SITE in brand docs demo; do
               echo "=== Deploying $SITE (${{ steps.target.outputs.env }}) ==="
               cd "$BASE/$SITE"
               git fetch origin
-              git reset --hard "origin/$BRANCH"
+              git reset --hard origin/main
 
               if [ -f composer.json ]; then
                 composer install --no-dev --no-interaction --optimize-autoloader
