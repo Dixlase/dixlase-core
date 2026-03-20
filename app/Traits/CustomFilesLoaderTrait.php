@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Str;
 
 /**
  * @api プラグイン/テーマから使用可能な安定APIです
@@ -35,80 +36,65 @@ use Illuminate\Support\Facades\View;
  */
 trait CustomFilesLoaderTrait
 {
-    // カスタムファイルを読み込む
-    public function loadCustomFilesForType($customFilesPath, $typeConfig)
+    /**
+     * Load custom override files for a given file type configuration.
+     *
+     * @param  string  $customFilesPath  Absolute path to the custom files directory
+     * @param  array{path: string, namespace: string}  $typeConfig  File type configuration
+     */
+    public function loadCustomFilesForType(string $customFilesPath, array $typeConfig): void
     {
-        $customPath = base_path($customFilesPath.$typeConfig['path']);
+        $customPath = $customFilesPath.DIRECTORY_SEPARATOR.$typeConfig['path'];
         $defaultNamespace = $typeConfig['namespace'];
 
         $this->loadCustomFiles($customPath, $defaultNamespace);
     }
 
-    public function loadCustomFiles($customPath, $defaultNamespace)
+    /**
+     * Scan custom directory and bind custom classes to replace core classes.
+     *
+     * Custom files use the `Custom\` namespace prefix (e.g. `Custom\App\Http\Controllers\FooController`)
+     * to override core classes (e.g. `App\Http\Controllers\FooController`).
+     *
+     * @param  string  $customPath  Absolute path to scan for custom PHP files
+     * @param  string  $defaultNamespace  Core namespace prefix (e.g. `App\Http\Controllers\`)
+     */
+    public function loadCustomFiles(string $customPath, string $defaultNamespace): void
     {
         if (! File::exists($customPath)) {
             return;
         }
 
         foreach (File::allFiles($customPath) as $file) {
-            $relativePath = Str::replaceFirst($customPath, '', $file->getPath());
-            $className = $this->getClassNameFromPath($relativePath);
+            if ($file->getExtension() !== 'php') {
+                continue;
+            }
 
-            $customClass = $defaultNamespace.'Custom\\'.$className;
+            // Build relative path including filename, then convert to class name
+            $relativePathname = Str::replaceFirst(
+                $customPath.DIRECTORY_SEPARATOR,
+                '',
+                $file->getPathname()
+            );
+            $className = $this->getClassNameFromPath($relativePathname);
+
+            // Custom class: Custom\App\Http\Controllers\FooController (matches composer autoload)
+            $customClass = 'Custom\\'.$defaultNamespace.$className;
+            // Core class: App\Http\Controllers\FooController
             $coreClass = $defaultNamespace.$className;
 
-            if (class_exists($customClass)) {
-                if (class_exists($coreClass)) {
-                    $mergeMode = config('custom.default_merge_mode', 'merge');
-
-                    if ($mergeMode === 'replace') {
-                        App::bind($coreClass, $customClass);
-                    } elseif ($mergeMode === 'merge') {
-                        $mergedClass = $this->mergeClasses($coreClass, $customClass);
-                        App::bind($coreClass, $mergedClass);
-                    }
-                } else {
-                    App::bind($customClass, $customClass);
-                }
+            if (class_exists($customClass) && class_exists($coreClass)) {
+                app()->bind($coreClass, $customClass);
             }
         }
     }
 
-    private function getClassNameFromPath($relativePath)
+    /**
+     * Convert a relative file path to a class name.
+     */
+    private function getClassNameFromPath(string $relativePath): string
     {
         return str_replace(['/', '.php'], ['\\', ''], $relativePath);
-    }
-
-    private function mergeClasses(string $coreClass, string $customClass)
-    {
-        // 動的なクラス生成のためのクラス名を定義
-        $mergedClassName = $coreClass.'MergedWith'.$customClass;
-
-        if (! class_exists($mergedClassName)) {
-            // 動的にクラスを生成
-            eval("
-            class {$mergedClassName} extends {$coreClass} {
-                private \$customInstance;
-
-                public function __construct()
-                {
-                    parent::__construct();
-                    \$this->customInstance = new {$customClass}();
-                }
-
-                public function __call(\$method, \$args)
-                {
-                    if (method_exists(\$this->customInstance, \$method)) {
-                        return \$this->customInstance->\$method(...\$args);
-                    }
-                    return parent::__call(\$method, \$args);
-                }
-            }
-        ");
-        }
-
-        // 動的に生成したクラスのインスタンスを返す
-        return new $mergedClassName();
     }
 
     /*
