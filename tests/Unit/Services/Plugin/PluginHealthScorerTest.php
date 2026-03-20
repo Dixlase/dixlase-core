@@ -61,7 +61,7 @@ class PluginHealthScorerTest extends TestCase
     }
 
     /**
-     * 署名未設定の場合の減点テスト（非本番環境）
+     * 署名未設定の場合の減点テスト（環境非依存: -10）
      */
     public function test_unsigned_signature_deduction(): void
     {
@@ -85,8 +85,8 @@ class PluginHealthScorerTest extends TestCase
 
         $result = $this->scorer->calculate('test-plugin');
 
-        // signature_unsigned: -5 → score = 95
-        $this->assertEquals(95, $result->score);
+        // signature_unsigned: -10 → score = 90
+        $this->assertEquals(90, $result->score);
         $this->assertEquals(PluginHealthStatus::Healthy, $result->status);
 
         $types = array_map(fn ($i) => $i->type, $result->issues);
@@ -647,13 +647,13 @@ class PluginHealthScorerTest extends TestCase
     }
 
     // ====================================================================
-    // 新規テスト: 環境依存ペナルティ
+    // 新規テスト: 署名未署名ペナルティ（環境非依存）
     // ====================================================================
 
     /**
-     * 本番環境での署名未署名ペナルティ -15 のテスト
+     * 署名未署名ペナルティが環境に依存しないことのテスト（本番環境でも -10）
      */
-    public function test_signature_unsigned_production_penalty(): void
+    public function test_signature_unsigned_penalty_same_in_production(): void
     {
         $this->app->detectEnvironment(fn () => 'production');
 
@@ -676,19 +676,18 @@ class PluginHealthScorerTest extends TestCase
 
         $result = $this->scorer->calculate('test-plugin');
 
-        // signature_unsigned_production: -15 → score = 85
-        $this->assertEquals(85, $result->score);
-        $this->assertEquals(PluginHealthStatus::Advisory, $result->status);
+        // signature_unsigned: -10 → score = 90 (same as non-production)
+        $this->assertEquals(90, $result->score);
+        $this->assertEquals(PluginHealthStatus::Healthy, $result->status);
 
         $types = array_map(fn ($i) => $i->type, $result->issues);
-        $this->assertContains('signature_unsigned_production', $types);
-        $this->assertNotContains('signature_unsigned', $types);
+        $this->assertContains('signature_unsigned', $types);
     }
 
     /**
-     * 非本番環境での署名未署名ペナルティ -5 のテスト
+     * 署名未署名ペナルティが環境に依存しないことのテスト（ローカル環境でも -10）
      */
-    public function test_signature_unsigned_non_production_penalty(): void
+    public function test_signature_unsigned_penalty_same_in_local(): void
     {
         $this->app->detectEnvironment(fn () => 'local');
 
@@ -711,13 +710,12 @@ class PluginHealthScorerTest extends TestCase
 
         $result = $this->scorer->calculate('test-plugin');
 
-        // signature_unsigned: -5 → score = 95
-        $this->assertEquals(95, $result->score);
+        // signature_unsigned: -10 → score = 90 (same as production)
+        $this->assertEquals(90, $result->score);
         $this->assertEquals(PluginHealthStatus::Healthy, $result->status);
 
         $types = array_map(fn ($i) => $i->type, $result->issues);
         $this->assertContains('signature_unsigned', $types);
-        $this->assertNotContains('signature_unsigned_production', $types);
     }
 
     // ====================================================================

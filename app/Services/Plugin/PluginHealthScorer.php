@@ -141,18 +141,11 @@ class PluginHealthScorer
         $signatureInfo = $this->permissionService->getSignatureInfo($pluginSlug);
 
         if ($signatureInfo['status'] === 'unsigned') {
-            $isProduction = app()->environment('production');
-            $deduction = $isProduction
-                ? ($deductionRules['signature_unsigned_production'] ?? -15)
-                : ($deductionRules['signature_unsigned'] ?? -5);
-
             $issues[] = new HealthIssue(
-                type: $isProduction ? 'signature_unsigned_production' : 'signature_unsigned',
-                severity: $isProduction ? 'warning' : 'info',
-                description: $isProduction
-                    ? '本番環境で署名がありません。署名を強く推奨します。'
-                    : '署名がありません。本番配布時は署名を推奨します。',
-                deduction: $deduction,
+                type: 'signature_unsigned',
+                severity: 'warning',
+                description: '署名がありません。配布時は署名を推奨します。',
+                deduction: $deductionRules['signature_unsigned'] ?? -10,
             );
         } elseif ($signatureInfo['status'] === 'invalid') {
             $issues[] = new HealthIssue(

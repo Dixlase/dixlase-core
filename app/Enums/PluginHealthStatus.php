@@ -186,7 +186,7 @@ enum PluginHealthStatus: string
     {
         return [
             // 署名関連
-            'signature_unsigned' => -5,
+            'signature_unsigned' => -10,
             'signature_invalid' => -50,
             'signature_mismatch' => -50,
 
@@ -195,9 +195,6 @@ enum PluginHealthStatus: string
             'permission_undeclared_major' => -15,
             'permission_unused' => -2,
             'permission_undefined' => -10,
-
-            // 署名関連（環境別）
-            'signature_unsigned_production' => -15,
 
             // CSP関連（モード別）
             'csp_violation_dev' => 0,

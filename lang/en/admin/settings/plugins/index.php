@@ -82,7 +82,7 @@ return [
     'health_issue' => [
         'csp_inline_css_required' => 'Inline CSS required. May not work in strict mode.',
         'csp_external_resources' => 'External resources detected. Review for security.',
-        'signature_unsigned_production' => 'No signature in production environment. Signing is strongly recommended.',
+        'signature_unsigned' => 'No signature. Signing is recommended for distribution.',
     ],
 
     // Badge Labels (for card display)
@@ -91,6 +91,24 @@ return [
         'signature' => 'Signature',
         'permission' => 'Permission',
         'csp' => 'CSP',
+        'preset' => 'Preset',
+    ],
+
+    // CSP Mode Badge Labels
+    'csp_mode' => [
+        'development' => 'Dev',
+        'standard' => 'Standard',
+        'strict' => 'Strict',
+        'not_checked' => 'Not Checked',
+    ],
+
+    // Security Preset Compatibility Badge Labels
+    'preset_badge' => [
+        'development' => 'Dev',
+        'balanced' => 'Balanced',
+        'strict' => 'Strict',
+        'custom' => 'Current',
+        'not_verified' => 'Not Verified',
     ],
 
     // Health Status (PluginHealthStatus Enum)
@@ -335,7 +353,6 @@ return [
         'health_score_display' => 'Score: :score/100',
         'signature_deduction' => '(Deduction: -:points)',
         'health_issue_signature_unsigned' => 'Signature: Unsigned',
-        'health_issue_signature_unsigned_production' => 'Signature: Unsigned (Production)',
         'health_issue_signature_invalid' => 'Signature: Invalid',
         'health_issue_permission_undefined' => 'Permissions: Not Defined',
         'health_issue_permission_undeclared_minor' => 'Permission: Undeclared Usage (Minor)',

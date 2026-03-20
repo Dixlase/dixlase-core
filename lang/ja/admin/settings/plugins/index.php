@@ -82,7 +82,7 @@ return [
     'health_issue' => [
         'csp_inline_css_required' => 'インラインCSSが必要です。厳格モードでは動作しない可能性があります。',
         'csp_external_resources' => '外部リソースが検出されました。セキュリティ上の確認を推奨します。',
-        'signature_unsigned_production' => '本番環境で署名がありません。署名を強く推奨します。',
+        'signature_unsigned' => '署名がありません。配布時は署名を推奨します。',
     ],
 
     // バッジラベル（カード表示用）
@@ -91,6 +91,24 @@ return [
         'signature' => '署名',
         'permission' => '権限',
         'csp' => 'CSP',
+        'preset' => '動作',
+    ],
+
+    // CSPモードバッジラベル
+    'csp_mode' => [
+        'development' => '開発',
+        'standard' => '標準',
+        'strict' => '厳格',
+        'not_checked' => '未検証',
+    ],
+
+    // セキュリティプリセット互換バッジラベル
+    'preset_badge' => [
+        'development' => '開発',
+        'balanced' => 'バランス',
+        'strict' => '厳格',
+        'custom' => '現在の設定',
+        'not_verified' => '未確認',
     ],
 
     // 健全性ステータス（PluginHealthStatus Enum）
@@ -335,7 +353,6 @@ return [
         'health_score_display' => 'スコア: :score/100',
         'signature_deduction' => '（減点: -:points）',
         'health_issue_signature_unsigned' => '署名: 未署名',
-        'health_issue_signature_unsigned_production' => '署名: 未署名（本番環境）',
         'health_issue_signature_invalid' => '署名: 無効',
         'health_issue_permission_undefined' => '権限: 未定義',
         'health_issue_permission_undeclared_minor' => '権限: 未宣言の使用（軽微）',
