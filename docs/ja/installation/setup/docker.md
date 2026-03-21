@@ -1,6 +1,6 @@
 # Docker セットアップ
 
-> **[English version](../../installation/docker.md)**
+> **[English version](../../../installation/setup/docker.md)**
 
 Docker 環境では、すべてのサービスが事前設定されたローカル開発環境を提供します。
 
@@ -57,7 +57,7 @@ docker exec -i dixlase-vite-1 npm run build
 | Root パスワード | `root` |
 | テーブルプレフィックス | `dls_` |
 
-[インストールウィザード](wizard.md)でこれらの値を使用してください。
+[インストールウィザード](../wizard.md)でこれらの値を使用してください。
 
 ## デフォルトメール設定
 
@@ -158,4 +158,4 @@ docker exec -i dixlase-vite-1 npm run build
 
 ## 次のステップ
 
-コンテナが起動し `http://localhost:8080` にアクセスできたら、[インストールウィザード](wizard.md)に進んでセットアップを完了してください。
+コンテナが起動し `http://localhost:8080` にアクセスできたら、[インストールウィザード](../wizard.md)に進んでセットアップを完了してください。
