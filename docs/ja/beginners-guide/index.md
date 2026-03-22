@@ -1,7 +1,4 @@
 # 初心者ガイド
-
-> **[English version](../../beginners-guide/index.md)**
-
 このガイドでは、Dixlase 管理パネルのレイアウト、主要セクション、コア機能を紹介します。[インストールガイド](../installation/index.md)を完了した後、このガイドを使ってサイト管理に慣れてください。
 
 ## 管理パネルへのアクセス

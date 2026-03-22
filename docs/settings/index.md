@@ -1,7 +1,4 @@
 # Settings
-
-> **[日本語版はこちら](../ja/settings/index.md)**
-
 Dixlase settings configuration reference. Detailed guides for each setting area have been organized by audience.
 
 ## Base Settings

@@ -1,7 +1,4 @@
 # セットアップガイド
-
-> **[English version](../../../installation/setup/index.md)**
-
 環境に合ったセットアップ方法を選択してください。
 
 ## Docker（推奨）

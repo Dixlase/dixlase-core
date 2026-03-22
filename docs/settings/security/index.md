@@ -1,7 +1,4 @@
 # Security Settings
-
-> **[日本語版はこちら](../../ja/settings/security/index.md)**
-
 Security-related configuration settings.
 
 ## Related Guides

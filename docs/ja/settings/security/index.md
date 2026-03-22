@@ -1,7 +1,4 @@
 # セキュリティ設定
-
-> **[English version](../../../settings/security/index.md)**
-
 セキュリティ関連の設定です。
 
 ## 関連ガイド

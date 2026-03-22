@@ -1,7 +1,4 @@
 # Installation Wizard
-
-> **[日本語版はこちら](../ja/installation/wizard.md)**
-
 The installation wizard guides you through the initial configuration of Dixlase. It runs automatically when `INSTALLED=false` in your `.env` file.
 
 ## Overview

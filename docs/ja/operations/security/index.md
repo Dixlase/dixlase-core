@@ -1,7 +1,4 @@
 # セキュリティ
-
-> **[English version](../../../operations/security/index.md)**
-
 Dixlase 運用者向けのセキュリティ設定・強化ガイドです。
 
 ## ガイド

@@ -1,7 +1,4 @@
 # System Settings
-
-> **[日本語版はこちら](../../ja/settings/system/index.md)**
-
 System maintenance and configuration settings.
 
 ## Related Guides

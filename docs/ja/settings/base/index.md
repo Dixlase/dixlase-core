@@ -1,7 +1,4 @@
 # 基本設定
-
-> **[English version](../../../settings/base/index.md)**
-
 アプリケーション全般の設定です。
 
 ## 関連ガイド

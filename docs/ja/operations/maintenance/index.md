@@ -1,7 +1,4 @@
 # メンテナンス
-
-> **[English version](../../../operations/maintenance/index.md)**
-
 データベースメンテナンスと監査ログ管理のガイドです。
 
 ## ガイド

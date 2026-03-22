@@ -1,7 +1,4 @@
 # Emergency Response
-
-> **[日本語版はこちら](../../ja/operations/emergency/index.md)**
-
 Recovery procedures for incidents and system emergencies.
 
 ## Guides

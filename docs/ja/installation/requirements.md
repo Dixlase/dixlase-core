@@ -1,7 +1,4 @@
 # システム要件
-
-> **[English version](../../installation/requirements.md)**
-
 ## PHP
 
 | 要件 | 詳細 |

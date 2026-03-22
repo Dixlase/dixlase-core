@@ -1,7 +1,4 @@
 # Docker Setup
-
-> **[日本語版はこちら](../../ja/installation/setup/docker.md)**
-
 The Docker environment provides a complete local development setup with all services pre-configured.
 
 ## Quick Start

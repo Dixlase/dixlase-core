@@ -1,7 +1,4 @@
 # 全体設定
-
-> **[English version](../../settings/index.md)**
-
 Dixlase 設定リファレンスです。各設定領域の詳細ガイドは対象者別に整理されています。
 
 ## 基本設定

@@ -1,7 +1,4 @@
 # Plugin & Theme Health Scoring Rules
-
-> **[日本語版はこちら](../../ja/development/plugins/health-scoring-rules.md)**
-
 This document describes the two scoring systems used by Dixlase to evaluate plugin and theme safety: **Risk Scoring** and **Health Scoring**.
 
 ---

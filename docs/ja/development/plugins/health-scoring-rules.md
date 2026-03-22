@@ -1,7 +1,4 @@
 # プラグイン・テーマ 健全性スコアリングルール
-
-> **[English version](../../../development/plugins/health-scoring-rules.md)**
-
 Dixlase がプラグイン・テーマの安全性を評価する2つのスコアリングシステム、**リスクスコア** と **健全性スコア** の仕様です。
 
 ---

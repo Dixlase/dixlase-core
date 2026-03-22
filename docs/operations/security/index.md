@@ -1,7 +1,4 @@
 # Security
-
-> **[日本語版はこちら](../../ja/operations/security/index.md)**
-
 Security configuration and hardening guides for Dixlase operators.
 
 ## Guides
