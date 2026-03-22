@@ -35,7 +35,7 @@ interface ThemePermissionServiceInterface
     /**
      * テーマの権限をチェック
      *
-     * @param  string  $themeSlug  テーマのスラッグ（例: dixlase-default-theme）
+     * @param  string  $themeSlug  テーマのスラッグ（例: dixlase-one-page）
      * @param  string  $permission  権限キー（例: assets.custom_js, database.own_tables）
      */
     public function check(string $themeSlug, string $permission): bool;

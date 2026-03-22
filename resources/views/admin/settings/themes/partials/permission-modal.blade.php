@@ -98,9 +98,9 @@ https://exc-d.com
             @if($card['hasPermissions'])
                 <div class="mb-3 flex items-center">
                     <span class="text-sm text-gray-700 dark:text-gray-300 mr-2">{{ __('admin/settings/themes/index.permissions.health_status') }}:</span>
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $card['healthColors'][$card['riskLevel']] ?? $card['healthColors']['low'] }}">
-                        <i class="{{ $card['healthIcons'][$card['riskLevel']] ?? $card['healthIcons']['low'] }} mr-1"></i>
-                        {{ __('admin/settings/themes/index.permissions.' . ($card['healthLabels'][$card['riskLevel']] ?? 'health_healthy')) }}
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $card['healthStatusColors'][$card['riskLevel']] ?? $card['healthStatusColors']['healthy'] }}">
+                        <i class="{{ $card['healthStatusIcons'][$card['riskLevel']] ?? $card['healthStatusIcons']['healthy'] }} mr-1"></i>
+                        {{ __('admin/settings/themes/index.permissions.' . ($card['healthStatusLabelKeys'][$card['riskLevel']] ?? 'health_status_healthy')) }}
                     </span>
                 </div>
 

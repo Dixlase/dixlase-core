@@ -33,7 +33,7 @@ class ThemesTableSeeder extends Seeder
     public function run(): void
     {
         // theme.jsonから情報を読み込む
-        $themeJsonPath = base_path('themes/DixlaseDefaultTheme/theme.json');
+        $themeJsonPath = base_path('themes/DixlaseOnePage/theme.json');
 
         if (file_exists($themeJsonPath)) {
             $themeJson = json_decode(file_get_contents($themeJsonPath), true);
@@ -42,10 +42,10 @@ class ThemesTableSeeder extends Seeder
             $description = $themeJson['description']['ja'] ?? $themeJson['description']['en'] ?? null;
 
             Theme::create([
-                'name' => $themeJson['name'] ?? 'DixlaseDefaultTheme',
+                'name' => $themeJson['name'] ?? 'DixlaseOnePage',
                 'package_name' => $themeJson['package_name'] ?? null,
-                'directory' => 'DixlaseDefaultTheme',
-                'slug' => $themeJson['slug'] ?? 'dixlase-default-theme',
+                'directory' => 'DixlaseOnePage',
+                'slug' => $themeJson['slug'] ?? 'dixlase-one-page',
                 'namespace' => $themeJson['namespace'] ?? null,
                 'description' => $description,
                 'license' => $themeJson['license'] ?? null,
@@ -67,9 +67,9 @@ class ThemesTableSeeder extends Seeder
         } else {
             // theme.jsonが存在しない場合は最小限の情報で作成
             Theme::create([
-                'name' => 'DixlaseDefaultTheme',
-                'slug' => 'dixlase-default-theme',
-                'directory' => 'DixlaseDefaultTheme',
+                'name' => 'DixlaseOnePage',
+                'slug' => 'dixlase-one-page',
+                'directory' => 'DixlaseOnePage',
                 'version' => '1.0.0',
                 'has_settings' => true,
                 'installed_at' => now(),

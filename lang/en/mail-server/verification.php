@@ -65,7 +65,7 @@ return [
     
     // Mail Verification Functions (Common)
     'verification_token_invalid' => 'Mail verification token is invalid.',
-    'verification_error' => 'An error occurred during mail verification: :error',
+    'verification_error_message' => 'An error occurred during mail verification: :error',
     'verification_success_common' => [
         'title' => 'Mail Verification Complete',
         'heading' => 'Mail verification has been completed',

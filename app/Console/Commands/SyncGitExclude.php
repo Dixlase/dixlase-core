@@ -118,7 +118,7 @@ class SyncGitExclude extends Command
 
         // 実際のディレクトリを検出
         $actualPlugins = $this->detectDirectories(base_path('plugins'));
-        $actualThemes = $this->detectDirectories(base_path('themes'), ['DixlaseDefaultTheme']);
+        $actualThemes = $this->detectDirectories(base_path('themes'), ['DixlaseOnePage']);
 
         // 差分を計算
         $pluginsToAdd = array_diff($actualPlugins, $currentPlugins);
