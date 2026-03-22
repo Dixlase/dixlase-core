@@ -449,7 +449,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
         $theme = Theme::findOrFail($id);
 
         // デフォルトテーマはアンインストールできない
-        $defaultThemeSlug = config('themes.default_theme_slug', 'dixlase-default-theme');
+        $defaultThemeSlug = config('themes.default_theme_slug', 'dixlase-one-page');
         if ($theme->slug === $defaultThemeSlug) {
             return back()->with('error', 'デフォルトテーマはアンインストールできません。');
         }

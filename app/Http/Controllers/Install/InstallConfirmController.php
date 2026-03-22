@@ -275,20 +275,20 @@ class InstallConfirmController extends BaseInstallController
             Log::channel('install')->info('DatabaseSeeder実行完了');
 
             // テーマのマイグレーションを実行
-            Log::channel('install')->info('DixlaseDefaultTheme マイグレーション開始');
+            Log::channel('install')->info('DixlaseOnePage マイグレーション開始');
             Artisan::call('migrate', [
-                '--path' => 'themes/DixlaseDefaultTheme/database/migrations',
+                '--path' => 'themes/DixlaseOnePage/database/migrations',
                 '--force' => true,
             ]);
-            Log::channel('install')->info('DixlaseDefaultTheme マイグレーション完了');
+            Log::channel('install')->info('DixlaseOnePage マイグレーション完了');
 
             // テーマシーダーを実行
-            Log::channel('install')->info('DixlaseDefaultTheme DatabaseSeeder実行開始');
+            Log::channel('install')->info('DixlaseOnePage DatabaseSeeder実行開始');
             Artisan::call('db:seed', [
-                '--class' => 'Themes\\DixlaseDefaultTheme\\Database\\Seeders\\DatabaseSeeder',
+                '--class' => 'Themes\\DixlaseOnePage\\Database\\Seeders\\DatabaseSeeder',
                 '--force' => true,
             ]);
-            Log::channel('install')->info('DixlaseDefaultTheme DatabaseSeeder実行完了（設定 + 権限）');
+            Log::channel('install')->info('DixlaseOnePage DatabaseSeeder実行完了（設定 + 権限）');
 
             // 初期データの投入
             Log::channel('install')->info('初期データ投入開始');

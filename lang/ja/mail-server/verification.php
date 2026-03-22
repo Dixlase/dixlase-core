@@ -65,7 +65,7 @@ return [
     
     // メール受信確認機能（共通）
     'verification_token_invalid' => 'メール認証トークンが無効です。',
-    'verification_error' => 'メール認証処理中にエラーが発生しました: :error',
+    'verification_error_message' => 'メール認証処理中にエラーが発生しました: :error',
     'verification_success_common' => [
         'title' => 'メール受信確認完了',
         'heading' => 'メール受信確認が完了しました',

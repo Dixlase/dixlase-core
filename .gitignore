@@ -47,7 +47,7 @@ custom/*
 
 # プラグインとテーマのディレクトリを除外
 # プラグイン: 個別のリポジトリとして管理（.git/info/excludeで追跡）
-# テーマ: DixlaseDefaultThemeはGit Submoduleとしてコアに同梱
+# テーマ: DixlaseOnePageはGit Submoduleとしてコアに同梱
 plugins/*
 !plugins/DixlaseDeploy/
 !plugins/DixlaseInquiry/
@@ -65,6 +65,7 @@ plugins/*
 !plugins/DixlaseBackup/
 !plugins/DixlaseMultilingual/
 themes/*
+!themes/DixlaseOnePage/
 
 license-info.json
 license.txt

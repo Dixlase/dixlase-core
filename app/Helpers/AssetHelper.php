@@ -158,12 +158,12 @@ if (! function_exists('get_active_theme_directory')) {
 
                 if ($themeSetting && $themeSetting->value) {
                     $activeTheme = \App\Models\Theme::find((int) $themeSetting->value);
-                    $themeDirectory = $activeTheme ? $activeTheme->directory : 'DixlaseDefaultTheme';
+                    $themeDirectory = $activeTheme ? $activeTheme->directory : 'DixlaseOnePage';
                 } else {
-                    $themeDirectory = 'DixlaseDefaultTheme';
+                    $themeDirectory = 'DixlaseOnePage';
                 }
             } catch (\Exception $e) {
-                $themeDirectory = 'DixlaseDefaultTheme';
+                $themeDirectory = 'DixlaseOnePage';
             }
         }
 

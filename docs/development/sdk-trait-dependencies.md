@@ -130,7 +130,7 @@ The `mergeAdminNavigation()` method was the last direct reference to `\App\Helpe
 
 Navigation loading is now fully handled by `loadPluginConfigs()` → `mergeAdminNavigationFile()` (auto-load path).
 
-**Note:** `DixlaseDefaultTheme` still calls `AdminHelper::mergeAdminNavigation()` directly (not via the trait). This is a separate code path — the theme doesn't use `ThemeLoaderTrait` for navigation. The `AdminHelper` static method remains available; theme migration is out of scope for this phase.
+**Note:** `DixlaseOnePage` still calls `AdminHelper::mergeAdminNavigation()` directly (not via the trait). This is a separate code path — the theme doesn't use `ThemeLoaderTrait` for navigation. The `AdminHelper` static method remains available; theme migration is out of scope for this phase.
 
 **`PluginLoaderTrait` is now free of all `\App\` concrete class dependencies:**
 - Uses `PluginRepositoryInterface` (not `App\Models\Plugin`)
@@ -152,17 +152,17 @@ This approach keeps Contract signatures unchanged (no DTO wrapping) while declar
 
 ### Phase 5a: Theme Legacy Navigation Migration (Completed)
 
-**DixlaseDefaultTheme migrated from `AdminHelper::mergeAdminNavigation()` to auto-load path:**
+**DixlaseOnePage migrated from `AdminHelper::mergeAdminNavigation()` to auto-load path:**
 
 The theme was the last caller of `AdminHelper::mergeAdminNavigation()` outside of AdminHelper itself.
 
 | Change | Detail |
 |--------|--------|
-| New file | `themes/DixlaseDefaultTheme/config/admin/navigation.php` (new structure) |
-| Removed | `AdminHelper::mergeAdminNavigation()` call from `DixlaseDefaultThemeServiceProvider::register()` |
-| Removed | `use App\Helpers\AdminHelper;` import from `DixlaseDefaultThemeServiceProvider` |
+| New file | `themes/DixlaseOnePage/config/admin/navigation.php` (new structure) |
+| Removed | `AdminHelper::mergeAdminNavigation()` call from `DixlaseOnePageServiceProvider::register()` |
+| Removed | `use App\Helpers\AdminHelper;` import from `DixlaseOnePageServiceProvider` |
 | Updated | `ThemeServiceProvider::loadThemeConfigs()` — now auto-detects `config/admin/navigation.php` and merges via `AdminNavigationManagerInterface` |
-| Cleaned | `themes/DixlaseDefaultTheme/config/admin.php` — removed `nav` key (now empty) |
+| Cleaned | `themes/DixlaseOnePage/config/admin.php` — removed `nav` key (now empty) |
 
 Theme navigation auto-loading now mirrors the plugin pattern: `ThemeServiceProvider` checks for `config/admin/navigation.php` in the theme directory and delegates to `AdminNavigationManagerInterface::mergeNavigationFile()`.
 

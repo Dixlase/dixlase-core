@@ -75,6 +75,6 @@ class ThemeRepository implements ThemeRepositoryInterface
      */
     private function getDefaultThemeDirectory(): string
     {
-        return config('themes.default_theme', env('APP_THEME', 'DixlaseDefaultTheme'));
+        return config('themes.default_theme', env('APP_THEME', 'DixlaseOnePage'));
     }
 }

@@ -89,7 +89,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     /**
      * テーマの権限をチェック
      *
-     * @param  string  $themeSlug  テーマのスラッグ（例: dixlase-default-theme）
+     * @param  string  $themeSlug  テーマのスラッグ（例: dixlase-one-page）
      * @param  string  $permission  権限キー（例: assets.custom_js, database.own_tables）
      */
     public function check(string $themeSlug, string $permission): bool
@@ -487,8 +487,8 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     /**
      * スラッグをテーマ名に変換
      *
-     * @param  string  $slug  dixlase-default-theme
-     * @return string DixlaseDefaultTheme
+     * @param  string  $slug  dixlase-one-page
+     * @return string DixlaseOnePage
      */
     protected function slugToName(string $slug): string
     {
@@ -498,8 +498,8 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     /**
      * テーマ名をスラッグに変換
      *
-     * @param  string  $name  DixlaseDefaultTheme
-     * @return string dixlase-default-theme
+     * @param  string  $name  DixlaseOnePage
+     * @return string dixlase-one-page
      */
     protected function nameToSlug(string $name): string
     {
