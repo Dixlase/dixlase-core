@@ -1,7 +1,4 @@
 # Dixlase Documentation
-
-> **[日本語版はこちら](ja/index.md)**
-
 Welcome to the Dixlase CMS documentation. This documentation covers the architecture, features, and development guides for the Dixlase platform.
 
 ## Getting Started

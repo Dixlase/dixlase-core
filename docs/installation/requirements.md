@@ -1,7 +1,4 @@
 # System Requirements
-
-> **[日本語版はこちら](../ja/installation/requirements.md)**
-
 ## PHP
 
 | Requirement | Details |

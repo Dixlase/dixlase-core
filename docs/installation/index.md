@@ -1,7 +1,4 @@
 # Installation Guide
-
-> **[日本語版はこちら](../ja/installation/index.md)**
-
 This guide walks you through installing Dixlase CMS on your server. Choose the method that best fits your environment.
 
 ## Prerequisites

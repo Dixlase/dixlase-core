@@ -1,7 +1,4 @@
 # Docker セットアップ
-
-> **[English version](../../../installation/setup/docker.md)**
-
 Docker 環境では、すべてのサービスが事前設定されたローカル開発環境を提供します。
 
 ## クイックスタート

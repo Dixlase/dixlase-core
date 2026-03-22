@@ -1,7 +1,4 @@
 # 機能ガイド
-
-> **[English version](../../../operations/features/index.md)**
-
 個別の管理機能の詳細ガイドです。
 
 ## ガイド

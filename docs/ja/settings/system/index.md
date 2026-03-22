@@ -1,7 +1,4 @@
 # システム設定
-
-> **[English version](../../../settings/system/index.md)**
-
 システムメンテナンスと設定です。
 
 ## 関連ガイド

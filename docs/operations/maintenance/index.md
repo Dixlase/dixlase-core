@@ -1,7 +1,4 @@
 # Maintenance
-
-> **[日本語版はこちら](../../ja/operations/maintenance/index.md)**
-
 Database maintenance and audit log management guides.
 
 ## Guides

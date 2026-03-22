@@ -1,7 +1,4 @@
 # Beginner's Guide
-
-> **[日本語版はこちら](../ja/beginners-guide/index.md)**
-
 This guide introduces the Dixlase admin panel — its layout, main sections, and core features. After completing the [Installation Guide](../installation/index.md), use this guide to get familiar with managing your site.
 
 ## Accessing the Admin Panel

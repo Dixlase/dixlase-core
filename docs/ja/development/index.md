@@ -1,7 +1,4 @@
 # 開発ガイド
-
-> **[English version](../../development/index.md)**
-
 Dixlase を拡張・開発するための技術ドキュメントです。
 
 ## APIリファレンス

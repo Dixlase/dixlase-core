@@ -1,7 +1,4 @@
 # Dixlase ドキュメント
-
-> **[English version](../index.md)**
-
 Dixlase CMS のドキュメントへようこそ。このドキュメントでは、Dixlase プラットフォームのアーキテクチャ、機能、開発ガイドを紹介します。
 
 ## はじめに

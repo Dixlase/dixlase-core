@@ -1,7 +1,4 @@
 # Development Guide
-
-> **[日本語版はこちら](../ja/development/index.md)**
-
 Technical documentation for developers building on or extending Dixlase.
 
 ## API Reference

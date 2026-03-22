@@ -1,7 +1,4 @@
 # Post-Install Checklist
-
-> **[日本語版はこちら](../ja/installation/post-install.md)**
-
 After completing the installation wizard, follow this checklist to verify your installation and secure your site.
 
 ## Verification

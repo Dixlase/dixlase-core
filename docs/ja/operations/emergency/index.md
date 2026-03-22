@@ -1,7 +1,4 @@
 # 緊急時対応
-
-> **[English version](../../../operations/emergency/index.md)**
-
 インシデントやシステム緊急時のリカバリー手順です。
 
 ## ガイド

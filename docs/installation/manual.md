@@ -1,7 +1,4 @@
 # Manual Installation
-
-> **[日本語版はこちら](../ja/installation/manual.md)**
-
 This guide covers installing Dixlase on a production server without Docker. Ensure your server meets the [System Requirements](requirements.md) before proceeding.
 
 ## 1. Server Preparation

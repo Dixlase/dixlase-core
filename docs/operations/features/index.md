@@ -1,7 +1,4 @@
 # Features
-
-> **[日本語版はこちら](../../ja/operations/features/index.md)**
-
 Detailed guides for specific admin features.
 
 ## Guides

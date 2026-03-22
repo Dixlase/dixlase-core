@@ -1,8 +1,12 @@
 # Operations Guide
 
-> **[日本語版はこちら](../ja/operations/index.md)**
-
 Guides for site administrators and operators who manage Dixlase installations.
+
+## Admin Menu Overview
+
+A reference of all pages in the admin panel and what each one does.
+
+- [Admin Menu Overview](admin-menu/index.md)
 
 ## Security
 

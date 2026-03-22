@@ -1,7 +1,4 @@
 # 手動インストール
-
-> **[English version](../../installation/manual.md)**
-
 このガイドでは、Docker を使わずに本番サーバーに Dixlase をインストールする方法を説明します。作業前に[システム要件](requirements.md)を満たしていることを確認してください。
 
 ## 1. サーバー準備

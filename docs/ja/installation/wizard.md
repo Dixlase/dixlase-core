@@ -1,7 +1,4 @@
 # インストールウィザード
-
-> **[English version](../../installation/wizard.md)**
-
 インストールウィザードは、Dixlase の初期設定をガイドします。`.env` ファイルで `INSTALLED=false` が設定されている場合に自動的に実行されます。
 
 ## 概要

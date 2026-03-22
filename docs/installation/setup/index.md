@@ -1,7 +1,4 @@
 # Setup Guide
-
-> **[日本語版はこちら](../../ja/installation/setup/index.md)**
-
 Choose the setup method that best fits your environment.
 
 ## Docker (Recommended)
