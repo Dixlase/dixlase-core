@@ -31,8 +31,8 @@ jobs:
             set -e
             BASE="${{ steps.target.outputs.base_dir }}"
 
-            for SITE in brand docs demo; do
-              echo "=== Deploying $SITE (staging) ==="
+            for SITE in brand docs demo keys; do
+              echo "=== Deploying $SITE (${{ steps.target.outputs.env }}) ==="
               cd "$BASE/$SITE"
               git fetch origin
               git reset --hard origin/main
@@ -48,4 +48,4 @@ jobs:
               fi
             done
 
-            echo "=== Staging deploy complete ==="
+            echo "=== Deploy complete ==="
