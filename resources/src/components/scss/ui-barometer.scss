@@ -1,0 +1,51 @@
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * Website: https://exc-d.com
+ *
+ * Barometer component styles
+ * Chevron-arrow style indicator for CSP/preset compatibility
+ */
+
+.barometer {
+    @apply inline-flex items-stretch;
+
+    &__segment {
+        @apply relative flex items-center justify-center text-xs font-medium text-white;
+        padding: 0.2rem 0.5rem 0.2rem 0.75rem;
+        min-width: 2.8rem;
+        clip-path: polygon(0 0, calc(100% - 0.45rem) 0, 100% 50%, calc(100% - 0.45rem) 100%, 0 100%, 0.45rem 50%);
+
+        &--first {
+            padding-left: 0.5rem;
+            clip-path: polygon(0 0, calc(100% - 0.45rem) 0, 100% 50%, calc(100% - 0.45rem) 100%, 0 100%);
+            border-radius: 0.15rem 0 0 0.15rem;
+        }
+
+        &--last {
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0.45rem 50%);
+            border-radius: 0 0.15rem 0.15rem 0;
+        }
+
+        // OK: green
+        &--ok {
+            @apply bg-green-500 dark:bg-green-600;
+        }
+
+        // NG: red
+        &--ng {
+            @apply bg-red-500 dark:bg-red-600;
+        }
+
+        // Unknown/unchecked: gray
+        &--unknown {
+            @apply bg-gray-300 text-gray-500 dark:bg-gray-600 dark:text-gray-400;
+        }
+    }
+
+    &__label {
+        @apply relative z-10 whitespace-nowrap leading-tight;
+        font-size: 0.65rem;
+    }
+}

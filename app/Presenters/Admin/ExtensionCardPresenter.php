@@ -284,6 +284,8 @@ class ExtensionCardPresenter
             'scanData' => $scanData,
             'cspModeBadges' => self::buildCspModeBadges($cspCompatibility),
             'presetBadges' => self::buildPresetCompatibilityBadges($healthStatus),
+            'cspBarometerItems' => self::buildCspBarometerItems($cspCompatibility),
+            'presetBarometerItems' => self::buildPresetBarometerItems($healthStatus),
         ];
     }
 
@@ -599,6 +601,61 @@ class ExtensionCardPresenter
         }
 
         return $badges;
+    }
+
+    /**
+     * CSP barometer items for the ui-barometer component
+     *
+     * @param  array<string, mixed>  $cspCompatibility
+     * @return array<int, array{label: string, status: string}>
+     */
+    private static function buildCspBarometerItems(array $cspCompatibility): array
+    {
+        $badges = self::buildCspModeBadges($cspCompatibility);
+        $modes = ['development', 'standard', 'strict'];
+        $items = [];
+
+        foreach ($modes as $mode) {
+            $badge = $badges[$mode];
+            if (! $badge['checked']) {
+                $status = 'unknown';
+            } else {
+                $status = $badge['compatible'] ? 'ok' : 'ng';
+            }
+            $items[] = [
+                'label' => __('admin/settings/plugins/index.csp_mode.'.$mode),
+                'status' => $status,
+            ];
+        }
+
+        return $items;
+    }
+
+    /**
+     * Preset barometer items for the ui-barometer component
+     *
+     * @return array<int, array{label: string, status: string}>
+     */
+    private static function buildPresetBarometerItems(?string $healthStatus): array
+    {
+        $badges = self::buildPresetCompatibilityBadges($healthStatus);
+        $presets = ['development', 'balanced', 'strict'];
+        $items = [];
+
+        foreach ($presets as $preset) {
+            $compatible = $badges[$preset]['compatible'];
+            if ($compatible === null) {
+                $status = 'unknown';
+            } else {
+                $status = $compatible ? 'ok' : 'ng';
+            }
+            $items[] = [
+                'label' => __('admin/settings/plugins/index.preset_badge.'.$preset),
+                'status' => $status,
+            ];
+        }
+
+        return $items;
     }
 
     /**
