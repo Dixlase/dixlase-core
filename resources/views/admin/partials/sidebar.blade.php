@@ -33,16 +33,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <button x-show="!editMode"
                     x-cloak
                     @click="enterEditMode()"
-                    class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1"
                     title="{{ __('admin/navigation.edit_menu') }}">
-                <i class="fas fa-pen mr-1"></i>{{ __('admin/navigation.edit_menu') }}
+                <i class="fas fa-sliders-h text-xs"></i>
             </button>
             <button x-show="editMode"
                     x-cloak
                     @click="exitEditMode()"
-                    class="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors"
+                    class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-1"
                     title="{{ __('admin/navigation.done_editing') }}">
-                <i class="fas fa-check mr-1"></i>{{ __('admin/navigation.done_editing') }}
+                <i class="fas fa-check text-xs"></i>
             </button>
         </div>
 
@@ -224,7 +224,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
 
                 @if (isset($item['children']) && is_array($item['children']))
-                    <div x-show="{{ $open_key }} && !editMode" x-collapse class="ml-2 space-y-1" role="menu">
+                    <div x-show="{{ $open_key }} || editMode" x-collapse class="ml-2 space-y-1" role="menu">
                         @foreach ($item['children'] as $child_key => $child_item)
                             @php
                                 // 子項目の権限キーを生成（親キー.子キー）
@@ -278,19 +278,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 $__childMenuHidden = $__childMenuVis === \App\Enums\MenuVisibility::Hidden;
                             @endphp
                             @if ($child_has_permission && !$__childMenuHidden)
-                                <div x-show="!isHidden('{{ $__childMenuKey }}')">
+                                <div x-show="editMode || !isHidden('{{ $__childMenuKey }}')"
+                                     :class="{ 'opacity-50': editMode && isHidden('{{ $__childMenuKey }}') }">
                                 @if (isset($child_item['route']) && is_string($child_item['route']) && Route::has($child_item['route']))
-                                    <a href="{{ route($child_item['route']) }}"
-                                    class="{{ $button_class }} {{ $child_item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
-                                    role="menuitem">
-                                        <i class="{{ $child_item['icon'] }} mr-3" aria-hidden="true"></i>
-                                        <span>{{ __($child_item['text']) }}</span>
-                                        @if ($__childMenuVis === \App\Enums\MenuVisibility::ReadOnly)
-                                            <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
-                                        @elseif ($__childMenuVis === \App\Enums\MenuVisibility::GuideOnly)
-                                            <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
-                                        @endif
-                                    </a>
+                                    <div class="flex items-center group">
+                                        <a href="{{ route($child_item['route']) }}"
+                                        class="{{ $button_class }} {{ $child_item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
+                                        :class="{ 'pointer-events-none': editMode }"
+                                        role="menuitem">
+                                            <i class="{{ $child_item['icon'] }} mr-3" aria-hidden="true"></i>
+                                            <span>{{ __($child_item['text']) }}</span>
+                                            @if ($__childMenuVis === \App\Enums\MenuVisibility::ReadOnly)
+                                                <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
+                                            @elseif ($__childMenuVis === \App\Enums\MenuVisibility::GuideOnly)
+                                                <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
+                                            @endif
+                                        </a>
+                                        <button x-show="editMode"
+                                                x-cloak
+                                                @click="toggleMenu('{{ $__childMenuKey }}')"
+                                                class="ml-1 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
+                                            <i class="fas text-xs" :class="isHidden('{{ $__childMenuKey }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                        </button>
+                                    </div>
 
                                 @else
                                     @php
@@ -324,13 +334,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                                     @if(isset($child_item['icon']) && is_string($child_item['icon']) && isset($child_item['text']) && is_string($child_item['text']))
                                     <div x-data="{ {{ $open_child_key }}: {{ $is_open_child ? 'true' : 'false' }} }">
-                                        <button @click="{{ $open_child_key }} = !{{ $open_child_key }}" class="{{ $button_class }} sidebar-link">
-                                            <i class="{{ $child_item['icon'] }} mr-3"></i>
-                                            <span>{{ __($child_item['text']) }}</span>
-                                            <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_child_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </button>
+                                        <div class="flex items-center group">
+                                            <button @click="editMode || ({{ $open_child_key }} = !{{ $open_child_key }})" class="{{ $button_class }} sidebar-link">
+                                                <i class="{{ $child_item['icon'] }} mr-3"></i>
+                                                <span>{{ __($child_item['text']) }}</span>
+                                                <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_child_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </button>
+                                            <button x-show="editMode"
+                                                    x-cloak
+                                                    @click="toggleMenu('{{ $__childMenuKey }}')"
+                                                    class="ml-1 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
+                                                <i class="fas text-xs" :class="isHidden('{{ $__childMenuKey }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                            </button>
+                                        </div>
                                         @if (isset($child_item['children']) && is_array($child_item['children']))
                                             <div x-show="{{ $open_child_key }}" x-collapse class="ml-2 space-y-1">
                                                 @foreach ($child_item['children'] as $grand_child_key => $grand_child_item)
@@ -345,19 +363,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                         $__gcMenuHidden = $__gcMenuVis === \App\Enums\MenuVisibility::Hidden;
                                                     @endphp
                                                     @if (!$__gcMenuHidden && isset($grand_child_item['route']) && is_string($grand_child_item['route']) && Route::has($grand_child_item['route']) && isset($grand_child_item['icon']) && is_string($grand_child_item['icon']) && isset($grand_child_item['text']) && is_string($grand_child_item['text']) && (\App\Helpers\AdminHelper::canEditMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key) || \App\Helpers\AdminHelper::canViewMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key)))
-                                                        <div x-show="!isHidden('{{ $grand_child_role_key }}')">
-                                                        <a href="{{ route($grand_child_item['route']) }}"
-                                                        class="{{ $button_class }} {{ $grand_child_item['route'] === $route_name ? 'sidebar-link-active' : 'sidebar-link' }}">
-                                                            <i class="{{ $grand_child_item['icon'] }} mr-3"></i>
-                                                            <span>{{ __($grand_child_item['text']) }}</span>
-                                                            @if ($__gcMenuVis === \App\Enums\MenuVisibility::ReadOnly)
-                                                                <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
-                                                            @elseif ($__gcMenuVis === \App\Enums\MenuVisibility::GuideOnly)
-                                                                <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
-                                                            @elseif (!\App\Helpers\AdminHelper::canEditMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key))
-                                                                <span class="text-xs text-gray-400">(閲覧のみ)</span>
-                                                            @endif
-                                                        </a>
+                                                        <div x-show="editMode || !isHidden('{{ $grand_child_role_key }}')"
+                                                             :class="{ 'opacity-50': editMode && isHidden('{{ $grand_child_role_key }}') }">
+                                                            <div class="flex items-center group">
+                                                                <a href="{{ route($grand_child_item['route']) }}"
+                                                                class="{{ $button_class }} {{ $grand_child_item['route'] === $route_name ? 'sidebar-link-active' : 'sidebar-link' }}"
+                                                                :class="{ 'pointer-events-none': editMode }">
+                                                                    <i class="{{ $grand_child_item['icon'] }} mr-3"></i>
+                                                                    <span>{{ __($grand_child_item['text']) }}</span>
+                                                                    @if ($__gcMenuVis === \App\Enums\MenuVisibility::ReadOnly)
+                                                                        <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
+                                                                    @elseif ($__gcMenuVis === \App\Enums\MenuVisibility::GuideOnly)
+                                                                        <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
+                                                                    @elseif (!\App\Helpers\AdminHelper::canEditMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key))
+                                                                        <span class="text-xs text-gray-400">(閲覧のみ)</span>
+                                                                    @endif
+                                                                </a>
+                                                                <button x-show="editMode"
+                                                                        x-cloak
+                                                                        @click="toggleMenu('{{ $grand_child_role_key }}')"
+                                                                        class="ml-1 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
+                                                                    <i class="fas text-xs" :class="isHidden('{{ $grand_child_role_key }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     {{-- 4階層目: 孫項目がさらに子を持つ場合 --}}
                                                     @elseif (isset($grand_child_item['children']) && is_array($grand_child_item['children']) && isset($grand_child_item['icon']) && isset($grand_child_item['text']))
