@@ -147,52 +147,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- CSPモード別互換性 --}}
             <div class="flex items-center gap-2">
                 <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/plugins/index.badge_labels.csp') }}</span>
-                <div class="flex items-center gap-1">
-                    @foreach(['development', 'standard', 'strict'] as $cspMode)
-                        @if($card['cspModeBadges'][$cspMode]['checked'])
-                            @if($card['cspModeBadges'][$cspMode]['compatible'])
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                    <i class="fas fa-check mr-0.5 text-[10px]"></i>{{ __('admin/settings/plugins/index.csp_mode.' . $cspMode) }}
-                                </span>
-                            @else
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                    <i class="fas fa-times mr-0.5 text-[10px]"></i>{{ __('admin/settings/plugins/index.csp_mode.' . $cspMode) }}
-                                </span>
-                            @endif
-                        @else
-                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
-                                <i class="fas fa-question mr-0.5 text-[10px]"></i>{{ __('admin/settings/plugins/index.csp_mode.' . $cspMode) }}
-                            </span>
-                        @endif
-                    @endforeach
-                </div>
+                <x-ui-barometer :items="$card['cspBarometerItems']" />
             </div>
 
             {{-- セキュリティプリセット互換性 --}}
             <div class="flex items-center gap-2">
                 <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/plugins/index.badge_labels.preset') }}</span>
-                <div class="flex items-center gap-1">
-                    @foreach(['development', 'balanced', 'strict'] as $presetKey)
-                        @if($card['presetBadges'][$presetKey]['compatible'] === null)
-                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
-                                <i class="fas fa-question mr-0.5 text-[10px]"></i>{{ __('admin/settings/plugins/index.preset_badge.' . $presetKey) }}
-                            </span>
-                        @elseif($card['presetBadges'][$presetKey]['compatible'])
-                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                <i class="fas fa-check mr-0.5 text-[10px]"></i>{{ __('admin/settings/plugins/index.preset_badge.' . $presetKey) }}
-                            </span>
-                        @else
-                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                <i class="fas fa-times mr-0.5 text-[10px]"></i>{{ __('admin/settings/plugins/index.preset_badge.' . $presetKey) }}
-                            </span>
-                        @endif
-                    @endforeach
-                    @if($card['presetBadges']['custom']['compatible'] !== null)
-                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium border {{ $card['presetBadges']['custom']['compatible'] ? 'border-green-300 text-green-700 dark:border-green-700 dark:text-green-300' : 'border-red-300 text-red-700 dark:border-red-700 dark:text-red-300' }}">
-                            <i class="fas {{ $card['presetBadges']['custom']['compatible'] ? 'fa-check' : 'fa-times' }} mr-0.5 text-[10px]"></i>{{ __('admin/settings/plugins/index.preset_badge.custom') }}
-                        </span>
-                    @endif
-                </div>
+                <x-ui-barometer :items="$card['presetBarometerItems']" />
             </div>
 
             {{-- スキャンボタン --}}
