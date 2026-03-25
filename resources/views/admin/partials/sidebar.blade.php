@@ -196,7 +196,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                     @else
                         <div class="flex items-center group" :class="{ 'opacity-50': editMode && isHidden('{{ $key }}') }">
-                            <button @click="editMode || ({{ $open_key }} = !{{ $open_key }})"
+                            <button @click="{{ $open_key }} = !{{ $open_key }}"
                             class="{{ $button_class }} text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
                             aria-expanded="false"
                             :aria-expanded="{{ $open_key }}.toString()">
@@ -224,7 +224,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
 
                 @if (isset($item['children']) && is_array($item['children']))
-                    <div x-show="{{ $open_key }} || editMode" x-collapse class="ml-2 space-y-1" role="menu">
+                    <div x-show="{{ $open_key }}" x-collapse class="ml-2 space-y-1" role="menu">
                         @foreach ($item['children'] as $child_key => $child_item)
                             @php
                                 // 子項目の権限キーを生成（親キー.子キー）
@@ -278,8 +278,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 $__childMenuHidden = $__childMenuVis === \App\Enums\MenuVisibility::Hidden;
                             @endphp
                             @if ($child_has_permission && !$__childMenuHidden)
-                                <div x-show="editMode || !isHidden('{{ $__childMenuKey }}')"
-                                     :class="{ 'opacity-50': editMode && isHidden('{{ $__childMenuKey }}') }">
+                                <div @if (!$__isProtected) x-show="editMode || !isHidden('{{ $__childMenuKey }}')" :class="{ 'opacity-50': editMode && isHidden('{{ $__childMenuKey }}') }" @endif>
                                 @if (isset($child_item['route']) && is_string($child_item['route']) && Route::has($child_item['route']))
                                     <div class="flex items-center group">
                                         <a href="{{ route($child_item['route']) }}"
@@ -294,12 +293,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                 <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
                                             @endif
                                         </a>
-                                        <button x-show="editMode"
-                                                x-cloak
-                                                @click="toggleMenu('{{ $__childMenuKey }}')"
-                                                class="ml-1 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
-                                            <i class="fas text-xs" :class="isHidden('{{ $__childMenuKey }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
-                                        </button>
+                                        @unless ($__isProtected)
+                                            <button x-show="editMode"
+                                                    x-cloak
+                                                    @click="toggleMenu('{{ $__childMenuKey }}')"
+                                                    class="ml-1 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
+                                                <i class="fas text-xs" :class="isHidden('{{ $__childMenuKey }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                            </button>
+                                        @endunless
                                     </div>
 
                                 @else
@@ -335,19 +336,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     @if(isset($child_item['icon']) && is_string($child_item['icon']) && isset($child_item['text']) && is_string($child_item['text']))
                                     <div x-data="{ {{ $open_child_key }}: {{ $is_open_child ? 'true' : 'false' }} }">
                                         <div class="flex items-center group">
-                                            <button @click="editMode || ({{ $open_child_key }} = !{{ $open_child_key }})" class="{{ $button_class }} sidebar-link">
+                                            <button @click="{{ $open_child_key }} = !{{ $open_child_key }}" class="{{ $button_class }} sidebar-link">
                                                 <i class="{{ $child_item['icon'] }} mr-3"></i>
                                                 <span>{{ __($child_item['text']) }}</span>
                                                 <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_child_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                                 </svg>
                                             </button>
+                                            @unless ($__isProtected)
                                             <button x-show="editMode"
                                                     x-cloak
                                                     @click="toggleMenu('{{ $__childMenuKey }}')"
                                                     class="ml-1 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
                                                 <i class="fas text-xs" :class="isHidden('{{ $__childMenuKey }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
                                             </button>
+                                            @endunless
                                         </div>
                                         @if (isset($child_item['children']) && is_array($child_item['children']))
                                             <div x-show="{{ $open_child_key }}" x-collapse class="ml-2 space-y-1">
