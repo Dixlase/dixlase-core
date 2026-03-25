@@ -475,11 +475,11 @@ if (! function_exists('load_active_assets')) {
             }
         }
 
+        // 管理画面用アセットを読み込み（Alpine.data() 登録を Alpine.start() より前に実行するため先に読み込む）
+        $output .= load_assets('admin', null, ['js/app.js', 'scss/style.scss']);
+
         // 共通アセットを読み込み（Alpine.start() がここで実行される）
         $output .= load_assets('common', null, ['js/app.js', 'scss/style.scss']);
-
-        // 管理画面用アセットを読み込み
-        $output .= load_assets('admin', null, ['js/app.js', 'scss/style.scss']);
 
         return $output;
     }
