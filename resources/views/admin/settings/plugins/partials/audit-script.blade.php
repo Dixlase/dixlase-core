@@ -207,10 +207,10 @@ https://exc-d.com
         <div id="pluginActionStage1Content" class="text-center">
             <p id="pluginActionStage1Message" class="text-sm text-gray-700 dark:text-gray-300"></p>
         </div>
-        <div id="pluginActionStage1Spinner" class="hidden flex items-center justify-center w-full py-3">
-            <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
-        </div>
         <x-slot:footer>
+            <div id="pluginActionStage1Spinner" class="hidden flex items-center justify-center w-full py-1">
+                <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
+            </div>
             <div id="pluginActionStage1Buttons" class="flex gap-2">
                 <x-form-button
                     type="button"
