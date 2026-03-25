@@ -25,11 +25,33 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <div class="flex h-full">
     {{-- サイドバー本体 --}}
-    <div class="flex flex-col w-64 h-full overflow-y-auto bg-white/75 dark:bg-gray-900/75 border-r border-gray-200 dark:border-gray-600 backdrop-blur-sm shadow-md">
-        <nav class="flex-1 px-4 py-4 space-y-1" role="navigation" aria-label="Admin navigation menu">
+    <div class="flex flex-col w-64 h-full overflow-y-auto bg-white/75 dark:bg-gray-900/75 border-r border-gray-200 dark:border-gray-600 backdrop-blur-sm shadow-md"
+         x-data="sidebarEditor('{{ route('admin.profile.sidebar.update') }}', {{ json_encode($sidebar_hidden_menus ?? []) }})">
+
+        {{-- サイドバー編集ボタン --}}
+        <div class="flex items-center justify-end px-4 pt-3 pb-1">
+            <button x-show="!editMode"
+                    x-cloak
+                    @click="enterEditMode()"
+                    class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    title="{{ __('admin/navigation.edit_menu') }}">
+                <i class="fas fa-pen mr-1"></i>{{ __('admin/navigation.edit_menu') }}
+            </button>
+            <button x-show="editMode"
+                    x-cloak
+                    @click="exitEditMode()"
+                    class="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors"
+                    title="{{ __('admin/navigation.done_editing') }}">
+                <i class="fas fa-check mr-1"></i>{{ __('admin/navigation.done_editing') }}
+            </button>
+        </div>
+
+        <nav class="flex-1 px-4 pb-4 space-y-1" role="navigation" aria-label="Admin navigation menu">
         @php
             // モード表示設定を一度だけ取得
             $__isSimpleMode = \App\Helpers\AdminModeHelper::isSimpleMode();
+            // 非表示不可のメニュー
+            $__protectedMenus = ['dashboard', 'profile'];
         @endphp
         @foreach (config('admin.navigation') as $key => $item)
             @php
@@ -39,7 +61,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 $role_key = $key;
                 // 開くべきアコーディオンを判定
                 $open_key = 'open_' . str_replace('-', '_', $key);
-                
+
                 // プラグインルートの場合の判定を改善
                 $is_open = false;
                 if (strpos($route_name, '::') !== false) {
@@ -48,7 +70,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     $plugin_parts = explode('.', $plugin_route);
                     // admin.users.settings.login の場合、plugin_parts[1] = 'users' が $key と一致するか
                     $is_open = isset($plugin_parts[1]) && $plugin_parts[1] === $key;
-                    
+
                     // プラグインの子項目の場合の特別判定
                     if (!$is_open && isset($item['children'])) {
                         foreach ($item['children'] as $child_item) {
@@ -62,71 +84,80 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     // コアルートの場合: admin.controller.action
                     $is_open = isset($current_route_parts[1]) && $current_route_parts[1] === $key;
                 }
+
+                $__isProtected = in_array($key, $__protectedMenus);
             @endphp
 
 
-            <div x-cloak x-data="{ {{ $open_key }} : {{ $is_open ? 'true' : 'false' }} }">
+            <div x-cloak x-data="{ {{ $open_key }} : {{ $is_open ? 'true' : 'false' }} }"
+                 x-show="editMode || !isHidden('{{ $key }}')"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0">
                 @php
                     // ダッシュボードとプロフィールは全員アクセス可能
                     $is_public_menu = in_array($key, ['dashboard', 'profile']);
-                    
+
                     // プラグインスラッグを取得
                     $plugin_slug = $item['plugin_slug'] ?? null;
-                    
+
                     // 親項目の権限チェック
-                    $has_permission = $is_public_menu || 
-                                     \App\Helpers\AdminHelper::canEditMenuOrPlugin($plugin_slug, $role_key) || 
+                    $has_permission = $is_public_menu ||
+                                     \App\Helpers\AdminHelper::canEditMenuOrPlugin($plugin_slug, $role_key) ||
                                      \App\Helpers\AdminHelper::canViewMenuOrPlugin($plugin_slug, $role_key);
-                    
+
                     // 親メニューに権限がない場合、子メニューの権限をチェック
                     if (!$has_permission && isset($item['children']) && is_array($item['children'])) {
                         foreach ($item['children'] as $child_key => $child_item) {
                             $child_role_key = $key . '.' . $child_key;
                             $child_plugin_slug = $child_item['plugin_slug'] ?? $plugin_slug;
-                            
-                            if (\App\Helpers\AdminHelper::canEditMenuOrPlugin($child_plugin_slug, $child_role_key) || 
+
+                            if (\App\Helpers\AdminHelper::canEditMenuOrPlugin($child_plugin_slug, $child_role_key) ||
                                 \App\Helpers\AdminHelper::canViewMenuOrPlugin($child_plugin_slug, $child_role_key)) {
                                 $has_permission = true;
                                 break;
                             }
                         }
                     }
-                    
+
                     // 親メニューがアコーディオン（ルートなし）で、子メニューが全て非表示の場合は親メニューも非表示
                     if ($has_permission && !isset($item['route']) && isset($item['children']) && is_array($item['children'])) {
                         $has_visible_children = false;
                         foreach ($item['children'] as $child_key => $child_item) {
                             $child_role_key = $key . '.' . $child_key;
                             $child_plugin_slug = $child_item['plugin_slug'] ?? $plugin_slug;
-                            
+
                             $can_edit = \App\Helpers\AdminHelper::canEditMenuOrPlugin($child_plugin_slug, $child_role_key);
                             $can_view = \App\Helpers\AdminHelper::canViewMenuOrPlugin($child_plugin_slug, $child_role_key);
-                            
+
                             // 子項目が表示可能かチェック
                             $child_is_visible = $can_edit || $can_view;
-                            
+
                             // 子項目がさらに孫項目を持つ場合、孫項目の権限もチェック
                             if (!$child_is_visible && isset($child_item['children']) && is_array($child_item['children'])) {
                                 foreach ($child_item['children'] as $grandchild_key => $grandchild_item) {
                                     $grandchild_role_key = $child_role_key . '.' . $grandchild_key;
                                     $grandchild_plugin_slug = $grandchild_item['plugin_slug'] ?? $child_plugin_slug;
-                                    
+
                                     $gc_can_edit = \App\Helpers\AdminHelper::canEditMenuOrPlugin($grandchild_plugin_slug, $grandchild_role_key);
                                     $gc_can_view = \App\Helpers\AdminHelper::canViewMenuOrPlugin($grandchild_plugin_slug, $grandchild_role_key);
-                                    
+
                                     if ($gc_can_edit || $gc_can_view) {
                                         $child_is_visible = true;
                                         break;
                                     }
                                 }
                             }
-                            
+
                             if ($child_is_visible) {
                                 $has_visible_children = true;
                                 break;
                             }
                         }
-                        
+
                         if (!$has_visible_children) {
                             $has_permission = false;
                         }
@@ -141,76 +172,97 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endphp
                 @if ($has_permission && !$__menuHidden)
                     @if (isset($item['route']) && is_string($item['route']) && Route::has($item['route']))
-                        <a href="{{ route($item['route']) }}"
-                        class="{{ $button_class }} {{ $item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
-                        role="menuitem">
-                            <i class="{{ $item['icon'] }} mr-3" aria-hidden="true"></i>
-                            <span>{{ __($item['text']) }}</span>
-                            @if ($__menuVis === \App\Enums\MenuVisibility::ReadOnly)
-                                <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
-                            @elseif ($__menuVis === \App\Enums\MenuVisibility::GuideOnly)
-                                <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
-                            @endif
-                        </a>
+                        <div class="flex items-center group" :class="{ 'opacity-50': editMode && isHidden('{{ $key }}') }">
+                            <a href="{{ route($item['route']) }}"
+                            class="{{ $button_class }} {{ $item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
+                            :class="{ 'pointer-events-none': editMode }"
+                            role="menuitem">
+                                <i class="{{ $item['icon'] }} mr-3" aria-hidden="true"></i>
+                                <span>{{ __($item['text']) }}</span>
+                                @if ($__menuVis === \App\Enums\MenuVisibility::ReadOnly)
+                                    <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
+                                @elseif ($__menuVis === \App\Enums\MenuVisibility::GuideOnly)
+                                    <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
+                                @endif
+                            </a>
+                            @unless ($__isProtected)
+                                <button x-show="editMode"
+                                        x-cloak
+                                        @click="toggleMenu('{{ $key }}')"
+                                        class="ml-1 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
+                                    <i class="fas text-xs" :class="isHidden('{{ $key }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                </button>
+                            @endunless
+                        </div>
                     @else
-                        <button @click="{{ $open_key }} = !{{ $open_key }}" 
-                        class="{{ $button_class }} text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
-                        aria-expanded="false"
-                        :aria-expanded="{{ $open_key }}.toString()">
-                            <i class="{{ $item['icon'] }} mr-3" aria-hidden="true"></i>
-                            <span>{{ __($item['text']) }}</span>
-                            @if ($__menuVis === \App\Enums\MenuVisibility::ReadOnly)
-                                <i class="fas fa-lock text-xs text-gray-400 ml-1" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
-                            @elseif ($__menuVis === \App\Enums\MenuVisibility::GuideOnly)
-                                <i class="fas fa-directions text-xs text-purple-400 ml-1" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
-                            @endif
-                            <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
+                        <div class="flex items-center group" :class="{ 'opacity-50': editMode && isHidden('{{ $key }}') }">
+                            <button @click="editMode || ({{ $open_key }} = !{{ $open_key }})"
+                            class="{{ $button_class }} text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
+                            aria-expanded="false"
+                            :aria-expanded="{{ $open_key }}.toString()">
+                                <i class="{{ $item['icon'] }} mr-3" aria-hidden="true"></i>
+                                <span>{{ __($item['text']) }}</span>
+                                @if ($__menuVis === \App\Enums\MenuVisibility::ReadOnly)
+                                    <i class="fas fa-lock text-xs text-gray-400 ml-1" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
+                                @elseif ($__menuVis === \App\Enums\MenuVisibility::GuideOnly)
+                                    <i class="fas fa-directions text-xs text-purple-400 ml-1" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
+                                @endif
+                                <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            @unless ($__isProtected)
+                                <button x-show="editMode"
+                                        x-cloak
+                                        @click="toggleMenu('{{ $key }}')"
+                                        class="ml-1 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
+                                    <i class="fas text-xs" :class="isHidden('{{ $key }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                </button>
+                            @endunless
+                        </div>
                     @endif
                 @endif
 
                 @if (isset($item['children']) && is_array($item['children']))
-                    <div x-show="{{ $open_key }}" x-collapse class="ml-2 space-y-1" role="menu">
+                    <div x-show="{{ $open_key }} && !editMode" x-collapse class="ml-2 space-y-1" role="menu">
                         @foreach ($item['children'] as $child_key => $child_item)
                             @php
                                 // 子項目の権限キーを生成（親キー.子キー）
                                 $child_role_key = $key . '.' . $child_key;
                                 $child_plugin_slug = $child_item['plugin_slug'] ?? $plugin_slug;
-                                
+
                                 // 子項目の権限チェック
-                                $child_has_permission = \App\Helpers\AdminHelper::canEditMenuOrPlugin($child_plugin_slug, $child_role_key) || 
+                                $child_has_permission = \App\Helpers\AdminHelper::canEditMenuOrPlugin($child_plugin_slug, $child_role_key) ||
                                                        \App\Helpers\AdminHelper::canViewMenuOrPlugin($child_plugin_slug, $child_role_key);
-                                
+
                                 // 子項目に権限がない場合、孫項目の権限をチェック
                                 if (!$child_has_permission && isset($child_item['children']) && is_array($child_item['children'])) {
                                     foreach ($child_item['children'] as $grandchild_key => $grandchild_item) {
                                         $grandchild_role_key = $child_role_key . '.' . $grandchild_key;
                                         $grandchild_plugin_slug = $grandchild_item['plugin_slug'] ?? $child_plugin_slug;
-                                        
-                                        if (\App\Helpers\AdminHelper::canEditMenuOrPlugin($grandchild_plugin_slug, $grandchild_role_key) || 
+
+                                        if (\App\Helpers\AdminHelper::canEditMenuOrPlugin($grandchild_plugin_slug, $grandchild_role_key) ||
                                             \App\Helpers\AdminHelper::canViewMenuOrPlugin($grandchild_plugin_slug, $grandchild_role_key)) {
                                             $child_has_permission = true;
                                             break;
                                         }
                                     }
                                 }
-                                
+
                                 // 子項目がアコーディオンの場合、表示可能な孫項目があるかチェック
                                 if ($child_has_permission && !isset($child_item['route']) && isset($child_item['children']) && is_array($child_item['children'])) {
                                     $has_visible_grandchildren = false;
                                     foreach ($child_item['children'] as $grandchild_key => $grandchild_item) {
                                         $grandchild_role_key = $child_role_key . '.' . $grandchild_key;
                                         $grandchild_plugin_slug = $grandchild_item['plugin_slug'] ?? $child_plugin_slug;
-                                        
-                                        if (\App\Helpers\AdminHelper::canEditMenuOrPlugin($grandchild_plugin_slug, $grandchild_role_key) || 
+
+                                        if (\App\Helpers\AdminHelper::canEditMenuOrPlugin($grandchild_plugin_slug, $grandchild_role_key) ||
                                             \App\Helpers\AdminHelper::canViewMenuOrPlugin($grandchild_plugin_slug, $grandchild_role_key)) {
                                             $has_visible_grandchildren = true;
                                             break;
                                         }
                                     }
-                                    
+
                                     // 表示可能な孫項目がない場合は子項目も非表示
                                     if (!$has_visible_grandchildren) {
                                         $child_has_permission = false;
@@ -226,8 +278,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 $__childMenuHidden = $__childMenuVis === \App\Enums\MenuVisibility::Hidden;
                             @endphp
                             @if ($child_has_permission && !$__childMenuHidden)
+                                <div x-show="!isHidden('{{ $__childMenuKey }}')">
                                 @if (isset($child_item['route']) && is_string($child_item['route']) && Route::has($child_item['route']))
-                                    <a href="{{ route($child_item['route']) }}" 
+                                    <a href="{{ route($child_item['route']) }}"
                                     class="{{ $button_class }} {{ $child_item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
                                     role="menuitem">
                                         <i class="{{ $child_item['icon'] }} mr-3" aria-hidden="true"></i>
@@ -244,7 +297,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         // 親キーを含めて変数名の競合を回避（例: open_users_settings）
                                         $open_child_key = 'open_' . str_replace('-', '_', $key) . '_' . str_replace('-', '_', $child_key);
                                         $is_open_child = false;
-                                        
+
                                         // プラグインルートの場合の判定
                                         if (strpos($route_name, '::') !== false) {
                                             // plugin-name::admin.resource.action 形式
@@ -257,7 +310,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             $current_child_route_parts = explode('.', $route_name);
                                             $is_open_child = isset($current_child_route_parts[2]) && $current_child_route_parts[2] === $child_key;
                                         }
-                                        
+
                                         // 孫要素のルートが現在のルートと一致する場合も開く
                                         if (!$is_open_child && isset($child_item['children']) && is_array($child_item['children'])) {
                                             foreach ($child_item['children'] as $gc_item) {
@@ -292,6 +345,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                         $__gcMenuHidden = $__gcMenuVis === \App\Enums\MenuVisibility::Hidden;
                                                     @endphp
                                                     @if (!$__gcMenuHidden && isset($grand_child_item['route']) && is_string($grand_child_item['route']) && Route::has($grand_child_item['route']) && isset($grand_child_item['icon']) && is_string($grand_child_item['icon']) && isset($grand_child_item['text']) && is_string($grand_child_item['text']) && (\App\Helpers\AdminHelper::canEditMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key) || \App\Helpers\AdminHelper::canViewMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key)))
+                                                        <div x-show="!isHidden('{{ $grand_child_role_key }}')">
                                                         <a href="{{ route($grand_child_item['route']) }}"
                                                         class="{{ $button_class }} {{ $grand_child_item['route'] === $route_name ? 'sidebar-link-active' : 'sidebar-link' }}">
                                                             <i class="{{ $grand_child_item['icon'] }} mr-3"></i>
@@ -304,6 +358,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                                 <span class="text-xs text-gray-400">(閲覧のみ)</span>
                                                             @endif
                                                         </a>
+                                                        </div>
                                                     {{-- 4階層目: 孫項目がさらに子を持つ場合 --}}
                                                     @elseif (isset($grand_child_item['children']) && is_array($grand_child_item['children']) && isset($grand_child_item['icon']) && isset($grand_child_item['text']))
                                                         @php
@@ -357,6 +412,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     </div>
                                     @endif
                                 @endif
+                                </div>
                             @endif
                         @endforeach
                     </div>

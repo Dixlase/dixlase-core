@@ -406,5 +406,7 @@ trait AdminLoggedInTrait
 
         $this->appearance = $this->member->appearance?->value ?? AppearanceMode::Auto->value;
         $this->viewParams['appearance'] = $this->appearance;
+
+        $this->viewParams['sidebar_hidden_menus'] = $this->member->sidebar_preferences['hidden'] ?? [];
     }
 }
