@@ -39,6 +39,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 document.documentElement.classList.add(d?'dark':'light');
             })();
         </script>
+        {{-- FOUC防止: サイドバー状態に応じてメインコンテンツのマージンを即座に適用 --}}
+        <style @cspNonce>
+            @media(min-width:768px){#admin-main-content{margin-left:16rem}}
+        </style>
+        <script @cspNonce>
+            (function(){
+                if(localStorage.getItem('sidebarCollapsed')==='true'){
+                    var s=document.currentScript;
+                    s.previousElementSibling.textContent='';
+                }
+            })();
+        </script>
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
@@ -95,6 +107,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <!-- Main Content Area -->
                 <main @right-sidebar-active.window="rightSidebarActive = true"
+                      id="admin-main-content"
                       class="ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white"
                       :class="{
                           'md:ml-0': sidebarCollapsed,
