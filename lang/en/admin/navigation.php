@@ -13,6 +13,9 @@
  */
 
 return [
+    'edit_menu' => 'Edit Menu',
+    'done_editing' => 'Done',
+
     'dashboard' => 'Dashboard',
     'front' => [
         'text' => 'Front Page Management',

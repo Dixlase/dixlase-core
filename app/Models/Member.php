@@ -64,6 +64,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
         'two_fa_mode' => AuthenticationMode::class,
         'appearance' => AppearanceMode::class,
         'locale' => Locale::class,
+        'sidebar_preferences' => 'array',
     ];
 
     /**
@@ -88,6 +89,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
         'passkey_prompt_dismissed',
         'two_fa_default_method',
         'description',
+        'sidebar_preferences',
     ];
 
     /**

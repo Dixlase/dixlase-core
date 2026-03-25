@@ -13,6 +13,9 @@
  */
 
 return [
+    'edit_menu' => 'メニュー編集',
+    'done_editing' => '完了',
+
     'dashboard' => 'ダッシュボード',
     'front' => [
         'text' => 'フロントページ管理',

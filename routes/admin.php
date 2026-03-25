@@ -38,6 +38,7 @@ use App\Http\Controllers\Admin\Profile\AdminProfileBasicController;
 use App\Http\Controllers\Admin\Profile\AdminProfileController;
 use App\Http\Controllers\Admin\Profile\AdminProfileNotificationsController;
 use App\Http\Controllers\Admin\Profile\AdminProfilePasskeyPromptController;
+use App\Http\Controllers\Admin\Profile\AdminProfileSidebarController;
 use App\Http\Controllers\Admin\Profile\AdminProfilePasswordController;
 use App\Http\Controllers\Admin\Profile\AdminProfileTwoFaController;
 use App\Http\Controllers\Admin\Profile\AdminProfileTwoFaManagementController;
@@ -200,6 +201,9 @@ Route::prefix($adminUrl)->name('admin.')
             // パスキー登録促進モーダル設定
             Route::post('/profile/passkey-prompt/dismiss', [AdminProfilePasskeyPromptController::class, 'dismiss'])->name('profile.passkey-prompt.dismiss');
             Route::post('/profile/passkey-prompt/reset', [AdminProfilePasskeyPromptController::class, 'reset'])->name('profile.passkey-prompt.reset');
+
+            // サイドバーメニュー表示設定
+            Route::post('/profile/sidebar/update', [AdminProfileSidebarController::class, 'update'])->name('profile.sidebar.update');
 
             // メンバー管理（権限チェック付き）
             Route::middleware('check.menu.access:members')->prefix('members')->name('members.')->group(function () {
