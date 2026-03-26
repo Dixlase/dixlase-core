@@ -88,10 +88,11 @@ return [
     // Badge Labels (for card display)
     'badge_labels' => [
         'health' => 'Health',
-        'signature' => 'Signature',
-        'permission' => 'Perm Def',
+        'signature' => 'Sign',
+        'permission' => 'Perm',
         'csp' => 'CSP',
-        'preset' => 'Preset',
+        'preset' => 'Mode',
+        'operation' => 'Status',
     ],
 
     // CSP Mode Badge Labels
@@ -163,6 +164,14 @@ return [
         'csp_compatible' => 'CSP Compatible',
         'csp_inline_required' => 'CSP Not Ready',
         'csp_not_checked' => 'CSP Not Checked',
+    ],
+
+    // Operation Status (Traffic Light)
+    'operation_status' => [
+        'ok' => 'Fully Operational',
+        'caution' => 'Caution',
+        'blocked' => 'Blocked',
+        'unknown' => 'Unverified',
     ],
 
     // Modal Messages
