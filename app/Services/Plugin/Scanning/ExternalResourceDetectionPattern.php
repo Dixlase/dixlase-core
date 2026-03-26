@@ -65,7 +65,7 @@ class ExternalResourceDetectionPattern extends DetectionPattern
     }
 
     /**
-     * コンテキスト検証: コメント行とテスト用URLを除外
+     * コンテキスト検証: コメント行・テスト用URL・CSP信頼済みドメインを除外
      */
     public function validateMatch(string $match, string $line, string $fileContent, string $filePath): bool
     {
@@ -85,6 +85,42 @@ class ExternalResourceDetectionPattern extends DetectionPattern
             return false;
         }
 
+        // CSP信頼済みドメインは除外
+        if ($this->isTrustedDomain($line)) {
+            return false;
+        }
+
         return true;
+    }
+
+    /**
+     * マッチした文字列がCSP信頼済みドメインを参照しているか判定
+     */
+    protected function isTrustedDomain(string $match): bool
+    {
+        $trustedDomains = config('csp.domains.trusted_domains', []);
+
+        // CSPディレクティブに直接定義されたドメインも収集
+        $directives = config('csp.directives', []);
+        foreach ($directives as $sources) {
+            if (! is_array($sources)) {
+                continue;
+            }
+            foreach ($sources as $source) {
+                if (str_starts_with($source, 'https://') || str_starts_with($source, 'http://')) {
+                    $trustedDomains[] = $source;
+                }
+            }
+        }
+
+        $trustedDomains = array_unique($trustedDomains);
+
+        foreach ($trustedDomains as $domain) {
+            if (str_contains($match, parse_url($domain, PHP_URL_HOST) ?: '')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
