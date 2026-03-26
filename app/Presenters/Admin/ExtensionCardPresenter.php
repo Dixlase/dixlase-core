@@ -284,8 +284,8 @@ class ExtensionCardPresenter
             'scanData' => $scanData,
             'cspModeBadges' => self::buildCspModeBadges($cspCompatibility),
             'presetBadges' => self::buildPresetCompatibilityBadges($healthStatus),
-            'cspBarometerItems' => self::buildCspBarometerItems($cspCompatibility),
-            'presetBarometerItems' => self::buildPresetBarometerItems($healthStatus),
+            'cspBarometerItems' => self::buildCspBarometerItems($cspCompatibility, $auditedAt),
+            'presetBarometerItems' => self::buildPresetBarometerItems($healthStatus, $auditedAt),
         ];
     }
 
@@ -609,10 +609,19 @@ class ExtensionCardPresenter
      * @param  array<string, mixed>  $cspCompatibility
      * @return array<int, array{label: string, status: string}>
      */
-    private static function buildCspBarometerItems(array $cspCompatibility): array
+    private static function buildCspBarometerItems(array $cspCompatibility, ?string $auditedAt): array
     {
-        $badges = self::buildCspModeBadges($cspCompatibility);
         $modes = ['development', 'standard', 'strict'];
+
+        if ($auditedAt === null) {
+            return array_map(fn ($mode) => [
+                'label' => __('admin/settings/plugins/index.csp_mode.'.$mode),
+                'status' => 'unknown',
+                'tier' => $mode,
+            ], $modes);
+        }
+
+        $badges = self::buildCspModeBadges($cspCompatibility);
         $items = [];
 
         foreach ($modes as $mode) {
@@ -625,6 +634,7 @@ class ExtensionCardPresenter
             $items[] = [
                 'label' => __('admin/settings/plugins/index.csp_mode.'.$mode),
                 'status' => $status,
+                'tier' => $mode,
             ];
         }
 
@@ -634,12 +644,26 @@ class ExtensionCardPresenter
     /**
      * Preset barometer items for the ui-barometer component
      *
-     * @return array<int, array{label: string, status: string}>
+     * @return array<int, array{label: string, status: string, tier: string}>
      */
-    private static function buildPresetBarometerItems(?string $healthStatus): array
+    private static function buildPresetBarometerItems(?string $healthStatus, ?string $auditedAt): array
     {
-        $badges = self::buildPresetCompatibilityBadges($healthStatus);
+        $tierMap = [
+            'development' => 'development',
+            'balanced' => 'standard',
+            'strict' => 'strict',
+        ];
         $presets = ['development', 'balanced', 'strict'];
+
+        if ($auditedAt === null) {
+            return array_map(fn ($preset) => [
+                'label' => __('admin/settings/plugins/index.preset_badge.'.$preset),
+                'status' => 'unknown',
+                'tier' => $tierMap[$preset],
+            ], $presets);
+        }
+
+        $badges = self::buildPresetCompatibilityBadges($healthStatus);
         $items = [];
 
         foreach ($presets as $preset) {
@@ -652,6 +676,7 @@ class ExtensionCardPresenter
             $items[] = [
                 'label' => __('admin/settings/plugins/index.preset_badge.'.$preset),
                 'status' => $status,
+                'tier' => $tierMap[$preset],
             ];
         }
 

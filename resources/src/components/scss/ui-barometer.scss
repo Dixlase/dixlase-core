@@ -8,6 +8,8 @@
  * Chevron-arrow style indicator for CSP/preset compatibility
  */
 
+$arrow-depth: 0.45rem;
+
 .barometer {
     @apply inline-flex items-stretch;
 
@@ -15,27 +17,34 @@
         @apply relative flex items-center justify-center text-xs font-medium text-white;
         padding: 0.2rem 0.5rem 0.2rem 0.75rem;
         min-width: 2.8rem;
-        clip-path: polygon(0 0, calc(100% - 0.45rem) 0, 100% 50%, calc(100% - 0.45rem) 100%, 0 100%, 0.45rem 50%);
+        clip-path: polygon(0 0, calc(100% - #{$arrow-depth}) 0, 100% 50%, calc(100% - #{$arrow-depth}) 100%, 0 100%, #{$arrow-depth} 50%);
 
         &--first {
             padding-left: 0.5rem;
-            clip-path: polygon(0 0, calc(100% - 0.45rem) 0, 100% 50%, calc(100% - 0.45rem) 100%, 0 100%);
+            clip-path: polygon(0 0, calc(100% - #{$arrow-depth}) 0, 100% 50%, calc(100% - #{$arrow-depth}) 100%, 0 100%);
             border-radius: 0.15rem 0 0 0.15rem;
         }
 
         &--last {
-            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0.45rem 50%);
-            border-radius: 0 0.15rem 0.15rem 0;
+            clip-path: polygon(0 0, calc(100% - #{$arrow-depth}) 0, 100% 50%, calc(100% - #{$arrow-depth}) 100%, 0 100%, #{$arrow-depth} 50%);
         }
 
-        // OK: green
-        &--ok {
-            @apply bg-green-500 dark:bg-green-600;
+        // Tier colors: development=yellow, standard=blue, strict=red
+        &--development {
+            @apply bg-yellow-500 dark:bg-yellow-600;
         }
 
-        // NG: red
-        &--ng {
+        &--standard {
+            @apply bg-blue-500 dark:bg-blue-600;
+        }
+
+        &--strict {
             @apply bg-red-500 dark:bg-red-600;
+        }
+
+        // NG: dimmed with reduced opacity
+        &--ng {
+            @apply bg-gray-400 text-gray-200 dark:bg-gray-500 dark:text-gray-300;
         }
 
         // Unknown/unchecked: gray

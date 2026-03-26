@@ -89,7 +89,7 @@ return [
     'badge_labels' => [
         'health' => 'Health',
         'signature' => 'Signature',
-        'permission' => 'Permission',
+        'permission' => 'Perm Def',
         'csp' => 'CSP',
         'preset' => 'Preset',
     ],
@@ -144,14 +144,16 @@ return [
     // Verification Status (PluginVerificationStatus Enum)
     'verification' => [
         // Signature
-        'signature_valid' => 'Signature: OK',
-        'signature_unsigned' => 'Signature: Unsigned',
-        'signature_invalid' => 'Signature: Invalid',
-        'signature_pending' => 'Signature: Pending',
+        'signature_valid' => 'Signed',
+        'signature_unsigned' => 'Unsigned',
+        'signature_invalid' => 'Invalid',
+        'signature_pending' => 'Pending',
+        'signature_not_scanned' => 'Unverified',
         // Permission
-        'permission_ok' => 'Permission: OK',
-        'permission_undefined' => 'Permission: Undefined',
-        'permission_mismatch' => 'Permission: Mismatch',
+        'permission_ok' => 'OK',
+        'permission_undefined' => 'Undefined',
+        'permission_mismatch' => 'Mismatch',
+        'permission_not_scanned' => 'Unverified',
         // Scan
         'scan_not_performed' => 'Scan: Not Performed',
         'scan_outdated' => 'Scan: Outdated',
