@@ -43,6 +43,9 @@ class AdminProfileSidebarController extends AdminLoggedInController
         $request->validate([
             'hidden' => ['present', 'array'],
             'hidden.*' => ['string', 'regex:/^[a-z0-9_]+(\.[a-z0-9_-]+)*$/'],
+            'order' => ['sometimes', 'array'],
+            'order.*' => ['array'],
+            'order.*.*' => ['string', 'regex:/^[a-z0-9_-]+$/'],
         ]);
 
         $hidden = $request->input('hidden', []);
@@ -58,8 +61,14 @@ class AdminProfileSidebarController extends AdminLoggedInController
             return true;
         }));
 
+        $order = $request->input('order', []);
+
         $member = Auth::guard('member')->user();
-        $member->sidebar_preferences = ['hidden' => $hidden];
+        $preferences = ['hidden' => $hidden];
+        if (! empty($order)) {
+            $preferences['order'] = $order;
+        }
+        $member->sidebar_preferences = $preferences;
         $member->save();
 
         return response()->json([

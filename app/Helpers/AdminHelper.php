@@ -493,4 +493,29 @@ class AdminHelper
 
         return $existing;
     }
+
+    /**
+     * Reorder an associative array by a list of keys.
+     * Keys not in $orderedKeys are appended at the end in original order.
+     *
+     * @param  array<string, mixed>  $items
+     * @param  array<int, string>  $orderedKeys
+     * @return array<string, mixed>
+     */
+    public static function reorderByKeys(array $items, array $orderedKeys): array
+    {
+        $reordered = [];
+        foreach ($orderedKeys as $key) {
+            if (array_key_exists($key, $items)) {
+                $reordered[$key] = $items[$key];
+            }
+        }
+        foreach ($items as $key => $item) {
+            if (! array_key_exists($key, $reordered)) {
+                $reordered[$key] = $item;
+            }
+        }
+
+        return $reordered;
+    }
 }
