@@ -686,14 +686,6 @@ class ExtensionCardPresenter
             ];
         }
 
-        // Red: security preset blocks the plugin
-        if ($enableAction === PluginEnableAction::Blocked) {
-            return [
-                'status' => 'blocked',
-                'label' => __('admin/settings/plugins/index.operation_status.blocked'),
-            ];
-        }
-
         // Check CSP compatibility with current mode
         $cspModeMap = [0 => 'development', 1 => 'standard', 2 => 'strict'];
         $currentCspMode = $cspModeMap[(int) SecuritySettingsRegistry::get('csp_mode', 1)] ?? 'standard';
@@ -702,8 +694,16 @@ class ExtensionCardPresenter
             ? $cspBadges[$currentCspMode]['compatible']
             : null;
 
-        // Yellow: CSP issue detected with current mode
-        if ($cspCompatibleWithCurrentMode === false) {
+        // Red: security preset blocks OR CSP incompatible with current mode
+        if ($enableAction === PluginEnableAction::Blocked || $cspCompatibleWithCurrentMode === false) {
+            return [
+                'status' => 'blocked',
+                'label' => __('admin/settings/plugins/index.operation_status.blocked'),
+            ];
+        }
+
+        // Yellow: minor issues (warning or acknowledgement required)
+        if ($enableAction === PluginEnableAction::WarningRequired || $enableAction === PluginEnableAction::AcknowledgementRequired) {
             return [
                 'status' => 'caution',
                 'label' => __('admin/settings/plugins/index.operation_status.caution'),
