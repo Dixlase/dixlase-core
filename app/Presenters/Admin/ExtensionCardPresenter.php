@@ -712,9 +712,10 @@ class ExtensionCardPresenter
         }
 
         // Check CSP compatibility with current mode
-        $currentCspMode = SecuritySettingsRegistry::get('csp_mode', 'development');
+        $cspModeMap = [0 => 'development', 1 => 'standard', 2 => 'strict'];
+        $currentCspMode = $cspModeMap[(int) SecuritySettingsRegistry::get('csp_mode', 1)] ?? 'standard';
         $cspBadges = self::buildCspModeBadges($cspCompatibility);
-        $cspCompatibleWithCurrentMode = $cspBadges[$currentCspMode]['checked']
+        $cspCompatibleWithCurrentMode = ($cspBadges[$currentCspMode]['checked'] ?? false)
             ? $cspBadges[$currentCspMode]['compatible']
             : null;
 
