@@ -89,7 +89,7 @@ return [
     'badge_labels' => [
         'health' => '健全性',
         'signature' => '署名',
-        'permission' => '権限',
+        'permission' => '権限定義',
         'csp' => 'CSP',
         'preset' => '動作',
     ],
@@ -144,14 +144,16 @@ return [
     // 検証状態（PluginVerificationStatus Enum）
     'verification' => [
         // 署名
-        'signature_valid' => '署名：OK',
-        'signature_unsigned' => '署名：未署名',
-        'signature_invalid' => '署名：不一致',
-        'signature_pending' => '署名：検証待ち',
+        'signature_valid' => '署名あり',
+        'signature_unsigned' => '未署名',
+        'signature_invalid' => '署名不一致',
+        'signature_pending' => '検証待ち',
+        'signature_not_scanned' => '未確認',
         // 権限
-        'permission_ok' => '権限定義：OK',
-        'permission_undefined' => '権限定義：未定義',
-        'permission_mismatch' => '権限定義：不一致',
+        'permission_ok' => 'OK',
+        'permission_undefined' => '未定義',
+        'permission_mismatch' => '不一致',
+        'permission_not_scanned' => '未確認',
         // スキャン
         'scan_not_performed' => 'スキャン：未実行',
         'scan_outdated' => 'スキャン：期限切れ',

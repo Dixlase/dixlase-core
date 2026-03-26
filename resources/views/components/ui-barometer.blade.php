@@ -26,13 +26,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @foreach($items as $index => $item)
         @php
             $status = $item['status'] ?? 'unknown';
-            $statusClass = match($status) {
-                'ok' => 'barometer__segment--ok',
-                'ng' => 'barometer__segment--ng',
-                default => 'barometer__segment--unknown',
-            };
+            $tier = $item['tier'] ?? 'default';
             $isFirst = $index === 0;
             $isLast = $index === count($items) - 1;
+
+            $statusClass = match(true) {
+                $status === 'unknown' => 'barometer__segment--unknown',
+                $status === 'ng' => 'barometer__segment--ng',
+                default => 'barometer__segment--' . $tier,
+            };
             $positionClass = $isFirst ? 'barometer__segment--first' : ($isLast ? 'barometer__segment--last' : '');
         @endphp
         <div class="barometer__segment {{ $statusClass }} {{ $positionClass }}">
