@@ -852,18 +852,8 @@ class ExtensionCardPresenter
      */
     private static function computeNeedsScan(string $slug, ?string $auditedAt): bool
     {
-        // 未スキャンの場合は常にtrue
-        if ($auditedAt === null) {
-            return true;
-        }
-
-        // PluginHealthScorerでファイルハッシュ変更を検知
-        try {
-            $healthScorer = app(PluginHealthScorer::class);
-
-            return $healthScorer->needsRescan($slug);
-        } catch (\Exception $e) {
-            return true;
-        }
+        // Once scanned, do not force re-scan for install/enable flow.
+        // Users can manually re-scan from the card if files have changed.
+        return $auditedAt === null;
     }
 }
