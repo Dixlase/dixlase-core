@@ -52,7 +52,8 @@ Alpine.data('sidebarEditor', (saveUrl, initialHidden, initialOrder) => ({
 
     enterEditMode() {
         this.editMode = true;
-        this.$nextTick(() => this.initSortables());
+        // Wait for DOM to fully update (x-show, x-cloak removal)
+        setTimeout(() => this.initSortables(), 100);
     },
 
     exitEditMode() {
@@ -62,9 +63,18 @@ Alpine.data('sidebarEditor', (saveUrl, initialHidden, initialOrder) => ({
     },
 
     initSortables() {
-        const containers = this.$root.querySelectorAll('[data-sortable-group]');
+        const root = this.$refs.sidebarRoot;
+        if (!root) {
+            console.error('[SidebarEditor] sidebarRoot ref not found');
+            return;
+        }
+        const containers = root.querySelectorAll('[data-sortable-group]');
+        console.log('[SidebarEditor] Found sortable containers:', containers.length);
         containers.forEach(container => {
             const groupKey = container.dataset.sortableGroup;
+            const draggableItems = container.querySelectorAll(':scope > [data-menu-key]');
+            const handles = container.querySelectorAll(':scope > [data-menu-key] .drag-handle');
+            console.log(`[SidebarEditor] Group "${groupKey}": ${draggableItems.length} items, ${handles.length} handles`);
             const instance = Sortable.create(container, {
                 handle: '.drag-handle',
                 animation: 150,
@@ -73,9 +83,13 @@ Alpine.data('sidebarEditor', (saveUrl, initialHidden, initialOrder) => ({
                 fallbackClass: 'sortable-fallback',
                 draggable: '[data-menu-key]',
                 group: { name: groupKey, pull: false, put: false },
+                onStart: () => {
+                    console.log(`[SidebarEditor] Drag started in group "${groupKey}"`);
+                },
                 onEnd: () => {
                     const keys = Array.from(container.querySelectorAll(':scope > [data-menu-key]'))
                         .map(el => el.dataset.menuKey);
+                    console.log(`[SidebarEditor] New order for "${groupKey}":`, keys);
                     this.menuOrder[groupKey] = keys;
                 },
             });
