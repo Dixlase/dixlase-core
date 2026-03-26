@@ -28,25 +28,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <div class="flex flex-col w-64 h-full overflow-y-auto bg-white/75 dark:bg-gray-900/75 border-r border-gray-200 dark:border-gray-600 backdrop-blur-sm shadow-md"
          x-data="sidebarEditor('{{ route('admin.profile.sidebar.update') }}', {{ json_encode($sidebar_hidden_menus ?? []) }})">
 
-        {{-- サイドバー編集ボタン --}}
-        <div class="flex items-center justify-end px-4 pt-3 pb-1">
-            <button x-show="!editMode"
-                    x-cloak
-                    @click="enterEditMode()"
-                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1"
-                    title="{{ __('admin/navigation.edit_menu') }}">
-                <i class="fas fa-sliders-h text-xs"></i>
-            </button>
-            <button x-show="editMode"
-                    x-cloak
-                    @click="exitEditMode()"
-                    class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-1"
-                    title="{{ __('admin/navigation.done_editing') }}">
-                <i class="fas fa-check text-xs"></i>
-            </button>
-        </div>
-
-        <nav class="flex-1 px-4 pb-4 space-y-1" role="navigation" aria-label="Admin navigation menu">
+        <nav class="flex-1 px-4 py-4 space-y-1" role="navigation" aria-label="Admin navigation menu">
         @php
             // モード表示設定を一度だけ取得
             $__isSimpleMode = \App\Helpers\AdminModeHelper::isSimpleMode();
@@ -185,14 +167,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
                                 @endif
                             </a>
-                            @unless ($__isProtected)
+                            @if ($key === 'dashboard')
+                                {{-- サイドバー編集ボタン（ダッシュボード行の右端） --}}
+                                <button x-show="!editMode"
+                                        x-cloak
+                                        @click="enterEditMode()"
+                                        class="ml-auto p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0"
+                                        title="{{ __('admin/navigation.edit_menu') }}">
+                                    <i class="fas fa-sliders-h text-xs"></i>
+                                </button>
+                                <button x-show="editMode"
+                                        x-cloak
+                                        @click="exitEditMode()"
+                                        class="ml-auto p-1 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors flex-shrink-0"
+                                        title="{{ __('admin/navigation.done_editing') }}">
+                                    <i class="fas fa-check text-xs"></i>
+                                </button>
+                            @elseunless ($__isProtected)
                                 <button x-show="editMode"
                                         x-cloak
                                         @click="toggleMenu('{{ $key }}')"
                                         class="ml-1 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
                                     <i class="fas text-xs" :class="isHidden('{{ $key }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
                                 </button>
-                            @endunless
+                            @endif
                         </div>
                     @else
                         <div class="flex items-center group" :class="{ 'opacity-50': editMode && isHidden('{{ $key }}') }">
