@@ -168,24 +168,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 @elseif ($__menuVis === \App\Enums\MenuVisibility::GuideOnly)
                                     <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
                                 @endif
+                                @if ($key === 'dashboard')
+                                    {{-- サイドバー編集ボタン（ダッシュボード行の右端、リンク内に配置して矢印と位置を揃える） --}}
+                                    <i x-show="!editMode"
+                                       x-cloak
+                                       @click.prevent="enterEditMode()"
+                                       class="fas fa-sliders-h w-4 h-4 ml-auto text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer transition-colors flex items-center justify-center"
+                                       title="{{ __('admin/navigation.edit_menu') }}"></i>
+                                    <i x-show="editMode"
+                                       x-cloak
+                                       @click.prevent="exitEditMode()"
+                                       class="fas fa-check w-4 h-4 ml-auto text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer transition-colors flex items-center justify-center"
+                                       title="{{ __('admin/navigation.done_editing') }}"></i>
+                                @endif
                             </a>
-                            @if ($key === 'dashboard')
-                                {{-- サイドバー編集ボタン（ダッシュボード行の右端） --}}
-                                <button x-show="!editMode"
-                                        x-cloak
-                                        @click="enterEditMode()"
-                                        class="ml-auto p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0"
-                                        title="{{ __('admin/navigation.edit_menu') }}">
-                                    <i class="fas fa-sliders-h text-xs"></i>
-                                </button>
-                                <button x-show="editMode"
-                                        x-cloak
-                                        @click="exitEditMode()"
-                                        class="ml-auto p-1 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors flex-shrink-0"
-                                        title="{{ __('admin/navigation.done_editing') }}">
-                                    <i class="fas fa-check text-xs"></i>
-                                </button>
-                            @elseif (!$__isProtected)
+                            @if (!$__isProtected)
                                 <button x-show="editMode"
                                         x-cloak
                                         @click="toggleMenu('{{ $key }}')"
