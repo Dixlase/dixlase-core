@@ -88,6 +88,7 @@ return [
     // Badge Labels (for card display)
     'badge_labels' => [
         'health' => 'Health',
+        'health_full' => 'Health',
         'signature' => 'Sign',
         'permission' => 'Perm',
         'csp' => 'CSP',

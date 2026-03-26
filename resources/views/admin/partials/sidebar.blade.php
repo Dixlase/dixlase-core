@@ -158,7 +158,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @if (isset($item['route']) && is_string($item['route']) && Route::has($item['route']))
                         <div class="flex items-center group" :class="{ 'opacity-50': editMode && isHidden('{{ $key }}') }">
                             <a href="{{ route($item['route']) }}"
-                            class="{{ $button_class }} {{ $key === 'dashboard' ? 'pr-0' : '' }} {{ $item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
+                            class="{{ $button_class }} {{ $key === 'dashboard' ? 'mr-3' : '' }} {{ $item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
                             :class="{ 'pointer-events-none': editMode }"
                             role="menuitem">
                                 <i class="{{ $item['icon'] }} mr-3" aria-hidden="true"></i>
