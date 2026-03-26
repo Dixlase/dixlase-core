@@ -19,17 +19,19 @@
  */
 
 import Alpine from 'alpinejs';
+import Sortable from 'sortablejs';
 
-Alpine.data('sidebarEditor', (saveUrl, initialHidden) => ({
+Alpine.data('sidebarEditor', (saveUrl, initialHidden, initialOrder) => ({
     editMode: false,
     hiddenMenus: initialHidden || [],
+    menuOrder: initialOrder || {},
     saving: false,
+    sortableInstances: [],
 
     isHidden(key) {
         if (this.hiddenMenus.includes(key)) {
             return true;
         }
-        // Check if any parent key is hidden (e.g. 'front' hides 'front.pages')
         const parts = key.split('.');
         for (let i = 1; i < parts.length; i++) {
             const parentKey = parts.slice(0, i).join('.');
@@ -50,11 +52,38 @@ Alpine.data('sidebarEditor', (saveUrl, initialHidden) => ({
 
     enterEditMode() {
         this.editMode = true;
+        this.$nextTick(() => this.initSortables());
     },
 
     exitEditMode() {
+        this.destroySortables();
         this.editMode = false;
         this.savePreferences();
+    },
+
+    initSortables() {
+        const containers = this.$root.querySelectorAll('[data-sortable-group]');
+        containers.forEach(container => {
+            const groupKey = container.dataset.sortableGroup;
+            const instance = Sortable.create(container, {
+                handle: '.drag-handle',
+                animation: 150,
+                ghostClass: 'opacity-30',
+                draggable: '[data-menu-key]',
+                group: { name: groupKey, pull: false, put: false },
+                onEnd: () => {
+                    const keys = Array.from(container.querySelectorAll(':scope > [data-menu-key]'))
+                        .map(el => el.dataset.menuKey);
+                    this.menuOrder[groupKey] = keys;
+                },
+            });
+            this.sortableInstances.push(instance);
+        });
+    },
+
+    destroySortables() {
+        this.sortableInstances.forEach(instance => instance.destroy());
+        this.sortableInstances = [];
     },
 
     savePreferences() {
@@ -67,7 +96,10 @@ Alpine.data('sidebarEditor', (saveUrl, initialHidden) => ({
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'Accept': 'application/json',
             },
-            body: JSON.stringify({ hidden: this.hiddenMenus }),
+            body: JSON.stringify({
+                hidden: this.hiddenMenus,
+                order: this.menuOrder,
+            }),
         })
         .then(response => response.json())
         .then(() => {

@@ -408,5 +408,6 @@ trait AdminLoggedInTrait
         $this->viewParams['appearance'] = $this->appearance;
 
         $this->viewParams['sidebar_hidden_menus'] = $this->member->sidebar_preferences['hidden'] ?? [];
+        $this->viewParams['sidebar_menu_order'] = $this->member->sidebar_preferences['order'] ?? [];
     }
 }
