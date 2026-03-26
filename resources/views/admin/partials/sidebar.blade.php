@@ -26,6 +26,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div class="flex h-full">
     {{-- サイドバー本体 --}}
     <div class="flex flex-col w-64 h-full overflow-y-auto bg-white/75 dark:bg-gray-900/75 border-r border-gray-200 dark:border-gray-600 backdrop-blur-sm shadow-md"
+         x-ref="sidebarRoot"
          x-data="sidebarEditor('{{ route('admin.profile.sidebar.update') }}', {{ json_encode($sidebar_hidden_menus ?? []) }}, {{ json_encode($sidebar_menu_order ?? new \stdClass) }})">
 
         <nav class="flex-1 px-4 py-4 space-y-1" role="navigation" aria-label="Admin navigation menu" data-sortable-group="_top">
