@@ -92,7 +92,7 @@ return [
         'signature' => '署名',
         'permission' => '権限',
         'csp' => 'CSP',
-        'preset' => 'モード',
+        'preset' => '拡張',
         'operation' => '動作',
     ],
 

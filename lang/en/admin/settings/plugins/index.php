@@ -92,7 +92,7 @@ return [
         'signature' => 'Sign',
         'permission' => 'Perm',
         'csp' => 'CSP',
-        'preset' => 'Mode',
+        'preset' => 'Ext',
         'operation' => 'Status',
     ],
 
