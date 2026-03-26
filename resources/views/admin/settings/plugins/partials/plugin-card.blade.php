@@ -89,12 +89,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'blocked' => 'text-red-500',
                     default => 'text-gray-400',
                 };
-                $healthIconColor = !$card['auditedAt'] ? 'text-gray-400' : match($card['healthStatus'] ?? 'not_verified') {
-                    'healthy' => 'text-green-500',
-                    'advisory' => 'text-yellow-500',
-                    'warning', 'critical' => 'text-red-500',
-                    default => 'text-gray-400',
-                };
+                $healthIconColor = ($card['healthStatus'] ?? 'not_verified') === 'healthy' ? 'text-green-500' : 'text-red-500';
             @endphp
 
             {{-- 健全性 --}}
