@@ -72,13 +72,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
             <div x-cloak x-data="{ {{ $open_key }} : {{ $is_open ? 'true' : 'false' }} }"
+                 @unless ($__isProtected)
                  x-show="editMode || !isHidden('{{ $key }}')"
                  x-transition:enter="transition ease-out duration-200"
                  x-transition:enter-start="opacity-0"
                  x-transition:enter-end="opacity-100"
                  x-transition:leave="transition ease-in duration-150"
                  x-transition:leave-start="opacity-100"
-                 x-transition:leave-end="opacity-0">
+                 x-transition:leave-end="opacity-0"
+                 @endunless>
                 @php
                     // ダッシュボードとプロフィールは全員アクセス可能
                     $is_public_menu = in_array($key, ['dashboard', 'profile']);
@@ -183,7 +185,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         title="{{ __('admin/navigation.done_editing') }}">
                                     <i class="fas fa-check text-xs"></i>
                                 </button>
-                            @elseunless ($__isProtected)
+                            @elseif (!$__isProtected)
                                 <button x-show="editMode"
                                         x-cloak
                                         @click="toggleMenu('{{ $key }}')"
