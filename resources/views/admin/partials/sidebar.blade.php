@@ -158,7 +158,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @if (isset($item['route']) && is_string($item['route']) && Route::has($item['route']))
                         <div class="flex items-center group" :class="{ 'opacity-50': editMode && isHidden('{{ $key }}') }">
                             <a href="{{ route($item['route']) }}"
-                            class="{{ $button_class }} {{ $item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
+                            class="{{ $button_class }} {{ $key === 'dashboard' ? 'pr-0' : '' }} {{ $item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
                             :class="{ 'pointer-events-none': editMode }"
                             role="menuitem">
                                 <i class="{{ $item['icon'] }} mr-3" aria-hidden="true"></i>
@@ -168,21 +168,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 @elseif ($__menuVis === \App\Enums\MenuVisibility::GuideOnly)
                                     <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
                                 @endif
-                                @if ($key === 'dashboard')
-                                    {{-- サイドバー編集ボタン（ダッシュボード行の右端、リンク内に配置して矢印と位置を揃える） --}}
-                                    <i x-show="!editMode"
-                                       x-cloak
-                                       @click.prevent="enterEditMode()"
-                                       class="fas fa-sliders-h w-4 h-4 ml-auto text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer transition-colors flex items-center justify-center"
-                                       title="{{ __('admin/navigation.edit_menu') }}"></i>
-                                    <i x-show="editMode"
-                                       x-cloak
-                                       @click.prevent="exitEditMode()"
-                                       class="fas fa-check w-4 h-4 ml-auto text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer transition-colors flex items-center justify-center"
-                                       title="{{ __('admin/navigation.done_editing') }}"></i>
-                                @endif
                             </a>
-                            @if (!$__isProtected)
+                            @if ($key === 'dashboard')
+                                {{-- サイドバー編集ボタン（ダッシュボード行の右端、リンク枠の外） --}}
+                                <button x-show="!editMode"
+                                        x-cloak
+                                        @click="enterEditMode()"
+                                        class="w-4 h-4 mr-4 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer transition-colors flex-shrink-0"
+                                        title="{{ __('admin/navigation.edit_menu') }}">
+                                    <i class="fas fa-sliders-h text-xs"></i>
+                                </button>
+                                <button x-show="editMode"
+                                        x-cloak
+                                        @click="exitEditMode()"
+                                        class="w-4 h-4 mr-4 flex items-center justify-center text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer transition-colors flex-shrink-0"
+                                        title="{{ __('admin/navigation.done_editing') }}">
+                                    <i class="fas fa-check text-xs"></i>
+                                </button>
+                            @elseif (!$__isProtected)
                                 <button x-show="editMode"
                                         x-cloak
                                         @click="toggleMenu('{{ $key }}')"
