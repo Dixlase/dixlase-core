@@ -43,7 +43,7 @@ https://exc-d.com
         'attentionReasonsTitle' => __('admin/settings/plugins/index.permissions.attention_reasons_title'),
         'permissionConsistencyTitle' => __('admin/settings/plugins/index.permissions.permission_consistency_title'),
         'totalRiskScoreLabel' => __('admin/settings/plugins/index.permissions.total_risk_score'),
-        'healthBadgeLabel' => __('admin/settings/plugins/index.badge_labels.health'),
+        'healthBadgeLabel' => __('admin/settings/plugins/index.badge_labels.health_full'),
         'statsLabel' => __('admin/settings/plugins/index.permissions.audit_stats'),
         'matchesLabel' => __('admin/settings/plugins/index.permissions.audit_matches'),
         'mismatchesLabel' => __('admin/settings/plugins/index.permissions.audit_mismatches'),

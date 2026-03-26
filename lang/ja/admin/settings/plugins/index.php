@@ -88,6 +88,7 @@ return [
     // バッジラベル（カード表示用）
     'badge_labels' => [
         'health' => '健全',
+        'health_full' => '健全性',
         'signature' => '署名',
         'permission' => '権限',
         'csp' => 'CSP',

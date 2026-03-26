@@ -351,26 +351,7 @@ class ExtensionCardPresenter
         $auditResult = $permissionSummary['audit'] ?? [];
         $hasMismatches = $auditResult['has_mismatches'] ?? false;
 
-        if ($signatureStatus === 'valid' || $signatureStatus === 'pending_verification') {
-            $badgeColors = [
-                'official' => 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-                'verified' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-                'partner' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-            ];
-            $badgeIcons = [
-                'official' => 'fas fa-crown',
-                'verified' => 'fas fa-check-circle',
-                'partner' => 'fas fa-handshake',
-            ];
-            $badgeLabels = [
-                'official' => __($translationPrefix.'.permissions.signature_official'),
-                'verified' => __($translationPrefix.'.permissions.signature_verified'),
-                'partner' => __($translationPrefix.'.permissions.signature_partner'),
-            ];
-            $badgeColor = $badgeColors[$signatureType] ?? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-            $badgeIcon = $badgeIcons[$signatureType] ?? 'fas fa-check-circle';
-            $badgeLabel = $badgeLabels[$signatureType] ?? __($translationPrefix.'.permissions.signature_signed');
-        } elseif ($signatureStatus === 'invalid') {
+        if ($signatureStatus === 'invalid') {
             $badgeColor = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
             $badgeIcon = 'fas fa-times-circle';
             $badgeLabel = __($translationPrefix.'.permissions.signature_invalid');

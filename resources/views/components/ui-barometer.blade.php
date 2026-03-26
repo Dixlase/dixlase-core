@@ -38,11 +38,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             $positionClass = $isFirst ? 'barometer__segment--first' : ($isLast ? 'barometer__segment--last' : '');
         @endphp
         <div class="barometer__segment {{ $statusClass }} {{ $positionClass }}">
-            @if($status === 'ok')
-                <span class="inline-block w-1.5 h-1.5 rounded-full bg-green-400 mr-1 flex-shrink-0"></span>
-            @elseif($status === 'ng')
-                <span class="inline-block w-1.5 h-1.5 rounded-full bg-red-400 mr-1 flex-shrink-0"></span>
-            @endif
             <span class="barometer__label">{{ $item['label'] }}</span>
         </div>
     @endforeach
