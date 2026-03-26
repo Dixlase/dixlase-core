@@ -198,7 +198,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
                                     <i class="fas text-xs" :class="isHidden('{{ $key }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
                                 </button>
-                                <span x-show="editMode" x-cloak class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0">
+                                <span x-show="editMode" x-cloak class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0" style="touch-action:none">
                                     <i class="fas fa-grip-vertical text-xs"></i>
                                 </span>
                             @endif
@@ -216,7 +216,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 @elseif ($__menuVis === \App\Enums\MenuVisibility::GuideOnly)
                                     <i class="fas fa-directions text-xs text-purple-400 ml-1" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
                                 @endif
-                                <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_key }} }" x-show="!editMode" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
@@ -227,7 +227,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
                                     <i class="fas text-xs" :class="isHidden('{{ $key }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
                                 </button>
-                                <span x-show="editMode" x-cloak class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0">
+                                <span x-show="editMode" x-cloak class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0" style="touch-action:none">
                                     <i class="fas fa-grip-vertical text-xs"></i>
                                 </span>
                             @endunless
@@ -318,7 +318,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                     class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
                                                 <i class="fas text-xs" :class="isHidden('{{ $__childMenuKey }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
                                             </button>
-                                            <span x-show="editMode" x-cloak class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0">
+                                            <span x-show="editMode" x-cloak class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0" style="touch-action:none">
                                                 <i class="fas fa-grip-vertical text-xs"></i>
                                             </span>
                                         @endunless
@@ -360,7 +360,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             <button @click="{{ $open_child_key }} = !{{ $open_child_key }}" class="{{ $button_class }} sidebar-link">
                                                 <i class="{{ $child_item['icon'] }} mr-3" x-show="!editMode"></i>
                                                 <span>{{ __($child_item['text']) }}</span>
-                                                <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_child_key }} }" x-show="!editMode" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_child_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                                 </svg>
                                             </button>
@@ -371,7 +371,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                     class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
                                                 <i class="fas text-xs" :class="isHidden('{{ $__childMenuKey }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
                                             </button>
-                                            <span x-show="editMode" x-cloak class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0">
+                                            <span x-show="editMode" x-cloak class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0" style="touch-action:none">
                                                 <i class="fas fa-grip-vertical text-xs"></i>
                                             </span>
                                             @endunless
@@ -419,7 +419,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                                         class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
                                                                     <i class="fas text-xs" :class="isHidden('{{ $grand_child_role_key }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
                                                                 </button>
-                                                                <span x-show="editMode" x-cloak class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0">
+                                                                <span x-show="editMode" x-cloak class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0" style="touch-action:none">
                                                                     <i class="fas fa-grip-vertical text-xs"></i>
                                                                 </span>
                                                             </div>

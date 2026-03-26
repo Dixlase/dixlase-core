@@ -69,6 +69,8 @@ Alpine.data('sidebarEditor', (saveUrl, initialHidden, initialOrder) => ({
                 handle: '.drag-handle',
                 animation: 150,
                 ghostClass: 'opacity-30',
+                forceFallback: true,
+                fallbackClass: 'sortable-fallback',
                 draggable: '[data-menu-key]',
                 group: { name: groupKey, pull: false, put: false },
                 onEnd: () => {
