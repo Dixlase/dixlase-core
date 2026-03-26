@@ -287,6 +287,8 @@ class ExtensionCardPresenter
             'cspBarometerItems' => self::buildCspBarometerItems($cspCompatibility, $auditedAt),
             'presetBarometerItems' => self::buildPresetBarometerItems($healthStatus, $auditedAt),
             'operationStatus' => self::computeOperationStatus($cspCompatibility, $healthStatus, $auditedAt, $enableAction),
+            'cspMaxTier' => self::computeMaxCompatibleTier(self::buildCspModeBadges($cspCompatibility), $auditedAt),
+            'presetMaxTier' => self::computeMaxCompatibleTier(self::buildPresetCompatibilityBadges($healthStatus), $auditedAt),
         ];
     }
 
@@ -713,6 +715,34 @@ class ExtensionCardPresenter
             'status' => 'ok',
             'label' => __('admin/settings/plugins/index.operation_status.ok'),
         ];
+    }
+
+    /**
+     * Compute the highest compatible tier from badge data
+     *
+     * Returns: 'strict' (green), 'standard' (yellow), 'development' (red), or 'unknown' (gray)
+     * The tiers are checked from highest to lowest; the first compatible one wins.
+     *
+     * @param  array<string, array{compatible: bool|null}>  $badges
+     */
+    private static function computeMaxCompatibleTier(array $badges, ?string $auditedAt): string
+    {
+        if ($auditedAt === null) {
+            return 'unknown';
+        }
+
+        $tiers = ['strict', 'standard', 'balanced', 'development'];
+
+        foreach ($tiers as $tier) {
+            if (isset($badges[$tier]) && ($badges[$tier]['compatible'] ?? null) === true) {
+                return match ($tier) {
+                    'balanced' => 'standard',
+                    default => $tier,
+                };
+            }
+        }
+
+        return 'none';
     }
 
     /**

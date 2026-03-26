@@ -76,9 +76,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="mb-3 pt-3 border-t border-gray-100 dark:border-gray-700 space-y-2"
              data-scan-data="{{ json_encode($card['scanData'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) }}"
              data-plugin-name="{{ $card['name'] }}">
-            {{-- 健全性/署名 --}}
+            @php
+                $tierIconColor = fn(string $tier) => match($tier) {
+                    'strict' => 'text-green-500',
+                    'standard' => 'text-yellow-500',
+                    'development' => 'text-red-500',
+                    default => 'text-gray-400',
+                };
+                $opIconColor = match($card['operationStatus']['status']) {
+                    'ok' => 'text-green-500',
+                    'caution' => 'text-yellow-500',
+                    'blocked' => 'text-red-500',
+                    default => 'text-gray-400',
+                };
+                $healthIconColor = !$card['auditedAt'] ? 'text-gray-400' : match($card['healthStatus'] ?? 'not_verified') {
+                    'healthy' => 'text-green-500',
+                    'advisory' => 'text-yellow-500',
+                    'warning', 'critical' => 'text-red-500',
+                    default => 'text-gray-400',
+                };
+            @endphp
+
+            {{-- 健全性 --}}
             <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="{{ $card['badgeIcon'] }} mr-1"></i>{{ __('admin/settings/plugins/index.badge_labels.health') }}</span>
+                <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="{{ $card['badgeIcon'] }} mr-1 {{ $healthIconColor }}"></i>{{ __('admin/settings/plugins/index.badge_labels.health') }}</button>
                 <button type="button"
                         class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $card['badgeColor'] }} cursor-pointer hover:opacity-80 transition-opacity">
                     {{ $card['badgeLabel'] }}
@@ -93,19 +114,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         {{ __('admin/settings/plugins/index.verification.signature_not_scanned') }}
                     </span>
                 @elseif($card['signatureStatus'] === 'valid' || $card['signatureStatus'] === 'pending_verification')
-                    <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-check-circle mr-1 text-green-500"></i>{{ __('admin/settings/plugins/index.badge_labels.signature') }}</span>
+                    <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-check-circle mr-1 text-green-500"></i>{{ __('admin/settings/plugins/index.badge_labels.signature') }}</button>
                     <button type="button"
                             class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 cursor-pointer hover:opacity-80 transition-opacity">
                         {{ __('admin/settings/plugins/index.verification.signature_valid') }}
                     </button>
                 @elseif($card['signatureStatus'] === 'invalid')
-                    <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-times-circle mr-1 text-red-500"></i>{{ __('admin/settings/plugins/index.badge_labels.signature') }}</span>
+                    <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-times-circle mr-1 text-red-500"></i>{{ __('admin/settings/plugins/index.badge_labels.signature') }}</button>
                     <button type="button"
                             class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 cursor-pointer hover:opacity-80 transition-opacity">
                         {{ __('admin/settings/plugins/index.verification.signature_invalid') }}
                     </button>
                 @else
-                    <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-file-signature mr-1 text-yellow-500"></i>{{ __('admin/settings/plugins/index.badge_labels.signature') }}</span>
+                    <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-file-signature mr-1 text-yellow-500"></i>{{ __('admin/settings/plugins/index.badge_labels.signature') }}</button>
                     <button type="button"
                             class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 cursor-pointer hover:opacity-80 transition-opacity">
                         {{ __('admin/settings/plugins/index.verification.signature_unsigned') }}
@@ -122,21 +143,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </span>
                 @elseif($card['hasPermissions'])
                     @if($card['hasMismatches'])
-                        <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-exclamation-circle mr-1 text-red-500"></i>{{ __('admin/settings/plugins/index.badge_labels.permission') }}</span>
+                        <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-exclamation-circle mr-1 text-red-500"></i>{{ __('admin/settings/plugins/index.badge_labels.permission') }}</button>
                         <button type="button"
                                 class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 cursor-pointer hover:opacity-80 transition-opacity"
                                 title="{{ __('admin/settings/plugins/index.permissions.audit_mismatch_warning') }}">
                             {{ __('admin/settings/plugins/index.verification.permission_mismatch') }}
                         </button>
                     @else
-                        <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-check-circle mr-1 text-green-500"></i>{{ __('admin/settings/plugins/index.badge_labels.permission') }}</span>
+                        <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-check-circle mr-1 text-green-500"></i>{{ __('admin/settings/plugins/index.badge_labels.permission') }}</button>
                         <button type="button"
                                 class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 cursor-pointer hover:opacity-80 transition-opacity">
                             {{ __('admin/settings/plugins/index.verification.permission_ok') }}
                         </button>
                     @endif
                 @else
-                    <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-key mr-1 text-gray-400"></i>{{ __('admin/settings/plugins/index.badge_labels.permission') }}</span>
+                    <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-key mr-1 text-gray-400"></i>{{ __('admin/settings/plugins/index.badge_labels.permission') }}</button>
                     <button type="button"
                             class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 cursor-pointer hover:opacity-80 transition-opacity">
                         {{ __('admin/settings/plugins/index.verification.permission_undefined') }}
@@ -146,19 +167,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             {{-- CSPモード別互換性 --}}
             <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-shield-alt mr-1 text-gray-400"></i>{{ __('admin/settings/plugins/index.badge_labels.csp') }}</span>
+                <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-shield-alt mr-1 {{ $tierIconColor($card['cspMaxTier']) }}"></i>{{ __('admin/settings/plugins/index.badge_labels.csp') }}</button>
                 <x-ui-barometer :items="$card['cspBarometerItems']" />
             </div>
 
             {{-- セキュリティプリセット互換性 --}}
             <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-sliders-h mr-1 text-gray-400"></i>{{ __('admin/settings/plugins/index.badge_labels.preset') }}</span>
+                <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-sliders-h mr-1 {{ $tierIconColor($card['presetMaxTier']) }}"></i>{{ __('admin/settings/plugins/index.badge_labels.preset') }}</button>
                 <x-ui-barometer :items="$card['presetBarometerItems']" />
             </div>
 
             {{-- 動作判定（信号機） --}}
             <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-power-off mr-1 text-gray-400"></i>{{ __('admin/settings/plugins/index.badge_labels.operation') }}</span>
+                <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-power-off mr-1 {{ $opIconColor }}"></i>{{ __('admin/settings/plugins/index.badge_labels.operation') }}</button>
                 <div class="inline-flex items-center gap-1">
                     @php
                         $opStatus = $card['operationStatus']['status'];
