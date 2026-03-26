@@ -26,7 +26,18 @@ Alpine.data('sidebarEditor', (saveUrl, initialHidden) => ({
     saving: false,
 
     isHidden(key) {
-        return this.hiddenMenus.includes(key);
+        if (this.hiddenMenus.includes(key)) {
+            return true;
+        }
+        // Check if any parent key is hidden (e.g. 'front' hides 'front.pages')
+        const parts = key.split('.');
+        for (let i = 1; i < parts.length; i++) {
+            const parentKey = parts.slice(0, i).join('.');
+            if (this.hiddenMenus.includes(parentKey)) {
+                return true;
+            }
+        }
+        return false;
     },
 
     toggleMenu(key) {
