@@ -27,6 +27,7 @@ $arrow-depth: 0.45rem;
 
         &--last {
             clip-path: polygon(0 0, calc(100% - #{$arrow-depth}) 0, 100% 50%, calc(100% - #{$arrow-depth}) 100%, 0 100%, #{$arrow-depth} 50%);
+            border-radius: 0 0.15rem 0.15rem 0;
         }
 
         // Tier colors: development=yellow, standard=blue, strict=red
@@ -42,9 +43,9 @@ $arrow-depth: 0.45rem;
             @apply bg-red-500 dark:bg-red-600;
         }
 
-        // NG: dimmed with reduced opacity
+        // NG: show tier color but dimmed
         &--ng {
-            @apply bg-gray-400 text-gray-200 dark:bg-gray-500 dark:text-gray-300;
+            @apply bg-gray-300 text-gray-500 dark:bg-gray-600 dark:text-gray-400;
         }
 
         // Unknown/unchecked: gray

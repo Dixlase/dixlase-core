@@ -286,6 +286,7 @@ class ExtensionCardPresenter
             'presetBadges' => self::buildPresetCompatibilityBadges($healthStatus),
             'cspBarometerItems' => self::buildCspBarometerItems($cspCompatibility, $auditedAt),
             'presetBarometerItems' => self::buildPresetBarometerItems($healthStatus, $auditedAt),
+            'operationStatus' => self::computeOperationStatus($cspCompatibility, $healthStatus, $auditedAt, $enableAction),
         ];
     }
 
@@ -681,6 +682,55 @@ class ExtensionCardPresenter
         }
 
         return $items;
+    }
+
+    /**
+     * Compute operation status (traffic light) based on current CSP mode and security preset
+     *
+     * @param  array<string, mixed>  $cspCompatibility
+     * @return array{status: string, label: string}
+     */
+    private static function computeOperationStatus(
+        array $cspCompatibility,
+        ?string $healthStatus,
+        ?string $auditedAt,
+        PluginEnableAction $enableAction
+    ): array {
+        if ($auditedAt === null) {
+            return [
+                'status' => 'unknown',
+                'label' => __('admin/settings/plugins/index.operation_status.unknown'),
+            ];
+        }
+
+        // Red: security preset blocks the plugin
+        if ($enableAction === PluginEnableAction::Blocked) {
+            return [
+                'status' => 'blocked',
+                'label' => __('admin/settings/plugins/index.operation_status.blocked'),
+            ];
+        }
+
+        // Check CSP compatibility with current mode
+        $currentCspMode = SecuritySettingsRegistry::get('csp_mode', 'development');
+        $cspBadges = self::buildCspModeBadges($cspCompatibility);
+        $cspCompatibleWithCurrentMode = $cspBadges[$currentCspMode]['checked']
+            ? $cspBadges[$currentCspMode]['compatible']
+            : null;
+
+        // Yellow: CSP issue detected with current mode
+        if ($cspCompatibleWithCurrentMode === false) {
+            return [
+                'status' => 'caution',
+                'label' => __('admin/settings/plugins/index.operation_status.caution'),
+            ];
+        }
+
+        // Green: fully operational
+        return [
+            'status' => 'ok',
+            'label' => __('admin/settings/plugins/index.operation_status.ok'),
+        ];
     }
 
     /**

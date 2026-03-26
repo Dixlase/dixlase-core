@@ -87,11 +87,12 @@ return [
 
     // バッジラベル（カード表示用）
     'badge_labels' => [
-        'health' => '健全性',
+        'health' => '健全',
         'signature' => '署名',
-        'permission' => '権限定義',
+        'permission' => '権限',
         'csp' => 'CSP',
-        'preset' => '動作',
+        'preset' => 'モード',
+        'operation' => '動作',
     ],
 
     // CSPモードバッジラベル
@@ -163,6 +164,14 @@ return [
         'csp_compatible' => 'CSP互換',
         'csp_inline_required' => 'CSP未対応',
         'csp_not_checked' => 'CSP未検証',
+    ],
+
+    // 動作判定（信号機）
+    'operation_status' => [
+        'ok' => '完全動作',
+        'caution' => '注意あり',
+        'blocked' => '動作不可',
+        'unknown' => '未確認',
     ],
 
     // モーダル文言

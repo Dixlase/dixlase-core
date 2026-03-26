@@ -88,7 +88,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- 署名ステータス --}}
             <div class="flex items-center gap-2">
                 @if(!$card['auditedAt'])
-                    <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-question-circle mr-1 text-gray-400"></i>{{ __('admin/settings/plugins/index.badge_labels.signature') }}</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-file-signature mr-1 text-gray-400"></i>{{ __('admin/settings/plugins/index.badge_labels.signature') }}</span>
                     <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
                         {{ __('admin/settings/plugins/index.verification.signature_not_scanned') }}
                     </span>
@@ -116,7 +116,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- 権限定義 --}}
             <div class="flex items-center gap-2">
                 @if(!$card['auditedAt'])
-                    <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-question-circle mr-1 text-gray-400"></i>{{ __('admin/settings/plugins/index.badge_labels.permission') }}</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-key mr-1 text-gray-400"></i>{{ __('admin/settings/plugins/index.badge_labels.permission') }}</span>
                     <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
                         {{ __('admin/settings/plugins/index.verification.permission_not_scanned') }}
                     </span>
@@ -136,7 +136,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </button>
                     @endif
                 @else
-                    <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-question-circle mr-1 text-gray-400"></i>{{ __('admin/settings/plugins/index.badge_labels.permission') }}</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-key mr-1 text-gray-400"></i>{{ __('admin/settings/plugins/index.badge_labels.permission') }}</span>
                     <button type="button"
                             class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 cursor-pointer hover:opacity-80 transition-opacity">
                         {{ __('admin/settings/plugins/index.verification.permission_undefined') }}
@@ -154,6 +154,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center gap-2">
                 <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-sliders-h mr-1 text-gray-400"></i>{{ __('admin/settings/plugins/index.badge_labels.preset') }}</span>
                 <x-ui-barometer :items="$card['presetBarometerItems']" />
+            </div>
+
+            {{-- 動作判定（信号機） --}}
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-power-off mr-1 text-gray-400"></i>{{ __('admin/settings/plugins/index.badge_labels.operation') }}</span>
+                <div class="inline-flex items-center gap-1">
+                    @php
+                        $opStatus = $card['operationStatus']['status'];
+                    @endphp
+                    <span class="inline-block w-3 h-3 rounded-full {{ $opStatus === 'ok' ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
+                    <span class="inline-block w-3 h-3 rounded-full {{ $opStatus === 'caution' ? 'bg-yellow-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
+                    <span class="inline-block w-3 h-3 rounded-full {{ $opStatus === 'blocked' ? 'bg-red-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
+                    <span class="text-xs text-gray-600 dark:text-gray-300 ml-1">{{ $card['operationStatus']['label'] }}</span>
+                </div>
             </div>
 
             {{-- スキャンボタン --}}
