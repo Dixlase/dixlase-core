@@ -286,9 +286,21 @@ class ExtensionCardPresenter
             'presetBadges' => self::buildPresetCompatibilityBadges($healthStatus),
             'cspBarometerItems' => self::buildCspBarometerItems($cspCompatibility, $auditedAt),
             'presetBarometerItems' => self::buildPresetBarometerItems($healthStatus, $auditedAt),
-            'operationStatus' => self::computeOperationStatus($cspCompatibility, $healthStatus, $auditedAt, $enableAction),
-            'cspMaxTier' => self::computeMaxCompatibleTier(self::buildCspModeBadges($cspCompatibility), $auditedAt),
-            'presetMaxTier' => self::computeMaxCompatibleTier(self::buildPresetCompatibilityBadges($healthStatus), $auditedAt),
+            'operationStatus' => $operationStatus = self::computeOperationStatus($cspCompatibility, $healthStatus, $auditedAt, $enableAction),
+            'cspMaxTier' => $cspMaxTier = self::computeMaxCompatibleTier(self::buildCspModeBadges($cspCompatibility), $auditedAt),
+            'presetMaxTier' => $presetMaxTier = self::computeMaxCompatibleTier(self::buildPresetCompatibilityBadges($healthStatus), $auditedAt),
+            // Icon colors for template (moved from @php block)
+            'healthIconColor' => ($healthStatus ?? 'not_verified') === 'healthy' ? 'text-green-500' : 'text-red-500',
+            'opIconColor' => match ($operationStatus['status'] ?? 'unknown') {
+                'ok' => 'text-green-500',
+                'caution' => 'text-yellow-500',
+                'blocked' => 'text-red-500',
+                default => 'text-gray-400',
+            },
+            'cspTierIconColor' => self::tierToIconColor($cspMaxTier),
+            'presetTierIconColor' => self::tierToIconColor($presetMaxTier),
+            // Simple mode display data
+            ...self::computeSimpleDisplayData($healthStatus, $operationStatus),
         ];
     }
 
@@ -743,6 +755,62 @@ class ExtensionCardPresenter
         }
 
         return 'none';
+    }
+
+    /**
+     * Map tier level to icon color class
+     */
+    private static function tierToIconColor(string $tier): string
+    {
+        return match ($tier) {
+            'strict' => 'text-green-500',
+            'standard' => 'text-yellow-500',
+            'development' => 'text-red-500',
+            default => 'text-gray-400',
+        };
+    }
+
+    /**
+     * Compute simplified display data for simple mode
+     *
+     * @param  array<string, string>  $operationStatus
+     * @return array<string, string>
+     */
+    private static function computeSimpleDisplayData(?string $healthStatus, array $operationStatus): array
+    {
+        $prefix = 'admin/settings/plugins/index.simple.';
+
+        // Health: healthy=safe(green), advisory=caution(yellow), else=problem(red)
+        [$simpleHealthLabel, $simpleHealthIcon, $simpleHealthIconColor, $simpleHealthBadgeColor] = match ($healthStatus) {
+            'healthy' => [
+                __($prefix.'health_safe'), 'fas fa-check-circle', 'text-green-500',
+                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+            ],
+            'advisory' => [
+                __($prefix.'health_caution'), 'fas fa-exclamation-triangle', 'text-yellow-500',
+                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+            ],
+            default => [
+                __($prefix.'health_problem'), 'fas fa-times-circle', 'text-red-500',
+                'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+            ],
+        };
+
+        // Operation: ok=usable(green), else=unusable(red)
+        $opOk = $operationStatus['status'] === 'ok';
+
+        return [
+            'simpleHealthLabel' => $simpleHealthLabel,
+            'simpleHealthIcon' => $simpleHealthIcon,
+            'simpleHealthIconColor' => $simpleHealthIconColor,
+            'simpleHealthBadgeColor' => $simpleHealthBadgeColor,
+            'simpleOperationLabel' => __($prefix.($opOk ? 'operation_usable' : 'operation_unusable')),
+            'simpleOperationIcon' => $opOk ? 'fas fa-check-circle' : 'fas fa-times-circle',
+            'simpleOperationIconColor' => $opOk ? 'text-green-500' : 'text-red-500',
+            'simpleOperationBadgeColor' => $opOk
+                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+        ];
     }
 
     /**

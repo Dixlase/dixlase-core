@@ -175,6 +175,15 @@ return [
         'unknown' => 'Unverified',
     ],
 
+    // Simple Mode Display
+    'simple' => [
+        'health_safe' => 'Safe',
+        'health_caution' => 'Caution',
+        'health_problem' => 'Problem',
+        'operation_usable' => 'Usable',
+        'operation_unusable' => 'Unusable',
+    ],
+
     // Modal Messages
     'modal' => [
         'health_check_title' => 'Health Check Details',

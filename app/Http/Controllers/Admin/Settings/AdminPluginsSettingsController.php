@@ -129,6 +129,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $this->viewParams['uninstalledPluginCards'] = $uninstalledPluginCards;
         $this->viewParams['installedPluginCard'] = $installedPluginCard;
         $this->viewParams['scanRequired'] = $scanRequired;
+        $this->viewParams['isSimpleMode'] = \App\Helpers\AdminModeHelper::isSimpleMode();
         $this->viewParams['heading'] = __('admin/settings/plugins/index.heading');
 
         return view('admin::settings.plugins.index', $this->viewParams);
@@ -254,13 +255,8 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             ]);
         }
 
-        return [
-            'has_mismatches' => false,
-            'mismatches' => [],
-            'matches_count' => 0,
-            'total_checked' => 0,
-            'audited_at' => null,
-        ];
+        // Return existing DB audit data to stay consistent with health scorer
+        return $this->getPluginAuditResult($pluginSlug);
     }
 
     /**
