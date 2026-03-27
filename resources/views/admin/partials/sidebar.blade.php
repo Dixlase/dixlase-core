@@ -485,12 +485,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
         @endforeach
-    </nav>
 
         {{-- リセットボタン（編集モード時のみ） --}}
-        <div x-show="editMode" x-cloak class="px-4 pb-4">
+        <div x-show="editMode" x-cloak class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
             <button @click="confirmReset()"
-                    class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 border border-gray-200 dark:border-gray-700 rounded-md hover:border-red-300 dark:hover:border-red-700 transition-colors"
+                    class="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-md hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition-colors"
                     :disabled="resetting">
                 <i class="fas fa-undo-alt"></i>
                 <span>{{ __('admin/navigation.reset_menu') }}</span>
@@ -530,6 +529,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
         </div>
+    </nav>
     </div>
 
     {{-- タブボタン（モバイルのみ、サイドバーの右端） --}}
