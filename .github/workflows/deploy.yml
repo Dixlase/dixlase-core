@@ -13,7 +13,7 @@ jobs:
       - name: Set deploy target
         id: target
         run: |
-          if [ "${{ github.repository }}" = "Dixlase/dixlase" ]; then
+          if [ "${{ github.repository }}" = "Dixlase/dixlase-core" ]; then
             echo "env=production" >> $GITHUB_OUTPUT
             echo "base_dir=/srv/dixlase" >> $GITHUB_OUTPUT
           else
