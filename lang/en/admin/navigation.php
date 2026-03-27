@@ -15,6 +15,11 @@
 return [
     'edit_menu' => 'Edit Menu',
     'done_editing' => 'Done',
+    'reset_menu' => 'Reset',
+    'reset_confirm_title' => 'Reset Menu',
+    'reset_confirm_message' => 'All visibility and ordering settings will be reset. This action cannot be undone.',
+    'reset_confirm_button' => 'Reset',
+    'reset_cancel_button' => 'Cancel',
 
     'dashboard' => 'Dashboard',
     'front' => [

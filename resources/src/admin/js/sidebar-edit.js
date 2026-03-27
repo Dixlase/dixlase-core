@@ -21,11 +21,13 @@
 import Alpine from 'alpinejs';
 import Sortable from 'sortablejs';
 
-Alpine.data('sidebarEditor', (saveUrl, initialHidden, initialOrder) => ({
+Alpine.data('sidebarEditor', (saveUrl, resetUrl, initialHidden, initialOrder) => ({
     editMode: false,
     hiddenMenus: initialHidden || [],
     menuOrder: initialOrder || {},
     saving: false,
+    resetting: false,
+    showResetConfirm: false,
     sortableInstances: [],
 
     isHidden(key) {
@@ -91,6 +93,39 @@ Alpine.data('sidebarEditor', (saveUrl, initialHidden, initialOrder) => ({
     destroySortables() {
         this.sortableInstances.forEach(instance => instance.destroy());
         this.sortableInstances = [];
+    },
+
+    confirmReset() {
+        this.showResetConfirm = true;
+    },
+
+    cancelReset() {
+        this.showResetConfirm = false;
+    },
+
+    executeReset() {
+        this.resetting = true;
+        this.showResetConfirm = false;
+
+        fetch(resetUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(() => {
+            this.resetting = false;
+            this.destroySortables();
+            this.editMode = false;
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Error resetting sidebar preferences:', error);
+            this.resetting = false;
+        });
     },
 
     savePreferences() {
