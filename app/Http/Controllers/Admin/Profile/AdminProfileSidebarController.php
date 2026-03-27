@@ -75,4 +75,18 @@ class AdminProfileSidebarController extends AdminLoggedInController
             'success' => true,
         ]);
     }
+
+    /**
+     * Reset sidebar preferences to defaults
+     */
+    public function reset(): JsonResponse
+    {
+        $member = Auth::guard('member')->user();
+        $member->sidebar_preferences = null;
+        $member->save();
+
+        return response()->json([
+            'success' => true,
+        ]);
+    }
 }

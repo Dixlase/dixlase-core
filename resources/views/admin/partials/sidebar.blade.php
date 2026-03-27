@@ -27,7 +27,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     {{-- サイドバー本体 --}}
     <div class="flex flex-col w-64 h-full overflow-y-auto bg-white/75 dark:bg-gray-900/75 border-r border-gray-200 dark:border-gray-600 backdrop-blur-sm shadow-md"
          x-ref="sidebarRoot"
-         x-data="sidebarEditor('{{ route('admin.profile.sidebar.update') }}', {{ json_encode($sidebar_hidden_menus ?? []) }}, {{ json_encode($sidebar_menu_order ?? new \stdClass) }})">
+         x-data="sidebarEditor('{{ route('admin.profile.sidebar.update') }}', '{{ route('admin.profile.sidebar.reset') }}', {{ json_encode($sidebar_hidden_menus ?? []) }}, {{ json_encode($sidebar_menu_order ?? new \stdClass) }})">
 
         <nav class="flex-1 px-4 py-4 space-y-1" role="navigation" aria-label="Admin navigation menu" data-sortable-group="_top">
         @php
@@ -486,6 +486,50 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         @endforeach
     </nav>
+
+        {{-- リセットボタン（編集モード時のみ） --}}
+        <div x-show="editMode" x-cloak class="px-4 pb-4">
+            <button @click="confirmReset()"
+                    class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 border border-gray-200 dark:border-gray-700 rounded-md hover:border-red-300 dark:hover:border-red-700 transition-colors"
+                    :disabled="resetting">
+                <i class="fas fa-undo-alt"></i>
+                <span>{{ __('admin/navigation.reset_menu') }}</span>
+            </button>
+        </div>
+
+        {{-- リセット確認モーダル --}}
+        <div x-show="showResetConfirm"
+             x-cloak
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full mx-4 p-6"
+                 @click.outside="cancelReset()">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    {{ __('admin/navigation.reset_confirm_title') }}
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                    {{ __('admin/navigation.reset_confirm_message') }}
+                </p>
+                <div class="flex justify-end gap-3">
+                    <button @click="cancelReset()"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        {{ __('admin/navigation.reset_cancel_button') }}
+                    </button>
+                    <button @click="executeReset()"
+                            class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
+                            :disabled="resetting">
+                        <i class="fas fa-undo-alt mr-1" x-show="!resetting"></i>
+                        <i class="fas fa-spinner fa-spin mr-1" x-show="resetting" x-cloak></i>
+                        {{ __('admin/navigation.reset_confirm_button') }}
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- タブボタン（モバイルのみ、サイドバーの右端） --}}

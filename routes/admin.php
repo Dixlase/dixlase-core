@@ -38,8 +38,8 @@ use App\Http\Controllers\Admin\Profile\AdminProfileBasicController;
 use App\Http\Controllers\Admin\Profile\AdminProfileController;
 use App\Http\Controllers\Admin\Profile\AdminProfileNotificationsController;
 use App\Http\Controllers\Admin\Profile\AdminProfilePasskeyPromptController;
-use App\Http\Controllers\Admin\Profile\AdminProfileSidebarController;
 use App\Http\Controllers\Admin\Profile\AdminProfilePasswordController;
+use App\Http\Controllers\Admin\Profile\AdminProfileSidebarController;
 use App\Http\Controllers\Admin\Profile\AdminProfileTwoFaController;
 use App\Http\Controllers\Admin\Profile\AdminProfileTwoFaManagementController;
 use App\Http\Controllers\Admin\SafeModeController;
@@ -204,6 +204,7 @@ Route::prefix($adminUrl)->name('admin.')
 
             // サイドバーメニュー表示設定
             Route::post('/profile/sidebar/update', [AdminProfileSidebarController::class, 'update'])->name('profile.sidebar.update');
+            Route::post('/profile/sidebar/reset', [AdminProfileSidebarController::class, 'reset'])->name('profile.sidebar.reset');
 
             // メンバー管理（権限チェック付き）
             Route::middleware('check.menu.access:members')->prefix('members')->name('members.')->group(function () {
