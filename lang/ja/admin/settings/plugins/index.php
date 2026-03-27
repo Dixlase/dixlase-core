@@ -175,6 +175,15 @@ return [
         'unknown' => '未確認',
     ],
 
+    // 簡単モード表示
+    'simple' => [
+        'health_safe' => '安全',
+        'health_caution' => '注意',
+        'health_problem' => '問題あり',
+        'operation_usable' => '使えます',
+        'operation_unusable' => '使えません',
+    ],
+
     // モーダル文言
     'modal' => [
         'health_check_title' => '健全性チェックの詳細',
