@@ -300,7 +300,7 @@ class ExtensionCardPresenter
             'cspTierIconColor' => self::tierToIconColor($cspMaxTier),
             'presetTierIconColor' => self::tierToIconColor($presetMaxTier),
             // Simple mode display data
-            ...self::computeSimpleDisplayData($healthStatus, $operationStatus),
+            ...self::computeSimpleDisplayData($healthStatus, $operationStatus, $auditedAt),
         ];
     }
 
@@ -776,9 +776,30 @@ class ExtensionCardPresenter
      * @param  array<string, string>  $operationStatus
      * @return array<string, string>
      */
-    private static function computeSimpleDisplayData(?string $healthStatus, array $operationStatus): array
+    private static function computeSimpleDisplayData(?string $healthStatus, array $operationStatus, ?string $auditedAt): array
     {
         $prefix = 'admin/settings/plugins/index.simple.';
+
+        // Not scanned: show "unknown" for both
+        if ($auditedAt === null) {
+            $unknownStyle = [
+                'label' => __($prefix.'unknown'),
+                'icon' => 'fas fa-question-circle',
+                'iconColor' => 'text-gray-400',
+                'badgeColor' => 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400',
+            ];
+
+            return [
+                'simpleHealthLabel' => $unknownStyle['label'],
+                'simpleHealthIcon' => $unknownStyle['icon'],
+                'simpleHealthIconColor' => $unknownStyle['iconColor'],
+                'simpleHealthBadgeColor' => $unknownStyle['badgeColor'],
+                'simpleOperationLabel' => $unknownStyle['label'],
+                'simpleOperationIcon' => $unknownStyle['icon'],
+                'simpleOperationIconColor' => $unknownStyle['iconColor'],
+                'simpleOperationBadgeColor' => $unknownStyle['badgeColor'],
+            ];
+        }
 
         // Health: healthy=safe(green), advisory=caution(yellow), else=problem(red)
         [$simpleHealthLabel, $simpleHealthIcon, $simpleHealthIconColor, $simpleHealthBadgeColor] = match ($healthStatus) {

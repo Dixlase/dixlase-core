@@ -20,7 +20,7 @@
  * プラグイン監査スクリプト用JavaScript
  */
 
-import { buildUnifiedScanResultHtml } from './scan-result-builder';
+import { buildUnifiedScanResultHtml, buildSimpleScanResultHtml } from './scan-result-builder';
 
 /**
  * プラグイン監査設定を取得
@@ -83,7 +83,8 @@ export function runPluginScan(slug, auditUrl) {
 export function populateResultContent(scanData, config) {
     const container = document.getElementById('pluginAuditResultContent');
     if (container) {
-        container.innerHTML = buildUnifiedScanResultHtml(scanData, config);
+        const buildFn = config.isSimpleMode ? buildSimpleScanResultHtml : buildUnifiedScanResultHtml;
+        container.innerHTML = buildFn(scanData, config);
     }
 }
 

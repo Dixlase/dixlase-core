@@ -180,8 +180,9 @@ return [
         'health_safe' => '安全',
         'health_caution' => '注意',
         'health_problem' => '問題あり',
-        'operation_usable' => '使えます',
-        'operation_unusable' => '使えません',
+        'operation_usable' => '可能',
+        'operation_unusable' => '不可',
+        'unknown' => '不明',
     ],
 
     // モーダル文言

@@ -21,7 +21,7 @@
  */
 
 import { getAuditConfig, runPluginScan } from './audit';
-import { buildUnifiedScanResultHtml, buildHealthBadgeHtml } from './scan-result-builder';
+import { buildUnifiedScanResultHtml, buildHealthBadgeHtml, buildSimpleScanResultHtml } from './scan-result-builder';
 
 /**
  * モーダルを開く
@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // スキャン結果の詳細も表示
             if (scanData.audit) {
-                contentHtml += buildUnifiedScanResultHtml(scanData, config);
+                contentHtml += (config.isSimpleMode ? buildSimpleScanResultHtml : buildUnifiedScanResultHtml)(scanData, config);
             } else if (scanData.healthIssues && scanData.healthIssues.length > 0) {
                 contentHtml += buildHealthBadgeHtml(scanData, null, config);
             }
@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function () {
             `;
 
             if (scanData.audit) {
-                contentHtml += buildUnifiedScanResultHtml(scanData, config);
+                contentHtml += (config.isSimpleMode ? buildSimpleScanResultHtml : buildUnifiedScanResultHtml)(scanData, config);
             } else if (scanData.healthIssues && scanData.healthIssues.length > 0) {
                 contentHtml += buildHealthBadgeHtml(scanData, null, config);
             }
@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (scanData && scanData.audit) {
                 setModalIconType('pluginActionStage2Modal', 'info');
                 contentHtml += `<h3 class="text-base font-semibold text-gray-900 dark:text-white mb-3 text-center">${scanResultHeading}</h3>`;
-                contentHtml += buildUnifiedScanResultHtml(scanData, config);
+                contentHtml += (config.isSimpleMode ? buildSimpleScanResultHtml : buildUnifiedScanResultHtml)(scanData, config);
             } else if (scanData && scanData.healthIssues && scanData.healthIssues.length > 0) {
                 // スキャン済みで減点項目あり: 健全性バッジで警告表示
                 setModalIconType('pluginActionStage2Modal', 'warning');
