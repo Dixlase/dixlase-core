@@ -817,8 +817,9 @@ class ExtensionCardPresenter
             ],
         };
 
-        // Operation: ok=usable(green), else=unusable(red)
-        $opOk = $operationStatus['status'] === 'ok';
+        // Operation: in simple mode, "problem" health also means unavailable
+        $isHealthProblem = ! in_array($healthStatus, ['healthy', 'advisory'], true);
+        $opOk = $operationStatus['status'] === 'ok' && ! $isHealthProblem;
 
         return [
             'simpleHealthLabel' => $simpleHealthLabel,
