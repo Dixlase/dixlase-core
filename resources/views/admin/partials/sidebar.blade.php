@@ -489,45 +489,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{-- リセットボタン（編集モード時のみ） --}}
         <div x-show="editMode" x-cloak class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
             <button @click="confirmReset()"
-                    class="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-md hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition-colors"
-                    :disabled="resetting">
+                    class="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition-colors">
                 <i class="fas fa-undo-alt"></i>
                 <span>{{ __('admin/navigation.reset_menu') }}</span>
             </button>
-        </div>
-
-        {{-- リセット確認モーダル --}}
-        <div x-show="showResetConfirm"
-             x-cloak
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full mx-4 p-6"
-                 @click.outside="cancelReset()">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    {{ __('admin/navigation.reset_confirm_title') }}
-                </h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                    {{ __('admin/navigation.reset_confirm_message') }}
-                </p>
-                <div class="flex justify-end gap-3">
-                    <button @click="cancelReset()"
-                            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                        {{ __('admin/navigation.reset_cancel_button') }}
-                    </button>
-                    <button @click="executeReset()"
-                            class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
-                            :disabled="resetting">
-                        <i class="fas fa-undo-alt mr-1" x-show="!resetting"></i>
-                        <i class="fas fa-spinner fa-spin mr-1" x-show="resetting" x-cloak></i>
-                        {{ __('admin/navigation.reset_confirm_button') }}
-                    </button>
-                </div>
-            </div>
         </div>
     </nav>
     </div>
@@ -539,3 +504,32 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <i class="fas text-sm" :class="openSidebar ? 'fa-chevron-left' : 'fa-chevron-right'"></i>
     </button>
 </div>
+
+{{-- リセット確認モーダル（ページ全体レベルに配置） --}}
+@push('modals')
+    <x-ui-modal
+        id="sidebarResetModal"
+        icon-type="warning"
+        confirm-color="red"
+        :title="__('admin/navigation.reset_confirm_title')"
+        :message="__('admin/navigation.reset_confirm_message')"
+        :cancel-label="__('admin/navigation.reset_cancel_button')"
+    >
+        <x-slot:footer>
+            <x-form-button
+                type="button"
+                variant="secondary"
+                icon="fas fa-times"
+                @click="close()"
+                class="mx-2"
+            >{{ __('admin/navigation.reset_cancel_button') }}</x-form-button>
+            <x-form-button
+                type="button"
+                variant="danger"
+                icon="fas fa-undo-alt"
+                @click="if(window._sidebarExecuteReset) window._sidebarExecuteReset()"
+                class="mx-2"
+            >{{ __('admin/navigation.reset_confirm_button') }}</x-form-button>
+        </x-slot:footer>
+    </x-ui-modal>
+@endpush

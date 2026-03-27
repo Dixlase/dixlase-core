@@ -27,7 +27,6 @@ Alpine.data('sidebarEditor', (saveUrl, resetUrl, initialHidden, initialOrder) =>
     menuOrder: initialOrder || {},
     saving: false,
     resetting: false,
-    showResetConfirm: false,
     sortableInstances: [],
 
     isHidden(key) {
@@ -96,16 +95,18 @@ Alpine.data('sidebarEditor', (saveUrl, resetUrl, initialHidden, initialOrder) =>
     },
 
     confirmReset() {
-        this.showResetConfirm = true;
-    },
-
-    cancelReset() {
-        this.showResetConfirm = false;
+        // Expose executeReset globally for the modal's confirm button
+        window._sidebarExecuteReset = () => this.executeReset();
+        if (typeof window.openModal === 'function') {
+            window.openModal('sidebarResetModal');
+        }
     },
 
     executeReset() {
         this.resetting = true;
-        this.showResetConfirm = false;
+        if (typeof window.closeModal === 'function') {
+            window.closeModal('sidebarResetModal');
+        }
 
         fetch(resetUrl, {
             method: 'POST',
