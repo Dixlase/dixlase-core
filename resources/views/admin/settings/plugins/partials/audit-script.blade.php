@@ -87,6 +87,7 @@ https://exc-d.com
             'install' => __('common.install'),
             'enable' => __('common.enable'),
             'cancel' => __('common.cancel'),
+            'close' => __('common.close'),
             'stage2ConfirmActionMessage' => __('admin/settings/plugins/index.two_stage.stage2_confirm_action_message'),
             'processingInstall' => __('admin/settings/plugins/index.two_stage.processing_install'),
             'processingEnable' => __('admin/settings/plugins/index.two_stage.processing_enable'),
