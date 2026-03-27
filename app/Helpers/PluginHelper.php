@@ -65,7 +65,7 @@ class PluginHelper
                 return false;
             }
 
-            return Plugin::where('slug', $slug)->where('is_enabled', true)->exists();
+            return Plugin::where('slug', $slug)->whereNotNull('enabled_at')->exists();
         } catch (\Exception $e) {
             return false;
         }
