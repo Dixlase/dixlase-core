@@ -297,9 +297,10 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // キャンセルボタンをリセット
+        // キャンセルボタンをリセット（ブロック時は「閉じる」ラベル）
         if (stage2CancelBtn) {
             stage2CancelBtn.disabled = false;
+            stage2CancelBtn.textContent = isBlocked ? (ts.close || 'Close') : (ts.cancel || 'Cancel');
         }
 
         openModal('pluginActionStage2Modal');
@@ -360,13 +361,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     const healthScore = this.dataset.healthScore ? parseInt(this.dataset.healthScore) : null;
                     const healthStatus = this.dataset.healthStatus || null;
                     const enableAction = this.dataset.enableAction || 'allowed';
+                    const operationStatus = this.dataset.operationStatus || 'unknown';
 
-                    if (healthIssues.length > 0 || enableAction !== 'allowed') {
+                    if (healthIssues.length > 0 || enableAction !== 'allowed' || operationStatus === 'blocked') {
                         storedHealthData = {
                             healthIssues,
                             healthScore,
                             healthStatus,
-                            enableAction,
+                            enableAction: operationStatus === 'blocked' ? 'blocked' : enableAction,
                             audit: null,
                         };
                     }
