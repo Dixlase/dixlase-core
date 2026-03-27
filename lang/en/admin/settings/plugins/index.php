@@ -180,8 +180,9 @@ return [
         'health_safe' => 'Safe',
         'health_caution' => 'Caution',
         'health_problem' => 'Problem',
-        'operation_usable' => 'Usable',
-        'operation_unusable' => 'Unusable',
+        'operation_usable' => 'Available',
+        'operation_unusable' => 'Unavailable',
+        'unknown' => 'Unknown',
     ],
 
     // Modal Messages

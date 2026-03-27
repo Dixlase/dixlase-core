@@ -10,6 +10,7 @@ https://exc-d.com
 @push('scripts')
 <script id="plugin-audit-config" type="application/json">
     <?php echo json_encode([
+        'isSimpleMode' => $isSimpleMode ?? false,
         'auditUrl' => route('admin.settings.plugins.audit'),
         'messages' => [
             'scanning' => __('admin/settings/plugins/index.permissions.audit_scanning'),

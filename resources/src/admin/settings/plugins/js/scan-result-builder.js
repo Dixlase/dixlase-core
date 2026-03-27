@@ -386,3 +386,10 @@ export function buildHealthBadgeHtml(scanData, audit, config) {
         </div>
     `;
 }
+
+/**
+ * Simple mode: health conclusion + deductions only
+ */
+export function buildSimpleScanResultHtml(scanData, config) {
+    return buildHealthBadgeHtml(scanData, scanData.audit || {}, config);
+}
