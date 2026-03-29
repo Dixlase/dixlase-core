@@ -91,14 +91,20 @@ class AdminFrontController extends AdminLoggedInController
         // ユーザーのプロフィール言語をデフォルト値として使用
         $userLocale = auth()->user()?->locale?->value ?? array_key_first($languages);
 
+        $editorManager = app(EditorManager::class);
+        $enabledByPlugin = $editorManager->getAvailableEditorTypes();
+        $guiEditorInfo = ContentEditorPresenter::guiEditorInfo();
+
         $this->viewParams['languages'] = $languages;
-        $this->viewParams['editorCardOptions'] = ContentEditorType::radioCardOptions(ContentStorageType::DATABASE);
+        $this->viewParams['editorCardOptions'] = ContentEditorType::radioCardOptions(ContentStorageType::DATABASE, [], $enabledByPlugin);
         $this->viewParams['editorOptions'] = ContentEditorType::optionsFor(ContentStorageType::DATABASE);
         $this->viewParams['storageOptions'] = ContentStorageType::optionsWithDescription();
         $this->viewParams['templates'] = $templates;
         $this->viewParams['defaultLang'] = $userLocale;
         $this->viewParams['defaultStorageType'] = ContentStorageType::DATABASE->slug();
         $this->viewParams['fileStorageBasePath'] = 'storage/app/private/'.$this->contentService->getBasePath();
+        $this->viewParams['guiEditorInfo'] = $guiEditorInfo;
+        $this->viewParams['guiEditorAssetHtml'] = $guiEditorInfo ? ContentEditorPresenter::editorAssetHtml($guiEditorInfo) : '';
 
         return view('admin::front/create', $this->viewParams);
     }
@@ -211,9 +217,15 @@ class AdminFrontController extends AdminLoggedInController
         $this->viewParams['editorTypeDescription'] = __($frontPage->editor_type->descriptionKey());
         $this->viewParams['langCode'] = $frontPage->lang;
         $this->viewParams['langName'] = $languages[$frontPage->lang] ?? $frontPage->lang;
+        $guiEditorInfo = ContentEditorPresenter::guiEditorInfo();
+        $isGuiEditor = $frontPage->editor_type === ContentEditorType::GUI;
+
         $this->viewParams['storageOptions'] = ContentStorageType::optionsWithDescription();
         $this->viewParams['storageType'] = old('storage_type', $frontPage->storage_type->slug());
         $this->viewParams['fileStorageBasePath'] = 'storage/app/private/'.$this->contentService->getBasePath();
+        $this->viewParams['isGuiEditor'] = $isGuiEditor;
+        $this->viewParams['guiEditorInfo'] = $guiEditorInfo;
+        $this->viewParams['guiEditorAssetHtml'] = $guiEditorInfo ? ContentEditorPresenter::editorAssetHtml($guiEditorInfo) : '';
 
         return view('admin::front/edit', $this->viewParams);
     }

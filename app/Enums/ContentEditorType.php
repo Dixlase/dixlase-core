@@ -251,13 +251,14 @@ enum ContentEditorType: int
      * ラジオカードグループ用のオプション配列を取得
      *
      * <x-form-radio-card-group> コンポーネントに直接渡せる形式で返す。
-     * GUIエディタは将来実装のため disabled + Coming Soon バッジ付き。
+     * GUIエディタはプラグインが提供しない場合 disabled + Coming Soon バッジ付き。
      *
      * @param  ContentStorageType|null  $storageType  保存方法でフィルタ（nullの場合は全て）
      * @param  array<string>  $exclude  除外するエディタータイプ値
+     * @param  array<string>  $enabledByPlugin  プラグインにより利用可能になったエディタータイプスラッグ
      * @return array<int, array{value: string, label: string, icon: string, description: string, disabled?: bool, badge?: string, badgeColor?: string}>
      */
-    public static function radioCardOptions(?ContentStorageType $storageType = null, array $exclude = []): array
+    public static function radioCardOptions(?ContentStorageType $storageType = null, array $exclude = [], array $enabledByPlugin = []): array
     {
         $types = $storageType ? self::availableFor($storageType) : self::cases();
         $options = [];
@@ -274,8 +275,8 @@ enum ContentEditorType: int
                 'description' => __($type->descriptionKey()),
             ];
 
-            // GUIは将来実装のため無効化
-            if ($type === self::GUI) {
+            // GUIはプラグインが提供しない場合は無効化
+            if ($type === self::GUI && ! in_array($type->slug(), $enabledByPlugin, true)) {
                 $option['disabled'] = true;
                 $option['badge'] = __('common.content_editor.coming_soon_badge');
                 $option['badgeColor'] = 'gray';

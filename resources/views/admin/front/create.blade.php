@@ -68,7 +68,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
 
                 {{-- Content タブ --}}
-                <div x-show="activeTab === 'content' || !isHtmlEditor">
+                <div x-show="(activeTab === 'content' || !isHtmlEditor) && editorType !== 'gui'">
                     <x-form-label :for="'content'" :text="__('admin/front.create.content_label')" />
                     <x-form-textarea
                         id="content"
@@ -79,6 +79,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         class="font-mono text-sm"
                     />
                     <x-form-error name="content" />
+                </div>
+
+                {{-- GUI エディター --}}
+                <div x-show="editorType === 'gui'" x-cloak>
+                    @if($guiEditorInfo ?? null)
+                        @include($guiEditorInfo->viewName, [
+                            'contentFieldName' => 'content',
+                            'editorInfo' => $guiEditorInfo,
+                        ])
+                    @else
+                        <div class="p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
+                            <i class="fas fa-paint-brush text-4xl text-gray-400 mb-4"></i>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                {{ __('common.content_editor.gui_coming_soon') }}
+                            </p>
+                        </div>
+                    @endif
                 </div>
 
                 {{-- CSS タブ（HTML エディタ時のみ） --}}
@@ -156,3 +173,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         form="front-page-create-form"
     />
 @endsection
+
+@if($guiEditorAssetHtml ?? '')
+    @push('head')
+        {!! $guiEditorAssetHtml !!}
+    @endpush
+@endif
