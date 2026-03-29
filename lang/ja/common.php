@@ -527,6 +527,10 @@ return [
         'blade_description' => 'Laravel Blade記法で記述。動的コンテンツ対応。',
         'blade_warning' => '⚠️ Bladeテンプレートは強力ですが、セキュリティリスクがあります。信頼できる管理者のみが使用してください。',
         'preview' => 'プレビュー',
+        'gui_unavailable' => 'GUIエディタのコンテンツが存在しますが、エディタープラグインがインストールされていません。GUIエディタープラグインをインストールしてください。',
+        'gui_editor_selection' => 'GUIエディタ',
+        'gui_editor_selection_description' => 'コンテンツ編集に使用するGUIエディタープラグインを選択します。',
+        'no_gui_editor' => 'GUIエディタープラグインが未インストール',
     ],
 
     /*

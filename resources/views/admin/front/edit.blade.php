@@ -58,7 +58,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <x-content-editor.tabs />
                 @endif
 
-                {{-- Content タブ --}}
+                {{-- Content タブ (non-GUI editors) --}}
+                @if(!($isGuiEditor ?? false))
                 <div x-show="activeTab === 'content'">
                     <x-form-label :for="'content'" :text="__('admin/front.edit.content_label')" />
                     <x-form-textarea
@@ -71,6 +72,38 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     />
                     <x-form-error name="content" />
                 </div>
+                @endif
+
+                {{-- GUI エディター --}}
+                @if($isGuiEditor ?? false)
+                <div>
+                    @if($guiEditorInfo ?? null)
+                        @include($guiEditorInfo->viewName, [
+                            'contentFieldName' => 'content',
+                            'editorInfo' => $guiEditorInfo,
+                        ])
+                    @else
+                        <div class="p-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                            <div class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-yellow-500 mt-1 mr-3"></i>
+                                <div>
+                                    <p class="text-yellow-800 dark:text-yellow-200">
+                                        {{ __('common.content_editor.gui_unavailable') }}
+                                    </p>
+                                    <x-form-textarea
+                                        id="content"
+                                        name="content"
+                                        :value="$body"
+                                        rows="10"
+                                        class="mt-3 font-mono text-sm"
+                                        readonly
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+                @endif
 
                 @if ($isHtmlEditor)
                     {{-- CSS タブ --}}
@@ -181,3 +214,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         form="front-page-edit-form"
     />
 @endsection
+
+@if($guiEditorAssetHtml ?? '')
+    @push('head')
+        {!! $guiEditorAssetHtml !!}
+    @endpush
+@endif

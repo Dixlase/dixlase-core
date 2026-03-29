@@ -58,6 +58,16 @@ class FrontWelcomeController extends FrontController
             $frontContent = $this->contentService->getContent($frontPage, $locale);
             $frontEditorType = $frontPage->editor_type->slug() ?? 'html';
 
+            // GUI editor: render JSON content to HTML for front display
+            if ($frontPage->editor_type === ContentEditorType::GUI && $frontContent) {
+                $editorManager = app(EditorManager::class);
+                $renderedHtml = $editorManager->renderContent('gui', $frontContent);
+                if ($renderedHtml !== '') {
+                    $frontContent = $renderedHtml;
+                    $frontEditorType = 'html';
+                }
+            }
+
             // HTML editor: check if custom JS/CSS exists for external file delivery
             if ($frontPage->editor_type === ContentEditorType::HTML) {
                 $hasCustomJs = ! empty($this->contentService->getJsContent($frontPage, $locale));

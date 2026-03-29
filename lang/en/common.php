@@ -353,6 +353,10 @@ return [
         'blade_description' => 'Write in Laravel Blade syntax. Dynamic content support.',
         'blade_warning' => '⚠️ Blade templates are powerful but have security risks. Only trusted administrators should use this.',
         'preview' => 'Preview',
+        'gui_unavailable' => 'GUI editor content exists but no editor plugin is installed. Install a GUI editor plugin to edit this content.',
+        'gui_editor_selection' => 'GUI Editor',
+        'gui_editor_selection_description' => 'Select the GUI editor plugin to use for content editing.',
+        'no_gui_editor' => 'No GUI editor plugin installed',
     ],
 
     // Meta Information
