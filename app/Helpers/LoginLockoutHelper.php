@@ -104,13 +104,9 @@ class LoginLockoutHelper
         array $settings = [],
         $settingSource = null
     ): array {
-        // ログイン試行を記録
-        MemberLoginAttempt::recordAttempt(
-            $identifier,
-            $request->ip(),
-            $request->userAgent(),
-            $successful
-        );
+        // ログイン試行を記録（行動分析データ付き）
+        $behaviorService = app(\App\Services\LoginBehaviorService::class);
+        $behaviorService->recordLoginAttempt($identifier, $request, $successful);
 
         if ($successful) {
             // 成功時は失敗記録をクリア

@@ -97,6 +97,24 @@ return [
         'date_column_type' => 'timestamp',
     ],
 
+    'audit_logs' => [
+        'table' => 'audit_logs',
+        'date_column' => 'occurred_at',
+        'default_days' => 365,
+        'name' => 'admin/settings/systems/database.audit_logs.name',
+        'description' => 'admin/settings/systems/database.audit_logs.description',
+        'enabled' => true,
+    ],
+
+    'api_request_logs' => [
+        'table' => 'api_request_logs',
+        'date_column' => 'requested_at',
+        'default_days' => 90,
+        'name' => 'admin/settings/systems/database.api_request_logs.name',
+        'description' => 'admin/settings/systems/database.api_request_logs.description',
+        'enabled' => true,
+    ],
+
     'cache_data' => [
         'table' => 'cache',
         'date_column' => 'expiration',

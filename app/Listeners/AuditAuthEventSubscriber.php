@@ -92,7 +92,7 @@ class AuditAuthEventSubscriber
      */
     public function handleLockout(Lockout $event): void
     {
-        Audit::logSecurity(AuditLog::ACTION_LOCKOUT_TRIGGERED, [
+        $log = Audit::logSecurity(AuditLog::ACTION_LOCKOUT_TRIGGERED, [
             'outcome' => AuditLog::OUTCOME_DENIED,
             'severity' => AuditLog::SEVERITY_CRITICAL,
             'context' => [
@@ -100,6 +100,11 @@ class AuditAuthEventSubscriber
                 'ip' => $event->request->ip(),
             ],
         ]);
+
+        event(new \App\Events\SecurityAlertEvent('lockout', [
+            'ip' => $event->request->ip(),
+            'identifier' => $event->request->input('email') ?? $event->request->input('login'),
+        ], $log));
     }
 
     /**

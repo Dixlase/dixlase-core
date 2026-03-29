@@ -83,6 +83,16 @@ return [
         'description' => 'Clean up old deleted two-factor PASSKEYs (biometric)',
         'default_days' => '90 days',
     ],
+    'audit_logs' => [
+        'name' => 'Audit Logs',
+        'description' => 'Delete audit log records older than the specified retention period',
+        'default_days' => '365 days',
+    ],
+    'api_request_logs' => [
+        'name' => 'API Request Logs',
+        'description' => 'Delete API request log records older than the specified retention period',
+        'default_days' => '90 days',
+    ],
     'cache_data' => [
         'name' => 'Cache Data',
         'description' => 'Clean up expired cache entries and locks',
