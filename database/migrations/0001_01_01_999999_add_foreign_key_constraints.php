@@ -153,6 +153,26 @@ return new class extends Migration
                 ->on('members')
                 ->nullOnDelete();
         });
+
+        // ========================================
+        // extension_sources テーブルへの外部キー
+        // ========================================
+
+        // plugins.source_id -> extension_sources.id
+        Schema::table('plugins', function (Blueprint $table) {
+            $table->foreign('source_id')
+                ->references('id')
+                ->on('extension_sources')
+                ->nullOnDelete();
+        });
+
+        // themes.source_id -> extension_sources.id
+        Schema::table('themes', function (Blueprint $table) {
+            $table->foreign('source_id')
+                ->references('id')
+                ->on('extension_sources')
+                ->nullOnDelete();
+        });
     }
 
     /**
@@ -160,6 +180,16 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // themes.source_id
+        Schema::table('themes', function (Blueprint $table) {
+            $table->dropForeign(['source_id']);
+        });
+
+        // plugins.source_id
+        Schema::table('plugins', function (Blueprint $table) {
+            $table->dropForeign(['source_id']);
+        });
+
         // role_permission_overrides.updated_by
         Schema::table('role_permission_overrides', function (Blueprint $table) {
             $table->dropForeign(['updated_by']);

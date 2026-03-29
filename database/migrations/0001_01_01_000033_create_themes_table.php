@@ -46,6 +46,10 @@ return new class extends Migration
             $table->string('version')->default('1.0.0');
             $table->boolean('has_settings')->default(false)->comment('テーマ設定ページの有無');
             $table->json('config')->nullable();
+            $table->unsignedBigInteger('source_id')->nullable()->index(); // Extension source reference
+            $table->string('source_repo')->nullable(); // Repository name at source
+            $table->string('available_version')->nullable(); // Latest available version from source
+            $table->timestamp('last_version_check')->nullable(); // Last update check timestamp
             $table->timestamp('installed_at')->nullable();
             $table->timestamps();
         });

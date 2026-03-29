@@ -22,8 +22,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Theme extends Model
 {
@@ -52,6 +53,10 @@ class Theme extends Model
         'has_settings', // テーマ設定ページの有無
         'config',       // テーマ設定
         'installed_at', // インストール日時
+        'source_id',
+        'source_repo',
+        'available_version',
+        'last_version_check',
     ];
 
     /**
@@ -61,8 +66,25 @@ class Theme extends Model
         'config' => 'array',
         'has_settings' => 'boolean',
         'installed_at' => 'datetime',
+        'last_version_check' => 'datetime',
     ];
 
+    /**
+     * Extension source that this theme was installed from
+     */
+    public function source(): BelongsTo
+    {
+        return $this->belongsTo(ExtensionSource::class, 'source_id');
+    }
+
+    /**
+     * Check if an update is available from the source
+     */
+    public function hasUpdateAvailable(): bool
+    {
+        return $this->available_version !== null
+            && version_compare($this->available_version, $this->version, '>');
+    }
 
     /**
      * インストール済みテーマのスコープ
@@ -77,7 +99,7 @@ class Theme extends Model
      */
     public function isInstalled(): bool
     {
-        return !is_null($this->installed_at);
+        return ! is_null($this->installed_at);
     }
 
     /**
@@ -88,8 +110,8 @@ class Theme extends Model
         $themeSetting = \DB::table('theme_settings')
             ->where('key', 'enabled_theme_id')
             ->first();
-        $enabledThemeId = $themeSetting ? (int)$themeSetting->value : null;
-        
+        $enabledThemeId = $themeSetting ? (int) $themeSetting->value : null;
+
         return $enabledThemeId && $this->id == $enabledThemeId;
     }
 
@@ -107,7 +129,7 @@ class Theme extends Model
     public function deleteTheme()
     {
         if ($this->is_default) {
-            throw new \Exception("デフォルトテーマは削除できません。");
+            throw new \Exception('デフォルトテーマは削除できません。');
         }
 
         $this->delete();
