@@ -39,15 +39,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 document.documentElement.classList.add(d?'dark':'light');
             })();
         </script>
-        {{-- FOUC防止: サイドバー状態に応じてメインコンテンツのマージンを即座に適用 --}}
-        <style @cspNonce>
+        {{-- FOUC防止: サイドバー状態に応じてマージンとサイドバー表示を即座に適用 --}}
+        <style @cspNonce id="fouc-sidebar">
             @media(min-width:768px){#admin-main-content{margin-left:16rem}}
         </style>
         <script @cspNonce>
             (function(){
                 if(localStorage.getItem('sidebarCollapsed')==='true'){
-                    var s=document.currentScript;
-                    s.previousElementSibling.textContent='';
+                    document.getElementById('fouc-sidebar').textContent='@media(min-width:640px){.admin aside{transform:translateX(-16rem)}}';
                 }
             })();
         </script>
@@ -94,7 +93,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </aside>
 
                 <!-- Sidebar Toggle Button (Desktop) -->
-                <button @click="sidebarCollapsed = !sidebarCollapsed"
+                <button @click="sidebarCollapsed = !sidebarCollapsed; var fs=document.getElementById('fouc-sidebar'); if(fs) fs.textContent=''"
                         class="hidden sm:flex fixed top-14 left-0 z-40 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
                         :class="{
                             'translate-x-0': sidebarCollapsed,
@@ -120,11 +119,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                               
                               // 初回表示後にトランジションを追加（全ページ共通）
                               setTimeout(() => {
-                                  // FOUC防止スタイルを除去（Alpine初期化済みのためクラスが適用済み）
-                                  document.querySelectorAll('style').forEach(s => {
-                                      if (s.textContent.includes('#admin-main-content')) s.textContent = '';
-                                  });
-
                                   // transition-colorsを削除してからtransition-allを追加
                                   $el.classList.remove('transition-colors');
                                   
