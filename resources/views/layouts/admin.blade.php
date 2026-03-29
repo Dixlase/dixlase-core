@@ -120,6 +120,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                               
                               // 初回表示後にトランジションを追加（全ページ共通）
                               setTimeout(() => {
+                                  // FOUC防止スタイルを除去（Alpine初期化済みのためクラスが適用済み）
+                                  document.querySelectorAll('style').forEach(s => {
+                                      if (s.textContent.includes('#admin-main-content')) s.textContent = '';
+                                  });
+
                                   // transition-colorsを削除してからtransition-allを追加
                                   $el.classList.remove('transition-colors');
                                   
