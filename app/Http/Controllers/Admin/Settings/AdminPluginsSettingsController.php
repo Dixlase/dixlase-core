@@ -293,6 +293,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $installAllowed = $enableAction !== PluginEnableAction::Blocked;
             $healthScore = $healthResult->score;
             $healthStatus = $healthResult->status->value;
+
+            PluginAudit::where('plugin_slug', $slug)->update([
+                'health_score' => $healthScore,
+                'health_status' => $healthStatus,
+            ]);
         } catch (\Exception $e) {
             // 算出失敗時はデフォルト値を維持
         }
