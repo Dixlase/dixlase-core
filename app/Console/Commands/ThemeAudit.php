@@ -140,7 +140,24 @@ class ThemeAudit extends Command
         $content = File::get($themeJsonPath);
         $data = json_decode($content, true);
 
-        return $data['permissions'] ?? [];
+        $permissions = $data['permissions'] ?? [];
+
+        // Normalize legacy core_tables format to core_tables_read/core_tables_write
+        if (isset($permissions['database']['core_tables'])) {
+            $coreTablesValue = $permissions['database']['core_tables'];
+
+            if (! isset($permissions['database']['core_tables_read'])) {
+                $permissions['database']['core_tables_read'] = $coreTablesValue;
+            }
+            if (! isset($permissions['database']['core_tables_write'])) {
+                $permissions['database']['core_tables_write'] = is_array($coreTablesValue)
+                    ? $coreTablesValue
+                    : false;
+            }
+            unset($permissions['database']['core_tables']);
+        }
+
+        return $permissions;
     }
 
     /**
