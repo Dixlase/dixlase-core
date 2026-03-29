@@ -71,7 +71,6 @@ final readonly class ScanTargetDTO implements JsonSerializable
                 'resources',
                 'database/migrations',
                 'public/index.php',
-                'public/build',
                 'artisan',
                 'composer.json',
                 'composer.lock',
