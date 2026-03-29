@@ -255,6 +255,23 @@ class PluginPermissionService implements PluginPermissionServiceInterface
 
         // メタデータを除外してマージ
         $filtered = array_diff_key($permissions, ['_optional' => true, '_notes' => true]);
+
+        // Normalize legacy core_tables format to core_tables_read/core_tables_write
+        if (isset($filtered['database']['core_tables'])) {
+            $coreTablesValue = $filtered['database']['core_tables'];
+
+            if (! isset($filtered['database']['core_tables_read'])) {
+                $filtered['database']['core_tables_read'] = $coreTablesValue;
+            }
+            if (! isset($filtered['database']['core_tables_write'])) {
+                // For boolean true, assume read-only unless write is explicitly declared
+                $filtered['database']['core_tables_write'] = is_array($coreTablesValue)
+                    ? $coreTablesValue
+                    : false;
+            }
+            unset($filtered['database']['core_tables']);
+        }
+
         $merged = array_replace_recursive($this->defaultPermissions, $filtered);
 
         // メタデータを復元
