@@ -135,6 +135,7 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
     public function show(FileIntegrityAudit $audit)
     {
         $this->viewParams['audit'] = $audit;
+        $this->viewParams['resultPayload'] = $audit->result_payload ?? [];
         $this->addIntegrityConstants();
 
         return view('admin.settings.security.integrity-show', $this->viewParams);
