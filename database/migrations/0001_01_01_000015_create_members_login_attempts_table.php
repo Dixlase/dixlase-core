@@ -83,6 +83,12 @@ return new class extends Migration
             // 追加コンテキスト（JSON）- 将来の拡張用
             $table->json('context')->nullable();
 
+            // メンバーID（識別子から解決、不明な場合はnull）
+            $table->unsignedBigInteger('member_id')->nullable()->index();
+
+            // Bot/AIスクレイパー疑いフラグ
+            $table->boolean('is_bot_suspected')->default(false)->index();
+
             // インデックスを追加してクエリ性能を向上（カスタム名で短縮）
             $table->index(['identifier', 'attempted_at'], 'idx_login_identifier_time');
             $table->index(['ip_address', 'attempted_at'], 'idx_login_ip_time');
@@ -91,6 +97,10 @@ return new class extends Migration
             // 行動分析用インデックス
             $table->index(['identifier', 'successful', 'attempted_at'], 'idx_login_behavior');
             $table->index(['identifier', 'login_hour'], 'idx_login_hour_pattern');
+
+            // メンバー・Bot検知用インデックス
+            $table->index(['member_id', 'attempted_at'], 'idx_login_member_time');
+            $table->index(['is_bot_suspected', 'attempted_at'], 'idx_login_bot_time');
         });
     }
 

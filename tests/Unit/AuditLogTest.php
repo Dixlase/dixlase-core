@@ -176,4 +176,145 @@ class AuditLogTest extends TestCase
             AuditLog::getDefaultSeverity(AuditLog::ACTION_LOGIN_FAILED)
         );
     }
+
+    // ========================================
+    // AI Operation Tests
+    // ========================================
+
+    public function test_can_log_ai_operation(): void
+    {
+        $log = Audit::logAi(AuditLog::ACTION_AI_CONTENT_GENERATED, [
+            'context' => Audit::buildAiContext(
+                'Auto-generated blog post based on trending topics',
+                'content_generation'
+            ),
+        ]);
+
+        $this->assertNotNull($log);
+        $this->assertEquals(AuditLog::CATEGORY_AI, $log->category);
+        $this->assertEquals(AuditLog::ACTION_AI_CONTENT_GENERATED, $log->action);
+        $this->assertTrue($log->is_ai_generated);
+        $this->assertEquals(AuditLog::ACTOR_SOURCE_AI_PLUGIN, $log->actor_source);
+    }
+
+    public function test_build_ai_context_includes_reason_and_intent(): void
+    {
+        $context = Audit::buildAiContext('SEO optimization', 'improve_ranking', ['model' => 'gpt-4']);
+
+        $this->assertEquals('SEO optimization', $context['reason']);
+        $this->assertEquals('improve_ranking', $context['intent']);
+        $this->assertEquals('gpt-4', $context['model']);
+    }
+
+    public function test_actor_source_is_stored_in_log(): void
+    {
+        Audit::setActorSource(AuditLog::ACTOR_SOURCE_API);
+
+        $log = Audit::log([
+            'category' => AuditLog::CATEGORY_SYSTEM,
+            'action' => AuditLog::ACTION_SETTINGS_UPDATED,
+        ]);
+
+        $this->assertEquals(AuditLog::ACTOR_SOURCE_API, $log->actor_source);
+
+        // Reset
+        Audit::setActorSource(null);
+    }
+
+    public function test_is_ai_generated_defaults_to_false(): void
+    {
+        $log = Audit::log([
+            'category' => AuditLog::CATEGORY_AUTH,
+            'action' => AuditLog::ACTION_LOGIN,
+        ]);
+
+        $this->assertFalse($log->is_ai_generated);
+    }
+
+    public function test_scope_ai_generated(): void
+    {
+        Audit::logAi(AuditLog::ACTION_AI_CONTENT_GENERATED);
+        Audit::log([
+            'category' => AuditLog::CATEGORY_AUTH,
+            'action' => AuditLog::ACTION_LOGIN,
+        ]);
+
+        $aiLogs = AuditLog::aiGenerated()->get();
+        $this->assertCount(1, $aiLogs);
+        $this->assertEquals(AuditLog::ACTION_AI_CONTENT_GENERATED, $aiLogs->first()->action);
+    }
+
+    public function test_scope_from_source(): void
+    {
+        Audit::setActorSource(AuditLog::ACTOR_SOURCE_CLI);
+        Audit::log([
+            'category' => AuditLog::CATEGORY_SYSTEM,
+            'action' => AuditLog::ACTION_SETTINGS_UPDATED,
+        ]);
+
+        Audit::setActorSource(AuditLog::ACTOR_SOURCE_WEB);
+        Audit::log([
+            'category' => AuditLog::CATEGORY_AUTH,
+            'action' => AuditLog::ACTION_LOGIN,
+        ]);
+
+        $cliLogs = AuditLog::fromSource(AuditLog::ACTOR_SOURCE_CLI)->get();
+        $this->assertCount(1, $cliLogs);
+
+        // Reset
+        Audit::setActorSource(null);
+    }
+
+    public function test_scope_bot_related(): void
+    {
+        Audit::logSecurity(AuditLog::ACTION_BOT_LOGIN_DETECTED);
+        Audit::logAuth(AuditLog::ACTION_LOGIN);
+
+        $botLogs = AuditLog::botRelated()->get();
+        $this->assertCount(1, $botLogs);
+    }
+
+    public function test_ai_category_mapping(): void
+    {
+        $this->assertEquals(
+            AuditLog::CATEGORY_AI,
+            AuditLog::getCategoryForAction(AuditLog::ACTION_AI_CONTENT_GENERATED)
+        );
+        $this->assertEquals(
+            AuditLog::CATEGORY_AI,
+            AuditLog::getCategoryForAction(AuditLog::ACTION_AI_BULK_OPERATION)
+        );
+    }
+
+    public function test_bot_actions_map_to_security_category(): void
+    {
+        $this->assertEquals(
+            AuditLog::CATEGORY_SECURITY,
+            AuditLog::getCategoryForAction(AuditLog::ACTION_BOT_LOGIN_DETECTED)
+        );
+        $this->assertEquals(
+            AuditLog::CATEGORY_SECURITY,
+            AuditLog::getCategoryForAction(AuditLog::ACTION_BOT_SCRAPING_DETECTED)
+        );
+    }
+
+    public function test_ai_bulk_operation_is_high_risk(): void
+    {
+        $riskLevel = AuditLog::getRiskLevelForAction(AuditLog::ACTION_AI_BULK_OPERATION);
+        $this->assertTrue($riskLevel->isDangerous());
+    }
+
+    public function test_audit_log_created_event_is_dispatched(): void
+    {
+        \Illuminate\Support\Facades\Event::fake([\App\Events\AuditLogCreated::class]);
+
+        Audit::log([
+            'category' => AuditLog::CATEGORY_AUTH,
+            'action' => AuditLog::ACTION_LOGIN,
+        ]);
+
+        \Illuminate\Support\Facades\Event::assertDispatched(\App\Events\AuditLogCreated::class, function ($event) {
+            return $event->auditLog->action === AuditLog::ACTION_LOGIN;
+        });
+    }
 }

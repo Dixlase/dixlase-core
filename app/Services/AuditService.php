@@ -23,6 +23,7 @@
 namespace App\Services;
 
 use App\Enums\OperationRiskLevel;
+use App\Events\AuditLogCreated;
 use App\Models\AuditLog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
@@ -61,6 +62,11 @@ class AuditService
     protected bool $fileLoggingEnabled = true;
 
     /**
+     * 操作元チャネル (web, api, cli, scheduler, ai_plugin, webhook, queue)
+     */
+    protected ?string $actorSource = null;
+
+    /**
      * 監査ログを記録（DB + ファイル）
      */
     public function log(array $data): ?AuditLog
@@ -82,6 +88,16 @@ class AuditService
                 $data['impersonated_by_id'] = $this->impersonatedById;
             }
 
+            // 操作元チャネルを自動設定
+            if (! isset($data['actor_source'])) {
+                $data['actor_source'] = $this->getActorSource();
+            }
+
+            // AI生成フラグを自動設定
+            if (! isset($data['is_ai_generated'])) {
+                $data['is_ai_generated'] = ($data['actor_source'] ?? null) === AuditLog::ACTOR_SOURCE_AI_PLUGIN;
+            }
+
             $auditLog = null;
 
             // DBに保存（テーブルが存在する場合のみ）
@@ -92,6 +108,11 @@ class AuditService
             // ファイルにも出力
             if ($this->fileLoggingEnabled) {
                 $this->writeToFile($data, $auditLog);
+            }
+
+            // SIEM連携用イベントを発火
+            if ($auditLog) {
+                event(new AuditLogCreated($auditLog));
             }
 
             return $auditLog;
@@ -143,6 +164,8 @@ class AuditService
                 'ip' => $data['ip_address'] ?? request()->ip(),
                 'plugin' => $data['plugin_name'] ?? $this->currentPlugin,
                 'request_id' => $data['request_id'] ?? $this->requestId,
+                'actor_source' => $data['actor_source'] ?? $this->actorSource,
+                'is_ai_generated' => $data['is_ai_generated'] ?? false,
             ];
 
             // contextからmessageを取得
@@ -237,6 +260,35 @@ class AuditService
         ]));
     }
 
+    /**
+     * AI操作ログを記録
+     */
+    public function logAi(string $action, array $data = []): ?AuditLog
+    {
+        return $this->log(array_merge($data, [
+            'category' => AuditLog::CATEGORY_AI,
+            'action' => $action,
+            'is_ai_generated' => true,
+            'actor_source' => $data['actor_source'] ?? AuditLog::ACTOR_SOURCE_AI_PLUGIN,
+        ]));
+    }
+
+    /**
+     * Build structured context for AI operations
+     *
+     * @param  string  $reason  Why this AI operation was performed
+     * @param  string|null  $intent  What the AI intended to achieve
+     * @param  array  $extra  Additional context data
+     * @return array Structured context array
+     */
+    public function buildAiContext(string $reason, ?string $intent = null, array $extra = []): array
+    {
+        return array_merge([
+            'reason' => $reason,
+            'intent' => $intent,
+        ], $extra);
+    }
+
     // ========================================
     // コンテキスト管理
     // ========================================
@@ -261,6 +313,37 @@ class AuditService
         $this->requestId = $requestId;
 
         return $this;
+    }
+
+    /**
+     * 操作元チャネルを設定
+     */
+    public function setActorSource(?string $source): self
+    {
+        $this->actorSource = $source;
+
+        return $this;
+    }
+
+    /**
+     * 操作元チャネルを取得（未設定なら自動検出）
+     */
+    public function getActorSource(): ?string
+    {
+        if ($this->actorSource !== null) {
+            return $this->actorSource;
+        }
+
+        if (app()->runningInConsole()) {
+            return AuditLog::ACTOR_SOURCE_CLI;
+        }
+
+        $request = request();
+        if ($request && $request->is('api/*')) {
+            return AuditLog::ACTOR_SOURCE_API;
+        }
+
+        return AuditLog::ACTOR_SOURCE_WEB;
     }
 
     /**
