@@ -105,22 +105,35 @@ class ThemeAudit extends Command
      */
     protected function resolveThemeDirectory(string $input): ?string
     {
+        // 1. Str::studly で変換して探す
         $studlyName = Str::studly(str_replace('-', '_', $input));
         $path = base_path("themes/{$studlyName}");
         if (File::isDirectory($path)) {
             return $path;
         }
 
+        // 2. 入力そのままで探す
         $path = base_path("themes/{$input}");
         if (File::isDirectory($path)) {
             return $path;
         }
 
+        // 3. テーマディレクトリを走査してマッチ
         $themesDir = base_path('themes');
         if (File::isDirectory($themesDir)) {
             foreach (File::directories($themesDir) as $dir) {
+                // kebab-case でのマッチ
                 if (Str::kebab(basename($dir)) === $input) {
                     return $dir;
+                }
+
+                // theme.json の slug でのマッチ
+                $themeJson = $dir.'/theme.json';
+                if (File::exists($themeJson)) {
+                    $data = json_decode(File::get($themeJson), true);
+                    if (($data['slug'] ?? '') === $input) {
+                        return $dir;
+                    }
                 }
             }
         }

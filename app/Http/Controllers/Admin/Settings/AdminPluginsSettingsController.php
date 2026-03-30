@@ -299,7 +299,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 'health_status' => $healthStatus,
             ]);
         } catch (\Exception $e) {
-            // 算出失敗時はデフォルト値を維持
+            Log::error('Health score calculation failed after audit', [
+                'plugin' => $slug,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
         }
 
         // 減点項目を取得（0減点の項目は除外）
