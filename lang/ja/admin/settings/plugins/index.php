@@ -432,7 +432,7 @@ return [
         'stage1_scan_optional_title' => 'スキャンしますか？',
         'stage1_scan_optional_message' => ':actionの前にこのプラグインをスキャンしますか？',
         'stage1_scanning' => 'スキャン中...',
-        'stage1_scanning_description' => 'セキュリティスキャンを実行しています。しばらくお待ちください。',
+        'stage1_scanning_description' => 'セキュリティスキャンを実行しています。<br>しばらくお待ちください。',
         'stage1_skip_scan' => 'スキップ',
         'stage1_start_scan' => 'スキャン開始',
         'stage2_confirm_install' => 'このプラグインをインストールしますか？',
@@ -449,7 +449,7 @@ return [
         'stage2_confirm_action_message' => ':actionを実行しますか？',
         'processing_install' => 'インストール中...',
         'processing_enable' => '有効化中...',
-        'processing_install_description' => 'プラグインをインストールしています。しばらくお待ちください。',
-        'processing_enable_description' => 'プラグインを有効化しています。しばらくお待ちください。',
+        'processing_install_description' => 'プラグインをインストールしています。<br>しばらくお待ちください。',
+        'processing_enable_description' => 'プラグインを有効化しています。<br>しばらくお待ちください。',
     ],
 ];

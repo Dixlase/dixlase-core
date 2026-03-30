@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function () {
         stage1Buttons.classList.add('hidden');
         stage1Spinner.classList.remove('hidden');
         setModalTitle('pluginActionStage1Modal', ts.stage1Scanning || '');
-        stage1Message.textContent = ts.stage1ScanningDescription || '';
+        stage1Message.innerHTML = ts.stage1ScanningDescription || '';
 
         // submitting=true でモーダルを閉じられないようにする
         setModalSubmitting('pluginActionStage1Modal', true);
@@ -313,13 +313,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const actionLabel = currentAction.actionType === 'install' ? ts.processingInstall : ts.processingEnable;
         const actionDescription = currentAction.actionType === 'install' ? ts.processingInstallDescription : ts.processingEnableDescription;
 
-        // モーダルのタイトルとメッセージをDOM要素に直接設定
-        const modalEl = document.getElementById('pluginActionProcessingModal');
-        if (modalEl) {
-            const titleEl = modalEl.querySelector('.modal-title');
-            if (titleEl) titleEl.textContent = actionLabel || '';
-            const messageEl = modalEl.querySelector('.modal-message p');
-            if (messageEl) messageEl.textContent = actionDescription || '';
+        setModalTitle('pluginActionProcessingModal', actionLabel || '');
+        const messageEl = document.getElementById('pluginActionProcessingMessage');
+        if (messageEl) {
+            messageEl.innerHTML = actionDescription || '';
         }
         setModalIconType('pluginActionProcessingModal', 'info');
         setModalSubmitting('pluginActionProcessingModal', true);

@@ -432,7 +432,7 @@ return [
         'stage1_scan_optional_title' => 'Scan Plugin?',
         'stage1_scan_optional_message' => 'Would you like to scan this plugin before :action?',
         'stage1_scanning' => 'Scanning...',
-        'stage1_scanning_description' => 'Running security scan. Please wait.',
+        'stage1_scanning_description' => 'Running security scan.<br>Please wait.',
         'stage1_skip_scan' => 'Skip Scan',
         'stage1_start_scan' => 'Start Scan',
         'stage2_confirm_install' => 'Install this plugin?',
@@ -449,7 +449,7 @@ return [
         'stage2_confirm_action_message' => 'Do you want to proceed with :action?',
         'processing_install' => 'Installing...',
         'processing_enable' => 'Enabling...',
-        'processing_install_description' => 'Installing the plugin. Please wait.',
-        'processing_enable_description' => 'Enabling the plugin. Please wait.',
+        'processing_install_description' => 'Installing the plugin.<br>Please wait.',
+        'processing_enable_description' => 'Enabling the plugin.<br>Please wait.',
     ],
 ];
