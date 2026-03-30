@@ -104,7 +104,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <input type="text" id="mediaUrl" value="{{ asset('storage/' . config('admin.files.mediaPath') . '/' . $media->path) }}" 
                            class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm" 
                            readonly>
-                    <button @click="copyToClipboard($event)"
+                    <button @click="copyMediaUrlToClipboard($event)"
                             data-copied-text="{{ __('common.copied') }}"
                             data-copy-failed-text="{{ __('admin/media/preview.copy_failed') }}"
                             class="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition dark:bg-green-600 dark:hover:bg-green-700 flex items-center gap-2">

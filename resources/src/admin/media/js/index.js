@@ -28,8 +28,8 @@ window.openDeleteModal = function (fileId, fileName) {
 
     const form = document.getElementById('deleteForm');
     if (form) {
-        const baseUrl = form.dataset.baseUrl || '/admin/media/delete';
-        form.action = `${baseUrl}/${fileId}`;
+        const baseUrl = form.dataset.baseUrl || '';
+        form.action = baseUrl.replace('__ID__', fileId);
     }
 
     if (typeof window.openModal === 'function') {
