@@ -31,6 +31,8 @@ use App\Http\Requests\Admin\Front\AdminFrontCreateRequest;
 use App\Http\Requests\Admin\Front\AdminFrontEditUpdateRequest;
 use App\Http\Requests\Admin\Front\AdminFrontSettingsUpdateRequest;
 use App\Models\FrontPage;
+use App\Presenters\Admin\ContentEditorPresenter;
+use App\Services\Editor\EditorManager;
 use App\Services\FrontPageContentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
