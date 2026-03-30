@@ -45,9 +45,12 @@ function closeModal(id) {
  */
 function setModalTitle(id, title) {
     const el = document.getElementById(id);
-    if (el && el._x_dataStack && el._x_dataStack[0]) {
+    if (!el) return;
+    if (el._x_dataStack && el._x_dataStack[0]) {
         el._x_dataStack[0].title = title;
     }
+    const titleEl = el.querySelector('.modal-title');
+    if (titleEl) titleEl.textContent = title;
 }
 
 /**
