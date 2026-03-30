@@ -43,11 +43,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <h3 id="{{ $id }}-title" class="text-lg font-semibold text-gray-900 dark:text-white">
                     {{ __('common.select_media') }}
                 </h3>
-                <button type="button" 
-                        @click="closeMediaSelector('{{ $id }}')"
-                        class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('admin.media.upload') }}" target="_blank"
+                       class="px-3 py-1.5 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 inline-flex items-center">
+                        <i class="fas fa-upload mr-1.5"></i>{{ __('common.upload') }}
+                    </a>
+                    <button type="button"
+                            @click="closeMediaSelector('{{ $id }}')"
+                            class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
             </div>
 
             <!-- 検索とフィルター -->
@@ -67,10 +73,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <option value="video">{{ __('common.videos') }}</option>
                             <option value="document">{{ __('common.documents') }}</option>
                         </select>
-                        <a href="{{ route('admin.media.upload') }}" target="_blank"
-                           class="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 inline-flex items-center">
-                            <i class="fas fa-upload mr-1.5"></i>{{ __('common.upload') }}
-                        </a>
                     </div>
                 </div>
             </div>
