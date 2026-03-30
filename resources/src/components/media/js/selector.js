@@ -233,9 +233,6 @@ window.confirmMediaSelection = function (modalId, inputId, previewId, multiple) 
         } else {
             input.value = selectedMedia.id;
         }
-
-        // Trigger change event
-        input.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     // Update preview
@@ -262,6 +259,21 @@ window.confirmMediaSelection = function (modalId, inputId, previewId, multiple) 
                 </div>
             `;
         }
+    }
+
+    // Dispatch custom event with media details (for theme preview etc.)
+    document.dispatchEvent(new CustomEvent('media-selected', {
+        detail: {
+            inputId: inputId,
+            previewId: previewId,
+            media: multiple ? selectedMedia : selectedMedia,
+            url: multiple ? selectedMedia.map(m => m.url) : selectedMedia.url,
+        }
+    }));
+
+    // Trigger change event on input (after preview is updated)
+    if (input) {
+        input.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     closeMediaSelector(modalId);
