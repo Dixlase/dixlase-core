@@ -35,7 +35,7 @@ use App\Enums\PasskeyMode;
 use App\Enums\TwoFaMethod;
 use App\Helpers\AdminHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Http\Requests\Admin\Settings\AdminSettingsMemberStoreRequest;
+use App\Http\Requests\Admin\Settings\Members\AdminSettingsMemberStoreRequest;
 use App\Models\Member;
 use App\Services\MailServerValidatorService;
 use App\Services\TwoFa\TwoFaStatusService;
