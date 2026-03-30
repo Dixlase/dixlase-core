@@ -184,7 +184,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 />
 
 <!-- 削除用フォーム -->
-<form id="deleteForm" data-base-url="{{ url('admin/media/delete') }}" method="POST" style="display: none;">
+<form id="deleteForm" data-base-url="{{ route('admin.media.delete', ['media' => '__ID__']) }}" method="POST" style="display: none;">
     @csrf
     @method('DELETE')
 </form>

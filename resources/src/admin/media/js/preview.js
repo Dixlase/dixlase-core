@@ -3,7 +3,7 @@
  * Handles copying media URL to clipboard
  */
 
-window.copyToClipboard = function (event) {
+window.copyMediaUrlToClipboard = function (event) {
     const urlInput = document.getElementById('mediaUrl');
     const copyButton = event.currentTarget || event.target.closest('button');
 
