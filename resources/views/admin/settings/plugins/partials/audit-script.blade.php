@@ -163,12 +163,13 @@ https://exc-d.com
     {{-- スキャン中モーダル --}}
     <x-ui-modal
         id="pluginAuditScanningModal"
-        :title="__('admin/settings/plugins/index.permissions.audit_scanning')"
-        :message="__('admin/settings/plugins/index.permissions.audit_scanning_description')"
+        :title="__('admin/settings/plugins/index.permissions.audit_scanning_title')"
+        message=""
         iconType="info"
         :dismissible="false"
         :closeOnly="true"
     >
+        <p class="text-sm text-gray-700 dark:text-gray-300 text-center">{!! __('admin/settings/plugins/index.permissions.audit_scanning_description') !!}</p>
         <x-slot:footer>
             <div class="flex items-center justify-center w-full py-1">
                 <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
@@ -273,6 +274,7 @@ https://exc-d.com
     <x-ui-modal
         id="pluginActionProcessingModal"
         title=""
+        message=""
         iconType="info"
         :dismissible="false"
         :closeOnly="true"
