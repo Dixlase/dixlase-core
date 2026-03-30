@@ -54,19 +54,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
                     <div class="flex-1">
-                        <input type="text" 
+                        <input type="text"
                                id="{{ $id }}-search"
                                placeholder="{{ __('common.search') }}..."
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
                     <div class="flex gap-2">
-                        <select id="{{ $id }}-type-filter" 
+                        <select id="{{ $id }}-type-filter"
                                 class="px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500">
                             <option value="">{{ __('common.all_types') }}</option>
                             <option value="image">{{ __('common.images') }}</option>
                             <option value="video">{{ __('common.videos') }}</option>
                             <option value="document">{{ __('common.documents') }}</option>
                         </select>
+                        <a href="{{ route('admin.media.upload') }}" target="_blank"
+                           class="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 inline-flex items-center">
+                            <i class="fas fa-upload mr-1.5"></i>{{ __('common.upload') }}
+                        </a>
                     </div>
                 </div>
             </div>
