@@ -58,7 +58,7 @@ final readonly class ActionResult
     /**
      * Create a success result from a model
      */
-    public static function success(Model $model, ?string $message = null, ?string $label = null): self
+    public static function success(Model $model, ?string $message = null, ?string $label = null, array $metadata = []): self
     {
         return new self(
             success: true,
@@ -67,6 +67,7 @@ final readonly class ActionResult
             targetType: get_class($model),
             targetId: $model->getKey(),
             targetLabel: $label,
+            metadata: $metadata,
         );
     }
 
