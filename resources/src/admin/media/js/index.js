@@ -22,7 +22,8 @@ window.openDeleteModal = function (fileId, fileName) {
     const messageElement = modal.querySelector('.modal-message p');
     if (messageElement) {
         const deleteMessage = modal.dataset.deleteMessage || '「{fileName}」を削除しますか？この操作は取り消せません。';
-        messageElement.textContent = deleteMessage.replace('{fileName}', fileName);
+        const escapedName = fileName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        messageElement.innerHTML = deleteMessage.replace('{fileName}', escapedName);
     }
 
     const form = document.getElementById('deleteForm');

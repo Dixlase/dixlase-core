@@ -21,7 +21,7 @@ return [
     'preview' => 'Preview',
     'download' => 'Download',
     'delete' => 'Delete',
-    'delete_message' => 'Are you sure you want to delete "{fileName}"? This action cannot be undone.',
+    'delete_message' => 'Are you sure you want to delete "{fileName}"?<br>This action cannot be undone.',
 
     'success' => [
         'uploaded' => 'File uploaded successfully.',

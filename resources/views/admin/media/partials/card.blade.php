@@ -53,7 +53,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <span class="media-card__dimensions">{{ $file->formatted_dimensions }}</span>
             @endif
             @if($file->member)
-                <span class="media-card__uploader">{{ $file->member->name }}</span>
+                <span class="media-card__uploader">{{ $file->member->display_name }}</span>
             @endif
             <time class="media-card__date" datetime="{{ $file->created_at->format('Y-m-d') }}">
                 {{ $file->created_at->format('Y/m/d') }}
