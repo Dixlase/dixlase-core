@@ -203,7 +203,11 @@ class ExtensionCardPresenter
                 $enableAction = $healthScorer->determineEnableAction($healthResult);
             }
         } catch (\Exception $e) {
-            // 算出失敗時はデフォルト値を維持
+            Log::error('ExtensionCardPresenter: health calculation failed', [
+                'plugin' => $slug,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile().':'.$e->getLine(),
+            ]);
         }
 
         $badge = self::computeBadge($permissionSummary, 'admin/settings/plugins/index', $healthStatus);
