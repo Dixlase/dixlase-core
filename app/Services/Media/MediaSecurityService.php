@@ -102,10 +102,10 @@ class MediaSecurityService
         $fileSizeKb = $file->getSize() / 1024;
 
         if ($fileSizeKb > $sizeLimit) {
-            $result->addError('size_exceeded', __('admin/media.security.size_exceeded', [
+            $result->addError('size_exceeded', __('admin/media/security.size_exceeded', [
                 'size' => round($fileSizeKb / 1024, 2).'MB',
                 'max' => round($sizeLimit / 1024, 2).'MB',
-                'category' => __('admin/media.security.category.'.$category),
+                'category' => __('admin/media/security.category.'.$category),
             ]));
         }
 
@@ -151,7 +151,7 @@ class MediaSecurityService
 
         $content = file_get_contents($file->getPathname());
         if ($content === false) {
-            $errors[] = ['code' => 'svg_read_error', 'message' => __('admin/media.security.svg.read_error')];
+            $errors[] = ['code' => 'svg_read_error', 'message' => __('admin/media/security.svg.read_error')];
 
             return ['errors' => $errors, 'warnings' => $warnings];
         }
@@ -159,9 +159,9 @@ class MediaSecurityService
         // SVGが安全かチェック
         if (! $this->svgSanitizer->isSafe($content)) {
             if ($this->isSvgSanitizationEnabled()) {
-                $warnings[] = ['code' => 'svg_will_sanitize', 'message' => __('admin/media.security.svg.will_sanitize')];
+                $warnings[] = ['code' => 'svg_will_sanitize', 'message' => __('admin/media/security.svg.will_sanitize')];
             } else {
-                $errors[] = ['code' => 'svg_unsafe', 'message' => __('admin/media.security.svg.unsafe')];
+                $errors[] = ['code' => 'svg_unsafe', 'message' => __('admin/media/security.svg.unsafe')];
             }
         }
 

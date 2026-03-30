@@ -15,9 +15,13 @@
 return [
     'heading' => 'メディアアップロード',
     'description' => '画像、動画、ドキュメントなどのファイルをアップロードします。許可されたファイルタイプとサイズ制限が適用されます。',
-    'select_file' => 'メディアファイルを選択:',
+    'select_file' => 'メディアファイルを選択',
     'drag_drop_text' => 'ここにファイルをドラッグするか、クリックしてアップロード',
     'supported_formats' => '対応形式:',
+    'multiple_files_hint' => '複数ファイルを一度に選択できます',
+    'upload_progress' => 'アップロード進捗',
+    'back_to_list' => 'メディア一覧に戻る',
+    'files_failed' => '件のファイルがアップロードに失敗しました。',
 
     'settings_heading' => '現在のメディア設定',
     'settings_heading_auto' => '現在のメディア設定（自動設定）',
