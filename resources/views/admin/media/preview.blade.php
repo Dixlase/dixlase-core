@@ -38,7 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p><strong>{{ __('common.dimensions') }}</strong> {{ $media->formatted_dimensions }}</p>
             @endif
             <p><strong>{{ __('common.upload_date') }}</strong> {{ $media->created_at->format('Y-m-d H:i:s') }}</p>
-            <p><strong>{{ __('common.uploaded_by') }}</strong> {{ $media->member->name ?? __('admin/media/preview.unknown') }}</p>
+            <p><strong>{{ __('common.uploaded_by') }}</strong> {{ $media->member->display_name ?? __('admin/media/preview.unknown') }}</p>
             
             <!-- メディア情報編集フォーム -->
             <form action="{{ route('admin.media.update', $media->id) }}" method="POST" class="mt-6 space-y-4">
@@ -104,7 +104,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <input type="text" id="mediaUrl" value="{{ asset('storage/' . config('admin.files.mediaPath') . '/' . $media->path) }}" 
                            class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm" 
                            readonly>
-                    <button @click="copyToClipboard()" 
+                    <button @click="copyToClipboard($event)"
                             data-copied-text="{{ __('common.copied') }}"
                             data-copy-failed-text="{{ __('admin/media/preview.copy_failed') }}"
                             class="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition dark:bg-green-600 dark:hover:bg-green-700 flex items-center gap-2">
@@ -124,26 +124,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <i class="fas fa-download"></i> {{ __('common.download') }}
                     </a>
 
-                    <form action="{{ route('admin.media.delete', $media->id) }}" method="POST" class="inline">
-                        @csrf
-                        @method('DELETE')
-                        <!-- 削除ボタン -->
-                        <button type="button" @click="openModal('deleteModal')" class="bg-red-500 text-white py-2 px-4 rounded flex items-center gap-2 hover:bg-red-600 transition dark:bg-red-600 dark:hover:bg-red-700">
-                            <i class="fas fa-trash-alt"></i> {{ __('common.delete') }}
-                        </button>
-
-                        <!-- 削除モーダル -->
-                        <x-ui-modal
-                            id="deleteModal"
-                            :title="__('admin/media/preview.delete_confirmation')"
-                            :message="__('admin/media/preview.delete_message')"
-                            :confirm_label="__('common.delete')"
-                            :cancel_label="__('common.cancel')"
-                        />
-                    </form>
-
+                    <button type="button" @click="openModal('deleteModal')" class="bg-red-500 text-white py-2 px-4 rounded flex items-center gap-2 hover:bg-red-600 transition dark:bg-red-600 dark:hover:bg-red-700">
+                        <i class="fas fa-trash-alt"></i> {{ __('common.delete') }}
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- 削除用フォーム -->
+    <form id="deleteMediaForm" action="{{ route('admin.media.delete', $media->id) }}" method="POST" style="display: none;">
+        @csrf
+        @method('DELETE')
+    </form>
+
+    <!-- 削除確認モーダル -->
+    <x-ui-modal
+        id="deleteModal"
+        :title="__('admin/media/preview.delete_confirmation')"
+        :message="__('admin/media/preview.delete_message')"
+        :confirm_label="__('common.delete')"
+        :cancel_label="__('common.cancel')"
+        icon_type="danger"
+        confirm_color="red"
+        form="deleteMediaForm"
+    />
 @endsection
