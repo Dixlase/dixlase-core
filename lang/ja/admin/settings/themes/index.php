@@ -61,28 +61,70 @@ return [
 
     // バッジラベル（カード表示用）
     'badge_labels' => [
-        'health' => '健全性',
+        'health' => '健全',
+        'health_full' => '健全性',
         'signature' => '署名',
         'permission' => '権限',
         'csp' => 'CSP',
+        'preset' => '拡張',
+        'operation' => '動作',
+    ],
+
+    // CSPモードバッジラベル
+    'csp_mode' => [
+        'development' => '開発',
+        'standard' => '標準',
+        'strict' => '厳格',
+        'not_checked' => '未検証',
+    ],
+
+    // セキュリティプリセット互換バッジラベル
+    'preset_badge' => [
+        'development' => '開発',
+        'balanced' => 'バランス',
+        'strict' => '厳格',
+        'custom' => '現在の設定',
+        'not_verified' => '未確認',
+    ],
+
+    // 健全性ステータス
+    'health_status' => [
+        'healthy' => '健全',
+        'healthy_description' => '宣言された権限・署名・構成に不一致は見つかりませんでした。',
+        'advisory' => '注意',
+        'advisory_description' => '軽微な指摘があります。動作に直ちに影響はありませんが、見直しを推奨します。',
+        'needs_attention' => '要確認',
+        'needs_attention_description' => '重要な指摘があります。有効化・運用前に内容を確認してください。',
+        'not_verified' => '未確認',
+        'not_verified_description' => '検証情報が不足しています（未スキャン、権限定義なし、署名なし等）。',
     ],
 
     // 検証状態
     'verification' => [
         // 署名
-        'signature_valid' => '署名：OK',
-        'signature_unsigned' => '署名：未署名',
-        'signature_invalid' => '署名：不一致',
-        'signature_pending' => '署名：検証待ち',
+        'signature_valid' => '署名あり',
+        'signature_unsigned' => '未署名',
+        'signature_invalid' => '署名不一致',
+        'signature_pending' => '検証待ち',
+        'signature_not_scanned' => '未確認',
         // 権限
-        'permission_ok' => '権限定義：OK',
-        'permission_undefined' => '権限定義：未定義',
-        'permission_mismatch' => '権限定義：不一致',
+        'permission_ok' => 'OK',
+        'permission_undefined' => '未定義',
+        'permission_mismatch' => '不一致',
+        'permission_not_scanned' => '未確認',
         // CSP
-        'csp_ready' => 'CSP Ready',
+        'csp_ready' => 'CSP対応済み',
         'csp_compatible' => 'CSP互換',
-        'csp_inline_required' => 'インラインJS必須',
+        'csp_inline_required' => 'CSP未対応',
         'csp_not_checked' => 'CSP未検証',
+    ],
+
+    // 動作判定（信号機）
+    'operation_status' => [
+        'ok' => '完全動作',
+        'caution' => '注意あり',
+        'blocked' => '動作不可',
+        'unknown' => '未確認',
     ],
 
     // CSP適合性
@@ -98,6 +140,10 @@ return [
         'health_warning' => '注意',
         'health_needs_attention' => '要確認',
         'health_not_verified' => '未確認',
+        'health_status_healthy' => '良好',
+        'health_status_advisory' => '注意',
+        'health_status_needs_attention' => '要確認',
+        'health_status_not_verified' => '未検証',
         'unknown' => '未定義',
         'unknown_warning' => '権限情報が定義されていません。このテーマがどのような操作を行うか不明です。信頼できるソースから入手したことを確認してください。',
         'audit_mismatch_title' => '権限の不一致',
