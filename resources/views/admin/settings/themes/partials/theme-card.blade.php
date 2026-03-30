@@ -8,29 +8,22 @@ https://exc-d.com
 インストール済み・未インストールの両方で使用
 --}}
 
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all duration-200 flex flex-col group {{ $card['isEnabled'] ? 'ring-2 ring-green-500 ring-offset-2 dark:ring-offset-gray-900' : '' }}">
+<div x-data class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all duration-200 flex flex-col group {{ $card['isEnabled'] ? 'ring-2 ring-green-500 ring-offset-2 dark:ring-offset-gray-900' : '' }}">
     {{-- サムネイル --}}
     <div class="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
         <img
             src="{{ $card['thumbnailUrl'] }}"
             alt="{{ $card['name'] }}"
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onerror="this.src='{{ asset('assets/images/theme-default.svg') }}'"
+            x-on:error="$el.src='{{ asset('assets/images/theme-default.svg') }}'"
         >
         {{-- ステータスバッジ（オーバーレイ） --}}
         <div class="absolute top-3 right-3">
             @if($card['isInstalled'])
-                @if($card['isEnabled'])
-                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium shadow-sm bg-green-500 text-white">
-                        <i class="fas fa-star mr-1"></i>
-                        {{ __('common.active') }}
-                    </span>
-                @else
-                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium shadow-sm bg-gray-500 text-white">
-                        <i class="fas fa-pause-circle mr-1"></i>
-                        {{ __('common.inactive') }}
-                    </span>
-                @endif
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium shadow-sm {{ $card['isEnabled'] ? 'bg-green-500 text-white' : 'bg-gray-500 text-white' }}">
+                    <i class="fas {{ $card['isEnabled'] ? 'fa-star' : 'fa-pause-circle' }} mr-1"></i>
+                    {{ $card['isEnabled'] ? __('common.active') : __('common.inactive') }}
+                </span>
             @else
                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium shadow-sm bg-yellow-500 text-white">
                     <i class="fas fa-download mr-1"></i>
@@ -67,93 +60,110 @@ https://exc-d.com
 
         {{-- バッジ類 --}}
         @if($card['permissionSummary'])
-        <div class="mb-3 pt-3 border-t border-gray-100 dark:border-gray-700 space-y-2">
+        <div class="mb-3 pt-3 border-t border-gray-100 dark:border-gray-700 space-y-2"
+             data-scan-data="{{ json_encode($card['scanData'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) }}"
+             data-plugin-name="{{ $card['name'] }}">
+
             {{-- 健全性 --}}
             <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/themes/index.badge_labels.health') }}</span>
+                <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="{{ $card['badgeIcon'] }} mr-1 {{ $card['healthIconColor'] }}"></i>{{ __('admin/settings/themes/index.badge_labels.health') }}</button>
                 <button type="button"
-                        class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $card['badgeColor'] }} cursor-pointer hover:opacity-80 transition-opacity"
-                        @click="openModal('{{ $card['permissionModalId'] }}')">
-                    <i class="{{ $card['badgeIcon'] }} mr-1"></i>
+                        class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $card['badgeColor'] }} cursor-pointer hover:opacity-80 transition-opacity">
                     {{ $card['badgeLabel'] }}
-                    <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
                 </button>
             </div>
 
             {{-- 署名ステータス --}}
             <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/themes/index.badge_labels.signature') }}</span>
-                @if($card['signatureStatus'] === 'valid' || $card['signatureStatus'] === 'pending_verification')
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                        <i class="fas fa-check-circle mr-1"></i>
+                @if(!$card['auditedAt'])
+                    <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-file-signature mr-1 text-gray-400"></i>{{ __('admin/settings/themes/index.badge_labels.signature') }}</span>
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+                        {{ __('admin/settings/themes/index.verification.signature_not_scanned') }}
+                    </span>
+                @elseif($card['signatureStatus'] === 'valid' || $card['signatureStatus'] === 'pending_verification')
+                    <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-check-circle mr-1 text-green-500"></i>{{ __('admin/settings/themes/index.badge_labels.signature') }}</button>
+                    <button type="button"
+                            class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 cursor-pointer hover:opacity-80 transition-opacity">
                         {{ __('admin/settings/themes/index.verification.signature_valid') }}
-                    </span>
+                    </button>
                 @elseif($card['signatureStatus'] === 'invalid')
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                        <i class="fas fa-times-circle mr-1"></i>
+                    <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-times-circle mr-1 text-red-500"></i>{{ __('admin/settings/themes/index.badge_labels.signature') }}</button>
+                    <button type="button"
+                            class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 cursor-pointer hover:opacity-80 transition-opacity">
                         {{ __('admin/settings/themes/index.verification.signature_invalid') }}
-                    </span>
+                    </button>
                 @else
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
-                        <i class="fas fa-file-signature mr-1"></i>
+                    <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-file-signature mr-1 text-yellow-500"></i>{{ __('admin/settings/themes/index.badge_labels.signature') }}</button>
+                    <button type="button"
+                            class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 cursor-pointer hover:opacity-80 transition-opacity">
                         {{ __('admin/settings/themes/index.verification.signature_unsigned') }}
-                    </span>
+                    </button>
                 @endif
             </div>
 
             {{-- 権限定義 --}}
             <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/themes/index.badge_labels.permission') }}</span>
-                @if($card['hasPermissions'])
+                @if(!$card['auditedAt'])
+                    <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-key mr-1 text-gray-400"></i>{{ __('admin/settings/themes/index.badge_labels.permission') }}</span>
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+                        {{ __('admin/settings/themes/index.verification.permission_not_scanned') }}
+                    </span>
+                @elseif($card['hasPermissions'])
                     @if($card['hasMismatches'])
-                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" title="{{ __('admin/settings/themes/index.permissions.audit_mismatch_warning') }}">
-                            <i class="fas fa-code-branch mr-1"></i>
+                        <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-exclamation-circle mr-1 text-red-500"></i>{{ __('admin/settings/themes/index.badge_labels.permission') }}</button>
+                        <button type="button"
+                                class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 cursor-pointer hover:opacity-80 transition-opacity"
+                                title="{{ __('admin/settings/themes/index.permissions.audit_mismatch_warning') }}">
                             {{ __('admin/settings/themes/index.verification.permission_mismatch') }}
-                        </span>
+                        </button>
                     @else
-                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                            <i class="fas fa-check-circle mr-1"></i>
+                        <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-check-circle mr-1 text-green-500"></i>{{ __('admin/settings/themes/index.badge_labels.permission') }}</button>
+                        <button type="button"
+                                class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 cursor-pointer hover:opacity-80 transition-opacity">
                             {{ __('admin/settings/themes/index.verification.permission_ok') }}
-                        </span>
+                        </button>
                     @endif
                 @else
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
-                        <i class="fas fa-question-circle mr-1"></i>
+                    <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-key mr-1 text-gray-400"></i>{{ __('admin/settings/themes/index.badge_labels.permission') }}</button>
+                    <button type="button"
+                            class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 cursor-pointer hover:opacity-80 transition-opacity">
                         {{ __('admin/settings/themes/index.verification.permission_undefined') }}
-                    </span>
+                    </button>
                 @endif
             </div>
 
-            {{-- CSP互換性 --}}
+            {{-- CSPモード別互換性 --}}
             <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/themes/index.badge_labels.csp') }}</span>
-                @if($card['cspCompatibility']['status'] === 'csp_ready' || $card['cspCompatibility']['status'] === 'compatible')
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" title="{{ __('admin/settings/themes/index.csp.ready_tooltip') }}">
-                        <i class="fas fa-shield-alt mr-1"></i>
-                        {{ __('admin/settings/themes/index.verification.csp_ready') }}
-                    </span>
-                @elseif($card['cspCompatibility']['requires_inline_js'])
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" title="{{ __('admin/settings/themes/index.csp.inline_required_tooltip') }}">
-                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                        {{ __('admin/settings/themes/index.verification.csp_inline_required') }}
-                    </span>
-                @else
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
-                        <i class="fas fa-question mr-1"></i>
-                        {{ __('admin/settings/themes/index.verification.csp_not_checked') }}
-                    </span>
-                @endif
+                <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-shield-alt mr-1 {{ $card['cspTierIconColor'] }}"></i>{{ __('admin/settings/themes/index.badge_labels.csp') }}</button>
+                <x-ui-barometer :items="$card['cspBarometerItems']" />
+            </div>
+
+            {{-- セキュリティプリセット互換性 --}}
+            <div class="flex items-center gap-2">
+                <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-sliders-h mr-1 {{ $card['presetTierIconColor'] }}"></i>{{ __('admin/settings/themes/index.badge_labels.preset') }}</button>
+                <x-ui-barometer :items="$card['presetBarometerItems']" />
+            </div>
+
+            {{-- 動作判定（信号機） --}}
+            <div class="flex items-center gap-2">
+                <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-power-off mr-1 {{ $card['opIconColor'] }}"></i>{{ __('admin/settings/themes/index.badge_labels.operation') }}</button>
+                <div class="inline-flex items-center gap-1">
+                    <span class="inline-block w-3 h-3 rounded-full {{ $card['operationStatus']['status'] === 'ok' ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
+                    <span class="inline-block w-3 h-3 rounded-full {{ $card['operationStatus']['status'] === 'caution' ? 'bg-yellow-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
+                    <span class="inline-block w-3 h-3 rounded-full {{ $card['operationStatus']['status'] === 'blocked' ? 'bg-red-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
+                    <span class="text-xs text-gray-600 dark:text-gray-300 ml-1">{{ $card['operationStatus']['label'] }}</span>
+                </div>
             </div>
 
             {{-- スキャンボタン --}}
-            <div class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+            <div class="flex justify-center items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
                 <x-form-button
                     type="button"
                     :label="$card['auditedAt'] ? __('admin/settings/themes/index.permissions.audit_button_rescan') : __('admin/settings/themes/index.permissions.audit_button')"
-                    :variant="$card['auditedAt'] ? 'tertiary' : 'warning'"
-                    size="xs"
+                    :variant="$card['auditedAt'] ? 'secondary' : 'warning'"
+                    size="sm"
                     icon="fas fa-search"
-                    class="theme-audit-btn w-full"
+                    class="theme-audit-btn"
                     :data-slug="$card['slug']"
                     :title="$card['auditedAt'] ? __('admin/settings/themes/index.permissions.audit_last_scanned') . ': ' . $card['auditedAtFormatted'] : __('admin/settings/themes/index.permissions.audit_not_scanned')"
                 />

@@ -62,27 +62,69 @@ return [
     // Badge Labels (for card display)
     'badge_labels' => [
         'health' => 'Health',
-        'signature' => 'Signature',
-        'permission' => 'Permission',
+        'health_full' => 'Health Status',
+        'signature' => 'Sign',
+        'permission' => 'Perm',
         'csp' => 'CSP',
+        'preset' => 'Ext',
+        'operation' => 'Op',
+    ],
+
+    // CSP Mode Badge Labels
+    'csp_mode' => [
+        'development' => 'Dev',
+        'standard' => 'Std',
+        'strict' => 'Strict',
+        'not_checked' => 'N/A',
+    ],
+
+    // Security Preset Compatibility Badge Labels
+    'preset_badge' => [
+        'development' => 'Dev',
+        'balanced' => 'Balanced',
+        'strict' => 'Strict',
+        'custom' => 'Current',
+        'not_verified' => 'N/A',
+    ],
+
+    // Health Status
+    'health_status' => [
+        'healthy' => 'Healthy',
+        'healthy_description' => 'No mismatches found between declared permissions, signature, and configuration.',
+        'advisory' => 'Advisory',
+        'advisory_description' => 'Minor issues found. No immediate impact on operation, but review is recommended.',
+        'needs_attention' => 'Needs Attention',
+        'needs_attention_description' => 'Important issues found. Please review before activation or operation.',
+        'not_verified' => 'Not Verified',
+        'not_verified_description' => 'Verification information is insufficient (not scanned, no permissions, no signature, etc.).',
     ],
 
     // Verification Status
     'verification' => [
         // Signature
-        'signature_valid' => 'Signature: OK',
-        'signature_unsigned' => 'Signature: Unsigned',
-        'signature_invalid' => 'Signature: Invalid',
-        'signature_pending' => 'Signature: Pending',
+        'signature_valid' => 'Signed',
+        'signature_unsigned' => 'Unsigned',
+        'signature_invalid' => 'Invalid',
+        'signature_pending' => 'Pending',
+        'signature_not_scanned' => 'N/A',
         // Permission
-        'permission_ok' => 'Permission: OK',
-        'permission_undefined' => 'Permission: Undefined',
-        'permission_mismatch' => 'Permission: Mismatch',
+        'permission_ok' => 'OK',
+        'permission_undefined' => 'Undefined',
+        'permission_mismatch' => 'Mismatch',
+        'permission_not_scanned' => 'N/A',
         // CSP
         'csp_ready' => 'CSP Ready',
         'csp_compatible' => 'CSP Compatible',
-        'csp_inline_required' => 'Inline JS Required',
-        'csp_not_checked' => 'CSP Not Checked',
+        'csp_inline_required' => 'CSP N/A',
+        'csp_not_checked' => 'CSP N/A',
+    ],
+
+    // Operation Status (traffic light)
+    'operation_status' => [
+        'ok' => 'Fully Operational',
+        'caution' => 'Caution',
+        'blocked' => 'Blocked',
+        'unknown' => 'Unknown',
     ],
 
     // CSP Compliance
@@ -98,6 +140,10 @@ return [
         'health_warning' => 'Warning',
         'health_needs_attention' => 'Needs Attention',
         'health_not_verified' => 'Not Verified',
+        'health_status_healthy' => 'Healthy',
+        'health_status_advisory' => 'Advisory',
+        'health_status_needs_attention' => 'Needs Attention',
+        'health_status_not_verified' => 'Not Verified',
         'unknown' => 'Undefined',
         'unknown_warning' => 'Permission information is not defined. It is unknown what operations this theme performs. Please confirm it was obtained from a trusted source.',
         'audit_mismatch_title' => 'Permission Mismatch',
