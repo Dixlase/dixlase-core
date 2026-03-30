@@ -22,6 +22,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -44,8 +45,51 @@ class Media extends Model
         'alt_text',
         'path',
         'type',
+        'file_size',
+        'width',
+        'height',
         'uploaded_by',
     ];
+
+    /**
+     * フォーマット済みファイルサイズを返すアクセサ
+     */
+    protected function formattedFileSize(): Attribute
+    {
+        return Attribute::make(
+            get: function (): ?string {
+                if ($this->file_size === null) {
+                    return null;
+                }
+
+                $bytes = (int) $this->file_size;
+                if ($bytes === 0) {
+                    return '0 B';
+                }
+
+                $units = ['B', 'KB', 'MB', 'GB'];
+                $i = (int) floor(log($bytes, 1024));
+
+                return round($bytes / pow(1024, $i), $i > 0 ? 1 : 0).' '.$units[$i];
+            },
+        );
+    }
+
+    /**
+     * フォーマット済み画像寸法を返すアクセサ
+     */
+    protected function formattedDimensions(): Attribute
+    {
+        return Attribute::make(
+            get: function (): ?string {
+                if ($this->width === null || $this->height === null) {
+                    return null;
+                }
+
+                return $this->width.' × '.$this->height.' px';
+            },
+        );
+    }
 
     public function member()
     {

@@ -84,7 +84,7 @@ class MimeValidatorService
         $expectedMimes = $this->extensionMimeMap[$extension] ?? [];
 
         if (empty($expectedMimes)) {
-            $result->addWarning('unknown_extension', __('admin/media.security.mime.unknown_extension', [
+            $result->addWarning('unknown_extension', __('admin/media/security.mime.unknown_extension', [
                 'extension' => $extension,
             ]));
 
@@ -93,7 +93,7 @@ class MimeValidatorService
 
         // 検出されたMIMEタイプが期待値と一致するかチェック
         if (! in_array($detectedMime, $expectedMimes)) {
-            $result->addError('mime_mismatch', __('admin/media.security.mime.mime_mismatch', [
+            $result->addError('mime_mismatch', __('admin/media/security.mime.mime_mismatch', [
                 'extension' => $extension,
                 'expected' => implode(', ', $expectedMimes),
                 'detected' => $detectedMime,
@@ -103,14 +103,14 @@ class MimeValidatorService
         // 画像ファイルの場合、実際にデコードして検証
         if ($this->isImageExtension($extension) && $extension !== 'svg') {
             if (! $this->validateImageContent($file)) {
-                $result->addError('invalid_image', __('admin/media.security.mime.invalid_image'));
+                $result->addError('invalid_image', __('admin/media/security.mime.invalid_image'));
             }
         }
 
         // SVGの場合、XMLとして解析可能かチェック
         if ($extension === 'svg') {
             if (! $this->validateSvgContent($file)) {
-                $result->addError('invalid_svg', __('admin/media.security.mime.invalid_svg'));
+                $result->addError('invalid_svg', __('admin/media/security.mime.invalid_svg'));
             }
         }
 
@@ -118,7 +118,7 @@ class MimeValidatorService
         if (! $this->validateMagicBytes($file, $detectedMime)) {
             // SVGとテキストファイルはマジックバイトがないのでスキップ
             if (! in_array($extension, ['svg', 'txt', 'docx'])) {
-                $result->addWarning('magic_bytes_mismatch', __('admin/media.security.mime.magic_bytes_mismatch'));
+                $result->addWarning('magic_bytes_mismatch', __('admin/media/security.mime.magic_bytes_mismatch'));
             }
         }
 

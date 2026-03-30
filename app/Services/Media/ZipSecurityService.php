@@ -72,7 +72,7 @@ class ZipSecurityService
         $result = new ZipCheckResult();
 
         if (! file_exists($filePath)) {
-            $result->addError('file_not_found', __('admin/media.security.zip.file_not_found'));
+            $result->addError('file_not_found', __('admin/media/security.zip.file_not_found'));
 
             return $result;
         }
@@ -81,7 +81,7 @@ class ZipSecurityService
         $opened = $zip->open($filePath, ZipArchive::RDONLY);
 
         if ($opened !== true) {
-            $result->addError('invalid_zip', __('admin/media.security.zip.invalid_zip'));
+            $result->addError('invalid_zip', __('admin/media/security.zip.invalid_zip'));
 
             return $result;
         }
@@ -92,7 +92,7 @@ class ZipSecurityService
 
         // ファイル数チェック
         if ($fileCount > $this->maxFileCount) {
-            $result->addError('too_many_files', __('admin/media.security.zip.too_many_files', [
+            $result->addError('too_many_files', __('admin/media/security.zip.too_many_files', [
                 'count' => $fileCount,
                 'max' => $this->maxFileCount,
             ]));
@@ -114,7 +114,7 @@ class ZipSecurityService
 
             // パストラバーサルチェック
             if ($this->hasPathTraversal($fileName)) {
-                $result->addError('path_traversal', __('admin/media.security.zip.path_traversal', [
+                $result->addError('path_traversal', __('admin/media/security.zip.path_traversal', [
                     'file' => $fileName,
                 ]));
             }
@@ -122,7 +122,7 @@ class ZipSecurityService
             // 禁止拡張子チェック
             $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
             if (in_array($extension, $this->forbiddenExtensions)) {
-                $result->addWarning('forbidden_extension', __('admin/media.security.zip.forbidden_extension', [
+                $result->addWarning('forbidden_extension', __('admin/media/security.zip.forbidden_extension', [
                     'file' => $fileName,
                     'extension' => $extension,
                 ]));
@@ -131,7 +131,7 @@ class ZipSecurityService
             // 隠しファイルチェック
             $baseName = basename($fileName);
             if (str_starts_with($baseName, '.') && $baseName !== '.') {
-                $result->addWarning('hidden_file', __('admin/media.security.zip.hidden_file', [
+                $result->addWarning('hidden_file', __('admin/media/security.zip.hidden_file', [
                     'file' => $fileName,
                 ]));
             }
@@ -142,7 +142,7 @@ class ZipSecurityService
 
         // 展開後サイズチェック
         if ($uncompressedSize > $this->maxUncompressedSize) {
-            $result->addError('size_exceeded', __('admin/media.security.zip.size_exceeded', [
+            $result->addError('size_exceeded', __('admin/media/security.zip.size_exceeded', [
                 'size' => $this->formatBytes($uncompressedSize),
                 'max' => $this->formatBytes($this->maxUncompressedSize),
             ]));
@@ -154,7 +154,7 @@ class ZipSecurityService
             $result->setCompressionRatio($ratio);
 
             if ($ratio > $this->maxCompressionRatio) {
-                $result->addError('compression_bomb', __('admin/media.security.zip.compression_bomb', [
+                $result->addError('compression_bomb', __('admin/media/security.zip.compression_bomb', [
                     'ratio' => round($ratio, 2),
                     'max' => $this->maxCompressionRatio,
                 ]));

@@ -179,6 +179,8 @@ return [
     // File Related
     'file_name' => 'File Name',
     'file_type' => 'File Type',
+    'file_size' => 'File Size',
+    'dimensions' => 'Dimensions',
     'upload_date' => 'Upload Date',
     'uploaded_by' => 'Uploaded By',
 

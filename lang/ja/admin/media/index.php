@@ -22,18 +22,19 @@ return [
     'download' => 'ダウンロード',
     'delete' => '削除',
     'delete_message' => '「{fileName}」を削除しますか？この操作は取り消せません。',
-    
+
     'success' => [
         'uploaded' => 'ファイルがアップロードされました。',
+        'uploaded_count' => ':count件のファイルがアップロードされました。',
         'deleted' => 'ファイルが削除されました。',
         'updated' => 'メディア情報が更新されました。',
     ],
-    
+
     'error' => [
         'save_failed' => 'ファイルの保存に失敗しました。',
         'file_not_exists' => 'ファイルが存在しません。',
     ],
-    
+
     'search' => [
         'file_name_placeholder' => 'ファイル名で検索',
         'date_from' => '開始日',

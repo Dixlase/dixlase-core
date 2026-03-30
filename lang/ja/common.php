@@ -268,6 +268,8 @@ return [
 
     'file_name' => 'ファイル名',
     'file_type' => 'ファイルタイプ',
+    'file_size' => 'ファイルサイズ',
+    'dimensions' => '画像サイズ',
     'upload_date' => 'アップロード日時',
     'uploaded_by' => 'アップロードしたメンバー',
 

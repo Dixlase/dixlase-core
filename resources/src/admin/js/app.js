@@ -24,6 +24,7 @@ import './layout-vanilla';
 import './login-flow';
 import '../media/js/index';
 import '../media/js/preview';
+import '../media/js/upload';
 import '../profile/js/appearance-mode';
 import '../../components/mail-server/js/settings-admin';
 import '../security/js/safe-mode-banner';

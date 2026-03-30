@@ -173,8 +173,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <!-- 削除確認モーダル -->
 <x-ui-modal
     id="deleteModal"
-    data-delete-message="{{ __('admin/media.index.delete_message') }}"
-    :title="__('admin/media.preview.delete_confirmation')"
+    data-delete-message="{{ __('admin/media/index.delete_message') }}"
+    :title="__('admin/media/preview.delete_confirmation')"
     message=""
     :confirm_label="__('common.delete')"
     :cancel_label="__('common.cancel')"
