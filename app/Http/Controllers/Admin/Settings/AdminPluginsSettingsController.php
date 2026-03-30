@@ -866,22 +866,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      */
     private function getPluginName($plugin)
     {
-        try {
-            // プラグインの翻訳ファイルから名前を取得
-            $pluginSlug = strtolower(str_replace('Dixlase', 'dixlase-', $plugin->directory));
-            $translationKey = $pluginSlug.'::admin.plugin.name';
-            $name = __($translationKey);
-
-            // 翻訳キーがそのまま返された場合は翻訳が見つからない
-            if ($name === $translationKey) {
-                return $plugin->name ?? __('admin/settings/plugins/index.messages.no_plugin_name');
-            }
-
-            return $name;
-        } catch (\Exception $e) {
-            // 翻訳ファイルが存在しない場合はDBの名前またはデフォルト
-            return $plugin->name ?? __('admin/settings/plugins/index.messages.no_plugin_name');
-        }
+        return $plugin->name ?? __('admin/settings/plugins/index.messages.no_plugin_name');
     }
 
     /**
