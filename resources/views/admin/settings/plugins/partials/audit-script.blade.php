@@ -273,11 +273,11 @@ https://exc-d.com
     <x-ui-modal
         id="pluginActionProcessingModal"
         title=""
-        message=""
         iconType="info"
         :dismissible="false"
         :closeOnly="true"
     >
+        <p id="pluginActionProcessingMessage" class="text-sm text-gray-700 dark:text-gray-300 text-center"></p>
         <x-slot:footer>
             <div class="flex items-center justify-center w-full py-1">
                 <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
