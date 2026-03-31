@@ -99,8 +99,14 @@ class AdminLoginLockoutService
     /**
      * 成功したログイン後の処理
      */
-    public function handleSuccessfulLogin(string $identifier): void
+    public function handleSuccessfulLogin(string $identifier, ?\Illuminate\Http\Request $request = null): void
     {
+        // 成功したログイン試行を記録（行動分析データ付き）
+        $request = $request ?? request();
+        $behaviorService = app(\App\Services\LoginBehaviorService::class);
+        $behaviorService->recordLoginAttempt($identifier, $request, true);
+
+        // 失敗した試行記録をクリア
         LoginLockoutHelper::clearFailedAttempts($identifier);
     }
 
