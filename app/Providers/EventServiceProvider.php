@@ -39,10 +39,14 @@ class EventServiceProvider extends ServiceProvider
     /**
      * The subscriber classes to register.
      *
+     * Laravel 12 では ApplicationBuilder::withEvents() により
+     * app/Listeners 内の Subscriber が自動検出・登録されるため、
+     * ここでの手動登録は不要（2重登録を防ぐ）。
+     *
      * @var array<int, class-string>
      */
     protected $subscribe = [
-        AuditAuthEventSubscriber::class,
+        // AuditAuthEventSubscriber は自動検出で登録される
     ];
 
     /**
