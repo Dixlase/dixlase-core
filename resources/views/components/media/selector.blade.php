@@ -47,7 +47,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="flex items-center gap-3">
                     @if($confirmUploadNavigation)
                         <button type="button"
-                            onclick="openModal('{{ $id }}_uploadConfirmModal')"
+                            @click="openModal('{{ $id }}_uploadConfirmModal')"
                             class="px-3 py-1.5 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 inline-flex items-center">
                             <i class="fas fa-upload mr-1.5"></i>{{ __('common.upload') }}
                         </button>
