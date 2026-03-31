@@ -59,7 +59,7 @@ class AuditLogTest extends TestCase
 
     public function test_can_log_with_actor_model(): void
     {
-        $member = Member::factory()->create(['name' => 'Test User']);
+        $member = Member::factory()->create(['display_name' => 'Test User']);
 
         $log = Audit::logAuth(AuditLog::ACTION_LOGIN, [
             'actor' => $member,
@@ -74,7 +74,7 @@ class AuditLogTest extends TestCase
 
     public function test_can_log_with_target_model(): void
     {
-        $member = Member::factory()->create(['name' => 'Target User']);
+        $member = Member::factory()->create(['display_name' => 'Target User']);
 
         $log = Audit::logAccount(AuditLog::ACTION_MEMBER_UPDATED, [
             'target' => $member,
