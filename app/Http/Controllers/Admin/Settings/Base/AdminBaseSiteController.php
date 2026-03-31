@@ -32,6 +32,8 @@ use App\Http\Requests\Admin\Settings\Base\AdminBaseSiteUpdateRequest;
 
 class AdminBaseSiteController extends AdminLoggedInController
 {
+    protected const SETTING_KEYS = ['app_name', 'locale', 'timezone', 'site_description', 'site_keywords', 'default_ogp_image_id', 'twitter_card_type'];
+
     protected BaseSettingRepositoryInterface $baseSettingRepository;
 
     public function __construct(BaseSettingRepositoryInterface $baseSettingRepository)
@@ -78,6 +80,8 @@ class AdminBaseSiteController extends AdminLoggedInController
      */
     public function update(AdminBaseSiteUpdateRequest $request)
     {
+        $before = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
+
         $validated = $request->validated();
 
         // .envに保存
@@ -106,6 +110,9 @@ class AdminBaseSiteController extends AdminLoggedInController
         ];
 
         $this->baseSettingRepository->setMultiple($dbSettings);
+
+        $after = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('base.site', $before, $after, auth()->user());
 
         return redirect()->route('admin.settings.base.site')
             ->with('success', __('admin/settings/base/site.settings_updated'));

@@ -32,6 +32,8 @@ use Illuminate\Support\Facades\Log;
 
 class AdminBaseModeController extends AdminLoggedInController
 {
+    protected const SETTING_KEYS = ['admin_mode'];
+
     protected BaseSettingRepositoryInterface $baseSettingRepository;
 
     public function __construct(BaseSettingRepositoryInterface $baseSettingRepository)
@@ -60,6 +62,8 @@ class AdminBaseModeController extends AdminLoggedInController
      */
     public function update(Request $request, AdminModeAutoConfigService $autoConfigService)
     {
+        $before = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
+
         $validated = $request->validate([
             'admin_mode' => 'required|integer|in:0,1',
         ]);
@@ -86,6 +90,9 @@ class AdminBaseModeController extends AdminLoggedInController
             'mode' => $newMode->name,
             'member_id' => auth()->id(),
         ]);
+
+        $after = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('base.mode', $before, $after, auth()->user());
 
         return redirect()->route('admin.settings.base.mode')
             ->with('success', __('admin/settings/base/mode.settings_updated'));

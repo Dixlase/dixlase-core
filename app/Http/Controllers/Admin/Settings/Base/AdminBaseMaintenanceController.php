@@ -31,6 +31,8 @@ use App\Http\Requests\Admin\Settings\Base\AdminBaseMaintenanceUpdateRequest;
 
 class AdminBaseMaintenanceController extends AdminLoggedInController
 {
+    protected const SETTING_KEYS = ['maintenance_mode', 'maintenance_message', 'maintenance_auto_release', 'maintenance_start_at', 'maintenance_release_at'];
+
     protected BaseSettingRepositoryInterface $baseSettingRepository;
 
     public function __construct(BaseSettingRepositoryInterface $baseSettingRepository)
@@ -63,6 +65,8 @@ class AdminBaseMaintenanceController extends AdminLoggedInController
      */
     public function update(AdminBaseMaintenanceUpdateRequest $request)
     {
+        $before = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
+
         $validated = $request->validated();
 
         $maintenanceMode = (int) ($validated['maintenance_mode'] ?? 0);
@@ -85,6 +89,9 @@ class AdminBaseMaintenanceController extends AdminLoggedInController
         ];
 
         $this->baseSettingRepository->setMultiple($dbSettings);
+
+        $after = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('base.maintenance', $before, $after, auth()->user());
 
         return redirect()->route('admin.settings.base.maintenance')
             ->with('success', __('admin/settings/base/maintenance.settings_updated'));
