@@ -319,7 +319,7 @@ trait LoginTrait
             return redirect()->route($redirectRoute);
         } else {
             // 成功したログインを記録（失敗記録をクリア）
-            $lockoutService->handleSuccessfulLogin($email);
+            $lockoutService->handleSuccessfulLogin($email, $request);
 
             // ログイン環境を記録、通知
             app($this->getLoginNotificationServiceClass())->handle($user, $request);
