@@ -107,9 +107,9 @@ class AdminLoginLockoutService
     /**
      * 失敗したログイン後の処理
      */
-    public function handleFailedLogin(Request $request, string $identifier): array
+    public function handleFailedLogin(Request $request, string $identifier, ?string $failureReason = null): array
     {
-        return LoginLockoutHelper::recordAndCheckLockout($request, $identifier, false);
+        return LoginLockoutHelper::recordAndCheckLockout($request, $identifier, false, failureReason: $failureReason);
     }
 
     /**
