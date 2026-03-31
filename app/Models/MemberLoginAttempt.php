@@ -194,7 +194,7 @@ class MemberLoginAttempt extends Model
         // 前回からの経過時間を計算
         $secondsSinceLast = null;
         if ($lastAttempt) {
-            $secondsSinceLast = $now->diffInSeconds($lastAttempt->attempted_at);
+            $secondsSinceLast = (int) $now->diffInSeconds($lastAttempt->attempted_at, absolute: true);
         }
 
         return static::create([
