@@ -501,6 +501,55 @@ class AuditService
         ]);
     }
 
+    /**
+     * 設定の一括変更をログ（1ページ分を1エントリで記録）
+     *
+     * @param  string  $settingsPage  ページ識別子 (例: "security.password")
+     * @param  array  $before  変更前の設定 ['key' => value, ...]
+     * @param  array  $after  変更後の設定 ['key' => value, ...]
+     * @param  Model|null  $actor  操作者
+     * @param  array  $sensitiveKeys  マスク対象のキー名
+     */
+    public function logBulkSettingsChange(
+        string $settingsPage,
+        array $before,
+        array $after,
+        ?Model $actor = null,
+        array $sensitiveKeys = [],
+    ): ?AuditLog {
+        // 型の不一致による偽の差分を防ぐため、全値を文字列に統一
+        $before = array_map(fn ($v) => $v === null ? null : (string) $v, $before);
+        $after = array_map(fn ($v) => $v === null ? null : (string) $v, $after);
+
+        $diff = $this->diff($before, $after);
+
+        if (empty($diff)) {
+            return null;
+        }
+
+        // 機密値をマスク
+        foreach ($sensitiveKeys as $key) {
+            if (isset($diff[$key])) {
+                $diff[$key]['from'] = $diff[$key]['from'] ? '********' : null;
+                $diff[$key]['to'] = $diff[$key]['to'] ? '********' : null;
+            }
+        }
+
+        return $this->log([
+            'category' => AuditLog::CATEGORY_SECURITY,
+            'action' => AuditLog::ACTION_SETTINGS_UPDATED,
+            'actor' => $actor,
+            'target_label' => $settingsPage,
+            'severity' => AuditLog::SEVERITY_WARNING,
+            'context' => [
+                'settings_page' => $settingsPage,
+                'changed_count' => count($diff),
+                'changed_keys' => array_keys($diff),
+                'diff' => $diff,
+            ],
+        ]);
+    }
+
     // ========================================
     // クエリヘルパー
     // ========================================

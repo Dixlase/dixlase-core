@@ -30,6 +30,27 @@ use App\Http\Requests\Admin\Settings\Security\AdminSecurityLoginUpdateRequest;
 
 class AdminSecurityLoginController extends AdminLoggedInController
 {
+    protected const SETTING_KEYS = [
+        'login_attempt_limit_enabled',
+        'login_attempt_max_attempts',
+        'login_attempt_max_attempts_ip',
+        'login_attempt_time_window',
+        'login_attempt_lockout_duration',
+        'login_attempt_lockout_notification_enabled',
+        'login_identifier_mode',
+        'login_notification_mode',
+        'login_notification_send_to_system',
+        'login_notification_system_email',
+        'two_fa_expire_minutes',
+        'two_fa_resend_interval_seconds',
+        'two_fa_max_attempts',
+        'two_fa_attempt_window',
+        'two_fa_lockout_duration',
+        'two_fa_lockout_notification_enabled',
+        'two_fa_recovery_codes_count',
+        'two_fa_recovery_code_regenerate_interval',
+    ];
+
     protected SecuritySettingRepositoryInterface $securitySettingRepository;
 
     public function __construct(
@@ -95,6 +116,7 @@ class AdminSecurityLoginController extends AdminLoggedInController
     public function update(AdminSecurityLoginUpdateRequest $request)
     {
         $validated = $request->validated();
+        $before = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
 
         if (array_key_exists('login_attempt_limit_enabled', $validated)) {
             $this->securitySettingRepository->set('login_attempt_limit_enabled', $validated['login_attempt_limit_enabled'] ?? false);
@@ -156,6 +178,9 @@ class AdminSecurityLoginController extends AdminLoggedInController
         if (array_key_exists('two_fa_recovery_code_regenerate_interval', $validated)) {
             $this->securitySettingRepository->set('two_fa_recovery_code_regenerate_interval', (int) $validated['two_fa_recovery_code_regenerate_interval']);
         }
+
+        $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('security.login', $before, $after, auth()->user());
 
         return redirect()->back()
             ->with('success', __('admin/settings/security/login.updated'));

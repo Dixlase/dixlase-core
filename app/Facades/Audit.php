@@ -36,6 +36,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \App\Models\AuditLog|null logContent(string $action, array $data = [])
  * @method static \App\Models\AuditLog|null logPlugin(string $action, array $data = [])
  * @method static \App\Models\AuditLog|null logAi(string $action, array $data = [])
+ * @method static \App\Models\AuditLog|null logBulkSettingsChange(string $settingsPage, array $before, array $after, ?\Illuminate\Database\Eloquent\Model $actor = null, array $sensitiveKeys = [])
  * @method static array buildAiContext(string $reason, ?string $intent = null, array $extra = [])
  * @method static \App\Services\AuditService setActorSource(?string $source)
  * @method static string|null getActorSource()

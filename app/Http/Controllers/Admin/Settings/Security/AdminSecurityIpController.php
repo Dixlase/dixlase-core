@@ -29,6 +29,17 @@ use App\Http\Requests\Admin\Settings\Security\AdminSecurityIpUpdateRequest;
 
 class AdminSecurityIpController extends AdminLoggedInController
 {
+    protected const SETTING_KEYS = [
+        'enable_allowed_admin_ips',
+        'allowed_admin_ips',
+        'enable_blocked_admin_ips',
+        'blocked_admin_ips',
+        'enable_allowed_front_ips',
+        'allowed_front_ips',
+        'enable_blocked_front_ips',
+        'blocked_front_ips',
+    ];
+
     protected SecuritySettingRepositoryInterface $securitySettingRepository;
 
     public function __construct(SecuritySettingRepositoryInterface $securitySettingRepository)
@@ -65,6 +76,7 @@ class AdminSecurityIpController extends AdminLoggedInController
     public function update(AdminSecurityIpUpdateRequest $request)
     {
         $validated = $request->validated();
+        $before = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
 
         // IP設定を更新
         $this->securitySettingRepository->set('enable_allowed_admin_ips', $validated['enable_allowed_admin_ips'] ?? false);
@@ -75,6 +87,9 @@ class AdminSecurityIpController extends AdminLoggedInController
         $this->securitySettingRepository->set('allowed_front_ips', $validated['allowed_front_ips'] ?? '');
         $this->securitySettingRepository->set('enable_blocked_front_ips', $validated['enable_blocked_front_ips'] ?? false);
         $this->securitySettingRepository->set('blocked_front_ips', $validated['blocked_front_ips'] ?? '');
+
+        $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('security.ip', $before, $after, auth()->user());
 
         return redirect()->route('admin.settings.security.ip')
             ->with('success', __('admin/settings/security/ip_settings_updated'));

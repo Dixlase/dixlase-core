@@ -34,6 +34,10 @@ use Illuminate\Support\Facades\Log;
 
 class AdminSecurityCaptchaController extends AdminLoggedInController
 {
+    protected const SETTING_KEYS = ['captcha_enabled', 'captcha_driver', 'captcha_google_version', 'captcha_google_min_score', 'captcha_google_project_id', 'captcha_google_site_key', 'captcha_google_secret_key', 'captcha_google_enterprise_site_key', 'captcha_google_enterprise_secret_key', 'captcha_turnstile_site_key', 'captcha_turnstile_secret_key'];
+
+    protected const SENSITIVE_KEYS = ['captcha_google_secret_key', 'captcha_google_enterprise_secret_key', 'captcha_turnstile_secret_key'];
+
     protected SecuritySettingRepositoryInterface $securitySettingRepository;
 
     protected CaptchaService $captchaService;
@@ -111,6 +115,8 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
      */
     public function update(AdminSecurityCaptchaUpdateRequest $request)
     {
+        $before = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+
         $validated = $request->validated();
 
         // 現在のCAPTCHA設定を取得
@@ -166,6 +172,9 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         if (isset($validated['forms']) && is_array($validated['forms'])) {
             $this->captchaService->bulkUpdateFormSettings($validated['forms']);
         }
+
+        $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('security.captcha', $before, $after, auth()->user(), static::SENSITIVE_KEYS);
 
         return redirect()->route('admin.settings.security.captcha')
             ->with('success', __('admin/settings/security/captcha.settings_updated'));

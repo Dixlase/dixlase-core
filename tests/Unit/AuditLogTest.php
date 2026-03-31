@@ -317,4 +317,57 @@ class AuditLogTest extends TestCase
             return $event->auditLog->action === AuditLog::ACTION_LOGIN;
         });
     }
+
+    // ========================================
+    // Bulk Settings Change Tests
+    // ========================================
+
+    public function test_log_bulk_settings_change_records_diff(): void
+    {
+        $before = ['password_min_length' => '8', 'password_require_symbol' => '0'];
+        $after = ['password_min_length' => '12', 'password_require_symbol' => '1'];
+
+        $log = Audit::logBulkSettingsChange('security.password', $before, $after);
+
+        $this->assertNotNull($log);
+        $this->assertEquals(AuditLog::CATEGORY_SECURITY, $log->category);
+        $this->assertEquals(AuditLog::ACTION_SETTINGS_UPDATED, $log->action);
+        $this->assertEquals('security.password', $log->target_label);
+        $this->assertEquals(AuditLog::SEVERITY_WARNING, $log->severity);
+        $this->assertEquals(2, $log->context['changed_count']);
+        $this->assertContains('password_min_length', $log->context['changed_keys']);
+        $this->assertEquals('8', $log->context['diff']['password_min_length']['from']);
+        $this->assertEquals('12', $log->context['diff']['password_min_length']['to']);
+    }
+
+    public function test_log_bulk_settings_change_skips_when_no_changes(): void
+    {
+        $before = ['key1' => 'value1', 'key2' => 'value2'];
+        $after = ['key1' => 'value1', 'key2' => 'value2'];
+
+        $log = Audit::logBulkSettingsChange('security.test', $before, $after);
+
+        $this->assertNull($log);
+        $this->assertDatabaseMissing('audit_logs', ['target_label' => 'security.test']);
+    }
+
+    public function test_log_bulk_settings_change_masks_sensitive_keys(): void
+    {
+        $before = ['site_key' => 'old-key', 'secret_key' => 'old-secret'];
+        $after = ['site_key' => 'new-key', 'secret_key' => 'new-secret'];
+
+        $log = Audit::logBulkSettingsChange(
+            'security.captcha',
+            $before,
+            $after,
+            null,
+            ['secret_key']
+        );
+
+        $this->assertNotNull($log);
+        $this->assertEquals('old-key', $log->context['diff']['site_key']['from']);
+        $this->assertEquals('new-key', $log->context['diff']['site_key']['to']);
+        $this->assertEquals('********', $log->context['diff']['secret_key']['from']);
+        $this->assertEquals('********', $log->context['diff']['secret_key']['to']);
+    }
 }
