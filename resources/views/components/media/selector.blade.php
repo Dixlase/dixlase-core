@@ -23,7 +23,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'inputId' => 'media_id',
     'previewId' => 'media_preview',
     'multiple' => false,
-    'allowedTypes' => ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']
+    'allowedTypes' => ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
+    'confirmUploadNavigation' => false,
 ])
 
 <!-- メディア選択モーダル -->
@@ -44,10 +45,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ __('common.select_media') }}
                 </h3>
                 <div class="flex items-center gap-3">
-                    <a href="{{ route('admin.media.upload') }}" target="_blank"
-                       class="px-3 py-1.5 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 inline-flex items-center">
-                        <i class="fas fa-upload mr-1.5"></i>{{ __('common.upload') }}
-                    </a>
+                    @if($confirmUploadNavigation)
+                        <button type="button"
+                            onclick="openModal('{{ $id }}_uploadConfirmModal')"
+                            class="px-3 py-1.5 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 inline-flex items-center">
+                            <i class="fas fa-upload mr-1.5"></i>{{ __('common.upload') }}
+                        </button>
+                    @else
+                        <a href="{{ route('admin.media.upload') }}" target="_blank"
+                           class="px-3 py-1.5 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 inline-flex items-center">
+                            <i class="fas fa-upload mr-1.5"></i>{{ __('common.upload') }}
+                        </a>
+                    @endif
                     <button type="button"
                             @click="closeMediaSelector('{{ $id }}')"
                             class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none">
@@ -116,3 +125,33 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 </div>
+
+@if($confirmUploadNavigation)
+{{-- アップロード画面遷移確認モーダル --}}
+<x-ui-modal id="{{ $id }}_uploadConfirmModal"
+    :title="__('components/media-selector.upload_confirm_title')"
+    :message="__('components/media-selector.upload_confirm_message')"
+    :confirm-label="__('components/media-selector.upload_confirm_ok')"
+    :cancel-label="__('common.cancel')"
+    icon-type="warning"
+    confirm-color="blue"
+    :form="null"
+>
+    @slot('footer')
+        <x-form-button
+            type="button"
+            variant="secondary"
+            icon="fas fa-times"
+            @click="close()"
+            class="mx-2"
+        >{{ __('common.cancel') }}</x-form-button>
+        <x-form-button
+            type="link"
+            variant="primary"
+            icon="fas fa-upload"
+            :href="route('admin.media.upload')"
+            class="mx-2"
+        >{{ __('components/media-selector.upload_confirm_ok') }}</x-form-button>
+    @endslot
+</x-ui-modal>
+@endif
