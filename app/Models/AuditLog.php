@@ -341,7 +341,7 @@ class AuditLog extends Model
         if (isset($data['actor']) && $data['actor'] instanceof Model) {
             $actorType = get_class($data['actor']);
             $actorId = $data['actor']->getKey();
-            $actorName = $actorName ?? $data['actor']->name ?? $data['actor']->email ?? null;
+            $actorName = $actorName ?? $data['actor']->display_name ?? $data['actor']->account_name ?? $data['actor']->name ?? $data['actor']->email ?? null;
         }
 
         // targetの処理
@@ -352,7 +352,7 @@ class AuditLog extends Model
         if (isset($data['target']) && $data['target'] instanceof Model) {
             $targetType = get_class($data['target']);
             $targetId = $data['target']->getKey();
-            $targetLabel = $targetLabel ?? $data['target']->name ?? $data['target']->title ?? null;
+            $targetLabel = $targetLabel ?? $data['target']->display_name ?? $data['target']->account_name ?? $data['target']->name ?? $data['target']->title ?? null;
         }
 
         return self::create([

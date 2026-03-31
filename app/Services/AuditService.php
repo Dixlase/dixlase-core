@@ -137,8 +137,9 @@ class AuditService
             $actorInfo = 'system';
             if (isset($data['actor']) && $data['actor'] instanceof Model) {
                 $actorInfo = class_basename($data['actor']).':'.$data['actor']->getKey();
-                if ($data['actor']->name ?? $data['actor']->email ?? null) {
-                    $actorInfo .= '('.($data['actor']->name ?? $data['actor']->email).')';
+                $actorDisplayName = $data['actor']->display_name ?? $data['actor']->account_name ?? $data['actor']->name ?? $data['actor']->email ?? null;
+                if ($actorDisplayName) {
+                    $actorInfo .= '('.$actorDisplayName.')';
                 }
             } elseif ($auditLog && $auditLog->actor_name) {
                 $actorInfo = $auditLog->actor_name;
