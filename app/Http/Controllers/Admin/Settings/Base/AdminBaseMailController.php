@@ -37,6 +37,10 @@ class AdminBaseMailController extends AdminLoggedInController
 {
     use MailTestTrait;
 
+    protected const SETTING_KEYS = ['mail_mailer', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption', 'mail_from_address', 'system_admin_email'];
+
+    protected const SENSITIVE_KEYS = ['mail_password'];
+
     protected BaseSettingRepositoryInterface $baseSettingRepository;
 
     public function __construct(BaseSettingRepositoryInterface $baseSettingRepository)
@@ -114,6 +118,8 @@ class AdminBaseMailController extends AdminLoggedInController
      */
     public function update(AdminBaseMailUpdateRequest $request)
     {
+        $before = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
+
         $validated = $request->validated();
 
         // .envに保存
@@ -194,6 +200,9 @@ class AdminBaseMailController extends AdminLoggedInController
                 session()->forget('mail_test_results');
             }
         }
+
+        $after = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('base.mail', $before, $after, auth()->user(), static::SENSITIVE_KEYS);
 
         return redirect()->route('admin.settings.base.mail')
             ->with('success', __('admin/settings/base/mail.settings_updated'));

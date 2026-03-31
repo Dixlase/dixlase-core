@@ -32,6 +32,8 @@ use Illuminate\Support\Facades\Session;
 
 class AdminBaseAdminController extends AdminLoggedInController
 {
+    protected const SETTING_KEYS = ['admin_url', 'force_ssl'];
+
     protected BaseSettingRepositoryInterface $baseSettingRepository;
 
     public function __construct(BaseSettingRepositoryInterface $baseSettingRepository)
@@ -61,6 +63,8 @@ class AdminBaseAdminController extends AdminLoggedInController
      */
     public function update(AdminBaseAdminUpdateRequest $request)
     {
+        $before = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
+
         $validated = $request->validated();
 
         $forceSsl = $request->has('force_ssl') ? 1 : 0;
@@ -72,6 +76,9 @@ class AdminBaseAdminController extends AdminLoggedInController
         // 管理画面URLが変更された場合の特別な処理
         $currentAdminUrl = AdminHelper::getAdminUrl();
         $newAdminUrl = $validated['admin_url'];
+
+        $after = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('base.admin', $before, $after, auth()->user());
 
         if ($newAdminUrl !== $currentAdminUrl) {
             // ユーザーをログアウト
