@@ -35,6 +35,7 @@ use App\Presenters\Admin\ExtensionCardPresenter;
 use App\Services\Csp\CspDiagnosticService;
 use App\Services\Csp\CspExtensionLoader;
 use App\Services\ExtensionOperationService;
+use App\Services\Theme\ThemeHealthScorer;
 use App\Services\Theme\ThemePermissionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;

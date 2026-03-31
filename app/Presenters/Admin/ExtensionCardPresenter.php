@@ -29,6 +29,7 @@ use App\Enums\PluginHealthStatus;
 use App\Enums\PluginTrustLevel;
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\SecuritySettingsRegistry;
+use App\Services\Theme\ThemeHealthScorer;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
