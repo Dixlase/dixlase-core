@@ -31,6 +31,20 @@ use App\Models\BaseSetting;
 
 class AdminSecurityTwoFaController extends AdminLoggedInController
 {
+    protected const SETTING_KEYS = [
+        'two_fa_mode',
+        'two_fa_passkey_mode',
+        'two_fa_passkey_max_devices',
+        'two_fa_expire_minutes',
+        'two_fa_resend_interval_seconds',
+        'two_fa_max_attempts',
+        'two_fa_attempt_window',
+        'two_fa_lockout_duration',
+        'two_fa_lockout_notification_enabled',
+        'two_fa_recovery_codes_count',
+        'two_fa_recovery_code_regenerate_interval',
+    ];
+
     protected SecuritySettingRepositoryInterface $securitySettingRepository;
 
     public function __construct(
@@ -116,6 +130,7 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
     public function update(AdminSecurityTwoFaUpdateRequest $request)
     {
         $validated = $request->validated();
+        $before = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
 
         // 二段階認証基本設定（セキュリティ設定に保存）
         if (array_key_exists('two_fa_mode', $validated)) {
@@ -153,6 +168,9 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
         if (array_key_exists('two_fa_recovery_code_regenerate_interval', $validated)) {
             $this->securitySettingRepository->set('two_fa_recovery_code_regenerate_interval', (string) $validated['two_fa_recovery_code_regenerate_interval']);
         }
+
+        $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('security.two_fa', $before, $after, auth()->user());
 
         return redirect()->back()
             ->with('success', __('admin/settings/security/two-fa.updated'));

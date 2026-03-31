@@ -30,6 +30,11 @@ use App\Models\BaseSetting;
 
 class AdminSecurityNotificationsController extends AdminLoggedInController
 {
+    protected const SETTING_KEYS = [
+        'notification_enabled',
+        'notification_log_levels',
+    ];
+
     protected SecuritySettingRepositoryInterface $securitySettingRepository;
 
     public function __construct(SecuritySettingRepositoryInterface $securitySettingRepository)
@@ -84,12 +89,17 @@ class AdminSecurityNotificationsController extends AdminLoggedInController
     public function update(\App\Http\Requests\Admin\Settings\Security\AdminSecurityNotificationsUpdateRequest $request)
     {
         $validated = $request->validated();
+        $before = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
 
         // 通知設定を更新
         $this->securitySettingRepository->set('notification_enabled', $validated['notification_enabled'] ?? false);
 
         $logLevels = $validated['notification_log_levels'] ?? LogLevel::getDefaultNotificationLevels();
+        $logLevels = array_values(array_unique($logLevels));
         $this->securitySettingRepository->set('notification_log_levels', implode(',', $logLevels));
+
+        $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('security.notifications', $before, $after, auth()->user());
 
         return redirect()->route('admin.settings.security.notifications')
             ->with('success', __('admin/settings/security/notifications.settings_updated'));

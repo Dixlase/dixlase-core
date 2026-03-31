@@ -33,6 +33,23 @@ use App\Models\BaseSetting;
 
 class AdminSecurityExtensionsController extends AdminLoggedInController
 {
+    protected const SETTING_KEYS = [
+        'extension_security_preset',
+        'extension_require_signature',
+        'extension_require_permission_definition',
+        'extension_allow_undefined_permissions',
+        'extension_plugin_max_health_level',
+        'extension_theme_max_health_level',
+        'extension_allow_logic_themes',
+        'extension_permission_mismatch_action',
+        'extension_notify_on_install',
+        'extension_notify_on_uninstall',
+        'extension_notify_on_enable',
+        'extension_notify_on_disable',
+        'extension_notify_on_unhealthy',
+        'extension_log_operations',
+    ];
+
     protected SecuritySettingRepositoryInterface $securitySettingRepository;
 
     public function __construct(SecuritySettingRepositoryInterface $securitySettingRepository)
@@ -89,6 +106,7 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
     public function update(AdminSecurityExtensionsUpdateRequest $request)
     {
         $validated = $request->validated();
+        $before = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
 
         // 拡張機能セキュリティ設定を更新
         $this->securitySettingRepository->set('extension_security_preset', $validated['extension_security_preset']);
@@ -105,6 +123,9 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
         $this->securitySettingRepository->set('extension_notify_on_disable', $validated['extension_notify_on_disable'] ?? false);
         $this->securitySettingRepository->set('extension_notify_on_unhealthy', $validated['extension_notify_on_unhealthy'] ?? true);
         $this->securitySettingRepository->set('extension_log_operations', $validated['extension_log_operations'] ?? true);
+
+        $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('security.extensions', $before, $after, auth()->user());
 
         return redirect()->route('admin.settings.security.extensions')
             ->with('success', __('admin/settings/security/extensions.settings_updated'));
