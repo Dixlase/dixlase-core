@@ -125,6 +125,7 @@ class ExtensionCardPresenter
             $healthIssues,
             $permissionSummary['categories'] ?? [],
             $permissionSummary['risk_reasons'] ?? [],
+            'admin/settings/themes/index',
         );
 
         $enableWarnings = $isModel ? self::computeEnableWarnings($permissionSummary, 'admin/settings/themes/index') : [];
@@ -963,6 +964,7 @@ class ExtensionCardPresenter
         array $healthIssues,
         array $categories,
         array $attentionReasons,
+        string $translationPrefix = 'admin/settings/plugins/index',
     ): array {
         // 署名情報をaudit互換形式に変換
         $signatureStatus = $badge['signatureStatus'] ?? 'unsigned';
@@ -978,7 +980,7 @@ class ExtensionCardPresenter
         ];
 
         // attention reasonsをフォーマット（JS互換）
-        $formattedReasons = self::formatAttentionReasons($attentionReasons, 'admin/settings/plugins/index');
+        $formattedReasons = self::formatAttentionReasons($attentionReasons, $translationPrefix);
 
         // CSPステータスのマッピング
         $cspStatus = $cspCompatibility['status'] ?? 'unknown';

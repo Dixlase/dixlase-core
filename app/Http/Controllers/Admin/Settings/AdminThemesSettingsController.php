@@ -258,10 +258,39 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 'admin/settings/themes/index'
             );
 
+            // 健全性スコアの計算
+            $healthScore = null;
+            $healthStatus = null;
+            $healthIssues = [];
+            try {
+                $healthScorer = app(ThemeHealthScorer::class);
+                $healthResult = $healthScorer->calculate($slug);
+                $healthScore = $healthResult->score;
+                $healthStatus = $healthResult->status->value;
+                $healthIssues = array_values(array_filter(
+                    array_map(fn ($i) => $i->jsonSerialize(), $healthResult->issues),
+                    fn ($i) => ($i['deduction'] ?? 0) !== 0,
+                ));
+            } catch (\Exception $e) {
+                Log::error('Theme health score calculation failed after audit', [
+                    'theme' => $slug,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            // 権限カテゴリ情報を取得
+            $permissionService = app(ThemePermissionService::class);
+            $summary = $permissionService->getSummary($slug);
+            $categories = $summary['categories'] ?? [];
+
             return response()->json([
                 'success' => true,
                 'message' => __('admin/settings/themes.audit.completed'),
                 'audit' => $result,
+                'healthScore' => $healthScore,
+                'healthStatus' => $healthStatus,
+                'healthIssues' => $healthIssues,
+                'categories' => $categories,
             ]);
         } catch (\Exception $e) {
             Log::error('Theme audit controller error', [
