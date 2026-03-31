@@ -81,6 +81,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @include($guiEditorInfo->viewName, [
                             'contentFieldName' => 'content',
                             'editorInfo' => $guiEditorInfo,
+                            'initialContent' => $body,
                         ])
                     @else
                         <div class="p-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">

@@ -81,22 +81,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <x-form-error name="content" />
                 </div>
 
-                {{-- GUI エディター --}}
-                <div x-show="editorType === 'gui'" x-cloak>
-                    @if($guiEditorInfo ?? null)
-                        @include($guiEditorInfo->viewName, [
-                            'contentFieldName' => 'content',
-                            'editorInfo' => $guiEditorInfo,
-                        ])
-                    @else
-                        <div class="p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
-                            <i class="fas fa-paint-brush text-4xl text-gray-400 mb-4"></i>
-                            <p class="text-gray-600 dark:text-gray-400">
-                                {{ __('common.content_editor.gui_coming_soon') }}
-                            </p>
-                        </div>
-                    @endif
-                </div>
+                {{-- GUI エディター（x-if で DOM から除外し name="content" の重複を防ぐ） --}}
+                <template x-if="editorType === 'gui'">
+                    <div>
+                        @if($guiEditorInfo ?? null)
+                            @include($guiEditorInfo->viewName, [
+                                'contentFieldName' => 'content',
+                                'editorInfo' => $guiEditorInfo,
+                                'initialContent' => '',
+                            ])
+                        @else
+                            <div class="p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
+                                <i class="fas fa-paint-brush text-4xl text-gray-400 mb-4"></i>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    {{ __('common.content_editor.gui_coming_soon') }}
+                                </p>
+                            </div>
+                        @endif
+                    </div>
+                </template>
 
                 {{-- CSS タブ（HTML エディタ時のみ） --}}
                 <div x-show="activeTab === 'css' && isHtmlEditor" x-cloak>

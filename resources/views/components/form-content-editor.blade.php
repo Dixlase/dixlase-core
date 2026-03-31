@@ -213,6 +213,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @include($guiEditorInfo->viewName, [
                     'contentFieldName' => $contentFieldName,
                     'editorInfo' => $guiEditorInfo,
+                    'initialContent' => $content,
                 ])
             @else
                 {{-- Fallback: no GUI editor plugin installed --}}
