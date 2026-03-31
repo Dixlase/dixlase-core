@@ -189,9 +189,9 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 $summary = $permissionService->getSummary($themeSlug);
                 $signature = $summary['signature'] ?? [];
 
-                // CSP情報を取得
-                $cspLoader = app(\App\Services\Csp\CspExtensionLoader::class);
-                $cspCompatibility = $cspLoader->getCspCompatibility('theme', $themeSlug);
+                // CSP準拠状況をコードスキャンで検証
+                $cspScanner = app(\App\Services\Csp\CspComplianceScanner::class);
+                $cspCompatibility = $cspScanner->scanTheme($themeSlug);
 
                 $auditData = [
                     'has_mismatches' => ! empty($mismatches),
@@ -205,6 +205,8 @@ class AdminThemesSettingsController extends AdminLoggedInController
                     'csp_status' => $cspCompatibility['status'] ?? 'not_checked',
                     'csp_requires_inline_js' => $cspCompatibility['requires_inline_js'] ?? false,
                     'csp_requires_inline_css' => $cspCompatibility['requires_inline_css'] ?? false,
+                    'csp_violations' => $cspCompatibility['violations'] ?? [],
+                    'csp_summary' => $cspCompatibility['summary'] ?? [],
                 ];
 
                 Log::info('Theme audit data prepared', ['theme' => $themeSlug, 'mismatches_count' => count($mismatches)]);
