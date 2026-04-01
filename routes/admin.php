@@ -123,6 +123,8 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/front/create', [AdminFrontController::class, 'store'])
                     ->middleware('check.menu.edit:front')->name('front.store');
                 Route::get('/front/edit', [AdminFrontController::class, 'edit'])->name('front.edit');
+                Route::post('/front/preview', [AdminFrontController::class, 'preview'])
+                    ->middleware('check.menu.access:front')->name('front.preview');
                 Route::put('/front/edit', [AdminFrontController::class, 'update'])
                     ->middleware('check.menu.edit:front')->name('front.edit.update');
                 Route::delete('/front/reset', [AdminFrontController::class, 'destroy'])

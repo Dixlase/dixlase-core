@@ -625,6 +625,78 @@ class AdminFrontPageTest extends TestCase
     }
 
     // =========================================================
+    // Preview
+    // =========================================================
+
+    public function test_preview_returns_rendered_html_for_html_editor(): void
+    {
+        $response = $this->actingAs($this->admin, 'member')
+            ->postJson(route('admin.front.preview'), [
+                'content' => '<h1>Preview Test</h1>',
+                'editor_type' => 'html',
+            ]);
+
+        $response->assertOk();
+        $response->assertJson(['html' => '<h1>Preview Test</h1>']);
+    }
+
+    public function test_preview_returns_rendered_html_for_markdown_editor(): void
+    {
+        $response = $this->actingAs($this->admin, 'member')
+            ->postJson(route('admin.front.preview'), [
+                'content' => '# Hello World',
+                'editor_type' => 'markdown',
+            ]);
+
+        $response->assertOk();
+        $response->assertJsonStructure(['html']);
+        $this->assertStringContainsString('<h1>Hello World</h1>', $response->json('html'));
+    }
+
+    public function test_preview_returns_empty_html_for_empty_content(): void
+    {
+        $response = $this->actingAs($this->admin, 'member')
+            ->postJson(route('admin.front.preview'), [
+                'content' => '',
+                'editor_type' => 'html',
+            ]);
+
+        $response->assertOk();
+        $response->assertJson(['html' => '']);
+    }
+
+    public function test_preview_returns_empty_html_for_invalid_editor_type(): void
+    {
+        $response = $this->actingAs($this->admin, 'member')
+            ->postJson(route('admin.front.preview'), [
+                'content' => '<p>Test</p>',
+                'editor_type' => 'invalid',
+            ]);
+
+        $response->assertOk();
+        $response->assertJson(['html' => '']);
+    }
+
+    public function test_edit_passes_preview_url(): void
+    {
+        FrontPage::create([
+            'page_type' => 'main_content',
+            'lang' => 'en',
+            'content' => '<h1>Test</h1>',
+            'editor_type' => ContentEditorType::HTML,
+            'storage_type' => ContentStorageType::DATABASE,
+            'status' => ContentStatus::PUBLISHED,
+        ]);
+
+        $response = $this->actingAs($this->admin, 'member')
+            ->get(route('admin.front.edit'));
+
+        $response->assertOk();
+        $response->assertViewHas('previewUrl');
+        $response->assertViewHas('editorTypeValue', 'html');
+    }
+
+    // =========================================================
     // Settings
     // =========================================================
 
