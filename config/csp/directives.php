@@ -33,9 +33,9 @@ return [
     'script-src' => ["'self'", "'nonce'", "'strict-dynamic'", "'unsafe-eval'", 'https://challenges.cloudflare.com', 'https://www.google.com', 'https://www.gstatic.com'],
 
     // スクリプト属性（onclick等のイベントハンドラ属性）
-    // 注意: 開発モードのみ許可。標準/厳格モードでは'none'に設定される
+    // ベース値は'none'（ブロック）。開発モードではCspBuilderが'unsafe-inline'に上書き
     // Alpine.jsの@click等はscript-src-attrではなくscript-srcで制御される
-    'script-src-attr' => ["'unsafe-inline'"], // 開発モード用
+    'script-src-attr' => ["'none'"],
 
     // スタイル
     // 'unsafe-inline'はnonceと併用すると無視されるため、インラインスタイル（element.style）を許可するには

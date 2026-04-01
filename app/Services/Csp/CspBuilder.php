@@ -509,9 +509,12 @@ class CspBuilder
         }
 
         // script-src-attrの制御
+        // ベース値は'none'。開発モード(block_script_attr: false)では'unsafe-inline'に上書き
         $blockScriptAttr = $modeConfig['block_script_attr'] ?? false;
-        if ($blockScriptAttr && isset($directives['script-src-attr'])) {
+        if ($blockScriptAttr) {
             $directives['script-src-attr'] = ["'none'"];
+        } elseif (isset($directives['script-src-attr'])) {
+            $directives['script-src-attr'] = ["'unsafe-inline'"];
         }
 
         // style-srcの制御
