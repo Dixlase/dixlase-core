@@ -93,8 +93,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :value="$body"
                         rows="6"
                         :placeholder="__('admin/front.edit.content_placeholder')"
-                        class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500 !overflow-hidden !resize-none"
-                        data-auto-resize
+                        class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
                     />
                     <x-form-error name="content" />
                 </div>

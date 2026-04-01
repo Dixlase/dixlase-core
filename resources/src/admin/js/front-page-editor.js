@@ -146,17 +146,21 @@ function createFrontPageEditor(config) {
         },
 
         /**
-         * data-auto-resize 属性を持つ textarea の高さをコンテンツに合わせて自動調整
+         * エディタの textarea の高さをコンテンツに合わせて自動調整
          */
         initAutoResizeTextareas() {
-            const textareas = document.querySelectorAll('textarea[data-auto-resize]');
-            textareas.forEach((textarea) => {
+            ['content', 'custom_css', 'custom_js'].forEach((id) => {
+                const textarea = document.getElementById(id);
+                if (!textarea) {
+                    return;
+                }
+                textarea.style.overflow = 'hidden';
+                textarea.style.resize = 'none';
                 const resize = () => {
                     textarea.style.height = 'auto';
                     textarea.style.height = textarea.scrollHeight + 'px';
                 };
                 textarea.addEventListener('input', resize);
-                // 初期サイズ調整
                 resize();
             });
         },
