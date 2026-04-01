@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of Dixlase.
  *
@@ -28,12 +29,33 @@ return [
         // Bunny Fonts (Dixlaseデフォルト)
         'https://fonts.bunny.net',
 
+        // Font Awesome
+        'https://use.fontawesome.com',
+
+        // Google reCAPTCHA
+        'https://www.google.com',
+        'https://www.gstatic.com',
+
+        // YouTube 埋め込み
+        'https://www.youtube.com',
+        'https://www.youtube-nocookie.com',
+
+        // Google Maps
+        'https://maps.googleapis.com',
+        'https://maps.gstatic.com',
+
+        // Gravatar
+        'https://www.gravatar.com',
+
+        // Cloudflare Turnstile
+        'https://challenges.cloudflare.com',
+
         // CDN (必要に応じて追加)
         // 'https://cdn.jsdelivr.net',
         // 'https://cdnjs.cloudflare.com',
 
-        // Tailwind CSS
-        //'https://cdn.tailwindcss.com/',
+        // Tailwind CSS Play CDN (開発用)
+        // 'https://cdn.tailwindcss.com',
 
     ],
 
