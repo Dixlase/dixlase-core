@@ -118,18 +118,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.trusted_domains') }}</legend>
 
                     @if(! empty($configTrustedDomains))
-                    <div class="mb-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                        <p class="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1.5">
+                    <div class="mb-3 p-3 rounded-lg bg-gray-800/60 dark:bg-gray-800/60 border border-gray-600 dark:border-gray-600">
+                        <p class="text-xs font-medium text-gray-300 dark:text-gray-300 mb-1.5">
                             <i class="fas fa-shield-alt mr-1"></i>{{ __('admin/settings/security/csp.config_trusted_domains_label') }}
                         </p>
                         <div class="flex flex-wrap gap-1.5">
                             @foreach($configTrustedDomains as $domain)
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-blue-100 dark:bg-blue-800/40 text-blue-800 dark:text-blue-200">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-gray-700 dark:bg-gray-700 text-gray-100 dark:text-gray-100">
                                 {{ parse_url($domain, PHP_URL_HOST) ?? $domain }}
                             </span>
                             @endforeach
                         </div>
-                        <p class="text-xs text-blue-600 dark:text-blue-400 mt-1.5">{{ __('admin/settings/security/csp.config_trusted_domains_help') }}</p>
                     </div>
                     @endif
 
