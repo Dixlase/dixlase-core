@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of Dixlase.
  *
@@ -28,8 +29,8 @@ return [
     // 'strict-dynamic' でnonce付きスクリプトから読み込まれるスクリプトも許可
     // 'unsafe-eval' はAlpine.jsが必要とするため追加
     // CAPTCHA用: Cloudflare Turnstile, Google reCAPTCHA
-    // 開発環境: Vite開発サーバー
-    'script-src' => ["'self'", "'nonce'", "'strict-dynamic'", "'unsafe-eval'", 'https://challenges.cloudflare.com', 'https://www.google.com', 'https://www.gstatic.com', 'https://localhost:5173'],
+    // Vite開発サーバーは CspBuilder が local 環境でのみ自動追加
+    'script-src' => ["'self'", "'nonce'", "'strict-dynamic'", "'unsafe-eval'", 'https://challenges.cloudflare.com', 'https://www.google.com', 'https://www.gstatic.com'],
 
     // スクリプト属性（onclick等のイベントハンドラ属性）
     // 注意: 開発モードのみ許可。標準/厳格モードでは'none'に設定される
@@ -40,9 +41,8 @@ return [
     // 'unsafe-inline'はnonceと併用すると無視されるため、インラインスタイル（element.style）を許可するには
     // nonceを使用しないか、unsafe-inlineのみを使用する必要がある
     // Alpine.jsやJavaScriptでのスタイル操作を許可するためunsafe-inlineを使用
-    // 開発環境のViteサーバーからのスタイルシート読み込みを許可
     // Bunny Fonts、Font Awesome CDN
-    'style-src' => ["'self'", "'unsafe-inline'", 'https://localhost:5173', 'https://fonts.bunny.net', 'https://cdnjs.cloudflare.com', 'https://use.fontawesome.com'],
+    'style-src' => ["'self'", "'unsafe-inline'", 'https://fonts.bunny.net', 'https://cdnjs.cloudflare.com', 'https://use.fontawesome.com'],
 
     // 画像
     'img-src' => ["'self'", 'data:', 'blob:'],
@@ -50,12 +50,11 @@ return [
     // フォント
     // Bunny Fonts、Font Awesome CDN
     // ローカルフォント（Vite build assets）
-    // Vite開発サーバー（開発環境でnode_modulesから読み込むフォント）
-    'font-src' => ["'self'", 'data:', 'blob:', 'https://localhost:5173', 'https://fonts.bunny.net', 'https://cdnjs.cloudflare.com', 'https://use.fontawesome.com'],
+    'font-src' => ["'self'", 'data:', 'blob:', 'https://fonts.bunny.net', 'https://cdnjs.cloudflare.com', 'https://use.fontawesome.com'],
 
     // 接続先（XHR, fetch, WebSocket等）
-    // Vite開発サーバー（WebSocket）とCAPTCHA用（Cloudflare Turnstile, Google reCAPTCHA）
-    'connect-src' => ["'self'", 'wss://localhost:5173', 'https://localhost:5173', 'https://challenges.cloudflare.com', 'https://www.google.com'],
+    // CAPTCHA用: Cloudflare Turnstile, Google reCAPTCHA
+    'connect-src' => ["'self'", 'https://challenges.cloudflare.com', 'https://www.google.com'],
 
     // メディア（audio, video）
     'media-src' => ["'self'"],

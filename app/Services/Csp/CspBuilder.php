@@ -86,6 +86,9 @@ class CspBuilder
         // 1. 設定ファイルのデフォルトディレクティブ
         $directives = config('csp.directives', []);
 
+        // 1.5. 開発環境の場合、Vite開発サーバー用ドメインを追加
+        $directives = $this->addViteDevServerDirectives($directives);
+
         // 2. 信頼済みドメインを追加
         $trustedDomains = $this->getTrustedDomains();
         $directives = $this->addTrustedDomains($directives, $trustedDomains);
@@ -115,6 +118,29 @@ class CspBuilder
         $directives = $this->addReportUri($directives);
 
         return $directives;
+    }
+
+    /**
+     * 開発環境の場合、Vite開発サーバー用のCSPディレクティブを追加
+     * 本番環境では一切追加しない
+     */
+    protected function addViteDevServerDirectives(array $directives): array
+    {
+        if (! app()->environment('local')) {
+            return $directives;
+        }
+
+        $viteHost = env('VITE_DEV_SERVER_URL', 'https://localhost:5173');
+        $viteWs = 'wss://'.parse_url($viteHost, PHP_URL_HOST).':'.parse_url($viteHost, PHP_URL_PORT);
+
+        $viteDirectives = [
+            'script-src' => [$viteHost],
+            'style-src' => [$viteHost],
+            'font-src' => [$viteHost],
+            'connect-src' => [$viteHost, $viteWs],
+        ];
+
+        return $this->mergeDirectives($directives, $viteDirectives);
     }
 
     /**
