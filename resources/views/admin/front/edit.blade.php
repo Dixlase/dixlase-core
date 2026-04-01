@@ -36,21 +36,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @method('PUT')
 
         {{-- ===== 編集/プレビュー切替タブ ===== --}}
-        <div class="flex gap-2 mb-4">
-            <button type="button" @click="showEditor()"
-                :class="!previewMode
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'"
-                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                <i class="fas fa-edit mr-1"></i>{{ __('admin/front.edit.tab_edit') }}
-            </button>
-            <button type="button" @click="loadPreview()"
-                :class="previewMode
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'"
-                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                <i class="fas fa-eye mr-1"></i>{{ __('admin/front.edit.tab_preview') }}
-            </button>
+        <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
+            <nav class="-mb-px flex gap-x-6" aria-label="Tabs">
+                <button type="button" @click="showEditor()"
+                    :class="!previewMode
+                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'"
+                    class="flex items-center gap-x-2 border-b-2 px-1 py-3 text-sm font-medium whitespace-nowrap transition-colors">
+                    <i class="fas fa-edit"></i>{{ __('admin/front.edit.tab_edit') }}
+                </button>
+                <button type="button" @click="loadPreview()"
+                    :class="previewMode
+                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'"
+                    class="flex items-center gap-x-2 border-b-2 px-1 py-3 text-sm font-medium whitespace-nowrap transition-colors">
+                    <i class="fas fa-eye"></i>{{ __('admin/front.edit.tab_preview') }}
+                </button>
+            </nav>
         </div>
 
         {{-- ===== メインコンテンツエリア ===== --}}
