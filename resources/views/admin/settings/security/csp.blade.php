@@ -129,6 +129,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </span>
                             @endforeach
                         </div>
+                        <p class="text-xs text-gray-400 dark:text-gray-400 mt-1.5">
+                            <i class="fas fa-file-code mr-1"></i><code class="text-gray-300">config/csp/domains.php</code>
+                        </p>
                     </div>
                     @endif
 
