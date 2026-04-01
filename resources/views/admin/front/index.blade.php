@@ -90,6 +90,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
+    {{-- Theme Preview --}}
+    @if ($frontPage && !empty($previewContent))
+        <div class="mt-6">
+            @includeIf('themes::admin.preview-shell', ['previewContent' => $previewContent])
+        </div>
+    @endif
+
     @if ($frontPage)
         <x-ui-modal
             id="resetFrontPageModal"
