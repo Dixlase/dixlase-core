@@ -26,6 +26,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * テーマメタデータモデル
+ */
 class Theme extends Model
 {
     use HasFactory;

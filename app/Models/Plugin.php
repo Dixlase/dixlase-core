@@ -25,6 +25,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * プラグインメタデータモデル
+ */
 class Plugin extends Model
 {
     /**
