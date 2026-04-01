@@ -21,6 +21,8 @@
  */
 if (! function_exists('shortcode_parse')) {
     /**
+     * @api プラグイン/テーマから使用可能な安定APIです
+     *
      * ショートコードをパースして実行
      *
      * @param  string  $content  パース対象のコンテンツ
