@@ -130,6 +130,16 @@ function createFrontPageEditor(config) {
 
         init() {
             this.$dispatch('right-sidebar-active');
+
+            // エディタフォーム要素をプレビューシェルのコンテンツエリアに移動
+            this.$nextTick(() => {
+                const target = document.getElementById('editor-embed-target');
+                const fields = this.$refs.editorFields;
+                if (target && fields) {
+                    fields.classList.remove('hidden');
+                    target.appendChild(fields);
+                }
+            });
         },
     };
 }
