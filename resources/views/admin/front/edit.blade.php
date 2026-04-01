@@ -53,11 +53,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'previewContent' => '<div class="not-prose">'
                 {{-- 編集/プレビュー切替タブ（コンテンツエリア内） --}}
                 . '<div class="mb-4">'
-                . '<nav class="inline-flex gap-x-1 rounded-lg bg-black/30 backdrop-blur-sm p-1" aria-label="Tabs">'
-                . '<button type="button" @click="showEditor()" :class="!previewMode ? \'bg-white/20 text-white shadow-sm\' : \'text-gray-300 hover:text-white hover:bg-white/10\'" class="flex items-center gap-x-2 rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors">'
+                . '<nav class="inline-flex gap-x-1 rounded-lg bg-gray-800/90 backdrop-blur-sm p-1 shadow-lg" aria-label="Tabs">'
+                . '<button type="button" @click="showEditor()" :class="!previewMode ? \'bg-blue-600 text-white shadow-sm\' : \'text-gray-300 hover:text-white hover:bg-gray-700/80\'" class="flex items-center gap-x-2 rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors">'
                 . '<i class="fas fa-edit"></i>' . __('components/content-editor.preview_tab_edit')
                 . '</button>'
-                . '<button type="button" @click="loadPreview()" :class="previewMode ? \'bg-white/20 text-white shadow-sm\' : \'text-gray-300 hover:text-white hover:bg-white/10\'" class="flex items-center gap-x-2 rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors">'
+                . '<button type="button" @click="loadPreview()" :class="previewMode ? \'bg-blue-600 text-white shadow-sm\' : \'text-gray-300 hover:text-white hover:bg-gray-700/80\'" class="flex items-center gap-x-2 rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors">'
                 . '<i class="fas fa-eye"></i>' . __('components/content-editor.preview_tab_preview')
                 . '</button>'
                 . '</nav>'
