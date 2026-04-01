@@ -203,7 +203,7 @@ return [
         'attention_reasons_title' => 'Reasons for Attention',
         'attention_reason_storage_public_uploads' => 'Uses public directory upload permission',
         'attention_reason_assets_external_resources' => 'Uses external resource loading permission',
-        'attention_reason_assets_external_resources_trusted' => 'Uses trusted external resources',
+        'attention_reason_assets_external_resources_trusted' => 'Uses trusted external resources (:domains)',
         'attention_reason_database_core_tables_read' => 'Uses core table read permission',
         'attention_reason_database_core_tables_write' => 'Uses core table write permission',
         'attention_reason_settings_read_core' => 'Uses core settings read permission',

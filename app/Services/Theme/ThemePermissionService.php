@@ -432,9 +432,9 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             $reasons[] = ['key' => 'storage.public_uploads', 'severity' => 'high', 'score' => 2];
         }
         if ($permissions['assets']['external_resources'] ?? false) {
-            $allTrusted = $themeSlug !== null && $this->allExternalDomainsAreTrusted($themeSlug);
-            if ($allTrusted) {
-                $reasons[] = ['key' => 'assets.external_resources_trusted', 'severity' => 'info', 'score' => 0];
+            $trustedResult = $themeSlug !== null ? $this->checkExternalDomainsTrust($themeSlug) : ['all_trusted' => false, 'domains' => []];
+            if ($trustedResult['all_trusted']) {
+                $reasons[] = ['key' => 'assets.external_resources_trusted', 'severity' => 'info', 'score' => 0, 'details' => $trustedResult['domains']];
             } else {
                 $score += 3;
                 $reasons[] = ['key' => 'assets.external_resources', 'severity' => 'high', 'score' => 3];
@@ -479,13 +479,18 @@ class ThemePermissionService implements ThemePermissionServiceInterface
      * CSPディレクティブ設定（style-src, font-src, script-src等）に含まれる
      * ドメインと照合し、全ての外部ドメインが信頼済みであればtrueを返す。
      */
-    protected function allExternalDomainsAreTrusted(string $themeSlug): bool
+    /**
+     * テーマの外部ドメインが全て信頼リストに含まれるかチェックし、ドメイン一覧も返す
+     *
+     * @return array{all_trusted: bool, domains: list<string>}
+     */
+    protected function checkExternalDomainsTrust(string $themeSlug): array
     {
         $themeName = $this->slugToName($themeSlug);
         $themeJsonPath = base_path("themes/{$themeName}/theme.json");
 
         if (! File::exists($themeJsonPath)) {
-            return false;
+            return ['all_trusted' => false, 'domains' => []];
         }
 
         $data = json_decode(File::get($themeJsonPath), true);
@@ -493,7 +498,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
         $externalDomains = $cspConfig['external_domains'] ?? [];
 
         if (empty($externalDomains)) {
-            return false;
+            return ['all_trusted' => false, 'domains' => []];
         }
 
         // テーマが宣言している全外部ドメインを抽出
@@ -508,8 +513,10 @@ class ThemePermissionService implements ThemePermissionServiceInterface
         }
 
         if (empty($themeDomains)) {
-            return false;
+            return ['all_trusted' => false, 'domains' => []];
         }
+
+        $themeDomains = array_values(array_unique($themeDomains));
 
         // コアCSPディレクティブから信頼ドメインのホスト名を収集
         $trustedHosts = [];
@@ -536,11 +543,11 @@ class ThemePermissionService implements ThemePermissionServiceInterface
         // 全ての外部ドメインが信頼リストに含まれるかチェック
         foreach ($themeDomains as $host) {
             if (! isset($trustedHosts[$host])) {
-                return false;
+                return ['all_trusted' => false, 'domains' => $themeDomains];
             }
         }
 
-        return true;
+        return ['all_trusted' => true, 'domains' => $themeDomains];
     }
 
     /**

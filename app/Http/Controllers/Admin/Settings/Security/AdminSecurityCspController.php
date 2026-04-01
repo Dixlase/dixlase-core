@@ -78,6 +78,7 @@ class AdminSecurityCspController extends AdminLoggedInController
             'cryptominer' => 'fas fa-coins',
         ];
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.csp');
+        $this->viewParams['configTrustedDomains'] = config('csp.domains.trusted_domains', []);
 
         return view('admin.settings.security.csp', $this->viewParams);
     }

@@ -930,8 +930,10 @@ class ExtensionCardPresenter
             } else {
                 $reasonKey = str_replace('.', '_', $reason['key'] ?? '');
                 $severity = $reason['severity'] ?? 'medium';
+                $details = $reason['details'] ?? [];
+                $translationParams = ! empty($details) ? ['domains' => implode(', ', $details)] : [];
                 $formatted[] = [
-                    'text' => __($translationPrefix.'.permissions.attention_reason_'.$reasonKey),
+                    'text' => __($translationPrefix.'.permissions.attention_reason_'.$reasonKey, $translationParams),
                     'color' => match ($severity) {
                         'high' => 'text-orange-600 dark:text-orange-400',
                         'info' => 'text-blue-600 dark:text-blue-400',

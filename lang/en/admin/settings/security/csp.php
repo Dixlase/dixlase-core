@@ -43,6 +43,8 @@ return [
     'exclude_dev_tools' => 'Exclude Dev Tool Violations',
     'exclude_dev_tools_help' => 'Exclude CSP violations from development tools (Vite dev server, Windsurf/MCP browser preview, etc.) from logs.',
     'trusted_domains' => 'Trusted Domains',
+    'config_trusted_domains_label' => 'Default trusted domains (from config)',
+    'config_trusted_domains_help' => 'These domains are defined in the core config file and are always trusted. To modify them, edit config/csp/domains.php.',
     'trusted_domains_help' => 'Enter domains allowed to load external resources, one per line. You can add external CDNs required by plugins or themes. The scheme (https://) can be omitted.',
     'trusted_domains_placeholder' => 'https://cdn.example.com
 https://fonts.googleapis.com
