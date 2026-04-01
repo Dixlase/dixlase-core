@@ -31,12 +31,10 @@ use Illuminate\Support\Collection;
 use RuntimeException;
 
 /**
- * @api プラグイン/テーマから使用可能な安定APIです
- *
  * Extension Source Manager
  *
- * Central service for managing extension sources, provider registry,
- * update checking, and fallback downloads across multiple sources.
+ * 拡張機能ソースの管理、プロバイダーレジストリ、更新チェック、
+ * 複数ソース間のフォールバックダウンロードを管理する中央サービス。
  */
 class ExtensionSourceManager
 {
