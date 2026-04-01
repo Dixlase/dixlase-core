@@ -38,24 +38,32 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{-- ===== 編集/プレビュー切替タブ ===== --}}
         <x-content-editor.preview-tabs />
 
-        {{-- ===== メインコンテンツエリア ===== --}}
-        <div class="space-y-6" x-show="!previewMode">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
-                {{-- エディタータイプ（固定表示） --}}
-                <div>
-                    <x-form-label :text="__('admin/front.edit.editor_type_label')" />
-                    <x-content-editor.type-badge
-                        :icon="$editorTypeIcon"
-                        :color="$editorTypeColor"
-                        :label="$editorTypeLabel"
-                        :description="$editorTypeDescription"
-                    />
-                </div>
+        {{-- ===== テーマプレビューシェル（常時表示） ===== --}}
+        {{-- コンテンツエリアに編集フォームとプレビューを共存させる --}}
+        @includeIf('themes::admin.preview-shell', [
+            'previewContent' => '<div id="editor-embed-target" x-show="!previewMode" class="not-prose"></div>'
+                . '<div x-show="previewMode" x-cloak>'
+                . '<div x-show="previewLoading" class="not-prose text-center py-12">'
+                . '<i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-3 block"></i>'
+                . '<p class="text-sm text-gray-500">' . __('components/content-editor.preview_loading') . '</p>'
+                . '</div>'
+                . '<div x-show="!previewLoading" id="preview-content-slot"></div>'
+                . '</div>',
+        ])
 
-                {{-- 言語（固定表示） --}}
-                <div>
-                    <x-form-label :text="__('admin/front.edit.lang_label')" />
-                    <p class="text-sm text-gray-700 dark:text-gray-300">{{ $langName }}</p>
+        {{-- ===== エディタフォーム要素（Alpine init でプレビューシェル内に移動される） ===== --}}
+        <div x-ref="editorFields" class="hidden">
+            <div class="bg-gray-900/90 backdrop-blur-sm rounded-lg border border-gray-700 p-5 space-y-4">
+                {{-- エディタータイプ + 言語（コンパクト表示） --}}
+                <div class="flex flex-wrap items-center gap-4 text-xs">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-800 text-gray-300 border border-gray-600">
+                        <i class="{{ $editorTypeIcon }}" style="color: {{ $editorTypeColor }}"></i>
+                        {{ $editorTypeLabel }}
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-800 text-gray-300 border border-gray-600">
+                        <i class="fas fa-globe"></i>
+                        {{ $langName }}
+                    </span>
                 </div>
 
                 {{-- タブナビゲーション（HTML エディタ時のみ） --}}
@@ -66,14 +74,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{-- Content タブ (non-GUI editors) --}}
                 @if(!($isGuiEditor ?? false))
                 <div x-show="activeTab === 'content'">
-                    <x-form-label :for="'content'" :text="__('admin/front.edit.content_label')" />
                     <x-form-textarea
                         id="content"
                         name="content"
                         :value="$body"
-                        rows="20"
+                        rows="16"
                         :placeholder="__('admin/front.edit.content_placeholder')"
-                        class="font-mono text-sm"
+                        class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
                     />
                     <x-form-error name="content" />
                 </div>
@@ -89,18 +96,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             'initialContent' => $body,
                         ])
                     @else
-                        <div class="p-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                        <div class="p-4 bg-yellow-900/30 border border-yellow-700 rounded-lg">
                             <div class="flex items-start">
                                 <i class="fas fa-exclamation-triangle text-yellow-500 mt-1 mr-3"></i>
                                 <div>
-                                    <p class="text-yellow-800 dark:text-yellow-200">
+                                    <p class="text-yellow-200 text-sm">
                                         {{ __('common.content_editor.gui_unavailable') }}
                                     </p>
                                     <x-form-textarea
                                         id="content"
                                         name="content"
                                         :value="$body"
-                                        rows="10"
+                                        rows="8"
                                         class="mt-3 font-mono text-sm"
                                         readonly
                                     />
@@ -114,48 +121,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if ($isHtmlEditor)
                     {{-- CSS タブ --}}
                     <div x-show="activeTab === 'css'" x-cloak>
-                        <x-form-label :for="'custom_css'" :text="__('components/content-editor.tab_css')" />
                         <x-form-textarea
                             id="custom_css"
                             name="custom_css"
                             :value="$customCss ?? ''"
-                            rows="20"
+                            rows="16"
                             :placeholder="__('admin/front.edit.custom_css_placeholder')"
-                            class="font-mono text-sm"
+                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
                         />
                         <x-form-error name="custom_css" />
                     </div>
 
                     {{-- JavaScript タブ --}}
                     <div x-show="activeTab === 'js'" x-cloak>
-                        <x-form-label :for="'custom_js'" :text="__('components/content-editor.tab_js')" />
                         <x-form-textarea
                             id="custom_js"
                             name="custom_js"
                             :value="$customJs ?? ''"
-                            rows="20"
+                            rows="16"
                             :placeholder="__('admin/front.edit.custom_js_placeholder')"
-                            class="font-mono text-sm"
+                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
                         />
                         <x-form-error name="custom_js" />
                     </div>
                 @endif
-            </div>
-        </div>
-
-        {{-- ===== プレビューエリア ===== --}}
-        <div x-show="previewMode" x-cloak>
-            {{-- ローディング表示 --}}
-            <div x-show="previewLoading" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
-                <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-3"></i>
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('components/content-editor.preview_loading') }}</p>
-            </div>
-
-            {{-- プレビューコンテンツ --}}
-            <div x-show="!previewLoading">
-                @includeIf('themes::admin.preview-shell', [
-                    'previewContent' => '<div id="preview-content-slot"></div>',
-                ])
             </div>
         </div>
 
