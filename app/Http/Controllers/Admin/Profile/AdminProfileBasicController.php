@@ -69,6 +69,8 @@ class AdminProfileBasicController extends AdminLoggedInController
         // メールサーバー設定状態を確認
         $isMailServerTested = MailServerValidatorService::isMailServerTested();
 
+        $before = $member->only(['account_name', 'display_name', 'description', 'locale', 'email']);
+
         // プロフィール更新
         $updateData = [
             'account_name' => $validated['account_name'],
@@ -117,6 +119,17 @@ class AdminProfileBasicController extends AdminLoggedInController
         } else {
             $message = __('admin/profile/common.updated');
         }
+
+        $after = auth()->user()->fresh()->only(['account_name', 'display_name', 'description', 'locale', 'email']);
+        \App\Facades\Audit::log([
+            'category' => 'account',
+            'action' => 'profile.updated',
+            'actor' => auth()->user(),
+            'target' => auth()->user(),
+            'context' => [
+                'diff' => \App\Facades\Audit::diff($before, $after),
+            ],
+        ]);
 
         return redirect()->route('admin.profile.basic')->with('success', $message);
     }

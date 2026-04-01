@@ -69,6 +69,7 @@ class AdminProfileTwoFaController extends AdminLoggedInController
 
         // 二段階認証モードの変更を検出するため、保存前の値を取得（整数値として）
         $twoFaOldMode = is_int($member->two_fa_mode) ? $member->two_fa_mode : $member->two_fa_mode->value;
+        $beforeMode = $member->two_fa_mode;
 
         // two_fa_mode は全体設定が UseProfileSetting のときだけ上書き
         $twoFaForceMode = (int) SecuritySetting::getValue('two_fa_mode', AuthenticationMode::UseProfileSetting->value);
@@ -85,6 +86,18 @@ class AdminProfileTwoFaController extends AdminLoggedInController
         $twoFaStatusService = new TwoFaStatusService();
         $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
         $twoFaPasskeyService = new TwoFaPasskeyService();
+
+        \App\Facades\Audit::log([
+            'category' => 'account',
+            'action' => 'profile.two_fa_changed',
+            'actor' => auth()->user(),
+            'target' => auth()->user(),
+            'severity' => 'notice',
+            'context' => [
+                'before' => $beforeMode,
+                'after' => auth()->user()->fresh()->two_fa_mode,
+            ],
+        ]);
 
         $redirect = redirect()->route('admin.profile.two-fa')->with('success', __('admin/profile/common.two_fa_updated'));
 
