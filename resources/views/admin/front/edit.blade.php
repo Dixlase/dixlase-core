@@ -28,13 +28,33 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
               defaultStorageType: '{{ old('storage_type', $storageType) }}',
               fileStorageBasePath: '{{ $fileStorageBasePath }}',
               editorType: '{{ $editorType }}',
-              langCode: '{{ $langCode }}'
+              langCode: '{{ $langCode }}',
+              previewUrl: '{{ $previewUrl }}',
+              editorTypeValue: '{{ $editorTypeValue }}'
           })">
         @csrf
         @method('PUT')
 
+        {{-- ===== 編集/プレビュー切替タブ ===== --}}
+        <div class="flex gap-2 mb-4">
+            <button type="button" @click="showEditor()"
+                :class="!previewMode
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                <i class="fas fa-edit mr-1"></i>{{ __('admin/front.edit.tab_edit') }}
+            </button>
+            <button type="button" @click="loadPreview()"
+                :class="previewMode
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                <i class="fas fa-eye mr-1"></i>{{ __('admin/front.edit.tab_preview') }}
+            </button>
+        </div>
+
         {{-- ===== メインコンテンツエリア ===== --}}
-        <div class="space-y-6">
+        <div class="space-y-6" x-show="!previewMode">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
                 {{-- エディタータイプ（固定表示） --}}
                 <div>
@@ -135,6 +155,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <x-form-error name="custom_js" />
                     </div>
                 @endif
+            </div>
+        </div>
+
+        {{-- ===== プレビューエリア ===== --}}
+        <div x-show="previewMode" x-cloak>
+            {{-- ローディング表示 --}}
+            <div x-show="previewLoading" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+                <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-3"></i>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/front.edit.preview_loading') }}</p>
+            </div>
+
+            {{-- プレビューコンテンツ --}}
+            <div x-show="!previewLoading">
+                @includeIf('themes::admin.preview-shell', [
+                    'previewContent' => '<div id="preview-content-slot"></div>',
+                ])
             </div>
         </div>
 

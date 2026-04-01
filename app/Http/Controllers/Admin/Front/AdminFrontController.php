@@ -34,7 +34,9 @@ use App\Models\FrontPage;
 use App\Presenters\Admin\ContentEditorPresenter;
 use App\Services\Editor\EditorManager;
 use App\Services\FrontPageContentService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class AdminFrontController extends AdminLoggedInController
@@ -258,8 +260,33 @@ class AdminFrontController extends AdminLoggedInController
         $this->viewParams['isGuiEditor'] = $isGuiEditor;
         $this->viewParams['guiEditorInfo'] = $guiEditorInfo;
         $this->viewParams['guiEditorAssetHtml'] = $guiEditorInfo ? ContentEditorPresenter::editorAssetHtml($guiEditorInfo) : '';
+        $this->viewParams['previewUrl'] = route('admin.front.preview');
+        $this->viewParams['editorTypeValue'] = $frontPage->editor_type->slug();
 
         return view('admin::front/edit', $this->viewParams);
+    }
+
+    /**
+     * 編集中コンテンツのプレビュー用HTMLを返す（AJAX）
+     */
+    public function preview(Request $request): JsonResponse
+    {
+        $content = $request->input('content', '');
+        $editorTypeSlug = $request->input('editor_type', 'html');
+        $editorType = ContentEditorType::tryFromSlug($editorTypeSlug);
+
+        $renderedHtml = '';
+        if ($content && $editorType) {
+            $renderedHtml = match ($editorType) {
+                ContentEditorType::GUI => app(EditorManager::class)->renderContent('gui', $content),
+                ContentEditorType::MARKDOWN => \Illuminate\Support\Str::markdown($content),
+                ContentEditorType::BLADE => \Illuminate\Support\Facades\Blade::render($content),
+                default => $content,
+            };
+            $renderedHtml = shortcode_parse($renderedHtml);
+        }
+
+        return response()->json(['html' => $renderedHtml]);
     }
 
     /**

@@ -86,6 +86,12 @@ return [
 
         'save_success' => 'フロントページのコンテンツを更新しました。',
 
+        'tab_edit' => '編集',
+        'tab_preview' => 'プレビュー',
+        'preview_loading' => 'プレビューを読み込み中...',
+        'preview_error' => 'プレビューの読み込みに失敗しました。',
+        'preview_empty' => 'プレビューするコンテンツを入力してください。',
+
         'sidebar_open' => 'サイドバーを開く',
         'sidebar_close' => 'サイドバーを閉じる',
 

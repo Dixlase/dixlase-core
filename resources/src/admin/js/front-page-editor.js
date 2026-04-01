@@ -91,6 +91,10 @@ function createFrontPageEditor(config) {
         editorType: config.editorType || 'html',
         langCode: config.langCode || 'en',
         activeTab: 'content',
+        previewMode: false,
+        previewLoading: false,
+        previewUrl: config.previewUrl || '',
+        editorTypeValue: config.editorTypeValue || 'html',
 
         get isHtmlEditor() {
             return this.editorType === 'html';
@@ -124,6 +128,58 @@ function createFrontPageEditor(config) {
 
         init() {
             this.$dispatch('right-sidebar-active');
+        },
+
+        async loadPreview() {
+            this.previewMode = true;
+            this.previewLoading = true;
+
+            const contentEl = document.getElementById('content');
+            const content = contentEl ? contentEl.value : '';
+
+            if (!content.trim()) {
+                this.previewLoading = false;
+                return;
+            }
+
+            try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                const response = await fetch(this.previewUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken ? csrfToken.content : '',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        content: content,
+                        editor_type: this.editorTypeValue,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Preview request failed');
+                }
+
+                const data = await response.json();
+                const slot = document.getElementById('preview-content-slot');
+                if (slot) {
+                    slot.innerHTML = data.html || '';
+                }
+            } catch (error) {
+                console.error('Preview failed:', error);
+                const slot = document.getElementById('preview-content-slot');
+                if (slot) {
+                    slot.innerHTML = '';
+                }
+                this.previewError = true;
+            } finally {
+                this.previewLoading = false;
+            }
+        },
+
+        showEditor() {
+            this.previewMode = false;
         },
     };
 }
