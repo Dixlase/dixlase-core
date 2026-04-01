@@ -85,7 +85,7 @@ class ThemeAudit extends Command
         $detectedPermissions = $this->analyzeThemeCode($themeDir);
 
         // 比較結果を生成
-        $auditResult = $this->comparePermissions($declaredPermissions, $detectedPermissions);
+        $auditResult = $this->comparePermissions($declaredPermissions, $detectedPermissions, $themeSlug);
 
         if ($isJson) {
             $this->outputJson($auditResult);
@@ -184,7 +184,7 @@ class ThemeAudit extends Command
     /**
      * 宣言された権限と検出された権限を比較
      */
-    protected function comparePermissions(array $declared, array $detected): array
+    protected function comparePermissions(array $declared, array $detected, ?string $themeSlug = null): array
     {
         $mismatches = [];
         $matches = [];
@@ -230,7 +230,7 @@ class ThemeAudit extends Command
         }
 
         // リスクレベルと理由を統一計算（サービスに委譲）
-        $riskResult = $this->permissionService->calculateUnifiedRiskLevel($declared, $mismatches);
+        $riskResult = $this->permissionService->calculateUnifiedRiskLevel($declared, $mismatches, $themeSlug);
 
         return [
             'mismatches' => $mismatches,
