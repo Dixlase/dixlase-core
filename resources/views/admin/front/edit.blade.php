@@ -36,24 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @method('PUT')
 
         {{-- ===== 編集/プレビュー切替タブ ===== --}}
-        <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
-            <nav class="-mb-px flex gap-x-6" aria-label="Tabs">
-                <button type="button" @click="showEditor()"
-                    :class="!previewMode
-                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'"
-                    class="flex items-center gap-x-2 border-b-2 px-1 py-3 text-sm font-medium whitespace-nowrap transition-colors">
-                    <i class="fas fa-edit"></i>{{ __('admin/front.edit.tab_edit') }}
-                </button>
-                <button type="button" @click="loadPreview()"
-                    :class="previewMode
-                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'"
-                    class="flex items-center gap-x-2 border-b-2 px-1 py-3 text-sm font-medium whitespace-nowrap transition-colors">
-                    <i class="fas fa-eye"></i>{{ __('admin/front.edit.tab_preview') }}
-                </button>
-            </nav>
-        </div>
+        <x-content-editor.preview-tabs />
 
         {{-- ===== メインコンテンツエリア ===== --}}
         <div class="space-y-6" x-show="!previewMode">
@@ -165,7 +148,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- ローディング表示 --}}
             <div x-show="previewLoading" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
                 <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-3"></i>
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/front.edit.preview_loading') }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('components/content-editor.preview_loading') }}</p>
             </div>
 
             {{-- プレビューコンテンツ --}}

@@ -32,6 +32,7 @@ use App\Http\Requests\Admin\Front\AdminFrontEditUpdateRequest;
 use App\Http\Requests\Admin\Front\AdminFrontSettingsUpdateRequest;
 use App\Models\FrontPage;
 use App\Presenters\Admin\ContentEditorPresenter;
+use App\Services\ContentPreviewService;
 use App\Services\Editor\EditorManager;
 use App\Services\FrontPageContentService;
 use Illuminate\Http\JsonResponse;
@@ -47,6 +48,7 @@ class AdminFrontController extends AdminLoggedInController
     public function __construct(
         protected FrontSettingRepositoryInterface $frontSettingRepository,
         protected FrontPageContentService $contentService,
+        protected ContentPreviewService $previewService,
     ) {
         parent::__construct();
     }
@@ -80,17 +82,7 @@ class AdminFrontController extends AdminLoggedInController
         if ($frontPage && $frontPage->isPublished()) {
             $rawContent = $this->contentService->getContent($frontPage, $frontPage->lang);
             if ($rawContent) {
-                $editorType = $frontPage->editor_type;
-                if ($editorType === ContentEditorType::GUI) {
-                    $previewContent = app(EditorManager::class)->renderContent('gui', $rawContent);
-                } elseif ($editorType === ContentEditorType::MARKDOWN) {
-                    $previewContent = \Illuminate\Support\Str::markdown($rawContent);
-                } elseif ($editorType === ContentEditorType::BLADE) {
-                    $previewContent = \Illuminate\Support\Facades\Blade::render($rawContent);
-                } else {
-                    $previewContent = $rawContent;
-                }
-                $previewContent = shortcode_parse($previewContent);
+                $previewContent = $this->previewService->render($rawContent, $frontPage->editor_type);
             }
         }
         $this->viewParams['previewContent'] = $previewContent;
@@ -273,18 +265,8 @@ class AdminFrontController extends AdminLoggedInController
     {
         $content = $request->input('content', '');
         $editorTypeSlug = $request->input('editor_type', 'html');
-        $editorType = ContentEditorType::tryFromSlug($editorTypeSlug);
 
-        $renderedHtml = '';
-        if ($content && $editorType) {
-            $renderedHtml = match ($editorType) {
-                ContentEditorType::GUI => app(EditorManager::class)->renderContent('gui', $content),
-                ContentEditorType::MARKDOWN => \Illuminate\Support\Str::markdown($content),
-                ContentEditorType::BLADE => \Illuminate\Support\Facades\Blade::render($content),
-                default => $content,
-            };
-            $renderedHtml = shortcode_parse($renderedHtml);
-        }
+        $renderedHtml = $this->previewService->renderFromSlug($content, $editorTypeSlug);
 
         return response()->json(['html' => $renderedHtml]);
     }

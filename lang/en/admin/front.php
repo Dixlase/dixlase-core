@@ -86,12 +86,6 @@ return [
 
         'save_success' => 'Front page content has been updated.',
 
-        'tab_edit' => 'Edit',
-        'tab_preview' => 'Preview',
-        'preview_loading' => 'Loading preview...',
-        'preview_error' => 'Failed to load preview.',
-        'preview_empty' => 'Enter content to preview.',
-
         'sidebar_open' => 'Open sidebar',
         'sidebar_close' => 'Close sidebar',
 
