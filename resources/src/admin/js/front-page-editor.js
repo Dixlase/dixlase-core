@@ -139,6 +139,25 @@ function createFrontPageEditor(config) {
                     fields.classList.remove('hidden');
                     target.appendChild(fields);
                 }
+
+                // data-auto-resize 属性を持つ textarea を自動リサイズ
+                this.initAutoResizeTextareas();
+            });
+        },
+
+        /**
+         * data-auto-resize 属性を持つ textarea の高さをコンテンツに合わせて自動調整
+         */
+        initAutoResizeTextareas() {
+            const textareas = document.querySelectorAll('textarea[data-auto-resize]');
+            textareas.forEach((textarea) => {
+                const resize = () => {
+                    textarea.style.height = 'auto';
+                    textarea.style.height = textarea.scrollHeight + 'px';
+                };
+                textarea.addEventListener('input', resize);
+                // 初期サイズ調整
+                resize();
             });
         },
     };

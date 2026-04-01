@@ -35,37 +35,50 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
         @method('PUT')
 
-        {{-- ===== 編集/プレビュー切替タブ ===== --}}
-        <x-content-editor.preview-tabs />
+        {{-- ===== エディタータイプ + 言語（プレビュー外に配置） ===== --}}
+        <div class="flex flex-wrap items-center gap-3 mb-4 text-xs">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+                <i class="{{ $editorTypeIcon }}" style="color: {{ $editorTypeColor }}"></i>
+                {{ $editorTypeLabel }}
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+                <i class="fas fa-globe"></i>
+                {{ $langName }}
+            </span>
+        </div>
 
         {{-- ===== テーマプレビューシェル（常時表示） ===== --}}
-        {{-- コンテンツエリアに編集フォームとプレビューを共存させる --}}
+        {{-- コンテンツエリアに編集/プレビュータブ + エディタ + プレビューを共存させる --}}
         @includeIf('themes::admin.preview-shell', [
-            'previewContent' => '<div id="editor-embed-target" x-show="!previewMode" class="not-prose"></div>'
+            'previewContent' => '<div class="not-prose">'
+                {{-- 編集/プレビュー切替タブ（コンテンツエリア内） --}}
+                . '<div class="border-b border-gray-600 mb-4">'
+                . '<nav class="-mb-px flex gap-x-6" aria-label="Tabs">'
+                . '<button type="button" @click="showEditor()" :class="!previewMode ? \'border-blue-400 text-blue-400\' : \'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-300\'" class="flex items-center gap-x-2 border-b-2 px-1 py-2.5 text-sm font-medium whitespace-nowrap transition-colors">'
+                . '<i class="fas fa-edit"></i>' . __('components/content-editor.preview_tab_edit')
+                . '</button>'
+                . '<button type="button" @click="loadPreview()" :class="previewMode ? \'border-blue-400 text-blue-400\' : \'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-300\'" class="flex items-center gap-x-2 border-b-2 px-1 py-2.5 text-sm font-medium whitespace-nowrap transition-colors">'
+                . '<i class="fas fa-eye"></i>' . __('components/content-editor.preview_tab_preview')
+                . '</button>'
+                . '</nav>'
+                . '</div>'
+                {{-- エディタ埋め込みターゲット --}}
+                . '<div id="editor-embed-target" x-show="!previewMode"></div>'
+                {{-- プレビュー表示エリア --}}
                 . '<div x-show="previewMode" x-cloak>'
-                . '<div x-show="previewLoading" class="not-prose text-center py-12">'
+                . '<div x-show="previewLoading" class="text-center py-12">'
                 . '<i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-3 block"></i>'
                 . '<p class="text-sm text-gray-500">' . __('components/content-editor.preview_loading') . '</p>'
                 . '</div>'
-                . '<div x-show="!previewLoading" id="preview-content-slot"></div>'
-                . '</div>',
+                . '</div>'
+                . '</div>'
+                {{-- プレビューコンテンツ（prose 適用） --}}
+                . '<div x-show="previewMode && !previewLoading" x-cloak id="preview-content-slot"></div>',
         ])
 
         {{-- ===== エディタフォーム要素（Alpine init でプレビューシェル内に移動される） ===== --}}
         <div x-ref="editorFields" class="hidden">
             <div class="bg-gray-900/90 backdrop-blur-sm rounded-lg border border-gray-700 p-5 space-y-4">
-                {{-- エディタータイプ + 言語（コンパクト表示） --}}
-                <div class="flex flex-wrap items-center gap-4 text-xs">
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-800 text-gray-300 border border-gray-600">
-                        <i class="{{ $editorTypeIcon }}" style="color: {{ $editorTypeColor }}"></i>
-                        {{ $editorTypeLabel }}
-                    </span>
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-800 text-gray-300 border border-gray-600">
-                        <i class="fas fa-globe"></i>
-                        {{ $langName }}
-                    </span>
-                </div>
-
                 {{-- タブナビゲーション（HTML エディタ時のみ） --}}
                 @if ($isHtmlEditor)
                     <x-content-editor.tabs />
@@ -78,9 +91,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         id="content"
                         name="content"
                         :value="$body"
-                        rows="16"
+                        rows="6"
                         :placeholder="__('admin/front.edit.content_placeholder')"
-                        class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
+                        class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500 !overflow-hidden !resize-none"
+                        data-auto-resize
                     />
                     <x-form-error name="content" />
                 </div>
@@ -125,9 +139,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             id="custom_css"
                             name="custom_css"
                             :value="$customCss ?? ''"
-                            rows="16"
+                            rows="6"
                             :placeholder="__('admin/front.edit.custom_css_placeholder')"
-                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
+                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500 !overflow-hidden !resize-none"
+                            data-auto-resize
                         />
                         <x-form-error name="custom_css" />
                     </div>
@@ -138,9 +153,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             id="custom_js"
                             name="custom_js"
                             :value="$customJs ?? ''"
-                            rows="16"
+                            rows="6"
                             :placeholder="__('admin/front.edit.custom_js_placeholder')"
-                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
+                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500 !overflow-hidden !resize-none"
+                            data-auto-resize
                         />
                         <x-form-error name="custom_js" />
                     </div>
