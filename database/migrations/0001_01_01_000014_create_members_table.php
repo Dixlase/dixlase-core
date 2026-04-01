@@ -43,6 +43,7 @@ return new class extends Migration
             $table->string('pending_email')->nullable(); // 認証待ちの新メールアドレス
             $table->string('locale')->nullable(); // 個別言語設定（nullの場合はシステムデフォルト）
             $table->integer('role')->default(1);   // 1=admin, 2=super_admin, 3=editor, 4=author, 5=contributor
+            $table->unsignedBigInteger('custom_role_id')->nullable(); // カスタムロール（外部キー制約は add_foreign_key_constraints で追加）
             $table->integer('appearance')->default(0); // 0= auto, 1 = light, 2 = dark
             $table->string('password'); // Hashed
             $table->integer('login_notification_mode')->default(2); // 0= Disabled, 1= DifferentDevice, 2= Always
