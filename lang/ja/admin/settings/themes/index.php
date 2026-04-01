@@ -203,7 +203,7 @@ return [
         'attention_reasons_title' => '確認が必要な理由',
         'attention_reason_storage_public_uploads' => '公開ディレクトリへのアップロード権限を使用します',
         'attention_reason_assets_external_resources' => '外部リソースの読み込み権限を使用します',
-        'attention_reason_assets_external_resources_trusted' => '信頼できる外部リソースを読み込んでいます',
+        'attention_reason_assets_external_resources_trusted' => '信頼できる外部リソースを読み込んでいます (:domains)',
         'attention_reason_database_core_tables_read' => 'コアテーブルの読み取り権限を使用します',
         'attention_reason_database_core_tables_write' => 'コアテーブルへの書き込み権限を使用します',
         'attention_reason_settings_read_core' => 'コア設定の読み取り権限を使用します',
