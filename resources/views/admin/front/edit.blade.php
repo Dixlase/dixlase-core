@@ -52,12 +52,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @includeIf('themes::admin.preview-shell', [
             'previewContent' => '<div class="not-prose">'
                 {{-- 編集/プレビュー切替タブ（コンテンツエリア内） --}}
-                . '<div class="border-b border-gray-600 mb-4">'
-                . '<nav class="-mb-px flex gap-x-6" aria-label="Tabs">'
-                . '<button type="button" @click="showEditor()" :class="!previewMode ? \'border-blue-400 text-blue-400\' : \'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-300\'" class="flex items-center gap-x-2 border-b-2 px-1 py-2.5 text-sm font-medium whitespace-nowrap transition-colors">'
+                . '<div class="mb-4">'
+                . '<nav class="inline-flex gap-x-1 rounded-lg bg-black/30 backdrop-blur-sm p-1" aria-label="Tabs">'
+                . '<button type="button" @click="showEditor()" :class="!previewMode ? \'bg-white/20 text-white shadow-sm\' : \'text-gray-300 hover:text-white hover:bg-white/10\'" class="flex items-center gap-x-2 rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors">'
                 . '<i class="fas fa-edit"></i>' . __('components/content-editor.preview_tab_edit')
                 . '</button>'
-                . '<button type="button" @click="loadPreview()" :class="previewMode ? \'border-blue-400 text-blue-400\' : \'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-300\'" class="flex items-center gap-x-2 border-b-2 px-1 py-2.5 text-sm font-medium whitespace-nowrap transition-colors">'
+                . '<button type="button" @click="loadPreview()" :class="previewMode ? \'bg-white/20 text-white shadow-sm\' : \'text-gray-300 hover:text-white hover:bg-white/10\'" class="flex items-center gap-x-2 rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors">'
                 . '<i class="fas fa-eye"></i>' . __('components/content-editor.preview_tab_preview')
                 . '</button>'
                 . '</nav>'
@@ -78,7 +78,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         {{-- ===== エディタフォーム要素（Alpine init でプレビューシェル内に移動される） ===== --}}
         <div x-ref="editorFields" class="hidden">
-            <div class="bg-gray-900/90 backdrop-blur-sm rounded-lg border border-gray-700 p-5 space-y-4">
+            <div class="space-y-4">
                 {{-- タブナビゲーション（HTML エディタ時のみ） --}}
                 @if ($isHtmlEditor)
                     <x-content-editor.tabs />
