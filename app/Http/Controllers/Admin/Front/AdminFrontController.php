@@ -73,6 +73,26 @@ class AdminFrontController extends AdminLoggedInController
         $this->viewParams['storageTypeLabel'] = $storageTypeLabel;
         $this->viewParams['langName'] = $langName;
 
+        // フロントページコンテンツをプレビュー用にレンダリング
+        $previewContent = null;
+        if ($frontPage && $frontPage->isPublished()) {
+            $rawContent = $this->contentService->getContent($frontPage, $frontPage->lang);
+            if ($rawContent) {
+                $editorType = $frontPage->editor_type;
+                if ($editorType === ContentEditorType::GUI) {
+                    $previewContent = app(EditorManager::class)->renderContent('gui', $rawContent);
+                } elseif ($editorType === ContentEditorType::MARKDOWN) {
+                    $previewContent = \Illuminate\Support\Str::markdown($rawContent);
+                } elseif ($editorType === ContentEditorType::BLADE) {
+                    $previewContent = \Illuminate\Support\Facades\Blade::render($rawContent);
+                } else {
+                    $previewContent = $rawContent;
+                }
+                $previewContent = shortcode_parse($previewContent);
+            }
+        }
+        $this->viewParams['previewContent'] = $previewContent;
+
         return view('admin::front/index', $this->viewParams);
     }
 
