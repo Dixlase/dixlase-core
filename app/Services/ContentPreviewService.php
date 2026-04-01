@@ -57,7 +57,7 @@ class ContentPreviewService
         try {
             $html = match ($editorType) {
                 ContentEditorType::GUI => $this->editorManager->renderContent('gui', $content),
-                ContentEditorType::MARKDOWN => Str::markdown($content),
+                ContentEditorType::MARKDOWN => Str::markdown($this->normalizeMarkdown($content)),
                 ContentEditorType::BLADE => Blade::render($content),
                 ContentEditorType::HTML => $content,
             };
@@ -71,6 +71,17 @@ class ContentPreviewService
 
             return $content;
         }
+    }
+
+    /**
+     * Markdown の緩和前処理
+     *
+     * 見出し記号（#）の後にスペースがない場合に自動補正する。
+     * 例: `#見出し` → `# 見出し`、`##見出し` → `## 見出し`
+     */
+    protected function normalizeMarkdown(string $content): string
+    {
+        return preg_replace('/^(#{1,6})([^\s#])/m', '$1 $2', $content);
     }
 
     /**

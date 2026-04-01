@@ -60,6 +60,28 @@ class ContentPreviewServiceTest extends TestCase
         $this->assertStringContainsString('<strong>bold</strong>', $result);
     }
 
+    public function test_render_markdown_normalizes_heading_without_space(): void
+    {
+        $result = $this->service->render('#見出し', ContentEditorType::MARKDOWN);
+
+        $this->assertStringContainsString('<h1>見出し</h1>', $result);
+    }
+
+    public function test_render_markdown_normalizes_h2_without_space(): void
+    {
+        $result = $this->service->render('##見出し2', ContentEditorType::MARKDOWN);
+
+        $this->assertStringContainsString('<h2>見出し2</h2>', $result);
+    }
+
+    public function test_render_markdown_does_not_affect_inline_hash(): void
+    {
+        $result = $this->service->render('通常テキスト #タグ', ContentEditorType::MARKDOWN);
+
+        $this->assertStringContainsString('#タグ', $result);
+        $this->assertStringNotContainsString('<h1>', $result);
+    }
+
     public function test_render_from_slug_with_invalid_slug_returns_empty(): void
     {
         $result = $this->service->renderFromSlug('<p>Test</p>', 'invalid');
