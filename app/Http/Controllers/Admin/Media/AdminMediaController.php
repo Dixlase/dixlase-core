@@ -36,6 +36,14 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminMediaController extends AdminLoggedInController
 {
+    protected const MEDIA_SETTING_KEYS = [
+        'allowed_file_types', 'max_file_size',
+        'max_file_size_image', 'max_file_size_video',
+        'max_file_size_document', 'max_file_size_archive',
+        'svg_sanitization_enabled', 'zip_security_enabled',
+        'mime_validation_enabled', 'zip_max_compression_ratio', 'zip_max_file_count',
+    ];
+
     /**
      * メディア設定リポジトリ
      */
@@ -247,6 +255,17 @@ class AdminMediaController extends AdminLoggedInController
                 'uploaded_by' => $memberId,
             ]);
 
+            \App\Facades\Audit::logContent('media.uploaded', [
+                'actor' => auth()->user(),
+                'target' => $media,
+                'target_label' => $media->name,
+                'context' => [
+                    'file_name' => $media->name,
+                    'type' => $media->type,
+                    'file_size' => $media->file_size,
+                ],
+            ]);
+
             $results[] = [
                 'success' => true,
                 'name' => $file->getClientOriginalName(),
@@ -285,6 +304,17 @@ class AdminMediaController extends AdminLoggedInController
 
     public function delete(Media $media)
     {
+        \App\Facades\Audit::logContent('media.deleted', [
+            'actor' => auth()->user(),
+            'target_label' => $media->name,
+            'severity' => 'warning',
+            'context' => [
+                'file_name' => $media->name,
+                'type' => $media->type,
+                'file_size' => $media->file_size,
+            ],
+        ]);
+
         $disk = config('admin.files.storageDisk', 'public');
         $mediaPath = config('admin.files.mediaPath', 'media');
 
@@ -368,6 +398,15 @@ class AdminMediaController extends AdminLoggedInController
             'caption' => $request->input('caption'),
             'alt_text' => $request->input('alt_text'),
             'description' => $request->input('description'),
+        ]);
+
+        \App\Facades\Audit::logContent('media.updated', [
+            'actor' => auth()->user(),
+            'target' => $media,
+            'target_label' => $media->name,
+            'context' => [
+                'updated_fields' => array_keys($request->validated()),
+            ],
         ]);
 
         return redirect()->route('admin.media.preview', $media->id)
@@ -458,6 +497,8 @@ class AdminMediaController extends AdminLoggedInController
             return redirect()->route('admin.media.index');
         }
 
+        $before = $this->mediaSettingRepository->getMultiple(static::MEDIA_SETTING_KEYS);
+
         $selectedTypes = $request->input('allowed_file_types', []);
         $maxFileSizeMB = $request->input('max_file_size');
         $maxFileSize = round($maxFileSizeMB * 1024);
@@ -476,6 +517,9 @@ class AdminMediaController extends AdminLoggedInController
 
         $this->mediaSettingRepository->set('zip_max_compression_ratio', $request->input('zip_max_compression_ratio'));
         $this->mediaSettingRepository->set('zip_max_file_count', $request->input('zip_max_file_count'));
+
+        $after = $this->mediaSettingRepository->getMultiple(static::MEDIA_SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('media.settings', $before, $after, auth()->user());
 
         return redirect()->back()->with('success', __('admin/media/settings.success.settings_updated'));
     }

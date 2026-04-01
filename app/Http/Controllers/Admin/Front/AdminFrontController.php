@@ -152,7 +152,7 @@ class AdminFrontController extends AdminLoggedInController
         }
 
         // コンテンツ作成（常にDBにもコンテンツを保存 = バックアップ）
-        FrontPage::create([
+        $frontPage = FrontPage::create([
             'page_type' => 'main_content',
             'lang' => $validated['lang'],
             'content' => $content,
@@ -161,6 +161,16 @@ class AdminFrontController extends AdminLoggedInController
             'editor_type' => $editorTypeEnum,
             'storage_type' => $storageTypeEnum,
             'status' => ContentStatus::PUBLISHED,
+        ]);
+
+        \App\Facades\Audit::logContent('front_page.created', [
+            'actor' => auth()->user(),
+            'target' => $frontPage,
+            'target_label' => $frontPage->lang ?? 'default',
+            'context' => [
+                'editor_type' => $frontPage->editor_type ?? null,
+                'storage_type' => $frontPage->storage_type ?? null,
+            ],
         ]);
 
         return redirect()
@@ -294,6 +304,12 @@ class AdminFrontController extends AdminLoggedInController
         }
         $frontPage->update($updateData);
 
+        \App\Facades\Audit::logContent('front_page.updated', [
+            'actor' => auth()->user(),
+            'target' => $frontPage,
+            'target_label' => $frontPage->lang ?? 'default',
+        ]);
+
         return redirect()
             ->route('admin.front.edit')
             ->with('success', __('admin/front.edit.save_success'));
@@ -307,6 +323,8 @@ class AdminFrontController extends AdminLoggedInController
         $frontPage = FrontPage::findByType('main_content');
 
         if ($frontPage) {
+            $label = $frontPage->lang ?? 'default';
+
             // ファイル保存の場合、関連ファイルも削除
             if ($frontPage->storage_type === ContentStorageType::FILE) {
                 $this->contentService->deleteFile(
@@ -323,6 +341,12 @@ class AdminFrontController extends AdminLoggedInController
             }
 
             $frontPage->delete();
+
+            \App\Facades\Audit::logContent('front_page.deleted', [
+                'actor' => auth()->user(),
+                'target_label' => $label,
+                'severity' => 'warning',
+            ]);
         }
 
         return redirect()
