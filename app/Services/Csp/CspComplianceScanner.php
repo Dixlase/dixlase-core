@@ -201,6 +201,11 @@ class CspComplianceScanner
                     continue;
                 }
 
+                // @cspNonce 付きはCSP準拠のため除外
+                if (str_contains($tag, '@cspNonce')) {
+                    continue;
+                }
+
                 // Bladeコメント内は除外
                 if ($this->isInsideBladeComment($content, $offset)) {
                     continue;
@@ -233,6 +238,11 @@ class CspComplianceScanner
             foreach ($matches[0] as $match) {
                 $tag = $match[0];
                 $offset = $match[1];
+
+                // @cspNonce 付きはCSP準拠のため除外
+                if (str_contains($tag, '@cspNonce')) {
+                    continue;
+                }
 
                 // Bladeコメント内は除外
                 if ($this->isInsideBladeComment($content, $offset)) {
