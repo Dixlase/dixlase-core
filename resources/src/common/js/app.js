@@ -44,6 +44,7 @@ import '../../components/two-fa/js/two-fa-profile-settings';
 import '../../components/two-fa/js/webauthn-utils';
 import '../../components/two-fa/js/two-fa-management';
 import '../../components/js/form-content-editor';
+import '../../components/js/content-preview-mixin';
 import '../../components/media/js/selector';
 import '../../components/mail-server/js/test';
 import '../../components/mail-server/js/verification';

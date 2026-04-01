@@ -30,4 +30,10 @@ return [
     'storage_section' => 'Storage',
     'storage_type_label' => 'Storage Type',
     'storage_file_path' => 'File path:',
+
+    'preview_tab_edit' => 'Edit',
+    'preview_tab_preview' => 'Preview',
+    'preview_loading' => 'Loading preview...',
+    'preview_error' => 'Failed to load preview.',
+    'preview_empty' => 'Enter content to preview.',
 ];

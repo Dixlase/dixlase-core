@@ -30,4 +30,10 @@ return [
     'storage_section' => '保存設定',
     'storage_type_label' => '保存方法',
     'storage_file_path' => 'ファイルパス:',
+
+    'preview_tab_edit' => '編集',
+    'preview_tab_preview' => 'プレビュー',
+    'preview_loading' => 'プレビューを読み込み中...',
+    'preview_error' => 'プレビューの読み込みに失敗しました。',
+    'preview_empty' => 'プレビューするコンテンツを入力してください。',
 ];
