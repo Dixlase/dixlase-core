@@ -929,14 +929,19 @@ class ExtensionCardPresenter
                 ];
             } else {
                 $reasonKey = str_replace('.', '_', $reason['key'] ?? '');
+                $severity = $reason['severity'] ?? 'medium';
                 $formatted[] = [
                     'text' => __($translationPrefix.'.permissions.attention_reason_'.$reasonKey),
-                    'color' => ($reason['severity'] ?? 'medium') === 'high'
-                        ? 'text-orange-600 dark:text-orange-400'
-                        : 'text-yellow-600 dark:text-yellow-400',
-                    'icon' => ($reason['severity'] ?? 'medium') === 'high'
-                        ? 'fas fa-exclamation-circle'
-                        : 'fas fa-info-circle',
+                    'color' => match ($severity) {
+                        'high' => 'text-orange-600 dark:text-orange-400',
+                        'info' => 'text-blue-600 dark:text-blue-400',
+                        default => 'text-yellow-600 dark:text-yellow-400',
+                    },
+                    'icon' => match ($severity) {
+                        'high' => 'fas fa-exclamation-circle',
+                        'info' => 'fas fa-check-circle',
+                        default => 'fas fa-info-circle',
+                    },
                     'score' => $reason['score'] ?? 0,
                 ];
             }
