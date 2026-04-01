@@ -60,11 +60,12 @@ Reusable preview container with device toggle, scaling, and theme isolation.
     </div>
 
     {{-- Scaled Preview Container --}}
-    <div class="rounded-xl overflow-hidden shadow-2xl relative w-full border border-gray-100 dark:border-gray-700" id="{{ $outerId }}" style="min-height: 400px;">
-        <div class="absolute top-0 left-0 transition-[width] duration-300" id="{{ $innerId }}"
+    <div class="rounded-xl overflow-hidden shadow-2xl relative w-full border border-gray-100 dark:border-gray-700" id="{{ $outerId }}" style="min-height: 300px;">
+        <div class="transition-[width] duration-300" id="{{ $innerId }}"
              data-preview-theme="{{ $appearanceMode === '1' ? 'light' : 'dark' }}"
              @appearance-changed.window="$el.dataset.previewTheme = $event.detail.mode === '1' ? 'light' : 'dark'"
-             :style="'width: ' + previewDeviceWidth + 'px; transform-origin: top left;'">
+             :style="previewDevice === 'desktop' ? 'width: 100%;' : 'width: ' + previewDeviceWidth + 'px; transform-origin: top left; position: absolute; top: 0; left: 0;'"
+             :class="previewDevice === 'desktop' ? 'relative' : 'absolute top-0 left-0'">
 
             {{ $slot }}
 
@@ -114,17 +115,28 @@ window.previewContainerMixin = function(outerId = 'preview-outer', innerId = 'pr
             const outer = document.getElementById(outerId);
             const inner = document.getElementById(innerId);
             if (outer && inner) {
-                const containerWidth = outer.offsetWidth;
-                const deviceWidth = this.previewDeviceWidth;
-                const scale = this.previewDevice === 'desktop'
-                    ? containerWidth / deviceWidth
-                    : Math.min(containerWidth / deviceWidth, 1);
-                inner.style.transform = 'scale(' + scale + ')';
-                const contentHeight = inner.scrollHeight || 900;
-                outer.style.height = Math.max(contentHeight * scale, 300) + 'px';
-                const scaledWidth = deviceWidth * scale;
-                const offsetX = (containerWidth - scaledWidth) / 2;
-                inner.style.left = Math.max(offsetX, 0) + 'px';
+                if (this.previewDevice === 'desktop') {
+                    // デスクトップ: スケーリングなしのリキッドレイアウト
+                    inner.style.width = '100%';
+                    inner.style.transform = 'none';
+                    inner.style.position = 'relative';
+                    inner.style.left = '0';
+                    outer.style.height = 'auto';
+                    outer.style.minHeight = '300px';
+                } else {
+                    // モバイル/タブレット: 固定幅 + スケーリング
+                    const containerWidth = outer.offsetWidth;
+                    const deviceWidth = this.previewDeviceWidth;
+                    const scale = Math.min(containerWidth / deviceWidth, 1);
+                    inner.style.width = deviceWidth + 'px';
+                    inner.style.transform = 'scale(' + scale + ')';
+                    inner.style.position = 'absolute';
+                    const contentHeight = inner.scrollHeight || 900;
+                    outer.style.height = Math.max(contentHeight * scale, 300) + 'px';
+                    const scaledWidth = deviceWidth * scale;
+                    const offsetX = (containerWidth - scaledWidth) / 2;
+                    inner.style.left = Math.max(offsetX, 0) + 'px';
+                }
             }
         },
     };
