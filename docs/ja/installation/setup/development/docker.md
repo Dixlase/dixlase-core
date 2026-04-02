@@ -54,7 +54,7 @@ docker exec -i dixlase-vite-1 npm run build
 | Root パスワード | `root` |
 | テーブルプレフィックス | `dls_` |
 
-[インストールウィザード](../wizard.md)でこれらの値を使用してください。
+[インストールウィザード](../../wizard.md)でこれらの値を使用してください。
 
 ## デフォルトメール設定
 
@@ -155,4 +155,4 @@ docker exec -i dixlase-vite-1 npm run build
 
 ## 次のステップ
 
-コンテナが起動し `http://localhost:8080` にアクセスできたら、[インストールウィザード](../wizard.md)に進んでセットアップを完了してください。
+コンテナが起動し `http://localhost:8080` にアクセスできたら、[インストールウィザード](../../wizard.md)に進んでセットアップを完了してください。
