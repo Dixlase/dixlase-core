@@ -1,12 +1,26 @@
 # セットアップガイド
+
 環境に合ったセットアップ方法を選択してください。
 
-## Docker（推奨）
+## Dixlaseの入手
 
-最も手軽な方法です。PHP、データベース、Webサーバー、メール、キャッシュなど、すべてのサービスがコンテナで事前設定されています。
+まず、Dixlaseのソースコードを入手してください。利用可能な方法は[ダウンロード・入手方法](download/index.md)をご覧ください。
 
-- [Docker セットアップ](docker.md)
+## 開発環境
 
-## その他の方法
+開発・テスト用のローカル環境を構築します。
 
-今後のリリースで追加のセットアップ方法を掲載予定です。
+- [Docker](development/docker.md) — 推奨。全サービスがコンテナで事前設定済み
+- [Laravel Herd](development/laravel-herd.md) — Mac/Windows向けワンクリックPHP + Nginx
+- [XAMPP / MAMP](development/xampp-mamp.md) — クラシックなGUIベースのローカルサーバー
+- [Valet](development/valet.md) — Mac向け軽量バックグラウンドサーバー
+- [手動セットアップ](development/manual.md) — PHP、Composer、データベースを個別にインストール
+
+## 本番環境
+
+Dixlaseをライブサーバーにデプロイします。
+
+- [VPS / クラウドサーバー](production/vps-cloud.md) — 自前サーバーでNginx + PHP-FPM
+- [共有レンタルサーバー](production/shared-hosting.md) — 共有ホスティングにデプロイ
+- [Docker本番環境](production/docker-production.md) — コンテナで本番運用
+- [PaaS](production/paas.md) — Laravel ForgeやPloiなどのマネージドプラットフォーム

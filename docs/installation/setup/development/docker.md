@@ -54,7 +54,7 @@ docker exec -i dixlase-vite-1 npm run build
 | Root Password | `root` |
 | Table Prefix | `dls_` |
 
-Use these values when configuring the [Installation Wizard](../wizard.md).
+Use these values when configuring the [Installation Wizard](../../wizard.md).
 
 ## Default Mail Configuration
 
@@ -155,4 +155,4 @@ For hot-reload during development, run `npm run dev` instead.
 
 ## Next Steps
 
-Once the containers are running and you can access `http://localhost:8080`, proceed to the [Installation Wizard](../wizard.md) to complete setup.
+Once the containers are running and you can access `http://localhost:8080`, proceed to the [Installation Wizard](../../wizard.md) to complete setup.
