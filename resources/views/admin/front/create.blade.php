@@ -129,6 +129,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <x-form-error name="custom_js" />
                 </div>
             </div>
+
+            {{-- ===== プレビュー ===== --}}
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="flex items-center px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-eye mr-1"></i>{{ __('admin/front.edit.preview_title') }}
+                    </span>
+                </div>
+                <div class="bg-gray-100 dark:bg-gray-900 p-4 min-h-[200px]">
+                    <div class="bg-white dark:bg-gray-800 rounded shadow-sm border border-gray-300 dark:border-gray-600 p-6 max-w-4xl mx-auto min-h-[150px]">
+                        <div x-ref="previewContent"
+                             class="dls-preview-prose max-w-none">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         {{-- ===== 右サイドバートグルボタン ===== --}}

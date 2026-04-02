@@ -5,7 +5,7 @@
  * Website: https://exc-d.com
  *
  * スプリットペイン + ライブプレビュー Alpine.js コンポーネント
- * フロントページ編集画面で使用。左ペインにエディタ、右ペインにiframeテーマプレビューを配置し、
+ * フロントページ編集画面で使用。左ペインにエディタ、右ペインに疑似インラインフレームプレビューを配置し、
  * 編集内容をリアルタイムにプレビューに反映する。
  */
 
@@ -30,33 +30,24 @@ const DEBOUNCE_DELAYS = {
 function createSplitPaneEditor(config) {
     return {
         // --- スプリットペイン ---
-        splitRatio: parseFloat(localStorage.getItem(STORAGE_KEY_SPLIT_RATIO) || '0.4'),
+        splitRatio: parseFloat(localStorage.getItem(STORAGE_KEY_SPLIT_RATIO) || '0.5'),
         isDragging: false,
 
-        // --- プレビュー状態 ---
-        previewReady: false,
-        previewLoading: true,
-
         // --- デバイスプレビュー ---
-        previewDevice: 'desktop',
-        freeWidth: 1440,
-        freeHeight: 900,
+        previewDevice: 'free',
+        freeWidth: 800,
+        freeHeight: 600,
         isResizingPreview: false,
 
         // --- エディタ設定 ---
         editorType: config.editorType || 'html',
         editorTypeValue: config.editorTypeValue || 'html',
         previewUrl: config.previewUrl || '',
-        previewFrameUrl: config.previewFrameUrl || '',
 
         // --- ストレージ関連 ---
         storageType: config.defaultStorageType || 'database',
         fileStorageBasePath: config.fileStorageBasePath || '',
         activeTab: 'content',
-
-        // --- 右サイドバー ---
-        rightSidebarCollapsed: false,
-        rightSidebarReady: false,
 
         // --- 内部状態 ---
         _debounceTimer: null,
@@ -112,34 +103,16 @@ function createSplitPaneEditor(config) {
         init() {
             this.$dispatch('right-sidebar-active');
 
-            // iframe ready リスナー
-            this._onMessage = (e) => {
-                if (e.origin !== window.location.origin) return;
-                if (e.data?.type === 'dixlase-preview-ready') {
-                    this.previewReady = true;
-                    this.previewLoading = false;
-                    this.sendContentToPreview();
-                }
-            };
-            window.addEventListener('message', this._onMessage);
-
             this.$nextTick(() => {
                 this.initAutoResizeTextareas();
                 this.watchContentChanges();
-
-                // 右サイドバーのアニメーションを遅延有効化
-                setTimeout(() => { this.rightSidebarReady = true; }, 100);
+                this.renderToPreview();
             });
 
             // splitRatio永続化
             this.$watch('splitRatio', (v) => {
                 localStorage.setItem(STORAGE_KEY_SPLIT_RATIO, v.toString());
             });
-        },
-
-        // --- 右サイドバー ---
-        toggleRightSidebar() {
-            this.rightSidebarCollapsed = !this.rightSidebarCollapsed;
         },
 
         // --- スプリットペイン ドラッグ ---
@@ -210,7 +183,7 @@ function createSplitPaneEditor(config) {
             document.addEventListener('mouseup', onUp);
         },
 
-        // --- コンテンツ監視・リアルタイム更新 ---
+        // --- コンテンツ監視 ---
         watchContentChanges() {
             const contentEl = document.getElementById('content');
             if (contentEl) {
@@ -226,32 +199,31 @@ function createSplitPaneEditor(config) {
         onContentChange() {
             clearTimeout(this._debounceTimer);
             const delay = DEBOUNCE_DELAYS[this.editorType] ?? 400;
-            this._debounceTimer = setTimeout(() => this.renderAndSend(), delay);
+            this._debounceTimer = setTimeout(() => this.renderToPreview(), delay);
         },
 
         onCssChange() {
             clearTimeout(this._cssDebounceTimer);
-            this._cssDebounceTimer = setTimeout(() => {
-                const css = document.getElementById('custom_css')?.value || '';
-                this.postToIframe('updateCustomCss', { css });
-            }, 200);
+            this._cssDebounceTimer = setTimeout(() => this.updateCustomCssPreview(), 200);
         },
 
-        renderAndSend() {
+        // --- プレビューレンダリング ---
+        renderToPreview() {
             const content = document.getElementById('content')?.value || '';
-            if (!this.previewReady) return;
+            const previewEl = this.$refs.previewContent;
+            if (!previewEl) return;
 
             if (this.editorType === 'html') {
-                this.postToIframe('updateContent', { html: content });
+                previewEl.innerHTML = content;
+                this.updateCustomCssPreview();
             } else if (this.editorType === 'markdown') {
-                const html = window.marked ? window.marked.parse(content) : content;
-                this.postToIframe('updateContent', { html });
+                previewEl.innerHTML = window.marked ? window.marked.parse(content) : content;
             } else {
-                this.serverRenderAndSend(content);
+                this.serverRenderToPreview(content);
             }
         },
 
-        async serverRenderAndSend(content) {
+        async serverRenderToPreview(content) {
             // 前回の未完了リクエストをキャンセル
             if (this._abortController) {
                 this._abortController.abort();
@@ -276,7 +248,10 @@ function createSplitPaneEditor(config) {
 
                 if (!response.ok) return;
                 const data = await response.json();
-                this.postToIframe('updateContent', { html: data.html || '' });
+                const previewEl = this.$refs.previewContent;
+                if (previewEl) {
+                    previewEl.innerHTML = data.html || '';
+                }
             } catch (error) {
                 if (error.name !== 'AbortError') {
                     console.error('Preview render failed:', error);
@@ -284,24 +259,15 @@ function createSplitPaneEditor(config) {
             }
         },
 
-        sendContentToPreview() {
-            this.renderAndSend();
-            // カスタムCSSも送信
-            if (this.isHtmlEditor) {
-                const css = document.getElementById('custom_css')?.value || '';
-                if (css) {
-                    this.postToIframe('updateCustomCss', { css });
-                }
+        updateCustomCssPreview() {
+            const css = document.getElementById('custom_css')?.value || '';
+            let styleEl = document.getElementById('dls-preview-custom-css');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'dls-preview-custom-css';
+                document.head.appendChild(styleEl);
             }
-        },
-
-        postToIframe(action, data) {
-            const iframe = this.$refs.previewIframe;
-            if (!iframe?.contentWindow) return;
-            iframe.contentWindow.postMessage(
-                { type: 'dixlase-preview-update', action, ...data },
-                window.location.origin
-            );
+            styleEl.textContent = css;
         },
 
         // --- モバイルUX ---

@@ -5,7 +5,7 @@
  * Website: https://exc-d.com
  *
  * フロントページ作成画面の Alpine.js コンポーネント
- * 言語・エディタータイプ切り替えでテンプレートを自動適用
+ * 言語・エディタータイプ切り替えでテンプレートを自動適用し、リアルタイムプレビューを表示
  * （編集画面は split-pane-editor.js の splitPaneEditor コンポーネントを使用）
  */
 
@@ -23,6 +23,9 @@ function createFrontPageCreate(config) {
         storageType: config.defaultStorageType || 'database',
         fileStorageBasePath: config.fileStorageBasePath || '',
         activeTab: 'content',
+
+        // --- プレビュー内部状態 ---
+        _debounceTimer: null,
 
         get isHtmlEditor() {
             return this.editorType === 'html';
@@ -66,6 +69,7 @@ function createFrontPageCreate(config) {
 
             this.$nextTick(() => {
                 this.applyTemplate();
+                this.watchContentChanges();
             });
         },
 
@@ -77,6 +81,54 @@ function createFrontPageCreate(config) {
                     contentEl.value = tpl.content;
                 }
             }
+            // テンプレート適用後にプレビューを更新
+            this.$nextTick(() => this.renderToPreview());
+        },
+
+        // --- コンテンツ監視・プレビュー ---
+        watchContentChanges() {
+            const contentEl = document.getElementById('content');
+            if (contentEl) {
+                contentEl.addEventListener('input', () => {
+                    clearTimeout(this._debounceTimer);
+                    this._debounceTimer = setTimeout(() => this.renderToPreview(), 200);
+                });
+            }
+
+            const cssEl = document.getElementById('custom_css');
+            if (cssEl) {
+                cssEl.addEventListener('input', () => {
+                    clearTimeout(this._debounceTimer);
+                    this._debounceTimer = setTimeout(() => this.updateCustomCssPreview(), 200);
+                });
+            }
+        },
+
+        renderToPreview() {
+            const content = document.getElementById('content')?.value || '';
+            const previewEl = this.$refs.previewContent;
+            if (!previewEl) return;
+
+            if (this.editorType === 'html') {
+                previewEl.innerHTML = content;
+                this.updateCustomCssPreview();
+            } else if (this.editorType === 'markdown') {
+                previewEl.innerHTML = window.marked ? window.marked.parse(content) : content;
+            } else {
+                // Blade/GUI はクライアントサイドレンダリング不可 — テキストとして表示
+                previewEl.textContent = content;
+            }
+        },
+
+        updateCustomCssPreview() {
+            const css = document.getElementById('custom_css')?.value || '';
+            let styleEl = document.getElementById('dls-preview-custom-css');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'dls-preview-custom-css';
+                document.head.appendChild(styleEl);
+            }
+            styleEl.textContent = css;
         },
     };
 }

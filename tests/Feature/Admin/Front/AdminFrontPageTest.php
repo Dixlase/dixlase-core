@@ -677,7 +677,7 @@ class AdminFrontPageTest extends TestCase
         $response->assertJson(['html' => '']);
     }
 
-    public function test_edit_passes_preview_url_and_preview_frame_url(): void
+    public function test_edit_passes_preview_url(): void
     {
         FrontPage::create([
             'page_type' => 'main_content',
@@ -693,7 +693,6 @@ class AdminFrontPageTest extends TestCase
 
         $response->assertOk();
         $response->assertViewHas('previewUrl');
-        $response->assertViewHas('previewFrameUrl');
         $response->assertViewHas('editorTypeValue', 'html');
     }
 
