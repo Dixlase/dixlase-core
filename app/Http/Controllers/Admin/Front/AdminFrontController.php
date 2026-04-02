@@ -253,7 +253,6 @@ class AdminFrontController extends AdminLoggedInController
         $this->viewParams['guiEditorInfo'] = $guiEditorInfo;
         $this->viewParams['guiEditorAssetHtml'] = $guiEditorInfo ? ContentEditorPresenter::editorAssetHtml($guiEditorInfo) : '';
         $this->viewParams['previewUrl'] = route('admin.front.preview');
-        $this->viewParams['previewFrameUrl'] = route('admin.front.preview-frame');
         $this->viewParams['editorTypeValue'] = $frontPage->editor_type->slug();
 
         return view('admin::front/edit', $this->viewParams);

@@ -29,8 +29,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
               fileStorageBasePath: '{{ $fileStorageBasePath }}',
               editorType: '{{ $editorType }}',
               editorTypeValue: '{{ $editorTypeValue }}',
-              previewUrl: '{{ $previewUrl }}',
-              previewFrameUrl: '{{ $previewFrameUrl }}'
+              previewUrl: '{{ $previewUrl }}'
           })">
         @csrf
         @method('PUT')
@@ -49,13 +48,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         {{-- ===== スプリットペインコンテナ ===== --}}
         <div x-ref="splitContainer"
-             class="flex flex-col lg:flex-row -mx-8 -mb-8"
+             class="flex flex-col lg:flex-row gap-4"
              :class="isDragging || isResizingPreview ? 'select-none' : ''">
 
             {{-- ===== 左ペイン: エディタ ===== --}}
             <div x-ref="editorPane"
-                 class="w-full lg:overflow-y-auto px-6 py-4 lg:border-r border-gray-200 dark:border-gray-700"
-                 :style="window.innerWidth >= 1024 ? 'width: ' + (splitRatio * 100) + '%; max-height: calc(100vh - 120px)' : ''">
+                 class="w-full lg:overflow-y-auto"
+                 :style="window.innerWidth >= 1024 ? 'width: ' + (splitRatio * 100) + '%; max-height: calc(100vh - 160px)' : ''">
 
                 <div class="space-y-4">
                     {{-- タブナビゲーション（HTML エディタ時のみ） --}}
@@ -153,10 +152,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- ===== 右ペイン: プレビュー ===== --}}
             <div x-ref="previewPane"
                  class="w-full lg:overflow-y-auto"
-                 :style="window.innerWidth >= 1024 ? 'width: ' + ((1 - splitRatio) * 100) + '%; max-height: calc(100vh - 120px)' : ''">
+                 :style="window.innerWidth >= 1024 ? 'width: ' + ((1 - splitRatio) * 100) + '%; max-height: calc(100vh - 160px)' : ''">
 
                 {{-- プレビューヘッダー --}}
-                <div class="flex flex-wrap items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 gap-2">
+                <div class="flex flex-wrap items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg gap-2">
                     <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
                         <i class="fas fa-eye mr-1"></i>{{ __('admin/front.edit.preview_title') }}
                     </span>
@@ -212,24 +211,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
 
                 {{-- プレビューコンテナ --}}
-                <div class="flex justify-center bg-gray-100 dark:bg-gray-900 p-4 min-h-[400px] relative">
-                    {{-- ローディングオーバーレイ --}}
-                    <div x-show="previewLoading" x-transition class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900 z-10">
-                        <div class="text-center">
-                            <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-3 block"></i>
-                            <p class="text-sm text-gray-500">{{ __('components/content-editor.preview_loading') }}</p>
+                <div class="flex justify-center bg-gray-100 dark:bg-gray-900 p-4 min-h-[300px] relative border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg">
+                    <div class="relative transition-all duration-300"
+                         :style="'width: ' + currentPreviewWidth + 'px; max-width: 100%;'">
+                        <div class="bg-white dark:bg-gray-800 rounded shadow-lg overflow-auto border border-gray-300 dark:border-gray-600"
+                             :style="'height: ' + currentPreviewHeight + 'px'">
+                            <div x-ref="previewContent"
+                                 class="dls-preview-prose p-6 max-w-none">
+                            </div>
                         </div>
-                    </div>
-
-                    {{-- iframe + リサイズハンドル --}}
-                    <div class="relative inline-block transition-all duration-300"
-                         :style="'width: ' + currentPreviewWidth + 'px; height: ' + currentPreviewHeight + 'px; max-width: 100%;'">
-                        <iframe x-ref="previewIframe"
-                                src="{{ $previewFrameUrl }}"
-                                class="w-full h-full border border-gray-300 dark:border-gray-600 bg-white rounded shadow-lg"
-                                sandbox="allow-scripts allow-same-origin allow-forms"
-                                title="{{ __('admin/front.edit.preview_title') }}">
-                        </iframe>
 
                         {{-- 右辺リサイズハンドル --}}
                         <div class="absolute top-0 -right-1.5 w-3 h-full cursor-ew-resize group z-10"
