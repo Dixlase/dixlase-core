@@ -4,8 +4,9 @@
  * Copyright (C) 2025 exc-D inc.
  * Website: https://exc-d.com
  *
- * フロントページ作成・編集画面の Alpine.js コンポーネント
- * テンプレート切り替え + 右サイドバー起動 + 保存方法選択
+ * フロントページ作成画面の Alpine.js コンポーネント
+ * 言語・エディタータイプ切り替えでテンプレートを自動適用
+ * （編集画面は split-pane-editor.js の splitPaneEditor コンポーネントを使用）
  */
 
 import Alpine from 'alpinejs';
@@ -80,92 +81,4 @@ function createFrontPageCreate(config) {
     };
 }
 
-/**
- * フロントページ編集画面
- * 保存方法選択 + 右サイドバー起動
- */
-function createFrontPageEditor(config) {
-    return {
-        ...contentPreviewMixin({
-            previewUrl: config.previewUrl || '',
-            editorTypeValue: config.editorTypeValue || 'html',
-            contentElementId: 'content',
-        }),
-
-        storageType: config.defaultStorageType || 'database',
-        fileStorageBasePath: config.fileStorageBasePath || '',
-        editorType: config.editorType || 'html',
-        langCode: config.langCode || 'en',
-        activeTab: 'content',
-
-        get isHtmlEditor() {
-            return this.editorType === 'html';
-        },
-
-        get isFileStorage() {
-            return this.storageType === 'file';
-        },
-
-        get filePath() {
-            if (!this.isFileStorage) {
-                return '';
-            }
-            const ext = this.editorType === 'markdown' ? 'md' : 'html';
-            return this.fileStorageBasePath + '/content.' + ext;
-        },
-
-        get jsFilePath() {
-            if (!this.isFileStorage || !this.isHtmlEditor) {
-                return '';
-            }
-            return this.fileStorageBasePath + '/script.js';
-        },
-
-        get cssFilePath() {
-            if (!this.isFileStorage || !this.isHtmlEditor) {
-                return '';
-            }
-            return this.fileStorageBasePath + '/style.css';
-        },
-
-        init() {
-            this.$dispatch('right-sidebar-active');
-
-            // エディタフォーム要素をプレビューシェルのコンテンツエリアに移動
-            this.$nextTick(() => {
-                const target = document.getElementById('editor-embed-target');
-                const fields = this.$refs.editorFields;
-                if (target && fields) {
-                    fields.classList.remove('hidden');
-                    target.appendChild(fields);
-                }
-
-                // data-auto-resize 属性を持つ textarea を自動リサイズ
-                this.initAutoResizeTextareas();
-            });
-        },
-
-        /**
-         * エディタの textarea の高さをコンテンツに合わせて自動調整
-         */
-        initAutoResizeTextareas() {
-            ['content', 'custom_css', 'custom_js'].forEach((id) => {
-                const textarea = document.getElementById(id);
-                if (!textarea) {
-                    return;
-                }
-                textarea.style.overflow = 'hidden';
-                textarea.style.resize = 'none';
-                const resize = () => {
-                    textarea.style.height = 'auto';
-                    textarea.style.height = textarea.scrollHeight + 'px';
-                };
-                textarea.addEventListener('input', resize);
-                resize();
-            });
-        },
-    };
-}
-
 Alpine.data('frontPageCreate', createFrontPageCreate);
-Alpine.data('frontPageEditor', createFrontPageEditor);

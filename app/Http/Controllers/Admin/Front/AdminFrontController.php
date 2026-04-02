@@ -253,9 +253,73 @@ class AdminFrontController extends AdminLoggedInController
         $this->viewParams['guiEditorInfo'] = $guiEditorInfo;
         $this->viewParams['guiEditorAssetHtml'] = $guiEditorInfo ? ContentEditorPresenter::editorAssetHtml($guiEditorInfo) : '';
         $this->viewParams['previewUrl'] = route('admin.front.preview');
+        $this->viewParams['previewFrameUrl'] = route('admin.front.preview-frame');
         $this->viewParams['editorTypeValue'] = $frontPage->editor_type->slug();
 
         return view('admin::front/edit', $this->viewParams);
+    }
+
+    /**
+     * iframe用プレビューフレーム（テーマレイアウトでフロントページを表示）
+     *
+     * 管理画面の編集画面内iframeに読み込まれる。
+     * テーマの layouts.app を使用してフロントページと同じ見た目で表示し、
+     * postMessage でコンテンツをリアルタイム更新する。
+     */
+    public function previewFrame(): View
+    {
+        // CSP frame-ancestors を 'self' に上書き（iframe埋め込み許可）
+        request()->attributes->set('csp_frame_ancestors_self', true);
+
+        // テーマ設定を読み込む（FrontController と同じロジック）
+        $themeSettings = $this->loadThemeSettingsForPreview();
+
+        // フロントページの初期コンテンツを取得・レンダリング
+        $frontPage = FrontPage::findByType('main_content');
+        $initialRenderedContent = '';
+
+        if ($frontPage) {
+            $rawContent = $this->contentService->getContent($frontPage, $frontPage->lang);
+            if ($rawContent) {
+                $initialRenderedContent = $this->previewService->render($rawContent, $frontPage->editor_type);
+            }
+        }
+
+        return view('themes::admin.preview-frame', [
+            'themeSettings' => $themeSettings,
+            'initialRenderedContent' => $initialRenderedContent,
+        ]);
+    }
+
+    /**
+     * プレビューフレーム用にテーマ設定を読み込む
+     */
+    protected function loadThemeSettingsForPreview(): object
+    {
+        try {
+            $activeThemeId = \Illuminate\Support\Facades\DB::table('theme_settings')
+                ->where('key', 'enabled_theme_id')
+                ->value('value');
+
+            if (! $activeThemeId) {
+                return (object) [];
+            }
+
+            $theme = \Illuminate\Support\Facades\DB::table('themes')->find($activeThemeId);
+            if (! $theme) {
+                return (object) [];
+            }
+
+            $settingsTableName = 'thm_'.strtolower(str_replace('-', '_', $theme->slug)).'_settings';
+
+            $settings = \Illuminate\Support\Facades\DB::table($settingsTableName)
+                ->get()
+                ->pluck('value', 'name');
+
+            return (object) $settings->toArray();
+        } catch (\Exception $e) {
+            return (object) [];
+        }
     }
 
     /**

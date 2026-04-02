@@ -24,18 +24,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form id="front-page-edit-form"
           action="{{ route('admin.front.edit.update') }}"
           method="POST"
-          x-data="frontPageEditor({
+          x-data="splitPaneEditor({
               defaultStorageType: '{{ old('storage_type', $storageType) }}',
               fileStorageBasePath: '{{ $fileStorageBasePath }}',
               editorType: '{{ $editorType }}',
-              langCode: '{{ $langCode }}',
+              editorTypeValue: '{{ $editorTypeValue }}',
               previewUrl: '{{ $previewUrl }}',
-              editorTypeValue: '{{ $editorTypeValue }}'
+              previewFrameUrl: '{{ $previewFrameUrl }}'
           })">
         @csrf
         @method('PUT')
 
-        {{-- ===== エディタータイプ + 言語（プレビュー外に配置） ===== --}}
+        {{-- ===== エディタータイプ + 言語バッジ ===== --}}
         <div class="flex flex-wrap items-center gap-3 mb-4 text-xs">
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
                 <i class="{{ $editorTypeIcon }}" style="color: {{ $editorTypeColor }}"></i>
@@ -47,120 +47,224 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </span>
         </div>
 
-        {{-- ===== テーマプレビューシェル（常時表示） ===== --}}
-        {{-- コンテンツエリアに編集/プレビュータブ + エディタ + プレビューを共存させる --}}
-        @includeIf('themes::admin.preview-shell', [
-            'previewContent' => '<div class="not-prose">'
-                {{-- 編集/プレビュー切替タブ（コンテンツエリア内） --}}
-                . '<div class="mb-4">'
-                . '<nav class="inline-flex gap-x-1 rounded-lg bg-gray-800/90 backdrop-blur-sm p-1 shadow-lg" aria-label="Tabs">'
-                . '<button type="button" @click="showEditor()" :class="!previewMode ? \'bg-blue-600 text-white shadow-sm\' : \'text-gray-300 hover:text-white hover:bg-gray-700/80\'" class="flex items-center gap-x-2 rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors">'
-                . '<i class="fas fa-edit"></i>' . __('components/content-editor.preview_tab_edit')
-                . '</button>'
-                . '<button type="button" @click="loadPreview()" :class="previewMode ? \'bg-blue-600 text-white shadow-sm\' : \'text-gray-300 hover:text-white hover:bg-gray-700/80\'" class="flex items-center gap-x-2 rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors">'
-                . '<i class="fas fa-eye"></i>' . __('components/content-editor.preview_tab_preview')
-                . '</button>'
-                . '</nav>'
-                . '</div>'
-                {{-- エディタ埋め込みターゲット --}}
-                . '<div id="editor-embed-target" x-show="!previewMode"></div>'
-                {{-- プレビュー表示エリア --}}
-                . '<div x-show="previewMode" x-cloak>'
-                . '<div x-show="previewLoading" class="text-center py-12">'
-                . '<i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-3 block"></i>'
-                . '<p class="text-sm text-gray-500">' . __('components/content-editor.preview_loading') . '</p>'
-                . '</div>'
-                . '</div>'
-                . '</div>'
-                {{-- プレビューコンテンツ（prose 適用） --}}
-                . '<div x-show="previewMode && !previewLoading" x-cloak id="preview-content-slot"></div>',
-        ])
+        {{-- ===== スプリットペインコンテナ ===== --}}
+        <div x-ref="splitContainer"
+             class="flex flex-col lg:flex-row -mx-8 -mb-8"
+             :class="isDragging || isResizingPreview ? 'select-none' : ''">
 
-        {{-- ===== エディタフォーム要素（Alpine init でプレビューシェル内に移動される） ===== --}}
-        <div x-ref="editorFields" class="hidden">
-            <div class="space-y-4">
-                {{-- タブナビゲーション（HTML エディタ時のみ） --}}
-                @if ($isHtmlEditor)
-                    <x-content-editor.tabs />
-                @endif
+            {{-- ===== 左ペイン: エディタ ===== --}}
+            <div x-ref="editorPane"
+                 class="w-full lg:overflow-y-auto px-6 py-4 lg:border-r border-gray-200 dark:border-gray-700"
+                 :style="window.innerWidth >= 1024 ? 'width: ' + (splitRatio * 100) + '%; max-height: calc(100vh - 120px)' : ''">
 
-                {{-- Content タブ (non-GUI editors) --}}
-                @if(!($isGuiEditor ?? false))
-                <div x-show="activeTab === 'content'">
-                    <x-form-textarea
-                        id="content"
-                        name="content"
-                        :value="$body"
-                        rows="6"
-                        :placeholder="__('admin/front.edit.content_placeholder')"
-                        class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
-                    />
-                    <x-form-error name="content" />
-                </div>
-                @endif
+                <div class="space-y-4">
+                    {{-- タブナビゲーション（HTML エディタ時のみ） --}}
+                    @if ($isHtmlEditor)
+                        <x-content-editor.tabs />
+                    @endif
 
-                {{-- GUI エディター --}}
-                @if($isGuiEditor ?? false)
-                <div>
-                    @if($guiEditorInfo ?? null)
-                        @include($guiEditorInfo->viewName, [
-                            'contentFieldName' => 'content',
-                            'editorInfo' => $guiEditorInfo,
-                            'initialContent' => $body,
-                        ])
-                    @else
-                        <div class="p-4 bg-yellow-900/30 border border-yellow-700 rounded-lg">
-                            <div class="flex items-start">
-                                <i class="fas fa-exclamation-triangle text-yellow-500 mt-1 mr-3"></i>
-                                <div>
-                                    <p class="text-yellow-200 text-sm">
-                                        {{ __('common.content_editor.gui_unavailable') }}
-                                    </p>
-                                    <x-form-textarea
-                                        id="content"
-                                        name="content"
-                                        :value="$body"
-                                        rows="8"
-                                        class="mt-3 font-mono text-sm"
-                                        readonly
-                                    />
+                    {{-- Content タブ (non-GUI editors) --}}
+                    @if(!($isGuiEditor ?? false))
+                    <div x-show="activeTab === 'content'">
+                        <x-form-textarea
+                            id="content"
+                            name="content"
+                            :value="$body"
+                            rows="6"
+                            :placeholder="__('admin/front.edit.content_placeholder')"
+                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
+                        />
+                        <x-form-error name="content" />
+                    </div>
+                    @endif
+
+                    {{-- GUI エディター --}}
+                    @if($isGuiEditor ?? false)
+                    <div>
+                        @if($guiEditorInfo ?? null)
+                            @include($guiEditorInfo->viewName, [
+                                'contentFieldName' => 'content',
+                                'editorInfo' => $guiEditorInfo,
+                                'initialContent' => $body,
+                            ])
+                        @else
+                            <div class="p-4 bg-yellow-900/30 border border-yellow-700 rounded-lg">
+                                <div class="flex items-start">
+                                    <i class="fas fa-exclamation-triangle text-yellow-500 mt-1 mr-3"></i>
+                                    <div>
+                                        <p class="text-yellow-200 text-sm">
+                                            {{ __('common.content_editor.gui_unavailable') }}
+                                        </p>
+                                        <x-form-textarea
+                                            id="content"
+                                            name="content"
+                                            :value="$body"
+                                            rows="8"
+                                            class="mt-3 font-mono text-sm"
+                                            readonly
+                                        />
+                                    </div>
                                 </div>
                             </div>
+                        @endif
+                    </div>
+                    @endif
+
+                    @if ($isHtmlEditor)
+                        {{-- CSS タブ --}}
+                        <div x-show="activeTab === 'css'" x-cloak>
+                            <x-form-textarea
+                                id="custom_css"
+                                name="custom_css"
+                                :value="$customCss ?? ''"
+                                rows="6"
+                                :placeholder="__('admin/front.edit.custom_css_placeholder')"
+                                class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500 !overflow-hidden !resize-none"
+                                data-auto-resize
+                            />
+                            <x-form-error name="custom_css" />
+                        </div>
+
+                        {{-- JavaScript タブ --}}
+                        <div x-show="activeTab === 'js'" x-cloak>
+                            <x-form-textarea
+                                id="custom_js"
+                                name="custom_js"
+                                :value="$customJs ?? ''"
+                                rows="6"
+                                :placeholder="__('admin/front.edit.custom_js_placeholder')"
+                                class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500 !overflow-hidden !resize-none"
+                                data-auto-resize
+                            />
+                            <x-form-error name="custom_js" />
                         </div>
                     @endif
                 </div>
-                @endif
-
-                @if ($isHtmlEditor)
-                    {{-- CSS タブ --}}
-                    <div x-show="activeTab === 'css'" x-cloak>
-                        <x-form-textarea
-                            id="custom_css"
-                            name="custom_css"
-                            :value="$customCss ?? ''"
-                            rows="6"
-                            :placeholder="__('admin/front.edit.custom_css_placeholder')"
-                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500 !overflow-hidden !resize-none"
-                            data-auto-resize
-                        />
-                        <x-form-error name="custom_css" />
-                    </div>
-
-                    {{-- JavaScript タブ --}}
-                    <div x-show="activeTab === 'js'" x-cloak>
-                        <x-form-textarea
-                            id="custom_js"
-                            name="custom_js"
-                            :value="$customJs ?? ''"
-                            rows="6"
-                            :placeholder="__('admin/front.edit.custom_js_placeholder')"
-                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500 !overflow-hidden !resize-none"
-                            data-auto-resize
-                        />
-                        <x-form-error name="custom_js" />
-                    </div>
-                @endif
             </div>
+
+            {{-- ===== ドラッグ Divider (PC only) ===== --}}
+            <div class="hidden lg:flex items-center justify-center w-2 flex-shrink-0 cursor-col-resize transition-colors"
+                 :class="isDragging ? 'bg-blue-500 dark:bg-blue-400' : 'bg-gray-200 dark:bg-gray-700 hover:bg-blue-400 dark:hover:bg-blue-500'"
+                 @mousedown="startDrag($event)">
+                <div class="w-0.5 h-8 rounded-full"
+                     :class="isDragging ? 'bg-white' : 'bg-gray-400 dark:bg-gray-500'"></div>
+            </div>
+
+            {{-- ===== 右ペイン: プレビュー ===== --}}
+            <div x-ref="previewPane"
+                 class="w-full lg:overflow-y-auto"
+                 :style="window.innerWidth >= 1024 ? 'width: ' + ((1 - splitRatio) * 100) + '%; max-height: calc(100vh - 120px)' : ''">
+
+                {{-- プレビューヘッダー --}}
+                <div class="flex flex-wrap items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 gap-2">
+                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-eye mr-1"></i>{{ __('admin/front.edit.preview_title') }}
+                    </span>
+
+                    <div class="flex items-center gap-3">
+                        {{-- デバイストグルボタン --}}
+                        <div class="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5">
+                            <button type="button" @click="setPreviewDevice('mobile')"
+                                :class="previewDevice === 'mobile' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+                                class="px-2.5 py-1.5 rounded-md transition-all text-xs"
+                                title="{{ __('admin/front.edit.device_mobile') }} (375×667)">
+                                <i class="fas fa-mobile-alt"></i>
+                            </button>
+                            <button type="button" @click="setPreviewDevice('tablet')"
+                                :class="previewDevice === 'tablet' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+                                class="px-2.5 py-1.5 rounded-md transition-all text-xs"
+                                title="{{ __('admin/front.edit.device_tablet') }} (768×1024)">
+                                <i class="fas fa-tablet-alt"></i>
+                            </button>
+                            <button type="button" @click="setPreviewDevice('desktop')"
+                                :class="previewDevice === 'desktop' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+                                class="px-2.5 py-1.5 rounded-md transition-all text-xs"
+                                title="{{ __('admin/front.edit.device_desktop') }} (1440×900)">
+                                <i class="fas fa-desktop"></i>
+                            </button>
+                            <button type="button" @click="setPreviewDevice('free')"
+                                :class="previewDevice === 'free' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+                                class="px-2.5 py-1.5 rounded-md transition-all text-xs"
+                                title="{{ __('admin/front.edit.device_free') }}">
+                                <i class="fas fa-expand-arrows-alt"></i>
+                            </button>
+                        </div>
+
+                        {{-- サイズ表示 / フリーサイズ入力 --}}
+                        <div class="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
+                            <template x-if="previewDevice === 'free'">
+                                <div class="flex items-center gap-1">
+                                    <input type="number" x-model.number="freeWidth" min="200" max="3840"
+                                           class="w-16 px-1.5 py-0.5 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                                           title="{{ __('admin/front.edit.preview_width') }}">
+                                    <span>×</span>
+                                    <input type="number" x-model.number="freeHeight" min="200" max="3840"
+                                           class="w-16 px-1.5 py-0.5 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                                           title="{{ __('admin/front.edit.preview_height') }}">
+                                    <span>px</span>
+                                </div>
+                            </template>
+                            <template x-if="previewDevice !== 'free'">
+                                <span x-text="currentPreviewWidth + '×' + currentPreviewHeight + 'px'"></span>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- プレビューコンテナ --}}
+                <div class="flex justify-center bg-gray-100 dark:bg-gray-900 p-4 min-h-[400px] relative">
+                    {{-- ローディングオーバーレイ --}}
+                    <div x-show="previewLoading" x-transition class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900 z-10">
+                        <div class="text-center">
+                            <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-3 block"></i>
+                            <p class="text-sm text-gray-500">{{ __('components/content-editor.preview_loading') }}</p>
+                        </div>
+                    </div>
+
+                    {{-- iframe + リサイズハンドル --}}
+                    <div class="relative inline-block transition-all duration-300"
+                         :style="'width: ' + currentPreviewWidth + 'px; height: ' + currentPreviewHeight + 'px; max-width: 100%;'">
+                        <iframe x-ref="previewIframe"
+                                src="{{ $previewFrameUrl }}"
+                                class="w-full h-full border border-gray-300 dark:border-gray-600 bg-white rounded shadow-lg"
+                                sandbox="allow-scripts allow-same-origin allow-forms"
+                                title="{{ __('admin/front.edit.preview_title') }}">
+                        </iframe>
+
+                        {{-- 右辺リサイズハンドル --}}
+                        <div class="absolute top-0 -right-1.5 w-3 h-full cursor-ew-resize group z-10"
+                             @mousedown="startPreviewResize($event, 'horizontal')">
+                            <div class="absolute top-1/2 -translate-y-1/2 right-0.5 w-1 h-8 rounded-full bg-gray-300 dark:bg-gray-600 group-hover:bg-blue-400 transition-colors"></div>
+                        </div>
+
+                        {{-- 下辺リサイズハンドル --}}
+                        <div class="absolute -bottom-1.5 left-0 w-full h-3 cursor-ns-resize group z-10"
+                             @mousedown="startPreviewResize($event, 'vertical')">
+                            <div class="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-8 rounded-full bg-gray-300 dark:bg-gray-600 group-hover:bg-blue-400 transition-colors"></div>
+                        </div>
+
+                        {{-- 右下角リサイズハンドル --}}
+                        <div class="absolute -bottom-1.5 -right-1.5 w-4 h-4 cursor-nwse-resize group z-20"
+                             @mousedown="startPreviewResize($event, 'both')">
+                            <div class="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 border-b-2 border-r-2 border-gray-300 dark:border-gray-600 group-hover:border-blue-400 transition-colors rounded-br-sm"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ===== モバイル用フローティングボタン ===== --}}
+        <div class="lg:hidden fixed bottom-20 right-4 z-40 flex flex-col gap-2">
+            <button type="button" @click="scrollToEditor()"
+                    class="p-3 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-colors"
+                    title="{{ __('admin/front.edit.scroll_to_editor') }}">
+                <i class="fas fa-edit text-sm"></i>
+            </button>
+            <button type="button" @click="scrollToPreview()"
+                    class="p-3 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-colors"
+                    title="{{ __('admin/front.edit.scroll_to_preview') }}">
+                <i class="fas fa-eye text-sm"></i>
+            </button>
         </div>
 
         {{-- ===== 右サイドバートグルボタン ===== --}}
