@@ -89,6 +89,16 @@ return [
         'sidebar_open' => 'Open sidebar',
         'sidebar_close' => 'Close sidebar',
 
+        'preview_title' => 'Preview',
+        'scroll_to_editor' => 'Scroll to editor',
+        'scroll_to_preview' => 'Scroll to preview',
+        'device_mobile' => 'Mobile',
+        'device_tablet' => 'Tablet',
+        'device_desktop' => 'Desktop',
+        'device_free' => 'Free size',
+        'preview_width' => 'Width',
+        'preview_height' => 'Height',
+
         'reset_section_title' => 'Danger Zone',
         'reset_description' => 'Reset the front page content. This action cannot be undone.',
         'reset_button' => 'Reset',
