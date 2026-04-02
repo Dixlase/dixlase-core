@@ -29,7 +29,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
               fileStorageBasePath: '{{ $fileStorageBasePath }}',
               editorType: '{{ $editorType }}',
               editorTypeValue: '{{ $editorTypeValue }}',
-              previewUrl: '{{ $previewUrl }}'
+              previewUrl: '{{ $previewUrl }}',
+              previewFrameUrl: '{{ $previewFrameUrl }}'
           })">
         @csrf
         @method('PUT')
@@ -48,13 +49,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         {{-- ===== スプリットペインコンテナ ===== --}}
         <div x-ref="splitContainer"
-             class="flex flex-col lg:flex-row gap-4"
-             :class="isDragging || isResizingPreview ? 'select-none' : ''">
+             class="flex gap-4"
+             :class="[
+                 isHorizontal ? 'flex-row' : 'flex-col',
+                 (isDragging || isResizingPreview) ? 'select-none' : ''
+             ]">
 
-            {{-- ===== 左ペイン: エディタ ===== --}}
+            {{-- ===== エディタペイン ===== --}}
             <div x-ref="editorPane"
-                 class="w-full lg:overflow-y-auto"
-                 :style="window.innerWidth >= 1024 ? 'width: ' + (splitRatio * 100) + '%; max-height: calc(100vh - 160px)' : ''">
+                 class="w-full min-w-0"
+                 :class="isHorizontal ? 'overflow-y-auto' : ''"
+                 :style="isHorizontal ? 'width: ' + (splitRatio * 100) + '%; max-height: calc(100vh - 160px)' : ''">
 
                 <div class="space-y-4">
                     {{-- タブナビゲーション（HTML エディタ時のみ） --}}
@@ -141,18 +146,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
-            {{-- ===== ドラッグ Divider (PC only) ===== --}}
-            <div class="hidden lg:flex items-center justify-center w-2 flex-shrink-0 cursor-col-resize transition-colors"
+            {{-- ===== ドラッグ Divider (横並び時のみ表示) ===== --}}
+            <div x-show="isHorizontal" x-cloak
+                 class="flex items-center justify-center w-2 flex-shrink-0 cursor-col-resize transition-colors"
                  :class="isDragging ? 'bg-blue-500 dark:bg-blue-400' : 'bg-gray-200 dark:bg-gray-700 hover:bg-blue-400 dark:hover:bg-blue-500'"
                  @mousedown="startDrag($event)">
                 <div class="w-0.5 h-8 rounded-full"
                      :class="isDragging ? 'bg-white' : 'bg-gray-400 dark:bg-gray-500'"></div>
             </div>
 
-            {{-- ===== 右ペイン: プレビュー ===== --}}
+            {{-- ===== プレビューペイン ===== --}}
             <div x-ref="previewPane"
-                 class="w-full lg:overflow-y-auto"
-                 :style="window.innerWidth >= 1024 ? 'width: ' + ((1 - splitRatio) * 100) + '%; max-height: calc(100vh - 160px)' : ''">
+                 class="w-full min-w-0"
+                 :class="isHorizontal ? 'overflow-y-auto' : ''"
+                 :style="isHorizontal ? 'width: ' + ((1 - splitRatio) * 100) + '%; max-height: calc(100vh - 160px)' : ''">
 
                 {{-- プレビューヘッダー --}}
                 <div class="flex flex-wrap items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg gap-2">
@@ -212,14 +219,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 {{-- プレビューコンテナ --}}
                 <div class="flex justify-center bg-gray-100 dark:bg-gray-900 p-4 min-h-[300px] relative border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg">
-                    <div class="relative transition-all duration-300"
-                         :style="'width: ' + currentPreviewWidth + 'px; max-width: 100%;'">
-                        <div class="bg-white dark:bg-gray-800 rounded shadow-lg overflow-auto border border-gray-300 dark:border-gray-600"
-                             :style="'height: ' + currentPreviewHeight + 'px'">
-                            <div x-ref="previewContent"
-                                 class="dls-preview-prose p-6 max-w-none">
-                            </div>
+                    {{-- ローディングオーバーレイ --}}
+                    <div x-show="previewLoading" x-transition class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900 z-10 rounded-b-lg">
+                        <div class="text-center">
+                            <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-3 block"></i>
+                            <p class="text-sm text-gray-500">{{ __('components/content-editor.preview_loading') }}</p>
                         </div>
+                    </div>
+
+                    {{-- iframe + リサイズハンドル --}}
+                    <div class="relative inline-block transition-all duration-300"
+                         :style="'width: ' + currentPreviewWidth + 'px; height: ' + currentPreviewHeight + 'px; max-width: 100%;'">
+                        <iframe x-ref="previewIframe"
+                                :src="previewFrameUrl"
+                                class="w-full h-full border border-gray-300 dark:border-gray-600 bg-white rounded shadow-lg"
+                                sandbox="allow-scripts allow-same-origin allow-forms"
+                                title="{{ __('admin/front.edit.preview_title') }}">
+                        </iframe>
 
                         {{-- 右辺リサイズハンドル --}}
                         <div class="absolute top-0 -right-1.5 w-3 h-full cursor-ew-resize group z-10"
@@ -243,8 +259,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
 
-        {{-- ===== モバイル用フローティングボタン ===== --}}
-        <div class="lg:hidden fixed bottom-20 right-4 z-40 flex flex-col gap-2">
+        {{-- ===== 縦並び時のフローティングボタン ===== --}}
+        <div x-show="!isHorizontal" x-cloak class="fixed bottom-20 right-4 z-40 flex flex-col gap-2">
             <button type="button" @click="scrollToEditor()"
                     class="p-3 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-colors"
                     title="{{ __('admin/front.edit.scroll_to_editor') }}">
