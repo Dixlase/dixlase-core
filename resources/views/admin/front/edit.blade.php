@@ -218,42 +218,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
 
                 {{-- プレビューコンテナ --}}
-                <div class="flex justify-center bg-gray-100 dark:bg-gray-900 p-4 min-h-[300px] relative border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg">
+                <div class="relative overflow-hidden bg-gray-100 dark:bg-gray-900 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg"
+                     :style="'height: ' + currentPreviewHeight + 'px'">
                     {{-- ローディングオーバーレイ --}}
-                    <div x-show="previewLoading" x-transition class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900 z-10 rounded-b-lg">
+                    <div x-show="previewLoading" x-transition class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900 z-10">
                         <div class="text-center">
                             <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-3 block"></i>
                             <p class="text-sm text-gray-500">{{ __('components/content-editor.preview_loading') }}</p>
                         </div>
                     </div>
 
-                    {{-- iframe + リサイズハンドル --}}
-                    <div class="relative inline-block transition-all duration-300"
-                         :style="'width: ' + currentPreviewWidth + 'px; height: ' + currentPreviewHeight + 'px; max-width: 100%;'">
-                        <iframe x-ref="previewIframe"
-                                :src="previewFrameUrl"
-                                class="w-full h-full border border-gray-300 dark:border-gray-600 bg-white rounded shadow-lg"
-                                sandbox="allow-scripts allow-same-origin allow-forms"
-                                title="{{ __('admin/front.edit.preview_title') }}">
-                        </iframe>
+                    <iframe x-ref="previewIframe"
+                            :src="previewFrameUrl"
+                            class="w-full h-full bg-white"
+                            :style="'max-width: ' + currentPreviewWidth + 'px; margin: 0 auto; display: block;'"
+                            sandbox="allow-scripts allow-same-origin allow-forms"
+                            title="{{ __('admin/front.edit.preview_title') }}">
+                    </iframe>
 
-                        {{-- 右辺リサイズハンドル --}}
-                        <div class="absolute top-0 -right-1.5 w-3 h-full cursor-ew-resize group z-10"
-                             @mousedown="startPreviewResize($event, 'horizontal')">
-                            <div class="absolute top-1/2 -translate-y-1/2 right-0.5 w-1 h-8 rounded-full bg-gray-300 dark:bg-gray-600 group-hover:bg-blue-400 transition-colors"></div>
-                        </div>
-
-                        {{-- 下辺リサイズハンドル --}}
-                        <div class="absolute -bottom-1.5 left-0 w-full h-3 cursor-ns-resize group z-10"
-                             @mousedown="startPreviewResize($event, 'vertical')">
-                            <div class="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-8 rounded-full bg-gray-300 dark:bg-gray-600 group-hover:bg-blue-400 transition-colors"></div>
-                        </div>
-
-                        {{-- 右下角リサイズハンドル --}}
-                        <div class="absolute -bottom-1.5 -right-1.5 w-4 h-4 cursor-nwse-resize group z-20"
-                             @mousedown="startPreviewResize($event, 'both')">
-                            <div class="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 border-b-2 border-r-2 border-gray-300 dark:border-gray-600 group-hover:border-blue-400 transition-colors rounded-br-sm"></div>
-                        </div>
+                    {{-- 下辺リサイズハンドル --}}
+                    <div class="absolute -bottom-1.5 left-0 w-full h-3 cursor-ns-resize group z-10"
+                         @mousedown="startPreviewResize($event, 'vertical')">
+                        <div class="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-8 rounded-full bg-gray-300 dark:bg-gray-600 group-hover:bg-blue-400 transition-colors"></div>
                     </div>
                 </div>
             </div>
