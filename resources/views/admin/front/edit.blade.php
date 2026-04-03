@@ -58,7 +58,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         {{-- ===== スプリットペインコンテナ ===== --}}
         <div x-ref="splitContainer"
-             class="flex gap-4"
+             class="flex gap-4 overflow-hidden"
              :class="[
                  isHorizontal ? 'flex-row' : 'flex-col',
                  (isDragging || isResizingPreview) ? 'select-none' : ''
