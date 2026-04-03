@@ -49,7 +49,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
 
         {{-- ===== メインコンテンツエリア ===== --}}
-        <div class="space-y-6">
+        <div class="space-y-6 min-w-0 overflow-hidden">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
                 {{-- 言語選択 --}}
                 <div>

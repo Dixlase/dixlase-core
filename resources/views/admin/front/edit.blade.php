@@ -67,8 +67,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- ===== エディタペイン ===== --}}
             <div x-ref="editorPane"
                  class="w-full min-w-0"
-                 :class="isHorizontal ? 'overflow-y-auto' : ''"
-                 :style="isHorizontal ? 'width: ' + (splitRatio * 100) + '%; max-height: calc(100vh - 160px)' : ''">
+                 :class="isHorizontal && previewVisible ? 'overflow-y-auto' : ''"
+                 :style="isHorizontal && previewVisible ? 'width: ' + (splitRatio * 100) + '%; max-height: calc(100vh - 160px)' : ''">
 
                 <div class="space-y-4">
                     {{-- タブナビゲーション（HTML エディタ時のみ） --}}
