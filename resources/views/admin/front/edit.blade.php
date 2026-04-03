@@ -35,7 +35,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
         @method('PUT')
 
-        {{-- ===== エディタータイプ + 言語バッジ ===== --}}
+        {{-- ===== エディタータイプ + 言語バッジ + プレビュートグル ===== --}}
         <div class="flex flex-wrap items-center gap-3 mb-4 text-xs">
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
                 <i class="{{ $editorTypeIcon }}" style="color: {{ $editorTypeColor }}"></i>
@@ -45,6 +45,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <i class="fas fa-globe"></i>
                 {{ $langName }}
             </span>
+            <button type="button" @click="togglePreview()"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-colors"
+                :class="previewVisible
+                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-700'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'"
+                :title="previewVisible ? '{{ __('admin/front.edit.preview_hide') }}' : '{{ __('admin/front.edit.preview_show') }}'">
+                <i class="fas" :class="previewVisible ? 'fa-eye' : 'fa-eye-slash'"></i>
+                <span x-text="previewVisible ? '{{ __('admin/front.edit.preview_hide') }}' : '{{ __('admin/front.edit.preview_show') }}'"></span>
+            </button>
         </div>
 
         {{-- ===== スプリットペインコンテナ ===== --}}
@@ -146,8 +155,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
-            {{-- ===== ドラッグ Divider (横並び時のみ表示) ===== --}}
-            <div x-show="isHorizontal" x-cloak
+            {{-- ===== ドラッグ Divider (横並び時かつプレビュー表示時のみ) ===== --}}
+            <div x-show="isHorizontal && previewVisible" x-cloak
                  class="flex items-center justify-center w-2 flex-shrink-0 cursor-col-resize transition-colors"
                  :class="isDragging ? 'bg-blue-500 dark:bg-blue-400' : 'bg-gray-200 dark:bg-gray-700 hover:bg-blue-400 dark:hover:bg-blue-500'"
                  @mousedown="startDrag($event)">
@@ -156,31 +165,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
 
             {{-- ===== プレビューペイン ===== --}}
-            <div x-ref="previewPane"
+            <div x-show="previewVisible" x-cloak
+                 x-ref="previewPane"
                  class="w-full min-w-0"
-                 :class="isHorizontal && previewVisible ? 'overflow-y-auto' : ''"
-                 :style="isHorizontal && previewVisible ? 'width: ' + ((1 - splitRatio) * 100) + '%; max-height: calc(100vh - 160px)' : ''">
+                 :class="isHorizontal ? 'overflow-y-auto' : ''"
+                 :style="isHorizontal ? 'width: ' + ((1 - splitRatio) * 100) + '%; max-height: calc(100vh - 160px)' : ''">
 
                 {{-- プレビューヘッダー --}}
-                <div class="flex flex-wrap items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 gap-2"
-                     :class="previewVisible ? 'rounded-t-lg' : 'rounded-lg'">
+                <div class="flex flex-wrap items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg gap-2">
                     <div class="flex items-center gap-2">
-                        {{-- プレビュー表示/非表示トグル --}}
-                        <button type="button" @click="togglePreview()"
-                            class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                            :title="previewVisible ? '{{ __('admin/front.edit.preview_hide') }}' : '{{ __('admin/front.edit.preview_show') }}'">
-                            <i class="fas" :class="previewVisible ? 'fa-eye' : 'fa-eye-slash'"></i>
-                        </button>
                         <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-                            {{ __('admin/front.edit.preview_title') }}
+                            <i class="fas fa-eye mr-1"></i>{{ __('admin/front.edit.preview_title') }}
                         </span>
                         {{-- スケール表示（縮小時のみ） --}}
-                        <span x-show="previewVisible && previewScale < 1" x-cloak
+                        <span x-show="previewScale < 1" x-cloak
                               class="text-[10px] text-gray-400 dark:text-gray-500"
                               x-text="Math.round(previewScale * 100) + '%'"></span>
                     </div>
 
-                    <div x-show="previewVisible" class="flex items-center gap-3">
+                    <div class="flex items-center gap-3">
                         {{-- デバイストグルボタン --}}
                         <div class="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5">
                             <button type="button" @click="setPreviewDevice('mobile')"
@@ -231,8 +234,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
 
                 {{-- プレビューコンテナ --}}
-                <div x-show="previewVisible"
-                     x-ref="previewContainer"
+                <div x-ref="previewContainer"
                      class="relative overflow-hidden bg-gray-100 dark:bg-gray-900 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg"
                      :style="'height: ' + scaledPreviewHeight + 'px'">
                     {{-- ローディングオーバーレイ --}}
