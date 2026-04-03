@@ -221,6 +221,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     />
 @endsection
 
+@push('styles')
+<style @cspNonce>
+/* メインコンテンツがflexbox min-width:autoで縮小しない問題を修正 */
+#admin-main-content { min-width: 0; }
+</style>
+@endpush
+
 @if($guiEditorAssetHtml ?? '')
     @push('head')
         {!! $guiEditorAssetHtml !!}
