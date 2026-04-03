@@ -86,6 +86,7 @@ class AdminFrontController extends AdminLoggedInController
             }
         }
         $this->viewParams['previewContent'] = $previewContent;
+        $this->viewParams['previewFrameUrl'] = route('admin.front.preview-frame');
 
         return view('admin::front/index', $this->viewParams);
     }
