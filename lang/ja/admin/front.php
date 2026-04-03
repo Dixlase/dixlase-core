@@ -90,6 +90,8 @@ return [
         'sidebar_close' => 'サイドバーを閉じる',
 
         'preview_title' => 'プレビュー',
+        'preview_show' => 'プレビューを表示',
+        'preview_hide' => 'プレビューを非表示',
         'scroll_to_editor' => 'エディタに移動',
         'scroll_to_preview' => 'プレビューに移動',
         'device_mobile' => 'モバイル',

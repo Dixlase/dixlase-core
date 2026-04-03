@@ -158,16 +158,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- ===== プレビューペイン ===== --}}
             <div x-ref="previewPane"
                  class="w-full min-w-0"
-                 :class="isHorizontal ? 'overflow-y-auto' : ''"
-                 :style="isHorizontal ? 'width: ' + ((1 - splitRatio) * 100) + '%; max-height: calc(100vh - 160px)' : ''">
+                 :class="isHorizontal && previewVisible ? 'overflow-y-auto' : ''"
+                 :style="isHorizontal && previewVisible ? 'width: ' + ((1 - splitRatio) * 100) + '%; max-height: calc(100vh - 160px)' : ''">
 
                 {{-- プレビューヘッダー --}}
-                <div class="flex flex-wrap items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg gap-2">
-                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-                        <i class="fas fa-eye mr-1"></i>{{ __('admin/front.edit.preview_title') }}
-                    </span>
+                <div class="flex flex-wrap items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 gap-2"
+                     :class="previewVisible ? 'rounded-t-lg' : 'rounded-lg'">
+                    <div class="flex items-center gap-2">
+                        {{-- プレビュー表示/非表示トグル --}}
+                        <button type="button" @click="togglePreview()"
+                            class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                            :title="previewVisible ? '{{ __('admin/front.edit.preview_hide') }}' : '{{ __('admin/front.edit.preview_show') }}'">
+                            <i class="fas" :class="previewVisible ? 'fa-eye' : 'fa-eye-slash'"></i>
+                        </button>
+                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                            {{ __('admin/front.edit.preview_title') }}
+                        </span>
+                        {{-- スケール表示（縮小時のみ） --}}
+                        <span x-show="previewVisible && previewScale < 1" x-cloak
+                              class="text-[10px] text-gray-400 dark:text-gray-500"
+                              x-text="Math.round(previewScale * 100) + '%'"></span>
+                    </div>
 
-                    <div class="flex items-center gap-3">
+                    <div x-show="previewVisible" class="flex items-center gap-3">
                         {{-- デバイストグルボタン --}}
                         <div class="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5">
                             <button type="button" @click="setPreviewDevice('mobile')"
@@ -218,8 +231,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
 
                 {{-- プレビューコンテナ --}}
-                <div class="relative overflow-hidden bg-gray-100 dark:bg-gray-900 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg"
-                     :style="'height: ' + currentPreviewHeight + 'px'">
+                <div x-show="previewVisible"
+                     x-ref="previewContainer"
+                     class="relative overflow-hidden bg-gray-100 dark:bg-gray-900 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg"
+                     :style="'height: ' + scaledPreviewHeight + 'px'">
                     {{-- ローディングオーバーレイ --}}
                     <div x-show="previewLoading" x-transition class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900 z-10">
                         <div class="text-center">
@@ -228,13 +243,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                     </div>
 
-                    <iframe x-ref="previewIframe"
-                            :src="previewFrameUrl"
-                            class="w-full h-full bg-white"
-                            :style="'max-width: ' + currentPreviewWidth + 'px; margin: 0 auto; display: block;'"
-                            sandbox="allow-scripts allow-same-origin allow-forms"
-                            title="{{ __('admin/front.edit.preview_title') }}">
-                    </iframe>
+                    {{-- スケーリングラッパー --}}
+                    <div :style="'width: ' + scaledPreviewWidth + 'px; height: ' + scaledPreviewHeight + 'px; margin: 0 auto;'">
+                        <iframe x-ref="previewIframe"
+                                :src="previewFrameUrl"
+                                class="bg-white"
+                                :style="'width: ' + currentPreviewWidth + 'px; height: ' + currentPreviewHeight + 'px; transform: scale(' + previewScale + '); transform-origin: top left;'"
+                                sandbox="allow-scripts allow-same-origin allow-forms"
+                                title="{{ __('admin/front.edit.preview_title') }}">
+                        </iframe>
+                    </div>
 
                     {{-- 下辺リサイズハンドル --}}
                     <div class="absolute -bottom-1.5 left-0 w-full h-3 cursor-ns-resize group z-10"
