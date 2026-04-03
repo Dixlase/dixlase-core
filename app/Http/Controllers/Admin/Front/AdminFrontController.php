@@ -121,6 +121,8 @@ class AdminFrontController extends AdminLoggedInController
         $this->viewParams['fileStorageBasePath'] = 'storage/app/private/'.$this->contentService->getBasePath();
         $this->viewParams['guiEditorInfo'] = $guiEditorInfo;
         $this->viewParams['guiEditorAssetHtml'] = $guiEditorInfo ? ContentEditorPresenter::editorAssetHtml($guiEditorInfo) : '';
+        $this->viewParams['previewFrameUrl'] = route('admin.front.preview-frame');
+        $this->viewParams['previewUrl'] = route('admin.front.preview');
 
         return view('admin::front/create', $this->viewParams);
     }
