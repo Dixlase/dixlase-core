@@ -24,6 +24,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form id="front-page-create-form"
           action="{{ route('admin.front.store') }}"
           method="POST"
+          class="min-w-0 overflow-hidden"
           x-data="frontPageCreate({
               defaultLang: '{{ old('lang', $defaultLang) }}',
               defaultEditorType: '{{ old('editor_type', 'markdown') }}',
