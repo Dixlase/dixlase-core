@@ -68,7 +68,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div x-ref="editorPane"
                  class="w-full min-w-0"
                  :class="isHorizontal && previewVisible ? 'overflow-y-auto' : ''"
-                 :style="isHorizontal && previewVisible ? 'width: ' + (splitRatio * 100) + '%; max-height: calc(100vh - 160px)' : ''">
+                 :style="isHorizontal && previewVisible ? { width: (splitRatio * 100) + '%', maxHeight: 'calc(100vh - 160px)' } : {}"
 
                 <div class="space-y-4">
                     {{-- タブナビゲーション（HTML エディタ時のみ） --}}
@@ -169,7 +169,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                  x-ref="previewPane"
                  class="w-full min-w-0"
                  :class="isHorizontal ? 'overflow-y-auto' : ''"
-                 :style="isHorizontal ? 'width: ' + ((1 - splitRatio) * 100) + '%; max-height: calc(100vh - 160px)' : ''">
+                 :style="isHorizontal ? { width: ((1 - splitRatio) * 100) + '%', maxHeight: 'calc(100vh - 160px)' } : {}"
 
                 {{-- プレビューヘッダー --}}
                 <div class="flex flex-wrap items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg gap-2">
