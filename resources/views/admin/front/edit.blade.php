@@ -69,7 +69,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div x-ref="editorPane"
                  class="w-full min-w-0"
                  :class="isHorizontal && previewVisible ? 'overflow-y-auto' : ''"
-                 :style="isHorizontal && previewVisible ? { width: (splitRatio * 100) + '%', maxHeight: 'calc(100vh - 160px)' } : {}"
+                 :style="isHorizontal && previewVisible ? { width: (splitRatio * 100) + '%', maxHeight: 'calc(100vh - 160px)' } : {}">
 
                 <div class="space-y-4">
                     {{-- タブナビゲーション（HTML エディタ時のみ） --}}
