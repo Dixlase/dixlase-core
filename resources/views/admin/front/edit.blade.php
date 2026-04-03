@@ -24,6 +24,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form id="front-page-edit-form"
           action="{{ route('admin.front.edit.update') }}"
           method="POST"
+          class="min-w-0 overflow-hidden"
           x-data="splitPaneEditor({
               defaultStorageType: '{{ old('storage_type', $storageType) }}',
               fileStorageBasePath: '{{ $fileStorageBasePath }}',
