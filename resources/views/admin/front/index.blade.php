@@ -92,7 +92,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     {{-- Theme Preview (iframe) --}}
     @if ($frontPage && !empty($previewContent))
-        <div class="mt-6" x-data="{
+        <div class="mt-6 min-w-0 overflow-hidden" x-data="{
             previewFrameUrl: '{{ $previewFrameUrl }}',
             previewDevice: 'desktop',
             freeWidth: 1440,
@@ -217,3 +217,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </form>
     @endif
 @endsection
+
+@push('styles')
+<style @cspNonce>
+#admin-main-content { min-width: 0; }
+</style>
+@endpush
