@@ -29,9 +29,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
               defaultEditorType: '{{ old('editor_type', 'markdown') }}',
               defaultStorageType: '{{ old('storage_type', $defaultStorageType) }}',
               fileStorageBasePath: '{{ $fileStorageBasePath }}',
-              templates: {{ Js::from($templates) }}
+              templates: {{ Js::from($templates) }},
+              previewFrameUrl: '{{ $previewFrameUrl }}',
+              previewUrl: '{{ $previewUrl }}'
           })">
         @csrf
+
+        {{-- ===== プレビュートグル ===== --}}
+        <div class="flex flex-wrap items-center gap-3 mb-4 text-xs">
+            <button type="button" @click="togglePreview()"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-colors"
+                :class="previewVisible
+                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-700'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'"
+                :title="previewVisible ? '{{ __('admin/front.edit.preview_hide') }}' : '{{ __('admin/front.edit.preview_show') }}'">
+                <i class="fas" :class="previewVisible ? 'fa-eye' : 'fa-eye-slash'"></i>
+                <span x-text="previewVisible ? '{{ __('admin/front.edit.preview_hide') }}' : '{{ __('admin/front.edit.preview_show') }}'"></span>
+            </button>
+        </div>
 
         {{-- ===== メインコンテンツエリア ===== --}}
         <div class="space-y-6">
@@ -131,17 +146,96 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
 
             {{-- ===== プレビュー ===== --}}
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div class="flex items-center px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
-                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-                        <i class="fas fa-eye mr-1"></i>{{ __('admin/front.edit.preview_title') }}
-                    </span>
-                </div>
-                <div class="bg-gray-100 dark:bg-gray-900 p-4 min-h-[200px]">
-                    <div class="bg-white dark:bg-gray-800 rounded shadow-sm border border-gray-300 dark:border-gray-600 p-6 max-w-4xl mx-auto min-h-[150px]">
-                        <div x-ref="previewContent"
-                             class="dls-preview-prose max-w-none">
+            <div x-show="previewVisible" x-cloak>
+                {{-- プレビューヘッダー --}}
+                <div class="flex flex-wrap items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                            <i class="fas fa-eye mr-1"></i>{{ __('admin/front.edit.preview_title') }}
+                        </span>
+                        {{-- スケール表示（縮小時のみ） --}}
+                        <span x-show="previewScale < 1" x-cloak
+                              class="text-[10px] text-gray-400 dark:text-gray-500"
+                              x-text="Math.round(previewScale * 100) + '%'"></span>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        {{-- デバイストグルボタン --}}
+                        <div class="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5">
+                            <button type="button" @click="setPreviewDevice('mobile')"
+                                :class="previewDevice === 'mobile' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+                                class="px-2.5 py-1.5 rounded-md transition-all text-xs"
+                                title="{{ __('admin/front.edit.device_mobile') }} (375×667)">
+                                <i class="fas fa-mobile-alt"></i>
+                            </button>
+                            <button type="button" @click="setPreviewDevice('tablet')"
+                                :class="previewDevice === 'tablet' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+                                class="px-2.5 py-1.5 rounded-md transition-all text-xs"
+                                title="{{ __('admin/front.edit.device_tablet') }} (768×1024)">
+                                <i class="fas fa-tablet-alt"></i>
+                            </button>
+                            <button type="button" @click="setPreviewDevice('desktop')"
+                                :class="previewDevice === 'desktop' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+                                class="px-2.5 py-1.5 rounded-md transition-all text-xs"
+                                title="{{ __('admin/front.edit.device_desktop') }} (1440×900)">
+                                <i class="fas fa-desktop"></i>
+                            </button>
+                            <button type="button" @click="setPreviewDevice('free')"
+                                :class="previewDevice === 'free' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+                                class="px-2.5 py-1.5 rounded-md transition-all text-xs"
+                                title="{{ __('admin/front.edit.device_free') }}">
+                                <i class="fas fa-expand-arrows-alt"></i>
+                            </button>
                         </div>
+
+                        {{-- サイズ表示 / フリーサイズ入力 --}}
+                        <div class="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
+                            <template x-if="previewDevice === 'free'">
+                                <div class="flex items-center gap-1">
+                                    <input type="number" x-model.number="freeWidth" min="200" max="3840"
+                                           class="w-16 px-1.5 py-0.5 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                                           title="{{ __('admin/front.edit.preview_width') }}">
+                                    <span>×</span>
+                                    <input type="number" x-model.number="freeHeight" min="200" max="3840"
+                                           class="w-16 px-1.5 py-0.5 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                                           title="{{ __('admin/front.edit.preview_height') }}">
+                                    <span>px</span>
+                                </div>
+                            </template>
+                            <template x-if="previewDevice !== 'free'">
+                                <span x-text="currentPreviewWidth + '×' + currentPreviewHeight + 'px'"></span>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- プレビューコンテナ --}}
+                <div x-ref="previewContainer"
+                     class="relative overflow-hidden bg-gray-100 dark:bg-gray-900 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg"
+                     :style="'height: ' + scaledPreviewHeight + 'px'">
+                    {{-- ローディングオーバーレイ --}}
+                    <div x-show="previewLoading" x-transition class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900 z-10">
+                        <div class="text-center">
+                            <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-3 block"></i>
+                            <p class="text-sm text-gray-500">{{ __('components/content-editor.preview_loading') }}</p>
+                        </div>
+                    </div>
+
+                    {{-- スケーリングラッパー --}}
+                    <div :style="'width: ' + scaledPreviewWidth + 'px; height: ' + scaledPreviewHeight + 'px; margin: 0 auto;'">
+                        <iframe x-ref="previewIframe"
+                                :src="previewFrameUrl"
+                                class="bg-white"
+                                :style="'width: ' + currentPreviewWidth + 'px; height: ' + currentPreviewHeight + 'px; transform: scale(' + previewScale + '); transform-origin: top left;'"
+                                sandbox="allow-scripts allow-same-origin allow-forms"
+                                title="{{ __('admin/front.edit.preview_title') }}">
+                        </iframe>
+                    </div>
+
+                    {{-- 下辺リサイズハンドル --}}
+                    <div class="absolute -bottom-1.5 left-0 w-full h-3 cursor-ns-resize group z-10"
+                         @mousedown="startPreviewResize($event, 'vertical')">
+                        <div class="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-8 rounded-full bg-gray-300 dark:bg-gray-600 group-hover:bg-blue-400 transition-colors"></div>
                     </div>
                 </div>
             </div>
