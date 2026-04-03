@@ -12,6 +12,10 @@
 
 import Alpine from 'alpinejs';
 
+const STORAGE_KEY_SPLIT_RATIO = 'dls-split-ratio';
+const MIN_PANE_WIDTH = 320;
+const HORIZONTAL_MIN_WIDTH = 900;
+
 const DEVICE_PRESETS = {
     mobile: { width: 375, height: 667 },
     tablet: { width: 768, height: 1024 },
@@ -34,6 +38,11 @@ function createFrontPageCreate(config) {
         fileStorageBasePath: config.fileStorageBasePath || '',
         activeTab: 'content',
 
+        // --- レイアウト ---
+        splitRatio: parseFloat(localStorage.getItem(STORAGE_KEY_SPLIT_RATIO) || '0.5'),
+        isDragging: false,
+        isHorizontal: false,
+
         // --- プレビュー設定 ---
         previewFrameUrl: config.previewFrameUrl || '',
         previewUrl: config.previewUrl || '',
@@ -52,6 +61,7 @@ function createFrontPageCreate(config) {
         _debounceTimer: null,
         _cssDebounceTimer: null,
         _abortController: null,
+        _resizeObserver: null,
         _previewResizeObserver: null,
 
         get isHtmlEditor() {
@@ -140,7 +150,13 @@ function createFrontPageCreate(config) {
                 this.applyTemplate();
                 this.watchContentChanges();
                 this.initAutoResizeTextareas();
+                this.observeContainerWidth();
                 this.observePreviewContainerWidth();
+            });
+
+            // splitRatio永続化
+            this.$watch('splitRatio', (v) => {
+                localStorage.setItem(STORAGE_KEY_SPLIT_RATIO, v.toString());
             });
         },
 
@@ -156,6 +172,55 @@ function createFrontPageCreate(config) {
                 }
             }
             this.$nextTick(() => this.sendContentToPreview());
+        },
+
+        // --- コンテナ幅監視（横並び/縦並び自動切替） ---
+        observeContainerWidth() {
+            const container = this.$refs.splitContainer;
+            if (!container) return;
+
+            this._resizeObserver = new ResizeObserver((entries) => {
+                for (const entry of entries) {
+                    this.isHorizontal = entry.contentRect.width >= HORIZONTAL_MIN_WIDTH;
+                }
+            });
+            this._resizeObserver.observe(container);
+        },
+
+        // --- スプリットペイン ドラッグ ---
+        startDrag(event) {
+            if (!this.isHorizontal) return;
+            this.isDragging = true;
+            event.preventDefault();
+
+            const container = this.$refs.splitContainer;
+
+            const onMove = (e) => {
+                if (!this.isDragging) return;
+                const rect = container.getBoundingClientRect();
+                let ratio = (e.clientX - rect.left) / rect.width;
+                const minRatio = MIN_PANE_WIDTH / rect.width;
+                ratio = Math.max(minRatio, Math.min(1 - minRatio, ratio));
+                this.splitRatio = ratio;
+            };
+
+            const onUp = () => {
+                this.isDragging = false;
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+            };
+
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        },
+
+        // --- モバイルUX ---
+        scrollToEditor() {
+            this.$refs.editorPane?.scrollIntoView({ behavior: 'smooth' });
+        },
+
+        scrollToPreview() {
+            this.$refs.previewPane?.scrollIntoView({ behavior: 'smooth' });
         },
 
         // --- プレビューコンテナ幅監視（スケーリング計算用） ---
