@@ -90,6 +90,8 @@ return [
         'sidebar_close' => 'Close sidebar',
 
         'preview_title' => 'Preview',
+        'preview_show' => 'Show preview',
+        'preview_hide' => 'Hide preview',
         'scroll_to_editor' => 'Scroll to editor',
         'scroll_to_preview' => 'Scroll to preview',
         'device_mobile' => 'Mobile',

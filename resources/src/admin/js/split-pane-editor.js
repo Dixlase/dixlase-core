@@ -39,12 +39,14 @@ function createSplitPaneEditor(config) {
         // --- プレビュー状態 ---
         previewReady: false,
         previewLoading: true,
+        previewVisible: true,
 
         // --- デバイスプレビュー ---
         previewDevice: 'desktop',
         freeWidth: 1440,
         freeHeight: 900,
         isResizingPreview: false,
+        _previewContainerWidth: 0,
 
         // --- エディタ設定 ---
         editorType: config.editorType || 'html',
@@ -62,6 +64,7 @@ function createSplitPaneEditor(config) {
         _cssDebounceTimer: null,
         _abortController: null,
         _resizeObserver: null,
+        _previewResizeObserver: null,
 
         // --- Computed ---
         get isHtmlEditor() {
@@ -108,6 +111,21 @@ function createSplitPaneEditor(config) {
             return DEVICE_PRESETS[this.previewDevice]?.height ?? 900;
         },
 
+        get previewScale() {
+            if (this._previewContainerWidth <= 0 || this.currentPreviewWidth <= this._previewContainerWidth) {
+                return 1;
+            }
+            return this._previewContainerWidth / this.currentPreviewWidth;
+        },
+
+        get scaledPreviewWidth() {
+            return Math.round(this.currentPreviewWidth * this.previewScale);
+        },
+
+        get scaledPreviewHeight() {
+            return Math.round(this.currentPreviewHeight * this.previewScale);
+        },
+
         // --- 初期化 ---
         init() {
             this.$dispatch('right-sidebar-active');
@@ -127,6 +145,7 @@ function createSplitPaneEditor(config) {
                 this.initAutoResizeTextareas();
                 this.watchContentChanges();
                 this.observeContainerWidth();
+                this.observePreviewContainerWidth();
             });
 
             // splitRatio永続化
@@ -146,6 +165,24 @@ function createSplitPaneEditor(config) {
                 }
             });
             this._resizeObserver.observe(container);
+        },
+
+        // --- プレビューコンテナ幅監視（スケーリング計算用） ---
+        observePreviewContainerWidth() {
+            const container = this.$refs.previewContainer;
+            if (!container) return;
+
+            this._previewResizeObserver = new ResizeObserver((entries) => {
+                for (const entry of entries) {
+                    this._previewContainerWidth = entry.contentRect.width;
+                }
+            });
+            this._previewResizeObserver.observe(container);
+        },
+
+        // --- プレビュー表示/非表示トグル ---
+        togglePreview() {
+            this.previewVisible = !this.previewVisible;
         },
 
         // --- スプリットペイン ドラッグ ---
