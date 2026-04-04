@@ -13,6 +13,7 @@
 import Alpine from 'alpinejs';
 import { previewMixin } from './mixins/preview-mixin';
 import { splitPaneMixin } from './mixins/split-pane-mixin';
+import { mergeMixins } from './mixins/merge-mixin';
 
 const DEBOUNCE_DELAYS = {
     html: 150,
@@ -22,11 +23,7 @@ const DEBOUNCE_DELAYS = {
 };
 
 function createSplitPaneEditor(config) {
-    return {
-        // --- 共通ミックスイン ---
-        ...splitPaneMixin(),
-        ...previewMixin(config),
-
+    return mergeMixins(splitPaneMixin(), previewMixin(config), {
         // --- エディタ設定 ---
         editorType: config.editorType || 'html',
         editorTypeValue: config.editorTypeValue || 'html',
@@ -189,7 +186,7 @@ function createSplitPaneEditor(config) {
                 resize();
             });
         },
-    };
+    });
 }
 
 Alpine.data('splitPaneEditor', createSplitPaneEditor);

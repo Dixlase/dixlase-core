@@ -14,6 +14,7 @@
 import Alpine from 'alpinejs';
 import { previewMixin } from './mixins/preview-mixin';
 import { splitPaneMixin } from './mixins/split-pane-mixin';
+import { mergeMixins } from './mixins/merge-mixin';
 
 const DEBOUNCE_DELAYS = {
     html: 150,
@@ -23,11 +24,7 @@ const DEBOUNCE_DELAYS = {
 };
 
 function createFrontPageCreate(config) {
-    return {
-        // --- 共通ミックスイン ---
-        ...splitPaneMixin(),
-        ...previewMixin(config),
-
+    return mergeMixins(splitPaneMixin(), previewMixin(config), {
         // --- フロントページ作成固有 ---
         lang: config.defaultLang,
         editorType: config.defaultEditorType,
@@ -221,7 +218,7 @@ function createFrontPageCreate(config) {
                 resize();
             });
         },
-    };
+    });
 }
 
 Alpine.data('frontPageCreate', createFrontPageCreate);
