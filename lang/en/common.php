@@ -342,7 +342,7 @@ return [
     'content_editor' => [
         'label' => 'Editor Type',
         'gui' => 'GUI Editor',
-        'gui_description' => 'Intuitive drag & drop editing (coming soon)',
+        'gui_description' => 'Intuitive drag & drop editing.',
         'gui_coming_soon' => 'GUI editor is coming soon',
         'coming_soon_badge' => 'Coming Soon',
         'advanced_badge' => 'Advanced',

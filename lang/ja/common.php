@@ -516,7 +516,7 @@ return [
     'content_editor' => [
         'label' => 'エディタータイプ',
         'gui' => 'GUIエディタ',
-        'gui_description' => 'ドラッグ&ドロップで直感的に編集（将来実装予定）',
+        'gui_description' => 'ドラッグ&ドロップで直感的に編集。',
         'gui_coming_soon' => 'GUIエディタは近日実装予定です',
         'coming_soon_badge' => '近日公開',
         'advanced_badge' => '上級者向け',
