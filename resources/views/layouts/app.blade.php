@@ -31,16 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
-        @if (app()->environment('local'))
-            {{-- 開発環境ではリソースを直接読み込み --}}
-            @vite([
-                'resources/src/common/js/app.js',
-                'resources/src/common/scss/style.scss'
-            ])
-        @else
-            {{-- 本番環境ではmanifest.jsonを読み込み --}}
-            @vite(['resources/src/common/js/app.js', 'resources/src/common/scss/style.scss'], 'build')
-        @endif
+        @vite(['resources/src/common/js/app.js', 'resources/src/common/scss/style.scss'], 'assets/build')
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">

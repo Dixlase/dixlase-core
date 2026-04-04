@@ -7,24 +7,10 @@
     <title>@yield('title') | {{ config('app.name') }}</title>
     
     <!-- ダークモード初期化スクリプト（最優先で読み込み） -->
-    @if (app()->environment('local'))
-        @vite(['resources/src/install/js/dark-mode-init.js'])
-    @else
-        @vite(['resources/src/install/js/dark-mode-init.js'], 'assets/build')
-    @endif
-    
+    @vite(['resources/src/install/js/dark-mode-init.js'], 'assets/build')
+
     <!-- メインスクリプト -->
-    @if (app()->environment('local'))
-        {{-- 開発環境ではリソースを直接読み込み --}}
-        @vite([
-            'resources/src/install/js/app.js',
-            'resources/src/common/js/app.js',
-            'resources/src/common/scss/style.scss'
-        ])
-    @else
-        {{-- 本番環境ではmanifest.jsonを読み込み --}}
-        @vite(['resources/src/install/js/app.js', 'resources/src/common/js/app.js', 'resources/src/common/scss/style.scss'], 'assets/build')
-    @endif
+    @vite(['resources/src/install/js/app.js', 'resources/src/common/js/app.js', 'resources/src/common/scss/style.scss'], 'assets/build')
 
 
 </head>
