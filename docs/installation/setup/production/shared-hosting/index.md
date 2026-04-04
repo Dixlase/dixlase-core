@@ -20,6 +20,9 @@ Deploy Dixlase on shared rental servers. Choose a guide for your hosting provide
 
 ### International
 
+- [Hostinger](hostinger.md) — One of the world's most popular hosts (hPanel)
+- [SiteGround](siteground.md) — High-performance hosting with Site Tools panel
+- [A2 Hosting](a2-hosting.md) — Developer-friendly with SSH and Composer support
 - [cPanel Hosting](cpanel.md) — Generic guide for any cPanel-based hosting
 
 ## General Steps
