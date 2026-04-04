@@ -38,14 +38,22 @@ jobs:
               git fetch origin
               git reset --hard origin/main
 
+              # ストレージディレクトリの復元（git reset で消える場合がある）
+              mkdir -p storage/framework/{views,cache/data,sessions} storage/logs bootstrap/cache
+
               if [ -f composer.json ]; then
                 composer install --no-dev --no-interaction --optimize-autoloader
               fi
 
+              # パーミッション修正（www-data が書き込めるように）
+              docker exec compose-php-1 chown www-data:www-data /var/www/apps/$SITE
+              docker exec compose-php-1 chmod -R 777 /var/www/apps/$SITE/storage /var/www/apps/$SITE/bootstrap/cache
+
+              # キャッシュはコンテナ内で実行（パスの不一致を防ぐ）
               if [ -f artisan ]; then
-                php artisan config:cache
-                php artisan route:cache
-                php artisan view:cache
+                docker exec compose-php-1 php /var/www/apps/$SITE/artisan config:clear
+                docker exec compose-php-1 php /var/www/apps/$SITE/artisan view:clear
+                docker exec compose-php-1 php /var/www/apps/$SITE/artisan route:clear
               fi
             done
 
