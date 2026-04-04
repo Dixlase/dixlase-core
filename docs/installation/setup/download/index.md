@@ -2,6 +2,10 @@
 
 Choose how to get the Dixlase source code.
 
+## Quick Start
+
+- [Quick Install Script](quick-install.md) — One-line command to download, configure, and launch the installer
+
 ## Methods
 
 - [Git Clone](git-clone.md) — Clone the repository for development with version control
