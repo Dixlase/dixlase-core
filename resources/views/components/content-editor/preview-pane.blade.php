@@ -4,10 +4,16 @@ This file is part of Dixlase.
 Copyright (C) 2026 exc-D inc.
 https://exc-d.com
 
-フロントページ編集・作成画面で共有するプレビューセクション。
+共通プレビューペインコンポーネント。
 スプリットペインコンテナ内で使用する。
-Alpine.js コンポーネント（splitPaneEditor / frontPageCreate）が提供する
-プレビュー関連プロパティ・メソッドに依存する。
+ドラッグ分割バー + プレビューペイン（デバイス切替、スケーリング、iframe）を提供。
+
+Alpine.js 親コンポーネントが以下のプロパティ・メソッドを提供する必要がある:
+- previewMixin: previewVisible, previewDevice, previewScale, currentPreviewWidth/Height,
+                scaledPreviewWidth/Height, freeWidth/Height, previewLoading, previewFrameUrl,
+                setPreviewDevice(), startPreviewResize(), togglePreview()
+- splitPaneMixin: isHorizontal, splitRatio, isDragging, startDrag()
+- x-ref: previewPane, previewContainer, previewIframe
 --}}
 
 {{-- ===== ドラッグ Divider (横並び時かつプレビュー表示時のみ) ===== --}}
@@ -30,7 +36,7 @@ Alpine.js コンポーネント（splitPaneEditor / frontPageCreate）が提供�
     <div class="flex flex-wrap items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg gap-2">
         <div class="flex items-center gap-2">
             <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-                <i class="fas fa-eye mr-1"></i>{{ __('admin/front.edit.preview_title') }}
+                <i class="fas fa-eye mr-1"></i>{{ __('components/content-editor.preview_title') }}
             </span>
             {{-- スケール表示（縮小時のみ） --}}
             <span x-show="previewScale < 1" x-cloak
@@ -44,25 +50,25 @@ Alpine.js コンポーネント（splitPaneEditor / frontPageCreate）が提供�
                 <button type="button" @click="setPreviewDevice('mobile')"
                     :class="previewDevice === 'mobile' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
                     class="px-2.5 py-1.5 rounded-md transition-all text-xs"
-                    title="{{ __('admin/front.edit.device_mobile') }} (375×667)">
+                    title="{{ __('components/content-editor.device_mobile') }} (375×667)">
                     <i class="fas fa-mobile-alt"></i>
                 </button>
                 <button type="button" @click="setPreviewDevice('tablet')"
                     :class="previewDevice === 'tablet' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
                     class="px-2.5 py-1.5 rounded-md transition-all text-xs"
-                    title="{{ __('admin/front.edit.device_tablet') }} (768×1024)">
+                    title="{{ __('components/content-editor.device_tablet') }} (768×1024)">
                     <i class="fas fa-tablet-alt"></i>
                 </button>
                 <button type="button" @click="setPreviewDevice('desktop')"
                     :class="previewDevice === 'desktop' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
                     class="px-2.5 py-1.5 rounded-md transition-all text-xs"
-                    title="{{ __('admin/front.edit.device_desktop') }} (1440×900)">
+                    title="{{ __('components/content-editor.device_desktop') }} (1440×900)">
                     <i class="fas fa-desktop"></i>
                 </button>
                 <button type="button" @click="setPreviewDevice('free')"
                     :class="previewDevice === 'free' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
                     class="px-2.5 py-1.5 rounded-md transition-all text-xs"
-                    title="{{ __('admin/front.edit.device_free') }}">
+                    title="{{ __('components/content-editor.device_free') }}">
                     <i class="fas fa-expand-arrows-alt"></i>
                 </button>
             </div>
@@ -73,11 +79,11 @@ Alpine.js コンポーネント（splitPaneEditor / frontPageCreate）が提供�
                     <div class="flex items-center gap-1">
                         <input type="number" x-model.number="freeWidth" min="200" max="3840"
                                class="w-16 px-1.5 py-0.5 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-                               title="{{ __('admin/front.edit.preview_width') }}">
+                               title="{{ __('components/content-editor.preview_width') }}">
                         <span>×</span>
                         <input type="number" x-model.number="freeHeight" min="200" max="3840"
                                class="w-16 px-1.5 py-0.5 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-                               title="{{ __('admin/front.edit.preview_height') }}">
+                               title="{{ __('components/content-editor.preview_height') }}">
                         <span>px</span>
                     </div>
                 </template>
@@ -107,7 +113,7 @@ Alpine.js コンポーネント（splitPaneEditor / frontPageCreate）が提供�
                     class="bg-white"
                     :style="'width: ' + currentPreviewWidth + 'px; height: ' + currentPreviewHeight + 'px; transform: scale(' + previewScale + '); transform-origin: top left;'"
                     sandbox="allow-scripts allow-same-origin allow-forms"
-                    title="{{ __('admin/front.edit.preview_title') }}">
+                    title="{{ __('components/content-editor.preview_title') }}">
             </iframe>
         </div>
 

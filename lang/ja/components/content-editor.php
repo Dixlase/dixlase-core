@@ -36,4 +36,17 @@ return [
     'preview_loading' => 'プレビューを読み込み中...',
     'preview_error' => 'プレビューの読み込みに失敗しました。',
     'preview_empty' => 'プレビューするコンテンツを入力してください。',
+
+    // 共通プレビューペイン
+    'preview_title' => 'プレビュー',
+    'preview_show' => 'プレビューを表示',
+    'preview_hide' => 'プレビューを非表示',
+    'device_mobile' => 'モバイル',
+    'device_tablet' => 'タブレット',
+    'device_desktop' => 'デスクトップ',
+    'device_free' => 'フリーサイズ',
+    'preview_width' => '幅',
+    'preview_height' => '高さ',
+    'scroll_to_editor' => 'エディタに移動',
+    'scroll_to_preview' => 'プレビューに移動',
 ];

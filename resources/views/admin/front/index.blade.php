@@ -127,7 +127,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex flex-wrap items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg gap-2">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-                        <i class="fas fa-eye mr-1"></i>{{ __('admin/front.edit.preview_title') }}
+                        <i class="fas fa-eye mr-1"></i>{{ __('components/content-editor.preview_title') }}
                     </span>
                     <span x-show="previewScale < 1" x-cloak
                           class="text-[10px] text-gray-400 dark:text-gray-500"
@@ -139,25 +139,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <button type="button" @click="setPreviewDevice('mobile')"
                             :class="previewDevice === 'mobile' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
                             class="px-2.5 py-1.5 rounded-md transition-all text-xs"
-                            title="{{ __('admin/front.edit.device_mobile') }} (375×667)">
+                            title="{{ __('components/content-editor.device_mobile') }} (375×667)">
                             <i class="fas fa-mobile-alt"></i>
                         </button>
                         <button type="button" @click="setPreviewDevice('tablet')"
                             :class="previewDevice === 'tablet' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
                             class="px-2.5 py-1.5 rounded-md transition-all text-xs"
-                            title="{{ __('admin/front.edit.device_tablet') }} (768×1024)">
+                            title="{{ __('components/content-editor.device_tablet') }} (768×1024)">
                             <i class="fas fa-tablet-alt"></i>
                         </button>
                         <button type="button" @click="setPreviewDevice('desktop')"
                             :class="previewDevice === 'desktop' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
                             class="px-2.5 py-1.5 rounded-md transition-all text-xs"
-                            title="{{ __('admin/front.edit.device_desktop') }} (1440×900)">
+                            title="{{ __('components/content-editor.device_desktop') }} (1440×900)">
                             <i class="fas fa-desktop"></i>
                         </button>
                         <button type="button" @click="setPreviewDevice('free')"
                             :class="previewDevice === 'free' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
                             class="px-2.5 py-1.5 rounded-md transition-all text-xs"
-                            title="{{ __('admin/front.edit.device_free') }}">
+                            title="{{ __('components/content-editor.device_free') }}">
                             <i class="fas fa-expand-arrows-alt"></i>
                         </button>
                     </div>
@@ -189,7 +189,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             class="bg-white"
                             :style="'width: ' + currentPreviewWidth + 'px; height: ' + currentPreviewHeight + 'px; transform: scale(' + previewScale + '); transform-origin: top left;'"
                             sandbox="allow-scripts allow-same-origin allow-forms"
-                            title="{{ __('admin/front.edit.preview_title') }}">
+                            title="{{ __('components/content-editor.preview_title') }}">
                     </iframe>
                 </div>
             </div>

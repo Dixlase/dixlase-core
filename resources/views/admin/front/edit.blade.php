@@ -51,9 +51,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :class="previewVisible
                     ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-700'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'"
-                :title="previewVisible ? '{{ __('admin/front.edit.preview_hide') }}' : '{{ __('admin/front.edit.preview_show') }}'">
+                :title="previewVisible ? '{{ __('components/content-editor.preview_hide') }}' : '{{ __('components/content-editor.preview_show') }}'">
                 <i class="fas" :class="previewVisible ? 'fa-eye' : 'fa-eye-slash'"></i>
-                <span x-text="previewVisible ? '{{ __('admin/front.edit.preview_hide') }}' : '{{ __('admin/front.edit.preview_show') }}'"></span>
+                <span x-text="previewVisible ? '{{ __('components/content-editor.preview_hide') }}' : '{{ __('components/content-editor.preview_show') }}'"></span>
             </button>
         </div>
 
@@ -156,19 +156,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
-            @include('admin.front.partials.preview-section')
+            @include('components.content-editor.preview-pane')
         </div>
 
         {{-- ===== 縦並び時のフローティングボタン ===== --}}
         <div x-show="!isHorizontal && previewVisible" x-cloak class="fixed bottom-20 right-4 z-40 flex flex-col gap-2">
             <button type="button" @click="scrollToEditor()"
                     class="p-3 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-colors"
-                    title="{{ __('admin/front.edit.scroll_to_editor') }}">
+                    title="{{ __('components/content-editor.scroll_to_editor') }}">
                 <i class="fas fa-edit text-sm"></i>
             </button>
             <button type="button" @click="scrollToPreview()"
                     class="p-3 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-colors"
-                    title="{{ __('admin/front.edit.scroll_to_preview') }}">
+                    title="{{ __('components/content-editor.scroll_to_preview') }}">
                 <i class="fas fa-eye text-sm"></i>
             </button>
         </div>

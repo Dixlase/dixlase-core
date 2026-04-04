@@ -1,0 +1,103 @@
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * Website: https://exc-d.com
+ *
+ * スプリットペインレイアウトの共通ミックスイン
+ * エディタとプレビューの横並び/縦並び自動切替、ドラッグ分割、
+ * スクロール制御等の共通ロジックを提供する。
+ *
+ * 使い方:
+ *   import { splitPaneMixin } from './mixins/split-pane-mixin';
+ *   Alpine.data('myEditor', (config) => ({
+ *       ...splitPaneMixin(),
+ *       // 固有のプロパティ・メソッド
+ *   }));
+ *
+ * 必須 x-ref（Blade 側）:
+ *   - splitContainer: スプリットペインコンテナ
+ *   - editorPane: エディタペイン
+ *   - previewPane: プレビューペイン
+ */
+
+const STORAGE_KEY_SPLIT_RATIO = 'dls-split-ratio';
+const MIN_PANE_WIDTH = 320;
+const HORIZONTAL_MIN_WIDTH = 900;
+
+export { STORAGE_KEY_SPLIT_RATIO, MIN_PANE_WIDTH, HORIZONTAL_MIN_WIDTH };
+
+/**
+ * スプリットペイン共通ミックスイン
+ *
+ * @returns {object} Alpine.js データオブジェクト
+ */
+export function splitPaneMixin() {
+    return {
+        // --- レイアウト ---
+        splitRatio: parseFloat(localStorage.getItem(STORAGE_KEY_SPLIT_RATIO) || '0.5'),
+        isDragging: false,
+        isHorizontal: false,
+        _resizeObserver: null,
+
+        // --- スプリットペイン初期化（init() 内から呼ぶ） ---
+        initSplitPane() {
+            this.$nextTick(() => {
+                this.observeContainerWidth();
+            });
+
+            this.$watch('splitRatio', (v) => {
+                localStorage.setItem(STORAGE_KEY_SPLIT_RATIO, v.toString());
+            });
+        },
+
+        // --- コンテナ幅監視（横並び/縦並び自動切替） ---
+        observeContainerWidth() {
+            const container = this.$refs.splitContainer;
+            if (!container) return;
+
+            this._resizeObserver = new ResizeObserver((entries) => {
+                for (const entry of entries) {
+                    this.isHorizontal = entry.contentRect.width >= HORIZONTAL_MIN_WIDTH;
+                }
+            });
+            this._resizeObserver.observe(container);
+        },
+
+        // --- ドラッグ ---
+        startDrag(event) {
+            if (!this.isHorizontal) return;
+            this.isDragging = true;
+            event.preventDefault();
+
+            const container = this.$refs.splitContainer;
+
+            const onMove = (e) => {
+                if (!this.isDragging) return;
+                const rect = container.getBoundingClientRect();
+                let ratio = (e.clientX - rect.left) / rect.width;
+                const minRatio = MIN_PANE_WIDTH / rect.width;
+                ratio = Math.max(minRatio, Math.min(1 - minRatio, ratio));
+                this.splitRatio = ratio;
+            };
+
+            const onUp = () => {
+                this.isDragging = false;
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+            };
+
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        },
+
+        // --- スクロール ---
+        scrollToEditor() {
+            this.$refs.editorPane?.scrollIntoView({ behavior: 'smooth' });
+        },
+
+        scrollToPreview() {
+            this.$refs.previewPane?.scrollIntoView({ behavior: 'smooth' });
+        },
+    };
+}
