@@ -17,6 +17,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+@api プラグイン/テーマから使用可能な安定APIです
+
 管理画面共通の右サイドバーコンポーネント。
 トグルボタンとスライドパネルを提供する。
 --}}

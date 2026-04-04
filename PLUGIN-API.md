@@ -237,7 +237,9 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 ### 6.3 管理画面コンポーネント
 
 `x-admin.save-button`, `x-admin.delete-button`, `x-admin.danger-zone`,
-`x-admin.account-status`, `x-admin.settings.security-notifications`
+`x-admin.account-status`, `x-admin.settings.security-notifications`,
+`x-admin.right-sidebar`, `x-admin.theme-preview-sidebar`,
+`x-admin.theme-preview-sidebar-section`, `x-admin.theme-preview-container`
 
 ### 6.4 フロントエンドコンポーネント
 
