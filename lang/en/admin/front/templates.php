@@ -37,6 +37,58 @@ Feel free to reach out to us:
 - Phone: [Your Phone Number]
 - Address: [Your Address]
 
+---
+
+## Markdown Tag Samples
+
+### Text Formatting
+
+This is **bold**, *italic*, ***bold italic***, and ~~strikethrough~~ text.
+
+`Inline code` is also supported.
+
+> This is a blockquote. It can span multiple lines and is useful for highlighting important content.
+
+### Nested Lists
+
+- Item 1
+- Item 2
+  - Sub-item 2-1
+  - Sub-item 2-2
+- Item 3
+
+### Ordered List
+
+1. First item
+2. Second item
+3. Third item
+
+### Links
+
+[Dixlase Official Website](https://example.com)
+
+### Table
+
+| Column 1 | Column 2 | Column 3 |
+|----------|----------|----------|
+| A1 | B1 | C1 |
+| A2 | B2 | C2 |
+| A3 | B3 | C3 |
+
+### Code Block
+
+```javascript
+function hello() {
+    console.log("Hello, Dixlase!");
+}
+```
+
+### Task List
+
+- [x] Completed task
+- [ ] Incomplete task
+- [ ] Another incomplete task
+
 ## Image Sample
 
 ![Sample Image](data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='600'%20height='300'%20viewBox='0%200%20600%20300'%3E%3Crect%20fill='%234f46e5'%20width='600'%20height='300'/%3E%3Ctext%20x='50%25'%20y='50%25'%20dominant-baseline='middle'%20text-anchor='middle'%20fill='white'%20font-family='system-ui'%20font-size='24'%3ESample%20Image%20(600x300)%3C/text%3E%3C/svg%3E)
