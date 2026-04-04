@@ -87,7 +87,7 @@ the Free Software Foundation, either version 3 of the License, or
         <div id="{{ $innerId }}"
              data-preview-theme="{{ $appearanceMode === '1' ? 'light' : 'dark' }}"
              @appearance-changed.window="$el.dataset.previewTheme = $event.detail.mode === '1' ? 'light' : 'dark'"
-             :style="'visibility: visible; width: ' + previewDeviceWidth + 'px; transform: scale(' + previewScale + '); transform-origin: top left; margin: 0;'"
+             :style="'visibility: ' + (_previewReady ? 'visible' : 'hidden') + '; width: ' + previewDeviceWidth + 'px; transform: scale(' + previewScale + '); transform-origin: top left; margin: 0;'"
              style="visibility: hidden;"
              class="relative">
 
@@ -112,6 +112,7 @@ window.previewContainerMixin = function(outerId = 'preview-outer', innerId = 'pr
         previewDeviceWidth: {{ $defaultDevice === 'mobile' ? 375 : ($defaultDevice === 'tablet' ? 768 : 1440) }},
         freeWidth: 1440,
         previewScale: 1,
+        _previewReady: false,
         _containerWidth: 0,
 
         initPreviewContainer() {
@@ -121,6 +122,7 @@ window.previewContainerMixin = function(outerId = 'preview-outer', innerId = 'pr
                 this._containerWidth = outerImmediate.offsetWidth;
                 this.updatePreviewScale();
             }
+            this._previewReady = true;
 
             this.$nextTick(() => {
                 const outer = document.getElementById(outerId);
