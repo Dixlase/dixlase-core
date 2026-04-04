@@ -4,6 +4,14 @@
  * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
+ * @api プラグイン/テーマから window.Dixlase.mixins.splitPaneMixin として使用可能
+ *
+ * Additional permission under GNU AGPL version 3 section 7:
+ * Dixlase plugins and themes may use this file's exported functions via the
+ * window.Dixlase.mixins runtime API without being subject to the copyleft
+ * requirements of the AGPL. Direct import into plugin build bundles is NOT
+ * covered by this exception.
+ *
  * スプリットペインレイアウトの共通ミックスイン
  * エディタとプレビューの横並び/縦並び自動切替、ドラッグ分割、
  * スクロール制御等の共通ロジックを提供する。
