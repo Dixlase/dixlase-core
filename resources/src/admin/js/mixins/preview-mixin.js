@@ -4,6 +4,14 @@
  * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
+ * @api プラグイン/テーマから window.Dixlase.mixins.previewMixin として使用可能
+ *
+ * Additional permission under GNU AGPL version 3 section 7:
+ * Dixlase plugins and themes may use this file's exported functions via the
+ * window.Dixlase.mixins runtime API without being subject to the copyleft
+ * requirements of the AGPL. Direct import into plugin build bundles is NOT
+ * covered by this exception.
+ *
  * プレビュー機能の共通ミックスイン
  * iframe テーマプレビュー、デバイス切替、スケーリング、リサイズ等の
  * 共通ロジックを提供する。フロントページ、ページプラグイン、リーガルプラグイン等で共用。
