@@ -36,6 +36,10 @@ return [
 - メール: [email@example.com]
 - 電話: [電話番号]
 - 住所: [住所]
+
+## 画像サンプル
+
+![サンプル画像](data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='600'%20height='300'%20viewBox='0%200%20600%20300'%3E%3Crect%20fill='%234f46e5'%20width='600'%20height='300'/%3E%3Ctext%20x='50%25'%20y='50%25'%20dominant-baseline='middle'%20text-anchor='middle'%20fill='white'%20font-family='system-ui'%20font-size='24'%3E%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB%E7%94%BB%E5%83%8F%20(600x300)%3C/text%3E%3C/svg%3E)
 MARKDOWN,
         'content_html' => <<<'HTML'
 <h1>当サイトへようこそ</h1>
@@ -100,6 +104,19 @@ MARKDOWN,
         <tr><td>A2</td><td>B2</td><td>C2</td></tr>
     </tbody>
 </table>
+
+<h3>画像</h3>
+<p>キャプション付き画像:</p>
+<figure>
+    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='300' viewBox='0 0 600 300'%3E%3Crect fill='%234f46e5' width='600' height='300'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='system-ui' font-size='24'%3E%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB%E7%94%BB%E5%83%8F (600x300)%3C/text%3E%3C/svg%3E" alt="サンプル画像" style="max-width:100%;height:auto;border-radius:0.5rem;">
+    <figcaption>図1: サンプルプレースホルダー画像</figcaption>
+</figure>
+
+<p>横並びの画像:</p>
+<div style="display:flex;gap:1rem;flex-wrap:wrap;">
+    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='180' viewBox='0 0 280 180'%3E%3Crect fill='%230d9488' width='280' height='180'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='system-ui' font-size='16'%3E%E5%86%99%E7%9C%9F 1%3C/text%3E%3C/svg%3E" alt="写真1" style="border-radius:0.5rem;">
+    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='180' viewBox='0 0 280 180'%3E%3Crect fill='%23d97706' width='280' height='180'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='system-ui' font-size='16'%3E%E5%86%99%E7%9C%9F 2%3C/text%3E%3C/svg%3E" alt="写真2" style="border-radius:0.5rem;">
+</div>
 
 <h3>コードブロック</h3>
 <pre><code>function hello() {

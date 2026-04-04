@@ -36,6 +36,10 @@ Feel free to reach out to us:
 - Email: [email@example.com]
 - Phone: [Your Phone Number]
 - Address: [Your Address]
+
+## Image Sample
+
+![Sample Image](data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='600'%20height='300'%20viewBox='0%200%20600%20300'%3E%3Crect%20fill='%234f46e5'%20width='600'%20height='300'/%3E%3Ctext%20x='50%25'%20y='50%25'%20dominant-baseline='middle'%20text-anchor='middle'%20fill='white'%20font-family='system-ui'%20font-size='24'%3ESample%20Image%20(600x300)%3C/text%3E%3C/svg%3E)
 MARKDOWN,
         'content_html' => <<<'HTML'
 <h1>Welcome to Our Website</h1>
@@ -100,6 +104,19 @@ MARKDOWN,
         <tr><td>A2</td><td>B2</td><td>C2</td></tr>
     </tbody>
 </table>
+
+<h3>Images</h3>
+<p>Inline image with caption:</p>
+<figure>
+    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='300' viewBox='0 0 600 300'%3E%3Crect fill='%234f46e5' width='600' height='300'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='system-ui' font-size='24'%3ESample Image (600x300)%3C/text%3E%3C/svg%3E" alt="Sample image" style="max-width:100%;height:auto;border-radius:0.5rem;">
+    <figcaption>Figure 1: A sample placeholder image</figcaption>
+</figure>
+
+<p>Side-by-side images:</p>
+<div style="display:flex;gap:1rem;flex-wrap:wrap;">
+    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='180' viewBox='0 0 280 180'%3E%3Crect fill='%230d9488' width='280' height='180'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='system-ui' font-size='16'%3EPhoto 1%3C/text%3E%3C/svg%3E" alt="Photo 1" style="border-radius:0.5rem;">
+    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='180' viewBox='0 0 280 180'%3E%3Crect fill='%23d97706' width='280' height='180'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='system-ui' font-size='16'%3EPhoto 2%3C/text%3E%3C/svg%3E" alt="Photo 2" style="border-radius:0.5rem;">
+</div>
 
 <h3>Code Block</h3>
 <pre><code>function hello() {
