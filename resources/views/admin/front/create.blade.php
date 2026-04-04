@@ -164,7 +164,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
 
             {{-- 言語選択 --}}
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div>
                 <x-form-label :for="'lang'" :text="__('admin/front.create.lang_label')" class="mb-2" />
                 <x-form-select
                     id="lang"

@@ -102,7 +102,9 @@ class AdminFrontController extends AdminLoggedInController
             return redirect()->route('admin.front.edit');
         }
 
-        $languages = config('language.languages', []);
+        $languages = collect(config('language.languages', []))->mapWithKeys(
+            fn ($label, $code) => [$code => __("common.{$code}")]
+        )->all();
         $templates = $this->buildTemplateData();
 
         // ユーザーのプロフィール言語をデフォルト値として使用
