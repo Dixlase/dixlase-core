@@ -7,20 +7,12 @@
  * スプリットペイン + ライブプレビュー Alpine.js コンポーネント
  * フロントページ編集画面で使用。エディタとiframeテーマプレビューを配置し、
  * 編集内容をリアルタイムにプレビューに反映する。
- * コンテナ実幅に基づき横並び/縦並びを自動切替する。
+ * 共通ミックスイン（preview-mixin, split-pane-mixin）を使用。
  */
 
 import Alpine from 'alpinejs';
-
-const STORAGE_KEY_SPLIT_RATIO = 'dls-split-ratio';
-const MIN_PANE_WIDTH = 320;
-const HORIZONTAL_MIN_WIDTH = 900;
-
-const DEVICE_PRESETS = {
-    mobile: { width: 375, height: 667 },
-    tablet: { width: 768, height: 1024 },
-    desktop: { width: 1440, height: 900 },
-};
+import { previewMixin } from './mixins/preview-mixin';
+import { splitPaneMixin } from './mixins/split-pane-mixin';
 
 const DEBOUNCE_DELAYS = {
     html: 150,
@@ -31,28 +23,13 @@ const DEBOUNCE_DELAYS = {
 
 function createSplitPaneEditor(config) {
     return {
-        // --- レイアウト ---
-        splitRatio: parseFloat(localStorage.getItem(STORAGE_KEY_SPLIT_RATIO) || '0.5'),
-        isDragging: false,
-        isHorizontal: false,
-
-        // --- プレビュー状態 ---
-        previewReady: false,
-        previewLoading: true,
-        previewVisible: true,
-
-        // --- デバイスプレビュー ---
-        previewDevice: 'desktop',
-        freeWidth: 1440,
-        freeHeight: 900,
-        isResizingPreview: false,
-        _previewContainerWidth: 0,
+        // --- 共通ミックスイン ---
+        ...splitPaneMixin(),
+        ...previewMixin(config),
 
         // --- エディタ設定 ---
         editorType: config.editorType || 'html',
         editorTypeValue: config.editorTypeValue || 'html',
-        previewUrl: config.previewUrl || '',
-        previewFrameUrl: config.previewFrameUrl || '',
 
         // --- ストレージ関連 ---
         storageType: config.defaultStorageType || 'database',
@@ -63,8 +40,6 @@ function createSplitPaneEditor(config) {
         _debounceTimer: null,
         _cssDebounceTimer: null,
         _abortController: null,
-        _resizeObserver: null,
-        _previewResizeObserver: null,
 
         // --- Computed ---
         get isHtmlEditor() {
@@ -97,161 +72,16 @@ function createSplitPaneEditor(config) {
             return this.fileStorageBasePath + '/style.css';
         },
 
-        get currentPreviewWidth() {
-            if (this.previewDevice === 'free') {
-                return this.freeWidth;
-            }
-            return DEVICE_PRESETS[this.previewDevice]?.width ?? 1440;
-        },
-
-        get currentPreviewHeight() {
-            if (this.previewDevice === 'free') {
-                return this.freeHeight;
-            }
-            return DEVICE_PRESETS[this.previewDevice]?.height ?? 900;
-        },
-
-        get previewScale() {
-            if (this._previewContainerWidth <= 0 || this.currentPreviewWidth <= this._previewContainerWidth) {
-                return 1;
-            }
-            return this._previewContainerWidth / this.currentPreviewWidth;
-        },
-
-        get scaledPreviewWidth() {
-            return Math.round(this.currentPreviewWidth * this.previewScale);
-        },
-
-        get scaledPreviewHeight() {
-            return Math.round(this.currentPreviewHeight * this.previewScale);
-        },
-
         // --- 初期化 ---
         init() {
             this.$dispatch('right-sidebar-active');
-
-            // iframe ready リスナー
-            this._onMessage = (e) => {
-                if (e.origin !== window.location.origin) return;
-                if (e.data?.type === 'dixlase-preview-ready') {
-                    this.previewReady = true;
-                    this.previewLoading = false;
-                    this.sendContentToPreview();
-                }
-            };
-            window.addEventListener('message', this._onMessage);
+            this.initPreview();
+            this.initSplitPane();
 
             this.$nextTick(() => {
                 this.initAutoResizeTextareas();
                 this.watchContentChanges();
-                this.observeContainerWidth();
-                this.observePreviewContainerWidth();
             });
-
-            // splitRatio永続化
-            this.$watch('splitRatio', (v) => {
-                localStorage.setItem(STORAGE_KEY_SPLIT_RATIO, v.toString());
-            });
-        },
-
-        // --- コンテナ幅監視（横並び/縦並び自動切替） ---
-        observeContainerWidth() {
-            const container = this.$refs.splitContainer;
-            if (!container) return;
-
-            this._resizeObserver = new ResizeObserver((entries) => {
-                for (const entry of entries) {
-                    this.isHorizontal = entry.contentRect.width >= HORIZONTAL_MIN_WIDTH;
-                }
-            });
-            this._resizeObserver.observe(container);
-        },
-
-        // --- プレビューコンテナ幅監視（スケーリング計算用） ---
-        observePreviewContainerWidth() {
-            const container = this.$refs.previewContainer;
-            if (!container) return;
-
-            this._previewResizeObserver = new ResizeObserver((entries) => {
-                for (const entry of entries) {
-                    this._previewContainerWidth = entry.contentRect.width;
-                }
-            });
-            this._previewResizeObserver.observe(container);
-        },
-
-        // --- プレビュー表示/非表示トグル ---
-        togglePreview() {
-            this.previewVisible = !this.previewVisible;
-        },
-
-        // --- スプリットペイン ドラッグ ---
-        startDrag(event) {
-            if (!this.isHorizontal) return;
-            this.isDragging = true;
-            event.preventDefault();
-
-            const container = this.$refs.splitContainer;
-
-            const onMove = (e) => {
-                if (!this.isDragging) return;
-                const rect = container.getBoundingClientRect();
-                let ratio = (e.clientX - rect.left) / rect.width;
-                const minRatio = MIN_PANE_WIDTH / rect.width;
-                ratio = Math.max(minRatio, Math.min(1 - minRatio, ratio));
-                this.splitRatio = ratio;
-            };
-
-            const onUp = () => {
-                this.isDragging = false;
-                document.removeEventListener('mousemove', onMove);
-                document.removeEventListener('mouseup', onUp);
-            };
-
-            document.addEventListener('mousemove', onMove);
-            document.addEventListener('mouseup', onUp);
-        },
-
-        // --- デバイスプレビュー ---
-        setPreviewDevice(device) {
-            this.previewDevice = device;
-        },
-
-        // --- フリーサイズ リサイズハンドル ---
-        startPreviewResize(event, direction) {
-            event.preventDefault();
-            this.isResizingPreview = true;
-
-            // フリーモードに自動切替
-            if (this.previewDevice !== 'free') {
-                this.freeWidth = this.currentPreviewWidth;
-                this.freeHeight = this.currentPreviewHeight;
-                this.previewDevice = 'free';
-            }
-
-            const startX = event.clientX;
-            const startY = event.clientY;
-            const startW = this.freeWidth;
-            const startH = this.freeHeight;
-
-            const onMove = (e) => {
-                if (!this.isResizingPreview) return;
-                if (direction === 'horizontal' || direction === 'both') {
-                    this.freeWidth = Math.max(200, startW + (e.clientX - startX));
-                }
-                if (direction === 'vertical' || direction === 'both') {
-                    this.freeHeight = Math.max(200, startH + (e.clientY - startY));
-                }
-            };
-
-            const onUp = () => {
-                this.isResizingPreview = false;
-                document.removeEventListener('mousemove', onMove);
-                document.removeEventListener('mouseup', onUp);
-            };
-
-            document.addEventListener('mousemove', onMove);
-            document.addEventListener('mouseup', onUp);
         },
 
         // --- コンテンツ監視 ---
@@ -297,7 +127,6 @@ function createSplitPaneEditor(config) {
         },
 
         async serverRenderAndSend(content) {
-            // 前回の未完了リクエストをキャンセル
             if (this._abortController) {
                 this._abortController.abort();
             }
@@ -331,31 +160,12 @@ function createSplitPaneEditor(config) {
 
         sendContentToPreview() {
             this.renderAndSend();
-            // カスタムCSSも送信
             if (this.isHtmlEditor) {
                 const css = document.getElementById('custom_css')?.value || '';
                 if (css) {
                     this.postToIframe('updateCustomCss', { css });
                 }
             }
-        },
-
-        postToIframe(action, data) {
-            const iframe = this.$refs.previewIframe;
-            if (!iframe?.contentWindow) return;
-            iframe.contentWindow.postMessage(
-                { type: 'dixlase-preview-update', action, ...data },
-                window.location.origin
-            );
-        },
-
-        // --- モバイルUX ---
-        scrollToEditor() {
-            this.$refs.editorPane?.scrollIntoView({ behavior: 'smooth' });
-        },
-
-        scrollToPreview() {
-            this.$refs.previewPane?.scrollIntoView({ behavior: 'smooth' });
         },
 
         // --- textarea自動リサイズ ---
