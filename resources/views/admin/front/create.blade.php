@@ -166,7 +166,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{-- ===== 右サイドバートグルボタン ===== --}}
         <button type="button"
                 @click="toggleRightSidebar()"
-                class="flex fixed top-14 right-0 z-50 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-l-lg shadow-md border border-r-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                class="fixed top-14 right-0 z-50 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-l-lg shadow-md border border-r-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
                 :class="{
                     'translate-x-0': rightSidebarCollapsed,
                     '-translate-x-80': !rightSidebarCollapsed
