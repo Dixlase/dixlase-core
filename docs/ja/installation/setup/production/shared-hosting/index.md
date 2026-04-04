@@ -20,6 +20,9 @@
 
 ### 海外
 
+- [Hostinger](hostinger.md) — 世界最大級のホスティングサービス（hPanel）
+- [SiteGround](siteground.md) — 高性能ホスティング（Site Toolsパネル）
+- [A2 Hosting](a2-hosting.md) — SSH・Composer対応の開発者向けホスティング
 - [cPanelホスティング](cpanel.md) — cPanelベースのホスティング汎用ガイド
 
 ## 一般的な手順
