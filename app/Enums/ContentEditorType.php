@@ -275,12 +275,7 @@ enum ContentEditorType: int
                 'description' => __($type->descriptionKey()),
             ];
 
-            // GUIはプラグインが提供しない場合は無効化
-            if ($type === self::GUI && ! in_array($type->slug(), $enabledByPlugin, true)) {
-                $option['disabled'] = true;
-                $option['badge'] = __('common.content_editor.coming_soon_badge');
-                $option['badgeColor'] = 'gray';
-            }
+            // GUIは常に選択可能（プラグイン未提供時はコンテンツ領域でプレースホルダーを表示）
 
             $options[] = $option;
         }

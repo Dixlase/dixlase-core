@@ -1,4 +1,6 @@
 {{--
+@api プラグイン/テーマから使用可能な安定APIコンポーネントです
+
 This file is part of Dixlase.
 
 Copyright (C) 2025 exc-D inc.
