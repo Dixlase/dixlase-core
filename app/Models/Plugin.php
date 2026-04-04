@@ -23,7 +23,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * プラグインメタデータモデル
+ */
 class Plugin extends Model
 {
     /**
@@ -43,6 +49,10 @@ class Plugin extends Model
         'description',
         'installed_at',
         'enabled_at',
+        'source_id',
+        'source_repo',
+        'available_version',
+        'last_version_check',
     ];
 
     /**
@@ -51,7 +61,25 @@ class Plugin extends Model
     protected $casts = [
         'installed_at' => 'datetime',
         'enabled_at' => 'datetime',
+        'last_version_check' => 'datetime',
     ];
+
+    /**
+     * Extension source that this plugin was installed from
+     */
+    public function source(): BelongsTo
+    {
+        return $this->belongsTo(ExtensionSource::class, 'source_id');
+    }
+
+    /**
+     * Check if an update is available from the source
+     */
+    public function hasUpdateAvailable(): bool
+    {
+        return $this->available_version !== null
+            && version_compare($this->available_version, $this->version, '>');
+    }
 
     /**
      * 有効化されたプラグインを取得するスコープ
@@ -74,7 +102,7 @@ class Plugin extends Model
      */
     public function isInstalled(): bool
     {
-        return !is_null($this->installed_at);
+        return ! is_null($this->installed_at);
     }
 
     /**
@@ -82,11 +110,12 @@ class Plugin extends Model
      */
     public function isEnabled(): bool
     {
-        return !is_null($this->enabled_at);
+        return ! is_null($this->enabled_at);
     }
 
     /**
      * 後方互換性のため残す（非推奨）
+     *
      * @deprecated Use isEnabled() instead
      */
     public function isActivated(): bool

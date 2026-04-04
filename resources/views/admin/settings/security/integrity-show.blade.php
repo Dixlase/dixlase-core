@@ -78,13 +78,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    @php $details = $audit->details ?? []; @endphp
-
     <!-- 変更されたファイル -->
-    @if(!empty($details['changed']))
+    @if(!empty($resultPayload['changed']))
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-red-200 dark:border-red-800 p-6 mb-6">
             <h2 class="text-lg font-semibold text-red-800 dark:text-red-200 mb-4">
-                <i class="fas fa-edit mr-2"></i>{{ __('admin/settings/security/integrity.changed_files') }} ({{ count($details['changed']) }})
+                <i class="fas fa-edit mr-2"></i>{{ __('admin/settings/security/integrity.changed_files') }} ({{ count($resultPayload['changed']) }})
             </h2>
             
             <div class="overflow-x-auto">
@@ -97,11 +95,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                        @foreach($details['changed'] as $file)
+                        @foreach($resultPayload['changed'] as $file)
                             <tr>
                                 <td class="px-4 py-3 text-sm text-gray-900 dark:text-white font-mono">{{ $file['path'] ?? 'N/A' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 font-mono">{{ substr($file['expected_hash'] ?? '', 0, 16) }}...</td>
-                                <td class="px-4 py-3 text-sm text-red-600 dark:text-red-400 font-mono">{{ substr($file['actual_hash'] ?? '', 0, 16) }}...</td>
+                                <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 font-mono">{{ substr($file['old_hash'] ?? '', 0, 16) }}...</td>
+                                <td class="px-4 py-3 text-sm text-red-600 dark:text-red-400 font-mono">{{ substr($file['new_hash'] ?? '', 0, 16) }}...</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -111,14 +109,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
 
     <!-- 追加されたファイル -->
-    @if(!empty($details['added']))
+    @if(!empty($resultPayload['added']))
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-yellow-200 dark:border-yellow-800 p-6 mb-6">
             <h2 class="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-4">
-                <i class="fas fa-plus-circle mr-2"></i>{{ __('admin/settings/security/integrity.added_files') }} ({{ count($details['added']) }})
+                <i class="fas fa-plus-circle mr-2"></i>{{ __('admin/settings/security/integrity.added_files') }} ({{ count($resultPayload['added']) }})
             </h2>
             
             <ul class="space-y-2">
-                @foreach($details['added'] as $file)
+                @foreach($resultPayload['added'] as $file)
                     <li class="text-sm text-gray-900 dark:text-white font-mono">
                         <i class="fas fa-file text-yellow-500 mr-2"></i>{{ is_array($file) ? ($file['path'] ?? 'N/A') : $file }}
                     </li>
@@ -128,14 +126,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
 
     <!-- 削除されたファイル -->
-    @if(!empty($details['removed']))
+    @if(!empty($resultPayload['removed']))
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-orange-200 dark:border-orange-800 p-6 mb-6">
             <h2 class="text-lg font-semibold text-orange-800 dark:text-orange-200 mb-4">
-                <i class="fas fa-minus-circle mr-2"></i>{{ __('admin/settings/security/integrity.removed_files') }} ({{ count($details['removed']) }})
+                <i class="fas fa-minus-circle mr-2"></i>{{ __('admin/settings/security/integrity.removed_files') }} ({{ count($resultPayload['removed']) }})
             </h2>
             
             <ul class="space-y-2">
-                @foreach($details['removed'] as $file)
+                @foreach($resultPayload['removed'] as $file)
                     <li class="text-sm text-gray-900 dark:text-white font-mono">
                         <i class="fas fa-file-excel text-orange-500 mr-2"></i>{{ is_array($file) ? ($file['path'] ?? 'N/A') : $file }}
                     </li>
@@ -145,16 +143,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
 
     <!-- 疑わしいファイル -->
-    @if(!empty($details['suspicious']))
+    @if(!empty($resultPayload['suspicious']))
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-purple-200 dark:border-purple-800 p-6 mb-6">
             <h2 class="text-lg font-semibold text-purple-800 dark:text-purple-200 mb-4">
-                <i class="fas fa-question-circle mr-2"></i>{{ __('admin/settings/security/integrity.suspicious_files') }} ({{ count($details['suspicious']) }})
+                <i class="fas fa-question-circle mr-2"></i>{{ __('admin/settings/security/integrity.suspicious_files') }} ({{ count($resultPayload['suspicious']) }})
             </h2>
             
             <p class="text-sm text-purple-600 dark:text-purple-400 mb-4">{{ __('admin/settings/security/integrity.suspicious_files_help') }}</p>
             
             <ul class="space-y-2">
-                @foreach($details['suspicious'] as $file)
+                @foreach($resultPayload['suspicious'] as $file)
                     <li class="text-sm text-gray-900 dark:text-white font-mono">
                         <i class="fas fa-exclamation text-purple-500 mr-2"></i>{{ is_array($file) ? ($file['path'] ?? 'N/A') : $file }}
                     </li>

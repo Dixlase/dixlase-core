@@ -153,6 +153,70 @@ return new class extends Migration
                 ->on('members')
                 ->nullOnDelete();
         });
+
+        // ========================================
+        // custom_roles テーブルへの外部キー
+        // ========================================
+
+        // custom_roles.created_by -> members.id
+        Schema::table('custom_roles', function (Blueprint $table) {
+            $table->foreign('created_by')
+                ->references('id')
+                ->on('members')
+                ->nullOnDelete();
+        });
+
+        // ========================================
+        // custom_role_permission_overrides テーブルへの外部キー
+        // ========================================
+
+        // custom_role_permission_overrides.custom_role_id -> custom_roles.id
+        Schema::table('custom_role_permission_overrides', function (Blueprint $table) {
+            $table->foreign('custom_role_id')
+                ->references('id')
+                ->on('custom_roles')
+                ->cascadeOnDelete();
+        });
+
+        // custom_role_permission_overrides.updated_by -> members.id
+        Schema::table('custom_role_permission_overrides', function (Blueprint $table) {
+            $table->foreign('updated_by')
+                ->references('id')
+                ->on('members')
+                ->nullOnDelete();
+        });
+
+        // ========================================
+        // members.custom_role_id への外部キー
+        // ========================================
+
+        // members.custom_role_id -> custom_roles.id
+        Schema::table('members', function (Blueprint $table) {
+            $table->foreign('custom_role_id')
+                ->references('id')
+                ->on('custom_roles')
+                ->nullOnDelete();
+        });
+
+        // ========================================
+        // extension_sources テーブルへの外部キー
+        // ========================================
+
+        // plugins.source_id -> extension_sources.id
+        Schema::table('plugins', function (Blueprint $table) {
+            $table->foreign('source_id')
+                ->references('id')
+                ->on('extension_sources')
+                ->nullOnDelete();
+        });
+
+        // themes.source_id -> extension_sources.id
+        Schema::table('themes', function (Blueprint $table) {
+            $table->foreign('source_id')
+                ->references('id')
+                ->on('extension_sources')
+                ->nullOnDelete();
+        });
     }
 
     /**
@@ -160,6 +224,36 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // themes.source_id
+        Schema::table('themes', function (Blueprint $table) {
+            $table->dropForeign(['source_id']);
+        });
+
+        // plugins.source_id
+        Schema::table('plugins', function (Blueprint $table) {
+            $table->dropForeign(['source_id']);
+        });
+
+        // members.custom_role_id
+        Schema::table('members', function (Blueprint $table) {
+            $table->dropForeign(['custom_role_id']);
+        });
+
+        // custom_role_permission_overrides.updated_by
+        Schema::table('custom_role_permission_overrides', function (Blueprint $table) {
+            $table->dropForeign(['updated_by']);
+        });
+
+        // custom_role_permission_overrides.custom_role_id
+        Schema::table('custom_role_permission_overrides', function (Blueprint $table) {
+            $table->dropForeign(['custom_role_id']);
+        });
+
+        // custom_roles.created_by
+        Schema::table('custom_roles', function (Blueprint $table) {
+            $table->dropForeign(['created_by']);
+        });
+
         // role_permission_overrides.updated_by
         Schema::table('role_permission_overrides', function (Blueprint $table) {
             $table->dropForeign(['updated_by']);

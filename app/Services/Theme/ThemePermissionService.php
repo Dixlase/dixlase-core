@@ -241,7 +241,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
         // リスクレベルと理由を常に現在のスコアリングルールで再計算
         // （監査DBのキャッシュはスコアリングルール変更後に陳腐化するため）
         $mismatches = $auditData['mismatches'] ?? [];
-        $riskResult = $this->calculateUnifiedRiskLevel($permissions, $mismatches);
+        $riskResult = $this->calculateUnifiedRiskLevel($permissions, $mismatches, $themeSlug);
         $riskLevel = $riskResult['level'];
         $riskReasons = $riskResult['reasons'];
         $riskScore = $riskResult['score'];
@@ -384,10 +384,10 @@ class ThemePermissionService implements ThemePermissionServiceInterface
      * @param  array  $mismatches  権限の不一致リスト（comparePermissions() の結果）
      * @return array{level: string, reasons: array, score: int}
      */
-    public function calculateUnifiedRiskLevel(array $declaredPermissions, array $mismatches = []): array
+    public function calculateUnifiedRiskLevel(array $declaredPermissions, array $mismatches = [], ?string $themeSlug = null): array
     {
         // 宣言ベースのスコアリング
-        $result = $this->calculateRiskLevelWithReasons($declaredPermissions);
+        $result = $this->calculateRiskLevelWithReasons($declaredPermissions, $themeSlug);
         $score = $result['score'];
         $reasons = $result['reasons'];
 
@@ -421,7 +421,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
      *
      * @return array ['level' => string, 'reasons' => array, 'score' => int]
      */
-    public function calculateRiskLevelWithReasons(array $permissions): array
+    public function calculateRiskLevelWithReasons(array $permissions, ?string $themeSlug = null): array
     {
         $score = 0;
         $reasons = [];
@@ -432,8 +432,13 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             $reasons[] = ['key' => 'storage.public_uploads', 'severity' => 'high', 'score' => 2];
         }
         if ($permissions['assets']['external_resources'] ?? false) {
-            $score += 3;
-            $reasons[] = ['key' => 'assets.external_resources', 'severity' => 'high', 'score' => 3];
+            $trustedResult = $themeSlug !== null ? $this->checkExternalDomainsTrust($themeSlug) : ['all_trusted' => false, 'domains' => []];
+            if ($trustedResult['all_trusted']) {
+                $reasons[] = ['key' => 'assets.external_resources_trusted', 'severity' => 'info', 'score' => 0, 'details' => $trustedResult['domains']];
+            } else {
+                $score += 3;
+                $reasons[] = ['key' => 'assets.external_resources', 'severity' => 'high', 'score' => 3];
+            }
         }
 
         // 中リスク権限（スコア1）
@@ -466,6 +471,83 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             'reasons' => $reasons,
             'score' => $score,
         ];
+    }
+
+    /**
+     * テーマの外部ドメインがコアの信頼リストに全て含まれるか判定
+     *
+     * CSPディレクティブ設定（style-src, font-src, script-src等）に含まれる
+     * ドメインと照合し、全ての外部ドメインが信頼済みであればtrueを返す。
+     */
+    /**
+     * テーマの外部ドメインが全て信頼リストに含まれるかチェックし、ドメイン一覧も返す
+     *
+     * @return array{all_trusted: bool, domains: list<string>}
+     */
+    protected function checkExternalDomainsTrust(string $themeSlug): array
+    {
+        $themeName = $this->slugToName($themeSlug);
+        $themeJsonPath = base_path("themes/{$themeName}/theme.json");
+
+        if (! File::exists($themeJsonPath)) {
+            return ['all_trusted' => false, 'domains' => []];
+        }
+
+        $data = json_decode(File::get($themeJsonPath), true);
+        $cspConfig = $data['csp'] ?? [];
+        $externalDomains = $cspConfig['external_domains'] ?? [];
+
+        if (empty($externalDomains)) {
+            return ['all_trusted' => false, 'domains' => []];
+        }
+
+        // テーマが宣言している全外部ドメインを抽出
+        $themeDomains = [];
+        foreach ($externalDomains as $domains) {
+            if (is_array($domains)) {
+                foreach ($domains as $domain) {
+                    $host = parse_url($domain, PHP_URL_HOST) ?? $domain;
+                    $themeDomains[] = $host;
+                }
+            }
+        }
+
+        if (empty($themeDomains)) {
+            return ['all_trusted' => false, 'domains' => []];
+        }
+
+        $themeDomains = array_values(array_unique($themeDomains));
+
+        // コアCSPディレクティブから信頼ドメインのホスト名を収集
+        $trustedHosts = [];
+        $directives = config('csp.directives', []);
+        foreach ($directives as $values) {
+            if (! is_array($values)) {
+                continue;
+            }
+            foreach ($values as $value) {
+                $host = parse_url($value, PHP_URL_HOST);
+                if ($host) {
+                    $trustedHosts[$host] = true;
+                }
+            }
+        }
+
+        // config/csp/domains.php の trusted_domains も収集
+        $configDomains = config('csp.domains.trusted_domains', []);
+        foreach ($configDomains as $domain) {
+            $host = parse_url($domain, PHP_URL_HOST) ?? $domain;
+            $trustedHosts[$host] = true;
+        }
+
+        // 全ての外部ドメインが信頼リストに含まれるかチェック
+        foreach ($themeDomains as $host) {
+            if (! isset($trustedHosts[$host])) {
+                return ['all_trusted' => false, 'domains' => $themeDomains];
+            }
+        }
+
+        return ['all_trusted' => true, 'domains' => $themeDomains];
     }
 
     /**

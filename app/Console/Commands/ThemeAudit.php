@@ -85,7 +85,7 @@ class ThemeAudit extends Command
         $detectedPermissions = $this->analyzeThemeCode($themeDir);
 
         // 比較結果を生成
-        $auditResult = $this->comparePermissions($declaredPermissions, $detectedPermissions);
+        $auditResult = $this->comparePermissions($declaredPermissions, $detectedPermissions, $themeSlug);
 
         if ($isJson) {
             $this->outputJson($auditResult);
@@ -105,22 +105,35 @@ class ThemeAudit extends Command
      */
     protected function resolveThemeDirectory(string $input): ?string
     {
+        // 1. Str::studly で変換して探す
         $studlyName = Str::studly(str_replace('-', '_', $input));
         $path = base_path("themes/{$studlyName}");
         if (File::isDirectory($path)) {
             return $path;
         }
 
+        // 2. 入力そのままで探す
         $path = base_path("themes/{$input}");
         if (File::isDirectory($path)) {
             return $path;
         }
 
+        // 3. テーマディレクトリを走査してマッチ
         $themesDir = base_path('themes');
         if (File::isDirectory($themesDir)) {
             foreach (File::directories($themesDir) as $dir) {
+                // kebab-case でのマッチ
                 if (Str::kebab(basename($dir)) === $input) {
                     return $dir;
+                }
+
+                // theme.json の slug でのマッチ
+                $themeJson = $dir.'/theme.json';
+                if (File::exists($themeJson)) {
+                    $data = json_decode(File::get($themeJson), true);
+                    if (($data['slug'] ?? '') === $input) {
+                        return $dir;
+                    }
                 }
             }
         }
@@ -140,7 +153,24 @@ class ThemeAudit extends Command
         $content = File::get($themeJsonPath);
         $data = json_decode($content, true);
 
-        return $data['permissions'] ?? [];
+        $permissions = $data['permissions'] ?? [];
+
+        // Normalize legacy core_tables format to core_tables_read/core_tables_write
+        if (isset($permissions['database']['core_tables'])) {
+            $coreTablesValue = $permissions['database']['core_tables'];
+
+            if (! isset($permissions['database']['core_tables_read'])) {
+                $permissions['database']['core_tables_read'] = $coreTablesValue;
+            }
+            if (! isset($permissions['database']['core_tables_write'])) {
+                $permissions['database']['core_tables_write'] = is_array($coreTablesValue)
+                    ? $coreTablesValue
+                    : false;
+            }
+            unset($permissions['database']['core_tables']);
+        }
+
+        return $permissions;
     }
 
     /**
@@ -154,7 +184,7 @@ class ThemeAudit extends Command
     /**
      * 宣言された権限と検出された権限を比較
      */
-    protected function comparePermissions(array $declared, array $detected): array
+    protected function comparePermissions(array $declared, array $detected, ?string $themeSlug = null): array
     {
         $mismatches = [];
         $matches = [];
@@ -200,7 +230,7 @@ class ThemeAudit extends Command
         }
 
         // リスクレベルと理由を統一計算（サービスに委譲）
-        $riskResult = $this->permissionService->calculateUnifiedRiskLevel($declared, $mismatches);
+        $riskResult = $this->permissionService->calculateUnifiedRiskLevel($declared, $mismatches, $themeSlug);
 
         return [
             'mismatches' => $mismatches,

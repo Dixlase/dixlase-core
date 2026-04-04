@@ -67,6 +67,8 @@ class AdminSecurityEnvironmentController extends AdminLoggedInController
                 ->withInput();
         }
 
+        $before = ['app_env' => config('app.env'), 'app_debug' => config('app.debug')];
+
         try {
             // .envファイルを更新（EnvHelperを使用）
             EnvHelper::update([
@@ -79,6 +81,9 @@ class AdminSecurityEnvironmentController extends AdminLoggedInController
                 'app_debug' => $validated['app_debug'],
                 'updated_by' => auth()->id(),
             ]);
+
+            $after = ['app_env' => $validated['app_env'], 'app_debug' => $validated['app_debug']];
+            \App\Facades\Audit::logBulkSettingsChange('security.environment', $before, $after, auth()->user());
 
             return redirect()->route('admin.settings.security.environment')
                 ->with('success', __('admin/settings/security/environment.settings_updated'));

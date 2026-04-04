@@ -22,9 +22,9 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
 
 class MemberLoginAttempt extends Model
 {
@@ -50,6 +50,8 @@ class MemberLoginAttempt extends Model
         'from_trusted_device',
         'risk_score',
         'context',
+        'member_id',
+        'is_bot_suspected',
     ];
 
     protected $casts = [
@@ -62,26 +64,35 @@ class MemberLoginAttempt extends Model
         'seconds_since_last_login' => 'integer',
         'risk_score' => 'integer',
         'context' => 'array',
+        'member_id' => 'integer',
+        'is_bot_suspected' => 'boolean',
     ];
 
     // ========================================
     // 失敗理由の定数
     // ========================================
     public const FAILURE_INVALID_PASSWORD = 'invalid_password';
+
     public const FAILURE_ACCOUNT_LOCKED = 'account_locked';
+
     public const FAILURE_ACCOUNT_DISABLED = 'account_disabled';
+
     public const FAILURE_TWO_FA_FAILED = 'two_fa_failed';
+
     public const FAILURE_TWO_FA_EXPIRED = 'two_fa_expired';
+
     public const FAILURE_IP_BLOCKED = 'ip_blocked';
+
     public const FAILURE_CAPTCHA_FAILED = 'captcha_failed';
+
     public const FAILURE_UNKNOWN = 'unknown';
+
+    public const FAILURE_BOT_DETECTED = 'bot_detected';
+
+    public const FAILURE_RATE_LIMITED = 'rate_limited';
 
     /**
      * 指定した識別子（メールアドレス等）の失敗した試行回数を取得
-     *
-     * @param string $identifier
-     * @param int $timeWindowMinutes
-     * @return int
      */
     public static function getFailedAttemptsCount(string $identifier, int $timeWindowMinutes): int
     {
@@ -95,10 +106,6 @@ class MemberLoginAttempt extends Model
 
     /**
      * 指定したIPアドレスの失敗した試行回数を取得
-     *
-     * @param string $ipAddress
-     * @param int $timeWindowMinutes
-     * @return int
      */
     public static function getFailedAttemptsCountByIp(string $ipAddress, int $timeWindowMinutes): int
     {
@@ -112,9 +119,6 @@ class MemberLoginAttempt extends Model
 
     /**
      * 最後の失敗した試行時刻を取得
-     *
-     * @param string $identifier
-     * @return Carbon|null
      */
     public static function getLastFailedAttempt(string $identifier): ?Carbon
     {
@@ -128,18 +132,13 @@ class MemberLoginAttempt extends Model
 
     /**
      * ログイン試行を記録
-     *
-     * @param string $identifier
-     * @param string $ipAddress
-     * @param string|null $userAgent
-     * @param bool $successful
-     * @return static
      */
     public static function recordAttempt(
         string $identifier,
         string $ipAddress,
         ?string $userAgent = null,
-        bool $successful = false
+        bool $successful = false,
+        ?int $memberId = null,
     ): static {
         return static::create([
             'identifier' => $identifier,
@@ -147,14 +146,12 @@ class MemberLoginAttempt extends Model
             'user_agent' => $userAgent,
             'successful' => $successful,
             'attempted_at' => Carbon::now(),
+            'member_id' => $memberId,
         ]);
     }
 
     /**
      * 成功したログイン後、過去の失敗記録をクリア
-     *
-     * @param string $identifier
-     * @return void
      */
     public static function clearFailedAttempts(string $identifier): void
     {
@@ -165,9 +162,6 @@ class MemberLoginAttempt extends Model
 
     /**
      * 古いログイン試行記録を削除（クリーンアップ用）
-     *
-     * @param int $daysOld
-     * @return int
      */
     public static function cleanupOldAttempts(int $daysOld = 30): int
     {
@@ -191,16 +185,16 @@ class MemberLoginAttempt extends Model
         array $behaviorData = []
     ): static {
         $now = Carbon::now();
-        
+
         // 前回のログイン試行を取得
         $lastAttempt = static::where('identifier', $identifier)
             ->orderBy('attempted_at', 'desc')
             ->first();
-        
+
         // 前回からの経過時間を計算
         $secondsSinceLast = null;
         if ($lastAttempt) {
-            $secondsSinceLast = $now->diffInSeconds($lastAttempt->attempted_at);
+            $secondsSinceLast = (int) $now->diffInSeconds($lastAttempt->attempted_at, absolute: true);
         }
 
         return static::create([
@@ -221,20 +215,21 @@ class MemberLoginAttempt extends Model
             'from_trusted_device' => $behaviorData['from_trusted_device'] ?? false,
             'risk_score' => $behaviorData['risk_score'] ?? null,
             'context' => $behaviorData['context'] ?? null,
+            'member_id' => $behaviorData['member_id'] ?? null,
+            'is_bot_suspected' => $behaviorData['is_bot_suspected'] ?? false,
         ]);
     }
 
     /**
      * ユーザーの通常ログイン時間帯を取得（β版で行動分析に使用）
-     * 
-     * @param string $identifier
-     * @param int $days 分析対象日数
+     *
+     * @param  int  $days  分析対象日数
      * @return array ['hours' => [時間帯 => 回数], 'peak_hour' => 最頻時間帯]
      */
     public static function getLoginHourPattern(string $identifier, int $days = 30): array
     {
         $cutoffDate = Carbon::now()->subDays($days);
-        
+
         $attempts = static::where('identifier', $identifier)
             ->where('successful', true)
             ->where('attempted_at', '>=', $cutoffDate)
@@ -265,7 +260,7 @@ class MemberLoginAttempt extends Model
     public static function getLoginDayPattern(string $identifier, int $days = 30): array
     {
         $cutoffDate = Carbon::now()->subDays($days);
-        
+
         $attempts = static::where('identifier', $identifier)
             ->where('successful', true)
             ->where('attempted_at', '>=', $cutoffDate)
@@ -293,7 +288,7 @@ class MemberLoginAttempt extends Model
     public static function getKnownDeviceFingerprints(string $identifier, int $days = 90): array
     {
         $cutoffDate = Carbon::now()->subDays($days);
-        
+
         return static::where('identifier', $identifier)
             ->where('successful', true)
             ->where('attempted_at', '>=', $cutoffDate)
@@ -309,7 +304,7 @@ class MemberLoginAttempt extends Model
     public static function getKnownCountryCodes(string $identifier, int $days = 90): array
     {
         $cutoffDate = Carbon::now()->subDays($days);
-        
+
         return static::where('identifier', $identifier)
             ->where('successful', true)
             ->where('attempted_at', '>=', $cutoffDate)
@@ -321,11 +316,7 @@ class MemberLoginAttempt extends Model
 
     /**
      * 現在のログインが異常かどうかを判定（β版で実装予定）
-     * 
-     * @param string $identifier
-     * @param int $currentHour
-     * @param string|null $deviceFingerprint
-     * @param string|null $countryCode
+     *
      * @return array ['is_anomaly' => bool, 'reasons' => array, 'risk_score' => int]
      */
     public static function detectAnomaly(
@@ -344,7 +335,7 @@ class MemberLoginAttempt extends Model
             $hourCount = $hourPattern['hours'][$currentHour] ?? 0;
             $totalLogins = $hourPattern['total_logins'];
             $hourRatio = $hourCount / $totalLogins;
-            
+
             if ($hourRatio < 0.05) {
                 // この時間帯のログインが5%未満
                 $reasons[] = 'unusual_login_hour';
@@ -355,7 +346,7 @@ class MemberLoginAttempt extends Model
         // デバイスフィンガープリントの異常検知
         if ($deviceFingerprint) {
             $knownFingerprints = static::getKnownDeviceFingerprints($identifier);
-            if (!empty($knownFingerprints) && !in_array($deviceFingerprint, $knownFingerprints)) {
+            if (! empty($knownFingerprints) && ! in_array($deviceFingerprint, $knownFingerprints)) {
                 $reasons[] = 'unknown_device';
                 $riskScore += 30;
             }
@@ -364,14 +355,14 @@ class MemberLoginAttempt extends Model
         // 国コードの異常検知
         if ($countryCode) {
             $knownCountries = static::getKnownCountryCodes($identifier);
-            if (!empty($knownCountries) && !in_array($countryCode, $knownCountries)) {
+            if (! empty($knownCountries) && ! in_array($countryCode, $knownCountries)) {
                 $reasons[] = 'unknown_country';
                 $riskScore += 40;
             }
         }
 
         return [
-            'is_anomaly' => !empty($reasons),
+            'is_anomaly' => ! empty($reasons),
             'reasons' => $reasons,
             'risk_score' => min($riskScore, 100),
         ];
@@ -383,7 +374,7 @@ class MemberLoginAttempt extends Model
     public static function getBehaviorStats(string $identifier, int $days = 30): array
     {
         $cutoffDate = Carbon::now()->subDays($days);
-        
+
         $attempts = static::where('identifier', $identifier)
             ->where('attempted_at', '>=', $cutoffDate)
             ->get();
@@ -395,8 +386,8 @@ class MemberLoginAttempt extends Model
             'total_attempts' => $attempts->count(),
             'successful_count' => $successful->count(),
             'failed_count' => $failed->count(),
-            'success_rate' => $attempts->count() > 0 
-                ? round($successful->count() / $attempts->count() * 100, 2) 
+            'success_rate' => $attempts->count() > 0
+                ? round($successful->count() / $attempts->count() * 100, 2)
                 : 0,
             'unique_ips' => $attempts->pluck('ip_address')->unique()->count(),
             'unique_devices' => $attempts->pluck('device_fingerprint')->filter()->unique()->count(),
@@ -458,5 +449,21 @@ class MemberLoginAttempt extends Model
     public function scopeFromTrustedDevice($query)
     {
         return $query->where('from_trusted_device', true);
+    }
+
+    /**
+     * Bot suspected attempts only
+     */
+    public function scopeBotSuspected($query)
+    {
+        return $query->where('is_bot_suspected', true);
+    }
+
+    /**
+     * Filter by member ID
+     */
+    public function scopeForMember($query, int $memberId)
+    {
+        return $query->where('member_id', $memberId);
     }
 }

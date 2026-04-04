@@ -24,97 +24,149 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form id="front-page-create-form"
           action="{{ route('admin.front.store') }}"
           method="POST"
+          class="min-w-0 overflow-hidden"
           x-data="frontPageCreate({
               defaultLang: '{{ old('lang', $defaultLang) }}',
               defaultEditorType: '{{ old('editor_type', 'markdown') }}',
               defaultStorageType: '{{ old('storage_type', $defaultStorageType) }}',
               fileStorageBasePath: '{{ $fileStorageBasePath }}',
-              templates: {{ Js::from($templates) }}
+              templates: {{ Js::from($templates) }},
+              previewFrameUrl: '{{ $previewFrameUrl }}',
+              previewUrl: '{{ $previewUrl }}'
           })">
         @csrf
 
-        {{-- ===== メインコンテンツエリア ===== --}}
-        <div class="space-y-6">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
-                {{-- 言語選択 --}}
-                <div>
-                    <x-form-label :for="'lang'" :text="__('admin/front.create.lang_label')" />
-                    <x-form-select
-                        id="lang"
-                        name="lang"
-                        :options="$languages"
-                        :value="old('lang', $defaultLang)"
-                        x-model="lang"
-                    />
-                    <x-form-error name="lang" />
-                </div>
+        {{-- ===== プレビュートグル ===== --}}
+        <div class="flex flex-wrap items-center gap-3 mb-4 text-xs">
+            <button type="button" @click="togglePreview()"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-colors"
+                :class="previewVisible
+                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-700'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'"
+                :title="previewVisible ? '{{ __('components/content-editor.preview_hide') }}' : '{{ __('components/content-editor.preview_show') }}'">
+                <i class="fas" :class="previewVisible ? 'fa-eye' : 'fa-eye-slash'"></i>
+                <span x-text="previewVisible ? '{{ __('components/content-editor.preview_hide') }}' : '{{ __('components/content-editor.preview_show') }}'"></span>
+            </button>
+        </div>
 
-                {{-- エディタータイプ --}}
-                <div>
-                    <x-form-label :text="__('admin/front.create.editor_type_label')" class="mb-3" />
-                    <x-form-radio-card-group
-                        name="editor_type"
-                        :options="$editorCardOptions"
-                        :value="old('editor_type', 'markdown')"
-                        :columns="3"
-                        xModel="editorType"
-                    />
-                    <x-form-error name="editor_type" />
-                </div>
+        {{-- ===== スプリットペインコンテナ ===== --}}
+        <div x-ref="splitContainer"
+             class="flex gap-4 overflow-hidden"
+             :class="[
+                 isHorizontal ? 'flex-row' : 'flex-col',
+                 (isDragging || isResizingPreview) ? 'select-none' : ''
+             ]">
 
-                {{-- タブナビゲーション（HTML エディタ時のみ） --}}
-                <div x-show="isHtmlEditor" x-cloak>
-                    <x-content-editor.tabs />
-                </div>
+            {{-- ===== エディタペイン ===== --}}
+            <div x-ref="editorPane"
+                 class="w-full min-w-0"
+                 :class="isHorizontal && previewVisible ? 'overflow-y-auto' : ''"
+                 :style="isHorizontal && previewVisible ? 'width: ' + (splitRatio * 100) + '%; max-height: calc(100vh - 160px)' : ''">
 
-                {{-- Content タブ --}}
-                <div x-show="activeTab === 'content' || !isHtmlEditor">
-                    <x-form-label :for="'content'" :text="__('admin/front.create.content_label')" />
-                    <x-form-textarea
-                        id="content"
-                        name="content"
-                        :value="old('content', '')"
-                        rows="20"
-                        :placeholder="__('admin/front.create.content_placeholder')"
-                        class="font-mono text-sm"
-                    />
-                    <x-form-error name="content" />
-                </div>
+                <div class="space-y-4">
+                    {{-- 言語選択 --}}
+                    <div>
+                        <x-form-label :for="'lang'" :text="__('admin/front.create.lang_label')" />
+                        <x-form-select
+                            id="lang"
+                            name="lang"
+                            :options="$languages"
+                            :value="old('lang', $defaultLang)"
+                            x-model="lang"
+                        />
+                        <x-form-error name="lang" />
+                    </div>
 
-                {{-- CSS タブ（HTML エディタ時のみ） --}}
-                <div x-show="activeTab === 'css' && isHtmlEditor" x-cloak>
-                    <x-form-label :for="'custom_css'" :text="__('components/content-editor.tab_css')" />
-                    <x-form-textarea
-                        id="custom_css"
-                        name="custom_css"
-                        :value="old('custom_css', '')"
-                        rows="20"
-                        :placeholder="__('admin/front.create.custom_css_placeholder')"
-                        class="font-mono text-sm"
-                    />
-                    <x-form-error name="custom_css" />
-                </div>
+                    {{-- エディタータイプ --}}
+                    <div>
+                        <x-form-label :text="__('admin/front.create.editor_type_label')" class="mb-3" />
+                        <x-form-radio-card-group
+                            name="editor_type"
+                            :options="$editorCardOptions"
+                            :value="old('editor_type', 'markdown')"
+                            :columns="3"
+                            xModel="editorType"
+                        />
+                        <x-form-error name="editor_type" />
+                    </div>
 
-                {{-- JavaScript タブ（HTML エディタ時のみ） --}}
-                <div x-show="activeTab === 'js' && isHtmlEditor" x-cloak>
-                    <x-form-label :for="'custom_js'" :text="__('components/content-editor.tab_js')" />
-                    <x-form-textarea
-                        id="custom_js"
-                        name="custom_js"
-                        :value="old('custom_js', '')"
-                        rows="20"
-                        :placeholder="__('admin/front.create.custom_js_placeholder')"
-                        class="font-mono text-sm"
-                    />
-                    <x-form-error name="custom_js" />
+                    {{-- タブナビゲーション（HTML エディタ時のみ） --}}
+                    <div x-show="isHtmlEditor" x-cloak>
+                        <x-content-editor.tabs />
+                    </div>
+
+                    {{-- Content タブ --}}
+                    <div x-show="(activeTab === 'content' || !isHtmlEditor) && editorType !== 'gui'">
+                        <x-form-textarea
+                            id="content"
+                            name="content"
+                            :value="old('content', '')"
+                            rows="6"
+                            :placeholder="__('admin/front.create.content_placeholder')"
+                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
+                        />
+                        <x-form-error name="content" />
+                    </div>
+
+                    {{-- GUI エディター（x-if で DOM から除外し name="content" の重複を防ぐ） --}}
+                    <template x-if="editorType === 'gui'">
+                        <div>
+                            @if($guiEditorInfo ?? null)
+                                @include($guiEditorInfo->viewName, [
+                                    'contentFieldName' => 'content',
+                                    'editorInfo' => $guiEditorInfo,
+                                    'initialContent' => '',
+                                ])
+                            @else
+                                <div class="p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
+                                    <i class="fas fa-paint-brush text-4xl text-gray-400 mb-4"></i>
+                                    <p class="text-gray-600 dark:text-gray-400">
+                                        {{ __('common.content_editor.gui_coming_soon') }}
+                                    </p>
+                                </div>
+                            @endif
+                        </div>
+                    </template>
+
+                    {{-- CSS タブ（HTML エディタ時のみ） --}}
+                    <div x-show="activeTab === 'css' && isHtmlEditor" x-cloak>
+                        <x-form-textarea
+                            id="custom_css"
+                            name="custom_css"
+                            :value="old('custom_css', '')"
+                            rows="6"
+                            :placeholder="__('admin/front.create.custom_css_placeholder')"
+                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500 !overflow-hidden !resize-none"
+                            data-auto-resize
+                        />
+                        <x-form-error name="custom_css" />
+                    </div>
+
+                    {{-- JavaScript タブ（HTML エディタ時のみ） --}}
+                    <div x-show="activeTab === 'js' && isHtmlEditor" x-cloak>
+                        <x-form-textarea
+                            id="custom_js"
+                            name="custom_js"
+                            :value="old('custom_js', '')"
+                            rows="6"
+                            :placeholder="__('admin/front.create.custom_js_placeholder')"
+                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500 !overflow-hidden !resize-none"
+                            data-auto-resize
+                        />
+                        <x-form-error name="custom_js" />
+                    </div>
                 </div>
             </div>
+
+            @include('components.content-editor.preview-pane')
         </div>
+
+        @include('components.content-editor.scroll-buttons')
 
         {{-- ===== 右サイドバートグルボタン ===== --}}
         <button type="button"
                 @click="toggleRightSidebar()"
-                class="hidden sm:flex fixed top-14 right-0 z-50 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-l-lg shadow-md border border-r-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                class="fixed top-14 right-0 z-50 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-l-lg shadow-md border border-r-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
                 :class="{
                     'translate-x-0': rightSidebarCollapsed,
                     '-translate-x-80': !rightSidebarCollapsed
@@ -156,3 +208,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         form="front-page-create-form"
     />
 @endsection
+
+@push('styles')
+<style @cspNonce>
+/* メインコンテンツがflexbox min-width:autoで縮小しない問題を修正 */
+#admin-main-content { min-width: 0; }
+</style>
+@endpush
+
+@if($guiEditorAssetHtml ?? '')
+    @push('head')
+        {!! $guiEditorAssetHtml !!}
+    @endpush
+@endif

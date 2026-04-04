@@ -22,23 +22,26 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\Csp\CspBuilder;
+use App\Services\Csp\CspExtensionLoader;
+use App\Services\Csp\CspNonceGenerator;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use App\Services\Csp\CspBuilder;
-use App\Services\Csp\CspNonceGenerator;
-use App\Services\Csp\CspExtensionLoader;
 
 /**
  * Content Security Policy Middleware
- * 
+ *
  * CSPヘッダーをレスポンスに付与するミドルウェア。
  */
 class ContentSecurityPolicy
 {
     protected CspBuilder $builder;
+
     protected CspNonceGenerator $nonceGenerator;
+
     protected CspExtensionLoader $extensionLoader;
+
     protected bool $extensionsLoaded = false;
 
     public function __construct(
@@ -57,7 +60,7 @@ class ContentSecurityPolicy
     public function handle(Request $request, Closure $next, ?string $context = null): Response
     {
         // CSPが無効な場合はスキップ
-        if (!$this->builder->isEnabled()) {
+        if (! $this->builder->isEnabled()) {
             return $next($request);
         }
 
@@ -70,7 +73,7 @@ class ContentSecurityPolicy
         $request->attributes->set('csp_nonce', $this->nonceGenerator->getNonce());
 
         // プラグイン・テーマからCSP設定を読み込み（1回のみ）
-        if (!$this->extensionsLoaded) {
+        if (! $this->extensionsLoaded) {
             $this->extensionLoader->loadAll();
             $this->extensionsLoaded = true;
         }
@@ -85,17 +88,20 @@ class ContentSecurityPolicy
         // HTMLレスポンスのみにCSPヘッダーを付与
         if ($this->shouldAddCspHeader($response)) {
             // Laravel Boostが挿入するスクリプトにnonceを追加（開発環境のみ）
-            if (!app()->environment('production')) {
+            if (! app()->environment('production')) {
                 $this->addNonceToBoostScripts($response);
             }
 
             $headerName = $this->builder->getHeaderName();
             $headerValue = $this->builder->build();
-            
+
             $response->headers->set($headerName, $headerValue);
 
             // 追加のセキュリティヘッダー
             $this->addSecurityHeaders($response);
+
+            // ルート単位の frame-ancestors 上書き（管理画面内iframeプレビュー用）
+            $this->overrideFrameAncestorsIfRequested($request, $response, $headerName);
         }
 
         return $response;
@@ -126,7 +132,7 @@ class ContentSecurityPolicy
     protected function detectContext(Request $request): string
     {
         $path = $request->path();
-        
+
         // 管理画面パスの判定
         $adminPath = config('admin.path', 'admin');
         if (str_starts_with($path, $adminPath) || str_starts_with($path, 'admin')) {
@@ -157,28 +163,57 @@ class ContentSecurityPolicy
 
     /**
      * Laravel Boostが挿入するスクリプトにnonceを追加
-     * 
+     *
      * 開発環境でLaravel Boost（MCP Server）が動的に挿入する
      * browser-logger-activeスクリプトにCSP nonceを付与する。
      */
     protected function addNonceToBoostScripts(Response $response): void
     {
         $content = $response->getContent();
-        
+
         if ($content === false || empty($content)) {
             return;
         }
 
         $nonce = $this->nonceGenerator->getNonce();
-        
+
         // <script id="browser-logger-active"> にnonceを追加
         $pattern = '/<script\s+id=["\']browser-logger-active["\']\s*>/i';
-        $replacement = '<script id="browser-logger-active" nonce="' . $nonce . '">';
-        
+        $replacement = '<script id="browser-logger-active" nonce="'.$nonce.'">';
+
         $newContent = preg_replace($pattern, $replacement, $content);
-        
+
         if ($newContent !== null && $newContent !== $content) {
             $response->setContent($newContent);
+        }
+    }
+
+    /**
+     * リクエスト属性に基づいて frame-ancestors ディレクティブを上書き
+     *
+     * 管理画面内でiframeプレビューを使用するルートで、
+     * frame-ancestors を 'none' から 'self' に変更する。
+     * コントローラーで request()->attributes->set('csp_frame_ancestors_self', true) を設定する。
+     */
+    protected function overrideFrameAncestorsIfRequested(Request $request, Response $response, string $headerName): void
+    {
+        if (! $request->attributes->get('csp_frame_ancestors_self')) {
+            return;
+        }
+
+        $cspHeader = $response->headers->get($headerName, '');
+        if (empty($cspHeader)) {
+            return;
+        }
+
+        $updatedHeader = preg_replace(
+            "/frame-ancestors\s+'none'/",
+            "frame-ancestors 'self'",
+            $cspHeader
+        );
+
+        if ($updatedHeader !== $cspHeader) {
+            $response->headers->set($headerName, $updatedHeader);
         }
     }
 
@@ -188,22 +223,22 @@ class ContentSecurityPolicy
     protected function addSecurityHeaders(Response $response): void
     {
         // X-Content-Type-Options: MIMEタイプスニッフィング防止
-        if (!$response->headers->has('X-Content-Type-Options')) {
+        if (! $response->headers->has('X-Content-Type-Options')) {
             $response->headers->set('X-Content-Type-Options', 'nosniff');
         }
 
         // X-Frame-Options: クリックジャッキング防止（CSPのframe-ancestorsと併用）
-        if (!$response->headers->has('X-Frame-Options')) {
+        if (! $response->headers->has('X-Frame-Options')) {
             $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         }
 
         // Referrer-Policy: リファラー情報の制御
-        if (!$response->headers->has('Referrer-Policy')) {
+        if (! $response->headers->has('Referrer-Policy')) {
             $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         }
 
         // Permissions-Policy: ブラウザ機能の制限
-        if (!$response->headers->has('Permissions-Policy')) {
+        if (! $response->headers->has('Permissions-Policy')) {
             $response->headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
         }
     }

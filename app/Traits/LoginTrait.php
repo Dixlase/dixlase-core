@@ -252,7 +252,8 @@ trait LoginTrait
         // ユーザーが見つからない、またはパスワードが間違っている場合
         if (! $user || ! \Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
             // 失敗したログインを記録
-            $lockoutInfo = $lockoutService->handleFailedLogin($request, $login);
+            $failureReason = \App\Models\MemberLoginAttempt::FAILURE_INVALID_PASSWORD;
+            $lockoutInfo = $lockoutService->handleFailedLogin($request, $login, $failureReason);
 
             $errorMessage = __('auth.failed');
 
@@ -318,7 +319,7 @@ trait LoginTrait
             return redirect()->route($redirectRoute);
         } else {
             // 成功したログインを記録（失敗記録をクリア）
-            $lockoutService->handleSuccessfulLogin($email);
+            $lockoutService->handleSuccessfulLogin($email, $request);
 
             // ログイン環境を記録、通知
             app($this->getLoginNotificationServiceClass())->handle($user, $request);

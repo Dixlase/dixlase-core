@@ -57,9 +57,14 @@ class AdminSecuritySessionController extends AdminLoggedInController
     {
         $validated = $request->validated();
 
+        $before = ['session_encrypt' => ConfigHelper::getSessionEncrypt(), 'session_lifetime' => ConfigHelper::getSessionLifetime()];
+
         // セッション設定を更新
         ConfigHelper::setSessionEncrypt($validated['session_encrypt'] ?? false);
         ConfigHelper::setSessionLifetime($validated['session_lifetime']);
+
+        $after = ['session_encrypt' => ConfigHelper::getSessionEncrypt(), 'session_lifetime' => ConfigHelper::getSessionLifetime()];
+        \App\Facades\Audit::logBulkSettingsChange('security.session', $before, $after, auth()->user());
 
         return redirect()->route('admin.settings.security.session')
             ->with('success', __('admin/settings/security/session.settings_updated'));

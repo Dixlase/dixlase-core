@@ -104,6 +104,17 @@ class ThemeServiceProvider extends ServiceProvider
                         'trace' => $e->getTraceAsString(),
                     ]);
                 }
+
+                // テーマのServiceProviderを登録
+                try {
+                    $this->registerThemeServiceProviders($activeTheme, $themePath);
+                } catch (\Exception $e) {
+                    Log::error('Error registering theme service providers', [
+                        'theme' => $activeTheme->directory,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                    ]);
+                }
             }
         } catch (\Exception $e) {
             // Log the error but don't break the application
@@ -116,6 +127,31 @@ class ThemeServiceProvider extends ServiceProvider
 
         // Load theme routes
         $this->loadThemeRoutes();
+    }
+
+    /**
+     * テーマのServiceProviderを登録
+     * theme.jsonにprovidersが定義されていれば登録する
+     */
+    protected function registerThemeServiceProviders(Theme $theme, string $themePath): void
+    {
+        $themeJsonPath = "{$themePath}/theme.json";
+
+        if (! File::exists($themeJsonPath)) {
+            return;
+        }
+
+        $themeJson = json_decode(File::get($themeJsonPath), true);
+
+        if (! isset($themeJson['providers']) || ! is_array($themeJson['providers'])) {
+            return;
+        }
+
+        foreach ($themeJson['providers'] as $provider) {
+            if (class_exists($provider)) {
+                $this->app->register($provider);
+            }
+        }
     }
 
     /**

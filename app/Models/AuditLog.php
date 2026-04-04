@@ -29,7 +29,7 @@ use Illuminate\Support\Str;
 
 /**
  * 監査ログモデル
- * 
+ *
  * 誰が / いつ / どこから / 何に対して / 何をしたか を記録
  */
 class AuditLog extends Model
@@ -55,6 +55,8 @@ class AuditLog extends Model
         'session_id',
         'plugin_name',
         'plugin_version',
+        'actor_source',
+        'is_ai_generated',
         'context',
         'schema_version',
         'record_hash',
@@ -68,6 +70,7 @@ class AuditLog extends Model
     protected $casts = [
         'occurred_at' => 'datetime',
         'context' => 'array',
+        'is_ai_generated' => 'boolean',
         'schema_version' => 'integer',
         'chain_sequence' => 'integer',
         'last_verified_at' => 'datetime',
@@ -77,7 +80,9 @@ class AuditLog extends Model
     // ハッシュチェーン検証ステータス定数
     // ========================================
     public const VERIFICATION_VALID = 'valid';
+
     public const VERIFICATION_INVALID = 'invalid';
+
     public const VERIFICATION_SKIPPED = 'skipped';
 
     // ハッシュアルゴリズム
@@ -90,109 +95,206 @@ class AuditLog extends Model
     // Severity（重要度）定数
     // ========================================
     public const SEVERITY_DEBUG = 'debug';
+
     public const SEVERITY_INFO = 'info';
+
     public const SEVERITY_NOTICE = 'notice';
+
     public const SEVERITY_WARNING = 'warning';
+
     public const SEVERITY_ERROR = 'error';
+
     public const SEVERITY_CRITICAL = 'critical';
+
     public const SEVERITY_ALERT = 'alert';
+
     public const SEVERITY_EMERGENCY = 'emergency';
 
     // ========================================
     // Outcome（結果）定数
     // ========================================
     public const OUTCOME_SUCCESS = 'success';
+
     public const OUTCOME_FAILURE = 'failure';
+
     public const OUTCOME_DENIED = 'denied';
+
     public const OUTCOME_PENDING = 'pending';
+
     public const OUTCOME_UNKNOWN = 'unknown';
 
     // ========================================
     // Category（カテゴリ）定数
     // ========================================
     public const CATEGORY_AUTH = 'auth';
+
     public const CATEGORY_ACCOUNT = 'account';
+
     public const CATEGORY_DEVICE = 'device';
+
     public const CATEGORY_SECURITY = 'security';
+
     public const CATEGORY_SESSION = 'session';
+
     public const CATEGORY_EXTENSION = 'extension';
+
     public const CATEGORY_CONTENT = 'content';
+
     public const CATEGORY_SYSTEM = 'system';
+
     public const CATEGORY_PLUGIN = 'plugin';
+
+    public const CATEGORY_AI = 'ai';
 
     // ========================================
     // Action（アクション）定数 - 認証関連
     // ========================================
     public const ACTION_LOGIN = 'login';
+
     public const ACTION_LOGOUT = 'logout';
+
     public const ACTION_LOGIN_FAILED = 'login_failed';
+
     public const ACTION_LOGIN_IDENTIFIER_CHECK = 'login_identifier_check';
+
     public const ACTION_LOGIN_IDENTIFIER_NOT_FOUND = 'login_identifier_not_found';
+
     public const ACTION_PASSKEY_AUTH_SUCCESS = 'passkey_auth_success';
+
     public const ACTION_PASSKEY_AUTH_FAILED = 'passkey_auth_failed';
+
     public const ACTION_NEW_DEVICE_LOGIN = 'new_device_login';
+
     public const ACTION_PASSWORD_CHANGED = 'password_changed';
+
     public const ACTION_PASSWORD_RESET = 'password_reset';
+
     public const ACTION_EMAIL_CHANGED = 'email_changed';
 
     // ========================================
     // Action（アクション）定数 - Two-FA関連
     // ========================================
     public const ACTION_TWO_FA_ENABLED = 'two_fa_enabled';
+
     public const ACTION_TWO_FA_DISABLED = 'two_fa_disabled';
+
     public const ACTION_TWO_FA_CODE_SENT = 'two_fa_code_sent';
+
     public const ACTION_TWO_FA_CODE_VERIFIED = 'two_fa_code_verified';
+
     public const ACTION_TWO_FA_CODE_FAILED = 'two_fa_code_failed';
+
     public const ACTION_RECOVERY_CODE_USED = 'recovery_code_used';
+
     public const ACTION_PASSKEY_REGISTERED = 'passkey_registered';
+
     public const ACTION_PASSKEY_REVOKED = 'passkey_revoked';
 
     // ========================================
     // Action（アクション）定数 - デバイス関連
     // ========================================
     public const ACTION_DEVICE_TRUSTED = 'device_trusted';
+
     public const ACTION_DEVICE_BLOCKED = 'device_blocked';
+
     public const ACTION_DEVICE_REMOVED = 'device_removed';
 
     // ========================================
     // Action（アクション）定数 - セキュリティ関連
     // ========================================
     public const ACTION_IP_BLOCKED = 'ip_blocked';
+
     public const ACTION_IP_ALLOWED = 'ip_allowed';
+
     public const ACTION_LOCKOUT_TRIGGERED = 'lockout_triggered';
+
     public const ACTION_LOCKOUT_RELEASED = 'lockout_released';
+
     public const ACTION_STEP_UP_AUTH_REQUIRED = 'step_up_auth_required';
+
     public const ACTION_STEP_UP_AUTH_COMPLETED = 'step_up_auth_completed';
 
     // ========================================
     // Action（アクション）定数 - セッション関連
     // ========================================
     public const ACTION_SESSION_CREATED = 'session_created';
+
     public const ACTION_SESSION_DESTROYED = 'session_destroyed';
+
     public const ACTION_FORCED_LOGOUT = 'forced_logout';
 
     // ========================================
     // Action（アクション）定数 - 拡張機能関連
     // ========================================
     public const ACTION_PLUGIN_INSTALLED = 'plugin_installed';
+
     public const ACTION_PLUGIN_ENABLED = 'plugin_enabled';
+
     public const ACTION_PLUGIN_DISABLED = 'plugin_disabled';
+
     public const ACTION_PLUGIN_UNINSTALLED = 'plugin_uninstalled';
+
     public const ACTION_PLUGIN_UPDATED = 'plugin_updated';
+
     public const ACTION_THEME_INSTALLED = 'theme_installed';
+
     public const ACTION_THEME_ENABLED = 'theme_enabled';
+
     public const ACTION_THEME_DISABLED = 'theme_disabled';
+
     public const ACTION_THEME_UNINSTALLED = 'theme_uninstalled';
+
     public const ACTION_THEME_UPDATED = 'theme_updated';
 
     // ========================================
     // Action（アクション）定数 - 設定関連
     // ========================================
     public const ACTION_SETTINGS_UPDATED = 'settings_updated';
+
     public const ACTION_MEMBER_CREATED = 'member_created';
+
     public const ACTION_MEMBER_UPDATED = 'member_updated';
+
     public const ACTION_MEMBER_DELETED = 'member_deleted';
+
     public const ACTION_ROLE_CHANGED = 'role_changed';
+
+    // ========================================
+    // Action（アクション）定数 - AI操作関連
+    // ========================================
+    public const ACTION_AI_CONTENT_GENERATED = 'ai_content_generated';
+
+    public const ACTION_AI_CONTENT_MODIFIED = 'ai_content_modified';
+
+    public const ACTION_AI_SUGGESTION_APPLIED = 'ai_suggestion_applied';
+
+    public const ACTION_AI_BULK_OPERATION = 'ai_bulk_operation';
+
+    // ========================================
+    // Action（アクション）定数 - AI/Bot攻撃検知
+    // ========================================
+    public const ACTION_BOT_LOGIN_DETECTED = 'bot_login_detected';
+
+    public const ACTION_BOT_SCRAPING_DETECTED = 'bot_scraping_detected';
+
+    public const ACTION_AI_RATE_LIMIT_HIT = 'ai_rate_limit_hit';
+
+    // ========================================
+    // Actor Source（操作元チャネル）定数
+    // ========================================
+    public const ACTOR_SOURCE_WEB = 'web';
+
+    public const ACTOR_SOURCE_API = 'api';
+
+    public const ACTOR_SOURCE_CLI = 'cli';
+
+    public const ACTOR_SOURCE_SCHEDULER = 'scheduler';
+
+    public const ACTOR_SOURCE_AI_PLUGIN = 'ai_plugin';
+
+    public const ACTOR_SOURCE_WEBHOOK = 'webhook';
+
+    public const ACTOR_SOURCE_QUEUE = 'queue';
 
     // ========================================
     // リレーション
@@ -220,40 +322,39 @@ class AuditLog extends Model
 
     /**
      * 監査ログを記録（メインAPI）
-     * 
-     * @param array $data ログデータ
-     * @return self
+     *
+     * @param  array  $data  ログデータ
      */
     public static function log(array $data): self
     {
         // リクエストコンテキストを自動取得
         $request = request();
-        
+
         // request_idがなければ生成
         $requestId = $data['request_id'] ?? $request->header('X-Request-ID') ?? (string) Str::uuid();
-        
+
         // actorの処理
         $actorType = null;
         $actorId = null;
         $actorName = $data['actor_name'] ?? null;
-        
+
         if (isset($data['actor']) && $data['actor'] instanceof Model) {
             $actorType = get_class($data['actor']);
             $actorId = $data['actor']->getKey();
-            $actorName = $actorName ?? $data['actor']->name ?? $data['actor']->email ?? null;
+            $actorName = $actorName ?? $data['actor']->display_name ?? $data['actor']->account_name ?? $data['actor']->name ?? $data['actor']->email ?? null;
         }
-        
+
         // targetの処理
         $targetType = null;
         $targetId = null;
         $targetLabel = $data['target_label'] ?? null;
-        
+
         if (isset($data['target']) && $data['target'] instanceof Model) {
             $targetType = get_class($data['target']);
             $targetId = $data['target']->getKey();
-            $targetLabel = $targetLabel ?? $data['target']->name ?? $data['target']->title ?? null;
+            $targetLabel = $targetLabel ?? $data['target']->display_name ?? $data['target']->account_name ?? $data['target']->name ?? $data['target']->title ?? null;
         }
-        
+
         return self::create([
             'occurred_at' => $data['occurred_at'] ?? now(),
             'severity' => $data['severity'] ?? self::SEVERITY_INFO,
@@ -273,6 +374,8 @@ class AuditLog extends Model
             'session_id' => $data['session_id'] ?? session()->getId(),
             'plugin_name' => $data['plugin_name'] ?? $data['plugin'] ?? null,
             'plugin_version' => $data['plugin_version'] ?? null,
+            'actor_source' => $data['actor_source'] ?? null,
+            'is_ai_generated' => $data['is_ai_generated'] ?? false,
             'context' => $data['context'] ?? null,
             'schema_version' => 1,
         ]);
@@ -345,7 +448,7 @@ class AuditLog extends Model
     public function scopeForActor($query, Model $actor)
     {
         return $query->where('actor_type', get_class($actor))
-                     ->where('actor_id', $actor->getKey());
+            ->where('actor_id', $actor->getKey());
     }
 
     /**
@@ -354,7 +457,7 @@ class AuditLog extends Model
     public function scopeForTarget($query, Model $target)
     {
         return $query->where('target_type', get_class($target))
-                     ->where('target_id', $target->getKey());
+            ->where('target_id', $target->getKey());
     }
 
     /**
@@ -446,6 +549,34 @@ class AuditLog extends Model
         ]);
     }
 
+    /**
+     * AI generated operations only
+     */
+    public function scopeAiGenerated($query)
+    {
+        return $query->where('is_ai_generated', true);
+    }
+
+    /**
+     * Filter by actor source channel
+     */
+    public function scopeFromSource($query, string $source)
+    {
+        return $query->where('actor_source', $source);
+    }
+
+    /**
+     * Bot/AI attack related operations
+     */
+    public function scopeBotRelated($query)
+    {
+        return $query->whereIn('action', [
+            self::ACTION_BOT_LOGIN_DETECTED,
+            self::ACTION_BOT_SCRAPING_DETECTED,
+            self::ACTION_AI_RATE_LIMIT_HIT,
+        ]);
+    }
+
     // ========================================
     // ヘルパーメソッド
     // ========================================
@@ -459,14 +590,14 @@ class AuditLog extends Model
             self::ACTION_LOGIN, self::ACTION_LOGOUT, self::ACTION_LOGIN_FAILED,
             self::ACTION_LOGIN_IDENTIFIER_CHECK, self::ACTION_PASSKEY_AUTH_SUCCESS,
             self::ACTION_PASSKEY_AUTH_FAILED, self::ACTION_NEW_DEVICE_LOGIN,
-            self::ACTION_2FA_CODE_SENT, self::ACTION_2FA_CODE_VERIFIED,
-            self::ACTION_2FA_CODE_FAILED,
+            self::ACTION_TWO_FA_CODE_SENT, self::ACTION_TWO_FA_CODE_VERIFIED,
+            self::ACTION_TWO_FA_CODE_FAILED,
         ];
 
         $accountActions = [
             self::ACTION_PASSWORD_CHANGED, self::ACTION_PASSWORD_RESET,
-            self::ACTION_EMAIL_CHANGED, self::ACTION_2FA_ENABLED,
-            self::ACTION_2FA_DISABLED, self::ACTION_RECOVERY_CODE_USED,
+            self::ACTION_EMAIL_CHANGED, self::ACTION_TWO_FA_ENABLED,
+            self::ACTION_TWO_FA_DISABLED, self::ACTION_RECOVERY_CODE_USED,
             self::ACTION_PASSKEY_REGISTERED, self::ACTION_PASSKEY_REVOKED,
             self::ACTION_MEMBER_CREATED, self::ACTION_MEMBER_UPDATED,
             self::ACTION_MEMBER_DELETED, self::ACTION_ROLE_CHANGED,
@@ -482,6 +613,8 @@ class AuditLog extends Model
             self::ACTION_IP_ALLOWED, self::ACTION_LOCKOUT_TRIGGERED,
             self::ACTION_LOCKOUT_RELEASED, self::ACTION_STEP_UP_AUTH_REQUIRED,
             self::ACTION_STEP_UP_AUTH_COMPLETED,
+            self::ACTION_BOT_LOGIN_DETECTED, self::ACTION_BOT_SCRAPING_DETECTED,
+            self::ACTION_AI_RATE_LIMIT_HIT,
         ];
 
         $sessionActions = [
@@ -497,12 +630,33 @@ class AuditLog extends Model
             self::ACTION_THEME_UNINSTALLED, self::ACTION_THEME_UPDATED,
         ];
 
-        if (in_array($action, $authActions)) return self::CATEGORY_AUTH;
-        if (in_array($action, $accountActions)) return self::CATEGORY_ACCOUNT;
-        if (in_array($action, $deviceActions)) return self::CATEGORY_DEVICE;
-        if (in_array($action, $securityActions)) return self::CATEGORY_SECURITY;
-        if (in_array($action, $sessionActions)) return self::CATEGORY_SESSION;
-        if (in_array($action, $extensionActions)) return self::CATEGORY_EXTENSION;
+        if (in_array($action, $authActions)) {
+            return self::CATEGORY_AUTH;
+        }
+        if (in_array($action, $accountActions)) {
+            return self::CATEGORY_ACCOUNT;
+        }
+        if (in_array($action, $deviceActions)) {
+            return self::CATEGORY_DEVICE;
+        }
+        if (in_array($action, $securityActions)) {
+            return self::CATEGORY_SECURITY;
+        }
+        if (in_array($action, $sessionActions)) {
+            return self::CATEGORY_SESSION;
+        }
+        if (in_array($action, $extensionActions)) {
+            return self::CATEGORY_EXTENSION;
+        }
+
+        $aiActions = [
+            self::ACTION_AI_CONTENT_GENERATED, self::ACTION_AI_CONTENT_MODIFIED,
+            self::ACTION_AI_SUGGESTION_APPLIED, self::ACTION_AI_BULK_OPERATION,
+        ];
+
+        if (in_array($action, $aiActions)) {
+            return self::CATEGORY_AI;
+        }
 
         return self::CATEGORY_SYSTEM;
     }
@@ -520,13 +674,15 @@ class AuditLog extends Model
             self::ACTION_LOGIN_FAILED, self::ACTION_LOGIN_IDENTIFIER_NOT_FOUND,
             self::ACTION_PASSKEY_AUTH_FAILED, self::ACTION_NEW_DEVICE_LOGIN,
             self::ACTION_PASSWORD_CHANGED, self::ACTION_EMAIL_CHANGED,
-            self::ACTION_2FA_DISABLED, self::ACTION_IP_BLOCKED,
+            self::ACTION_TWO_FA_DISABLED, self::ACTION_IP_BLOCKED,
             self::ACTION_FORCED_LOGOUT, self::ACTION_DEVICE_BLOCKED,
             self::ACTION_MEMBER_DELETED,
+            self::ACTION_BOT_LOGIN_DETECTED, self::ACTION_BOT_SCRAPING_DETECTED,
+            self::ACTION_AI_RATE_LIMIT_HIT, self::ACTION_AI_BULK_OPERATION,
         ];
 
         $noticeActions = [
-            self::ACTION_PASSKEY_AUTH_SUCCESS, self::ACTION_2FA_ENABLED,
+            self::ACTION_PASSKEY_AUTH_SUCCESS, self::ACTION_TWO_FA_ENABLED,
             self::ACTION_RECOVERY_CODE_USED, self::ACTION_PASSKEY_REGISTERED,
             self::ACTION_PASSKEY_REVOKED, self::ACTION_PLUGIN_INSTALLED,
             self::ACTION_PLUGIN_ENABLED, self::ACTION_PLUGIN_DISABLED,
@@ -535,9 +691,15 @@ class AuditLog extends Model
             self::ACTION_MEMBER_CREATED, self::ACTION_ROLE_CHANGED,
         ];
 
-        if (in_array($action, $criticalActions)) return self::SEVERITY_CRITICAL;
-        if (in_array($action, $warningActions)) return self::SEVERITY_WARNING;
-        if (in_array($action, $noticeActions)) return self::SEVERITY_NOTICE;
+        if (in_array($action, $criticalActions)) {
+            return self::SEVERITY_CRITICAL;
+        }
+        if (in_array($action, $warningActions)) {
+            return self::SEVERITY_WARNING;
+        }
+        if (in_array($action, $noticeActions)) {
+            return self::SEVERITY_NOTICE;
+        }
 
         return self::SEVERITY_INFO;
     }
@@ -592,24 +754,25 @@ class AuditLog extends Model
             self::ACTION_THEME_UNINSTALLED,     // テーマアンインストール
         ];
 
-        // High: 削除・重要設定変更
+        // High: 削除・重要設定変更・AI一括操作
         $highActions = [
             self::ACTION_MEMBER_DELETED,        // メンバー削除
             self::ACTION_FORCED_LOGOUT,         // 強制ログアウト
-            self::ACTION_2FA_DISABLED,          // 2FA無効化
+            self::ACTION_TWO_FA_DISABLED,          // 2FA無効化
             self::ACTION_DEVICE_BLOCKED,        // デバイスブロック
             self::ACTION_DEVICE_REMOVED,        // デバイス削除
             self::ACTION_PASSKEY_REVOKED,       // Passkey無効化
             self::ACTION_PLUGIN_DISABLED,       // プラグイン無効化
             self::ACTION_THEME_DISABLED,        // テーマ無効化
             self::ACTION_ROLE_CHANGED,          // 権限変更
+            self::ACTION_AI_BULK_OPERATION,     // AI一括操作
         ];
 
         // Medium: 編集・更新
         $mediumActions = [
             self::ACTION_PASSWORD_CHANGED,      // パスワード変更
             self::ACTION_EMAIL_CHANGED,         // メールアドレス変更
-            self::ACTION_2FA_ENABLED,           // 2FA有効化
+            self::ACTION_TWO_FA_ENABLED,           // 2FA有効化
             self::ACTION_DEVICE_TRUSTED,        // デバイス信頼
             self::ACTION_PASSKEY_REGISTERED,    // Passkey登録
             self::ACTION_MEMBER_CREATED,        // メンバー作成
@@ -696,15 +859,15 @@ class AuditLog extends Model
                 $dangerousActions[] = $action;
             }
         }
-        
+
         // 定義済みアクションから危険なものを抽出
         $allActions = [
             self::ACTION_LOGIN, self::ACTION_LOGOUT, self::ACTION_LOGIN_FAILED,
             self::ACTION_NEW_DEVICE_LOGIN, self::ACTION_PASSWORD_CHANGED,
             self::ACTION_PASSWORD_RESET, self::ACTION_EMAIL_CHANGED,
-            self::ACTION_2FA_ENABLED, self::ACTION_2FA_DISABLED,
-            self::ACTION_2FA_CODE_SENT, self::ACTION_2FA_CODE_VERIFIED,
-            self::ACTION_2FA_CODE_FAILED, self::ACTION_RECOVERY_CODE_USED,
+            self::ACTION_TWO_FA_ENABLED, self::ACTION_TWO_FA_DISABLED,
+            self::ACTION_TWO_FA_CODE_SENT, self::ACTION_TWO_FA_CODE_VERIFIED,
+            self::ACTION_TWO_FA_CODE_FAILED, self::ACTION_RECOVERY_CODE_USED,
             self::ACTION_PASSKEY_REGISTERED, self::ACTION_PASSKEY_REVOKED,
             self::ACTION_DEVICE_TRUSTED, self::ACTION_DEVICE_BLOCKED,
             self::ACTION_DEVICE_REMOVED, self::ACTION_IP_BLOCKED,
@@ -753,9 +916,9 @@ class AuditLog extends Model
             self::ACTION_LOGIN, self::ACTION_LOGOUT, self::ACTION_LOGIN_FAILED,
             self::ACTION_NEW_DEVICE_LOGIN, self::ACTION_PASSWORD_CHANGED,
             self::ACTION_PASSWORD_RESET, self::ACTION_EMAIL_CHANGED,
-            self::ACTION_2FA_ENABLED, self::ACTION_2FA_DISABLED,
-            self::ACTION_2FA_CODE_SENT, self::ACTION_2FA_CODE_VERIFIED,
-            self::ACTION_2FA_CODE_FAILED, self::ACTION_RECOVERY_CODE_USED,
+            self::ACTION_TWO_FA_ENABLED, self::ACTION_TWO_FA_DISABLED,
+            self::ACTION_TWO_FA_CODE_SENT, self::ACTION_TWO_FA_CODE_VERIFIED,
+            self::ACTION_TWO_FA_CODE_FAILED, self::ACTION_RECOVERY_CODE_USED,
             self::ACTION_PASSKEY_REGISTERED, self::ACTION_PASSKEY_REVOKED,
             self::ACTION_DEVICE_TRUSTED, self::ACTION_DEVICE_BLOCKED,
             self::ACTION_DEVICE_REMOVED, self::ACTION_IP_BLOCKED,
@@ -787,7 +950,7 @@ class AuditLog extends Model
     /**
      * このレコードのハッシュを計算
      *
-     * @param string|null $previousHash 前レコードのハッシュ
+     * @param  string|null  $previousHash  前レコードのハッシュ
      * @return string SHA-256ハッシュ（64文字）
      */
     public function calculateHash(?string $previousHash = null): string
@@ -816,8 +979,6 @@ class AuditLog extends Model
 
     /**
      * ハッシュチェーンを設定してレコードを保存
-     *
-     * @return bool
      */
     public function saveWithHashChain(): bool
     {
@@ -844,8 +1005,6 @@ class AuditLog extends Model
 
     /**
      * このレコードのハッシュを検証
-     *
-     * @return bool
      */
     public function verifyHash(): bool
     {
@@ -854,13 +1013,12 @@ class AuditLog extends Model
         }
 
         $expectedHash = $this->calculateHash($this->previous_hash);
+
         return hash_equals($expectedHash, $this->record_hash);
     }
 
     /**
      * このレコードのチェーンリンクを検証（前レコードとの整合性）
-     *
-     * @return bool
      */
     public function verifyChainLink(): bool
     {
@@ -872,7 +1030,7 @@ class AuditLog extends Model
         // 前のレコードを取得
         $previousLog = self::where('record_hash', $this->previous_hash)->first();
 
-        if (!$previousLog) {
+        if (! $previousLog) {
             return false;
         }
 
@@ -882,8 +1040,6 @@ class AuditLog extends Model
 
     /**
      * 検証ステータスを更新
-     *
-     * @param bool $isValid
      */
     public function markAsVerified(bool $isValid): void
     {
@@ -898,7 +1054,7 @@ class AuditLog extends Model
      */
     public function hasValidHashChain(): bool
     {
-        return !empty($this->record_hash) && !empty($this->previous_hash);
+        return ! empty($this->record_hash) && ! empty($this->previous_hash);
     }
 
     /**
@@ -967,8 +1123,6 @@ class AuditLog extends Model
 
     /**
      * 最新のハッシュを取得
-     *
-     * @return string|null
      */
     public static function getLatestHash(): ?string
     {
@@ -979,8 +1133,6 @@ class AuditLog extends Model
 
     /**
      * 最新のシーケンス番号を取得
-     *
-     * @return int
      */
     public static function getLatestSequence(): int
     {
@@ -991,14 +1143,12 @@ class AuditLog extends Model
 
     /**
      * ハッシュチェーン付きでログを記録
-     *
-     * @param array $data
-     * @return self
      */
     public static function logWithHashChain(array $data): self
     {
         $log = self::log($data);
         $log->saveWithHashChain();
+
         return $log;
     }
 }

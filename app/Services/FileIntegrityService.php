@@ -58,7 +58,6 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         'resources',
         'database/migrations',
         'public/index.php',
-        'public/build',
         'artisan',
         'composer.json',
         'composer.lock',

@@ -101,10 +101,10 @@ function renderMediaGrid(modalId, mediaItems) {
             : data.selectedMedia?.id === media.id;
 
         return `
-            <div class="media-selector-item ${isSelected ? 'selected' : ''}" 
+            <div class="media-selector-item cursor-pointer ${isSelected ? 'selected' : ''}"
                  data-media-id="${media.id}"
-                 onclick="toggleMediaSelection('${modalId}', ${JSON.stringify(media).replace(/"/g, '&quot;')})">
-                <div class="relative aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all">
+                 data-media-json="${encodeURIComponent(JSON.stringify(media))}">
+                <div class="relative aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-500 transition-all">
                     ${isImage
                 ? `<img src="${media.url}" alt="${media.name}" class="w-full h-full object-cover">`
                 : `<div class="flex items-center justify-center w-full h-full">
@@ -119,10 +119,20 @@ function renderMediaGrid(modalId, mediaItems) {
                 : ''
             }
                 </div>
-                <p class="mt-2 text-sm text-gray-700 dark:text-gray-300 truncate" title="${media.name}">${media.name}</p>
             </div>
         `;
     }).join('');
+
+    // Attach click handler via event delegation (CSP-safe)
+    grid.onclick = function (e) {
+        const item = e.target.closest('.media-selector-item');
+        if (!item) return;
+        const mediaJson = item.dataset.mediaJson;
+        if (mediaJson) {
+            const media = JSON.parse(decodeURIComponent(mediaJson));
+            window.toggleMediaSelection(modalId, media);
+        }
+    };
 }
 
 /**
@@ -223,9 +233,6 @@ window.confirmMediaSelection = function (modalId, inputId, previewId, multiple) 
         } else {
             input.value = selectedMedia.id;
         }
-
-        // Trigger change event
-        input.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     // Update preview
@@ -235,8 +242,8 @@ window.confirmMediaSelection = function (modalId, inputId, previewId, multiple) 
             preview.innerHTML = selectedMedia.map(m => `
                 <div class="relative inline-block mr-2 mb-2">
                     <img src="${m.url}" alt="${m.name}" class="w-20 h-20 object-cover rounded">
-                    <button type="button" onclick="removeMediaPreview('${inputId}', '${previewId}', ${m.id})" 
-                            class="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full hover:bg-red-700">
+                    <button type="button" class="media-remove-btn absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full hover:bg-red-700"
+                            data-input-id="${inputId}" data-preview-id="${previewId}" data-media-id="${m.id}">
                         <i class="fas fa-times text-xs"></i>
                     </button>
                 </div>
@@ -245,8 +252,8 @@ window.confirmMediaSelection = function (modalId, inputId, previewId, multiple) 
             preview.innerHTML = `
                 <div class="relative inline-block">
                     <img src="${selectedMedia.url}" alt="${selectedMedia.name}" class="w-64 ${aspectClasses} rounded border border-gray-300 dark:border-gray-600">
-                    <button type="button" onclick="removeMediaPreview('${inputId}', '${previewId}')" 
-                            class="absolute -top-2 -right-2 w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    <button type="button" class="media-remove-btn absolute -top-2 -right-2 w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            data-input-id="${inputId}" data-preview-id="${previewId}">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -254,11 +261,26 @@ window.confirmMediaSelection = function (modalId, inputId, previewId, multiple) 
         }
     }
 
+    // Dispatch custom event with media details (for theme preview etc.)
+    document.dispatchEvent(new CustomEvent('media-selected', {
+        detail: {
+            inputId: inputId,
+            previewId: previewId,
+            media: multiple ? selectedMedia : selectedMedia,
+            url: multiple ? selectedMedia.map(m => m.url) : selectedMedia.url,
+        }
+    }));
+
+    // Trigger change event on input (after preview is updated)
+    if (input) {
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
     closeMediaSelector(modalId);
 };
 
 /**
- * Remove media preview
+ * Remove media preview (delegated event handler)
  */
 window.removeMediaPreview = function (inputId, previewId, mediaId = null) {
     const input = document.getElementById(inputId);
@@ -276,7 +298,7 @@ window.removeMediaPreview = function (inputId, previewId, mediaId = null) {
     if (preview) {
         if (mediaId) {
             // Remove specific preview
-            const previewItem = preview.querySelector(`[onclick*="${mediaId}"]`)?.closest('.relative');
+            const previewItem = preview.querySelector(`[data-media-id="${mediaId}"]`)?.closest('.relative');
             if (previewItem) previewItem.remove();
         } else {
             // Clear all
@@ -286,6 +308,16 @@ window.removeMediaPreview = function (inputId, previewId, mediaId = null) {
 
     input.dispatchEvent(new Event('change', { bubbles: true }));
 };
+
+// Delegated click handler for remove buttons (CSP-safe)
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.media-remove-btn');
+    if (!btn) return;
+    const inputId = btn.dataset.inputId;
+    const previewId = btn.dataset.previewId;
+    const mediaId = btn.dataset.mediaId ? parseInt(btn.dataset.mediaId) : null;
+    window.removeMediaPreview(inputId, previewId, mediaId);
+});
 
 /**
  * Render pagination

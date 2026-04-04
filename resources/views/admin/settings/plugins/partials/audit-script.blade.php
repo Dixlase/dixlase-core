@@ -87,6 +87,7 @@ https://exc-d.com
             'install' => __('common.install'),
             'enable' => __('common.enable'),
             'cancel' => __('common.cancel'),
+            'close' => __('common.close'),
             'stage2ConfirmActionMessage' => __('admin/settings/plugins/index.two_stage.stage2_confirm_action_message'),
             'processingInstall' => __('admin/settings/plugins/index.two_stage.processing_install'),
             'processingEnable' => __('admin/settings/plugins/index.two_stage.processing_enable'),
@@ -162,12 +163,13 @@ https://exc-d.com
     {{-- スキャン中モーダル --}}
     <x-ui-modal
         id="pluginAuditScanningModal"
-        :title="__('admin/settings/plugins/index.permissions.audit_scanning')"
-        :message="__('admin/settings/plugins/index.permissions.audit_scanning_description')"
+        :title="__('admin/settings/plugins/index.permissions.audit_scanning_title')"
+        message=""
         iconType="info"
         :dismissible="false"
         :closeOnly="true"
     >
+        <p class="text-sm text-gray-700 dark:text-gray-300 text-center">{!! __('admin/settings/plugins/index.permissions.audit_scanning_description') !!}</p>
         <x-slot:footer>
             <div class="flex items-center justify-center w-full py-1">
                 <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
@@ -277,6 +279,7 @@ https://exc-d.com
         :dismissible="false"
         :closeOnly="true"
     >
+        <p id="pluginActionProcessingMessage" class="text-sm text-gray-700 dark:text-gray-300 text-center"></p>
         <x-slot:footer>
             <div class="flex items-center justify-center w-full py-1">
                 <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>

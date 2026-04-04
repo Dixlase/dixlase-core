@@ -33,6 +33,9 @@ use Illuminate\Support\Facades\Log;
 
 class AdminSystemApiController extends AdminLoggedInController
 {
+    /** @var string[] */
+    protected const SETTING_KEYS = ['api_enabled', 'api_rate_limit', 'api_signature_required'];
+
     /**
      * API設定リポジトリ
      */
@@ -107,9 +110,14 @@ class AdminSystemApiController extends AdminLoggedInController
     {
         $validated = $request->validated();
 
+        $before = $this->apiSettingRepository->getMultiple(static::SETTING_KEYS);
+
         $this->apiSettingRepository->set('api_enabled', $validated['api_enabled'] ?? false);
         $this->apiSettingRepository->set('api_rate_limit', $validated['api_rate_limit'] ?? 60);
         $this->apiSettingRepository->set('api_signature_required', $validated['api_signature_required'] ?? true);
+
+        $after = $this->apiSettingRepository->getMultiple(static::SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('system.api', $before, $after, auth()->user());
 
         Log::channel('admin_activity')->info('API設定を更新しました', [
             'member_id' => Auth::guard('member')->id(),

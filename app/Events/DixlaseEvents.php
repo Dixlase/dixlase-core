@@ -326,6 +326,38 @@ final class DixlaseEvents
      */
     public const SECURITY_ALERT = 'dixlase.security.alert';
 
+    /**
+     * Fired when bot behavior is detected at login
+     * Payload: SecurityAlertEvent
+     */
+    public const BOT_DETECTED = 'dixlase.security.bot.detected';
+
+    /**
+     * Fired when login anomaly is detected
+     * Payload: SecurityAlertEvent
+     */
+    public const LOGIN_ANOMALY_DETECTED = 'dixlase.security.login.anomaly';
+
+    // =========================================================================
+    // Audit Events
+    // =========================================================================
+
+    /**
+     * Fired when a new audit log record is created
+     * Payload: AuditLogCreated event
+     */
+    public const AUDIT_LOG_CREATED = 'dixlase.audit.log.created';
+
+    // =========================================================================
+    // AI Events (reserved for future use)
+    // =========================================================================
+
+    /**
+     * Fired when an AI plugin performs an audited operation
+     * Payload: AuditLogCreated event
+     */
+    public const AI_OPERATION_LOGGED = 'dixlase.ai.operation.logged';
+
     // =========================================================================
     // Helper Methods
     // =========================================================================
@@ -358,6 +390,8 @@ final class DixlaseEvents
             'maintenance' => 'dixlase.maintenance.',
             'security' => 'dixlase.security.',
             'integrity' => 'dixlase.integrity.',
+            'audit' => 'dixlase.audit.',
+            'ai' => 'dixlase.ai.',
             default => $category,
         };
 

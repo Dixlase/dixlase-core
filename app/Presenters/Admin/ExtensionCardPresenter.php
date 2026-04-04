@@ -29,7 +29,9 @@ use App\Enums\PluginHealthStatus;
 use App\Enums\PluginTrustLevel;
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\SecuritySettingsRegistry;
+use App\Services\Theme\ThemeHealthScorer;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class ExtensionCardPresenter
 {
@@ -68,19 +70,69 @@ class ExtensionCardPresenter
             ? ($theme->permission_summary ?? null)
             : ($theme['permission_summary'] ?? null);
 
-        $badge = self::computeBadge($permissionSummary, 'admin/settings/themes/index');
-
         $cspCompatibility = $isModel ? ($theme->csp_compatibility ?? []) : ($theme['csp_compatibility'] ?? []);
         $cspDiagnostic = $isModel ? ($theme->csp_diagnostic ?? null) : ($theme['csp_diagnostic'] ?? null);
 
         $auditResult = $permissionSummary['audit'] ?? [];
         $auditedAt = $auditResult['audited_at'] ?? null;
+
+        // 監査結果にCSP情報がある場合はそちらを優先
+        if (! empty($auditResult['csp_status'])) {
+            $cspCompatibility = [
+                'status' => $auditResult['csp_status'],
+                'requires_inline_js' => $auditResult['csp_requires_inline_js'] ?? false,
+                'requires_inline_css' => $auditResult['csp_requires_inline_css'] ?? false,
+                'has_csp_config' => $cspCompatibility['has_csp_config'] ?? false,
+                'csp_ready' => ! ($auditResult['csp_requires_inline_js'] ?? false),
+                'violations' => $auditResult['csp_violations'] ?? [],
+                'summary' => $auditResult['csp_summary'] ?? [],
+            ];
+        }
         $auditedAtFormatted = $auditedAt ? Carbon::parse($auditedAt)->format('Y/m/d H:i') : null;
 
         $permissionModalId = 'permissionModal-theme-'.($isModel ? $theme->id : $directory);
 
+        // 健全性スコアの計算
+        $enableAction = PluginEnableAction::Allowed;
+        $healthScore = null;
+        $healthStatus = null;
+        $healthIssues = [];
+        try {
+            $healthScorer = app(ThemeHealthScorer::class);
+            $healthResult = $healthScorer->calculate($slug);
+            $healthScore = $healthResult->score;
+            $healthStatus = $healthResult->status->value;
+            $healthIssues = array_values(array_filter(
+                array_map(fn ($i) => $i->jsonSerialize(), $healthResult->issues),
+                fn ($i) => ($i['deduction'] ?? 0) !== 0,
+            ));
+        } catch (\Exception $e) {
+            Log::error('ExtensionCardPresenter: theme health calculation failed', [
+                'theme' => $slug,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile().':'.$e->getLine(),
+            ]);
+        }
+
+        $badge = self::computeBadge($permissionSummary, 'admin/settings/themes/index', $healthStatus);
+
+        // バッジクリック用のスキャンデータ
+        $scanData = self::buildScanDataForBadge(
+            $auditResult,
+            $badge,
+            $cspCompatibility,
+            $healthScore,
+            $healthStatus,
+            $healthIssues,
+            $permissionSummary['categories'] ?? [],
+            $permissionSummary['risk_reasons'] ?? [],
+            'admin/settings/themes/index',
+        );
+
         $enableWarnings = $isModel ? self::computeEnableWarnings($permissionSummary, 'admin/settings/themes/index') : [];
         $installWarnings = ! $isModel ? self::computeInstallWarnings($permissionSummary, 'admin/settings/themes/index') : [];
+
+        $operationStatus = self::computeOperationStatus($cspCompatibility, $healthStatus, $auditedAt, $enableAction);
 
         return [
             'isModel' => $isModel,
@@ -121,6 +173,24 @@ class ExtensionCardPresenter
             'installWarnings' => $installWarnings,
             'hasInstallWarnings' => ! empty($installWarnings),
             'hasSettings' => $isModel ? ($theme->has_settings ?? false) : false,
+            'healthScore' => $healthScore,
+            'healthStatus' => $healthStatus,
+            'healthIssues' => $healthIssues,
+            'scanData' => $scanData,
+            'cspBarometerItems' => self::buildCspBarometerItems($cspCompatibility, $auditedAt),
+            'presetBarometerItems' => self::buildPresetBarometerItems($healthStatus, $auditedAt),
+            'operationStatus' => $operationStatus,
+            'cspMaxTier' => $cspMaxTier = self::computeMaxCompatibleTier(self::buildCspModeBadges($cspCompatibility), $auditedAt),
+            'presetMaxTier' => $presetMaxTier = self::computeMaxCompatibleTier(self::buildPresetCompatibilityBadges($healthStatus), $auditedAt),
+            'healthIconColor' => ($healthStatus ?? 'not_verified') === 'healthy' ? 'text-green-500' : 'text-red-500',
+            'opIconColor' => match ($operationStatus['status'] ?? 'unknown') {
+                'ok' => 'text-green-500',
+                'caution' => 'text-yellow-500',
+                'blocked' => 'text-red-500',
+                default => 'text-gray-400',
+            },
+            'cspTierIconColor' => self::tierToIconColor($cspMaxTier),
+            'presetTierIconColor' => self::tierToIconColor($presetMaxTier),
         ];
     }
 
@@ -203,7 +273,11 @@ class ExtensionCardPresenter
                 $enableAction = $healthScorer->determineEnableAction($healthResult);
             }
         } catch (\Exception $e) {
-            // 算出失敗時はデフォルト値を維持
+            Log::error('ExtensionCardPresenter: health calculation failed', [
+                'plugin' => $slug,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile().':'.$e->getLine(),
+            ]);
         }
 
         $badge = self::computeBadge($permissionSummary, 'admin/settings/plugins/index', $healthStatus);
@@ -817,8 +891,9 @@ class ExtensionCardPresenter
             ],
         };
 
-        // Operation: ok=usable(green), else=unusable(red)
-        $opOk = $operationStatus['status'] === 'ok';
+        // Operation: in simple mode, "problem" health also means unavailable
+        $isHealthProblem = ! in_array($healthStatus, ['healthy', 'advisory'], true);
+        $opOk = $operationStatus['status'] === 'ok' && ! $isHealthProblem;
 
         return [
             'simpleHealthLabel' => $simpleHealthLabel,
@@ -854,14 +929,21 @@ class ExtensionCardPresenter
                 ];
             } else {
                 $reasonKey = str_replace('.', '_', $reason['key'] ?? '');
+                $severity = $reason['severity'] ?? 'medium';
+                $details = $reason['details'] ?? [];
+                $translationParams = ! empty($details) ? ['domains' => implode(', ', $details)] : [];
                 $formatted[] = [
-                    'text' => __($translationPrefix.'.permissions.attention_reason_'.$reasonKey),
-                    'color' => ($reason['severity'] ?? 'medium') === 'high'
-                        ? 'text-orange-600 dark:text-orange-400'
-                        : 'text-yellow-600 dark:text-yellow-400',
-                    'icon' => ($reason['severity'] ?? 'medium') === 'high'
-                        ? 'fas fa-exclamation-circle'
-                        : 'fas fa-info-circle',
+                    'text' => __($translationPrefix.'.permissions.attention_reason_'.$reasonKey, $translationParams),
+                    'color' => match ($severity) {
+                        'high' => 'text-orange-600 dark:text-orange-400',
+                        'info' => 'text-blue-600 dark:text-blue-400',
+                        default => 'text-yellow-600 dark:text-yellow-400',
+                    },
+                    'icon' => match ($severity) {
+                        'high' => 'fas fa-exclamation-circle',
+                        'info' => 'fas fa-check-circle',
+                        default => 'fas fa-info-circle',
+                    },
                     'score' => $reason['score'] ?? 0,
                 ];
             }
@@ -890,6 +972,7 @@ class ExtensionCardPresenter
         array $healthIssues,
         array $categories,
         array $attentionReasons,
+        string $translationPrefix = 'admin/settings/plugins/index',
     ): array {
         // 署名情報をaudit互換形式に変換
         $signatureStatus = $badge['signatureStatus'] ?? 'unsigned';
@@ -905,7 +988,7 @@ class ExtensionCardPresenter
         ];
 
         // attention reasonsをフォーマット（JS互換）
-        $formattedReasons = self::formatAttentionReasons($attentionReasons, 'admin/settings/plugins/index');
+        $formattedReasons = self::formatAttentionReasons($attentionReasons, $translationPrefix);
 
         // CSPステータスのマッピング
         $cspStatus = $cspCompatibility['status'] ?? 'unknown';

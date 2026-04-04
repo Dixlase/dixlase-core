@@ -43,6 +43,7 @@ return [
     'exclude_dev_tools' => '開発ツールの違反を除外',
     'exclude_dev_tools_help' => 'Vite開発サーバー、Windsurf/MCPブラウザプレビュー等の開発ツールによるCSP違反をログから除外します。',
     'trusted_domains' => '信頼済みドメイン',
+    'config_trusted_domains_label' => 'デフォルト信頼済みドメイン（コンフィグ定義）',
     'trusted_domains_help' => '外部リソースの読み込みを許可するドメインを1行に1つずつ入力してください。プラグインやテーマが必要とする外部CDN等を追加できます。スキーム（https://）は省略可能です。',
     'trusted_domains_placeholder' => 'https://cdn.example.com
 https://fonts.googleapis.com

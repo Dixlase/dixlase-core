@@ -3,7 +3,7 @@ This guide walks you through installing Dixlase CMS on your server. Choose the m
 
 ## Prerequisites
 
-Before installing, make sure your environment meets the [System Requirements](requirements.md).
+Before installing, make sure your environment meets the [System Requirements](../requirements.md).
 
 ## Setup
 

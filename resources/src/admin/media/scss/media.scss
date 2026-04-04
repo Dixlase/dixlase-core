@@ -88,6 +88,14 @@
         @apply block text-sm text-gray-500 dark:text-gray-400;
     }
 
+    .media-card__size {
+        @apply block text-sm text-gray-500 dark:text-gray-400;
+    }
+
+    .media-card__dimensions {
+        @apply block text-sm text-gray-500 dark:text-gray-400;
+    }
+
     .media-card__date {
         @apply block text-sm text-gray-500 dark:text-gray-400;
     }

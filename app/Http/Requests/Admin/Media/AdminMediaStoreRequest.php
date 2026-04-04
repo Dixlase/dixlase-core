@@ -22,8 +22,8 @@
 
 namespace App\Http\Requests\Admin\Media;
 
-use Illuminate\Foundation\Http\FormRequest;
 use App\Models\MediaSetting;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Log;
 
 class AdminMediaStoreRequest extends FormRequest
@@ -45,9 +45,18 @@ class AdminMediaStoreRequest extends FormRequest
     {
         $allowedFileTypes = $this->getAllowedFileTypes();
         $maxFileSize = $this->getMaxFileSize();
+        $mimes = implode(',', $allowedFileTypes);
+
+        // 複数ファイルアップロード（files[]）と単一ファイル（file）の両方に対応
+        if ($this->hasFile('files')) {
+            return [
+                'files' => 'required|array|min:1',
+                'files.*' => 'file|mimes:'.$mimes.'|max:'.$maxFileSize,
+            ];
+        }
 
         return [
-            'file' => 'required|file|mimes:' . implode(',', $allowedFileTypes) . '|max:' . $maxFileSize,
+            'file' => 'required|file|mimes:'.$mimes.'|max:'.$maxFileSize,
         ];
     }
 
@@ -59,7 +68,7 @@ class AdminMediaStoreRequest extends FormRequest
         return [
             'file.required' => 'ファイルは必須です。',
             'file.file' => '有効なファイルをアップロードしてください。',
-            'file.mimes' => '許可されているファイルタイプは ' . implode(', ', $this->allowedTypes()) . ' です。',
+            'file.mimes' => '許可されているファイルタイプは '.implode(', ', $this->allowedTypes()).' です。',
             'file.max' => "ファイルサイズが上限を超えています。上限: {$maxFileSizeMB}MBです。",
         ];
     }
@@ -75,6 +84,7 @@ class AdminMediaStoreRequest extends FormRequest
     protected function getAllowedFileTypes(): array
     {
         $allowedTypes = MediaSetting::where('name', 'allowed_file_types')->value('value');
+
         return $allowedTypes ? json_decode($allowedTypes, true) : ['jpg', 'jpeg', 'png', 'gif', 'pdf'];
     }
 
@@ -84,12 +94,13 @@ class AdminMediaStoreRequest extends FormRequest
     protected function getMaxFileSize(): int
     {
         $maxSize = MediaSetting::where('name', 'max_file_size')->value('value');
-        return $maxSize ? (int)$maxSize : 2048;
+
+        return $maxSize ? (int) $maxSize : 2048;
     }
 
     public function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
     {
-        Log::error('バリデーションエラー: ' . json_encode($validator->errors()->all()));
+        Log::error('バリデーションエラー: '.json_encode($validator->errors()->all()));
 
         parent::failedValidation($validator);
     }

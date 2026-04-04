@@ -44,6 +44,10 @@ return new class extends Migration
             $table->string('email')->nullable(); // 作者のメール
             $table->string('url')->nullable(); // 作者のウェブサイト
             $table->string('version'); // バージョン
+            $table->unsignedBigInteger('source_id')->nullable()->index(); // Extension source reference
+            $table->string('source_repo')->nullable(); // Repository name at source
+            $table->string('available_version')->nullable(); // Latest available version from source
+            $table->timestamp('last_version_check')->nullable(); // Last update check timestamp
             $table->timestamp('installed_at')->nullable(); // インストール日時
             $table->timestamp('enabled_at')->nullable(); // 有効化日時
             $table->timestamps(); // Laravelの `created_at` & `updated_at`

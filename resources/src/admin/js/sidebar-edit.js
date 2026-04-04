@@ -82,7 +82,7 @@ Alpine.data('sidebarEditor', (saveUrl, resetUrl, initialHidden, initialOrder) =>
                 onEnd: () => {
                     const keys = Array.from(container.querySelectorAll(':scope > [data-menu-key]'))
                         .map(el => el.dataset.menuKey);
-                    this.menuOrder[groupKey] = keys;
+                    this.menuOrder = { ...this.menuOrder, [groupKey]: keys };
                 },
             });
             this.sortableInstances.push(instance);

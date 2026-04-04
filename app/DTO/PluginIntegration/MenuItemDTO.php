@@ -46,6 +46,7 @@ final readonly class MenuItemDTO implements JsonSerializable
      * @param  int  $displayOrder  表示順
      * @param  bool  $isActive  有効/無効
      * @param  array<string,mixed>  $meta  追加メタデータ
+     * @param  MenuItemDTO[]  $children  子メニューアイテム
      */
     public function __construct(
         public string $label,
@@ -59,6 +60,7 @@ final readonly class MenuItemDTO implements JsonSerializable
         public int $displayOrder = 0,
         public bool $isActive = true,
         public array $meta = [],
+        public array $children = [],
     ) {}
 
     /**
@@ -80,6 +82,7 @@ final readonly class MenuItemDTO implements JsonSerializable
             'display_order' => $this->displayOrder,
             'is_active' => $this->isActive,
             'meta' => $this->meta,
+            'children' => array_map(fn (self $child) => $child->jsonSerialize(), $this->children),
         ];
     }
 
@@ -112,6 +115,7 @@ final readonly class MenuItemDTO implements JsonSerializable
             displayOrder: $data['display_order'] ?? 0,
             isActive: $data['is_active'] ?? true,
             meta: $data['meta'] ?? [],
+            children: array_map(fn (array $child) => self::fromArray($child), $data['children'] ?? []),
         );
     }
 
@@ -167,6 +171,7 @@ final readonly class MenuItemDTO implements JsonSerializable
             displayOrder: $this->displayOrder,
             isActive: $this->isActive,
             meta: $this->meta,
+            children: $this->children,
         );
     }
 
@@ -189,6 +194,23 @@ final readonly class MenuItemDTO implements JsonSerializable
             displayOrder: $this->displayOrder,
             isActive: $this->isActive,
             meta: $this->meta,
+            children: $this->children,
         );
+    }
+
+    /**
+     * 子メニューを持つかどうか判定
+     */
+    public function hasChildren(): bool
+    {
+        return count($this->children) > 0;
+    }
+
+    /**
+     * メニューグループ（URLなしのドロップダウンコンテナ）かどうか判定
+     */
+    public function isMenuGroup(): bool
+    {
+        return $this->sourceType === 'menu_group';
     }
 }

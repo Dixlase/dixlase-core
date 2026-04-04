@@ -28,36 +28,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'contentFieldName' => 'content',
     'storageFieldName' => 'storage_type',
     'editorFieldName' => 'editor_type',
+    'storageOptions' => [],
+    'editorOptions' => [],
+    'editorTranslations' => [],
+    'editorIcons' => [],
+    'pluginEditors' => [],
+    'guiEditorInfo' => null,
+    'guiEditorAssetHtml' => '',
 ])
-
-@php
-use App\Enums\ContentStorageType;
-use App\Enums\ContentEditorType;
-
-$storageTypeEnum = is_string($storageType) ? ContentStorageType::fromSlug($storageType) : $storageType;
-$editorTypeEnum = is_string($editorType) ? ContentEditorType::fromSlug($editorType) : $editorType;
-@endphp
-
-@php
-$editorTranslations = [
-    'common.content_editor.gui' => __('common.content_editor.gui'),
-    'common.content_editor.gui_description' => __('common.content_editor.gui_description'),
-    'common.content_editor.markdown' => __('common.content_editor.markdown'),
-    'common.content_editor.markdown_description' => __('common.content_editor.markdown_description'),
-    'common.content_editor.html' => __('common.content_editor.html'),
-    'common.content_editor.html_description' => __('common.content_editor.html_description'),
-    'common.content_editor.blade' => __('common.content_editor.blade'),
-    'common.content_editor.blade_description' => __('common.content_editor.blade_description'),
-];
-@endphp
 
 <div data-translations='@json($editorTranslations)'
      x-data="{
-    storageType: '{{ $storageTypeEnum->slug() }}',
-    editorType: '{{ $editorTypeEnum->slug() }}',
+    storageType: '{{ $storageType }}',
+    editorType: '{{ $editorType }}',
     content: @js($content),
     identifier: @js($identifier),
-    
+    hasGuiEditor: {{ $guiEditorInfo ? 'true' : 'false' }},
+
     get availableEditors() {
         const editors = {
             'database': ['gui', 'markdown', 'html'],
@@ -65,11 +52,11 @@ $editorTranslations = [
         };
         return editors[this.storageType] || [];
     },
-    
+
     get isFileStorage() {
         return this.storageType === 'file';
     },
-    
+
     get filePath() {
         if (!this.isFileStorage || !this.identifier) return '';
         const extensions = {
@@ -81,39 +68,37 @@ $editorTranslations = [
         const ext = extensions[this.editorType] || 'txt';
         return `storage/app/pages/${this.identifier}.${ext}`;
     },
-    
+
     updateEditorType() {
-        // 保存方法変更時、利用可能なエディタータイプでなければ最初のものを選択
         if (!this.availableEditors.includes(this.editorType)) {
             this.editorType = this.availableEditors[0] || 'html';
         }
-    }
-}" x-init="$watch('storageType', () => updateEditorType())" class="space-y-4">
+    },
 
-    {{-- 保存方法選択 --}}
+    onEditorContentUpdated(event) {
+        if (event.detail && event.detail.content !== undefined) {
+            this.content = event.detail.content;
+        }
+    }
+}" x-init="
+    $watch('storageType', () => updateEditorType());
+    $watch('editorType', (value) => {
+        $dispatch('editor-type-changed', { editorType: value, storageType: storageType });
+    });
+" @editor-content-updated.window="onEditorContentUpdated($event)" class="space-y-4">
+
+    {{-- Storage type selector --}}
     @if($showStorageSelector)
     <div class="mb-4">
         @include('components::form-label', [
             'for' => $storageFieldName,
             'text' => __('common.content_storage.label'),
         ])
-        
-        @php
-        $storageOptions = [];
-        foreach(ContentStorageType::optionsWithDescription() as $value => $option) {
-            $storageOptions[] = [
-                'value' => $value,
-                'label' => $option['label'],
-                'description' => $option['description'],
-                'icon' => $value === 'database' ? 'fas fa-database' : 'fas fa-file-code',
-            ];
-        }
-        @endphp
-        
+
         <x-form-radio-card-group
             :name="$storageFieldName"
             :options="$storageOptions"
-            :value="$storageTypeEnum->slug()"
+            :value="$storageType"
             xModel="storageType"
             :columns="2"
             color="blue"
@@ -125,32 +110,16 @@ $editorTranslations = [
     <input type="hidden" name="{{ $storageFieldName }}" x-model="storageType">
     @endif
 
-    {{-- エディタータイプ選択 --}}
+    {{-- Editor type selector --}}
     @if($showEditorSelector)
     <div class="mb-4">
         @include('components::form-label', [
             'for' => $editorFieldName,
             'text' => __('common.content_editor.label'),
         ])
-        
-        @php
-        $editorIcons = [
-            'gui' => 'fas fa-magic',
-            'markdown' => 'fab fa-markdown',
-            'html' => 'fas fa-code',
-            'blade' => 'fab fa-laravel',
-        ];
-        $editorColors = [
-            'gui' => 'purple',
-            'markdown' => 'blue',
-            'html' => 'orange',
-            'blade' => 'red',
-        ];
-        @endphp
-        
+
         <div x-data="{
             editorIcons: {{ Js::from($editorIcons) }},
-            editorColors: {{ Js::from($editorColors) }},
             editorOptions: [],
             updateEditorOptions() {
                 this.editorOptions = this.availableEditors.map(editor => ({
@@ -158,8 +127,7 @@ $editorTranslations = [
                     label: this.$t(`common.content_editor.${editor}`),
                     description: this.$t(`common.content_editor.${editor}_description`),
                     icon: this.editorIcons[editor] || 'fas fa-file',
-                    color: this.editorColors[editor] || 'gray',
-                    disabled: editor === 'gui'
+                    disabled: editor === 'gui' && !this.hasGuiEditor
                 }));
             }
         }" x-init="updateEditorOptions(); $watch('availableEditors', () => updateEditorOptions())">
@@ -169,18 +137,18 @@ $editorTranslations = [
                         <label class="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none transition-all duration-150"
                                :class="[
                                    option.disabled ? 'opacity-50 cursor-not-allowed' : '',
-                                   editorType === option.value 
-                                       ? 'border-blue-600 dark:border-blue-500 ring-3 ring-blue-600 dark:ring-blue-500 bg-blue-50 dark:bg-blue-900/30' 
+                                   editorType === option.value
+                                       ? 'border-blue-600 dark:border-blue-500 ring-3 ring-blue-600 dark:ring-blue-500 bg-blue-50 dark:bg-blue-900/30'
                                        : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-500'
                                ]"
                                @click="if (!option.disabled) editorType = option.value">
-                            <input type="radio" 
-                                   name="{{ $editorFieldName }}" 
+                            <input type="radio"
+                                   name="{{ $editorFieldName }}"
                                    :value="option.value"
                                    x-model="editorType"
                                    :disabled="option.disabled"
                                    class="sr-only">
-                            
+
                             <span class="flex flex-1">
                                 <span class="flex flex-col justify-center">
                                     <span class="flex items-center gap-2 text-sm font-medium"
@@ -191,7 +159,7 @@ $editorTranslations = [
                                     <span class="mt-1 text-xs text-gray-500 dark:text-gray-400" x-text="option.description"></span>
                                 </span>
                             </span>
-                            
+
                             <span class="absolute top-3 right-3 flex items-center justify-center"
                                   x-show="editorType === option.value && !option.disabled"
                                   x-transition:enter="transition ease-out duration-100"
@@ -202,8 +170,8 @@ $editorTranslations = [
                                   x-transition:leave-end="opacity-0 scale-75">
                                 <i class="fas fa-check-circle text-lg text-blue-600 dark:text-blue-400"></i>
                             </span>
-                            
-                            <span class="pointer-events-none absolute -inset-px rounded-lg" 
+
+                            <span class="pointer-events-none absolute -inset-px rounded-lg"
                                   :class="editorType === option.value ? 'border-2 border-blue-600 dark:border-blue-500' : 'border border-transparent'"
                                   aria-hidden="true"></span>
                         </label>
@@ -216,7 +184,7 @@ $editorTranslations = [
     <input type="hidden" name="{{ $editorFieldName }}" x-model="editorType">
     @endif
 
-    {{-- ファイル保存時の情報表示 --}}
+    {{-- File storage info --}}
     <div x-show="isFileStorage" x-cloak class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
         <div class="flex items-start">
             <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
@@ -232,25 +200,34 @@ $editorTranslations = [
         </div>
     </div>
 
-    {{-- コンテンツエディタ --}}
+    {{-- Content editor panels --}}
     <div class="mb-4">
         @include('components::form-label', [
             'for' => $contentFieldName,
             'text' => __('common.content'),
         ])
-        
-        {{-- GUI エディタ（将来実装） --}}
+
+        {{-- GUI editor (plugin-provided) --}}
         <div x-show="editorType === 'gui'" x-cloak>
-            <div class="p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
-                <i class="fas fa-magic text-4xl text-gray-400 mb-4"></i>
-                <p class="text-gray-600 dark:text-gray-400">
-                    {{ __('common.content_editor.gui_coming_soon') }}
-                </p>
-            </div>
-            <input type="hidden" name="{{ $contentFieldName }}" x-model="content">
+            @if($guiEditorInfo)
+                @include($guiEditorInfo->viewName, [
+                    'contentFieldName' => $contentFieldName,
+                    'editorInfo' => $guiEditorInfo,
+                    'initialContent' => $content,
+                ])
+            @else
+                {{-- Fallback: no GUI editor plugin installed --}}
+                <div class="p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
+                    <i class="fas fa-paint-brush text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        {{ __('common.content_editor.gui_coming_soon') }}
+                    </p>
+                </div>
+                <input type="hidden" name="{{ $contentFieldName }}" x-model="content">
+            @endif
         </div>
 
-        {{-- Markdown エディタ --}}
+        {{-- Markdown editor --}}
         <div x-show="editorType === 'markdown'" x-cloak>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
@@ -275,7 +252,7 @@ $editorTranslations = [
             </div>
         </div>
 
-        {{-- HTML エディタ --}}
+        {{-- HTML editor --}}
         <div x-show="editorType === 'html'" x-cloak>
             @include('components::form-textarea', [
                 'id' => $contentFieldName . '_html',
@@ -286,7 +263,7 @@ $editorTranslations = [
             ])
         </div>
 
-        {{-- Blade エディタ --}}
+        {{-- Blade editor --}}
         <div x-show="editorType === 'blade'" x-cloak>
             @include('components::form-textarea', [
                 'id' => $contentFieldName . '_blade',
@@ -303,3 +280,7 @@ $editorTranslations = [
     </div>
 </div>
 
+{{-- Plugin editor assets --}}
+@if($guiEditorAssetHtml)
+    {!! $guiEditorAssetHtml !!}
+@endif

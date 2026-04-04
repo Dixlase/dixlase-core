@@ -22,15 +22,14 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\AuditLog;
+use App\Models\Member;
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
-use \App\Models\Member;
-
-
+use Symfony\Component\HttpFoundation\Response;
 
 class LogAdminActivity
 {
@@ -41,6 +40,13 @@ class LogAdminActivity
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Set actor source for audit logging within this request
+        $audit = app('audit');
+        $actorSource = $request->is('api/*')
+            ? AuditLog::ACTOR_SOURCE_API
+            : AuditLog::ACTOR_SOURCE_WEB;
+        $audit->setActorSource($actorSource);
+
         $response = $next($request);
 
         $user = Auth::user();

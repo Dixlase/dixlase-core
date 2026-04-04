@@ -28,6 +28,11 @@ use App\Enums\ContentStorageType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
+ * フロントページモデル
+ */
 class FrontPage extends Model
 {
     use HasFactory;

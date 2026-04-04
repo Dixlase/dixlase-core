@@ -32,6 +32,8 @@ use Illuminate\Http\Request;
 
 class AdminSecurityCspController extends AdminLoggedInController
 {
+    protected const SETTING_KEYS = ['csp_enabled', 'csp_mode', 'csp_log_violations', 'csp_exclude_dev_tools', 'csp_trusted_domains', 'csp_denied_domains', 'csp_custom_directives', 'csp_custom_directives_mode', 'csp_blocklist_check_enabled', 'csp_blocklist_action', 'csp_blocklist_enabled_categories'];
+
     protected SecuritySettingRepositoryInterface $securitySettingRepository;
 
     public function __construct(SecuritySettingRepositoryInterface $securitySettingRepository)
@@ -76,6 +78,7 @@ class AdminSecurityCspController extends AdminLoggedInController
             'cryptominer' => 'fas fa-coins',
         ];
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.csp');
+        $this->viewParams['configTrustedDomains'] = config('csp.domains.trusted_domains', []);
 
         return view('admin.settings.security.csp', $this->viewParams);
     }
@@ -85,6 +88,8 @@ class AdminSecurityCspController extends AdminLoggedInController
      */
     public function update(AdminSecurityCspUpdateRequest $request)
     {
+        $before = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+
         $validated = $request->validated();
 
         // 現在の設定をセッションに退避（ロールバック用）
@@ -134,6 +139,9 @@ class AdminSecurityCspController extends AdminLoggedInController
         $categories = $validated['csp_blocklist_categories'] ?? [];
         $this->securitySettingRepository->set('csp_blocklist_enabled_categories', implode(',', $categories));
 
+        $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('security.csp', $before, $after, auth()->user());
+
         return redirect()->route('admin.settings.security.csp')
             ->with('success', __('admin/settings/security/csp.settings_updated'))
             ->with('show_csp_confirmation', true);
@@ -169,10 +177,15 @@ class AdminSecurityCspController extends AdminLoggedInController
             ], 400);
         }
 
+        $beforeRollback = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+
         // 前回の設定に戻す
         foreach ($previousSettings as $key => $value) {
             $this->securitySettingRepository->set($key, $value);
         }
+
+        $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('security.csp', $beforeRollback, $after, auth()->user());
 
         // セッションをクリア
         session()->forget('csp_pending_confirmation');

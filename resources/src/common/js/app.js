@@ -44,6 +44,7 @@ import '../../components/two-fa/js/two-fa-profile-settings';
 import '../../components/two-fa/js/webauthn-utils';
 import '../../components/two-fa/js/two-fa-management';
 import '../../components/js/form-content-editor';
+import '../../components/js/content-preview-mixin';
 import '../../components/media/js/selector';
 import '../../components/mail-server/js/test';
 import '../../components/mail-server/js/verification';
@@ -57,7 +58,6 @@ import '../../admin/settings/plugins/js/audit';
 import '../../admin/settings/plugins/js/two-stage-modal';
 import '../../admin/settings/themes/js/audit';
 import '../../admin/js/login-flow';
-import '../../admin/js/front-page-editor';
 import '../../admin/js/dashboard-mode-toggle';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'

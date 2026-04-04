@@ -20,6 +20,8 @@
  * テーマ監査スクリプト用JavaScript
  */
 
+import { buildUnifiedScanResultHtml } from '../../plugins/js/scan-result-builder';
+
 document.addEventListener('DOMContentLoaded', function () {
     const configEl = document.getElementById('theme-audit-config');
     if (!configEl) return;
@@ -27,6 +29,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const config = JSON.parse(configEl.textContent);
     const auditMessages = config.messages || {};
     const auditUrl = config.auditUrl || '';
+
+    // 結果モーダルの閉じる動作を管理するフラグ
+    // true: スキャン実行後（ページリロード） / false: バッジクリック（単純に閉じる）
+    let resultModalReloadOnClose = false;
 
     /**
      * スキャン中モーダルを開く（submitting=true で閉じ操作をブロック）
@@ -53,121 +59,51 @@ document.addEventListener('DOMContentLoaded', function () {
     /**
      * スキャン結果のHTMLを生成して結果モーダルのコンテンツ領域に挿入する
      */
-    function populateResultContent(audit) {
-        const hasIssues = audit.has_mismatches && audit.mismatches && audit.mismatches.length > 0;
-        const riskLevel = audit.risk_level || 'low';
-
-        const healthColors = {
-            'low': { bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-700 dark:text-green-300', icon: 'fa-check-circle' },
-            'medium': { bg: 'bg-yellow-50 dark:bg-yellow-900/20', border: 'border-yellow-200 dark:border-yellow-800', text: 'text-yellow-700 dark:text-yellow-300', icon: 'fa-exclamation-circle' },
-            'high': { bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-700 dark:text-orange-300', icon: 'fa-exclamation-triangle' },
-            'unknown': { bg: 'bg-gray-50 dark:bg-gray-900/20', border: 'border-gray-200 dark:border-gray-800', text: 'text-gray-700 dark:text-gray-300', icon: 'fa-question-circle' }
-        };
-        const healthStyle = healthColors[riskLevel] || healthColors['unknown'];
-        const healthLabels = config.healthLabels || {};
-
-        let contentHtml = '';
-
-        // 健全性ステータス
-        contentHtml += `
-            <div class="p-3 rounded-lg ${healthStyle.bg} border ${healthStyle.border} mb-3">
-                <div class="flex items-center gap-2 ${healthStyle.text}">
-                    <i class="fas ${healthStyle.icon}"></i>
-                    <span class="font-semibold">${config.healthBadgeLabel || ''}: ${healthLabels[riskLevel] || healthLabels['unknown'] || ''}</span>
-                </div>
-            </div>
-        `;
-
-        // 確認が必要な理由（attention reasons）
-        const attentionReasons = audit.formatted_attention_reasons || [];
-        if (attentionReasons.length > 0) {
-            contentHtml += `
-                <div class="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 mb-3">
-                    <p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
-                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                        ${config.attentionReasonsTitle || ''}
-                    </p>
-                    <ul class="text-sm space-y-1 ml-5 list-disc">
-                        ${attentionReasons.map(r => `
-                            <li class="${r.color || 'text-yellow-700 dark:text-yellow-300'}">
-                                <i class="${r.icon || 'fas fa-info-circle'} mr-1"></i>
-                                ${r.text || ''}
-                                ${r.score ? `<span class="inline-flex items-center ml-1 px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200">+${r.score}</span>` : ''}
-                            </li>
-                        `).join('')}
-                    </ul>
-                    ${(() => {
-                        const totalScore = attentionReasons.reduce((sum, r) => sum + (r.score || 0), 0);
-                        return totalScore > 0 ? `
-                            <div class="mt-2 pt-2 border-t border-yellow-200 dark:border-yellow-700 flex items-center justify-between">
-                                <span class="text-xs font-medium text-yellow-700 dark:text-yellow-300">${config.totalRiskScoreLabel || ''}</span>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${riskLevel === 'high' ? 'bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200' : riskLevel === 'medium' ? 'bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200' : 'bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200'}">${totalScore}</span>
-                            </div>
-                        ` : '';
-                    })()}
-                </div>
-            `;
-        }
-
-        // 権限定義の整合性セクション見出し
-        contentHtml += `
-            <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 mt-1">
-                <i class="fas fa-balance-scale mr-1"></i>
-                ${config.permissionConsistencyTitle || ''}
-            </p>
-        `;
-
-        // 権限不一致の警告
-        if (hasIssues) {
-            contentHtml += `
-                <div class="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 mb-3">
-                    <p class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">
-                        <i class="fas fa-code-branch mr-1"></i>
-                        ${auditMessages.mismatchFound || ''}
-                    </p>
-                    <ul class="text-sm text-red-700 dark:text-red-300 space-y-1 ml-5 list-disc">
-                        ${audit.mismatches.slice(0, 10).map(m => `
-                            <li>
-                                <code class="bg-red-100 dark:bg-red-800 px-1 rounded">${m.permission}</code>
-                                - ${m.type === 'undeclared_usage' ? (auditMessages.undeclaredUsage || '') : (auditMessages.unusedDeclaration || '')}
-                            </li>
-                        `).join('')}
-                    </ul>
-                    ${audit.mismatches.length > 10 ? `<p class="text-xs text-red-600 dark:text-red-400 mt-2">...他 ${audit.mismatches.length - 10} 件</p>` : ''}
-                </div>
-            `;
-        } else {
-            contentHtml += `
-                <div class="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 mb-3">
-                    <p class="text-sm text-green-700 dark:text-green-300">
-                        <i class="fas fa-check-circle mr-1"></i>
-                        ${auditMessages.noIssues || ''}
-                    </p>
-                </div>
-            `;
-        }
-
-        contentHtml += `
-            <div class="mt-3 text-xs text-gray-500 dark:text-gray-400">
-                ${config.statsLabel || ''}: ${audit.total_checked || 0} /
-                ${config.matchesLabel || ''}: ${audit.matches_count || 0} /
-                ${config.mismatchesLabel || ''}: ${(audit.mismatches || []).length}
-            </div>
-        `;
-
+    function populateResultContent(scanData) {
         const container = document.getElementById('themeAuditResultContent');
         if (container) {
-            container.innerHTML = contentHtml;
+            container.innerHTML = buildUnifiedScanResultHtml(scanData, config);
         }
     }
 
-    // 結果モーダルの閉じるボタン（CSP対応: インラインonclickではなくイベントリスナーで登録）
+    // 結果モーダルの閉じるボタン
     const resultCloseBtn = document.getElementById('themeAuditResultCloseBtn');
     if (resultCloseBtn) {
         resultCloseBtn.addEventListener('click', function () {
-            window.location.reload();
+            if (resultModalReloadOnClose) {
+                window.location.reload();
+            } else {
+                window.closeModal('themeAuditResultModal');
+            }
         });
     }
+
+    // バッジ詳細ボタン: data-scan-data からスキャンデータを読み取り結果モーダルに表示
+    document.querySelectorAll('.badge-detail-btn').forEach(function (btn) {
+        // プラグインページのバッジはプラグイン側で処理するためスキップ
+        if (document.getElementById('plugin-audit-config')) return;
+
+        btn.addEventListener('click', function () {
+            const container = this.closest('[data-scan-data]');
+            if (!container) return;
+
+            const scanData = JSON.parse(container.dataset.scanData);
+            const themeName = container.dataset.pluginName || '';
+
+            // リロードなしモードに設定
+            resultModalReloadOnClose = false;
+
+            // モーダルタイトルにテーマ名を設定
+            const titleEl = document.querySelector('#themeAuditResultModal .modal-title');
+            if (titleEl) {
+                titleEl.textContent = (auditMessages.resultTitle || '') + (themeName ? ' - ' + themeName : '');
+            }
+
+            // 結果コンテンツを挿入して結果モーダルを開く
+            populateResultContent(scanData);
+            window.openModal('themeAuditResultModal');
+        });
+    });
 
     document.querySelectorAll('.theme-audit-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
@@ -214,8 +150,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 if (data.success) {
+                    // スキャン実行後はリロードモードに設定
+                    resultModalReloadOnClose = true;
+
                     // 結果コンテンツを挿入して結果モーダルを開く
-                    populateResultContent(data.audit);
+                    populateResultContent(data);
                     // スキャン中モーダルが完全に閉じるのを待つ
                     setTimeout(function () {
                         window.openModal('themeAuditResultModal');

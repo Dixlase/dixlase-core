@@ -68,13 +68,15 @@ final readonly class ScanTargetDTO implements JsonSerializable
                 'bootstrap',
                 'config',
                 'routes',
+                'resources',
+                'database/migrations',
                 'public/index.php',
                 'artisan',
                 'composer.json',
                 'composer.lock',
             ],
             ignorePatterns: [
-                'app/Custom',
+                'custom',
                 'storage',
                 'vendor',
                 'node_modules',
@@ -82,6 +84,10 @@ final readonly class ScanTargetDTO implements JsonSerializable
                 '.git',
                 '.env',
                 '.env.*',
+                'public/uploads',
+                'public/storage',
+                'public/hot',
+                '*.log',
             ],
         );
     }

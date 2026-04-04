@@ -34,8 +34,8 @@ abstract class TestCase extends BaseTestCase
         Factory::guessFactoryNamesUsing(function (string $modelName) {
             $basename = class_basename($modelName);
 
-            // Check DixlaseCoreDev factories first (core model factories for testing)
-            $coreDevFactory = 'Plugins\\DixlaseCoreDev\\Database\\Factories\\'.$basename.'Factory';
+            // Check DixlaseCoreDevKit factories first (core model factories for testing)
+            $coreDevFactory = 'Plugins\\DixlaseCoreDevKit\\Database\\Factories\\'.$basename.'Factory';
             if (class_exists($coreDevFactory)) {
                 return $coreDevFactory;
             }

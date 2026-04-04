@@ -116,7 +116,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- 信頼済みドメイン -->
                 <fieldset class="mb-4">
                     <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.trusted_domains') }}</legend>
-                    
+
+                    @if(! empty($configTrustedDomains))
+                    <div class="mb-3 p-3 rounded-lg bg-gray-800/60 dark:bg-gray-800/60 border border-gray-600 dark:border-gray-600">
+                        <p class="text-xs font-medium text-gray-300 dark:text-gray-300 mb-1.5">
+                            <i class="fas fa-shield-alt mr-1"></i>{{ __('admin/settings/security/csp.config_trusted_domains_label') }}
+                        </p>
+                        <div class="flex flex-wrap gap-1.5">
+                            @foreach($configTrustedDomains as $domain)
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-gray-700 dark:bg-gray-700 text-gray-100 dark:text-gray-100">
+                                {{ parse_url($domain, PHP_URL_HOST) ?? $domain }}
+                            </span>
+                            @endforeach
+                        </div>
+                        <p class="text-xs text-gray-400 dark:text-gray-400 mt-1.5">
+                            <i class="fas fa-file-code mr-1"></i><code class="text-gray-300">config/csp/domains.php</code>
+                        </p>
+                    </div>
+                    @endif
+
                     <x-form-textarea
                         id="csp_trusted_domains"
                         name="csp_trusted_domains"

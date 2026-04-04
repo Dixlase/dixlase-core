@@ -92,6 +92,27 @@ class LoginBehaviorService
     ): MemberLoginAttempt {
         $context = $this->collectLoginContext($request);
 
+        // Resolve member_id from identifier
+        if (! isset($additionalData['member_id'])) {
+            $member = \App\Models\Member::where('email', $identifier)
+                ->orWhere('account_name', $identifier)
+                ->first();
+            $additionalData['member_id'] = $member?->id;
+        }
+
+        // Detect bot behavior
+        if (! isset($additionalData['is_bot_suspected'])) {
+            $botResult = $this->detectBotBehavior($request, $identifier);
+            $additionalData['is_bot_suspected'] = $botResult['is_bot_suspected'];
+
+            if ($botResult['is_bot_suspected']) {
+                $additionalData['context'] = array_merge(
+                    $additionalData['context'] ?? [],
+                    ['bot_signals' => $botResult['signals'], 'bot_score' => $botResult['bot_score']]
+                );
+            }
+        }
+
         $behaviorData = array_merge($context, $additionalData);
 
         return MemberLoginAttempt::recordAttemptWithBehavior(
@@ -239,6 +260,59 @@ class LoginBehaviorService
                 ->filter()
                 ->countBy()
                 ->toArray(),
+        ];
+    }
+
+    // ========================================
+    // Bot Detection
+    // ========================================
+
+    /**
+     * Detect bot behavior from login request
+     *
+     * @return array{is_bot_suspected: bool, signals: string[], bot_score: int}
+     */
+    public function detectBotBehavior(Request $request, string $identifier): array
+    {
+        $signals = [];
+        $score = 0;
+
+        // 1. Known bot user-agent patterns
+        $ua = $request->userAgent() ?? '';
+        if (preg_match('/bot|crawler|spider|scraper|headless|phantom|selenium|puppeteer/i', $ua)) {
+            $signals[] = 'known_bot_ua';
+            $score += 40;
+        }
+
+        // 2. Missing typical browser headers
+        if (empty($request->header('Accept-Language'))) {
+            $signals[] = 'missing_accept_language';
+            $score += 15;
+        }
+
+        // 3. Rapid-fire attempts (>5 in 60 seconds from same IP)
+        $recentFromIp = MemberLoginAttempt::where('ip_address', $request->ip())
+            ->where('attempted_at', '>=', Carbon::now()->subSeconds(60))
+            ->count();
+        if ($recentFromIp > 5) {
+            $signals[] = 'rapid_fire_attempts';
+            $score += 30;
+        }
+
+        // 4. Credential stuffing pattern (multiple identifiers from same IP)
+        $uniqueIdentifiers = MemberLoginAttempt::where('ip_address', $request->ip())
+            ->where('attempted_at', '>=', Carbon::now()->subMinutes(5))
+            ->distinct()
+            ->count('identifier');
+        if ($uniqueIdentifiers > 3) {
+            $signals[] = 'credential_stuffing_pattern';
+            $score += 40;
+        }
+
+        return [
+            'is_bot_suspected' => $score >= 30,
+            'signals' => $signals,
+            'bot_score' => min($score, 100),
         ];
     }
 }

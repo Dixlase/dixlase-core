@@ -30,4 +30,23 @@ return [
     'storage_section' => 'Storage',
     'storage_type_label' => 'Storage Type',
     'storage_file_path' => 'File path:',
+
+    'preview_tab_edit' => 'Edit',
+    'preview_tab_preview' => 'Preview',
+    'preview_loading' => 'Loading preview...',
+    'preview_error' => 'Failed to load preview.',
+    'preview_empty' => 'Enter content to preview.',
+
+    // 共通プレビューペイン
+    'preview_title' => 'Preview',
+    'preview_show' => 'Show preview',
+    'preview_hide' => 'Hide preview',
+    'device_mobile' => 'Mobile',
+    'device_tablet' => 'Tablet',
+    'device_desktop' => 'Desktop',
+    'device_free' => 'Free size',
+    'preview_width' => 'Width',
+    'preview_height' => 'Height',
+    'scroll_to_editor' => 'Scroll to editor',
+    'scroll_to_preview' => 'Scroll to preview',
 ];
