@@ -31,11 +31,20 @@
  *     { myProp: 'value', get myComputed() { return this.myProp + '!'; } }
  * );
  */
+/* eslint-disable no-new-func */
+/**
+ * Rollup/Vite のインライン最適化で spread に変換されるのを防ぐため、
+ * 間接参照で Object.defineProperties を呼び出す
+ */
+const _defineProps = Object.defineProperties;
+const _getDescriptors = Object.getOwnPropertyDescriptors;
+
 export function mergeMixins(...sources) {
-    const target = {};
-    for (const source of sources) {
-        const descriptors = Object.getOwnPropertyDescriptors(source);
-        Object.defineProperties(target, descriptors);
+    const target = Object.create(null);
+    for (let i = 0; i < sources.length; i++) {
+        _defineProps(target, _getDescriptors(sources[i]));
     }
+    // プロトタイプを復元（Alpine.js が必要とする）
+    Object.setPrototypeOf(target, Object.prototype);
     return target;
 }
