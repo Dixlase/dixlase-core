@@ -88,6 +88,7 @@ the Free Software Foundation, either version 3 of the License, or
              data-preview-theme="{{ $appearanceMode === '1' ? 'light' : 'dark' }}"
              @appearance-changed.window="$el.dataset.previewTheme = $event.detail.mode === '1' ? 'light' : 'dark'"
              :style="'width: ' + previewDeviceWidth + 'px; transform: scale(' + previewScale + '); transform-origin: top left; margin: 0;'"
+             style="max-width: 100%; transform-origin: top left;"
              class="relative">
 
             {{ $slot }}
