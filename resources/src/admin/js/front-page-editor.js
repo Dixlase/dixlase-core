@@ -24,7 +24,8 @@ const DEBOUNCE_DELAYS = {
 };
 
 function createFrontPageCreate(config) {
-    return mergeMixins(splitPaneMixin(), previewMixin(config), {
+    const base = mergeMixins(splitPaneMixin(), previewMixin(config));
+    return mergeMixins(base, {
         // --- フロントページ作成固有 ---
         lang: config.defaultLang,
         editorType: config.defaultEditorType,

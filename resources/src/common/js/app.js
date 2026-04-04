@@ -58,7 +58,6 @@ import '../../admin/settings/plugins/js/audit';
 import '../../admin/settings/plugins/js/two-stage-modal';
 import '../../admin/settings/themes/js/audit';
 import '../../admin/js/login-flow';
-import '../../admin/js/front-page-editor';
 import '../../admin/js/dashboard-mode-toggle';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'

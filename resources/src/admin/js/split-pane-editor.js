@@ -23,7 +23,8 @@ const DEBOUNCE_DELAYS = {
 };
 
 function createSplitPaneEditor(config) {
-    return mergeMixins(splitPaneMixin(), previewMixin(config), {
+    const base = mergeMixins(splitPaneMixin(), previewMixin(config));
+    return mergeMixins(base, {
         // --- エディタ設定 ---
         editorType: config.editorType || 'html',
         editorTypeValue: config.editorTypeValue || 'html',
