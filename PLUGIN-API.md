@@ -1,7 +1,7 @@
 # Dixlase CMS プラグイン API 境界
 
 **バージョン:** dev
-**最終更新日:** 2026-04-01
+**最終更新日:** 2026-04-05
 **目的:** AGPL ライセンス例外条項のための公開プラグイン API 境界の定義（LICENSE を参照）
 
 このドキュメントは「プラグイン API」を構成するすべてのコンポーネントを定義します。
@@ -237,23 +237,13 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 ### 6.3 管理画面コンポーネント
 
 `x-admin.save-button`, `x-admin.delete-button`, `x-admin.danger-zone`,
-`x-admin.account-status`, `x-admin.settings.security-notifications`,
-`x-admin.right-sidebar`, `x-admin.theme-preview-sidebar`,
-`x-admin.theme-preview-sidebar-section`, `x-admin.theme-preview-container`
+`x-admin.account-status`, `x-admin.settings.security-notifications`
 
 ### 6.4 フロントエンドコンポーネント
 
 `x-front.button`, `x-front.card`, `x-front.breadcrumb`, `x-front.navigation`
 
-### 6.5 コンテンツエディタコンポーネント
-
-`x-content-editor.preview-pane` — 共通プレビューペイン（デバイス切替、スケーリング、iframe プレビュー）。
-スプリットペインコンテナ内で `@include('components.content-editor.preview-pane')` として使用。
-Alpine.js 親コンポーネントが `window.Dixlase.mixins.previewMixin` と `window.Dixlase.mixins.splitPaneMixin` のプロパティを提供する必要あり。
-
-`x-content-editor.tabs`, `x-content-editor.storage-info`, `x-content-editor.type-badge`
-
-### 6.6 専用コンポーネント
+### 6.5 専用コンポーネント
 
 `x-media.picker`, `x-media.selector`, `x-extension.card`, `x-captcha`,
 `x-security.captcha-settings`, `x-security.captcha-widget`,
@@ -593,43 +583,7 @@ plugins/PluginName/lang/
 
 ---
 
-## 15. JavaScript ランタイム API
-
-### 15.1 `window.Dixlase.mixins`
-
-コアの管理画面 JS がランタイムに公開する Alpine.js ミックスイン。
-プラグイン/テーマは `import` せずランタイム参照で使用するため、ビルド成果物にコアコードが混入しません。
-
-| ミックスイン | 説明 |
-|---|---|
-| `window.Dixlase.mixins.previewMixin(config)` | iframe プレビュー状態管理（デバイス切替、スケーリング、リサイズ、postMessage 通信） |
-| `window.Dixlase.mixins.splitPaneMixin()` | スプリットペインレイアウト（横並び/縦並び自動切替、ドラッグ分割、スクロール制御） |
-| `window.Dixlase.mixins.constants` | `DEVICE_PRESETS`, `STORAGE_KEY_SPLIT_RATIO`, `MIN_PANE_WIDTH`, `HORIZONTAL_MIN_WIDTH` |
-
-**プラグインでの使い方:**
-
-```javascript
-// プラグインの Alpine.js コンポーネント（import 不要）
-Alpine.data('myPluginEditor', (config) => {
-    const { previewMixin, splitPaneMixin } = window.Dixlase.mixins;
-    return {
-        ...splitPaneMixin(),
-        ...previewMixin(config),
-        // プラグイン固有のロジック
-        init() {
-            this.initPreview();
-            this.initSplitPane();
-            // ...
-        },
-    };
-});
-```
-
-**重要:** コアの JS ファイルを `import` でプラグインにバンドルしないでください。`import` はビルド時にコードを結合するため、プラグインの配布物に AGPL コードが混入し、ライセンス例外の対象外となります。
-
----
-
-## 16. プラグイン API に含まれないもの
+## 15. プラグイン API に含まれないもの
 
 以下は**内部実装の詳細**であり、例外の対象に含まれ**ません**:
 
