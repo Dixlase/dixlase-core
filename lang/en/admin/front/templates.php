@@ -58,6 +58,90 @@ MARKDOWN,
     <li>Phone: [Your Phone Number]</li>
     <li>Address: [Your Address]</li>
 </ul>
+
+<hr>
+
+<h2>HTML Tag Samples</h2>
+
+<h3>Text Formatting</h3>
+<p>This is <strong>bold</strong>, <em>italic</em>, <u>underline</u>, <s>strikethrough</s>, and <mark>highlight</mark> text.</p>
+<p><code>Inline code</code> is also supported. <a href="#">Link test</a>.</p>
+
+<blockquote>
+  <p>This is a blockquote. It can span multiple lines and is useful for highlighting important content.</p>
+</blockquote>
+
+<h3>Nested Lists</h3>
+<ul>
+    <li>Item 1</li>
+    <li>Item 2
+        <ul>
+            <li>Sub-item 2-1</li>
+            <li>Sub-item 2-2</li>
+        </ul>
+    </li>
+    <li>Item 3</li>
+</ul>
+
+<h3>Ordered List</h3>
+<ol>
+    <li>First item</li>
+    <li>Second item</li>
+    <li>Third item</li>
+</ol>
+
+<h3>Table</h3>
+<table>
+    <thead>
+        <tr><th>Column 1</th><th>Column 2</th><th>Column 3</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>A1</td><td>B1</td><td>C1</td></tr>
+        <tr><td>A2</td><td>B2</td><td>C2</td></tr>
+    </tbody>
+</table>
+
+<h3>Code Block</h3>
+<pre><code>function hello() {
+    console.log("Hello, Dixlase!");
+}</code></pre>
+
+<h3>Custom Styled Card</h3>
+<div class="custom-card">
+    <h3>Sample Card</h3>
+    <p>This card demonstrates custom CSS styling.</p>
+</div>
+
+<div class="custom-card accent">
+    <h3>Accent Card</h3>
+    <p>A different style variation.</p>
+</div>
 HTML,
+
+        'content_css' => <<<'CSS'
+/* Custom card styles */
+.custom-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.custom-card.accent {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.custom-card h3 {
+    margin-top: 0;
+    font-size: 1.25rem;
+}
+CSS,
+
+        'content_js' => <<<'JS'
+// Sample: Log page load
+console.log('Front page loaded successfully.');
+JS,
     ],
 ];

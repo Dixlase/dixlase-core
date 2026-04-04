@@ -58,6 +58,90 @@ MARKDOWN,
     <li>電話: [電話番号]</li>
     <li>住所: [住所]</li>
 </ul>
+
+<hr>
+
+<h2>HTMLタグサンプル</h2>
+
+<h3>テキスト装飾</h3>
+<p>これは<strong>太字</strong>、<em>斜体</em>、<u>下線</u>、<s>取り消し線</s>、<mark>ハイライト</mark>のテストです。</p>
+<p><code>インラインコード</code>もサポートされています。<a href="#">リンクテスト</a>。</p>
+
+<blockquote>
+  <p>これはブロック引用です。複数行にまたがることができ、重要なコンテンツの強調に使えます。</p>
+</blockquote>
+
+<h3>ネストされたリスト</h3>
+<ul>
+    <li>項目1</li>
+    <li>項目2
+        <ul>
+            <li>サブ項目2-1</li>
+            <li>サブ項目2-2</li>
+        </ul>
+    </li>
+    <li>項目3</li>
+</ul>
+
+<h3>番号付きリスト</h3>
+<ol>
+    <li>最初の項目</li>
+    <li>2番目の項目</li>
+    <li>3番目の項目</li>
+</ol>
+
+<h3>テーブル</h3>
+<table>
+    <thead>
+        <tr><th>列1</th><th>列2</th><th>列3</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>A1</td><td>B1</td><td>C1</td></tr>
+        <tr><td>A2</td><td>B2</td><td>C2</td></tr>
+    </tbody>
+</table>
+
+<h3>コードブロック</h3>
+<pre><code>function hello() {
+    console.log("Hello, Dixlase!");
+}</code></pre>
+
+<h3>カスタムスタイルカード</h3>
+<div class="custom-card">
+    <h3>サンプルカード</h3>
+    <p>このカードはカスタムCSSのスタイリングを示しています。</p>
+</div>
+
+<div class="custom-card accent">
+    <h3>アクセントカード</h3>
+    <p>異なるスタイルのバリエーションです。</p>
+</div>
 HTML,
+
+        'content_css' => <<<'CSS'
+/* カスタムカードスタイル */
+.custom-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.custom-card.accent {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.custom-card h3 {
+    margin-top: 0;
+    font-size: 1.25rem;
+}
+CSS,
+
+        'content_js' => <<<'JS'
+// サンプル: ページ読み込みログ
+console.log('フロントページが正常に読み込まれました。');
+JS,
     ],
 ];
