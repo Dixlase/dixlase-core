@@ -167,8 +167,19 @@ function createFrontPageCreate(config) {
                 const contentEl = document.getElementById('content');
                 if (contentEl) {
                     contentEl.value = tpl.content;
-                    // textarea の高さを再計算
                     contentEl.dispatchEvent(new Event('input'));
+                }
+
+                // HTML エディタ時は CSS/JS テンプレートも適用
+                const cssEl = document.getElementById('custom_css');
+                if (cssEl && tpl.custom_css !== undefined) {
+                    cssEl.value = tpl.custom_css;
+                    cssEl.dispatchEvent(new Event('input'));
+                }
+                const jsEl = document.getElementById('custom_js');
+                if (jsEl && tpl.custom_js !== undefined) {
+                    jsEl.value = tpl.custom_js;
+                    jsEl.dispatchEvent(new Event('input'));
                 }
             }
             this.$nextTick(() => this.sendContentToPreview());

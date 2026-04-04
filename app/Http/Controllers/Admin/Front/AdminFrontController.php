@@ -484,6 +484,8 @@ class AdminFrontController extends AdminLoggedInController
                 ],
                 'html' => [
                     'content' => trans('admin/front/templates.main_content.content_html', [], $lang),
+                    'custom_css' => trans('admin/front/templates.main_content.content_css', [], $lang),
+                    'custom_js' => trans('admin/front/templates.main_content.content_js', [], $lang),
                 ],
             ];
         }
