@@ -5,6 +5,6 @@ This section covers deployment options for running Dixlase in a production envir
 ## Deployment Options
 
 - [VPS / Cloud Server](vps-cloud.md) — Deploy with Nginx + PHP-FPM + MariaDB/MySQL on a virtual private server or cloud instance.
-- [Shared Hosting](shared-hosting.md) — Deploy on shared rental servers, a popular option in Japan.
+- [Shared Hosting](shared-hosting/index.md) — Deploy on shared rental servers with provider-specific guides.
 - [Docker Production](docker-production.md) — Run containerized Dixlase in production.
 - [PaaS Deployment](paas.md) — Use managed platforms like Laravel Forge or Ploi.
