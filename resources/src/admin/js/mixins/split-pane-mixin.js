@@ -101,11 +101,17 @@ export function splitPaneMixin() {
 
         // --- スクロール ---
         scrollToEditor() {
-            this.$refs.editorPane?.scrollIntoView({ behavior: 'smooth' });
+            const el = this.$refs.editorPane;
+            if (!el) return;
+            const offset = 80;
+            window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - offset, behavior: 'smooth' });
         },
 
         scrollToPreview() {
-            this.$refs.previewPane?.scrollIntoView({ behavior: 'smooth' });
+            const el = this.$refs.previewPane;
+            if (!el) return;
+            const offset = 80;
+            window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - offset, behavior: 'smooth' });
         },
     };
 }
