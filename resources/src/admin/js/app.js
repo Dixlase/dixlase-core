@@ -35,10 +35,12 @@ import './split-pane-editor';
 // プラグイン/テーマ向けランタイム API（import 不要で使用可能）
 import { previewMixin, DEVICE_PRESETS } from './mixins/preview-mixin';
 import { splitPaneMixin, STORAGE_KEY_SPLIT_RATIO, MIN_PANE_WIDTH, HORIZONTAL_MIN_WIDTH } from './mixins/split-pane-mixin';
+import { mergeMixins } from './mixins/merge-mixin';
 
 window.Dixlase = window.Dixlase || {};
 window.Dixlase.mixins = {
     previewMixin,
     splitPaneMixin,
+    mergeMixins,
     constants: { DEVICE_PRESETS, STORAGE_KEY_SPLIT_RATIO, MIN_PANE_WIDTH, HORIZONTAL_MIN_WIDTH },
 };
