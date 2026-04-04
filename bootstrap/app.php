@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Traefik等のリバースプロキシ背後で正しくHTTPS/IPを認識する
+        $middleware->trustProxies(at: '*');
+
         // Register global middlewares
         $middleware->use([
             \App\Http\Middleware\CheckInstallationReady::class, // インストール準備状況チェック + インストール状態チェック

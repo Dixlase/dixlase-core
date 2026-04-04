@@ -120,11 +120,15 @@ class CheckInstallationReady
                 }
                 
                 Log::channel('install')->info('APP_KEY was generated and saved to .env');
-                
-                // 設定をリフレッシュ
+
+                // 設定をランタイムに反映
+                config(['app.key' => $newKey]);
                 if (function_exists('opcache_invalidate')) {
                     opcache_invalidate($envPath, true);
                 }
+
+                // .envを再読み込みしてリダイレクト（暗号化キーを確実に反映するため）
+                return redirect($request->fullUrl());
             }
         } catch (\Exception $e) {
             Log::error('Environment setup error: ' . $e->getMessage());
