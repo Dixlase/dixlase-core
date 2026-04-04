@@ -34,5 +34,8 @@
 // Component styles (admin-specific)
 @use '../../components/scss/ui-admin-bar';
 
+// Preview prose styles (content preview within admin)
+@use 'preview-prose';
+
 // Security component styles
 @use '../../components/security/scss/safe-mode-banner';

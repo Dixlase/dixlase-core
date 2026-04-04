@@ -21,19 +21,20 @@ return [
     'preview' => 'Preview',
     'download' => 'Download',
     'delete' => 'Delete',
-    'delete_message' => 'Are you sure you want to delete "{fileName}"? This action cannot be undone.',
-    
+    'delete_message' => 'Are you sure you want to delete "{fileName}"?<br>This action cannot be undone.',
+
     'success' => [
         'uploaded' => 'File uploaded successfully.',
+        'uploaded_count' => ':count file(s) uploaded successfully.',
         'deleted' => 'File deleted successfully.',
         'updated' => 'Media information updated successfully.',
     ],
-    
+
     'error' => [
         'save_failed' => 'Failed to save file.',
         'file_not_exists' => 'File does not exist.',
     ],
-    
+
     'search' => [
         'file_name_placeholder' => 'Search by file name',
         'date_from' => 'Upload Date (From)',

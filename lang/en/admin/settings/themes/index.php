@@ -62,27 +62,69 @@ return [
     // Badge Labels (for card display)
     'badge_labels' => [
         'health' => 'Health',
-        'signature' => 'Signature',
-        'permission' => 'Permission',
+        'health_full' => 'Health Status',
+        'signature' => 'Sign',
+        'permission' => 'Perm',
         'csp' => 'CSP',
+        'preset' => 'Ext',
+        'operation' => 'Op',
+    ],
+
+    // CSP Mode Badge Labels
+    'csp_mode' => [
+        'development' => 'Dev',
+        'standard' => 'Std',
+        'strict' => 'Strict',
+        'not_checked' => 'N/A',
+    ],
+
+    // Security Preset Compatibility Badge Labels
+    'preset_badge' => [
+        'development' => 'Dev',
+        'balanced' => 'Balanced',
+        'strict' => 'Strict',
+        'custom' => 'Current',
+        'not_verified' => 'N/A',
+    ],
+
+    // Health Status
+    'health_status' => [
+        'healthy' => 'Healthy',
+        'healthy_description' => 'No mismatches found between declared permissions, signature, and configuration.',
+        'advisory' => 'Advisory',
+        'advisory_description' => 'Minor issues found. No immediate impact on operation, but review is recommended.',
+        'needs_attention' => 'Needs Attention',
+        'needs_attention_description' => 'Important issues found. Please review before activation or operation.',
+        'not_verified' => 'Not Verified',
+        'not_verified_description' => 'Verification information is insufficient (not scanned, no permissions, no signature, etc.).',
     ],
 
     // Verification Status
     'verification' => [
         // Signature
-        'signature_valid' => 'Signature: OK',
-        'signature_unsigned' => 'Signature: Unsigned',
-        'signature_invalid' => 'Signature: Invalid',
-        'signature_pending' => 'Signature: Pending',
+        'signature_valid' => 'Signed',
+        'signature_unsigned' => 'Unsigned',
+        'signature_invalid' => 'Invalid',
+        'signature_pending' => 'Pending',
+        'signature_not_scanned' => 'N/A',
         // Permission
-        'permission_ok' => 'Permission: OK',
-        'permission_undefined' => 'Permission: Undefined',
-        'permission_mismatch' => 'Permission: Mismatch',
+        'permission_ok' => 'OK',
+        'permission_undefined' => 'Undefined',
+        'permission_mismatch' => 'Mismatch',
+        'permission_not_scanned' => 'N/A',
         // CSP
         'csp_ready' => 'CSP Ready',
         'csp_compatible' => 'CSP Compatible',
-        'csp_inline_required' => 'Inline JS Required',
-        'csp_not_checked' => 'CSP Not Checked',
+        'csp_inline_required' => 'CSP N/A',
+        'csp_not_checked' => 'CSP N/A',
+    ],
+
+    // Operation Status (traffic light)
+    'operation_status' => [
+        'ok' => 'Fully Operational',
+        'caution' => 'Caution',
+        'blocked' => 'Blocked',
+        'unknown' => 'Unknown',
     ],
 
     // CSP Compliance
@@ -98,6 +140,10 @@ return [
         'health_warning' => 'Warning',
         'health_needs_attention' => 'Needs Attention',
         'health_not_verified' => 'Not Verified',
+        'health_status_healthy' => 'Healthy',
+        'health_status_advisory' => 'Advisory',
+        'health_status_needs_attention' => 'Needs Attention',
+        'health_status_not_verified' => 'Not Verified',
         'unknown' => 'Undefined',
         'unknown_warning' => 'Permission information is not defined. It is unknown what operations this theme performs. Please confirm it was obtained from a trusted source.',
         'audit_mismatch_title' => 'Permission Mismatch',
@@ -107,7 +153,8 @@ return [
         'audit_button' => 'Scan',
         'audit_button_rescan' => 'Rescan',
         'audit_scanning' => 'Scanning...',
-        'audit_scanning_description' => 'Running a security scan on the theme. Please wait until it completes.',
+        'audit_scanning_title' => 'Scanning Theme',
+        'audit_scanning_description' => 'Running a security scan on the theme.<br>Please wait until it completes.',
         'audit_not_scanned' => 'Not Scanned',
         'audit_last_scanned' => 'Last Scanned',
         'audit_result_title' => 'Scan Results',
@@ -156,6 +203,7 @@ return [
         'attention_reasons_title' => 'Reasons for Attention',
         'attention_reason_storage_public_uploads' => 'Uses public directory upload permission',
         'attention_reason_assets_external_resources' => 'Uses external resource loading permission',
+        'attention_reason_assets_external_resources_trusted' => 'Uses trusted external resources (:domains)',
         'attention_reason_database_core_tables_read' => 'Uses core table read permission',
         'attention_reason_database_core_tables_write' => 'Uses core table write permission',
         'attention_reason_settings_read_core' => 'Uses core settings read permission',
@@ -181,5 +229,33 @@ return [
         'enable_warning_confirm' => 'Do you want to activate understanding the above?',
         'enable_warning_invalid_signature' => 'Invalid signature (possible tampering)',
         'enable_warning_needs_attention' => 'Contains permissions that need attention',
+        'total_evaluation' => 'Overall Evaluation',
+        'health_score_display' => 'Score: :score/100',
+        'signature_section_label' => 'Signature',
+        'health_issue_signature_unsigned' => 'Signature: Unsigned',
+        'health_issue_signature_invalid' => 'Signature: Invalid',
+        'health_issue_permission_undefined' => 'Permission: Undefined',
+        'health_issue_permission_undeclared_minor' => 'Permission: Undeclared usage (minor)',
+        'health_issue_permission_undeclared_major' => 'Permission: Undeclared usage (major)',
+        'health_issue_permission_unused' => 'Permission: Unused declaration',
+        'health_issue_csp_inline_css_required' => 'CSP: Inline CSS required',
+        'health_issue_csp_inline_js_required' => 'CSP: Inline JS required',
+        'health_issue_csp_violation_strict' => 'CSP: Violation (strict mode)',
+        'health_issue_csp_violation_standard' => 'CSP: Violation (standard mode)',
+        'health_issue_dangerous_api_exec' => 'Dangerous API detected',
+        'health_issue_scan_not_performed' => 'Scan: Not performed',
+        'health_issue_scan_outdated' => 'Scan: Outdated',
+        'csp_status' => 'CSP Compliance',
+        'csp_section_label' => 'CSP Compliance',
+        'csp_compliant' => 'Compliant',
+        'csp_not_compliant' => 'Non-compliant',
+        'csp_inline_scripts' => 'Inline Scripts',
+        'csp_inline_styles' => 'Inline Styles',
+        'csp_event_handlers' => 'Event Handlers',
+        'csp_javascript_urls' => 'JavaScript URLs',
+        'csp_violation_inline_script' => 'Inline Script',
+        'csp_violation_inline_style' => 'Inline Style',
+        'csp_violation_event_handler' => 'Event Handler',
+        'csp_violation_javascript_url' => 'JavaScript URL',
     ],
 ];

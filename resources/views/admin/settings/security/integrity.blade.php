@@ -152,32 +152,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if($latestAudit->hasIssues())
                 <div class="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                     <h3 class="font-semibold text-red-800 dark:text-red-200 mb-3">{{ __('admin/settings/security/integrity.issues_found') }}</h3>
-                    
-                    @php $summary = $latestAudit->summary; @endphp
-                    
+
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        @if(($summary['changed'] ?? 0) > 0)
+                        @if($latestAudit->changed_files_count > 0)
                             <div class="flex items-center text-red-700 dark:text-red-300">
                                 <i class="fas fa-edit mr-2"></i>
-                                <span>{{ __('admin/settings/security/integrity.changed_files') }}: {{ $summary['changed'] }}</span>
+                                <span>{{ __('admin/settings/security/integrity.changed_files') }}: {{ $latestAudit->changed_files_count }}</span>
                             </div>
                         @endif
-                        @if(($summary['added'] ?? 0) > 0)
+                        @if($latestAudit->added_files_count > 0)
                             <div class="flex items-center text-yellow-700 dark:text-yellow-300">
                                 <i class="fas fa-plus-circle mr-2"></i>
-                                <span>{{ __('admin/settings/security/integrity.added_files') }}: {{ $summary['added'] }}</span>
+                                <span>{{ __('admin/settings/security/integrity.added_files') }}: {{ $latestAudit->added_files_count }}</span>
                             </div>
                         @endif
-                        @if(($summary['removed'] ?? 0) > 0)
+                        @if($latestAudit->removed_files_count > 0)
                             <div class="flex items-center text-orange-700 dark:text-orange-300">
                                 <i class="fas fa-minus-circle mr-2"></i>
-                                <span>{{ __('admin/settings/security/integrity.removed_files') }}: {{ $summary['removed'] }}</span>
+                                <span>{{ __('admin/settings/security/integrity.removed_files') }}: {{ $latestAudit->removed_files_count }}</span>
                             </div>
                         @endif
-                        @if(($summary['suspicious'] ?? 0) > 0)
+                        @if($latestAudit->suspicious_files_count > 0)
                             <div class="flex items-center text-purple-700 dark:text-purple-300">
                                 <i class="fas fa-question-circle mr-2"></i>
-                                <span>{{ __('admin/settings/security/integrity.suspicious_files') }}: {{ $summary['suspicious'] }}</span>
+                                <span>{{ __('admin/settings/security/integrity.suspicious_files') }}: {{ $latestAudit->suspicious_files_count }}</span>
                             </div>
                         @endif
                     </div>
@@ -272,9 +270,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-sm">
                                     @if($audit->hasIssues())
-                                        @php $s = $audit->summary; @endphp
                                         <span class="text-red-600 dark:text-red-400">
-                                            {{ ($s['changed'] ?? 0) + ($s['added'] ?? 0) + ($s['removed'] ?? 0) + ($s['suspicious'] ?? 0) }}
+                                            {{ $audit->changed_files_count + $audit->added_files_count + $audit->removed_files_count + $audit->suspicious_files_count }}
                                         </span>
                                     @else
                                         <span class="text-green-600 dark:text-green-400">0</span>

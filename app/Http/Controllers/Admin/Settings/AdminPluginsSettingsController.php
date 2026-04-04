@@ -293,8 +293,17 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $installAllowed = $enableAction !== PluginEnableAction::Blocked;
             $healthScore = $healthResult->score;
             $healthStatus = $healthResult->status->value;
+
+            PluginAudit::where('plugin_slug', $slug)->update([
+                'health_score' => $healthScore,
+                'health_status' => $healthStatus,
+            ]);
         } catch (\Exception $e) {
-            // 算出失敗時はデフォルト値を維持
+            Log::error('Health score calculation failed after audit', [
+                'plugin' => $slug,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
         }
 
         // 減点項目を取得（0減点の項目は除外）
@@ -857,22 +866,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      */
     private function getPluginName($plugin)
     {
-        try {
-            // プラグインの翻訳ファイルから名前を取得
-            $pluginSlug = strtolower(str_replace('Dixlase', 'dixlase-', $plugin->directory));
-            $translationKey = $pluginSlug.'::admin.plugin.name';
-            $name = __($translationKey);
-
-            // 翻訳キーがそのまま返された場合は翻訳が見つからない
-            if ($name === $translationKey) {
-                return $plugin->name ?? __('admin/settings/plugins/index.messages.no_plugin_name');
-            }
-
-            return $name;
-        } catch (\Exception $e) {
-            // 翻訳ファイルが存在しない場合はDBの名前またはデフォルト
-            return $plugin->name ?? __('admin/settings/plugins/index.messages.no_plugin_name');
-        }
+        return $plugin->name ?? __('admin/settings/plugins/index.messages.no_plugin_name');
     }
 
     /**

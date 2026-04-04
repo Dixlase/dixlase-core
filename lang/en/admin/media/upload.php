@@ -15,9 +15,13 @@
 return [
     'heading' => 'Media Upload',
     'description' => 'Upload images, videos, documents and other files. Allowed file types and size limits apply.',
-    'select_file' => 'Select Media File:',
+    'select_file' => 'Select Media Files',
     'drag_drop_text' => 'Drag files here or click to upload',
     'supported_formats' => 'Supported formats:',
+    'multiple_files_hint' => 'Multiple files can be selected at once',
+    'upload_progress' => 'Upload Progress',
+    'back_to_list' => 'Back to Media List',
+    'files_failed' => 'file(s) failed to upload.',
 
     'settings_heading' => 'Current Media Settings',
     'settings_heading_auto' => 'Current Media Settings (Auto-configured)',

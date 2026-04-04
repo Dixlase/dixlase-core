@@ -19,6 +19,6 @@ return [
     'url_description' => 'You can copy and use this URL',
     'copy_failed' => 'Failed to copy',
     'delete_confirmation' => 'Delete File',
-    'delete_message' => 'Are you sure you want to delete this file? This action cannot be undone.',
+    'delete_message' => 'Are you sure you want to delete this file?<br>This action cannot be undone.',
     'unknown' => 'Unknown',
 ];

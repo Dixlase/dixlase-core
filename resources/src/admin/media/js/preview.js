@@ -3,17 +3,18 @@
  * Handles copying media URL to clipboard
  */
 
-window.copyToClipboard = function () {
+window.copyMediaUrlToClipboard = function (event) {
     const urlInput = document.getElementById('mediaUrl');
-    const copyButton = event.target.closest('button');
+    const copyButton = event.currentTarget || event.target.closest('button');
+
+    if (!urlInput || !copyButton) {
+        console.error('[Media Preview] mediaUrl input or button not found');
+        return;
+    }
+
     const originalText = copyButton.innerHTML;
     const copiedText = copyButton.dataset.copiedText || 'Copied';
     const copyFailedText = copyButton.dataset.copyFailedText || 'Copy failed';
-
-    if (!urlInput) {
-        console.error('[Media Preview] mediaUrl input not found');
-        return;
-    }
 
     urlInput.select();
     urlInput.setSelectionRange(0, urlInput.value.length);

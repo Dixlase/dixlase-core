@@ -22,6 +22,10 @@
 
 namespace App\Http\Controllers\Admin\Members;
 
+use App\Actions\Member\CreateMemberAction;
+use App\Actions\Member\DeleteMemberAction;
+use App\Actions\Member\UpdateMemberAction;
+use App\Actors\MemberActor;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Enums\AppearanceMode;
 use App\Enums\AuthenticationMode;
@@ -29,11 +33,11 @@ use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use App\Enums\PasskeyMode;
 use App\Enums\TwoFaMethod;
+use App\Helpers\AdminHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Http\Requests\Admin\Settings\AdminSettingsMemberStoreRequest;
+use App\Http\Requests\Admin\Settings\Members\AdminSettingsMemberStoreRequest;
 use App\Models\Member;
 use App\Services\MailServerValidatorService;
-use App\Services\PasswordService;
 use App\Services\TwoFa\TwoFaStatusService;
 
 class AdminMemberFormController extends AdminLoggedInController
@@ -98,39 +102,38 @@ class AdminMemberFormController extends AdminLoggedInController
     public function store(AdminSettingsMemberStoreRequest $request)
     {
         $validated = $request->validated();
-        $validated['password'] = PasswordService::hash($validated['password']);
+        $validated['email_verified'] = $request->input(
+            'email_verified',
+            MailServerValidatorService::isMailServerTested() ? '0' : '1'
+        );
 
-        $isMailServerTested = MailServerValidatorService::isMailServerTested();
-        $emailVerified = (string) $request->input('email_verified', $isMailServerTested ? '0' : '1');
+        $actor = new MemberActor(AdminHelper::getMember());
+        $result = app(CreateMemberAction::class)->execute($actor, $validated);
 
-        if (! $isMailServerTested) {
-            $validated['email_verified_at'] = now();
-        } elseif ($emailVerified === '1') {
-            $validated['email_verified_at'] = now();
-        } else {
-            $validated['email_verified_at'] = null;
+        if ($result->success) {
+            \App\Facades\Audit::log([
+                'category' => 'account',
+                'action' => 'member.created',
+                'actor' => auth()->user(),
+                'target' => $result->model,
+                'target_label' => $result->targetLabel,
+                'context' => [
+                    'account_name' => $validated['account_name'] ?? null,
+                    'email' => $validated['email'] ?? null,
+                    'role' => $validated['role'] ?? null,
+                ],
+            ]);
         }
 
-        unset($validated['email_verified']);
-
-        $member = Member::create($validated);
-
-        if ($isMailServerTested && $emailVerified === '0') {
-            try {
-                $member->sendEmailVerificationNotification('create');
-                $message = __('admin/members/create.messages.created_with_verification_email');
-            } catch (\Exception $e) {
-                \Log::error('Failed to send verification email', [
-                    'member_id' => $member->id,
-                    'error' => $e->getMessage(),
-                ]);
-                $message = __('admin/members/create.messages.created_but_email_failed');
-            }
+        if ($result->metadata['email_sent'] ?? false) {
+            $message = __('admin/members/create.messages.created_with_verification_email');
+        } elseif ($result->metadata['email_failed'] ?? false) {
+            $message = __('admin/members/create.messages.created_but_email_failed');
         } else {
             $message = __('admin/members/create.messages.created');
         }
 
-        return redirect()->route('admin.members.edit', ['member' => $member->id])->with('success', $message);
+        return redirect()->route('admin.members.edit', ['member' => $result->model->id])->with('success', $message);
     }
 
     /**
@@ -216,15 +219,21 @@ class AdminMemberFormController extends AdminLoggedInController
      */
     public function update(AdminSettingsMemberStoreRequest $request, Member $member)
     {
-        $validated = $request->validated();
+        $before = $member->toArray();
+        $actor = new MemberActor(AdminHelper::getMember());
+        (new UpdateMemberAction($member))->execute($actor, $request->validated());
 
-        if (! empty($validated['password'])) {
-            $validated['password'] = PasswordService::hash($validated['password']);
-        } else {
-            unset($validated['password']);
-        }
-
-        $member->update($validated);
+        $after = $member->fresh()?->toArray() ?? [];
+        \App\Facades\Audit::log([
+            'category' => 'account',
+            'action' => 'member.updated',
+            'actor' => auth()->user(),
+            'target' => $member,
+            'target_label' => $member->display_name ?? $member->account_name,
+            'context' => [
+                'diff' => \App\Facades\Audit::diff($before, $after),
+            ],
+        ]);
 
         return redirect()->route('admin.members.edit', ['member' => $member->id])
             ->with('success', __('admin/members/edit.messages.updated'));
@@ -235,12 +244,22 @@ class AdminMemberFormController extends AdminLoggedInController
      */
     public function destroy(Member $member)
     {
-        if ($member->id === 1) {
+        $label = $member->display_name ?? $member->account_name;
+        $actor = new MemberActor(AdminHelper::getMember());
+        $result = (new DeleteMemberAction($member))->execute($actor, []);
+
+        if (! $result->success) {
             return redirect()->route('admin.members.index')
                 ->with('error', __('admin/members/index.messages.cannot_delete_initial_admin'));
         }
 
-        $member->delete();
+        \App\Facades\Audit::log([
+            'category' => 'account',
+            'action' => 'member.deleted',
+            'actor' => auth()->user(),
+            'target_label' => $label,
+            'severity' => 'warning',
+        ]);
 
         return redirect()->route('admin.members.index')
             ->with('success', __('admin/members/index.messages.deleted'));

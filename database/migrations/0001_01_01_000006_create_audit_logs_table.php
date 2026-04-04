@@ -101,6 +101,14 @@ return new class extends Migration
             $table->string('plugin_version', 50)->nullable();
 
             // ========================================
+            // 操作元チャネル / AI操作フラグ
+            // ========================================
+            // actor_source: web, api, cli, scheduler, ai_plugin, webhook, queue
+            $table->string('actor_source', 20)->nullable()->index();
+            // AI-generated operation flag (denormalized for fast filtering)
+            $table->boolean('is_ai_generated')->default(false)->index();
+
+            // ========================================
             // 任意の追加情報（JSON）
             // ========================================
             // 構造例:
@@ -155,6 +163,10 @@ return new class extends Migration
             $table->index(['category', 'severity', 'occurred_at']);
             $table->index(['ip_address', 'action', 'occurred_at']);
             $table->index(['plugin_name', 'action', 'occurred_at']);
+
+            // AI操作・操作元クエリ用インデックス
+            $table->index(['is_ai_generated', 'category', 'occurred_at']);
+            $table->index(['actor_source', 'occurred_at']);
 
             // ハッシュチェーン用インデックス
             $table->index('record_hash');

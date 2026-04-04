@@ -1,0 +1,129 @@
+// =============================================================================
+// プレビューコンテンツ用のタイポグラフィスタイル
+// =============================================================================
+// 管理画面の .admin スコープ内でコンテンツプレビューを表示する際、
+// 管理画面のデフォルトスタイル（p: text-xs, section: padded border box 等）を
+// リセットし、コンテンツ閲覧に適したタイポグラフィを適用する。
+
+.admin .dls-preview-prose {
+    @apply text-base leading-relaxed text-gray-800 dark:text-gray-200;
+
+    // 見出し
+    h1 {
+        @apply text-3xl font-bold mb-4 mt-6 text-gray-900 dark:text-white leading-tight;
+    }
+
+    h2 {
+        @apply text-2xl font-bold mb-3 mt-5 text-gray-900 dark:text-white leading-tight;
+        font-size: 1.5rem;
+    }
+
+    h3 {
+        @apply text-xl font-semibold mb-2 mt-4 text-gray-900 dark:text-white leading-snug;
+    }
+
+    h4 {
+        @apply text-lg font-semibold mb-2 mt-3 text-gray-900 dark:text-white;
+    }
+
+    h5,
+    h6 {
+        @apply text-base font-semibold mb-2 mt-3 text-gray-900 dark:text-white;
+    }
+
+    // 段落（管理画面の p: text-xs text-gray-500 を上書き）
+    p {
+        @apply mt-0 mb-4 text-base text-gray-800 dark:text-gray-200 leading-relaxed;
+    }
+
+    // リンク
+    a {
+        @apply text-blue-600 dark:text-blue-400 underline;
+
+        &:hover {
+            @apply text-blue-800 dark:text-blue-300;
+        }
+    }
+
+    // リスト
+    ul {
+        @apply list-disc pl-6 mb-4 space-y-1;
+    }
+
+    ol {
+        @apply list-decimal pl-6 mb-4 space-y-1;
+    }
+
+    li {
+        @apply text-base text-gray-800 dark:text-gray-200;
+    }
+
+    // 引用
+    blockquote {
+        @apply border-l-4 border-gray-300 dark:border-gray-600 pl-4 my-4 italic text-gray-600 dark:text-gray-400;
+    }
+
+    // コード
+    code {
+        @apply bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800 dark:text-gray-200;
+    }
+
+    pre {
+        @apply bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto mb-4;
+
+        code {
+            @apply bg-transparent p-0 rounded-none;
+        }
+    }
+
+    // 画像
+    img {
+        @apply max-w-full h-auto rounded-lg my-4;
+    }
+
+    // テーブル（管理画面テーブルスタイルを上書き）
+    table {
+        @apply w-full mb-4 border-collapse text-left;
+
+        thead {
+            @apply bg-gray-50 dark:bg-gray-800;
+
+            tr th {
+                @apply px-3 py-2 border border-gray-300 dark:border-gray-600 font-semibold text-sm text-gray-700 dark:text-gray-300;
+            }
+        }
+
+        tbody {
+            tr {
+                @apply bg-transparent;
+            }
+
+            td {
+                @apply px-3 py-2 border border-gray-300 dark:border-gray-600 text-base;
+            }
+        }
+    }
+
+    // セクション（管理画面の section: padded border box を上書き）
+    section {
+        @apply mb-4 p-0 bg-transparent rounded-none shadow-none border-0;
+
+        section {
+            @apply bg-transparent rounded-none;
+        }
+    }
+
+    // 水平線
+    hr {
+        @apply my-6 border-gray-300 dark:border-gray-600;
+    }
+
+    // strong / em
+    strong {
+        @apply font-bold text-gray-900 dark:text-white;
+    }
+
+    em {
+        @apply italic;
+    }
+}

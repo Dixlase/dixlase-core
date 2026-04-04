@@ -90,6 +90,112 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
+    {{-- Theme Preview (iframe) --}}
+    @if ($frontPage && !empty($previewContent))
+        <div class="mt-6 min-w-0 overflow-hidden" x-data="{
+            previewFrameUrl: '{{ $previewFrameUrl }}',
+            previewDevice: 'desktop',
+            freeWidth: 1440,
+            freeHeight: 900,
+            _previewContainerWidth: 0,
+            get currentPreviewWidth() {
+                const presets = { mobile: 375, tablet: 768, desktop: 1440 };
+                return this.previewDevice === 'free' ? this.freeWidth : (presets[this.previewDevice] ?? 1440);
+            },
+            get currentPreviewHeight() {
+                const presets = { mobile: 667, tablet: 1024, desktop: 900 };
+                return this.previewDevice === 'free' ? this.freeHeight : (presets[this.previewDevice] ?? 900);
+            },
+            get previewScale() {
+                if (this._previewContainerWidth <= 0 || this.currentPreviewWidth <= this._previewContainerWidth) return 1;
+                return this._previewContainerWidth / this.currentPreviewWidth;
+            },
+            get scaledPreviewWidth() { return Math.round(this.currentPreviewWidth * this.previewScale); },
+            get scaledPreviewHeight() { return Math.round(this.currentPreviewHeight * this.previewScale); },
+            setPreviewDevice(d) { this.previewDevice = d; },
+            init() {
+                this.$nextTick(() => {
+                    const c = this.$refs.previewContainer;
+                    if (!c) return;
+                    new ResizeObserver(entries => {
+                        for (const e of entries) this._previewContainerWidth = e.contentRect.width;
+                    }).observe(c);
+                });
+            }
+        }">
+            {{-- プレビューヘッダー --}}
+            <div class="flex flex-wrap items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg gap-2">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-eye mr-1"></i>{{ __('components/content-editor.preview_title') }}
+                    </span>
+                    <span x-show="previewScale < 1" x-cloak
+                          class="text-[10px] text-gray-400 dark:text-gray-500"
+                          x-text="Math.round(previewScale * 100) + '%'"></span>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5">
+                        <button type="button" @click="setPreviewDevice('mobile')"
+                            :class="previewDevice === 'mobile' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+                            class="px-2.5 py-1.5 rounded-md transition-all text-xs"
+                            title="{{ __('components/content-editor.device_mobile') }} (375×667)">
+                            <i class="fas fa-mobile-alt"></i>
+                        </button>
+                        <button type="button" @click="setPreviewDevice('tablet')"
+                            :class="previewDevice === 'tablet' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+                            class="px-2.5 py-1.5 rounded-md transition-all text-xs"
+                            title="{{ __('components/content-editor.device_tablet') }} (768×1024)">
+                            <i class="fas fa-tablet-alt"></i>
+                        </button>
+                        <button type="button" @click="setPreviewDevice('desktop')"
+                            :class="previewDevice === 'desktop' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+                            class="px-2.5 py-1.5 rounded-md transition-all text-xs"
+                            title="{{ __('components/content-editor.device_desktop') }} (1440×900)">
+                            <i class="fas fa-desktop"></i>
+                        </button>
+                        <button type="button" @click="setPreviewDevice('free')"
+                            :class="previewDevice === 'free' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+                            class="px-2.5 py-1.5 rounded-md transition-all text-xs"
+                            title="{{ __('components/content-editor.device_free') }}">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
+                        <template x-if="previewDevice === 'free'">
+                            <div class="flex items-center gap-1">
+                                <input type="number" x-model.number="freeWidth" min="200" max="3840"
+                                       class="w-16 px-1.5 py-0.5 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                <span>×</span>
+                                <input type="number" x-model.number="freeHeight" min="200" max="3840"
+                                       class="w-16 px-1.5 py-0.5 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                <span>px</span>
+                            </div>
+                        </template>
+                        <template x-if="previewDevice !== 'free'">
+                            <span x-text="currentPreviewWidth + '×' + currentPreviewHeight + 'px'"></span>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            {{-- プレビューコンテナ --}}
+            <div x-ref="previewContainer"
+                 class="relative overflow-hidden bg-gray-100 dark:bg-gray-900 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg"
+                 :style="'height: ' + scaledPreviewHeight + 'px'">
+                <div :style="'width: ' + scaledPreviewWidth + 'px; height: ' + scaledPreviewHeight + 'px; margin: 0 auto;'">
+                    <iframe :src="previewFrameUrl"
+                            class="bg-white"
+                            :style="'width: ' + currentPreviewWidth + 'px; height: ' + currentPreviewHeight + 'px; transform: scale(' + previewScale + '); transform-origin: top left;'"
+                            sandbox="allow-scripts allow-same-origin allow-forms"
+                            title="{{ __('components/content-editor.preview_title') }}">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    @endif
+
     @if ($frontPage)
         <x-ui-modal
             id="resetFrontPageModal"
@@ -111,3 +217,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </form>
     @endif
 @endsection
+
+@push('styles')
+<style @cspNonce>
+#admin-main-content { min-width: 0; }
+</style>
+@endpush

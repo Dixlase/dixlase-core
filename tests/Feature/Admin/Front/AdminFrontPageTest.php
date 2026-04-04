@@ -625,6 +625,158 @@ class AdminFrontPageTest extends TestCase
     }
 
     // =========================================================
+    // Preview
+    // =========================================================
+
+    public function test_preview_returns_rendered_html_for_html_editor(): void
+    {
+        $response = $this->actingAs($this->admin, 'member')
+            ->postJson(route('admin.front.preview'), [
+                'content' => '<h1>Preview Test</h1>',
+                'editor_type' => 'html',
+            ]);
+
+        $response->assertOk();
+        $response->assertJson(['html' => '<h1>Preview Test</h1>']);
+    }
+
+    public function test_preview_returns_rendered_html_for_markdown_editor(): void
+    {
+        $response = $this->actingAs($this->admin, 'member')
+            ->postJson(route('admin.front.preview'), [
+                'content' => '# Hello World',
+                'editor_type' => 'markdown',
+            ]);
+
+        $response->assertOk();
+        $response->assertJsonStructure(['html']);
+        $this->assertStringContainsString('<h1>Hello World</h1>', $response->json('html'));
+    }
+
+    public function test_preview_returns_empty_html_for_empty_content(): void
+    {
+        $response = $this->actingAs($this->admin, 'member')
+            ->postJson(route('admin.front.preview'), [
+                'content' => '',
+                'editor_type' => 'html',
+            ]);
+
+        $response->assertOk();
+        $response->assertJson(['html' => '']);
+    }
+
+    public function test_preview_returns_empty_html_for_invalid_editor_type(): void
+    {
+        $response = $this->actingAs($this->admin, 'member')
+            ->postJson(route('admin.front.preview'), [
+                'content' => '<p>Test</p>',
+                'editor_type' => 'invalid',
+            ]);
+
+        $response->assertOk();
+        $response->assertJson(['html' => '']);
+    }
+
+    public function test_edit_passes_preview_url_and_preview_frame_url(): void
+    {
+        FrontPage::create([
+            'page_type' => 'main_content',
+            'lang' => 'en',
+            'content' => '<h1>Test</h1>',
+            'editor_type' => ContentEditorType::HTML,
+            'storage_type' => ContentStorageType::DATABASE,
+            'status' => ContentStatus::PUBLISHED,
+        ]);
+
+        $response = $this->actingAs($this->admin, 'member')
+            ->get(route('admin.front.edit'));
+
+        $response->assertOk();
+        $response->assertViewHas('previewUrl');
+        $response->assertViewHas('previewFrameUrl');
+        $response->assertViewHas('editorTypeValue', 'html');
+    }
+
+    // =========================================================
+    // Preview Frame (iframe)
+    // =========================================================
+
+    public function test_preview_frame_requires_authentication(): void
+    {
+        $response = $this->get(route('admin.front.preview-frame'));
+
+        $response->assertRedirect();
+    }
+
+    public function test_preview_frame_returns_themed_page(): void
+    {
+        // テーマビューの名前空間を登録
+        View::addNamespace('themes', [
+            base_path('themes/DixlaseOnePage/resources/views'),
+        ]);
+
+        FrontPage::create([
+            'page_type' => 'main_content',
+            'lang' => 'en',
+            'content' => '<h1>Preview Frame Test</h1>',
+            'editor_type' => ContentEditorType::HTML,
+            'storage_type' => ContentStorageType::DATABASE,
+            'status' => ContentStatus::PUBLISHED,
+        ]);
+
+        $response = $this->actingAs($this->admin, 'member')
+            ->get(route('admin.front.preview-frame'));
+
+        $response->assertOk();
+        $response->assertSee('preview-content-area');
+        $response->assertSee('dixlase-preview-update');
+        $response->assertSee('dixlase-preview-ready');
+    }
+
+    public function test_preview_frame_csp_allows_frame_ancestors_self(): void
+    {
+        // テーマビューの名前空間を登録
+        View::addNamespace('themes', [
+            base_path('themes/DixlaseOnePage/resources/views'),
+        ]);
+
+        FrontPage::create([
+            'page_type' => 'main_content',
+            'lang' => 'en',
+            'content' => '<h1>Test</h1>',
+            'editor_type' => ContentEditorType::HTML,
+            'storage_type' => ContentStorageType::DATABASE,
+            'status' => ContentStatus::PUBLISHED,
+        ]);
+
+        $response = $this->actingAs($this->admin, 'member')
+            ->get(route('admin.front.preview-frame'));
+
+        $response->assertOk();
+
+        $csp = $response->headers->get('Content-Security-Policy', '');
+        if (! empty($csp)) {
+            $this->assertStringNotContainsString("frame-ancestors 'none'", $csp);
+        }
+
+        $this->assertEquals('SAMEORIGIN', $response->headers->get('X-Frame-Options'));
+    }
+
+    public function test_preview_frame_works_without_content(): void
+    {
+        // テーマビューの名前空間を登録
+        View::addNamespace('themes', [
+            base_path('themes/DixlaseOnePage/resources/views'),
+        ]);
+
+        $response = $this->actingAs($this->admin, 'member')
+            ->get(route('admin.front.preview-frame'));
+
+        $response->assertOk();
+        $response->assertSee('preview-content-area');
+    }
+
+    // =========================================================
     // Settings
     // =========================================================
 

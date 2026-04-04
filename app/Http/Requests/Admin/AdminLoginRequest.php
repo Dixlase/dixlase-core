@@ -22,12 +22,11 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Services\AdminLoginLockoutService;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Log;
-use App\Services\AdminLoginLockoutService;
 
 class AdminLoginRequest extends FormRequest
 {
@@ -38,6 +37,7 @@ class AdminLoginRequest extends FormRequest
         parent::__construct();
         $this->lockoutService = new AdminLoginLockoutService();
     }
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -73,9 +73,9 @@ class AdminLoginRequest extends FormRequest
         $this->ensureIsNotLockedOut($login, $ipAddress);
 
         // 認証試行
-        if (!Auth::guard($guard)->attempt($this->only('login', 'password'))) {
+        if (! Auth::guard($guard)->attempt($this->only('login', 'password'))) {
             // 失敗時の処理
-            $lockoutInfo = $this->lockoutService->handleFailedLogin($this, $login);
+            $lockoutInfo = $this->lockoutService->handleFailedLogin($this, $login, \App\Models\MemberLoginAttempt::FAILURE_INVALID_PASSWORD);
 
             if ($lockoutInfo['is_locked_out'] || $lockoutInfo['is_ip_locked_out']) {
                 throw ValidationException::withMessages([

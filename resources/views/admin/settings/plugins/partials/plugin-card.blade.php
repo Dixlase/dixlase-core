@@ -74,24 +74,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{-- バッジ類 --}}
         @if($card['permissionSummary'])
         <div class="mb-3 pt-3 border-t border-gray-100 dark:border-gray-700 space-y-2"
-             @unless($isSimpleMode ?? false)
              data-scan-data="{{ json_encode($card['scanData'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) }}"
-             data-plugin-name="{{ $card['name'] }}"
-             @endunless>
+             data-plugin-name="{{ $card['name'] }}">
 
             @if($isSimpleMode ?? false)
                 {{-- === 簡単モード: 健全 + 動作の2行のみ === --}}
                 <div class="flex items-center gap-2">
-                    <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="{{ $card['simpleHealthIcon'] }} mr-1 {{ $card['simpleHealthIconColor'] }}"></i>{{ __('admin/settings/plugins/index.badge_labels.health') }}</span>
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $card['simpleHealthBadgeColor'] }}">
+                    <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="{{ $card['simpleHealthIcon'] }} mr-1 {{ $card['simpleHealthIconColor'] }}"></i>{{ __('admin/settings/plugins/index.badge_labels.health') }}</button>
+                    <button type="button" class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $card['simpleHealthBadgeColor'] }} cursor-pointer hover:opacity-80 transition-opacity">
                         {{ $card['simpleHealthLabel'] }}
-                    </span>
+                    </button>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="{{ $card['simpleOperationIcon'] }} mr-1 {{ $card['simpleOperationIconColor'] }}"></i>{{ __('admin/settings/plugins/index.badge_labels.operation') }}</span>
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $card['simpleOperationBadgeColor'] }}">
+                    <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="{{ $card['simpleOperationIcon'] }} mr-1 {{ $card['simpleOperationIconColor'] }}"></i>{{ __('admin/settings/plugins/index.badge_labels.operation') }}</button>
+                    <button type="button" class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $card['simpleOperationBadgeColor'] }} cursor-pointer hover:opacity-80 transition-opacity">
                         {{ $card['simpleOperationLabel'] }}
-                    </span>
+                    </button>
                 </div>
             @else
                 {{-- === 通常モード: 全7行 === --}}

@@ -19,6 +19,6 @@ return [
     'url_description' => 'このURLをコピーして使用できます',
     'copy_failed' => 'コピーに失敗しました',
     'delete_confirmation' => 'ファイルの削除',
-    'delete_message' => 'このファイルを削除しますか？この操作は取り消せません。',
+    'delete_message' => 'このファイルを削除しますか？<br>この操作は取り消せません。',
     'unknown' => '不明',
 ];

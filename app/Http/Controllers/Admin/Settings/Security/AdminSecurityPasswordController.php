@@ -29,6 +29,15 @@ use App\Http\Requests\Admin\Settings\Security\AdminSecurityPasswordUpdateRequest
 
 class AdminSecurityPasswordController extends AdminLoggedInController
 {
+    protected const SETTING_KEYS = [
+        'pwned_password_check_enabled',
+        'password_min_length',
+        'password_require_uppercase',
+        'password_require_number',
+        'password_require_symbol',
+        'password_reset_enabled',
+    ];
+
     protected SecuritySettingRepositoryInterface $securitySettingRepository;
 
     public function __construct(SecuritySettingRepositoryInterface $securitySettingRepository)
@@ -72,6 +81,7 @@ class AdminSecurityPasswordController extends AdminLoggedInController
     public function update(AdminSecurityPasswordUpdateRequest $request)
     {
         $validated = $request->validated();
+        $before = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
 
         // 共通設定
         if (array_key_exists('pwned_password_check_enabled', $validated)) {
@@ -94,6 +104,9 @@ class AdminSecurityPasswordController extends AdminLoggedInController
         if (array_key_exists('password_reset_enabled', $validated)) {
             $this->securitySettingRepository->set('password_reset_enabled', $validated['password_reset_enabled'] ?? false);
         }
+
+        $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('security.password', $before, $after, auth()->user());
 
         return redirect()->route('admin.settings.security.password')
             ->with('success', __('admin/settings/security/password.settings_updated'));

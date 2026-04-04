@@ -151,22 +151,44 @@ class PluginAudit extends Command
      */
     protected function resolvePluginDirectory(string $input): ?string
     {
+        // 1. Str::studly で変換して探す
         $studlyName = Str::studly(str_replace('-', '_', $input));
         $path = base_path("plugins/{$studlyName}");
         if (File::isDirectory($path)) {
             return $path;
         }
 
+        // 2. 入力そのままで探す
         $path = base_path("plugins/{$input}");
         if (File::isDirectory($path)) {
             return $path;
         }
 
+        // 3. DB の directory カラムから探す（インストール済みプラグイン）
+        $plugin = \App\Models\Plugin::where('slug', $input)->first();
+        if ($plugin && $plugin->directory) {
+            $path = base_path("plugins/{$plugin->directory}");
+            if (File::isDirectory($path)) {
+                return $path;
+            }
+        }
+
+        // 4. プラグインディレクトリを走査して plugin.json の slug でマッチ
         $pluginsDir = base_path('plugins');
         if (File::isDirectory($pluginsDir)) {
             foreach (File::directories($pluginsDir) as $dir) {
+                // kebab-case でのマッチ
                 if (Str::kebab(basename($dir)) === $input) {
                     return $dir;
+                }
+
+                // plugin.json の slug でのマッチ
+                $pluginJson = $dir.'/plugin.json';
+                if (File::exists($pluginJson)) {
+                    $data = json_decode(File::get($pluginJson), true);
+                    if (($data['slug'] ?? '') === $input) {
+                        return $dir;
+                    }
                 }
             }
         }
@@ -186,7 +208,24 @@ class PluginAudit extends Command
         $content = File::get($pluginJsonPath);
         $data = json_decode($content, true);
 
-        return $data['permissions'] ?? [];
+        $permissions = $data['permissions'] ?? [];
+
+        // Normalize legacy core_tables format to core_tables_read/core_tables_write
+        if (isset($permissions['database']['core_tables'])) {
+            $coreTablesValue = $permissions['database']['core_tables'];
+
+            if (! isset($permissions['database']['core_tables_read'])) {
+                $permissions['database']['core_tables_read'] = $coreTablesValue;
+            }
+            if (! isset($permissions['database']['core_tables_write'])) {
+                $permissions['database']['core_tables_write'] = is_array($coreTablesValue)
+                    ? $coreTablesValue
+                    : false;
+            }
+            unset($permissions['database']['core_tables']);
+        }
+
+        return $permissions;
     }
 
     /**

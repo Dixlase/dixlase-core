@@ -24,6 +24,7 @@ https://exc-d.com
         data-plugin-name="{{ $card['name'] }}"
         data-form-id="installForm-{{ $card['directory'] }}"
         data-enable-action="{{ $card['enableAction'] ?? 'allowed' }}"
+        data-operation-status="{{ $card['operationStatus']['status'] ?? 'unknown' }}"
         data-health-score="{{ $card['healthScore'] ?? '' }}"
         data-health-status="{{ $card['healthStatus'] ?? '' }}"
         data-health-issues="{{ json_encode($card['healthIssues'] ?? []) }}"

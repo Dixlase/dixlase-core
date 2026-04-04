@@ -31,8 +31,13 @@ use App\Http\Requests\Admin\Front\AdminFrontCreateRequest;
 use App\Http\Requests\Admin\Front\AdminFrontEditUpdateRequest;
 use App\Http\Requests\Admin\Front\AdminFrontSettingsUpdateRequest;
 use App\Models\FrontPage;
+use App\Presenters\Admin\ContentEditorPresenter;
+use App\Services\ContentPreviewService;
+use App\Services\Editor\EditorManager;
 use App\Services\FrontPageContentService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class AdminFrontController extends AdminLoggedInController
@@ -43,6 +48,7 @@ class AdminFrontController extends AdminLoggedInController
     public function __construct(
         protected FrontSettingRepositoryInterface $frontSettingRepository,
         protected FrontPageContentService $contentService,
+        protected ContentPreviewService $previewService,
     ) {
         parent::__construct();
     }
@@ -71,6 +77,17 @@ class AdminFrontController extends AdminLoggedInController
         $this->viewParams['storageTypeLabel'] = $storageTypeLabel;
         $this->viewParams['langName'] = $langName;
 
+        // フロントページコンテンツをプレビュー用にレンダリング
+        $previewContent = null;
+        if ($frontPage && $frontPage->isPublished()) {
+            $rawContent = $this->contentService->getContent($frontPage, $frontPage->lang);
+            if ($rawContent) {
+                $previewContent = $this->previewService->render($rawContent, $frontPage->editor_type);
+            }
+        }
+        $this->viewParams['previewContent'] = $previewContent;
+        $this->viewParams['previewFrameUrl'] = route('admin.front.preview-frame');
+
         return view('admin::front/index', $this->viewParams);
     }
 
@@ -91,14 +108,22 @@ class AdminFrontController extends AdminLoggedInController
         // ユーザーのプロフィール言語をデフォルト値として使用
         $userLocale = auth()->user()?->locale?->value ?? array_key_first($languages);
 
+        $editorManager = app(EditorManager::class);
+        $enabledByPlugin = $editorManager->getAvailableEditorTypes();
+        $guiEditorInfo = ContentEditorPresenter::guiEditorInfo();
+
         $this->viewParams['languages'] = $languages;
-        $this->viewParams['editorCardOptions'] = ContentEditorType::radioCardOptions(ContentStorageType::DATABASE);
+        $this->viewParams['editorCardOptions'] = ContentEditorType::radioCardOptions(ContentStorageType::DATABASE, [], $enabledByPlugin);
         $this->viewParams['editorOptions'] = ContentEditorType::optionsFor(ContentStorageType::DATABASE);
         $this->viewParams['storageOptions'] = ContentStorageType::optionsWithDescription();
         $this->viewParams['templates'] = $templates;
         $this->viewParams['defaultLang'] = $userLocale;
         $this->viewParams['defaultStorageType'] = ContentStorageType::DATABASE->slug();
         $this->viewParams['fileStorageBasePath'] = 'storage/app/private/'.$this->contentService->getBasePath();
+        $this->viewParams['guiEditorInfo'] = $guiEditorInfo;
+        $this->viewParams['guiEditorAssetHtml'] = $guiEditorInfo ? ContentEditorPresenter::editorAssetHtml($guiEditorInfo) : '';
+        $this->viewParams['previewFrameUrl'] = route('admin.front.preview-frame');
+        $this->viewParams['previewUrl'] = route('admin.front.preview');
 
         return view('admin::front/create', $this->viewParams);
     }
@@ -144,7 +169,7 @@ class AdminFrontController extends AdminLoggedInController
         }
 
         // コンテンツ作成（常にDBにもコンテンツを保存 = バックアップ）
-        FrontPage::create([
+        $frontPage = FrontPage::create([
             'page_type' => 'main_content',
             'lang' => $validated['lang'],
             'content' => $content,
@@ -153,6 +178,16 @@ class AdminFrontController extends AdminLoggedInController
             'editor_type' => $editorTypeEnum,
             'storage_type' => $storageTypeEnum,
             'status' => ContentStatus::PUBLISHED,
+        ]);
+
+        \App\Facades\Audit::logContent('front_page.created', [
+            'actor' => auth()->user(),
+            'target' => $frontPage,
+            'target_label' => $frontPage->lang ?? 'default',
+            'context' => [
+                'editor_type' => $frontPage->editor_type ?? null,
+                'storage_type' => $frontPage->storage_type ?? null,
+            ],
         ]);
 
         return redirect()
@@ -211,11 +246,96 @@ class AdminFrontController extends AdminLoggedInController
         $this->viewParams['editorTypeDescription'] = __($frontPage->editor_type->descriptionKey());
         $this->viewParams['langCode'] = $frontPage->lang;
         $this->viewParams['langName'] = $languages[$frontPage->lang] ?? $frontPage->lang;
+        $guiEditorInfo = ContentEditorPresenter::guiEditorInfo();
+        $isGuiEditor = $frontPage->editor_type === ContentEditorType::GUI;
+
         $this->viewParams['storageOptions'] = ContentStorageType::optionsWithDescription();
         $this->viewParams['storageType'] = old('storage_type', $frontPage->storage_type->slug());
         $this->viewParams['fileStorageBasePath'] = 'storage/app/private/'.$this->contentService->getBasePath();
+        $this->viewParams['isGuiEditor'] = $isGuiEditor;
+        $this->viewParams['guiEditorInfo'] = $guiEditorInfo;
+        $this->viewParams['guiEditorAssetHtml'] = $guiEditorInfo ? ContentEditorPresenter::editorAssetHtml($guiEditorInfo) : '';
+        $this->viewParams['previewUrl'] = route('admin.front.preview');
+        $this->viewParams['previewFrameUrl'] = route('admin.front.preview-frame');
+        $this->viewParams['editorTypeValue'] = $frontPage->editor_type->slug();
 
         return view('admin::front/edit', $this->viewParams);
+    }
+
+    /**
+     * iframe用プレビューフレーム（テーマレイアウトでフロントページを表示）
+     *
+     * 管理画面の編集画面内iframeに読み込まれる。
+     * テーマの layouts.app を使用してフロントページと同じ見た目で表示し、
+     * postMessage でコンテンツをリアルタイム更新する。
+     */
+    public function previewFrame(): View
+    {
+        // CSP frame-ancestors を 'self' に上書き（iframe埋め込み許可）
+        request()->attributes->set('csp_frame_ancestors_self', true);
+
+        // テーマ設定を読み込む（FrontController と同じロジック）
+        $themeSettings = $this->loadThemeSettingsForPreview();
+
+        // フロントページの初期コンテンツを取得・レンダリング
+        $frontPage = FrontPage::findByType('main_content');
+        $initialRenderedContent = '';
+
+        if ($frontPage) {
+            $rawContent = $this->contentService->getContent($frontPage, $frontPage->lang);
+            if ($rawContent) {
+                $initialRenderedContent = $this->previewService->render($rawContent, $frontPage->editor_type);
+            }
+        }
+
+        return view('themes::admin.preview-frame', [
+            'themeSettings' => $themeSettings,
+            'initialRenderedContent' => $initialRenderedContent,
+        ]);
+    }
+
+    /**
+     * プレビューフレーム用にテーマ設定を読み込む
+     */
+    protected function loadThemeSettingsForPreview(): object
+    {
+        try {
+            $activeThemeId = \Illuminate\Support\Facades\DB::table('theme_settings')
+                ->where('key', 'enabled_theme_id')
+                ->value('value');
+
+            if (! $activeThemeId) {
+                return (object) [];
+            }
+
+            $theme = \Illuminate\Support\Facades\DB::table('themes')->find($activeThemeId);
+            if (! $theme) {
+                return (object) [];
+            }
+
+            $settingsTableName = 'thm_'.strtolower(str_replace('-', '_', $theme->slug)).'_settings';
+
+            $settings = \Illuminate\Support\Facades\DB::table($settingsTableName)
+                ->get()
+                ->pluck('value', 'name');
+
+            return (object) $settings->toArray();
+        } catch (\Exception $e) {
+            return (object) [];
+        }
+    }
+
+    /**
+     * 編集中コンテンツのプレビュー用HTMLを返す（AJAX）
+     */
+    public function preview(Request $request): JsonResponse
+    {
+        $content = $request->input('content', '');
+        $editorTypeSlug = $request->input('editor_type', 'html');
+
+        $renderedHtml = $this->previewService->renderFromSlug($content, $editorTypeSlug);
+
+        return response()->json(['html' => $renderedHtml]);
     }
 
     /**
@@ -280,6 +400,12 @@ class AdminFrontController extends AdminLoggedInController
         }
         $frontPage->update($updateData);
 
+        \App\Facades\Audit::logContent('front_page.updated', [
+            'actor' => auth()->user(),
+            'target' => $frontPage,
+            'target_label' => $frontPage->lang ?? 'default',
+        ]);
+
         return redirect()
             ->route('admin.front.edit')
             ->with('success', __('admin/front.edit.save_success'));
@@ -293,6 +419,8 @@ class AdminFrontController extends AdminLoggedInController
         $frontPage = FrontPage::findByType('main_content');
 
         if ($frontPage) {
+            $label = $frontPage->lang ?? 'default';
+
             // ファイル保存の場合、関連ファイルも削除
             if ($frontPage->storage_type === ContentStorageType::FILE) {
                 $this->contentService->deleteFile(
@@ -309,6 +437,12 @@ class AdminFrontController extends AdminLoggedInController
             }
 
             $frontPage->delete();
+
+            \App\Facades\Audit::logContent('front_page.deleted', [
+                'actor' => auth()->user(),
+                'target_label' => $label,
+                'severity' => 'warning',
+            ]);
         }
 
         return redirect()
@@ -350,6 +484,8 @@ class AdminFrontController extends AdminLoggedInController
                 ],
                 'html' => [
                     'content' => trans('admin/front/templates.main_content.content_html', [], $lang),
+                    'custom_css' => trans('admin/front/templates.main_content.content_css', [], $lang),
+                    'custom_js' => trans('admin/front/templates.main_content.content_js', [], $lang),
                 ],
             ];
         }

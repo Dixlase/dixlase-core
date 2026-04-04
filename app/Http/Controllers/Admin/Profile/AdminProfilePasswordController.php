@@ -59,6 +59,14 @@ class AdminProfilePasswordController extends AdminLoggedInController
         if (! empty($validated['password'])) {
             $member->password = PasswordService::hash($validated['password']);
             $member->save();
+
+            \App\Facades\Audit::log([
+                'category' => 'account',
+                'action' => 'profile.password_changed',
+                'actor' => auth()->user(),
+                'target' => auth()->user(),
+                'severity' => 'notice',
+            ]);
         }
 
         return redirect()->route('admin.profile.password')->with('success', __('admin/profile/common.updated'));

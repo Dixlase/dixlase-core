@@ -36,6 +36,14 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminMediaController extends AdminLoggedInController
 {
+    protected const MEDIA_SETTING_KEYS = [
+        'allowed_file_types', 'max_file_size',
+        'max_file_size_image', 'max_file_size_video',
+        'max_file_size_document', 'max_file_size_archive',
+        'svg_sanitization_enabled', 'zip_security_enabled',
+        'mime_validation_enabled', 'zip_max_compression_ratio', 'zip_max_file_count',
+    ];
+
     /**
      * メディア設定リポジトリ
      */
@@ -165,56 +173,148 @@ class AdminMediaController extends AdminLoggedInController
     }
 
     /**
-     * Store a newly created resource in storage.
+     * ファイルをアップロードして保存する
      */
     public function store(AdminMediaStoreRequest $request)
     {
-        $file = $request->file('file');
-        if (! $file) {
-            return redirect()->back()->withErrors(['file' => __('admin/media.upload.error.file_not_found')]);
+        $files = $request->file('files', []);
+        $singleFile = $request->file('file');
+
+        // 単一ファイルの場合は配列に変換（後方互換性）
+        if ($singleFile && empty($files)) {
+            $files = [$singleFile];
         }
 
-        // セキュリティチェック
-        $securityResult = $this->mediaSecurityService->validateUpload($file);
-        if (! $securityResult->isValid()) {
-            return redirect()->back()->withErrors(['file' => $securityResult->getFirstError()]);
-        }
-
-        // メンバーIDを取得
-        $memberId = $this->member->id;
-
-        try {
-            $path = $file->store(config('admin.files.mediaPath'), config('admin.files.storageDisk'));
-            $fileName = basename($path);
-
-            // SVGファイルの場合、サニタイズを実行
-            $extension = strtolower($file->getClientOriginalExtension());
-            if ($extension === 'svg') {
-                $fullPath = Storage::disk(config('admin.files.storageDisk'))->path($path);
-                $this->mediaSecurityService->sanitizeSvgIfNeeded($fullPath);
+        if (empty($files)) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'error' => __('admin/media/upload.error.file_not_found')], 422);
             }
-        } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['file' => __('admin/media.index.error.save_failed')]);
+
+            return redirect()->back()->withErrors(['file' => __('admin/media/upload.error.file_not_found')]);
         }
 
-        $this->mediaRepository->create([
-            'name' => $file->getClientOriginalName(),
-            'path' => $fileName,
-            'type' => $file->getMimeType(),
-            'uploaded_by' => $memberId,
-        ]);
+        $memberId = $this->member->id;
+        $results = [];
+        $allWarnings = [];
 
-        // 警告がある場合はセッションに保存
-        if ($securityResult->hasWarnings()) {
-            $warnings = array_map(fn ($w) => $w['message'], $securityResult->getWarnings());
-            session()->flash('warnings', $warnings);
+        foreach ($files as $file) {
+            // セキュリティチェック
+            $securityResult = $this->mediaSecurityService->validateUpload($file);
+            if (! $securityResult->isValid()) {
+                $results[] = [
+                    'success' => false,
+                    'name' => $file->getClientOriginalName(),
+                    'error' => $securityResult->getFirstError(),
+                ];
+
+                continue;
+            }
+
+            try {
+                $path = $file->store(config('admin.files.mediaPath'), config('admin.files.storageDisk'));
+                $fileName = basename($path);
+
+                // SVGファイルの場合、サニタイズを実行
+                $extension = strtolower($file->getClientOriginalExtension());
+                if ($extension === 'svg') {
+                    $fullPath = Storage::disk(config('admin.files.storageDisk'))->path($path);
+                    $this->mediaSecurityService->sanitizeSvgIfNeeded($fullPath);
+                }
+            } catch (\Exception $e) {
+                $results[] = [
+                    'success' => false,
+                    'name' => $file->getClientOriginalName(),
+                    'error' => __('admin/media/index.error.save_failed'),
+                ];
+
+                continue;
+            }
+
+            // ファイルサイズと画像の寸法を取得
+            $fileSize = $file->getSize();
+            $width = null;
+            $height = null;
+            $mimeType = $file->getMimeType();
+
+            if (str_starts_with($mimeType, 'image/') && $mimeType !== 'image/svg+xml') {
+                $storedPath = Storage::disk(config('admin.files.storageDisk'))->path($path);
+                $imageSize = @getimagesize($storedPath);
+                if ($imageSize !== false) {
+                    $width = $imageSize[0];
+                    $height = $imageSize[1];
+                }
+            }
+
+            $media = $this->mediaRepository->create([
+                'name' => $file->getClientOriginalName(),
+                'path' => $fileName,
+                'type' => $mimeType,
+                'file_size' => $fileSize,
+                'width' => $width,
+                'height' => $height,
+                'uploaded_by' => $memberId,
+            ]);
+
+            \App\Facades\Audit::logContent('media.uploaded', [
+                'actor' => auth()->user(),
+                'target' => $media,
+                'target_label' => $media->name,
+                'context' => [
+                    'file_name' => $media->name,
+                    'type' => $media->type,
+                    'file_size' => $media->file_size,
+                ],
+            ]);
+
+            $results[] = [
+                'success' => true,
+                'name' => $file->getClientOriginalName(),
+                'id' => $media->id,
+            ];
+
+            // 警告を収集
+            if ($securityResult->hasWarnings()) {
+                $fileWarnings = array_map(fn ($w) => $file->getClientOriginalName().': '.$w['message'], $securityResult->getWarnings());
+                $allWarnings = array_merge($allWarnings, $fileWarnings);
+            }
         }
 
-        return redirect()->route('admin.media.index')->with('success', __('admin/media.index.success.uploaded'));
+        // AJAX リクエストの場合はJSONを返す
+        if ($request->expectsJson()) {
+            $successCount = count(array_filter($results, fn ($r) => $r['success']));
+            $failCount = count(array_filter($results, fn ($r) => ! $r['success']));
+
+            return response()->json([
+                'success' => $successCount > 0,
+                'results' => $results,
+                'message' => __('admin/media/index.success.uploaded_count', ['count' => $successCount]),
+                'warnings' => $allWarnings,
+                'successCount' => $successCount,
+                'failCount' => $failCount,
+            ]);
+        }
+
+        // 通常のフォーム送信の場合
+        if (! empty($allWarnings)) {
+            session()->flash('warnings', $allWarnings);
+        }
+
+        return redirect()->route('admin.media.index')->with('success', __('admin/media/index.success.uploaded'));
     }
 
     public function delete(Media $media)
     {
+        \App\Facades\Audit::logContent('media.deleted', [
+            'actor' => auth()->user(),
+            'target_label' => $media->name,
+            'severity' => 'warning',
+            'context' => [
+                'file_name' => $media->name,
+                'type' => $media->type,
+                'file_size' => $media->file_size,
+            ],
+        ]);
+
         $disk = config('admin.files.storageDisk', 'public');
         $mediaPath = config('admin.files.mediaPath', 'media');
 
@@ -233,7 +333,7 @@ class AdminMediaController extends AdminLoggedInController
 
         $media->delete();
 
-        return redirect()->route('admin.media.index')->with('success', __('admin/media.index.success.deleted'));
+        return redirect()->route('admin.media.index')->with('success', __('admin/media/index.success.deleted'));
     }
 
     public function download(Media $media)
@@ -251,7 +351,7 @@ class AdminMediaController extends AdminLoggedInController
         }
 
         if (! Storage::disk($disk)->exists($filePath)) {
-            abort(404, __('admin/media.index.error.file_not_exists'));
+            abort(404, __('admin/media/index.error.file_not_exists'));
         }
 
         // セキュアなダウンロードレスポンスを生成
@@ -298,6 +398,15 @@ class AdminMediaController extends AdminLoggedInController
             'caption' => $request->input('caption'),
             'alt_text' => $request->input('alt_text'),
             'description' => $request->input('description'),
+        ]);
+
+        \App\Facades\Audit::logContent('media.updated', [
+            'actor' => auth()->user(),
+            'target' => $media,
+            'target_label' => $media->name,
+            'context' => [
+                'updated_fields' => array_keys($request->validated()),
+            ],
         ]);
 
         return redirect()->route('admin.media.preview', $media->id)
@@ -388,6 +497,8 @@ class AdminMediaController extends AdminLoggedInController
             return redirect()->route('admin.media.index');
         }
 
+        $before = $this->mediaSettingRepository->getMultiple(static::MEDIA_SETTING_KEYS);
+
         $selectedTypes = $request->input('allowed_file_types', []);
         $maxFileSizeMB = $request->input('max_file_size');
         $maxFileSize = round($maxFileSizeMB * 1024);
@@ -407,6 +518,9 @@ class AdminMediaController extends AdminLoggedInController
         $this->mediaSettingRepository->set('zip_max_compression_ratio', $request->input('zip_max_compression_ratio'));
         $this->mediaSettingRepository->set('zip_max_file_count', $request->input('zip_max_file_count'));
 
-        return redirect()->back()->with('success', __('admin/media.settings.success.settings_updated'));
+        $after = $this->mediaSettingRepository->getMultiple(static::MEDIA_SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('media.settings', $before, $after, auth()->user());
+
+        return redirect()->back()->with('success', __('admin/media/settings.success.settings_updated'));
     }
 }

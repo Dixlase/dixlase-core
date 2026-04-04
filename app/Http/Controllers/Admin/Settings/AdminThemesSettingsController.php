@@ -35,6 +35,7 @@ use App\Presenters\Admin\ExtensionCardPresenter;
 use App\Services\Csp\CspDiagnosticService;
 use App\Services\Csp\CspExtensionLoader;
 use App\Services\ExtensionOperationService;
+use App\Services\Theme\ThemeHealthScorer;
 use App\Services\Theme\ThemePermissionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -188,9 +189,9 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 $summary = $permissionService->getSummary($themeSlug);
                 $signature = $summary['signature'] ?? [];
 
-                // CSP情報を取得
-                $cspLoader = app(\App\Services\Csp\CspExtensionLoader::class);
-                $cspCompatibility = $cspLoader->getCspCompatibility('theme', $themeSlug);
+                // CSP準拠状況をコードスキャンで検証
+                $cspScanner = app(\App\Services\Csp\CspComplianceScanner::class);
+                $cspCompatibility = $cspScanner->scanTheme($themeSlug);
 
                 $auditData = [
                     'has_mismatches' => ! empty($mismatches),
@@ -204,6 +205,8 @@ class AdminThemesSettingsController extends AdminLoggedInController
                     'csp_status' => $cspCompatibility['status'] ?? 'not_checked',
                     'csp_requires_inline_js' => $cspCompatibility['requires_inline_js'] ?? false,
                     'csp_requires_inline_css' => $cspCompatibility['requires_inline_css'] ?? false,
+                    'csp_violations' => $cspCompatibility['violations'] ?? [],
+                    'csp_summary' => $cspCompatibility['summary'] ?? [],
                 ];
 
                 Log::info('Theme audit data prepared', ['theme' => $themeSlug, 'mismatches_count' => count($mismatches)]);
@@ -258,10 +261,39 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 'admin/settings/themes/index'
             );
 
+            // 健全性スコアの計算
+            $healthScore = null;
+            $healthStatus = null;
+            $healthIssues = [];
+            try {
+                $healthScorer = app(ThemeHealthScorer::class);
+                $healthResult = $healthScorer->calculate($slug);
+                $healthScore = $healthResult->score;
+                $healthStatus = $healthResult->status->value;
+                $healthIssues = array_values(array_filter(
+                    array_map(fn ($i) => $i->jsonSerialize(), $healthResult->issues),
+                    fn ($i) => ($i['deduction'] ?? 0) !== 0,
+                ));
+            } catch (\Exception $e) {
+                Log::error('Theme health score calculation failed after audit', [
+                    'theme' => $slug,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            // 権限カテゴリ情報を取得
+            $permissionService = app(ThemePermissionService::class);
+            $summary = $permissionService->getSummary($slug);
+            $categories = $summary['categories'] ?? [];
+
             return response()->json([
                 'success' => true,
                 'message' => __('admin/settings/themes.audit.completed'),
                 'audit' => $result,
+                'healthScore' => $healthScore,
+                'healthStatus' => $healthStatus,
+                'healthIssues' => $healthIssues,
+                'categories' => $categories,
             ]);
         } catch (\Exception $e) {
             Log::error('Theme audit controller error', [

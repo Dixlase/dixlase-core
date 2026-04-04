@@ -89,6 +89,18 @@ return [
         'sidebar_open' => 'サイドバーを開く',
         'sidebar_close' => 'サイドバーを閉じる',
 
+        'preview_title' => 'プレビュー',
+        'preview_show' => 'プレビューを表示',
+        'preview_hide' => 'プレビューを非表示',
+        'scroll_to_editor' => 'エディタに移動',
+        'scroll_to_preview' => 'プレビューに移動',
+        'device_mobile' => 'モバイル',
+        'device_tablet' => 'タブレット',
+        'device_desktop' => 'デスクトップ',
+        'device_free' => 'フリーサイズ',
+        'preview_width' => '幅',
+        'preview_height' => '高さ',
+
         'reset_section_title' => '危険な操作',
         'reset_description' => 'フロントページのコンテンツをリセットします。この操作は元に戻せません。',
         'reset_button' => 'リセット',

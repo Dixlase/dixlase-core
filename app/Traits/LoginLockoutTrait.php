@@ -181,14 +181,9 @@ trait LoginLockoutTrait
      */
     public function recordLoginAttempt(Request $request, string $identifier, bool $successful = false)
     {
-        $modelClass = $this->getLoginAttemptModelClass();
+        $behaviorService = app(\App\Services\LoginBehaviorService::class);
 
-        return $modelClass::recordAttempt(
-            $identifier,
-            $request->ip(),
-            $request->userAgent(),
-            $successful
-        );
+        return $behaviorService->recordLoginAttempt($identifier, $request, $successful);
     }
 
     /**
@@ -198,13 +193,9 @@ trait LoginLockoutTrait
     {
         $modelClass = $this->getLoginAttemptModelClass();
 
-        // 成功したログインを記録
-        $modelClass::recordAttempt(
-            $identifier,
-            request()->ip(),
-            request()->userAgent(),
-            true
-        );
+        // 成功したログインを記録（行動分析データ付き）
+        $behaviorService = app(\App\Services\LoginBehaviorService::class);
+        $behaviorService->recordLoginAttempt($identifier, request(), true);
 
         // 失敗した試行記録をクリア
         $modelClass::clearFailedAttempts($identifier);

@@ -9,6 +9,7 @@
     'error' => null,
     'aspectRatio' => 'original', // 'original', 'ogp' (1.91:1), 'square' (1:1), '16:9', '4:3', 'hero' (21:9)
     'buttonText' => null, // ボタンのテキスト（指定しない場合はデフォルト）
+    'confirmUploadNavigation' => false, // アップロード画面遷移時に確認モーダルを表示するか
 ])
 
 @php
@@ -81,5 +82,6 @@
         :inputId="$inputId"
         :previewId="$previewId"
         :multiple="false"
+        :confirmUploadNavigation="$confirmUploadNavigation"
     />
 @endpush
