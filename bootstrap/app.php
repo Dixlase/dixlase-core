@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Register global middlewares
         $middleware->use([
+            \Illuminate\Http\Middleware\TrustProxies::class, // リバースプロキシ背後でHTTPS/IPを認識
             \App\Http\Middleware\CheckInstallationReady::class, // インストール準備状況チェック + インストール状態チェック
             \App\Http\Middleware\ForceHttps::class, // FORCE_SSL有効時にHTTPS強制リダイレクト
             \App\Http\Middleware\ApplySessionConfig::class, // セッション設定の動的適用
