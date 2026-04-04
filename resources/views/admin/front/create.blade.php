@@ -64,19 +64,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                  :style="isHorizontal && previewVisible ? 'width: ' + (splitRatio * 100) + '%; max-height: calc(100vh - 160px)' : ''">
 
                 <div class="space-y-4">
-                    {{-- 言語選択 --}}
-                    <div>
-                        <x-form-label :for="'lang'" :text="__('admin/front.create.lang_label')" />
-                        <x-form-select
-                            id="lang"
-                            name="lang"
-                            :options="$languages"
-                            :value="old('lang', $defaultLang)"
-                            x-model="lang"
-                        />
-                        <x-form-error name="lang" />
-                    </div>
-
                     {{-- エディタータイプ --}}
                     <div>
                         <x-form-label :text="__('admin/front.create.editor_type_label')" class="mb-3" />
@@ -175,6 +162,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :storageType="old('storage_type', $defaultStorageType)"
                 :showJsCss="true"
             />
+
+            {{-- 言語選択 --}}
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <x-form-label :for="'lang'" :text="__('admin/front.create.lang_label')" class="mb-2" />
+                <x-form-select
+                    id="lang"
+                    name="lang"
+                    :options="$languages"
+                    :value="old('lang', $defaultLang)"
+                    x-model="lang"
+                />
+                <x-form-error name="lang" />
+            </div>
 
         </x-admin.right-sidebar>
     </form>
