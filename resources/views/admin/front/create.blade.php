@@ -161,19 +161,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @include('components.content-editor.preview-pane')
         </div>
 
-        {{-- ===== 縦並び時のフローティングボタン ===== --}}
-        <div x-show="!isHorizontal && previewVisible" x-cloak class="fixed bottom-20 right-4 z-40 flex flex-col gap-2">
-            <button type="button" @click="scrollToEditor()"
-                    class="p-3 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-colors"
-                    title="{{ __('components/content-editor.scroll_to_editor') }}">
-                <i class="fas fa-edit text-sm"></i>
-            </button>
-            <button type="button" @click="scrollToPreview()"
-                    class="p-3 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-colors"
-                    title="{{ __('components/content-editor.scroll_to_preview') }}">
-                <i class="fas fa-eye text-sm"></i>
-            </button>
-        </div>
+        @include('components.content-editor.scroll-buttons')
 
         {{-- ===== 右サイドバートグルボタン ===== --}}
         <button type="button"
