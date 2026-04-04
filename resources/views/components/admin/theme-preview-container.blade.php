@@ -87,8 +87,8 @@ the Free Software Foundation, either version 3 of the License, or
         <div id="{{ $innerId }}"
              data-preview-theme="{{ $appearanceMode === '1' ? 'light' : 'dark' }}"
              @appearance-changed.window="$el.dataset.previewTheme = $event.detail.mode === '1' ? 'light' : 'dark'"
-             :style="'width: ' + previewDeviceWidth + 'px; transform: scale(' + previewScale + '); transform-origin: top left; margin: 0;'"
-             style="max-width: 100%; transform-origin: top left;"
+             :style="'visibility: visible; width: ' + previewDeviceWidth + 'px; transform: scale(' + previewScale + '); transform-origin: top left; margin: 0;'"
+             style="visibility: hidden;"
              class="relative">
 
             {{ $slot }}
@@ -115,6 +115,13 @@ window.previewContainerMixin = function(outerId = 'preview-outer', innerId = 'pr
         _containerWidth: 0,
 
         initPreviewContainer() {
+            // 即座にスケール計算（FOUC防止）
+            const outerImmediate = document.getElementById(outerId);
+            if (outerImmediate && outerImmediate.offsetWidth > 0) {
+                this._containerWidth = outerImmediate.offsetWidth;
+                this.updatePreviewScale();
+            }
+
             this.$nextTick(() => {
                 const outer = document.getElementById(outerId);
                 if (!outer) return;
