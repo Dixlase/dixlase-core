@@ -4,6 +4,8 @@ This file is part of Dixlase.
 Copyright (C) 2026 exc-D inc.
 https://exc-d.com
 
+@api プラグイン/テーマから @include('components.content-editor.preview-pane') として使用可能
+
 共通プレビューペインコンポーネント。
 スプリットペインコンテナ内で使用する。
 ドラッグ分割バー + プレビューペイン（デバイス切替、スケーリング、iframe）を提供。
