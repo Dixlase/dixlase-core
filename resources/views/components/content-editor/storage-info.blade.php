@@ -4,7 +4,7 @@ This file is part of Dixlase.
 Copyright (C) 2026 exc-D inc.
 https://exc-d.com
 
-@api プラグイン/テーマから <x-content-editor.storage-info /> として使用可能
+@api Available for plugins/themes as <x-content-editor.storage-info />
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by

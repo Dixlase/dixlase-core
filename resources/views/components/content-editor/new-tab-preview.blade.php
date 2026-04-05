@@ -4,26 +4,20 @@ This file is part of Dixlase.
 Copyright (C) 2026 exc-D inc.
 https://exc-d.com
 
-@api プラグイン/テーマから <x-content-editor.new-tab-preview /> として使用可能
+@api Available for plugins/themes as <x-content-editor.new-tab-preview />
 
-Additional permission under GNU AGPL version 3 section 7:
-Dixlase plugins and themes may use this component without being subject
-to the copyleft requirements of the AGPL.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-別タブプレビューボタンコンポーネント。
-親フォームの入力データを収集し、指定されたプレビューURLにPOSTして新しいタブで開く。
-各プラグインのサーバー側プレビュールートが自分のテンプレートでレンダリングする。
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
 
-使用例:
-<x-content-editor.new-tab-preview :url="$previewUrl" />
-
-必須プロパティ:
-- url: プレビュー用POSTエンドポイントのURL
-
-オプションプロパティ:
-- label: ボタンラベル（デフォルト: 翻訳キーから取得）
-- help: 説明テキスト（デフォルト: 翻訳キーから取得）
-- icon: ボタンアイコン（デフォルト: fas fa-external-link-alt）
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @props([

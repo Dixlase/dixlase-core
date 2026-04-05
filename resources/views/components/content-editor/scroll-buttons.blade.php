@@ -4,13 +4,20 @@ This file is part of Dixlase.
 Copyright (C) 2026 exc-D inc.
 https://exc-d.com
 
-@api プラグイン/テーマから @include('components.content-editor.scroll-buttons') として使用可能
+@api Available for plugins/themes as <x-content-editor.scroll-buttons />
 
-縦並びモード時のエディタ/プレビュー スクロールフローティングボタン。
-メインコンテンツエリアの右下に配置され、右サイドバーの開閉に追従する。
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-Alpine.js 親コンポーネントが以下を提供する必要がある:
-- isHorizontal, previewVisible, scrollToEditor(), scrollToPreview()
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 <div x-show="!isHorizontal && previewVisible" x-cloak

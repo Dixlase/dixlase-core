@@ -4,7 +4,7 @@ This file is part of Dixlase.
 Copyright (C) 2026 exc-D inc.
 https://exc-d.com
 
-@api プラグイン/テーマから <x-content-editor.preview-tabs /> として使用可能
+@api Available for plugins/themes as <x-content-editor.preview-tabs />
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
@@ -18,10 +18,6 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-編集/プレビュー切替タブコンポーネント
-Alpine.js の previewMode 状態と loadPreview() / showEditor() メソッドに依存します。
-contentPreviewMixin() と併用してください。
 --}}
 
 @props([
