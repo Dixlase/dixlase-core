@@ -53,8 +53,6 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
         'extension_notify_on_unhealthy',
         'extension_log_operations',
         'extension_source_type',
-        'extension_source_owner',
-        'extension_source_token',
         'extension_update_check_interval',
     ];
 
@@ -88,8 +86,6 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
             'extension_log_operations' => filter_var($this->securitySettingRepository->get('extension_log_operations', true), FILTER_VALIDATE_BOOLEAN),
             // Extension source settings
             'extension_source_type' => $this->securitySettingRepository->get('extension_source_type', 'github'),
-            'extension_source_owner' => $this->securitySettingRepository->get('extension_source_owner', config('extension-sources.github.default_owner', 'Dixlase')),
-            'extension_source_token' => $this->securitySettingRepository->get('extension_source_token', ''),
             'extension_update_check_interval' => (int) $this->securitySettingRepository->get('extension_update_check_interval', config('extension-sources.check_interval', 86400)),
         ];
 
@@ -120,7 +116,7 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.extensions');
         $this->viewParams['sourcePresets'] = $sourcePresets;
         $this->viewParams['checkIntervalOptions'] = $checkIntervalOptions;
-        $this->viewParams['hasSourceToken'] = ! empty($settings['extension_source_token']);
+        $this->viewParams['sourceReferenceUrl'] = 'https://github.com/'.config('extension-sources.github.default_owner', 'Dixlase');
 
         return view('admin.settings.security.extensions', $this->viewParams);
     }
@@ -151,14 +147,7 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
 
         // 拡張機能ソース設定を更新
         $this->securitySettingRepository->set('extension_source_type', $validated['extension_source_type']);
-        $this->securitySettingRepository->set('extension_source_owner', $validated['extension_source_owner'] ?? config('extension-sources.github.default_owner', 'Dixlase'));
         $this->securitySettingRepository->set('extension_update_check_interval', $validated['extension_update_check_interval']);
-
-        // トークンは入力があった場合のみ更新（空文字でクリア可能）
-        if ($request->has('extension_source_token')) {
-            $token = $validated['extension_source_token'] ?? '';
-            $this->securitySettingRepository->set('extension_source_token', $token);
-        }
 
         $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
         \App\Facades\Audit::logBulkSettingsChange('security.extensions', $before, $after, auth()->user());
@@ -174,20 +163,11 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
     {
         $request->validate([
             'type' => 'required|string|max:50',
-            'owner' => 'nullable|string|max:100',
-            'token' => 'nullable|string|max:500',
         ]);
 
         $type = $request->input('type');
-        $owner = $request->input('owner');
-        $token = $request->input('token');
 
-        // トークンが送信されなかった場合は保存済みトークンを使用
-        if ($token === null || $token === '') {
-            $token = $this->securitySettingRepository->get('extension_source_token', '') ?: null;
-        }
-
-        // GitHub のデフォルト URL を取得
+        // config から接続情報を取得（オーナー・トークンは .env / config で管理）
         $baseUrl = match ($type) {
             'github' => config('extension-sources.github.api_base', 'https://api.github.com'),
             default => '',
@@ -198,8 +178,8 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
             'name' => 'Connection Test',
             'type' => $type,
             'base_url' => $baseUrl,
-            'owner' => $owner,
-            'auth_token' => $token,
+            'owner' => config('extension-sources.github.default_owner', 'Dixlase'),
+            'auth_token' => config('extension-sources.github.default_token'),
         ]);
 
         try {
