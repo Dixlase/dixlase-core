@@ -67,25 +67,32 @@ jobs:
             for SITE in brand docs demo keys; do
               echo "=== Deploying $SITE (${{ steps.target.outputs.env }}) ==="
               cd "$BASE/$SITE"
+
+              # 1. deploy ユーザーが git 操作できるよう所有権を戻す
+              docker exec compose-php-1 chown -R 1001:1001 /var/www/apps/$SITE
+
+              # 2. コードを最新に更新
               git fetch origin
               git reset --hard origin/main
 
-              # ストレージディレクトリの復元（git reset で消える場合がある）
+              # 3. ストレージディレクトリの復元（git reset で消える場合がある）
               mkdir -p storage/framework/{views,cache/data,sessions} storage/logs bootstrap/cache
 
+              # 4. Composer 依存関係とオートロード更新
               if [ -f composer.json ]; then
-                composer install --no-dev --no-interaction --optimize-autoloader
+                docker exec compose-php-1 bash -c "cd /var/www/apps/$SITE && composer install --no-dev --no-interaction --optimize-autoloader"
               fi
 
-              # CIでビルド済みのフロントエンドアセットをコピー
+              # 5. CIでビルド済みのフロントエンドアセットをコピー
               mkdir -p public/assets/build
               rsync -a "$BASE/_shared/build/" public/assets/build/
 
-              # パーミッション修正（www-data が書き込めるように）
+              # 6. パーミッション修正（www-data が .env とルートに書き込めるように）
               docker exec compose-php-1 chown www-data:www-data /var/www/apps/$SITE
+              [ -f .env ] && docker exec compose-php-1 chown www-data:www-data /var/www/apps/$SITE/.env
               docker exec compose-php-1 chmod -R 777 /var/www/apps/$SITE/storage /var/www/apps/$SITE/bootstrap/cache
 
-              # キャッシュはコンテナ内で実行（パスの不一致を防ぐ）
+              # 7. キャッシュクリア（コンテナ内で実行してパス不一致を防ぐ）
               if [ -f artisan ]; then
                 docker exec compose-php-1 php /var/www/apps/$SITE/artisan config:clear
                 docker exec compose-php-1 php /var/www/apps/$SITE/artisan view:clear
