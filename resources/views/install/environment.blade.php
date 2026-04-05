@@ -147,7 +147,7 @@
             $prefixOptions = array_combine($adminUrlPrefixes, $adminUrlPrefixes);
         @endphp
 
-        <fieldset x-data="{
+        <div x-data="{
             prefix: '{{ $currentPrefix }}',
             suffix: '{{ $currentSuffix }}',
             baseUrl: '{{ $protocol }}{{ $hostAndPort }}',
@@ -159,41 +159,40 @@
                 setTimeout(() => { this.copied = false; }, 2000);
             }
         }">
-            <legend class="sr-only">{{ __('install/step2.admin_panel_url') }}</legend>
-
-            <div>
-                <x-form-label for="admin_url_suffix" :text="__('install/step2.admin_url')" :required="true" />
-                <div class="flex items-center gap-2">
-                    <x-form-select
-                        id="admin_url_prefix"
-                        name="admin_url_prefix"
-                        :options="$prefixOptions"
-                        :value="$currentPrefix"
-                        xModel="prefix"
-                        class="input-lg"
-                    />
-                    <span class="text-gray-500 dark:text-gray-400 text-lg font-bold">-</span>
-                    <x-form-text
-                        name="admin_url_suffix"
-                        id="admin_url_suffix"
-                        :value="$currentSuffix"
-                        :required="true"
-                        class="input-lg"
-                        placeholder="xxxx"
-                        x-model="suffix"
-                    />
-                </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                    URL: <span x-text="fullUrl"></span>
-                    <button type="button" @click="copyUrl()" class="ml-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition">
-                        <i class="far" :class="copied ? 'fa-check-circle text-green-500 dark:text-green-400' : 'fa-copy'"></i>
-                    </button>
-                </p>
-                <x-form-error field="admin_url_prefix" />
-                <x-form-error field="admin_url_suffix" />
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('install/step2.admin_url_security_note') }}</p>
+            <x-form-label for="admin_url_suffix" :text="__('install/step2.admin_url')" :required="true" />
+            <div class="flex items-center">
+                <span class="p-2 bg-gray-200 dark:bg-gray-700 border border-r-0 border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300 text-sm whitespace-nowrap">{{ $protocol }}{{ $hostAndPort }}/</span>
+                <select
+                    id="admin_url_prefix"
+                    name="admin_url_prefix"
+                    x-model="prefix"
+                    class="input-common p-2 bg-gray-50 dark:bg-gray-800 border-y border-l-0 border-r-0 border-gray-300 dark:border-gray-500 text-sm dark:text-white rounded-none"
+                >
+                    @foreach($prefixOptions as $val => $label)
+                        <option value="{{ $val }}" {{ $currentPrefix === $val ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <span class="p-2 bg-gray-200 dark:bg-gray-700 border-y border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm">-</span>
+                <x-form-text
+                    name="admin_url_suffix"
+                    id="admin_url_suffix"
+                    :value="$currentSuffix"
+                    :required="true"
+                    class="input-full rounded-r-lg rounded-l-none"
+                    placeholder="xxxx"
+                    x-model="suffix"
+                />
             </div>
-        </fieldset>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                URL: <span x-text="fullUrl"></span>
+                <button type="button" @click="copyUrl()" class="ml-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition">
+                    <i class="far" :class="copied ? 'fa-check-circle text-green-500 dark:text-green-400' : 'fa-copy'"></i>
+                </button>
+            </p>
+            <x-form-error field="admin_url_prefix" />
+            <x-form-error field="admin_url_suffix" />
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('install/step2.admin_url_security_note') }}</p>
+        </div>
     </section>
     @endif
 
