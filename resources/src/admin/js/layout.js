@@ -54,6 +54,13 @@ window.adminLayout = function() {
                 this.rightSidebarReady = true;
             });
 
+            // 右サイドバー強制オープンイベント（新規作成画面等で使用）
+            window.addEventListener('right-sidebar-force-open', () => {
+                this.$nextTick(() => {
+                    this.rightSidebarCollapsed = false;
+                });
+            });
+
             // サイドバーの折りたたみ状態をlocalStorageに保存
             this.$watch('sidebarCollapsed', value => {
                 localStorage.setItem('sidebarCollapsed', value);
