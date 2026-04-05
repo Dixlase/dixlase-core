@@ -49,4 +49,8 @@ return [
     'preview_height' => 'Height',
     'scroll_to_editor' => 'Scroll to editor',
     'scroll_to_preview' => 'Scroll to preview',
+
+    // 別タブプレビュー
+    'new_tab_preview' => 'Preview',
+    'new_tab_preview_help' => 'Preview current content in a new window before saving.',
 ];
