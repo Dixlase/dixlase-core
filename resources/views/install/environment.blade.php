@@ -161,13 +161,11 @@
         }">
             <x-form-label for="admin_url_suffix" :text="__('install/step2.admin_url')" :required="true" />
             <div class="flex items-center">
-                <span class="p-2 bg-gray-200 dark:bg-gray-700 border border-r-0 border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300 text-sm whitespace-nowrap">{{ $protocol }}{{ $hostAndPort }}/</span>
-                <select
-                    id="admin_url_prefix"
-                    name="admin_url_prefix"
-                    x-model="prefix"
-                    class="input-common p-2 bg-gray-50 dark:bg-gray-800 border-y border-l-0 border-r-0 border-gray-300 dark:border-gray-500 text-sm dark:text-white rounded-none"
-                >
+                <span id="admin_base_url" class="p-2 bg-gray-200 dark:bg-gray-700 border border-r-0 border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300 text-sm whitespace-nowrap">{{ $protocol }}{{ $hostAndPort }}/</span>
+                <select id="admin_url_prefix" name="admin_url_prefix"
+                    x-init="prefix = $el.value"
+                    @change="prefix = $event.target.value"
+                    class="p-2 bg-gray-50 dark:bg-gray-800 border border-l-0 border-r-0 border-gray-300 dark:border-gray-500 text-sm dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                     @foreach($prefixOptions as $val => $label)
                         <option value="{{ $val }}" {{ $currentPrefix === $val ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
