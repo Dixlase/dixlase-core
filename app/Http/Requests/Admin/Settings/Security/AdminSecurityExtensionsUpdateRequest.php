@@ -59,8 +59,6 @@ class AdminSecurityExtensionsUpdateRequest extends FormRequest
             'extension_log_operations' => 'boolean',
             // Extension source settings
             'extension_source_type' => 'required|in:'.implode(',', array_keys(config('extension-sources.presets', ['github' => []]))),
-            'extension_source_owner' => 'nullable|string|max:100',
-            'extension_source_token' => 'nullable|string|max:500',
             'extension_update_check_interval' => 'required|integer|in:'.implode(',', array_keys(config('extension-sources.check_intervals', [86400 => '']))),
         ];
     }

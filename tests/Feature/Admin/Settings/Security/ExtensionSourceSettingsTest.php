@@ -107,7 +107,6 @@ class ExtensionSourceSettingsTest extends TestCase
                 'extension_theme_max_health_level' => 2,
                 'extension_permission_mismatch_action' => 'warn',
                 'extension_source_type' => 'github',
-                'extension_source_owner' => 'TestOrg',
                 'extension_update_check_interval' => 43200,
             ]);
 
@@ -116,26 +115,7 @@ class ExtensionSourceSettingsTest extends TestCase
 
         $repo = app(SecuritySettingRepositoryInterface::class);
         $this->assertEquals('github', $repo->get('extension_source_type'));
-        $this->assertEquals('TestOrg', $repo->get('extension_source_owner'));
         $this->assertEquals(43200, (int) $repo->get('extension_update_check_interval'));
-    }
-
-    public function test_source_token_is_saved_when_provided(): void
-    {
-        $this->actingAs($this->admin, 'member')
-            ->post(route('admin.settings.security.extensions.update'), [
-                'extension_security_preset' => 'balanced',
-                'extension_plugin_max_health_level' => 1,
-                'extension_theme_max_health_level' => 2,
-                'extension_permission_mismatch_action' => 'warn',
-                'extension_source_type' => 'github',
-                'extension_source_owner' => 'Dixlase',
-                'extension_source_token' => 'ghp_test_token_abc',
-                'extension_update_check_interval' => 86400,
-            ]);
-
-        $repo = app(SecuritySettingRepositoryInterface::class);
-        $this->assertEquals('ghp_test_token_abc', $repo->get('extension_source_token'));
     }
 
     public function test_source_type_validation_rejects_unknown_type(): void
@@ -225,29 +205,20 @@ class ExtensionSourceSettingsTest extends TestCase
         $response->assertJsonValidationErrors('type');
     }
 
-    public function test_test_source_uses_saved_token_when_not_provided(): void
+    public function test_test_source_uses_config_values(): void
     {
-        $repo = app(SecuritySettingRepositoryInterface::class);
-        $repo->set('extension_source_token', 'ghp_saved_token');
-
         Http::fake([
             'api.github.com/user' => Http::response([
-                'login' => 'saved-user',
+                'login' => 'config-user',
             ], 200),
         ]);
 
         $response = $this->actingAs($this->admin, 'member')
             ->postJson(route('admin.settings.security.extensions.test-source'), [
                 'type' => 'github',
-                'owner' => 'TestOrg',
-                'token' => '',
             ]);
 
         $response->assertOk();
         $response->assertJson(['success' => true]);
-
-        Http::assertSent(function ($request) {
-            return $request->hasHeader('Authorization');
-        });
     }
 }

@@ -395,11 +395,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- 拡張機能ソース設定 -->
         <section x-data="{
             sourceType: '{{ old('extension_source_type', $settings['extension_source_type'] ?? 'github') }}',
-            owner: '{{ old('extension_source_owner', $settings['extension_source_owner'] ?? '') }}',
             testStatus: 'idle',
             testMessage: '',
             testDetails: {},
-            isOfficial: false,
 
             async testConnection() {
                 this.testStatus = 'testing';
@@ -407,7 +405,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 this.testDetails = {};
 
                 try {
-                    const tokenInput = document.getElementById('extension_source_token');
                     const response = await fetch('{{ route('admin.settings.security.extensions.test-source') }}', {
                         method: 'POST',
                         headers: {
@@ -415,18 +412,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
                             'Accept': 'application/json',
                         },
-                        body: JSON.stringify({
-                            type: this.sourceType,
-                            owner: this.owner,
-                            token: tokenInput ? tokenInput.value : '',
-                        }),
+                        body: JSON.stringify({ type: this.sourceType }),
                     });
 
                     const data = await response.json();
                     this.testStatus = data.success ? 'success' : 'failed';
                     this.testMessage = data.message || '';
                     this.testDetails = data.details || {};
-                    this.isOfficial = data.is_official || false;
                 } catch (error) {
                     this.testStatus = 'failed';
                     this.testMessage = error.message;
@@ -471,62 +463,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </fieldset>
 
-            <!-- GitHub 設定 -->
+            <!-- GitHub ソース情報 -->
             <div x-show="sourceType === 'github'" x-cloak>
                 <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <div class="flex items-center gap-2 mb-3">
+                    <div class="flex items-center gap-2 mb-2">
                         <i class="fab fa-github text-lg"></i>
                         <span class="font-medium">{{ __('admin/settings/security/extensions.source.github_description') }}</span>
                     </div>
 
-                    <!-- オーナー -->
-                    <fieldset>
-                        <legend>{{ __('admin/settings/security/extensions.source.owner') }}</legend>
-
-                        <x-form-text
-                            id="extension_source_owner"
-                            name="extension_source_owner"
-                            :value="old('extension_source_owner', $settings['extension_source_owner'] ?? '')"
-                            :placeholder="__('admin/settings/security/extensions.source.owner_placeholder')"
-                            xModel="owner"
-                        />
-                        <x-form-error name="extension_source_owner" />
-                        <p>{{ __('admin/settings/security/extensions.source.owner_help') }}</p>
-                    </fieldset>
-
-                    <!-- 認証トークン -->
-                    <fieldset>
-                        <legend>{{ __('admin/settings/security/extensions.source.token') }}</legend>
-
-                        <x-form-text
-                            id="extension_source_token"
-                            name="extension_source_token"
-                            type="password"
-                            value=""
-                            :placeholder="__('admin/settings/security/extensions.source.token_placeholder')"
-                            autocomplete="off"
-                        />
-                        <x-form-error name="extension_source_token" />
-
-                        <div class="mt-1 flex items-center gap-2 text-sm">
-                            @if($hasSourceToken)
-                                <span class="text-green-600 dark:text-green-400">
-                                    <i class="fas fa-check-circle"></i>
-                                    {{ __('admin/settings/security/extensions.source.token_saved') }}
-                                </span>
-                            @else
-                                <span class="text-gray-500 dark:text-gray-400">
-                                    <i class="fas fa-info-circle"></i>
-                                    {{ __('admin/settings/security/extensions.source.token_not_set') }}
-                                </span>
-                            @endif
-                        </div>
-                        <p>{{ __('admin/settings/security/extensions.source.token_help') }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/extensions.source.token_clear_hint') }}</p>
-                    </fieldset>
+                    <!-- 参照先 URL -->
+                    <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                        <i class="fas fa-link text-xs"></i>
+                        <span>{{ __('admin/settings/security/extensions.source.reference_url') }}:</span>
+                        <a href="{{ $sourceReferenceUrl }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
+                            {{ $sourceReferenceUrl }}
+                            <i class="fas fa-external-link-alt text-[10px] ml-0.5"></i>
+                        </a>
+                    </div>
 
                     <!-- 接続テスト -->
-                    <div class="mt-4">
+                    <div class="mt-3">
                         <button
                             type="button"
                             class="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
@@ -542,7 +498,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <span x-text="testStatus === 'testing' ? '{{ __('admin/settings/security/extensions.source.testing') }}' : '{{ __('admin/settings/security/extensions.source.test_connection') }}'"></span>
                         </button>
 
-                        <!-- テスト結果 -->
+                        <!-- テスト結果: 成功 -->
                         <div x-show="testStatus === 'success'" x-cloak class="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                             <div class="flex items-center gap-2 text-green-700 dark:text-green-300">
                                 <i class="fas fa-check-circle"></i>
@@ -556,6 +512,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </template>
                         </div>
 
+                        <!-- テスト結果: 失敗 -->
                         <div x-show="testStatus === 'failed'" x-cloak class="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                             <div class="flex items-center gap-2 text-red-700 dark:text-red-300">
                                 <i class="fas fa-times-circle"></i>
