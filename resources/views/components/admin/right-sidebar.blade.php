@@ -4,6 +4,8 @@ This file is part of Dixlase.
 Copyright (C) 2026 exc-D inc.
 https://exc-d.com
 
+@api Available for plugins/themes as <x-admin.right-sidebar />
+
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -16,11 +18,6 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-@api プラグイン/テーマから使用可能な安定APIです
-
-管理画面共通の右サイドバーコンポーネント。
-トグルボタンとスライドパネルを提供する。
 --}}
 
 @props([
