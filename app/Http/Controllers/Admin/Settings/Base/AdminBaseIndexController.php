@@ -28,15 +28,21 @@ use App\Enums\MenuVisibility;
 use App\Helpers\AdminModeHelper;
 use App\Helpers\ConfigHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Services\Editor\EditorManager;
 
 class AdminBaseIndexController extends AdminLoggedInController
 {
     protected BaseSettingRepositoryInterface $baseSettingRepository;
 
-    public function __construct(BaseSettingRepositoryInterface $baseSettingRepository)
-    {
+    protected EditorManager $editorManager;
+
+    public function __construct(
+        BaseSettingRepositoryInterface $baseSettingRepository,
+        EditorManager $editorManager,
+    ) {
         parent::__construct();
         $this->baseSettingRepository = $baseSettingRepository;
+        $this->editorManager = $editorManager;
     }
 
     /**
@@ -81,8 +87,12 @@ class AdminBaseIndexController extends AdminLoggedInController
         $this->viewParams['maintenanceMode'] = $maintenanceMode;
         $this->viewParams['adminMode'] = $adminMode;
 
+        // コンテンツエディター設定
+        $preferredEditor = $this->editorManager->getPreferredEditor('gui');
+        $this->viewParams['preferredEditorName'] = $preferredEditor?->label ?? '';
+
         // サブページの表示可否を判定（Hiddenのサブページはカード非表示）
-        $subPageKeys = ['site', 'admin', 'mail', 'maintenance', 'mode'];
+        $subPageKeys = ['site', 'admin', 'mail', 'maintenance', 'mode', 'editor'];
         $subPageVisible = [];
         foreach ($subPageKeys as $key) {
             $visibility = AdminModeHelper::getMenuVisibility("settings.base.{$key}");

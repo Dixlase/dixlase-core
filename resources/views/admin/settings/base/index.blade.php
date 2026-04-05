@@ -153,6 +153,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </span>
             </div>
         </a>
+
+        <!-- コンテンツエディター設定 -->
+        @if($subPageVisible['editor'] ?? true)
+        <a href="{{ route('admin.settings.base.editor') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <i class="fas fa-pen-nib text-teal-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/base/index.nav.editor') }}</h3>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                @if($preferredEditorName)
+                    <p>GUI: {{ $preferredEditorName }}</p>
+                @else
+                    <span class="inline-flex items-center text-gray-500">
+                        <i class="fas fa-minus-circle mr-1"></i>{{ __('admin/settings/base/index.no_gui_editor') }}
+                    </span>
+                @endif
+            </div>
+        </a>
+        @endif
     </div>
 </div>
 @endsection

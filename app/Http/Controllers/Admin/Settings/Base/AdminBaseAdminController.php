@@ -27,25 +27,19 @@ use App\Helpers\AdminHelper;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Base\AdminBaseAdminUpdateRequest;
-use App\Services\Editor\EditorManager;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
 class AdminBaseAdminController extends AdminLoggedInController
 {
-    protected const SETTING_KEYS = ['admin_url', 'force_ssl', 'preferred_gui_editor'];
+    protected const SETTING_KEYS = ['admin_url', 'force_ssl'];
 
     protected BaseSettingRepositoryInterface $baseSettingRepository;
 
-    protected EditorManager $editorManager;
-
-    public function __construct(
-        BaseSettingRepositoryInterface $baseSettingRepository,
-        EditorManager $editorManager,
-    ) {
+    public function __construct(BaseSettingRepositoryInterface $baseSettingRepository)
+    {
         parent::__construct();
         $this->baseSettingRepository = $baseSettingRepository;
-        $this->editorManager = $editorManager;
     }
 
     /**
@@ -66,14 +60,10 @@ class AdminBaseAdminController extends AdminLoggedInController
             'admin_url_prefix' => $currentPrefix,
             'admin_url_suffix' => $currentSuffix,
             'force_ssl' => (bool) $this->baseSettingRepository->get('force_ssl', false),
-            'preferred_gui_editor' => $this->baseSettingRepository->get(EditorManager::PREFERRED_GUI_EDITOR_KEY, ''),
         ];
-
-        $guiEditors = $this->editorManager->getEditorsForType('gui');
 
         $this->viewParams['settings'] = $settings;
         $this->viewParams['prefixes'] = array_combine($prefixes, $prefixes);
-        $this->viewParams['guiEditors'] = $guiEditors;
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.base.admin');
 
         return view('admin.settings.base.admin', $this->viewParams);
@@ -93,10 +83,6 @@ class AdminBaseAdminController extends AdminLoggedInController
         // DBに保存
         $this->baseSettingRepository->set('admin_url', $validated['admin_url']);
         $this->baseSettingRepository->set('force_ssl', $forceSsl);
-        $this->baseSettingRepository->set(
-            EditorManager::PREFERRED_GUI_EDITOR_KEY,
-            $validated['preferred_gui_editor'] ?? '',
-        );
 
         // 管理画面URLが変更された場合の特別な処理
         $currentAdminUrl = AdminHelper::getAdminUrl();

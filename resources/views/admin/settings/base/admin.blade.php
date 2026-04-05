@@ -89,61 +89,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </fieldset>
     </section>
 
-    <!-- コンテンツエディター設定 -->
-    <section>
-        <h2>{{ __('admin/settings/base/admin.content_editor_settings') }}</h2>
-
-        <fieldset>
-            <legend>{{ __('admin/settings/base/admin.preferred_gui_editor') }}</legend>
-
-            @if(count($guiEditors) === 0)
-                <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
-                    <div class="flex items-center gap-3 text-gray-500 dark:text-gray-400">
-                        <i class="fas fa-info-circle text-lg"></i>
-                        <p class="text-sm">{{ __('admin/settings/base/admin.no_gui_editor_available') }}</p>
-                    </div>
-                </div>
-            @elseif(count($guiEditors) === 1)
-                <div class="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <i class="{{ $guiEditors[0]->icon }} text-lg text-blue-600 dark:text-blue-400"></i>
-                    <div>
-                        <div class="font-medium text-gray-900 dark:text-white">{{ $guiEditors[0]->label }}</div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ $guiEditors[0]->description }}</div>
-                    </div>
-                </div>
-                <input type="hidden" name="preferred_gui_editor" value="{{ $guiEditors[0]->pluginSlug }}">
-                <p class="mt-2">{{ __('admin/settings/base/admin.gui_editor_auto') }}</p>
-            @else
-                <div class="space-y-3">
-                    @foreach($guiEditors as $editor)
-                        <label class="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none transition-all duration-150
-                            {{ old('preferred_gui_editor', $settings['preferred_gui_editor']) === $editor->pluginSlug
-                                ? 'border-blue-600 dark:border-blue-500 ring-2 ring-blue-600 dark:ring-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                                : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-500' }}">
-                            <input type="radio"
-                                   name="preferred_gui_editor"
-                                   value="{{ $editor->pluginSlug }}"
-                                   class="sr-only"
-                                   {{ old('preferred_gui_editor', $settings['preferred_gui_editor']) === $editor->pluginSlug ? 'checked' : '' }}>
-                            <span class="flex flex-1">
-                                <span class="flex flex-col">
-                                    <span class="flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-white">
-                                        <i class="{{ $editor->icon }}"></i>
-                                        {{ $editor->label }}
-                                    </span>
-                                    <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $editor->description }}</span>
-                                </span>
-                            </span>
-                        </label>
-                    @endforeach
-                </div>
-            @endif
-
-            <x-form-error field="preferred_gui_editor" />
-            <p class="mt-2">{{ __('admin/settings/base/admin.preferred_gui_editor_help') }}</p>
-        </fieldset>
-    </section>
-
     </fieldset>
 </form>
 </div>

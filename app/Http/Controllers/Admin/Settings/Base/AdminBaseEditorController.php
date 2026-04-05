@@ -1,0 +1,89 @@
+<?php
+
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+namespace App\Http\Controllers\Admin\Settings\Base;
+
+use App\Contracts\Repositories\BaseSettingRepositoryInterface;
+use App\Helpers\AdminModeHelper;
+use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Http\Requests\Admin\Settings\Base\AdminBaseEditorUpdateRequest;
+use App\Services\Editor\EditorManager;
+
+/**
+ * コンテンツエディター設定コントローラー
+ */
+class AdminBaseEditorController extends AdminLoggedInController
+{
+    protected const SETTING_KEYS = ['preferred_gui_editor'];
+
+    public function __construct(
+        protected BaseSettingRepositoryInterface $baseSettingRepository,
+        protected EditorManager $editorManager,
+    ) {
+        parent::__construct();
+    }
+
+    /**
+     * コンテンツエディター設定ページ
+     */
+    public function index()
+    {
+        $guiEditors = $this->editorManager->getEditorsForType('gui');
+
+        $guiEditorOptions = [];
+        foreach ($guiEditors as $editor) {
+            $guiEditorOptions[$editor->pluginSlug] = $editor->label;
+        }
+
+        $settings = [
+            'preferred_gui_editor' => $this->baseSettingRepository->get(EditorManager::PREFERRED_GUI_EDITOR_KEY, ''),
+        ];
+
+        $this->viewParams['settings'] = $settings;
+        $this->viewParams['guiEditors'] = $guiEditors;
+        $this->viewParams['guiEditorOptions'] = $guiEditorOptions;
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.base.editor');
+
+        return view('admin.settings.base.editor', $this->viewParams);
+    }
+
+    /**
+     * コンテンツエディター設定の更新
+     */
+    public function update(AdminBaseEditorUpdateRequest $request)
+    {
+        $before = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
+
+        $validated = $request->validated();
+
+        $this->baseSettingRepository->set(
+            EditorManager::PREFERRED_GUI_EDITOR_KEY,
+            $validated['preferred_gui_editor'] ?? '',
+        );
+
+        $after = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
+        \App\Facades\Audit::logBulkSettingsChange('base.editor', $before, $after, auth()->user());
+
+        return redirect()->route('admin.settings.base.editor')
+            ->with('success', __('admin/settings/base/editor.settings_updated'));
+    }
+}

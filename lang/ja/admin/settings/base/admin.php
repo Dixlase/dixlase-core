@@ -24,11 +24,4 @@ return [
     'force_ssl_help' => 'HTTPSでのアクセスを強制します。SSL証明書が設定されている場合のみ有効にしてください。',
     'settings_updated' => '管理画面設定が更新されました。',
     'admin_url_changed' => '管理画面URLが変更されました。新しいURLでログインしてください。',
-
-    // コンテンツエディター設定
-    'content_editor_settings' => 'コンテンツエディター',
-    'preferred_gui_editor' => 'GUIエディター',
-    'preferred_gui_editor_help' => 'コンテンツ編集に使用するGUIブロックエディタープラグインを選択します。複数のGUIエディタープラグインがインストールされている場合、選択したものがデフォルトとして使用されます。',
-    'no_gui_editor_available' => 'GUIエディタープラグインがインストールされていません。ブロックエディターを使用するには、GUIエディタープラグインをインストールしてください。',
-    'gui_editor_auto' => '自動（利用可能なエディターを使用）',
 ];
