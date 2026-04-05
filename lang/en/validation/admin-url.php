@@ -3,8 +3,8 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -21,9 +21,8 @@
  */
 
 return [
-    // 管理画面のURL
-    'admin_url' => env('ADMIN_URL', 'admin'),
-
-    // 管理画面URLプレフィックス候補
-    'admin_url_prefixes' => ['admin', 'manage', 'cp', 'panel', 'dash', 'ctrl'],
+    'prefix_invalid' => 'The selected URL prefix is invalid.',
+    'suffix_min' => 'The URL suffix must be at least 4 characters.',
+    'suffix_max' => 'The URL suffix must not exceed 50 characters.',
+    'suffix_format' => 'The URL suffix may only contain lowercase letters and numbers.',
 ];

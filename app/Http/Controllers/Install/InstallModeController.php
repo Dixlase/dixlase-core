@@ -58,8 +58,12 @@ class InstallModeController extends BaseInstallController
         session(['install_data.install_mode' => (int) $validated['install_mode']]);
 
         // ランダムな管理画面URLを初回のみ生成（セッションに未設定の場合）
+        // プレフィックスとサフィックスの両方をランダムに生成
         if (! session()->has('install_data.admin_url')) {
-            session(['install_data.admin_url' => 'admin-'.strtolower(Str::random(4))]);
+            $prefixes = config('admin.url.admin_url_prefixes', ['admin']);
+            $prefix = $prefixes[array_rand($prefixes)];
+            $suffix = strtolower(Str::random(4));
+            session(['install_data.admin_url' => $prefix.'-'.$suffix]);
         }
 
         return redirect()->route('install.settings');

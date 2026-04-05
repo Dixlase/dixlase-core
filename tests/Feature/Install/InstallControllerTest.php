@@ -130,13 +130,147 @@ class InstallControllerTest extends TestCase
             ],
         ]);
 
-        // app_envとadmin_urlが欠けているのでバリデーションエラー
+        // app_envとadmin_url_prefix/suffixが欠けているのでバリデーションエラー
         $response = $this->post('/install/environment', [
             'app_url' => 'example.com',
             'app_timezone' => 'Asia/Tokyo',
         ]);
 
         $response->assertStatus(302);
-        $response->assertSessionHasErrors(['app_env', 'admin_url']);
+        $response->assertSessionHasErrors(['app_env', 'admin_url_prefix', 'admin_url_suffix']);
+    }
+
+    /**
+     * モード選択時にランダムな管理画面URLが生成されることをテスト
+     * プレフィックスはconfig候補から選択される
+     */
+    public function test_mode_selection_generates_random_admin_url(): void
+    {
+        $response = $this->post('/install/mode', [
+            'install_mode' => 0,
+        ]);
+
+        $adminUrl = session('install_data.admin_url');
+        $this->assertNotNull($adminUrl);
+
+        // プレフィックス-サフィックス形式であること
+        $this->assertMatchesRegularExpression('/^[a-z]+-[a-z0-9]{4}$/', $adminUrl);
+
+        // プレフィックスがconfig候補に含まれること
+        $prefixes = config('admin.url.admin_url_prefixes', ['admin']);
+        $parts = explode('-', $adminUrl, 2);
+        $this->assertContains($parts[0], $prefixes);
+    }
+
+    /**
+     * 詳細モードでプレフィックスとサフィックスが正しく結合されることをテスト
+     */
+    public function test_advanced_mode_combines_prefix_and_suffix(): void
+    {
+        $this->withSession([
+            'install_data' => [
+                'install_mode' => 1,
+                'site_name' => 'Test Site',
+                'admin_account_name' => 'admin',
+                'admin_email' => 'admin@example.com',
+                'admin_password' => 'encrypted_password',
+                'app_locale' => 'ja',
+            ],
+        ]);
+
+        $response = $this->post('/install/environment', [
+            'app_env' => 'production',
+            'app_url' => 'example.com',
+            'admin_url_prefix' => 'panel',
+            'admin_url_suffix' => 'test1234',
+            'app_timezone' => 'Asia/Tokyo',
+        ]);
+
+        $response->assertRedirect(route('install.database'));
+        $this->assertEquals('panel-test1234', session('install_data.admin_url'));
+    }
+
+    /**
+     * 詳細モードでサフィックスが3文字以下の場合バリデーションエラーになることをテスト
+     */
+    public function test_advanced_mode_rejects_short_suffix(): void
+    {
+        $this->withSession([
+            'install_data' => [
+                'install_mode' => 1,
+                'site_name' => 'Test Site',
+                'admin_account_name' => 'admin',
+                'admin_email' => 'admin@example.com',
+                'admin_password' => 'encrypted_password',
+                'app_locale' => 'ja',
+            ],
+        ]);
+
+        $response = $this->post('/install/environment', [
+            'app_env' => 'production',
+            'app_url' => 'example.com',
+            'admin_url_prefix' => 'admin',
+            'admin_url_suffix' => 'abc',
+            'app_timezone' => 'Asia/Tokyo',
+        ]);
+
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['admin_url_suffix']);
+    }
+
+    /**
+     * 詳細モードで不正な文字を含むサフィックスが拒否されることをテスト
+     */
+    public function test_advanced_mode_rejects_invalid_suffix_characters(): void
+    {
+        $this->withSession([
+            'install_data' => [
+                'install_mode' => 1,
+                'site_name' => 'Test Site',
+                'admin_account_name' => 'admin',
+                'admin_email' => 'admin@example.com',
+                'admin_password' => 'encrypted_password',
+                'app_locale' => 'ja',
+            ],
+        ]);
+
+        $response = $this->post('/install/environment', [
+            'app_env' => 'production',
+            'app_url' => 'example.com',
+            'admin_url_prefix' => 'admin',
+            'admin_url_suffix' => 'UPPER_case!',
+            'app_timezone' => 'Asia/Tokyo',
+        ]);
+
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['admin_url_suffix']);
+    }
+
+    /**
+     * 詳細モードで無効なプレフィックスが拒否されることをテスト
+     */
+    public function test_advanced_mode_rejects_invalid_prefix(): void
+    {
+        $this->withSession([
+            'install_data' => [
+                'install_mode' => 1,
+                'site_name' => 'Test Site',
+                'admin_account_name' => 'admin',
+                'admin_email' => 'admin@example.com',
+                'admin_password' => 'encrypted_password',
+                'app_locale' => 'ja',
+            ],
+        ]);
+
+        $response = $this->post('/install/environment', [
+            'app_env' => 'production',
+            'app_url' => 'example.com',
+            'admin_url_prefix' => 'hacked',
+            'admin_url_suffix' => 'test1234',
+            'app_timezone' => 'Asia/Tokyo',
+        ]);
+
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['admin_url_prefix']);
     }
 }

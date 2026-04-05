@@ -35,12 +35,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <fieldset>
             <legend>{{ __('admin/settings/base/admin.admin_url') }}</legend>
-            <x-form-text
-                name="admin_url"
-                :value="old('admin_url', $settings['admin_url'])"
-                :required="true"
-                class="input-lg"
-            />
+            <div class="flex items-center">
+                <x-form-select
+                    id="admin_url_prefix"
+                    name="admin_url_prefix"
+                    :options="$prefixes"
+                    :value="old('admin_url_prefix', $settings['admin_url_prefix'])"
+                    class="input-lg rounded-r-none"
+                />
+                <span class="p-2 bg-gray-200 dark:bg-gray-700 border-y border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm">-</span>
+                <x-form-text
+                    name="admin_url_suffix"
+                    id="admin_url_suffix"
+                    :value="old('admin_url_suffix', $settings['admin_url_suffix'])"
+                    :required="true"
+                    class="input-lg rounded-l-none"
+                />
+            </div>
+            <x-form-error field="admin_url_prefix" />
+            <x-form-error field="admin_url_suffix" />
+            <x-form-error field="admin_url" />
             <p>{!! __('admin/settings/base/admin.admin_url_help') !!}</p>
         </fieldset>
 
