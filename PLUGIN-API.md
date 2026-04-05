@@ -237,25 +237,37 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 ### 6.3 Admin Components
 
 `x-admin.save-button`, `x-admin.delete-button`, `x-admin.danger-zone`,
-`x-admin.account-status`, `x-admin.settings.security-notifications`
+`x-admin.account-status`, `x-admin.right-sidebar`,
+`x-admin.mode-guide-banner`, `x-admin.mode-partial-notice`, `x-admin.mode-readonly-banner`,
+`x-admin.theme-preview-container`, `x-admin.theme-preview-sidebar`,
+`x-admin.theme-preview-sidebar-section`
 
 ### 6.4 Front-end Components
 
 `x-front.button`, `x-front.card`, `x-front.breadcrumb`, `x-front.navigation`
 
-### 6.5 Specialized Components
+### 6.5 Content Editor Components
 
-`x-media.picker`, `x-media.selector`, `x-extension.card`, `x-captcha`,
-`x-security.captcha-settings`, `x-security.captcha-widget`,
-`x-security.csp-safe-mode-banner`, `x-security.login-attempt-limit-settings`,
+`x-content-editor.tabs`, `x-content-editor.preview-tabs`,
+`x-content-editor.preview-pane`, `x-content-editor.new-tab-preview`,
+`x-content-editor.scroll-buttons`, `x-content-editor.storage-info`,
+`x-content-editor.type-badge`
+
+### 6.6 Security & Auth Components
+
+`x-captcha`,
+`x-security.login-attempt-limit-settings`, `x-security.login-identifier-mode-selector`,
 `x-security.login-notification-selector`, `x-security.passkey-device-settings`,
 `x-security.password-settings`, `x-security.session-settings`,
 `x-security.two-fa-detailed-settings`, `x-security.two-fa-general-settings`,
 `x-two-fa.management`, `x-two-fa.mode-selector`, `x-two-fa.individual-settings`,
 `x-auth.login-form`, `x-auth.account-verification`, `x-auth.forgot-password`,
 `x-auth.reset-password`, `x-auth.verification-notice`, `x-auth.login-field`,
-`x-mail-server.form`, `x-mail-server.test`, `x-mail-server.verification-error`,
-`x-mail-server.verification-success`, `x-application-logo`, `x-auth-session-status`
+`x-application-logo`, `x-auth-session-status`
+
+### 6.7 Media Components
+
+`x-media.picker`, `x-media.selector`
 
 ---
 
