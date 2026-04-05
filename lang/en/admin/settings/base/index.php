@@ -24,11 +24,14 @@ return [
     'maintenance_inactive' => 'Normal Operation',
     'auto_configured' => 'This setting is automatically configured in Simple Mode.',
 
+    'no_gui_editor' => 'No GUI editor',
+
     'nav' => [
         'site' => 'Site Settings',
         'admin' => 'Admin Panel Settings',
         'mail' => 'Mail Settings',
         'maintenance' => 'Maintenance Settings',
         'mode' => 'Mode Settings',
+        'editor' => 'Content Editor',
     ],
 ];

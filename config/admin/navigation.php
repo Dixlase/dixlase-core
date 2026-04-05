@@ -169,6 +169,11 @@ return [
                         'route' => 'admin.settings.base.mode',
                         'icon' => 'fas fa-fw fa-sliders-h',
                     ],
+                    'editor' => [
+                        'text' => 'admin/navigation.settings.base.editor',
+                        'route' => 'admin.settings.base.editor',
+                        'icon' => 'fas fa-fw fa-pen-nib',
+                    ],
                 ],
             ],
             'security' => [

@@ -23,11 +23,4 @@ return [
     'force_ssl_help' => 'Force HTTPS access. Only enable if SSL certificate is configured.',
     'settings_updated' => 'Admin panel settings have been updated.',
     'admin_url_changed' => 'Admin URL has been changed. Please log in with the new URL.',
-
-    // コンテンツエディター設定
-    'content_editor_settings' => 'Content Editor',
-    'preferred_gui_editor' => 'GUI Editor',
-    'preferred_gui_editor_help' => 'Select the GUI block editor plugin to use for content editing. When multiple GUI editor plugins are installed, the selected one will be used as the default.',
-    'no_gui_editor_available' => 'No GUI editor plugin is installed. Install a GUI editor plugin to enable the block editor.',
-    'gui_editor_auto' => 'Auto (use the only available editor)',
 ];

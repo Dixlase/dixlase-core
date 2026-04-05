@@ -303,6 +303,12 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/mode', [Base\AdminBaseModeController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.mode')
                     ->name('mode.update');
+
+                // コンテンツエディター設定
+                Route::get('/editor', [Base\AdminBaseEditorController::class, 'index'])->name('editor');
+                Route::post('/editor', [Base\AdminBaseEditorController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.base.editor')
+                    ->name('editor.update');
             });
 
             // セキュリティ設定（権限チェック付き）

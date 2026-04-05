@@ -34,9 +34,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * 管理画面設定ページのGUIエディター設定テスト
+ * コンテンツエディター設定ページのテスト
  */
-class AdminBaseAdminEditorSettingTest extends TestCase
+class AdminBaseEditorSettingTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -67,29 +67,30 @@ class AdminBaseAdminEditorSettingTest extends TestCase
     // 表示テスト
     // ========================================
 
-    public function test_admin_settings_page_shows_content_editor_section(): void
+    public function test_editor_settings_page_returns_200(): void
     {
         $response = $this->actingAs($this->admin, 'member')
-            ->get(route('admin.settings.base.admin'));
+            ->get(route('admin.settings.base.editor'));
+
+        $response->assertStatus(200);
+    }
+
+    public function test_editor_settings_page_has_gui_editors_data(): void
+    {
+        $response = $this->actingAs($this->admin, 'member')
+            ->get(route('admin.settings.base.editor'));
 
         $response->assertStatus(200);
         $response->assertViewHas('guiEditors');
+        $response->assertViewHas('guiEditorOptions');
+        $this->assertIsArray($response->viewData('guiEditors'));
+        $this->assertIsArray($response->viewData('guiEditorOptions'));
     }
 
-    public function test_admin_settings_page_passes_gui_editors_as_array(): void
+    public function test_editor_settings_page_has_preferred_gui_editor_setting(): void
     {
         $response = $this->actingAs($this->admin, 'member')
-            ->get(route('admin.settings.base.admin'));
-
-        $response->assertStatus(200);
-        $guiEditors = $response->viewData('guiEditors');
-        $this->assertIsArray($guiEditors);
-    }
-
-    public function test_admin_settings_page_includes_preferred_gui_editor_in_settings(): void
-    {
-        $response = $this->actingAs($this->admin, 'member')
-            ->get(route('admin.settings.base.admin'));
+            ->get(route('admin.settings.base.editor'));
 
         $response->assertStatus(200);
         $settings = $response->viewData('settings');
@@ -103,13 +104,11 @@ class AdminBaseAdminEditorSettingTest extends TestCase
     public function test_preferred_gui_editor_is_saved(): void
     {
         $response = $this->actingAs($this->admin, 'member')
-            ->post(route('admin.settings.base.admin.update'), [
-                'admin_url_prefix' => 'admin',
-                'admin_url_suffix' => 'test1234',
+            ->post(route('admin.settings.base.editor.update'), [
                 'preferred_gui_editor' => 'dixlase-gui-editor',
             ]);
 
-        $response->assertRedirect();
+        $response->assertRedirect(route('admin.settings.base.editor'));
         $this->assertEquals(
             'dixlase-gui-editor',
             BaseSetting::get(EditorManager::PREFERRED_GUI_EDITOR_KEY),
@@ -119,13 +118,11 @@ class AdminBaseAdminEditorSettingTest extends TestCase
     public function test_preferred_gui_editor_can_be_empty(): void
     {
         $response = $this->actingAs($this->admin, 'member')
-            ->post(route('admin.settings.base.admin.update'), [
-                'admin_url_prefix' => 'admin',
-                'admin_url_suffix' => 'test1234',
+            ->post(route('admin.settings.base.editor.update'), [
                 'preferred_gui_editor' => '',
             ]);
 
-        $response->assertRedirect();
+        $response->assertRedirect(route('admin.settings.base.editor'));
         $this->assertEquals(
             '',
             BaseSetting::get(EditorManager::PREFERRED_GUI_EDITOR_KEY),
@@ -136,13 +133,13 @@ class AdminBaseAdminEditorSettingTest extends TestCase
     // 認証テスト
     // ========================================
 
-    public function test_guest_cannot_access_admin_settings(): void
+    public function test_guest_cannot_access_editor_settings(): void
     {
         $this->withMiddleware([
             CheckInstallationReady::class,
         ]);
 
-        $response = $this->get(route('admin.settings.base.admin'));
+        $response = $this->get(route('admin.settings.base.editor'));
 
         $response->assertRedirect();
     }
