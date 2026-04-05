@@ -38,11 +38,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         {{-- ===== エディタータイプ + プレビュートグル ===== --}}
         <div class="mb-4 space-y-3">
-            {{-- 機能説明 --}}
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ __('admin/front.create.description') }}
-            </p>
-
             {{-- エディタータイプ --}}
             <div>
                 <x-form-label :text="__('admin/front.create.editor_type_label')" class="mb-3" />
