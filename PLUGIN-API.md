@@ -1,35 +1,35 @@
-# Dixlase CMS プラグイン API 境界
+# Dixlase CMS Plugin API Boundary
 
-**バージョン:** dev
-**最終更新日:** 2026-04-05
-**目的:** AGPL ライセンス例外条項のための公開プラグイン API 境界の定義（LICENSE を参照）
+**Version:** dev
+**Last Updated:** 2026-04-05
+**Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE)
 
-このドキュメントは「プラグイン API」を構成するすべてのコンポーネントを定義します。
-プラグインおよびテーマが Dixlase プラグイン・テーマ例外に基づき、AGPL のコピーレフト義務を
-発生させることなく使用できる公開インターフェース、サービス、設定を示します。
-
----
-
-## プラグイン・テーマのライセンスについて
-
-Dixlase CMS と**このドキュメントに記載されたインターフェースのみを通じて**連携するプラグインおよびテーマは、Dixlase CMS の派生物とは**みなされません**。プロプライエタリライセンスを含む、任意のライセンスで配布することができます。
-
-この権利は **Dixlase プラグイン・テーマ例外条項**（`LICENSE` ファイルの「GNU AGPL バージョン3 第7条に基づく追加許可」セクションを参照）によって付与されます。例外は以下の全条件を満たす場合に適用されます:
-
-1. プラグイン/テーマが、このドキュメントに定義された Plugin API のみを通じて Dixlase CMS と通信すること。
-2. プラグイン/テーマが、コアのソースファイルを変更・置換・モンキーパッチしないこと。
-3. プラグイン/テーマが、コアの内部実装を迂回・複製しないこと。
-4. プラグイン/テーマが、標準の読み込み機構（`PluginLoaderTrait` / `ThemeLoaderTrait`）を通じて読み込まれ、`plugins/` または `themes/` ディレクトリに配置されていること。
-
-いずれかの条件を満たさない場合、プラグイン/テーマは AGPL-3.0 の全条項の対象となります。
+This document defines all components that form the "Plugin API" -- the public interfaces,
+services, and configurations that plugins and themes are permitted to use without triggering
+AGPL copyleft obligations under the Dixlase Plugin and Theme Exception.
 
 ---
 
-## 1. コントラクト / インターフェース
+## Licensing Your Plugin or Theme
+
+Plugins and themes that interact with Dixlase CMS **exclusively through the interfaces listed in this document** are **not** considered derivative works of Dixlase CMS. You may distribute them under any license of your choice, including proprietary licenses.
+
+This right is granted by the **Dixlase Plugin and Theme Exception** (see the `LICENSE` file, Section "Additional permission under GNU AGPL version 3 section 7"). The exception applies when all of the following conditions are met:
+
+1. Your plugin/theme communicates with Dixlase CMS only through the Plugin API defined in this document.
+2. Your plugin/theme does not modify, replace, or monkey-patch any core source file.
+3. Your plugin/theme does not bypass or replicate internal core implementations.
+4. Your plugin/theme is loaded through the standard loading mechanism (`PluginLoaderTrait` / `ThemeLoaderTrait`) and resides in the `plugins/` or `themes/` directory.
+
+If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 terms.
+
+---
+
+## 1. Contracts / Interfaces
 
 ### 1.1 Service Contracts
 
-| コントラクト | 説明 |
+| Contract | Description |
 |---|---|
 | `App\Contracts\Action\ActionInterface` | Contract for all CMS business operations |
 | `App\Contracts\Action\Actor` | Represents the entity performing an operation |
@@ -48,7 +48,7 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 
 ### 1.2 Plugin Integration Contracts
 
-| コントラクト | 説明 |
+| Contract | Description |
 |---|---|
 | `App\Contracts\PluginIntegration\DashboardNotificationProviderInterface` | ダッシュボード通知を提供するプラグインの契約 |
 | `App\Contracts\PluginIntegration\DashboardWidgetProviderInterface` | ダッシュボードウィジェットを提供するプラグインの契約 |
@@ -60,7 +60,7 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 
 ### 1.3 Plugin Capability Contracts
 
-| コントラクト | 説明 |
+| Contract | Description |
 |---|---|
 | `App\Contracts\Plugin\ApiResourceProviderInterface` | APIリソースプロバイダーインターフェース |
 | `App\Contracts\Plugin\ContentProviderCapableInterface` | コンテンツ提供機能を宣言するインターフェース |
@@ -72,7 +72,7 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 
 ### 1.4 Repository Contracts
 
-| コントラクト | 説明 |
+| Contract | Description |
 |---|---|
 | `App\Contracts\Repositories\ApiSettingRepositoryInterface` | API設定リポジトリインターフェース |
 | `App\Contracts\Repositories\BaseSettingRepositoryInterface` | 基本設定リポジトリインターフェース |
@@ -86,9 +86,9 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 
 ---
 
-## 2. プラグイン用トレイト
+## 2. Traits for Plugin Use
 
-| トレイト | 説明 |
+| Trait | Description |
 |---|---|
 | `App\Traits\AdminInterfaceTrait` | 管理画面の共通インターフェース初期化トレイト |
 | `App\Traits\AdminLoggedInTrait` | 管理画面ログイン後の共通初期化トレイト |
@@ -114,16 +114,16 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 
 ---
 
-## 3. 拡張用ベースコントローラー
+## 3. Base Controllers for Extension
 
-| コントローラー | 説明 |
+| Controller | Description |
 |---|---|
 | `App\Http\Controllers\Admin\AdminController` | 管理画面基底コントローラー |
 | `App\Http\Controllers\Admin\AdminLoggedinController` | 認証必須の管理画面コントローラー |
 
 ---
 
-## 4. データ転送オブジェクト（DTO）
+## 4. Data Transfer Objects (DTOs)
 
 ### 4.1 Action DTOs
 
@@ -186,7 +186,7 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 
 ---
 
-## 5. Enum
+## 5. Enums
 
 ### 5.1 System Enums
 
@@ -215,9 +215,9 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 
 ---
 
-## 6. Blade コンポーネント
+## 6. Blade Components
 
-### 6.1 フォームコンポーネント
+### 6.1 Form Components
 
 `x-form-text`, `x-form-email`, `x-form-password`, `x-form-textarea`, `x-form-select`,
 `x-form-checkbox`, `x-form-checkbox-group`, `x-form-toggle`, `x-form-toggle-group`,
@@ -226,7 +226,7 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 `x-form-input-with-label`, `x-form-password-tools`, `x-form-required-badge`,
 `x-form-content-editor`
 
-### 6.2 UI コンポーネント
+### 6.2 UI Components
 
 `x-ui-modal`, `x-ui-modal-vanilla`, `x-ui-notification`, `x-ui-livewire-notification`,
 `x-ui-livewire-modal`, `x-ui-message`, `x-ui-flash-message`, `x-ui-status-badge`,
@@ -234,16 +234,16 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 `x-ui-maintenance-banner`, `x-ui-admin-maintenance-banner`,
 `x-ui-appearance-mode-selector`, `x-ui-language-switcher`, `x-ui-admin-bar`
 
-### 6.3 管理画面コンポーネント
+### 6.3 Admin Components
 
 `x-admin.save-button`, `x-admin.delete-button`, `x-admin.danger-zone`,
 `x-admin.account-status`, `x-admin.settings.security-notifications`
 
-### 6.4 フロントエンドコンポーネント
+### 6.4 Front-end Components
 
 `x-front.button`, `x-front.card`, `x-front.breadcrumb`, `x-front.navigation`
 
-### 6.5 専用コンポーネント
+### 6.5 Specialized Components
 
 `x-media.picker`, `x-media.selector`, `x-extension.card`, `x-captcha`,
 `x-security.captcha-settings`, `x-security.captcha-widget`,
@@ -257,52 +257,32 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 `x-mail-server.form`, `x-mail-server.test`, `x-mail-server.verification-error`,
 `x-mail-server.verification-success`, `x-application-logo`, `x-auth-session-status`
 
-### 6.6 コンテンツエディタコンポーネント
+---
 
-コンテンツ編集（HTML/Markdown/GUI）で使用する共有コンポーネント群。
+## 7. Middleware Groups for Plugins
 
-**Blade コンポーネント / パーシャル:**
+### 7.1 API Middleware
 
-- `x-content-editor.tabs` — Content/CSS/JS タブナビゲーション
-- `x-content-editor.type-badge` — エディタタイプ表示バッジ（アイコン・色・説明付き）
-- `x-content-editor.storage-info` — ストレージタイプ選択・ファイルパス表示
-- `x-content-editor.new-tab-preview` — 別タブプレビューボタン
-- `x-content-editor.preview-tabs` — 編集/プレビュー切替タブ
-- `@include('components.content-editor.preview-pane')` — スプリットペインプレビューUI
-- `@include('components.content-editor.scroll-buttons')` — エディタ/プレビュースクロールボタン
+| Group | Description |
+|---|---|
+| `plugin.api` | Authenticated API routes (ApiKey auth + rate limiting + logging) |
+| `plugin.api.public` | Public API routes (rate limiting + logging, no auth) |
 
-**JavaScript API (`window.Dixlase.mixins`):**
+### 7.2 Web Middleware
 
-- `window.Dixlase.mixins.previewMixin` — iframe プレビュー状態管理（postMessage、デバイス切替）
-- `window.Dixlase.mixins.splitPaneMixin` — スプリットペインレイアウト（ドラッグリサイズ、水平/垂直切替）
-- `window.Dixlase.mixins.mergeMixins()` — getter 保持マージユーティリティ（Alpine.js の `...spread` 代替）
+| Group | Description |
+|---|---|
+| `plugin` | Basic plugin routes (session, cookies, view sharing, bindings) |
+| `plugin.web` | Plugin front-end routes (with IP filtering) |
+| `plugin.admin` | Plugin admin routes (auth required + IP filtering) |
 
 ---
 
-## 7. プラグイン用ミドルウェアグループ
+## 8. Configuration Structures
 
-### 7.1 API ミドルウェア
+### 8.1 Admin Navigation
 
-| グループ | 説明 |
-|---|---|
-| `plugin.api` | 認証付き API ルート（ApiKey 認証 + レート制限 + ログ） |
-| `plugin.api.public` | 公開 API ルート（レート制限 + ログ、認証なし） |
-
-### 7.2 Web ミドルウェア
-
-| グループ | 説明 |
-|---|---|
-| `plugin` | 基本プラグインルート（セッション、クッキー、ビュー共有、バインディング） |
-| `plugin.web` | プラグインフロントエンドルート（IP フィルタリング付き） |
-| `plugin.admin` | プラグイン管理画面ルート（認証必須 + IP フィルタリング） |
-
----
-
-## 8. 設定ファイル構造
-
-### 8.1 管理画面ナビゲーション
-
-**ファイル:** `plugins/{Name}/config/admin/navigation.php`
+**File:** `plugins/{Name}/config/admin/navigation.php`
 
 ```php
 return [
@@ -317,9 +297,9 @@ return [
 ];
 ```
 
-### 8.2 ロール権限
+### 8.2 Role Permissions
 
-**ファイル:** `plugins/{Name}/config/admin/roles.php`
+**File:** `plugins/{Name}/config/admin/roles.php`
 
 ```php
 return [
@@ -332,9 +312,9 @@ return [
 ];
 ```
 
-### 8.3 データベースクリーンアップ
+### 8.3 Database Cleanup
 
-**ファイル:** `plugins/{Name}/config/admin/database-cleanup.php`
+**File:** `plugins/{Name}/config/admin/database-cleanup.php`
 
 ```php
 return [
@@ -351,22 +331,22 @@ return [
 
 ---
 
-## 9. 注入可能なサービス
+## 9. Injectable Services
 
-### 9.1 プラグイン/テーマサービス
+### 9.1 Plugin/Theme Services
 
-以下の `@api` マーク付きサービスは DI で直接注入できます。
-その他のサービスはインターフェース経由でアクセスします（セクション 1 を参照）。
+The services marked with `@api` below can be directly injected via DI.
+The remaining services are accessed via their respective interfaces (see Section 1).
 
-- `App\Services\Plugin\DeclaresVerifier` — `@api`、直接 DI
-- `App\Services\Plugin\PluginPermissionService` — `@api`、直接 DI
-- `App\Services\Plugin\PluginServiceResolver` — `@api`、直接 DI
-- `App\Services\Plugin\CoreSignatureVerifier` — 代わりに `SignatureVerifierInterface` を使用
+- `App\Services\Plugin\DeclaresVerifier` — `@api`, direct DI
+- `App\Services\Plugin\PluginPermissionService` — `@api`, direct DI
+- `App\Services\Plugin\PluginServiceResolver` — `@api`, direct DI
+- `App\Services\Plugin\CoreSignatureVerifier` — use `SignatureVerifierInterface` instead
 - `App\Services\Theme\ThemePermissionService`
 - `App\Services\PluginMigrator`
 - `App\Services\PluginMigrationRepository`
 
-### 9.2 コアサービス
+### 9.2 Core Services
 
 - `App\Services\PermissionService`
 - `App\Services\PermissionRegistry`
@@ -382,12 +362,12 @@ return [
 - `App\Services\MailServerValidatorService`
 - `App\Services\RouteSlugRegistry`
 
-### 9.3 メール & ログ
+### 9.3 Mail & Logging
 
-- `App\Contracts\Mail\MailServiceInterface`（コンテナバインディング経由）
-- `App\Contracts\Logging\LogServiceInterface`（コンテナバインディング経由）
+- `App\Contracts\Mail\MailServiceInterface` (via container binding)
+- `App\Contracts\Logging\LogServiceInterface` (via container binding)
 
-### 9.4 セキュリティサービス
+### 9.4 Security Services
 
 - `App\Services\CaptchaTestService`
 - `App\Services\CaptchaFailoverService`
@@ -399,61 +379,61 @@ return [
 - `App\Services\TwoFa\TwoFaRecoveryCodeService`
 - `App\Services\EmailAuthenticationService`
 
-### 9.5 API & CSP サービス
+### 9.5 API & CSP Services
 
 - `App\Services\ApiRateLimitService`
 - `App\Services\Csp\CspPolicyRegistry`
 - `App\Services\Csp\CspBuilder`
 - `App\Services\Csp\CspNonceGenerator`
 
-### 9.6 ヘルパークラス
+### 9.6 Helper Classes
 
-| ヘルパー | 説明 |
+| Helper | Description |
 |---|---|
-| `App\Helpers\CaptchaHelper` | CAPTCHA 有効判定・ウィジェット描画・ドライバー設定ヘルパー |
-| `App\Helpers\ConfigHelper` | セキュリティ設定・セッション設定の取得ヘルパー |
-| `App\Helpers\ComposerLocalHelper` | composer-local.json の管理ヘルパー |
-| `App\Helpers\GitExcludeHelper` | .git/info/exclude ファイル管理ヘルパー |
-| `App\Helpers\GitIgnoreHelper` | .gitignore ファイル管理ヘルパー |
-| `App\Helpers\LocaleHelper` | 言語設定・ロケール判定ヘルパー |
-| `App\Helpers\LoginHelper` | ログイン認証・2FA チェック・セッション管理ヘルパー |
-| `App\Helpers\LoginLockoutHelper` | ログインロックアウト判定・記録ヘルパー |
-| `App\Helpers\PluginHelper` | プラグイン有効状態・パス・ルート読み込みヘルパー |
-| `App\Helpers\TwoFaHelper` | 二段階認証コード生成・送信・設定取得ヘルパー |
+| `App\Helpers\CaptchaHelper` | CAPTCHA enablement check, widget rendering, and driver configuration |
+| `App\Helpers\ConfigHelper` | Security and session configuration retrieval |
+| `App\Helpers\ComposerLocalHelper` | composer-local.json management |
+| `App\Helpers\GitExcludeHelper` | .git/info/exclude file management |
+| `App\Helpers\GitIgnoreHelper` | .gitignore file management |
+| `App\Helpers\LocaleHelper` | Locale detection and language settings |
+| `App\Helpers\LoginHelper` | Login authentication, 2FA check, and session management |
+| `App\Helpers\LoginLockoutHelper` | Login lockout detection and recording |
+| `App\Helpers\PluginHelper` | Plugin enablement status, paths, and route loading |
+| `App\Helpers\TwoFaHelper` | Two-factor authentication code generation, sending, and settings |
 
-### 9.7 アクター
+### 9.7 Actors
 
-- `App\Actors\MemberActor` — Action フレームワーク用のメンバーアクター実装
+- `App\Actors\MemberActor` — Member actor implementation for the Action framework
 
-### 9.8 イベント
+### 9.8 Events
 
-- `App\Events\AuditLogCreated` — 監査ログ作成イベント（SIEM 連携・プラグインフック用）
-- `App\Events\SecurityAlertEvent` — セキュリティアラートイベント
+- `App\Events\AuditLogCreated` — Audit log creation event (for SIEM integration and plugin hooks)
+- `App\Events\SecurityAlertEvent` — Security alert event
 
-### 9.9 バリデーションルール
+### 9.9 Validation Rules
 
-- `App\Rules\UniqueContentSlug` — コンテンツスラッグの一意性バリデーション
-- `App\Rules\UniqueRouteSlug` — ルートスラッグの一意性バリデーション
+- `App\Rules\UniqueContentSlug` — Content slug uniqueness validation
+- `App\Rules\UniqueRouteSlug` — Route slug uniqueness validation
 
 ---
 
-## 10. Eloquent モデル
+## 10. Eloquent Models
 
-### 10.1 ユーザー/メンバーモデル
+### 10.1 User/Member Models
 
 - `App\Models\Member`
 
-### 10.2 コンテンツモデル
+### 10.2 Content Models
 
 - `App\Models\FrontPage`
 - `App\Models\Media`
 
-### 10.3 プラグイン/拡張モデル
+### 10.3 Plugin/Extension Models
 
 - `App\Models\Plugin`
 - `App\Models\Theme`
 
-### 10.4 システムモデル
+### 10.4 System Models
 
 - `App\Models\BaseSetting`
 - `App\Models\SecuritySetting`
@@ -461,21 +441,21 @@ return [
 
 ---
 
-## 11. グローバルヘルパー関数
+## 11. Global Helper Functions
 
-| 関数 | 説明 |
+| Function | Description |
 |---|---|
-| `shortcode_parse(string $content): string` | コンテンツ内のショートコードを解析・実行する |
+| `shortcode_parse(string $content): string` | Parse and execute shortcodes in content |
 
 ---
 
-## 12. プラグインアーキテクチャ要件
+## 12. Plugin Architecture Requirements
 
-### 12.1 プラグインディレクトリ構造
+### 12.1 Plugin Directory Structure
 
 ```
 plugins/PluginName/
-├── plugin.json              # 必須: メタデータ、権限、宣言
+├── plugin.json              # Required: metadata, permissions, declares
 ├── composer.json
 ├── app/
 │   └── Providers/
@@ -495,20 +475,20 @@ plugins/PluginName/
 └── tests/
 ```
 
-### 12.2 自己完結原則
+### 12.2 Self-Containment Principle
 
-プラグインはアーキテクチャ上自己完結しています — すべてのプラグインファイルは `plugins/PluginName/` 内に配置され、**コアのソースファイルを一切改変しません**。具体的には:
+Plugins are architecturally self-contained — all plugin files reside within `plugins/PluginName/` and **do not modify any core source files**. Specifically:
 
-- **設定ファイル**（`config/admin/navigation.php`、`roles.php` 等）はプラグインディレクトリ内に提供され、`PluginLoaderTrait` によって起動時にアプリケーションへマージされます。コアの設定ファイルは上書きされません。
-- **ルートファイル**（`routes/`）はプラグインディレクトリから自動読み込みされます。コアのルートファイルは改変されません。
-- **マイグレーション**（`database/migrations/`）はプラグイン固有のテーブルのみを管理します。コアのデータベーススキーマは変更されません。
-- **ビューと翻訳**（`resources/views/`、`lang/`）はプラグインの slug で名前空間化され、コアのテンプレートを置き換えません。
+- **Config files** (`config/admin/navigation.php`, `roles.php`, etc.) are provided within the plugin directory and merged into the application by `PluginLoaderTrait` at boot time. Core config files are never overwritten.
+- **Route files** (`routes/`) are auto-loaded from the plugin directory. Core route files are not modified.
+- **Migrations** (`database/migrations/`) manage only plugin-owned tables. Core database schema is not altered.
+- **Views and translations** (`resources/views/`, `lang/`) are namespaced under the plugin's slug and do not replace core templates.
 
-この自己完結性により、プラグインのインストール・アンインストールはディレクトリの追加・削除のみで完結し、コアファイルには一切触れません。ライセンス上、このアーキテクチャを通じてプラグイン固有の設定・ルート・ビュー・マイグレーションを提供することは、**コアソースファイルの改変には該当しません**。
+This self-containment means that installing or removing a plugin involves only adding or deleting its directory — no core files are touched. For license purposes, providing plugin-specific config, routes, views, and migrations through this architecture **does not constitute modification of core source files**.
 
-### 12.3 ServiceProvider 要件
+### 12.3 ServiceProvider Requirements
 
-プラグインは `PluginLoaderTrait` を使用する ServiceProvider を提供する必要があります:
+Plugins must provide a ServiceProvider that uses `PluginLoaderTrait`:
 
 ```php
 namespace Plugins\PluginName\App\Providers;
@@ -525,7 +505,7 @@ class PluginNameServiceProvider extends ServiceProvider
 }
 ```
 
-### 12.4 plugin.json スキーマ
+### 12.4 plugin.json Schema
 
 ```json
 {
@@ -562,7 +542,7 @@ class PluginNameServiceProvider extends ServiceProvider
 
 ---
 
-## 13. 翻訳ファイル構造
+## 13. Translation Structure
 
 ```
 plugins/PluginName/lang/
@@ -580,9 +560,9 @@ plugins/PluginName/lang/
 
 ---
 
-## 14. `@api` PHPDoc タグ規約
+## 14. `@api` PHPDoc Tag Convention
 
-プラグイン API を構成するすべてのクラスには `@api` PHPDoc タグが付与されています:
+All classes that form the Plugin API are annotated with the `@api` PHPDoc tag:
 
 ```php
 /**
@@ -590,30 +570,30 @@ plugins/PluginName/lang/
  */
 ```
 
-### プラグイン開発者向けガイドライン
-- **依存して安全:** `@api` タグ付きクラスは安定しており、ライセンス例外の対象です
-- **依存を避ける:** `@api` タグなしのクラスは内部実装の詳細です
-- **PHPStan 強制:** DixlaseDevKit は非 `@api` インポートに対する PHPStan ルールを提供します
-- **クイックチェック:** `dls:plugin:check-api {plugin-name}` でプラグインの非 API インポートをスキャンできます
+### Guidelines for Plugin Developers
+- **Safe to depend on:** Classes with `@api` tag are stable and covered by the license exception
+- **Avoid depending on:** Classes without `@api` tag are internal implementation details
+- **PHPStan enforcement:** DixlaseDevKit provides a PHPStan rule that warns about non-`@api` imports
+- **Quick check:** Run `dls:plugin:check-api {plugin-name}` to scan your plugin for non-API imports
 
-### コアコントリビューター向けガイドライン
-- プラグイン/テーマでの使用を意図した新しいクラスには `@api` を追加する
-- 既存クラスから `@api` を削除する場合はメジャーバージョンアップが必要な破壊的変更です
-- `dls:plugin:check-api`（DixlaseDevKit）で API サーフェスの一貫性を検証できます
+### Guidelines for Core Contributors
+- Add `@api` to any new class intended for plugin/theme use
+- Removing `@api` from an existing class is a breaking change requiring a major version bump
+- Run `dls:plugin:check-api` (DixlaseDevKit) to verify API surface consistency
 
 ---
 
-## 15. プラグイン API に含まれないもの
+## 15. What Is NOT Part of the Plugin API
 
-以下は**内部実装の詳細**であり、例外の対象に含まれ**ません**:
+The following are **internal implementation details** and are NOT covered by the exception:
 
-- 上記に記載されたベースクラス以外の内部コントローラーロジック
-- サービスクラスの実装（代わりにコントラクト/インターフェースを使用）
-- ドキュメント化されていないモデルスコープメソッド
-- リクエストバリデーションクラス（Form Request）
-- 内部イベントハンドリング基盤
-- 内部ジョブキュー基盤（`ShouldQueue` インターフェースを除く）
-- リストされたクラスの private/protected メソッド
-- モデルを通じて公開されていないデータベーススキーマの内部
+- Internal controller logic beyond base classes listed above
+- Service class implementations (use contracts/interfaces instead)
+- Undocumented model scope methods
+- Request validation classes (Form Requests)
+- Internal event handling infrastructure
+- Internal job queue infrastructure (except `ShouldQueue` interface)
+- Private/protected methods of any listed class
+- Database schema internals not exposed through models
 
-内部コンポーネントに依存するプラグインは、完全な AGPL-3.0 条件の対象となる派生著作物となります。
+Plugins relying on internal components become derivative works subject to full AGPL-3.0 terms.
