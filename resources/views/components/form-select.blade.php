@@ -4,6 +4,8 @@ This file is part of Dixlase.
 Copyright (C) 2025 exc-D inc.
 https://exc-d.com
 
+@api プラグイン/テーマから <x-form-select /> として使用可能
+
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
