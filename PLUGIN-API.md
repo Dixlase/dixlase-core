@@ -255,8 +255,7 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 `x-auth.login-form`, `x-auth.account-verification`, `x-auth.forgot-password`,
 `x-auth.reset-password`, `x-auth.verification-notice`, `x-auth.login-field`,
 `x-mail-server.form`, `x-mail-server.test`, `x-mail-server.verification-error`,
-`x-mail-server.verification-success`, `x-application-logo`, `x-auth-session-status`,
-`x-content-editor.new-tab-preview`
+`x-mail-server.verification-success`, `x-application-logo`, `x-auth-session-status`
 
 ---
 
@@ -584,29 +583,7 @@ plugins/PluginName/lang/
 
 ---
 
-## 15. JavaScript ランタイム API
-
-プラグイン/テーマが `window.Dixlase` 経由で利用可能なクライアントサイド API。
-コアの管理画面JSバンドルで登録され、プラグインJSから直接 `import` せずに使用できる。
-
-### 15.1 ミックスイン (`window.Dixlase.mixins`)
-
-| API | 説明 |
-|---|---|
-| `previewMixin(config)` | iframe プレビュー状態管理（デバイス切替、スケーリング） |
-| `splitPaneMixin()` | スプリットペインレイアウト（ドラッグリサイズ） |
-| `mergeMixins(...objects)` | getter 保持マージユーティリティ |
-| `constants` | `DEVICE_PRESETS`, `MIN_PANE_WIDTH` 等の定数 |
-
-### 15.2 ユーティリティ (`window.Dixlase`)
-
-| API | 説明 |
-|---|---|
-| `newTabPreview(url, el)` | 親フォームのデータを収集し別タブでプレビュー |
-
----
-
-## 16. プラグイン API に含まれないもの
+## 15. プラグイン API に含まれないもの
 
 以下は**内部実装の詳細**であり、例外の対象に含まれ**ません**:
 
