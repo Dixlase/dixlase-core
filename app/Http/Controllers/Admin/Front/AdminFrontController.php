@@ -58,6 +58,8 @@ class AdminFrontController extends AdminLoggedInController
      */
     public function index(): View
     {
+        $this->setDescription(__('admin/front.index.description'));
+
         $frontPage = FrontPage::findByType('main_content');
         $languages = config('language.languages', []);
 
@@ -101,6 +103,8 @@ class AdminFrontController extends AdminLoggedInController
         if ($existing) {
             return redirect()->route('admin.front.edit');
         }
+
+        $this->setDescription(__('admin/front.create.description'));
 
         $languages = collect(config('language.languages', []))->mapWithKeys(
             fn ($label, $code) => [$code => __("common.{$code}")]
@@ -202,6 +206,8 @@ class AdminFrontController extends AdminLoggedInController
      */
     public function edit(): View|RedirectResponse
     {
+        $this->setDescription(__('admin/front.edit.description'));
+
         $frontPage = FrontPage::findByType('main_content');
 
         // コンテンツ未存在時は create にリダイレクト
