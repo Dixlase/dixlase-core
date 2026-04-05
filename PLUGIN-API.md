@@ -257,6 +257,26 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 `x-mail-server.form`, `x-mail-server.test`, `x-mail-server.verification-error`,
 `x-mail-server.verification-success`, `x-application-logo`, `x-auth-session-status`
 
+### 6.6 コンテンツエディタコンポーネント
+
+コンテンツ編集（HTML/Markdown/GUI）で使用する共有コンポーネント群。
+
+**Blade コンポーネント / パーシャル:**
+
+- `x-content-editor.tabs` — Content/CSS/JS タブナビゲーション
+- `x-content-editor.type-badge` — エディタタイプ表示バッジ（アイコン・色・説明付き）
+- `x-content-editor.storage-info` — ストレージタイプ選択・ファイルパス表示
+- `x-content-editor.new-tab-preview` — 別タブプレビューボタン
+- `x-content-editor.preview-tabs` — 編集/プレビュー切替タブ
+- `@include('components.content-editor.preview-pane')` — スプリットペインプレビューUI
+- `@include('components.content-editor.scroll-buttons')` — エディタ/プレビュースクロールボタン
+
+**JavaScript API (`window.Dixlase.mixins`):**
+
+- `window.Dixlase.mixins.previewMixin` — iframe プレビュー状態管理（postMessage、デバイス切替）
+- `window.Dixlase.mixins.splitPaneMixin` — スプリットペインレイアウト（ドラッグリサイズ、水平/垂直切替）
+- `window.Dixlase.mixins.mergeMixins()` — getter 保持マージユーティリティ（Alpine.js の `...spread` 代替）
+
 ---
 
 ## 7. プラグイン用ミドルウェアグループ
