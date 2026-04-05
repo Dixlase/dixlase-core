@@ -42,6 +42,7 @@ return [
 
         'lang_label' => 'Language',
         'editor_type_label' => 'Editor Type',
+        'editor_type_help' => 'Editor type can only be selected during creation and cannot be changed after saving.',
         'content_label' => 'Content',
         'content_placeholder' => 'Enter your front page content...',
 

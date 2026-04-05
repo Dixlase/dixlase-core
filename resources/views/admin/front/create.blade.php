@@ -36,17 +36,41 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           })">
         @csrf
 
-        {{-- ===== プレビュートグル ===== --}}
-        <div class="flex flex-wrap items-center gap-3 mb-4 text-xs">
-            <button type="button" @click="togglePreview()"
-                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-colors"
-                :class="previewVisible
-                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-700'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'"
-                :title="previewVisible ? '{{ __('components/content-editor.preview_hide') }}' : '{{ __('components/content-editor.preview_show') }}'">
-                <i class="fas" :class="previewVisible ? 'fa-eye' : 'fa-eye-slash'"></i>
-                <span x-text="previewVisible ? '{{ __('components/content-editor.preview_hide') }}' : '{{ __('components/content-editor.preview_show') }}'"></span>
-            </button>
+        {{-- ===== エディタータイプ + プレビュートグル ===== --}}
+        <div class="mb-4 space-y-3">
+            {{-- 機能説明 --}}
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                {{ __('admin/front.create.description') }}
+            </p>
+
+            {{-- エディタータイプ --}}
+            <div>
+                <x-form-label :text="__('admin/front.create.editor_type_label')" class="mb-3" />
+                <x-form-radio-card-group
+                    name="editor_type"
+                    :options="$editorCardOptions"
+                    :value="old('editor_type', 'markdown')"
+                    :columns="3"
+                    xModel="editorType"
+                />
+                <x-form-error name="editor_type" />
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    <i class="fas fa-info-circle mr-1"></i>{{ __('admin/front.create.editor_type_help') }}
+                </p>
+            </div>
+
+            {{-- プレビュートグル --}}
+            <div class="flex flex-wrap items-center gap-3 text-xs">
+                <button type="button" @click="togglePreview()"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-colors"
+                    :class="previewVisible
+                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-700'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'"
+                    :title="previewVisible ? '{{ __('components/content-editor.preview_hide') }}' : '{{ __('components/content-editor.preview_show') }}'">
+                    <i class="fas" :class="previewVisible ? 'fa-eye' : 'fa-eye-slash'"></i>
+                    <span x-text="previewVisible ? '{{ __('components/content-editor.preview_hide') }}' : '{{ __('components/content-editor.preview_show') }}'"></span>
+                </button>
+            </div>
         </div>
 
         {{-- ===== スプリットペインコンテナ ===== --}}
@@ -64,18 +88,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                  :style="isHorizontal && previewVisible ? 'width: ' + (splitRatio * 100) + '%; max-height: calc(100vh - 160px)' : ''">
 
                 <div class="space-y-4">
-                    {{-- エディタータイプ --}}
-                    <div>
-                        <x-form-label :text="__('admin/front.create.editor_type_label')" class="mb-3" />
-                        <x-form-radio-card-group
-                            name="editor_type"
-                            :options="$editorCardOptions"
-                            :value="old('editor_type', 'markdown')"
-                            :columns="3"
-                            xModel="editorType"
-                        />
-                        <x-form-error name="editor_type" />
-                    </div>
 
                     {{-- タブナビゲーション（HTML エディタ時のみ） --}}
                     <div x-show="isHtmlEditor" x-cloak>
