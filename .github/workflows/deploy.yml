@@ -45,6 +45,12 @@ jobs:
                 composer install --no-dev --no-interaction --optimize-autoloader
               fi
 
+              # フロントエンドビルド
+              if [ -f package.json ]; then
+                npm ci --no-audit --no-fund
+                npm run build
+              fi
+
               # パーミッション修正（www-data が書き込めるように）
               docker exec compose-php-1 chown www-data:www-data /var/www/apps/$SITE
               docker exec compose-php-1 chmod -R 777 /var/www/apps/$SITE/storage /var/www/apps/$SITE/bootstrap/cache
