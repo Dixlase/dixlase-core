@@ -67,10 +67,10 @@ jobs:
             for SITE in brand docs demo keys; do
               echo "=== Deploying $SITE (${{ steps.target.outputs.env }}) ==="
               cd "$BASE/$SITE"
-              git fetch origin
 
-              # パーミッション問題を回避してリセット
-              git checkout -f origin/main
+              # gitが管理するファイルの所有権をデプロイユーザーに修正（パーミッションエラー回避）
+              sudo chown -R "$USER":"$USER" .
+              git fetch origin
               git reset --hard origin/main
 
               # ストレージディレクトリの復元（git reset で消える場合がある）
