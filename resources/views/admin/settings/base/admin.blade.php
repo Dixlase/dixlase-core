@@ -33,15 +33,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section>
         <h2>{{ __('admin/settings/base/admin.admin_panel_settings') }}</h2>
 
-        <fieldset>
+        <fieldset x-data="{
+            prefix: '{{ old('admin_url_prefix', $settings['admin_url_prefix']) }}',
+            suffix: '{{ old('admin_url_suffix', $settings['admin_url_suffix']) }}',
+            baseUrl: '{{ url('/') }}',
+            get fullUrl() { return this.baseUrl + '/' + this.prefix + '-' + this.suffix; },
+            copied: false,
+            copyUrl() {
+                navigator.clipboard.writeText(this.fullUrl);
+                this.copied = true;
+                setTimeout(() => { this.copied = false; }, 2000);
+            }
+        }">
             <legend>{{ __('admin/settings/base/admin.admin_url') }}</legend>
             <div class="flex items-center">
+                <span class="p-2 bg-gray-200 dark:bg-gray-700 border border-r-0 border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300 text-sm whitespace-nowrap">{{ url('/') }}/</span>
                 <x-form-select
                     id="admin_url_prefix"
                     name="admin_url_prefix"
                     :options="$prefixes"
                     :value="old('admin_url_prefix', $settings['admin_url_prefix'])"
-                    class="input-lg rounded-r-none"
+                    :useDefaultClass="false"
+                    class="p-2 bg-gray-50 dark:bg-gray-800 border-y border-gray-300 dark:border-gray-500 text-sm dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    xModel="prefix"
                 />
                 <span class="p-2 bg-gray-200 dark:bg-gray-700 border-y border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm">-</span>
                 <x-form-text
@@ -50,7 +64,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :value="old('admin_url_suffix', $settings['admin_url_suffix'])"
                     :required="true"
                     class="input-lg rounded-l-none"
+                    x-model="suffix"
                 />
+            </div>
+            <div class="flex items-center mt-2 gap-2">
+                <span class="text-sm text-gray-500 dark:text-gray-400" x-text="fullUrl"></span>
+                <button type="button" @click="copyUrl()" class="inline-flex items-center text-sm text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition">
+                    <template x-if="!copied">
+                        <span><i class="fas fa-copy mr-1"></i>{{ __('admin/settings/base/admin.copy_url') }}</span>
+                    </template>
+                    <template x-if="copied">
+                        <span class="text-green-500 dark:text-green-400"><i class="fas fa-check mr-1"></i>{{ __('admin/settings/base/admin.copied') }}</span>
+                    </template>
+                </button>
             </div>
             <x-form-error field="admin_url_prefix" />
             <x-form-error field="admin_url_suffix" />

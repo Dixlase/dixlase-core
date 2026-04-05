@@ -19,6 +19,8 @@ return [
     'admin_url_prefix' => 'URL Prefix',
     'admin_url_suffix' => 'URL Suffix',
     'admin_url_help' => 'Choose a prefix and enter a suffix to set the admin panel URL path.<br>The suffix must be at least 4 characters (lowercase letters and numbers only).<br>Warning: Changing the admin URL will log you out of the admin panel.',
+    'copy_url' => 'Copy',
+    'copied' => 'Copied!',
     'force_ssl' => 'Force SSL',
     'force_ssl_help' => 'Force HTTPS access. Only enable if SSL certificate is configured.',
     'settings_updated' => 'Admin panel settings have been updated.',
