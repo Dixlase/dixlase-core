@@ -93,8 +93,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </aside>
 
                 <!-- Sidebar Toggle Button (Desktop) -->
-                <button @click="sidebarCollapsed = !sidebarCollapsed; var fs=document.getElementById('fouc-sidebar'); if(fs) fs.textContent=''"
-                        class="hidden sm:flex fixed top-14 left-0 z-40 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                <button type="button"
+                        @click="sidebarCollapsed = !sidebarCollapsed; var fs=document.getElementById('fouc-sidebar'); if(fs) fs.textContent=''"
+                        class="hidden sm:flex fixed top-14 left-0 z-40 items-center backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
                         :class="{
                             'translate-x-0': sidebarCollapsed,
                             'translate-x-64': !sidebarCollapsed
