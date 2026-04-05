@@ -49,4 +49,8 @@ return [
     'preview_height' => '高さ',
     'scroll_to_editor' => 'エディタに移動',
     'scroll_to_preview' => 'プレビューに移動',
+
+    // 別タブプレビュー
+    'new_tab_preview' => 'プレビュー',
+    'new_tab_preview_help' => '現在の内容を保存前に新しいウィンドウでプレビューします。',
 ];

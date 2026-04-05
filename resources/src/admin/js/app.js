@@ -45,3 +45,40 @@ window.Dixlase.mixins = {
     mergeMixins,
     constants: { DEVICE_PRESETS, STORAGE_KEY_SPLIT_RATIO, MIN_PANE_WIDTH, HORIZONTAL_MIN_WIDTH },
 };
+
+/**
+ * @api プラグイン/テーマから window.Dixlase.newTabPreview() として使用可能
+ *
+ * 別タブプレビュー: 親フォームのデータを収集し、指定URLにPOSTして新しいタブで開く。
+ * x-content-editor.new-tab-preview コンポーネントから呼び出される。
+ *
+ * @param {string} url - プレビュー用POSTエンドポイントのURL
+ * @param {HTMLElement} el - ボタン要素（親フォームの特定に使用）
+ */
+window.Dixlase.newTabPreview = function(url, el) {
+    if (!url) return;
+
+    var parentForm = el.closest('form');
+    var previewForm = document.createElement('form');
+    previewForm.method = 'POST';
+    previewForm.action = url;
+    previewForm.target = '_blank';
+    previewForm.style.display = 'none';
+
+    if (parentForm) {
+        var data = new FormData(parentForm);
+        for (var pair of data.entries()) {
+            // _method (PUT/PATCH) は除外（プレビューはPOST）
+            if (pair[0] === '_method') continue;
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = pair[0];
+            input.value = pair[1];
+            previewForm.appendChild(input);
+        }
+    }
+
+    document.body.appendChild(previewForm);
+    previewForm.submit();
+    document.body.removeChild(previewForm);
+};
