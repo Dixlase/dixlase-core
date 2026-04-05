@@ -119,7 +119,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | Controller | Description |
 |---|---|
 | `App\Http\Controllers\Admin\AdminController` | 管理画面基底コントローラー |
-| `App\Http\Controllers\Admin\AdminLoggedinController` | 認証必須の管理画面コントローラー |
+| `App\Http\Controllers\Admin\AdminLoggedInController` | 認証必須の管理画面コントローラー |
 
 ---
 
