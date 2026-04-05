@@ -92,6 +92,53 @@ class GitHubSourceProviderTest extends TestCase
         $this->assertStringContainsString('401', $result['message']);
     }
 
+    public function test_check_connection_public_success_without_token(): void
+    {
+        $source = ExtensionSource::query()->create([
+            'name' => 'Public GitHub',
+            'type' => 'github',
+            'base_url' => 'https://api.github.com',
+            'owner' => 'TestOrg',
+            'priority' => 0,
+        ]);
+        $provider = new GitHubSourceProvider($source);
+
+        Http::fake([
+            'api.github.com/users/TestOrg' => Http::response([
+                'login' => 'TestOrg',
+            ], 200, [
+                'X-RateLimit-Remaining' => '59',
+            ]),
+        ]);
+
+        $result = $provider->checkConnection();
+
+        $this->assertTrue($result['success']);
+        $this->assertStringContainsString('TestOrg', $result['message']);
+        $this->assertFalse($result['details']['authenticated']);
+    }
+
+    public function test_check_connection_public_failure_without_token(): void
+    {
+        $source = ExtensionSource::query()->create([
+            'name' => 'Public GitHub',
+            'type' => 'github',
+            'base_url' => 'https://api.github.com',
+            'owner' => 'NonExistentOrg',
+            'priority' => 0,
+        ]);
+        $provider = new GitHubSourceProvider($source);
+
+        Http::fake([
+            'api.github.com/users/NonExistentOrg' => Http::response(['message' => 'Not Found'], 404),
+        ]);
+
+        $result = $provider->checkConnection();
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('404', $result['message']);
+    }
+
     public function test_is_available_returns_true_on_success(): void
     {
         Http::fake([
