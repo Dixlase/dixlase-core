@@ -8,6 +8,7 @@ export default defineConfig(({ command }) => ({
     plugins: [
         laravel({
             input: [
+                'resources/src/common/css/tailwind.css',
                 'resources/src/admin/js/app.js',
                 'resources/src/admin/scss/style.scss',
                 'resources/src/common/js/app.js',
@@ -67,6 +68,7 @@ export default defineConfig(({ command }) => ({
         assetsDir: '.', // アセットディレクトリ（outDir相対）
         rollupOptions: {
             input: {
+                tailwind: path.resolve(__dirname, 'resources/src/common/css/tailwind.css'),
                 admin_js: path.resolve(__dirname, 'resources/src/admin/js/app.js'),
                 admin_css: path.resolve(__dirname, 'resources/src/admin/scss/style.scss'),
                 common_js: path.resolve(__dirname, 'resources/src/common/js/app.js'),
