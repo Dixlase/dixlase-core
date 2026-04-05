@@ -371,6 +371,9 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/extensions', [Security\AdminSecurityExtensionsController::class, 'update'])
                     ->middleware('check.menu.edit:settings.security.extensions')
                     ->name('extensions.update');
+                Route::post('/extensions/test-source', [Security\AdminSecurityExtensionsController::class, 'testSource'])
+                    ->middleware('check.menu.edit:settings.security.extensions')
+                    ->name('extensions.test-source');
 
                 // CSP
                 Route::get('/csp', [Security\AdminSecurityCspController::class, 'index'])

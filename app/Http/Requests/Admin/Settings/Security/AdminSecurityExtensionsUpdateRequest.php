@@ -50,13 +50,18 @@ class AdminSecurityExtensionsUpdateRequest extends FormRequest
             'extension_plugin_max_health_level' => 'required|integer|min:0|max:3',
             'extension_theme_max_health_level' => 'required|integer|min:0|max:3',
             'extension_allow_logic_themes' => 'boolean',
-            'extension_permission_mismatch_action' => 'required|' . SecurityAction::validationRule(),
+            'extension_permission_mismatch_action' => 'required|'.SecurityAction::validationRule(),
             'extension_notify_on_install' => 'boolean',
             'extension_notify_on_uninstall' => 'boolean',
             'extension_notify_on_enable' => 'boolean',
             'extension_notify_on_disable' => 'boolean',
             'extension_notify_on_unhealthy' => 'boolean',
             'extension_log_operations' => 'boolean',
+            // Extension source settings
+            'extension_source_type' => 'required|in:'.implode(',', array_keys(config('extension-sources.presets', ['github' => []]))),
+            'extension_source_owner' => 'nullable|string|max:100',
+            'extension_source_token' => 'nullable|string|max:500',
+            'extension_update_check_interval' => 'required|integer|in:'.implode(',', array_keys(config('extension-sources.check_intervals', [86400 => '']))),
         ];
     }
 }
