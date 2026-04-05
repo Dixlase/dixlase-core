@@ -54,6 +54,10 @@ class InstallEnvironmentController extends BaseInstallController
             // アクセス中のプロトコルからSSL強制を自動判定
             $data['force_ssl'] = $request->isSecure()
                 || $request->header('X-Forwarded-Proto') === 'https';
+        } else {
+            // 詳細モード: プレフィックスとサフィックスを結合
+            $data['admin_url'] = $data['admin_url_prefix'].'-'.$data['admin_url_suffix'];
+            unset($data['admin_url_prefix'], $data['admin_url_suffix']);
         }
 
         // プロトコル除去

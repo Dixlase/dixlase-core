@@ -51,8 +51,10 @@ return [
 
     // Admin URL
     'admin_url' => 'Admin Panel URL',
-    'admin_url_security_note' => 'For production, it is recommended to use a URL other than "admin" that is harder to guess.',
-    'admin_url_auto_generated' => 'The admin URL is automatically generated with a random suffix for security.',
+    'admin_url_prefix' => 'URL Prefix',
+    'admin_url_suffix' => 'URL Suffix',
+    'admin_url_security_note' => 'Choose a prefix and enter a suffix. The suffix must be at least 4 characters (lowercase letters and numbers only).',
+    'admin_url_auto_generated' => 'The admin URL is automatically generated with a random prefix and suffix for security.',
 
     // SSL Settings
     'force_ssl' => 'Force SSL (HTTPS)',

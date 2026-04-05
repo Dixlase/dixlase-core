@@ -128,17 +128,41 @@
         <fieldset>
             <legend class="sr-only">{{ __('install/step2.admin_panel_url') }}</legend>
 
+            @php
+                $adminUrlPrefixes = config('admin.url.admin_url_prefixes', ['admin']);
+                $currentAdminUrl = old('admin_url_prefix', '') !== ''
+                    ? old('admin_url_prefix') . '-' . old('admin_url_suffix', '')
+                    : session('install_data.admin_url', 'admin');
+                $parts = explode('-', $currentAdminUrl, 2);
+                $currentPrefix = in_array($parts[0], $adminUrlPrefixes) ? $parts[0] : $adminUrlPrefixes[0];
+                $currentSuffix = $parts[1] ?? '';
+                $prefixOptions = array_combine($adminUrlPrefixes, $adminUrlPrefixes);
+            @endphp
+
             <div>
-                <x-form-label for="admin_url" :text="__('install/step2.admin_url')" />
+                <x-form-label for="admin_url_suffix" :text="__('install/step2.admin_url')" :required="true" />
                 <div class="flex items-center">
-                    <span id="admin_url_prefix" class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300 text-sm">{{ $protocol }}{{ $hostAndPort }}/</span>
+                    <span class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300 text-sm whitespace-nowrap">{{ $protocol }}{{ $hostAndPort }}/</span>
+                    <x-form-select
+                        id="admin_url_prefix"
+                        name="admin_url_prefix"
+                        :options="$prefixOptions"
+                        :value="$currentPrefix"
+                        :useDefaultClass="false"
+                        class="p-2 bg-gray-50 dark:bg-gray-800 border-y border-gray-300 dark:border-gray-500 text-sm dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                    <span class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm">-</span>
                     <x-form-text
-                        name="admin_url"
-                        id="admin_url"
-                        :value="old('admin_url', session('install_data.admin_url'))"
+                        name="admin_url_suffix"
+                        id="admin_url_suffix"
+                        :value="$currentSuffix"
+                        :required="true"
                         class="input-full rounded-r-lg rounded-l-none"
+                        placeholder="xxxx"
                     />
                 </div>
+                <x-form-error field="admin_url_prefix" />
+                <x-form-error field="admin_url_suffix" />
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('install/step2.admin_url_security_note') }}</p>
             </div>
         </fieldset>

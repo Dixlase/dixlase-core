@@ -24,6 +24,7 @@ namespace App\Http\Requests\Install;
 
 use App\Enums\AdminMode;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class InstallEnvironmentRequest extends FormRequest
 {
@@ -62,13 +63,31 @@ class InstallEnvironmentRequest extends FormRequest
             ];
         }
 
+        $prefixes = config('admin.url.admin_url_prefixes', ['admin']);
+
         return [
             'app_env' => 'required|in:local,staging,production',
             'app_debug' => 'nullable|boolean',
             'app_url' => 'required|string',
-            'admin_url' => 'required|string|max:255',
+            'admin_url_prefix' => ['required', 'string', Rule::in($prefixes)],
+            'admin_url_suffix' => ['required', 'string', 'min:4', 'max:50', 'regex:/^[a-z0-9]+$/'],
             'app_timezone' => 'required|timezone',
             'force_ssl' => 'nullable|boolean',
+        ];
+    }
+
+    /**
+     * バリデーションエラーメッセージ
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'admin_url_prefix.in' => __('validation/admin-url.prefix_invalid'),
+            'admin_url_suffix.min' => __('validation/admin-url.suffix_min'),
+            'admin_url_suffix.max' => __('validation/admin-url.suffix_max'),
+            'admin_url_suffix.regex' => __('validation/admin-url.suffix_format'),
         ];
     }
 }
