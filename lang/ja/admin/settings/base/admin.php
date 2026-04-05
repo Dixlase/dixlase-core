@@ -20,8 +20,6 @@ return [
     'admin_url_prefix' => 'URLプレフィックス',
     'admin_url_suffix' => 'URLサフィックス',
     'admin_url_help' => 'プレフィックスを選択し、サフィックスを入力して管理画面のURLパスを設定します。<br>サフィックスは4文字以上（半角英小文字と数字のみ）です。<br>注意！: 管理画面URLを変更すると、一旦管理画面からログアウトされます。',
-    'copy_url' => 'コピー',
-    'copied' => 'コピーしました！',
     'force_ssl' => 'SSL強制',
     'force_ssl_help' => 'HTTPSでのアクセスを強制します。SSL証明書が設定されている場合のみ有効にしてください。',
     'settings_updated' => '管理画面設定が更新されました。',

@@ -67,17 +67,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     x-model="suffix"
                 />
             </div>
-            <div class="flex items-center mt-2 gap-2">
-                <span class="text-sm text-gray-500 dark:text-gray-400" x-text="fullUrl"></span>
-                <button type="button" @click="copyUrl()" class="inline-flex items-center text-sm text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition">
-                    <template x-if="!copied">
-                        <span><i class="fas fa-copy mr-1"></i>{{ __('admin/settings/base/admin.copy_url') }}</span>
-                    </template>
-                    <template x-if="copied">
-                        <span class="text-green-500 dark:text-green-400"><i class="fas fa-check mr-1"></i>{{ __('admin/settings/base/admin.copied') }}</span>
-                    </template>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                URL: <span x-text="fullUrl"></span>
+                <button type="button" @click="copyUrl()" class="ml-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition">
+                    <i class="far" :class="copied ? 'fa-check-circle text-green-500 dark:text-green-400' : 'fa-copy'"></i>
                 </button>
-            </div>
+            </p>
             <x-form-error field="admin_url_prefix" />
             <x-form-error field="admin_url_suffix" />
             <x-form-error field="admin_url" />
