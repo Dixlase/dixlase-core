@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set deploy target
         id: target
         run: |
@@ -21,6 +24,27 @@ jobs:
             echo "env=staging" >> $GITHUB_OUTPUT
             echo "base_dir=/srv/dixlase/staging" >> $GITHUB_OUTPUT
           fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Build frontend assets
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Deploy built assets via rsync
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avz --delete
+          path: public/assets/build/
+          remote_path: ${{ steps.target.outputs.base_dir }}/_shared/build/
+          remote_host: ${{ secrets.SERVER_HOST }}
+          remote_user: ${{ secrets.SERVER_USER }}
+          remote_key: ${{ secrets.SERVER_SSH_KEY }}
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
@@ -36,6 +60,9 @@ jobs:
               echo "=== Deploying $SITE (${{ steps.target.outputs.env }}) ==="
               cd "$BASE/$SITE"
               git fetch origin
+
+              # パーミッション問題を回避してリセット
+              git checkout -f origin/main
               git reset --hard origin/main
 
               # ストレージディレクトリの復元（git reset で消える場合がある）
@@ -45,11 +72,9 @@ jobs:
                 composer install --no-dev --no-interaction --optimize-autoloader
               fi
 
-              # フロントエンドビルド
-              if [ -f package.json ]; then
-                npm ci --no-audit --no-fund
-                npm run build
-              fi
+              # CIでビルド済みのフロントエンドアセットをコピー
+              mkdir -p public/assets/build
+              rsync -a "$BASE/_shared/build/" public/assets/build/
 
               # パーミッション修正（www-data が書き込めるように）
               docker exec compose-php-1 chown www-data:www-data /var/www/apps/$SITE
