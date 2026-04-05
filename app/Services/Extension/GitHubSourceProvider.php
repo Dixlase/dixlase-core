@@ -139,27 +139,12 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     public function checkConnection(): array
     {
         try {
-            $response = $this->client()->get("{$this->baseUrl}/user");
-
-            if ($response->successful()) {
-                $user = $response->json();
-
-                return [
-                    'success' => true,
-                    'message' => "Connected as {$user['login']}",
-                    'details' => [
-                        'login' => $user['login'],
-                        'scopes' => $response->header('X-OAuth-Scopes'),
-                        'rate_limit' => $response->header('X-RateLimit-Remaining'),
-                    ],
-                ];
+            // トークンがある場合は認証エンドポイント、ない場合はオーナー情報で接続確認
+            if ($this->token) {
+                return $this->checkAuthenticatedConnection();
             }
 
-            return [
-                'success' => false,
-                'message' => "Authentication failed: HTTP {$response->status()}",
-                'details' => ['status' => $response->status()],
-            ];
+            return $this->checkPublicConnection();
         } catch (\Throwable $e) {
             return [
                 'success' => false,
@@ -167,6 +152,67 @@ class GitHubSourceProvider implements ExtensionSourceInterface
                 'details' => ['exception' => get_class($e)],
             ];
         }
+    }
+
+    /**
+     * トークン認証ありの接続テスト（GET /user）
+     *
+     * @return array{success: bool, message: string, details: array<string, mixed>}
+     */
+    protected function checkAuthenticatedConnection(): array
+    {
+        $response = $this->client()->get("{$this->baseUrl}/user");
+
+        if ($response->successful()) {
+            $user = $response->json();
+
+            return [
+                'success' => true,
+                'message' => "Connected as {$user['login']}",
+                'details' => [
+                    'login' => $user['login'],
+                    'authenticated' => true,
+                    'scopes' => $response->header('X-OAuth-Scopes'),
+                    'rate_limit' => $response->header('X-RateLimit-Remaining'),
+                ],
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => "Authentication failed: HTTP {$response->status()}",
+            'details' => ['status' => $response->status()],
+        ];
+    }
+
+    /**
+     * トークンなしの接続テスト（GET /users/{owner}）
+     *
+     * @return array{success: bool, message: string, details: array<string, mixed>}
+     */
+    protected function checkPublicConnection(): array
+    {
+        $response = $this->client()->get("{$this->baseUrl}/users/{$this->owner}");
+
+        if ($response->successful()) {
+            $data = $response->json();
+
+            return [
+                'success' => true,
+                'message' => "Connected to {$data['login']}",
+                'details' => [
+                    'login' => $data['login'],
+                    'authenticated' => false,
+                    'rate_limit' => $response->header('X-RateLimit-Remaining'),
+                ],
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => "Connection failed: HTTP {$response->status()}",
+            'details' => ['status' => $response->status()],
+        ];
     }
 
     /**

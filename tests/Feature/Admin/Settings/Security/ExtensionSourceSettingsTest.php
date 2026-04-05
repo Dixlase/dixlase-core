@@ -152,20 +152,19 @@ class ExtensionSourceSettingsTest extends TestCase
 
     public function test_test_source_api_returns_success_on_valid_connection(): void
     {
+        $owner = config('extension-sources.github.default_owner', 'Dixlase');
+
         Http::fake([
-            'api.github.com/user' => Http::response([
-                'login' => 'test-user',
+            "api.github.com/users/{$owner}" => Http::response([
+                'login' => $owner,
             ], 200, [
-                'X-OAuth-Scopes' => 'repo',
-                'X-RateLimit-Remaining' => '4999',
+                'X-RateLimit-Remaining' => '59',
             ]),
         ]);
 
         $response = $this->actingAs($this->admin, 'member')
             ->postJson(route('admin.settings.security.extensions.test-source'), [
                 'type' => 'github',
-                'owner' => 'TestOrg',
-                'token' => 'ghp_test_token',
             ]);
 
         $response->assertOk();
@@ -176,17 +175,17 @@ class ExtensionSourceSettingsTest extends TestCase
         $response->assertJsonStructure(['success', 'message', 'details', 'is_official']);
     }
 
-    public function test_test_source_api_returns_failure_on_bad_credentials(): void
+    public function test_test_source_api_returns_failure_on_connection_error(): void
     {
+        $owner = config('extension-sources.github.default_owner', 'Dixlase');
+
         Http::fake([
-            'api.github.com/user' => Http::response(['message' => 'Bad credentials'], 401),
+            "api.github.com/users/{$owner}" => Http::response(['message' => 'Not Found'], 404),
         ]);
 
         $response = $this->actingAs($this->admin, 'member')
             ->postJson(route('admin.settings.security.extensions.test-source'), [
                 'type' => 'github',
-                'owner' => 'TestOrg',
-                'token' => 'invalid_token',
             ]);
 
         $response->assertOk();
