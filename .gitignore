@@ -50,7 +50,7 @@ custom/*
 # テーマ: DixlaseOnePageはGit Submoduleとしてコアに同梱
 plugins/*
 !plugins/DixlaseDeploy/
-!plugins/DixlaseGuiEditor/
+!plugins/DixlaseGUIEditorLite/
 !plugins/DixlaseInquiry/
 !plugins/DixlaseLegal/
 !plugins/DixlaseMenu/
