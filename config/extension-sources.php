@@ -25,4 +25,28 @@ return [
 
     // Key ID used for official source signature verification
     'official_key_id' => env('EXTENSION_SOURCE_KEY_ID', 'dixlase-authority-2026'),
+
+    // Preset source definitions (hardcoded official sources)
+    'presets' => [
+        'github' => [
+            'name' => 'GitHub',
+            'icon' => 'fab fa-github',
+            'is_official' => true,
+            'description_key' => 'admin/settings/security/extensions.source.github_description',
+        ],
+        // 'marketplace' => [
+        //     'name' => 'Dixlase Marketplace',
+        //     'icon' => 'fas fa-store',
+        //     'is_official' => true,
+        //     'description_key' => 'admin/settings/security/extensions.source.marketplace_description',
+        // ],
+    ],
+
+    // Update check interval options (seconds)
+    'check_intervals' => [
+        86400 => 'admin/settings/security/extensions.source.interval_daily',
+        43200 => 'admin/settings/security/extensions.source.interval_12h',
+        21600 => 'admin/settings/security/extensions.source.interval_6h',
+        0 => 'admin/settings/security/extensions.source.interval_manual',
+    ],
 ];

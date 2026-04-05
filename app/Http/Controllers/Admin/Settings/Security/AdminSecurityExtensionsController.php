@@ -30,6 +30,10 @@ use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Security\AdminSecurityExtensionsUpdateRequest;
 use App\Models\BaseSetting;
+use App\Models\ExtensionSource;
+use App\Services\Extension\ExtensionSourceManager;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AdminSecurityExtensionsController extends AdminLoggedInController
 {
@@ -48,14 +52,16 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
         'extension_notify_on_disable',
         'extension_notify_on_unhealthy',
         'extension_log_operations',
+        'extension_source_type',
+        'extension_source_owner',
+        'extension_source_token',
+        'extension_update_check_interval',
     ];
 
-    protected SecuritySettingRepositoryInterface $securitySettingRepository;
-
-    public function __construct(SecuritySettingRepositoryInterface $securitySettingRepository)
-    {
+    public function __construct(
+        protected SecuritySettingRepositoryInterface $securitySettingRepository,
+    ) {
         parent::__construct();
-        $this->securitySettingRepository = $securitySettingRepository;
     }
 
     /**
@@ -80,6 +86,11 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
             'extension_notify_on_disable' => filter_var($this->securitySettingRepository->get('extension_notify_on_disable', false), FILTER_VALIDATE_BOOLEAN),
             'extension_notify_on_unhealthy' => filter_var($this->securitySettingRepository->get('extension_notify_on_unhealthy', true), FILTER_VALIDATE_BOOLEAN),
             'extension_log_operations' => filter_var($this->securitySettingRepository->get('extension_log_operations', true), FILTER_VALIDATE_BOOLEAN),
+            // Extension source settings
+            'extension_source_type' => $this->securitySettingRepository->get('extension_source_type', 'github'),
+            'extension_source_owner' => $this->securitySettingRepository->get('extension_source_owner', config('extension-sources.github.default_owner', 'Dixlase')),
+            'extension_source_token' => $this->securitySettingRepository->get('extension_source_token', ''),
+            'extension_update_check_interval' => (int) $this->securitySettingRepository->get('extension_update_check_interval', config('extension-sources.check_interval', 86400)),
         ];
 
         // メールテスト状態を取得
@@ -87,6 +98,17 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
         $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? BaseSetting::getValue('mail_connection_tested', false));
         $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? BaseSetting::getValue('mail_send_tested', false));
         $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
+
+        // ソースプリセット情報を構築
+        $sourcePresets = collect(config('extension-sources.presets', []))->map(fn (array $preset, string $type) => [
+            'value' => $type,
+            'label' => $preset['name'],
+            'icon' => $preset['icon'] ?? 'fas fa-globe',
+            'is_official' => $preset['is_official'] ?? false,
+        ])->values()->all();
+
+        // チェック間隔オプション（key => translationKey 形式）
+        $checkIntervalOptions = config('extension-sources.check_intervals', []);
 
         $this->viewParams['settings'] = $settings;
         $this->viewParams['mailConnectionTested'] = $mailConnectionTested;
@@ -96,6 +118,9 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
         $this->viewParams['securityLevelRangeLabels'] = ExtensionSecurityLevel::getRangeLabels();
         $this->viewParams['securityLevelRangeLabelColors'] = ExtensionSecurityLevel::getRangeLabelColors();
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.extensions');
+        $this->viewParams['sourcePresets'] = $sourcePresets;
+        $this->viewParams['checkIntervalOptions'] = $checkIntervalOptions;
+        $this->viewParams['hasSourceToken'] = ! empty($settings['extension_source_token']);
 
         return view('admin.settings.security.extensions', $this->viewParams);
     }
@@ -124,10 +149,74 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
         $this->securitySettingRepository->set('extension_notify_on_unhealthy', $validated['extension_notify_on_unhealthy'] ?? true);
         $this->securitySettingRepository->set('extension_log_operations', $validated['extension_log_operations'] ?? true);
 
+        // 拡張機能ソース設定を更新
+        $this->securitySettingRepository->set('extension_source_type', $validated['extension_source_type']);
+        $this->securitySettingRepository->set('extension_source_owner', $validated['extension_source_owner'] ?? config('extension-sources.github.default_owner', 'Dixlase'));
+        $this->securitySettingRepository->set('extension_update_check_interval', $validated['extension_update_check_interval']);
+
+        // トークンは入力があった場合のみ更新（空文字でクリア可能）
+        if ($request->has('extension_source_token')) {
+            $token = $validated['extension_source_token'] ?? '';
+            $this->securitySettingRepository->set('extension_source_token', $token);
+        }
+
         $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
         \App\Facades\Audit::logBulkSettingsChange('security.extensions', $before, $after, auth()->user());
 
         return redirect()->route('admin.settings.security.extensions')
             ->with('success', __('admin/settings/security/extensions.settings_updated'));
+    }
+
+    /**
+     * ソース接続テスト API
+     */
+    public function testSource(Request $request, ExtensionSourceManager $manager): JsonResponse
+    {
+        $request->validate([
+            'type' => 'required|string|max:50',
+            'owner' => 'nullable|string|max:100',
+            'token' => 'nullable|string|max:500',
+        ]);
+
+        $type = $request->input('type');
+        $owner = $request->input('owner');
+        $token = $request->input('token');
+
+        // トークンが送信されなかった場合は保存済みトークンを使用
+        if ($token === null || $token === '') {
+            $token = $this->securitySettingRepository->get('extension_source_token', '') ?: null;
+        }
+
+        // GitHub のデフォルト URL を取得
+        $baseUrl = match ($type) {
+            'github' => config('extension-sources.github.api_base', 'https://api.github.com'),
+            default => '',
+        };
+
+        // 一時的な ExtensionSource インスタンスを作成（DB 保存しない）
+        $source = new ExtensionSource([
+            'name' => 'Connection Test',
+            'type' => $type,
+            'base_url' => $baseUrl,
+            'owner' => $owner,
+            'auth_token' => $token,
+        ]);
+
+        try {
+            $provider = $manager->makeProvider($source);
+            $result = $provider->checkConnection();
+
+            // 公式判定を付与
+            $preset = config("extension-sources.presets.{$type}");
+            $result['is_official'] = $preset && ($preset['is_official'] ?? false);
+
+            return response()->json($result);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'details' => [],
+            ]);
+        }
     }
 }

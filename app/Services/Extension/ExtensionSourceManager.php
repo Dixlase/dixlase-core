@@ -132,6 +132,25 @@ class ExtensionSourceManager
         return $result;
     }
 
+    /**
+     * ソースが公式かどうかを判定する（ハードコード + Ed25519 署名併用）
+     */
+    public function isOfficialSource(ExtensionSource $source): bool
+    {
+        // 1. コアがプリセットしたソースタイプのハードコードチェック
+        $preset = config("extension-sources.presets.{$source->type}");
+        if ($preset && ($preset['is_official'] ?? false)) {
+            return true;
+        }
+
+        // 2. Ed25519 署名による検証
+        if ($source->hasSignature()) {
+            return $this->verifier->verify($source)['verified'];
+        }
+
+        return false;
+    }
+
     // ========================================
     // Extension Listing
     // ========================================
