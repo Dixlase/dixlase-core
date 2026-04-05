@@ -37,7 +37,8 @@
             "Custom\\Database\\Factories\\": "custom/database/factories",
             "Custom\\Database\\Seeders\\": "custom/database/seeders",
             "Plugins\\": "plugins/",
-            "Themes\\": "themes/",
+            "Themes\\DixlaseOnePage\\App\\": "themes/DixlaseOnePage/app/",
+            "Themes\\DixlaseOnePage\\Database\\": "themes/DixlaseOnePage/database/",
             "Plugins\\DixlaseCoreDevKit\\Database\\Factories\\": "plugins/DixlaseCoreDevKit/database/factories/"
         },
         "files": [
