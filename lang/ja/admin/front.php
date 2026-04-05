@@ -42,6 +42,7 @@ return [
 
         'lang_label' => '言語',
         'editor_type_label' => 'エディタータイプ',
+        'editor_type_help' => 'エディタータイプは新規作成時のみ選択でき、保存後は変更できません。',
         'content_label' => 'コンテンツ',
         'content_placeholder' => 'フロントページのコンテンツを入力...',
 
