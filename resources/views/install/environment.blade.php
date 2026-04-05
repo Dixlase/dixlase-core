@@ -109,13 +109,24 @@
 
     @if($isSimpleMode)
     <!-- 管理画面URL表示セクション（簡単モード：読み取り専用） -->
-    <section aria-labelledby="admin-url-heading">
+    <section aria-labelledby="admin-url-heading" x-data="{
+        fullUrl: '{{ $protocol }}{{ $hostAndPort }}/{{ session('install_data.admin_url', 'admin') }}',
+        copied: false,
+        copyUrl() {
+            navigator.clipboard.writeText(this.fullUrl);
+            this.copied = true;
+            setTimeout(() => { this.copied = false; }, 2000);
+        }
+    }">
         <h2 id="admin-url-heading" class="sr-only">{{ __('install/step2.admin_url_configuration') }}</h2>
 
         <div>
             <x-form-label :text="__('install/step2.admin_url')" />
             <div class="flex items-center">
-                <span class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 text-sm">{{ $protocol }}{{ $hostAndPort }}/{{ session('install_data.admin_url', 'admin') }}</span>
+                <span class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 text-sm" x-text="fullUrl"></span>
+                <button type="button" @click="copyUrl()" class="ml-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition">
+                    <i class="far" :class="copied ? 'fa-check-circle text-green-500 dark:text-green-400' : 'fa-copy'"></i>
+                </button>
             </div>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('install/step2.admin_url_auto_generated') }}</p>
         </div>
@@ -125,42 +136,59 @@
     <section aria-labelledby="admin-url-heading">
         <h2 id="admin-url-heading" class="sr-only">{{ __('install/step2.admin_url_configuration') }}</h2>
 
-        <fieldset>
-            <legend class="sr-only">{{ __('install/step2.admin_panel_url') }}</legend>
+        @php
+            $adminUrlPrefixes = config('admin.url.admin_url_prefixes', ['admin']);
+            $currentAdminUrl = old('admin_url_prefix', '') !== ''
+                ? old('admin_url_prefix') . '-' . old('admin_url_suffix', '')
+                : session('install_data.admin_url', 'admin');
+            $parts = explode('-', $currentAdminUrl, 2);
+            $currentPrefix = in_array($parts[0], $adminUrlPrefixes) ? $parts[0] : $adminUrlPrefixes[0];
+            $currentSuffix = $parts[1] ?? '';
+            $prefixOptions = array_combine($adminUrlPrefixes, $adminUrlPrefixes);
+        @endphp
 
-            @php
-                $adminUrlPrefixes = config('admin.url.admin_url_prefixes', ['admin']);
-                $currentAdminUrl = old('admin_url_prefix', '') !== ''
-                    ? old('admin_url_prefix') . '-' . old('admin_url_suffix', '')
-                    : session('install_data.admin_url', 'admin');
-                $parts = explode('-', $currentAdminUrl, 2);
-                $currentPrefix = in_array($parts[0], $adminUrlPrefixes) ? $parts[0] : $adminUrlPrefixes[0];
-                $currentSuffix = $parts[1] ?? '';
-                $prefixOptions = array_combine($adminUrlPrefixes, $adminUrlPrefixes);
-            @endphp
+        <fieldset x-data="{
+            prefix: '{{ $currentPrefix }}',
+            suffix: '{{ $currentSuffix }}',
+            baseUrl: '{{ $protocol }}{{ $hostAndPort }}',
+            get fullUrl() { return this.baseUrl + '/' + this.prefix + '-' + this.suffix; },
+            copied: false,
+            copyUrl() {
+                navigator.clipboard.writeText(this.fullUrl);
+                this.copied = true;
+                setTimeout(() => { this.copied = false; }, 2000);
+            }
+        }">
+            <legend class="sr-only">{{ __('install/step2.admin_panel_url') }}</legend>
 
             <div>
                 <x-form-label for="admin_url_suffix" :text="__('install/step2.admin_url')" :required="true" />
-                <div class="flex items-center">
-                    <span class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300 text-sm whitespace-nowrap">{{ $protocol }}{{ $hostAndPort }}/</span>
+                <div class="flex items-center gap-2">
                     <x-form-select
                         id="admin_url_prefix"
                         name="admin_url_prefix"
                         :options="$prefixOptions"
                         :value="$currentPrefix"
-                        :useDefaultClass="false"
-                        class="p-2 bg-gray-50 dark:bg-gray-800 border-y border-gray-300 dark:border-gray-500 text-sm dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        xModel="prefix"
+                        class="input-lg"
                     />
-                    <span class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm">-</span>
+                    <span class="text-gray-500 dark:text-gray-400 text-lg font-bold">-</span>
                     <x-form-text
                         name="admin_url_suffix"
                         id="admin_url_suffix"
                         :value="$currentSuffix"
                         :required="true"
-                        class="input-full rounded-r-lg rounded-l-none"
+                        class="input-lg"
                         placeholder="xxxx"
+                        x-model="suffix"
                     />
                 </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    URL: <span x-text="fullUrl"></span>
+                    <button type="button" @click="copyUrl()" class="ml-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition">
+                        <i class="far" :class="copied ? 'fa-check-circle text-green-500 dark:text-green-400' : 'fa-copy'"></i>
+                    </button>
+                </p>
                 <x-form-error field="admin_url_prefix" />
                 <x-form-error field="admin_url_suffix" />
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('install/step2.admin_url_security_note') }}</p>
