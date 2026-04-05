@@ -1,8 +1,10 @@
 {{--
 This file is part of Dixlase.
 
-Copyright (C) 2025 exc-D inc.
+Copyright (C) 2026 exc-D inc.
 https://exc-d.com
+
+@api Available for plugins/themes as <x-auth-session-status />
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
