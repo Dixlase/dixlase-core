@@ -67,9 +67,6 @@ jobs:
             for SITE in brand docs demo keys; do
               echo "=== Deploying $SITE (${{ steps.target.outputs.env }}) ==="
               cd "$BASE/$SITE"
-
-              # gitが管理するファイルの所有権をデプロイユーザーに修正（パーミッションエラー回避）
-              sudo chown -R "$USER":"$USER" .
               git fetch origin
               git reset --hard origin/main
 
