@@ -1,0 +1,45 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+
+/*
+ * Tailwind CSS v4 Theme Configuration
+ * Migrated from tailwind.config.js
+ */
+@theme {
+    --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+    --transition-property-colors: background-color, border-color, color, fill, stroke;
+    --transition-duration-standard: 300ms;
+}
+
+/*
+ * Source detection for Tailwind class scanning
+ */
+@source "../../../views/**/*.blade.php";
+@source "../../**/*.js";
+@source "../../**/*.vue";
+@source "../../../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
+@source "../../../../storage/framework/views/*.php";
+
+/*
+ * Dark mode: class-based strategy
+ */
+@variant dark (&:where(.dark, .dark *));
+
+/*
+ * Safelist: force-include dynamically referenced classes
+ */
+@source inline("bg-black bg-gray-950 text-white bg-white text-black border-gray-700 border-gray-800 transform transition-transform duration-300 duration-1000 translate-x-full translate-x-0 bg-indigo-600 hover:bg-indigo-500 dark:text-indigo-300 dark:text-red-400 dark:hover:text-indigo-500 dark:bg-gray-100 dark:bg-gray-300 dark:bg-gray-700 dark:bg-gray-800 dark:bg-gray-900 dark:bg-black odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800");
+
+/*
+ * Custom base styles
+ */
+@layer base {
+    [x-cloak] {
+        display: none !important;
+    }
+
+    .disable-transition * {
+        transition: none !important;
+    }
+}
