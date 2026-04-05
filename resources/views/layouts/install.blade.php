@@ -14,8 +14,8 @@
 
 
 </head>
-<body class="bg-gray-100 dark:bg-black flex items-center justify-center min-h-screen">
-    <div class="flex flex-col items-center w-full max-w-3xl min-w-[400px] my-10">
+<body class="bg-gray-100 dark:bg-black flex items-center justify-center min-h-screen px-4">
+    <div class="flex flex-col items-center w-full max-w-3xl my-10">
 
         <!-- Site Logo -->
         <div class="mb-4">
