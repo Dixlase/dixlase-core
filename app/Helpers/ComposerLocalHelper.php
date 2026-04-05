@@ -62,6 +62,7 @@ class ComposerLocalHelper
                 $autoload["Plugins\\{$pluginName}\\App\\"] = "plugins/{$pluginName}/app";
                 $autoload["Plugins\\{$pluginName}\\Database\\Factories\\"] = "plugins/{$pluginName}/database/factories";
                 $autoload["Plugins\\{$pluginName}\\Database\\Seeders\\"] = "plugins/{$pluginName}/database/seeders";
+                $autoload["Plugins\\{$pluginName}\\Tests\\"] = "plugins/{$pluginName}/tests";
             }
 
             // テーマのautoload設定

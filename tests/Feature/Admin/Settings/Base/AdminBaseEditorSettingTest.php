@@ -105,12 +105,12 @@ class AdminBaseEditorSettingTest extends TestCase
     {
         $response = $this->actingAs($this->admin, 'member')
             ->post(route('admin.settings.base.editor.update'), [
-                'preferred_gui_editor' => 'dixlase-gui-editor',
+                'preferred_gui_editor' => 'dixlase-gui-editor-lite',
             ]);
 
         $response->assertRedirect(route('admin.settings.base.editor'));
         $this->assertEquals(
-            'dixlase-gui-editor',
+            'dixlase-gui-editor-lite',
             BaseSetting::get(EditorManager::PREFERRED_GUI_EDITOR_KEY),
         );
     }

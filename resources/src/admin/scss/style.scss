@@ -20,6 +20,7 @@
 
 
 // Your custom styles here
+
 @use 'admin';
 
 // Page-specific styles
@@ -39,3 +40,6 @@
 
 // Security component styles
 @use '../../components/security/scss/safe-mode-banner';
+
+// Tailwind v4: enable @apply resolution for SCSS files
+@reference "tailwindcss";

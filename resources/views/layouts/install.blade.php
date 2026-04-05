@@ -10,7 +10,7 @@
     @vite(['resources/src/install/js/dark-mode-init.js'], 'assets/build')
 
     <!-- メインスクリプト -->
-    @vite(['resources/src/install/js/app.js', 'resources/src/common/js/app.js', 'resources/src/common/scss/style.scss'], 'assets/build')
+    @vite(['resources/src/common/css/tailwind.css', 'resources/src/install/js/app.js', 'resources/src/common/js/app.js', 'resources/src/common/scss/style.scss'], 'assets/build')
 
 
 </head>
