@@ -19,10 +19,15 @@ return [
     'admin_url_prefix' => 'URL Prefix',
     'admin_url_suffix' => 'URL Suffix',
     'admin_url_help' => 'Choose a prefix and enter a suffix to set the admin panel URL path.<br>The suffix must be at least 4 characters (lowercase letters and numbers only).<br>Warning: Changing the admin URL will log you out of the admin panel.',
-    'copy_url' => 'Copy',
-    'copied' => 'Copied!',
     'force_ssl' => 'Force SSL',
     'force_ssl_help' => 'Force HTTPS access. Only enable if SSL certificate is configured.',
     'settings_updated' => 'Admin panel settings have been updated.',
     'admin_url_changed' => 'Admin URL has been changed. Please log in with the new URL.',
+
+    // コンテンツエディター設定
+    'content_editor_settings' => 'Content Editor',
+    'preferred_gui_editor' => 'GUI Editor',
+    'preferred_gui_editor_help' => 'Select the GUI block editor plugin to use for content editing. When multiple GUI editor plugins are installed, the selected one will be used as the default.',
+    'no_gui_editor_available' => 'No GUI editor plugin is installed. Install a GUI editor plugin to enable the block editor.',
+    'gui_editor_auto' => 'Auto (use the only available editor)',
 ];
