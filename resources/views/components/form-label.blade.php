@@ -26,7 +26,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'required' => false, // 必須マーク表示
 ])
 
-<label for="{{ $for }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 {{ $class }}">
+<label for="{{ $for }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 {{ $class }}">
     @if ($key)
         {{ __($key) }}
     @elseif ($text)
@@ -35,6 +35,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{ $slot }}
     @endif
     @if ($required)
-        <span class="text-red-500 ml-1" aria-label="required">*</span>
+        <x-form-required-badge />
     @endif
 </label>

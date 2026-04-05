@@ -47,41 +47,33 @@ function initEnvironmentUrlSettings() {
     const appUrlInput = document.getElementById('app_url');
     const forceSslCheckbox = document.getElementById('force_ssl');
     const protocolDisplay = document.getElementById('protocol_display');
-    const adminUrlPrefix = document.getElementById('admin_url_prefix');
+    const adminBaseUrl = document.getElementById('admin_base_url');
 
-    if (!appUrlInput || !forceSslCheckbox || !protocolDisplay || !adminUrlPrefix) {
+    if (!appUrlInput || !protocolDisplay) {
         return;
     }
 
     function updateUrls() {
-        const protocol = forceSslCheckbox.checked ? 'https://' : 'http://';
-        const appUrl = appUrlInput.value.trim().replace(/^(https?:\/\/)?/, ''); // プロトコルを除去し、空白も削除
+        const protocol = forceSslCheckbox && forceSslCheckbox.checked ? 'https://' : 'http://';
+        const appUrl = appUrlInput.value.trim().replace(/^(https?:\/\/)?/, '');
 
         // アプリケーションURLのプロトコル表示を更新
         protocolDisplay.innerText = protocol;
 
-        // 管理画面URLのプレフィックスを更新（アプリケーションURL + スラッシュ）
-        if (appUrl) {
-            adminUrlPrefix.innerText = protocol + appUrl + '/';
-        } else {
-            adminUrlPrefix.innerText = protocol;
+        // 管理画面URLのベースURL表示を更新
+        if (adminBaseUrl) {
+            adminBaseUrl.innerText = appUrl ? protocol + appUrl + '/' : protocol;
         }
     }
 
     // 初回ロード時にURLを更新
     updateUrls();
 
-    // SSL設定変更時にリアルタイム更新
-    forceSslCheckbox.addEventListener('change', function () {
-        updateUrls();
-    });
+    if (forceSslCheckbox) {
+        forceSslCheckbox.addEventListener('change', updateUrls);
+    }
 
-    // アプリケーションURL入力時にリアルタイム更新
-    appUrlInput.addEventListener('input', function () {
-        updateUrls();
-    });
-
-    // アプリケーションURL入力フィールドのフォーカス時とブラー時にも更新
+    appUrlInput.addEventListener('input', updateUrls);
     appUrlInput.addEventListener('focus', updateUrls);
     appUrlInput.addEventListener('blur', updateUrls);
 }
