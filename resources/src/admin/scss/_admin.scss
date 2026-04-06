@@ -94,6 +94,12 @@
 
     .sidebar-link {
         @apply text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-black dark:hover:text-white;
+
+        // Tailwind v4: 外部スタイルによる上書きを防止
+        display: flex !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        padding: inherit !important;
     }
 
     .sidebar-link-active {
