@@ -442,7 +442,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                             <button @click="{{ $open_grand_child_key }} = !{{ $open_grand_child_key }}" class="{{ $button_class }} sidebar-link">
                                                                 <i class="{{ $grand_child_item['icon'] }} mr-3"></i>
                                                                 <span>{{ __($grand_child_item['text']) }}</span>
-                                                                <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_grand_child_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <svg class="{{ $arrow_class }} mr-1" :class="{ 'rotate-180': {{ $open_grand_child_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                                                 </svg>
                                                             </button>
