@@ -19,8 +19,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @props([
-    'button_class' => 'flex text-left items-center px-4 py-2 text-sm font-medium rounded-md focus:outline-none w-full',
-    'arrow_class' => 'w-4 h-4 ml-auto transform'
+    'button_class' => '!flex text-left items-center px-4 py-2 text-sm font-medium rounded-md focus:outline-none w-full',
+    'arrow_class' => 'w-4 h-4 ml-auto shrink-0 transform'
 ])
 
 <div class="flex h-full">

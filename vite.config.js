@@ -118,6 +118,7 @@ export default defineConfig(({ command }) => ({
                 '**/node_modules/**',
                 '**/.git/**',
                 '**/.env',        // .envファイルの監視を無効化（インストール中の頻繁な更新でクラッシュ防止）
+                '**/storage/framework/cache/**', // キャッシュファイルの監視を無効化（リロードループ防止）
             ],
         },
         // HMRの設定
