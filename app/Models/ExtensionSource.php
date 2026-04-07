@@ -26,8 +26,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @api プラグイン/テーマから使用可能な安定APIです
- *
  * Extension Source Model
  *
  * Represents an external source for downloading and updating extensions.

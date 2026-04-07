@@ -366,6 +366,7 @@ The remaining services are accessed via their respective interfaces (see Section
 - `App\Services\PageContentService`
 - `App\Services\FrontPageContentService`
 - `App\Services\ContentFileService`
+- `App\Services\ContentPreviewService`
 - `App\Services\DatabaseCleanupService`
 - `App\Services\SystemNotificationService`
 - `App\Services\Auth\AuthContextRegistryService`
@@ -407,6 +408,7 @@ The remaining services are accessed via their respective interfaces (see Section
 | `App\Helpers\ComposerLocalHelper` | composer-local.json management |
 | `App\Helpers\GitExcludeHelper` | .git/info/exclude file management |
 | `App\Helpers\GitIgnoreHelper` | .gitignore file management |
+| `App\Helpers\GlobalHelper` | Global helper functions (shortcode_parse, etc.) |
 | `App\Helpers\LocaleHelper` | Locale detection and language settings |
 | `App\Helpers\LoginHelper` | Login authentication, 2FA check, and session management |
 | `App\Helpers\LoginLockoutHelper` | Login lockout detection and recording |
