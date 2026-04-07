@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -25,8 +27,6 @@ namespace App\Contracts\Logging;
 use App\DTO\Logging\LogContextDTO;
 
 /**
- * @api プラグイン/テーマから使用可能な安定APIです
- *
  * ログ出力サービスの契約
  *
  * コアおよびプラグインから統一的なログ出力機能を利用するための
