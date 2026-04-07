@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,8 +28,6 @@ use App\Contracts\Plugin\PluginCapabilityInterface;
 use App\DTO\PluginIntegration\PreviewDTO;
 
 /**
- * @api Available as a stable API for plugins/themes
- *
  * Contract for plugins that provide preview data
  *
  * Enables themes to preview plugin content (forms, widgets, content blocks)

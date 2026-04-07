@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -25,8 +27,6 @@ namespace App\Contracts\Plugin;
 use App\DTO\Plugin\SignatureVerificationResult;
 
 /**
- * @api プラグイン/テーマから使用可能な安定APIです
- *
  * 署名検証コントラクト
  *
  * コア側で署名検証の抽象化を提供します。

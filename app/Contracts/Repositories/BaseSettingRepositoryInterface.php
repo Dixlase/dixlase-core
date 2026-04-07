@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -25,8 +27,6 @@ namespace App\Contracts\Repositories;
 use App\Models\BaseSetting;
 
 /**
- * @api プラグイン/テーマから使用可能な安定APIです
- *
  * 基本設定リポジトリインターフェース
  *
  * サイトの基本設定（サイト名、OGP画像など）を管理します。
