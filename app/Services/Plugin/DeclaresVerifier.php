@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -32,7 +34,6 @@ use Illuminate\Support\Str;
  * plugin.json の declares セクションと実際のファイル構成を照合し、
  * 宣言とファイルの不一致を検出します。
  *
- * @api プラグイン/テーマから直接DIで使用可能な安定APIです
  */
 class DeclaresVerifier
 {

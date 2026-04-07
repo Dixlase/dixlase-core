@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -43,7 +45,6 @@ use Illuminate\Support\Facades\Log;
  * $result = $resolver->resolve(MailCapableInterface::class);
  * ```
  *
- * @api プラグイン/テーマから直接DIで使用可能な安定APIです
  */
 class PluginServiceResolver
 {

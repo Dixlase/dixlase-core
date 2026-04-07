@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,9 +29,6 @@ use App\Services\TwoFa\TwoFaCodeService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-/**
- * @api プラグイン/テーマから直接DIで使用可能な安定APIです
- */
 class EmailAuthenticationService
 {
     protected TwoFaCodeService $codeService;
