@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,8 +29,6 @@ use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 /**
- * @api プラグイン/テーマから使用可能な安定APIです
- *
  * ルートスラッグ一意性バリデーションルール
  *
  * システム全体でトップレベルURLスラッグが重複しないことを検証する。
