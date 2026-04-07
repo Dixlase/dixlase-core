@@ -67,6 +67,9 @@ export default defineConfig(({ command }) => ({
         outDir: 'public/assets/build', // 出力先ディレクトリ
         assetsDir: '.', // アセットディレクトリ（outDir相対）
         rollupOptions: {
+            treeshake: {
+                moduleSideEffects: true,
+            },
             input: {
                 tailwind: path.resolve(__dirname, 'resources/src/common/css/tailwind.css'),
                 admin_js: path.resolve(__dirname, 'resources/src/admin/js/app.js'),
