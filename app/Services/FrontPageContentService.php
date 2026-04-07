@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,8 +28,6 @@ use App\Enums\ContentStorageType;
 use App\Models\FrontPage;
 
 /**
- * @api プラグイン/テーマから直接DIで使用可能な安定APIです
- *
  * フロントページコンテンツサービス
  * コアのContentFileServiceを継承し、フロントページ固有の機能を追加
  */

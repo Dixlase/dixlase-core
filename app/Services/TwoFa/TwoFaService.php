@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,8 +30,6 @@ use App\Services\EmailAuthenticationService;
 use Illuminate\Support\Facades\Log;
 
 /**
- * @api プラグイン/テーマから直接DIで使用可能な安定APIです
- *
  * 二段階認証サービス
  *
  * 管理画面とユーザープラグインで共通の二段階認証機能を提供
