@@ -219,7 +219,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 ### 6.1 Form Components
 
-`x-form-text`, `x-form-email`, `x-form-password`, `x-form-textarea`, `x-form-select`,
+`x-form-text`, `x-form-email`, `x-form-textarea`, `x-form-select`,
 `x-form-checkbox`, `x-form-checkbox-group`, `x-form-toggle`, `x-form-toggle-group`,
 `x-form-radio-group`, `x-form-radio-card-group`, `x-form-color`, `x-form-range`,
 `x-form-label`, `x-form-error`, `x-form-help-text`, `x-form-button`, `x-form-hidden`,
