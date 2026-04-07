@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,8 +28,6 @@ use App\Facades\Audit;
 use App\Models\AuditLog;
 
 /**
- * @api プラグイン/テーマから使用可能な安定APIです
- *
  * モデルの監査ログ自動記録トレイト
  *
  * モデルの作成・更新・削除時に自動的に監査ログを記録
