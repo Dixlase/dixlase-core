@@ -694,16 +694,29 @@ if (! function_exists('load_mail_verification_assets')) {
         $output = '';
 
         if (is_vite_dev_server()) {
-            // 開発環境：Vite経由で読み込み（各ファイルを個別に読み込む）
-            $output .= render_vite_assets(['resources/src/common/scss/style.scss'], false, false);
-            $output .= render_vite_assets(['resources/src/components/mail-server/js/dark-mode.js'], false, false);
-            $output .= render_vite_assets(["resources/src/components/mail-server/js/verification-{$scriptType}.js"], false, false);
+            // 開発環境：Vite経由で読み込み
+            // tailwind.css（ユーティリティクラス）+ style.scss（コンポーネント/カスタムスタイル）を
+            // 1回の @vite() 呼び出しでまとめて読み込む（@vite/client の重複防止）
+            $output .= render_vite_assets([
+                'resources/src/common/css/tailwind.css',
+                'resources/src/common/scss/style.scss',
+                'resources/src/components/mail-server/js/dark-mode.js',
+                "resources/src/components/mail-server/js/verification-{$scriptType}.js",
+            ], false, false);
         } else {
             // 本番環境：ビルド済みファイルを読み込み
             $manifestPath = public_path('assets/build/manifest.json');
             $assetBasePath = 'assets/build/';
 
-            // Tailwind CSS
+            // Tailwind CSS（ユーティリティクラス）
+            $output .= load_assets_from_manifest(
+                $manifestPath,
+                $assetBasePath,
+                ['css/tailwind.css'],
+                'resources/src/common'
+            );
+
+            // コンポーネント/カスタムスタイル
             $output .= load_assets_from_manifest(
                 $manifestPath,
                 $assetBasePath,
