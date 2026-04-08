@@ -420,8 +420,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Stage 2: 確認ボタン（フォーム送信）
     if (stage2ConfirmBtn) {
-        stage2ConfirmBtn.addEventListener('click', function () {
-            // ボタンを無効化してスピナーを表示
+        stage2ConfirmBtn.addEventListener('click', function (e) {
+            // ボタンを無効化
             const innerBtn = stage2ConfirmBtn.querySelector('button');
             if (innerBtn) innerBtn.disabled = true;
             if (stage2CancelBtn) stage2CancelBtn.disabled = true;

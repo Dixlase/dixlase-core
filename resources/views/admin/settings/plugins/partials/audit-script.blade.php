@@ -279,6 +279,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <span id="pluginActionStage2ConfirmLabel"></span>
                     </x-form-button>
                 </div>
+            </div>
         </x-slot:footer>
     </x-ui-modal>
 
