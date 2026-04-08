@@ -48,7 +48,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     name="preferred_gui_editor"
                     :options="$guiEditorOptions"
                     :value="old('preferred_gui_editor', $settings['preferred_gui_editor'])"
-                    class="input-lg"
                 />
             @endif
 

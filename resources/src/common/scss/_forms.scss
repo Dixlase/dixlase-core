@@ -55,26 +55,27 @@ html.dark .input-common {
     }
 }
 
-// 入力フィールドの幅指定（汎用）
-// 小: w-24 (6rem/96px) - 数値入力など短い入力向け
-// 中: w-48 (12rem/192px) - 短めのテキスト入力向け
-// 大: w-72 (18rem/288px) - 通常のテキスト入力向け
-// 特大: w-96 (24rem/384px) - 長めのテキスト入力向け
+// 入力フィールドの最大幅指定（汎用）
+// w-full と併用可能: 親コンテナに合わせつつ最大幅を制限
+// 小: max-w-24 (6rem/96px) - 数値入力など短い入力向け
+// 中: max-w-48 (12rem/192px) - 短めのテキスト入力向け
+// 大: max-w-72 (18rem/288px) - 通常のテキスト入力向け
+// 特大: max-w-96 (24rem/384px) - 長めのテキスト入力向け
 
 .input-sm {
-    @apply w-24;
+    @apply max-w-24;
 }
 
 .input-md {
-    @apply w-48;
+    @apply max-w-48;
 }
 
 .input-lg {
-    @apply w-72;
+    @apply max-w-72;
 }
 
 .input-xl {
-    @apply w-96;
+    @apply max-w-96;
 }
 
 .input-full {

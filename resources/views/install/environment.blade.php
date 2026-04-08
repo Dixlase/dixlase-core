@@ -74,7 +74,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     name="app_env"
                     :options="$envOptions"
                     :value="old('app_env', session('install_data.app_env', 'production'))"
-                    class="input-lg"
                 />
             </div>
 
