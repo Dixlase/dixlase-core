@@ -22,25 +22,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-    @php
-        // クッキーからフラッシュメッセージを取得（キャッシュクリア後も表示されるように）
-        $cookieSuccess = request()->cookie('flash_success');
-        $cookieError = request()->cookie('flash_error');
-    @endphp
-
-    @if(session('success') || $cookieSuccess)
-        <x-ui-message 
-            type="success" 
-            :message="session('success') ?? $cookieSuccess"
-            textSize="text-base font-medium"
-        />
-    @endif
-
-    @if(session('error') || $cookieError)
-        <x-ui-message 
-            type="error" 
-            :message="session('error') ?? $cookieError"
-            textSize="text-base font-medium"
+    @if(session('error'))
+        <x-ui-message
+            type="error"
+            :message="session('error')"
         />
     @endif
 
