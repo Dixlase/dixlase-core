@@ -93,7 +93,7 @@ class AdminBaseAdminController extends AdminLoggedInController
 
         // 管理画面URLが変更された場合の特別な処理
         if ($newAdminUrl !== $currentAdminUrl) {
-            Auth::guard('admin')->logout();
+            Auth::guard('member')->logout();
             Session::flush();
 
             $newAdminLoginUrl = url($newAdminUrl.'/login');
