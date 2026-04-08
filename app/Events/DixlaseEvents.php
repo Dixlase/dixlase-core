@@ -101,6 +101,50 @@ final class DixlaseEvents
     public const BACKUP_RESTORE_FAILED = 'dixlase.backup.restore.failed';
 
     // =========================================================================
+    // Backup Encryption Events
+    // =========================================================================
+
+    /**
+     * Fired when backup file encryption starts
+     * Payload: ['path' => string, 'algorithm' => string]
+     */
+    public const BACKUP_ENCRYPTING = 'dixlase.backup.encrypting';
+
+    /**
+     * Fired when backup file encryption completes
+     * Payload: ['path' => string, 'algorithm' => string, 'original_size' => int, 'encrypted_size' => int]
+     */
+    public const BACKUP_ENCRYPTED = 'dixlase.backup.encrypted';
+
+    /**
+     * Fired when backup file encryption fails
+     * Payload: ['path' => string, 'error' => string]
+     */
+    public const BACKUP_ENCRYPTION_FAILED = 'dixlase.backup.encryption.failed';
+
+    // =========================================================================
+    // Backup Verification Events
+    // =========================================================================
+
+    /**
+     * Fired when backup file verification starts
+     * Payload: ['path' => string]
+     */
+    public const BACKUP_VERIFYING = 'dixlase.backup.verifying';
+
+    /**
+     * Fired when backup file verification completes
+     * Payload: ['path' => string, 'hash' => string]
+     */
+    public const BACKUP_VERIFIED = 'dixlase.backup.verified';
+
+    /**
+     * Fired when backup file verification fails
+     * Payload: ['path' => string, 'reason' => string]
+     */
+    public const BACKUP_VERIFICATION_FAILED = 'dixlase.backup.verification.failed';
+
+    // =========================================================================
     // Deploy Events
     // =========================================================================
 

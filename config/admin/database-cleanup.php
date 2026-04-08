@@ -97,6 +97,16 @@ return [
         'date_column_type' => 'timestamp',
     ],
 
+    'backup_records' => [
+        'table' => 'backup_records',
+        'date_column' => 'created_at',
+        'default_days' => 365,
+        'name' => 'admin/settings/systems/database.backup_records.name',
+        'description' => 'admin/settings/systems/database.backup_records.description',
+        'enabled' => true,
+        'additional_conditions' => 'expired_or_deleted',
+    ],
+
     'audit_logs' => [
         'table' => 'audit_logs',
         'date_column' => 'occurred_at',

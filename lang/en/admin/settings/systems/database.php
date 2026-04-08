@@ -83,6 +83,11 @@ return [
         'description' => 'Clean up old deleted two-factor PASSKEYs (biometric)',
         'default_days' => '90 days',
     ],
+    'backup_records' => [
+        'name' => 'Backup Records',
+        'description' => 'Delete expired or removed backup records',
+        'default_days' => '365 days',
+    ],
     'audit_logs' => [
         'name' => 'Audit Logs',
         'description' => 'Delete audit log records older than the specified retention period',
