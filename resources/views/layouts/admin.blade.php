@@ -78,7 +78,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- Admin Bar (Header) -->
             <x-ui-admin-bar :isAdminLayout="true" />
 
-            <div class="min-h-screen flex relative">
+            <div class="min-h-screen flex relative pt-12">
                 <!-- Navigation Sidebar (Desktop only) -->
                 <aside class="md:fixed md:top-12 md:bottom-0 hidden sm:block w-64 flex-shrink-0 border-gray-300 @if($transitionEnabled ?? false) transition-all duration-[300ms] @else transition-transform duration-300 @endif"
                        :class="{
