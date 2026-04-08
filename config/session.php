@@ -20,9 +20,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Schema;
-
 return [
 
     /*
@@ -152,7 +149,7 @@ return [
 
     'cookie' => env(
         'SESSION_COOKIE',
-        Str::slug(env('APP_NAME', 'dixlase'), '_') . '_session'
+        'dixlase_session'
     ),
 
     /*
@@ -236,9 +233,5 @@ return [
     */
 
     'partitioned' => env('SESSION_PARTITIONED_COOKIE', false),
-
-
-
-
 
 ];
