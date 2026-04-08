@@ -292,7 +292,8 @@ document.addEventListener('DOMContentLoaded', function () {
             stage2ConfirmBtn.classList.add('hidden');
         } else {
             stage2ConfirmBtn.classList.remove('hidden');
-            stage2ConfirmBtn.disabled = false;
+            const innerConfirmBtn = stage2ConfirmBtn.querySelector('button');
+            if (innerConfirmBtn) innerConfirmBtn.disabled = false;
             // ラベル設定
             const btnLabel = currentAction.actionType === 'install' ? ts.install : ts.enable;
             if (stage2ConfirmLabel) {
@@ -421,7 +422,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (stage2ConfirmBtn) {
         stage2ConfirmBtn.addEventListener('click', function () {
             // ボタンを無効化してスピナーを表示
-            stage2ConfirmBtn.disabled = true;
+            const innerBtn = stage2ConfirmBtn.querySelector('button');
+            if (innerBtn) innerBtn.disabled = true;
             if (stage2CancelBtn) stage2CancelBtn.disabled = true;
 
             closeModal('pluginActionStage2Modal');
