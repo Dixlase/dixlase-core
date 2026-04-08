@@ -73,8 +73,7 @@ $mailServerFormConfig = [
             name="mail_mailer"
             :options="$mailers"
             :value="old('mail_mailer', session('install_data.mail_mailer', 'smtp'))"
-            class="w-full mail-setting-input"
-            class="input-lg"
+            class="mail-setting-input"
         />
     @else
         <x-form-label
