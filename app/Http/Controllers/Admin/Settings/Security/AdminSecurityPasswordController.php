@@ -80,33 +80,21 @@ class AdminSecurityPasswordController extends AdminLoggedInController
      */
     public function update(AdminSecurityPasswordUpdateRequest $request)
     {
-        $validated = $request->validated();
-        $before = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+        $actor = new MemberActor(AdminHelper::getMember());
 
-        // 共通設定
-        if (array_key_exists('pwned_password_check_enabled', $validated)) {
-            $this->securitySettingRepository->set('pwned_password_check_enabled', $validated['pwned_password_check_enabled'] ?? false);
-        }
-
-        // デフォルトパスワードポリシー
-        if (array_key_exists('password_min_length', $validated)) {
-            $this->securitySettingRepository->set('password_min_length', (int) $validated['password_min_length']);
-        }
-        if (array_key_exists('password_require_uppercase', $validated)) {
-            $this->securitySettingRepository->set('password_require_uppercase', $validated['password_require_uppercase'] ?? false);
-        }
-        if (array_key_exists('password_require_number', $validated)) {
-            $this->securitySettingRepository->set('password_require_number', $validated['password_require_number'] ?? false);
-        }
-        if (array_key_exists('password_require_symbol', $validated)) {
-            $this->securitySettingRepository->set('password_require_symbol', $validated['password_require_symbol'] ?? false);
-        }
-        if (array_key_exists('password_reset_enabled', $validated)) {
-            $this->securitySettingRepository->set('password_reset_enabled', $validated['password_reset_enabled'] ?? false);
-        }
-
-        $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
-        \App\Facades\Audit::logBulkSettingsChange('security.password', $before, $after, auth()->user());
+        UpdateSettingsAction::make(
+            repository: $this->securitySettingRepository,
+            settingsPage: 'security.password',
+            settingKeys: static::SETTING_KEYS,
+            writeCallback: function ($repo, $data) {
+                foreach (static::SETTING_KEYS as $key) {
+                    if (array_key_exists($key, $data)) {
+                        $repo->set($key, $key === 'password_min_length' ? (int) $data[$key] : ($data[$key] ?? false));
+                    }
+                }
+            },
+            permission: Permission::SETTINGS_SECURITY,
+        )->execute($actor, $request->validated());
 
         return redirect()->route('admin.settings.security.password')
             ->with('success', __('admin/settings/security/password.settings_updated'));

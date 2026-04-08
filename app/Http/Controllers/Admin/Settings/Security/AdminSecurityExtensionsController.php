@@ -126,31 +126,21 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
      */
     public function update(AdminSecurityExtensionsUpdateRequest $request)
     {
-        $validated = $request->validated();
-        $before = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+        $actor = new \App\Actors\MemberActor(\App\Helpers\AdminHelper::getMember());
 
-        // 拡張機能セキュリティ設定を更新
-        $this->securitySettingRepository->set('extension_security_preset', $validated['extension_security_preset']);
-        $this->securitySettingRepository->set('extension_require_signature', $validated['extension_require_signature'] ?? false);
-        $this->securitySettingRepository->set('extension_require_permission_definition', $validated['extension_require_permission_definition'] ?? false);
-        $this->securitySettingRepository->set('extension_allow_undefined_permissions', $validated['extension_allow_undefined_permissions'] ?? true);
-        $this->securitySettingRepository->set('extension_plugin_max_health_level', $validated['extension_plugin_max_health_level']);
-        $this->securitySettingRepository->set('extension_theme_max_health_level', $validated['extension_theme_max_health_level']);
-        $this->securitySettingRepository->set('extension_allow_logic_themes', $validated['extension_allow_logic_themes'] ?? true);
-        $this->securitySettingRepository->set('extension_permission_mismatch_action', $validated['extension_permission_mismatch_action']);
-        $this->securitySettingRepository->set('extension_notify_on_install', $validated['extension_notify_on_install'] ?? true);
-        $this->securitySettingRepository->set('extension_notify_on_uninstall', $validated['extension_notify_on_uninstall'] ?? true);
-        $this->securitySettingRepository->set('extension_notify_on_enable', $validated['extension_notify_on_enable'] ?? true);
-        $this->securitySettingRepository->set('extension_notify_on_disable', $validated['extension_notify_on_disable'] ?? false);
-        $this->securitySettingRepository->set('extension_notify_on_unhealthy', $validated['extension_notify_on_unhealthy'] ?? true);
-        $this->securitySettingRepository->set('extension_log_operations', $validated['extension_log_operations'] ?? true);
-
-        // 拡張機能ソース設定を更新
-        $this->securitySettingRepository->set('extension_source_type', $validated['extension_source_type']);
-        $this->securitySettingRepository->set('extension_update_check_interval', $validated['extension_update_check_interval']);
-
-        $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
-        \App\Facades\Audit::logBulkSettingsChange('security.extensions', $before, $after, auth()->user());
+        \App\Actions\Settings\UpdateSettingsAction::make(
+            repository: $this->securitySettingRepository,
+            settingsPage: 'security.extensions',
+            settingKeys: static::SETTING_KEYS,
+            writeCallback: function ($repo, $data) {
+                foreach (static::SETTING_KEYS as $key) {
+                    if (array_key_exists($key, $data)) {
+                        $repo->set($key, $data[$key]);
+                    }
+                }
+            },
+            permission: \App\Enums\Permission::SETTINGS_SECURITY,
+        )->execute($actor, $request->validated());
 
         return redirect()->route('admin.settings.security.extensions')
             ->with('success', __('admin/settings/security/extensions.settings_updated'));

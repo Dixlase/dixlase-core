@@ -75,21 +75,19 @@ class AdminSecurityIpController extends AdminLoggedInController
      */
     public function update(AdminSecurityIpUpdateRequest $request)
     {
-        $validated = $request->validated();
-        $before = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+        $actor = new MemberActor(AdminHelper::getMember());
 
-        // IP設定を更新
-        $this->securitySettingRepository->set('enable_allowed_admin_ips', $validated['enable_allowed_admin_ips'] ?? false);
-        $this->securitySettingRepository->set('allowed_admin_ips', $validated['allowed_admin_ips'] ?? '');
-        $this->securitySettingRepository->set('enable_blocked_admin_ips', $validated['enable_blocked_admin_ips'] ?? false);
-        $this->securitySettingRepository->set('blocked_admin_ips', $validated['blocked_admin_ips'] ?? '');
-        $this->securitySettingRepository->set('enable_allowed_front_ips', $validated['enable_allowed_front_ips'] ?? false);
-        $this->securitySettingRepository->set('allowed_front_ips', $validated['allowed_front_ips'] ?? '');
-        $this->securitySettingRepository->set('enable_blocked_front_ips', $validated['enable_blocked_front_ips'] ?? false);
-        $this->securitySettingRepository->set('blocked_front_ips', $validated['blocked_front_ips'] ?? '');
-
-        $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
-        \App\Facades\Audit::logBulkSettingsChange('security.ip', $before, $after, auth()->user());
+        UpdateSettingsAction::make(
+            repository: $this->securitySettingRepository,
+            settingsPage: 'security.ip',
+            settingKeys: static::SETTING_KEYS,
+            writeCallback: function ($repo, $data) {
+                foreach (static::SETTING_KEYS as $key) {
+                    $repo->set($key, $data[$key] ?? (str_contains($key, 'enable_') ? false : ''));
+                }
+            },
+            permission: Permission::SETTINGS_SECURITY,
+        )->execute($actor, $request->validated());
 
         return redirect()->route('admin.settings.security.ip')
             ->with('success', __('admin/settings/security/ip_settings_updated'));
