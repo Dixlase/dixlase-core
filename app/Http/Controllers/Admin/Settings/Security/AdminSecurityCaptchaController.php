@@ -115,66 +115,15 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
      */
     public function update(AdminSecurityCaptchaUpdateRequest $request)
     {
-        $before = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+        $actor = new \App\Actors\MemberActor(\App\Helpers\AdminHelper::getMember());
 
-        $validated = $request->validated();
+        $data = $request->validated();
+        $data['captcha_authentication_result'] = $request->boolean('captcha_authentication_result');
 
-        // 現在のCAPTCHA設定を取得
-        $currentDriver = $this->securitySettingRepository->get('captcha_driver', 'google');
-        $currentSiteKey = $this->securitySettingRepository->get('captcha_site_key', '');
-        $currentSecretKey = $this->securitySettingRepository->get('captcha_secret_key', '');
-        $currentVersion = $this->securitySettingRepository->get('captcha_google_version', 'v3');
-        $currentMinScore = $this->securitySettingRepository->get('captcha_google_min_score', '0.5');
-
-        // 新しいCAPTCHA設定
-        $newDriver = $validated['captcha_driver'] ?? 'google';
-        $newSiteKey = $validated['captcha_site_key'] ?? '';
-        $newSecretKey = $validated['captcha_secret_key'] ?? '';
-        $newVersion = $validated['captcha_google_version'] ?? 'v3';
-        $newMinScore = $validated['captcha_google_min_score'] ?? '0.5';
-
-        // CAPTCHA設定が変更されたかチェック
-        $captchaSettingsChanged = (
-            $currentDriver !== $newDriver ||
-            $currentSiteKey !== $newSiteKey ||
-            $currentSecretKey !== $newSecretKey ||
-            $currentVersion !== $newVersion ||
-            (string) $currentMinScore !== (string) $newMinScore
-        );
-
-        // フォームから送信されたテスト結果を確認
-        $submittedTestResult = $request->boolean('captcha_authentication_result');
-
-        // CAPTCHAテストサービス
-        $captchaTestService = app(CaptchaTestService::class);
-
-        // CAPTCHA設定が変更された場合のテスト結果リセット処理
-        // ただし、フォームでテスト成功状態が送信された場合は保持
-        if ($captchaSettingsChanged && ! $submittedTestResult) {
-            $captchaTestService->resetCaptchaTestResults();
-        } elseif ($submittedTestResult) {
-            // テスト結果をデータベースに保存（フォームから送信された値を使用）
-            $captchaTestService->saveCaptchaTestResult($newDriver, true);
-        }
-
-        // CAPTCHA設定を更新
-        $this->securitySettingRepository->set('captcha_enabled', $validated['captcha_enabled'] ?? false);
-        $this->securitySettingRepository->set('captcha_driver', $newDriver);
-
-        // プロバイダごとにキーを保存
-        $this->saveProviderKeys($newDriver, $newSiteKey, $newSecretKey);
-
-        $this->securitySettingRepository->set('captcha_google_version', $validated['captcha_google_version'] ?? 'v3');
-        $this->securitySettingRepository->set('captcha_google_min_score', $validated['captcha_google_min_score'] ?? '0.5');
-        $this->securitySettingRepository->set('captcha_google_project_id', $validated['captcha_google_project_id'] ?? '');
-
-        // フォーム設定を更新
-        if (isset($validated['forms']) && is_array($validated['forms'])) {
-            $this->captchaService->bulkUpdateFormSettings($validated['forms']);
-        }
-
-        $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
-        \App\Facades\Audit::logBulkSettingsChange('security.captcha', $before, $after, auth()->user(), static::SENSITIVE_KEYS);
+        (new \App\Actions\Security\UpdateCaptchaSettingsAction(
+            $this->securitySettingRepository,
+            $this->captchaService,
+        ))->execute($actor, $data);
 
         return redirect()->route('admin.settings.security.captcha')
             ->with('success', __('admin/settings/security/captcha.settings_updated'));
@@ -398,21 +347,5 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
                 'secret_key' => $this->securitySettingRepository->get('captcha_turnstile_secret_key', ''),
             ],
         ];
-    }
-
-    /**
-     * プロバイダごとにキーを保存
-     */
-    protected function saveProviderKeys(string $driver, string $siteKey, string $secretKey): void
-    {
-        $keyPrefix = match ($driver) {
-            'google' => 'captcha_google',
-            'google_enterprise' => 'captcha_google_enterprise',
-            'turnstile' => 'captcha_turnstile',
-            default => 'captcha_google',
-        };
-
-        $this->securitySettingRepository->set("{$keyPrefix}_site_key", $siteKey);
-        $this->securitySettingRepository->set("{$keyPrefix}_secret_key", $secretKey);
     }
 }
