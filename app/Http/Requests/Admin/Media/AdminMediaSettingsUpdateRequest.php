@@ -41,11 +41,11 @@ class AdminMediaSettingsUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        $fileExtensions = config('admin.fileExtensions');
+        $fileExtensions = config('admin.files.fileExtensions', []);
 
         return [
             'allowed_file_types' => 'array',
-            'allowed_file_types.*' => 'in:' . implode(',', $fileExtensions),
+            'allowed_file_types.*' => 'in:'.implode(',', $fileExtensions),
             'max_file_size' => 'required|integer|min:1|max:100',
             'max_file_size_image' => 'required|integer|min:1|max:100',
             'max_file_size_video' => 'required|integer|min:1|max:1000',
