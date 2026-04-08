@@ -108,20 +108,23 @@ class AdminSystemApiController extends AdminLoggedInController
      */
     public function update(AdminSystemApiUpdateRequest $request)
     {
-        $validated = $request->validated();
+        $actor = new \App\Actors\MemberActor(\App\Helpers\AdminHelper::getMember());
 
-        $before = $this->apiSettingRepository->getMultiple(static::SETTING_KEYS);
-
-        $this->apiSettingRepository->set('api_enabled', $validated['api_enabled'] ?? false);
-        $this->apiSettingRepository->set('api_rate_limit', $validated['api_rate_limit'] ?? 60);
-        $this->apiSettingRepository->set('api_signature_required', $validated['api_signature_required'] ?? true);
-
-        $after = $this->apiSettingRepository->getMultiple(static::SETTING_KEYS);
-        \App\Facades\Audit::logBulkSettingsChange('system.api', $before, $after, auth()->user());
+        \App\Actions\Settings\UpdateSettingsAction::make(
+            repository: $this->apiSettingRepository,
+            settingsPage: 'system.api',
+            settingKeys: static::SETTING_KEYS,
+            writeCallback: function ($repo, $data) {
+                $repo->set('api_enabled', $data['api_enabled'] ?? false);
+                $repo->set('api_rate_limit', $data['api_rate_limit'] ?? 60);
+                $repo->set('api_signature_required', $data['api_signature_required'] ?? true);
+            },
+            permission: \App\Enums\Permission::SETTINGS_API,
+        )->execute($actor, $request->validated());
 
         Log::channel('admin_activity')->info('API設定を更新しました', [
             'member_id' => Auth::guard('member')->id(),
-            'settings' => $validated,
+            'settings' => $request->validated(),
         ]);
 
         return redirect()->route('admin.settings.systems.api')

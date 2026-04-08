@@ -115,72 +115,32 @@ class AdminSecurityLoginController extends AdminLoggedInController
      */
     public function update(AdminSecurityLoginUpdateRequest $request)
     {
-        $validated = $request->validated();
-        $before = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+        $actor = new \App\Actors\MemberActor(\App\Helpers\AdminHelper::getMember());
 
-        if (array_key_exists('login_attempt_limit_enabled', $validated)) {
-            $this->securitySettingRepository->set('login_attempt_limit_enabled', $validated['login_attempt_limit_enabled'] ?? false);
-        }
-        if (array_key_exists('login_attempt_max_attempts', $validated)) {
-            $this->securitySettingRepository->set('login_attempt_max_attempts', (int) $validated['login_attempt_max_attempts']);
-        }
-        if (array_key_exists('login_attempt_max_attempts_ip', $validated)) {
-            $this->securitySettingRepository->set('login_attempt_max_attempts_ip', (int) $validated['login_attempt_max_attempts_ip']);
-        }
-        if (array_key_exists('login_attempt_time_window', $validated)) {
-            $this->securitySettingRepository->set('login_attempt_time_window', (int) $validated['login_attempt_time_window']);
-        }
-        if (array_key_exists('login_attempt_lockout_duration', $validated)) {
-            $this->securitySettingRepository->set('login_attempt_lockout_duration', (int) $validated['login_attempt_lockout_duration']);
-        }
-        if (array_key_exists('login_attempt_lockout_notification_enabled', $validated)) {
-            $this->securitySettingRepository->set('login_attempt_lockout_notification_enabled', $validated['login_attempt_lockout_notification_enabled'] ?? false);
-        }
+        // Boolean型とint型のキーを分類
+        $booleanKeys = ['login_attempt_limit_enabled', 'login_attempt_lockout_notification_enabled',
+            'login_notification_send_to_system', 'two_fa_lockout_notification_enabled'];
+        $stringKeys = ['login_notification_system_email'];
 
-        // ログイン識別子モード設定
-        if (array_key_exists('login_identifier_mode', $validated)) {
-            $this->securitySettingRepository->set('login_identifier_mode', (int) $validated['login_identifier_mode']);
-        }
-
-        // ログイン通知設定
-        if (array_key_exists('login_notification_mode', $validated)) {
-            $this->securitySettingRepository->set('login_notification_mode', (int) $validated['login_notification_mode']);
-        }
-        if (array_key_exists('login_notification_send_to_system', $validated)) {
-            $this->securitySettingRepository->set('login_notification_send_to_system', $validated['login_notification_send_to_system'] ?? false);
-        }
-        if (array_key_exists('login_notification_system_email', $validated)) {
-            $this->securitySettingRepository->set('login_notification_system_email', (string) $validated['login_notification_system_email']);
-        }
-
-        // 二段階認証の詳細設定
-        if (array_key_exists('two_fa_expire_minutes', $validated)) {
-            $this->securitySettingRepository->set('two_fa_expire_minutes', (int) $validated['two_fa_expire_minutes']);
-        }
-        if (array_key_exists('two_fa_resend_interval_seconds', $validated)) {
-            $this->securitySettingRepository->set('two_fa_resend_interval_seconds', (int) $validated['two_fa_resend_interval_seconds']);
-        }
-        if (array_key_exists('two_fa_max_attempts', $validated)) {
-            $this->securitySettingRepository->set('two_fa_max_attempts', (int) $validated['two_fa_max_attempts']);
-        }
-        if (array_key_exists('two_fa_attempt_window', $validated)) {
-            $this->securitySettingRepository->set('two_fa_attempt_window', (int) $validated['two_fa_attempt_window']);
-        }
-        if (array_key_exists('two_fa_lockout_duration', $validated)) {
-            $this->securitySettingRepository->set('two_fa_lockout_duration', (int) $validated['two_fa_lockout_duration']);
-        }
-        if (array_key_exists('two_fa_lockout_notification_enabled', $validated)) {
-            $this->securitySettingRepository->set('two_fa_lockout_notification_enabled', $validated['two_fa_lockout_notification_enabled'] ?? false);
-        }
-        if (array_key_exists('two_fa_recovery_codes_count', $validated)) {
-            $this->securitySettingRepository->set('two_fa_recovery_codes_count', (int) $validated['two_fa_recovery_codes_count']);
-        }
-        if (array_key_exists('two_fa_recovery_code_regenerate_interval', $validated)) {
-            $this->securitySettingRepository->set('two_fa_recovery_code_regenerate_interval', (int) $validated['two_fa_recovery_code_regenerate_interval']);
-        }
-
-        $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
-        \App\Facades\Audit::logBulkSettingsChange('security.login', $before, $after, auth()->user());
+        \App\Actions\Settings\UpdateSettingsAction::make(
+            repository: $this->securitySettingRepository,
+            settingsPage: 'security.login',
+            settingKeys: static::SETTING_KEYS,
+            writeCallback: function ($repo, $data) use ($booleanKeys, $stringKeys) {
+                foreach (static::SETTING_KEYS as $key) {
+                    if (array_key_exists($key, $data)) {
+                        if (in_array($key, $booleanKeys)) {
+                            $repo->set($key, $data[$key] ?? false);
+                        } elseif (in_array($key, $stringKeys)) {
+                            $repo->set($key, (string) $data[$key]);
+                        } else {
+                            $repo->set($key, (int) $data[$key]);
+                        }
+                    }
+                }
+            },
+            permission: \App\Enums\Permission::SETTINGS_SECURITY,
+        )->execute($actor, $request->validated());
 
         return redirect()->back()
             ->with('success', __('admin/settings/security/login.updated'));

@@ -129,48 +129,29 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
      */
     public function update(AdminSecurityTwoFaUpdateRequest $request)
     {
-        $validated = $request->validated();
-        $before = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+        $actor = new \App\Actors\MemberActor(\App\Helpers\AdminHelper::getMember());
 
-        // 二段階認証基本設定（セキュリティ設定に保存）
-        if (array_key_exists('two_fa_mode', $validated)) {
-            $this->securitySettingRepository->set('two_fa_mode', (int) $validated['two_fa_mode']);
-        }
-        if (array_key_exists('two_fa_passkey_mode', $validated)) {
-            $this->securitySettingRepository->set('two_fa_passkey_mode', (string) $validated['two_fa_passkey_mode']);
-        }
-        if (array_key_exists('two_fa_passkey_max_devices', $validated)) {
-            $this->securitySettingRepository->set('two_fa_passkey_max_devices', (string) $validated['two_fa_passkey_max_devices']);
-        }
-
-        // 二段階認証詳細設定（セキュリティ設定に保存）
-        if (array_key_exists('two_fa_expire_minutes', $validated)) {
-            $this->securitySettingRepository->set('two_fa_expire_minutes', (string) $validated['two_fa_expire_minutes']);
-        }
-        if (array_key_exists('two_fa_resend_interval_seconds', $validated)) {
-            $this->securitySettingRepository->set('two_fa_resend_interval_seconds', (string) $validated['two_fa_resend_interval_seconds']);
-        }
-        if (array_key_exists('two_fa_max_attempts', $validated)) {
-            $this->securitySettingRepository->set('two_fa_max_attempts', (string) $validated['two_fa_max_attempts']);
-        }
-        if (array_key_exists('two_fa_attempt_window', $validated)) {
-            $this->securitySettingRepository->set('two_fa_attempt_window', (string) $validated['two_fa_attempt_window']);
-        }
-        if (array_key_exists('two_fa_lockout_duration', $validated)) {
-            $this->securitySettingRepository->set('two_fa_lockout_duration', (string) $validated['two_fa_lockout_duration']);
-        }
-        if (array_key_exists('two_fa_lockout_notification_enabled', $validated)) {
-            $this->securitySettingRepository->set('two_fa_lockout_notification_enabled', $validated['two_fa_lockout_notification_enabled'] ? '1' : '0');
-        }
-        if (array_key_exists('two_fa_recovery_codes_count', $validated)) {
-            $this->securitySettingRepository->set('two_fa_recovery_codes_count', (string) $validated['two_fa_recovery_codes_count']);
-        }
-        if (array_key_exists('two_fa_recovery_code_regenerate_interval', $validated)) {
-            $this->securitySettingRepository->set('two_fa_recovery_code_regenerate_interval', (string) $validated['two_fa_recovery_code_regenerate_interval']);
-        }
-
-        $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
-        \App\Facades\Audit::logBulkSettingsChange('security.two_fa', $before, $after, auth()->user());
+        \App\Actions\Settings\UpdateSettingsAction::make(
+            repository: $this->securitySettingRepository,
+            settingsPage: 'security.two_fa',
+            settingKeys: static::SETTING_KEYS,
+            writeCallback: function ($repo, $data) {
+                foreach (static::SETTING_KEYS as $key) {
+                    if (array_key_exists($key, $data)) {
+                        $value = $data[$key];
+                        if ($key === 'two_fa_mode') {
+                            $value = (int) $value;
+                        } elseif ($key === 'two_fa_lockout_notification_enabled') {
+                            $value = $value ? '1' : '0';
+                        } else {
+                            $value = (string) $value;
+                        }
+                        $repo->set($key, $value);
+                    }
+                }
+            },
+            permission: \App\Enums\Permission::SETTINGS_SECURITY,
+        )->execute($actor, $request->validated());
 
         return redirect()->back()
             ->with('success', __('admin/settings/security/two-fa.updated'));

@@ -88,18 +88,21 @@ class AdminSecurityNotificationsController extends AdminLoggedInController
      */
     public function update(\App\Http\Requests\Admin\Settings\Security\AdminSecurityNotificationsUpdateRequest $request)
     {
-        $validated = $request->validated();
-        $before = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
+        $actor = new \App\Actors\MemberActor(\App\Helpers\AdminHelper::getMember());
 
-        // 通知設定を更新
-        $this->securitySettingRepository->set('notification_enabled', $validated['notification_enabled'] ?? false);
+        \App\Actions\Settings\UpdateSettingsAction::make(
+            repository: $this->securitySettingRepository,
+            settingsPage: 'security.notifications',
+            settingKeys: static::SETTING_KEYS,
+            writeCallback: function ($repo, $data) {
+                $repo->set('notification_enabled', $data['notification_enabled'] ?? false);
 
-        $logLevels = $validated['notification_log_levels'] ?? LogLevel::getDefaultNotificationLevels();
-        $logLevels = array_values(array_unique($logLevels));
-        $this->securitySettingRepository->set('notification_log_levels', implode(',', $logLevels));
-
-        $after = $this->securitySettingRepository->getMultiple(static::SETTING_KEYS);
-        \App\Facades\Audit::logBulkSettingsChange('security.notifications', $before, $after, auth()->user());
+                $logLevels = $data['notification_log_levels'] ?? LogLevel::getDefaultNotificationLevels();
+                $logLevels = array_values(array_unique($logLevels));
+                $repo->set('notification_log_levels', implode(',', $logLevels));
+            },
+            permission: \App\Enums\Permission::SETTINGS_SECURITY,
+        )->execute($actor, $request->validated());
 
         return redirect()->route('admin.settings.security.notifications')
             ->with('success', __('admin/settings/security/notifications.settings_updated'));
