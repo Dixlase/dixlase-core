@@ -30,7 +30,7 @@ return [
         'line3' => 'パスワードリセットを要求していない場合は、何もする必要はありません。',
         'regards' => 'よろしくお願いいたします',
     ],
-    
+
     'login-notification' => [
         'subject_user' => '【ログイン通知】:nameさん、:contextにログインがありました',
         'subject_system' => '【システム通知】:contextへのログインがありました',
@@ -50,20 +50,29 @@ return [
             'admin' => '管理画面',
         ],
     ],
-    
+
     'verify-email' => [
-        'subject' => 'メールアドレスの確認',
-        'subject_account' => ':typeアカウントの確認',
-        'greeting' => ':nameさん、こんにちは！',
-        'message_create' => 'ご登録ありがとうございます。以下のボタンをクリックして、メールアドレスの認証を完了してください。',
-        'message_email_change' => 'メールアドレスが変更されました。以下のボタンをクリックして、メールアドレスの変更を完了させてください。',
-        'message_resend' => 'メールアドレスの認証が必要です。以下のボタンをクリックして、認証を完了してください。',
-        'action' => 'メールアドレスを認証',
-        'action_subcopy' => '":button_text" ボタンをクリックできない場合は、以下のURLをコピーしてWebブラウザに貼り付けてください:',
-        'regards' => 'よろしくお願いいたします。',
-        'expiration_notice' => 'このリンクは :count 分後に期限切れになります。',
+        'member' => [
+            'subject' => 'メールアドレスの確認',
+            'subject_account' => ':typeアカウントの確認',
+            'greeting' => ':nameさん、こんにちは！',
+            'message_create' => 'ご登録ありがとうございます。以下のボタンをクリックして、メールアドレスの認証を完了してください。',
+            'message_email_change' => 'メールアドレスが変更されました。以下のボタンをクリックして、メールアドレスの変更を完了させてください。',
+            'message_resend' => 'メールアドレスの認証が必要です。以下のボタンをクリックして、認証を完了してください。',
+            'action_verify_account' => 'メールアドレスを認証',
+            'action_change_email' => 'メールアドレス変更を確認',
+            'manual_verification' => '上のボタンが機能しない場合は、以下のURLをコピーしてWebブラウザに貼り付けてください:',
+            'expiration' => 'このリンクは :minutes 分後に期限切れになります。',
+            'security_notice' => 'このメールに心当たりがない場合は、何もする必要はありません。',
+            'regards' => 'よろしくお願いいたします。',
+        ],
+        'member_verification_completed' => [
+            'subject' => 'メンバーアカウントの認証完了',
+            'greeting' => ':nameさん、こんにちは！',
+            'message' => 'メールアドレスの認証が完了しました。',
+        ],
     ],
-    
+
     'two-fa' => [
         'security_notice' => 'このログインに心当たりがない場合は、第三者によってログインが試行された可能性があります。不正アクセスのリスクがありますので、至急、パスワードを変更するか、システム管理者にお問い合わせください。',
         'regards' => 'よろしくお願いいたします。',
@@ -87,7 +96,7 @@ return [
             'deny_button' => 'ログインを拒否',
         ],
     ],
-    
+
     'lockout' => [
         'subject' => '【セキュリティ警告】管理画面ログインロックアウト発生',
         'title' => '管理画面ログインロックアウト通知',
@@ -100,7 +109,7 @@ return [
         'lockout_duration' => 'ロックアウト期間',
         'minutes' => ':minutes 分',
     ],
-    
+
     'file-integrity' => [
         'subject' => '【:site_name】ファイル整合性アラート - :status',
         'title' => 'ファイル整合性アラート',
@@ -110,7 +119,7 @@ return [
         'scan_date' => 'スキャン日時',
         'status' => 'ステータス',
     ],
-    
+
     'extension' => [
         'subject_installed' => '【:app_name】:type「:name」がインストールされました',
         'subject_uninstalled' => '【:app_name】:type「:name」がアンインストールされました',
@@ -118,7 +127,7 @@ return [
         'subject_disabled' => '【:app_name】:type「:name」が無効化されました',
         'subject_unhealthy_warning' => '【:app_name 警告】健全性に注意が必要な:typeが操作されました',
     ],
-    
+
     'member-notification' => [
         'admin_notification' => [
             'member_verified' => [

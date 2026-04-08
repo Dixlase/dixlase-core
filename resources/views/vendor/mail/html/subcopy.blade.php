@@ -15,7 +15,7 @@
         // 翻訳キーを取得（Mailable側から $translationKey 変数として渡される想定）
         // 渡されていない場合はメンバー用のみフォールバック（後方互換性）
         if (!isset($translationKey)) {
-            $translationKey = 'mail.login_notification.action_subcopy';
+            $translationKey = 'mail.login-notification.action_subcopy';
         }
         
         // 多言語化されたメッセージを表示
