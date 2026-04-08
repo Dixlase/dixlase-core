@@ -90,6 +90,6 @@ class AdminSecurityIpController extends AdminLoggedInController
         )->execute($actor, $request->validated());
 
         return redirect()->route('admin.settings.security.ip')
-            ->with('success', __('admin/settings/security/ip_settings_updated'));
+            ->with('success', __('admin/settings/security/ip.settings_updated'));
     }
 }

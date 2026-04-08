@@ -51,6 +51,8 @@ return [
     // Password reset feature
     'password_reset_feature' => 'Password Reset Feature',
     'password_reset_feature_description' => 'Enable or disable the password reset feature for members who have forgotten their passwords.',
+    'reset_settings' => 'Password Reset Settings',
+    'reset_help' => 'When enabled, members who have forgotten their password can reset it via email. A verified email address and a configured mail server are required.',
 
     'settings_updated' => 'Password security settings have been updated.',
 ];
