@@ -23,7 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <i class="fas fa-shield-alt mr-2"></i>{{ __('admin/dashboard.security_overview') }}
     </h2>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         @foreach($securityOverview as $item)
             <div class="flex items-start gap-3 p-4 rounded-lg border
                 @if($item['status'] === 'warning')
