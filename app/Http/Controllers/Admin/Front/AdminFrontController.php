@@ -22,10 +22,14 @@
 
 namespace App\Http\Controllers\Admin\Front;
 
+use App\Actions\FrontPage\CreateFrontPageAction;
+use App\Actions\FrontPage\DeleteFrontPageAction;
+use App\Actions\FrontPage\UpdateFrontPageAction;
+use App\Actors\MemberActor;
 use App\Contracts\Repositories\FrontSettingRepositoryInterface;
 use App\Enums\ContentEditorType;
-use App\Enums\ContentStatus;
 use App\Enums\ContentStorageType;
+use App\Helpers\AdminHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Front\AdminFrontCreateRequest;
 use App\Http\Requests\Admin\Front\AdminFrontEditUpdateRequest;
@@ -139,62 +143,8 @@ class AdminFrontController extends AdminLoggedInController
      */
     public function store(AdminFrontCreateRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
-
-        $storageTypeEnum = ContentStorageType::fromSlug($validated['storage_type']);
-        $editorTypeEnum = ContentEditorType::fromSlug($validated['editor_type']);
-        $editorTypeSlug = $editorTypeEnum->slug();
-        $content = $validated['content'] ?? '';
-        $customJs = $validated['custom_js'] ?? null;
-        $customCss = $validated['custom_css'] ?? null;
-
-        // HTML エディタ以外は JS/CSS を無視
-        if ($editorTypeEnum !== ContentEditorType::HTML) {
-            $customJs = null;
-            $customCss = null;
-        }
-
-        // ファイル保存の場合はファイルにも保存
-        if ($storageTypeEnum === ContentStorageType::FILE) {
-            $this->contentService->saveToFile(
-                'main_content',
-                $validated['lang'],
-                $editorTypeSlug,
-                $content
-            );
-
-            // HTML エディタ時は JS/CSS ファイルも保存
-            if ($editorTypeEnum === ContentEditorType::HTML) {
-                if ($customJs !== null && $customJs !== '') {
-                    $this->contentService->saveJsToFile('main_content', $validated['lang'], $customJs);
-                }
-                if ($customCss !== null && $customCss !== '') {
-                    $this->contentService->saveCssToFile('main_content', $validated['lang'], $customCss);
-                }
-            }
-        }
-
-        // コンテンツ作成（常にDBにもコンテンツを保存 = バックアップ）
-        $frontPage = FrontPage::create([
-            'page_type' => 'main_content',
-            'lang' => $validated['lang'],
-            'content' => $content,
-            'custom_js' => $customJs,
-            'custom_css' => $customCss,
-            'editor_type' => $editorTypeEnum,
-            'storage_type' => $storageTypeEnum,
-            'status' => ContentStatus::PUBLISHED,
-        ]);
-
-        \App\Facades\Audit::logContent('front_page.created', [
-            'actor' => auth()->user(),
-            'target' => $frontPage,
-            'target_label' => $frontPage->lang ?? 'default',
-            'context' => [
-                'editor_type' => $frontPage->editor_type ?? null,
-                'storage_type' => $frontPage->storage_type ?? null,
-            ],
-        ]);
+        $actor = new MemberActor(AdminHelper::getMember());
+        app(CreateFrontPageAction::class)->execute($actor, $request->validated());
 
         return redirect()
             ->route('admin.front.edit')
@@ -356,63 +306,8 @@ class AdminFrontController extends AdminLoggedInController
             return redirect()->route('admin.front.create');
         }
 
-        $validated = $request->validated();
-        $newStorageTypeEnum = ContentStorageType::fromSlug($validated['storage_type']);
-        $oldStorageTypeEnum = $frontPage->storage_type;
-        $editorTypeSlug = $frontPage->editor_type->slug();
-        $locale = $frontPage->lang;
-        $content = $validated['content'] ?? '';
-        $isHtmlEditor = $frontPage->editor_type === ContentEditorType::HTML;
-        $customJs = $isHtmlEditor ? ($validated['custom_js'] ?? null) : null;
-        $customCss = $isHtmlEditor ? ($validated['custom_css'] ?? null) : null;
-
-        // 保存方法が変更された場合の処理
-        if ($oldStorageTypeEnum !== $newStorageTypeEnum) {
-            if ($oldStorageTypeEnum === ContentStorageType::FILE && $newStorageTypeEnum === ContentStorageType::DATABASE) {
-                // ファイル→DB: ファイルを削除（DBには常にバックアップがあるため読み込み不要）
-                $this->contentService->deleteFile('main_content', $locale, $editorTypeSlug);
-                if ($isHtmlEditor) {
-                    $this->contentService->deleteJsFile('main_content', $locale);
-                    $this->contentService->deleteCssFile('main_content', $locale);
-                }
-            }
-        }
-
-        // ファイル保存の場合はファイルにも保存
-        if ($newStorageTypeEnum === ContentStorageType::FILE) {
-            $this->contentService->saveToFile('main_content', $locale, $editorTypeSlug, $content);
-
-            // HTML エディタ時は JS/CSS ファイルも保存
-            if ($isHtmlEditor) {
-                if ($customJs !== null && $customJs !== '') {
-                    $this->contentService->saveJsToFile('main_content', $locale, $customJs);
-                } else {
-                    $this->contentService->deleteJsFile('main_content', $locale);
-                }
-                if ($customCss !== null && $customCss !== '') {
-                    $this->contentService->saveCssToFile('main_content', $locale, $customCss);
-                } else {
-                    $this->contentService->deleteCssFile('main_content', $locale);
-                }
-            }
-        }
-
-        // ページを更新（常にDBにもコンテンツを保存 = バックアップ）
-        $updateData = [
-            'content' => $content,
-            'storage_type' => $newStorageTypeEnum,
-        ];
-        if ($isHtmlEditor) {
-            $updateData['custom_js'] = $customJs;
-            $updateData['custom_css'] = $customCss;
-        }
-        $frontPage->update($updateData);
-
-        \App\Facades\Audit::logContent('front_page.updated', [
-            'actor' => auth()->user(),
-            'target' => $frontPage,
-            'target_label' => $frontPage->lang ?? 'default',
-        ]);
+        $actor = new MemberActor(AdminHelper::getMember());
+        (new UpdateFrontPageAction($frontPage, $this->contentService))->execute($actor, $request->validated());
 
         return redirect()
             ->route('admin.front.edit')
@@ -427,30 +322,8 @@ class AdminFrontController extends AdminLoggedInController
         $frontPage = FrontPage::findByType('main_content');
 
         if ($frontPage) {
-            $label = $frontPage->lang ?? 'default';
-
-            // ファイル保存の場合、関連ファイルも削除
-            if ($frontPage->storage_type === ContentStorageType::FILE) {
-                $this->contentService->deleteFile(
-                    'main_content',
-                    $frontPage->lang,
-                    $frontPage->editor_type->slug()
-                );
-
-                // HTML エディタ時は JS/CSS ファイルも削除
-                if ($frontPage->editor_type === ContentEditorType::HTML) {
-                    $this->contentService->deleteJsFile('main_content', $frontPage->lang);
-                    $this->contentService->deleteCssFile('main_content', $frontPage->lang);
-                }
-            }
-
-            $frontPage->delete();
-
-            \App\Facades\Audit::logContent('front_page.deleted', [
-                'actor' => auth()->user(),
-                'target_label' => $label,
-                'severity' => 'warning',
-            ]);
+            $actor = new MemberActor(AdminHelper::getMember());
+            (new DeleteFrontPageAction($frontPage, $this->contentService))->execute($actor, []);
         }
 
         return redirect()
