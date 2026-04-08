@@ -76,3 +76,4 @@ window.adminLayout = function() {
         }
     };
 };
+console.log("LAYOUT_JS_LOADED");
