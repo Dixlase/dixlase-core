@@ -108,17 +108,28 @@ abstract class AbstractAction implements ActionInterface
     /**
      * Record an audit log entry after execution
      *
-     * Currently disabled — audit logging is handled uniformly by controllers.
-     * When the Action layer becomes the primary entry point for all operations
-     * (including API/CLI/AI), re-enable this method to centralize audit logging.
-     *
-     * Subclasses can override auditAction(), auditCategory(), and
-     * buildAuditContext() to prepare for future Action-based audit logging.
+     * Subclasses can override to customize audit context.
      */
     protected function audit(Actor $actor, array $data, ActionResult $result): void
     {
-        // Audit logging is currently handled by controllers for consistency.
-        // See: docs/plans/ for Action layer migration roadmap.
+        if (! $result->success) {
+            return;
+        }
+
+        $model = $actor->toAuditMorph();
+
+        Audit::log([
+            'category' => $this->auditCategory(),
+            'action' => $this->auditAction(),
+            'actor_type' => $model ? get_class($model) : null,
+            'actor_id' => $actor->getActorId(),
+            'actor_name' => $actor->getActorName(),
+            'target_type' => $result->targetType,
+            'target_id' => $result->targetId,
+            'target_label' => $result->targetLabel,
+            'context' => $this->buildAuditContext($data, $result),
+            'outcome' => 'success',
+        ]);
     }
 
     /**

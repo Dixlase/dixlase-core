@@ -110,21 +110,6 @@ class AdminMemberFormController extends AdminLoggedInController
         $actor = new MemberActor(AdminHelper::getMember());
         $result = app(CreateMemberAction::class)->execute($actor, $validated);
 
-        if ($result->success) {
-            \App\Facades\Audit::log([
-                'category' => 'account',
-                'action' => 'member.created',
-                'actor' => auth()->user(),
-                'target' => $result->model,
-                'target_label' => $result->targetLabel,
-                'context' => [
-                    'account_name' => $validated['account_name'] ?? null,
-                    'email' => $validated['email'] ?? null,
-                    'role' => $validated['role'] ?? null,
-                ],
-            ]);
-        }
-
         if ($result->metadata['email_sent'] ?? false) {
             $message = __('admin/members/create.messages.created_with_verification_email');
         } elseif ($result->metadata['email_failed'] ?? false) {
@@ -219,21 +204,8 @@ class AdminMemberFormController extends AdminLoggedInController
      */
     public function update(AdminSettingsMemberStoreRequest $request, Member $member)
     {
-        $before = $member->toArray();
         $actor = new MemberActor(AdminHelper::getMember());
         (new UpdateMemberAction($member))->execute($actor, $request->validated());
-
-        $after = $member->fresh()?->toArray() ?? [];
-        \App\Facades\Audit::log([
-            'category' => 'account',
-            'action' => 'member.updated',
-            'actor' => auth()->user(),
-            'target' => $member,
-            'target_label' => $member->display_name ?? $member->account_name,
-            'context' => [
-                'diff' => \App\Facades\Audit::diff($before, $after),
-            ],
-        ]);
 
         return redirect()->route('admin.members.edit', ['member' => $member->id])
             ->with('success', __('admin/members/edit.messages.updated'));
@@ -244,7 +216,6 @@ class AdminMemberFormController extends AdminLoggedInController
      */
     public function destroy(Member $member)
     {
-        $label = $member->display_name ?? $member->account_name;
         $actor = new MemberActor(AdminHelper::getMember());
         $result = (new DeleteMemberAction($member))->execute($actor, []);
 
@@ -252,14 +223,6 @@ class AdminMemberFormController extends AdminLoggedInController
             return redirect()->route('admin.members.index')
                 ->with('error', __('admin/members/index.messages.cannot_delete_initial_admin'));
         }
-
-        \App\Facades\Audit::log([
-            'category' => 'account',
-            'action' => 'member.deleted',
-            'actor' => auth()->user(),
-            'target_label' => $label,
-            'severity' => 'warning',
-        ]);
 
         return redirect()->route('admin.members.index')
             ->with('success', __('admin/members/index.messages.deleted'));
