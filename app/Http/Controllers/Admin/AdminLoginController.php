@@ -97,7 +97,7 @@ class AdminLoginController extends AdminController
      */
     protected function getTwoFaRoutePrefix(): string
     {
-        return $this->baseSettingRepository->get('admin_url', 'admin');
+        return 'admin';
     }
 
     /**
