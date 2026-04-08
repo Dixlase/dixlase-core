@@ -64,7 +64,7 @@ class MemberVerifyEmailNotification extends Notification
         $actionKey = $this->getActionKey($prefix);
 
         return (new MailMessage())
-            ->subject(__($subjectKey))
+            ->subject(__($subjectKey, ['type' => __('common.account_types.member')]))
             ->greeting(__('mail.verify-email.member.greeting', ['name' => $notifiable->name]))
             ->line(__($messageKey))
             ->action(__($actionKey), $verificationUrl)
