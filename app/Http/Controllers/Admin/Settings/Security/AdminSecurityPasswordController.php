@@ -80,9 +80,9 @@ class AdminSecurityPasswordController extends AdminLoggedInController
      */
     public function update(AdminSecurityPasswordUpdateRequest $request)
     {
-        $actor = new MemberActor(AdminHelper::getMember());
+        $actor = new \App\Actors\MemberActor(\App\Helpers\AdminHelper::getMember());
 
-        UpdateSettingsAction::make(
+        \App\Actions\Settings\UpdateSettingsAction::make(
             repository: $this->securitySettingRepository,
             settingsPage: 'security.password',
             settingKeys: static::SETTING_KEYS,
@@ -93,7 +93,7 @@ class AdminSecurityPasswordController extends AdminLoggedInController
                     }
                 }
             },
-            permission: Permission::SETTINGS_SECURITY,
+            permission: \App\Enums\Permission::SETTINGS_SECURITY,
         )->execute($actor, $request->validated());
 
         return redirect()->route('admin.settings.security.password')
