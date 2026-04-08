@@ -53,6 +53,8 @@ return [
     ],
     'force_setting_1' => 'Individual settings cannot be changed because',
     'force_setting_2' => 'is selected in member global settings.',
+    'delete_confirm_title' => 'Delete Member',
+    'delete_confirm_message' => 'Are you sure you want to delete member ":name"? This action cannot be undone.',
     'admin_operations' => 'Admin Operations',
     'initial_admin_account' => 'Initial Admin Account',
     'initial_admin_restriction' => 'This account is the initial administrator, so deletion and forced logout are not allowed. These operations are restricted to maintain system security.',

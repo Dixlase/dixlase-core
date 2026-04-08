@@ -50,7 +50,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <legend class="sr-only">{{ __('admin/members/index.search_title') }}</legend>
                 
                 <!-- 検索フィールド -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-end gap-4 mb-4">
                     <!-- キーワード検索 -->
                     <div>
                         <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -98,19 +98,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
 
                     <!-- 検索ボタン -->
-                    <div class="flex items-end">
-                        <div class="flex gap-2 w-full">
-                            <x-form-button
-                                type="submit"
-                                variant="primary"
-                                :label="__('common.search')"
-                                icon="fas fa-search"
-                            />
-                            <a href="{{ route('admin.members.index') }}" 
-                               class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 flex items-center justify-center">
-                                {{ __('common.filters.clear_button') }}
-                            </a>
-                        </div>
+                    <div class="flex gap-2">
+                        <x-form-button
+                            type="submit"
+                            variant="primary"
+                            :label="__('common.search')"
+                            icon="fas fa-search"
+                        />
+                        <a href="{{ route('admin.members.index') }}"
+                           class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 flex items-center justify-center">
+                            {{ __('common.filters.clear_button') }}
+                        </a>
                     </div>
                 </div>
             </fieldset>
@@ -177,14 +175,40 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <td data-label="{{ __('common.email') }}">{{ $member->email }}</td>
                             <td data-label="{{ __('common.role') }}">{{ $member->role->label() }}</td>
                             <td data-label="{{ __('common.actions') }}">
-                                <x-form-button
-                                    type="button"
-                                    variant="secondary"
-                                    size="sm"
-                                    :label="__('common.edit')"
-                                    icon="fas fa-edit"
-                                    @click="window.location.href='{{ route('admin.members.edit', ['member' => $member->id]) }}'"
-                                />
+                                <div class="flex items-center justify-end gap-2">
+                                    <x-form-button
+                                        type="link"
+                                        variant="ghost"
+                                        size="sm"
+                                        icon="fas fa-edit"
+                                        :href="route('admin.members.edit', ['member' => $member->id])"
+                                        title="{{ __('common.edit') }}"
+                                    />
+
+                                    <form action="{{ route('admin.members.destroy', ['member' => $member->id]) }}" method="POST" id="deleteForm-{{ $member->id }}">
+                                        @csrf
+                                        @method('DELETE')
+                                    </form>
+                                    <x-form-button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        icon="fas fa-trash"
+                                        class="!text-red-600 hover:!text-red-900 dark:!text-red-400 dark:hover:!text-red-300"
+                                        :xClick="'openModal(\'deleteModal-' . $member->id . '\')'"
+                                        title="{{ __('common.delete') }}"
+                                    />
+                                    <x-ui-modal
+                                        :id="'deleteModal-' . $member->id"
+                                        :title="__('admin/members/index.delete_confirm_title')"
+                                        :message="__('admin/members/index.delete_confirm_message', ['name' => $member->display_name ?? $member->account_name])"
+                                        :confirm_label="__('common.delete')"
+                                        :cancel_label="__('common.cancel')"
+                                        icon_type="danger"
+                                        confirm_color="red"
+                                        :form="'deleteForm-' . $member->id"
+                                    />
+                                </div>
                             </td>
                         </tr>
                     @endforeach

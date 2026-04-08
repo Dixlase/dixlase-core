@@ -54,6 +54,8 @@ return [
     ],
     'force_setting_1' => '個別設定は変更できません。',
     'force_setting_2' => 'がメンバー全体設定で選択されているためです。',
+    'delete_confirm_title' => 'メンバーの削除',
+    'delete_confirm_message' => 'メンバー「:name」を削除しますか？この操作は取り消せません。',
     'admin_operations' => '管理操作',
     'initial_admin_account' => '初期管理者アカウント',
     'initial_admin_restriction' => 'このアカウントは初期管理者のため、削除や強制ログアウトはできません。システムの安全性を保つため、これらの操作は制限されています。',
