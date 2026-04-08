@@ -32,11 +32,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'onchange' => null,      // onchangeイベント
     'style' => null,         // インラインスタイル
     'useDefaultClass' => true, // デフォルトクラスを使用するか
+    'width' => 'full',       // 幅: full（フル幅）, auto（コンテンツに合わせた最小幅）
 ])
 
 @php
-    $defaultClass = $useDefaultClass 
-        ? 'block w-full max-w-full p-2 pr-10 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white'
+    $widthClass = $width === 'auto' ? 'w-auto' : 'w-full max-w-full';
+    $defaultClass = $useDefaultClass
+        ? 'block ' . $widthClass . ' p-2 pr-10 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white'
         : '';
     $finalClass = trim($defaultClass . ' ' . $class);
 @endphp

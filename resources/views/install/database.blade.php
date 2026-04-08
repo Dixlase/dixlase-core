@@ -85,7 +85,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     name="db_connection"
                     :options="$dbConnectionOptions"
                     :value="old('db_connection', session('install_data.db_connection', 'mysql'))"
-                    class="input-lg"
                 />
             </div>
 

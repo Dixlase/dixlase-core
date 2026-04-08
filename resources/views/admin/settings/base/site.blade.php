@@ -72,7 +72,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :options="$locales"
                 :value="old('locale', $settings['locale'])"
                 :required="true"
-                class="input-lg"
             />
         </fieldset>
 
@@ -82,7 +81,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 name="timezone"
                 :options="$timezones"
                 :value="$settings['timezone']"
-                class="input-lg"
             />
         </fieldset>
     </section>
@@ -113,7 +111,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'summary_large_image' => __('admin/settings/base/site.twitter_card_summary_large'),
                 ]"
                 :value="old('twitter_card_type', $settings['twitter_card_type'])"
-                class="input-lg"
             />
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ __('admin/settings/base/site.twitter_card_type_help') }}</p>
         </fieldset>
