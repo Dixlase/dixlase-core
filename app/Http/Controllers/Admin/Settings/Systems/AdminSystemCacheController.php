@@ -113,10 +113,10 @@ class AdminSystemCacheController extends AdminLoggedInController
 
         if ($success) {
             return redirect()->route('admin.settings.systems.cache')
-                ->cookie('flash_success', $message, 1); // 1分間有効なクッキー
+                ->with('success', $message);
         } else {
             return redirect()->route('admin.settings.systems.cache')
-                ->cookie('flash_error', $message, 1); // 1分間有効なクッキー
+                ->with('error', $message);
         }
     }
 }
