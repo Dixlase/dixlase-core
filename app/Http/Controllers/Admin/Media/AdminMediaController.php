@@ -36,14 +36,6 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminMediaController extends AdminLoggedInController
 {
-    protected const MEDIA_SETTING_KEYS = [
-        'allowed_file_types', 'max_file_size',
-        'max_file_size_image', 'max_file_size_video',
-        'max_file_size_document', 'max_file_size_archive',
-        'svg_sanitization_enabled', 'zip_security_enabled',
-        'mime_validation_enabled', 'zip_max_compression_ratio', 'zip_max_file_count',
-    ];
-
     /**
      * メディア設定リポジトリ
      */
@@ -193,89 +185,30 @@ class AdminMediaController extends AdminLoggedInController
             return redirect()->back()->withErrors(['file' => __('admin/media/upload.error.file_not_found')]);
         }
 
-        $memberId = $this->member->id;
+        $actor = new MemberActor(AdminHelper::getMember());
+        $uploadAction = app(UploadMediaAction::class);
         $results = [];
         $allWarnings = [];
 
         foreach ($files as $file) {
-            // セキュリティチェック
-            $securityResult = $this->mediaSecurityService->validateUpload($file);
-            if (! $securityResult->isValid()) {
+            $result = $uploadAction->execute($actor, [
+                'file' => $file,
+                'uploaded_by' => $this->member->id,
+            ]);
+
+            if ($result->success) {
+                $results[] = [
+                    'success' => true,
+                    'name' => $file->getClientOriginalName(),
+                    'id' => $result->model->id,
+                ];
+                $allWarnings = array_merge($allWarnings, $result->metadata['warnings'] ?? []);
+            } else {
                 $results[] = [
                     'success' => false,
                     'name' => $file->getClientOriginalName(),
-                    'error' => $securityResult->getFirstError(),
+                    'error' => $result->message,
                 ];
-
-                continue;
-            }
-
-            try {
-                $path = $file->store(config('admin.files.mediaPath'), config('admin.files.storageDisk'));
-                $fileName = basename($path);
-
-                // SVGファイルの場合、サニタイズを実行
-                $extension = strtolower($file->getClientOriginalExtension());
-                if ($extension === 'svg') {
-                    $fullPath = Storage::disk(config('admin.files.storageDisk'))->path($path);
-                    $this->mediaSecurityService->sanitizeSvgIfNeeded($fullPath);
-                }
-            } catch (\Exception $e) {
-                $results[] = [
-                    'success' => false,
-                    'name' => $file->getClientOriginalName(),
-                    'error' => __('admin/media/index.error.save_failed'),
-                ];
-
-                continue;
-            }
-
-            // ファイルサイズと画像の寸法を取得
-            $fileSize = $file->getSize();
-            $width = null;
-            $height = null;
-            $mimeType = $file->getMimeType();
-
-            if (str_starts_with($mimeType, 'image/') && $mimeType !== 'image/svg+xml') {
-                $storedPath = Storage::disk(config('admin.files.storageDisk'))->path($path);
-                $imageSize = @getimagesize($storedPath);
-                if ($imageSize !== false) {
-                    $width = $imageSize[0];
-                    $height = $imageSize[1];
-                }
-            }
-
-            $media = $this->mediaRepository->create([
-                'name' => $file->getClientOriginalName(),
-                'path' => $fileName,
-                'type' => $mimeType,
-                'file_size' => $fileSize,
-                'width' => $width,
-                'height' => $height,
-                'uploaded_by' => $memberId,
-            ]);
-
-            \App\Facades\Audit::logContent('media.uploaded', [
-                'actor' => auth()->user(),
-                'target' => $media,
-                'target_label' => $media->name,
-                'context' => [
-                    'file_name' => $media->name,
-                    'type' => $media->type,
-                    'file_size' => $media->file_size,
-                ],
-            ]);
-
-            $results[] = [
-                'success' => true,
-                'name' => $file->getClientOriginalName(),
-                'id' => $media->id,
-            ];
-
-            // 警告を収集
-            if ($securityResult->hasWarnings()) {
-                $fileWarnings = array_map(fn ($w) => $file->getClientOriginalName().': '.$w['message'], $securityResult->getWarnings());
-                $allWarnings = array_merge($allWarnings, $fileWarnings);
             }
         }
 
@@ -304,34 +237,8 @@ class AdminMediaController extends AdminLoggedInController
 
     public function delete(Media $media)
     {
-        \App\Facades\Audit::logContent('media.deleted', [
-            'actor' => auth()->user(),
-            'target_label' => $media->name,
-            'severity' => 'warning',
-            'context' => [
-                'file_name' => $media->name,
-                'type' => $media->type,
-                'file_size' => $media->file_size,
-            ],
-        ]);
-
-        $disk = config('admin.files.storageDisk', 'public');
-        $mediaPath = config('admin.files.mediaPath', 'media');
-
-        // pathフィールドがファイル名のみの場合とフルパスの場合を考慮
-        if (strpos($media->path, $mediaPath) === 0) {
-            // フルパスが保存されている場合
-            $filePath = $media->path;
-        } else {
-            // ファイル名のみが保存されている場合
-            $filePath = $mediaPath.'/'.$media->path;
-        }
-
-        if (Storage::disk($disk)->exists($filePath)) {
-            Storage::disk($disk)->delete($filePath);
-        }
-
-        $media->delete();
+        $actor = new MemberActor(AdminHelper::getMember());
+        (new DeleteMediaAction($media))->execute($actor, []);
 
         return redirect()->route('admin.media.index')->with('success', __('admin/media/index.success.deleted'));
     }
@@ -394,20 +301,8 @@ class AdminMediaController extends AdminLoggedInController
      */
     public function updateMedia(AdminMediaUpdateRequest $request, Media $media)
     {
-        $this->mediaRepository->update($media->id, [
-            'caption' => $request->input('caption'),
-            'alt_text' => $request->input('alt_text'),
-            'description' => $request->input('description'),
-        ]);
-
-        \App\Facades\Audit::logContent('media.updated', [
-            'actor' => auth()->user(),
-            'target' => $media,
-            'target_label' => $media->name,
-            'context' => [
-                'updated_fields' => array_keys($request->validated()),
-            ],
-        ]);
+        $actor = new MemberActor(AdminHelper::getMember());
+        (new UpdateMediaMetadataAction($media, $this->mediaRepository))->execute($actor, $request->validated());
 
         return redirect()->route('admin.media.preview', $media->id)
             ->with('success', 'メディア情報が更新されました。');
@@ -488,7 +383,7 @@ class AdminMediaController extends AdminLoggedInController
     }
 
     /**
-     * Show the form for creating a new resource.
+     * メディア設定を更新
      */
     public function update(AdminMediaSettingsUpdateRequest $request)
     {
@@ -497,29 +392,9 @@ class AdminMediaController extends AdminLoggedInController
             return redirect()->route('admin.media.index');
         }
 
-        $before = $this->mediaSettingRepository->getMultiple(static::MEDIA_SETTING_KEYS);
-
-        $selectedTypes = $request->input('allowed_file_types', []);
-        $maxFileSizeMB = $request->input('max_file_size');
-        $maxFileSize = round($maxFileSizeMB * 1024);
-
-        $this->mediaSettingRepository->set('allowed_file_types', $selectedTypes);
-        $this->mediaSettingRepository->set('max_file_size', $maxFileSize);
-
-        $this->mediaSettingRepository->set('max_file_size_image', round($request->input('max_file_size_image') * 1024));
-        $this->mediaSettingRepository->set('max_file_size_video', round($request->input('max_file_size_video') * 1024));
-        $this->mediaSettingRepository->set('max_file_size_document', round($request->input('max_file_size_document') * 1024));
-        $this->mediaSettingRepository->set('max_file_size_archive', round($request->input('max_file_size_archive') * 1024));
-
-        $this->mediaSettingRepository->set('svg_sanitization_enabled', $request->boolean('svg_sanitization_enabled') ? '1' : '0');
-        $this->mediaSettingRepository->set('zip_security_enabled', $request->boolean('zip_security_enabled') ? '1' : '0');
-        $this->mediaSettingRepository->set('mime_validation_enabled', $request->boolean('mime_validation_enabled') ? '1' : '0');
-
-        $this->mediaSettingRepository->set('zip_max_compression_ratio', $request->input('zip_max_compression_ratio'));
-        $this->mediaSettingRepository->set('zip_max_file_count', $request->input('zip_max_file_count'));
-
-        $after = $this->mediaSettingRepository->getMultiple(static::MEDIA_SETTING_KEYS);
-        \App\Facades\Audit::logBulkSettingsChange('media.settings', $before, $after, auth()->user());
+        $actor = new MemberActor(AdminHelper::getMember());
+        $action = new UpdateMediaSettingsAction($this->mediaSettingRepository);
+        $action->execute($actor, $request->validated());
 
         return redirect()->back()->with('success', __('admin/media/settings.success.settings_updated'));
     }
