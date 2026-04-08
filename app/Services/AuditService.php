@@ -517,9 +517,9 @@ class AuditService
         ?Model $actor = null,
         array $sensitiveKeys = [],
     ): ?AuditLog {
-        // 型の不一致による偽の差分を防ぐため、全値を文字列に統一
-        $before = array_map(fn ($v) => $v === null ? null : (string) $v, $before);
-        $after = array_map(fn ($v) => $v === null ? null : (string) $v, $after);
+        // 型の不一致による偽の差分を防ぐため、スカラー値を文字列に統一（配列はそのまま）
+        $before = array_map(fn ($v) => $v === null ? null : (is_array($v) ? $v : (string) $v), $before);
+        $after = array_map(fn ($v) => $v === null ? null : (is_array($v) ? $v : (string) $v), $after);
 
         $diff = $this->diff($before, $after);
 
