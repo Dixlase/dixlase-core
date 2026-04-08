@@ -269,9 +269,7 @@ class ExtensionCardPresenter
                 array_map(fn ($i) => $i->jsonSerialize(), $healthResult->issues),
                 fn ($i) => ($i['deduction'] ?? 0) !== 0,
             ));
-            if ($isModel) {
-                $enableAction = $healthScorer->determineEnableAction($healthResult);
-            }
+            $enableAction = $healthScorer->determineEnableAction($healthResult);
         } catch (\Exception $e) {
             Log::error('ExtensionCardPresenter: health calculation failed', [
                 'plugin' => $slug,

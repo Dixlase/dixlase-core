@@ -232,13 +232,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     variant="secondary"
                     id="pluginActionStage1CancelBtn"
                 />
-                <x-form-button
-                    type="button"
-                    :label="__('admin/settings/plugins/index.two_stage.stage1_skip_scan')"
-                    variant="secondary"
-                    id="pluginActionStage1SkipBtn"
-                    class="hidden"
-                />
+                <div id="pluginActionStage1SkipBtn" class="hidden">
+                    <x-form-button
+                        type="button"
+                        :label="__('admin/settings/plugins/index.two_stage.stage1_skip_scan')"
+                        variant="secondary"
+                        class="stage1-skip-btn"
+                    />
+                </div>
                 <x-form-button
                     type="button"
                     :label="__('admin/settings/plugins/index.two_stage.stage1_start_scan')"
@@ -269,15 +270,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     variant="secondary"
                     id="pluginActionStage2CancelBtn"
                 />
-                <x-form-button
-                    type="button"
-                    label=""
-                    variant="success"
-                    id="pluginActionStage2ConfirmBtn"
-                >
-                    <span id="pluginActionStage2ConfirmLabel"></span>
-                </x-form-button>
-            </div>
+                <div id="pluginActionStage2ConfirmBtn">
+                    <x-form-button
+                        type="button"
+                        label=""
+                        variant="success"
+                    >
+                        <span id="pluginActionStage2ConfirmLabel"></span>
+                    </x-form-button>
+                </div>
         </x-slot:footer>
     </x-ui-modal>
 
