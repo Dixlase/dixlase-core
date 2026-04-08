@@ -22,6 +22,7 @@
 
 namespace App\Providers;
 
+use App\Contracts\Encryption\FileEncryptionServiceInterface;
 use App\Contracts\FileIntegrity\FileIntegrityServiceInterface;
 use App\Contracts\LegalPage\LegalPageServiceInterface;
 use App\Contracts\Logging\LogServiceInterface;
@@ -30,7 +31,9 @@ use App\Contracts\Plugin\PluginPermissionServiceInterface;
 use App\Contracts\Plugin\SignatureVerifierInterface;
 use App\Contracts\Theme\ThemePermissionServiceInterface;
 use App\Contracts\TwoFa\TwoFaPasskeyServiceInterface;
+use App\Contracts\Verification\FileVerificationServiceInterface;
 use App\Models\SecuritySetting;
+use App\Services\Encryption\CoreFileEncryptionService;
 use App\Services\FileIntegrityService;
 use App\Services\LegalPageService;
 use App\Services\LogService;
@@ -40,6 +43,7 @@ use App\Services\Plugin\PluginPermissionService;
 use App\Services\RouteSlugRegistry;
 use App\Services\Theme\ThemePermissionService;
 use App\Services\TwoFa\TwoFaPasskeyService;
+use App\Services\Verification\CoreFileVerificationService;
 use App\Traits\CustomFilesLoaderTrait;
 use App\Traits\PluginLoaderTrait;
 use App\Traits\ThemeLoaderTrait;
