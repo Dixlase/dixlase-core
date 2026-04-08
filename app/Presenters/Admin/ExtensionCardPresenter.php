@@ -371,6 +371,9 @@ class ExtensionCardPresenter
             },
             'cspTierIconColor' => self::tierToIconColor($cspMaxTier),
             'presetTierIconColor' => self::tierToIconColor($presetMaxTier),
+            // Update availability
+            'hasUpdateAvailable' => $isModel && $plugin->hasUpdateAvailable(),
+            'availableVersion' => $isModel ? $plugin->available_version : null,
             // Simple mode display data
             ...self::computeSimpleDisplayData($healthStatus, $operationStatus, $auditedAt),
         ];

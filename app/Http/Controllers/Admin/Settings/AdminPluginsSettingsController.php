@@ -35,11 +35,13 @@ use App\Models\PluginAudit;
 use App\Presenters\Admin\ExtensionCardPresenter;
 use App\Services\Csp\CspDiagnosticService;
 use App\Services\Csp\CspExtensionLoader;
+use App\Services\Extension\ExtensionSourceManager;
 use App\Services\ExtensionOperationService;
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\Plugin\PluginPermissionService;
 use App\Services\SecuritySettingsRegistry;
 use App\Traits\PluginLoaderTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -1004,6 +1006,162 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             ]);
 
             return;
+        }
+    }
+
+    /**
+     * ソースから利用可能なプラグイン一覧を返す（JSON API）
+     */
+    public function availableFromSource(ExtensionSourceManager $manager): JsonResponse
+    {
+        try {
+            $available = $manager->listAvailablePlugins();
+
+            // インストール済み・ディスク上に存在するプラグインを除外
+            $installedSlugs = Plugin::pluck('slug')->toArray();
+            $diskSlugs = collect($this->getUninstalledPlugins())->pluck('slug')->toArray();
+            $excludeSlugs = array_merge($installedSlugs, $diskSlugs);
+
+            $filtered = array_values(array_filter(
+                $available,
+                fn (array $plugin) => ! in_array($plugin['slug'], $excludeSlugs)
+            ));
+
+            return response()->json([
+                'success' => true,
+                'plugins' => $filtered,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'plugins' => [],
+            ]);
+        }
+    }
+
+    /**
+     * ソースからプラグインをダウンロードして配置
+     */
+    public function downloadFromSource(Request $request, ExtensionSourceManager $manager)
+    {
+        $request->validate([
+            'slug' => 'required|string|max:100',
+        ]);
+
+        $slug = $request->input('slug');
+
+        try {
+            // ソースから ZIP をダウンロード
+            $zipPath = $manager->download($slug, 'plugin');
+
+            // ZIP を展開して配置
+            $result = $this->extractAndPlacePlugin($zipPath);
+
+            if ($result['success']) {
+                return redirect()->route('admin.settings.plugins.index')
+                    ->with('success', __('admin/settings/plugins/add.messages.download_success', ['slug' => $slug]))
+                    ->with('uploaded_plugin_directory', $result['directory']);
+            }
+
+            return redirect()->route('admin.settings.plugins.add')
+                ->with('error', $result['error']);
+        } catch (\Throwable $e) {
+            Log::error('Plugin download from source failed', [
+                'slug' => $slug,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('admin.settings.plugins.add')
+                ->with('error', __('admin/settings/plugins/add.messages.download_failed', ['error' => $e->getMessage()]));
+        }
+    }
+
+    /**
+     * ZIP ファイルを展開してプラグインディレクトリに配置する共通処理
+     *
+     * @return array{success: bool, directory?: string, error?: string}
+     */
+    protected function extractAndPlacePlugin(string $zipPath): array
+    {
+        $zip = new ZipArchive();
+        if ($zip->open($zipPath) !== true) {
+            File::delete($zipPath);
+
+            return ['success' => false, 'error' => __('admin/settings/plugins/add.messages.zip_extract_failed')];
+        }
+
+        try {
+            // プラグインフォルダ名取得（ZIP内の最初のディレクトリ）
+            $dirs = [];
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $entry = $zip->getNameIndex($i);
+                if ($entry !== false) {
+                    $pathParts = explode('/', $entry);
+                    if (! empty($pathParts[0])) {
+                        $dirs[] = $pathParts[0];
+                    }
+                }
+            }
+            $dirs = array_unique($dirs);
+            $pluginDir = reset($dirs);
+
+            if (! $pluginDir) {
+                $zip->close();
+                File::delete($zipPath);
+
+                return ['success' => false, 'error' => __('admin/settings/plugins/add.messages.no_valid_directory')];
+            }
+
+            $destinationPath = base_path('plugins/'.$pluginDir);
+
+            if (File::exists($destinationPath)) {
+                $zip->close();
+                File::delete($zipPath);
+
+                return ['success' => false, 'error' => __('admin/settings/plugins/add.messages.directory_exists', ['directory' => $pluginDir])];
+            }
+
+            // ZIPを解凍
+            $zip->extractTo(base_path('plugins'));
+            $zip->close();
+            File::delete($zipPath);
+
+            // composer.jsonの存在確認
+            if (! File::exists(base_path("plugins/{$pluginDir}/composer.json"))) {
+                File::deleteDirectory($destinationPath);
+
+                return ['success' => false, 'error' => __('admin/settings/plugins/add.messages.composer_not_found')];
+            }
+
+            // Git除外ルールとcomposer.local.jsonを更新
+            GitExcludeHelper::addPluginExclusion($pluginDir);
+            GitIgnoreHelper::addPluginExclusion($pluginDir);
+            ComposerLocalHelper::syncAutoload();
+
+            // 自動監査を実行
+            $pluginJsonPath = base_path("plugins/{$pluginDir}/plugin.json");
+            if (File::exists($pluginJsonPath)) {
+                try {
+                    $pluginData = json_decode(File::get($pluginJsonPath), true);
+                    $pluginSlug = $pluginData['slug'] ?? Str::slug($pluginDir);
+                    $this->runPluginAudit($pluginSlug);
+                } catch (\Exception $e) {
+                    Log::warning('Auto-audit after extraction failed', [
+                        'directory' => $pluginDir,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            return ['success' => true, 'directory' => $pluginDir];
+        } catch (\Exception $e) {
+            if (isset($destinationPath) && File::exists($destinationPath)) {
+                File::deleteDirectory($destinationPath);
+            }
+            File::delete($zipPath);
+
+            return ['success' => false, 'error' => $e->getMessage()];
         }
     }
 }

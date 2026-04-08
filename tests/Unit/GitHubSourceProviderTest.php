@@ -94,6 +94,8 @@ class GitHubSourceProviderTest extends TestCase
 
     public function test_check_connection_public_success_without_token(): void
     {
+        config()->set('extension-sources.github.default_token', null);
+
         $source = ExtensionSource::query()->create([
             'name' => 'Public GitHub',
             'type' => 'github',
@@ -120,6 +122,8 @@ class GitHubSourceProviderTest extends TestCase
 
     public function test_check_connection_public_failure_without_token(): void
     {
+        config()->set('extension-sources.github.default_token', null);
+
         $source = ExtensionSource::query()->create([
             'name' => 'Public GitHub',
             'type' => 'github',

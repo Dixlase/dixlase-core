@@ -26,6 +26,25 @@ return [
     'enable_instruction' => 'to enable.',
     'name' => 'Plugin Name',
 
+    // Tabs
+    'tab_zip' => 'From ZIP File',
+    'tab_online' => 'From Online',
+
+    // Online install
+    'online' => [
+        'title' => 'Install from Online',
+        'description' => 'Browse and download plugins from the configured extension source.',
+        'loading' => 'Loading available plugins...',
+        'no_plugins' => 'No plugins available from this source.',
+        'connection_error' => 'Failed to connect to the extension source.',
+        'source_not_configured' => 'Extension source is not configured.',
+        'configure_link' => 'Configure in Security Settings',
+        'download' => 'Download',
+        'downloading' => 'Downloading...',
+        'version' => 'v:version',
+        'by_author' => 'by :author',
+    ],
+
     // Controller Messages
     'messages' => [
         'upload_success' => 'Plugin upload completed. Please install from the list.',
@@ -34,5 +53,7 @@ return [
         'no_valid_directory' => 'No valid plugin directory found in the ZIP file.',
         'directory_exists' => "Plugin directory ':directory' already exists.",
         'composer_not_found' => 'composer.json not found.',
+        'download_success' => 'Plugin ":slug" downloaded successfully. Please install from the list.',
+        'download_failed' => 'Plugin download failed: :error',
     ],
 ];

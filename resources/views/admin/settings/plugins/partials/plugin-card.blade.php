@@ -61,6 +61,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </span>
         </div>
 
+        {{-- アップデート通知 --}}
+        @if($card['hasUpdateAvailable'] ?? false)
+            <div class="flex items-center gap-1.5 mb-2 px-2 py-1 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded text-xs text-blue-700 dark:text-blue-300">
+                <i class="fas fa-arrow-up"></i>
+                {{ __('admin/settings/plugins/index.update_available', ['version' => $card['availableVersion']]) }}
+            </div>
+        @endif
+
         {{-- 説明 --}}
         @if($card['description'])
             <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">{{ $card['description'] }}</p>
