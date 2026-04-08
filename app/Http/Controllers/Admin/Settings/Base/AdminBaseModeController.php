@@ -62,37 +62,36 @@ class AdminBaseModeController extends AdminLoggedInController
      */
     public function update(Request $request, AdminModeAutoConfigService $autoConfigService)
     {
-        $before = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
-
         $validated = $request->validate([
             'admin_mode' => 'required|integer|in:0,1',
         ]);
 
-        $newMode = AdminMode::fromInt((int) $validated['admin_mode']);
+        $actor = new \App\Actors\MemberActor(\App\Helpers\AdminHelper::getMember());
 
-        // モードを保存
-        $this->baseSettingRepository->set('admin_mode', (string) $newMode->value);
+        \App\Actions\Settings\UpdateSettingsAction::make(
+            repository: $this->baseSettingRepository,
+            settingsPage: 'base.mode',
+            settingKeys: static::SETTING_KEYS,
+            writeCallback: function ($repo, $data) use ($autoConfigService) {
+                $newMode = AdminMode::fromInt((int) $data['admin_mode']);
 
-        // キャッシュをクリアして即座に反映
-        AdminModeHelper::clearCache();
+                $repo->set('admin_mode', (string) $newMode->value);
+                AdminModeHelper::clearCache();
 
-        // かんたんモードへの切り替え時: Hidden項目の自動設定値を適用
-        if ($newMode->isSimple()) {
-            $results = $autoConfigService->applyAll();
+                if ($newMode->isSimple()) {
+                    $results = $autoConfigService->applyAll();
+                    Log::channel('admin_activity')->info('かんたんモード自動設定を適用', [
+                        'results' => $results,
+                        'member_id' => auth()->id(),
+                    ]);
+                }
 
-            Log::channel('admin_activity')->info('かんたんモード自動設定を適用', [
-                'results' => $results,
-                'member_id' => auth()->id(),
-            ]);
-        }
-
-        Log::channel('admin_activity')->info('管理画面モード設定を更新', [
-            'mode' => $newMode->name,
-            'member_id' => auth()->id(),
-        ]);
-
-        $after = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
-        \App\Facades\Audit::logBulkSettingsChange('base.mode', $before, $after, auth()->user());
+                Log::channel('admin_activity')->info('管理画面モード設定を更新', [
+                    'mode' => $newMode->name,
+                    'member_id' => auth()->id(),
+                ]);
+            },
+        )->execute($actor, $validated);
 
         return redirect()->route('admin.settings.base.mode')
             ->with('success', __('admin/settings/base/mode.settings_updated'));
