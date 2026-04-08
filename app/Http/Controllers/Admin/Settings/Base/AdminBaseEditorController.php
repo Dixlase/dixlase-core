@@ -22,7 +22,10 @@
 
 namespace App\Http\Controllers\Admin\Settings\Base;
 
+use App\Actions\Settings\UpdateSettingsAction;
+use App\Actors\MemberActor;
 use App\Contracts\Repositories\BaseSettingRepositoryInterface;
+use App\Helpers\AdminHelper;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Base\AdminBaseEditorUpdateRequest;
@@ -71,17 +74,19 @@ class AdminBaseEditorController extends AdminLoggedInController
      */
     public function update(AdminBaseEditorUpdateRequest $request)
     {
-        $before = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
+        $actor = new MemberActor(AdminHelper::getMember());
 
-        $validated = $request->validated();
-
-        $this->baseSettingRepository->set(
-            EditorManager::PREFERRED_GUI_EDITOR_KEY,
-            $validated['preferred_gui_editor'] ?? '',
-        );
-
-        $after = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
-        \App\Facades\Audit::logBulkSettingsChange('base.editor', $before, $after, auth()->user());
+        UpdateSettingsAction::make(
+            repository: $this->baseSettingRepository,
+            settingsPage: 'base.editor',
+            settingKeys: static::SETTING_KEYS,
+            writeCallback: function ($repo, $data) {
+                $repo->set(
+                    EditorManager::PREFERRED_GUI_EDITOR_KEY,
+                    $data['preferred_gui_editor'] ?? '',
+                );
+            },
+        )->execute($actor, $request->validated());
 
         return redirect()->route('admin.settings.base.editor')
             ->with('success', __('admin/settings/base/editor.settings_updated'));
