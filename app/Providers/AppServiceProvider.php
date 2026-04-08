@@ -66,8 +66,14 @@ class AppServiceProvider extends ServiceProvider
             return new PluginPermissionService();
         });
 
+        // ファイル暗号化サービスをバインド
+        $this->app->bind(FileEncryptionServiceInterface::class, CoreFileEncryptionService::class);
+
         // ファイル整合性サービスをバインド
         $this->app->bind(FileIntegrityServiceInterface::class, FileIntegrityService::class);
+
+        // ファイルハッシュ検証サービスをバインド
+        $this->app->bind(FileVerificationServiceInterface::class, CoreFileVerificationService::class);
 
         // メール送信サービスをバインド
         $this->app->bind(MailServiceInterface::class, MailService::class);

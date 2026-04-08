@@ -83,6 +83,11 @@ return [
         'description' => '削除済みの古い二段階認証用PASSKEY(生体認証)をクリーンアップします',
         'default_days' => '90日',
     ],
+    'backup_records' => [
+        'name' => 'バックアップ記録',
+        'description' => '期限切れまたは削除済みのバックアップ記録を削除します',
+        'default_days' => '365日',
+    ],
     'audit_logs' => [
         'name' => '監査ログ',
         'description' => '指定した保持期間より古い監査ログレコードを削除します',
