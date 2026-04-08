@@ -1,7 +1,7 @@
 {{--
 This file is part of Dixlase.
 
-Copyright (C) 2025 exc-D inc.
+Copyright (C) 2026 exc-D inc.
 https://exc-d.com
 
 This program is free software: you can redistribute it and/or modify
@@ -130,9 +130,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                       $el.style.transitionDuration = '300ms';
                                       $el.style.transitionTimingFunction = 'cubic-bezier(0.4, 0, 0.2, 1)';
                                   } else {
-                                      // 他のページ: サイドバートグル用のトランジション（300ms）
-                                      $el.classList.add('transition-all', 'duration-300');
-                                      $el.style.transitionProperty = 'all';
+                                      // 他のページ: サイドバートグル用のトランジション（margin のみ）
+                                      $el.style.transitionProperty = 'margin-left, margin-right';
                                       $el.style.transitionDuration = '300ms';
                                       $el.style.transitionTimingFunction = 'cubic-bezier(0.4, 0, 0.2, 1)';
                                   }
