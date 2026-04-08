@@ -22,8 +22,14 @@
 
 namespace App\Http\Controllers\Admin\Media;
 
+use App\Actions\Media\DeleteMediaAction;
+use App\Actions\Media\UpdateMediaMetadataAction;
+use App\Actions\Media\UpdateMediaSettingsAction;
+use App\Actions\Media\UploadMediaAction;
+use App\Actors\MemberActor;
 use App\Contracts\Repositories\MediaRepositoryInterface;
 use App\Contracts\Repositories\MediaSettingRepositoryInterface;
+use App\Helpers\AdminHelper;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Media\AdminMediaSettingsUpdateRequest;
