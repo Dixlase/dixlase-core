@@ -26,6 +26,25 @@ return [
     'enable_instruction' => 'から有効化してください。',
     'name' => 'プラグイン名',
 
+    // タブ
+    'tab_zip' => 'ZIPファイルから追加',
+    'tab_online' => 'オンラインから追加',
+
+    // オンラインインストール
+    'online' => [
+        'title' => 'オンラインからインストール',
+        'description' => '設定された拡張機能ソースからプラグインを検索・ダウンロードします。',
+        'loading' => '利用可能なプラグインを読み込み中...',
+        'no_plugins' => 'このソースから利用可能なプラグインはありません。',
+        'connection_error' => '拡張機能ソースへの接続に失敗しました。',
+        'source_not_configured' => '拡張機能ソースが設定されていません。',
+        'configure_link' => 'セキュリティ設定で設定する',
+        'download' => 'ダウンロード',
+        'downloading' => 'ダウンロード中...',
+        'version' => 'v:version',
+        'by_author' => ':author 作',
+    ],
+
     // コントローラーメッセージ
     'messages' => [
         'upload_success' => 'プラグインのアップロードが完了しました。一覧からインストールしてください。',
@@ -34,5 +53,7 @@ return [
         'no_valid_directory' => 'ZIP内に有効なプラグインディレクトリが見つかりません。',
         'directory_exists' => "プラグインディレクトリ ':directory' は既に存在します。",
         'composer_not_found' => 'composer.json が見つかりません。',
+        'download_success' => 'プラグイン「:slug」のダウンロードが完了しました。一覧からインストールしてください。',
+        'download_failed' => 'プラグインのダウンロードに失敗しました: :error',
     ],
 ];

@@ -16,6 +16,7 @@ return [
     'heading' => 'プラグイン管理',
     'description' => 'インストール済みプラグインの管理、新しいプラグインの追加、プラグインの有効化・無効化を行います。',
     'installed_heading' => 'インストール済みプラグイン',
+    'update_available' => 'v:version が利用可能',
     'uninstalled_heading' => 'アンインストール済みプラグイン',
     'systems' => [
         'text' => 'システム',

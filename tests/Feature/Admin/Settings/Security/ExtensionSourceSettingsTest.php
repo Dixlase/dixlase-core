@@ -177,6 +177,7 @@ class ExtensionSourceSettingsTest extends TestCase
 
     public function test_test_source_api_returns_failure_on_connection_error(): void
     {
+        config()->set('extension-sources.github.default_token', null);
         $owner = config('extension-sources.github.default_owner', 'Dixlase');
 
         Http::fake([

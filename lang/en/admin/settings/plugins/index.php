@@ -16,6 +16,7 @@ return [
     'heading' => 'Plugin Management',
     'description' => 'Manage installed plugins, add new plugins, and enable or disable plugins.',
     'installed_heading' => 'Installed Plugins',
+    'update_available' => 'v:version available',
     'uninstalled_heading' => 'Uninstalled Plugins',
     'systems' => [
         'text' => 'System',

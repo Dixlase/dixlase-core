@@ -481,6 +481,11 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/plugins/audit', [AdminPluginsSettingsController::class, 'audit'])
                     ->middleware('check.menu.edit:settings.plugins')
                     ->name('settings.plugins.audit');
+                Route::get('/settings/plugins/available-from-source', [AdminPluginsSettingsController::class, 'availableFromSource'])
+                    ->name('settings.plugins.available-from-source');
+                Route::post('/settings/plugins/download-from-source', [AdminPluginsSettingsController::class, 'downloadFromSource'])
+                    ->middleware('check.menu.edit:settings.plugins')
+                    ->name('settings.plugins.download-from-source');
             });
 
             // システム設定（権限チェック付き）
