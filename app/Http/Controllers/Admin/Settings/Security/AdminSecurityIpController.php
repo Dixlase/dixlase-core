@@ -75,9 +75,9 @@ class AdminSecurityIpController extends AdminLoggedInController
      */
     public function update(AdminSecurityIpUpdateRequest $request)
     {
-        $actor = new MemberActor(AdminHelper::getMember());
+        $actor = new \App\Actors\MemberActor(\App\Helpers\AdminHelper::getMember());
 
-        UpdateSettingsAction::make(
+        \App\Actions\Settings\UpdateSettingsAction::make(
             repository: $this->securitySettingRepository,
             settingsPage: 'security.ip',
             settingKeys: static::SETTING_KEYS,
@@ -86,7 +86,7 @@ class AdminSecurityIpController extends AdminLoggedInController
                     $repo->set($key, $data[$key] ?? (str_contains($key, 'enable_') ? false : ''));
                 }
             },
-            permission: Permission::SETTINGS_SECURITY,
+            permission: \App\Enums\Permission::SETTINGS_SECURITY,
         )->execute($actor, $request->validated());
 
         return redirect()->route('admin.settings.security.ip')
