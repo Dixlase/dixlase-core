@@ -80,39 +80,35 @@ class AdminBaseSiteController extends AdminLoggedInController
      */
     public function update(AdminBaseSiteUpdateRequest $request)
     {
-        $before = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
+        $actor = new \App\Actors\MemberActor(\App\Helpers\AdminHelper::getMember());
 
-        $validated = $request->validated();
+        \App\Actions\Settings\UpdateSettingsAction::make(
+            repository: $this->baseSettingRepository,
+            settingsPage: 'base.site',
+            settingKeys: static::SETTING_KEYS,
+            writeCallback: function ($repo, $data) {
+                // .envに保存
+                $availableLocales = config('admin.locale.available', []);
+                EnvHelper::update([
+                    'app_name' => $data['app_name'],
+                    'locale' => $data['locale'],
+                    'timezone' => $data['timezone'],
+                    'faker_locale' => $availableLocales[$data['locale']]['faker_locale'] ?? 'ja_JA',
+                    'fallback_locale' => $data['locale'],
+                ]);
 
-        // .envに保存
-        $envData = [
-            'app_name' => $validated['app_name'],
-            'locale' => $validated['locale'],
-            'timezone' => $validated['timezone'],
-        ];
-
-        // APP_FAKER_LOCALEとAPP_FALLBACK_LOCALEを自動設定
-        $availableLocales = config('admin.locale.available', []);
-        $envData['faker_locale'] = $availableLocales[$validated['locale']]['faker_locale'] ?? 'ja_JA';
-        $envData['fallback_locale'] = $validated['locale'];
-
-        EnvHelper::update($envData);
-
-        // DBに保存
-        $dbSettings = [
-            'app_name' => $validated['app_name'],
-            'site_description' => $validated['site_description'] ?? '',
-            'site_keywords' => $validated['site_keywords'] ?? '',
-            'locale' => $validated['locale'],
-            'timezone' => $validated['timezone'],
-            'default_ogp_image_id' => $validated['default_ogp_image_id'],
-            'twitter_card_type' => $validated['twitter_card_type'],
-        ];
-
-        $this->baseSettingRepository->setMultiple($dbSettings);
-
-        $after = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
-        \App\Facades\Audit::logBulkSettingsChange('base.site', $before, $after, auth()->user());
+                // DBに保存
+                $repo->setMultiple([
+                    'app_name' => $data['app_name'],
+                    'site_description' => $data['site_description'] ?? '',
+                    'site_keywords' => $data['site_keywords'] ?? '',
+                    'locale' => $data['locale'],
+                    'timezone' => $data['timezone'],
+                    'default_ogp_image_id' => $data['default_ogp_image_id'],
+                    'twitter_card_type' => $data['twitter_card_type'],
+                ]);
+            },
+        )->execute($actor, $request->validated());
 
         return redirect()->route('admin.settings.base.site')
             ->with('success', __('admin/settings/base/site.settings_updated'));

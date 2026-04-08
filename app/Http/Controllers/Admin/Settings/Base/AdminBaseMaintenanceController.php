@@ -65,33 +65,29 @@ class AdminBaseMaintenanceController extends AdminLoggedInController
      */
     public function update(AdminBaseMaintenanceUpdateRequest $request)
     {
-        $before = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
+        $actor = new \App\Actors\MemberActor(\App\Helpers\AdminHelper::getMember());
 
-        $validated = $request->validated();
+        \App\Actions\Settings\UpdateSettingsAction::make(
+            repository: $this->baseSettingRepository,
+            settingsPage: 'base.maintenance',
+            settingKeys: static::SETTING_KEYS,
+            writeCallback: function ($repo, $data) {
+                $maintenanceMode = (int) ($data['maintenance_mode'] ?? 0);
+                $autoRelease = (int) ($data['maintenance_auto_release'] ?? 0);
 
-        $maintenanceMode = (int) ($validated['maintenance_mode'] ?? 0);
-        $autoRelease = (int) ($validated['maintenance_auto_release'] ?? 0);
+                EnvHelper::update([
+                    'maintenance_mode' => $maintenanceMode ? 'true' : 'false',
+                ]);
 
-        // .envに保存
-        $envData = [
-            'maintenance_mode' => $maintenanceMode ? 'true' : 'false',
-        ];
-
-        EnvHelper::update($envData);
-
-        // DBに保存
-        $dbSettings = [
-            'maintenance_mode' => $maintenanceMode ? '1' : '0',
-            'maintenance_message' => $validated['maintenance_message'] ?? '',
-            'maintenance_auto_release' => $autoRelease ? '1' : '0',
-            'maintenance_start_at' => $validated['maintenance_start_at'] ?? null,
-            'maintenance_release_at' => $autoRelease ? ($validated['maintenance_release_at'] ?? null) : null,
-        ];
-
-        $this->baseSettingRepository->setMultiple($dbSettings);
-
-        $after = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
-        \App\Facades\Audit::logBulkSettingsChange('base.maintenance', $before, $after, auth()->user());
+                $repo->setMultiple([
+                    'maintenance_mode' => $maintenanceMode ? '1' : '0',
+                    'maintenance_message' => $data['maintenance_message'] ?? '',
+                    'maintenance_auto_release' => $autoRelease ? '1' : '0',
+                    'maintenance_start_at' => $data['maintenance_start_at'] ?? null,
+                    'maintenance_release_at' => $autoRelease ? ($data['maintenance_release_at'] ?? null) : null,
+                ]);
+            },
+        )->execute($actor, $request->validated());
 
         return redirect()->route('admin.settings.base.maintenance')
             ->with('success', __('admin/settings/base/maintenance.settings_updated'));

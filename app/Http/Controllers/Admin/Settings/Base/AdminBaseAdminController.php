@@ -74,31 +74,29 @@ class AdminBaseAdminController extends AdminLoggedInController
      */
     public function update(AdminBaseAdminUpdateRequest $request)
     {
-        $before = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
-
         $validated = $request->validated();
-
-        $forceSsl = $request->has('force_ssl') ? 1 : 0;
-
-        // DBに保存
-        $this->baseSettingRepository->set('admin_url', $validated['admin_url']);
-        $this->baseSettingRepository->set('force_ssl', $forceSsl);
-
-        // 管理画面URLが変更された場合の特別な処理
         $currentAdminUrl = AdminHelper::getAdminUrl();
         $newAdminUrl = $validated['admin_url'];
+        $forceSsl = $request->has('force_ssl') ? 1 : 0;
 
-        $after = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
-        \App\Facades\Audit::logBulkSettingsChange('base.admin', $before, $after, auth()->user());
+        $actor = new \App\Actors\MemberActor(AdminHelper::getMember());
 
+        \App\Actions\Settings\UpdateSettingsAction::make(
+            repository: $this->baseSettingRepository,
+            settingsPage: 'base.admin',
+            settingKeys: static::SETTING_KEYS,
+            writeCallback: function ($repo, $data) use ($forceSsl) {
+                $repo->set('admin_url', $data['admin_url']);
+                $repo->set('force_ssl', $forceSsl);
+            },
+        )->execute($actor, $validated);
+
+        // 管理画面URLが変更された場合の特別な処理
         if ($newAdminUrl !== $currentAdminUrl) {
-            // ユーザーをログアウト
             Auth::guard('admin')->logout();
             Session::flush();
 
             $newAdminLoginUrl = url($newAdminUrl.'/login');
-
-            // SSL強制の場合、HTTPSにリダイレクト
             if ($forceSsl) {
                 $newAdminLoginUrl = str_replace('http://', 'https://', $newAdminLoginUrl);
             }
@@ -107,9 +105,7 @@ class AdminBaseAdminController extends AdminLoggedInController
                 ->with('success', __('admin/settings/base/admin.admin_url_changed'));
         }
 
-        // 通常のリダイレクト
         $baseUrl = url($newAdminUrl.'/settings/base/admin');
-
         if ($forceSsl) {
             $baseUrl = str_replace('http://', 'https://', $baseUrl);
         }

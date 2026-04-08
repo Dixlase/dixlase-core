@@ -118,91 +118,77 @@ class AdminBaseMailController extends AdminLoggedInController
      */
     public function update(AdminBaseMailUpdateRequest $request)
     {
-        $before = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
+        $actor = new \App\Actors\MemberActor(\App\Helpers\AdminHelper::getMember());
 
-        $validated = $request->validated();
+        \App\Actions\Settings\UpdateSettingsAction::make(
+            repository: $this->baseSettingRepository,
+            settingsPage: 'base.mail',
+            settingKeys: static::SETTING_KEYS,
+            writeCallback: function ($repo, $data) {
+                // .env用データ
+                $envData = [
+                    'mail_mailer' => $data['mail_mailer'],
+                    'mail_host' => $data['mail_host'] ?? '',
+                    'mail_port' => $data['mail_port'] ?? '',
+                    'mail_username' => $data['mail_username'] ?? null,
+                    'mail_password' => $data['mail_password'] ?? null,
+                    'mail_encryption' => $data['mail_encryption'] ?? null,
+                    'mail_from_address' => $data['mail_from_address'] ?? '',
+                ];
 
-        // .envに保存
-        $envData = [
-            'mail_mailer' => $validated['mail_mailer'],
-            'mail_host' => $validated['mail_host'] ?? '',
-            'mail_port' => $validated['mail_port'] ?? '',
-            'mail_username' => $validated['mail_username'] ?? null,
-            'mail_password' => $validated['mail_password'] ?? null,
-            'mail_encryption' => $validated['mail_encryption'] ?? null,
-            'mail_from_address' => $validated['mail_from_address'] ?? '',
-        ];
-
-        // 空文字列をnullに変換
-        $nullableMailFields = ['mail_username', 'mail_password', 'mail_encryption'];
-        foreach ($nullableMailFields as $field) {
-            if (isset($envData[$field]) && $envData[$field] === '') {
-                $envData[$field] = null;
-            }
-        }
-
-        // メール設定が変更されたかチェック
-        $mailKeys = ['mail_mailer', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption', 'mail_from_address'];
-        $mailSettingsChanged = false;
-
-        foreach ($mailKeys as $key) {
-            if (array_key_exists($key, $envData)) {
-                $currentValue = env(strtoupper($key));
-                $newValue = $envData[$key];
-
-                $currentValue = $currentValue === null ? '' : (string) $currentValue;
-                $newValue = $newValue === null ? '' : (string) $newValue;
-
-                if ($currentValue !== $newValue) {
-                    $mailSettingsChanged = true;
-                    break;
-                }
-            }
-        }
-
-        // DBに保存
-        $dbSettings = [
-            'mail_mailer' => $validated['mail_mailer'],
-            'mail_host' => $validated['mail_host'] ?? '',
-            'mail_port' => (string) ($validated['mail_port'] ?? ''),
-            'mail_username' => $validated['mail_username'] ?? '',
-            'mail_password' => $validated['mail_password'] ?? '',
-            'mail_encryption' => $validated['mail_encryption'] ?? '',
-            'mail_from_address' => $validated['mail_from_address'] ?? '',
-            'system_admin_email' => $validated['system_admin_email'] ?? '',
-        ];
-
-        $this->baseSettingRepository->setMultiple($dbSettings);
-
-        // .envファイルに設定を保存
-        EnvHelper::update($envData);
-
-        if ($mailSettingsChanged) {
-            // メール設定変更時は全てのテストステータスをリセット
-            $this->baseSettingRepository->set('mail_connection_tested', 0);
-            $this->baseSettingRepository->set('mail_connection_test_date', null);
-            $this->baseSettingRepository->set('mail_send_tested', 0);
-            $this->baseSettingRepository->set('mail_send_test_date', null);
-            $this->baseSettingRepository->set('mail_receive_tested', 0);
-            $this->baseSettingRepository->set('mail_receive_test_date', null);
-            $this->baseSettingRepository->set('mail_verification_token', null);
-
-            session()->forget('mail_test_results');
-        } else {
-            // メール設定が変更されていない場合、セッションのテスト結果をDBに保存
-            $sessionTestResults = session('mail_test_results', []);
-
-            if (! empty($sessionTestResults)) {
-                foreach ($sessionTestResults as $key => $value) {
-                    $this->baseSettingRepository->set($key, $value);
+                // 空文字列をnullに変換
+                foreach (['mail_username', 'mail_password', 'mail_encryption'] as $field) {
+                    if (isset($envData[$field]) && $envData[$field] === '') {
+                        $envData[$field] = null;
+                    }
                 }
 
-                session()->forget('mail_test_results');
-            }
-        }
+                // メール設定が変更されたかチェック
+                $mailSettingsChanged = false;
+                foreach (array_keys($envData) as $key) {
+                    $currentValue = env(strtoupper($key));
+                    $currentValue = $currentValue === null ? '' : (string) $currentValue;
+                    $newValue = $envData[$key] === null ? '' : (string) $envData[$key];
+                    if ($currentValue !== $newValue) {
+                        $mailSettingsChanged = true;
+                        break;
+                    }
+                }
 
-        $after = $this->baseSettingRepository->getMultiple(static::SETTING_KEYS);
-        \App\Facades\Audit::logBulkSettingsChange('base.mail', $before, $after, auth()->user(), static::SENSITIVE_KEYS);
+                // DB + .envに保存
+                $repo->setMultiple([
+                    'mail_mailer' => $data['mail_mailer'],
+                    'mail_host' => $data['mail_host'] ?? '',
+                    'mail_port' => (string) ($data['mail_port'] ?? ''),
+                    'mail_username' => $data['mail_username'] ?? '',
+                    'mail_password' => $data['mail_password'] ?? '',
+                    'mail_encryption' => $data['mail_encryption'] ?? '',
+                    'mail_from_address' => $data['mail_from_address'] ?? '',
+                    'system_admin_email' => $data['system_admin_email'] ?? '',
+                ]);
+                EnvHelper::update($envData);
+
+                if ($mailSettingsChanged) {
+                    $repo->set('mail_connection_tested', 0);
+                    $repo->set('mail_connection_test_date', null);
+                    $repo->set('mail_send_tested', 0);
+                    $repo->set('mail_send_test_date', null);
+                    $repo->set('mail_receive_tested', 0);
+                    $repo->set('mail_receive_test_date', null);
+                    $repo->set('mail_verification_token', null);
+                    session()->forget('mail_test_results');
+                } else {
+                    $sessionTestResults = session('mail_test_results', []);
+                    if (! empty($sessionTestResults)) {
+                        foreach ($sessionTestResults as $key => $value) {
+                            $repo->set($key, $value);
+                        }
+                        session()->forget('mail_test_results');
+                    }
+                }
+            },
+            sensitiveKeys: static::SENSITIVE_KEYS,
+        )->execute($actor, $request->validated());
 
         return redirect()->route('admin.settings.base.mail')
             ->with('success', __('admin/settings/base/mail.settings_updated'));
