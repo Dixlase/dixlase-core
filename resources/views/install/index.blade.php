@@ -52,18 +52,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </span>
                 </li>
             @endforeach
-            <li>
-                <strong>{{ __('install/index.permissions.storage') }}</strong>:
-                <span class="{{ $requirements['permissions']['storage'] ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                    {{ $requirements['permissions']['storage'] ? __('install/common.ok') : __('install/common.failed') }}
-                </span>
-            </li>
-            <li>
-                <strong>{{ __('install/index.permissions.cache') }}</strong>:
-                <span class="{{ $requirements['permissions']['bootstrap/cache'] ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                    {{ $requirements['permissions']['bootstrap/cache'] ? __('install/common.ok') : __('install/common.failed') }}
-                </span>
-            </li>
+            @foreach ($requirements['permissions'] as $dir => $writable)
+                <li>
+                    <strong>{{ $dir }}</strong> ({{ __('install/index.permissions.writable_required') }}):
+                    <span class="{{ $writable ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                        {{ $writable ? __('install/common.ok') : __('install/common.failed') }}
+                    </span>
+                </li>
+            @endforeach
         </ul>
     </div>
 

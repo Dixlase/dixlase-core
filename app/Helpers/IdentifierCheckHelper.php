@@ -168,29 +168,24 @@ class IdentifierCheckHelper
                 \App\Models\SecuritySetting::class
             );
 
-            // エラーメッセージを決定
-            $errorMessage = __('auth.failed');
-
-            // IPベースのロックアウトをチェック
+            // ロックアウト中の場合のみ例外を投げる（アクセス制限は維持）
             if ($lockoutInfo['is_ip_locked_out']) {
                 $lockoutDuration = $lockoutInfo['settings']['lockout_duration'] ?? 30;
-                $errorMessage = __('auth.lockout', ['minutes' => $lockoutDuration]);
+                throw ValidationException::withMessages([
+                    'login' => __('auth.lockout', ['minutes' => $lockoutDuration]),
+                ]);
             } elseif ($lockoutInfo['is_locked_out']) {
-                $errorMessage = __('auth.lockout', ['minutes' => $lockoutInfo['lockout_minutes']]);
-            } elseif ($lockoutInfo['remaining_attempts'] > 0) {
-                $errorMessage = __('auth.failed_with_attempts', ['attempts' => $lockoutInfo['remaining_attempts']]);
+                throw ValidationException::withMessages([
+                    'login' => __('auth.lockout', ['minutes' => $lockoutInfo['lockout_minutes']]),
+                ]);
             }
 
-            // エラーメッセージ情報を含めてValidationExceptionを投げる
-            $exception = ValidationException::withMessages([
-                'login' => $errorMessage,
-            ]);
-
-            // エラーメッセージをカスタムデータとして保存
-            $exception->errorBag = 'default';
-            $exception->redirectTo = null;
-
-            throw $exception;
+            // 存在しない場合も存在する場合と同じレスポンス形式で返す（ユーザー列挙防止）
+            return [
+                'exists' => false,
+                'has_passkey' => false,
+                'user' => null,
+            ];
         }
     }
 

@@ -27,6 +27,7 @@ return [
     'permissions' => [
         'storage' => 'Storage directory writable',
         'cache' => 'Bootstrap cache directory writable',
+        'writable_required' => 'writable required',
     ],
     'start_button' => 'Start Installation',
 ];

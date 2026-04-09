@@ -27,6 +27,7 @@ return [
     'permissions' => [
         'storage' => 'storageディレクトリが書き込み可能',
         'cache' => 'bootstrap/cacheディレクトリが書き込み可能',
+        'writable_required' => '書き込み権限が必要',
     ],
     'start_button' => 'インストールを開始',
 ];
