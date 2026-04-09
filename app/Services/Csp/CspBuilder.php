@@ -121,12 +121,12 @@ class CspBuilder
     }
 
     /**
-     * 開発環境の場合、Vite開発サーバー用のCSPディレクティブを追加
-     * 本番環境では一切追加しない
+     * Vite開発サーバーが稼働中の場合、CSPディレクティブを追加
+     * hotファイルの存在で判定（APP_ENVに依存しない）
      */
     protected function addViteDevServerDirectives(array $directives): array
     {
-        if (! app()->environment('local')) {
+        if (! file_exists(public_path('hot'))) {
             return $directives;
         }
 

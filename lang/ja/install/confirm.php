@@ -26,7 +26,9 @@ return [
     'confirm_message' => 'インストールを確定する前に、設定を確認してください。',
     'confirm_description' => '上記の設定でインストールを行います。<br>よろしいですか？',
     'confirm_button' => 'インストール',
-    
+    'installing' => 'インストール中...',
+    'installing_description' => 'このページを閉じないでください。しばらくお待ちください。',
+
     // 確認画面関連
     'settings_review' => '設定内容の確認',
     'basic_settings' => '基本設定',
@@ -34,19 +36,19 @@ return [
     'database_settings' => 'データベース設定',
     'mail_settings' => 'メール設定',
     'security_settings' => 'セキュリティ設定',
-    
+
     // サイト情報
     'site_name' => 'サイト名',
     'admin_email' => '管理者メールアドレス',
     'admin_password' => '管理者パスワード',
-    
+
     // IP制限
     'ip_restrictions' => 'IP制限',
     'allowed_admin_ips' => '管理画面の許可IPアドレス',
     'blocked_admin_ips' => '管理画面のブロックIPアドレス',
     'allowed_front_ips' => 'フロントの許可IPアドレス',
     'blocked_front_ips' => 'フロントのブロックIPアドレス',
-    
+
     // データベース情報
     'db_connection' => 'データベース接続',
     'db_host' => 'データベースホスト',

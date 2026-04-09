@@ -26,7 +26,9 @@ return [
     'confirm_message' => 'Please review your settings before finalizing the installation.',
     'confirm_description' => 'The installation will proceed with the above settings.<br>Are you sure?',
     'confirm_button' => 'Install',
-    
+    'installing' => 'Installing...',
+    'installing_description' => 'Please do not close this page. This may take a moment.',
+
     // Confirmation Page Related
     'settings_review' => 'Settings Review',
     'basic_settings' => 'Basic Settings',
@@ -34,19 +36,19 @@ return [
     'database_settings' => 'Database Settings',
     'mail_settings' => 'Mail Settings',
     'security_settings' => 'Security Settings',
-    
+
     // Site Information
     'site_name' => 'Site Name',
     'admin_email' => 'Admin Email',
     'admin_password' => 'Admin Password',
-    
+
     // IP Restrictions
     'ip_restrictions' => 'IP Restrictions',
     'allowed_admin_ips' => 'Allowed Admin Panel IPs',
     'blocked_admin_ips' => 'Blocked Admin Panel IPs',
     'allowed_front_ips' => 'Allowed Front IPs',
     'blocked_front_ips' => 'Blocked Front IPs',
-    
+
     // Database Information
     'db_connection' => 'Database Connection',
     'db_host' => 'Database Host',

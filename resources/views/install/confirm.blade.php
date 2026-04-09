@@ -199,19 +199,43 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <p class="text-center text-gray-700 dark:text-gray-300 mb-4">{!! __('install/confirm.confirm_description') !!}</p>
 
 <!-- インストール実行フォーム -->
-<form action="{{ route('install.confirm.store') }}" method="POST" class="space-y-4">
-    @csrf
-    <nav aria-label="{{ __('install/common.form_navigation') }}" class="flex justify-center">
-        <a href="{{ route('install.mail') }}"
-           class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 mx-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
-            {{ __('install/common.back_button') }}
-        </a>
-        <x-form-button
-            type="submit"
-            variant="primary"
-            :label="__('install/confirm.confirm_button')"
-            class="mx-4"
-        />
-    </nav>
-</form>
+<div x-data="{ installing: false }">
+    <form action="{{ route('install.confirm.store') }}" method="POST" class="space-y-4"
+          @submit="installing = true">
+        @csrf
+        <nav aria-label="{{ __('install/common.form_navigation') }}" class="flex justify-center">
+            <a href="{{ route('install.mail') }}"
+               class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 mx-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition"
+               :class="installing && 'pointer-events-none opacity-50'">
+                {{ __('install/common.back_button') }}
+            </a>
+            <button type="submit"
+                    :disabled="installing"
+                    class="bg-blue-600 dark:bg-blue-500 text-white py-2 px-4 mx-4 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
+                <span x-show="!installing">{{ __('install/confirm.confirm_button') }}</span>
+                <span x-show="installing" x-cloak class="flex items-center">
+                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {{ __('install/confirm.installing') }}
+                </span>
+            </button>
+        </nav>
+    </form>
+
+    {{-- インストール中オーバーレイ --}}
+    <div x-show="installing" x-cloak
+         class="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center"
+         aria-live="assertive" role="status">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-2xl text-center max-w-sm mx-4">
+            <svg class="animate-spin h-12 w-12 text-blue-600 dark:text-blue-400 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-lg font-semibold text-gray-800 dark:text-white mb-2">{{ __('install/confirm.installing') }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('install/confirm.installing_description') }}</p>
+        </div>
+    </div>
+</div>
 @endsection
