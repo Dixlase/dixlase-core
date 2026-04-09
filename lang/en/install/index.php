@@ -26,6 +26,11 @@ return [
     'server_requirements' => 'Server Requirements',
     'required_section' => 'Required',
     'recommended_section' => 'Recommended / Optional',
+    'category' => [
+        'extensions' => 'Extensions',
+        'permissions' => 'Permissions',
+        'other' => 'Other',
+    ],
     'permissions' => [
         'storage' => 'Storage directory writable',
         'cache' => 'Bootstrap cache directory writable',

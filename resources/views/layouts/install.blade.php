@@ -26,8 +26,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') | {{ config('app.name') }}</title>
     
-    <!-- ダークモード初期化スクリプト（最優先で読み込み） -->
-    @vite(['resources/src/install/js/dark-mode-init.js'], 'assets/build')
+    {{-- ダークモード初期化（FOUC防止：同期的に実行） --}}
+    <script @cspNonce>
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
 
     <!-- メインスクリプト -->
     @vite(['resources/src/common/css/tailwind.css', 'resources/src/install/js/app.js', 'resources/src/common/js/app.js', 'resources/src/common/scss/style.scss'], 'assets/build')

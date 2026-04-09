@@ -26,6 +26,11 @@ return [
     'server_requirements' => 'サーバー要件',
     'required_section' => '必須項目',
     'recommended_section' => '推奨・オプション',
+    'category' => [
+        'extensions' => '拡張機能',
+        'permissions' => 'パーミッション',
+        'other' => 'その他',
+    ],
     'permissions' => [
         'storage' => 'storageディレクトリが書き込み可能',
         'cache' => 'bootstrap/cacheディレクトリが書き込み可能',
