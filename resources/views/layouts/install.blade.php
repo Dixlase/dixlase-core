@@ -26,7 +26,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') | {{ config('app.name') }}</title>
     
-    {{-- ダークモード初期化（FOUC防止：同期的に実行） --}}
+    {{-- FOUC防止：ダークモード + Alpine.js x-cloak（同期的に実行） --}}
+    <style>[x-cloak]{display:none!important;}</style>
     <script @cspNonce>
         if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
             document.documentElement.classList.add('dark');
