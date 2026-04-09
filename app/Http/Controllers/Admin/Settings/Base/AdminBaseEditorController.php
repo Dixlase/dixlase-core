@@ -52,7 +52,7 @@ class AdminBaseEditorController extends AdminLoggedInController
     {
         $guiEditors = $this->editorManager->getEditorsForType('gui');
 
-        $guiEditorOptions = [];
+        $guiEditorOptions = ['' => __('admin/settings/base/editor.no_gui_editor_selected')];
         foreach ($guiEditors as $editor) {
             $guiEditorOptions[$editor->pluginSlug] = $editor->label;
         }
