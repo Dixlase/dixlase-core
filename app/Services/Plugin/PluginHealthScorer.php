@@ -112,6 +112,11 @@ class PluginHealthScorer
         // 5. スキャン鮮度の評価
         $issues = array_merge($issues, $this->evaluateScanFreshness($pluginSlug, $deductionRules));
 
+        // 6. リスク権限の評価（public_uploads等）
+        if ($permissions !== null) {
+            $issues = array_merge($issues, $this->evaluateRiskPermissions($permissions, $deductionRules));
+        }
+
         // 合計スコアの算出
         $totalDeduction = array_sum(array_map(fn (HealthIssue $i) => $i->deduction, $issues));
         $score = max(0, self::BASE_SCORE + $totalDeduction);
@@ -342,6 +347,54 @@ class PluginHealthScorer
                 severity: 'info',
                 description: "スキャンが古くなっています（{$daysSinceScan}日前）。再スキャンを推奨します。",
                 deduction: $deductionRules['scan_outdated'] ?? -5,
+            );
+        }
+
+        return $issues;
+    }
+
+    /**
+     * リスク権限の評価（public_uploads等の減点を健全性スコアに反映）
+     *
+     * @return HealthIssue[]
+     */
+    protected function evaluateRiskPermissions(array $permissions, array $deductionRules): array
+    {
+        $issues = [];
+
+        if ($permissions['storage']['public_uploads'] ?? false) {
+            if ($permissions['storage']['own_directory'] ?? false) {
+                $issues[] = new HealthIssue(
+                    type: 'risk_public_uploads_own_dir',
+                    severity: 'info',
+                    description: '専用ディレクトリ内で公開アップロードを使用します。',
+                    deduction: $deductionRules['risk_public_uploads_own_dir'] ?? -2,
+                );
+            } else {
+                $issues[] = new HealthIssue(
+                    type: 'risk_public_uploads_no_own_dir',
+                    severity: 'warning',
+                    description: '公開ディレクトリへ直接アップロードします。',
+                    deduction: $deductionRules['risk_public_uploads_no_own_dir'] ?? -4,
+                );
+            }
+        }
+
+        if ($permissions['members']['delete'] ?? false) {
+            $issues[] = new HealthIssue(
+                type: 'risk_members_delete',
+                severity: 'warning',
+                description: 'メンバーの削除権限を使用します。',
+                deduction: $deductionRules['risk_members_delete'] ?? -4,
+            );
+        }
+
+        if ($permissions['mail']['bulk_send'] ?? false) {
+            $issues[] = new HealthIssue(
+                type: 'risk_mail_bulk_send',
+                severity: 'warning',
+                description: 'メールの一括送信権限を使用します。',
+                deduction: $deductionRules['risk_mail_bulk_send'] ?? -3,
             );
         }
 

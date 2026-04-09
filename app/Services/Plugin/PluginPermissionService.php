@@ -37,7 +37,6 @@ use Illuminate\Support\Str;
  *
  * plugin.jsonのpermissionsセクションを読み取り、
  * プラグインの権限チェックを行うサービスです。
- *
  */
 class PluginPermissionService implements PluginPermissionServiceInterface
 {
@@ -544,42 +543,49 @@ class PluginPermissionService implements PluginPermissionServiceInterface
         $score = 0;
         $reasons = [];
 
-        // 高リスク権限（スコア2以上）
+        // 高リスク権限（減点大）
         if ($permissions['members']['write'] ?? false) {
-            $score += 3;
-            $reasons[] = ['key' => 'members.write', 'severity' => 'high', 'score' => 3];
+            $score -= 3;
+            $reasons[] = ['key' => 'members.write', 'severity' => 'high', 'score' => -3];
         }
         if ($permissions['members']['create'] ?? false) {
-            $score += 3;
-            $reasons[] = ['key' => 'members.create', 'severity' => 'high', 'score' => 3];
+            $score -= 3;
+            $reasons[] = ['key' => 'members.create', 'severity' => 'high', 'score' => -3];
         }
         if ($permissions['members']['delete'] ?? false) {
-            $score += 4;
-            $reasons[] = ['key' => 'members.delete', 'severity' => 'high', 'score' => 4];
+            $score -= 4;
+            $reasons[] = ['key' => 'members.delete', 'severity' => 'high', 'score' => -4];
         }
         if ($permissions['mail']['bulk_send'] ?? false) {
-            $score += 3;
-            $reasons[] = ['key' => 'mail.bulk_send', 'severity' => 'high', 'score' => 3];
+            $score -= 3;
+            $reasons[] = ['key' => 'mail.bulk_send', 'severity' => 'high', 'score' => -3];
         }
         if ($permissions['storage']['public_uploads'] ?? false) {
-            $score += 2;
-            $reasons[] = ['key' => 'storage.public_uploads', 'severity' => 'high', 'score' => 2];
+            if ($permissions['storage']['own_directory'] ?? false) {
+                // 中リスク: 専用ディレクトリ内で公開アップロード
+                $score -= 2;
+                $reasons[] = ['key' => 'storage.public_uploads_own_dir', 'severity' => 'medium', 'score' => -2];
+            } else {
+                // 高リスク: 公開ディレクトリ直接使用
+                $score -= 4;
+                $reasons[] = ['key' => 'storage.public_uploads_no_own_dir', 'severity' => 'high', 'score' => -4];
+            }
         }
         if (! empty($permissions['content']['write_other_plugins'] ?? [])) {
-            $score += 2;
-            $reasons[] = ['key' => 'content.write_other_plugins', 'severity' => 'high', 'score' => 2];
+            $score -= 2;
+            $reasons[] = ['key' => 'content.write_other_plugins', 'severity' => 'high', 'score' => -2];
         }
 
-        // 中リスク権限（スコア1）
+        // 中リスク権限（減点小）
         if (! empty($permissions['database']['core_tables_write'] ?? [])) {
-            $score += 1;
-            $reasons[] = ['key' => 'database.core_tables_write', 'severity' => 'medium', 'score' => 1];
+            $score -= 1;
+            $reasons[] = ['key' => 'database.core_tables_write', 'severity' => 'medium', 'score' => -1];
         }
 
         $level = 'low';
-        if ($score >= 7) {
+        if ($score <= -7) {
             $level = 'high';
-        } elseif ($score >= 3) {
+        } elseif ($score <= -3) {
             $level = 'medium';
         }
 
