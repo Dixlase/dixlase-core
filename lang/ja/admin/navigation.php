@@ -54,7 +54,7 @@ return [
             'mail' => 'メール設定',
             'maintenance' => 'メンテナンス設定',
             'mode' => 'モード設定',
-            'editor' => 'コンテンツエディター',
+            'editor' => 'GUIエディター設定',
         ],
         'security' => [
             'text' => 'セキュリティ設定',
