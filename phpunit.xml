@@ -17,17 +17,58 @@
             <!-- カスタムのFeatureテスト -->
             <directory>custom/tests/Feature</directory>
         </testsuite>
-        <testsuite name="DixlaseDocs">
-            <!-- DixlaseDocs プラグインのテスト -->
-            <directory>plugins/DixlaseDocs/tests</directory>
+        <!-- ============================================ -->
+        <!-- プラグインテストスイート（個別）              -->
+        <!-- ============================================ -->
+        <testsuite name="DixlaseOfficialDocs">
+            <directory>plugins/DixlaseOfficialDocs/tests</directory>
         </testsuite>
         <testsuite name="DixlaseDevKit">
-            <!-- DixlaseDevKit プラグインのテスト（プラグイン/テーマ/カスタム開発用） -->
             <directory>plugins/DixlaseDevKit/tests</directory>
         </testsuite>
-        <testsuite name="DixlaseCoreDev">
-            <!-- DixlaseCoreDev プラグインのテスト（コア開発用） -->
-            <directory>plugins/DixlaseCoreDev/tests</directory>
+        <testsuite name="DixlaseCoreDevKit">
+            <directory>plugins/DixlaseCoreDevKit/tests</directory>
+        </testsuite>
+        <testsuite name="DixlaseLegal">
+            <directory>plugins/DixlaseLegal/tests</directory>
+        </testsuite>
+        <testsuite name="DixlaseInquiry">
+            <directory>plugins/DixlaseInquiry/tests</directory>
+        </testsuite>
+        <testsuite name="DixlaseSEO">
+            <directory>plugins/DixlaseSEO/tests</directory>
+        </testsuite>
+        <testsuite name="DixlaseMenus">
+            <directory>plugins/DixlaseMenus/tests</directory>
+        </testsuite>
+        <testsuite name="DixlasePages">
+            <directory>plugins/DixlasePages/tests</directory>
+        </testsuite>
+        <testsuite name="DixlaseGUIEditorLite">
+            <directory>plugins/DixlaseGUIEditorLite/tests</directory>
+        </testsuite>
+        <testsuite name="DixlaseAi">
+            <directory>plugins/DixlaseAi/tests</directory>
+        </testsuite>
+        <testsuite name="DixlaseUsers">
+            <directory>plugins/DixlaseUsers/tests</directory>
+        </testsuite>
+        <testsuite name="DixlaseAuthority">
+            <directory>plugins/DixlaseAuthority/tests</directory>
+        </testsuite>
+        <testsuite name="DixlaseBackup">
+            <directory>plugins/DixlaseBackup/tests</directory>
+        </testsuite>
+        <testsuite name="DixlaseDeploy">
+            <directory>plugins/DixlaseDeploy/tests</directory>
+        </testsuite>
+        <testsuite name="DixlaseMultilingual">
+            <directory>plugins/DixlaseMultilingual/tests</directory>
+        </testsuite>
+        <!-- プラグインテストスイート（一括実行用） -->
+        <!-- Usage: php artisan test testsuite=Plugins    -->
+        <testsuite name="Plugins">
+            <directory>plugins/*/tests</directory>
         </testsuite>
     </testsuites>
     <source>

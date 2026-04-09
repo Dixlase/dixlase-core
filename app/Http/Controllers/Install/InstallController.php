@@ -123,7 +123,13 @@ class InstallController extends Controller
             'optional_extensions' => $optionalExtensions,
             'permissions' => [
                 'storage' => is_writable(storage_path()),
+                'storage/framework/views' => is_writable(storage_path('framework/views')),
+                'storage/framework/cache' => is_writable(storage_path('framework/cache')),
+                'storage/framework/sessions' => is_writable(storage_path('framework/sessions')),
+                'storage/logs' => is_writable(storage_path('logs')),
                 'bootstrap/cache' => is_writable(base_path('bootstrap/cache')),
+                '.env' => is_writable(base_path()) || is_writable(base_path('.env')),
+                'public' => is_writable(base_path('public')),
             ],
         ];
     }
