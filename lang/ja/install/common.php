@@ -23,15 +23,15 @@
 return [
     'title' => 'インストール',
     'header' => 'Dixlase インストール',
-    
+
     // 共通ボタン
     'back' => '戻る',
     'next' => '次へ',
     'back_button' => '戻る',
-    
+
     // ステップ表示
     'step_of_total' => ':current / :total ステップ',
-    
+
     // 状態表示
     'ok' => 'OK',
     'failed' => 'NG',
@@ -39,18 +39,20 @@ return [
     'disabled' => '無効',
     'none' => 'なし',
     'not_executed' => '未実行',
-    
-    // 必須・オプション
+
+    // 必須・推奨・オプション
     'required' => '必須',
+    'recommended' => '推奨',
     'optional' => 'オプション',
     'not_required' => '必須ではありません',
-    
+    'not_installed' => '未インストール',
+
     // 言語
     'languages' => [
         'en' => 'English',
         'ja' => '日本語',
     ],
-    
+
     // レイアウト関連
     'installation_progress' => 'インストール進捗',
     'language_selection' => '言語選択',
@@ -58,13 +60,13 @@ return [
     'validation_errors' => '入力エラー',
     'form_navigation' => 'フォーム操作',
     'back_to_previous_step' => '前のステップに戻る',
-    
+
     // ツールチップ
     'tooltip_generate' => 'パスワードを自動生成',
     'tooltip_copy' => 'パスワードをコピー',
     'tooltip_toggle' => 'パスワードの表示切り替え',
     'tooltip_test_db' => 'DB接続テストを行ってください。',
-    
+
     // エラーメッセージ
     'missing_required_fields' => '必須項目が不足しています。インストール手順を最初からやり直してください。',
     'please_complete_previous_steps' => '先に前の手順を完了させてください。',

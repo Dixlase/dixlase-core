@@ -23,15 +23,15 @@
 return [
     'title' => 'Installation',
     'header' => 'Dixlase Installation',
-    
+
     // Common Buttons
     'back' => 'Back',
     'next' => 'Next',
     'back_button' => 'Back',
-    
+
     // Step Display
     'step_of_total' => 'Step :current of :total',
-    
+
     // Status Display
     'ok' => 'OK',
     'failed' => 'FAILED',
@@ -39,18 +39,20 @@ return [
     'disabled' => 'Disabled',
     'none' => 'None',
     'not_executed' => 'Not Executed',
-    
-    // Required/Optional
+
+    // Required/Recommended/Optional
     'required' => 'Required',
+    'recommended' => 'Recommended',
     'optional' => 'Optional',
     'not_required' => 'Not Required',
-    
+    'not_installed' => 'Not Installed',
+
     // Languages
     'languages' => [
         'en' => 'English',
         'ja' => 'Japanese',
     ],
-    
+
     // Layout Related
     'installation_progress' => 'Installation Progress',
     'language_selection' => 'Language Selection',
@@ -58,13 +60,13 @@ return [
     'validation_errors' => 'Validation Errors',
     'form_navigation' => 'Form Navigation',
     'back_to_previous_step' => 'Back to previous step',
-    
+
     // Tooltips
     'tooltip_generate' => 'Generate password automatically',
     'tooltip_copy' => 'Copy password',
     'tooltip_toggle' => 'Toggle password visibility',
     'tooltip_test_db' => 'Please run database connection test.',
-    
+
     // Error Messages
     'missing_required_fields' => 'Required fields are missing. Please restart the installation process from the beginning.',
     'please_complete_previous_steps' => 'Please complete the previous steps first.',

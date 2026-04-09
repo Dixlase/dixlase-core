@@ -24,6 +24,8 @@ return [
     'welcome' => 'インストールへようこそ',
     'description' => 'インストールを開始する前に、サーバー要件を確認してください。',
     'server_requirements' => 'サーバー要件',
+    'required_section' => '必須項目',
+    'recommended_section' => '推奨・オプション',
     'permissions' => [
         'storage' => 'storageディレクトリが書き込み可能',
         'cache' => 'bootstrap/cacheディレクトリが書き込み可能',

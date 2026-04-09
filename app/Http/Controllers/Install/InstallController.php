@@ -94,7 +94,7 @@ class InstallController extends Controller
      */
     protected function checkServerRequirements()
     {
-        // 必須の拡張機能
+        // 必須の拡張機能（不足時はインストール不可）
         $requiredExtensions = [
             'Ctype' => extension_loaded('ctype'),
             'cURL' => extension_loaded('curl'),
@@ -106,7 +106,6 @@ class InstallController extends Controller
             'PCRE' => extension_loaded('pcre'),
             'PDO' => extension_loaded('pdo'),
             'PDO MySQL' => extension_loaded('pdo_mysql'),
-            'Redis' => extension_loaded('redis'),
             'Tokenizer' => extension_loaded('tokenizer'),
             'XML' => extension_loaded('xml'),
             'GD' => extension_loaded('gd'),
@@ -114,13 +113,16 @@ class InstallController extends Controller
             'Zip' => extension_loaded('zip'),
         ];
 
-        // オプションの拡張機能
-        $optionalExtensions = [
-            'BCMath' => extension_loaded('bcmath'),
+        // 推奨の拡張機能（不足時も続行可能だが、パフォーマンスや機能に影響）
+        $recommendedExtensions = [
+            'Redis' => extension_loaded('redis'),
             'OPcache' => extension_loaded('Zend OPcache'),
         ];
 
-        $allExtensions = array_merge($requiredExtensions, $optionalExtensions);
+        // オプションの拡張機能（あれば便利）
+        $optionalExtensions = [
+            'BCMath' => extension_loaded('bcmath'),
+        ];
 
         // ストレージサブディレクトリの存在確認と自動作成
         $storageDirs = [
@@ -171,8 +173,8 @@ class InstallController extends Controller
 
         return [
             'php' => version_compare(PHP_VERSION, '8.2.0', '>='),
-            'extensions' => $allExtensions,
             'required_extensions' => $requiredExtensions,
+            'recommended_extensions' => $recommendedExtensions,
             'optional_extensions' => $optionalExtensions,
             'permissions' => $permissions,
             'php_settings' => $phpSettings,

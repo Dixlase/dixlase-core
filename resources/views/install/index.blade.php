@@ -26,9 +26,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-    <!-- ✅ 環境チェック -->
-    <div class="mb-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-        <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-2">{{ __('install/index.server_requirements') }}</h2>
+    {{-- 必須チェック --}}
+    <div class="mb-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+        <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-2">{{ __('install/index.required_section') }}</h2>
         <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
             <li>
                 <strong>PHP 8.2+</strong>:
@@ -38,17 +38,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </li>
             @foreach ($requirements['required_extensions'] as $ext => $status)
                 <li>
-                    <strong>{{ $ext }}</strong> ({{ __('install.required') }}):
+                    <strong>{{ $ext }}</strong>:
                     <span class="{{ $status ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
                         {{ $status ? __('install/common.ok') : __('install/common.failed') }}
-                    </span>
-                </li>
-            @endforeach
-            @foreach ($requirements['optional_extensions'] as $ext => $status)
-                <li>
-                    <strong>{{ $ext }}</strong> ({{ __('install.optional') }}):
-                    <span class="{{ $status ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400' }}">
-                        {{ $status ? __('install/common.ok') : __('install.not_required') }}
                     </span>
                 </li>
             @endforeach
@@ -60,20 +52,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </span>
                 </li>
             @endforeach
-
-            {{-- PHP設定チェック --}}
-            @if (isset($requirements['php_settings']))
-                @foreach ($requirements['php_settings'] as $setting => $info)
-                    <li>
-                        <strong>{{ $setting }}</strong> ({{ __('install/index.php_settings.required') }}: {{ $info['required'] }}):
-                        <span class="{{ $info['ok'] ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                            {{ $info['current'] }} {{ $info['ok'] ? __('install/common.ok') : __('install/common.failed') }}
-                        </span>
-                    </li>
-                @endforeach
-            @endif
-
-            {{-- テーマ存在チェック --}}
+            @foreach ($requirements['php_settings'] as $setting => $info)
+                <li>
+                    <strong>{{ $setting }}</strong> ({{ __('install/index.php_settings.required') }}: {{ $info['required'] }}):
+                    <span class="{{ $info['ok'] ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                        {{ $info['current'] }} {{ $info['ok'] ? __('install/common.ok') : __('install/common.failed') }}
+                    </span>
+                </li>
+            @endforeach
             <li>
                 <strong>{{ __('install/index.theme_check.label') }}</strong>:
                 <span class="{{ $requirements['has_theme'] ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
@@ -83,18 +69,38 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </ul>
     </div>
 
-    <!-- ✅ インストールボタン -->
+    {{-- 推奨・オプションチェック --}}
+    <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
+        <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-2">{{ __('install/index.recommended_section') }}</h2>
+        <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+            @foreach ($requirements['recommended_extensions'] as $ext => $status)
+                <li>
+                    <strong>{{ $ext }}</strong> ({{ __('install/common.recommended') }}):
+                    <span class="{{ $status ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400' }}">
+                        {{ $status ? __('install/common.ok') : __('install/common.not_installed') }}
+                    </span>
+                </li>
+            @endforeach
+            @foreach ($requirements['optional_extensions'] as $ext => $status)
+                <li>
+                    <strong>{{ $ext }}</strong> ({{ __('install/common.optional') }}):
+                    <span class="{{ $status ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400' }}">
+                        {{ $status ? __('install/common.ok') : __('install/common.not_installed') }}
+                    </span>
+                </li>
+            @endforeach
+        </ul>
+    </div>
+
     @php
         $hasRequiredIssues = !$requirements['php'] ||
                            in_array(false, $requirements['required_extensions']) ||
                            in_array(false, $requirements['permissions']) ||
                            !$requirements['has_theme'];
-        if (isset($requirements['php_settings'])) {
-            foreach ($requirements['php_settings'] as $info) {
-                if (!$info['ok']) {
-                    $hasRequiredIssues = true;
-                    break;
-                }
+        foreach ($requirements['php_settings'] as $info) {
+            if (!$info['ok']) {
+                $hasRequiredIssues = true;
+                break;
             }
         }
     @endphp
@@ -109,7 +115,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     
     @if($hasRequiredIssues)
         <p class="text-sm text-red-600 dark:text-red-400 mt-2 text-center">
-            {{ __('install.required_issues') }}
+            {{ __('install/common.required_issues') }}
         </p>
     @endif
 
