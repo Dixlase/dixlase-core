@@ -71,11 +71,12 @@ Alpine.data('sidebarEditor', (saveUrl, resetUrl, initialHidden, initialOrder) =>
         const containers = root.querySelectorAll('[data-sortable-group]');
         containers.forEach(container => {
             const groupKey = container.dataset.sortableGroup;
-            const instance = Sortable.create(container, {
+            const options = {
                 handle: '.drag-handle',
                 animation: 150,
                 ghostClass: 'opacity-30',
                 forceFallback: true,
+                fallbackOnBody: true,
                 fallbackClass: 'sortable-fallback',
                 draggable: '[data-menu-key]',
                 group: { name: groupKey, pull: false, put: false },
@@ -84,7 +85,18 @@ Alpine.data('sidebarEditor', (saveUrl, resetUrl, initialHidden, initialOrder) =>
                         .map(el => el.dataset.menuKey);
                     this.menuOrder = { ...this.menuOrder, [groupKey]: keys };
                 },
-            });
+            };
+
+            // トップレベルではダッシュボードの上にドロップ不可
+            if (groupKey === '_top') {
+                options.onMove = (evt) => {
+                    if (evt.related.dataset.menuKey === 'dashboard' && !evt.willInsertAfter) {
+                        return false;
+                    }
+                };
+            }
+
+            const instance = Sortable.create(container, options);
             this.sortableInstances.push(instance);
         });
     },
