@@ -16,6 +16,7 @@ return [
     'heading' => 'テーマ管理',
     'description' => 'インストール済みテーマの管理、新しいテーマの追加、テーマの切り替えを行います。',
     'installed_heading' => 'インストール済みテーマ',
+    'update_available' => 'v:version が利用可能',
     'uninstalled_heading' => 'アンインストール済みテーマ',
     'title' => 'テーマ',
     'available_themes' => '利用可能なテーマ',

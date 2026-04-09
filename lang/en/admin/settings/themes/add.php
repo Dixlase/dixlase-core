@@ -22,4 +22,29 @@ return [
     'upload_limit' => 'Maximum upload file size:',
     'upload_button' => 'Upload and Add',
     'name' => 'Theme Name',
+
+    // Tabs
+    'tab_zip' => 'From ZIP File',
+    'tab_online' => 'From Online',
+
+    // Online install
+    'online' => [
+        'title' => 'Install from Online',
+        'description' => 'Browse and download themes from the configured extension source.',
+        'loading' => 'Loading available themes...',
+        'no_themes' => 'No themes available from this source.',
+        'connection_error' => 'Failed to connect to the extension source.',
+        'download' => 'Download',
+        'downloading' => 'Downloading...',
+    ],
+
+    // Controller Messages
+    'messages' => [
+        'download_success' => 'Theme ":slug" downloaded successfully. Please install from the list.',
+        'download_failed' => 'Theme download failed: :error',
+        'zip_extract_failed' => 'Failed to extract ZIP file.',
+        'no_valid_directory' => 'No valid theme directory found in the ZIP file.',
+        'directory_exists' => "Theme directory ':directory' already exists.",
+        'theme_json_not_found' => 'theme.json not found.',
+    ],
 ];

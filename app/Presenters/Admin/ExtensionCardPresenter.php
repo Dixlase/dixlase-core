@@ -191,6 +191,9 @@ class ExtensionCardPresenter
             },
             'cspTierIconColor' => self::tierToIconColor($cspMaxTier),
             'presetTierIconColor' => self::tierToIconColor($presetMaxTier),
+            // Update availability
+            'hasUpdateAvailable' => $isModel && $theme->hasUpdateAvailable(),
+            'availableVersion' => $isModel ? $theme->available_version : null,
         ];
     }
 
