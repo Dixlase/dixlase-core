@@ -32,6 +32,6 @@ return [
         'mail' => 'Mail Settings',
         'maintenance' => 'Maintenance Settings',
         'mode' => 'Mode Settings',
-        'editor' => 'Content Editor',
+        'editor' => 'GUI Editor Settings',
     ],
 ];
