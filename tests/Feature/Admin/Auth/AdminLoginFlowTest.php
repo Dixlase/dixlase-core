@@ -21,7 +21,6 @@ use Tests\TestCase;
  * - 正常ログイン/ログアウト
  * - 認証失敗時の適切なエラーハンドリング
  * - セッション管理（固定攻撃防止、再生成）
- * - CSRF 保護
  * - 未認証アクセスの拒否
  */
 class AdminLoginFlowTest extends TestCase
@@ -57,7 +56,6 @@ class AdminLoginFlowTest extends TestCase
             'status' => MemberStatus::Active,
         ]);
 
-        // ロックアウト無効化（ロックアウト専用テストは AdminLoginLockoutTest で実施）
         SecuritySetting::setValue('login_attempt_limit_enabled', false);
     }
 
@@ -145,19 +143,16 @@ class AdminLoginFlowTest extends TestCase
 
     public function test_failed_login_does_not_reveal_user_existence(): void
     {
-        // 存在するメールで失敗
         $responseExisting = $this->post(route('admin.login.store'), [
             'login' => 'admin@example.com',
             'password' => 'wrong-password',
         ]);
 
-        // 存在しないメールで失敗
         $responseNonExisting = $this->post(route('admin.login.store'), [
             'login' => 'nonexistent@example.com',
             'password' => 'wrong-password',
         ]);
 
-        // 両方とも同じ種類のレスポンス（リダイレクト）であること
         $this->assertEquals($responseExisting->getStatusCode(), $responseNonExisting->getStatusCode());
     }
 
@@ -185,13 +180,11 @@ class AdminLoginFlowTest extends TestCase
         SecuritySetting::setValue('login_attempt_time_window', 15);
         SecuritySetting::setValue('login_attempt_lockout_duration', 30);
 
-        // 先に失敗を記録
         MemberLoginAttempt::recordAttempt('admin@example.com', '127.0.0.1', null, false);
         MemberLoginAttempt::recordAttempt('admin@example.com', '127.0.0.1', null, false);
 
         $this->assertEquals(2, MemberLoginAttempt::getFailedAttemptsCount('admin@example.com', 15));
 
-        // 成功ログイン
         $this->post(route('admin.login.store'), [
             'login' => 'admin@example.com',
             'password' => 'secure-password-123',
@@ -201,18 +194,16 @@ class AdminLoginFlowTest extends TestCase
     }
 
     // =========================================================================
-    // CSRF 保護
+    // HTTP メソッド制限
     // =========================================================================
 
     public function test_login_via_put_method_is_rejected(): void
     {
-        // PUT でログインエンドポイントにアクセスしてもログインできない
         $response = $this->put(route('admin.login.store'), [
             'login' => 'admin@example.com',
             'password' => 'secure-password-123',
         ]);
 
-        // POST 以外のメソッドでは認証されないこと
         $response->assertStatus(405);
         $this->assertGuest('member');
     }
@@ -223,7 +214,6 @@ class AdminLoginFlowTest extends TestCase
 
     public function test_logout_clears_authentication(): void
     {
-        // ログインしてセッションを確立
         $this->post(route('admin.login.store'), [
             'login' => 'admin@example.com',
             'password' => 'secure-password-123',
@@ -231,7 +221,6 @@ class AdminLoginFlowTest extends TestCase
 
         $this->assertAuthenticatedAs($this->admin, 'member');
 
-        // ログアウト後にダッシュボードにアクセスできないことを確認
         $this->post(route('admin.logout'));
 
         $response = $this->get(route('admin.dashboard'));
@@ -264,7 +253,6 @@ class AdminLoginFlowTest extends TestCase
     {
         $response = $this->get(route('admin.settings.base.index'));
 
-        // ログインページにリダイレクトされること
         $response->assertRedirect();
         $this->assertGuest('member');
     }
@@ -288,7 +276,6 @@ class AdminLoginFlowTest extends TestCase
 
     public function test_plaintext_password_does_not_match(): void
     {
-        // パスワードが平文で保存されていないことを確認
         $this->admin->refresh();
         $this->assertNotEquals('secure-password-123', $this->admin->password);
         $this->assertTrue(Hash::check('secure-password-123', $this->admin->password));
@@ -310,17 +297,12 @@ class AdminLoginFlowTest extends TestCase
             'status' => MemberStatus::Inactive,
         ]);
 
-        // 非アクティブメンバーでログイン試行
         $this->post(route('admin.login.store'), [
             'login' => 'inactive@example.com',
             'password' => 'password',
         ]);
 
-        // ダッシュボードにアクセスできないことを確認
-        // (ログイン自体が通る場合でも、ダッシュボードへのアクセスが制限されるべき)
         $response = $this->get(route('admin.dashboard'));
-        // ログインできた場合はダッシュボードにアクセスできるが、
-        // 非アクティブメンバーはログイン画面にリダイレクトされるべき
         $this->assertTrue(
             $response->isRedirect() || $response->isForbidden(),
             'Inactive member should be redirected or forbidden'

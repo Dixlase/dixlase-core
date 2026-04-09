@@ -54,7 +54,6 @@ class AdminIpLockoutTest extends TestCase
             'status' => MemberStatus::Active,
         ]);
 
-        // ロックアウト有効化（低い閾値でテストしやすく）
         SecuritySetting::setValue('login_attempt_limit_enabled', true);
         SecuritySetting::setValue('login_attempt_max_attempts', 3);
         SecuritySetting::setValue('login_attempt_time_window', 15);
@@ -68,24 +67,12 @@ class AdminIpLockoutTest extends TestCase
         parent::tearDown();
     }
 
-    // =========================================================================
-    // IP レベルロックアウト
-    // =========================================================================
-
     public function test_ip_lockout_triggers_after_threshold(): void
     {
-        // IP ロックアウト閾値 = max_attempts * 2 = 6
-        // 異なる識別子で同一 IP から 6 回失敗
         for ($i = 0; $i < 6; $i++) {
-            MemberLoginAttempt::recordAttempt(
-                "user{$i}@example.com",
-                '127.0.0.1',
-                'TestAgent',
-                false
-            );
+            MemberLoginAttempt::recordAttempt("user{$i}@example.com", '127.0.0.1', 'TestAgent', false);
         }
 
-        // 正しいパスワードでも IP ロックアウトで拒否されること
         $response = $this->post(route('admin.login.store'), [
             'login' => 'admin@example.com',
             'password' => 'correct-password',
@@ -97,7 +84,6 @@ class AdminIpLockoutTest extends TestCase
 
     public function test_ip_lockout_blocks_different_identifiers(): void
     {
-        // 別ユーザーを作成
         $otherAdmin = Member::create([
             'account_name' => 'other',
             'display_name' => 'Other',
@@ -108,17 +94,10 @@ class AdminIpLockoutTest extends TestCase
             'status' => MemberStatus::Active,
         ]);
 
-        // 同一 IP で閾値を超える失敗を記録
         for ($i = 0; $i < 6; $i++) {
-            MemberLoginAttempt::recordAttempt(
-                "attacker{$i}@example.com",
-                '127.0.0.1',
-                'TestAgent',
-                false
-            );
+            MemberLoginAttempt::recordAttempt("attacker{$i}@example.com", '127.0.0.1', 'TestAgent', false);
         }
 
-        // 別の正当なユーザーも同じ IP からはブロックされること
         $response = $this->post(route('admin.login.store'), [
             'login' => 'other@example.com',
             'password' => 'other-password',
@@ -140,7 +119,6 @@ class AdminIpLockoutTest extends TestCase
             'status' => MemberStatus::Active,
         ]);
 
-        // admin@example.com で 3 回失敗 → 識別子ロックアウト
         for ($i = 0; $i < 3; $i++) {
             $this->post(route('admin.login.store'), [
                 'login' => 'admin@example.com',
@@ -148,15 +126,12 @@ class AdminIpLockoutTest extends TestCase
             ]);
         }
 
-        // admin はロックアウト
         $response = $this->post(route('admin.login.store'), [
             'login' => 'admin@example.com',
             'password' => 'correct-password',
         ]);
         $this->assertGuest('member');
 
-        // other は（IP ロックアウト閾値未達なら）まだログイン可能
-        // IP からの試行は 3 回、IP 閾値は 6 なのでまだ余裕あり
         $response = $this->post(route('admin.login.store'), [
             'login' => 'other@example.com',
             'password' => 'other-password',
@@ -170,17 +145,10 @@ class AdminIpLockoutTest extends TestCase
     {
         SecuritySetting::setValue('login_attempt_limit_enabled', false);
 
-        // 大量の失敗を記録
         for ($i = 0; $i < 20; $i++) {
-            MemberLoginAttempt::recordAttempt(
-                "user{$i}@example.com",
-                '127.0.0.1',
-                'TestAgent',
-                false
-            );
+            MemberLoginAttempt::recordAttempt("user{$i}@example.com", '127.0.0.1', 'TestAgent', false);
         }
 
-        // ロックアウト無効なのでログイン可能
         $response = $this->post(route('admin.login.store'), [
             'login' => 'admin@example.com',
             'password' => 'correct-password',
@@ -192,17 +160,10 @@ class AdminIpLockoutTest extends TestCase
 
     public function test_successful_login_does_not_clear_ip_lockout_for_others(): void
     {
-        // 異なる識別子で IP 閾値に近い失敗を記録（5回 = 閾値6の1手前）
         for ($i = 0; $i < 5; $i++) {
-            MemberLoginAttempt::recordAttempt(
-                "attacker{$i}@example.com",
-                '127.0.0.1',
-                'TestAgent',
-                false
-            );
+            MemberLoginAttempt::recordAttempt("attacker{$i}@example.com", '127.0.0.1', 'TestAgent', false);
         }
 
-        // 正当なユーザーがログイン成功
         $this->post(route('admin.login.store'), [
             'login' => 'admin@example.com',
             'password' => 'correct-password',
@@ -210,7 +171,6 @@ class AdminIpLockoutTest extends TestCase
 
         $this->assertAuthenticatedAs($this->admin, 'member');
 
-        // IP からの失敗試行カウントは残っていること（他人の失敗はクリアされない）
         $ipFailedCount = MemberLoginAttempt::getFailedAttemptsCountByIp('127.0.0.1', 15);
         $this->assertEquals(5, $ipFailedCount);
     }

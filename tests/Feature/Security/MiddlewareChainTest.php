@@ -94,12 +94,9 @@ class MiddlewareChainTest extends TestCase
         BaseSetting::setValue('maintenance_message', 'Under maintenance');
         BaseSetting::setValue('site_name', 'Test Site');
 
-        // フロントページにアクセス（認証なし）
         $response = $this->get('/');
         $statusCode = $response->getStatusCode();
 
-        // メンテナンスモード中はフロントが通常通り表示されないこと
-        // 503（メンテナンス画面）、302（リダイレクト）、500（ビュー未設定）のいずれか
         $this->assertNotEquals(
             200,
             $statusCode,
@@ -117,7 +114,6 @@ class MiddlewareChainTest extends TestCase
 
         $admin = $this->createAdmin();
 
-        // 管理者はメンテナンスモード中でもアクセス可能
         $response = $this->actingAs($admin, 'member')
             ->get(route('admin.dashboard'));
 
@@ -137,8 +133,6 @@ class MiddlewareChainTest extends TestCase
         $response = $this->actingAs($admin, 'member')
             ->get(route('admin.dashboard'));
 
-        // CSP が有効な場合のみヘッダーが付与される
-        // ここでは最低限のセキュリティヘッダーを確認
         if ($response->headers->has('X-Content-Type-Options')) {
             $this->assertEquals('nosniff', $response->headers->get('X-Content-Type-Options'));
         }

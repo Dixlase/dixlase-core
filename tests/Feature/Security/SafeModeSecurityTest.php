@@ -60,13 +60,8 @@ class SafeModeSecurityTest extends TestCase
         parent::tearDown();
     }
 
-    // =========================================================================
-    // SafeMode 認証要件
-    // =========================================================================
-
     public function test_safe_mode_requires_authentication(): void
     {
-        // 未認証で ?safe=csp を付けてもセッションにフラグが設定されないこと
         $this->get('/?safe=csp');
 
         $this->assertNull(session('safe_mode_csp'));
@@ -88,16 +83,11 @@ class SafeModeSecurityTest extends TestCase
         $this->assertTrue(session('safe_mode_plugins', false));
     }
 
-    // =========================================================================
-    // SafeMode パラメータの安全性
-    // =========================================================================
-
     public function test_invalid_safe_mode_parameter_is_ignored(): void
     {
         $this->actingAs($this->admin, 'member')
             ->get(route('admin.dashboard', ['safe' => 'invalid_mode']));
 
-        // 不正なモードではセッションフラグが設定されないこと
         $this->assertNull(session('safe_mode_invalid_mode'));
     }
 }
