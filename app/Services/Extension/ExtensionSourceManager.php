@@ -109,11 +109,51 @@ class ExtensionSourceManager
     /**
      * Get all enabled sources ordered by priority
      *
+     * DB にソースが1件もない場合は config プリセットからデフォルトソースを自動作成する。
+     *
      * @return Collection<int, ExtensionSource>
      */
     public function getEnabledSources(): Collection
     {
-        return ExtensionSource::query()->enabled()->get();
+        $sources = ExtensionSource::query()->enabled()->get();
+
+        if ($sources->isEmpty()) {
+            $this->seedDefaultSources();
+            $sources = ExtensionSource::query()->enabled()->get();
+        }
+
+        return $sources;
+    }
+
+    /**
+     * config プリセットからデフォルトソースを DB に作成
+     */
+    protected function seedDefaultSources(): void
+    {
+        $presets = config('extension-sources.presets', []);
+
+        foreach ($presets as $type => $preset) {
+            // 既に同タイプのソースが存在する場合はスキップ
+            if (ExtensionSource::query()->ofType($type)->exists()) {
+                continue;
+            }
+
+            $attributes = [
+                'name' => $preset['name'] ?? ucfirst($type),
+                'type' => $type,
+                'is_enabled' => true,
+                'is_official' => $preset['is_official'] ?? false,
+                'priority' => 0,
+            ];
+
+            // タイプ別のデフォルト値を設定
+            if ($type === 'github') {
+                $attributes['base_url'] = config('extension-sources.github.api_base', 'https://api.github.com');
+                $attributes['owner'] = config('extension-sources.github.default_owner', 'Dixlase');
+            }
+
+            ExtensionSource::query()->create($attributes);
+        }
     }
 
     /**
