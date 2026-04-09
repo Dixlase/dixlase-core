@@ -35,6 +35,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             $__isSimpleMode = \App\Helpers\AdminModeHelper::isSimpleMode();
             // 非表示不可のメニュー
             $__protectedMenus = ['dashboard', 'profile'];
+            // 並べ替え不可のメニュー（ダッシュボードは常に先頭固定）
+            $__unsortableMenus = ['dashboard'];
             // サーバーサイドの並べ替え
             $__navigation = config('admin.navigation');
             $__savedOrder = $sidebar_menu_order ?? [];
@@ -75,6 +77,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 }
 
                 $__isProtected = in_array($key, $__protectedMenus);
+                $__isUnsortable = in_array($key, $__unsortableMenus);
             @endphp
 
 
@@ -192,16 +195,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         title="{{ __('admin/navigation.done_editing') }}">
                                     <i class="fas fa-check text-xs"></i>
                                 </button>
-                            @elseif (!$__isProtected)
-                                <button x-show="editMode"
-                                        x-cloak
-                                        @click="toggleMenu('{{ $key }}')"
-                                        class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
-                                    <i class="fas text-xs" :class="isHidden('{{ $key }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
-                                </button>
-                                <span x-show="editMode" x-cloak class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0" style="touch-action:none">
-                                    <i class="fas fa-grip-vertical text-xs"></i>
-                                </span>
+                            @else
+                                @unless ($__isProtected)
+                                    <button x-show="editMode"
+                                            x-cloak
+                                            @click="toggleMenu('{{ $key }}')"
+                                            class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
+                                        <i class="fas text-xs" :class="isHidden('{{ $key }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                    </button>
+                                @endunless
+                                @unless ($__isUnsortable)
+                                    <span x-show="editMode" x-cloak class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0" style="touch-action:none">
+                                        <i class="fas fa-grip-vertical text-xs"></i>
+                                    </span>
+                                @endunless
                             @endif
                         </div>
                     @else
@@ -228,6 +235,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
                                     <i class="fas text-xs" :class="isHidden('{{ $key }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
                                 </button>
+                            @endunless
+                            @unless ($__isUnsortable)
                                 <span x-show="editMode" x-cloak class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0" style="touch-action:none">
                                     <i class="fas fa-grip-vertical text-xs"></i>
                                 </span>
@@ -319,6 +328,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                     class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
                                                 <i class="fas text-xs" :class="isHidden('{{ $__childMenuKey }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
                                             </button>
+                                        @endunless
+                                        @unless ($__isUnsortable)
                                             <span x-show="editMode" x-cloak class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0" style="touch-action:none">
                                                 <i class="fas fa-grip-vertical text-xs"></i>
                                             </span>
@@ -372,6 +383,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                     class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
                                                 <i class="fas text-xs" :class="isHidden('{{ $__childMenuKey }}') ? 'fa-eye-slash' : 'fa-eye'"></i>
                                             </button>
+                                            @endunless
+                                            @unless ($__isUnsortable)
                                             <span x-show="editMode" x-cloak class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0" style="touch-action:none">
                                                 <i class="fas fa-grip-vertical text-xs"></i>
                                             </span>
