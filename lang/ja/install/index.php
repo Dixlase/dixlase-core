@@ -29,5 +29,13 @@ return [
         'cache' => 'bootstrap/cacheディレクトリが書き込み可能',
         'writable_required' => '書き込み権限が必要',
     ],
+    'php_settings' => [
+        'required' => '必要',
+        'unlimited' => '無制限',
+    ],
+    'theme_check' => [
+        'label' => 'テーマ',
+        'not_found' => 'themes/ ディレクトリにテーマが見つかりません',
+    ],
     'start_button' => 'インストールを開始',
 ];

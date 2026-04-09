@@ -60,14 +60,43 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </span>
                 </li>
             @endforeach
+
+            {{-- PHP設定チェック --}}
+            @if (isset($requirements['php_settings']))
+                @foreach ($requirements['php_settings'] as $setting => $info)
+                    <li>
+                        <strong>{{ $setting }}</strong> ({{ __('install/index.php_settings.required') }}: {{ $info['required'] }}):
+                        <span class="{{ $info['ok'] ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                            {{ $info['current'] }} {{ $info['ok'] ? __('install/common.ok') : __('install/common.failed') }}
+                        </span>
+                    </li>
+                @endforeach
+            @endif
+
+            {{-- テーマ存在チェック --}}
+            <li>
+                <strong>{{ __('install/index.theme_check.label') }}</strong>:
+                <span class="{{ $requirements['has_theme'] ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                    {{ $requirements['has_theme'] ? __('install/common.ok') : __('install/index.theme_check.not_found') }}
+                </span>
+            </li>
         </ul>
     </div>
 
     <!-- ✅ インストールボタン -->
     @php
-        $hasRequiredIssues = !$requirements['php'] || 
-                           in_array(false, $requirements['required_extensions']) || 
-                           in_array(false, $requirements['permissions']);
+        $hasRequiredIssues = !$requirements['php'] ||
+                           in_array(false, $requirements['required_extensions']) ||
+                           in_array(false, $requirements['permissions']) ||
+                           !$requirements['has_theme'];
+        if (isset($requirements['php_settings'])) {
+            foreach ($requirements['php_settings'] as $info) {
+                if (!$info['ok']) {
+                    $hasRequiredIssues = true;
+                    break;
+                }
+            }
+        }
     @endphp
     <div class="flex justify-center">
         <a href="{{ $hasRequiredIssues ? '#' : route('install.mode') }}"

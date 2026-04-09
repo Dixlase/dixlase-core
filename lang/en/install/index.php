@@ -29,5 +29,13 @@ return [
         'cache' => 'Bootstrap cache directory writable',
         'writable_required' => 'writable required',
     ],
+    'php_settings' => [
+        'required' => 'required',
+        'unlimited' => 'unlimited',
+    ],
+    'theme_check' => [
+        'label' => 'Theme',
+        'not_found' => 'No theme found in themes/ directory',
+    ],
     'start_button' => 'Start Installation',
 ];
