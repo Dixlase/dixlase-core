@@ -29,7 +29,7 @@ if (! function_exists('is_vite_dev_server')) {
      */
     function is_vite_dev_server(): bool
     {
-        return app()->environment('local') && file_exists(public_path('hot'));
+        return file_exists(public_path('hot'));
     }
 }
 
