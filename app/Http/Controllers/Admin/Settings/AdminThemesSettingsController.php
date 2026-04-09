@@ -1012,4 +1012,103 @@ class AdminThemesSettingsController extends AdminLoggedInController
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
+
+    /**
+     * アップデートチェック（AJAX）
+     */
+    public function checkUpdates(\App\Services\Extension\ExtensionSourceManager $manager): \Illuminate\Http\JsonResponse
+    {
+        try {
+            $result = $manager->checkUpdates();
+
+            return response()->json([
+                'success' => true,
+                'plugins' => $result['plugins'],
+                'themes' => $result['themes'],
+                'message' => empty($result['themes'])
+                    ? __('admin/settings/themes/index.updates.all_up_to_date')
+                    : __('admin/settings/themes/index.updates.updates_found', ['count' => count($result['themes'])]),
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * テーマをアップデート（新バージョンをダウンロード → 置換）
+     */
+    public function updateTheme(int $id, \App\Services\Extension\ExtensionSourceManager $manager)
+    {
+        $theme = Theme::findOrFail($id);
+
+        if (! $theme->hasUpdateAvailable()) {
+            return back()->with('error', __('admin/settings/themes/index.updates.no_update'));
+        }
+
+        $slug = $theme->slug;
+        $newVersion = $theme->available_version;
+        $directory = $theme->directory;
+        $themePath = resource_path("views/themes/{$directory}");
+        $backupPath = resource_path("views/themes/{$directory}.backup");
+
+        try {
+            // 新バージョンの ZIP をダウンロード
+            $zipPath = $manager->download($slug, 'theme', $newVersion);
+
+            // 現在のディレクトリをバックアップ
+            if (File::exists($themePath)) {
+                File::move($themePath, $backupPath);
+            }
+
+            // ZIP を展開して配置
+            $result = $this->extractAndPlaceTheme($zipPath);
+
+            if (! $result['success']) {
+                $this->restoreFromBackup($backupPath, $themePath);
+
+                return back()->with('error', $result['error']);
+            }
+
+            // DB のバージョン情報を更新
+            $theme->update([
+                'version' => $newVersion,
+                'available_version' => null,
+                'last_version_check' => now(),
+            ]);
+
+            // バックアップを削除
+            if (File::exists($backupPath)) {
+                File::deleteDirectory($backupPath);
+            }
+
+            return redirect()->route('admin.settings.themes.index')
+                ->with('success', __('admin/settings/themes/index.updates.update_success', ['name' => $theme->name, 'version' => $newVersion]));
+        } catch (\Throwable $e) {
+            $this->restoreFromBackup($backupPath, $themePath);
+
+            Log::error('Theme update failed', [
+                'theme' => $slug,
+                'version' => $newVersion,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', __('admin/settings/themes/index.updates.update_failed', ['error' => $e->getMessage()]));
+        }
+    }
+
+    /**
+     * バックアップからディレクトリを復元
+     */
+    protected function restoreFromBackup(string $backupPath, string $originalPath): void
+    {
+        if (File::exists($backupPath)) {
+            if (File::exists($originalPath)) {
+                File::deleteDirectory($originalPath);
+            }
+            File::move($backupPath, $originalPath);
+        }
+    }
 }

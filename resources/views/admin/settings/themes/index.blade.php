@@ -26,10 +26,43 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section>
         <div class="flex items-center justify-between mb-6">
             <h2 class="mb-0">{{ __('admin/settings/themes/index.installed_heading') }}</h2>
-            <a href="{{ route('admin.settings.themes.add') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
-                <i class="fas fa-plus mr-2"></i>
-                {{ __('admin/settings/themes/index.add_theme') }}
-            </a>
+            <div class="flex items-center gap-3">
+                <div x-data="{
+                    checking: false,
+                    async check() {
+                        this.checking = true;
+                        try {
+                            const response = await fetch('{{ route('admin.settings.themes.check-updates') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json',
+                                },
+                            });
+                            const data = await response.json();
+                            if (data.success) {
+                                window.location.reload();
+                            }
+                        } catch (e) {}
+                        this.checking = false;
+                    }
+                }">
+                    <button
+                        type="button"
+                        class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                        :disabled="checking"
+                        @click="check()"
+                    >
+                        <i class="fas" :class="checking ? 'fa-spinner fa-spin' : 'fa-sync-alt'"></i>
+                        <span x-text="checking ? '{{ __('admin/settings/themes/index.updates.checking') }}' : '{{ __('admin/settings/themes/index.updates.check') }}'"></span>
+                    </button>
+                </div>
+                <a href="{{ route('admin.settings.themes.add') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
+                    <i class="fas fa-plus mr-2"></i>
+                    {{ __('admin/settings/themes/index.add_theme') }}
+                </a>
+            </div>
         </div>
 
         @if($themes->count() > 0)

@@ -17,6 +17,16 @@ return [
     'description' => 'Manage installed plugins, add new plugins, and enable or disable plugins.',
     'installed_heading' => 'Installed Plugins',
     'update_available' => 'v:version available',
+    'updates' => [
+        'check' => 'Check Updates',
+        'checking' => 'Checking...',
+        'all_up_to_date' => 'All plugins are up to date.',
+        'updates_found' => ':count update(s) available.',
+        'no_update' => 'No update available for this plugin.',
+        'update_button' => 'Update',
+        'update_success' => 'Plugin ":name" has been updated to v:version.',
+        'update_failed' => 'Plugin update failed: :error',
+    ],
     'uninstalled_heading' => 'Uninstalled Plugins',
     'systems' => [
         'text' => 'System',

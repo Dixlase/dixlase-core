@@ -1164,4 +1164,108 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
+
+    /**
+     * アップデートチェック（AJAX）
+     */
+    public function checkUpdates(\App\Services\Extension\ExtensionSourceManager $manager): \Illuminate\Http\JsonResponse
+    {
+        try {
+            $result = $manager->checkUpdates();
+
+            return response()->json([
+                'success' => true,
+                'plugins' => $result['plugins'],
+                'themes' => $result['themes'],
+                'message' => empty($result['plugins']) && empty($result['themes'])
+                    ? __('admin/settings/plugins/index.updates.all_up_to_date')
+                    : __('admin/settings/plugins/index.updates.updates_found', ['count' => count($result['plugins'])]),
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * プラグインをアップデート（新バージョンをダウンロード → 置換）
+     */
+    public function updatePlugin(int $id, \App\Services\Extension\ExtensionSourceManager $manager)
+    {
+        $plugin = Plugin::findOrFail($id);
+
+        if (! $plugin->hasUpdateAvailable()) {
+            return back()->with('error', __('admin/settings/plugins/index.updates.no_update'));
+        }
+
+        $slug = $plugin->slug;
+        $newVersion = $plugin->available_version;
+        $directory = $plugin->directory;
+        $pluginPath = base_path("plugins/{$directory}");
+        $backupPath = base_path("plugins/{$directory}.backup");
+
+        try {
+            // 新バージョンの ZIP をダウンロード
+            $zipPath = $manager->download($slug, 'plugin', $newVersion);
+
+            // 現在のディレクトリをバックアップ
+            if (File::exists($pluginPath)) {
+                File::move($pluginPath, $backupPath);
+            }
+
+            // ZIP を展開して配置
+            $result = $this->extractAndPlacePlugin($zipPath);
+
+            if (! $result['success']) {
+                // 失敗時はバックアップから復元
+                $this->restoreFromBackup($backupPath, $pluginPath);
+
+                return back()->with('error', $result['error']);
+            }
+
+            // DB のバージョン情報を更新
+            $plugin->update([
+                'version' => $newVersion,
+                'available_version' => null,
+                'last_version_check' => now(),
+            ]);
+
+            // バックアップを削除
+            if (File::exists($backupPath)) {
+                File::deleteDirectory($backupPath);
+            }
+
+            // 再監査
+            $this->runPluginAudit($slug);
+
+            return redirect()->route('admin.settings.plugins.index')
+                ->with('success', __('admin/settings/plugins/index.updates.update_success', ['name' => $plugin->name, 'version' => $newVersion]));
+        } catch (\Throwable $e) {
+            // 失敗時はバックアップから復元
+            $this->restoreFromBackup($backupPath, $pluginPath);
+
+            Log::error('Plugin update failed', [
+                'plugin' => $slug,
+                'version' => $newVersion,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', __('admin/settings/plugins/index.updates.update_failed', ['error' => $e->getMessage()]));
+        }
+    }
+
+    /**
+     * バックアップからディレクトリを復元
+     */
+    protected function restoreFromBackup(string $backupPath, string $originalPath): void
+    {
+        if (File::exists($backupPath)) {
+            if (File::exists($originalPath)) {
+                File::deleteDirectory($originalPath);
+            }
+            File::move($backupPath, $originalPath);
+        }
+    }
 }
