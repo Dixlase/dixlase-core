@@ -63,9 +63,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         {{-- アップデート通知 --}}
         @if($card['hasUpdateAvailable'] ?? false)
-            <div class="flex items-center gap-1.5 mb-2 px-2 py-1 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded text-xs text-blue-700 dark:text-blue-300">
-                <i class="fas fa-arrow-up"></i>
-                {{ __('admin/settings/plugins/index.update_available', ['version' => $card['availableVersion']]) }}
+            <div class="flex items-center justify-between mb-2 px-2 py-1 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded text-xs text-blue-700 dark:text-blue-300">
+                <span class="flex items-center gap-1.5">
+                    <i class="fas fa-arrow-up"></i>
+                    {{ __('admin/settings/plugins/index.update_available', ['version' => $card['availableVersion']]) }}
+                </span>
+                <form method="POST" action="{{ route('admin.settings.plugins.update', $card['id']) }}">
+                    @csrf
+                    <button type="submit" class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors">
+                        <i class="fas fa-download text-[10px]"></i>
+                        {{ __('admin/settings/plugins/index.updates.update_button') }}
+                    </button>
+                </form>
             </div>
         @endif
 

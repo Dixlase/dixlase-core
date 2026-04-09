@@ -17,6 +17,16 @@ return [
     'description' => 'インストール済みプラグインの管理、新しいプラグインの追加、プラグインの有効化・無効化を行います。',
     'installed_heading' => 'インストール済みプラグイン',
     'update_available' => 'v:version が利用可能',
+    'updates' => [
+        'check' => 'アップデートを確認',
+        'checking' => '確認中...',
+        'all_up_to_date' => 'すべてのプラグインは最新です。',
+        'updates_found' => ':count 件のアップデートがあります。',
+        'no_update' => 'このプラグインのアップデートはありません。',
+        'update_button' => 'アップデート',
+        'update_success' => 'プラグイン「:name」を v:version にアップデートしました。',
+        'update_failed' => 'プラグインのアップデートに失敗しました: :error',
+    ],
     'uninstalled_heading' => 'アンインストール済みプラグイン',
     'systems' => [
         'text' => 'システム',

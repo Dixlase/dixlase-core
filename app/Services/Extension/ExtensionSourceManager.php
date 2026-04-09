@@ -233,7 +233,7 @@ class ExtensionSourceManager
     protected function checkPluginUpdates(): array
     {
         $updates = [];
-        $plugins = Plugin::query()->installed()->whereNotNull('source_id')->get();
+        $plugins = Plugin::query()->installed()->get();
 
         foreach ($plugins as $plugin) {
             $release = $this->getLatestReleaseForExtension($plugin->slug, 'plugin', $plugin->source_id);
@@ -259,12 +259,12 @@ class ExtensionSourceManager
     /**
      * Check installed themes for updates
      *
-     * @return array<int, array{slug: string, current: string, available: string, source_id: int}>
+     * @return array<int, array{slug: string, current: string, available: string, source_id: ?int}>
      */
     protected function checkThemeUpdates(): array
     {
         $updates = [];
-        $themes = Theme::query()->installed()->whereNotNull('source_id')->get();
+        $themes = Theme::query()->installed()->get();
 
         foreach ($themes as $theme) {
             $release = $this->getLatestReleaseForExtension($theme->slug, 'theme', $theme->source_id);

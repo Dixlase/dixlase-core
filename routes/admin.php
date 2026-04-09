@@ -459,6 +459,12 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/themes/download-from-source', [AdminThemesSettingsController::class, 'downloadFromSource'])
                     ->middleware('check.menu.edit:settings.themes')
                     ->name('settings.themes.download-from-source');
+                Route::post('/settings/themes/check-updates', [AdminThemesSettingsController::class, 'checkUpdates'])
+                    ->middleware('check.menu.edit:settings.themes')
+                    ->name('settings.themes.check-updates');
+                Route::post('/settings/themes/update/{id}', [AdminThemesSettingsController::class, 'updateTheme'])
+                    ->middleware('check.menu.edit:settings.themes')
+                    ->name('settings.themes.update');
             });
 
             // プラグイン設定（権限チェック付き）
@@ -491,6 +497,12 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/plugins/download-from-source', [AdminPluginsSettingsController::class, 'downloadFromSource'])
                     ->middleware('check.menu.edit:settings.plugins')
                     ->name('settings.plugins.download-from-source');
+                Route::post('/settings/plugins/check-updates', [AdminPluginsSettingsController::class, 'checkUpdates'])
+                    ->middleware('check.menu.edit:settings.plugins')
+                    ->name('settings.plugins.check-updates');
+                Route::post('/settings/plugins/update/{id}', [AdminPluginsSettingsController::class, 'updatePlugin'])
+                    ->middleware('check.menu.edit:settings.plugins')
+                    ->name('settings.plugins.update');
             });
 
             // システム設定（権限チェック付き）
