@@ -22,12 +22,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-    <!-- Flash message for success or error -->
-    @if(session('success'))
-        <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50">
-            {{ session('success') }}
-        </div>
-    @endif
 
     @if ($errors->any())
         <div class="mb-4 p-4 text-red-800 bg-red-100 border border-red-200 rounded-lg">
@@ -39,76 +33,152 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
-        <h2 class="text-2xl font-bold mb-6 text-gray-700 dark:text-white">{{ __('admin/settings/themes/add.upload_title') }}</h2>
-        <!-- Alpine.jsでファイルアップロードを管理 -->
-        <form
-            action="{{ route('admin.settings.themes.upload') }}"
-            method="POST"
-            enctype="multipart/form-data"
-            class="space-y-6"
-            x-data="{ fileName: '' }"
-        >
-            @csrf
+    <!-- タブ切り替え -->
+    <div x-data="{ activeTab: '{{ old('_tab', 'zip') }}' }">
+        <div class="flex border-b border-gray-200 dark:border-gray-700 mb-6">
+            <button
+                type="button"
+                class="px-6 py-3 text-sm font-medium border-b-2 transition-colors"
+                :class="activeTab === 'zip'
+                    ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
+                @click="activeTab = 'zip'"
+            >
+                <i class="fas fa-file-archive mr-1.5"></i>
+                {{ __('admin/settings/themes/add.tab_zip') }}
+            </button>
+            <button
+                type="button"
+                class="px-6 py-3 text-sm font-medium border-b-2 transition-colors"
+                :class="activeTab === 'online'
+                    ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
+                @click="activeTab = 'online'"
+            >
+                <i class="fas fa-globe mr-1.5"></i>
+                {{ __('admin/settings/themes/add.tab_online') }}
+            </button>
+        </div>
 
-            <!-- アップロードフィールド -->
-            <div class="flex flex-col gap-2">
-                <label for="plugin_file" class="text-gray-600 dark:text-gray-300 font-medium">
-                    {{ __('admin/settings/themes/add.file_select_label') }}
-                </label>
-                <div
-                    class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-500 transition duration-300 max-w-full"
+        <!-- ZIPファイルから追加 -->
+        <div x-show="activeTab === 'zip'" x-cloak>
+            <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+                <h2 class="text-2xl font-bold mb-6 text-gray-700 dark:text-white">{{ __('admin/settings/themes/add.upload_title') }}</h2>
+                <form
+                    action="{{ route('admin.settings.themes.upload') }}"
+                    method="POST"
+                    enctype="multipart/form-data"
+                    class="space-y-6"
+                    x-data="{ fileName: '' }"
                 >
-                    <!-- ファイル入力 -->
-                    <input
-                        type="file"
-                        name="plugin_file"
-                        id="plugin_file"
-                        accept=".zip"
-                        class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-                        @change="fileName = $event.target.files[0] ? $event.target.files[0].name : ''"
-                        required
-                    >
+                    @csrf
 
-                    <!-- ドロップエリア表示部分 -->
-                    <div class="flex flex-col items-center justify-center text-center pointer-events-none">
-                        <svg
-                            class="w-12 h-12 text-blue-500 mb-3"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                            aria-hidden="true"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M12 16v4m0 0H8m4 0h4m-4-4a4 4 0 01-4-4 4 4 0 014-4 4 4 0 014 4 4 4 0 01-4 4z"
-                            ></path>
-                        </svg>
-                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="fileName || '{{ __('admin/settings/themes/add.drag_drop_text') }}'"></p>
-                        <p class="text-xs text-gray-400 mt-1">{{ __('admin/settings/themes/add.supported_format') }} <strong>.zip</strong></p>
+                    <div class="flex flex-col gap-2">
+                        <label for="theme_file" class="text-gray-600 dark:text-gray-300 font-medium">
+                            {{ __('admin/settings/themes/add.file_select_label') }}
+                        </label>
+                        <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-indigo-500 transition duration-300 max-w-full">
+                            <input
+                                type="file"
+                                name="plugin_file"
+                                id="theme_file"
+                                accept=".zip"
+                                class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                                @change="fileName = $event.target.files[0] ? $event.target.files[0].name : ''"
+                                required
+                            >
+                            <div class="flex flex-col items-center justify-center text-center pointer-events-none">
+                                <svg class="w-12 h-12 text-indigo-500 mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 16v4m0 0H8m4 0h4m-4-4a4 4 0 01-4-4 4 4 0 014-4 4 4 0 014 4 4 4 0 01-4 4z"></path>
+                                </svg>
+                                <p class="text-sm text-gray-500 dark:text-gray-400" x-text="fileName || '{{ __('admin/settings/themes/add.drag_drop_text') }}'"></p>
+                                <p class="text-xs text-gray-400 mt-1">{{ __('admin/settings/themes/add.supported_format') }} <strong>.zip</strong></p>
+                                <p class="text-xs text-gray-400 mt-1">{{ __('admin/settings/themes/add.upload_limit') }} <strong>{{ $uploadMaxMB }} MB</strong></p>
+                            </div>
+                        </div>
+                    </div>
 
-                        <!-- アップロード上限表示 -->
-                        <p class="text-xs text-gray-400 mt-1">{{ __('admin/settings/themes/add.upload_limit') }}
-                            <strong>{{ $uploadMaxMB }} MB</strong>
-                        </p>
+                    <div class="flex justify-end">
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300">
+                            {{ __('common.upload') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- オンラインから追加 -->
+        <div x-show="activeTab === 'online'" x-cloak>
+            <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6"
+                 x-data="onlineThemes({
+                     listUrl: '{{ route('admin.settings.themes.available-from-source') }}',
+                     downloadUrl: '{{ route('admin.settings.themes.download-from-source') }}',
+                     csrfToken: '{{ csrf_token() }}'
+                 })"
+            >
+                <h2 class="text-2xl font-bold mb-2 text-gray-700 dark:text-white">{{ __('admin/settings/themes/add.online.title') }}</h2>
+                <p class="text-gray-500 dark:text-gray-400 mb-6">{{ __('admin/settings/themes/add.online.description') }}</p>
+
+                <!-- ローディング -->
+                <div x-show="status === 'loading'" class="py-12 text-center">
+                    <i class="fas fa-spinner fa-spin text-2xl text-indigo-500 mb-3"></i>
+                    <p class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/themes/add.online.loading') }}</p>
+                </div>
+
+                <!-- エラー -->
+                <div x-show="status === 'error'" x-cloak class="py-8">
+                    <div class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                        <div class="flex items-center gap-2 text-red-700 dark:text-red-300">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span class="font-medium">{{ __('admin/settings/themes/add.online.connection_error') }}</span>
+                        </div>
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400" x-text="errorMessage"></p>
+                    </div>
+                </div>
+
+                <!-- 空 -->
+                <div x-show="status === 'empty'" x-cloak class="py-12 text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                        <i class="fas fa-palette text-3xl text-gray-400"></i>
+                    </div>
+                    <p class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/themes/add.online.no_themes') }}</p>
+                </div>
+
+                <!-- テーマ一覧 -->
+                <div x-show="status === 'loaded'" x-cloak>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <template x-for="theme in themes" :key="theme.slug">
+                            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors">
+                                <div class="flex items-start justify-between">
+                                    <div class="min-w-0 flex-1">
+                                        <h3 class="font-medium text-gray-900 dark:text-white truncate" x-text="theme.name || theme.slug"></h3>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5" x-show="theme.version" x-text="'v' + theme.version"></p>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2" x-text="theme.description || ''"></p>
+                                <div class="mt-3 flex items-center justify-between">
+                                    <span class="text-xs text-gray-400" x-show="theme.source_name" x-text="theme.source_name"></span>
+                                    <button
+                                        type="button"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
+                                        :disabled="downloadingSlug !== null"
+                                        @click="download(theme.slug)"
+                                    >
+                                        <template x-if="downloadingSlug === theme.slug">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                        </template>
+                                        <template x-if="downloadingSlug !== theme.slug">
+                                            <i class="fas fa-download"></i>
+                                        </template>
+                                        <span x-text="downloadingSlug === theme.slug ? '{{ __('admin/settings/themes/add.online.downloading') }}' : '{{ __('admin/settings/themes/add.online.download') }}'"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 </div>
             </div>
-
-
-            <!-- アップロードボタン -->
-            <div class="flex justify-end">
-                <button
-                    type="submit"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300"
-                >
-                    {{ __('common.upload') }}
-                </button>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 @endsection

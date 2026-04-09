@@ -865,4 +865,151 @@ class AdminThemesSettingsController extends AdminLoggedInController
             ]);
         }
     }
+
+    /**
+     * ソースから利用可能なテーマ一覧を返す（JSON API）
+     */
+    public function availableFromSource(\App\Services\Extension\ExtensionSourceManager $manager): \Illuminate\Http\JsonResponse
+    {
+        try {
+            $available = $manager->listAvailableThemes();
+
+            // インストール済み・ディスク上に存在するテーマを除外
+            $installedSlugs = Theme::pluck('slug')->toArray();
+            $diskSlugs = collect($this->getUninstalledThemes())->pluck('slug')->toArray();
+            $excludeSlugs = array_merge($installedSlugs, $diskSlugs);
+
+            $filtered = array_values(array_filter(
+                $available,
+                fn (array $theme) => ! in_array($theme['slug'], $excludeSlugs)
+            ));
+
+            return response()->json([
+                'success' => true,
+                'themes' => $filtered,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'themes' => [],
+            ]);
+        }
+    }
+
+    /**
+     * ソースからテーマをダウンロードして配置
+     */
+    public function downloadFromSource(Request $request, \App\Services\Extension\ExtensionSourceManager $manager)
+    {
+        $request->validate([
+            'slug' => 'required|string|max:100',
+        ]);
+
+        $slug = $request->input('slug');
+
+        try {
+            // ソースから ZIP をダウンロード
+            $zipPath = $manager->download($slug, 'theme');
+
+            // ZIP を展開して配置
+            $result = $this->extractAndPlaceTheme($zipPath);
+
+            if ($result['success']) {
+                return redirect()->route('admin.settings.themes.index')
+                    ->with('success', __('admin/settings/themes/add.messages.download_success', ['slug' => $slug]))
+                    ->with('uploaded_theme_directory', $result['directory']);
+            }
+
+            return redirect()->route('admin.settings.themes.add')
+                ->with('error', $result['error']);
+        } catch (\Throwable $e) {
+            Log::error('Theme download from source failed', [
+                'slug' => $slug,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('admin.settings.themes.add')
+                ->with('error', __('admin/settings/themes/add.messages.download_failed', ['error' => $e->getMessage()]));
+        }
+    }
+
+    /**
+     * ZIP ファイルを展開してテーマディレクトリに配置する共通処理
+     *
+     * @return array{success: bool, directory?: string, error?: string}
+     */
+    protected function extractAndPlaceTheme(string $zipPath): array
+    {
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath) !== true) {
+            File::delete($zipPath);
+
+            return ['success' => false, 'error' => __('admin/settings/themes/add.messages.zip_extract_failed')];
+        }
+
+        $themeDirectory = resource_path('views/themes/');
+
+        try {
+            // ZIP内の最初のディレクトリ名を取得
+            $extractedRootDir = null;
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $stat = $zip->statIndex($i);
+                $filename = $stat['name'];
+                if (strpos($filename, '/') !== false) {
+                    $extractedRootDir = explode('/', $filename)[0];
+                    break;
+                }
+            }
+
+            if (! $extractedRootDir) {
+                $zip->close();
+                File::delete($zipPath);
+
+                return ['success' => false, 'error' => __('admin/settings/themes/add.messages.no_valid_directory')];
+            }
+
+            $directoryName = Str::slug($extractedRootDir);
+            $destinationPath = $themeDirectory.$directoryName;
+
+            if (File::exists($destinationPath)) {
+                $zip->close();
+                File::delete($zipPath);
+
+                return ['success' => false, 'error' => __('admin/settings/themes/add.messages.directory_exists', ['directory' => $directoryName])];
+            }
+
+            // ZIPを解凍
+            $zip->extractTo($themeDirectory);
+            $zip->close();
+            File::delete($zipPath);
+
+            // 解凍されたディレクトリをリネーム（必要な場合）
+            $extractedDirPath = $themeDirectory.$extractedRootDir;
+            if (is_dir($extractedDirPath) && basename($extractedDirPath) !== $directoryName) {
+                File::move($extractedDirPath, $destinationPath);
+            }
+
+            // theme.jsonの存在確認
+            if (! File::exists($destinationPath.'/theme.json')) {
+                File::deleteDirectory($destinationPath);
+
+                return ['success' => false, 'error' => __('admin/settings/themes/add.messages.theme_json_not_found')];
+            }
+
+            // Git除外ルールとcomposer.local.jsonを更新
+            GitExcludeHelper::addThemeExclusion($directoryName);
+            GitIgnoreHelper::addThemeExclusion($directoryName);
+            ComposerLocalHelper::syncAutoload();
+
+            return ['success' => true, 'directory' => $directoryName];
+        } catch (\Exception $e) {
+            if (isset($destinationPath) && File::exists($destinationPath)) {
+                File::deleteDirectory($destinationPath);
+            }
+            File::delete($zipPath);
+
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
 }

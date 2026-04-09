@@ -16,6 +16,7 @@ return [
     'heading' => 'Theme Management',
     'description' => 'Manage installed themes, add new themes, and switch themes.',
     'installed_heading' => 'Installed Themes',
+    'update_available' => 'v:version available',
     'uninstalled_heading' => 'Uninstalled Themes',
     'title' => 'Themes',
     'available_themes' => 'Available Themes',

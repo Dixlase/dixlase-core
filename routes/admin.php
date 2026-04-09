@@ -454,6 +454,11 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/themes/audit', [AdminThemesSettingsController::class, 'audit'])
                     ->middleware('check.menu.edit:settings.themes')
                     ->name('settings.themes.audit');
+                Route::get('/settings/themes/available-from-source', [AdminThemesSettingsController::class, 'availableFromSource'])
+                    ->name('settings.themes.available-from-source');
+                Route::post('/settings/themes/download-from-source', [AdminThemesSettingsController::class, 'downloadFromSource'])
+                    ->middleware('check.menu.edit:settings.themes')
+                    ->name('settings.themes.download-from-source');
             });
 
             // プラグイン設定（権限チェック付き）
