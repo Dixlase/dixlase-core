@@ -105,26 +105,111 @@ class InstallController extends Controller
             'OpenSSL' => extension_loaded('openssl'),
             'PCRE' => extension_loaded('pcre'),
             'PDO' => extension_loaded('pdo'),
+            'PDO MySQL' => extension_loaded('pdo_mysql'),
+            'Redis' => extension_loaded('redis'),
             'Tokenizer' => extension_loaded('tokenizer'),
             'XML' => extension_loaded('xml'),
+            'GD' => extension_loaded('gd'),
+            'Intl' => extension_loaded('intl'),
+            'Zip' => extension_loaded('zip'),
         ];
 
         // オプションの拡張機能
         $optionalExtensions = [
             'BCMath' => extension_loaded('bcmath'),
+            'OPcache' => extension_loaded('Zend OPcache'),
         ];
 
         $allExtensions = array_merge($requiredExtensions, $optionalExtensions);
+
+        // ストレージサブディレクトリの存在確認と自動作成
+        $storageDirs = [
+            'framework/views',
+            'framework/cache/data',
+            'framework/sessions',
+            'logs',
+        ];
+        foreach ($storageDirs as $dir) {
+            $path = storage_path($dir);
+            if (! is_dir($path)) {
+                @mkdir($path, 0777, true);
+            }
+        }
+
+        // パーミッションチェック
+        $permissions = [
+            'storage' => is_writable(storage_path()),
+            'storage/framework/views' => is_writable(storage_path('framework/views')),
+            'storage/framework/cache' => is_writable(storage_path('framework/cache')),
+            'storage/framework/sessions' => is_writable(storage_path('framework/sessions')),
+            'storage/logs' => is_writable(storage_path('logs')),
+            'bootstrap/cache' => is_writable(base_path('bootstrap/cache')),
+            '.env' => is_writable(base_path()) || is_writable(base_path('.env')),
+            'public' => is_writable(base_path('public')),
+        ];
+
+        // PHP設定チェック
+        $phpSettings = [
+            'memory_limit' => $this->checkMemoryLimit(128),
+            'max_execution_time' => $this->checkMaxExecutionTime(60),
+        ];
+
+        // テーマの存在チェック（theme.json を持つディレクトリが1つ以上あるか）
+        $themesPath = base_path('themes');
+        $hasTheme = false;
+        if (is_dir($themesPath)) {
+            foreach (new \DirectoryIterator($themesPath) as $dir) {
+                if ($dir->isDot() || ! $dir->isDir()) {
+                    continue;
+                }
+                if (file_exists($dir->getPathname().'/theme.json')) {
+                    $hasTheme = true;
+                    break;
+                }
+            }
+        }
 
         return [
             'php' => version_compare(PHP_VERSION, '8.2.0', '>='),
             'extensions' => $allExtensions,
             'required_extensions' => $requiredExtensions,
             'optional_extensions' => $optionalExtensions,
-            'permissions' => [
-                'storage' => is_writable(storage_path()),
-                'bootstrap/cache' => is_writable(base_path('bootstrap/cache')),
-            ],
+            'permissions' => $permissions,
+            'php_settings' => $phpSettings,
+            'has_theme' => $hasTheme,
+        ];
+    }
+
+    /**
+     * memory_limit が最低値を満たしているかチェック
+     */
+    private function checkMemoryLimit(int $requiredMb): array
+    {
+        $limit = ini_get('memory_limit');
+        if ($limit === '-1') {
+            return ['ok' => true, 'current' => __('install/index.php_settings.unlimited'), 'required' => $requiredMb.'M'];
+        }
+        $currentMb = (int) $limit;
+        if (str_contains(strtolower($limit), 'g')) {
+            $currentMb = (int) $limit * 1024;
+        }
+
+        return ['ok' => $currentMb >= $requiredMb, 'current' => $limit, 'required' => $requiredMb.'M'];
+    }
+
+    /**
+     * max_execution_time が最低値を満たしているかチェック
+     */
+    private function checkMaxExecutionTime(int $requiredSeconds): array
+    {
+        $current = (int) ini_get('max_execution_time');
+        // 0 は無制限
+        $ok = ($current === 0) || ($current >= $requiredSeconds);
+
+        return [
+            'ok' => $ok,
+            'current' => $current === 0 ? __('install/index.php_settings.unlimited') : $current.'s',
+            'required' => $requiredSeconds.'s',
         ];
     }
 }
