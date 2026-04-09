@@ -19,6 +19,7 @@ return [
     'gui_editor_settings' => 'GUIエディター設定',
     'preferred_gui_editor' => 'GUIエディター',
     'preferred_gui_editor_help' => 'コンテンツ編集に使用するGUIブロックエディタープラグインを選択します。複数のGUIエディタープラグインがインストールされている場合、選択したものがデフォルトとして使用されます。',
+    'no_gui_editor_selected' => '使用しない',
     'no_gui_editor_available' => 'GUIエディタープラグインがインストールされていません。ブロックエディターを使用するには、GUIエディタープラグインをインストールしてください。',
 
     'settings_updated' => 'GUIエディター設定が更新されました。',

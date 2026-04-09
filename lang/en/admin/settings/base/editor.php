@@ -19,6 +19,7 @@ return [
     'gui_editor_settings' => 'GUI Editor Settings',
     'preferred_gui_editor' => 'GUI Editor',
     'preferred_gui_editor_help' => 'Select the GUI block editor plugin to use for content editing. When multiple GUI editor plugins are installed, the selected one will be used as the default.',
+    'no_gui_editor_selected' => 'Do not use',
     'no_gui_editor_available' => 'No GUI editor plugin is installed. Install a GUI editor plugin to enable the block editor.',
 
     'settings_updated' => 'GUI editor settings have been updated.',
