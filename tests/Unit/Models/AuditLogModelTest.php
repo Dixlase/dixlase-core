@@ -1,0 +1,101 @@
+<?php
+
+namespace Tests\Unit\Models;
+
+use App\Models\AuditLog;
+use App\Models\Member;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class AuditLogModelTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private function createAuditLog(array $overrides = []): AuditLog
+    {
+        return AuditLog::create(array_merge([
+            'occurred_at' => now(),
+            'severity' => AuditLog::SEVERITY_INFO,
+            'outcome' => AuditLog::OUTCOME_SUCCESS,
+            'category' => AuditLog::CATEGORY_AUTH,
+            'action' => AuditLog::ACTION_LOGIN,
+            'actor_type' => Member::class,
+            'actor_id' => 1,
+            'actor_name' => 'Test User',
+            'ip_address' => '127.0.0.1',
+            'user_agent' => 'PHPUnit',
+            'context' => ['test' => true],
+            'schema_version' => 1,
+        ], $overrides));
+    }
+
+    public function test_audit_log_can_be_created(): void
+    {
+        $log = $this->createAuditLog();
+
+        $this->assertDatabaseHas('audit_logs', ['id' => $log->id]);
+    }
+
+    public function test_context_is_cast_to_array(): void
+    {
+        $context = ['login_method' => 'password', 'device' => 'desktop'];
+        $log = $this->createAuditLog(['context' => $context]);
+
+        $log->refresh();
+        $this->assertIsArray($log->context);
+        $this->assertEquals($context, $log->context);
+    }
+
+    public function test_occurred_at_is_cast_to_datetime(): void
+    {
+        $log = $this->createAuditLog();
+
+        $this->assertInstanceOf(\Carbon\Carbon::class, $log->occurred_at);
+    }
+
+    public function test_is_ai_generated_is_cast_to_boolean(): void
+    {
+        $log = $this->createAuditLog(['is_ai_generated' => true]);
+
+        $this->assertIsBool($log->is_ai_generated);
+        $this->assertTrue($log->is_ai_generated);
+    }
+
+    public function test_severity_constants_exist(): void
+    {
+        $this->assertNotNull(AuditLog::SEVERITY_INFO);
+        $this->assertNotNull(AuditLog::SEVERITY_WARNING);
+    }
+
+    public function test_outcome_constants_exist(): void
+    {
+        $this->assertNotNull(AuditLog::OUTCOME_SUCCESS);
+        $this->assertNotNull(AuditLog::OUTCOME_FAILURE);
+    }
+
+    public function test_category_constants_exist(): void
+    {
+        $this->assertNotNull(AuditLog::CATEGORY_AUTH);
+    }
+
+    public function test_actor_morph_relationship(): void
+    {
+        $member = Member::factory()->create();
+        $log = $this->createAuditLog([
+            'actor_type' => Member::class,
+            'actor_id' => $member->id,
+        ]);
+
+        $this->assertNotNull($log->actor);
+        $this->assertInstanceOf(Member::class, $log->actor);
+        $this->assertEquals($member->id, $log->actor->id);
+    }
+
+    public function test_multiple_logs_can_be_created(): void
+    {
+        $this->createAuditLog(['action' => AuditLog::ACTION_LOGIN]);
+        $this->createAuditLog(['action' => AuditLog::ACTION_LOGOUT]);
+
+        $this->assertEquals(2, AuditLog::count());
+    }
+}
