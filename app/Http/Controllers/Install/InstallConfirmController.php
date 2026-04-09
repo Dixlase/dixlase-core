@@ -363,6 +363,9 @@ class InstallConfirmController extends BaseInstallController
                 ]);
             }
 
+            // バンドルテーマのセキュリティ監査を実行
+            $this->auditBundledThemes();
+
             // セッションデータを削除
             session()->forget('install_data');
             Log::channel('install')->info('=== インストール完了 ===');
@@ -583,5 +586,90 @@ class InstallConfirmController extends BaseInstallController
         $memberCount = DB::connection('mysql')->table('members')->count();
         Log::channel('install')->info('initializeDatabase - membersテーブル総レコード数: '.$memberCount);
         Log::channel('install')->info('initializeDatabase - 完了');
+    }
+
+    /**
+     * バンドルテーマのセキュリティ監査を実行
+     *
+     * インストール時に登録されたテーマの権限宣言・署名・CSP準拠状況をスキャンし、
+     * 監査結果をDBに保存する。失敗してもインストールは続行する。
+     *
+     * @see \App\Http\Controllers\Admin\Settings\AdminThemesSettingsController::runThemeAudit()
+     */
+    private function auditBundledThemes(): void
+    {
+        Log::channel('install')->info('バンドルテーマのセキュリティ監査開始');
+
+        $themes = DB::table('themes')->select('slug')->get();
+
+        foreach ($themes as $theme) {
+            try {
+                $slug = $theme->slug;
+                Log::channel('install')->info("テーマ監査開始: {$slug}");
+
+                // 権限宣言の整合性チェック（theme.json vs コード実態）
+                Artisan::call('dls:theme:audit', [
+                    'theme' => $slug,
+                    '--json' => true,
+                ]);
+
+                $output = trim(Artisan::output());
+                $result = json_decode($output, true);
+
+                if (json_last_error() !== JSON_ERROR_NONE || ! is_array($result)) {
+                    Log::channel('install')->warning("テーマ監査のJSON解析に失敗: {$slug}");
+
+                    continue;
+                }
+
+                // evidenceを制限（DBサイズ削減）
+                $mismatches = $result['mismatches'] ?? [];
+                foreach ($mismatches as &$mismatch) {
+                    if (isset($mismatch['evidence']) && is_array($mismatch['evidence'])) {
+                        $mismatch['evidence'] = array_slice($mismatch['evidence'], 0, 3);
+                    }
+                }
+                unset($mismatch);
+
+                // 署名情報を取得
+                $permissionService = app(ThemePermissionService::class);
+                $summary = $permissionService->getSummary($slug);
+                $signature = $summary['signature'] ?? [];
+
+                // CSP準拠状況をコードスキャンで検証
+                $cspScanner = app(CspComplianceScanner::class);
+                $cspCompatibility = $cspScanner->scanTheme($slug);
+
+                $auditData = [
+                    'has_mismatches' => ! empty($mismatches),
+                    'mismatches' => $mismatches,
+                    'matches_count' => count($result['matches'] ?? []),
+                    'total_checked' => $result['total_checked'] ?? 0,
+                    'risk_level' => $result['risk_level'] ?? null,
+                    'risk_reasons' => $result['risk_reasons'] ?? [],
+                    'signature_status' => $signature['status'] ?? 'unsigned',
+                    'signature_signer' => $signature['signer'] ?? null,
+                    'csp_status' => $cspCompatibility['status'] ?? 'not_checked',
+                    'csp_requires_inline_js' => $cspCompatibility['requires_inline_js'] ?? false,
+                    'csp_requires_inline_css' => $cspCompatibility['requires_inline_css'] ?? false,
+                    'csp_violations' => $cspCompatibility['violations'] ?? [],
+                    'csp_summary' => $cspCompatibility['summary'] ?? [],
+                ];
+
+                ThemeAudit::saveAuditResult($slug, $auditData);
+
+                Log::channel('install')->info("テーマ監査完了: {$slug}", [
+                    'risk_level' => $auditData['risk_level'],
+                    'csp_status' => $auditData['csp_status'],
+                    'has_mismatches' => $auditData['has_mismatches'],
+                ]);
+            } catch (\Exception $e) {
+                Log::channel('install')->warning("テーマ監査に失敗しましたが、インストールは続行します: {$theme->slug}", [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        Log::channel('install')->info('バンドルテーマのセキュリティ監査完了');
     }
 }

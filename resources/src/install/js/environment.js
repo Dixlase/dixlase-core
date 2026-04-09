@@ -54,7 +54,11 @@ function initEnvironmentUrlSettings() {
     }
 
     function updateUrls() {
-        const protocol = forceSslCheckbox && forceSslCheckbox.checked ? 'https://' : 'http://';
+        // force_sslチェックボックスがある場合はその値を使用
+        // ない場合（かんたんモード）は現在のページのプロトコルを使用
+        const protocol = forceSslCheckbox
+            ? (forceSslCheckbox.checked ? 'https://' : 'http://')
+            : window.location.protocol + '//';
         const appUrl = appUrlInput.value.trim().replace(/^(https?:\/\/)?/, '');
 
         // アプリケーションURLのプロトコル表示を更新
