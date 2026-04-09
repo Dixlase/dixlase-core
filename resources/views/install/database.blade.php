@@ -89,10 +89,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
 
             @php
-                $appEnv = session('install_data.app_env', 'local');
-                $defaultDbHost = $appEnv === 'local' ? 'mysql' : '127.0.0.1';
-                $defaultDbUser = $appEnv === 'local' ? 'dixlase' : '';
-                $defaultDbPassword = $appEnv === 'local' ? 'dixlase' : '';
+                // Docker環境判定: ホスト名 'mysql' がDNS解決可能ならDocker内と判断
+                $isDocker = gethostbyname('mysql') !== 'mysql';
+                $defaultDbHost = $isDocker ? 'mysql' : '127.0.0.1';
+                $defaultDbUser = $isDocker ? 'dixlase' : '';
+                $defaultDbPassword = $isDocker ? 'dixlase' : '';
             @endphp
 
             <div>

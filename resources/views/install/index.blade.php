@@ -26,71 +26,160 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
+    @php
+        // 各カテゴリのNG件数を事前計算
+        $phpOk = $requirements['php'];
+        $phpSettingsOk = true;
+        foreach ($requirements['php_settings'] as $info) {
+            if (!$info['ok']) { $phpSettingsOk = false; break; }
+        }
+        $phpAllOk = $phpOk && $phpSettingsOk;
+        $phpTotal = 1 + count($requirements['php_settings']);
+        $phpFailed = ($phpOk ? 0 : 1) + collect($requirements['php_settings'])->filter(fn($i) => !$i['ok'])->count();
+
+        $extFailed = collect($requirements['required_extensions'])->filter(fn($s) => !$s)->count();
+        $extTotal = count($requirements['required_extensions']);
+        $extAllOk = $extFailed === 0;
+
+        $permFailed = collect($requirements['permissions'])->filter(fn($w) => !$w)->count();
+        $permTotal = count($requirements['permissions']);
+        $permAllOk = $permFailed === 0;
+
+        $otherAllOk = $requirements['has_theme'];
+
+        $hasRequiredIssues = !$phpAllOk || !$extAllOk || !$permAllOk || !$otherAllOk;
+    @endphp
+
     {{-- 必須チェック --}}
     <div class="mb-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-        <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-3">{{ __('install/index.required_section') }}</h2>
+        <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-2">{{ __('install/index.required_section') }}</h2>
 
         {{-- PHP --}}
-        <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mt-3 mb-1">PHP</h3>
-        <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1 ml-2">
-            <li>
-                <strong>PHP 8.2+</strong>:
-                <span class="{{ $requirements['php'] ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                    {{ $requirements['php'] ? __('install/common.ok') : __('install/common.failed') }}
+        <div x-data="{ open: {{ $phpAllOk ? 'false' : 'true' }} }" class="border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+            <button type="button" @click="open = !open" class="flex items-center justify-between w-full py-2 text-left">
+                <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    PHP
+                    @if($phpAllOk)
+                        <span class="text-green-600 dark:text-green-400 font-normal ml-1">{{ $phpTotal }}/{{ $phpTotal }} OK</span>
+                    @else
+                        <span class="text-red-600 dark:text-red-400 font-normal ml-1">{{ $phpFailed }} {{ __('install/common.failed') }}</span>
+                    @endif
                 </span>
-            </li>
-            @foreach ($requirements['php_settings'] as $setting => $info)
+                <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform duration-200" :class="open && 'rotate-180'"></i>
+            </button>
+            <ul x-show="open" x-cloak x-collapse class="text-sm text-gray-700 dark:text-gray-300 space-y-1 ml-4 pb-2">
                 <li>
-                    <strong>{{ $setting }}</strong> ({{ __('install/index.php_settings.required') }}: {{ $info['required'] }}):
-                    <span class="{{ $info['ok'] ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                        {{ $info['current'] }} {{ $info['ok'] ? __('install/common.ok') : __('install/common.failed') }}
+                    <strong>PHP 8.2+</strong>:
+                    <span class="{{ $requirements['php'] ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                        {{ $requirements['php'] ? __('install/common.ok') : __('install/common.failed') }}
                     </span>
                 </li>
-            @endforeach
-        </ul>
+                @foreach ($requirements['php_settings'] as $setting => $info)
+                    <li>
+                        <strong>{{ $setting }}</strong> ({{ __('install/index.php_settings.required') }}: {{ $info['required'] }}):
+                        <span class="{{ $info['ok'] ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                            {{ $info['current'] }} {{ $info['ok'] ? __('install/common.ok') : __('install/common.failed') }}
+                        </span>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
 
         {{-- 拡張機能 --}}
-        <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mt-3 mb-1">{{ __('install/index.category.extensions') }}</h3>
-        <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1 ml-2">
-            @foreach ($requirements['required_extensions'] as $ext => $status)
-                <li>
-                    <strong>{{ $ext }}</strong>:
-                    <span class="{{ $status ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                        {{ $status ? __('install/common.ok') : __('install/common.failed') }}
-                    </span>
-                </li>
-            @endforeach
-        </ul>
+        <div x-data="{ open: {{ $extAllOk ? 'false' : 'true' }} }" class="border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+            <button type="button" @click="open = !open" class="flex items-center justify-between w-full py-2 text-left">
+                <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    {{ __('install/index.category.extensions') }}
+                    @if($extAllOk)
+                        <span class="text-green-600 dark:text-green-400 font-normal ml-1">{{ $extTotal }}/{{ $extTotal }} OK</span>
+                    @else
+                        <span class="text-red-600 dark:text-red-400 font-normal ml-1">{{ $extFailed }} {{ __('install/common.failed') }}</span>
+                    @endif
+                </span>
+                <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform duration-200" :class="open && 'rotate-180'"></i>
+            </button>
+            <ul x-show="open" x-cloak x-collapse class="text-sm text-gray-700 dark:text-gray-300 space-y-1 ml-4 pb-2">
+                @foreach ($requirements['required_extensions'] as $ext => $status)
+                    <li>
+                        <strong>{{ $ext }}</strong>:
+                        <span class="{{ $status ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                            {{ $status ? __('install/common.ok') : __('install/common.failed') }}
+                        </span>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
 
         {{-- パーミッション --}}
-        <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mt-3 mb-1">{{ __('install/index.category.permissions') }}</h3>
-        <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1 ml-2">
-            @foreach ($requirements['permissions'] as $dir => $writable)
-                <li>
-                    <strong>{{ $dir }}</strong> ({{ __('install/index.permissions.writable_required') }}):
-                    <span class="{{ $writable ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                        {{ $writable ? __('install/common.ok') : __('install/common.failed') }}
-                    </span>
-                </li>
-            @endforeach
-        </ul>
+        <div x-data="{ open: {{ $permAllOk ? 'false' : 'true' }} }" class="border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+            <button type="button" @click="open = !open" class="flex items-center justify-between w-full py-2 text-left">
+                <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    {{ __('install/index.category.permissions') }}
+                    @if($permAllOk)
+                        <span class="text-green-600 dark:text-green-400 font-normal ml-1">{{ $permTotal }}/{{ $permTotal }} OK</span>
+                    @else
+                        <span class="text-red-600 dark:text-red-400 font-normal ml-1">{{ $permFailed }} {{ __('install/common.failed') }}</span>
+                    @endif
+                </span>
+                <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform duration-200" :class="open && 'rotate-180'"></i>
+            </button>
+            <ul x-show="open" x-cloak x-collapse class="text-sm text-gray-700 dark:text-gray-300 space-y-1 ml-4 pb-2">
+                @foreach ($requirements['permissions'] as $dir => $writable)
+                    <li>
+                        <strong>{{ $dir }}</strong> ({{ __('install/index.permissions.writable_required') }}):
+                        <span class="{{ $writable ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                            {{ $writable ? __('install/common.ok') : __('install/common.failed') }}
+                        </span>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
 
         {{-- その他 --}}
-        <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mt-3 mb-1">{{ __('install/index.category.other') }}</h3>
-        <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1 ml-2">
-            <li>
-                <strong>{{ __('install/index.theme_check.label') }}</strong>:
-                <span class="{{ $requirements['has_theme'] ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                    {{ $requirements['has_theme'] ? __('install/common.ok') : __('install/index.theme_check.not_found') }}
+        <div x-data="{ open: {{ $otherAllOk ? 'false' : 'true' }} }">
+            <button type="button" @click="open = !open" class="flex items-center justify-between w-full py-2 text-left">
+                <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    {{ __('install/index.category.other') }}
+                    @if($otherAllOk)
+                        <span class="text-green-600 dark:text-green-400 font-normal ml-1">OK</span>
+                    @else
+                        <span class="text-red-600 dark:text-red-400 font-normal ml-1">1 {{ __('install/common.failed') }}</span>
+                    @endif
                 </span>
-            </li>
-        </ul>
+                <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform duration-200" :class="open && 'rotate-180'"></i>
+            </button>
+            <ul x-show="open" x-cloak x-collapse class="text-sm text-gray-700 dark:text-gray-300 space-y-1 ml-4 pb-2">
+                <li>
+                    <strong>{{ __('install/index.theme_check.label') }}</strong>:
+                    <span class="{{ $requirements['has_theme'] ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                        {{ $requirements['has_theme'] ? __('install/common.ok') : __('install/index.theme_check.not_found') }}
+                    </span>
+                </li>
+            </ul>
+        </div>
     </div>
 
     {{-- 推奨・オプションチェック --}}
-    <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
-        <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-3">{{ __('install/index.recommended_section') }}</h2>
-        <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1 ml-2">
+    @php
+        $recOptAllOk = !in_array(false, $requirements['recommended_extensions']) && !in_array(false, $requirements['optional_extensions']);
+        $recOptTotal = count($requirements['recommended_extensions']) + count($requirements['optional_extensions']);
+        $recOptFailed = collect($requirements['recommended_extensions'])->filter(fn($s) => !$s)->count()
+                      + collect($requirements['optional_extensions'])->filter(fn($s) => !$s)->count();
+    @endphp
+    <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600"
+         x-data="{ open: {{ $recOptAllOk ? 'false' : 'true' }} }">
+        <button type="button" @click="open = !open" class="flex items-center justify-between w-full text-left">
+            <h2 class="text-lg font-bold text-gray-800 dark:text-white">
+                {{ __('install/index.recommended_section') }}
+                @if($recOptAllOk)
+                    <span class="text-green-600 dark:text-green-400 text-sm font-normal ml-2">{{ $recOptTotal }}/{{ $recOptTotal }} OK</span>
+                @else
+                    <span class="text-yellow-600 dark:text-yellow-400 text-sm font-normal ml-2">{{ $recOptFailed }} {{ __('install/common.not_installed') }}</span>
+                @endif
+            </h2>
+            <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform duration-200" :class="open && 'rotate-180'"></i>
+        </button>
+        <ul x-show="open" x-cloak x-collapse class="text-sm text-gray-700 dark:text-gray-300 space-y-1 ml-2 mt-2">
             @foreach ($requirements['recommended_extensions'] as $ext => $status)
                 <li>
                     <strong>{{ $ext }}</strong> ({{ __('install/common.recommended') }}):
@@ -110,18 +199,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </ul>
     </div>
 
-    @php
-        $hasRequiredIssues = !$requirements['php'] ||
-                           in_array(false, $requirements['required_extensions']) ||
-                           in_array(false, $requirements['permissions']) ||
-                           !$requirements['has_theme'];
-        foreach ($requirements['php_settings'] as $info) {
-            if (!$info['ok']) {
-                $hasRequiredIssues = true;
-                break;
-            }
-        }
-    @endphp
     <div class="flex justify-center">
         <a href="{{ $hasRequiredIssues ? '#' : route('install.mode') }}"
         class="block w-auto bg-blue-600 dark:bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition text-center
@@ -130,7 +207,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{ __('install/index.start_button') }}
         </a>
     </div>
-    
+
     @if($hasRequiredIssues)
         <p class="text-sm text-red-600 dark:text-red-400 mt-2 text-center">
             {{ __('install/common.required_issues') }}
