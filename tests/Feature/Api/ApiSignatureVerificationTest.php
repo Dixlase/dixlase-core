@@ -39,7 +39,6 @@ class ApiSignatureVerificationTest extends TestCase
         putenv('INSTALLED=true');
         $_ENV['INSTALLED'] = 'true';
 
-        // テスト用ルートを登録（VerifyDixlaseSignature ミドルウェア付き）
         Route::middleware(VerifyDixlaseSignature::class.':'.TestClientResolver::class)
             ->post('/test/api/signed', function () {
                 return response()->json(['status' => 'ok']);
@@ -65,10 +64,6 @@ class ApiSignatureVerificationTest extends TestCase
         return $headers;
     }
 
-    // =========================================================================
-    // 正常系: 有効な署名
-    // =========================================================================
-
     public function test_valid_signature_passes(): void
     {
         $body = '{"data":"test"}';
@@ -79,10 +74,6 @@ class ApiSignatureVerificationTest extends TestCase
         $response->assertOk();
         $response->assertJson(['status' => 'ok']);
     }
-
-    // =========================================================================
-    // 異常系: 必須ヘッダー欠落
-    // =========================================================================
 
     public function test_missing_api_key_header_returns_401(): void
     {
@@ -117,13 +108,8 @@ class ApiSignatureVerificationTest extends TestCase
         $response->assertJsonPath('error.code', 'missing_headers');
     }
 
-    // =========================================================================
-    // 異常系: タイムスタンプ
-    // =========================================================================
-
     public function test_expired_timestamp_returns_401(): void
     {
-        // 6 分前のタイムスタンプ（許容範囲は 5 分）
         $expiredTimestamp = time() - 360;
         $headers = $this->signRequest('POST', '/test/api/signed', null, $expiredTimestamp);
 
@@ -135,7 +121,6 @@ class ApiSignatureVerificationTest extends TestCase
 
     public function test_future_timestamp_returns_401(): void
     {
-        // 6 分後のタイムスタンプ
         $futureTimestamp = time() + 360;
         $headers = $this->signRequest('POST', '/test/api/signed', null, $futureTimestamp);
 
@@ -157,14 +142,9 @@ class ApiSignatureVerificationTest extends TestCase
         $response->assertJsonPath('error.code', 'timestamp_expired');
     }
 
-    // =========================================================================
-    // 異常系: 不正な署名
-    // =========================================================================
-
     public function test_tampered_signature_returns_401(): void
     {
         $headers = $this->signRequest('POST', '/test/api/signed');
-        // 署名を改ざん
         $headers['X-Dixlase-Signature'] = 'v1=0000000000000000000000000000000000000000000000000000000000000000';
 
         $response = $this->postJson('/test/api/signed', [], $headers);
@@ -183,10 +163,6 @@ class ApiSignatureVerificationTest extends TestCase
         $response->assertStatus(401);
         $response->assertJsonPath('error.code', 'invalid_signature');
     }
-
-    // =========================================================================
-    // 異常系: 無効な API キー
-    // =========================================================================
 
     public function test_unknown_api_key_returns_401(): void
     {
@@ -210,9 +186,6 @@ class ApiSignatureVerificationTest extends TestCase
     }
 }
 
-/**
- * テスト用クライアントリゾルバー
- */
 class TestClientResolver
 {
     public function resolve(string $apiKey): ?array

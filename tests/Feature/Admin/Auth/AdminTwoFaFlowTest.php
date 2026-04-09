@@ -59,7 +59,6 @@ class AdminTwoFaFlowTest extends TestCase
             'two_fa_mode' => AuthenticationMode::Always->value,
         ]);
 
-        // 2FA 有効化 + ロックアウト無効化
         SecuritySetting::setValue('two_fa_mode', AuthenticationMode::Always->value);
         SecuritySetting::setValue('two_fa_expire_minutes', 5);
         SecuritySetting::setValue('two_fa_max_attempts', 5);
@@ -67,7 +66,6 @@ class AdminTwoFaFlowTest extends TestCase
         SecuritySetting::setValue('two_fa_lockout_duration', 30);
         SecuritySetting::setValue('login_attempt_limit_enabled', false);
 
-        // メールサーバーテスト済みフラグを設定（2FAがスキップされないように）
         BaseSetting::setValue('mail_connection_tested', true);
         BaseSetting::setValue('mail_send_tested', true);
         BaseSetting::setValue('mail_receive_tested', true);
@@ -84,12 +82,6 @@ class AdminTwoFaFlowTest extends TestCase
     // Helper
     // =========================================================================
 
-    /**
-     * ログインして 2FA セッションを確立し、既知のコードでトークンを置き換える
-     *
-     * ログイン時にサービスが自動的にトークンを生成するため、
-     * ログイン後にトークンを置き換える必要がある。
-     */
     private function loginAndSetupTwoFa(string $plainCode = '654321'): void
     {
         $this->post(route('admin.login.store'), [
@@ -97,7 +89,6 @@ class AdminTwoFaFlowTest extends TestCase
             'password' => 'secure-password-123',
         ]);
 
-        // 自動生成されたトークンを削除して既知のコードで置換
         MemberTwoFaToken::where('member_id', $this->admin->id)->delete();
         MemberTwoFaToken::create([
             'member_id' => $this->admin->id,
@@ -106,9 +97,6 @@ class AdminTwoFaFlowTest extends TestCase
         ]);
     }
 
-    /**
-     * ログインして 2FA セッションを確立する（トークン操作なし）
-     */
     private function loginAndGetTwoFaSession(): void
     {
         $this->post(route('admin.login.store'), [
@@ -117,9 +105,6 @@ class AdminTwoFaFlowTest extends TestCase
         ]);
     }
 
-    /**
-     * 期限切れ 2FA トークンに置き換える
-     */
     private function replaceWithExpiredToken(string $plainCode = '654321'): void
     {
         MemberTwoFaToken::where('member_id', $this->admin->id)->delete();
@@ -138,15 +123,12 @@ class AdminTwoFaFlowTest extends TestCase
     {
         $this->loginAndGetTwoFaSession();
 
-        // ダッシュボードではなく 2FA ページにリダイレクトされること
         $this->assertGuest('member');
-        // セッションにユーザーIDが保存されていること
         $this->assertTrue(session()->has('login.id'));
     }
 
     public function test_2fa_session_without_login_redirects_to_login(): void
     {
-        // ログインせずに 2FA ページにアクセス
         $response = $this->get(route('admin.two-fa.email.show'));
 
         $response->assertRedirect(route('admin.login'));
@@ -199,14 +181,12 @@ class AdminTwoFaFlowTest extends TestCase
     {
         $this->loginAndSetupTwoFa('654321');
 
-        // 検証成功
         $this->post(route('admin.two-fa.email.verify'), [
             'code' => '654321',
         ]);
 
         $this->assertAuthenticatedAs($this->admin, 'member');
 
-        // トークンが消費されていること（DB から削除）
         $this->assertDatabaseMissing('members_two_fa_tokens', [
             'member_id' => $this->admin->id,
         ]);
@@ -232,7 +212,6 @@ class AdminTwoFaFlowTest extends TestCase
     {
         $this->loginAndGetTwoFaSession();
 
-        // リカバリーコードを生成
         $recoveryService = app(TwoFaRecoveryCodeService::class);
         $codes = $recoveryService->generate($this->admin);
 
@@ -259,25 +238,21 @@ class AdminTwoFaFlowTest extends TestCase
 
     public function test_used_recovery_code_cannot_be_reused(): void
     {
-        // リカバリーコード生成
         $recoveryService = app(TwoFaRecoveryCodeService::class);
         $codes = $recoveryService->generate($this->admin);
         $firstCode = $codes[0];
 
-        // 1回目のログイン + リカバリーコード使用
         $this->loginAndGetTwoFaSession();
         $this->post(route('admin.two-fa.recovery-code.confirm'), [
             'recovery_code' => $firstCode,
         ]);
         $this->assertAuthenticatedAs($this->admin, 'member');
 
-        // 使用済みコードが DB で used_at が設定されていること
         $usedCode = $this->admin->twoFaRecoveryCodes()
             ->whereNotNull('used_at')
             ->first();
         $this->assertNotNull($usedCode, 'Recovery code should be marked as used');
 
-        // 使用済みコードの validate は false を返すこと
         $this->assertFalse(
             $recoveryService->validate($this->admin, $firstCode),
             'Used recovery code should not validate'
@@ -292,12 +267,10 @@ class AdminTwoFaFlowTest extends TestCase
         $codes = $recoveryService->generate($this->admin);
         $initialCount = $recoveryService->getRemainingCount($this->admin);
 
-        // 1つ使用
         $this->post(route('admin.two-fa.recovery-code.confirm'), [
             'recovery_code' => $codes[0],
         ]);
 
-        // 残りが減っていること
         $this->assertEquals($initialCount - 1, $recoveryService->getRemainingCount($this->admin));
     }
 
@@ -309,11 +282,8 @@ class AdminTwoFaFlowTest extends TestCase
     {
         $this->loginAndGetTwoFaSession();
 
-        // 2FA 検証中にダッシュボードにアクセスしようとする
         $response = $this->get(route('admin.dashboard'));
 
-        // ダッシュボードにはアクセスできないこと
-        // (ログインが完了していないので未認証)
         $this->assertGuest('member');
         $response->assertRedirect();
     }

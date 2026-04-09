@@ -19,7 +19,6 @@ use Tests\TestCase;
  * - ユーザー列挙攻撃の防御検証
  * - レスポンス形式の一貫性
  * - バリデーション
- * - レート制限
  */
 class AdminIdentifierCheckTest extends TestCase
 {
@@ -113,28 +112,20 @@ class AdminIdentifierCheckTest extends TestCase
     // ユーザー列挙防止の検証
     // =========================================================================
 
-    /**
-     * 存在する/しないユーザーに対して同一ステータスコード・同一レスポンス構造を返すことを検証。
-     * タイミング攻撃対策（100-300ms ランダム遅延）と合わせてユーザー列挙を防止。
-     */
     #[\PHPUnit\Framework\Attributes\Group('security-audit')]
     public function test_response_is_uniform_regardless_of_user_existence(): void
     {
-        // 存在するメール
         $responseExisting = $this->postJson(route('admin.login.check-identifier'), [
             'login' => 'admin@example.com',
         ]);
 
-        // 存在しないメール
         $responseNonExisting = $this->postJson(route('admin.login.check-identifier'), [
             'login' => 'nonexistent@example.com',
         ]);
 
-        // 両方 200 OK（ステータスコードからユーザー存在を判別できないこと）
         $responseExisting->assertOk();
         $responseNonExisting->assertOk();
 
-        // 同じ JSON キーを持つこと
         $existingKeys = array_keys($responseExisting->json());
         $nonExistingKeys = array_keys($responseNonExisting->json());
         $this->assertEquals($existingKeys, $nonExistingKeys);
@@ -148,7 +139,6 @@ class AdminIdentifierCheckTest extends TestCase
 
         $json = $response->json();
 
-        // ユーザーの個人情報がレスポンスに含まれていないこと
         $this->assertArrayNotHasKey('email', $json);
         $this->assertArrayNotHasKey('name', $json);
         $this->assertArrayNotHasKey('display_name', $json);
@@ -207,7 +197,6 @@ class AdminIdentifierCheckTest extends TestCase
             'login' => 'admin@example.com',
         ]);
 
-        // CAPTCHA 検証済みフラグがセッションに保存されること
         $this->assertNotNull(session('captcha_verified_admin@example.com'));
     }
 }

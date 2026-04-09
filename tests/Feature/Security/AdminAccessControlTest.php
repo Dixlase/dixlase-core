@@ -58,7 +58,7 @@ class AdminAccessControlTest extends TestCase
         $this->guest = $this->createMember(MemberRole::GUEST, 'guest');
 
         SecuritySetting::setValue('login_attempt_limit_enabled', false);
-        SecuritySetting::setValue('two_fa_mode', 0); // 2FA 無効化（ダッシュボード表示に必要）
+        SecuritySetting::setValue('two_fa_mode', 0);
     }
 
     protected function tearDown(): void
@@ -78,7 +78,7 @@ class AdminAccessControlTest extends TestCase
             'email_verified_at' => now(),
             'role' => $role,
             'status' => MemberStatus::Active,
-            'two_fa_mode' => 0, // 2FA 無効
+            'two_fa_mode' => 0,
         ]);
     }
 
@@ -147,7 +147,6 @@ class AdminAccessControlTest extends TestCase
         $response = $this->actingAs($this->superAdmin, 'member')
             ->get(route('admin.settings.systems.info'));
 
-        // 200 OK またはビュー内リダイレクト（設定ページの構造による）
         $this->assertTrue(
             $response->isOk() || $response->isRedirect(),
             'Super admin should be able to access system settings'
@@ -160,7 +159,6 @@ class AdminAccessControlTest extends TestCase
         $response = $this->actingAs($this->admin, 'member')
             ->get(route('admin.settings.systems.info'));
 
-        // 403 または権限不足によるリダイレクト
         $this->assertTrue(
             $response->isForbidden() || $response->isRedirect(),
             'Admin should not access system settings (SUPER_ADMIN only)'
@@ -222,7 +220,6 @@ class AdminAccessControlTest extends TestCase
         $response = $this->actingAs($this->editor, 'member')
             ->get(route('admin.settings.security.index'));
 
-        // 302 リダイレクトではなく 403 Forbidden であること
         $this->assertEquals(403, $response->getStatusCode());
     }
 }
