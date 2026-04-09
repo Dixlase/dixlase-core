@@ -24,6 +24,8 @@ return [
     'welcome' => 'Welcome to Dixlase Installation',
     'description' => 'Before proceeding, please check if your server meets the requirements.',
     'server_requirements' => 'Server Requirements',
+    'required_section' => 'Required',
+    'recommended_section' => 'Recommended / Optional',
     'permissions' => [
         'storage' => 'Storage directory writable',
         'cache' => 'Bootstrap cache directory writable',
