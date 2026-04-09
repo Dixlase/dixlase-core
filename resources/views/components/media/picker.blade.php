@@ -32,6 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'aspectRatio' => 'original', // 'original', 'ogp' (1.91:1), 'square' (1:1), '16:9', '4:3', 'hero' (21:9)
     'buttonText' => null, // ボタンのテキスト（指定しない場合はデフォルト）
     'confirmUploadNavigation' => false, // アップロード画面遷移時に確認モーダルを表示するか
+    'allowedTypes' => null, // 許可するMIMEタイプ（null=デフォルト画像のみ）
 ])
 
 @php
@@ -68,11 +69,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <div id="{{ $previewId }}" class="mb-4">
         @if($media)
             <div class="relative inline-block">
-                <img src="{{ asset('storage/media/' . $media->path) }}" 
-                     alt="{{ $media->name }}" 
-                     class="w-64 {{ $aspectClasses }} rounded border border-gray-300 dark:border-gray-600">
-                <button type="button" 
-                        @click="removeMediaPreview('{{ $inputId }}', '{{ $previewId }}')" 
+                @if(str_starts_with($media->type ?? '', 'video/'))
+                    <div class="w-64 {{ $aspectClasses }} rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                        <div class="text-center p-4">
+                            <i class="fas fa-video text-3xl text-gray-400 dark:text-gray-500 mb-2"></i>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[200px]">{{ $media->name }}</p>
+                        </div>
+                    </div>
+                @else
+                    <img src="{{ asset('storage/media/' . $media->path) }}"
+                         alt="{{ $media->name }}"
+                         class="w-64 {{ $aspectClasses }} rounded border border-gray-300 dark:border-gray-600">
+                @endif
+                <button type="button"
+                        @click="removeMediaPreview('{{ $inputId }}', '{{ $previewId }}')"
                         class="absolute -top-2 -right-2 w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
                         title="{{ __('common.delete') }}">
                     <i class="fas fa-times"></i>
@@ -105,5 +115,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :previewId="$previewId"
         :multiple="false"
         :confirmUploadNavigation="$confirmUploadNavigation"
+        :allowedTypes="$allowedTypes ?? ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']"
     />
 @endpush
