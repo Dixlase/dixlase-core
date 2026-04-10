@@ -31,16 +31,16 @@ use Illuminate\Support\Facades\Log;
 
 class AdminDashboardController extends AdminLoggedInController
 {
-    // 初期設定を行う
     public function __construct()
     {
         parent::__construct();
     }
 
-    //
+    /**
+     * ダッシュボード表示
+     */
     public function index()
     {
-        // 回復コード情報を取得
         $user = Auth::guard('member')->user();
         $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
         $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodeService->getRemainingCount($user);
@@ -70,6 +70,14 @@ class AdminDashboardController extends AdminLoggedInController
             $this->viewParams['prompt_passkey_registration'] = true;
         }
 
+        // はじめにカードのデータ準備
+        if (! $user->getting_started_dismissed) {
+            $this->viewParams['gettingStarted'] = [
+                'twoFaEnabled' => $user->two_fa_mode !== AuthenticationMode::Disabled->value,
+                'hasPlugins' => DB::table('plugins')->whereNotNull('enabled_at')->exists(),
+            ];
+        }
+
         // ダッシュボード表示データ
         $this->viewParams['securityOverview'] = DashboardPresenter::securityOverview($user);
         $this->viewParams['mailStatus'] = DashboardPresenter::mailServerStatus();
@@ -82,5 +90,17 @@ class AdminDashboardController extends AdminLoggedInController
         $this->viewParams['recentActivity'] = DashboardPresenter::recentActivity();
 
         return view('admin::dashboard', $this->viewParams);
+    }
+
+    /**
+     * はじめにカードを非表示にする（Ajax）
+     */
+    public function dismissGettingStarted(): JsonResponse
+    {
+        $user = Auth::guard('member')->user();
+        $user->getting_started_dismissed = true;
+        $user->save();
+
+        return response()->json(['success' => true]);
     }
 }

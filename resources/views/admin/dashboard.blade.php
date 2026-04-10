@@ -44,6 +44,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </x-form-button>
         </div>
 
+        {{-- はじめにカード --}}
+        @if(isset($gettingStarted))
+            @include('admin.dashboard._getting-started')
+        @endif
+
         {{-- セキュリティ概要（両モード） --}}
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
             @include('admin.dashboard._security-overview')
