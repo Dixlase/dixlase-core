@@ -30,9 +30,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <p class="text-sm text-blue-700 dark:text-blue-300 mt-1">{{ __('admin/dashboard/getting-started.description') }}</p>
         </div>
         <button type="button" @click="dismiss()"
-                class="text-blue-400 dark:text-blue-500 hover:text-blue-600 dark:hover:text-blue-300 transition p-1"
-                title="{{ __('admin/dashboard/getting-started.dismiss') }}"
-            <i class="fas fa-times"></i>
+                class="flex-shrink-0 text-sm text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100 transition px-2 py-1 rounded hover:bg-blue-100 dark:hover:bg-blue-800/30">
+            <i class="fas fa-times mr-1"></i>{{ __('admin/dashboard/getting-started.dismiss') }}
         </button>
     </div>
 
@@ -76,7 +75,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </a>
 
         {{-- テーマをカスタマイズ --}}
-        <a href="{{ route('admin.front.settings') }}"
+        <a href="{{ Route::has('admin.settings.themes.settings') ? route('admin.settings.themes.settings') : route('admin.settings.themes.index') }}"
            class="flex items-start gap-3 p-4 rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500 transition">
             <span class="mt-0.5 text-lg text-blue-500 dark:text-blue-400">
                 <i class="fas fa-palette"></i>
