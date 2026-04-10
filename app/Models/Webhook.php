@@ -110,8 +110,8 @@ class Webhook extends Model
         return $query->where(function ($q) use ($event) {
             // events が null の場合は全イベントを購読
             $q->whereNull('events')
-              ->orWhereJsonContains('events', $event)
-              ->orWhereJsonContains('events', '*');
+                ->orWhereJsonContains('events', $event)
+                ->orWhereJsonContains('events', '*');
         });
     }
 
@@ -144,7 +144,7 @@ class Webhook extends Model
      */
     public static function generateSecret(): string
     {
-        return 'whsec_' . Str::random(48);
+        return 'whsec_'.Str::random(48);
     }
 
     /**
@@ -152,8 +152,7 @@ class Webhook extends Model
      */
     public function recordSuccess(): void
     {
-        $this->increment('success_count');
-        $this->update(['last_triggered_at' => now()]);
+        $this->increment('success_count', 1, ['last_triggered_at' => now()]);
     }
 
     /**
@@ -161,8 +160,7 @@ class Webhook extends Model
      */
     public function recordFailure(): void
     {
-        $this->increment('failure_count');
-        $this->update(['last_triggered_at' => now()]);
+        $this->increment('failure_count', 1, ['last_triggered_at' => now()]);
     }
 
     /**
@@ -187,6 +185,6 @@ class Webhook extends Model
             return str_repeat('*', strlen($this->secret));
         }
 
-        return substr($this->secret, 0, 8) . '...' . substr($this->secret, -4);
+        return substr($this->secret, 0, 8).'...'.substr($this->secret, -4);
     }
 }
