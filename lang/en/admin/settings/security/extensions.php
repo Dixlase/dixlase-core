@@ -104,7 +104,7 @@ return [
         'owner_help' => 'GitHub organization or username that owns the extension repositories.',
         'owner_placeholder' => 'e.g. Dixlase',
         'token' => 'Authentication Token (Optional)',
-        'token_help' => 'Normally, no input is required. This setting is only needed for core or official plugin developers who need access to private repositories. Enter a GitHub Personal Access Token (PAT) with "repo" scope.',
+        'token_help' => 'Normally, no input is required. Setting a token increases the API rate limit from 60 to 5,000 requests per hour. This is also required for core or official plugin developers who need access to private repositories. Enter a GitHub Personal Access Token (PAT).',
         'token_placeholder' => 'ghp_...',
         'token_saved' => 'Token is saved',
         'token_not_set' => 'Token is not set',
