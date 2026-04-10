@@ -105,7 +105,7 @@ return [
         'owner_help' => '拡張機能リポジトリを所有する GitHub の組織名またはユーザー名です。',
         'owner_placeholder' => '例: Dixlase',
         'token' => '認証トークン（オプション）',
-        'token_help' => '通常は入力不要です。コアや公式プラグインの開発者で、プライベートリポジトリへのアクセスが必要な場合のみ設定してください。GitHub Personal Access Token（PAT）の "repo" スコープが必要です。',
+        'token_help' => '通常は入力不要です。トークンを設定すると API レート制限が 60回/時 から 5,000回/時 に増加します。コアや公式プラグインの開発者でプライベートリポジトリへのアクセスが必要な場合にも設定してください。GitHub Personal Access Token（PAT）を入力します。',
         'token_placeholder' => 'ghp_...',
         'token_saved' => 'トークンは保存済みです',
         'token_not_set' => 'トークンが未設定です',
