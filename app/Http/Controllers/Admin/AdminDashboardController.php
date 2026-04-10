@@ -22,11 +22,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\AuthenticationMode;
 use App\Presenters\Admin\DashboardPresenter;
 use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use App\Services\TwoFa\TwoFaStatusService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class AdminDashboardController extends AdminLoggedInController
