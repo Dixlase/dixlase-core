@@ -61,17 +61,15 @@ return [
     'two_fa_management_admin_note' => '管理者はPasskeyデバイスの追加や回復コードの生成はできません。削除のみ可能です。追加・生成はメンバー本人のみが実行できます。',
     'two_fa_cannot_enable_warning' => '二段階認証を有効化できません。メールサーバーの設定、パスキーの登録、または回復コードの生成のいずれかが必要です。',
     'passkey_all_deleted' => 'Passkeyデバイス（:count件）を削除しました。',
-    
+
     // ロールの権限範囲説明
     'role_permissions_info' => 'ロールごとの権限範囲',
     'role_super_admin_description' => 'すべての管理機能にアクセスでき、他の管理者の管理も可能です。システム設定の変更権限を持ちます。',
     'role_admin_description' => '管理画面のほとんどの機能にアクセスできますが、他の管理者の管理やシステム設定の変更はできません。',
     'role_editor_description' => 'コンテンツの作成・編集・公開が可能です。他のメンバーが作成したコンテンツも編集できます。',
-    'role_author_description' => '自分が作成したコンテンツのみ作成・編集・公開が可能です。他のメンバーのコンテンツは編集できません。',
     'role_contributor_description' => 'コンテンツの作成・編集が可能ですが、公開はできません。編集者以上の承認が必要です。',
-    'role_receptionist_description' => '受付業務に必要な限定的な機能のみ利用できます。コンテンツの作成・編集はできません。',
     'role_guest_description' => '最小限の閲覧権限のみを持ちます。ほとんどの管理機能にアクセスできません。',
-    
+
     // パスキー登録促進モーダル設定
     'passkey_prompt_settings' => 'パスキー登録促進モーダル設定',
     'passkey_prompt_settings_description' => 'このメンバーに対してパスキー登録促進モーダルを表示するかどうかを設定します。',

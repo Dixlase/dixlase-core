@@ -61,17 +61,15 @@ return [
     'two_fa_management_admin_note' => 'Administrators cannot add Passkey devices or generate recovery codes. Only deletion is allowed. Addition and generation can only be performed by the member themselves.',
     'two_fa_cannot_enable_warning' => 'Cannot enable two-factor authentication. A mail server configuration, passkey registration, or recovery code generation is required.',
     'passkey_all_deleted' => 'Passkey devices (:count) have been deleted.',
-    
+
     // Role permission descriptions
     'role_permissions_info' => 'Permission Scope by Role',
     'role_super_admin_description' => 'Full access to all administrative functions, including managing other administrators. Has permission to change system settings.',
     'role_admin_description' => 'Access to most admin panel features, but cannot manage other administrators or change system settings.',
     'role_editor_description' => 'Can create, edit, and publish content. Can also edit content created by other members.',
-    'role_author_description' => 'Can only create, edit, and publish their own content. Cannot edit content created by other members.',
     'role_contributor_description' => 'Can create and edit content, but cannot publish. Requires approval from editors or higher.',
-    'role_receptionist_description' => 'Limited access to functions necessary for reception duties. Cannot create or edit content.',
     'role_guest_description' => 'Minimal viewing permissions only. Cannot access most administrative functions.',
-    
+
     // Passkey Registration Prompt Modal Settings
     'passkey_prompt_settings' => 'Passkey Registration Prompt Modal Settings',
     'passkey_prompt_settings_description' => 'Configure whether to display the passkey registration prompt modal for this member.',

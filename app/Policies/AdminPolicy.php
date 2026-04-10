@@ -51,19 +51,9 @@ class AdminPolicy
         return $this->hasPermission($member, MemberRole::EDITOR);
     }
 
-    public function author(Member $member)
-    {
-        return $this->hasPermission($member, MemberRole::AUTHOR);
-    }
-
     public function contributor(Member $member)
     {
         return $this->hasPermission($member, MemberRole::CONTRIBUTOR);
-    }
-
-    public function receptionist(Member $member)
-    {
-        return $this->hasPermission($member, MemberRole::RECEPTIONIST);
     }
 
     public function guest(Member $member)

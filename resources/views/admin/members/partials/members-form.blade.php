@@ -247,14 +247,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['EDITOR'] }}</dt>
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_editor_description') }}</dd>
 
-                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['AUTHOR'] }}</dt>
-                                <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_author_description') }}</dd>
-
                                 <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['CONTRIBUTOR'] }}</dt>
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_contributor_description') }}</dd>
-
-                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['RECEPTIONIST'] }}</dt>
-                                <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_receptionist_description') }}</dd>
 
                                 <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ $roleLabels['GUEST'] }}</dt>
                                 <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_guest_description') }}</dd>

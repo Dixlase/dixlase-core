@@ -48,31 +48,26 @@ class CheckRole
         'super_admin' => MemberRole::SUPER_ADMIN,
         'admin' => MemberRole::ADMIN,
         'editor' => MemberRole::EDITOR,
-        'author' => MemberRole::AUTHOR,
         'contributor' => MemberRole::CONTRIBUTOR,
-        'receptionist' => MemberRole::RECEPTIONIST,
         'guest' => MemberRole::GUEST,
     ];
 
     /**
      * Handle an incoming request.
      *
-     * @param Request $request
-     * @param Closure $next
-     * @param string $role Role name (e.g., 'admin', 'super_admin')
-     * @return Response
+     * @param  string  $role  Role name (e.g., 'admin', 'super_admin')
      */
     public function handle(Request $request, Closure $next, string $role): Response
     {
         $roleName = strtolower(trim($role));
-        
-        if (!isset(self::ROLE_MAP[$roleName])) {
+
+        if (! isset(self::ROLE_MAP[$roleName])) {
             abort(500, "Invalid role specified: {$role}");
         }
 
         $requiredRole = self::ROLE_MAP[$roleName];
 
-        if (!PermissionService::hasRole($requiredRole)) {
+        if (! PermissionService::hasRole($requiredRole)) {
             abort(403, __('common.errors.unauthorized'));
         }
 

@@ -24,20 +24,18 @@ use App\Enums\MemberRole;
 
 /**
  * コア機能のデフォルト権限設定
- * 
+ *
  * 各メニュー/機能に対するデフォルトの権限を定義します。
  * 管理画面で変更された場合のみ、role_permission_overrides テーブルに差分が保存されます。
- * 
+ *
  * access_roles: 編集権限（write）- この値以上の権限を持つユーザーが編集可能
  * view_roles: 閲覧権限（read）- この値以上の権限を持つユーザーが閲覧可能
- * 
+ *
  * 権限値（MemberRole enum）:
  * - SUPER_ADMIN = 10 (特権管理者専用)
  * - ADMIN = 9 (管理者以上)
  * - EDITOR = 8 (編集者以上)
- * - AUTHOR = 7 (投稿者以上)
  * - CONTRIBUTOR = 6 (寄稿者以上)
- * - RECEPTIONIST = 5 (受付以上)
  * - GUEST = 1 (全員)
  */
 

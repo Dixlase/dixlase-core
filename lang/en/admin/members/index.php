@@ -64,7 +64,6 @@ return [
         'super_admin' => 'Super Administrator',
         'admin' => 'Administrator',
         'editor' => 'Editor',
-        'author' => 'Author',
         'contributor' => 'Contributor',
     ],
 ];

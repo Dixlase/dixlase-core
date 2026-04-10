@@ -57,10 +57,10 @@ class CheckRoleMiddlewareTest extends TestCase
                 return response('OK', 200);
             })->name('test.role.editor');
 
-        Route::middleware(['web', 'auth:member', 'role:receptionist'])
-            ->get('/test/role/receptionist', function () {
+        Route::middleware(['web', 'auth:member', 'role:contributor'])
+            ->get('/test/role/contributor', function () {
                 return response('OK', 200);
-            })->name('test.role.receptionist');
+            })->name('test.role.contributor');
 
         Route::middleware(['web', 'auth:member', 'role:guest'])
             ->get('/test/role/guest', function () {
@@ -130,11 +130,11 @@ class CheckRoleMiddlewareTest extends TestCase
         $response->assertStatus(403);
     }
 
-    public function test_receptionist_cannot_access_admin_route(): void
+    public function test_contributor_cannot_access_admin_route(): void
     {
-        $receptionist = Member::factory()->create(['role' => MemberRole::RECEPTIONIST]);
+        $contributor = Member::factory()->create(['role' => MemberRole::CONTRIBUTOR]);
 
-        $response = $this->actingAs($receptionist)->get('/test/role/admin');
+        $response = $this->actingAs($contributor)->get('/test/role/admin');
 
         $response->assertStatus(403);
     }
@@ -170,33 +170,33 @@ class CheckRoleMiddlewareTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_receptionist_cannot_access_editor_route(): void
+    public function test_contributor_cannot_access_editor_route(): void
     {
-        $receptionist = Member::factory()->create(['role' => MemberRole::RECEPTIONIST]);
+        $contributor = Member::factory()->create(['role' => MemberRole::CONTRIBUTOR]);
 
-        $response = $this->actingAs($receptionist)->get('/test/role/editor');
+        $response = $this->actingAs($contributor)->get('/test/role/editor');
 
         $response->assertStatus(403);
     }
 
     // ========================================
-    // RECEPTIONIST ロールテスト
+    // CONTRIBUTOR ロールテスト
     // ========================================
 
-    public function test_receptionist_can_access_receptionist_route(): void
+    public function test_contributor_can_access_contributor_route(): void
     {
-        $receptionist = Member::factory()->create(['role' => MemberRole::RECEPTIONIST]);
+        $contributor = Member::factory()->create(['role' => MemberRole::CONTRIBUTOR]);
 
-        $response = $this->actingAs($receptionist)->get('/test/role/receptionist');
+        $response = $this->actingAs($contributor)->get('/test/role/contributor');
 
         $response->assertStatus(200);
     }
 
-    public function test_guest_cannot_access_receptionist_route(): void
+    public function test_guest_cannot_access_contributor_route(): void
     {
         $guest = Member::factory()->create(['role' => MemberRole::GUEST]);
 
-        $response = $this->actingAs($guest)->get('/test/role/receptionist');
+        $response = $this->actingAs($guest)->get('/test/role/contributor');
 
         $response->assertStatus(403);
     }
@@ -211,7 +211,7 @@ class CheckRoleMiddlewareTest extends TestCase
             MemberRole::SUPER_ADMIN,
             MemberRole::ADMIN,
             MemberRole::EDITOR,
-            MemberRole::RECEPTIONIST,
+            MemberRole::CONTRIBUTOR,
             MemberRole::GUEST,
         ];
 
@@ -273,16 +273,16 @@ class CheckRoleMiddlewareTest extends TestCase
 
     public function test_role_hierarchy_is_respected(): void
     {
-        // ロール階層: SUPER_ADMIN > ADMIN > EDITOR > AUTHOR > CONTRIBUTOR > RECEPTIONIST > GUEST
+        // ロール階層: SUPER_ADMIN > ADMIN > EDITOR > CONTRIBUTOR > GUEST
         $testCases = [
-            ['role' => MemberRole::SUPER_ADMIN, 'can_access' => ['super_admin', 'admin', 'editor', 'receptionist', 'guest']],
-            ['role' => MemberRole::ADMIN, 'can_access' => ['admin', 'editor', 'receptionist', 'guest']],
-            ['role' => MemberRole::EDITOR, 'can_access' => ['editor', 'receptionist', 'guest']],
-            ['role' => MemberRole::RECEPTIONIST, 'can_access' => ['receptionist', 'guest']],
+            ['role' => MemberRole::SUPER_ADMIN, 'can_access' => ['super_admin', 'admin', 'editor', 'contributor', 'guest']],
+            ['role' => MemberRole::ADMIN, 'can_access' => ['admin', 'editor', 'contributor', 'guest']],
+            ['role' => MemberRole::EDITOR, 'can_access' => ['editor', 'contributor', 'guest']],
+            ['role' => MemberRole::CONTRIBUTOR, 'can_access' => ['contributor', 'guest']],
             ['role' => MemberRole::GUEST, 'can_access' => ['guest']],
         ];
 
-        $routes = ['super_admin', 'admin', 'editor', 'receptionist', 'guest'];
+        $routes = ['super_admin', 'admin', 'editor', 'contributor', 'guest'];
 
         foreach ($testCases as $testCase) {
             $member = Member::factory()->create(['role' => $testCase['role']]);

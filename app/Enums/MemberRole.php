@@ -32,9 +32,7 @@ enum MemberRole: int
     case SUPER_ADMIN = 10;
     case ADMIN = 9;
     case EDITOR = 8;
-    case AUTHOR = 7;
     case CONTRIBUTOR = 6;
-    case RECEPTIONIST = 5;
     case GUEST = 1;
 
     public function label(): string
@@ -43,9 +41,7 @@ enum MemberRole: int
             self::SUPER_ADMIN => 'super_admin',
             self::ADMIN => 'admin',
             self::EDITOR => 'editor',
-            self::AUTHOR => 'author',
             self::CONTRIBUTOR => 'contributor',
-            self::RECEPTIONIST => 'receptionist',
             self::GUEST => 'guest',
         };
 
@@ -68,9 +64,7 @@ enum MemberRole: int
             self::SUPER_ADMIN => 'super_admin',
             self::ADMIN => 'admin',
             self::EDITOR => 'editor',
-            self::AUTHOR => 'author',
             self::CONTRIBUTOR => 'contributor',
-            self::RECEPTIONIST => 'receptionist',
             self::GUEST => 'guest',
         };
     }

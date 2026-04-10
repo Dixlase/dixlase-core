@@ -110,14 +110,6 @@ trait HasPermissions
     }
 
     /**
-     * Check if the member is at least an author
-     */
-    public function isAuthor(): bool
-    {
-        return $this->hasRole(MemberRole::AUTHOR);
-    }
-
-    /**
      * Check if the member is at least a contributor
      */
     public function isContributor(): bool

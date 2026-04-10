@@ -17,8 +17,13 @@ import Alpine from 'alpinejs';
 Alpine.data('gettingStartedCard', (initialVisited = [], initialAllCompleted = false) => ({
     dismissed: false,
     visited: initialVisited,
+    visitUrl: '',
+    dismissUrl: '',
 
     init() {
+        this.visitUrl = this.$el.dataset.visitUrl;
+        this.dismissUrl = this.$el.dataset.dismissUrl;
+
         if (initialAllCompleted) {
             setTimeout(() => this.dismiss(), 1500);
         }
@@ -28,33 +33,19 @@ Alpine.data('gettingStartedCard', (initialVisited = [], initialAllCompleted = fa
         return this.visited.includes(step);
     },
 
-    async visit(step) {
+    visit(step) {
         if (this.visited.includes(step)) {
             return;
         }
 
         this.visited.push(step);
 
-        try {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-            const response = await fetch(this.$el.dataset.visitUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({ step }),
-            });
-
-            const data = await response.json();
-
-            if (data.allCompleted) {
-                setTimeout(() => this.dismiss(), 1500);
-            }
-        } catch (e) {
-            // ベストエフォート
-        }
+        // sendBeacon でページ遷移中でも確実にリクエストを送信
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+        const data = new FormData();
+        data.append('step', step);
+        data.append('_token', csrfToken);
+        navigator.sendBeacon(this.visitUrl, data);
     },
 
     async dismiss() {
@@ -62,7 +53,7 @@ Alpine.data('gettingStartedCard', (initialVisited = [], initialAllCompleted = fa
 
         try {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-            await fetch(this.$el.dataset.dismissUrl, {
+            await fetch(this.dismissUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
