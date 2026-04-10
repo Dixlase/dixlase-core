@@ -59,8 +59,14 @@ jobs:
 
       - name: Fetch registered submodules
         run: |
-          git submodule init
-          git submodule update --depth=1 --force || true
+          # .gitmodules に登録されたサブモジュールのみ取得（未登録の gitlink は無視）
+          if [ -f .gitmodules ]; then
+            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
+              name=$(echo "$key" | sed 's/^submodule\.\(.*\)\.path$/\1/')
+              git submodule init "$path" 2>/dev/null || true
+            done
+            git submodule update --depth=1 --force 2>/dev/null || true
+          fi
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -145,8 +151,14 @@ jobs:
 
       - name: Fetch registered submodules
         run: |
-          git submodule init
-          git submodule update --depth=1 --force || true
+          # .gitmodules に登録されたサブモジュールのみ取得（未登録の gitlink は無視）
+          if [ -f .gitmodules ]; then
+            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
+              name=$(echo "$key" | sed 's/^submodule\.\(.*\)\.path$/\1/')
+              git submodule init "$path" 2>/dev/null || true
+            done
+            git submodule update --depth=1 --force 2>/dev/null || true
+          fi
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -306,8 +318,14 @@ jobs:
 
       - name: Fetch registered submodules
         run: |
-          git submodule init
-          git submodule update --depth=1 --force || true
+          # .gitmodules に登録されたサブモジュールのみ取得（未登録の gitlink は無視）
+          if [ -f .gitmodules ]; then
+            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
+              name=$(echo "$key" | sed 's/^submodule\.\(.*\)\.path$/\1/')
+              git submodule init "$path" 2>/dev/null || true
+            done
+            git submodule update --depth=1 --force 2>/dev/null || true
+          fi
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
