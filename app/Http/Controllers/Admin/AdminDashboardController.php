@@ -22,13 +22,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\AuthenticationMode;
 use App\Presenters\Admin\DashboardPresenter;
 use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use App\Services\TwoFa\TwoFaStatusService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class AdminDashboardController extends AdminLoggedInController
@@ -74,9 +74,10 @@ class AdminDashboardController extends AdminLoggedInController
 
         // はじめにカードのデータ準備
         if (! $user->getting_started_dismissed) {
+            $visited = $user->getting_started_visited ?? [];
             $this->viewParams['gettingStarted'] = [
-                'twoFaEnabled' => $user->two_fa_mode !== AuthenticationMode::Disabled,
-                'hasPlugins' => DB::table('plugins')->whereNotNull('enabled_at')->exists(),
+                'visited' => $visited,
+                'allCompleted' => count(array_intersect(['two_fa', 'plugins', 'theme', 'front'], $visited)) >= 4,
             ];
         }
 
@@ -104,5 +105,39 @@ class AdminDashboardController extends AdminLoggedInController
         $user->save();
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * はじめにカードのステップを訪問済みにする（Ajax）
+     */
+    public function visitGettingStartedStep(Request $request): JsonResponse
+    {
+        $step = $request->input('step');
+        $validSteps = ['two_fa', 'plugins', 'theme', 'front'];
+
+        if (! in_array($step, $validSteps)) {
+            return response()->json(['success' => false], 422);
+        }
+
+        $user = Auth::guard('member')->user();
+        $visited = $user->getting_started_visited ?? [];
+
+        if (! in_array($step, $visited)) {
+            $visited[] = $step;
+            $user->getting_started_visited = $visited;
+
+            // 全ステップ訪問済みなら自動dismiss
+            if (count(array_intersect($validSteps, $visited)) >= count($validSteps)) {
+                $user->getting_started_dismissed = true;
+            }
+
+            $user->save();
+        }
+
+        return response()->json([
+            'success' => true,
+            'visited' => $visited,
+            'allCompleted' => $user->getting_started_dismissed,
+        ]);
     }
 }

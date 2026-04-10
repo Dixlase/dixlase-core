@@ -50,6 +50,7 @@ return new class extends Migration
             $table->integer('two_fa_mode')->default(0); // 0= Disabled, 1= DifferentDevice, 2= Always
             $table->boolean('passkey_prompt_dismissed')->default(false)->comment('パスキー登録促進モーダルを非表示にするかどうか');
             $table->boolean('getting_started_dismissed')->default(false)->comment('はじめにカードを非表示にするかどうか');
+            $table->json('getting_started_visited')->nullable()->comment('はじめにカードの訪問済みステップ');
             $table->json('sidebar_preferences')->nullable()->comment('Per-member sidebar menu visibility preferences');
             $table->string('last_login_ip')->nullable();
             $table->text('last_login_ua')->nullable();

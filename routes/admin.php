@@ -112,6 +112,7 @@ Route::prefix($adminUrl)->name('admin.')
             // ダッシュボード（全員アクセス可能）
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
             Route::post('/dashboard/dismiss-getting-started', [AdminDashboardController::class, 'dismissGettingStarted'])->name('dashboard.dismiss-getting-started');
+            Route::post('/dashboard/visit-getting-started', [AdminDashboardController::class, 'visitGettingStartedStep'])->name('dashboard.visit-getting-started');
 
             // セーフモード管理（全員アクセス可能）
             Route::post('/safe-mode/disable', [SafeModeController::class, 'disable'])->name('safe-mode.disable');
