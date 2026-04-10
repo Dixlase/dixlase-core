@@ -169,10 +169,8 @@ enum Permission: string
             self::SYSTEM_LOGS_VIEW,
             self::SYSTEM_CACHE_CLEAR, => MemberRole::EDITOR,
 
-            // Author
-            self::MEDIA_UPLOAD, => MemberRole::AUTHOR,
-
             // Contributor
+            self::MEDIA_UPLOAD,
             self::MEDIA_VIEW, => MemberRole::CONTRIBUTOR,
 
             // Guest (everyone)

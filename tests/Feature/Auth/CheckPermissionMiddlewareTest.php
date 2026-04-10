@@ -23,12 +23,9 @@
 namespace Tests\Feature\Auth;
 
 use App\Enums\MemberRole;
-use App\Enums\Permission;
 use App\Http\Middleware\CheckPermission;
 use App\Models\Member;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
@@ -148,16 +145,16 @@ class CheckPermissionMiddlewareTest extends TestCase
         $response->assertStatus(403);
     }
 
-    public function test_receptionist_has_view_only_permissions(): void
+    public function test_contributor_has_limited_permissions(): void
     {
-        $receptionist = Member::factory()->create(['role' => MemberRole::RECEPTIONIST]);
+        $contributor = Member::factory()->create(['role' => MemberRole::CONTRIBUTOR]);
 
-        // 閲覧は可能
-        $response = $this->actingAs($receptionist)->get('/test/permission/members-view');
-        $response->assertStatus(200);
+        // メンバー閲覧は不可（Editor以上が必要）
+        $response = $this->actingAs($contributor)->get('/test/permission/members-view');
+        $response->assertStatus(403);
 
         // 作成は不可
-        $response = $this->actingAs($receptionist)->get('/test/permission/members-create');
+        $response = $this->actingAs($contributor)->get('/test/permission/members-create');
         $response->assertStatus(403);
     }
 
@@ -167,10 +164,10 @@ class CheckPermissionMiddlewareTest extends TestCase
 
     public function test_any_of_permissions_allows_access_with_first_permission(): void
     {
-        // members.viewを持つがmembers.createを持たないユーザー
-        $receptionist = Member::factory()->create(['role' => MemberRole::RECEPTIONIST]);
+        // members.viewを持つユーザー（Editor以上）
+        $editor = Member::factory()->create(['role' => MemberRole::EDITOR]);
 
-        $response = $this->actingAs($receptionist)->get('/test/permission/any-of');
+        $response = $this->actingAs($editor)->get('/test/permission/any-of');
 
         // members.viewを持っているのでアクセス可能
         $response->assertStatus(200);

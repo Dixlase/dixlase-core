@@ -40,12 +40,12 @@ class AdminPolicyTest extends TestCase
         $this->assertTrue($policy->guest($member));
     }
 
-    public function test_admin_can_access_receptionist(): void
+    public function test_admin_can_access_contributor(): void
     {
         $member = Member::factory()->create(['role' => MemberRole::ADMIN->value]);
         $policy = new AdminPolicy();
 
-        $this->assertTrue($policy->receptionist($member));
+        $this->assertTrue($policy->contributor($member));
     }
 
     public function test_editor_cannot_access_admin(): void
@@ -56,9 +56,9 @@ class AdminPolicyTest extends TestCase
         $this->assertFalse($policy->admin($member));
     }
 
-    public function test_receptionist_cannot_access_editor(): void
+    public function test_contributor_cannot_access_editor(): void
     {
-        $member = Member::factory()->create(['role' => MemberRole::RECEPTIONIST->value]);
+        $member = Member::factory()->create(['role' => MemberRole::CONTRIBUTOR->value]);
         $policy = new AdminPolicy();
 
         $this->assertFalse($policy->editor($member));
