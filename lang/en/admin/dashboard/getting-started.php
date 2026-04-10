@@ -19,11 +19,9 @@ return [
 
     'two_fa_title' => 'Enable Two-Factor Authentication',
     'two_fa_description' => 'Protect your account with an extra layer of security.',
-    'two_fa_done' => 'Two-factor authentication is enabled.',
 
     'plugins_title' => 'Browse Plugins',
     'plugins_description' => 'Extend your site with plugins for blogs, pages, and more.',
-    'plugins_done' => 'Plugins are installed and active.',
 
     'theme_title' => 'Customize Your Theme',
     'theme_description' => 'Personalize the look and feel of your site.',

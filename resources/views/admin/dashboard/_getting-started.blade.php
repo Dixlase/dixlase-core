@@ -18,8 +18,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-<div x-data="gettingStartedCard()" x-show="!dismissed" x-cloak
+<div x-data="gettingStartedCard(@js($gettingStarted['visited']), {{ $gettingStarted['allCompleted'] ? 'true' : 'false' }})"
+     x-show="!dismissed"
+     x-cloak
+     x-transition:leave="transition ease-in duration-300"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
      data-dismiss-url="{{ route('admin.dashboard.dismiss-getting-started') }}"
+     data-visit-url="{{ route('admin.dashboard.visit-getting-started') }}"
      class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
 
     <div class="flex items-start justify-between mb-4">
@@ -37,48 +43,44 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {{-- 2段階認証 --}}
-        <a href="{{ route('admin.profile.two-fa') }}"
-           class="flex items-start gap-3 p-4 rounded-lg border transition
-                  {{ $gettingStarted['twoFaEnabled']
-                      ? 'border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/20'
-                      : 'border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500' }}">
-            <span class="mt-0.5 text-lg {{ $gettingStarted['twoFaEnabled'] ? 'text-green-500 dark:text-green-400' : 'text-blue-500 dark:text-blue-400' }}">
-                <i class="fas {{ $gettingStarted['twoFaEnabled'] ? 'fa-check-circle' : 'fa-shield-alt' }}"></i>
+        <a href="{{ route('admin.profile.two-fa') }}" @click="visit('two_fa')"
+           class="flex items-start gap-3 p-4 rounded-lg border transition"
+           :class="isVisited('two_fa')
+               ? 'border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/20'
+               : 'border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500'">
+            <span class="mt-0.5 text-lg" :class="isVisited('two_fa') ? 'text-green-500 dark:text-green-400' : 'text-blue-500 dark:text-blue-400'">
+                <i class="fas" :class="isVisited('two_fa') ? 'fa-check-circle' : 'fa-shield-alt'"></i>
             </span>
             <div class="min-w-0">
                 <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ __('admin/dashboard/getting-started.two_fa_title') }}</h3>
-                <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                    {{ $gettingStarted['twoFaEnabled']
-                        ? __('admin/dashboard/getting-started.two_fa_done')
-                        : __('admin/dashboard/getting-started.two_fa_description') }}
-                </p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{{ __('admin/dashboard/getting-started.two_fa_description') }}</p>
             </div>
         </a>
 
         {{-- プラグインを探す --}}
-        <a href="{{ route('admin.settings.plugins.add') }}"
-           class="flex items-start gap-3 p-4 rounded-lg border transition
-                  {{ $gettingStarted['hasPlugins']
-                      ? 'border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/20'
-                      : 'border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500' }}">
-            <span class="mt-0.5 text-lg {{ $gettingStarted['hasPlugins'] ? 'text-green-500 dark:text-green-400' : 'text-blue-500 dark:text-blue-400' }}">
-                <i class="fas {{ $gettingStarted['hasPlugins'] ? 'fa-check-circle' : 'fa-puzzle-piece' }}"></i>
+        <a href="{{ route('admin.settings.plugins.add') }}" @click="visit('plugins')"
+           class="flex items-start gap-3 p-4 rounded-lg border transition"
+           :class="isVisited('plugins')
+               ? 'border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/20'
+               : 'border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500'">
+            <span class="mt-0.5 text-lg" :class="isVisited('plugins') ? 'text-green-500 dark:text-green-400' : 'text-blue-500 dark:text-blue-400'">
+                <i class="fas" :class="isVisited('plugins') ? 'fa-check-circle' : 'fa-puzzle-piece'"></i>
             </span>
             <div class="min-w-0">
                 <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ __('admin/dashboard/getting-started.plugins_title') }}</h3>
-                <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                    {{ $gettingStarted['hasPlugins']
-                        ? __('admin/dashboard/getting-started.plugins_done')
-                        : __('admin/dashboard/getting-started.plugins_description') }}
-                </p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{{ __('admin/dashboard/getting-started.plugins_description') }}</p>
             </div>
         </a>
 
         {{-- テーマをカスタマイズ --}}
         <a href="{{ Route::has('admin.settings.themes.settings') ? route('admin.settings.themes.settings') : route('admin.settings.themes.index') }}"
-           class="flex items-start gap-3 p-4 rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500 transition">
-            <span class="mt-0.5 text-lg text-blue-500 dark:text-blue-400">
-                <i class="fas fa-palette"></i>
+           @click="visit('theme')"
+           class="flex items-start gap-3 p-4 rounded-lg border transition"
+           :class="isVisited('theme')
+               ? 'border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/20'
+               : 'border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500'">
+            <span class="mt-0.5 text-lg" :class="isVisited('theme') ? 'text-green-500 dark:text-green-400' : 'text-blue-500 dark:text-blue-400'">
+                <i class="fas" :class="isVisited('theme') ? 'fa-check-circle' : 'fa-palette'"></i>
             </span>
             <div class="min-w-0">
                 <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ __('admin/dashboard/getting-started.theme_title') }}</h3>
@@ -87,10 +89,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </a>
 
         {{-- フロントページを編集 --}}
-        <a href="{{ route('admin.front.index') }}"
-           class="flex items-start gap-3 p-4 rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500 transition">
-            <span class="mt-0.5 text-lg text-blue-500 dark:text-blue-400">
-                <i class="fas fa-file-alt"></i>
+        <a href="{{ route('admin.front.index') }}" @click="visit('front')"
+           class="flex items-start gap-3 p-4 rounded-lg border transition"
+           :class="isVisited('front')
+               ? 'border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/20'
+               : 'border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500'">
+            <span class="mt-0.5 text-lg" :class="isVisited('front') ? 'text-green-500 dark:text-green-400' : 'text-blue-500 dark:text-blue-400'">
+                <i class="fas" :class="isVisited('front') ? 'fa-check-circle' : 'fa-file-alt'"></i>
             </span>
             <div class="min-w-0">
                 <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ __('admin/dashboard/getting-started.front_title') }}</h3>

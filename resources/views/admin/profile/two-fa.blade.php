@@ -26,15 +26,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
 
         <div x-data="twoFaProfileSettings(@js(old('two_fa_mode', (string) ($twoFaMode?->value ?? 0))))" id="two-fa-settings-wrapper">
-            {{-- Passkeyが有効だがデバイスが未登録の場合の警告 --}}
-            @if($currentPasskeyEnabled && $twoFaPasskeyDevices->isEmpty())
-                <div class="mb-6">
-                    <x-ui-message 
-                        type="warning" 
-                        :message="__('admin/profile/common.passkey_no_devices_notice', ['url' => route('admin.profile.two-fa-management')])"
-                    />
-                </div>
-            @endif
+            {{-- パスキー未登録の警告はダッシュボードのパスキー登録促進モーダルで案内するため省略 --}}
 
             <section class="transition-colors-unified">
                 <h2>{{ __('admin/profile/two-fa.two_fa_settings') }}</h2>

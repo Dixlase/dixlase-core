@@ -14,8 +14,48 @@
 
 import Alpine from 'alpinejs';
 
-Alpine.data('gettingStartedCard', () => ({
+Alpine.data('gettingStartedCard', (initialVisited = [], initialAllCompleted = false) => ({
     dismissed: false,
+    visited: initialVisited,
+
+    init() {
+        if (initialAllCompleted) {
+            setTimeout(() => this.dismiss(), 1500);
+        }
+    },
+
+    isVisited(step) {
+        return this.visited.includes(step);
+    },
+
+    async visit(step) {
+        if (this.visited.includes(step)) {
+            return;
+        }
+
+        this.visited.push(step);
+
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+            const response = await fetch(this.$el.dataset.visitUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ step }),
+            });
+
+            const data = await response.json();
+
+            if (data.allCompleted) {
+                setTimeout(() => this.dismiss(), 1500);
+            }
+        } catch (e) {
+            // ベストエフォート
+        }
+    },
 
     async dismiss() {
         this.dismissed = true;
@@ -31,7 +71,7 @@ Alpine.data('gettingStartedCard', () => ({
                 },
             });
         } catch (e) {
-            // dismiss はベストエフォート — 失敗しても UI は閉じたまま
+            // ベストエフォート
         }
     },
 }));

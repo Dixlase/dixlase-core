@@ -65,6 +65,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
         'appearance' => AppearanceMode::class,
         'locale' => Locale::class,
         'sidebar_preferences' => 'array',
+        'getting_started_visited' => 'array',
     ];
 
     /**
