@@ -36,9 +36,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </button>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {{-- 2段階認証 --}}
-        <a href="{{ route('admin.profile.two-fa-management') }}"
+        <a href="{{ route('admin.profile.two-fa') }}"
            class="flex items-start gap-3 p-4 rounded-lg border transition
                   {{ $gettingStarted['twoFaEnabled']
                       ? 'border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/20'
@@ -76,7 +76,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </a>
 
         {{-- テーマをカスタマイズ --}}
-        <a href="{{ route('admin.front.edit') }}"
+        <a href="{{ route('admin.front.settings') }}"
            class="flex items-start gap-3 p-4 rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500 transition">
             <span class="mt-0.5 text-lg text-blue-500 dark:text-blue-400">
                 <i class="fas fa-palette"></i>
@@ -84,6 +84,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="min-w-0">
                 <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ __('admin/dashboard/getting-started.theme_title') }}</h3>
                 <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{{ __('admin/dashboard/getting-started.theme_description') }}</p>
+            </div>
+        </a>
+
+        {{-- フロントページを編集 --}}
+        <a href="{{ route('admin.front.index') }}"
+           class="flex items-start gap-3 p-4 rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500 transition">
+            <span class="mt-0.5 text-lg text-blue-500 dark:text-blue-400">
+                <i class="fas fa-file-alt"></i>
+            </span>
+            <div class="min-w-0">
+                <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ __('admin/dashboard/getting-started.front_title') }}</h3>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{{ __('admin/dashboard/getting-started.front_description') }}</p>
             </div>
         </a>
     </div>
