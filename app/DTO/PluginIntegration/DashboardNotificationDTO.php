@@ -27,10 +27,20 @@ namespace App\DTO\PluginIntegration;
 /**
  * ダッシュボード通知DTO
  *
- * プラグインがダッシュボードに表示する警告・推奨・情報通知を保持します。
+ * プラグイン・リモートサーバー・システムからダッシュボードに表示する
+ * 警告・推奨・情報通知を保持します。
  */
 final readonly class DashboardNotificationDTO
 {
+    /** @var string プラグインからの通知 */
+    public const SOURCE_PLUGIN = 'plugin';
+
+    /** @var string リモートサーバーからの通知 */
+    public const SOURCE_REMOTE = 'remote';
+
+    /** @var string システム内部からの通知 */
+    public const SOURCE_SYSTEM = 'system';
+
     /**
      * @param  string  $key  通知固有キー（例: 'inquiry_captcha_off'）
      * @param  string  $level  通知レベル（'warning', 'recommendation', 'info'）
@@ -39,6 +49,7 @@ final readonly class DashboardNotificationDTO
      * @param  string  $pluginName  プラグイン表示名（翻訳済み文字列）
      * @param  string|null  $url  対応ページへのリンク（null可）
      * @param  string|null  $actionLabel  アクションリンクのラベル（null可）
+     * @param  string  $source  通知ソース（'plugin', 'remote', 'system'）
      */
     public function __construct(
         public string $key,
@@ -48,5 +59,6 @@ final readonly class DashboardNotificationDTO
         public string $pluginName,
         public ?string $url = null,
         public ?string $actionLabel = null,
+        public string $source = self::SOURCE_PLUGIN,
     ) {}
 }

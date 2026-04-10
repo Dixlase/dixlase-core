@@ -49,6 +49,7 @@ class DashboardNotificationDTOTest extends TestCase
         $this->assertEquals('Test Plugin', $dto->pluginName);
         $this->assertEquals('/admin/settings', $dto->url);
         $this->assertEquals('Fix now', $dto->actionLabel);
+        $this->assertEquals(DashboardNotificationDTO::SOURCE_PLUGIN, $dto->source);
     }
 
     /**
@@ -66,6 +67,24 @@ class DashboardNotificationDTOTest extends TestCase
 
         $this->assertNull($dto->url);
         $this->assertNull($dto->actionLabel);
+        $this->assertEquals(DashboardNotificationDTO::SOURCE_PLUGIN, $dto->source);
+    }
+
+    /**
+     * DTO にカスタムソースを指定できること
+     */
+    public function test_can_create_with_custom_source(): void
+    {
+        $dto = new DashboardNotificationDTO(
+            key: 'remote_update',
+            level: 'info',
+            message: 'New version available',
+            icon: 'fas fa-cloud-download-alt',
+            pluginName: 'System',
+            source: DashboardNotificationDTO::SOURCE_REMOTE,
+        );
+
+        $this->assertEquals(DashboardNotificationDTO::SOURCE_REMOTE, $dto->source);
     }
 
     /**
