@@ -49,7 +49,7 @@ class MemberFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => Hash::make('password'),
-            'role' => MemberRole::Admin,
+            'role' => MemberRole::ADMIN,
             'status' => MemberStatus::Active,
             'remember_token' => Str::random(10),
         ];
