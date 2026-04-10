@@ -78,25 +78,16 @@ class AdminCoreControllerSmokeTest extends TestCase
 
     public function test_dashboard_accessible(): void
     {
-        $response = $this->actingAs($this->superAdmin, 'member')
-            ->get(route('admin.dashboard'));
-
-        // ダッシュボードは 200 または初期設定リダイレクト
-        $this->assertContains($response->getStatusCode(), [200, 302, 500]);
-        if ($response->getStatusCode() === 500) {
-            $this->markTestSkipped('Dashboard has a runtime error (AuthenticationMode import issue)');
-        }
+        $this->actingAs($this->superAdmin, 'member')
+            ->get(route('admin.dashboard'))
+            ->assertOk();
     }
 
     public function test_dashboard_accessible_by_editor(): void
     {
-        $response = $this->actingAs($this->editor, 'member')
-            ->get(route('admin.dashboard'));
-
-        $this->assertContains($response->getStatusCode(), [200, 302, 500]);
-        if ($response->getStatusCode() === 500) {
-            $this->markTestSkipped('Dashboard has a runtime error (AuthenticationMode import issue)');
-        }
+        $this->actingAs($this->editor, 'member')
+            ->get(route('admin.dashboard'))
+            ->assertOk();
     }
 
     // =========================================================================
