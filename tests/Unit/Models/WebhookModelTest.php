@@ -96,6 +96,7 @@ class WebhookModelTest extends TestCase
         $webhook->refresh();
 
         $this->assertEquals(1, $webhook->success_count);
+        $this->assertNotNull($webhook->last_triggered_at);
     }
 
     public function test_record_failure_increments_count(): void
