@@ -75,7 +75,7 @@ class AdminDashboardController extends AdminLoggedInController
         // はじめにカードのデータ準備
         if (! $user->getting_started_dismissed) {
             $this->viewParams['gettingStarted'] = [
-                'twoFaEnabled' => $user->two_fa_mode !== AuthenticationMode::Disabled->value,
+                'twoFaEnabled' => $user->two_fa_mode !== AuthenticationMode::Disabled,
                 'hasPlugins' => DB::table('plugins')->whereNotNull('enabled_at')->exists(),
             ];
         }
