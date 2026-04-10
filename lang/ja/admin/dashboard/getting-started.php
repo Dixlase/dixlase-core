@@ -27,4 +27,7 @@ return [
 
     'theme_title' => 'テーマをカスタマイズ',
     'theme_description' => 'サイトの見た目を自分好みに変更しましょう。',
+
+    'front_title' => 'フロントページを編集',
+    'front_description' => 'フロントページのコンテンツを作成・管理しましょう。',
 ];

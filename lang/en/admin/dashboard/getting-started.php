@@ -27,4 +27,7 @@ return [
 
     'theme_title' => 'Customize Your Theme',
     'theme_description' => 'Personalize the look and feel of your site.',
+
+    'front_title' => 'Edit Front Page',
+    'front_description' => 'Create and manage the content of your front page.',
 ];
