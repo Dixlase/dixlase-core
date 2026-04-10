@@ -57,7 +57,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </a>
 
         {{-- プラグインを探す --}}
-        <a href="{{ route('admin.settings.plugins.index') }}"
+        <a href="{{ route('admin.settings.plugins.add') }}"
            class="flex items-start gap-3 p-4 rounded-lg border transition
                   {{ $gettingStarted['hasPlugins']
                       ? 'border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/20'
@@ -76,7 +76,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </a>
 
         {{-- テーマをカスタマイズ --}}
-        <a href="{{ route('admin.settings.themes.index') }}"
+        <a href="{{ route('admin.front.edit') }}"
            class="flex items-start gap-3 p-4 rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500 transition">
             <span class="mt-0.5 text-lg text-blue-500 dark:text-blue-400">
                 <i class="fas fa-palette"></i>
