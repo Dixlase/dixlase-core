@@ -114,9 +114,17 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
         $this->viewParams['securityLevelRangeLabels'] = ExtensionSecurityLevel::getRangeLabels();
         $this->viewParams['securityLevelRangeLabelColors'] = ExtensionSecurityLevel::getRangeLabelColors();
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.extensions');
+        // 現在のソースレコードからトークン設定状態を取得
+        $currentSource = ExtensionSource::query()
+            ->ofType($settings['extension_source_type'])
+            ->enabled()
+            ->first();
+        $hasSourceToken = $currentSource && $currentSource->hasAuthentication();
+
         $this->viewParams['sourcePresets'] = $sourcePresets;
         $this->viewParams['checkIntervalOptions'] = $checkIntervalOptions;
         $this->viewParams['sourceReferenceUrl'] = 'https://github.com/'.config('extension-sources.github.default_owner', 'Dixlase');
+        $this->viewParams['hasSourceToken'] = $hasSourceToken;
 
         return view('admin.settings.security.extensions', $this->viewParams);
     }
@@ -142,6 +150,16 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
             permission: \App\Enums\Permission::SETTINGS_SECURITY,
         )->execute($actor, $request->validated());
 
+        // ソースのトークンを DB に保存（入力がある場合のみ更新）
+        $sourceToken = $request->input('extension_source_token');
+        if ($sourceToken !== null && $sourceToken !== '') {
+            $sourceType = $request->validated()['extension_source_type'] ?? 'github';
+            $source = ExtensionSource::query()->ofType($sourceType)->enabled()->first();
+            if ($source) {
+                $source->update(['auth_token' => $sourceToken]);
+            }
+        }
+
         return redirect()->route('admin.settings.security.extensions')
             ->with('success', __('admin/settings/security/extensions.settings_updated'));
     }
@@ -153,11 +171,18 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
     {
         $request->validate([
             'type' => 'required|string|max:50',
+            'token' => 'nullable|string|max:500',
         ]);
 
         $type = $request->input('type');
+        $inputToken = $request->input('token');
 
-        // config から接続情報を取得（オーナー・トークンは .env / config で管理）
+        // DB のソースレコードを取得（あれば DB のトークンを使う）
+        $dbSource = ExtensionSource::query()->ofType($type)->enabled()->first();
+
+        // トークン優先順位: フォーム入力 → DB → config/.env
+        $token = $inputToken ?: ($dbSource?->auth_token ?? config('extension-sources.github.default_token'));
+
         $baseUrl = match ($type) {
             'github' => config('extension-sources.github.api_base', 'https://api.github.com'),
             default => '',
@@ -169,7 +194,7 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
             'type' => $type,
             'base_url' => $baseUrl,
             'owner' => config('extension-sources.github.default_owner', 'Dixlase'),
-            'auth_token' => config('extension-sources.github.default_token'),
+            'auth_token' => $token,
         ]);
 
         try {

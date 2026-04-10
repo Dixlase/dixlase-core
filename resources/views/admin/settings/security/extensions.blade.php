@@ -405,6 +405,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 this.testDetails = {};
 
                 try {
+                    const tokenInput = document.getElementById('extension_source_token');
                     const response = await fetch('{{ route('admin.settings.security.extensions.test-source') }}', {
                         method: 'POST',
                         headers: {
@@ -412,7 +413,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
                             'Accept': 'application/json',
                         },
-                        body: JSON.stringify({ type: this.sourceType }),
+                        body: JSON.stringify({
+                            type: this.sourceType,
+                            token: tokenInput ? tokenInput.value : '',
+                        }),
                     });
 
                     const data = await response.json();
@@ -480,6 +484,36 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <i class="fas fa-external-link-alt text-[10px] ml-0.5"></i>
                         </a>
                     </div>
+
+                    <!-- 認証トークン -->
+                    <fieldset class="mt-3">
+                        <legend>{{ __('admin/settings/security/extensions.source.token') }}</legend>
+
+                        <x-form-text
+                            id="extension_source_token"
+                            name="extension_source_token"
+                            type="password"
+                            value=""
+                            :placeholder="__('admin/settings/security/extensions.source.token_placeholder')"
+                            autocomplete="off"
+                        />
+
+                        <div class="mt-1 flex items-center gap-2 text-sm">
+                            @if($hasSourceToken)
+                                <span class="text-green-600 dark:text-green-400">
+                                    <i class="fas fa-check-circle"></i>
+                                    {{ __('admin/settings/security/extensions.source.token_saved') }}
+                                </span>
+                            @else
+                                <span class="text-gray-500 dark:text-gray-400">
+                                    <i class="fas fa-info-circle"></i>
+                                    {{ __('admin/settings/security/extensions.source.token_not_set') }}
+                                </span>
+                            @endif
+                        </div>
+                        <p>{{ __('admin/settings/security/extensions.source.token_help') }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/extensions.source.token_clear_hint') }}</p>
+                    </fieldset>
 
                     <!-- 接続テスト -->
                     <div class="mt-3">
