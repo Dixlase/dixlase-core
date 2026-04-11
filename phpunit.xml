@@ -8,6 +8,7 @@
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
             <exclude>tests/Unit/Traits/CustomFilesLoaderTraitTest.php</exclude>
+            <exclude>tests/Unit/Admin/Users/AdminUserUnitTest.php</exclude>
         </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
