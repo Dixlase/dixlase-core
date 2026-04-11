@@ -503,10 +503,10 @@ class PluginPermissionService implements PluginPermissionServiceInterface
      */
     public function calculateUnifiedRiskLevel(array $declaredPermissions, array $mismatches = []): array
     {
-        // 宣言ベースのスコアリング
+        // 宣言ベースのスコアリング（内部は負のスコアを使用するため、正の値に変換）
         $result = $this->calculateRiskLevelWithReasons($declaredPermissions);
-        $score = $result['score'];
-        $reasons = $result['reasons'];
+        $score = abs($result['score']);
+        $reasons = array_map(fn ($r) => array_merge($r, ['score' => abs($r['score'])]), $result['reasons']);
 
         // 未宣言使用の不一致ペナルティ
         $undeclaredCount = count(array_filter($mismatches, fn ($m) => ($m['type'] ?? '') === 'undeclared_usage'));

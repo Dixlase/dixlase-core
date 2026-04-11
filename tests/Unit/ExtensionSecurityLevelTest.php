@@ -25,7 +25,7 @@ class ExtensionSecurityLevelTest extends TestCase
     {
         foreach (ExtensionSecurityLevel::cases() as $case) {
             $key = $case->translationKey();
-            $this->assertStringStartsWith('admin.settings.security.extension_security.health_level.', $key);
+            $this->assertStringStartsWith('admin/settings/security/extensions.security.health_level.', $key);
         }
     }
 

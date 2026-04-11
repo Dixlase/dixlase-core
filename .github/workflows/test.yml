@@ -58,14 +58,27 @@ jobs:
           token: ${{ secrets.SUBMODULE_PAT }}
 
       - name: Fetch registered submodules
+        env:
+          SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
         run: |
+          # PAT でサブモジュール URL の認証を設定
+          git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+
           # .gitmodules に登録されたサブモジュールのみ取得（未登録の gitlink は無視）
           if [ -f .gitmodules ]; then
+            echo "=== Registered submodules ==="
             git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
               name=$(echo "$key" | sed 's/^submodule\.\(.*\)\.path$/\1/')
-              git submodule init "$path" 2>/dev/null || true
+              echo "Initializing: $name ($path)"
+              git submodule init "$path" 2>&1 || true
             done
-            git submodule update --depth=1 --force 2>/dev/null || true
+            echo "=== Fetching submodules ==="
+            git submodule update --depth=1 --force 2>&1 || true
+            echo "=== Submodule status ==="
+            git submodule status 2>&1 || true
+            echo "=== Plugin directories ==="
+            ls -d plugins/*/ 2>/dev/null || echo "No plugin directories found"
+            ls -d themes/*/ 2>/dev/null || echo "No theme directories found"
           fi
 
       - name: Setup PHP
@@ -194,14 +207,24 @@ jobs:
           token: ${{ secrets.SUBMODULE_PAT }}
 
       - name: Fetch registered submodules
+        env:
+          SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
         run: |
+          # PAT でサブモジュール URL の認証を設定
+          git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+
           # .gitmodules に登録されたサブモジュールのみ取得（未登録の gitlink は無視）
           if [ -f .gitmodules ]; then
+            echo "=== Registered submodules ==="
             git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
               name=$(echo "$key" | sed 's/^submodule\.\(.*\)\.path$/\1/')
-              git submodule init "$path" 2>/dev/null || true
+              echo "Initializing: $name ($path)"
+              git submodule init "$path" 2>&1 || true
             done
-            git submodule update --depth=1 --force 2>/dev/null || true
+            echo "=== Fetching submodules ==="
+            git submodule update --depth=1 --force 2>&1 || true
+            echo "=== Plugin directories ==="
+            ls -d plugins/*/ 2>/dev/null || echo "No plugin directories found"
           fi
 
       - name: Setup PHP
@@ -395,14 +418,23 @@ jobs:
           token: ${{ secrets.SUBMODULE_PAT }}
 
       - name: Fetch registered submodules
+        env:
+          SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
         run: |
+          # PAT でサブモジュール URL の認証を設定
+          git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+
           # .gitmodules に登録されたサブモジュールのみ取得（未登録の gitlink は無視）
           if [ -f .gitmodules ]; then
             git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
               name=$(echo "$key" | sed 's/^submodule\.\(.*\)\.path$/\1/')
-              git submodule init "$path" 2>/dev/null || true
+              echo "Initializing: $name ($path)"
+              git submodule init "$path" 2>&1 || true
             done
-            git submodule update --depth=1 --force 2>/dev/null || true
+            echo "=== Fetching submodules ==="
+            git submodule update --depth=1 --force 2>&1 || true
+            echo "=== Plugin directories ==="
+            ls -d plugins/*/ 2>/dev/null || echo "No plugin directories found"
           fi
 
       - name: Setup PHP

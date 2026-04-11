@@ -34,12 +34,13 @@ class DeleteMemberActionTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function createMember(array $overrides = []): Member
+    private function createMemberWithId(int $id, array $overrides = []): Member
     {
         return Member::create(array_merge([
-            'account_name' => 'deleteme',
-            'display_name' => 'Delete Me',
-            'email' => 'delete@example.com',
+            'id' => $id,
+            'account_name' => 'member'.$id,
+            'display_name' => 'Member '.$id,
+            'email' => "member{$id}@example.com",
             'password' => bcrypt('Password123!'),
             'role' => MemberRole::ADMIN->value,
             'status' => 1,
@@ -51,24 +52,23 @@ class DeleteMemberActionTest extends TestCase
     {
         Audit::shouldReceive('log')->once();
 
-        // Create a placeholder for ID=1 (initial admin), then the actual target
-        $this->createMember(['account_name' => 'admin1', 'email' => 'admin@example.com']);
-        $member = $this->createMember();
-        $memberId = $member->id;
+        // ID=1 は初期管理者として保護されるため、プレースホルダーを作成
+        $this->createMemberWithId(1);
+        $member = $this->createMemberWithId(2, ['display_name' => 'Delete Me']);
         $action = new DeleteMemberAction($member);
 
         $result = $action->execute(new SystemActor(), []);
 
         $this->assertTrue($result->success);
-        $this->assertSoftDeleted('members', ['id' => $memberId]);
+        $this->assertSoftDeleted('members', ['id' => 2]);
     }
 
     public function test_prevents_deletion_of_initial_admin(): void
     {
         Audit::shouldReceive('log')->never();
 
-        // First member gets ID=1 automatically
-        $member = $this->createMember(['account_name' => 'admin1', 'email' => 'admin@example.com']);
+        // ID=1 の初期管理者を作成
+        $member = $this->createMemberWithId(1, ['account_name' => 'admin1']);
 
         $action = new DeleteMemberAction($member);
         $result = $action->execute(new SystemActor(), []);
@@ -82,9 +82,9 @@ class DeleteMemberActionTest extends TestCase
     {
         Audit::shouldReceive('log')->once();
 
-        // Create placeholder for ID=1, then the actual target
-        $this->createMember(['account_name' => 'admin1', 'email' => 'admin@example.com']);
-        $member = $this->createMember(['display_name' => 'Target User']);
+        // ID=1 プレースホルダー + 削除対象メンバー
+        $this->createMemberWithId(1);
+        $member = $this->createMemberWithId(2, ['display_name' => 'Target User']);
         $action = new DeleteMemberAction($member);
 
         $result = $action->execute(new SystemActor(), []);
