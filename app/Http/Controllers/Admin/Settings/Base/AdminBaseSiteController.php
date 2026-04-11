@@ -32,7 +32,7 @@ use App\Http\Requests\Admin\Settings\Base\AdminBaseSiteUpdateRequest;
 
 class AdminBaseSiteController extends AdminLoggedInController
 {
-    protected const SETTING_KEYS = ['app_name', 'locale', 'timezone', 'site_description', 'site_keywords', 'default_ogp_image_id', 'twitter_card_type'];
+    protected const SETTING_KEYS = ['app_name', 'locale', 'timezone', 'site_description', 'site_keywords'];
 
     protected BaseSettingRepositoryInterface $baseSettingRepository;
 
@@ -53,23 +53,15 @@ class AdminBaseSiteController extends AdminLoggedInController
             'site_keywords' => $this->baseSettingRepository->get('site_keywords', ''),
             'locale' => $this->getSystemLocale(),
             'timezone' => ConfigHelper::getAppTimezone(),
-            'default_ogp_image_id' => $this->baseSettingRepository->get('default_ogp_image_id'),
-            'twitter_card_type' => $this->baseSettingRepository->get('twitter_card_type', 'summary_large_image'),
         ];
 
         $timezones = TimezoneHelper::getTimezonesWithUtcOffset();
-
-        $defaultOgpImage = null;
-        if ($settings['default_ogp_image_id']) {
-            $defaultOgpImage = \App\Models\Media::find($settings['default_ogp_image_id']);
-        }
 
         $this->viewParams['settings'] = $settings;
         $this->viewParams['timezones'] = $timezones;
         $this->viewParams['locales'] = collect(config('admin.locale.available', []))->mapWithKeys(function ($locale, $key) {
             return [$key => $locale['name']];
         })->toArray();
-        $this->viewParams['defaultOgpImage'] = $defaultOgpImage;
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.base.site');
 
         return view('admin.settings.base.site', $this->viewParams);
@@ -104,8 +96,6 @@ class AdminBaseSiteController extends AdminLoggedInController
                     'site_keywords' => $data['site_keywords'] ?? '',
                     'locale' => $data['locale'],
                     'timezone' => $data['timezone'],
-                    'default_ogp_image_id' => $data['default_ogp_image_id'],
-                    'twitter_card_type' => $data['twitter_card_type'],
                 ]);
             },
         )->execute($actor, $request->validated());
