@@ -35,8 +35,7 @@
             "Database\\Seeders\\": "database/seeders/",
             "Custom\\App\\": "custom/app/",
             "Custom\\Database\\Factories\\": "custom/database/factories",
-            "Custom\\Database\\Seeders\\": "custom/database/seeders",
-            "Plugins\\": "plugins/"
+            "Custom\\Database\\Seeders\\": "custom/database/seeders"
         },
         "files": [
             "app/Helpers/AssetHelper.php",
@@ -51,6 +50,9 @@
         }
     },
     "scripts": {
+        "pre-autoload-dump": [
+            "@php scripts/sync-local-autoload.php"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
