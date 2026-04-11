@@ -883,14 +883,42 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $description = __($translationKey);
 
             // 翻訳キーがそのまま返された場合は翻訳が見つからない
-            if ($description === $translationKey) {
-                return $plugin->description ?? __('common.no_description');
+            if ($description !== $translationKey) {
+                return $description;
             }
 
-            return $description;
+            // plugin.json の多言語 description を参照
+            return $this->getLocalizedDescriptionFromPluginJson($plugin->directory)
+                ?? $plugin->description
+                ?? __('common.no_description');
         } catch (\Exception $e) {
-            // 翻訳ファイルが存在しない場合はDBの説明またはデフォルト
             return $plugin->description ?? __('common.no_description');
+        }
+    }
+
+    /**
+     * plugin.json から現在のロケールに合わせた description を取得
+     */
+    private function getLocalizedDescriptionFromPluginJson(string $directory): ?string
+    {
+        $pluginJsonPath = base_path("plugins/{$directory}/plugin.json");
+        if (! File::exists($pluginJsonPath)) {
+            return null;
+        }
+
+        try {
+            $data = json_decode(File::get($pluginJsonPath), true);
+            $description = $data['description'] ?? null;
+
+            if (is_array($description)) {
+                $locale = app()->getLocale();
+
+                return $description[$locale] ?? $description['en'] ?? $description['ja'] ?? null;
+            }
+
+            return is_string($description) ? $description : null;
+        } catch (\Exception $e) {
+            return null;
         }
     }
 
@@ -945,7 +973,8 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 if (json_last_error() === JSON_ERROR_NONE) {
                     $description = $pluginData['description'] ?? null;
                     if (is_array($description)) {
-                        $description = $description['en'] ?? $description['ja'] ?? null;
+                        $locale = app()->getLocale();
+                        $description = $description[$locale] ?? $description['en'] ?? $description['ja'] ?? null;
                     }
 
                     return [
