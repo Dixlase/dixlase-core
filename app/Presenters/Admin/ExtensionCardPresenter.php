@@ -936,6 +936,9 @@ class ExtensionCardPresenter
                 $severity = $reason['severity'] ?? 'medium';
                 $details = $reason['details'] ?? [];
                 $translationParams = ! empty($details) ? ['domains' => implode(', ', $details)] : [];
+                if (isset($reason['count'])) {
+                    $translationParams['count'] = $reason['count'];
+                }
                 $formatted[] = [
                     'text' => __($translationPrefix.'.permissions.attention_reason_'.$reasonKey, $translationParams),
                     'color' => match ($severity) {
