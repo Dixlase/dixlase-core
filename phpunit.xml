@@ -6,16 +6,17 @@
 >
     <testsuites>
         <testsuite name="Unit">
-            <!-- デフォルトのUnitテスト -->
             <directory>tests/Unit</directory>
-            <!-- カスタムのUnitテスト -->
-            <directory>custom/tests/Unit</directory>
+            <exclude>tests/Unit/Traits/CustomFilesLoaderTraitTest.php</exclude>
         </testsuite>
         <testsuite name="Feature">
-            <!-- デフォルトのFeatureテスト -->
             <directory>tests/Feature</directory>
-            <!-- カスタムのFeatureテスト -->
+        </testsuite>
+        <testsuite name="Custom">
+            <!-- カスタムオーバーライドのテスト（custom/ が存在する環境のみ） -->
+            <directory>custom/tests/Unit</directory>
             <directory>custom/tests/Feature</directory>
+            <file>tests/Unit/Traits/CustomFilesLoaderTraitTest.php</file>
         </testsuite>
         <!-- ============================================ -->
         <!-- プラグインテストスイート（個別）              -->
