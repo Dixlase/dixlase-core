@@ -87,9 +87,12 @@ jobs:
           restore-keys: |
             composer-${{ runner.os }}-${{ matrix.php }}-
 
-      - name: Generate composer.local.json for plugins
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Generate plugin autoload mappings
         run: |
-          # プラグイン・テーマの PSR-4 autoload マッピングを自動生成
+          # サブモジュール取得後にプラグイン・テーマの PSR-4 autoload マッピングを生成
           php -r '
           $mappings = [];
           foreach (glob("plugins/*/app") as $dir) {
@@ -121,9 +124,7 @@ jobs:
           ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
           echo "Generated composer.local.json with " . count($mappings) . " mappings\n";
           '
-
-      - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress
+          composer dump-autoload
 
       - name: Prepare environment
         run: |
@@ -222,9 +223,12 @@ jobs:
           restore-keys: |
             composer-${{ runner.os }}-${{ matrix.php }}-
 
-      - name: Generate composer.local.json for plugins
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Generate plugin autoload mappings
         run: |
-          # プラグイン・テーマの PSR-4 autoload マッピングを自動生成
+          # サブモジュール取得後にプラグイン・テーマの PSR-4 autoload マッピングを生成
           php -r '
           $mappings = [];
           foreach (glob("plugins/*/app") as $dir) {
@@ -256,9 +260,7 @@ jobs:
           ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
           echo "Generated composer.local.json with " . count($mappings) . " mappings\n";
           '
-
-      - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress
+          composer dump-autoload
 
       - name: Prepare environment
         run: |
@@ -409,9 +411,12 @@ jobs:
           php-version: '8.2'
           coverage: none
 
-      - name: Generate composer.local.json for plugins
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Generate plugin autoload mappings
         run: |
-          # プラグイン・テーマの PSR-4 autoload マッピングを自動生成
+          # サブモジュール取得後にプラグイン・テーマの PSR-4 autoload マッピングを生成
           php -r '
           $mappings = [];
           foreach (glob("plugins/*/app") as $dir) {
@@ -443,9 +448,7 @@ jobs:
           ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
           echo "Generated composer.local.json with " . count($mappings) . " mappings\n";
           '
-
-      - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress
+          composer dump-autoload
 
       - name: Prepare environment
         run: |
