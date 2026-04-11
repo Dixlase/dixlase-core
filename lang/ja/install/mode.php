@@ -26,13 +26,17 @@ return [
     'mode_description' => 'インストールおよび管理画面のモードを選択してください。',
 
     'simple_mode' => 'かんたんモード',
-    'simple_mode_description' => 'セキュリティを重視した設定が自動で適用されます。専門的な設定は後から管理画面で変更できます。',
+    'simple_mode_description' => 'セキュリティを重視した設定が自動で適用されます。',
     'simple_feature_security' => 'セキュリティ設定が自動で最適化',
     'simple_feature_quick' => '最小限の入力ですぐに使い始められる',
-    'simple_feature_changeable' => 'すべての設定は後から変更可能',
+    'simple_feature_easy' => 'Webの専門知識がなくても大丈夫',
 
     'advanced_mode' => '詳細モード',
-    'advanced_mode_description' => 'すべての設定を自由に行えます。システムへの影響を理解している方向けです。',
+    'advanced_mode_description' => 'すべての設定を自由に行えます。',
+    'advanced_feature_customize' => 'すべての設定を自由にカスタマイズ可能',
+    'advanced_feature_control' => '環境変数やSSL設定を細かく制御',
+    'advanced_feature_admin_url' => '管理画面URLを自分で指定',
+    'advanced_feature_audience' => '開発者、Webサイト制作者向け',
 
     'recommended' => '推奨',
     'can_change_later' => 'モードはインストール後に管理画面からいつでも変更できます。',
