@@ -28,6 +28,7 @@ use App\Enums\MemberRole;
 use App\Facades\Audit;
 use App\Models\Member;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class DeleteMemberActionTest extends TestCase
