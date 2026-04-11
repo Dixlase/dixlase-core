@@ -36,10 +36,7 @@
             "Custom\\App\\": "custom/app/",
             "Custom\\Database\\Factories\\": "custom/database/factories",
             "Custom\\Database\\Seeders\\": "custom/database/seeders",
-            "Plugins\\": "plugins/",
-            "Themes\\DixlaseOnePage\\App\\": "themes/DixlaseOnePage/app/",
-            "Themes\\DixlaseOnePage\\Database\\": "themes/DixlaseOnePage/database/",
-            "Plugins\\DixlaseCoreDevKit\\Database\\Factories\\": "plugins/DixlaseCoreDevKit/database/factories/"
+            "Plugins\\": "plugins/"
         },
         "files": [
             "app/Helpers/AssetHelper.php",
