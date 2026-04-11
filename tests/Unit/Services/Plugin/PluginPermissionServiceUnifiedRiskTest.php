@@ -304,8 +304,8 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
         $this->assertEquals($resultWithout['level'], $resultWith['level']);
         $this->assertEquals($resultWithout['score'], $resultWith['score']);
 
-        // storage.public_uploads (+2) + members.write (+3) = 5 → medium
-        $this->assertEquals('medium', $resultWithout['level']);
-        $this->assertEquals(5, $resultWithout['score']);
+        // storage.public_uploads (no own_dir: +4) + members.write (+3) = 7 → high
+        $this->assertEquals('high', $resultWithout['level']);
+        $this->assertEquals(7, $resultWithout['score']);
     }
 }

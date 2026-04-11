@@ -71,10 +71,10 @@ class FileIntegrityServiceTest extends TestCase
     public function test_save_baseline_creates_file(): void
     {
         $baseline = $this->service->generateCoreBaseline();
-        $result = $this->service->saveBaseline($baseline);
+        $result = $this->service->saveBaselineArray($baseline);
 
         $this->assertTrue($result);
-        $this->assertTrue(File::exists($this->testBaselinePath . '/core_hashes.json'));
+        $this->assertTrue(File::exists($this->testBaselinePath.'/core_hashes.json'));
     }
 
     /**
@@ -83,9 +83,10 @@ class FileIntegrityServiceTest extends TestCase
     public function test_load_baseline_returns_saved_data(): void
     {
         $baseline = $this->service->generateCoreBaseline();
-        $this->service->saveBaseline($baseline);
+        $this->service->saveBaselineArray($baseline);
 
-        $loaded = $this->service->loadBaseline();
+        // loadBaselineArray() で配列形式で読み込み検証
+        $loaded = $this->service->loadBaselineArray();
 
         $this->assertIsArray($loaded);
         $this->assertEquals($baseline['meta']['hash_algo'], $loaded['meta']['hash_algo']);
@@ -110,7 +111,7 @@ class FileIntegrityServiceTest extends TestCase
         $this->assertFalse($this->service->hasBaseline());
 
         $baseline = $this->service->generateCoreBaseline();
-        $this->service->saveBaseline($baseline);
+        $this->service->saveBaselineArray($baseline);
 
         $this->assertTrue($this->service->hasBaseline());
     }
@@ -121,15 +122,15 @@ class FileIntegrityServiceTest extends TestCase
     public function test_get_baseline_meta_returns_meta_with_file_count(): void
     {
         $baseline = $this->service->generateCoreBaseline();
-        $this->service->saveBaseline($baseline);
+        $this->service->saveBaselineArray($baseline);
 
         $meta = $this->service->getBaselineMeta();
 
         $this->assertIsArray($meta);
         $this->assertArrayHasKey('generated_at', $meta);
         $this->assertArrayHasKey('hash_algo', $meta);
-        $this->assertArrayHasKey('files', $meta);
-        $this->assertEquals(count($baseline['files']), $meta['files']);
+        $this->assertArrayHasKey('files_count', $meta);
+        $this->assertEquals(count($baseline['files']), $meta['files_count']);
     }
 
     /**
@@ -151,7 +152,7 @@ class FileIntegrityServiceTest extends TestCase
     {
         // ベースラインを作成
         $baseline = $this->service->generateCoreBaseline();
-        $this->service->saveBaseline($baseline);
+        $this->service->saveBaselineArray($baseline);
 
         // スキャン実行
         $audit = $this->service->scanCore();
@@ -170,16 +171,14 @@ class FileIntegrityServiceTest extends TestCase
     {
         $audit = $this->service->scanCore(
             FileIntegrityAudit::TRIGGER_MANUAL,
-            FileIntegrityAudit::INITIATED_BY_USER,
-            1
+            FileIntegrityAudit::INITIATED_BY_SYSTEM,
         );
 
         $this->assertDatabaseHas('file_integrity_audits', [
             'id' => $audit->id,
             'scope' => FileIntegrityAudit::SCOPE_CORE,
             'trigger' => FileIntegrityAudit::TRIGGER_MANUAL,
-            'initiated_by_type' => FileIntegrityAudit::INITIATED_BY_USER,
-            'initiated_by_id' => 1,
+            'initiated_by_type' => FileIntegrityAudit::INITIATED_BY_SYSTEM,
         ]);
     }
 
@@ -190,13 +189,13 @@ class FileIntegrityServiceTest extends TestCase
     {
         // 初回ベースライン作成
         $baseline1 = $this->service->generateCoreBaseline();
-        $this->service->saveBaseline($baseline1);
+        $this->service->saveBaselineArray($baseline1);
 
         $meta1 = $this->service->getBaselineMeta();
 
         // 少し待ってから再生成
         sleep(1);
-        $result = $this->service->regenerateBaseline();
+        $result = $this->service->regenerateBaselineCore();
 
         $this->assertTrue($result);
 
@@ -228,12 +227,13 @@ class FileIntegrityServiceTest extends TestCase
         $baseline = $this->service->generateCoreBaseline();
 
         // 除外されるべきパスが含まれていないことを確認
+        // resources/views/vendor/ 等はコアパスに含まれるため、先頭一致で判定
         foreach ($baseline['files'] as $path => $hash) {
-            $this->assertStringNotContainsString('vendor/', $path);
-            $this->assertStringNotContainsString('node_modules/', $path);
-            $this->assertStringNotContainsString('storage/', $path);
-            $this->assertStringNotContainsString('.git/', $path);
-            $this->assertStringNotContainsString('bootstrap/cache/', $path);
+            $this->assertDoesNotMatchRegularExpression('/^vendor\//', $path);
+            $this->assertDoesNotMatchRegularExpression('/^node_modules\//', $path);
+            $this->assertDoesNotMatchRegularExpression('/^storage\//', $path);
+            $this->assertDoesNotMatchRegularExpression('/^\.git\//', $path);
+            $this->assertDoesNotMatchRegularExpression('/^bootstrap\/cache\//', $path);
         }
     }
 

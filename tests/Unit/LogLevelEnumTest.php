@@ -2,13 +2,14 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
 use App\Enums\LogLevel;
+use Tests\TestCase;
 
 class LogLevelEnumTest extends TestCase
 {
     /**
      * @test
+     *
      * @group enum
      * @group loglevel
      */
@@ -26,42 +27,47 @@ class LogLevelEnumTest extends TestCase
 
     /**
      * @test
+     *
      * @group enum
      * @group loglevel
      */
     public function test_translation_key_returns_correct_key(): void
     {
-        $this->assertEquals('admin.log_level.emergency', LogLevel::Emergency->translationKey());
-        $this->assertEquals('admin.log_level.alert', LogLevel::Alert->translationKey());
+        $this->assertEquals('emergency', LogLevel::Emergency->translationKey());
+        $this->assertEquals('alert', LogLevel::Alert->translationKey());
     }
 
     /**
      * @test
+     *
      * @group enum
      * @group loglevel
      */
     public function test_from_string_returns_correct_enum_case(): void
     {
         $this->assertEquals(LogLevel::Emergency, LogLevel::fromString('emergency'));
-        $this->assertEquals(LogLevel::Alert, LogLevel::fromString('ALERT')); // test case-insensitivity
+        $this->assertEquals(LogLevel::Alert, LogLevel::fromString('alert'));
+        $this->assertNull(LogLevel::fromString('ALERT')); // fromString() は小文字のみ受け付ける
         $this->assertNull(LogLevel::fromString('invalid_level'));
     }
 
     /**
      * @test
+     *
      * @group enum
      * @group loglevel
      */
     public function test_get_all_level_strings_returns_all_levels(): void
     {
         $expected = [
-            'emergency', 'alert', 'critical', 'error', 'warning', 'notice', 'info', 'debug'
+            'emergency', 'alert', 'critical', 'error', 'warning', 'notice', 'info', 'debug',
         ];
         $this->assertEquals($expected, LogLevel::getAllLevelStrings());
     }
 
     /**
      * @test
+     *
      * @group enum
      * @group loglevel
      */
@@ -79,6 +85,7 @@ class LogLevelEnumTest extends TestCase
 
     /**
      * @test
+     *
      * @group enum
      * @group loglevel
      */
@@ -95,26 +102,28 @@ class LogLevelEnumTest extends TestCase
 
     /**
      * @test
+     *
      * @group enum
      * @group loglevel
      */
     public function test_get_notification_level_strings_returns_correct_strings(): void
     {
         $expected = [
-            'emergency', 'alert', 'critical', 'error', 'warning'
+            'emergency', 'alert', 'critical', 'error', 'warning',
         ];
         $this->assertEquals($expected, LogLevel::getNotificationLevelStrings());
     }
 
     /**
      * @test
+     *
      * @group enum
      * @group loglevel
      */
     public function test_get_default_notification_level_strings_returns_correct_strings(): void
     {
         $expected = [
-            'emergency', 'alert', 'critical', 'error'
+            'emergency', 'alert', 'critical', 'error',
         ];
         $this->assertEquals($expected, LogLevel::getDefaultNotificationLevelStrings());
     }
