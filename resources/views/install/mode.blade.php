@@ -52,7 +52,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </li>
                             <li class="flex items-center gap-2">
                                 <i class="fas fa-check text-green-500 text-xs"></i>
-                                {{ __('install/mode.simple_feature_changeable') }}
+                                {{ __('install/mode.simple_feature_easy') }}
                             </li>
                         </ul>
                     </div>
@@ -71,6 +71,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white text-center">{{ __('install/mode.advanced_mode') }}</h3>
                         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ __('install/mode.advanced_mode_description') }}</p>
+                        <ul class="mt-3 space-y-1 text-sm text-gray-500 dark:text-gray-400">
+                            <li class="flex items-center gap-2">
+                                <i class="fas fa-check text-green-500 text-xs"></i>
+                                {{ __('install/mode.advanced_feature_customize') }}
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i class="fas fa-check text-green-500 text-xs"></i>
+                                {{ __('install/mode.advanced_feature_control') }}
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i class="fas fa-check text-green-500 text-xs"></i>
+                                {{ __('install/mode.advanced_feature_admin_url') }}
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i class="fas fa-check text-green-500 text-xs"></i>
+                                {{ __('install/mode.advanced_feature_audience') }}
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>

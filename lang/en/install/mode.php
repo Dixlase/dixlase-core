@@ -26,13 +26,17 @@ return [
     'mode_description' => 'Choose the mode for installation and admin panel.',
 
     'simple_mode' => 'Simple Mode',
-    'simple_mode_description' => 'Security-focused settings are applied automatically. You can change advanced settings later from the admin panel.',
+    'simple_mode_description' => 'Security-focused settings are applied automatically.',
     'simple_feature_security' => 'Security settings automatically optimized',
     'simple_feature_quick' => 'Get started quickly with minimal input',
-    'simple_feature_changeable' => 'All settings can be changed later',
+    'simple_feature_easy' => 'No web expertise required',
 
     'advanced_mode' => 'Advanced Mode',
-    'advanced_mode_description' => 'Configure all settings freely. Recommended for users who understand the system implications.',
+    'advanced_mode_description' => 'Configure all settings freely.',
+    'advanced_feature_customize' => 'Fully customize all settings',
+    'advanced_feature_control' => 'Fine-tune environment variables and SSL settings',
+    'advanced_feature_admin_url' => 'Specify your own admin panel URL',
+    'advanced_feature_audience' => 'For developers and web professionals',
 
     'recommended' => 'Recommended',
     'can_change_later' => 'You can change the mode anytime from the admin panel after installation.',
