@@ -36,8 +36,7 @@ class DeleteMemberActionTest extends TestCase
 
     private function createMemberWithId(int $id, array $overrides = []): Member
     {
-        return Member::create(array_merge([
-            'id' => $id,
+        $member = Member::create(array_merge([
             'account_name' => 'member'.$id,
             'display_name' => 'Member '.$id,
             'email' => "member{$id}@example.com",
@@ -46,6 +45,14 @@ class DeleteMemberActionTest extends TestCase
             'status' => 1,
             'email_verified_at' => now(),
         ], $overrides));
+
+        // id は $fillable に含まれないため、作成後に直接更新
+        if ($member->id !== $id) {
+            DB::table('members')->where('id', $member->id)->update(['id' => $id]);
+            $member = Member::find($id);
+        }
+
+        return $member;
     }
 
     public function test_deletes_member_successfully(): void
@@ -60,7 +67,7 @@ class DeleteMemberActionTest extends TestCase
         $result = $action->execute(new SystemActor(), []);
 
         $this->assertTrue($result->success);
-        $this->assertSoftDeleted('members', ['id' => 2]);
+        $this->assertSoftDeleted('members', ['id' => $member->id]);
     }
 
     public function test_prevents_deletion_of_initial_admin(): void
