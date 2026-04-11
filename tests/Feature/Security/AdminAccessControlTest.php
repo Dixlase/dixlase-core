@@ -46,6 +46,7 @@ class AdminAccessControlTest extends TestCase
 
         putenv('INSTALLED=true');
         $_ENV['INSTALLED'] = 'true';
+        $_SERVER['INSTALLED'] = 'true';
 
         $adminTheme = config('themes.admin_theme', 'admin');
         View::addNamespace('admin', [
@@ -65,6 +66,7 @@ class AdminAccessControlTest extends TestCase
     {
         putenv('INSTALLED=false');
         $_ENV['INSTALLED'] = 'false';
+        unset($_SERVER['INSTALLED']);
         parent::tearDown();
     }
 

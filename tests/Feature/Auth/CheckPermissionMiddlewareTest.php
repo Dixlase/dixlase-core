@@ -42,6 +42,15 @@ class CheckPermissionMiddlewareTest extends TestCase
     {
         parent::setUp();
 
+        $this->withoutMiddleware([
+            CheckInstallationReady::class,
+            ContentSecurityPolicy::class,
+        ]);
+
+        putenv('INSTALLED=true');
+        $_ENV['INSTALLED'] = 'true';
+        $_SERVER['INSTALLED'] = 'true';
+
         // テスト用ルートを登録
         Route::middleware(['web', 'auth:member', 'permission:members.view'])
             ->get('/test/permission/members-view', function () {
@@ -58,7 +67,7 @@ class CheckPermissionMiddlewareTest extends TestCase
                 return response('OK', 200);
             })->name('test.permission.members-delete');
 
-        Route::middleware(['web', 'auth:member', 'permission:system.settings'])
+        Route::middleware(['web', 'auth:member', 'permission:settings.system'])
             ->get('/test/permission/system-settings', function () {
                 return response('OK', 200);
             })->name('test.permission.system-settings');
@@ -67,6 +76,14 @@ class CheckPermissionMiddlewareTest extends TestCase
             ->get('/test/permission/any-of', function () {
                 return response('OK', 200);
             })->name('test.permission.any-of');
+    }
+
+    protected function tearDown(): void
+    {
+        putenv('INSTALLED=false');
+        $_ENV['INSTALLED'] = 'false';
+        unset($_SERVER['INSTALLED']);
+        parent::tearDown();
     }
 
     // ========================================

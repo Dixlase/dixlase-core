@@ -42,6 +42,15 @@ class MaintenanceModeFeatureTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->withoutMiddleware([
+            \App\Http\Middleware\CheckInstallationReady::class,
+        ]);
+
+        putenv('INSTALLED=true');
+        $_ENV['INSTALLED'] = 'true';
+        $_SERVER['INSTALLED'] = 'true';
+
         $this->admin = Member::create([
             'account_name' => 'testadmin',
             'display_name' => 'Test Admin',
@@ -51,6 +60,14 @@ class MaintenanceModeFeatureTest extends TestCase
             'role' => MemberRole::ADMIN,
             'status' => MemberStatus::Active,
         ]);
+    }
+
+    protected function tearDown(): void
+    {
+        putenv('INSTALLED=false');
+        $_ENV['INSTALLED'] = 'false';
+        unset($_SERVER['INSTALLED']);
+        parent::tearDown();
     }
 
     // ========================================

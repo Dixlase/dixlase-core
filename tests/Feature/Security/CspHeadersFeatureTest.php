@@ -23,9 +23,12 @@
 namespace Tests\Feature\Security;
 
 use App\Enums\MemberRole;
+use App\Http\Middleware\CheckInstallationReady;
+use App\Models\BaseSetting;
 use App\Models\Member;
 use App\Models\SecuritySetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\View;
 use Tests\TestCase;
 
 /**
@@ -40,9 +43,34 @@ class CspHeadersFeatureTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
+        $this->withoutMiddleware([
+            CheckInstallationReady::class,
+            \App\Http\Middleware\EnsureEmailIsVerified::class,
+            \App\Http\Middleware\CheckMenuAccess::class,
+        ]);
+
+        putenv('INSTALLED=true');
+        $_ENV['INSTALLED'] = 'true';
+        $_SERVER['INSTALLED'] = 'true';
+
+        $adminTheme = config('themes.admin_theme', 'admin');
+        View::addNamespace('admin', [
+            resource_path("views/{$adminTheme}"),
+        ]);
+
+        BaseSetting::setValue('site_name', 'Test');
+
         // CSPを有効化
         config(['csp.enabled' => true]);
+    }
+
+    protected function tearDown(): void
+    {
+        putenv('INSTALLED=false');
+        $_ENV['INSTALLED'] = 'false';
+        unset($_SERVER['INSTALLED']);
+        parent::tearDown();
     }
 
     // ========================================
@@ -69,10 +97,10 @@ class CspHeadersFeatureTest extends TestCase
 
         $response = $this->actingAs($member)->get(route('admin.dashboard'));
 
-        $cspHeader = $response->headers->get('Content-Security-Policy') 
+        $cspHeader = $response->headers->get('Content-Security-Policy')
             ?? $response->headers->get('Content-Security-Policy-Report-Only');
 
-        $this->assertStringContainsString("default-src", $cspHeader);
+        $this->assertStringContainsString('default-src', $cspHeader);
     }
 
     public function test_csp_header_contains_script_src(): void
@@ -81,10 +109,10 @@ class CspHeadersFeatureTest extends TestCase
 
         $response = $this->actingAs($member)->get(route('admin.dashboard'));
 
-        $cspHeader = $response->headers->get('Content-Security-Policy') 
+        $cspHeader = $response->headers->get('Content-Security-Policy')
             ?? $response->headers->get('Content-Security-Policy-Report-Only');
 
-        $this->assertStringContainsString("script-src", $cspHeader);
+        $this->assertStringContainsString('script-src', $cspHeader);
     }
 
     // ========================================
@@ -214,14 +242,14 @@ class CspHeadersFeatureTest extends TestCase
 
         $response = $this->actingAs($member)->get(route('admin.dashboard'));
 
-        $cspHeader = $response->headers->get('Content-Security-Policy') 
+        $cspHeader = $response->headers->get('Content-Security-Policy')
             ?? $response->headers->get('Content-Security-Policy-Report-Only');
 
         // nonceが含まれている場合、'nonce-'という文字列が存在する
         if ($cspHeader && str_contains($cspHeader, 'script-src')) {
             // nonceまたはunsafe-inlineのどちらかが含まれているはず
             $this->assertTrue(
-                str_contains($cspHeader, 'nonce-') || 
+                str_contains($cspHeader, 'nonce-') ||
                 str_contains($cspHeader, "'unsafe-inline'") ||
                 str_contains($cspHeader, "'strict-dynamic'"),
                 'CSP script-src should contain nonce, unsafe-inline, or strict-dynamic'
@@ -239,11 +267,11 @@ class CspHeadersFeatureTest extends TestCase
 
         $response = $this->actingAs($member)->get(route('admin.dashboard'));
 
-        $cspHeader = $response->headers->get('Content-Security-Policy') 
+        $cspHeader = $response->headers->get('Content-Security-Policy')
             ?? $response->headers->get('Content-Security-Policy-Report-Only');
 
         if ($cspHeader) {
-            $this->assertStringContainsString("frame-ancestors", $cspHeader);
+            $this->assertStringContainsString('frame-ancestors', $cspHeader);
         }
     }
 
@@ -257,12 +285,12 @@ class CspHeadersFeatureTest extends TestCase
 
         $response = $this->actingAs($member)->get(route('admin.dashboard'));
 
-        $cspHeader = $response->headers->get('Content-Security-Policy') 
+        $cspHeader = $response->headers->get('Content-Security-Policy')
             ?? $response->headers->get('Content-Security-Policy-Report-Only');
 
         if ($cspHeader) {
             // object-srcが'none'に設定されていることを確認
-            $this->assertStringContainsString("object-src", $cspHeader);
+            $this->assertStringContainsString('object-src', $cspHeader);
         }
     }
 

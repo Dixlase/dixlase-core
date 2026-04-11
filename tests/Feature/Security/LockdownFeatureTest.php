@@ -23,10 +23,14 @@
 namespace Tests\Feature\Security;
 
 use App\Enums\MemberRole;
+use App\Http\Middleware\CheckInstallationReady;
+use App\Http\Middleware\ContentSecurityPolicy;
+use App\Models\BaseSetting;
 use App\Models\LockdownStatus;
 use App\Models\Member;
 use App\Services\LockdownService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\View;
 use Tests\TestCase;
 
 /**
@@ -41,6 +45,25 @@ class LockdownFeatureTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->withoutMiddleware([
+            CheckInstallationReady::class,
+            ContentSecurityPolicy::class,
+            \App\Http\Middleware\EnsureEmailIsVerified::class,
+            \App\Http\Middleware\CheckMenuAccess::class,
+        ]);
+
+        putenv('INSTALLED=true');
+        $_ENV['INSTALLED'] = 'true';
+        $_SERVER['INSTALLED'] = 'true';
+
+        $adminTheme = config('themes.admin_theme', 'admin');
+        View::addNamespace('admin', [
+            resource_path("views/{$adminTheme}"),
+        ]);
+
+        BaseSetting::setValue('site_name', 'Test');
+
         LockdownService::clearCache();
     }
 
@@ -48,6 +71,9 @@ class LockdownFeatureTest extends TestCase
     {
         LockdownService::deactivateAll();
         LockdownService::clearCache();
+        putenv('INSTALLED=false');
+        $_ENV['INSTALLED'] = 'false';
+        unset($_SERVER['INSTALLED']);
         parent::tearDown();
     }
 
@@ -283,7 +309,7 @@ class LockdownFeatureTest extends TestCase
 
         // auto_release_atを過去に設定
         LockdownStatus::active()->update([
-            'auto_release_at' => now()->subMinutes(5)
+            'auto_release_at' => now()->subMinutes(5),
         ]);
         LockdownService::clearCache();
 

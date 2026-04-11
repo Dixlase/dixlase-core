@@ -41,6 +41,15 @@ class CheckRoleMiddlewareTest extends TestCase
     {
         parent::setUp();
 
+        $this->withoutMiddleware([
+            CheckInstallationReady::class,
+            ContentSecurityPolicy::class,
+        ]);
+
+        putenv('INSTALLED=true');
+        $_ENV['INSTALLED'] = 'true';
+        $_SERVER['INSTALLED'] = 'true';
+
         // テスト用ルートを登録
         Route::middleware(['web', 'auth:member', 'role:super_admin'])
             ->get('/test/role/super-admin', function () {
@@ -66,6 +75,14 @@ class CheckRoleMiddlewareTest extends TestCase
             ->get('/test/role/guest', function () {
                 return response('OK', 200);
             })->name('test.role.guest');
+    }
+
+    protected function tearDown(): void
+    {
+        putenv('INSTALLED=false');
+        $_ENV['INSTALLED'] = 'false';
+        unset($_SERVER['INSTALLED']);
+        parent::tearDown();
     }
 
     // ========================================
@@ -288,7 +305,8 @@ class CheckRoleMiddlewareTest extends TestCase
             $member = Member::factory()->create(['role' => $testCase['role']]);
 
             foreach ($routes as $route) {
-                $response = $this->actingAs($member)->get("/test/role/{$route}");
+                $urlRoute = str_replace('_', '-', $route);
+                $response = $this->actingAs($member)->get("/test/role/{$urlRoute}");
 
                 if (in_array($route, $testCase['can_access'])) {
                     $this->assertEquals(
