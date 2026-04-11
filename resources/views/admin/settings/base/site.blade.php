@@ -89,31 +89,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section>
         <h2>{{ __('admin/settings/base/site.ogp_seo_settings') }}</h2>
 
-        <fieldset>
-            <legend>{{ __('admin/settings/base/site.default_ogp_image') }}</legend>
-            
-            <x-media.picker
-                name="default_ogp_image_id"
-                :value="$settings['default_ogp_image_id']"
-                :media="$defaultOgpImage"
-                :help="__('admin/settings/base/site.default_ogp_image_help')"
-                :error="$errors->first('default_ogp_image_id')"
-                aspectRatio="ogp"
-            />
-        </fieldset>
-
-        <fieldset>
-            <legend>{{ __('admin/settings/base/site.twitter_card_type') }}</legend>
-            <x-form-select
-                name="twitter_card_type"
-                :options="[
-                    'summary' => __('admin/settings/base/site.twitter_card_summary'),
-                    'summary_large_image' => __('admin/settings/base/site.twitter_card_summary_large'),
-                ]"
-                :value="old('twitter_card_type', $settings['twitter_card_type'])"
-            />
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ __('admin/settings/base/site.twitter_card_type_help') }}</p>
-        </fieldset>
+        <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-6">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{ __('admin/settings/base/site.ogp_seo_plugin_notice') }}
+            </p>
+        </div>
     </section>
 
 </form>

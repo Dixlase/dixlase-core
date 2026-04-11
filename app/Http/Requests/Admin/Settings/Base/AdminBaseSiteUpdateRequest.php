@@ -45,10 +45,8 @@ class AdminBaseSiteUpdateRequest extends FormRequest
             'app_name' => 'required|string|max:255',
             'site_description' => 'nullable|string|max:1000',
             'site_keywords' => 'nullable|string|max:500',
-            'locale' => 'required|string|in:' . implode(',', array_keys(config('admin.locale.available', []))),
+            'locale' => 'required|string|in:'.implode(',', array_keys(config('admin.locale.available', []))),
             'timezone' => 'required|string|timezone',
-            'default_ogp_image_id' => 'nullable|integer|exists:media,id',
-            'twitter_card_type' => 'required|string|in:summary,summary_large_image',
         ];
     }
 }
