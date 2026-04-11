@@ -3,9 +3,8 @@
 namespace Tests\Unit;
 
 use App\Models\MemberLoginAttempt;
-use App\Models\MemberSetting;
+use App\Models\SecuritySetting;
 use App\Services\AdminLoginLockoutService;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Tests\TestCase;
@@ -20,17 +19,17 @@ class AdminLoginLockoutServiceTest extends TestCase
     {
         parent::setUp();
         $this->service = new AdminLoginLockoutService();
-        
+
         // Set default test settings
-        MemberSetting::setValue('login_attempt_limit_enabled', true);
-        MemberSetting::setValue('login_attempt_max_attempts', 5);
-        MemberSetting::setValue('login_attempt_time_window', 15);
-        MemberSetting::setValue('login_attempt_lockout_duration', 30);
+        SecuritySetting::setValue('login_attempt_limit_enabled', true);
+        SecuritySetting::setValue('login_attempt_max_attempts', 5);
+        SecuritySetting::setValue('login_attempt_time_window', 15);
+        SecuritySetting::setValue('login_attempt_lockout_duration', 30);
     }
 
     public function test_lockout_is_disabled_when_setting_is_false()
     {
-        MemberSetting::setValue('login_attempt_limit_enabled', false);
+        SecuritySetting::setValue('login_attempt_limit_enabled', false);
 
         $this->assertFalse($this->service->isLockoutEnabled());
         $this->assertFalse($this->service->isLockedOut('test@example.com'));
@@ -38,7 +37,7 @@ class AdminLoginLockoutServiceTest extends TestCase
 
     public function test_lockout_is_enabled_when_setting_is_true()
     {
-        MemberSetting::setValue('login_attempt_limit_enabled', true);
+        SecuritySetting::setValue('login_attempt_limit_enabled', true);
 
         $this->assertTrue($this->service->isLockoutEnabled());
     }
@@ -120,7 +119,7 @@ class AdminLoginLockoutServiceTest extends TestCase
         }
 
         $remainingMinutes = $this->service->getLockoutRemainingMinutes($email);
-        
+
         // Should be close to 30 minutes (lockout duration)
         $this->assertGreaterThan(29, $remainingMinutes);
         $this->assertLessThanOrEqual(30, $remainingMinutes);
@@ -156,7 +155,7 @@ class AdminLoginLockoutServiceTest extends TestCase
 
         // Verify failed attempts are cleared
         $this->assertEquals(0, MemberLoginAttempt::getFailedAttemptsCount($email, 15));
-        
+
         // Verify successful attempt is recorded
         $this->assertEquals(1, MemberLoginAttempt::where('identifier', $email)->where('successful', true)->count());
     }
@@ -166,7 +165,7 @@ class AdminLoginLockoutServiceTest extends TestCase
         $email = 'test@example.com';
         $request = Request::create('/login', 'POST', [], [], [], [
             'REMOTE_ADDR' => '192.168.1.1',
-            'HTTP_USER_AGENT' => 'Mozilla/5.0'
+            'HTTP_USER_AGENT' => 'Mozilla/5.0',
         ]);
 
         $result = $this->service->handleFailedLogin($request, $email);
@@ -182,7 +181,7 @@ class AdminLoginLockoutServiceTest extends TestCase
         $email = 'test@example.com';
         $request = Request::create('/login', 'POST', [], [], [], [
             'REMOTE_ADDR' => '192.168.1.1',
-            'HTTP_USER_AGENT' => 'Mozilla/5.0'
+            'HTTP_USER_AGENT' => 'Mozilla/5.0',
         ]);
 
         // Create 4 existing failed attempts
@@ -201,7 +200,7 @@ class AdminLoginLockoutServiceTest extends TestCase
 
     public function test_get_lockout_info_when_disabled()
     {
-        MemberSetting::setValue('login_attempt_limit_enabled', false);
+        SecuritySetting::setValue('login_attempt_limit_enabled', false);
 
         $info = $this->service->getLockoutInfo('test@example.com');
 
@@ -255,7 +254,7 @@ class AdminLoginLockoutServiceTest extends TestCase
         $email = 'test@example.com';
         $request = Request::create('/login', 'POST', [], [], [], [
             'REMOTE_ADDR' => '192.168.1.1',
-            'HTTP_USER_AGENT' => 'Mozilla/5.0'
+            'HTTP_USER_AGENT' => 'Mozilla/5.0',
         ]);
 
         $attempt = $this->service->recordLoginAttempt($request, $email, false);
