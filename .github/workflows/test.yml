@@ -117,6 +117,13 @@ jobs:
           DB_CONNECTION: mysql
           DB_DATABASE: dixlase_test
 
+      - name: Run Custom Tests (if custom files exist)
+        if: hashFiles('custom/app/**/*.php') != ''
+        run: php artisan test --testsuite=Custom
+        env:
+          DB_CONNECTION: mysql
+          DB_DATABASE: dixlase_test
+
   # ============================================
   # PHPUnit Tests (Plugins)
   # ============================================
