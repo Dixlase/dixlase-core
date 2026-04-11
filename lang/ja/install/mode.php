@@ -22,8 +22,8 @@
 
 return [
     'mode_title' => 'モード選択',
-    'mode_header' => 'インストールモードの選択',
-    'mode_description' => 'インストールのモードを選択してください。',
+    'mode_header' => 'セットアップモードの選択',
+    'mode_description' => 'インストールおよび管理画面のモードを選択してください。',
 
     'simple_mode' => 'かんたんモード',
     'simple_mode_description' => 'セキュリティを重視した設定が自動で適用されます。専門的な設定は後から管理画面で変更できます。',

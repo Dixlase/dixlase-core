@@ -22,8 +22,8 @@
 
 return [
     'mode_title' => 'Mode Selection',
-    'mode_header' => 'Select Installation Mode',
-    'mode_description' => 'Choose your installation mode.',
+    'mode_header' => 'Select Setup Mode',
+    'mode_description' => 'Choose the mode for installation and admin panel.',
 
     'simple_mode' => 'Simple Mode',
     'simple_mode_description' => 'Security-focused settings are applied automatically. You can change advanced settings later from the admin panel.',
