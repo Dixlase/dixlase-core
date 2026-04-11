@@ -54,6 +54,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth.api' => \App\Http\Middleware\AuthenticateApiKey::class, // APIキー認証
             'throttle.api' => \App\Http\Middleware\ThrottleApiRequest::class, // APIレートリミット
             'log.api' => \App\Http\Middleware\LogApiRequest::class, // APIリクエストログ
+            'role' => \App\Http\Middleware\CheckRole::class, // ロールチェック
+            'permission' => \App\Http\Middleware\CheckPermission::class, // 権限チェック
         ]);
 
         // プラグインAPI用（APIキー認証 + レートリミット + ログ）

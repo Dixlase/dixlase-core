@@ -159,7 +159,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <!-- Page Header -->
                     <header class="mx-auto pt-6 pb-6 px-8 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white @if($transitionEnabled ?? false) transition-colors duration-[500ms] @endif">
                         <h1 class="font-semibold text-xl leading-tight text-gray-800 dark:text-white">
-                            {{ __($heading) }}
+                            {{ __($heading ?? '') }}
                         </h1>
                     </header>
 

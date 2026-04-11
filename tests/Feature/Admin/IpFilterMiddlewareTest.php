@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Http\Middleware\CheckInstallationReady;
 use App\Models\Member;
 use App\Models\SecuritySetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,6 +16,21 @@ class IpFilterMiddlewareTest extends TestCase
     {
         parent::setUp();
 
+        $this->withoutMiddleware([
+            CheckInstallationReady::class,
+            \App\Http\Middleware\EnsureEmailIsVerified::class,
+            \App\Http\Middleware\CheckMenuAccess::class,
+        ]);
+
+        putenv('INSTALLED=true');
+        $_ENV['INSTALLED'] = 'true';
+        $_SERVER['INSTALLED'] = 'true';
+
+        $adminTheme = config('themes.admin_theme', 'admin');
+        \Illuminate\Support\Facades\View::addNamespace('admin', [
+            resource_path("views/{$adminTheme}"),
+        ]);
+
         // テスト環境をproductionに設定（localではIP制限がスキップされるため）
         app()->detectEnvironment(fn () => 'production');
     }
@@ -23,6 +39,9 @@ class IpFilterMiddlewareTest extends TestCase
     {
         // 環境を元に戻す
         app()->detectEnvironment(fn () => 'testing');
+        putenv('INSTALLED=false');
+        $_ENV['INSTALLED'] = 'false';
+        unset($_SERVER['INSTALLED']);
         parent::tearDown();
     }
 
