@@ -18,6 +18,23 @@ class AdminSecuritySessionUpdateTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        putenv('INSTALLED=true');
+        $_ENV['INSTALLED'] = 'true';
+        $_SERVER['INSTALLED'] = 'true';
+    }
+
+    protected function tearDown(): void
+    {
+        putenv('INSTALLED=false');
+        $_ENV['INSTALLED'] = 'false';
+        unset($_SERVER['INSTALLED']);
+        parent::tearDown();
+    }
+
     // ========================================
     // レベル0: ConfigHelper の読み書き
     // ========================================

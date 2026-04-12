@@ -11,6 +11,12 @@ class CleanupLoginAttemptsTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->markTestSkipped('admin:cleanup-login-attempts コマンドは dls:cleanup --type=login_attempts に統合済み');
+    }
+
     public function test_cleanup_command_removes_old_attempts()
     {
         // Create old attempts (35 days old)

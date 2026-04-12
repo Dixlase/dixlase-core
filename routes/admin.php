@@ -67,8 +67,10 @@ Route::prefix($adminUrl)->name('admin.')
         });
 
         // ログイン
-        Route::get('/login', [AdminLoginController::class, 'create'])->name('login');
-        Route::post('/login', [AdminLoginController::class, 'store'])->name('login.store');
+        Route::middleware([\App\Http\Middleware\CheckLockdown::class.':login'])->group(function () {
+            Route::get('/login', [AdminLoginController::class, 'create'])->name('login');
+            Route::post('/login', [AdminLoginController::class, 'store'])->name('login.store');
+        });
 
         // ログイン識別子確認（メールアドレス/アカウント名の存在確認）
         Route::post('/login/check-identifier', [AdminLoginIdentifierCheckController::class, 'check'])->name('login.check-identifier');
@@ -108,6 +110,7 @@ Route::prefix($adminUrl)->name('admin.')
             'auth:member',
             'verified',
             'log.admin.activity',
+            \App\Http\Middleware\CheckLockdown::class.':admin',
         ])->group(function () {
             // ダッシュボード（全員アクセス可能）
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
