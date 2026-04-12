@@ -72,8 +72,12 @@ jobs:
               echo "Initializing: $name ($path)"
               git submodule init "$path" 2>&1 || true
             done
-            echo "=== Fetching submodules ==="
-            git submodule update --depth=1 --force 2>&1 || true
+            echo "=== Fetching submodules (individually) ==="
+            # 一括 update は 1 つの submodule が失敗すると後続が中断されるため個別に実行
+            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
+              echo "--- Updating: $path ---"
+              git submodule update --depth=1 --force "$path" 2>&1 || echo "WARN: Failed to update $path (continuing)"
+            done
             echo "=== Submodule status ==="
             git submodule status 2>&1 || true
             echo "=== Plugin directories ==="
@@ -113,6 +117,18 @@ jobs:
           cp .env.example .env
           php artisan key:generate
           mkdir -p custom/tests/Unit custom/tests/Feature
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build frontend assets (Vite manifest)
+        run: npm run build
 
       - name: Configure test database
         run: |
@@ -190,8 +206,12 @@ jobs:
               echo "Initializing: $name ($path)"
               git submodule init "$path" 2>&1 || true
             done
-            echo "=== Fetching submodules ==="
-            git submodule update --depth=1 --force 2>&1 || true
+            echo "=== Fetching submodules (individually) ==="
+            # 一括 update は 1 つの submodule が失敗すると後続が中断されるため個別に実行
+            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
+              echo "--- Updating: $path ---"
+              git submodule update --depth=1 --force "$path" 2>&1 || echo "WARN: Failed to update $path (continuing)"
+            done
             echo "=== Plugin directories ==="
             ls -d plugins/*/ 2>/dev/null || echo "No plugin directories found"
           fi
@@ -367,8 +387,12 @@ jobs:
               echo "Initializing: $name ($path)"
               git submodule init "$path" 2>&1 || true
             done
-            echo "=== Fetching submodules ==="
-            git submodule update --depth=1 --force 2>&1 || true
+            echo "=== Fetching submodules (individually) ==="
+            # 一括 update は 1 つの submodule が失敗すると後続が中断されるため個別に実行
+            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
+              echo "--- Updating: $path ---"
+              git submodule update --depth=1 --force "$path" 2>&1 || echo "WARN: Failed to update $path (continuing)"
+            done
             echo "=== Plugin directories ==="
             ls -d plugins/*/ 2>/dev/null || echo "No plugin directories found"
           fi
