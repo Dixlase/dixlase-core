@@ -49,7 +49,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
 @section('back_link')
-    <a class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:underline" href="{{ \Illuminate\Support\Facades\Route::has('welcome') ? route('welcome') : url('/') }}">
+    <a class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:underline" href="{{ $backUrl ?? url('/') }}">
         {{ __('admin/auth.login.back_to_welcome') }}
     </a>
 @endsection

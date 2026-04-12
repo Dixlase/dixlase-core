@@ -199,7 +199,7 @@ class AdminSecurityLoginIdentifierModeTest extends TestCase
     {
         SecuritySetting::set('login_identifier_mode', LoginIdentifierMode::EmailOnly->value);
 
-        $this->post('/login', [
+        $this->post(route('admin.login.store'), [
             'login' => 'admin@example.com',
             'password' => 'password',
         ]);
@@ -211,7 +211,7 @@ class AdminSecurityLoginIdentifierModeTest extends TestCase
     {
         SecuritySetting::set('login_identifier_mode', LoginIdentifierMode::EmailOnly->value);
 
-        $this->post('/login', [
+        $this->post(route('admin.login.store'), [
             'login' => 'testadmin',
             'password' => 'password',
         ]);
@@ -223,7 +223,7 @@ class AdminSecurityLoginIdentifierModeTest extends TestCase
     {
         SecuritySetting::set('login_identifier_mode', LoginIdentifierMode::AccountNameOnly->value);
 
-        $this->post('/login', [
+        $this->post(route('admin.login.store'), [
             'login' => 'testadmin',
             'password' => 'password',
         ]);
@@ -235,7 +235,7 @@ class AdminSecurityLoginIdentifierModeTest extends TestCase
     {
         SecuritySetting::set('login_identifier_mode', LoginIdentifierMode::AccountNameOnly->value);
 
-        $this->post('/login', [
+        $this->post(route('admin.login.store'), [
             'login' => 'admin@example.com',
             'password' => 'password',
         ]);
@@ -247,7 +247,7 @@ class AdminSecurityLoginIdentifierModeTest extends TestCase
     {
         SecuritySetting::set('login_identifier_mode', LoginIdentifierMode::EmailOrAccountName->value);
 
-        $this->post('/login', [
+        $this->post(route('admin.login.store'), [
             'login' => 'admin@example.com',
             'password' => 'password',
         ]);
@@ -259,7 +259,7 @@ class AdminSecurityLoginIdentifierModeTest extends TestCase
     {
         SecuritySetting::set('login_identifier_mode', LoginIdentifierMode::EmailOrAccountName->value);
 
-        $this->post('/login', [
+        $this->post(route('admin.login.store'), [
             'login' => 'testadmin',
             'password' => 'password',
         ]);
@@ -270,7 +270,7 @@ class AdminSecurityLoginIdentifierModeTest extends TestCase
     public function test_default_mode_allows_email_login(): void
     {
         // DB設定なし（デフォルト: EmailOrAccountName）
-        $this->post('/login', [
+        $this->post(route('admin.login.store'), [
             'login' => 'admin@example.com',
             'password' => 'password',
         ]);

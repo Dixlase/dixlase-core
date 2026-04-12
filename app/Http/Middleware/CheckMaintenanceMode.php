@@ -37,7 +37,8 @@ class CheckMaintenanceMode
     public function handle(Request $request, Closure $next): Response
     {
         // インストールが完了していない場合はメンテナンスチェックをスキップ
-        $installed = env('INSTALLED');
+        // config キャッシュ時の env() null 化対策として $_SERVER / $_ENV をフォールバック
+        $installed = $_SERVER['INSTALLED'] ?? $_ENV['INSTALLED'] ?? env('INSTALLED') ?? config('app.installed');
         if ($installed !== 'true' && $installed !== true) {
             return $next($request);
         }
