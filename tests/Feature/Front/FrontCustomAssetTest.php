@@ -25,6 +25,8 @@ class FrontCustomAssetTest extends TestCase
     {
         parent::setUp();
 
+        $this->markTestSkipped('DixlasePages プラグイン (FrontPageFactory) 依存');
+
         $_ENV['INSTALLED'] = 'true';
         $_SERVER['INSTALLED'] = 'true';
     }

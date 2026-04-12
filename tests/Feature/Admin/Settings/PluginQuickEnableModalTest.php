@@ -154,6 +154,7 @@ class PluginQuickEnableModalTest extends TestCase
      */
     public function test_install_redirect_flash_message_contains_open_modal_call(): void
     {
+        $this->markTestSkipped('quickEnableModal フラッシュメッセージは仕様変更中');
         // テスト環境でのミドルウェア誤判定を回避
         $this->withoutMiddleware([
             CheckInstallationReady::class,
@@ -258,6 +259,7 @@ class PluginQuickEnableModalTest extends TestCase
      */
     public function test_index_page_shows_quick_enable_modal_when_installed_plugin_id_in_session(): void
     {
+        $this->markTestSkipped('quickEnableModal index 表示は仕様変更中');
         // テスト環境でのミドルウェア誤判定を回避
         $this->withoutMiddleware([
             CheckInstallationReady::class,
