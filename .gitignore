@@ -62,6 +62,7 @@ plugins/*
 !plugins/DixlaseDocs/
 !plugins/DixlaseDevKit/
 !plugins/DixlaseCoreDev/
+!plugins/DixlaseCoreDevKit/
 !plugins/DixlaseAuthority/
 !plugins/DixlaseBackup/
 !plugins/DixlaseMultilingual/

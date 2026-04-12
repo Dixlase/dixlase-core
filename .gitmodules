@@ -37,3 +37,6 @@
 [submodule "themes/DixlaseOnePage"]
 	path = themes/DixlaseOnePage
 	url = https://github.com/Dixlase/theme-dixlase-onepage.git
+[submodule "plugins/DixlaseCoreDevKit"]
+	path = plugins/DixlaseCoreDevKit
+	url = https://github.com/Dixlase/plugin-dixlase-core-devkit.git
