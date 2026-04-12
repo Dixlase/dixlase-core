@@ -62,21 +62,26 @@ class AdminHelper
 
     public static function getAdminUrl()
     {
+        // admin_url 設定は config/admin/url.php に定義 → 'admin.url.admin_url'
+        $configDefault = config('admin.url.admin_url', 'admin');
+
+        // config キャッシュ時の env() null 化対策として $_SERVER / $_ENV をフォールバック
+        $installed = $_SERVER['INSTALLED'] ?? $_ENV['INSTALLED'] ?? env('INSTALLED') ?? config('app.installed');
+        $isInstalled = ($installed === 'true' || $installed === true);
+
         // インストール前やデータベース接続エラーの場合はコンフィグ値を返す
-        if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
-            return config('admin.admin_url');
+        if (! file_exists(base_path('.env')) || ! $isInstalled) {
+            return $configDefault;
         }
 
         try {
             if (Schema::hasTable('base_settings')) {
-                $adminUrl = BaseSetting::getValue('admin_url', config('admin.admin_url'));
-            } else {
-                $adminUrl = config('admin.admin_url');
+                return BaseSetting::getValue('admin_url', $configDefault);
             }
 
-            return $adminUrl;
+            return $configDefault;
         } catch (\Exception $e) {
-            return config('admin.admin_url');
+            return $configDefault;
         }
     }
 

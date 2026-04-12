@@ -195,6 +195,9 @@ trait LoginTrait
         $settingModelClass = $this->getSettingModelClass();
         $viewParams['passkeyEnabled'] = $this->shouldShowPasskeyButton($settingModelClass);
 
+        // 戻るリンクの URL（welcome ルート未定義時は / にフォールバック）
+        $viewParams['backUrl'] = \Illuminate\Support\Facades\Route::has('welcome') ? route('welcome') : url('/');
+
         return view($this->getLoginViewName(), $viewParams);
     }
 

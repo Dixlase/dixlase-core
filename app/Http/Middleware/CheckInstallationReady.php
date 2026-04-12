@@ -24,9 +24,9 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 
 class CheckInstallationReady
 {
@@ -50,16 +50,16 @@ class CheckInstallationReady
         }
 
         // インストール状態を事前チェック（ログ出力を最小限にするため）
-        $installed = env('INSTALLED') ?? config('app.installed');
+        $installed = $_SERVER['INSTALLED'] ?? $_ENV['INSTALLED'] ?? env('INSTALLED') ?? config('app.installed');
         $isInstalled = ($installed === 'true' || $installed === true);
-        
+
         // インストール完了後はログを出力しない
-        
+
         // インストール中はセッションドライバーをfileに切り替え
-        if (!$isInstalled) {
+        if (! $isInstalled) {
             $this->ensureFileSessionDriver();
         }
-        
+
         // セッションから言語を設定
         if (session()->has('install_locale')) {
             app()->setLocale(session('install_locale'));
@@ -70,7 +70,7 @@ class CheckInstallationReady
 
         try {
             // .envファイルが存在しない場合、.env.example からコピーして生成
-            if (!file_exists($envPath)) {
+            if (! file_exists($envPath)) {
                 if (file_exists($envExamplePath)) {
                     $copied = copy($envExamplePath, $envPath);
                     if ($copied) {
@@ -94,31 +94,31 @@ class CheckInstallationReady
             }
 
             // APP_KEYが設定されているか確認
-            if (!preg_match('/^APP_KEY=(.+)$/m', $envContent, $matches) || empty(trim($matches[1] ?? ''))) {
+            if (! preg_match('/^APP_KEY=(.+)$/m', $envContent, $matches) || empty(trim($matches[1] ?? ''))) {
                 // 新しいAPP_KEYを生成
-                $newKey = 'base64:' . base64_encode(random_bytes(32));
-                
+                $newKey = 'base64:'.base64_encode(random_bytes(32));
+
                 // .envファイルを更新
                 $updatedContent = preg_replace(
                     '/^APP_KEY=.*$/m',
-                    'APP_KEY=' . $newKey,
+                    'APP_KEY='.$newKey,
                     $envContent,
                     -1,
                     $count
                 );
-                
+
                 // マッチしなかった場合は追記
                 if ($count === 0) {
-                    $updatedContent .= "\nAPP_KEY=" . $newKey . "\n";
+                    $updatedContent .= "\nAPP_KEY=".$newKey."\n";
                 }
-                
+
                 // ファイルに書き込み
                 $written = file_put_contents($envPath, $updatedContent, LOCK_EX);
                 if ($written === false) {
                     Log::error('Failed to write to .env file');
                     throw new \RuntimeException('Failed to update APP_KEY in .env file');
                 }
-                
+
                 Log::channel('install')->info('APP_KEY was generated and saved to .env');
 
                 // 設定をランタイムに反映
@@ -131,29 +131,29 @@ class CheckInstallationReady
                 return redirect($request->fullUrl());
             }
         } catch (\Exception $e) {
-            Log::error('Environment setup error: ' . $e->getMessage());
+            Log::error('Environment setup error: '.$e->getMessage());
             throw $e;
         }
 
         // インストール状態チェック（.envの設定を優先）
         // 既に上でチェック済みなので再利用
         $currentRoute = $request->route() ? $request->route()->getName() : 'unknown';
-        
+
         // マイグレーション完了チェック（未インストール時のみログ出力）
         $debugInfo = [];
-        $isMigrated = $this->checkMigrationCompleted($debugInfo, !$isInstalled);
-        
+        $isMigrated = $this->checkMigrationCompleted($debugInfo, ! $isInstalled);
+
         // インストール完了後はログを出力しない
-        
-        if (!$isInstalled) {
+
+        if (! $isInstalled) {
             // 未インストール状態の処理
-            
+
             if ($request->is('install*') || $request->is('install/*')) {
                 // installルート内でのアクセス
-                
+
                 if ($request->is('install/complete')) {
                     // 完了画面へのアクセス
-                    if (!$isMigrated) {
+                    if (! $isMigrated) {
                         // マイグレーション未完了なのに完了画面にアクセス → 初期画面へ
                         return redirect()->route('install.index');
                     }
@@ -162,30 +162,29 @@ class CheckInstallationReady
                         session(['install_process_completed' => true]);
                     }
                     // 完了画面自体なので、そのまま通過させる
-                    
                 } elseif ($request->is('install/finalize') || $currentRoute === 'install.finalize') {
                     // finalize処理は常に許可（POSTリクエスト）
-                    
                 } else {
                     // その他のインストールフロー（index, environment, settings, database, confirm）
                     if ($isMigrated) {
                         // マイグレーション完了済み → 完了画面へリダイレクト
                         session(['install_process_completed' => true]);
+
                         return redirect()->route('install.complete');
                     }
                     // マイグレーション未完了ならインストールフロー続行を許可
                 }
-                
             } else {
                 // install以外のルート（フロントページなど）へのアクセス
-                
+
                 if ($isMigrated) {
                     // マイグレーション完了 → 完了画面へ
                     // ただし、既に完了画面へのリダイレクト中でなければ
                     // セッションが利用可能な場合のみチェック
-                    if ($request->hasSession() && !$request->session()->has('_redirect_to_complete')) {
+                    if ($request->hasSession() && ! $request->session()->has('_redirect_to_complete')) {
                         session(['install_process_completed' => true]);
                         $request->session()->put('_redirect_to_complete', true);
+
                         return redirect()->route('install.complete');
                     } elseif ($request->hasSession()) {
                         // リダイレクトループ防止: すでにリダイレクト済みの場合は通過
@@ -198,24 +197,23 @@ class CheckInstallationReady
                     return redirect()->route('install.index');
                 }
             }
-            
         } else {
             // インストール済みの場合、インストール画面にはアクセスできないようにする
             if ($request->is('install') || $request->is('install/*')) {
                 return redirect('/')->with('message', 'このアプリケーションは既にインストールされています。');
             }
         }
-        
+
         return $next($request);
     }
-    
+
     /**
      * マイグレーションが完了しているかチェック
-     * 
+     *
      * 提案1（migrationsテーブル）+ 提案3（管理者チェック）の統合版
-     * 
-     * @param array $debugInfo デバッグ情報を格納する配列（参照渡し）
-     * @param bool $logToInstall インストールログに出力するか（デフォルト: false）
+     *
+     * @param  array  $debugInfo  デバッグ情報を格納する配列（参照渡し）
+     * @param  bool  $logToInstall  インストールログに出力するか（デフォルト: false）
      */
     private function checkMigrationCompleted(array &$debugInfo = [], bool $logToInstall = false): bool
     {
@@ -223,99 +221,104 @@ class CheckInstallationReady
             // ステップ1: データベース接続をチェック
             $dbName = DB::connection()->getDatabaseName();
             $debugInfo['step1_db_connection'] = $dbName ? "OK ({$dbName})" : 'NG';
-            
-            if (!$dbName) {
+
+            if (! $dbName) {
                 if ($logToInstall) {
                     Log::channel('install')->info('CheckInstallationReady: データベース接続なし');
                 }
+
                 return false;
             }
-            
+
             // ステップ2: migrationsテーブルが存在するかチェック（Laravel標準）
             // ※ 直接SQL実行でインストールされた場合はmigrationsテーブルがない場合があるため
             //    存在しない場合はスキップして次のチェックに進む
             // テーブルプレフィックスを考慮: dls_migrations または migrations
             $hasMigrationsTable = DB::getSchemaBuilder()->hasTable('migrations');
             $debugInfo['step2_migrations_table'] = $hasMigrationsTable ? 'OK' : 'SKIP (直接SQL実行の可能性)';
-            
+
             if ($hasMigrationsTable) {
                 // ステップ3: マイグレーション実行レコード数をチェック
                 try {
                     $migrationCount = DB::table('migrations')->count();
                     $minRequiredMigrations = 15;
                     $debugInfo['step3_migration_count'] = "{$migrationCount}件 (必要: {$minRequiredMigrations})";
-                    
+
                     if ($migrationCount < $minRequiredMigrations) {
                         return false;
                     }
                 } catch (\Exception $e) {
                     // テーブル名の問題などでエラーが発生した場合はスキップ
-                    $debugInfo['step3_migration_count'] = 'ERROR: ' . $e->getMessage();
+                    $debugInfo['step3_migration_count'] = 'ERROR: '.$e->getMessage();
                 }
             } else {
                 $debugInfo['step3_migration_count'] = 'SKIP (migrationsテーブル不在)';
             }
-            
+
             // ステップ4: 主要テーブルの存在チェック（念のため）
             $requiredTables = ['members', 'base_settings', 'themes'];
             $tableStatus = [];
-            
+
             foreach ($requiredTables as $table) {
                 $exists = DB::getSchemaBuilder()->hasTable($table);
                 $tableStatus[$table] = $exists ? 'OK' : 'NG';
-                
-                if (!$exists) {
+
+                if (! $exists) {
                     if ($logToInstall) {
                         Log::channel('install')->debug("CheckInstallationReady: 主要テーブル '{$table}' が存在しません");
                     }
                     $debugInfo['step4_tables'] = $tableStatus;
+
                     return false;
                 }
             }
             $debugInfo['step4_tables'] = $tableStatus;
-            
+
             // ステップ5: 管理者ユーザーが存在するかチェック（初期データ投入の証拠）
             // role=10: SUPER_ADMIN, role=9: ADMIN
             $adminCount = DB::table('members')
                 ->whereIn('role', [9, 10])
                 ->count();
             $debugInfo['step5_admin_users'] = "{$adminCount}人";
-            
+
             if ($adminCount === 0) {
                 if ($logToInstall) {
                     Log::channel('install')->info('CheckInstallationReady: 管理者ユーザーが存在しません（初期データ未投入）');
                 }
+
                 return false;
             }
-            
+
             if ($logToInstall) {
                 Log::channel('install')->info('CheckInstallationReady: 管理者ユーザー存在確認');
             }
-            
+
             // ステップ6: base_settingsに基本データが存在するかチェック（さらなる確認）
             $hasSiteName = DB::table('base_settings')
                 ->where('name', 'site_name')
                 ->exists();
             $debugInfo['step6_site_name'] = $hasSiteName ? 'OK' : 'NG';
-            
-            if (!$hasSiteName) {
+
+            if (! $hasSiteName) {
                 if ($logToInstall) {
                     Log::channel('install')->info('CheckInstallationReady: base_settingsに初期データが存在しません');
                 }
+
                 return false;
             }
-            
+
             $debugInfo['result'] = '✅ ALL PASSED';
             if ($logToInstall) {
                 Log::channel('install')->info('CheckInstallationReady: ✅ マイグレーション完了を確認（全チェック通過）');
             }
+
             return true;
-            
         } catch (\Exception $e) {
             $debugInfo['error'] = $e->getMessage();
             if ($logToInstall) {
-                Log::channel('install')->info('CheckInstallationReady: マイグレーションチェックエラー - ' . $e->getMessage());
+                Log::channel('install')->info('CheckInstallationReady: マイグレーションチェックエラー - '.$e->getMessage());
             }
+
             return false;
         }
     }
@@ -327,22 +330,22 @@ class CheckInstallationReady
     private function ensureFileSessionDriver(): void
     {
         $currentDriver = config('session.driver');
-        
+
         // 既にfileドライバーの場合は何もしない
         if ($currentDriver === 'file') {
             return;
         }
-        
+
         // database系ドライバーの場合はfileに切り替え
         if (in_array($currentDriver, ['database', 'guard-aware-database'])) {
             config(['session.driver' => 'file']);
-            
+
             // セッションマネージャーを再バインド
             app()->forgetInstance('session');
             app()->forgetInstance('session.store');
-            
+
             Log::channel('install')->info('CheckInstallationReady: セッションドライバーを一時的にfileに切り替えました', [
-                'original_driver' => $currentDriver
+                'original_driver' => $currentDriver,
             ]);
         }
     }
