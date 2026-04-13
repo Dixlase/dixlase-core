@@ -44,6 +44,7 @@ class UpdateFrontPageAction extends AbstractAction
     public function __construct(
         protected readonly FrontPage $frontPage,
         protected readonly FrontPageContentService $contentService,
+        protected readonly FrontPageRevisionService $revisionService,
     ) {}
 
     protected function requiredPermission(): ?Permission
@@ -111,6 +112,12 @@ class UpdateFrontPageAction extends AbstractAction
             $updateData['custom_css'] = $customCss;
         }
         $this->frontPage->update($updateData);
+
+        // 保存後の状態をリビジョンに記録（直前リビジョンと差分がない場合はスキップ）
+        $this->revisionService->record(
+            $this->frontPage->fresh() ?? $this->frontPage,
+            userId: $actor->getActorId(),
+        );
 
         return ActionResult::success(
             model: $this->frontPage,

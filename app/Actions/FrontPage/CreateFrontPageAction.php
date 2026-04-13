@@ -44,6 +44,7 @@ class CreateFrontPageAction extends AbstractAction
 {
     public function __construct(
         protected readonly FrontPageContentService $contentService,
+        protected readonly FrontPageRevisionService $revisionService,
     ) {}
 
     protected function requiredPermission(): ?Permission
@@ -101,6 +102,9 @@ class CreateFrontPageAction extends AbstractAction
             'storage_type' => $storageTypeEnum,
             'status' => ContentStatus::PUBLISHED,
         ]);
+
+        // 初回作成時のリビジョンを記録
+        $this->revisionService->record($frontPage, userId: $actor->getActorId());
 
         return ActionResult::success(
             model: $frontPage,

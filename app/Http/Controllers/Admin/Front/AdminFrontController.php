@@ -307,7 +307,7 @@ class AdminFrontController extends AdminLoggedInController
         }
 
         $actor = new MemberActor(AdminHelper::getMember());
-        (new UpdateFrontPageAction($frontPage, $this->contentService))->execute($actor, $request->validated());
+        (new UpdateFrontPageAction($frontPage, $this->contentService, app(FrontPageRevisionService::class)))->execute($actor, $request->validated());
 
         return redirect()
             ->route('admin.front.edit')
