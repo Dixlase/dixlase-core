@@ -31,7 +31,7 @@ return [
         'edit_button' => 'コンテンツを編集',
         'reset_button' => 'リセット',
         'reset_confirm_title' => 'フロントページのリセット',
-        'reset_confirm' => 'フロントページのコンテンツをリセットしますか？この操作は元に戻せません。',
+        'reset_confirm' => 'フロントページのコンテンツをリセットしますか？すべてのリビジョン履歴も削除されます。この操作は元に戻せません。',
 
         'no_content_title' => 'コンテンツがありません',
         'no_content_description' => 'フロントページのコンテンツはまだ作成されていません。下のボタンから作成してください。',
@@ -110,7 +110,7 @@ return [
         'reset_description' => 'フロントページのコンテンツをリセットします。この操作は元に戻せません。',
         'reset_button' => 'リセット',
         'reset_confirm_title' => 'フロントページのリセット',
-        'reset_confirm' => 'フロントページのコンテンツをリセットしますか？すべてのコンテンツ、CSS、JavaScriptが完全に削除されます。',
+        'reset_confirm' => 'フロントページのコンテンツをリセットしますか？すべてのコンテンツ、CSS、JavaScript、およびリビジョン履歴が完全に削除されます。',
 
         'validation' => [
             'storage_type_required' => '保存方法を選択してください。',

@@ -30,7 +30,7 @@ return [
         'edit_button' => 'Edit Content',
         'reset_button' => 'Reset',
         'reset_confirm_title' => 'Reset Front Page',
-        'reset_confirm' => 'Are you sure you want to reset the front page content? This action cannot be undone.',
+        'reset_confirm' => 'Are you sure you want to reset the front page content? All revision history will also be deleted. This action cannot be undone.',
 
         'no_content_title' => 'No Content Yet',
         'no_content_description' => 'Front page content has not been created yet. Click the button below to create it.',
@@ -109,7 +109,7 @@ return [
         'reset_description' => 'Reset the front page content. This action cannot be undone.',
         'reset_button' => 'Reset',
         'reset_confirm_title' => 'Reset Front Page',
-        'reset_confirm' => 'Are you sure you want to reset the front page content? All content, CSS, and JavaScript will be permanently deleted.',
+        'reset_confirm' => 'Are you sure you want to reset the front page content? All content, CSS, JavaScript, and revision history will be permanently deleted.',
 
         'validation' => [
             'storage_type_required' => 'Please select a storage type.',
