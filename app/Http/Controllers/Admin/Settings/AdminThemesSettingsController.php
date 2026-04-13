@@ -984,8 +984,36 @@ class AdminThemesSettingsController extends AdminLoggedInController
             $zip->close();
             File::delete($zipPath);
 
-            // 解凍されたディレクトリをリネーム（必要な場合）
+            // 解凍されたディレクトリパス
             $extractedDirPath = $themeDirectory.$extractedRootDir;
+
+            // theme.json から正しいディレクトリ名を取得
+            $themeJsonPath = $extractedDirPath.'/theme.json';
+            if (File::exists($themeJsonPath)) {
+                try {
+                    $themeData = json_decode(File::get($themeJsonPath), true);
+                    $correctDir = $this->resolveThemeDirectoryName($themeData);
+
+                    if ($correctDir) {
+                        $directoryName = $correctDir;
+                        $destinationPath = $themeDirectory.$directoryName;
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to resolve theme directory name', [
+                        'directory' => $extractedRootDir,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // 既存チェック
+            if (File::exists($destinationPath) && $extractedDirPath !== $destinationPath) {
+                File::deleteDirectory($extractedDirPath);
+
+                return ['success' => false, 'error' => __('admin/settings/themes/add.messages.directory_exists', ['directory' => $directoryName])];
+            }
+
+            // 解凍されたディレクトリをリネーム（必要な場合）
             if (is_dir($extractedDirPath) && basename($extractedDirPath) !== $directoryName) {
                 File::move($extractedDirPath, $destinationPath);
             }
@@ -1110,5 +1138,42 @@ class AdminThemesSettingsController extends AdminLoggedInController
             }
             File::move($backupPath, $originalPath);
         }
+    }
+
+    /**
+     * theme.json の内容から正しいディレクトリ名を決定する
+     *
+     * 優先順位:
+     * 1. namespace の最終セグメント（例: Themes\DixlaseOnePage → DixlaseOnePage）
+     * 2. package_name の最後の部分
+     * 3. null（既存のディレクトリ名を維持）
+     */
+    protected function resolveThemeDirectoryName(?array $themeData): ?string
+    {
+        if (! is_array($themeData)) {
+            return null;
+        }
+
+        // namespace の最終セグメントを優先
+        $namespace = $themeData['namespace'] ?? null;
+        if (is_string($namespace) && $namespace !== '') {
+            $parts = explode('\\', trim($namespace, '\\'));
+            $lastSegment = end($parts);
+            if ($lastSegment !== false && $lastSegment !== '') {
+                return $lastSegment;
+            }
+        }
+
+        // フォールバック: package_name の最後の部分
+        $packageName = $themeData['package_name'] ?? null;
+        if (is_string($packageName) && $packageName !== '') {
+            $parts = explode('/', $packageName);
+            $lastSegment = end($parts);
+            if ($lastSegment !== false && $lastSegment !== '') {
+                return $lastSegment;
+            }
+        }
+
+        return null;
     }
 }
