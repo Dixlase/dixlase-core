@@ -172,11 +172,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :closeLabel="__('admin/front.edit.sidebar_close')"
         >
 
-            {{-- 保存方法 --}}
+            {{-- 保存方法（初回作成時のみ選択可能。編集時はロック表示） --}}
             <x-content-editor.storage-info
                 :storageOptions="$storageOptions"
-                :storageType="old('storage_type', $storageType)"
+                :storageType="$storageType"
                 :showJsCss="true"
+                :locked="true"
             />
 
             {{-- リセット --}}

@@ -31,6 +31,7 @@ return [
     'storage_type_label' => 'Storage Type',
     'storage_file_path' => 'File path:',
     'storage_file_warning' => 'With file storage you can edit the file directly in a local editor or manage it with Git, but changes made outside the admin panel will NOT be recorded in the revision history. Save through the admin panel to keep a revision trail.',
+    'storage_type_locked_help' => 'Storage type is locked after creation. To change it, reset and recreate the content.',
 
     'preview_tab_edit' => 'Edit',
     'preview_tab_preview' => 'Preview',

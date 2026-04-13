@@ -65,8 +65,8 @@ class UpdateFrontPageAction extends AbstractAction
 
     protected function handle(Actor $actor, array $data): ActionResult
     {
-        $newStorageTypeEnum = ContentStorageType::fromSlug($data['storage_type']);
-        $oldStorageTypeEnum = $this->frontPage->storage_type;
+        // 保存形式は初回作成時のみ選択可能。編集時は既存の値をそのまま使用する。
+        $storageTypeEnum = $this->frontPage->storage_type;
         $editorTypeSlug = $this->frontPage->editor_type->slug();
         $locale = $this->frontPage->lang;
         $content = $data['content'] ?? '';
@@ -74,19 +74,8 @@ class UpdateFrontPageAction extends AbstractAction
         $customJs = $isHtmlEditor ? ($data['custom_js'] ?? null) : null;
         $customCss = $isHtmlEditor ? ($data['custom_css'] ?? null) : null;
 
-        // 保存方法が変更された場合の処理
-        if ($oldStorageTypeEnum !== $newStorageTypeEnum) {
-            if ($oldStorageTypeEnum === ContentStorageType::FILE && $newStorageTypeEnum === ContentStorageType::DATABASE) {
-                $this->contentService->deleteFile('main_content', $locale, $editorTypeSlug);
-                if ($isHtmlEditor) {
-                    $this->contentService->deleteJsFile('main_content', $locale);
-                    $this->contentService->deleteCssFile('main_content', $locale);
-                }
-            }
-        }
-
         // ファイル保存の場合はファイルにも保存
-        if ($newStorageTypeEnum === ContentStorageType::FILE) {
+        if ($storageTypeEnum === ContentStorageType::FILE) {
             $this->contentService->saveToFile('main_content', $locale, $editorTypeSlug, $content);
 
             if ($isHtmlEditor) {
@@ -103,11 +92,8 @@ class UpdateFrontPageAction extends AbstractAction
             }
         }
 
-        // 常にDBにもコンテンツを保存（バックアップ）
-        $updateData = [
-            'content' => $content,
-            'storage_type' => $newStorageTypeEnum,
-        ];
+        // DBにもコンテンツを保存（バックアップ兼リビジョンのソース）
+        $updateData = ['content' => $content];
         if ($isHtmlEditor) {
             $updateData['custom_js'] = $customJs;
             $updateData['custom_css'] = $customCss;
