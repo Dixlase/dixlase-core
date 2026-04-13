@@ -93,21 +93,29 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         $response = $this->client()
             ->get("{$this->baseUrl}/repos/{$this->owner}/{$repo}/releases/latest");
 
-        if ($response->failed()) {
-            return null;
+        if ($response->successful()) {
+            return ReleaseInfo::fromGitHub($response->json(), $slug, $extensionType);
         }
 
-        return ReleaseInfo::fromGitHub($response->json(), $slug, $extensionType);
+        // Release がない場合はデフォルトブランチの情報から疑似 Release を生成
+        return $this->getDefaultBranchReleaseInfo($slug, $extensionType);
     }
 
     public function downloadRelease(string $slug, string $version, string $extensionType = 'plugin'): string
     {
+        // Release からの取得を試みる
         $release = $this->findRelease($slug, $version, $extensionType);
+
+        // Release がない場合はデフォルトブランチの zipball にフォールバック
         if ($release === null) {
-            throw new RuntimeException("Release v{$version} not found for {$slug}.");
+            $downloadUrl = $this->getDefaultBranchZipballUrl($slug, $extensionType);
+            if ($downloadUrl === null) {
+                throw new RuntimeException("Release v{$version} not found for {$slug} and default branch is unavailable.");
+            }
+        } else {
+            $downloadUrl = $release['download_url'];
         }
 
-        $downloadUrl = $release['download_url'];
         if ($downloadUrl === null) {
             throw new RuntimeException("No downloadable asset found for {$slug} v{$version}.");
         }
@@ -126,6 +134,49 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         }
 
         return $filePath;
+    }
+
+    /**
+     * デフォルトブランチから疑似 ReleaseInfo を生成
+     */
+    protected function getDefaultBranchReleaseInfo(string $slug, string $extensionType): ?ReleaseInfo
+    {
+        $repo = $this->buildRepoName($slug, $extensionType);
+        $manifest = $this->fetchManifest($repo, $extensionType);
+        $version = $manifest['version'] ?? '0.0.0-dev';
+
+        $downloadUrl = $this->getDefaultBranchZipballUrl($slug, $extensionType);
+        if ($downloadUrl === null) {
+            return null;
+        }
+
+        return new ReleaseInfo(
+            version: $version,
+            slug: $slug,
+            extensionType: $extensionType,
+            downloadUrl: $downloadUrl,
+            metadata: ['source' => 'default_branch'],
+        );
+    }
+
+    /**
+     * デフォルトブランチの zipball URL を取得
+     */
+    protected function getDefaultBranchZipballUrl(string $slug, string $extensionType): ?string
+    {
+        $repo = $this->buildRepoName($slug, $extensionType);
+
+        $response = $this->client()
+            ->get("{$this->baseUrl}/repos/{$this->owner}/{$repo}");
+
+        if ($response->failed()) {
+            return null;
+        }
+
+        $data = $response->json();
+        $defaultBranch = $data['default_branch'] ?? 'main';
+
+        return "{$this->baseUrl}/repos/{$this->owner}/{$repo}/zipball/{$defaultBranch}";
     }
 
     public function isAvailable(): bool
@@ -261,11 +312,14 @@ class GitHubSourceProvider implements ExtensionSourceInterface
                 }
 
                 $slug = substr($name, strlen($prefix));
+                // plugin.json / theme.json から正式な名前・説明・バージョンを取得
+                $manifest = $this->fetchManifest($name, $extensionType);
+
                 $repos[] = [
-                    'slug' => $slug,
-                    'name' => $repo['description'] ?? $slug,
-                    'description' => $repo['description'] ?? null,
-                    'version' => null,
+                    'slug' => $manifest['slug'] ?? $slug,
+                    'name' => $manifest['name'] ?? ($repo['description'] ?? $slug),
+                    'description' => $this->resolveDescription($manifest['description'] ?? null) ?? $repo['description'] ?? null,
+                    'version' => $manifest['version'] ?? null,
                 ];
             }
 
@@ -273,6 +327,64 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         } while (count($data) === 100);
 
         return $repos;
+    }
+
+    /**
+     * リポジトリから plugin.json / theme.json を取得
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function fetchManifest(string $repoName, string $extensionType): ?array
+    {
+        $manifestFile = $extensionType === 'theme' ? 'theme.json' : 'plugin.json';
+
+        $response = $this->client()
+            ->acceptJson()
+            ->get("{$this->baseUrl}/repos/{$this->owner}/{$repoName}/contents/{$manifestFile}");
+
+        if ($response->failed()) {
+            return null;
+        }
+
+        $data = $response->json();
+        $content = $data['content'] ?? null;
+        if ($content === null) {
+            return null;
+        }
+
+        try {
+            $decoded = base64_decode(str_replace("\n", '', $content), true);
+            if ($decoded === false) {
+                return null;
+            }
+
+            $manifest = json_decode($decoded, true);
+            if (! is_array($manifest)) {
+                return null;
+            }
+
+            return $manifest;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * 多言語対応の description を現在のロケールで解決
+     */
+    protected function resolveDescription(mixed $description): ?string
+    {
+        if (is_string($description)) {
+            return $description;
+        }
+
+        if (is_array($description)) {
+            $locale = app()->getLocale();
+
+            return $description[$locale] ?? $description['en'] ?? $description['ja'] ?? reset($description) ?: null;
+        }
+
+        return null;
     }
 
     /**
