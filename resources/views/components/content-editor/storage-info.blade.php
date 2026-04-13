@@ -24,6 +24,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'storageOptions' => [],
     'storageType' => '',
     'showJsCss' => false,
+    // true を指定すると保存形式を変更不可の表示専用バッジとして表示する（編集画面向け）
+    'locked' => false,
 ])
 
 <div>
@@ -33,13 +35,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <div>
         <x-form-label :text="__('components/content-editor.storage_type_label')" />
-        <x-form-select
-            name="storage_type"
-            :options="collect($storageOptions)->mapWithKeys(fn ($opt, $key) => [$key => $opt['label']])->all()"
-            :value="$storageType"
-            xModel="storageType"
-        />
-        <x-form-error name="storage_type" />
+        @if ($locked)
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-1 text-sm font-medium text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                    <i class="fas fa-lock mr-1.5 text-gray-500 dark:text-gray-400"></i>
+                    {{ $storageOptions[$storageType]['label'] ?? $storageType }}
+                </span>
+            </div>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('components/content-editor.storage_type_locked_help') }}</p>
+        @else
+            <x-form-select
+                name="storage_type"
+                :options="collect($storageOptions)->mapWithKeys(fn ($opt, $key) => [$key => $opt['label']])->all()"
+                :value="$storageType"
+                xModel="storageType"
+            />
+            <x-form-error name="storage_type" />
+        @endif
     </div>
 
     <div class="mt-2 text-sm space-y-1" x-show="isFileStorage" x-cloak>

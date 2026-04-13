@@ -113,8 +113,6 @@ return [
         'reset_confirm' => 'フロントページのコンテンツをリセットしますか？すべてのコンテンツ、CSS、JavaScript、およびリビジョン履歴が完全に削除されます。',
 
         'validation' => [
-            'storage_type_required' => '保存方法を選択してください。',
-            'storage_type_in' => '選択された保存方法は無効です。',
             'content_max' => 'コンテンツは500,000文字以内で入力してください。',
             'custom_js_max' => 'JavaScriptは500,000文字以内で入力してください。',
             'custom_css_max' => 'CSSは500,000文字以内で入力してください。',

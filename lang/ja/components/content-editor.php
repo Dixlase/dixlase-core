@@ -31,6 +31,7 @@ return [
     'storage_type_label' => '保存方法',
     'storage_file_path' => 'ファイルパス:',
     'storage_file_warning' => 'ファイル保存形式ではローカルエディタやGitで直接ファイルを編集できますが、管理画面を経由しない変更はリビジョン履歴に記録されません。履歴を残したい場合は必ず管理画面から保存してください。',
+    'storage_type_locked_help' => '保存形式は初回作成時のみ選択できます。変更するにはリセットして再作成してください。',
 
     'preview_tab_edit' => '編集',
     'preview_tab_preview' => 'プレビュー',

@@ -112,8 +112,6 @@ return [
         'reset_confirm' => 'Are you sure you want to reset the front page content? All content, CSS, JavaScript, and revision history will be permanently deleted.',
 
         'validation' => [
-            'storage_type_required' => 'Please select a storage type.',
-            'storage_type_in' => 'The selected storage type is not valid.',
             'content_max' => 'Content must not exceed 500,000 characters.',
             'custom_js_max' => 'JavaScript must not exceed 500,000 characters.',
             'custom_css_max' => 'CSS must not exceed 500,000 characters.',

@@ -23,7 +23,6 @@
 namespace App\Http\Requests\Admin\Front;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class AdminFrontEditUpdateRequest extends FormRequest
 {
@@ -42,8 +41,8 @@ class AdminFrontEditUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        // 保存形式は初回作成時のみ選択可能。編集時はフィールドを受け付けない。
         return [
-            'storage_type' => ['required', 'string', Rule::in(['database', 'file'])],
             'content' => ['nullable', 'string', 'max:500000'],
             'custom_js' => ['nullable', 'string', 'max:500000'],
             'custom_css' => ['nullable', 'string', 'max:500000'],
@@ -58,8 +57,6 @@ class AdminFrontEditUpdateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'storage_type.required' => __('admin/front.edit.validation.storage_type_required'),
-            'storage_type.in' => __('admin/front.edit.validation.storage_type_in'),
             'content.max' => __('admin/front.edit.validation.content_max'),
             'custom_js.max' => __('admin/front.edit.validation.custom_js_max'),
             'custom_css.max' => __('admin/front.edit.validation.custom_css_max'),
