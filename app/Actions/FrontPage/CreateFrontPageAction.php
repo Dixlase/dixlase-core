@@ -33,6 +33,7 @@ use App\Enums\ContentStorageType;
 use App\Enums\Permission;
 use App\Models\FrontPage;
 use App\Services\FrontPageContentService;
+use App\Services\FrontPageRevisionService;
 
 /**
  * Create a front page with dual-write (DB + file) support

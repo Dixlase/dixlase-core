@@ -39,6 +39,7 @@ use App\Presenters\Admin\ContentEditorPresenter;
 use App\Services\ContentPreviewService;
 use App\Services\Editor\EditorManager;
 use App\Services\FrontPageContentService;
+use App\Services\FrontPageRevisionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
