@@ -1,0 +1,89 @@
+<?php
+
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+/**
+ * フロントページ リビジョンモデル
+ *
+ * 保存時・手動・復元前バックアップでスナップショットを保持する。
+ */
+class FrontPageRevision extends Model
+{
+    protected $table = 'front_page_revisions';
+
+    public const TYPE_AUTO = 'auto';
+
+    public const TYPE_MANUAL = 'manual';
+
+    public const TYPE_RESTORE_BACKUP = 'restore_backup';
+
+    /** @var list<string> */
+    protected $fillable = [
+        'front_page_id',
+        'snapshot',
+        'type',
+        'note',
+        'created_by',
+    ];
+
+    public $timestamps = false;
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'snapshot' => 'array',
+            'created_at' => 'datetime',
+        ];
+    }
+
+    /**
+     * @return BelongsTo<FrontPage, self>
+     */
+    public function frontPage(): BelongsTo
+    {
+        return $this->belongsTo(FrontPage::class);
+    }
+
+    /**
+     * @return BelongsTo<User, self>
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $revision): void {
+            if (empty($revision->created_at)) {
+                $revision->created_at = now();
+            }
+        });
+    }
+}

@@ -110,4 +110,14 @@ class FrontPage extends Model
     {
         return $query->where('status', ContentStatus::PUBLISHED->value);
     }
+
+    /**
+     * リビジョン（編集履歴）
+     *
+     * @return HasMany<FrontPageRevision>
+     */
+    public function revisions(): HasMany
+    {
+        return $this->hasMany(FrontPageRevision::class)->latest('created_at');
+    }
 }
