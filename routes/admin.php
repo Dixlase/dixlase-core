@@ -147,6 +147,10 @@ Route::prefix($adminUrl)->name('admin.')
                     ->whereNumber('id')
                     ->middleware('check.menu.edit:front')
                     ->name('front.revisions.restore');
+                Route::post('/front/revisions/{id}/note', [AdminFrontRevisionController::class, 'updateNote'])
+                    ->whereNumber('id')
+                    ->middleware('check.menu.edit:front')
+                    ->name('front.revisions.note');
             });
 
             // メディア管理（権限チェック付き）
