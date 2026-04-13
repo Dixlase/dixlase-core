@@ -161,9 +161,9 @@ class AdminFrontController extends AdminLoggedInController
 
         $frontPage = FrontPage::findByType('main_content');
 
-        // コンテンツ未存在時は create にリダイレクト
+        // コンテンツ未存在時はフロントページマスター（一覧）にリダイレクト
         if (! $frontPage) {
-            return redirect()->route('admin.front.create');
+            return redirect()->route('admin.front.index');
         }
 
         $languages = config('language.languages', []);
@@ -304,7 +304,7 @@ class AdminFrontController extends AdminLoggedInController
     {
         $frontPage = FrontPage::findByType('main_content');
         if (! $frontPage) {
-            return redirect()->route('admin.front.create');
+            return redirect()->route('admin.front.index');
         }
 
         $actor = new MemberActor(AdminHelper::getMember());

@@ -50,10 +50,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <form id="restore-form-{{ $revision->id }}" action="{{ route('admin.front.revisions.restore', $revision->id) }}" method="POST">
             @csrf
             <button type="button" @click="openModal('restore-modal-{{ $revision->id }}')"
-                    class="inline-flex items-center justify-center rounded bg-amber-600 p-2 text-white hover:bg-amber-700"
-                    title="{{ __('admin/front/revisions.restore') }}">
+                    class="inline-flex items-center gap-2 rounded bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700">
                 <i class="fas fa-rotate-left"></i>
-                <span class="sr-only">{{ __('admin/front/revisions.restore') }}</span>
+                {{ __('admin/front/revisions.restore') }}
             </button>
         </form>
         <x-ui-modal
@@ -80,7 +79,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </section>
 
     <section class="mb-6">
-        <form action="{{ route('admin.front.revisions.note', $revision->id) }}" method="POST" class="flex flex-col gap-2 sm:flex-row sm:items-start">
+        <form id="note-form-{{ $revision->id }}" action="{{ route('admin.front.revisions.note', $revision->id) }}" method="POST" class="flex flex-col gap-2 sm:flex-row sm:items-start">
             @csrf
             <label for="revision-note-{{ $revision->id }}" class="shrink-0 pt-2 text-sm font-medium text-gray-700 dark:text-gray-200 sm:w-24">
                 {{ __('admin/front/revisions.note') }}
@@ -96,10 +95,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.note_help') }}</p>
             </div>
-            <button type="submit" class="shrink-0 rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">
+            <button type="button" @click="openModal('note-modal-{{ $revision->id }}')"
+                    class="shrink-0 rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">
                 {{ __('admin/front/revisions.note_save') }}
             </button>
         </form>
+        <x-ui-modal
+            :id="'note-modal-'.$revision->id"
+            :title="__('admin/front/revisions.note_confirm_title')"
+            :message="__('admin/front/revisions.note_confirm_message')"
+            :confirm_label="__('admin/front/revisions.note_save')"
+            :cancel_label="__('common.cancel')"
+            icon_type="info"
+            confirm_color="blue"
+            :form="'note-form-'.$revision->id"
+        />
     </section>
 
     <section>
