@@ -47,6 +47,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <span class="text-gray-500 dark:text-gray-400">{{ __('components/content-editor.storage_file_path') }}</span>
             <span class="font-mono text-blue-600 dark:text-blue-400 break-all" x-text="filePath"></span>
         </div>
+        <div class="mt-3 rounded border border-amber-300 bg-amber-50 p-3 text-amber-800 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
+            <p class="flex items-start gap-2">
+                <i class="fas fa-triangle-exclamation mt-0.5"></i>
+                <span>{{ __('components/content-editor.storage_file_warning') }}</span>
+            </p>
+        </div>
         @if ($showJsCss)
             <div x-show="isHtmlEditor && jsFilePath" x-cloak>
                 <span class="text-gray-500 dark:text-gray-400">JS:</span>
