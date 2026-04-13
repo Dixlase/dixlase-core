@@ -114,9 +114,11 @@ class UpdateFrontPageAction extends AbstractAction
         }
         $this->frontPage->update($updateData);
 
-        // 保存後の状態をリビジョンに記録（直前リビジョンと差分がない場合はスキップ）
+        // 保存後の状態をリビジョンに記録（ユーザーの明示保存なので manual として扱う）
+        // 直前リビジョンと差分がない場合はスキップ
         $this->revisionService->record(
             $this->frontPage->fresh() ?? $this->frontPage,
+            type: \App\Models\FrontPageRevision::TYPE_MANUAL,
             userId: $actor->getActorId(),
         );
 

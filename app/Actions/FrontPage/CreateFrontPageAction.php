@@ -104,8 +104,12 @@ class CreateFrontPageAction extends AbstractAction
             'status' => ContentStatus::PUBLISHED,
         ]);
 
-        // 初回作成時のリビジョンを記録
-        $this->revisionService->record($frontPage, userId: $actor->getActorId());
+        // 初回作成時のリビジョンを記録（ユーザーの明示保存なので manual として扱う）
+        $this->revisionService->record(
+            $frontPage,
+            type: \App\Models\FrontPageRevision::TYPE_MANUAL,
+            userId: $actor->getActorId(),
+        );
 
         return ActionResult::success(
             model: $frontPage,

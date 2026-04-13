@@ -44,55 +44,65 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <div class="mb-4 flex items-center justify-between">
         <a href="{{ route('admin.front.revisions.index') }}" class="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
             <i class="fas fa-arrow-left"></i>
-            {{ __('admin/front.revisions.heading') }}
+            {{ __('admin/front/revisions.heading') }}
         </a>
 
-        <form action="{{ route('admin.front.revisions.restore', $revision->id) }}" method="POST"
-              @submit.prevent="if (window.confirm(@js(__('admin/front.revisions.restore_confirm_message')))) $event.target.submit();">
+        <form id="restore-form-{{ $revision->id }}" action="{{ route('admin.front.revisions.restore', $revision->id) }}" method="POST">
             @csrf
-            <button type="submit" class="inline-flex items-center gap-2 rounded bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700">
+            <button type="button" @click="openModal('restore-modal-{{ $revision->id }}')"
+                    class="inline-flex items-center gap-2 rounded bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700">
                 <i class="fas fa-rotate-left"></i>
-                {{ __('admin/front.revisions.restore') }}
+                {{ __('admin/front/revisions.restore') }}
             </button>
         </form>
+        <x-ui-modal
+            :id="'restore-modal-'.$revision->id"
+            :title="__('admin/front/revisions.restore_confirm_title')"
+            :message="__('admin/front/revisions.restore_confirm_message')"
+            :confirm_label="__('admin/front/revisions.restore')"
+            :cancel_label="__('common.cancel')"
+            icon_type="warning"
+            confirm_color="yellow"
+            :form="'restore-form-'.$revision->id"
+        />
     </div>
 
     <section class="mb-6">
         <dl class="grid grid-cols-1 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
-            <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/front.revisions.created_at') }}</dt>
+            <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.created_at') }}</dt>
             <dd class="text-gray-900 dark:text-gray-100 sm:col-span-3">{{ $revision->created_at?->format('Y-m-d H:i:s') }}</dd>
-            <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/front.revisions.type') }}</dt>
+            <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.type') }}</dt>
             <dd class="text-gray-900 dark:text-gray-100 sm:col-span-3">{{ $typeLabels[$revision->type] ?? $revision->type }}</dd>
-            <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/front.revisions.creator') }}</dt>
-            <dd class="text-gray-900 dark:text-gray-100 sm:col-span-3">{{ $revision->creator->display_name ?? $revision->creator->account_name ?? __('admin/front.revisions.unknown_user') }}</dd>
+            <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.creator') }}</dt>
+            <dd class="text-gray-900 dark:text-gray-100 sm:col-span-3">{{ $revision->creator->display_name ?? $revision->creator->account_name ?? __('admin/front/revisions.unknown_user') }}</dd>
             @if ($revision->note)
-                <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/front.revisions.note') }}</dt>
+                <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.note') }}</dt>
                 <dd class="text-gray-900 dark:text-gray-100 sm:col-span-3">{{ $revision->note }}</dd>
             @endif
         </dl>
     </section>
 
     <section>
-        <h2 class="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-100">{{ __('admin/front.revisions.diff_heading') }}</h2>
+        <h2 class="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-100">{{ __('admin/front/revisions.diff_heading') }}</h2>
 
         @if (! $hasChanges)
-            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/front.revisions.diff_no_changes') }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/front/revisions.diff_no_changes') }}</p>
         @else
             @if (! empty($metaDiffs))
                 <div class="mb-6">
-                    <h3 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">{{ __('admin/front.revisions.diff_meta_heading') }}</h3>
+                    <h3 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">{{ __('admin/front/revisions.diff_meta_heading') }}</h3>
                     <table class="min-w-full text-sm">
                         <thead>
                             <tr class="text-xs text-gray-500 dark:text-gray-400">
                                 <th class="px-3 py-1 text-left font-medium"></th>
-                                <th class="px-3 py-1 text-left font-medium">{{ __('admin/front.revisions.diff_left_label') }}</th>
-                                <th class="px-3 py-1 text-left font-medium">{{ __('admin/front.revisions.diff_right_label') }}</th>
+                                <th class="px-3 py-1 text-left font-medium">{{ __('admin/front/revisions.diff_left_label') }}</th>
+                                <th class="px-3 py-1 text-left font-medium">{{ __('admin/front/revisions.diff_right_label') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($metaDiffs as $field => $values)
                                 <tr class="border-t border-gray-200 dark:border-gray-700">
-                                    <td class="px-3 py-1 font-medium text-gray-700 dark:text-gray-200">{{ __('admin/front.revisions.diff_field_'.$field) }}</td>
+                                    <td class="px-3 py-1 font-medium text-gray-700 dark:text-gray-200">{{ __('admin/front/revisions.diff_field_'.$field) }}</td>
                                     <td class="px-3 py-1 text-gray-900 dark:text-gray-100">{{ is_scalar($values['old']) ? $values['old'] : json_encode($values['old']) }}</td>
                                     <td class="px-3 py-1 text-gray-900 dark:text-gray-100">{{ is_scalar($values['new']) ? $values['new'] : json_encode($values['new']) }}</td>
                                 </tr>
@@ -104,11 +114,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             @foreach ($diffs as $field => $rows)
                 <div class="mb-6">
-                    <h3 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">{{ __('admin/front.revisions.diff_field_'.$field) }}</h3>
+                    <h3 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">{{ __('admin/front/revisions.diff_field_'.$field) }}</h3>
                     <div class="rounded border border-gray-200 dark:border-gray-700 overflow-hidden">
                         <div class="diff-header">
-                            <div>{{ __('admin/front.revisions.diff_left_label') }}</div>
-                            <div>{{ __('admin/front.revisions.diff_right_label') }}</div>
+                            <div>{{ __('admin/front/revisions.diff_left_label') }}</div>
+                            <div>{{ __('admin/front/revisions.diff_right_label') }}</div>
                         </div>
                         @foreach ($rows as $row)
                             <div class="diff-row diff-{{ $row['status'] }}">

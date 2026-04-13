@@ -49,7 +49,7 @@ class AdminFrontRevisionController extends AdminLoggedInController
      */
     public function index(): View|RedirectResponse
     {
-        $this->setDescription(__('admin/front.revisions.description'));
+        $this->setDescription(__('admin/front/revisions.index.description'));
 
         $frontPage = FrontPage::findByType('main_content');
         if (! $frontPage) {
@@ -132,7 +132,7 @@ class AdminFrontRevisionController extends AdminLoggedInController
 
         return redirect()
             ->route('admin.front.revisions.index')
-            ->with('success', __('admin/front.revisions.restore_success'));
+            ->with('success', __('admin/front/revisions.restore_success'));
     }
 
     /**
@@ -141,9 +141,9 @@ class AdminFrontRevisionController extends AdminLoggedInController
     private function typeLabels(): array
     {
         return [
-            FrontPageRevision::TYPE_AUTO => __('admin/front.revisions.type_auto'),
-            FrontPageRevision::TYPE_MANUAL => __('admin/front.revisions.type_manual'),
-            FrontPageRevision::TYPE_RESTORE_BACKUP => __('admin/front.revisions.type_restore_backup'),
+            FrontPageRevision::TYPE_AUTO => __('admin/front/revisions.type_auto'),
+            FrontPageRevision::TYPE_MANUAL => __('admin/front/revisions.type_manual'),
+            FrontPageRevision::TYPE_RESTORE_BACKUP => __('admin/front/revisions.type_restore_backup'),
         ];
     }
 }
