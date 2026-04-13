@@ -87,6 +87,8 @@ return [
         'settings.base.mail' => MenuVisibility::Full,
         'settings.base.maintenance' => MenuVisibility::Full,
         'settings.base.mode' => MenuVisibility::Full,
+        // コンテンツ設定は詳細設定のみ表示（簡単モードでは非表示、デフォルト値で動作）
+        'settings.base.content' => MenuVisibility::Hidden,
 
         // 全体設定 > セキュリティ設定
         'settings.security' => MenuVisibility::Partial,

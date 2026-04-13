@@ -309,6 +309,12 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.base.mode')
                     ->name('mode.update');
 
+                // コンテンツ設定（リビジョン保持件数など、全コンテンツタイプ共通）
+                Route::get('/content', [Base\AdminBaseContentController::class, 'index'])->name('content');
+                Route::post('/content', [Base\AdminBaseContentController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.base.content')
+                    ->name('content.update');
+
                 // コンテンツエディター設定
                 Route::get('/editor', [Base\AdminBaseEditorController::class, 'index'])->name('editor');
                 Route::post('/editor', [Base\AdminBaseEditorController::class, 'update'])
