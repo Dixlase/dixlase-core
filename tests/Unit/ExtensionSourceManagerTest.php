@@ -178,7 +178,7 @@ class ExtensionSourceManagerTest extends TestCase
         $plugins = $this->manager->listAvailablePlugins();
 
         $this->assertNotEmpty($plugins);
-        $this->assertEquals('pages', $plugins[0]['slug']);
+        $this->assertEquals('dixlase-pages', $plugins[0]['slug']);
         $this->assertArrayHasKey('source_id', $plugins[0]);
         $this->assertArrayHasKey('source_name', $plugins[0]);
     }

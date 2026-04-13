@@ -180,11 +180,11 @@ class GitHubSourceProviderTest extends TestCase
             ]),
         ]);
 
-        $release = $this->provider->getLatestRelease('test-plugin');
+        $release = $this->provider->getLatestRelease('dixlase-test-plugin');
 
         $this->assertNotNull($release);
         $this->assertEquals('1.5.0', $release->version);
-        $this->assertEquals('test-plugin', $release->slug);
+        $this->assertEquals('dixlase-test-plugin', $release->slug);
         $this->assertStringContainsString('test-plugin-1.5.0.zip', $release->downloadUrl);
     }
 
@@ -192,9 +192,10 @@ class GitHubSourceProviderTest extends TestCase
     {
         Http::fake([
             'api.github.com/repos/TestOrg/plugin-dixlase-nonexistent/releases/latest' => Http::response([], 404),
+            'api.github.com/repos/TestOrg/plugin-dixlase-nonexistent' => Http::response([], 404),
         ]);
 
-        $this->assertNull($this->provider->getLatestRelease('nonexistent'));
+        $this->assertNull($this->provider->getLatestRelease('dixlase-nonexistent'));
     }
 
     public function test_list_plugins(): void
@@ -213,8 +214,8 @@ class GitHubSourceProviderTest extends TestCase
         $plugins = $this->provider->listPlugins();
 
         $this->assertCount(2, $plugins);
-        $this->assertEquals('pages', $plugins[0]['slug']);
-        $this->assertEquals('blog', $plugins[1]['slug']);
+        $this->assertEquals('dixlase-pages', $plugins[0]['slug']);
+        $this->assertEquals('dixlase-blog', $plugins[1]['slug']);
     }
 
     public function test_list_themes(): void
@@ -232,8 +233,8 @@ class GitHubSourceProviderTest extends TestCase
         $themes = $this->provider->listThemes();
 
         $this->assertCount(2, $themes);
-        $this->assertEquals('default', $themes[0]['slug']);
-        $this->assertEquals('corporate', $themes[1]['slug']);
+        $this->assertEquals('dixlase-default', $themes[0]['slug']);
+        $this->assertEquals('dixlase-corporate', $themes[1]['slug']);
     }
 
     public function test_download_release(): void
@@ -256,9 +257,9 @@ class GitHubSourceProviderTest extends TestCase
 
         $downloadPath = config('extension-sources.download_path');
 
-        $path = $this->provider->downloadRelease('test-plugin', '1.0.0');
+        $path = $this->provider->downloadRelease('dixlase-test-plugin', '1.0.0');
 
-        $this->assertStringEndsWith('test-plugin-1.0.0.zip', $path);
+        $this->assertStringEndsWith('dixlase-test-plugin-1.0.0.zip', $path);
 
         // Clean up
         if (file_exists($path)) {
@@ -273,12 +274,13 @@ class GitHubSourceProviderTest extends TestCase
     {
         Http::fake([
             'api.github.com/repos/TestOrg/plugin-dixlase-test-plugin/releases/tags/*' => Http::response([], 404),
+            'api.github.com/repos/TestOrg/plugin-dixlase-test-plugin' => Http::response([], 404),
         ]);
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Release v9.9.9 not found');
+        $this->expectExceptionMessage('not found');
 
-        $this->provider->downloadRelease('test-plugin', '9.9.9');
+        $this->provider->downloadRelease('dixlase-test-plugin', '9.9.9');
     }
 
     public function test_theme_repo_name_uses_theme_prefix(): void
@@ -290,7 +292,7 @@ class GitHubSourceProviderTest extends TestCase
             ]),
         ]);
 
-        $release = $this->provider->getLatestRelease('my-theme', 'theme');
+        $release = $this->provider->getLatestRelease('dixlase-my-theme', 'theme');
 
         $this->assertNotNull($release);
         $this->assertEquals('1.0.0', $release->version);

@@ -19,8 +19,10 @@ return [
         'api_base' => 'https://api.github.com',
         'default_owner' => env('EXTENSION_GITHUB_OWNER', 'Dixlase'),
         'default_token' => env('EXTENSION_GITHUB_TOKEN'),
-        'repo_prefix' => 'plugin-dixlase-',
-        'theme_repo_prefix' => 'theme-dixlase-',
+        // Repo naming: {prefix}{plugin.json slug}
+        // e.g., plugin.json slug "dixlase-seo" → repo "plugin-dixlase-seo"
+        'repo_prefix' => 'plugin-',
+        'theme_repo_prefix' => 'theme-',
     ],
 
     // Key ID used for official source signature verification
