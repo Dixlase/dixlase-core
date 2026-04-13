@@ -164,17 +164,17 @@ class GitHubSourceProviderTest extends TestCase
     public function test_get_latest_release(): void
     {
         Http::fake([
-            'api.github.com/repos/TestOrg/dixlase-test-plugin/releases/latest' => Http::response([
+            'api.github.com/repos/TestOrg/plugin-dixlase-test-plugin/releases/latest' => Http::response([
                 'tag_name' => 'v1.5.0',
                 'body' => 'Release notes',
                 'published_at' => '2026-03-01T00:00:00Z',
                 'id' => 100,
                 'prerelease' => false,
-                'zipball_url' => 'https://api.github.com/repos/TestOrg/dixlase-test-plugin/zipball/v1.5.0',
+                'zipball_url' => 'https://api.github.com/repos/TestOrg/plugin-dixlase-test-plugin/zipball/v1.5.0',
                 'assets' => [
                     [
                         'name' => 'test-plugin-1.5.0.zip',
-                        'browser_download_url' => 'https://github.com/TestOrg/dixlase-test-plugin/releases/download/v1.5.0/test-plugin-1.5.0.zip',
+                        'browser_download_url' => 'https://github.com/TestOrg/plugin-dixlase-test-plugin/releases/download/v1.5.0/test-plugin-1.5.0.zip',
                     ],
                 ],
             ]),
@@ -191,7 +191,7 @@ class GitHubSourceProviderTest extends TestCase
     public function test_get_latest_release_returns_null_on_404(): void
     {
         Http::fake([
-            'api.github.com/repos/TestOrg/dixlase-nonexistent/releases/latest' => Http::response([], 404),
+            'api.github.com/repos/TestOrg/plugin-dixlase-nonexistent/releases/latest' => Http::response([], 404),
         ]);
 
         $this->assertNull($this->provider->getLatestRelease('nonexistent'));
@@ -202,10 +202,10 @@ class GitHubSourceProviderTest extends TestCase
         Http::fake([
             'api.github.com/orgs/TestOrg/repos*' => Http::sequence()
                 ->push([
-                    ['name' => 'dixlase-pages', 'description' => 'Page manager'],
-                    ['name' => 'dixlase-blog', 'description' => 'Blog plugin'],
+                    ['name' => 'plugin-dixlase-pages', 'description' => 'Page manager'],
+                    ['name' => 'plugin-dixlase-blog', 'description' => 'Blog plugin'],
                     ['name' => 'unrelated-repo', 'description' => 'Not a plugin'],
-                    ['name' => 'dixlase-theme-default', 'description' => 'Default theme'],
+                    ['name' => 'theme-dixlase-default', 'description' => 'Default theme'],
                 ])
                 ->push([]),
         ]);
@@ -222,9 +222,9 @@ class GitHubSourceProviderTest extends TestCase
         Http::fake([
             'api.github.com/orgs/TestOrg/repos*' => Http::sequence()
                 ->push([
-                    ['name' => 'dixlase-theme-default', 'description' => 'Default theme'],
-                    ['name' => 'dixlase-theme-corporate', 'description' => 'Corporate theme'],
-                    ['name' => 'dixlase-pages', 'description' => 'Not a theme'],
+                    ['name' => 'theme-dixlase-default', 'description' => 'Default theme'],
+                    ['name' => 'theme-dixlase-corporate', 'description' => 'Corporate theme'],
+                    ['name' => 'plugin-dixlase-pages', 'description' => 'Not a theme'],
                 ])
                 ->push([]),
         ]);
@@ -241,9 +241,9 @@ class GitHubSourceProviderTest extends TestCase
         $zipContent = 'PK'.str_repeat("\0", 100);
 
         Http::fake([
-            'api.github.com/repos/TestOrg/dixlase-test-plugin/releases/tags/v1.0.0' => Http::response([
+            'api.github.com/repos/TestOrg/plugin-dixlase-test-plugin/releases/tags/v1.0.0' => Http::response([
                 'tag_name' => 'v1.0.0',
-                'zipball_url' => 'https://api.github.com/repos/TestOrg/dixlase-test-plugin/zipball/v1.0.0',
+                'zipball_url' => 'https://api.github.com/repos/TestOrg/plugin-dixlase-test-plugin/zipball/v1.0.0',
                 'assets' => [
                     [
                         'name' => 'test-plugin-1.0.0.zip',
@@ -272,7 +272,7 @@ class GitHubSourceProviderTest extends TestCase
     public function test_download_release_throws_on_not_found(): void
     {
         Http::fake([
-            'api.github.com/repos/TestOrg/dixlase-test-plugin/releases/tags/*' => Http::response([], 404),
+            'api.github.com/repos/TestOrg/plugin-dixlase-test-plugin/releases/tags/*' => Http::response([], 404),
         ]);
 
         $this->expectException(\RuntimeException::class);
@@ -284,7 +284,7 @@ class GitHubSourceProviderTest extends TestCase
     public function test_theme_repo_name_uses_theme_prefix(): void
     {
         Http::fake([
-            'api.github.com/repos/TestOrg/dixlase-theme-my-theme/releases/latest' => Http::response([
+            'api.github.com/repos/TestOrg/theme-dixlase-my-theme/releases/latest' => Http::response([
                 'tag_name' => 'v1.0.0',
                 'assets' => [],
             ]),
@@ -294,6 +294,6 @@ class GitHubSourceProviderTest extends TestCase
 
         $this->assertNotNull($release);
         $this->assertEquals('1.0.0', $release->version);
-        Http::assertSent(fn ($request) => str_contains($request->url(), 'dixlase-theme-my-theme'));
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'theme-dixlase-my-theme'));
     }
 }

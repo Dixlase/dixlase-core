@@ -113,7 +113,7 @@ class ThemeSourceInstallTest extends TestCase
         Http::fake([
             "api.github.com/orgs/{$owner}/repos*" => Http::sequence()
                 ->push([
-                    ['name' => 'dixlase-theme-corporate', 'description' => 'Corporate theme'],
+                    ['name' => 'theme-dixlase-corporate', 'description' => 'Corporate theme'],
                 ])
                 ->push([]),
         ]);

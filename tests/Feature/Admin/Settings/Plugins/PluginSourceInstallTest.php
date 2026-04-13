@@ -113,7 +113,7 @@ class PluginSourceInstallTest extends TestCase
         Http::fake([
             "api.github.com/orgs/{$owner}/repos*" => Http::sequence()
                 ->push([
-                    ['name' => 'dixlase-sample-plugin', 'description' => 'A sample plugin'],
+                    ['name' => 'plugin-dixlase-sample-plugin', 'description' => 'A sample plugin'],
                 ])
                 ->push([]),
         ]);

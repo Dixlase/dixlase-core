@@ -19,8 +19,8 @@ return [
         'api_base' => 'https://api.github.com',
         'default_owner' => env('EXTENSION_GITHUB_OWNER', 'Dixlase'),
         'default_token' => env('EXTENSION_GITHUB_TOKEN'),
-        'repo_prefix' => 'dixlase-',
-        'theme_repo_prefix' => 'dixlase-theme-',
+        'repo_prefix' => 'plugin-dixlase-',
+        'theme_repo_prefix' => 'theme-dixlase-',
     ],
 
     // Key ID used for official source signature verification

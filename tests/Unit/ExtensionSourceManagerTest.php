@@ -170,7 +170,7 @@ class ExtensionSourceManagerTest extends TestCase
         Http::fake([
             'api.github.com/orgs/OrgA/repos*' => Http::sequence()
                 ->push([
-                    ['name' => 'dixlase-pages', 'description' => 'Pages'],
+                    ['name' => 'plugin-dixlase-pages', 'description' => 'Pages'],
                 ])
                 ->push([]),
         ]);
