@@ -1196,20 +1196,9 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             GitIgnoreHelper::addPluginExclusion($pluginDir);
             ComposerLocalHelper::syncAutoload();
 
-            // 自動監査を実行
-            $pluginJsonPath = base_path("plugins/{$pluginDir}/plugin.json");
-            if (File::exists($pluginJsonPath)) {
-                try {
-                    $pluginData = json_decode(File::get($pluginJsonPath), true);
-                    $pluginSlug = $pluginData['slug'] ?? Str::slug($pluginDir);
-                    $this->runPluginAudit($pluginSlug);
-                } catch (\Exception $e) {
-                    Log::warning('Auto-audit after extraction failed', [
-                        'directory' => $pluginDir,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
-            }
+            // 監査はインストール時に実行する（ダウンロード時はスキップ）
+            // プラグインファイルは plugins/ に配置されただけでは実行されない。
+            // インストール時の2段階モーダル（scan → confirm）で適切なタイミングで監査される。
 
             return ['success' => true, 'directory' => $pluginDir];
         } catch (\Exception $e) {
