@@ -30,6 +30,7 @@ use App\Models\FrontPageRevision;
 use App\Presenters\Admin\RevisionDiffPresenter;
 use App\Services\FrontPageRevisionService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
