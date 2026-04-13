@@ -40,7 +40,7 @@ return new class extends Migration
             $table->string('note')->nullable();
             $table->foreignId('created_by')
                 ->nullable()
-                ->constrained('users')
+                ->constrained('members')
                 ->nullOnDelete();
             $table->timestamp('created_at')->nullable();
 
