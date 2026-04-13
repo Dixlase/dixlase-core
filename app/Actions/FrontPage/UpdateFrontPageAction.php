@@ -32,6 +32,7 @@ use App\Enums\ContentStorageType;
 use App\Enums\Permission;
 use App\Models\FrontPage;
 use App\Services\FrontPageContentService;
+use App\Services\FrontPageRevisionService;
 
 /**
  * Update a front page with storage type migration support
