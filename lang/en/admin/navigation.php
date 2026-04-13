@@ -54,6 +54,7 @@ return [
             'mail' => 'Mail Settings',
             'maintenance' => 'Maintenance Settings',
             'mode' => 'Mode Settings',
+            'content' => 'Content Settings',
             'editor' => 'GUI Editor Settings',
         ],
         'security' => [
