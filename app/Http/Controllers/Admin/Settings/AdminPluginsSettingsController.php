@@ -1156,6 +1156,34 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $zip->close();
             File::delete($zipPath);
 
+            // plugin.json から正しいディレクトリ名を取得してリネーム
+            $pluginJsonPath = base_path("plugins/{$pluginDir}/plugin.json");
+            if (File::exists($pluginJsonPath)) {
+                try {
+                    $pluginData = json_decode(File::get($pluginJsonPath), true);
+                    $correctDir = $this->resolvePluginDirectoryName($pluginData);
+
+                    if ($correctDir && $correctDir !== $pluginDir) {
+                        $correctPath = base_path("plugins/{$correctDir}");
+
+                        if (File::exists($correctPath)) {
+                            File::deleteDirectory($destinationPath);
+
+                            return ['success' => false, 'error' => __('admin/settings/plugins/add.messages.directory_exists', ['directory' => $correctDir])];
+                        }
+
+                        File::move($destinationPath, $correctPath);
+                        $pluginDir = $correctDir;
+                        $destinationPath = $correctPath;
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to resolve plugin directory name', [
+                        'directory' => $pluginDir,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
             // composer.jsonの存在確認
             if (! File::exists(base_path("plugins/{$pluginDir}/composer.json"))) {
                 File::deleteDirectory($destinationPath);
@@ -1192,6 +1220,43 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
             return ['success' => false, 'error' => $e->getMessage()];
         }
+    }
+
+    /**
+     * plugin.json の内容から正しいディレクトリ名を決定する
+     *
+     * 優先順位:
+     * 1. namespace の最終セグメント（例: Plugins\DixlaseSEO → DixlaseSEO）
+     * 2. package_name の最後の部分（例: plugins/dixlase-seo → dixlase-seo）
+     * 3. null（既存のディレクトリ名を維持）
+     */
+    protected function resolvePluginDirectoryName(?array $pluginData): ?string
+    {
+        if (! is_array($pluginData)) {
+            return null;
+        }
+
+        // namespace の最終セグメントを優先
+        $namespace = $pluginData['namespace'] ?? null;
+        if (is_string($namespace) && $namespace !== '') {
+            $parts = explode('\\', trim($namespace, '\\'));
+            $lastSegment = end($parts);
+            if ($lastSegment !== false && $lastSegment !== '') {
+                return $lastSegment;
+            }
+        }
+
+        // フォールバック: package_name の最後の部分
+        $packageName = $pluginData['package_name'] ?? null;
+        if (is_string($packageName) && $packageName !== '') {
+            $parts = explode('/', $packageName);
+            $lastSegment = end($parts);
+            if ($lastSegment !== false && $lastSegment !== '') {
+                return $lastSegment;
+            }
+        }
+
+        return null;
     }
 
     /**
