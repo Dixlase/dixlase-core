@@ -123,7 +123,14 @@ class FrontPageRevisionService
     {
         $attributes = $frontPage->getAttributes();
 
-        return array_intersect_key($attributes, array_flip(self::SNAPSHOT_FIELDS));
+        // 全フィールドを必ず含める（未設定キーは null で埋める）ことで、
+        // in-memory モデルと DB 再ロード後でキーの有無が変わらないよう正規化する。
+        $snapshot = [];
+        foreach (self::SNAPSHOT_FIELDS as $field) {
+            $snapshot[$field] = $attributes[$field] ?? null;
+        }
+
+        return $snapshot;
     }
 
     /**
@@ -155,9 +162,15 @@ class FrontPageRevisionService
      */
     private function hash(array $snapshot): string
     {
-        ksort($snapshot);
+        // enum インスタンスや日時など、DB 由来の JSON と型が一致しない値を
+        // プリミティブに正規化するため、一度 JSON を往復させてから比較する。
+        $normalized = json_decode(
+            (string) json_encode($snapshot, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            true
+        ) ?? [];
+        ksort($normalized);
 
-        return hash('sha256', (string) json_encode($snapshot, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        return hash('sha256', (string) json_encode($normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 
     /**
