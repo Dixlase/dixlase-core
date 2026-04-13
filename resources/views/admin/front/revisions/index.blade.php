@@ -63,14 +63,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 {{ $revision->note }}
                             </td>
                             <td class="px-4 py-2 text-sm text-right whitespace-nowrap">
-                                <a href="{{ route('admin.front.revisions.show', $revision->id) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">
-                                    {{ __('admin/front/revisions.view_diff') }}
+                                <a href="{{ route('admin.front.revisions.show', $revision->id) }}"
+                                   class="text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                                   title="{{ __('admin/front/revisions.view_diff') }}">
+                                    <i class="fas fa-code-compare"></i>
+                                    <span class="sr-only">{{ __('admin/front/revisions.view_diff') }}</span>
                                 </a>
                                 <form id="restore-form-{{ $revision->id }}" action="{{ route('admin.front.revisions.restore', $revision->id) }}" method="POST" class="inline ml-3">
                                     @csrf
                                     <button type="button" @click="openModal('restore-modal-{{ $revision->id }}')"
-                                            class="text-amber-600 hover:text-amber-800 dark:text-amber-400">
-                                        {{ __('admin/front/revisions.restore') }}
+                                            class="text-amber-600 hover:text-amber-800 dark:text-amber-400"
+                                            title="{{ __('admin/front/revisions.restore') }}">
+                                        <i class="fas fa-rotate-left"></i>
+                                        <span class="sr-only">{{ __('admin/front/revisions.restore') }}</span>
                                     </button>
                                 </form>
                                 <x-ui-modal

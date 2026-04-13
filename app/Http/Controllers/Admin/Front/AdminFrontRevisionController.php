@@ -136,6 +136,31 @@ class AdminFrontRevisionController extends AdminLoggedInController
     }
 
     /**
+     * リビジョンのメモを更新する
+     */
+    public function updateNote(Request $request, int $id): RedirectResponse
+    {
+        $data = $request->validate([
+            'note' => 'nullable|string|max:500',
+        ]);
+
+        $frontPage = FrontPage::findByType('main_content');
+        if (! $frontPage) {
+            return redirect()->route('admin.front.create');
+        }
+
+        $revision = FrontPageRevision::query()
+            ->where('front_page_id', $frontPage->id)
+            ->findOrFail($id);
+
+        $revision->update(['note' => $data['note'] ?? null]);
+
+        return redirect()
+            ->route('admin.front.revisions.show', $revision->id)
+            ->with('success', __('admin/front/revisions.note_updated'));
+    }
+
+    /**
      * @return array<string, string>
      */
     private function typeLabels(): array

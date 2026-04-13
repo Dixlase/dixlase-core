@@ -50,9 +50,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <form id="restore-form-{{ $revision->id }}" action="{{ route('admin.front.revisions.restore', $revision->id) }}" method="POST">
             @csrf
             <button type="button" @click="openModal('restore-modal-{{ $revision->id }}')"
-                    class="inline-flex items-center gap-2 rounded bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700">
+                    class="inline-flex items-center justify-center rounded bg-amber-600 p-2 text-white hover:bg-amber-700"
+                    title="{{ __('admin/front/revisions.restore') }}">
                 <i class="fas fa-rotate-left"></i>
-                {{ __('admin/front/revisions.restore') }}
+                <span class="sr-only">{{ __('admin/front/revisions.restore') }}</span>
             </button>
         </form>
         <x-ui-modal
@@ -75,11 +76,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <dd class="text-gray-900 dark:text-gray-100 sm:col-span-3">{{ $typeLabels[$revision->type] ?? $revision->type }}</dd>
             <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.creator') }}</dt>
             <dd class="text-gray-900 dark:text-gray-100 sm:col-span-3">{{ $revision->creator->display_name ?? $revision->creator->account_name ?? __('admin/front/revisions.unknown_user') }}</dd>
-            @if ($revision->note)
-                <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.note') }}</dt>
-                <dd class="text-gray-900 dark:text-gray-100 sm:col-span-3">{{ $revision->note }}</dd>
-            @endif
         </dl>
+    </section>
+
+    <section class="mb-6">
+        <form action="{{ route('admin.front.revisions.note', $revision->id) }}" method="POST" class="flex flex-col gap-2 sm:flex-row sm:items-start">
+            @csrf
+            <label for="revision-note-{{ $revision->id }}" class="shrink-0 pt-2 text-sm font-medium text-gray-700 dark:text-gray-200 sm:w-24">
+                {{ __('admin/front/revisions.note') }}
+            </label>
+            <div class="flex-1">
+                <x-form-textarea
+                    id="revision-note-{{ $revision->id }}"
+                    name="note"
+                    :value="old('note', $revision->note)"
+                    :rows="2"
+                    :placeholder="__('admin/front/revisions.note_placeholder')"
+                    class="input-full"
+                />
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.note_help') }}</p>
+            </div>
+            <button type="submit" class="shrink-0 rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                {{ __('admin/front/revisions.note_save') }}
+            </button>
+        </form>
     </section>
 
     <section>
