@@ -31,6 +31,8 @@ return [
     'note_help' => 'Add an optional description for this revision (up to 500 characters).',
     'note_save' => 'Save Note',
     'note_updated' => 'Note updated.',
+    'note_confirm_title' => 'Save Note',
+    'note_confirm_message' => 'Update the note for this revision?',
     'actions' => 'Actions',
     'view_diff' => 'View Diff',
     'restore' => 'Restore This Version',

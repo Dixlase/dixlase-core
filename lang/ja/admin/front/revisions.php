@@ -34,6 +34,8 @@ return [
     'note_help' => 'このリビジョンに任意の説明を追加できます（500文字以内）。',
     'note_save' => 'メモを保存',
     'note_updated' => 'メモを更新しました。',
+    'note_confirm_title' => 'メモを保存',
+    'note_confirm_message' => 'このリビジョンのメモを更新しますか？',
     'actions' => '操作',
     'view_diff' => '差分を見る',
     'restore' => 'このバージョンに戻す',

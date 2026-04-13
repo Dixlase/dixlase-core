@@ -54,7 +54,7 @@ class AdminFrontRevisionController extends AdminLoggedInController
 
         $frontPage = FrontPage::findByType('main_content');
         if (! $frontPage) {
-            return redirect()->route('admin.front.create');
+            return redirect()->route('admin.front.index');
         }
 
         $revisions = $frontPage->revisions()->with('creator')->paginate(20);
@@ -73,7 +73,7 @@ class AdminFrontRevisionController extends AdminLoggedInController
     {
         $frontPage = FrontPage::findByType('main_content');
         if (! $frontPage) {
-            return redirect()->route('admin.front.create');
+            return redirect()->route('admin.front.index');
         }
 
         $revision = FrontPageRevision::query()
@@ -121,7 +121,7 @@ class AdminFrontRevisionController extends AdminLoggedInController
     {
         $frontPage = FrontPage::findByType('main_content');
         if (! $frontPage) {
-            return redirect()->route('admin.front.create');
+            return redirect()->route('admin.front.index');
         }
 
         $revision = FrontPageRevision::query()
@@ -147,7 +147,7 @@ class AdminFrontRevisionController extends AdminLoggedInController
 
         $frontPage = FrontPage::findByType('main_content');
         if (! $frontPage) {
-            return redirect()->route('admin.front.create');
+            return redirect()->route('admin.front.index');
         }
 
         $revision = FrontPageRevision::query()
