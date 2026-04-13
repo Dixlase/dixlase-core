@@ -53,31 +53,3 @@ window.copyToClipboard = function(elementId) {
     });
 };
 
-/**
- * フォーム送信のデバッグ
- */
-function initCompletePageDebug() {
-    const forms = document.querySelectorAll('form[action*="finalize"]');
-    console.log('完了画面: フォーム数 =', forms.length);
-    
-    forms.forEach((form, index) => {
-        console.log(`フォーム${index + 1}:`, {
-            action: form.action,
-            method: form.method,
-            redirect_to: form.querySelector('input[name="redirect_to"]')?.value
-        });
-        
-        form.addEventListener('submit', function(e) {
-            console.log(`フォーム${index + 1}が送信されました:`, {
-                redirect_to: form.querySelector('input[name="redirect_to"]')?.value
-            });
-        });
-    });
-}
-
-/**
- * ページ読み込み時に実行
- */
-document.addEventListener('DOMContentLoaded', function() {
-    initCompletePageDebug();
-});

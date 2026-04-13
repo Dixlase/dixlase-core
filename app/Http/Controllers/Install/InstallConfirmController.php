@@ -283,7 +283,9 @@ class InstallConfirmController extends BaseInstallController
             Log::channel('install')->info('DixlaseOnePage マイグレーション完了');
 
             // テーマシーダーを実行
+            // composer.local.json 未反映環境にも対応するため、動的にPSR-4を登録
             Log::channel('install')->info('DixlaseOnePage DatabaseSeeder実行開始');
+            $this->registerThemeAutoload('DixlaseOnePage');
             Artisan::call('db:seed', [
                 '--class' => 'Themes\\DixlaseOnePage\\Database\\Seeders\\DatabaseSeeder',
                 '--force' => true,
@@ -420,6 +422,29 @@ class InstallConfirmController extends BaseInstallController
         }
 
         return __('install/error.unknown');
+    }
+
+    /**
+     * テーマの PSR-4 オートロードを動的に登録
+     *
+     * composer.local.json が未反映の環境（Docker ビルド時に --no-scripts で
+     * sync-local-autoload.php が実行されなかった場合等）でも、インストール中に
+     * テーマのシーダー等を読み込めるようにする。
+     */
+    private function registerThemeAutoload(string $themeDirectory): void
+    {
+        $loaders = \Composer\Autoload\ClassLoader::getRegisteredLoaders();
+        if (empty($loaders)) {
+            return;
+        }
+
+        $loader = reset($loaders);
+        $baseNs = "Themes\\{$themeDirectory}\\";
+        $basePath = base_path("themes/{$themeDirectory}");
+
+        $loader->addPsr4($baseNs.'App\\', $basePath.'/app');
+        $loader->addPsr4($baseNs.'Database\\Factories\\', $basePath.'/database/factories');
+        $loader->addPsr4($baseNs.'Database\\Seeders\\', $basePath.'/database/seeders');
     }
 
     /**
