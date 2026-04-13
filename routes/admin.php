@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\Auth\AdminEmailVerificationPromptController;
 use App\Http\Controllers\Admin\Auth\AdminNewPasswordController;
 use App\Http\Controllers\Admin\Auth\AdminPasswordResetLinkController;
 use App\Http\Controllers\Admin\Front\AdminFrontController;
+use App\Http\Controllers\Admin\Front\AdminFrontRevisionController;
 use App\Http\Controllers\Admin\Media\AdminMediaController;
 use App\Http\Controllers\Admin\Members;
 use App\Http\Controllers\Admin\Profile\AdminProfileAppearanceController;
@@ -138,6 +139,14 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::get('/front/settings', [AdminFrontController::class, 'settings'])->name('front.settings');
                 Route::post('/front/settings', [AdminFrontController::class, 'updateSettings'])
                     ->middleware('check.menu.edit:front')->name('front.settings.store');
+
+                // リビジョン（閲覧・差分表示・復元）
+                Route::get('/front/revisions', [AdminFrontRevisionController::class, 'index'])->name('front.revisions.index');
+                Route::get('/front/revisions/{id}', [AdminFrontRevisionController::class, 'show'])->whereNumber('id')->name('front.revisions.show');
+                Route::post('/front/revisions/{id}/restore', [AdminFrontRevisionController::class, 'restore'])
+                    ->whereNumber('id')
+                    ->middleware('check.menu.edit:front')
+                    ->name('front.revisions.restore');
             });
 
             // メディア管理（権限チェック付き）

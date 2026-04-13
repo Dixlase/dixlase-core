@@ -71,11 +71,11 @@ class FrontPageRevision extends Model
     }
 
     /**
-     * @return BelongsTo<User, self>
+     * @return BelongsTo<Member, self>
      */
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(Member::class, 'created_by');
     }
 
     protected static function booted(): void

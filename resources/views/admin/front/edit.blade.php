@@ -46,6 +46,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <i class="fas fa-globe"></i>
                 {{ $langName }}
             </span>
+            <a href="{{ route('admin.front.revisions.index') }}"
+               class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:text-gray-800 dark:hover:text-white">
+                <i class="fas fa-clock-rotate-left"></i>
+                {{ __('admin/front.revisions.heading') }}
+            </a>
             <button type="button" @click="togglePreview()"
                 class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-colors"
                 :class="previewVisible
