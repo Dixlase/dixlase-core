@@ -414,6 +414,23 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
+     * オンライン（未ダウンロード）プラグインの詳細ページ
+     */
+    public function showOnline(string $slug, ExtensionSourceManager $manager)
+    {
+        $details = $manager->getExtensionDetails($slug, 'plugin');
+
+        if ($details === null) {
+            abort(404);
+        }
+
+        $this->viewParams['details'] = $details;
+        $this->viewParams['heading'] = $details['name'] ?? $slug;
+
+        return view('admin::settings.plugins.show-online', $this->viewParams);
+    }
+
+    /**
      * plugin.json から生データを読み込む（詳細ページ用）
      *
      * @return array<string, mixed>|null

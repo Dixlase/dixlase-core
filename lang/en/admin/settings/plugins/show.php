@@ -16,7 +16,11 @@ return [
     'heading' => 'Plugin Details',
     'description' => 'View detailed information and scan results for the plugin.',
     'back_to_list' => 'Back to Plugin List',
+    'back_to_add' => 'Back to Add Plugin',
     'update_available' => 'available',
+    'online_badge' => 'Available Online',
+    'repository' => 'Repository',
+    'last_updated' => 'Last Updated',
 
     // Metadata labels
     'author' => 'Author',

@@ -500,6 +500,7 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::get('/settings/plugins', [AdminPluginsSettingsController::class, 'index'])->name('settings.plugins.index');
                 Route::get('/settings/plugins/add', [AdminPluginsSettingsController::class, 'add'])->name('settings.plugins.add');
                 Route::get('/settings/plugins/show/{slug}', [AdminPluginsSettingsController::class, 'show'])->name('settings.plugins.show');
+                Route::get('/settings/plugins/show-online/{slug}', [AdminPluginsSettingsController::class, 'showOnline'])->name('settings.plugins.show-online');
                 Route::post('/settings/plugins/upload', [AdminPluginsSettingsController::class, 'upload'])
                     ->middleware('check.menu.edit:settings.plugins')
                     ->name('settings.plugins.upload');
