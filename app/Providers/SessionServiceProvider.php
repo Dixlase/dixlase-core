@@ -52,6 +52,16 @@ class SessionServiceProvider extends ServiceProvider
 
             return $handler;
         });
+
+        // セッションドライバーを register() で拡張
+        // boot 順序に依存せず、他の ServiceProvider の boot() からセッションを
+        // 利用できるようにする（AppServiceProvider 等でのセッションアクセス時に
+        // "Driver [guard-aware-database] not supported" エラーを防止）
+        $this->app->resolving('session', function ($manager) {
+            $manager->extend('guard-aware-database', function ($app) {
+                return $app['session.guard-aware'];
+            });
+        });
     }
 
     /**
@@ -59,9 +69,6 @@ class SessionServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // セッションドライバーを拡張
-        $this->app['session']->extend('guard-aware-database', function ($app) {
-            return $app['session.guard-aware'];
-        });
+        // 何もしない（register() で拡張済み）
     }
 }

@@ -65,8 +65,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     maxlength="20"
                     :required="true"
                     :placeholder="__('install/step1.admin_account_name_placeholder')"
-                    oninvalid="setCustomValidity('{{ __('install/step1.validation.admin_account_name_required') }}')"
-                    oninput="setCustomValidity('')"
+                    x-on:invalid="$el.setCustomValidity('{{ __('install/step1.validation.admin_account_name_required') }}')"
+                    x-on:input="$el.setCustomValidity('')"
                     ariaDescribedby="admin_account_name_help"
                     class="input-full"
                 />

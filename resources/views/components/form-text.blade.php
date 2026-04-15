@@ -35,12 +35,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'pattern' => null,
     'minlength' => null,
     'maxlength' => null,
-    'oninvalid' => null,
-    'oninput' => null,
-    'onpaste' => null,
-    'oncopy' => null,
-    'oncut' => null,
-    'oncontextmenu' => null,
     'ariaDescribedby' => null,
     'ariaLabel' => null,
     'autocomplete' => null,
@@ -65,16 +59,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if ($pattern) pattern="{{ $pattern }}" @endif
     @if ($minlength) minlength="{{ $minlength }}" @endif
     @if ($maxlength) maxlength="{{ $maxlength }}" @endif
-    @if ($oninvalid) oninvalid="{{ $oninvalid }}" @endif
-    @if ($oninput) oninput="{{ $oninput }}" @endif
-    @if ($onpaste) onpaste="{{ $onpaste }}" @endif
-    @if ($oncopy) oncopy="{{ $oncopy }}" @endif
-    @if ($oncut) oncut="{{ $oncut }}" @endif
-    @if ($oncontextmenu) oncontextmenu="{{ $oncontextmenu }}" @endif
     @if ($ariaDescribedby) aria-describedby="{{ $ariaDescribedby }}" @endif
     @if ($ariaLabel) aria-label="{{ $ariaLabel }}" @endif
     @if ($autocomplete) autocomplete="{{ $autocomplete }}" @endif
     @if ($xModel) x-model="{{ $xModel }}" @endif
+    {{ $attributes->except(['class'])->merge([]) }}
     class="input-common input-full my-2 {{ $showPasswordToggle ? 'pr-10' : '' }} {{ $class }}"
     value="{{ old($name, $value) }}"
     >
