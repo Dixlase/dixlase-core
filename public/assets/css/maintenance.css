@@ -19,15 +19,17 @@
  *
  * メンテナンスページ用スタイル
  * Vite不使用の静的CSSファイル（メンテナンスモード中はフレームワークが利用不可のため）
+ *
+ * すべてのスタイルは .maintenance-page スコープに閉じ込めて、
+ * 管理者ログイン時に併用されるアプリ側CSS（Tailwind / コンポーネント）と衝突させない。
  */
 
-* {
-    margin: 0;
-    padding: 0;
+.maintenance-page,
+.maintenance-page * {
     box-sizing: border-box;
 }
 
-body {
+.maintenance-page {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
@@ -37,7 +39,7 @@ body {
     padding: 20px;
 }
 
-.container {
+.maintenance-page .container {
     background: white;
     border-radius: 16px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -45,9 +47,10 @@ body {
     width: 100%;
     padding: 48px 32px;
     text-align: center;
+    margin: 0 auto;
 }
 
-.icon {
+.maintenance-page .icon {
     width: 80px;
     height: 80px;
     margin: 0 auto 24px;
@@ -58,53 +61,63 @@ body {
     justify-content: center;
 }
 
-.icon svg {
+.maintenance-page .icon svg {
     width: 40px;
     height: 40px;
     fill: white;
 }
 
-h1 {
+.maintenance-page h1 {
     font-size: 32px;
     font-weight: 700;
     color: #1a202c;
-    margin-bottom: 16px;
+    margin: 0 0 16px;
 }
 
-.message {
+.maintenance-page .maintenance-message {
     font-size: 18px;
     color: #4a5568;
     line-height: 1.6;
-    margin-bottom: 24px;
+    margin: 0 0 24px;
     white-space: pre-wrap;
+    background: transparent;
+    border: 0;
 }
 
-.release-info {
+.maintenance-page .release-info {
     background: #f7fafc;
     border-radius: 8px;
     padding: 16px;
     margin-top: 24px;
 }
 
-.release-info p {
+.maintenance-page .release-info p {
     font-size: 14px;
     color: #718096;
-    margin-bottom: 8px;
+    margin: 0 0 8px;
 }
 
-.release-time {
+.maintenance-page .release-time {
     font-size: 20px;
     font-weight: 600;
     color: #667eea;
 }
 
-.preview-badge {
+.maintenance-page .preview-badge {
     display: inline-block;
-    background: #fbbf24;
-    color: #78350f;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 14px;
+    background: #ffc107;
+    color: #333;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
     font-weight: 600;
     margin-bottom: 16px;
+}
+
+/* 管理者ログイン時は .maintenance-page がラッパーとして body 内部に置かれるため、
+   管理バーとバナー分のオフセットを確保する（admin.blade.php の --admin-banner-offset に連動） */
+body.maintenance-admin .maintenance-page {
+    min-height: calc(100vh - 3rem - var(--admin-banner-offset, 0px));
+    padding-top: 2rem;
+    padding-bottom: 2rem;
 }
