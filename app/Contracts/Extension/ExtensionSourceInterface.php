@@ -62,6 +62,15 @@ interface ExtensionSourceInterface
     public function listThemes(): array;
 
     /**
+     * Get detailed information for a single extension (manifest + repository metadata)
+     *
+     * @param  string  $slug  Extension slug
+     * @param  string  $extensionType  "plugin" or "theme"
+     * @return array<string, mixed>|null
+     */
+    public function getExtensionDetails(string $slug, string $extensionType = 'plugin'): ?array;
+
+    /**
      * Get the latest release info for an extension
      *
      * @param  string  $slug  Extension slug (kebab-case)

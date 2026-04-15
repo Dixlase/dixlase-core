@@ -245,6 +245,31 @@ class ExtensionSourceManager
         return $themes;
     }
 
+    /**
+     * 指定スラッグの拡張機能の詳細データをソースから取得する
+     *
+     * @return array<string, mixed>|null source_id/source_name 付きの詳細データ
+     */
+    public function getExtensionDetails(string $slug, string $extensionType = 'plugin'): ?array
+    {
+        foreach ($this->getEnabledSources() as $source) {
+            try {
+                $provider = $this->makeProvider($source);
+                $details = $provider->getExtensionDetails($slug, $extensionType);
+                if ($details !== null) {
+                    $details['source_id'] = $source->id;
+                    $details['source_name'] = $source->name;
+
+                    return $details;
+                }
+            } catch (\Throwable) {
+                continue;
+            }
+        }
+
+        return null;
+    }
+
     // ========================================
     // Update Checking
     // ========================================

@@ -16,7 +16,11 @@ return [
     'heading' => 'プラグイン詳細',
     'description' => 'プラグインの詳細情報とスキャン結果を確認します。',
     'back_to_list' => 'プラグイン一覧に戻る',
+    'back_to_add' => 'プラグインを追加に戻る',
     'update_available' => 'が利用可能',
+    'online_badge' => 'オンライン',
+    'repository' => 'リポジトリ',
+    'last_updated' => '最終更新',
 
     // メタデータラベル
     'author' => '作者',

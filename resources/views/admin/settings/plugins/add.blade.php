@@ -187,6 +187,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             </div>
                                         </div>
 
+                                        {{-- 詳細リンク --}}
+                                        <div class="mt-3">
+                                            <a
+                                                :href="'{{ url('/admin/settings/plugins/show-online') }}/' + plugin.slug"
+                                                class="inline-flex items-center gap-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline"
+                                            >
+                                                <i class="fas fa-info-circle"></i>
+                                                {{ __('admin/settings/plugins/index.view_details') }}
+                                            </a>
+                                        </div>
+
                                         {{-- ダウンロードボタン --}}
                                         <div class="mt-3">
                                             <button

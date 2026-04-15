@@ -86,6 +86,49 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         return $this->listRepositories($this->themeRepoPrefix, 'theme');
     }
 
+    /**
+     * 指定したスラッグの詳細データを取得する
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getExtensionDetails(string $slug, string $extensionType = 'plugin'): ?array
+    {
+        $repoName = $this->buildRepoName($slug, $extensionType);
+
+        // リポジトリ情報を取得（default_branch などを取得するため）
+        $repoResponse = $this->client()->get("{$this->baseUrl}/repos/{$this->owner}/{$repoName}");
+        if ($repoResponse->failed()) {
+            return null;
+        }
+        $repo = $repoResponse->json();
+
+        // manifest を取得
+        $manifest = $this->fetchManifest($repoName, $extensionType);
+        if ($manifest === null) {
+            return null;
+        }
+
+        $defaultBranch = $repo['default_branch'] ?? 'main';
+        $thumbnailFile = $manifest['thumbnail'] ?? ($extensionType === 'theme' ? 'screenshot.png' : 'thumbnail.png');
+
+        return [
+            'slug' => $manifest['slug'] ?? $slug,
+            'name' => $manifest['name'] ?? ($repo['description'] ?? $slug),
+            'description' => $this->resolveDescription($manifest['description'] ?? null) ?? $repo['description'] ?? null,
+            'version' => $manifest['version'] ?? null,
+            'author' => $manifest['author'] ?? null,
+            'email' => $manifest['email'] ?? null,
+            'url' => $manifest['url'] ?? $manifest['homepage'] ?? null,
+            'license' => $manifest['license'] ?? null,
+            'package_name' => $manifest['package_name'] ?? null,
+            'namespace' => $manifest['namespace'] ?? null,
+            'thumbnail_url' => "https://raw.githubusercontent.com/{$this->owner}/{$repoName}/{$defaultBranch}/{$thumbnailFile}",
+            'repository_url' => $repo['html_url'] ?? null,
+            'updated_at' => $repo['updated_at'] ?? null,
+            'extension_type' => $extensionType,
+        ];
+    }
+
     public function getLatestRelease(string $slug, string $extensionType = 'plugin'): ?ReleaseInfo
     {
         $repo = $this->buildRepoName($slug, $extensionType);
