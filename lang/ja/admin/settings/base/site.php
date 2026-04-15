@@ -21,6 +21,8 @@ return [
     'language_region_settings' => '言語・地域設定',
     'locale' => 'デフォルトの言語設定',
     'ogp_seo_plugin_notice' => 'SEO関連の設定（サイト説明・キーワード・OGP・メタタグなど）はプラグインの DixlaseSEO で行います。ご利用には DixlaseSEO をインストール・有効化してください。',
+    'ogp_seo_plugin_enable_notice' => 'SEO関連の設定（サイト説明・キーワード・OGP・メタタグなど）はプラグインの DixlaseSEO で行います。DixlaseSEO は追加済みですが有効化されていません。プラグインマスターからインストール・有効化してください。',
     'ogp_seo_plugin_install_link' => 'プラグインを追加',
+    'ogp_seo_plugin_master_link' => 'プラグインマスター',
     'settings_updated' => 'サイト設定が更新されました。',
 ];
