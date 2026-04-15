@@ -20,208 +20,67 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Models\BaseSetting;
 use App\Models\FrontPage;
 use App\Models\FrontPageRevision;
-use Illuminate\Support\Facades\DB;
 
 /**
- * フロントページのリビジョン作成・復元・クリーンアップを担うサービス
+ * フロントページ専用のリビジョンサービス（薄いファサード）
  *
- * 将来 Phase 2 で `RevisionService` として汎用化する想定。
+ * 実際のロジックは汎用の {@see RevisionService} に委譲する。
+ * 既存呼び出し（Actions, Controllers, テスト）の後方互換性を保つためにのみ存在する。
  */
 class FrontPageRevisionService
 {
-    /** 設定キー: リビジョン保持件数（0 でリビジョン無効、上限 500） */
-    public const SETTING_KEY_RETENTION = 'content.revision.retention_count';
+    /** @deprecated {@see RevisionService::SETTING_KEY_RETENTION} を参照 */
+    public const SETTING_KEY_RETENTION = RevisionService::SETTING_KEY_RETENTION;
 
-    public const DEFAULT_RETENTION = 50;
+    /** @deprecated {@see RevisionService::DEFAULT_RETENTION} を参照 */
+    public const DEFAULT_RETENTION = RevisionService::DEFAULT_RETENTION;
 
-    public const MAX_RETENTION = 500;
+    /** @deprecated {@see RevisionService::MAX_RETENTION} を参照 */
+    public const MAX_RETENTION = RevisionService::MAX_RETENTION;
 
-    /**
-     * スナップショットに含めるカラム（比較・復元対象）
-     *
-     * @var list<string>
-     */
-    private const SNAPSHOT_FIELDS = [
-        'page_type',
-        'lang',
-        'title',
-        'content',
-        'custom_js',
-        'custom_css',
-        'storage_type',
-        'editor_type',
-        'status',
-    ];
+    public function __construct(protected RevisionService $service) {}
 
-    /**
-     * リビジョンを作成する。
-     *
-     * 直前リビジョンと同一内容なら作成をスキップする（auto/manual 共通）。
-     * 作成後、保持件数を超えた古いリビジョンを削除する。
-     *
-     * @return FrontPageRevision|null 作成されたリビジョン（スキップ時は null）
-     */
-    public function record(FrontPage $frontPage, string $type = FrontPageRevision::TYPE_AUTO, ?int $userId = null, ?string $note = null): ?FrontPageRevision
-    {
-        $retention = $this->getRetentionCount();
-        if ($retention === 0) {
-            return null;
-        }
+    public function record(
+        FrontPage $frontPage,
+        string $type = FrontPageRevision::TYPE_AUTO,
+        ?int $userId = null,
+        ?string $note = null,
+    ): ?FrontPageRevision {
+        /** @var FrontPageRevision|null $revision */
+        $revision = $this->service->record($frontPage, $type, $userId, $note);
 
-        $snapshot = $this->buildSnapshot($frontPage);
-
-        if ($this->matchesLatest($frontPage, $snapshot)) {
-            return null;
-        }
-
-        return DB::transaction(function () use ($frontPage, $snapshot, $type, $userId, $note, $retention) {
-            $revision = FrontPageRevision::create([
-                'front_page_id' => $frontPage->id,
-                'snapshot' => $snapshot,
-                'type' => $type,
-                'note' => $note,
-                'created_by' => $userId,
-            ]);
-
-            $this->pruneOldRevisions($frontPage, $retention);
-
-            return $revision;
-        });
+        return $revision;
     }
 
-    /**
-     * リビジョンから復元する。
-     *
-     * 復元前の現状が直前リビジョンと差分がある場合のみ restore_backup を作成する。
-     */
     public function restore(FrontPageRevision $revision, ?int $userId = null): FrontPage
     {
-        $frontPage = $revision->frontPage;
+        /** @var FrontPage $frontPage */
+        $frontPage = $this->service->restore($revision, $userId);
 
-        return DB::transaction(function () use ($frontPage, $revision, $userId) {
-            $this->record($frontPage, FrontPageRevision::TYPE_RESTORE_BACKUP, $userId);
-
-            $snapshot = $revision->snapshot;
-            $updateData = array_intersect_key($snapshot, array_flip(self::SNAPSHOT_FIELDS));
-            $frontPage->update($updateData);
-
-            return $frontPage->fresh();
-        });
+        return $frontPage;
     }
 
     /**
-     * 現在の FrontPage からスナップショット配列を生成する。
-     *
      * @return array<string, mixed>
      */
     public function buildSnapshot(FrontPage $frontPage): array
     {
-        $attributes = $frontPage->getAttributes();
-
-        // 全フィールドを必ず含める（未設定キーは null で埋める）ことで、
-        // in-memory モデルと DB 再ロード後でキーの有無が変わらないよう正規化する。
-        $snapshot = [];
-        foreach (self::SNAPSHOT_FIELDS as $field) {
-            $snapshot[$field] = $attributes[$field] ?? null;
-        }
-
-        return $snapshot;
+        return $this->service->buildSnapshot($frontPage);
     }
 
-    /**
-     * 直前リビジョンのスナップショットと現在のスナップショットが同一かを判定する。
-     *
-     * JSON を正規化（キーソート）したハッシュで比較する。
-     *
-     * @param  array<string, mixed>  $snapshot
-     */
-    private function matchesLatest(FrontPage $frontPage, array $snapshot): bool
-    {
-        $latest = FrontPageRevision::query()
-            ->where('front_page_id', $frontPage->id)
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->first();
-
-        if (! $latest) {
-            return false;
-        }
-
-        return $this->hash($latest->snapshot ?? []) === $this->hash($snapshot);
-    }
-
-    /**
-     * スナップショット配列の正規化ハッシュを返す。
-     *
-     * @param  array<string, mixed>  $snapshot
-     */
-    private function hash(array $snapshot): string
-    {
-        // enum インスタンスや日時など、DB 由来の JSON と型が一致しない値を
-        // プリミティブに正規化するため、一度 JSON を往復させてから比較する。
-        $normalized = json_decode(
-            (string) json_encode($snapshot, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            true
-        ) ?? [];
-        ksort($normalized);
-
-        return hash('sha256', (string) json_encode($normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-    }
-
-    /**
-     * 保持件数を超えた古いリビジョンを削除する。
-     *
-     * 保護フラグが立ったリビジョンは削除対象から除外される。
-     * 結果として総件数が保持件数を超える場合があるが、ユーザーの明示的な保護意図を尊重する。
-     */
-    private function pruneOldRevisions(FrontPage $frontPage, int $retention): void
-    {
-        $total = FrontPageRevision::query()
-            ->where('front_page_id', $frontPage->id)
-            ->count();
-
-        $overflow = $total - $retention;
-        if ($overflow <= 0) {
-            return;
-        }
-
-        // 保護されていない古いリビジョンを上限超過分だけ削除
-        $ids = FrontPageRevision::query()
-            ->where('front_page_id', $frontPage->id)
-            ->where('is_protected', false)
-            ->orderBy('created_at')
-            ->orderBy('id')
-            ->limit($overflow)
-            ->pluck('id');
-
-        if ($ids->isNotEmpty()) {
-            FrontPageRevision::query()->whereIn('id', $ids)->delete();
-        }
-    }
-
-    /**
-     * 保護中のリビジョン件数を返す。
-     */
     public function countProtected(FrontPage $frontPage): int
     {
-        return FrontPageRevision::query()
-            ->where('front_page_id', $frontPage->id)
-            ->where('is_protected', true)
-            ->count();
+        return $this->service->countProtected($frontPage);
     }
 
-    /**
-     * 保持件数設定値を取得する（0〜MAX_RETENTION の範囲に丸める）。
-     */
     public function getRetentionCount(): int
     {
-        $value = (int) BaseSetting::getValue(self::SETTING_KEY_RETENTION, self::DEFAULT_RETENTION);
-
-        return max(0, min(self::MAX_RETENTION, $value));
+        return $this->service->getRetentionCount();
     }
 }

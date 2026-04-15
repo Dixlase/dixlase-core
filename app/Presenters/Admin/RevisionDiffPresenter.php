@@ -28,10 +28,10 @@ use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 
 /**
- * リビジョン差分のサイドバイサイド表示用 Presenter
+ * @api リビジョン差分のサイドバイサイド表示用 Presenter
  *
  * 任意の 2 つのテキストを行単位で比較し、Git 風に左右に並べた表示行の配列を返す。
- * 各行は ['status' => 'same|removed|added|empty', 'left' => ?string, 'right' => ?string]
+ * 各行は ['status' => 'same|removed|added|changed', 'left' => ?string, 'right' => ?string]
  */
 class RevisionDiffPresenter
 {

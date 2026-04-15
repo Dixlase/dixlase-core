@@ -1,7 +1,7 @@
 # Dixlase CMS Plugin API Boundary
 
 **Version:** dev
-**Last Updated:** 2026-04-05
+**Last Updated:** 2026-04-16
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -35,16 +35,19 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\Action\Actor` | Represents the entity performing an operation |
 | `App\Contracts\Admin\AdminNavigationManagerInterface` | 管理画面ナビゲーション管理インターフェース |
 | `App\Contracts\CspPolicyProvider` | CSP Policy Provider Interface |
+| `App\Contracts\Encryption\FileEncryptionServiceInterface` | ファイル暗号化サービスインターフェース |
 | `App\Contracts\Extension\ExtensionSourceInterface` | Extension Source Provider Interface |
 | `App\Contracts\FileIntegrity\FileIntegrityServiceInterface` | ファイル整合性チェックサービスの契約 |
 | `App\Contracts\LegalPage\LegalPageServiceInterface` | 法務ページレジストリサービスの契約 |
 | `App\Contracts\Logging\LogServiceInterface` | ログ出力サービスの契約 |
 | `App\Contracts\Mail\MailServiceInterface` | メール送信サービスの契約 |
+| `App\Contracts\Revisionable` | 各プラグイン/テーマは自身のリビジョンテーブルと Eloquent モデルを持ちつつ、 |
 | `App\Contracts\RouteSlugProvider` | Route Slug Provider Interface |
 | `App\Contracts\Theme\ThemePermissionServiceInterface` | テーマ権限管理サービスの契約 |
 | `App\Contracts\TranslationResolver` | Translation Resolver Contract |
 | `App\Contracts\TwoFaInterface` | 二段階認証機能を持つユーザーのインターフェース |
 | `App\Contracts\TwoFa\TwoFaPasskeyServiceInterface` | Passkey（WebAuthn）認証サービスの契約 |
+| `App\Contracts\Verification\FileVerificationServiceInterface` | ファイル整合性検証サービスインターフェース |
 
 ### 1.2 Plugin Integration Contracts
 
@@ -97,6 +100,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Traits\CustomFilesLoaderTrait` | カスタムファイルオーバーライドローディング |
 | `App\Traits\EmailVerificationTrait` | メール認証の共通ロジックを提供するTrait |
 | `App\Traits\HasPermissions` | HasPermissions Trait |
+| `App\Traits\HasRevisions` | `App\Contracts\Revisionable` を実装するモデルに `use` することで、 |
 | `App\Traits\LoginIdentifierCheckTrait` | ログイン識別子確認の共通トレイト |
 | `App\Traits\LoginNotificationTrait` | ログイン通知の共通トレイト |
 | `App\Traits\MailTestTrait` |  |
@@ -138,30 +142,34 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 - `App\DTO\Editor\EditorInfo`
 
-### 4.4 Extension DTOs
+### 4.4 Encryption DTOs
+
+- `App\DTO\Encryption\EncryptionResultDTO`
+
+### 4.5 Extension DTOs
 
 - `App\DTO\Extension\ReleaseInfo`
 
-### 4.5 File Integrity DTOs
+### 4.6 File Integrity DTOs
 
 - `App\DTO\FileIntegrity\BaselineDTO`
 - `App\DTO\FileIntegrity\FileChangeDTO`
 - `App\DTO\FileIntegrity\ScanResultDTO`
 - `App\DTO\FileIntegrity\ScanTargetDTO`
 
-### 4.6 Logging DTOs
+### 4.7 Logging DTOs
 
 - `App\DTO\Logging\LogContextDTO`
 - `App\DTO\Logging\LogEntryDTO`
 
-### 4.7 Mail DTOs
+### 4.8 Mail DTOs
 
 - `App\DTO\Mail\MailAttachmentDTO`
 - `App\DTO\Mail\MailConfigDTO`
 - `App\DTO\Mail\MailMessageDTO`
 - `App\DTO\Mail\MailResultDTO`
 
-### 4.8 Plugin Integration DTOs
+### 4.9 Plugin Integration DTOs
 
 - `App\DTO\PluginIntegration\DashboardNotificationDTO`
 - `App\DTO\PluginIntegration\DashboardWidgetDTO`
@@ -173,14 +181,14 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\DTO\PluginIntegration\PreviewFieldDTO`
 - `App\DTO\PluginIntegration\SearchQueryDTO`
 
-### 4.9 Plugin DTOs
+### 4.10 Plugin DTOs
 
 - `App\DTO\Plugin\CapabilityResolutionResult`
 - `App\DTO\Plugin\DeclaresVerificationResult`
 - `App\DTO\Plugin\EnabledPluginRecord`
 - `App\DTO\Plugin\SignatureVerificationResult`
 
-### 4.10 RouteSlug DTOs
+### 4.11 RouteSlug DTOs
 
 - `App\DTO\RouteSlug\RegisteredSlug`
 
@@ -231,7 +239,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 `x-ui-modal`, `x-ui-modal-vanilla`, `x-ui-notification`, `x-ui-livewire-notification`,
 `x-ui-livewire-modal`, `x-ui-message`, `x-ui-flash-message`, `x-ui-status-badge`,
 `x-ui-pagination`, `x-ui-pagination-controls`, `x-ui-tooltip`,
-`x-ui-maintenance-banner`, `x-ui-admin-maintenance-banner`,
+`x-ui-maintenance-banner`, `x-ui-admin-maintenance-banner`, `x-ui-system-banner`,
 `x-ui-appearance-mode-selector`, `x-ui-language-switcher`, `x-ui-admin-bar`
 
 ### 6.3 Admin Components
@@ -374,6 +382,7 @@ The remaining services are accessed via their respective interfaces (see Section
 - `App\Services\LegalPageService`
 - `App\Services\MailServerValidatorService`
 - `App\Services\RouteSlugRegistry`
+- `App\Services\SystemWarningService`
 
 ### 9.3 Mail & Logging
 
