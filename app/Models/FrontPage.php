@@ -24,19 +24,21 @@
 
 namespace App\Models;
 
+use App\Contracts\Revisionable;
 use App\Enums\ContentEditorType;
 use App\Enums\ContentStatus;
 use App\Enums\ContentStorageType;
+use App\Traits\HasRevisions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * フロントページモデル
  */
-class FrontPage extends Model
+class FrontPage extends Model implements Revisionable
 {
     use HasFactory;
+    use HasRevisions;
 
     /**
      * テーブル名
@@ -112,13 +114,31 @@ class FrontPage extends Model
         return $query->where('status', ContentStatus::PUBLISHED->value);
     }
 
-    /**
-     * リビジョン（編集履歴）
-     *
-     * @return HasMany<FrontPageRevision>
-     */
-    public function revisions(): HasMany
+    public function revisionModel(): string
     {
-        return $this->hasMany(FrontPageRevision::class)->latest('created_at');
+        return FrontPageRevision::class;
+    }
+
+    public function revisionForeignKey(): string
+    {
+        return 'front_page_id';
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function revisionableFields(): array
+    {
+        return [
+            'page_type',
+            'lang',
+            'title',
+            'content',
+            'custom_js',
+            'custom_css',
+            'storage_type',
+            'editor_type',
+            'status',
+        ];
     }
 }
