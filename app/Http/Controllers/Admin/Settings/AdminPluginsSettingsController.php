@@ -531,6 +531,18 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
             // インストール後に監査を実行
             if ($plugin) {
+                // plugin.json からサプライチェーン防御用メタデータを取得して保存
+                $this->persistSupplyChainMetadata($plugin, 'upload');
+
+                // バージョン履歴を記録（初回インストール）
+                $this->recordVersionHistory(
+                    plugin: $plugin,
+                    oldVersion: null,
+                    oldSigningKeyId: null,
+                    oldAuthorId: null,
+                    installationMethod: PluginVersionHistory::METHOD_INSTALL,
+                );
+
                 $this->runPluginAudit($plugin->slug);
 
                 // 拡張機能操作の通知・ログ記録
@@ -1293,6 +1305,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             // 新バージョンの ZIP をダウンロード
             $zipPath = $manager->download($slug, 'plugin', $newVersion);
 
+            // 更新前のメタデータを保存（履歴記録用）
+            $oldVersion = $plugin->version;
+            $oldSigningKeyId = $plugin->signing_key_id;
+            $oldAuthorId = $plugin->author_id;
+
             // 現在のディレクトリをバックアップ
             if (File::exists($pluginPath)) {
                 File::move($pluginPath, $backupPath);
@@ -1314,6 +1331,18 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 'available_version' => null,
                 'last_version_check' => now(),
             ]);
+
+            // 新しい plugin.json からサプライチェーン防御用メタデータを更新
+            $this->persistSupplyChainMetadata($plugin, 'update');
+
+            // バージョン履歴を記録（アップデート）
+            $this->recordVersionHistory(
+                plugin: $plugin,
+                oldVersion: $oldVersion,
+                oldSigningKeyId: $oldSigningKeyId,
+                oldAuthorId: $oldAuthorId,
+                installationMethod: PluginVersionHistory::METHOD_UPDATE,
+            );
 
             // バックアップを削除
             if (File::exists($backupPath)) {
@@ -1349,6 +1378,126 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 File::deleteDirectory($originalPath);
             }
             File::move($backupPath, $originalPath);
+        }
+    }
+
+    /**
+     * plugin.json からサプライチェーン防御用のメタデータを抽出して Plugin に保存
+     *
+     * @param  string  $installationMethod  "upload" / "marketplace" / "cli" / "github"
+     */
+    protected function persistSupplyChainMetadata(Plugin $plugin, string $installationMethod, ?string $sourceUrl = null): void
+    {
+        $pluginJsonPath = base_path("plugins/{$plugin->directory}/plugin.json");
+        if (! File::exists($pluginJsonPath)) {
+            return;
+        }
+
+        try {
+            $data = json_decode(File::get($pluginJsonPath), true);
+            if (json_last_error() !== JSON_ERROR_NONE || ! is_array($data)) {
+                return;
+            }
+
+            $plugin->update([
+                'author_id' => $data['author_id'] ?? null,
+                'publisher_key_id' => $data['publisher_key_id'] ?? null,
+                'signing_key_id' => $data['signing']['key_id'] ?? null,
+                'installation_method' => $installationMethod,
+                'installed_from_url' => $sourceUrl,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Failed to persist supply-chain metadata', [
+                'plugin' => $plugin->slug,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * プラグインのバージョン履歴を記録し、署名鍵・オーナー変更があれば監査ログも記録
+     */
+    protected function recordVersionHistory(
+        Plugin $plugin,
+        ?string $oldVersion,
+        ?string $oldSigningKeyId,
+        ?string $oldAuthorId,
+        string $installationMethod,
+    ): void {
+        $newSigningKeyId = $plugin->signing_key_id;
+        $newAuthorId = $plugin->author_id;
+        $signingKeyChanged = $oldSigningKeyId !== null && $oldSigningKeyId !== $newSigningKeyId;
+        $authorIdChanged = $oldAuthorId !== null && $oldAuthorId !== $newAuthorId;
+
+        $member = AdminHelper::getMember();
+
+        try {
+            PluginVersionHistory::create([
+                'plugin_slug' => $plugin->slug,
+                'old_version' => $oldVersion,
+                'new_version' => $plugin->version,
+                'old_signing_key_id' => $oldSigningKeyId,
+                'new_signing_key_id' => $newSigningKeyId,
+                'old_author_id' => $oldAuthorId,
+                'new_author_id' => $newAuthorId,
+                'files_changed_count' => 0, // 初期リリース: 未計算
+                'lines_added' => 0,
+                'lines_removed' => 0,
+                'signing_key_changed' => $signingKeyChanged,
+                'author_id_changed' => $authorIdChanged,
+                'installation_method' => $installationMethod,
+                'installed_from_url' => $plugin->installed_from_url,
+                'applied_by_id' => $member?->id,
+                'applied_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Failed to record plugin version history', [
+                'plugin' => $plugin->slug,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // 署名鍵変更・オーナー変更は監査ログに記録（承認フロー等は Phase 2 で実装）
+        if ($signingKeyChanged) {
+            $this->logSupplyChainEvent($plugin, AuditLog::ACTION_PLUGIN_SIGNING_KEY_CHANGED, [
+                'old_signing_key_id' => $oldSigningKeyId,
+                'new_signing_key_id' => $newSigningKeyId,
+            ]);
+        }
+
+        if ($authorIdChanged) {
+            $this->logSupplyChainEvent($plugin, AuditLog::ACTION_PLUGIN_AUTHOR_ID_CHANGED, [
+                'old_author_id' => $oldAuthorId,
+                'new_author_id' => $newAuthorId,
+            ]);
+        }
+    }
+
+    /**
+     * サプライチェーン防御のイベントを監査ログに記録
+     *
+     * @param  array<string, mixed>  $context
+     */
+    protected function logSupplyChainEvent(Plugin $plugin, string $action, array $context = []): void
+    {
+        try {
+            $context = array_merge([
+                'plugin_slug' => $plugin->slug,
+                'plugin_name' => $plugin->name,
+                'plugin_version' => $plugin->version,
+            ], $context);
+
+            Log::warning('Supply-chain event detected', [
+                'action' => $action,
+                'context' => $context,
+            ]);
+            // AuditLog への保存は既存の監査ログサービス経由（Phase 2 で詳細実装）
+        } catch (\Throwable $e) {
+            Log::warning('Failed to log supply-chain event', [
+                'plugin' => $plugin->slug,
+                'action' => $action,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 }

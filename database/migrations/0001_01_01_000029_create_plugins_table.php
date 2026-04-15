@@ -48,6 +48,12 @@ return new class extends Migration
             $table->string('source_repo')->nullable(); // Repository name at source
             $table->string('available_version')->nullable(); // Latest available version from source
             $table->timestamp('last_version_check')->nullable(); // Last update check timestamp
+            // サプライチェーン攻撃防御用カラム
+            $table->string('signing_key_id')->nullable()->index(); // 初回インストール時の署名鍵ID
+            $table->string('author_id')->nullable()->index(); // plugin.json の author_id
+            $table->string('publisher_key_id')->nullable(); // 配布者の署名鍵ID
+            $table->string('installed_from_url')->nullable(); // インストール元URL
+            $table->string('installation_method')->nullable(); // upload/marketplace/cli/github
             $table->timestamp('installed_at')->nullable(); // インストール日時
             $table->timestamp('enabled_at')->nullable(); // 有効化日時
             $table->timestamps(); // Laravelの `created_at` & `updated_at`
