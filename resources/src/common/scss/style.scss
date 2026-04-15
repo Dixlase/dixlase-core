@@ -44,5 +44,7 @@
 @use '../../vendor/mail/html/scss/layout';
 
 // Tailwind v4: enable @apply resolution for SCSS files
-@reference "tailwindcss";
+// プロジェクトの tailwind.css を参照することで、クラスベースのダークモード
+// （@variant dark (&:where(.dark, .dark *))) が @apply 展開にも適用される
+@reference "../css/tailwind.css";
 

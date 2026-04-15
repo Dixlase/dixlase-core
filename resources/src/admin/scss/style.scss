@@ -42,4 +42,6 @@
 @use '../../components/security/scss/safe-mode-banner';
 
 // Tailwind v4: enable @apply resolution for SCSS files
-@reference "tailwindcss";
+// プロジェクトの tailwind.css を参照することで、クラスベースのダークモード
+// （@variant dark (&:where(.dark, .dark *))) が @apply 展開にも適用される
+@reference "../../common/css/tailwind.css";
