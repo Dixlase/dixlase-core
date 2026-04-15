@@ -117,7 +117,8 @@
 /* 管理者ログイン時は .maintenance-page がラッパーとして body 内部に置かれるため、
    管理バーとバナー分のオフセットを確保する（admin.blade.php の --admin-banner-offset に連動） */
 body.maintenance-admin .maintenance-page {
-    min-height: calc(100vh - 3rem - var(--admin-banner-offset, 0px));
-    padding-top: 2rem;
+    min-height: 100vh;
+    padding-top: calc(3rem + var(--admin-banner-offset, 0px) + 2rem);
     padding-bottom: 2rem;
+    background: transparent;
 }
