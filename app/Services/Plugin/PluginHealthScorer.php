@@ -159,6 +159,34 @@ class PluginHealthScorer
                 description: '署名が無効です。改ざんの可能性があります。',
                 deduction: $deductionRules['signature_invalid'] ?? -50,
             );
+        } elseif ($signatureInfo['status'] === 'pending_verification') {
+            $issues[] = new HealthIssue(
+                type: 'signature_pending_verification',
+                severity: 'warning',
+                description: '署名の検証が完了していません（公開鍵サーバー未接続）。',
+                deduction: $deductionRules['signature_pending_verification'] ?? -5,
+            );
+        } elseif ($signatureInfo['status'] === 'unknown_key') {
+            $issues[] = new HealthIssue(
+                type: 'signature_unknown_key',
+                severity: 'warning',
+                description: '署名鍵が信頼済みとして登録されていません。',
+                deduction: $deductionRules['signature_unknown_key'] ?? -15,
+            );
+        } elseif ($signatureInfo['status'] === 'expired') {
+            $issues[] = new HealthIssue(
+                type: 'signature_expired',
+                severity: 'warning',
+                description: '署名に使用された鍵が失効しています。',
+                deduction: $deductionRules['signature_expired'] ?? -20,
+            );
+        } elseif ($signatureInfo['status'] === 'error') {
+            $issues[] = new HealthIssue(
+                type: 'signature_error',
+                severity: 'warning',
+                description: '署名検証中にエラーが発生しました。',
+                deduction: $deductionRules['signature_error'] ?? -10,
+            );
         }
 
         return $issues;
