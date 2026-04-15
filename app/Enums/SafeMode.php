@@ -57,7 +57,7 @@ enum SafeMode: string
         return match ($this) {
             self::Csp => 'bg-red-600 dark:bg-red-700',
             self::Plugins => 'bg-orange-600 dark:bg-orange-700',
-            self::Theme => 'bg-purple-600 dark:bg-purple-700',
+            self::Theme => 'bg-red-600 dark:bg-red-700',
         };
     }
 
@@ -69,7 +69,7 @@ enum SafeMode: string
         return match ($this) {
             self::Csp => 'bg-red-800 dark:bg-red-900 hover:bg-red-900 dark:hover:bg-red-950',
             self::Plugins => 'bg-orange-800 dark:bg-orange-900 hover:bg-orange-900 dark:hover:bg-orange-950',
-            self::Theme => 'bg-purple-800 dark:bg-purple-900 hover:bg-purple-900 dark:hover:bg-purple-950',
+            self::Theme => 'bg-red-800 dark:bg-red-900 hover:bg-red-900 dark:hover:bg-red-950',
         };
     }
 
@@ -81,7 +81,7 @@ enum SafeMode: string
         return match ($this) {
             self::Csp => 'text-red-600 dark:text-red-700',
             self::Plugins => 'text-orange-600 dark:text-orange-700',
-            self::Theme => 'text-purple-600 dark:text-purple-700',
+            self::Theme => 'text-red-600 dark:text-red-700',
         };
     }
 
