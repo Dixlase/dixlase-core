@@ -151,6 +151,10 @@ Route::prefix($adminUrl)->name('admin.')
                     ->whereNumber('id')
                     ->middleware('check.menu.edit:front')
                     ->name('front.revisions.note');
+                Route::post('/front/revisions/{id}/protect', [AdminFrontRevisionController::class, 'toggleProtection'])
+                    ->whereNumber('id')
+                    ->middleware('check.menu.edit:front')
+                    ->name('front.revisions.protect');
             });
 
             // メディア管理（権限チェック付き）

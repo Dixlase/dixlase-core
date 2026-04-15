@@ -46,6 +46,7 @@ class FrontPageRevision extends Model
         'snapshot',
         'type',
         'note',
+        'is_protected',
         'created_by',
     ];
 
@@ -58,6 +59,7 @@ class FrontPageRevision extends Model
     {
         return [
             'snapshot' => 'array',
+            'is_protected' => 'boolean',
             'created_at' => 'datetime',
         ];
     }

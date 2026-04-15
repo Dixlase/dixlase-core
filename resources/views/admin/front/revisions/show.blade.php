@@ -47,14 +47,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{ __('admin/front/revisions.heading') }}
         </a>
 
-        <form id="restore-form-{{ $revision->id }}" action="{{ route('admin.front.revisions.restore', $revision->id) }}" method="POST">
-            @csrf
-            <button type="button" @click="openModal('restore-modal-{{ $revision->id }}')"
-                    class="inline-flex items-center gap-2 rounded bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700">
-                <i class="fas fa-rotate-left"></i>
-                {{ __('admin/front/revisions.restore') }}
-            </button>
-        </form>
+        <div class="flex items-center gap-2">
+            <form action="{{ route('admin.front.revisions.protect', $revision->id) }}" method="POST">
+                @csrf
+                <button type="submit"
+                        class="inline-flex items-center gap-2 rounded border px-3 py-1.5 text-sm font-medium {{ $revision->is_protected
+                            ? 'border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-400 dark:bg-blue-900 dark:text-blue-100 dark:hover:bg-blue-800'
+                            : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700' }}">
+                    <i class="fas {{ $revision->is_protected ? 'fa-shield-halved' : 'fa-shield' }}"></i>
+                    {{ $revision->is_protected ? __('admin/front/revisions.protect_disable') : __('admin/front/revisions.protect_enable') }}
+                </button>
+            </form>
+            <form id="restore-form-{{ $revision->id }}" action="{{ route('admin.front.revisions.restore', $revision->id) }}" method="POST">
+                @csrf
+                <button type="button" @click="openModal('restore-modal-{{ $revision->id }}')"
+                        class="inline-flex items-center gap-2 rounded bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700">
+                    <i class="fas fa-rotate-left"></i>
+                    {{ __('admin/front/revisions.restore') }}
+                </button>
+            </form>
+        </div>
         <x-ui-modal
             :id="'restore-modal-'.$revision->id"
             :title="__('admin/front/revisions.restore_confirm_title')"
