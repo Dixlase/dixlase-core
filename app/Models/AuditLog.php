@@ -236,6 +236,15 @@ class AuditLog extends Model
 
     public const ACTION_PLUGIN_UPDATED = 'plugin_updated';
 
+    // サプライチェーン攻撃防御用のアクション
+    public const ACTION_PLUGIN_SIGNING_KEY_CHANGED = 'plugin_signing_key_changed';
+
+    public const ACTION_PLUGIN_AUTHOR_ID_CHANGED = 'plugin_author_id_changed';
+
+    public const ACTION_PLUGIN_FILE_INTEGRITY_FAILED = 'plugin_file_integrity_failed';
+
+    public const ACTION_PLUGIN_EXTERNAL_CALL_BLOCKED = 'plugin_external_call_blocked';
+
     public const ACTION_THEME_INSTALLED = 'theme_installed';
 
     public const ACTION_THEME_ENABLED = 'theme_enabled';

@@ -66,6 +66,11 @@ return new class extends Migration
             // 再スキャン判定用ファイルハッシュ
             $table->string('files_hash')->nullable()->comment('コードファイルハッシュ（再スキャン判定用）');
 
+            // ファイル整合性検出（サプライチェーン攻撃防御）
+            $table->unsignedInteger('detected_file_additions')->default(0)->comment('署名時に存在しなかった新規ファイル数');
+            $table->unsignedInteger('detected_file_modifications')->default(0)->comment('ハッシュ不一致ファイル数');
+            $table->unsignedInteger('detected_file_deletions')->default(0)->comment('署名時に存在したが現在ないファイル数');
+
             $table->timestamp('audited_at')->nullable();
             $table->timestamps();
 
