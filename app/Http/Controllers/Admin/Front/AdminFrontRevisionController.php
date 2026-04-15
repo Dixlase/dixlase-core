@@ -131,7 +131,8 @@ class AdminFrontRevisionController extends AdminLoggedInController
             ->findOrFail($id);
 
         $actor = new MemberActor(AdminHelper::getMember());
-        $this->revisionService->restore($revision, userId: $actor->getActorId());
+        (new \App\Actions\FrontPage\RestoreFrontPageRevisionAction($revision, app(\App\Services\RevisionService::class)))
+            ->execute($actor, []);
 
         return redirect()
             ->route('admin.front.revisions.index')
@@ -152,11 +153,13 @@ class AdminFrontRevisionController extends AdminLoggedInController
             ->where('front_page_id', $frontPage->id)
             ->findOrFail($id);
 
-        $revision->update(['is_protected' => ! $revision->is_protected]);
+        $actor = new MemberActor(AdminHelper::getMember());
+        (new \App\Actions\FrontPage\ToggleFrontPageRevisionProtectionAction($revision))
+            ->execute($actor, []);
 
         return back()->with(
             'success',
-            $revision->is_protected
+            $revision->fresh()->is_protected
                 ? __('admin/front/revisions.protect_enabled')
                 : __('admin/front/revisions.protect_disabled')
         );
@@ -180,7 +183,9 @@ class AdminFrontRevisionController extends AdminLoggedInController
             ->where('front_page_id', $frontPage->id)
             ->findOrFail($id);
 
-        $revision->update(['note' => $data['note'] ?? null]);
+        $actor = new MemberActor(AdminHelper::getMember());
+        (new \App\Actions\FrontPage\UpdateFrontPageRevisionNoteAction($revision))
+            ->execute($actor, $data);
 
         return redirect()
             ->route('admin.front.revisions.show', $revision->id)
