@@ -44,13 +44,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @unless ($seoPluginEnabled)
             <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-6 mt-4">
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ __('admin/settings/base/site.ogp_seo_plugin_notice') }}
+                    @if ($seoPluginFilesPresent)
+                        {{ __('admin/settings/base/site.ogp_seo_plugin_enable_notice') }}
+                    @else
+                        {{ __('admin/settings/base/site.ogp_seo_plugin_notice') }}
+                    @endif
                 </p>
-                <a href="{{ route('admin.settings.plugins.add') }}"
-                    class="inline-flex items-center mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
-                    <i class="fas fa-plus-circle mr-2"></i>
-                    {{ __('admin/settings/base/site.ogp_seo_plugin_install_link') }}
-                </a>
+                @if ($seoPluginFilesPresent)
+                    <a href="{{ route('admin.settings.plugins.index') }}"
+                        class="inline-flex items-center mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                        <i class="fas fa-cog mr-2"></i>
+                        {{ __('admin/settings/base/site.ogp_seo_plugin_master_link') }}
+                    </a>
+                @else
+                    <a href="{{ route('admin.settings.plugins.add') }}"
+                        class="inline-flex items-center mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                        <i class="fas fa-plus-circle mr-2"></i>
+                        {{ __('admin/settings/base/site.ogp_seo_plugin_install_link') }}
+                    </a>
+                @endif
             </div>
         @endunless
     </section>

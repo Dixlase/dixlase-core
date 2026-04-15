@@ -20,6 +20,8 @@ return [
     'language_region_settings' => 'Language & Region Settings',
     'locale' => 'Default Language',
     'ogp_seo_plugin_notice' => 'SEO-related settings (site description, keywords, OGP, meta tags, etc.) are managed by the DixlaseSEO plugin. Please install and enable DixlaseSEO to use these features.',
+    'ogp_seo_plugin_enable_notice' => 'SEO-related settings (site description, keywords, OGP, meta tags, etc.) are managed by the DixlaseSEO plugin. DixlaseSEO is added but not yet enabled. Please install and enable it from the Plugin Master.',
     'ogp_seo_plugin_install_link' => 'Add Plugin',
+    'ogp_seo_plugin_master_link' => 'Plugin Master',
     'settings_updated' => 'Site settings have been updated.',
 ];
