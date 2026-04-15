@@ -67,7 +67,11 @@ class CspBuilder
      */
     public function build(): string
     {
-        // セーフモードの場合はCSPを無効化（空文字列を返す）
+        // セーフモードの場合はCSPヘッダーを送出しない。
+        // 空文字列をブラウザに送るとUAによって解釈が揺れる（無視/全拒否）ため、
+        // 呼び出し側（ContentSecurityPolicy ミドルウェア）で空文字を検知し
+        // ヘッダー自体を付与しない実装とする。
+        // X-Frame-Options 等の追加セキュリティヘッダーは引き続き付与される。
         if (session('safe_mode_csp')) {
             return '';
         }
@@ -509,12 +513,15 @@ class CspBuilder
         }
 
         // script-src-attrの制御
-        // ベース値は'none'。開発モード(block_script_attr: false)では'unsafe-inline'に上書き
-        $blockScriptAttr = $modeConfig['block_script_attr'] ?? false;
-        if ($blockScriptAttr) {
-            $directives['script-src-attr'] = ["'none'"];
-        } elseif (isset($directives['script-src-attr'])) {
+        // ベース値は'none'（onclick等のインラインハンドラをブロック）。
+        // 開発モードのみ、既存テーマ/プラグイン互換のため'unsafe-inline'に緩和する。
+        // 標準モード以降では block_script_attr 設定に関わらず'none'を維持し、
+        // 設定ミスでインラインハンドラが解禁されないようにする。
+        $blockScriptAttr = $modeConfig['block_script_attr'] ?? true;
+        if ($mode === 'development' && $blockScriptAttr === false) {
             $directives['script-src-attr'] = ["'unsafe-inline'"];
+        } else {
+            $directives['script-src-attr'] = ["'none'"];
         }
 
         // style-srcの制御
