@@ -41,11 +41,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <style @cspNonce>
             :root { --admin-banner-offset: 0px; }
             #admin-bar { top: var(--admin-banner-offset, 0px); }
-            body.maintenance-admin {
-                margin: 0;
-                min-height: 100vh;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            }
         </style>
     @endif
     <title>{{ __('maintenance.title') }}</title>

@@ -20,9 +20,81 @@
  * メンテナンスページ用スタイル
  * Vite不使用の静的CSSファイル（メンテナンスモード中はフレームワークが利用不可のため）
  *
- * すべてのスタイルは .maintenance-page スコープに閉じ込めて、
- * 管理者ログイン時に併用されるアプリ側CSS（Tailwind / コンポーネント）と衝突させない。
+ * 配色トークンはCSS変数で管理し、ゲストは prefers-color-scheme、
+ * 管理者閲覧時は html.light / html.dark クラス（AppearanceMode）に連動する。
  */
+
+/* ライト（デフォルト） */
+:root {
+    --m-bg-top: #f8fafc;
+    --m-bg-bot: #e2e8f0;
+    --m-card-bg: #ffffff;
+    --m-card-border: rgba(148, 163, 184, 0.15);
+    --m-card-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+    --m-heading: #0f172a;
+    --m-text: #475569;
+    --m-release-bg: #f1f5f9;
+    --m-release-text: #64748b;
+    --m-release-time: #6366f1;
+    --m-icon-bg-start: #818cf8;
+    --m-icon-bg-end: #6366f1;
+    --m-preview-bg: #fbbf24;
+    --m-preview-text: #1f2937;
+}
+
+/* ゲスト: システム設定がダーク */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --m-bg-top: #0f172a;
+        --m-bg-bot: #1e293b;
+        --m-card-bg: #111827;
+        --m-card-border: #334155;
+        --m-card-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        --m-heading: #f8fafc;
+        --m-text: #cbd5e1;
+        --m-release-bg: #1f2937;
+        --m-release-text: #94a3b8;
+        --m-release-time: #a5b4fc;
+        --m-icon-bg-start: #6366f1;
+        --m-icon-bg-end: #4f46e5;
+    }
+}
+
+/* 管理者閲覧時に html.light が明示されたら @media を上書き */
+:root.light {
+    --m-bg-top: #f8fafc;
+    --m-bg-bot: #e2e8f0;
+    --m-card-bg: #ffffff;
+    --m-card-border: rgba(148, 163, 184, 0.15);
+    --m-card-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+    --m-heading: #0f172a;
+    --m-text: #475569;
+    --m-release-bg: #f1f5f9;
+    --m-release-text: #64748b;
+    --m-release-time: #6366f1;
+    --m-icon-bg-start: #818cf8;
+    --m-icon-bg-end: #6366f1;
+}
+
+/* 管理者閲覧時に html.dark が明示されたら @media を上書き */
+:root.dark {
+    --m-bg-top: #0f172a;
+    --m-bg-bot: #1e293b;
+    --m-card-bg: #111827;
+    --m-card-border: #334155;
+    --m-card-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    --m-heading: #f8fafc;
+    --m-text: #cbd5e1;
+    --m-release-bg: #1f2937;
+    --m-release-text: #94a3b8;
+    --m-release-time: #a5b4fc;
+    --m-icon-bg-start: #6366f1;
+    --m-icon-bg-end: #4f46e5;
+}
+
+body {
+    margin: 0;
+}
 
 .maintenance-page,
 .maintenance-page * {
@@ -31,7 +103,7 @@
 
 .maintenance-page {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(180deg, var(--m-bg-top) 0%, var(--m-bg-bot) 100%);
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -40,9 +112,10 @@
 }
 
 .maintenance-page .container {
-    background: white;
+    background: var(--m-card-bg);
+    border: 1px solid var(--m-card-border);
     border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--m-card-shadow);
     max-width: 600px;
     width: 100%;
     padding: 48px 32px;
@@ -54,7 +127,7 @@
     width: 80px;
     height: 80px;
     margin: 0 auto 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--m-icon-bg-start) 0%, var(--m-icon-bg-end) 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -70,13 +143,13 @@
 .maintenance-page h1 {
     font-size: 32px;
     font-weight: 700;
-    color: #1a202c;
+    color: var(--m-heading);
     margin: 0 0 16px;
 }
 
 .maintenance-page .maintenance-message {
     font-size: 18px;
-    color: #4a5568;
+    color: var(--m-text);
     line-height: 1.6;
     margin: 0 0 24px;
     white-space: pre-wrap;
@@ -85,7 +158,7 @@
 }
 
 .maintenance-page .release-info {
-    background: #f7fafc;
+    background: var(--m-release-bg);
     border-radius: 8px;
     padding: 16px;
     margin-top: 24px;
@@ -93,20 +166,20 @@
 
 .maintenance-page .release-info p {
     font-size: 14px;
-    color: #718096;
+    color: var(--m-release-text);
     margin: 0 0 8px;
 }
 
 .maintenance-page .release-time {
     font-size: 20px;
     font-weight: 600;
-    color: #667eea;
+    color: var(--m-release-time);
 }
 
 .maintenance-page .preview-badge {
     display: inline-block;
-    background: #ffc107;
-    color: #333;
+    background: var(--m-preview-bg);
+    color: var(--m-preview-text);
     padding: 4px 12px;
     border-radius: 12px;
     font-size: 12px;
@@ -114,11 +187,9 @@
     margin-bottom: 16px;
 }
 
-/* 管理者ログイン時は .maintenance-page がラッパーとして body 内部に置かれるため、
-   管理バーとバナー分のオフセットを確保する（admin.blade.php の --admin-banner-offset に連動） */
+/* 管理者閲覧時は管理バー + バナー分を padding-top で確保 */
 body.maintenance-admin .maintenance-page {
     min-height: 100vh;
     padding-top: calc(3rem + var(--admin-banner-offset, 0px) + 2rem);
     padding-bottom: 2rem;
-    background: transparent;
 }
