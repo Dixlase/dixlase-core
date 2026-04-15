@@ -95,13 +95,20 @@ class ContentSecurityPolicy
             $headerName = $this->builder->getHeaderName();
             $headerValue = $this->builder->build();
 
-            $response->headers->set($headerName, $headerValue);
+            // セーフモード等で空文字が返った場合はヘッダーを送出しない。
+            // 空文字のCSPはブラウザによって「無視」または「全拒否」と解釈されるため、
+            // ヘッダー自体を付与しないことで既定のブラウザ挙動に委ねる。
+            if ($headerValue !== '') {
+                $response->headers->set($headerName, $headerValue);
+            }
 
-            // 追加のセキュリティヘッダー
+            // 追加のセキュリティヘッダー（CSPが無効でも付与する）
             $this->addSecurityHeaders($response);
 
             // ルート単位の frame-ancestors 上書き（管理画面内iframeプレビュー用）
-            $this->overrideFrameAncestorsIfRequested($request, $response, $headerName);
+            if ($headerValue !== '') {
+                $this->overrideFrameAncestorsIfRequested($request, $response, $headerName);
+            }
         }
 
         return $response;
