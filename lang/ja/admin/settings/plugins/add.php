@@ -41,6 +41,8 @@ return [
         'configure_link' => 'セキュリティ設定で設定する',
         'download' => 'ダウンロード',
         'downloading' => 'ダウンロード中...',
+        'downloading_title' => 'プラグインをダウンロード中',
+        'downloading_wait' => 'ダウンロードが完了するまでお待ちください。',
         'version' => 'v:version',
         'by_author' => ':author 作',
     ],
@@ -53,7 +55,7 @@ return [
         'no_valid_directory' => 'ZIP内に有効なプラグインディレクトリが見つかりません。',
         'directory_exists' => "プラグインディレクトリ ':directory' は既に存在します。",
         'composer_not_found' => 'composer.json が見つかりません。',
-        'download_success' => 'プラグイン「:slug」のダウンロードが完了しました。一覧からインストールしてください。',
+        'download_success' => 'プラグイン「:name」のダウンロードが完了しました。一覧からインストールしてください。',
         'download_failed' => 'プラグインのダウンロードに失敗しました: :error',
     ],
 ];

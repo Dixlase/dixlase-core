@@ -27,6 +27,7 @@ Alpine.data('onlinePlugins', (config) => ({
     status: 'idle',
     errorMessage: '',
     downloadingSlug: null,
+    downloadingName: '',
 
     init() {
         this.fetchPlugins();
@@ -56,9 +57,10 @@ Alpine.data('onlinePlugins', (config) => ({
         }
     },
 
-    download(slug) {
+    download(plugin) {
         if (this.downloadingSlug) return;
-        this.downloadingSlug = slug;
+        this.downloadingSlug = plugin.slug;
+        this.downloadingName = plugin.name || plugin.slug;
 
         // hidden form を使って POST リクエストを送信（CSRF 対応）
         const form = document.createElement('form');
@@ -74,10 +76,19 @@ Alpine.data('onlinePlugins', (config) => ({
         const slugInput = document.createElement('input');
         slugInput.type = 'hidden';
         slugInput.name = 'slug';
-        slugInput.value = slug;
+        slugInput.value = plugin.slug;
         form.appendChild(slugInput);
 
         document.body.appendChild(form);
         form.submit();
+    },
+
+    /**
+     * 画像読み込み失敗時にデフォルトサムネイルに切り替え
+     */
+    handleThumbnailError(event) {
+        if (event.target && config.defaultThumbnail) {
+            event.target.src = config.defaultThumbnail;
+        }
     },
 }));

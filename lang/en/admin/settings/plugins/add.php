@@ -41,6 +41,8 @@ return [
         'configure_link' => 'Configure in Security Settings',
         'download' => 'Download',
         'downloading' => 'Downloading...',
+        'downloading_title' => 'Downloading Plugin',
+        'downloading_wait' => 'Please wait until the download completes.',
         'version' => 'v:version',
         'by_author' => 'by :author',
     ],
@@ -53,7 +55,7 @@ return [
         'no_valid_directory' => 'No valid plugin directory found in the ZIP file.',
         'directory_exists' => "Plugin directory ':directory' already exists.",
         'composer_not_found' => 'composer.json not found.',
-        'download_success' => 'Plugin ":slug" downloaded successfully. Please install from the list.',
+        'download_success' => 'Plugin ":name" downloaded successfully. Please install from the list.',
         'download_failed' => 'Plugin download failed: :error',
     ],
 ];

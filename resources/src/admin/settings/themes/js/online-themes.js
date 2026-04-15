@@ -27,6 +27,7 @@ Alpine.data('onlineThemes', (config) => ({
     status: 'idle',
     errorMessage: '',
     downloadingSlug: null,
+    downloadingName: '',
 
     init() {
         this.fetchThemes();
@@ -56,9 +57,10 @@ Alpine.data('onlineThemes', (config) => ({
         }
     },
 
-    download(slug) {
+    download(theme) {
         if (this.downloadingSlug) return;
-        this.downloadingSlug = slug;
+        this.downloadingSlug = theme.slug;
+        this.downloadingName = theme.name || theme.slug;
 
         const form = document.createElement('form');
         form.method = 'POST';
@@ -73,10 +75,16 @@ Alpine.data('onlineThemes', (config) => ({
         const slugInput = document.createElement('input');
         slugInput.type = 'hidden';
         slugInput.name = 'slug';
-        slugInput.value = slug;
+        slugInput.value = theme.slug;
         form.appendChild(slugInput);
 
         document.body.appendChild(form);
         form.submit();
+    },
+
+    handleThumbnailError(event) {
+        if (event.target && config.defaultThumbnail) {
+            event.target.src = config.defaultThumbnail;
+        }
     },
 }));
