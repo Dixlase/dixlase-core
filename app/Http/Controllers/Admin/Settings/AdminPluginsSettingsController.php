@@ -23,6 +23,7 @@
 namespace App\Http\Controllers\Admin\Settings;
 
 use App\Enums\PluginEnableAction;
+use App\Helpers\AdminHelper;
 use App\Helpers\ComposerLocalHelper;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\GitIgnoreHelper;
@@ -30,8 +31,10 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\AdminPluginDeleteRequest;
 use App\Http\Requests\Admin\Settings\AdminPluginInstallRequest;
 use App\Http\Requests\Admin\Settings\AdminPluginUploadRequest;
+use App\Models\AuditLog;
 use App\Models\Plugin;
 use App\Models\PluginAudit;
+use App\Models\PluginVersionHistory;
 use App\Presenters\Admin\ExtensionCardPresenter;
 use App\Services\Csp\CspDiagnosticService;
 use App\Services\Csp\CspExtensionLoader;
