@@ -32,7 +32,7 @@ use App\Http\Requests\Admin\Settings\Base\AdminBaseSiteUpdateRequest;
 
 class AdminBaseSiteController extends AdminLoggedInController
 {
-    protected const SETTING_KEYS = ['app_name', 'locale', 'timezone', 'site_description', 'site_keywords'];
+    protected const SETTING_KEYS = ['app_name', 'locale', 'timezone'];
 
     protected BaseSettingRepositoryInterface $baseSettingRepository;
 
@@ -49,8 +49,6 @@ class AdminBaseSiteController extends AdminLoggedInController
     {
         $settings = [
             'app_name' => ConfigHelper::getAppName(),
-            'site_description' => $this->baseSettingRepository->get('site_description', ''),
-            'site_keywords' => $this->baseSettingRepository->get('site_keywords', ''),
             'locale' => $this->getSystemLocale(),
             'timezone' => ConfigHelper::getAppTimezone(),
         ];
@@ -63,6 +61,7 @@ class AdminBaseSiteController extends AdminLoggedInController
             return [$key => $locale['name']];
         })->toArray();
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.base.site');
+        $this->viewParams['seoPluginEnabled'] = \App\Helpers\PluginHelper::isEnabled('dixlase-seo');
 
         return view('admin.settings.base.site', $this->viewParams);
     }
@@ -92,8 +91,6 @@ class AdminBaseSiteController extends AdminLoggedInController
                 // DBに保存
                 $repo->setMultiple([
                     'app_name' => $data['app_name'],
-                    'site_description' => $data['site_description'] ?? '',
-                    'site_keywords' => $data['site_keywords'] ?? '',
                     'locale' => $data['locale'],
                     'timezone' => $data['timezone'],
                 ]);
