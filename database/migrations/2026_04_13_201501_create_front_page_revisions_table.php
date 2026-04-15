@@ -38,6 +38,8 @@ return new class extends Migration
             // auto: 自動保存 / manual: 手動作成 / restore_backup: 復元前バックアップ
             $table->string('type', 20)->default('auto');
             $table->string('note')->nullable();
+            // 保護フラグ。true の場合は自動保持件数超過時の自動削除対象外となる
+            $table->boolean('is_protected')->default(false);
             $table->foreignId('created_by')
                 ->nullable()
                 ->constrained('members')

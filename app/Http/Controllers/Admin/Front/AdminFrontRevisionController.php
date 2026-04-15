@@ -62,6 +62,8 @@ class AdminFrontRevisionController extends AdminLoggedInController
         $this->viewParams['frontPage'] = $frontPage;
         $this->viewParams['revisions'] = $revisions;
         $this->viewParams['typeLabels'] = $this->typeLabels();
+        $this->viewParams['retention'] = $this->revisionService->getRetentionCount();
+        $this->viewParams['protectedCount'] = $this->revisionService->countProtected($frontPage);
 
         return view('admin.front.revisions.index', $this->viewParams);
     }
@@ -134,6 +136,30 @@ class AdminFrontRevisionController extends AdminLoggedInController
         return redirect()
             ->route('admin.front.revisions.index')
             ->with('success', __('admin/front/revisions.restore_success'));
+    }
+
+    /**
+     * リビジョンの保護フラグを切り替える
+     */
+    public function toggleProtection(int $id): RedirectResponse
+    {
+        $frontPage = FrontPage::findByType('main_content');
+        if (! $frontPage) {
+            return redirect()->route('admin.front.index');
+        }
+
+        $revision = FrontPageRevision::query()
+            ->where('front_page_id', $frontPage->id)
+            ->findOrFail($id);
+
+        $revision->update(['is_protected' => ! $revision->is_protected]);
+
+        return back()->with(
+            'success',
+            $revision->is_protected
+                ? __('admin/front/revisions.protect_enabled')
+                : __('admin/front/revisions.protect_disabled')
+        );
     }
 
     /**

@@ -22,11 +22,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-    <div class="mb-4">
+    <div class="mb-4 flex items-center justify-between gap-4">
         <a href="{{ route('admin.front.edit') }}" class="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
             <i class="fas fa-arrow-left"></i>
             {{ __('admin/front/revisions.back_to_edit') }}
         </a>
+        @if ($retention > 0)
+            <span class="inline-flex items-center gap-2 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-1 text-xs text-gray-700 dark:text-gray-300"
+                  title="{{ __('admin/front/revisions.protect_help') }}">
+                <i class="fas fa-shield-halved text-blue-500 dark:text-blue-400"></i>
+                @if ($protectedCount > $retention)
+                    {{ __('admin/front/revisions.protect_count_summary_over', ['protected' => $protectedCount, 'retention' => $retention]) }}
+                @else
+                    {{ __('admin/front/revisions.protect_count_summary', ['protected' => $protectedCount, 'retention' => $retention]) }}
+                @endif
+            </span>
+        @endif
     </div>
 
     @if ($revisions->isEmpty())
@@ -42,6 +53,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <th scope="col" class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.type') }}</th>
                         <th scope="col" class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.creator') }}</th>
                         <th scope="col" class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.note') }}</th>
+                        <th scope="col" class="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.protect') }}</th>
                         <th scope="col" class="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.actions') }}</th>
                     </tr>
                 </thead>
@@ -61,6 +73,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </td>
                             <td class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">
                                 {{ $revision->note }}
+                            </td>
+                            <td class="px-4 py-2 text-sm text-center whitespace-nowrap">
+                                <form action="{{ route('admin.front.revisions.protect', $revision->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit"
+                                            class="{{ $revision->is_protected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-blue-600 dark:text-gray-500 dark:hover:text-blue-400' }}"
+                                            title="{{ $revision->is_protected ? __('admin/front/revisions.protect_disable') : __('admin/front/revisions.protect_enable') }}">
+                                        <i class="fas {{ $revision->is_protected ? 'fa-shield-halved' : 'fa-shield' }}"></i>
+                                        <span class="sr-only">{{ $revision->is_protected ? __('admin/front/revisions.protect_label_on') : __('admin/front/revisions.protect_label_off') }}</span>
+                                    </button>
+                                </form>
                             </td>
                             <td class="px-4 py-2 text-sm text-right whitespace-nowrap">
                                 <a href="{{ route('admin.front.revisions.show', $revision->id) }}"

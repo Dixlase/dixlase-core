@@ -175,20 +175,44 @@ class FrontPageRevisionService
 
     /**
      * 保持件数を超えた古いリビジョンを削除する。
+     *
+     * 保護フラグが立ったリビジョンは削除対象から除外される。
+     * 結果として総件数が保持件数を超える場合があるが、ユーザーの明示的な保護意図を尊重する。
      */
     private function pruneOldRevisions(FrontPage $frontPage, int $retention): void
     {
+        $total = FrontPageRevision::query()
+            ->where('front_page_id', $frontPage->id)
+            ->count();
+
+        $overflow = $total - $retention;
+        if ($overflow <= 0) {
+            return;
+        }
+
+        // 保護されていない古いリビジョンを上限超過分だけ削除
         $ids = FrontPageRevision::query()
             ->where('front_page_id', $frontPage->id)
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->skip($retention)
-            ->take(PHP_INT_MAX)
+            ->where('is_protected', false)
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->limit($overflow)
             ->pluck('id');
 
         if ($ids->isNotEmpty()) {
             FrontPageRevision::query()->whereIn('id', $ids)->delete();
         }
+    }
+
+    /**
+     * 保護中のリビジョン件数を返す。
+     */
+    public function countProtected(FrontPage $frontPage): int
+    {
+        return FrontPageRevision::query()
+            ->where('front_page_id', $frontPage->id)
+            ->where('is_protected', true)
+            ->count();
     }
 
     /**
