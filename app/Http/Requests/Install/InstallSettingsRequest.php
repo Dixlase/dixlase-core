@@ -42,7 +42,7 @@ class InstallSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'site_name' => 'required|string|max:255',
+            'site_name' => 'required|string|max:60',
             'admin_account_name' => [
                 'required',
                 'string',

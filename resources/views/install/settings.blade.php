@@ -41,8 +41,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     id="site_name"
                     :value="old('site_name', session('install_data.site_name', ''))"
                     :required="true"
+                    maxlength="60"
                     class="input-full"
                 />
+                <x-form-help-text :text="__('install/step1.site_name_help')" />
             </div>
         </fieldset>
     </section>
