@@ -21,8 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @foreach($banners as $banner)
-<div class="fixed left-0 right-0 z-[9999] {{ $banner['bgClass'] }} text-white px-4 py-3 shadow-md ui-system-banner"
-     style="top: {{ $loop->index * 52 }}px;"
+<div class="{{ $banner['bgClass'] }} text-white px-4 py-3 shadow-md ui-system-banner"
      role="alert">
     <div class="max-w-full mx-auto flex items-center justify-between">
         <div class="flex items-center space-x-3">

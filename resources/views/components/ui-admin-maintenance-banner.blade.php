@@ -46,7 +46,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 @if($showBanner)
-<div id="admin-maintenance-banner" class="fixed left-0 right-0 bg-yellow-500 dark:bg-yellow-600 text-white px-4 py-3 shadow-md z-[9999]" style="top: 0;">
+<div id="admin-maintenance-banner" class="bg-yellow-500 dark:bg-yellow-600 text-white px-4 py-3 shadow-md">
     <div class="max-w-full mx-auto flex items-center justify-between">
         <div class="flex items-center space-x-3">
             <i class="fas fa-exclamation-triangle text-xl"></i>

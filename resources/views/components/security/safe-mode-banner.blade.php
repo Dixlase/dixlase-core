@@ -19,8 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @foreach($activeModes as $mode)
-<div class="fixed left-0 right-0 z-[10000] {{ $mode['bgClass'] }} text-white px-4 py-3 shadow-md safe-mode-banner"
-     style="top: {{ $loop->index * 52 }}px;"
+<div class="{{ $mode['bgClass'] }} text-white px-4 py-3 shadow-md safe-mode-banner"
      role="alert"
      id="safe-mode-banner-{{ $mode['value'] }}">
     <div class="max-w-full mx-auto flex items-center justify-between">

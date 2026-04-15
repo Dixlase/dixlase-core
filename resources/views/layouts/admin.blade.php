@@ -43,6 +43,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <style @cspNonce id="fouc-sidebar">
             @media(min-width:768px){#admin-main-content{margin-left:16rem}}
         </style>
+        {{-- バナースタックの高さを管理バー・サイドバー・本文のオフセットに伝播させる --}}
+        <style @cspNonce>
+            :root { --admin-banner-offset: 0px; }
+            #admin-bar { top: var(--admin-banner-offset, 0px); }
+            #admin-layout-flex { padding-top: calc(3rem + var(--admin-banner-offset, 0px)); }
+            @media(min-width:768px){
+                #admin-layout-flex > aside { top: calc(3rem + var(--admin-banner-offset, 0px)); }
+            }
+            #admin-sidebar-toggle { top: calc(3.5rem + var(--admin-banner-offset, 0px)); }
+        </style>
         <script @cspNonce>
             (function(){
                 if(localStorage.getItem('sidebarCollapsed')==='true'){
@@ -69,19 +79,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           x-data="adminLayout()"
           x-init="init()">
         <div class="min-h-screen">
-            <!-- Maintenance Mode Banner (Sticky at top) -->
-            <x-ui-admin-maintenance-banner />
-            
-            <!-- Safe Mode Banner -->
-            <x-security.safe-mode-banner />
+            {{-- 管理画面バナースタック（メンテナンス / セーフモード / システム警告） --}}
+            <div id="admin-banner-stack"
+                 class="fixed top-0 left-0 right-0 z-[9999] flex flex-col"
+                 x-data
+                 x-init="
+                     const root = document.documentElement;
+                     const update = () => {
+                         const h = $el.offsetHeight || 0;
+                         root.style.setProperty('--admin-banner-offset', h + 'px');
+                     };
+                     update();
+                     const ro = new ResizeObserver(update);
+                     ro.observe($el);
+                     window.addEventListener('resize', update);
+                 ">
+                <x-ui-admin-maintenance-banner />
+                <x-security.safe-mode-banner />
+                <x-ui-system-banner />
+            </div>
 
-            <!-- System Warning Banners (generic) -->
-            <x-ui-system-banner />
-            
             <!-- Admin Bar (Header) -->
             <x-ui-admin-bar :isAdminLayout="true" />
 
-            <div class="min-h-screen flex relative pt-12">
+            <div id="admin-layout-flex" class="min-h-screen flex relative">
                 <!-- Navigation Sidebar (Desktop only) -->
                 <aside class="md:fixed md:top-12 md:bottom-0 hidden sm:block w-64 flex-shrink-0 border-gray-300 @if($transitionEnabled ?? false) transition-all duration-[300ms] @else transition-transform duration-300 @endif"
                        :class="{
@@ -97,6 +118,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <!-- Sidebar Toggle Button (Desktop) -->
                 <button type="button"
+                        id="admin-sidebar-toggle"
                         @click="sidebarCollapsed = !sidebarCollapsed; var fs=document.getElementById('fouc-sidebar'); if(fs) fs.textContent=''"
                         class="hidden sm:flex fixed top-14 left-0 z-40 items-center backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
                         :class="{
