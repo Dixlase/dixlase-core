@@ -39,11 +39,12 @@ class InstallModeController extends BaseInstallController
         $locale = $this->getCurrentLocale();
         app()->setLocale($locale);
 
-        return view('install.mode', [
-            'currentLocale' => $locale,
-            'availableLocales' => $this->availableLocales,
-            'selectedMode' => session('install_data.install_mode', AdminMode::Simple->value),
-        ]);
+        return view('install.mode', array_merge(
+            $this->getViewData(1),
+            [
+                'selectedMode' => session('install_data.install_mode', AdminMode::Simple->value),
+            ]
+        ));
     }
 
     /**

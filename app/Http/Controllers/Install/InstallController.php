@@ -52,7 +52,7 @@ class InstallController extends Controller
     // 利用可能な言語のリスト
     protected $availableLocales;
 
-    private $total_steps = 4;
+    private $total_steps = 5;
 
     public function __construct()
     {

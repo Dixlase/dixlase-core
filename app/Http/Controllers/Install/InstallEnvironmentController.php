@@ -35,7 +35,7 @@ class InstallEnvironmentController extends BaseInstallController
      */
     public function create()
     {
-        return view('install.environment', $this->getViewData(2));
+        return view('install.environment', $this->getViewData(3));
     }
 
     /**

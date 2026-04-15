@@ -37,7 +37,7 @@ class InstallDatabaseController extends BaseInstallController
      */
     public function create()
     {
-        return view('install.database', $this->getViewData(3));
+        return view('install.database', $this->getViewData(4));
     }
 
     /**

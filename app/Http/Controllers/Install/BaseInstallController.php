@@ -38,7 +38,7 @@ abstract class BaseInstallController extends Controller
     /**
      * インストールの総ステップ数
      */
-    protected $total_steps = 4;
+    protected $total_steps = 5;
 
     /**
      * コンストラクタ
