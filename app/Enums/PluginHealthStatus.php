@@ -189,6 +189,10 @@ enum PluginHealthStatus: string
             'signature_unsigned' => -10,
             'signature_invalid' => -50,
             'signature_mismatch' => -50,
+            'signature_pending_verification' => -5,
+            'signature_unknown_key' => -15,
+            'signature_expired' => -20,
+            'signature_error' => -10,
 
             // 権限関連
             'permission_undeclared_minor' => -5,

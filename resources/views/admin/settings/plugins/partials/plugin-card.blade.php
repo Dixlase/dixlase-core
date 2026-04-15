@@ -124,11 +124,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
                             {{ __('admin/settings/plugins/index.verification.signature_not_scanned') }}
                         </span>
-                    @elseif($card['signatureStatus'] === 'valid' || $card['signatureStatus'] === 'pending_verification')
+                    @elseif($card['signatureStatus'] === 'valid')
                         <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-check-circle mr-1 text-green-500"></i>{{ __('admin/settings/plugins/index.badge_labels.signature') }}</button>
                         <button type="button"
                                 class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 cursor-pointer hover:opacity-80 transition-opacity">
                             {{ __('admin/settings/plugins/index.verification.signature_valid') }}
+                        </button>
+                    @elseif($card['signatureStatus'] === 'pending_verification')
+                        <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-clock mr-1 text-yellow-500"></i>{{ __('admin/settings/plugins/index.badge_labels.signature') }}</button>
+                        <button type="button"
+                                class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 cursor-pointer hover:opacity-80 transition-opacity">
+                            {{ __('admin/settings/plugins/index.verification.signature_pending') }}
+                        </button>
+                    @elseif(in_array($card['signatureStatus'], ['unknown_key', 'expired', 'error'], true))
+                        <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-exclamation-triangle mr-1 text-orange-500"></i>{{ __('admin/settings/plugins/index.badge_labels.signature') }}</button>
+                        <button type="button"
+                                class="badge-detail-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 cursor-pointer hover:opacity-80 transition-opacity">
+                            {{ __('admin/settings/plugins/index.permissions.signature_' . $card['signatureStatus']) }}
                         </button>
                     @elseif($card['signatureStatus'] === 'invalid')
                         <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-times-circle mr-1 text-red-500"></i>{{ __('admin/settings/plugins/index.badge_labels.signature') }}</button>
