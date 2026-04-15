@@ -67,7 +67,7 @@ class InstallMailController extends BaseInstallController
         ]);
 
         return view('install.mail', array_merge(
-            $this->getViewData(4),
+            $this->getViewData(5),
             [
                 'admin_email' => $adminEmail,
                 'testStatus' => $testStatus,

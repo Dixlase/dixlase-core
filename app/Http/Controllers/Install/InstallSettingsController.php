@@ -36,7 +36,7 @@ class InstallSettingsController extends BaseInstallController
     public function create()
     {
         return view('install.settings', array_merge(
-            $this->getViewData(1),
+            $this->getViewData(2),
             ['errors' => session('errors') ?? new \Illuminate\Support\MessageBag()]
         ));
     }

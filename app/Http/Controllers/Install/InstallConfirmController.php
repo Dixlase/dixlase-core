@@ -396,7 +396,7 @@ class InstallConfirmController extends BaseInstallController
             // ユーザーフレンドリーなエラーメッセージを作成
             $errorMessage = $this->getInstallationErrorMessage($e);
 
-            return redirect()->route('install.confirm')
+            return redirect()->route('install.mode')
                 ->with('error', $errorMessage)
                 ->with('error_details', $e->getMessage());
         }
