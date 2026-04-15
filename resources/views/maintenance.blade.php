@@ -41,7 +41,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <style @cspNonce>
             :root { --admin-banner-offset: 0px; }
             #admin-bar { top: var(--admin-banner-offset, 0px); }
-            body.maintenance-admin { padding-top: calc(3rem + var(--admin-banner-offset, 0px)); }
+            /* 管理者閲覧時は maintenance.css のレイアウトを無効化し、管理バー + バナー分だけ下にずらす */
+            body.maintenance-admin {
+                display: block !important;
+                padding: 0 !important;
+                padding-top: calc(3rem + var(--admin-banner-offset, 0px) + 2rem) !important;
+                padding-bottom: 2rem !important;
+                min-height: 100vh;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+            body.maintenance-admin .container {
+                margin: 0 auto;
+            }
         </style>
     @endif
     <title>{{ __('maintenance.title') }}</title>
@@ -51,8 +62,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <x-ui-notification />
     @endif
 </head>
-<body @class(['admin maintenance-admin font-sans antialiased dark:bg-black dark:text-white' => $isAdmin])
-      @if($isAdmin) data-default-appearance="{{ $appearance }}" @endif>
+<body @class(['admin maintenance-admin font-sans antialiased' => $isAdmin])
+      @if($isAdmin)
+          data-default-appearance="{{ $appearance }}"
+          x-data="adminLayout()"
+          x-init="init()"
+      @endif>
     @if($isAdmin)
         {{-- 管理画面バナースタック（メンテナンス / セーフモード / システム警告） --}}
         <div id="admin-banner-stack"
