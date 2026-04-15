@@ -156,7 +156,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             :src="theme.thumbnail_url || '{{ asset('assets/images/theme-default.svg') }}'"
                                             :alt="theme.name || theme.slug"
                                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                            x-on:error="handleThumbnailError($event)"
+                                            x-on:error="$el.src = '{{ asset('assets/images/theme-default.svg') }}'; $el.onerror = null;"
                                         >
                                         <div class="absolute top-3 right-3">
                                             <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium shadow-sm bg-indigo-500 text-white" x-show="theme.version">

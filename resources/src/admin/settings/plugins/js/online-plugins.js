@@ -82,13 +82,4 @@ Alpine.data('onlinePlugins', (config) => ({
         document.body.appendChild(form);
         form.submit();
     },
-
-    /**
-     * 画像読み込み失敗時にデフォルトサムネイルに切り替え
-     */
-    handleThumbnailError(event) {
-        if (event.target && config.defaultThumbnail) {
-            event.target.src = config.defaultThumbnail;
-        }
-    },
 }));
