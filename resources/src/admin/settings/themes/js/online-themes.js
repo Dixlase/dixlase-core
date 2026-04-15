@@ -81,10 +81,4 @@ Alpine.data('onlineThemes', (config) => ({
         document.body.appendChild(form);
         form.submit();
     },
-
-    handleThumbnailError(event) {
-        if (event.target && config.defaultThumbnail) {
-            event.target.src = config.defaultThumbnail;
-        }
-    },
 }));
