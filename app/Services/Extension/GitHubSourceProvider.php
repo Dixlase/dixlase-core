@@ -314,12 +314,17 @@ class GitHubSourceProvider implements ExtensionSourceInterface
                 $slug = substr($name, strlen($prefix));
                 // plugin.json / theme.json から正式な名前・説明・バージョンを取得
                 $manifest = $this->fetchManifest($name, $extensionType);
+                $defaultBranch = $repo['default_branch'] ?? 'main';
+                $thumbnailFile = $manifest['thumbnail'] ?? ($extensionType === 'theme' ? 'screenshot.png' : 'thumbnail.png');
 
                 $repos[] = [
                     'slug' => $manifest['slug'] ?? $slug,
                     'name' => $manifest['name'] ?? ($repo['description'] ?? $slug),
                     'description' => $this->resolveDescription($manifest['description'] ?? null) ?? $repo['description'] ?? null,
                     'version' => $manifest['version'] ?? null,
+                    'author' => $manifest['author'] ?? null,
+                    'license' => $manifest['license'] ?? null,
+                    'thumbnail_url' => "https://raw.githubusercontent.com/{$this->owner}/{$name}/{$defaultBranch}/{$thumbnailFile}",
                 ];
             }
 

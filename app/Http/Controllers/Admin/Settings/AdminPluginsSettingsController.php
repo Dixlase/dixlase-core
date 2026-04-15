@@ -1103,8 +1103,10 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $result = $this->extractAndPlacePlugin($zipPath);
 
             if ($result['success']) {
+                $displayName = $result['name'] ?? $slug;
+
                 return redirect()->route('admin.settings.plugins.index')
-                    ->with('success', __('admin/settings/plugins/add.messages.download_success', ['slug' => $slug]))
+                    ->with('success', __('admin/settings/plugins/add.messages.download_success', ['name' => $displayName]))
                     ->with('uploaded_plugin_directory', $result['directory']);
             }
 
@@ -1215,7 +1217,20 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             // プラグインファイルは plugins/ に配置されただけでは実行されない。
             // インストール時の2段階モーダル（scan → confirm）で適切なタイミングで監査される。
 
-            return ['success' => true, 'directory' => $pluginDir];
+            // plugin.json から表示用の名前を取得
+            $displayName = null;
+            if (isset($pluginData) && is_array($pluginData)) {
+                $displayName = $pluginData['name'] ?? null;
+            } elseif (File::exists(base_path("plugins/{$pluginDir}/plugin.json"))) {
+                try {
+                    $pluginData = json_decode(File::get(base_path("plugins/{$pluginDir}/plugin.json")), true);
+                    $displayName = $pluginData['name'] ?? null;
+                } catch (\Exception) {
+                    // ignore
+                }
+            }
+
+            return ['success' => true, 'directory' => $pluginDir, 'name' => $displayName];
         } catch (\Exception $e) {
             if (isset($destinationPath) && File::exists($destinationPath)) {
                 File::deleteDirectory($destinationPath);

@@ -36,11 +36,13 @@ return [
         'connection_error' => '拡張機能ソースへの接続に失敗しました。',
         'download' => 'ダウンロード',
         'downloading' => 'ダウンロード中...',
+        'downloading_title' => 'テーマをダウンロード中',
+        'downloading_wait' => 'ダウンロードが完了するまでお待ちください。',
     ],
 
     // コントローラーメッセージ
     'messages' => [
-        'download_success' => 'テーマ「:slug」のダウンロードが完了しました。一覧からインストールしてください。',
+        'download_success' => 'テーマ「:name」のダウンロードが完了しました。一覧からインストールしてください。',
         'download_failed' => 'テーマのダウンロードに失敗しました: :error',
         'zip_extract_failed' => 'ZIPファイルの展開に失敗しました。',
         'no_valid_directory' => 'ZIP内に有効なテーマディレクトリが見つかりません。',

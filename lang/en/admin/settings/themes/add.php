@@ -36,11 +36,13 @@ return [
         'connection_error' => 'Failed to connect to the extension source.',
         'download' => 'Download',
         'downloading' => 'Downloading...',
+        'downloading_title' => 'Downloading Theme',
+        'downloading_wait' => 'Please wait until the download completes.',
     ],
 
     // Controller Messages
     'messages' => [
-        'download_success' => 'Theme ":slug" downloaded successfully. Please install from the list.',
+        'download_success' => 'Theme ":name" downloaded successfully. Please install from the list.',
         'download_failed' => 'Theme download failed: :error',
         'zip_extract_failed' => 'Failed to extract ZIP file.',
         'no_valid_directory' => 'No valid theme directory found in the ZIP file.',

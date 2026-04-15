@@ -916,8 +916,10 @@ class AdminThemesSettingsController extends AdminLoggedInController
             $result = $this->extractAndPlaceTheme($zipPath);
 
             if ($result['success']) {
+                $displayName = $result['name'] ?? $slug;
+
                 return redirect()->route('admin.settings.themes.index')
-                    ->with('success', __('admin/settings/themes/add.messages.download_success', ['slug' => $slug]))
+                    ->with('success', __('admin/settings/themes/add.messages.download_success', ['name' => $displayName]))
                     ->with('uploaded_theme_directory', $result['directory']);
             }
 
@@ -1030,7 +1032,13 @@ class AdminThemesSettingsController extends AdminLoggedInController
             GitIgnoreHelper::addThemeExclusion($directoryName);
             ComposerLocalHelper::syncAutoload();
 
-            return ['success' => true, 'directory' => $directoryName];
+            // theme.json から表示用の名前を取得
+            $displayName = null;
+            if (isset($themeData) && is_array($themeData)) {
+                $displayName = $themeData['name'] ?? null;
+            }
+
+            return ['success' => true, 'directory' => $directoryName, 'name' => $displayName];
         } catch (\Exception $e) {
             if (isset($destinationPath) && File::exists($destinationPath)) {
                 File::deleteDirectory($destinationPath);
