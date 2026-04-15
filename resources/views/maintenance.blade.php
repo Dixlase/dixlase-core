@@ -18,15 +18,65 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
+@php
+    $isAdmin = $isAdmin ?? false;
+    $appearance = $appearance ?? '0';
+@endphp
+
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+      @if($isAdmin) x-data="appearanceMode('{{ $appearance }}')" x-init="init()" :class="{ 'dark': isDark, 'light': !isDark, 'theme-ready': themeReady }" @endif>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    @if($isAdmin)
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <script @cspNonce>
+            (function(){
+                var a='{{ $appearance }}';
+                var d=a==='2'||(a==='0'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.classList.add(d?'dark':'light');
+            })();
+        </script>
+        <style @cspNonce>
+            :root { --admin-banner-offset: 0px; }
+            #admin-bar { top: var(--admin-banner-offset, 0px); }
+            body.maintenance-admin { padding-top: calc(3rem + var(--admin-banner-offset, 0px)); }
+        </style>
+    @endif
     <title>{{ __('maintenance.title') }}</title>
     <link rel="stylesheet" href="/assets/css/maintenance.css">
+    @if($isAdmin)
+        {!! load_active_assets() !!}
+        <x-ui-notification />
+    @endif
 </head>
-<body>
+<body @class(['admin maintenance-admin font-sans antialiased dark:bg-black dark:text-white' => $isAdmin])
+      @if($isAdmin) data-default-appearance="{{ $appearance }}" @endif>
+    @if($isAdmin)
+        {{-- 管理画面バナースタック（メンテナンス / セーフモード / システム警告） --}}
+        <div id="admin-banner-stack"
+             class="fixed top-0 left-0 right-0 z-[9999] flex flex-col"
+             x-data
+             x-init="
+                 const root = document.documentElement;
+                 const update = () => {
+                     const h = $el.offsetHeight || 0;
+                     root.style.setProperty('--admin-banner-offset', h + 'px');
+                 };
+                 update();
+                 const ro = new ResizeObserver(update);
+                 ro.observe($el);
+                 window.addEventListener('resize', update);
+             ">
+            <x-ui-admin-maintenance-banner />
+            <x-security.safe-mode-banner />
+            <x-ui-system-banner />
+        </div>
+
+        <x-ui-admin-bar :isAdminLayout="true" />
+    @endif
+
     <div class="container">
         @if(isset($isPreview) && $isPreview)
             <div class="preview-badge">
