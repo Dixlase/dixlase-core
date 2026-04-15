@@ -97,6 +97,9 @@ class AppServiceProvider extends ServiceProvider
         // 法務ページレジストリサービスをシングルトンとして登録
         $this->app->singleton(LegalPageService::class);
 
+        // システム警告バナーレジストリをシングルトンとして登録
+        $this->app->singleton(\App\Services\SystemWarningService::class);
+
         // Contract インターフェース → 具象クラスのバインド
         $this->app->bind(LegalPageServiceInterface::class, LegalPageService::class);
         $this->app->bind(TwoFaPasskeyServiceInterface::class, TwoFaPasskeyService::class);
