@@ -43,6 +43,7 @@ return [
     'no_plugins' => 'No plugins are installed.',
     'no_plugins_description' => 'Add plugins to extend your site\'s functionality.',
     'add_plugin' => 'Add Plugin',
+    'view_details' => 'View Details',
     'uninstalled_description' => 'These plugins have files present but are not yet installed.',
     'buttons' => [],
     'uninstall' => [
@@ -396,6 +397,8 @@ return [
         'signature_deduction' => '(Deduction: -:points)',
         'health_issue_signature_unsigned' => 'Signature: Unsigned',
         'health_issue_signature_invalid' => 'Signature: Invalid',
+        'health_issue_missing_author_id' => 'Metadata: author_id missing',
+        'health_issue_missing_publisher_key_id' => 'Metadata: publisher_key_id missing',
         'health_issue_permission_undefined' => 'Permissions: Not Defined',
         'health_issue_permission_undeclared_minor' => 'Permission: Undeclared Usage (Minor)',
         'health_issue_permission_undeclared_major' => 'Permission: Undeclared Usage (Major)',

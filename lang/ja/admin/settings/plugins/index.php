@@ -43,6 +43,7 @@ return [
     'no_plugins' => 'プラグインがインストールされていません。',
     'no_plugins_description' => 'プラグインを追加して、サイトの機能を拡張しましょう。',
     'add_plugin' => 'プラグインを追加',
+    'view_details' => '詳細を開く',
     'uninstalled_description' => 'これらのプラグインはファイルが存在しますが、まだインストールされていません。',
     'buttons' => [],
     'uninstall' => [
@@ -396,6 +397,8 @@ return [
         'signature_deduction' => '（減点: -:points）',
         'health_issue_signature_unsigned' => '署名: 未署名',
         'health_issue_signature_invalid' => '署名: 無効',
+        'health_issue_missing_author_id' => 'メタデータ: author_id 未定義',
+        'health_issue_missing_publisher_key_id' => 'メタデータ: publisher_key_id 未定義',
         'health_issue_permission_undefined' => '権限: 未定義',
         'health_issue_permission_undeclared_minor' => '権限: 未宣言の使用（軽微）',
         'health_issue_permission_undeclared_major' => '権限: 未宣言の使用（重大）',
