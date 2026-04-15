@@ -55,7 +55,7 @@ class AdminBaseSettingsRequest extends FormRequest
         $availableLocales = array_keys(config('admin.locale.available', []));
 
         return [
-            'app_name' => 'required|string|max:255',
+            'app_name' => 'required|string|max:60',
             'site_description' => 'nullable|string|max:500',
             'site_keywords' => 'nullable|string|max:500',
             'locale' => ['required', Rule::in($availableLocales)],

@@ -28,37 +28,31 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- サイト設定 -->
     <section>
         <h2>{{ __('admin/settings/base/site.site_settings') }}</h2>
-        
+
         <fieldset>
             <legend>{{ __('admin/settings/base/site.app_name') }}</legend>
             <x-form-text
                 name="app_name"
                 :value="old('app_name', $settings['app_name'])"
                 :required="true"
+                maxlength="60"
                 class="input-full"
             />
+            <x-form-help-text :text="__('admin/settings/base/site.app_name_help')" />
         </fieldset>
 
-        <fieldset>
-            <legend>{{ __('admin/settings/base/site.site_description') }}</legend>
-            <x-form-textarea
-                name="site_description"
-                :value="old('site_description', $settings['site_description'])"
-                :rows="3"
-                class="input-full"
-            />
-            <p>{{ __('admin/settings/base/site.site_description_help') }}</p>
-        </fieldset>
-
-        <fieldset>
-            <legend>{{ __('admin/settings/base/site.site_keywords') }}</legend>
-            <x-form-text
-                name="site_keywords"
-                :value="old('site_keywords', $settings['site_keywords'])"
-                class="input-full"
-            />
-            <p>{{ __('admin/settings/base/site.site_keywords_help') }}</p>
-        </fieldset>
+        @unless ($seoPluginEnabled)
+            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-6 mt-4">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    {{ __('admin/settings/base/site.ogp_seo_plugin_notice') }}
+                </p>
+                <a href="{{ route('admin.settings.plugins.add') }}"
+                    class="inline-flex items-center mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                    <i class="fas fa-plus-circle mr-2"></i>
+                    {{ __('admin/settings/base/site.ogp_seo_plugin_install_link') }}
+                </a>
+            </div>
+        @endunless
     </section>
 
     <!-- 言語・地域設定 -->
@@ -83,17 +77,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :value="$settings['timezone']"
             />
         </fieldset>
-    </section>
-
-    <!-- OGP・SEO設定 -->
-    <section>
-        <h2>{{ __('admin/settings/base/site.ogp_seo_settings') }}</h2>
-
-        <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-6">
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-                {{ __('admin/settings/base/site.ogp_seo_plugin_notice') }}
-            </p>
-        </div>
     </section>
 
 </form>

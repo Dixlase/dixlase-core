@@ -24,18 +24,19 @@ return [
     'settings_title' => 'Installation - Step 1',
     'settings_header' => 'Basic Settings',
     'settings_description' => 'Please enter the basic information to set up your site.',
-    
+
     // Semantic Headings
     'site_information' => 'Site Information',
     'admin_account_information' => 'Administrator Account Information',
     'admin_account_details' => 'Administrator Account Details',
     'password_settings' => 'Password Settings',
     'password_setup' => 'Password Setup',
-    
+
     // Site Information
     'site_name' => 'Site Name',
+    'site_name_help' => 'Enter within 60 characters for SEO and to prevent layout issues.',
     'admin_email' => 'Admin Email',
-    
+
     // Administrator Account
     'admin_account_name' => 'Account Name',
     'admin_account_name_placeholder' => 'Enter alphanumeric characters (e.g., siteadmin2025)',
@@ -46,14 +47,14 @@ return [
     'admin_password' => 'Admin Password',
     'admin_password_confirmation' => 'Confirm Password',
     'admin_password_confirmation_note' => 'Please re-enter the same password for confirmation.',
-    
+
     // Validation
     'validation' => [
         'admin_account_name_required' => 'Please enter an account name.',
         'admin_account_name_alpha_num' => 'Account name must contain only alphanumeric characters.',
         'admin_account_name_length' => 'Account name must be between 3 and 20 characters.',
     ],
-    
+
     // Password Requirements
     'password_requirements' => [
         'length' => '8 or more characters',

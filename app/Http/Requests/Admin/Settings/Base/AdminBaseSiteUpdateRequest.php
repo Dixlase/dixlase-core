@@ -42,7 +42,7 @@ class AdminBaseSiteUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'app_name' => 'required|string|max:255',
+            'app_name' => 'required|string|max:60',
             'site_description' => 'nullable|string|max:1000',
             'site_keywords' => 'nullable|string|max:500',
             'locale' => 'required|string|in:'.implode(',', array_keys(config('admin.locale.available', []))),

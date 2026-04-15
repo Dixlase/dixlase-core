@@ -24,18 +24,19 @@ return [
     'settings_title' => '基本設定',
     'settings_header' => 'インストール設定',
     'settings_description' => 'ソフトウェアの基本設定を行います。',
-    
+
     // セマンティック見出し
     'site_information' => 'サイト基本情報',
     'admin_account_information' => '管理者アカウント情報',
     'admin_account_details' => '管理者アカウントの詳細',
     'password_settings' => 'パスワード設定',
     'password_setup' => 'パスワードの設定',
-    
+
     // サイト情報
     'site_name' => 'サイト名',
+    'site_name_help' => 'SEOとレイアウト崩れ防止のため60文字以内で入力してください。',
     'admin_email' => '管理者メールアドレス',
-    
+
     // 管理者アカウント
     'admin_account_name' => 'アカウント名',
     'admin_account_name_placeholder' => '半角英数字で入力（例: siteadmin2025）',
@@ -46,14 +47,14 @@ return [
     'admin_password' => '管理者パスワード',
     'admin_password_confirmation' => '管理者パスワード確認',
     'admin_password_confirmation_note' => '確認のため、同じパスワードを手入力してください。',
-    
+
     // バリデーション
     'validation' => [
         'admin_account_name_required' => 'アカウント名を入力してください。',
         'admin_account_name_alpha_num' => 'アカウント名は半角英数字のみ使用できます。',
         'admin_account_name_length' => 'アカウント名は3〜20文字で入力してください。',
     ],
-    
+
     // パスワード要件
     'password_requirements' => [
         'length' => '8文字以上',
