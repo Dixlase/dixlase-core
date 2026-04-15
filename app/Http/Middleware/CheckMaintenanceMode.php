@@ -53,11 +53,6 @@ class CheckMaintenanceMode
             return $next($request);
         }
 
-        // 管理者でログインしている場合はフロントページもアクセス可能
-        if (auth()->guard('member')->check()) {
-            return $next($request);
-        }
-
         // メンテナンスモード設定を取得
         $settings = $this->getMaintenanceSettings();
 
