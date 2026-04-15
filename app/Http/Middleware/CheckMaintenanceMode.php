@@ -121,9 +121,18 @@ class CheckMaintenanceMode
             $retryAfter = max(0, now()->diffInSeconds($releaseAt, false));
         }
 
+        // 管理メンバーでログイン中なら、管理バーとバナーを表示するためのコンテキストを渡す
+        $member = auth()->guard('member')->user();
+        $isAdmin = $member !== null;
+        $appearance = $isAdmin
+            ? ($member->appearance?->value ?? \App\Enums\AppearanceMode::Auto->value)
+            : \App\Enums\AppearanceMode::Auto->value;
+
         $response = response()->view('maintenance', [
             'message' => $settings['maintenance_message'],
             'releaseAt' => $settings['maintenance_release_at'],
+            'isAdmin' => $isAdmin,
+            'appearance' => (string) $appearance,
         ], 503);
 
         // Retry-Afterヘッダーを設定
