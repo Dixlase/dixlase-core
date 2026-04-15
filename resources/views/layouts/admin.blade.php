@@ -74,6 +74,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             <!-- Safe Mode Banner -->
             <x-security.safe-mode-banner />
+
+            <!-- System Warning Banners (generic) -->
+            <x-ui-system-banner />
             
             <!-- Admin Bar (Header) -->
             <x-ui-admin-bar :isAdminLayout="true" />
