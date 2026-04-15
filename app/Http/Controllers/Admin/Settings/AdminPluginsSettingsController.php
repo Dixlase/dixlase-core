@@ -23,6 +23,7 @@
 namespace App\Http\Controllers\Admin\Settings;
 
 use App\Enums\PluginEnableAction;
+use App\Facades\Audit;
 use App\Helpers\AdminHelper;
 use App\Helpers\ComposerLocalHelper;
 use App\Helpers\GitExcludeHelper;
@@ -345,6 +346,93 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $this->viewParams['heading'] = __('admin/settings/plugins/add.heading');
 
         return view('admin::settings.plugins.add', $this->viewParams);
+    }
+
+    /**
+     * インストール済みプラグインの詳細ページ
+     */
+    public function show(string $slug)
+    {
+        $plugin = Plugin::where('slug', $slug)->first();
+
+        // インストール済みプラグインが見つからない場合は、未インストールのディレクトリから探す
+        if (! $plugin) {
+            $uninstalledPlugin = collect($this->getUninstalledPlugins())->firstWhere('slug', $slug);
+
+            if (! $uninstalledPlugin) {
+                abort(404);
+            }
+
+            // 未インストールプラグイン用の追加データを準備
+            $permissionService = app(PluginPermissionService::class);
+            $cspDiagnosticService = app(CspDiagnosticService::class);
+            $cspLoader = app(CspExtensionLoader::class);
+
+            $summary = $permissionService->getSummary($uninstalledPlugin['slug']);
+            $summary['audit'] = $this->getPluginAuditResult($uninstalledPlugin['slug']);
+            $uninstalledPlugin['permission_summary'] = $summary;
+
+            $pluginPath = base_path('plugins/'.$uninstalledPlugin['directory']);
+            $uninstalledPlugin['csp_diagnostic'] = $cspDiagnosticService->diagnosePlugin($pluginPath);
+            $uninstalledPlugin['csp_compatibility'] = $cspLoader->getCspCompatibility('plugin', $uninstalledPlugin['slug']);
+
+            $card = ExtensionCardPresenter::forPlugin($uninstalledPlugin);
+            $rawData = $uninstalledPlugin;
+            $isInstalled = false;
+        } else {
+            // インストール済みプラグイン用のデータを準備
+            $permissionService = app(PluginPermissionService::class);
+            $cspDiagnosticService = app(CspDiagnosticService::class);
+            $cspLoader = app(CspExtensionLoader::class);
+
+            $plugin->translated_name = $this->getPluginName($plugin);
+            $plugin->translated_description = $this->getPluginDescription($plugin);
+            $plugin->has_settings = $this->checkPluginHasSettings($plugin);
+
+            $summary = $permissionService->getSummary($plugin->slug);
+            $summary['audit'] = $this->getPluginAuditResult($plugin->slug);
+            $plugin->permission_summary = $summary;
+
+            $pluginPath = base_path('plugins/'.$plugin->directory);
+            $plugin->csp_diagnostic = $cspDiagnosticService->diagnosePlugin($pluginPath);
+            $plugin->csp_compatibility = $cspLoader->getCspCompatibility('plugin', $plugin->slug);
+
+            $card = ExtensionCardPresenter::forPlugin($plugin);
+            $rawData = $this->loadPluginJson($plugin->directory);
+            $isInstalled = true;
+        }
+
+        $this->viewParams['card'] = $card;
+        $this->viewParams['rawData'] = $rawData;
+        $this->viewParams['isInstalled'] = $isInstalled;
+        $this->viewParams['scanRequired'] = self::isScanRequired();
+        $this->viewParams['isSimpleMode'] = \App\Helpers\AdminModeHelper::isSimpleMode();
+        $this->viewParams['heading'] = $card['name'] ?? $slug;
+        $this->viewParams['settingsUrl'] = $card['settingsUrl'] ?? null;
+
+        return view('admin::settings.plugins.show', $this->viewParams);
+    }
+
+    /**
+     * plugin.json から生データを読み込む（詳細ページ用）
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function loadPluginJson(string $directory): ?array
+    {
+        $path = base_path("plugins/{$directory}/plugin.json");
+
+        if (! File::exists($path)) {
+            return null;
+        }
+
+        try {
+            $data = json_decode(File::get($path), true);
+
+            return is_array($data) ? $data : null;
+        } catch (\Exception) {
+            return null;
+        }
     }
 
     /**
@@ -1499,17 +1587,23 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     protected function logSupplyChainEvent(Plugin $plugin, string $action, array $context = []): void
     {
         try {
-            $context = array_merge([
+            $fullContext = array_merge([
                 'plugin_slug' => $plugin->slug,
                 'plugin_name' => $plugin->name,
                 'plugin_version' => $plugin->version,
             ], $context);
 
-            Log::warning('Supply-chain event detected', [
-                'action' => $action,
-                'context' => $context,
+            Audit::logExtension($action, [
+                'actor' => AdminHelper::getMember(),
+                'outcome' => AuditLog::OUTCOME_SUCCESS,
+                'severity' => AuditLog::SEVERITY_WARNING,
+                'plugin_name' => $plugin->name,
+                'plugin_version' => $plugin->version,
+                'target_type' => 'plugin',
+                'target_id' => (string) $plugin->id,
+                'target_label' => $plugin->slug,
+                'context' => $fullContext,
             ]);
-            // AuditLog への保存は既存の監査ログサービス経由（Phase 2 で詳細実装）
         } catch (\Throwable $e) {
             Log::warning('Failed to log supply-chain event', [
                 'plugin' => $plugin->slug,

@@ -247,6 +247,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
+    {{-- 詳細リンク --}}
+    <div class="px-4 py-2 border-t border-gray-100 dark:border-gray-700">
+        <a href="{{ route('admin.settings.plugins.show', $card['slug']) }}"
+           class="inline-flex items-center gap-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline">
+            <i class="fas fa-info-circle"></i>
+            {{ __('admin/settings/plugins/index.view_details') }}
+        </a>
+    </div>
+
     {{-- アクションボタン --}}
     <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700">
         <div class="flex flex-wrap gap-2 justify-center">

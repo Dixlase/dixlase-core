@@ -499,6 +499,7 @@ Route::prefix($adminUrl)->name('admin.')
             Route::middleware('check.menu.access:settings.plugins')->group(function () {
                 Route::get('/settings/plugins', [AdminPluginsSettingsController::class, 'index'])->name('settings.plugins.index');
                 Route::get('/settings/plugins/add', [AdminPluginsSettingsController::class, 'add'])->name('settings.plugins.add');
+                Route::get('/settings/plugins/show/{slug}', [AdminPluginsSettingsController::class, 'show'])->name('settings.plugins.show');
                 Route::post('/settings/plugins/upload', [AdminPluginsSettingsController::class, 'upload'])
                     ->middleware('check.menu.edit:settings.plugins')
                     ->name('settings.plugins.upload');
