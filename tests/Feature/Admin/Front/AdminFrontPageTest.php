@@ -233,12 +233,12 @@ class AdminFrontPageTest extends TestCase
         $response->assertViewHas('editorType', 'html');
     }
 
-    public function test_edit_redirects_to_create_when_no_content(): void
+    public function test_edit_redirects_to_index_when_no_content(): void
     {
         $response = $this->actingAs($this->admin, 'member')
             ->get(route('admin.front.edit'));
 
-        $response->assertRedirect(route('admin.front.create'));
+        $response->assertRedirect(route('admin.front.index'));
     }
 
     // =========================================================
@@ -271,11 +271,12 @@ class AdminFrontPageTest extends TestCase
         ]);
     }
 
-    public function test_update_switches_storage_type_from_file_to_database(): void
+    public function test_update_preserves_storage_type_after_creation(): void
     {
+        // 保存形式は初回作成時のみ選択可能。編集時は既存の値が維持されること
         Storage::fake('local');
 
-        $frontPage = FrontPage::create([
+        FrontPage::create([
             'page_type' => 'main_content',
             'lang' => 'en',
             'content' => '<h1>Test</h1>',
@@ -284,36 +285,28 @@ class AdminFrontPageTest extends TestCase
             'status' => ContentStatus::PUBLISHED,
         ]);
 
-        // ファイルを事前作成
-        Storage::disk('local')->put('core/front/content.html', '<h1>Test</h1>');
-
         $response = $this->actingAs($this->admin, 'member')
             ->put(route('admin.front.edit.update'), [
-                'storage_type' => 'database',
-                'content' => '<h1>Updated in DB</h1>',
+                'content' => '<h1>Updated</h1>',
             ]);
 
         $response->assertRedirect(route('admin.front.edit'));
 
         $this->assertDatabaseHas('front_pages', [
             'page_type' => 'main_content',
-            'storage_type' => ContentStorageType::DATABASE,
-            'content' => '<h1>Updated in DB</h1>',
+            'storage_type' => ContentStorageType::FILE,
+            'content' => '<h1>Updated</h1>',
         ]);
-
-        // ファイルが削除されていること
-        Storage::disk('local')->assertMissing('core/front/content.html');
     }
 
     public function test_update_redirects_when_no_content_exists(): void
     {
         $response = $this->actingAs($this->admin, 'member')
             ->put(route('admin.front.edit.update'), [
-                'storage_type' => 'database',
                 'content' => 'test',
             ]);
 
-        $response->assertRedirect(route('admin.front.create'));
+        $response->assertRedirect(route('admin.front.index'));
     }
 
     // =========================================================
@@ -553,39 +546,8 @@ class AdminFrontPageTest extends TestCase
         $this->assertNull($frontPage->custom_css);
     }
 
-    public function test_update_deletes_js_css_files_when_switching_to_database(): void
-    {
-        Storage::fake('local');
-
-        FrontPage::create([
-            'page_type' => 'main_content',
-            'lang' => 'en',
-            'content' => '<h1>Test</h1>',
-            'custom_js' => 'alert("hi");',
-            'custom_css' => '.test {}',
-            'editor_type' => ContentEditorType::HTML,
-            'storage_type' => ContentStorageType::FILE,
-            'status' => ContentStatus::PUBLISHED,
-        ]);
-
-        Storage::disk('local')->put('core/front/content.html', '<h1>Test</h1>');
-        Storage::disk('local')->put('core/front/script.js', 'alert("hi");');
-        Storage::disk('local')->put('core/front/style.css', '.test {}');
-
-        $response = $this->actingAs($this->admin, 'member')
-            ->put(route('admin.front.edit.update'), [
-                'storage_type' => 'database',
-                'content' => '<h1>Updated</h1>',
-                'custom_js' => 'console.log("db");',
-                'custom_css' => 'body {}',
-            ]);
-
-        $response->assertRedirect(route('admin.front.edit'));
-
-        Storage::disk('local')->assertMissing('core/front/content.html');
-        Storage::disk('local')->assertMissing('core/front/script.js');
-        Storage::disk('local')->assertMissing('core/front/style.css');
-    }
+    // Note: FILE → DB への切替テストは保存形式の初回固定化により削除。
+    // 保存形式の変更は作成時のみ許可され、編集時は既存値が維持される。
 
     // =========================================================
     // Destroy - JS/CSS files
