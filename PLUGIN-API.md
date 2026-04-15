@@ -58,6 +58,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\PluginIntegration\LinkableInterface` | リンク可能なコンテンツの最小契約 |
 | `App\Contracts\PluginIntegration\LinkableProviderInterface` | リンク可能なコンテンツを提供するプラグインの契約 |
 | `App\Contracts\PluginIntegration\MenuProviderInterface` | Contract for plugins that provide navigation menus |
+| `App\Contracts\PluginIntegration\PageMetaProviderInterface` | ページごとのSEOメタ情報の読み書きを提供するインターフェース |
 | `App\Contracts\PluginIntegration\PreviewProviderInterface` | Contract for plugins that provide preview data |
 | `App\Contracts\PluginIntegration\PrivacyPolicyProviderInterface` | プライバシーポリシープロバイダーの契約 |
 
@@ -176,6 +177,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\DTO\PluginIntegration\LinkableDTO`
 - `App\DTO\PluginIntegration\MenuDTO`
 - `App\DTO\PluginIntegration\MenuItemDTO`
+- `App\DTO\PluginIntegration\PageMetaDTO`
 - `App\DTO\PluginIntegration\PaginatedResultDTO`
 - `App\DTO\PluginIntegration\PreviewDTO`
 - `App\DTO\PluginIntegration\PreviewFieldDTO`
@@ -248,7 +250,8 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 `x-admin.account-status`, `x-admin.right-sidebar`,
 `x-admin.mode-guide-banner`, `x-admin.mode-partial-notice`, `x-admin.mode-readonly-banner`,
 `x-admin.theme-preview-container`, `x-admin.theme-preview-sidebar`,
-`x-admin.theme-preview-sidebar-section`
+`x-admin.theme-preview-sidebar-section`,
+`x-revision.list`, `x-revision.diff`
 
 ### 6.4 Front-end Components
 

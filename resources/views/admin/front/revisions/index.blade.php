@@ -21,106 +21,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-<div class="mx-auto">
-    <div class="mb-4 flex items-center justify-between gap-4">
-        <a href="{{ route('admin.front.edit') }}" class="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
-            <i class="fas fa-arrow-left"></i>
-            {{ __('admin/front/revisions.back_to_edit') }}
-        </a>
-        @if ($retention > 0)
-            <span class="inline-flex items-center gap-2 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-1 text-xs text-gray-700 dark:text-gray-300"
-                  title="{{ __('admin/front/revisions.protect_help') }}">
-                <i class="fas fa-shield-halved text-blue-500 dark:text-blue-400"></i>
-                @if ($protectedCount > $retention)
-                    {{ __('admin/front/revisions.protect_count_summary_over', ['protected' => $protectedCount, 'retention' => $retention]) }}
-                @else
-                    {{ __('admin/front/revisions.protect_count_summary', ['protected' => $protectedCount, 'retention' => $retention]) }}
-                @endif
-            </span>
-        @endif
-    </div>
-
-    @if ($revisions->isEmpty())
-        <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-6">
-            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/front/revisions.no_revisions') }}</p>
-        </div>
-    @else
-        <section>
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-800">
-                    <tr>
-                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.created_at') }}</th>
-                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.type') }}</th>
-                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.creator') }}</th>
-                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.note') }}</th>
-                        <th scope="col" class="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.protect') }}</th>
-                        <th scope="col" class="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('admin/front/revisions.actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    @foreach ($revisions as $revision)
-                        <tr>
-                            <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap">
-                                {{ $revision->created_at?->format('Y-m-d H:i:s') }}
-                            </td>
-                            <td class="px-4 py-2 text-sm">
-                                <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-                                    {{ $typeLabels[$revision->type] ?? $revision->type }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100">
-                                {{ $revision->creator->display_name ?? $revision->creator->account_name ?? __('admin/front/revisions.unknown_user') }}
-                            </td>
-                            <td class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">
-                                {{ $revision->note }}
-                            </td>
-                            <td class="px-4 py-2 text-sm text-center whitespace-nowrap">
-                                <form action="{{ route('admin.front.revisions.protect', $revision->id) }}" method="POST" class="inline">
-                                    @csrf
-                                    <button type="submit"
-                                            class="{{ $revision->is_protected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-blue-600 dark:text-gray-500 dark:hover:text-blue-400' }}"
-                                            title="{{ $revision->is_protected ? __('admin/front/revisions.protect_disable') : __('admin/front/revisions.protect_enable') }}">
-                                        <i class="fas {{ $revision->is_protected ? 'fa-shield-halved' : 'fa-shield' }}"></i>
-                                        <span class="sr-only">{{ $revision->is_protected ? __('admin/front/revisions.protect_label_on') : __('admin/front/revisions.protect_label_off') }}</span>
-                                    </button>
-                                </form>
-                            </td>
-                            <td class="px-4 py-2 text-sm text-right whitespace-nowrap">
-                                <a href="{{ route('admin.front.revisions.show', $revision->id) }}"
-                                   class="text-blue-600 hover:text-blue-800 dark:text-blue-400"
-                                   title="{{ __('admin/front/revisions.view_diff') }}">
-                                    <i class="fas fa-code-compare"></i>
-                                    <span class="sr-only">{{ __('admin/front/revisions.view_diff') }}</span>
-                                </a>
-                                <form id="restore-form-{{ $revision->id }}" action="{{ route('admin.front.revisions.restore', $revision->id) }}" method="POST" class="inline ml-3">
-                                    @csrf
-                                    <button type="button" @click="openModal('restore-modal-{{ $revision->id }}')"
-                                            class="text-amber-600 hover:text-amber-800 dark:text-amber-400"
-                                            title="{{ __('admin/front/revisions.restore') }}">
-                                        <i class="fas fa-rotate-left"></i>
-                                        <span class="sr-only">{{ __('admin/front/revisions.restore') }}</span>
-                                    </button>
-                                </form>
-                                <x-ui-modal
-                                    :id="'restore-modal-'.$revision->id"
-                                    :title="__('admin/front/revisions.restore_confirm_title')"
-                                    :message="__('admin/front/revisions.restore_confirm_message')"
-                                    :confirm_label="__('admin/front/revisions.restore')"
-                                    :cancel_label="__('common.cancel')"
-                                    icon_type="warning"
-                                    confirm_color="yellow"
-                                    :form="'restore-form-'.$revision->id"
-                                />
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-
-            <div class="mt-4">
-                {{ $revisions->links() }}
-            </div>
-        </section>
-    @endif
-</div>
+    <x-revision.list
+        :revisions="$revisions"
+        :typeLabels="$typeLabels"
+        :retention="$retention"
+        :protectedCount="$protectedCount"
+        :backRoute="route('admin.front.edit')"
+        showRouteName="admin.front.revisions.show"
+        restoreRouteName="admin.front.revisions.restore"
+        protectRouteName="admin.front.revisions.protect"
+        translationPrefix="admin/front/revisions"
+    />
 @endsection
