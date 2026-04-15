@@ -52,6 +52,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 #admin-layout-flex > aside { top: calc(3rem + var(--admin-banner-offset, 0px)); }
             }
             #admin-sidebar-toggle { top: calc(3.5rem + var(--admin-banner-offset, 0px)); }
+            .modal { padding-top: var(--admin-banner-offset, 0px); }
+            .modal .modal-container { max-height: calc(100vh - 6rem - var(--admin-banner-offset, 0px)); }
         </style>
         <script @cspNonce>
             (function(){
