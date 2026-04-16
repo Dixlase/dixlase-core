@@ -260,9 +260,11 @@ class RevisionService
         /** @var Revisionable|null $target */
         $target = null;
 
-        // `frontPage()` のような命名でリレーションが定義されていれば優先使用。
-        // 見つからない場合は FK 値と `revisionableModel()` 相当の規約で逆引きする。
-        foreach (['content', 'target', 'revisionable', 'frontPage', 'page', 'legalPage'] as $relation) {
+        // リビジョンモデルに定義されたリレーションメソッドのうち、
+        // Revisionable を返すものを探す。下記は優先順位付きの候補リスト。
+        // 汎用名（content/target/revisionable）を最優先にし、
+        // その後にコアおよび各プラグインが使う想定のリレーション名を並べる。
+        foreach (self::revisionableRelationCandidates() as $relation) {
             if (method_exists($revision, $relation)) {
                 $resolved = $revision->{$relation};
                 if ($resolved instanceof Revisionable) {
@@ -275,10 +277,38 @@ class RevisionService
         if (! $target) {
             throw new \RuntimeException(
                 'Could not resolve Revisionable target from revision model '.get_class($revision).
-                '. Define a relation returning a Revisionable instance.'
+                '. Define a relation returning a Revisionable instance, '.
+                'named one of: '.implode(', ', self::revisionableRelationCandidates()).'.'
             );
         }
 
         return $target;
+    }
+
+    /**
+     * 親 Revisionable を逆引きするために探索するリレーション名の候補リスト。
+     *
+     * プラグインが別の命名を使う場合は、そのリレーション名を下記に追加するか、
+     * `RevisionService` を継承して `loadTarget()` を上書きすること。
+     *
+     * @return list<string>
+     */
+    private static function revisionableRelationCandidates(): array
+    {
+        return [
+            // 汎用名（優先）
+            'content',
+            'target',
+            'revisionable',
+            // コア
+            'frontPage',
+            // プラグイン用の想定名
+            'page',         // DixlasePages
+            'post',         // 将来の DixlaseBlog
+            'legal',        // DixlaseLegal（シンプル名）
+            'legalPage',    // DixlaseLegal（後方互換・別名）
+            'article',
+            'entry',
+        ];
     }
 }
