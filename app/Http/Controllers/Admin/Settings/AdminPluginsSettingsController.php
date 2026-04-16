@@ -1017,6 +1017,22 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      */
     private function getPluginName($plugin)
     {
+        // plugin.json の name フィールド（人間向け名称）を優先
+        $directory = $plugin->directory ?? $plugin->name ?? null;
+        if ($directory) {
+            $pluginJsonPath = base_path("plugins/{$directory}/plugin.json");
+            if (File::exists($pluginJsonPath)) {
+                try {
+                    $data = json_decode(File::get($pluginJsonPath), true);
+                    if (is_array($data) && ! empty($data['name'])) {
+                        return $data['name'];
+                    }
+                } catch (\Exception) {
+                    // フォールバック
+                }
+            }
+        }
+
         return $plugin->name ?? __('admin/settings/plugins/index.messages.no_plugin_name');
     }
 
