@@ -37,6 +37,7 @@ return [
         'description' => 'Description',
         'details' => 'Detailed Information',
         'scan_result' => 'Scan Result',
+        'scan_details' => 'Scan Details',
     ],
 
     // Scan

@@ -402,6 +402,15 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $isInstalled = true;
         }
 
+        // CSP ステータスを翻訳キーにマッピング
+        $cspStatus = $card['cspCompatibility']['status'] ?? 'not_checked';
+        $cspStatusLabelKey = match ($cspStatus) {
+            'csp_ready' => 'csp_ready',
+            'compatible' => 'csp_compatible',
+            'inline_required', 'inline_css_only' => 'csp_inline_required',
+            default => 'csp_not_checked',
+        };
+
         $this->viewParams['card'] = $card;
         $this->viewParams['rawData'] = $rawData;
         $this->viewParams['isInstalled'] = $isInstalled;
@@ -409,6 +418,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $this->viewParams['isSimpleMode'] = \App\Helpers\AdminModeHelper::isSimpleMode();
         $this->viewParams['heading'] = $card['name'] ?? $slug;
         $this->viewParams['settingsUrl'] = $card['settingsUrl'] ?? null;
+        $this->viewParams['cspStatusLabelKey'] = $cspStatusLabelKey;
 
         return view('admin::settings.plugins.show', $this->viewParams);
     }

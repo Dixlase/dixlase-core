@@ -222,7 +222,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <div>
                             <div class="font-medium">
                                 <i class="fas {{ $card['healthStatusIcons'][$card['healthStatus']] ?? 'fa-question-circle' }} mr-1"></i>
-                                {{ __($card['healthStatusLabelKeys'][$card['healthStatus']] ?? 'common.unknown') }}
+                                {{ __('admin/settings/plugins/index.permissions.'.($card['healthStatusLabelKeys'][$card['healthStatus']] ?? 'health_status_not_verified')) }}
                             </div>
                         </div>
                     </div>
@@ -252,7 +252,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
                     <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ __('admin/settings/plugins/show.scan.csp') }}</div>
                     <div class="text-sm font-medium text-gray-900 dark:text-white">
-                        {{ __('admin/settings/plugins/index.verification.csp_'.($card['cspCompatibility']['status'] ?? 'not_checked')) }}
+                        {{ __('admin/settings/plugins/index.verification.'.$cspStatusLabelKey) }}
                     </div>
                 </div>
 
@@ -266,16 +266,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             {{-- 健全性の指摘事項 --}}
             @if(! empty($card['healthIssues']))
-                <div class="mt-4">
+                <div class="mt-4 mb-4">
                     <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ __('admin/settings/plugins/show.scan.issues') }}</h3>
                     <ul class="space-y-2">
                         @foreach($card['healthIssues'] as $issue)
                             <li class="flex items-start gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded text-sm">
                                 <i class="fas fa-exclamation-triangle text-yellow-500 mt-0.5"></i>
                                 <div class="flex-1">
-                                    <span class="text-gray-700 dark:text-gray-200">{{ __('admin/settings/plugins/index.permissions.health_issue_'.($issue['key'] ?? 'unknown'), [], app()->getLocale()) }}</span>
+                                    <span class="text-gray-700 dark:text-gray-200">{{ $issue['description'] ?? ($issue['type'] ?? '') }}</span>
                                     @if(! empty($issue['deduction']))
-                                        <span class="text-xs text-yellow-700 dark:text-yellow-300 ml-1">(-{{ $issue['deduction'] }})</span>
+                                        <span class="text-xs text-yellow-700 dark:text-yellow-300 ml-1">({{ $issue['deduction'] }})</span>
                                     @endif
                                 </div>
                             </li>
@@ -284,8 +284,41 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             @endif
 
+            {{-- CSP モード互換性バロメータ --}}
+            @if(! empty($card['cspBarometerItems']))
+                <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                        <i class="fas fa-shield-alt mr-1 {{ $card['cspTierIconColor'] }}"></i>
+                        {{ __('admin/settings/plugins/index.badge_labels.csp_full') ?? __('admin/settings/plugins/index.badge_labels.csp') }}
+                    </h3>
+                    <x-ui-barometer :items="$card['cspBarometerItems']" />
+                </div>
+            @endif
+
+            {{-- セキュリティプリセット互換性バロメータ --}}
+            @if(! empty($card['presetBarometerItems']))
+                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                        <i class="fas fa-layer-group mr-1 {{ $card['presetTierIconColor'] }}"></i>
+                        {{ __('admin/settings/plugins/index.badge_labels.preset') }}
+                    </h3>
+                    <x-ui-barometer :items="$card['presetBarometerItems']" />
+                </div>
+            @endif
+
+            {{-- 詳細なスキャン情報（バッジモーダル互換） --}}
+            @if($card['permissionSummary'])
+                <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                        <i class="fas fa-clipboard-list mr-1"></i>
+                        {{ __('admin/settings/plugins/show.sections.scan_details') }}
+                    </h3>
+                    @include('admin.settings.plugins.partials.scan-details', ['card' => $card])
+                </div>
+            @endif
+
             {{-- 再スキャンボタン --}}
-            <div class="mt-4 flex gap-2">
+            <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-2">
                 <button
                     type="button"
                     class="audit-rescan-btn inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
