@@ -101,6 +101,41 @@ permission-modal と詳細ページで共有
         @endif
     </div>
 
+    {{-- 権限定義の整合性 --}}
+    <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+        <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin/settings/plugins/index.permissions.permission_consistency_title') }}</h4>
+        @if($card['hasMismatches'])
+            <div class="flex items-center">
+                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                    <i class="fas fa-times-circle mr-1"></i>
+                    {{ __('admin/settings/plugins/index.verification.permission_mismatch') }}
+                </span>
+            </div>
+        @elseif(! $card['hasPermissions'])
+            <div class="flex items-center">
+                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    {{ __('admin/settings/plugins/index.verification.permission_undefined') }}
+                </span>
+            </div>
+        @elseif(empty($card['auditedAt']))
+            <div class="flex items-center">
+                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                    <i class="fas fa-question-circle mr-1"></i>
+                    {{ __('admin/settings/plugins/index.verification.permission_not_scanned') }}
+                </span>
+            </div>
+        @else
+            <div class="flex items-center">
+                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    <i class="fas fa-check-circle mr-1"></i>
+                    {{ __('admin/settings/plugins/index.verification.permission_ok') }}
+                </span>
+                <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/index.modal.healthy_body') }}</span>
+            </div>
+        @endif
+    </div>
+
     {{-- 権限情報 --}}
     <div>
         <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin/settings/plugins/index.permissions.permission_info') }}</h4>

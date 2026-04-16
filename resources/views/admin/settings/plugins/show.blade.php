@@ -81,8 +81,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <p class="text-gray-600 dark:text-gray-300 mb-4">{{ $card['description'] }}</p>
                 @endif
 
-                {{-- 主要メタ情報 --}}
-                <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mb-4">
+                {{-- メタ情報（基本 + 詳細をまとめて表示） --}}
+                <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm mb-4">
                     @if(! empty($card['authorName']))
                         <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.author') }}</dt>
                         <dd class="text-gray-900 dark:text-gray-200">
@@ -102,11 +102,37 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endif
 
                     <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.slug') }}</dt>
-                    <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs">{{ $card['slug'] }}</dd>
+                    <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $card['slug'] }}</dd>
 
                     @if(! empty($rawData['package_name']))
                         <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.package_name') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs">{{ $rawData['package_name'] }}</dd>
+                        <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $rawData['package_name'] }}</dd>
+                    @endif
+
+                    @if(! empty($rawData['namespace']))
+                        <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.namespace') }}</dt>
+                        <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $rawData['namespace'] }}</dd>
+                    @endif
+
+                    @if(! empty($card['directory']))
+                        <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.directory') }}</dt>
+                        <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $card['directory'] }}</dd>
+                    @endif
+
+                    @if(! empty($rawData['email']))
+                        <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.email') }}</dt>
+                        <dd class="text-gray-900 dark:text-gray-200">
+                            <a href="mailto:{{ $rawData['email'] }}" class="text-indigo-600 dark:text-indigo-400 hover:underline break-all">{{ $rawData['email'] }}</a>
+                        </dd>
+                    @endif
+
+                    @if(! empty($rawData['url']))
+                        <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.url') }}</dt>
+                        <dd class="text-gray-900 dark:text-gray-200">
+                            <a href="{{ $rawData['url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline break-all">
+                                {{ $rawData['url'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
+                            </a>
+                        </dd>
                     @endif
                 </dl>
 
@@ -162,54 +188,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
     </div>
-
-    {{-- 説明（全文） --}}
-    @if(! empty($rawData['description']))
-        <section class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ __('admin/settings/plugins/show.sections.description') }}</h2>
-            <div class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 whitespace-pre-line">{{ $card['description'] }}</div>
-        </section>
-    @endif
-
-    {{-- 詳細情報 --}}
-    <section class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ __('admin/settings/plugins/show.sections.details') }}</h2>
-        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
-            @if(! empty($rawData['namespace']))
-                <div>
-                    <dt class="text-gray-500 dark:text-gray-400 mb-0.5">{{ __('admin/settings/plugins/show.namespace') }}</dt>
-                    <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $rawData['namespace'] }}</dd>
-                </div>
-            @endif
-
-            @if(! empty($card['directory']))
-                <div>
-                    <dt class="text-gray-500 dark:text-gray-400 mb-0.5">{{ __('admin/settings/plugins/show.directory') }}</dt>
-                    <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $card['directory'] }}</dd>
-                </div>
-            @endif
-
-            @if(! empty($rawData['email']))
-                <div>
-                    <dt class="text-gray-500 dark:text-gray-400 mb-0.5">{{ __('admin/settings/plugins/show.email') }}</dt>
-                    <dd class="text-gray-900 dark:text-gray-200">
-                        <a href="mailto:{{ $rawData['email'] }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">{{ $rawData['email'] }}</a>
-                    </dd>
-                </div>
-            @endif
-
-            @if(! empty($rawData['url']))
-                <div>
-                    <dt class="text-gray-500 dark:text-gray-400 mb-0.5">{{ __('admin/settings/plugins/show.url') }}</dt>
-                    <dd class="text-gray-900 dark:text-gray-200">
-                        <a href="{{ $rawData['url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline break-all">
-                            {{ $rawData['url'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
-                        </a>
-                    </dd>
-                </div>
-            @endif
-        </dl>
-    </section>
 
     {{-- スキャン結果（インストール済み・未インストール両方で表示） --}}
     @if($card['auditedAtFormatted'] || $card['healthScore'] !== null)
@@ -286,16 +264,70 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
 
             {{-- 再スキャンボタン --}}
-            <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-2">
+            <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-2"
+                 x-data="{
+                     scanning: false,
+                     errorMessage: '',
+                     async rescan() {
+                         this.scanning = true;
+                         this.errorMessage = '';
+                         try {
+                             const response = await fetch('{{ route('admin.settings.plugins.audit') }}', {
+                                 method: 'POST',
+                                 headers: {
+                                     'Content-Type': 'application/json',
+                                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                     'Accept': 'application/json',
+                                 },
+                                 body: JSON.stringify({ slug: '{{ $card['slug'] }}' }),
+                             });
+                             const data = await response.json();
+                             if (data.success) {
+                                 window.location.reload();
+                             } else {
+                                 this.errorMessage = data.message || '{{ __('admin/settings/plugins/index.audit.failed') }}';
+                                 this.scanning = false;
+                             }
+                         } catch (error) {
+                             this.errorMessage = error.message;
+                             this.scanning = false;
+                         }
+                     }
+                 }">
                 <button
                     type="button"
-                    class="audit-rescan-btn inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-                    data-plugin-slug="{{ $card['slug'] }}"
-                    data-audit-url="{{ route('admin.settings.plugins.audit') }}"
-                    data-csrf-token="{{ csrf_token() }}"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                    :disabled="scanning"
+                    @click="rescan()"
                 >
                     <i class="fas fa-sync-alt"></i>{{ __('admin/settings/plugins/show.scan.rescan') }}
                 </button>
+
+                {{-- エラー表示 --}}
+                <template x-if="errorMessage">
+                    <div class="flex items-center gap-1.5 text-sm text-red-600 dark:text-red-400">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span x-text="errorMessage"></span>
+                    </div>
+                </template>
+
+                {{-- スキャン中モーダル --}}
+                <div x-show="scanning" x-cloak
+                     class="fixed inset-0 z-50 overflow-y-auto"
+                     role="dialog"
+                     aria-modal="true"
+                >
+                    <div class="flex items-center justify-center min-h-screen px-4">
+                        <div class="fixed inset-0 bg-black/60 transition-opacity"></div>
+                        <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-md w-full text-center">
+                            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                                <i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ __('admin/settings/plugins/index.permissions.audit_scanning_title') }}</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{!! __('admin/settings/plugins/index.permissions.audit_scanning_description') !!}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
     @endif
@@ -307,46 +339,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </a>
     </div>
 </div>
-
-@push('scripts')
-<script @cspNonce>
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.audit-rescan-btn').forEach((btn) => {
-            btn.addEventListener('click', async () => {
-                const slug = btn.dataset.pluginSlug;
-                const url = btn.dataset.auditUrl;
-                const csrfToken = btn.dataset.csrfToken;
-
-                btn.disabled = true;
-                const originalHtml = btn.innerHTML;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>{{ __('admin/settings/plugins/show.scan.scanning') }}';
-
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Accept': 'application/json',
-                        },
-                        body: JSON.stringify({ slug }),
-                    });
-                    const data = await response.json();
-                    if (data.success) {
-                        window.location.reload();
-                    } else {
-                        alert(data.message || 'Scan failed');
-                        btn.disabled = false;
-                        btn.innerHTML = originalHtml;
-                    }
-                } catch (error) {
-                    alert(error.message);
-                    btn.disabled = false;
-                    btn.innerHTML = originalHtml;
-                }
-            });
-        });
-    });
-</script>
-@endpush
 @endsection
