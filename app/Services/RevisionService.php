@@ -303,10 +303,9 @@ class RevisionService
             // コア
             'frontPage',
             // プラグイン用の想定名
-            'page',         // DixlasePages
-            'post',         // 将来の DixlaseBlog
-            'legal',        // DixlaseLegal（シンプル名）
-            'legalPage',    // DixlaseLegal（後方互換・別名）
+            'page',     // DixlasePages
+            'post',     // 将来の DixlaseBlog
+            'legal',    // DixlaseLegal
             'article',
             'entry',
         ];
