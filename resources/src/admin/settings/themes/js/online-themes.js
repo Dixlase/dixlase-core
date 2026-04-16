@@ -59,8 +59,19 @@ Alpine.data('onlineThemes', (config) => ({
 
     download(theme) {
         if (this.downloadingSlug) return;
-        this.downloadingSlug = theme.slug;
-        this.downloadingName = theme.name || theme.slug;
+
+        // API が想定外の型を返した場合に備え、slug/name を文字列化して防御する
+        const slug = typeof theme.slug === 'string' ? theme.slug : '';
+        if (! slug) {
+            return;
+        }
+        this.downloadingSlug = slug;
+        this.downloadingName = typeof theme.name === 'string' ? theme.name : slug;
+
+        // 共通モーダルコンポーネントを開く
+        if (typeof window.openModal === 'function') {
+            window.openModal('downloadingThemeModal');
+        }
 
         const form = document.createElement('form');
         form.method = 'POST';
@@ -75,7 +86,7 @@ Alpine.data('onlineThemes', (config) => ({
         const slugInput = document.createElement('input');
         slugInput.type = 'hidden';
         slugInput.name = 'slug';
-        slugInput.value = theme.slug;
+        slugInput.value = slug;
         form.appendChild(slugInput);
 
         document.body.appendChild(form);

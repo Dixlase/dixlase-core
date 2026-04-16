@@ -46,6 +46,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'closeOnly' => false,         // 閉じるボタンのみ表示モード
     'close_only' => null,         // 後方互換性
     'dismissible' => true,        // 背景クリックで閉じるかどうか（デフォルト: true）
+    'hideActions' => false,       // アクション領域を非表示（ローディング表示等で使用）
 ])
 
 @php
@@ -63,16 +64,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'warning' => 'fas fa-exclamation-triangle',
         'danger' => 'fas fa-times-circle',
         'info' => 'fas fa-info-circle',
-        'success' => 'fas fa-check-circle'
+        'success' => 'fas fa-check-circle',
+        'loading' => 'fas fa-spinner fa-spin',
     ];
     $iconClass = $iconClasses[$iconType] ?? $iconClasses['warning'];
-    
+
     // アイコンの色を設定
     $iconColorClasses = [
         'warning' => 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-400',
         'danger' => 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400',
         'info' => 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400',
-        'success' => 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
+        'success' => 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400',
+        'loading' => 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900 dark:text-indigo-400',
     ];
     $iconColorClass = $iconColorClasses[$iconType] ?? $iconColorClasses['info'];
     
@@ -164,6 +167,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
         
+        @if(! $hideActions)
         <div class="modal-actions">
             @if(!$hasCustomFooter)
                 @if($closeOnly || $closeLabel)
@@ -216,6 +220,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{ $footer }}
             @endif
         </div>
+        @endif
     </div>
 </div>
 
