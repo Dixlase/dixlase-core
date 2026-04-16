@@ -155,61 +155,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 
     {{-- スキャン結果（常に表示、未スキャン時もスキャンボタンを提供） --}}
-    <section class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6"
-             x-data="{
-                 scanning: false,
-                 errorMessage: '',
-                 async runScan() {
-                     this.scanning = true;
-                     this.errorMessage = '';
-                     try {
-                         const response = await fetch('{{ route('admin.settings.plugins.audit') }}', {
-                             method: 'POST',
-                             headers: {
-                                 'Content-Type': 'application/json',
-                                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                 'Accept': 'application/json',
-                             },
-                             body: JSON.stringify({ slug: '{{ $card['slug'] }}' }),
-                         });
-                         const data = await response.json();
-                         if (data.success) {
-                             window.location.reload();
-                         } else {
-                             this.errorMessage = data.message || '{{ __('admin/settings/plugins/index.audit.failed') }}';
-                             this.scanning = false;
-                         }
-                     } catch (error) {
-                         this.errorMessage = error.message;
-                         this.scanning = false;
-                     }
-                 }
-             }">
+    <section class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-3">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-0">{{ __('admin/settings/plugins/show.sections.scan_result') }}</h2>
-                    <button
+                    <x-form-button
                         type="button"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
-                        :disabled="scanning"
-                        @click="runScan()"
-                    >
-                        <i class="fas fa-sync-alt"></i>
-                        <span>{{ empty($card['auditedAt']) ? __('admin/settings/plugins/show.scan.scan') : __('admin/settings/plugins/show.scan.rescan') }}</span>
-                    </button>
+                        :label="empty($card['auditedAt']) ? __('admin/settings/plugins/show.scan.scan') : __('admin/settings/plugins/show.scan.rescan')"
+                        :variant="empty($card['auditedAt']) ? 'warning' : 'secondary'"
+                        size="sm"
+                        icon="fas fa-sync-alt"
+                        class="audit-btn"
+                        :data-slug="$card['slug']"
+                    />
                 </div>
                 @if($card['auditedAtFormatted'])
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.last_scanned_at', ['date' => $card['auditedAtFormatted']]) }}</span>
                 @endif
             </div>
-
-            {{-- エラー表示 --}}
-            <template x-if="errorMessage">
-                <div class="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-300">
-                    <i class="fas fa-exclamation-circle mr-1"></i>
-                    <span x-text="errorMessage"></span>
-                </div>
-            </template>
 
             {{-- 未スキャン時のメッセージ --}}
             @if(empty($card['auditedAt']))
@@ -283,23 +246,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             @endif
 
-            {{-- スキャン中モーダル --}}
-            <div x-show="scanning" x-cloak
-                 class="fixed inset-0 z-50 overflow-y-auto"
-                 role="dialog"
-                 aria-modal="true"
-            >
-                <div class="flex items-center justify-center min-h-screen px-4">
-                    <div class="fixed inset-0 bg-black/60 transition-opacity"></div>
-                    <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-md w-full text-center">
-                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                            <i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i>
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ __('admin/settings/plugins/index.permissions.audit_scanning_title') }}</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">{!! __('admin/settings/plugins/index.permissions.audit_scanning_description') !!}</p>
-                    </div>
-                </div>
-            </div>
     </section>
 
     {{-- 戻るボタン --}}
@@ -309,4 +255,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </a>
     </div>
 </div>
+
+{{-- スキャン関連のモーダル・設定スクリプト（一覧ページと共有） --}}
+@include('admin.settings.plugins.partials.audit-script')
 @endsection
