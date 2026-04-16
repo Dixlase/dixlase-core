@@ -683,7 +683,7 @@ class ExtensionCardPresenter
      * @param  array<string, mixed>  $cspCompatibility
      * @return array<int, array{label: string, status: string}>
      */
-    private static function buildCspBarometerItems(array $cspCompatibility, ?string $auditedAt): array
+    public static function buildCspBarometerItems(array $cspCompatibility, ?string $auditedAt): array
     {
         $modes = ['development', 'standard', 'strict'];
 
@@ -720,7 +720,7 @@ class ExtensionCardPresenter
      *
      * @return array<int, array{label: string, status: string, tier: string}>
      */
-    private static function buildPresetBarometerItems(?string $healthStatus, ?string $auditedAt): array
+    public static function buildPresetBarometerItems(?string $healthStatus, ?string $auditedAt): array
     {
         $tierMap = [
             'development' => 'development',

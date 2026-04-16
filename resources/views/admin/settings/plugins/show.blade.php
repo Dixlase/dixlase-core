@@ -163,8 +163,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     {{-- スキャン結果（常に表示、未スキャン時もスキャンボタンを提供） --}}
     <section class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
             <div class="flex items-center justify-between gap-3 mb-4">
-                <div class="flex items-center gap-3 leading-none">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white m-0 leading-none">{{ __('admin/settings/plugins/show.sections.scan_result') }}</h2>
+                <div class="flex items-center gap-3">
+                    <span class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/plugins/show.sections.scan_result') }}</span>
                     <x-form-button
                         type="button"
                         :label="empty($card['auditedAt']) ? __('admin/settings/plugins/show.scan.scan') : __('admin/settings/plugins/show.scan.rescan')"
@@ -176,7 +176,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     />
                 </div>
                 @if($card['auditedAtFormatted'])
-                    <span class="text-xs text-gray-500 dark:text-gray-400 leading-none">{{ __('admin/settings/plugins/show.last_scanned_at', ['date' => $card['auditedAtFormatted']]) }}</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.last_scanned_at', ['date' => $card['auditedAtFormatted']]) }}</span>
                 @endif
             </div>
 
