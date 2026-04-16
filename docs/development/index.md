@@ -19,6 +19,13 @@ UI component usage guides and styling conventions.
 
 - [Components](components/)
 
+## Revisions
+
+Shared revision API: Revisionable contract, HasRevisions trait,
+RevisionService, diff presenter and blade components.
+
+- [Revisions](revisions.md)
+
 ## Members
 
 Role-based access control and permission system design.
