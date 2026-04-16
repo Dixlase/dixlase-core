@@ -37,6 +37,7 @@ return [
         'description' => '説明',
         'details' => '詳細情報',
         'scan_result' => 'スキャン結果',
+        'scan_details' => 'スキャン詳細',
     ],
 
     // スキャン

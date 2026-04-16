@@ -85,6 +85,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <p class="text-sm text-gray-400 dark:text-gray-500 italic mb-3">{{ __('common.no_description') }}</p>
         @endif
 
+        {{-- 詳細を開くボタン --}}
+        <div class="mb-3">
+            <x-form-button
+                type="link"
+                :href="route('admin.settings.plugins.show', $card['slug'])"
+                :label="__('admin/settings/plugins/index.view_details')"
+                variant="secondary"
+                size="xs"
+                icon="fas fa-info-circle"
+                class="w-full justify-center"
+            />
+        </div>
+
         {{-- バッジ類 --}}
         @if($card['permissionSummary'])
         <div class="mb-3 pt-3 border-t border-gray-100 dark:border-gray-700 space-y-2"
@@ -245,15 +258,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             @endif
         </div>
-    </div>
-
-    {{-- 詳細リンク --}}
-    <div class="px-4 py-2 border-t border-gray-100 dark:border-gray-700">
-        <a href="{{ route('admin.settings.plugins.show', $card['slug']) }}"
-           class="inline-flex items-center gap-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline">
-            <i class="fas fa-info-circle"></i>
-            {{ __('admin/settings/plugins/index.view_details') }}
-        </a>
     </div>
 
     {{-- アクションボタン --}}
