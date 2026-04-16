@@ -32,19 +32,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     {{-- ヘッダー --}}
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-[minmax(280px,_1fr)_2fr] gap-0">
-            {{-- サムネイル（モバイルは 16:9、デスクトップは情報エリアの高さに合わせて埋める） --}}
-            <div class="relative aspect-video md:aspect-auto bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden min-h-[200px]">
-                <img
-                    src="{{ $card['thumbnailUrl'] }}"
-                    alt="{{ $card['name'] }}"
-                    class="w-full h-full object-cover md:absolute md:inset-0"
-                    x-on:error="$el.src = '{{ asset('assets/images/plugin-default.svg') }}'; $el.onerror = null;"
-                >
-            </div>
+        {{-- サムネイル（16:9 フル幅バナー） --}}
+        <div class="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
+            <img
+                src="{{ $card['thumbnailUrl'] }}"
+                alt="{{ $card['name'] }}"
+                class="w-full h-full object-cover"
+                x-on:error="$el.src = '{{ asset('assets/images/plugin-default.svg') }}'; $el.onerror = null;"
+            >
+        </div>
 
-            {{-- 基本情報 --}}
-            <div class="p-6 flex flex-col">
+        {{-- 基本情報 --}}
+        <div class="p-6 flex flex-col">
                 <div class="flex items-start justify-between gap-3 mb-3">
                     <div class="min-w-0 flex-1">
                         <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">{{ $card['name'] }}</h1>
@@ -81,58 +80,74 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <p class="text-gray-600 dark:text-gray-300 mb-4">{{ $card['description'] }}</p>
                 @endif
 
-                {{-- メタ情報（基本 + 詳細をまとめて表示） --}}
-                <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm mb-4">
+                {{-- メタ情報（2カラム表示で横幅を活用） --}}
+                <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm mb-4">
                     @if(! empty($card['authorName']))
-                        <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.author') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200">
-                            @if(! empty($rawData['url']))
-                                <a href="{{ $rawData['url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
-                                    {{ $card['authorName'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
-                                </a>
-                            @else
-                                {{ $card['authorName'] }}
-                            @endif
-                        </dd>
+                        <div class="flex gap-3">
+                            <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.author') }}</dt>
+                            <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">
+                                @if(! empty($rawData['url']))
+                                    <a href="{{ $rawData['url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
+                                        {{ $card['authorName'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
+                                    </a>
+                                @else
+                                    {{ $card['authorName'] }}
+                                @endif
+                            </dd>
+                        </div>
                     @endif
 
                     @if(! empty($card['license']))
-                        <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.license') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200">{{ $card['license'] }}</dd>
+                        <div class="flex gap-3">
+                            <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.license') }}</dt>
+                            <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $card['license'] }}</dd>
+                        </div>
                     @endif
 
                     @if(! empty($rawData['email']))
-                        <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.email') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200">
-                            <a href="mailto:{{ $rawData['email'] }}" class="text-indigo-600 dark:text-indigo-400 hover:underline break-all">{{ $rawData['email'] }}</a>
-                        </dd>
+                        <div class="flex gap-3">
+                            <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.email') }}</dt>
+                            <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
+                                <a href="mailto:{{ $rawData['email'] }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">{{ $rawData['email'] }}</a>
+                            </dd>
+                        </div>
                     @endif
 
                     @if(! empty($rawData['url']))
-                        <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.url') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200">
-                            <a href="{{ $rawData['url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline break-all">
-                                {{ $rawData['url'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
-                            </a>
-                        </dd>
+                        <div class="flex gap-3">
+                            <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.url') }}</dt>
+                            <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
+                                <a href="{{ $rawData['url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
+                                    {{ $rawData['url'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
+                                </a>
+                            </dd>
+                        </div>
                     @endif
 
-                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.slug') }}</dt>
-                    <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $card['slug'] }}</dd>
+                    <div class="flex gap-3">
+                        <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.slug') }}</dt>
+                        <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $card['slug'] }}</dd>
+                    </div>
 
                     @if(! empty($card['directory']))
-                        <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.directory') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $card['directory'] }}</dd>
+                        <div class="flex gap-3">
+                            <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.directory') }}</dt>
+                            <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $card['directory'] }}</dd>
+                        </div>
                     @endif
 
                     @if(! empty($rawData['package_name']))
-                        <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.package_name') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $rawData['package_name'] }}</dd>
+                        <div class="flex gap-3">
+                            <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.package_name') }}</dt>
+                            <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $rawData['package_name'] }}</dd>
+                        </div>
                     @endif
 
                     @if(! empty($rawData['namespace']))
-                        <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.namespace') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $rawData['namespace'] }}</dd>
+                        <div class="flex gap-3">
+                            <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.namespace') }}</dt>
+                            <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $rawData['namespace'] }}</dd>
+                        </div>
                     @endif
                 </dl>
 
@@ -150,7 +165,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if($card['permissionSummary'])
                     @include('admin.settings.plugins.partials.permission-modal', ['card' => $card])
                 @endif
-            </div>
         </div>
     </div>
 
