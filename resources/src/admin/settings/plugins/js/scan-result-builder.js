@@ -55,7 +55,6 @@ const HEALTH_STATUS_STYLES = {
 export function buildUnifiedScanResultHtml(scanData, config) {
     const audit = scanData.audit || {};
     const signatureLabels = config.signatureLabels || {};
-    const cspLabels = config.cspLabels || {};
     const auditMessages = config.messages || {};
 
     let html = '';
@@ -71,28 +70,40 @@ export function buildUnifiedScanResultHtml(scanData, config) {
     // 1. 健全性スコア（最上部・大きく表示）
     html += buildHealthBadgeHtml(scanData, audit, config);
 
-    // 2-4. 統合ボックス: 署名 → 権限整合性 → CSP
+    // 2-3. 統合ボックス: 署名 → 権限整合性
     html += '<div class="rounded-lg border border-gray-200 dark:border-gray-700 mb-3 mt-3 overflow-hidden">';
-
-    // 署名サブセクション
     html += buildSignatureSection(audit, signatureLabels, config);
-
-    // 区切り線
     html += '<div class="border-t border-gray-200 dark:border-gray-700"></div>';
-
-    // 権限整合性サブセクション
     html += buildPermissionsSection(audit, auditMessages, config);
-
-    // CSPサブセクション（該当する場合のみ）
-    const cspHtml = buildCspSection(audit, cspLabels);
-    if (cspHtml) {
-        html += '<div class="border-t border-gray-200 dark:border-gray-700"></div>';
-        html += cspHtml;
-    }
-
     html += '</div>';
 
-    // 5. 権限カテゴリ（最後）
+    // 4. CSP モード互換性バロメータ
+    if (scanData.cspBarometerItems && scanData.cspBarometerItems.length > 0) {
+        html += `
+            <div class="mb-3">
+                <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    <i class="fas fa-shield-alt mr-1"></i>
+                    ${config.cspCompatibilityLabel || 'CSP モード互換性'}
+                </p>
+                ${buildBarometerHtml(scanData.cspBarometerItems)}
+            </div>
+        `;
+    }
+
+    // 5. 拡張機能互換性バロメータ
+    if (scanData.presetBarometerItems && scanData.presetBarometerItems.length > 0) {
+        html += `
+            <div class="mb-3">
+                <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    <i class="fas fa-layer-group mr-1"></i>
+                    ${config.presetCompatibilityLabel || '拡張機能互換性'}
+                </p>
+                ${buildBarometerHtml(scanData.presetBarometerItems)}
+            </div>
+        `;
+    }
+
+    // 6. 権限カテゴリ（最後）
     const categoriesHtml = buildCategoriesSection(scanData.categories, config);
     if (categoriesHtml) {
         html += categoriesHtml;
@@ -107,6 +118,38 @@ export function buildUnifiedScanResultHtml(scanData, config) {
         </div>
     `;
 
+    return html;
+}
+
+/**
+ * バロメータHTMLを生成（Blade の x-ui-barometer と同じ構造）
+ */
+function buildBarometerHtml(items) {
+    if (! items || items.length === 0) return '';
+
+    let html = '<div class="barometer">';
+    items.forEach((item, index) => {
+        const status = item.status || 'unknown';
+        const tier = item.tier || 'default';
+        const isFirst = index === 0;
+        const isLast = index === items.length - 1;
+
+        let statusClass;
+        if (status === 'unknown') {
+            statusClass = 'barometer__segment--unknown';
+        } else if (status === 'ng') {
+            statusClass = 'barometer__segment--ng';
+        } else {
+            statusClass = `barometer__segment--${tier}`;
+        }
+
+        const positionClass = isFirst ? 'barometer__segment--first' : (isLast ? 'barometer__segment--last' : '');
+
+        html += `<div class="barometer__segment ${statusClass} ${positionClass}">`;
+        html += `<span class="barometer__label">${item.label || ''}</span>`;
+        html += '</div>';
+    });
+    html += '</div>';
     return html;
 }
 

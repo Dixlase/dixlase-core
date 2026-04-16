@@ -325,6 +325,25 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $summary = $permissionService->getSummary($slug);
         $categories = $summary['categories'] ?? [];
 
+        // CSP モード互換性・拡張機能互換性バロメータを計算
+        $cspLoader = app(\App\Services\Csp\CspExtensionLoader::class);
+        $cspCompatibility = $cspLoader->getCspCompatibility('plugin', $slug);
+        if (! empty($result['csp_status'])) {
+            $cspCompatibility = [
+                'status' => $result['csp_status'],
+                'requires_inline_js' => $result['csp_requires_inline_js'] ?? false,
+                'requires_inline_css' => $result['csp_requires_inline_css'] ?? false,
+                'has_csp_config' => $cspCompatibility['has_csp_config'] ?? false,
+                'csp_ready' => ! ($result['csp_requires_inline_js'] ?? false),
+                'violations' => $result['csp_violations'] ?? [],
+                'summary' => $result['csp_summary'] ?? [],
+            ];
+        }
+
+        $auditedAt = $result['audited_at'] ?? null;
+        $cspBarometerItems = ExtensionCardPresenter::buildCspBarometerItems($cspCompatibility, $auditedAt);
+        $presetBarometerItems = ExtensionCardPresenter::buildPresetBarometerItems($healthStatus, $auditedAt);
+
         return response()->json([
             'success' => true,
             'message' => __('admin/settings/plugins/index.audit.completed'),
@@ -336,6 +355,8 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             'healthStatus' => $healthStatus,
             'healthIssues' => $healthIssues,
             'categories' => $categories,
+            'cspBarometerItems' => $cspBarometerItems,
+            'presetBarometerItems' => $presetBarometerItems,
         ]);
     }
 

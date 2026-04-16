@@ -59,6 +59,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'statsLabel' => __('admin/settings/plugins/index.permissions.audit_stats'),
         'matchesLabel' => __('admin/settings/plugins/index.permissions.audit_matches'),
         'mismatchesLabel' => __('admin/settings/plugins/index.permissions.audit_mismatches'),
+        'cspCompatibilityLabel' => __('admin/settings/plugins/show.sections.csp_compatibility'),
+        'presetCompatibilityLabel' => __('admin/settings/plugins/show.sections.preset_compatibility'),
         'healthIssueTypeLabels' => [
             'signature_unsigned' => __('admin/settings/plugins/index.permissions.health_issue_signature_unsigned'),
             'signature_invalid' => __('admin/settings/plugins/index.permissions.health_issue_signature_invalid'),
