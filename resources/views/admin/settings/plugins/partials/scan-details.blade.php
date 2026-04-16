@@ -9,14 +9,58 @@ it under the terms of the GNU Affero General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-スキャン詳細（バッジモーダル互換）パーシャル
-permission-modal と詳細ページで共有
+スキャン結果の統一表示パーシャル
+詳細ページとバッジモーダルで共有。以下の順序で表示:
+1. 健全性スコア
+2. 指摘事項（減点理由）
+3. 監査警告（不一致時）
+4. CSP診断警告（非準拠時）
+5. 署名ステータス
+6. 権限定義の整合性
+7. CSPモード互換性バロメータ
+8. セキュリティプリセット互換性バロメータ
+9. 権限情報（カテゴリ一覧）
 --}}
 
-<div class="text-left">
-    {{-- 監査警告 --}}
+<div class="text-left space-y-4">
+    {{-- 1. 健全性スコア --}}
+    @if($card['healthScore'] !== null)
+        <div class="p-4 rounded-lg {{ $card['healthStatusColors'][$card['healthStatus']] ?? 'bg-gray-100 dark:bg-gray-700' }}">
+            <div class="flex items-center gap-3">
+                <div class="text-3xl font-bold">{{ $card['healthScore'] }}<span class="text-sm font-normal">/100</span></div>
+                <div>
+                    <div class="font-medium">
+                        <i class="fas {{ $card['healthStatusIcons'][$card['healthStatus']] ?? 'fa-question-circle' }} mr-1"></i>
+                        {{ __('admin/settings/plugins/index.permissions.'.($card['healthStatusLabelKeys'][$card['healthStatus']] ?? 'health_status_not_verified')) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- 2. 健全性の指摘事項（減点理由） --}}
+    @if(! empty($card['healthIssues']))
+        <div>
+            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ __('admin/settings/plugins/show.scan.issues') }}</h4>
+            <ul class="space-y-2">
+                @foreach($card['healthIssues'] as $issue)
+                    <li class="flex items-start gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded text-sm">
+                        <i class="fas fa-exclamation-triangle text-yellow-500 mt-0.5"></i>
+                        <div class="flex-1">
+                            <span class="text-gray-700 dark:text-gray-200">{{ $issue['description'] ?? ($issue['type'] ?? '') }}</span>
+                            @if(! empty($issue['deduction']))
+                                <span class="text-xs text-yellow-700 dark:text-yellow-300 ml-1">({{ $issue['deduction'] }})</span>
+                            @endif
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    {{-- 3. 監査警告（不一致検出時） --}}
     @if($card['hasMismatches'])
-        <div class="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+        <div class="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
             <h5 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">
                 <i class="fas fa-code-branch mr-1"></i>
                 {{ __('admin/settings/plugins/index.permissions.audit_mismatch_title') }}
@@ -37,9 +81,9 @@ permission-modal と詳細ページで共有
         </div>
     @endif
 
-    {{-- CSP診断警告 --}}
+    {{-- 4. CSP診断警告（非準拠時） --}}
     @if($card['cspDiagnostic'] && !($card['cspDiagnostic']['compliant'] ?? true))
-        <div class="mb-4 p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
+        <div class="p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
             <h5 class="text-sm font-semibold text-orange-800 dark:text-orange-200 mb-2">
                 <i class="fas fa-shield-alt mr-1"></i>
                 {{ __('admin/settings/plugins/index.permissions.csp_warning_title') }}
@@ -53,8 +97,8 @@ permission-modal と詳細ページで共有
         </div>
     @endif
 
-    {{-- 署名ステータス --}}
-    <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+    {{-- 5. 署名ステータス --}}
+    <div>
         <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin/settings/plugins/index.permissions.signature_status') }}</h4>
         @if(empty($card['auditedAt']))
             <div class="flex items-center mb-2">
@@ -111,8 +155,8 @@ permission-modal と詳細ページで共有
         @endif
     </div>
 
-    {{-- 権限定義の整合性 --}}
-    <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+    {{-- 6. 権限定義の整合性 --}}
+    <div>
         <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin/settings/plugins/index.permissions.permission_consistency_title') }}</h4>
         @if($card['hasMismatches'])
             <div class="flex items-center">
@@ -146,19 +190,32 @@ permission-modal と詳細ページで共有
         @endif
     </div>
 
-    {{-- 権限情報 --}}
+    {{-- 7. CSP モード互換性バロメータ --}}
+    @if(! empty($card['cspBarometerItems']))
+        <div>
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                <i class="fas fa-shield-alt mr-1 {{ $card['cspTierIconColor'] }}"></i>
+                {{ __('admin/settings/plugins/show.sections.csp_compatibility') }}
+            </h4>
+            <x-ui-barometer :items="$card['cspBarometerItems']" />
+        </div>
+    @endif
+
+    {{-- 8. セキュリティプリセット互換性バロメータ --}}
+    @if(! empty($card['presetBarometerItems']))
+        <div>
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                <i class="fas fa-layer-group mr-1 {{ $card['presetTierIconColor'] }}"></i>
+                {{ __('admin/settings/plugins/show.sections.preset_compatibility') }}
+            </h4>
+            <x-ui-barometer :items="$card['presetBarometerItems']" />
+        </div>
+    @endif
+
+    {{-- 9. 権限情報（カテゴリ一覧 + 確認理由） --}}
     <div>
         <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin/settings/plugins/index.permissions.permission_info') }}</h4>
         @if($card['hasPermissions'])
-            {{-- 健全性レベル表示 --}}
-            <div class="mb-3 flex items-center">
-                <span class="text-sm text-gray-700 dark:text-gray-300 mr-2">{{ __('admin/settings/plugins/index.permissions.health_status') }}:</span>
-                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $card['healthStatusColors'][$card['healthStatus'] ?? 'not_verified'] ?? $card['healthStatusColors']['not_verified'] }}">
-                    <i class="{{ $card['healthStatusIcons'][$card['healthStatus'] ?? 'not_verified'] ?? $card['healthStatusIcons']['not_verified'] }} mr-1"></i>
-                    {{ __('admin/settings/plugins/index.permissions.' . ($card['healthStatusLabelKeys'][$card['healthStatus'] ?? 'not_verified'] ?? 'health_status_not_verified')) }}
-                </span>
-            </div>
-
             {{-- 確認が必要な理由 --}}
             @if(! empty($card['attentionReasons']))
                 <div class="mb-4 p-3 rounded-lg {{ ($card['healthStatus'] ?? 'not_verified') === 'needs_attention' ? 'bg-orange-50 dark:bg-orange-900/20' : (($card['healthStatus'] ?? 'not_verified') === 'advisory' ? 'bg-yellow-50 dark:bg-yellow-900/20' : 'bg-gray-50 dark:bg-gray-800') }}">
