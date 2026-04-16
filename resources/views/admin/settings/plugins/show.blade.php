@@ -32,9 +32,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     {{-- ヘッダー --}}
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-0">
+        <div class="grid grid-cols-1 md:grid-cols-[minmax(280px,_1fr)_2fr] gap-0">
             {{-- サムネイル --}}
-            <div class="relative aspect-video md:aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
+            <div class="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
                 <img
                     src="{{ $card['thumbnailUrl'] }}"
                     alt="{{ $card['name'] }}"
@@ -44,7 +44,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
 
             {{-- 基本情報 --}}
-            <div class="md:col-span-2 p-6 flex flex-col">
+            <div class="p-6 flex flex-col">
                 <div class="flex items-start justify-between gap-3 mb-3">
                     <div class="min-w-0 flex-1">
                         <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">{{ $card['name'] }}</h1>
