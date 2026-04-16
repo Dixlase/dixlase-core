@@ -38,6 +38,8 @@ return [
         'details' => 'Detailed Information',
         'scan_result' => 'Scan Result',
         'scan_details' => 'Scan Details',
+        'csp_compatibility' => 'CSP Mode Compatibility',
+        'preset_compatibility' => 'Security Preset Compatibility',
     ],
 
     // Scan

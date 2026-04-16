@@ -56,11 +56,11 @@ permission-modal と詳細ページで共有
     {{-- 署名ステータス --}}
     <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
         <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin/settings/plugins/index.permissions.signature_status') }}</h4>
-        @if($card['signatureStatus'] === 'valid' || $card['signatureStatus'] === 'pending_verification')
+        @if($card['signatureStatus'] === 'valid')
             <div class="flex items-center mb-2">
-                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $card['badgeColor'] }}">
-                    <i class="{{ $card['badgeIcon'] }} mr-1"></i>
-                    {{ $card['badgeLabel'] }}
+                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    <i class="fas fa-check-circle mr-1"></i>
+                    {{ __('admin/settings/plugins/index.permissions.signature_valid') }}
                 </span>
             </div>
             @if($card['signature']['signed_by'] ?? null)
@@ -68,6 +68,16 @@ permission-modal と詳細ページで共有
                     {{ __('admin/settings/plugins/index.permissions.signed_by') }}: {{ $card['signature']['signed_by'] }}
                 </p>
             @endif
+        @elseif($card['signatureStatus'] === 'pending_verification')
+            <div class="flex items-center mb-2">
+                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                    <i class="fas fa-hourglass-half mr-1"></i>
+                    {{ __('admin/settings/plugins/index.permissions.signature_pending_verification') }}
+                </span>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                {{ __('admin/settings/plugins/index.permissions.signature_pending_verification_info') }}
+            </p>
         @elseif($card['signatureStatus'] === 'invalid')
             <div class="flex items-center mb-2">
                 <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">

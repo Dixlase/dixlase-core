@@ -38,6 +38,8 @@ return [
         'details' => '詳細情報',
         'scan_result' => 'スキャン結果',
         'scan_details' => 'スキャン詳細',
+        'csp_compatibility' => 'CSPモード互換性',
+        'preset_compatibility' => 'セキュリティプリセット互換性',
     ],
 
     // スキャン

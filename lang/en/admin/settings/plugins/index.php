@@ -43,7 +43,7 @@ return [
     'no_plugins' => 'No plugins are installed.',
     'no_plugins_description' => 'Add plugins to extend your site\'s functionality.',
     'add_plugin' => 'Add Plugin',
-    'view_details' => 'View Details',
+    'view_details' => 'Details',
     'uninstalled_description' => 'These plugins have files present but are not yet installed.',
     'buttons' => [],
     'uninstall' => [
@@ -162,6 +162,7 @@ return [
         'signature_unsigned' => 'Unsigned',
         'signature_invalid' => 'Invalid',
         'signature_pending' => 'Pending',
+        'signature_pending_verification' => 'Pending Verification',
         'signature_not_scanned' => 'Unverified',
         // Permission
         'permission_ok' => 'OK',
