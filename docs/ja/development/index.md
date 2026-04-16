@@ -19,6 +19,13 @@ UIコンポーネントの使い方ガイドとスタイリング規約です。
 
 - [コンポーネント](components/)
 
+## リビジョン
+
+共通リビジョン API: Revisionable コントラクト、HasRevisions トレイト、
+RevisionService、差分プレゼンター、Blade コンポーネントの解説。
+
+- [リビジョン](revisions.md)
+
 ## メンバー
 
 ロールベースアクセス制御とパーミッションシステムの設計です。
