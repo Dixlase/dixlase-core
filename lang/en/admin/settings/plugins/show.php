@@ -49,8 +49,10 @@ return [
         'csp' => 'CSP',
         'operation' => 'Operation',
         'issues' => 'Issues Found',
+        'scan' => 'Scan',
         'rescan' => 'Rescan',
         'scanning' => 'Scanning...',
+        'not_scanned_message' => 'This plugin has not been scanned yet. Run a scan to check security and permissions.',
     ],
 
     'last_scanned_at' => 'Last scanned: :date',

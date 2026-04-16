@@ -33,12 +33,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     {{-- ヘッダー --}}
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
         <div class="grid grid-cols-1 md:grid-cols-[minmax(280px,_1fr)_2fr] gap-0">
-            {{-- サムネイル --}}
-            <div class="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
+            {{-- サムネイル（モバイルは 16:9、デスクトップは情報エリアの高さに合わせて埋める） --}}
+            <div class="relative aspect-video md:aspect-auto bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden min-h-[200px]">
                 <img
                     src="{{ $card['thumbnailUrl'] }}"
                     alt="{{ $card['name'] }}"
-                    class="w-full h-full object-cover"
+                    class="w-full h-full object-cover md:absolute md:inset-0"
                     x-on:error="$el.src = '{{ asset('assets/images/plugin-default.svg') }}'; $el.onerror = null;"
                 >
             </div>
@@ -137,67 +137,87 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </dl>
 
                 {{-- アクションボタン --}}
+                {{-- アクションボタン（一覧ページと同じ2段階モーダルフローを使用） --}}
                 <div class="mt-auto flex flex-wrap gap-2">
                     @if($isInstalled)
-                        @if($card['isEnabled'] && $card['settingsUrl'])
-                            <a href="{{ $card['settingsUrl'] }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
-                                <i class="fas fa-cog"></i>{{ __('admin/settings/plugins/show.actions.settings') }}
-                            </a>
-                        @endif
-
-                        @if($card['isEnabled'])
-                            <form method="POST" action="{{ route('admin.settings.plugins.disable', $card['id']) }}" class="inline">
-                                @csrf
-                                <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors">
-                                    <i class="fas fa-pause"></i>{{ __('admin/settings/plugins/show.actions.disable') }}
-                                </button>
-                            </form>
-                        @else
-                            <form method="POST" action="{{ route('admin.settings.plugins.enable', $card['id']) }}" class="inline">
-                                @csrf
-                                <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors">
-                                    <i class="fas fa-play"></i>{{ __('admin/settings/plugins/show.actions.enable') }}
-                                </button>
-                            </form>
-
-                            <form method="POST" action="{{ route('admin.settings.plugins.uninstall', $card['id']) }}" class="inline">
-                                @csrf
-                                <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors">
-                                    <i class="fas fa-trash"></i>{{ __('admin/settings/plugins/show.actions.uninstall') }}
-                                </button>
-                            </form>
-                        @endif
+                        @include('admin.settings.plugins.partials.installed-actions', ['card' => $card])
                     @else
-                        <form method="POST" action="{{ route('admin.settings.plugins.install') }}" class="inline">
-                            @csrf
-                            <input type="hidden" name="directory" value="{{ $card['directory'] }}">
-                            <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors">
-                                <i class="fas fa-download"></i>{{ __('admin/settings/plugins/show.actions.install') }}
-                            </button>
-                        </form>
-
-                        <form method="POST" action="{{ route('admin.settings.plugins.delete') }}" class="inline">
-                            @csrf
-                            <input type="hidden" name="directory" value="{{ $card['directory'] }}">
-                            <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors">
-                                <i class="fas fa-trash"></i>{{ __('admin/settings/plugins/show.actions.delete') }}
-                            </button>
-                        </form>
+                        @include('admin.settings.plugins.partials.uninstalled-actions', ['card' => $card])
                     @endif
                 </div>
+
+                {{-- バッジモーダル（2段階フローでスキャン結果を表示する際に使用） --}}
+                @if($card['permissionSummary'])
+                    @include('admin.settings.plugins.partials.permission-modal', ['card' => $card])
+                @endif
             </div>
         </div>
     </div>
 
-    {{-- スキャン結果（インストール済み・未インストール両方で表示） --}}
-    @if($card['auditedAtFormatted'] || $card['healthScore'] !== null)
-        <section class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+    {{-- スキャン結果（常に表示、未スキャン時もスキャンボタンを提供） --}}
+    <section class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6"
+             x-data="{
+                 scanning: false,
+                 errorMessage: '',
+                 async runScan() {
+                     this.scanning = true;
+                     this.errorMessage = '';
+                     try {
+                         const response = await fetch('{{ route('admin.settings.plugins.audit') }}', {
+                             method: 'POST',
+                             headers: {
+                                 'Content-Type': 'application/json',
+                                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                 'Accept': 'application/json',
+                             },
+                             body: JSON.stringify({ slug: '{{ $card['slug'] }}' }),
+                         });
+                         const data = await response.json();
+                         if (data.success) {
+                             window.location.reload();
+                         } else {
+                             this.errorMessage = data.message || '{{ __('admin/settings/plugins/index.audit.failed') }}';
+                             this.scanning = false;
+                         }
+                     } catch (error) {
+                         this.errorMessage = error.message;
+                         this.scanning = false;
+                     }
+                 }
+             }">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/plugins/show.sections.scan_result') }}</h2>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-0">{{ __('admin/settings/plugins/show.sections.scan_result') }}</h2>
+                    <button
+                        type="button"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                        :disabled="scanning"
+                        @click="runScan()"
+                    >
+                        <i class="fas fa-sync-alt"></i>
+                        <span>{{ empty($card['auditedAt']) ? __('admin/settings/plugins/show.scan.scan') : __('admin/settings/plugins/show.scan.rescan') }}</span>
+                    </button>
+                </div>
                 @if($card['auditedAtFormatted'])
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.last_scanned_at', ['date' => $card['auditedAtFormatted']]) }}</span>
                 @endif
             </div>
+
+            {{-- エラー表示 --}}
+            <template x-if="errorMessage">
+                <div class="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-300">
+                    <i class="fas fa-exclamation-circle mr-1"></i>
+                    <span x-text="errorMessage"></span>
+                </div>
+            </template>
+
+            {{-- 未スキャン時のメッセージ --}}
+            @if(empty($card['auditedAt']))
+                <div class="mb-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-center">
+                    <i class="fas fa-info-circle text-2xl text-gray-400 mb-2"></i>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/settings/plugins/show.scan.not_scanned_message') }}</p>
+                </div>
+            @endif
 
             {{-- 健全性スコア --}}
             @if($card['healthScore'] !== null)
@@ -263,74 +283,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             @endif
 
-            {{-- 再スキャンボタン --}}
-            <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-2"
-                 x-data="{
-                     scanning: false,
-                     errorMessage: '',
-                     async rescan() {
-                         this.scanning = true;
-                         this.errorMessage = '';
-                         try {
-                             const response = await fetch('{{ route('admin.settings.plugins.audit') }}', {
-                                 method: 'POST',
-                                 headers: {
-                                     'Content-Type': 'application/json',
-                                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                     'Accept': 'application/json',
-                                 },
-                                 body: JSON.stringify({ slug: '{{ $card['slug'] }}' }),
-                             });
-                             const data = await response.json();
-                             if (data.success) {
-                                 window.location.reload();
-                             } else {
-                                 this.errorMessage = data.message || '{{ __('admin/settings/plugins/index.audit.failed') }}';
-                                 this.scanning = false;
-                             }
-                         } catch (error) {
-                             this.errorMessage = error.message;
-                             this.scanning = false;
-                         }
-                     }
-                 }">
-                <button
-                    type="button"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
-                    :disabled="scanning"
-                    @click="rescan()"
-                >
-                    <i class="fas fa-sync-alt"></i>{{ __('admin/settings/plugins/show.scan.rescan') }}
-                </button>
-
-                {{-- エラー表示 --}}
-                <template x-if="errorMessage">
-                    <div class="flex items-center gap-1.5 text-sm text-red-600 dark:text-red-400">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span x-text="errorMessage"></span>
-                    </div>
-                </template>
-
-                {{-- スキャン中モーダル --}}
-                <div x-show="scanning" x-cloak
-                     class="fixed inset-0 z-50 overflow-y-auto"
-                     role="dialog"
-                     aria-modal="true"
-                >
-                    <div class="flex items-center justify-center min-h-screen px-4">
-                        <div class="fixed inset-0 bg-black/60 transition-opacity"></div>
-                        <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-md w-full text-center">
-                            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                                <i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i>
-                            </div>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ __('admin/settings/plugins/index.permissions.audit_scanning_title') }}</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">{!! __('admin/settings/plugins/index.permissions.audit_scanning_description') !!}</p>
+            {{-- スキャン中モーダル --}}
+            <div x-show="scanning" x-cloak
+                 class="fixed inset-0 z-50 overflow-y-auto"
+                 role="dialog"
+                 aria-modal="true"
+            >
+                <div class="flex items-center justify-center min-h-screen px-4">
+                    <div class="fixed inset-0 bg-black/60 transition-opacity"></div>
+                    <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-md w-full text-center">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                            <i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i>
                         </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ __('admin/settings/plugins/index.permissions.audit_scanning_title') }}</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">{!! __('admin/settings/plugins/index.permissions.audit_scanning_description') !!}</p>
                     </div>
                 </div>
             </div>
-        </section>
-    @endif
+    </section>
 
     {{-- 戻るボタン --}}
     <div class="mt-6">

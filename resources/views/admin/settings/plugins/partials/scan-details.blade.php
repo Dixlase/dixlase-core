@@ -56,7 +56,17 @@ permission-modal と詳細ページで共有
     {{-- 署名ステータス --}}
     <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
         <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin/settings/plugins/index.permissions.signature_status') }}</h4>
-        @if($card['signatureStatus'] === 'valid')
+        @if(empty($card['auditedAt']))
+            <div class="flex items-center mb-2">
+                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+                    <i class="fas fa-question-circle mr-1"></i>
+                    {{ __('admin/settings/plugins/index.verification.signature_not_scanned') }}
+                </span>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                {{ __('admin/settings/plugins/index.permissions.scan_recommendation') }}
+            </p>
+        @elseif($card['signatureStatus'] === 'valid')
             <div class="flex items-center mb-2">
                 <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                     <i class="fas fa-check-circle mr-1"></i>
