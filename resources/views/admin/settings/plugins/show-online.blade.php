@@ -76,15 +76,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if(! empty($details['author']))
                     <div class="flex gap-3">
                         <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.author') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">
-                            @if(! empty($details['url']))
-                                <a href="{{ $details['url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
-                                    {{ $details['author'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
-                                </a>
-                            @else
-                                {{ $details['author'] }}
-                            @endif
-                        </dd>
+                        <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $details['author'] }}</dd>
                     </div>
                 @endif
 

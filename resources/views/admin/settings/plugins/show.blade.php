@@ -85,15 +85,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @if(! empty($card['authorName']))
                         <div class="flex gap-3">
                             <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.author') }}</dt>
-                            <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">
-                                @if(! empty($rawData['url']))
-                                    <a href="{{ $rawData['url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
-                                        {{ $card['authorName'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
-                                    </a>
-                                @else
-                                    {{ $card['authorName'] }}
-                                @endif
-                            </dd>
+                            <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $card['authorName'] }}</dd>
                         </div>
                     @endif
 
@@ -170,9 +162,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     {{-- スキャン結果（常に表示、未スキャン時もスキャンボタンを提供） --}}
     <section class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-3">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-0">{{ __('admin/settings/plugins/show.sections.scan_result') }}</h2>
+            <div class="flex items-center justify-between gap-3 mb-4">
+                <div class="flex items-center gap-3 leading-none">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white m-0 leading-none">{{ __('admin/settings/plugins/show.sections.scan_result') }}</h2>
                     <x-form-button
                         type="button"
                         :label="empty($card['auditedAt']) ? __('admin/settings/plugins/show.scan.scan') : __('admin/settings/plugins/show.scan.rescan')"
@@ -184,7 +176,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     />
                 </div>
                 @if($card['auditedAtFormatted'])
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.last_scanned_at', ['date' => $card['auditedAtFormatted']]) }}</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 leading-none">{{ __('admin/settings/plugins/show.last_scanned_at', ['date' => $card['auditedAtFormatted']]) }}</span>
                 @endif
             </div>
 
