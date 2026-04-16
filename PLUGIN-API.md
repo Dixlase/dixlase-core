@@ -1,7 +1,7 @@
 # Dixlase CMS Plugin API Boundary
 
 **Version:** dev
-**Last Updated:** 2026-04-16
+**Last Updated:** 2026-04-17
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -58,9 +58,9 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\PluginIntegration\LinkableInterface` | リンク可能なコンテンツの最小契約 |
 | `App\Contracts\PluginIntegration\LinkableProviderInterface` | リンク可能なコンテンツを提供するプラグインの契約 |
 | `App\Contracts\PluginIntegration\MenuProviderInterface` | Contract for plugins that provide navigation menus |
-| `App\Contracts\PluginIntegration\PageMetaProviderInterface` | ページごとのSEOメタ情報の読み書きを提供するインターフェース |
 | `App\Contracts\PluginIntegration\PreviewProviderInterface` | Contract for plugins that provide preview data |
 | `App\Contracts\PluginIntegration\PrivacyPolicyProviderInterface` | プライバシーポリシープロバイダーの契約 |
+| `App\Contracts\PluginIntegration\SeoMetaProviderInterface` | コンテンツ単位のSEOメタ情報の読み書きを提供するインターフェース |
 
 ### 1.3 Plugin Capability Contracts
 
@@ -177,11 +177,11 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\DTO\PluginIntegration\LinkableDTO`
 - `App\DTO\PluginIntegration\MenuDTO`
 - `App\DTO\PluginIntegration\MenuItemDTO`
-- `App\DTO\PluginIntegration\PageMetaDTO`
 - `App\DTO\PluginIntegration\PaginatedResultDTO`
 - `App\DTO\PluginIntegration\PreviewDTO`
 - `App\DTO\PluginIntegration\PreviewFieldDTO`
 - `App\DTO\PluginIntegration\SearchQueryDTO`
+- `App\DTO\PluginIntegration\SeoMetaDTO`
 
 ### 4.10 Plugin DTOs
 

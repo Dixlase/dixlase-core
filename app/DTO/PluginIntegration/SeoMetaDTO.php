@@ -27,15 +27,15 @@ namespace App\DTO\PluginIntegration;
 use JsonSerializable;
 
 /**
- * ページ単位のSEOメタ情報DTO
+ * コンテンツ単位のSEOメタ情報DTO
  *
- * プラグイン生成ページ（固定ページ、リーガルページ等）に紐づく
- * SEOメタタグ・OGP情報を受け渡しするための不変データオブジェクトです。
+ * プラグイン生成ページ（固定ページ、リーガルページ、ブログ記事など）に
+ * 紐づくSEOメタタグ・OGP情報を受け渡しするための不変データオブジェクトです。
  *
  * 現時点の最小フィールド: description, ogpMediaId
  * 将来的にタイトルタグのオーバーライドや keywords 等を追加予定。
  */
-final readonly class PageMetaDTO implements JsonSerializable
+final readonly class SeoMetaDTO implements JsonSerializable
 {
     /**
      * @param  string|null  $description  メタディスクリプション（未設定時はnull）
