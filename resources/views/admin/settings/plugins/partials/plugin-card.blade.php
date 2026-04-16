@@ -85,8 +85,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <p class="text-sm text-gray-400 dark:text-gray-500 italic mb-3">{{ __('common.no_description') }}</p>
         @endif
 
-        {{-- 詳細を開くボタン --}}
-        <div class="mb-3">
+        {{-- 詳細ボタン --}}
+        <div class="mb-3 flex justify-center">
             <x-form-button
                 type="link"
                 :href="route('admin.settings.plugins.show', $card['slug'])"
@@ -94,7 +94,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 variant="secondary"
                 size="xs"
                 icon="fas fa-info-circle"
-                class="w-full justify-center"
+                class="py-2 px-3"
             />
         </div>
 

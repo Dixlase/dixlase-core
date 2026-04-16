@@ -43,7 +43,7 @@ return [
     'no_plugins' => 'プラグインがインストールされていません。',
     'no_plugins_description' => 'プラグインを追加して、サイトの機能を拡張しましょう。',
     'add_plugin' => 'プラグインを追加',
-    'view_details' => '詳細を開く',
+    'view_details' => '詳細',
     'uninstalled_description' => 'これらのプラグインはファイルが存在しますが、まだインストールされていません。',
     'buttons' => [],
     'uninstall' => [
@@ -162,6 +162,7 @@ return [
         'signature_unsigned' => '未署名',
         'signature_invalid' => '署名不一致',
         'signature_pending' => '検証待ち',
+        'signature_pending_verification' => '検証待ち',
         'signature_not_scanned' => '未確認',
         // 権限
         'permission_ok' => 'OK',

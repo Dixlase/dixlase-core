@@ -23,6 +23,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto max-w-5xl">
 
+    {{-- 戻るリンク（上部） --}}
+    <div class="mb-4">
+        <a href="{{ route('admin.settings.plugins.index') }}" class="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+            <i class="fas fa-arrow-left"></i>{{ __('admin/settings/plugins/show.back_to_list') }}
+        </a>
+    </div>
+
     {{-- ヘッダー --}}
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-0">
@@ -229,44 +236,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             @endif
 
-            {{-- 検証ステータス --}}
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                <div class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ __('admin/settings/plugins/show.scan.signature') }}</div>
-                    <div class="text-sm font-medium text-gray-900 dark:text-white">{{ __('admin/settings/plugins/index.verification.signature_'.$card['signatureStatus']) }}</div>
-                </div>
-
-                <div class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ __('admin/settings/plugins/show.scan.permission') }}</div>
-                    <div class="text-sm font-medium text-gray-900 dark:text-white">
-                        @if($card['hasMismatches'])
-                            {{ __('admin/settings/plugins/index.verification.permission_mismatch') }}
-                        @elseif(! $card['hasPermissions'])
-                            {{ __('admin/settings/plugins/index.verification.permission_undefined') }}
-                        @else
-                            {{ __('admin/settings/plugins/index.verification.permission_ok') }}
-                        @endif
-                    </div>
-                </div>
-
-                <div class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ __('admin/settings/plugins/show.scan.csp') }}</div>
-                    <div class="text-sm font-medium text-gray-900 dark:text-white">
-                        {{ __('admin/settings/plugins/index.verification.'.$cspStatusLabelKey) }}
-                    </div>
-                </div>
-
-                <div class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ __('admin/settings/plugins/show.scan.operation') }}</div>
-                    <div class="text-sm font-medium text-gray-900 dark:text-white">
-                        {{ __('admin/settings/plugins/index.operation_status.'.($card['operationStatus']['status'] ?? 'unknown')) }}
-                    </div>
-                </div>
-            </div>
-
-            {{-- 健全性の指摘事項 --}}
+            {{-- 健全性の指摘事項（減点理由） --}}
             @if(! empty($card['healthIssues']))
-                <div class="mt-4 mb-4">
+                <div class="mb-4">
                     <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ __('admin/settings/plugins/show.scan.issues') }}</h3>
                     <ul class="space-y-2">
                         @foreach($card['healthIssues'] as $issue)
@@ -284,12 +256,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             @endif
 
+            {{-- 詳細なスキャン情報（署名ステータス → 権限情報：バッジモーダル互換順序） --}}
+            @if($card['permissionSummary'])
+                <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    @include('admin.settings.plugins.partials.scan-details', ['card' => $card])
+                </div>
+            @endif
+
             {{-- CSP モード互換性バロメータ --}}
             @if(! empty($card['cspBarometerItems']))
-                <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
                         <i class="fas fa-shield-alt mr-1 {{ $card['cspTierIconColor'] }}"></i>
-                        {{ __('admin/settings/plugins/index.badge_labels.csp_full') ?? __('admin/settings/plugins/index.badge_labels.csp') }}
+                        {{ __('admin/settings/plugins/show.sections.csp_compatibility') }}
                     </h3>
                     <x-ui-barometer :items="$card['cspBarometerItems']" />
                 </div>
@@ -300,20 +279,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
                         <i class="fas fa-layer-group mr-1 {{ $card['presetTierIconColor'] }}"></i>
-                        {{ __('admin/settings/plugins/index.badge_labels.preset') }}
+                        {{ __('admin/settings/plugins/show.sections.preset_compatibility') }}
                     </h3>
                     <x-ui-barometer :items="$card['presetBarometerItems']" />
-                </div>
-            @endif
-
-            {{-- 詳細なスキャン情報（バッジモーダル互換） --}}
-            @if($card['permissionSummary'])
-                <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3">
-                        <i class="fas fa-clipboard-list mr-1"></i>
-                        {{ __('admin/settings/plugins/show.sections.scan_details') }}
-                    </h3>
-                    @include('admin.settings.plugins.partials.scan-details', ['card' => $card])
                 </div>
             @endif
 
