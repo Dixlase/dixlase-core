@@ -24,41 +24,41 @@
 
 namespace App\Contracts\PluginIntegration;
 
-use App\DTO\PluginIntegration\PageMetaDTO;
+use App\DTO\PluginIntegration\SeoMetaDTO;
 
 /**
- * ページごとのSEOメタ情報の読み書きを提供するインターフェース
+ * コンテンツ単位のSEOメタ情報の読み書きを提供するインターフェース
  *
  * SEOプラグインが実装を提供し、ページ生成系プラグイン（固定ページ、
- * リーガルページ等）から利用されます。SEOプラグイン未インストール時は
- * この契約の実装はコンテナに登録されないため、呼び出し側は
- * `app()->has(PageMetaProviderInterface::class)` でチェックしてから
- * 解決するか、optional resolution パターンを使用してください。
+ * リーガルページ、ブログ記事など）から利用されます。SEOプラグイン
+ * 未インストール時はこの契約の実装はコンテナに登録されないため、
+ * 呼び出し側は `app()->has(SeoMetaProviderInterface::class)` で
+ * チェックしてから解決するか、optional resolution パターンを使用してください。
  *
  * メタ情報は `(plugin_slug, entity_id)` のペアで一意に識別されます。
  * `plugin_slug` は呼び出し元プラグインのスラッグ（例: `dixlase-pages`）、
  * `entity_id` は各プラグイン内での対象エンティティの識別子
- * （通常はページ等のモデルID）を文字列として渡します。
+ * （通常はコンテンツモデルのID）を文字列として渡します。
  */
-interface PageMetaProviderInterface
+interface SeoMetaProviderInterface
 {
     /**
      * 指定プラグインの指定エンティティのメタ情報を取得
      *
      * @param  string  $pluginSlug  呼び出し元プラグインのスラッグ
      * @param  string  $entityId  対象エンティティのID
-     * @return PageMetaDTO|null 未登録の場合はnull
+     * @return SeoMetaDTO|null 未登録の場合はnull
      */
-    public function getMeta(string $pluginSlug, string $entityId): ?PageMetaDTO;
+    public function getMeta(string $pluginSlug, string $entityId): ?SeoMetaDTO;
 
     /**
      * メタ情報を保存（upsert）
      *
      * @param  string  $pluginSlug  呼び出し元プラグインのスラッグ
      * @param  string  $entityId  対象エンティティのID
-     * @param  PageMetaDTO  $meta  保存するメタ情報
+     * @param  SeoMetaDTO  $meta  保存するメタ情報
      */
-    public function saveMeta(string $pluginSlug, string $entityId, PageMetaDTO $meta): void;
+    public function saveMeta(string $pluginSlug, string $entityId, SeoMetaDTO $meta): void;
 
     /**
      * 単一のメタ情報を削除
