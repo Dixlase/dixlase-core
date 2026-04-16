@@ -101,24 +101,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <dd class="text-gray-900 dark:text-gray-200">{{ $card['license'] }}</dd>
                     @endif
 
-                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.slug') }}</dt>
-                    <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $card['slug'] }}</dd>
-
-                    @if(! empty($rawData['package_name']))
-                        <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.package_name') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $rawData['package_name'] }}</dd>
-                    @endif
-
-                    @if(! empty($rawData['namespace']))
-                        <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.namespace') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $rawData['namespace'] }}</dd>
-                    @endif
-
-                    @if(! empty($card['directory']))
-                        <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.directory') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $card['directory'] }}</dd>
-                    @endif
-
                     @if(! empty($rawData['email']))
                         <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.email') }}</dt>
                         <dd class="text-gray-900 dark:text-gray-200">
@@ -133,6 +115,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 {{ $rawData['url'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
                             </a>
                         </dd>
+                    @endif
+
+                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.slug') }}</dt>
+                    <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $card['slug'] }}</dd>
+
+                    @if(! empty($card['directory']))
+                        <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.directory') }}</dt>
+                        <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $card['directory'] }}</dd>
+                    @endif
+
+                    @if(! empty($rawData['package_name']))
+                        <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.package_name') }}</dt>
+                        <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $rawData['package_name'] }}</dd>
+                    @endif
+
+                    @if(! empty($rawData['namespace']))
+                        <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.namespace') }}</dt>
+                        <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all">{{ $rawData['namespace'] }}</dd>
                     @endif
                 </dl>
 
