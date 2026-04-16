@@ -182,10 +182,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             </div>
                                         </div>
 
-                                        <div class="mt-3">
+                                        <div class="mt-3 flex justify-center">
                                             <button
                                                 type="button"
-                                                class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                                                class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
                                                 :disabled="downloadingSlug !== null"
                                                 @click="download(theme)"
                                             >

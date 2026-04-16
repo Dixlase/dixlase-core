@@ -187,11 +187,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             </div>
                                         </div>
 
-                                        {{-- 詳細リンク --}}
-                                        <div class="mt-3">
+                                        {{-- 詳細ボタン --}}
+                                        <div class="mt-3 flex justify-center">
                                             <a
-                                                :href="'{{ url('/admin/settings/plugins/show-online') }}/' + plugin.slug"
-                                                class="inline-flex items-center gap-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline"
+                                                :href="'{{ route('admin.settings.plugins.show-online', ['slug' => '__SLUG__']) }}'.replace('__SLUG__', plugin.slug)"
+                                                class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                                             >
                                                 <i class="fas fa-info-circle"></i>
                                                 {{ __('admin/settings/plugins/index.view_details') }}
@@ -199,10 +199,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         </div>
 
                                         {{-- ダウンロードボタン --}}
-                                        <div class="mt-3">
+                                        <div class="mt-3 flex justify-center">
                                             <button
                                                 type="button"
-                                                class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                                                class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
                                                 :disabled="downloadingSlug !== null"
                                                 @click="download(plugin)"
                                             >
