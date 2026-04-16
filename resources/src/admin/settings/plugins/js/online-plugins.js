@@ -59,8 +59,19 @@ Alpine.data('onlinePlugins', (config) => ({
 
     download(plugin) {
         if (this.downloadingSlug) return;
-        this.downloadingSlug = plugin.slug;
-        this.downloadingName = plugin.name || plugin.slug;
+
+        // API が想定外の型を返した場合に備え、slug/name を文字列化して防御する
+        const slug = typeof plugin.slug === 'string' ? plugin.slug : '';
+        if (! slug) {
+            return;
+        }
+        this.downloadingSlug = slug;
+        this.downloadingName = typeof plugin.name === 'string' ? plugin.name : slug;
+
+        // 共通モーダルコンポーネントを開く
+        if (typeof window.openModal === 'function') {
+            window.openModal('downloadingPluginModal');
+        }
 
         // hidden form を使って POST リクエストを送信（CSRF 対応）
         const form = document.createElement('form');
@@ -76,7 +87,7 @@ Alpine.data('onlinePlugins', (config) => ({
         const slugInput = document.createElement('input');
         slugInput.type = 'hidden';
         slugInput.name = 'slug';
-        slugInput.value = plugin.slug;
+        slugInput.value = slug;
         form.appendChild(slugInput);
 
         document.body.appendChild(form);

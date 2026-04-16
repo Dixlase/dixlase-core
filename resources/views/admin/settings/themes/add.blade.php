@@ -200,24 +200,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                 </div>
 
-                {{-- ダウンロード中モーダル --}}
-                <div x-show="downloadingSlug !== null" x-cloak
-                     class="fixed inset-0 z-50 overflow-y-auto"
-                     role="dialog"
-                     aria-modal="true"
+                {{-- ダウンロード中モーダル（download() から openModal で呼び出す） --}}
+                <x-ui-modal
+                    id="downloadingThemeModal"
+                    iconType="loading"
+                    :title="__('admin/settings/themes/add.online.downloading_title')"
+                    :dismissible="false"
+                    :hideActions="true"
                 >
-                    <div class="flex items-center justify-center min-h-screen px-4">
-                        <div class="fixed inset-0 bg-black/60 transition-opacity"></div>
-                        <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-md w-full text-center">
-                            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                                <i class="fas fa-spinner fa-spin text-3xl text-indigo-500"></i>
-                            </div>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ __('admin/settings/themes/add.online.downloading_title') }}</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-1" x-text="downloadingName"></p>
-                            <p class="text-xs text-gray-500 dark:text-gray-500">{{ __('admin/settings/themes/add.online.downloading_wait') }}</p>
-                        </div>
+                    <div class="modal-message text-center">
+                        <p class="font-medium" x-text="downloadingName"></p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/themes/add.online.downloading_wait') }}</p>
                     </div>
-                </div>
+                </x-ui-modal>
             </div>
         </div>
     </div>

@@ -112,16 +112,16 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         $thumbnailFile = $manifest['thumbnail'] ?? ($extensionType === 'theme' ? 'screenshot.png' : 'thumbnail.png');
 
         return [
-            'slug' => $manifest['slug'] ?? $slug,
-            'name' => $manifest['name'] ?? ($repo['description'] ?? $slug),
-            'description' => $this->resolveDescription($manifest['description'] ?? null) ?? $repo['description'] ?? null,
-            'version' => $manifest['version'] ?? null,
-            'author' => $manifest['author'] ?? null,
-            'email' => $manifest['email'] ?? null,
-            'url' => $manifest['url'] ?? $manifest['homepage'] ?? null,
-            'license' => $manifest['license'] ?? null,
-            'package_name' => $manifest['package_name'] ?? null,
-            'namespace' => $manifest['namespace'] ?? null,
+            'slug' => $this->resolveString($manifest['slug'] ?? null) ?? $slug,
+            'name' => $this->resolveLocalizedString($manifest['name'] ?? null) ?? ($repo['description'] ?? $slug),
+            'description' => $this->resolveLocalizedString($manifest['description'] ?? null) ?? $repo['description'] ?? null,
+            'version' => $this->resolveString($manifest['version'] ?? null),
+            'author' => $this->resolveString($manifest['author'] ?? null),
+            'email' => $this->resolveString($manifest['email'] ?? null),
+            'url' => $this->resolveString($manifest['url'] ?? $manifest['homepage'] ?? null),
+            'license' => $this->resolveString($manifest['license'] ?? null),
+            'package_name' => $this->resolveString($manifest['package_name'] ?? null),
+            'namespace' => $this->resolveString($manifest['namespace'] ?? null),
             'thumbnail_url' => "https://raw.githubusercontent.com/{$this->owner}/{$repoName}/{$defaultBranch}/{$thumbnailFile}",
             'repository_url' => $repo['html_url'] ?? null,
             'updated_at' => $repo['updated_at'] ?? null,
@@ -361,12 +361,12 @@ class GitHubSourceProvider implements ExtensionSourceInterface
                 $thumbnailFile = $manifest['thumbnail'] ?? ($extensionType === 'theme' ? 'screenshot.png' : 'thumbnail.png');
 
                 $repos[] = [
-                    'slug' => $manifest['slug'] ?? $slug,
-                    'name' => $manifest['name'] ?? ($repo['description'] ?? $slug),
-                    'description' => $this->resolveDescription($manifest['description'] ?? null) ?? $repo['description'] ?? null,
-                    'version' => $manifest['version'] ?? null,
-                    'author' => $manifest['author'] ?? null,
-                    'license' => $manifest['license'] ?? null,
+                    'slug' => $this->resolveString($manifest['slug'] ?? null) ?? $slug,
+                    'name' => $this->resolveLocalizedString($manifest['name'] ?? null) ?? ($repo['description'] ?? $slug),
+                    'description' => $this->resolveLocalizedString($manifest['description'] ?? null) ?? $repo['description'] ?? null,
+                    'version' => $this->resolveString($manifest['version'] ?? null),
+                    'author' => $this->resolveString($manifest['author'] ?? null),
+                    'license' => $this->resolveString($manifest['license'] ?? null),
                     'thumbnail_url' => "https://raw.githubusercontent.com/{$this->owner}/{$name}/{$defaultBranch}/{$thumbnailFile}",
                 ];
             }
@@ -418,21 +418,36 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     }
 
     /**
-     * 多言語対応の description を現在のロケールで解決
+     * 多言語対応の文字列フィールドを現在のロケールで解決する
+     *
+     * 文字列はそのまま返し、連想配列（例: `{ja: "...", en: "..."}`）は現在のロケールで解決する。
+     * 解決不能な値（オブジェクト・数値など）は null を返し、フロントで `[object Object]` として文字列化されるのを防ぐ。
      */
-    protected function resolveDescription(mixed $description): ?string
+    protected function resolveLocalizedString(mixed $value): ?string
     {
-        if (is_string($description)) {
-            return $description;
+        if (is_string($value)) {
+            return $value;
         }
 
-        if (is_array($description)) {
+        if (is_array($value)) {
             $locale = app()->getLocale();
+            $resolved = $value[$locale] ?? $value['en'] ?? $value['ja'] ?? reset($value);
 
-            return $description[$locale] ?? $description['en'] ?? $description['ja'] ?? reset($description) ?: null;
+            return is_string($resolved) ? $resolved : null;
         }
 
         return null;
+    }
+
+    /**
+     * 文字列フィールドを厳密にチェックする（多言語解決は行わない）
+     *
+     * 本来文字列であるべきフィールド（slug, version, license 等）に対して使用する。
+     * 文字列以外が来た場合は null を返す。
+     */
+    protected function resolveString(mixed $value): ?string
+    {
+        return is_string($value) ? $value : null;
     }
 
     /**
