@@ -68,8 +68,11 @@ export function buildUnifiedScanResultHtml(scanData, config) {
         </p>
     `;
 
-    // 統合ボックス: 署名 + 権限整合性 + CSP
-    html += '<div class="rounded-lg border border-gray-200 dark:border-gray-700 mb-3 overflow-hidden">';
+    // 1. 健全性スコア（最上部・大きく表示）
+    html += buildHealthBadgeHtml(scanData, audit, config);
+
+    // 2-4. 統合ボックス: 署名 → 権限整合性 → CSP
+    html += '<div class="rounded-lg border border-gray-200 dark:border-gray-700 mb-3 mt-3 overflow-hidden">';
 
     // 署名サブセクション
     html += buildSignatureSection(audit, signatureLabels, config);
@@ -89,23 +92,20 @@ export function buildUnifiedScanResultHtml(scanData, config) {
 
     html += '</div>';
 
-    // 権限カテゴリ（APIレスポンスのcategoriesから表示）
+    // 5. 権限カテゴリ（最後）
     const categoriesHtml = buildCategoriesSection(scanData.categories, config);
     if (categoriesHtml) {
         html += categoriesHtml;
     }
 
-    // 統計情報
+    // 統計情報（最下部）
     html += `
-        <div class="text-xs text-gray-500 dark:text-gray-400">
+        <div class="text-xs text-gray-500 dark:text-gray-400 mt-3">
             ${config.statsLabel || ''}: ${audit.total_checked || 0} /
             ${config.matchesLabel || ''}: ${audit.matches_count || 0} /
             ${config.mismatchesLabel || ''}: ${(audit.mismatches || []).length}
         </div>
     `;
-
-    // 総合評価（別ボックス）
-    html += buildHealthBadgeHtml(scanData, audit, config);
 
     return html;
 }
