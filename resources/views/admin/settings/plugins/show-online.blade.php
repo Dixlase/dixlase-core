@@ -35,11 +35,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
         <div class="grid grid-cols-1 md:grid-cols-[minmax(280px,_1fr)_2fr] gap-0">
             {{-- サムネイル --}}
-            <div class="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
+            <div class="relative aspect-video md:aspect-auto bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden min-h-[200px]">
                 <img
                     src="{{ $details['thumbnail_url'] ?? asset('assets/images/plugin-default.svg') }}"
                     alt="{{ $details['name'] ?? $details['slug'] }}"
-                    class="w-full h-full object-cover"
+                    class="w-full h-full object-cover md:absolute md:inset-0"
                     x-on:error="$el.src = '{{ asset('assets/images/plugin-default.svg') }}'; $el.onerror = null;"
                 >
             </div>

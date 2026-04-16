@@ -49,8 +49,10 @@ return [
         'csp' => 'CSP',
         'operation' => '動作',
         'issues' => '検出された指摘事項',
+        'scan' => 'スキャン',
         'rescan' => '再スキャン',
         'scanning' => 'スキャン中...',
+        'not_scanned_message' => 'このプラグインはまだスキャンされていません。スキャンを実行してセキュリティと権限を確認してください。',
     ],
 
     'last_scanned_at' => '最終スキャン: :date',
