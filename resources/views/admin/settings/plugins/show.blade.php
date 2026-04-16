@@ -196,70 +196,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             @endif
 
-            {{-- 健全性スコア --}}
-            @if($card['healthScore'] !== null)
-                <div class="mb-4 p-4 rounded-lg {{ $card['healthStatusColors'][$card['healthStatus']] ?? 'bg-gray-100 dark:bg-gray-700' }}">
-                    <div class="flex items-center gap-3">
-                        <div class="text-3xl font-bold">{{ $card['healthScore'] }}<span class="text-sm font-normal">/100</span></div>
-                        <div>
-                            <div class="font-medium">
-                                <i class="fas {{ $card['healthStatusIcons'][$card['healthStatus']] ?? 'fa-question-circle' }} mr-1"></i>
-                                {{ __('admin/settings/plugins/index.permissions.'.($card['healthStatusLabelKeys'][$card['healthStatus']] ?? 'health_status_not_verified')) }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            {{-- スキャン結果（統一順序: 健全性 → 署名 → 権限定義 → CSP → 拡張 → 権限情報） --}}
+            @if($card['permissionSummary'] || $card['healthScore'] !== null)
+                @include('admin.settings.plugins.partials.scan-details', ['card' => $card])
             @endif
-
-            {{-- 健全性の指摘事項（減点理由） --}}
-            @if(! empty($card['healthIssues']))
-                <div class="mb-4">
-                    <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ __('admin/settings/plugins/show.scan.issues') }}</h3>
-                    <ul class="space-y-2">
-                        @foreach($card['healthIssues'] as $issue)
-                            <li class="flex items-start gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded text-sm">
-                                <i class="fas fa-exclamation-triangle text-yellow-500 mt-0.5"></i>
-                                <div class="flex-1">
-                                    <span class="text-gray-700 dark:text-gray-200">{{ $issue['description'] ?? ($issue['type'] ?? '') }}</span>
-                                    @if(! empty($issue['deduction']))
-                                        <span class="text-xs text-yellow-700 dark:text-yellow-300 ml-1">({{ $issue['deduction'] }})</span>
-                                    @endif
-                                </div>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            {{-- 詳細なスキャン情報（署名ステータス → 権限情報：バッジモーダル互換順序） --}}
-            @if($card['permissionSummary'])
-                <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
-                    @include('admin.settings.plugins.partials.scan-details', ['card' => $card])
-                </div>
-            @endif
-
-            {{-- CSP モード互換性バロメータ --}}
-            @if(! empty($card['cspBarometerItems']))
-                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                        <i class="fas fa-shield-alt mr-1 {{ $card['cspTierIconColor'] }}"></i>
-                        {{ __('admin/settings/plugins/show.sections.csp_compatibility') }}
-                    </h3>
-                    <x-ui-barometer :items="$card['cspBarometerItems']" />
-                </div>
-            @endif
-
-            {{-- セキュリティプリセット互換性バロメータ --}}
-            @if(! empty($card['presetBarometerItems']))
-                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                        <i class="fas fa-layer-group mr-1 {{ $card['presetTierIconColor'] }}"></i>
-                        {{ __('admin/settings/plugins/show.sections.preset_compatibility') }}
-                    </h3>
-                    <x-ui-barometer :items="$card['presetBarometerItems']" />
-                </div>
-            @endif
-
     </section>
 
     {{-- 戻るボタン --}}

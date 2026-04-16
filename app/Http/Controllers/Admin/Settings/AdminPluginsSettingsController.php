@@ -349,6 +349,25 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
+     * アクション実行後のリダイレクト先を決定する
+     *
+     * Referer が詳細ページだった場合は詳細ページに戻り、それ以外は一覧ページにリダイレクトする
+     */
+    protected function redirectAfterPluginAction(Request $request, ?string $slug = null): \Illuminate\Http\RedirectResponse
+    {
+        // 詳細ページから来た場合は詳細ページに戻す
+        if ($slug) {
+            $referer = $request->headers->get('referer', '');
+            $showUrl = route('admin.settings.plugins.show', $slug);
+            if (str_starts_with($referer, $showUrl) || str_contains($referer, "/settings/plugins/show/{$slug}")) {
+                return redirect()->route('admin.settings.plugins.show', $slug);
+            }
+        }
+
+        return redirect()->route('admin.settings.plugins.index');
+    }
+
+    /**
      * インストール済みプラグインの詳細ページ
      */
     public function show(string $slug)
@@ -684,7 +703,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 ? __('admin/settings/plugins/index.messages.install_success')
                 : __('admin/settings/plugins/index.messages.install_success_no_plugin');
 
-            return redirect()->route('admin.settings.plugins.index')
+            return $this->redirectAfterPluginAction($request, $plugin?->slug)
                 ->with('success', $successMessage)
                 ->with('installed_plugin_id', $plugin ? $plugin->id : null);
         } catch (\Exception $e) {
@@ -736,7 +755,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 $pluginData
             );
 
-            return redirect()->route('admin.settings.plugins.index')
+            return $this->redirectAfterPluginAction($request, $plugin->slug)
                 ->with('success', __('admin/settings/plugins/index.messages.uninstall_success'));
         } catch (\Exception $e) {
             Log::error('Plugin uninstall failed', [
@@ -748,7 +767,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         }
     }
 
-    public function enable($id)
+    public function enable($id, Request $request)
     {
         $plugin = Plugin::findOrFail($id);
         $translatedName = $this->getPluginName($plugin);
@@ -793,7 +812,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 ]
             );
 
-            return redirect()->route('admin.settings.plugins.index')
+            return $this->redirectAfterPluginAction($request, $plugin->slug)
                 ->with('success', str_replace('{name}', $translatedName, __('admin/settings/plugins/index.enabled.success')));
         } catch (\Exception $e) {
             Log::error('Plugin enable failed', [
@@ -805,7 +824,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         }
     }
 
-    public function disable($id)
+    public function disable($id, Request $request)
     {
         $plugin = Plugin::findOrFail($id);
         $translatedName = $this->getPluginName($plugin);
@@ -828,7 +847,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 ]
             );
 
-            return redirect()->route('admin.settings.plugins.index')
+            return $this->redirectAfterPluginAction($request, $plugin->slug)
                 ->with('success', __('admin/settings/plugins/index.messages.disable_success'));
         } catch (\Exception $e) {
             Log::error('Plugin disable failed', [
