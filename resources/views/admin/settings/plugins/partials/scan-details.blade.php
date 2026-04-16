@@ -70,8 +70,8 @@ permission-modal と詳細ページで共有
             @endif
         @elseif($card['signatureStatus'] === 'pending_verification')
             <div class="flex items-center mb-2">
-                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                    <i class="fas fa-hourglass-half mr-1"></i>
+                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                    <i class="fas fa-clock mr-1"></i>
                     {{ __('admin/settings/plugins/index.permissions.signature_pending_verification') }}
                 </span>
             </div>
