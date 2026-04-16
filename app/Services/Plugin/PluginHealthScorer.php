@@ -117,6 +117,9 @@ class PluginHealthScorer
             $issues = array_merge($issues, $this->evaluateRiskPermissions($permissions, $deductionRules));
         }
 
+        // 7. サプライチェーン防御用メタデータの評価（author_id / publisher_key_id）
+        $issues = array_merge($issues, $this->evaluateSupplyChainMetadata($pluginSlug, $deductionRules));
+
         // 合計スコアの算出
         $totalDeduction = array_sum(array_map(fn (HealthIssue $i) => $i->deduction, $issues));
         $score = max(0, self::BASE_SCORE + $totalDeduction);
@@ -423,6 +426,54 @@ class PluginHealthScorer
                 severity: 'warning',
                 description: 'メールの一括送信権限を使用します。',
                 deduction: $deductionRules['risk_mail_bulk_send'] ?? -3,
+            );
+        }
+
+        return $issues;
+    }
+
+    /**
+     * サプライチェーン防御用メタデータ（author_id / publisher_key_id）の評価
+     *
+     * plugin.json に必要なメタデータが欠落している場合は health_issue として記録する。
+     *
+     * @return array<HealthIssue>
+     */
+    protected function evaluateSupplyChainMetadata(string $pluginSlug, array $deductionRules): array
+    {
+        $issues = [];
+
+        $pluginName = \Illuminate\Support\Str::studly(str_replace('-', '_', $pluginSlug));
+        $pluginJsonPath = base_path("plugins/{$pluginName}/plugin.json");
+
+        if (! \Illuminate\Support\Facades\File::exists($pluginJsonPath)) {
+            return $issues;
+        }
+
+        try {
+            $data = json_decode(\Illuminate\Support\Facades\File::get($pluginJsonPath), true);
+            if (json_last_error() !== JSON_ERROR_NONE || ! is_array($data)) {
+                return $issues;
+            }
+        } catch (\Throwable $e) {
+            return $issues;
+        }
+
+        if (empty($data['author_id'])) {
+            $issues[] = new HealthIssue(
+                type: 'missing_author_id',
+                severity: 'warning',
+                description: 'plugin.json に author_id が定義されていません。',
+                deduction: $deductionRules['missing_author_id'] ?? -3,
+            );
+        }
+
+        if (empty($data['publisher_key_id'])) {
+            $issues[] = new HealthIssue(
+                type: 'missing_publisher_key_id',
+                severity: 'warning',
+                description: 'plugin.json に publisher_key_id が定義されていません。',
+                deduction: $deductionRules['missing_publisher_key_id'] ?? -3,
             );
         }
 

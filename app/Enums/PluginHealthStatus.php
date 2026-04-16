@@ -194,6 +194,10 @@ enum PluginHealthStatus: string
             'signature_expired' => -20,
             'signature_error' => -10,
 
+            // サプライチェーン防御用メタデータ
+            'missing_author_id' => -3,
+            'missing_publisher_key_id' => -3,
+
             // 権限関連
             'permission_undeclared_minor' => -5,
             'permission_undeclared_major' => -15,
