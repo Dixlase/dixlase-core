@@ -962,6 +962,9 @@ class AdminThemesSettingsController extends AdminLoggedInController
             if ($result['success']) {
                 $displayName = $result['name'] ?? $slug;
 
+                // 新規ダウンロード時は過去の監査結果を破棄し未スキャン状態に戻す
+                $this->purgeAuditRecordsForSlug($slug, $result['directory'] ?? null);
+
                 return redirect()->route('admin.settings.themes.index')
                     ->with('success', __('admin/settings/themes/add.messages.download_success', ['name' => $displayName]))
                     ->with('uploaded_theme_directory', $result['directory']);
@@ -978,6 +981,30 @@ class AdminThemesSettingsController extends AdminLoggedInController
             return redirect()->route('admin.settings.themes.add')
                 ->with('error', __('admin/settings/themes/add.messages.download_failed', ['error' => $e->getMessage()]));
         }
+    }
+
+    /**
+     * 指定したテーマの過去の監査レコードを削除する（再ダウンロード時に未スキャン状態へ戻すため）
+     */
+    protected function purgeAuditRecordsForSlug(string $slug, ?string $directory = null): void
+    {
+        $slugsToPurge = [$slug];
+
+        if ($directory) {
+            $themeJsonPath = base_path("themes/{$directory}/theme.json");
+            if (File::exists($themeJsonPath)) {
+                try {
+                    $data = json_decode(File::get($themeJsonPath), true);
+                    if (is_array($data) && isset($data['slug']) && is_string($data['slug']) && $data['slug'] !== '') {
+                        $slugsToPurge[] = $data['slug'];
+                    }
+                } catch (\Exception) {
+                    // ignore
+                }
+            }
+        }
+
+        ThemeAudit::whereIn('theme_slug', array_unique($slugsToPurge))->delete();
     }
 
     /**
