@@ -109,10 +109,13 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         }
 
         $defaultBranch = $repo['default_branch'] ?? 'main';
-        $thumbnailFile = $manifest['thumbnail'] ?? ($extensionType === 'theme' ? 'screenshot.png' : 'thumbnail.png');
+        $thumbnailFile = is_string($manifest['thumbnail'] ?? null)
+            ? $manifest['thumbnail']
+            : ($extensionType === 'theme' ? 'screenshot.png' : 'thumbnail.png');
 
         return [
-            'slug' => $this->resolveString($manifest['slug'] ?? null) ?? $slug,
+            // slug は URL から受け取った値を固定で返す（manifest の slug フィールドは信頼しない）
+            'slug' => $slug,
             'name' => $this->resolveLocalizedString($manifest['name'] ?? null) ?? ($repo['description'] ?? $slug),
             'description' => $this->resolveLocalizedString($manifest['description'] ?? null) ?? $repo['description'] ?? null,
             'version' => $this->resolveString($manifest['version'] ?? null),
@@ -354,14 +357,17 @@ class GitHubSourceProvider implements ExtensionSourceInterface
                     continue;
                 }
 
+                // slug はリポジトリ名から必ず導出する（manifest の slug フィールドは信頼せず固定）
                 $slug = substr($name, strlen($prefix));
                 // plugin.json / theme.json から正式な名前・説明・バージョンを取得
-                $manifest = $this->fetchManifest($name, $extensionType);
+                $manifest = $this->fetchManifest($name, $extensionType) ?? [];
                 $defaultBranch = $repo['default_branch'] ?? 'main';
-                $thumbnailFile = $manifest['thumbnail'] ?? ($extensionType === 'theme' ? 'screenshot.png' : 'thumbnail.png');
+                $thumbnailFile = is_string($manifest['thumbnail'] ?? null)
+                    ? $manifest['thumbnail']
+                    : ($extensionType === 'theme' ? 'screenshot.png' : 'thumbnail.png');
 
                 $repos[] = [
-                    'slug' => $this->resolveString($manifest['slug'] ?? null) ?? $slug,
+                    'slug' => $slug,
                     'name' => $this->resolveLocalizedString($manifest['name'] ?? null) ?? ($repo['description'] ?? $slug),
                     'description' => $this->resolveLocalizedString($manifest['description'] ?? null) ?? $repo['description'] ?? null,
                     'version' => $this->resolveString($manifest['version'] ?? null),

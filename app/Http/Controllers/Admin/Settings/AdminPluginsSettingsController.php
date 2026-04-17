@@ -1237,14 +1237,29 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $diskSlugs = collect($this->getUninstalledPlugins())->pluck('slug')->toArray();
             $excludeSlugs = array_merge($installedSlugs, $diskSlugs);
 
+            // slug が文字列でないエントリは壊れたマニフェストとして除外する（フロント側の [object Object] 問題の根本対策）
             $filtered = array_values(array_filter(
                 $available,
-                fn (array $plugin) => ! in_array($plugin['slug'], $excludeSlugs)
+                function (array $plugin) use ($excludeSlugs) {
+                    if (! isset($plugin['slug']) || ! is_string($plugin['slug']) || $plugin['slug'] === '') {
+                        Log::warning('Online plugin entry dropped due to invalid slug', ['entry' => $plugin]);
+
+                        return false;
+                    }
+
+                    return ! in_array($plugin['slug'], $excludeSlugs);
+                }
             ));
+
+            // 各エントリの文字列フィールドを明示的に再正規化（JS 側で [object Object] になる防御の最終砦）
+            $normalized = array_map(
+                fn (array $plugin) => $this->normalizeExtensionEntry($plugin),
+                $filtered
+            );
 
             return response()->json([
                 'success' => true,
-                'plugins' => $filtered,
+                'plugins' => $normalized,
             ]);
         } catch (\Throwable $e) {
             return response()->json([
@@ -1253,6 +1268,36 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 'plugins' => [],
             ]);
         }
+    }
+
+    /**
+     * API レスポンス用に文字列フィールドを明示的に正規化する（多言語オブジェクト等の漏れを防ぐ）
+     *
+     * @param  array<string, mixed>  $entry
+     * @return array<string, mixed>
+     */
+    protected function normalizeExtensionEntry(array $entry): array
+    {
+        $locale = app()->getLocale();
+        $stringFields = ['slug', 'version', 'author', 'email', 'url', 'license', 'package_name', 'namespace', 'thumbnail_url', 'source_name', 'repository_url', 'updated_at'];
+        foreach ($stringFields as $field) {
+            if (isset($entry[$field]) && ! is_string($entry[$field])) {
+                $entry[$field] = null;
+            }
+        }
+        // name と description は多言語オブジェクトを現在ロケールで解決
+        foreach (['name', 'description'] as $field) {
+            if (isset($entry[$field]) && is_array($entry[$field])) {
+                $entry[$field] = $entry[$field][$locale] ?? $entry[$field]['en'] ?? $entry[$field]['ja'] ?? null;
+                if (! is_string($entry[$field])) {
+                    $entry[$field] = null;
+                }
+            } elseif (isset($entry[$field]) && ! is_string($entry[$field])) {
+                $entry[$field] = null;
+            }
+        }
+
+        return $entry;
     }
 
     /**

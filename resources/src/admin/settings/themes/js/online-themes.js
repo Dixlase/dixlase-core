@@ -96,6 +96,10 @@ Alpine.data('onlineThemes', (config) => ({
         form.appendChild(slugInput);
 
         document.body.appendChild(form);
-        form.submit();
+
+        // 2 回 RAF を挟んでモーダルの開く遷移を描画してからフォーム送信する
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => form.submit());
+        });
     },
 }));
