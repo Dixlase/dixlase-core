@@ -44,77 +44,90 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-slot:badges>
 
         <x-slot:metadata>
-            @if(! empty($details['author']))
-                <div class="grid grid-cols-[6rem_1fr] gap-3">
-                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.author') }}</dt>
-                    <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $details['author'] }}</dd>
-                </div>
+            {{-- リポジトリ・最終更新（説明直下、全幅で表示） --}}
+            @if(! empty($details['repository_url']) || ! empty($details['updated_at']))
+                <dl class="space-y-2 mb-4">
+                    @if(! empty($details['repository_url']))
+                        <div class="flex items-start gap-3">
+                            <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.repository') }}</dt>
+                            <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
+                                <a href="{{ $details['repository_url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
+                                    {{ $details['repository_url'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
+                                </a>
+                            </dd>
+                        </div>
+                    @endif
+
+                    @if(! empty($details['updated_at']))
+                        <div class="flex items-start gap-3">
+                            <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.last_updated') }}</dt>
+                            <dd class="text-gray-900 dark:text-gray-200 min-w-0">{{ \Carbon\Carbon::parse($details['updated_at'])->format('Y/m/d H:i') }}</dd>
+                        </div>
+                    @endif
+                </dl>
             @endif
 
-            @if(! empty($details['license']))
-                <div class="grid grid-cols-[6rem_1fr] gap-3">
-                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.license') }}</dt>
-                    <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $details['license'] }}</dd>
-                </div>
-            @endif
+            {{-- 2カラム：左=連絡先系 / 右=技術情報系 --}}
+            <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                {{-- 左カラム --}}
+                <div class="space-y-2">
+                    @if(! empty($details['author']))
+                        <div class="flex items-start gap-3">
+                            <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.author') }}</dt>
+                            <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $details['author'] }}</dd>
+                        </div>
+                    @endif
 
-            @if(! empty($details['email']))
-                <div class="grid grid-cols-[6rem_1fr] gap-3">
-                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.email') }}</dt>
-                    <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
-                        <a href="mailto:{{ $details['email'] }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">{{ $details['email'] }}</a>
-                    </dd>
-                </div>
-            @endif
+                    @if(! empty($details['email']))
+                        <div class="flex items-start gap-3">
+                            <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.email') }}</dt>
+                            <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
+                                <a href="mailto:{{ $details['email'] }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">{{ $details['email'] }}</a>
+                            </dd>
+                        </div>
+                    @endif
 
-            @if(! empty($details['url']))
-                <div class="grid grid-cols-[6rem_1fr] gap-3">
-                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.url') }}</dt>
-                    <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
-                        <a href="{{ $details['url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
-                            {{ $details['url'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
-                        </a>
-                    </dd>
+                    @if(! empty($details['url']))
+                        <div class="flex items-start gap-3">
+                            <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.url') }}</dt>
+                            <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
+                                <a href="{{ $details['url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
+                                    {{ $details['url'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
+                                </a>
+                            </dd>
+                        </div>
+                    @endif
                 </div>
-            @endif
 
-            <div class="grid grid-cols-[6rem_1fr] gap-3">
-                <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.slug') }}</dt>
-                <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $details['slug'] }}</dd>
-            </div>
+                {{-- 右カラム --}}
+                <div class="space-y-2">
+                    @if(! empty($details['license']))
+                        <div class="flex items-start gap-3">
+                            <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.license') }}</dt>
+                            <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $details['license'] }}</dd>
+                        </div>
+                    @endif
 
-            @if(! empty($details['package_name']))
-                <div class="grid grid-cols-[6rem_1fr] gap-3">
-                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.package_name') }}</dt>
-                    <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $details['package_name'] }}</dd>
+                    @if(! empty($details['namespace']))
+                        <div class="flex items-start gap-3">
+                            <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.namespace') }}</dt>
+                            <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $details['namespace'] }}</dd>
+                        </div>
+                    @endif
+
+                    <div class="flex items-start gap-3">
+                        <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.slug') }}</dt>
+                        <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $details['slug'] }}</dd>
+                    </div>
+
+                    @if(! empty($details['package_name']))
+                        <div class="flex items-start gap-3">
+                            <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.package_name') }}</dt>
+                            <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $details['package_name'] }}</dd>
+                        </div>
+                    @endif
                 </div>
-            @endif
-
-            @if(! empty($details['namespace']))
-                <div class="grid grid-cols-[6rem_1fr] gap-3">
-                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.namespace') }}</dt>
-                    <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $details['namespace'] }}</dd>
-                </div>
-            @endif
-
-            @if(! empty($details['updated_at']))
-                <div class="grid grid-cols-[6rem_1fr] gap-3">
-                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.last_updated') }}</dt>
-                    <dd class="text-gray-900 dark:text-gray-200 min-w-0">{{ \Carbon\Carbon::parse($details['updated_at'])->format('Y/m/d H:i') }}</dd>
-                </div>
-            @endif
-
-            @if(! empty($details['repository_url']))
-                {{-- リポジトリ URL は長いため全幅で表示 --}}
-                <div class="grid grid-cols-[6rem_1fr] gap-3 md:col-span-2">
-                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.repository') }}</dt>
-                    <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
-                        <a href="{{ $details['repository_url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
-                            {{ $details['repository_url'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
-                        </a>
-                    </dd>
-                </div>
-            @endif
+            </dl>
         </x-slot:metadata>
 
         <x-slot:actions>

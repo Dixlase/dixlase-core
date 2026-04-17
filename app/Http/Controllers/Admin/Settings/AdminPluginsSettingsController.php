@@ -1260,13 +1260,19 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      */
     public function downloadFromSource(Request $request, ExtensionSourceManager $manager)
     {
-        // slug の形式チェック。空白・ブラケット・不正な文字列化結果（[object Object]）を弾き、
-        // それ以外の英数字・ハイフン・ドット・アンダースコアの組み合わせを許可する。
         $request->validate([
-            'slug' => ['required', 'string', 'max:100', 'regex:/^[^\s\[\]<>"\'`\/\\\\]+$/'],
+            'slug' => ['required', 'string', 'max:100'],
         ]);
 
         $slug = $request->input('slug');
+
+        // JS 文字列化結果や空白混入を後段で弾き、GitHub API に不正な値が流れないようにする。
+        if (preg_match('/[\s\[\]<>"\'`\/\\\\]/', $slug)) {
+            Log::warning('Plugin download rejected: invalid slug characters', ['slug' => $slug]);
+
+            return redirect()->route('admin.settings.plugins.add')
+                ->with('error', __('admin/settings/plugins/add.messages.download_failed', ['error' => 'Invalid slug']));
+        }
 
         try {
             // ソースから ZIP をダウンロード

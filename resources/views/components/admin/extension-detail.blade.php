@@ -61,10 +61,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
 
         @isset($metadata)
-            {{-- メタ情報（2カラム表示で横幅を活用） --}}
-            <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm mb-4">
+            {{-- メタ情報（構造は各ビューに委ねる） --}}
+            <div class="text-sm mb-4">
                 {{ $metadata }}
-            </dl>
+            </div>
         @endisset
 
         @isset($actions)
