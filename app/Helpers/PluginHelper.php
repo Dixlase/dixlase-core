@@ -128,6 +128,67 @@ class PluginHelper
     }
 
     /**
+     * 指定スラッグの有効化プラグインが指定 capability を宣言しているか
+     *
+     * 「プラグインごとに機能対応を確認したい」用途で使用します。
+     * 例: SEOプラグインが「dixlase-pages が seo-meta に対応宣言しているか」確認
+     *
+     * @param  string  $slug  プラグインスラッグ（例: 'dixlase-pages'）
+     * @param  string  $capability  capability 識別子（例: 'seo-meta'）
+     */
+    public static function pluginHasCapability(string $slug, string $capability): bool
+    {
+        $map = self::getEnabledCapabilityMap();
+
+        return in_array($capability, $map[$slug] ?? [], true);
+    }
+
+    /**
+     * 指定 capability を宣言している有効化プラグインのスラッグ一覧を取得
+     *
+     * SEOプラグインが「SEOメタに対応しているプラグイン一覧」を取得して
+     * 連携設定 UI を自動生成する、といった用途で使用します。
+     *
+     * @param  string  $capability  capability 識別子（例: 'seo-meta'）
+     * @return array<int, string> プラグインスラッグの配列
+     */
+    public static function getEnabledPluginSlugsByCapability(string $capability): array
+    {
+        $map = self::getEnabledCapabilityMap();
+        $slugs = [];
+        foreach ($map as $slug => $capabilities) {
+            if (in_array($capability, $capabilities, true)) {
+                $slugs[] = $slug;
+            }
+        }
+
+        return $slugs;
+    }
+
+    /**
+     * 指定ディレクトリのプラグイン/テーマが宣言する capabilities を取得
+     *
+     * plugins/{directory}/plugin.json または themes/{directory}/plugin.json の
+     * `capabilities` 配列を読み取って返します。
+     * 未宣言や plugin.json 自体がない場合は空配列。
+     *
+     * @return array<int, string>
+     */
+    public static function getCapabilitiesForDirectory(string $directory): array
+    {
+        $map = self::getInstalledCapabilityMap();
+        if (isset($map[$directory])) {
+            return $map[$directory];
+        }
+
+        // プラグインマップになければテーマディレクトリも確認
+        $themePath = base_path("themes/{$directory}");
+        $json = self::readPluginJson($themePath);
+
+        return self::extractCapabilities($json);
+    }
+
+    /**
      * ランタイムキャッシュを破棄（主にテスト用）
      */
     public static function clearCapabilityCache(): void
