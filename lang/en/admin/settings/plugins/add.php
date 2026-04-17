@@ -21,6 +21,8 @@ return [
     'supported_format' => 'Supported format:',
     'upload_limit' => 'Maximum upload file size:',
     'upload_button' => 'Upload and Add',
+    'uploading_title' => 'Uploading Plugin',
+    'uploading_wait' => 'Please wait while the file is being uploaded and extracted.',
     'enable_plugin_text' => 'To enable the plugin,',
     'enable_from_here' => 'click here',
     'enable_instruction' => 'to enable.',

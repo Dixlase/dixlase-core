@@ -62,6 +62,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     enctype="multipart/form-data"
                     class="space-y-6"
                     x-data="{ fileName: '' }"
+                    @submit="
+                        const nameEl = document.getElementById('uploadingThemeName');
+                        if (nameEl) { nameEl.textContent = fileName; }
+                        if (typeof window.openModal === 'function') { window.openModal('uploadingThemeModal'); }
+                    "
                 >
                     @csrf
 
@@ -211,6 +216,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="modal-message text-center">
             <p id="downloadingThemeName" class="font-medium"></p>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/themes/add.online.downloading_wait') }}</p>
+        </div>
+    </x-ui-modal>
+
+    {{-- アップロード中モーダル（ZIP アップロードフォームの @submit から openModal で呼び出す） --}}
+    <x-ui-modal
+        id="uploadingThemeModal"
+        iconType="loading"
+        :title="__('admin/settings/themes/add.uploading_title')"
+        message=""
+        :dismissible="false"
+        :hideActions="true"
+    >
+        <div class="modal-message text-center">
+            <p id="uploadingThemeName" class="font-medium"></p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/themes/add.uploading_wait') }}</p>
         </div>
     </x-ui-modal>
 @endpush

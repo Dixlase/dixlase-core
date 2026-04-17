@@ -21,6 +21,8 @@ return [
     'supported_format' => '対応形式:',
     'upload_limit' => 'アップロード可能ファイルサイズ上限:',
     'upload_button' => 'アップロードして追加',
+    'uploading_title' => 'テーマをアップロード中',
+    'uploading_wait' => 'ファイルのアップロードと展開が完了するまでお待ちください。',
     'name' => 'テーマ名',
 
     // タブ
