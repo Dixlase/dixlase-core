@@ -45,7 +45,8 @@ return [
     'style-src' => ["'self'", "'unsafe-inline'", 'https://fonts.bunny.net', 'https://cdnjs.cloudflare.com', 'https://use.fontawesome.com'],
 
     // 画像
-    'img-src' => ["'self'", 'data:', 'blob:'],
+    // raw.githubusercontent.com: オンライン拡張機能追加画面のサムネイル（GitHub Source Provider）
+    'img-src' => ["'self'", 'data:', 'blob:', 'https://raw.githubusercontent.com'],
 
     // フォント
     // Bunny Fonts、Font Awesome CDN

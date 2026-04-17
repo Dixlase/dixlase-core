@@ -68,7 +68,11 @@ Alpine.data('onlinePlugins', (config) => ({
         this.downloadingSlug = slug;
         this.downloadingName = typeof plugin.name === 'string' ? plugin.name : slug;
 
-        // 共通モーダルコンポーネントを開く
+        // 共通モーダルコンポーネントを開く（Alpine スコープ越えを避けるため DOM に直接書き込む）
+        const nameEl = document.getElementById('downloadingPluginName');
+        if (nameEl) {
+            nameEl.textContent = this.downloadingName;
+        }
         if (typeof window.openModal === 'function') {
             window.openModal('downloadingPluginModal');
         }

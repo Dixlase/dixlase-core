@@ -217,21 +217,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                 </div>
 
-                {{-- ダウンロード中モーダル（download() から openModal で呼び出す） --}}
-                <x-ui-modal
-                    id="downloadingPluginModal"
-                    iconType="loading"
-                    :title="__('admin/settings/plugins/add.online.downloading_title')"
-                    :dismissible="false"
-                    :hideActions="true"
-                >
-                    <div class="modal-message text-center">
-                        <p class="font-medium" x-text="downloadingName"></p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/plugins/add.online.downloading_wait') }}</p>
-                    </div>
-                </x-ui-modal>
             </div>
         </div>
     </div>
 </div>
 @endsection
+
+@push('modals')
+    {{-- ダウンロード中モーダル（onlinePlugins.download() から openModal で呼び出す） --}}
+    <x-ui-modal
+        id="downloadingPluginModal"
+        iconType="loading"
+        :title="__('admin/settings/plugins/add.online.downloading_title')"
+        :dismissible="false"
+        :hideActions="true"
+    >
+        <div class="modal-message text-center">
+            <p id="downloadingPluginName" class="font-medium"></p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/plugins/add.online.downloading_wait') }}</p>
+        </div>
+    </x-ui-modal>
+@endpush
