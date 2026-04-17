@@ -1260,10 +1260,10 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      */
     public function downloadFromSource(Request $request, ExtensionSourceManager $manager)
     {
-        // slug の形式チェック。英数字で始まり、英数字・ドット・アンダースコア・ハイフンのみ許可する。
-        // [object Object] のような JS 文字列化結果や空白文字を弾きつつ、大文字混在のスラッグにも対応する。
+        // slug の形式チェック。空白・ブラケット・不正な文字列化結果（[object Object]）を弾き、
+        // それ以外の英数字・ハイフン・ドット・アンダースコアの組み合わせを許可する。
         $request->validate([
-            'slug' => ['required', 'string', 'max:100', 'regex:/^[A-Za-z0-9][A-Za-z0-9._-]*$/'],
+            'slug' => ['required', 'string', 'max:100', 'regex:/^[^\s\[\]<>"\'`\/\\\\]+$/'],
         ]);
 
         $slug = $request->input('slug');
@@ -1418,14 +1418,21 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      * plugin.json の内容から正しいディレクトリ名を決定する
      *
      * 優先順位:
-     * 1. namespace の最終セグメント（例: Plugins\DixlaseSEO → DixlaseSEO）
-     * 2. package_name の最後の部分（例: plugins/dixlase-seo → dixlase-seo）
-     * 3. null（既存のディレクトリ名を維持）
+     * 1. 明示された package フィールド（マニフェストとインストール先の一意なマッピング）
+     * 2. namespace の最終セグメント（例: Plugins\DixlaseSEO → DixlaseSEO）
+     * 3. package_name の最後の部分（例: plugins/dixlase-seo → dixlase-seo）
+     * 4. null（既存のディレクトリ名を維持）
      */
     protected function resolvePluginDirectoryName(?array $pluginData): ?string
     {
         if (! is_array($pluginData)) {
             return null;
+        }
+
+        // 明示された package フィールドを最優先
+        $package = $pluginData['package'] ?? null;
+        if (is_string($package) && $package !== '') {
+            return $package;
         }
 
         // namespace の最終セグメントを優先
