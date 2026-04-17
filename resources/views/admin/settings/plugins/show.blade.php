@@ -64,22 +64,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <x-slot:metadata>
             @if(! empty($card['authorName']))
-                <div class="flex gap-3">
-                    <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.author') }}</dt>
+                <div class="grid grid-cols-[6rem_1fr] gap-3">
+                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.author') }}</dt>
                     <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $card['authorName'] }}</dd>
                 </div>
             @endif
 
             @if(! empty($card['license']))
-                <div class="flex gap-3">
-                    <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.license') }}</dt>
+                <div class="grid grid-cols-[6rem_1fr] gap-3">
+                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.license') }}</dt>
                     <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $card['license'] }}</dd>
                 </div>
             @endif
 
             @if(! empty($rawData['email']))
-                <div class="flex gap-3">
-                    <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.email') }}</dt>
+                <div class="grid grid-cols-[6rem_1fr] gap-3">
+                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.email') }}</dt>
                     <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
                         <a href="mailto:{{ $rawData['email'] }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">{{ $rawData['email'] }}</a>
                     </dd>
@@ -87,8 +87,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
 
             @if(! empty($rawData['url']))
-                <div class="flex gap-3">
-                    <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.url') }}</dt>
+                <div class="grid grid-cols-[6rem_1fr] gap-3">
+                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.url') }}</dt>
                     <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
                         <a href="{{ $rawData['url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
                             {{ $rawData['url'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
@@ -97,28 +97,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             @endif
 
-            <div class="flex gap-3">
-                <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.slug') }}</dt>
+            <div class="grid grid-cols-[6rem_1fr] gap-3">
+                <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.slug') }}</dt>
                 <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $card['slug'] }}</dd>
             </div>
 
             @if(! empty($card['directory']))
-                <div class="flex gap-3">
-                    <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.directory') }}</dt>
+                <div class="grid grid-cols-[6rem_1fr] gap-3">
+                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.directory') }}</dt>
                     <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $card['directory'] }}</dd>
                 </div>
             @endif
 
             @if(! empty($rawData['package_name']))
-                <div class="flex gap-3">
-                    <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.package_name') }}</dt>
+                <div class="grid grid-cols-[6rem_1fr] gap-3">
+                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.package_name') }}</dt>
                     <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $rawData['package_name'] }}</dd>
                 </div>
             @endif
 
             @if(! empty($rawData['namespace']))
-                <div class="flex gap-3">
-                    <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.namespace') }}</dt>
+                <div class="grid grid-cols-[6rem_1fr] gap-3">
+                    <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.namespace') }}</dt>
                     <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $rawData['namespace'] }}</dd>
                 </div>
             @endif

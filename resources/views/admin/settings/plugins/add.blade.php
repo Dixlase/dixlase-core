@@ -23,15 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto">
 
-    @if ($errors->any())
-        <div class="mb-4 p-4 text-red-800 bg-red-100 border border-red-200 rounded-lg">
-            <ul class="list-disc list-inside">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    {{-- エラー・フラッシュメッセージは管理レイアウトの <x-ui-flash-message /> で表示 --}}
 
     <!-- タブ切り替え -->
     <div x-data="{ activeTab: '{{ old('_tab', 'online') }}' }">
