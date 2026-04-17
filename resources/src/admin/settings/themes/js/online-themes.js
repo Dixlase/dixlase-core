@@ -60,11 +60,15 @@ Alpine.data('onlineThemes', (config) => ({
     download(theme) {
         if (this.downloadingSlug) return;
 
-        // API が想定外の型を返した場合に備え、slug/name を文字列化して防御する
-        const slug = typeof theme.slug === 'string' ? theme.slug : '';
-        if (! slug) {
+        // API が想定外の型を返した場合に備え、slug/name を文字列化して防御する。
+        // サーバ側と同一の正規表現で事前チェックし、不正値は送信しない。
+        const rawSlug = typeof theme.slug === 'string' ? theme.slug.trim() : '';
+        const slugPattern = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+        if (! rawSlug || ! slugPattern.test(rawSlug)) {
+            console.warn('[onlineThemes] invalid slug, skipping download:', theme.slug);
             return;
         }
+        const slug = rawSlug;
         this.downloadingSlug = slug;
         this.downloadingName = typeof theme.name === 'string' ? theme.name : slug;
 

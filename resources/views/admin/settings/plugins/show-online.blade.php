@@ -23,124 +23,103 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto max-w-5xl">
 
-    {{-- ヘッダー --}}
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
-        {{-- サムネイル（16:9 フル幅バナー） --}}
-        <div class="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
-            <img
-                src="{{ $details['thumbnail_url'] ?? asset('assets/images/plugin-default.svg') }}"
-                alt="{{ $details['name'] ?? $details['slug'] }}"
-                class="w-full h-full object-cover"
-                x-data
-                x-on:error="$el.src = '{{ asset('assets/images/plugin-default.svg') }}'; $el.onerror = null;"
-            >
-        </div>
+    {{-- ヘッダー（拡張機能詳細カード共通コンポーネント） --}}
+    <x-admin.extension-detail
+        :title="$details['name'] ?? $details['slug']"
+        :version="$details['version'] ?? null"
+        :description="$details['description'] ?? null"
+        :thumbnail-url="$details['thumbnail_url'] ?? null"
+        :fallback-thumbnail-url="asset('assets/images/plugin-default.svg')"
+    >
+        <x-slot:badges>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                <i class="fas fa-cloud-download-alt mr-1"></i>{{ __('admin/settings/plugins/show.online_badge') }}
+            </span>
 
-        {{-- 基本情報 --}}
-        <div class="p-6 flex flex-col">
-            <div class="flex items-start justify-between gap-3 mb-3">
-                <div class="min-w-0 flex-1">
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">{{ $details['name'] ?? $details['slug'] }}</h1>
-                    <div class="flex items-center gap-2 flex-wrap">
-                        @if(! empty($details['version']))
-                            <span class="inline-block font-mono text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded">v{{ $details['version'] }}</span>
-                        @endif
+            @if(! empty($details['source_name']))
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                    {{ $details['source_name'] }}
+                </span>
+            @endif
+        </x-slot:badges>
 
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                            <i class="fas fa-cloud-download-alt mr-1"></i>{{ __('admin/settings/plugins/show.online_badge') }}
-                        </span>
-
-                        @if(! empty($details['source_name']))
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                                {{ $details['source_name'] }}
-                            </span>
-                        @endif
-                    </div>
+        <x-slot:metadata>
+            @if(! empty($details['author']))
+                <div class="flex gap-3">
+                    <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.author') }}</dt>
+                    <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $details['author'] }}</dd>
                 </div>
-            </div>
-
-            {{-- 短い説明 --}}
-            @if(! empty($details['description']))
-                <p class="text-gray-600 dark:text-gray-300 mb-4">{{ $details['description'] }}</p>
             @endif
 
-            {{-- メタ情報（ダウンロード済みページと同一の2カラム表示） --}}
-            <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm mb-4">
-                @if(! empty($details['author']))
-                    <div class="flex gap-3">
-                        <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.author') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $details['author'] }}</dd>
-                    </div>
-                @endif
-
-                @if(! empty($details['license']))
-                    <div class="flex gap-3">
-                        <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.license') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $details['license'] }}</dd>
-                    </div>
-                @endif
-
-                @if(! empty($details['email']))
-                    <div class="flex gap-3">
-                        <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.email') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
-                            <a href="mailto:{{ $details['email'] }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">{{ $details['email'] }}</a>
-                        </dd>
-                    </div>
-                @endif
-
-                @if(! empty($details['url']))
-                    <div class="flex gap-3">
-                        <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.url') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
-                            <a href="{{ $details['url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
-                                {{ $details['url'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
-                            </a>
-                        </dd>
-                    </div>
-                @endif
-
+            @if(! empty($details['license']))
                 <div class="flex gap-3">
-                    <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.slug') }}</dt>
-                    <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $details['slug'] }}</dd>
+                    <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.license') }}</dt>
+                    <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $details['license'] }}</dd>
                 </div>
+            @endif
 
-                @if(! empty($details['package_name']))
-                    <div class="flex gap-3">
-                        <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.package_name') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $details['package_name'] }}</dd>
-                    </div>
-                @endif
+            @if(! empty($details['email']))
+                <div class="flex gap-3">
+                    <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.email') }}</dt>
+                    <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
+                        <a href="mailto:{{ $details['email'] }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">{{ $details['email'] }}</a>
+                    </dd>
+                </div>
+            @endif
 
-                @if(! empty($details['namespace']))
-                    <div class="flex gap-3">
-                        <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.namespace') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $details['namespace'] }}</dd>
-                    </div>
-                @endif
+            @if(! empty($details['url']))
+                <div class="flex gap-3">
+                    <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.url') }}</dt>
+                    <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
+                        <a href="{{ $details['url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
+                            {{ $details['url'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
+                        </a>
+                    </dd>
+                </div>
+            @endif
 
-                @if(! empty($details['updated_at']))
-                    <div class="flex gap-3">
-                        <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.last_updated') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 min-w-0">{{ \Carbon\Carbon::parse($details['updated_at'])->format('Y/m/d H:i') }}</dd>
-                    </div>
-                @endif
+            <div class="flex gap-3">
+                <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.slug') }}</dt>
+                <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $details['slug'] }}</dd>
+            </div>
 
-                @if(! empty($details['repository_url']))
-                    {{-- リポジトリ URL は長いため全幅で表示 --}}
-                    <div class="flex gap-3 md:col-span-2">
-                        <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.repository') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
-                            <a href="{{ $details['repository_url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
-                                {{ $details['repository_url'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
-                            </a>
-                        </dd>
-                    </div>
-                @endif
-            </dl>
+            @if(! empty($details['package_name']))
+                <div class="flex gap-3">
+                    <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.package_name') }}</dt>
+                    <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $details['package_name'] }}</dd>
+                </div>
+            @endif
 
+            @if(! empty($details['namespace']))
+                <div class="flex gap-3">
+                    <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.namespace') }}</dt>
+                    <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $details['namespace'] }}</dd>
+                </div>
+            @endif
+
+            @if(! empty($details['updated_at']))
+                <div class="flex gap-3">
+                    <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.last_updated') }}</dt>
+                    <dd class="text-gray-900 dark:text-gray-200 min-w-0">{{ \Carbon\Carbon::parse($details['updated_at'])->format('Y/m/d H:i') }}</dd>
+                </div>
+            @endif
+
+            @if(! empty($details['repository_url']))
+                {{-- リポジトリ URL は長いため全幅で表示 --}}
+                <div class="flex gap-3 md:col-span-2">
+                    <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.repository') }}</dt>
+                    <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
+                        <a href="{{ $details['repository_url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
+                            {{ $details['repository_url'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
+                        </a>
+                    </dd>
+                </div>
+            @endif
+        </x-slot:metadata>
+
+        <x-slot:actions>
             {{-- ダウンロードボタン（共通モーダルで進行状態を表示） --}}
-            <form id="download-form" method="POST" action="{{ route('admin.settings.plugins.download-from-source') }}" class="mt-auto">
+            <form id="download-form" method="POST" action="{{ route('admin.settings.plugins.download-from-source') }}">
                 @csrf
                 <input type="hidden" name="slug" value="{{ $details['slug'] }}">
                 <x-form-button
@@ -152,8 +131,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :data-name="$details['name'] ?? $details['slug']"
                 />
             </form>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-admin.extension-detail>
 
     {{-- 戻るボタン --}}
     <div class="mt-6">
@@ -170,6 +149,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         id="downloadingPluginModal"
         iconType="loading"
         :title="__('admin/settings/plugins/add.online.downloading_title')"
+        message=""
         :dismissible="false"
         :hideActions="true"
     >

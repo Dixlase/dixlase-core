@@ -60,11 +60,16 @@ Alpine.data('onlinePlugins', (config) => ({
     download(plugin) {
         if (this.downloadingSlug) return;
 
-        // API が想定外の型を返した場合に備え、slug/name を文字列化して防御する
-        const slug = typeof plugin.slug === 'string' ? plugin.slug : '';
-        if (! slug) {
+        // API が想定外の型を返した場合に備え、slug/name を文字列化して防御する。
+        // サーバ側と同一の正規表現で事前チェックし、不正値は送信しない。
+        const rawSlug = typeof plugin.slug === 'string' ? plugin.slug.trim() : '';
+        const slugPattern = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+        if (! rawSlug || ! slugPattern.test(rawSlug)) {
+            // 診断のためコンソールに出して早期 return
+            console.warn('[onlinePlugins] invalid slug, skipping download:', plugin.slug);
             return;
         }
+        const slug = rawSlug;
         this.downloadingSlug = slug;
         this.downloadingName = typeof plugin.name === 'string' ? plugin.name : slug;
 

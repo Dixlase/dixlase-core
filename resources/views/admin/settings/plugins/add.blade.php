@@ -229,6 +229,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         id="downloadingPluginModal"
         iconType="loading"
         :title="__('admin/settings/plugins/add.online.downloading_title')"
+        message=""
         :dismissible="false"
         :hideActions="true"
     >
