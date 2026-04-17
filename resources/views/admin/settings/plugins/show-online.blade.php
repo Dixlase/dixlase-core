@@ -21,15 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-<div class="mx-auto max-w-5xl"
-     x-data="{
-         downloading: false,
-         download() {
-             this.downloading = true;
-             document.getElementById('download-form').submit();
-         }
-     }"
->
+<div class="mx-auto max-w-5xl">
 
     {{-- ヘッダー --}}
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
@@ -39,6 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 src="{{ $details['thumbnail_url'] ?? asset('assets/images/plugin-default.svg') }}"
                 alt="{{ $details['name'] ?? $details['slug'] }}"
                 class="w-full h-full object-cover"
+                x-data
                 x-on:error="$el.src = '{{ asset('assets/images/plugin-default.svg') }}'; $el.onerror = null;"
             >
         </div>
@@ -71,7 +64,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p class="text-gray-600 dark:text-gray-300 mb-4">{{ $details['description'] }}</p>
             @endif
 
-            {{-- メタ情報（2カラム表示） --}}
+            {{-- メタ情報（ダウンロード済みページと同一の2カラム表示） --}}
             <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm mb-4">
                 @if(! empty($details['author']))
                     <div class="flex gap-3">
@@ -107,24 +100,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                 @endif
 
-                @if(! empty($details['repository_url']))
-                    <div class="flex gap-3">
-                        <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.repository') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
-                            <a href="{{ $details['repository_url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
-                                {{ $details['repository_url'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
-                            </a>
-                        </dd>
-                    </div>
-                @endif
-
-                @if(! empty($details['updated_at']))
-                    <div class="flex gap-3">
-                        <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.last_updated') }}</dt>
-                        <dd class="text-gray-900 dark:text-gray-200 min-w-0">{{ \Carbon\Carbon::parse($details['updated_at'])->format('Y/m/d H:i') }}</dd>
-                    </div>
-                @endif
-
                 <div class="flex gap-3">
                     <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.slug') }}</dt>
                     <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $details['slug'] }}</dd>
@@ -143,29 +118,40 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <dd class="text-gray-900 dark:text-gray-200 font-mono text-xs break-all min-w-0">{{ $details['namespace'] }}</dd>
                     </div>
                 @endif
+
+                @if(! empty($details['updated_at']))
+                    <div class="flex gap-3">
+                        <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.last_updated') }}</dt>
+                        <dd class="text-gray-900 dark:text-gray-200 min-w-0">{{ \Carbon\Carbon::parse($details['updated_at'])->format('Y/m/d H:i') }}</dd>
+                    </div>
+                @endif
+
+                @if(! empty($details['repository_url']))
+                    {{-- リポジトリ URL は長いため全幅で表示 --}}
+                    <div class="flex gap-3 md:col-span-2">
+                        <dt class="text-gray-500 dark:text-gray-400 min-w-[6rem] flex-shrink-0">{{ __('admin/settings/plugins/show.repository') }}</dt>
+                        <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-all">
+                            <a href="{{ $details['repository_url'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
+                                {{ $details['repository_url'] }} <i class="fas fa-external-link-alt text-[10px]"></i>
+                            </a>
+                        </dd>
+                    </div>
+                @endif
             </dl>
 
-            {{-- ダウンロードボタン --}}
-            <div class="mt-auto">
-                <form id="download-form" method="POST" action="{{ route('admin.settings.plugins.download-from-source') }}">
-                    @csrf
-                    <input type="hidden" name="slug" value="{{ $details['slug'] }}">
-                    <button
-                        type="button"
-                        class="inline-flex items-center gap-1.5 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
-                        :disabled="downloading"
-                        @click="download()"
-                    >
-                        <template x-if="downloading">
-                            <i class="fas fa-spinner fa-spin"></i>
-                        </template>
-                        <template x-if="! downloading">
-                            <i class="fas fa-download"></i>
-                        </template>
-                        <span x-text="downloading ? '{{ __('admin/settings/plugins/add.online.downloading') }}' : '{{ __('admin/settings/plugins/add.online.download') }}'"></span>
-                    </button>
-                </form>
-            </div>
+            {{-- ダウンロードボタン（共通モーダルで進行状態を表示） --}}
+            <form id="download-form" method="POST" action="{{ route('admin.settings.plugins.download-from-source') }}" class="mt-auto">
+                @csrf
+                <input type="hidden" name="slug" value="{{ $details['slug'] }}">
+                <x-form-button
+                    type="button"
+                    :label="__('admin/settings/plugins/add.online.download')"
+                    variant="primary"
+                    icon="fas fa-download"
+                    class="download-trigger-btn"
+                    :data-name="$details['name'] ?? $details['slug']"
+                />
+            </form>
         </div>
     </div>
 
@@ -177,3 +163,46 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 </div>
 @endsection
+
+@push('modals')
+    {{-- ダウンロード中モーダル（ダウンロードボタンクリック時に openModal で開く） --}}
+    <x-ui-modal
+        id="downloadingPluginModal"
+        iconType="loading"
+        :title="__('admin/settings/plugins/add.online.downloading_title')"
+        :dismissible="false"
+        :hideActions="true"
+    >
+        <div class="modal-message text-center">
+            <p id="downloadingPluginName" class="font-medium"></p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/plugins/add.online.downloading_wait') }}</p>
+        </div>
+    </x-ui-modal>
+@endpush
+
+@push('scripts')
+    <script @cspNonce>
+        (function () {
+            const btn = document.querySelector('.download-trigger-btn');
+            const form = document.getElementById('download-form');
+            if (! btn || ! form) {
+                return;
+            }
+            btn.addEventListener('click', function () {
+                if (btn.disabled) {
+                    return;
+                }
+                btn.disabled = true;
+                const name = btn.dataset.name || '';
+                const nameEl = document.getElementById('downloadingPluginName');
+                if (nameEl) {
+                    nameEl.textContent = name;
+                }
+                if (typeof window.openModal === 'function') {
+                    window.openModal('downloadingPluginModal');
+                }
+                form.submit();
+            });
+        })();
+    </script>
+@endpush
