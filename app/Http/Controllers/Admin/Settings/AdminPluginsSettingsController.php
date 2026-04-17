@@ -1264,15 +1264,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             'slug' => ['required', 'string', 'max:100'],
         ]);
 
-        $slug = $request->input('slug');
-
-        // JS 文字列化結果や空白混入を後段で弾き、GitHub API に不正な値が流れないようにする。
-        if (preg_match('/[\s\[\]<>"\'`\/\\\\]/', $slug)) {
-            Log::warning('Plugin download rejected: invalid slug characters', ['slug' => $slug]);
-
-            return redirect()->route('admin.settings.plugins.add')
-                ->with('error', __('admin/settings/plugins/add.messages.download_failed', ['error' => 'Invalid slug']));
-        }
+        $slug = trim((string) $request->input('slug'));
 
         try {
             // ソースから ZIP をダウンロード

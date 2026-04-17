@@ -30,7 +30,7 @@ return [
     'namespace' => 'Namespace',
     'directory' => 'Directory',
     'email' => 'Email',
-    'url' => 'Website',
+    'url' => 'URL',
 
     // Sections
     'sections' => [
