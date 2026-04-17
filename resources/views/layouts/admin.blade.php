@@ -254,6 +254,42 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
         @stack('modals')
 
+        {{-- CSRF セッション切れ時の共通モーダル（fetch が 419 を返すと自動で開く） --}}
+        <script @cspNonce>
+            window.csrfErrorTranslations = {
+                title: @json(__('common.csrf.title')),
+                message: @json(__('common.csrf.message')),
+                reload: @json(__('common.csrf.reload')),
+            };
+        </script>
+        <x-ui-modal
+            id="csrfErrorModal"
+            :title="__('common.csrf.title')"
+            iconType="warning"
+            :dismissible="false"
+        >
+            <p class="text-sm text-gray-700 dark:text-gray-300 text-center">{{ __('common.csrf.message') }}</p>
+            <x-slot:footer>
+                <x-form-button
+                    type="button"
+                    variant="primary"
+                    icon="fas fa-sync-alt"
+                    :label="__('common.csrf.reload')"
+                    id="csrfErrorReloadBtn"
+                />
+            </x-slot:footer>
+        </x-ui-modal>
+        <script @cspNonce>
+            document.addEventListener('DOMContentLoaded', function () {
+                const btn = document.getElementById('csrfErrorReloadBtn');
+                if (btn) {
+                    btn.addEventListener('click', function () {
+                        window.location.reload();
+                    });
+                }
+            });
+        </script>
+
         {{-- Page-specific styles --}}
         @hasSection('styles')
             @yield('styles')

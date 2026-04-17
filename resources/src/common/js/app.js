@@ -28,6 +28,7 @@ import '../../components/js/form-email';
 import '../../components/js/form-password-tools';
 import '../../components/js/ui-notification';
 import '../../components/js/ui-modal';
+import '../../components/js/csrf-error-handler';
 import '../../components/js/ui-tooltip';
 import '../../components/js/ui-pagination-controls';
 import '../../components/js/ui-admin-bar';
