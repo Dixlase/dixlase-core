@@ -21,6 +21,8 @@ return [
     'supported_format' => '対応形式:',
     'upload_limit' => 'アップロード可能ファイルサイズ上限:',
     'upload_button' => 'アップロードして追加',
+    'uploading_title' => 'プラグインをアップロード中',
+    'uploading_wait' => 'ファイルのアップロードと展開が完了するまでお待ちください。',
     'enable_plugin_text' => 'プラグインを有効化する場合は',
     'enable_from_here' => 'こちら',
     'enable_instruction' => 'から有効化してください。',

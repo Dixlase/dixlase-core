@@ -62,6 +62,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     enctype="multipart/form-data"
                     class="space-y-6"
                     x-data="{ fileName: '' }"
+                    @submit="
+                        const nameEl = document.getElementById('uploadingPluginName');
+                        if (nameEl) { nameEl.textContent = fileName; }
+                        if (typeof window.openModal === 'function') { window.openModal('uploadingPluginModal'); }
+                    "
                 >
                     @csrf
 
@@ -228,6 +233,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="modal-message text-center">
             <p id="downloadingPluginName" class="font-medium"></p>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/plugins/add.online.downloading_wait') }}</p>
+        </div>
+    </x-ui-modal>
+
+    {{-- アップロード中モーダル（ZIP アップロードフォームの @submit から openModal で呼び出す） --}}
+    <x-ui-modal
+        id="uploadingPluginModal"
+        iconType="loading"
+        :title="__('admin/settings/plugins/add.uploading_title')"
+        message=""
+        :dismissible="false"
+        :hideActions="true"
+    >
+        <div class="modal-message text-center">
+            <p id="uploadingPluginName" class="font-medium"></p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/plugins/add.uploading_wait') }}</p>
         </div>
     </x-ui-modal>
 @endpush

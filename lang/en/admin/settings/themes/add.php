@@ -21,6 +21,8 @@ return [
     'supported_format' => 'Supported format:',
     'upload_limit' => 'Maximum upload file size:',
     'upload_button' => 'Upload and Add',
+    'uploading_title' => 'Uploading Theme',
+    'uploading_wait' => 'Please wait while the file is being uploaded and extracted.',
     'name' => 'Theme Name',
 
     // Tabs
