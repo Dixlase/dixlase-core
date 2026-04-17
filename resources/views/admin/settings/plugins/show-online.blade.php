@@ -67,14 +67,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </dl>
             @endif
 
-            {{-- 2カラム：左=連絡先系 / 右=技術情報系 --}}
+            {{-- 2カラム：左=人/権利系 / 右=技術識別子系 --}}
             <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                {{-- 左カラム --}}
+                {{-- 左カラム: 作者 → ライセンス → Email → URL --}}
                 <div class="space-y-2">
                     @if(! empty($details['author']))
                         <div class="flex items-start gap-3">
                             <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.author') }}</dt>
                             <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $details['author'] }}</dd>
+                        </div>
+                    @endif
+
+                    @if(! empty($details['license']))
+                        <div class="flex items-start gap-3">
+                            <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.license') }}</dt>
+                            <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $details['license'] }}</dd>
                         </div>
                     @endif
 
@@ -99,15 +106,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endif
                 </div>
 
-                {{-- 右カラム --}}
+                {{-- 右カラム: 名前空間 → スラッグ → パッケージ名 --}}
                 <div class="space-y-2">
-                    @if(! empty($details['license']))
-                        <div class="flex items-start gap-3">
-                            <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.license') }}</dt>
-                            <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $details['license'] }}</dd>
-                        </div>
-                    @endif
-
                     @if(! empty($details['namespace']))
                         <div class="flex items-start gap-3">
                             <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.namespace') }}</dt>

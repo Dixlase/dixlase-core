@@ -29,8 +29,8 @@ return [
     'package_name' => 'パッケージ名',
     'namespace' => '名前空間',
     'directory' => 'ディレクトリ',
-    'email' => 'メールアドレス',
-    'url' => 'ウェブサイト',
+    'email' => 'Email',
+    'url' => 'URL',
 
     // セクション
     'sections' => [

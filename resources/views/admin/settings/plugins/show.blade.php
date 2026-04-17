@@ -64,12 +64,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <x-slot:metadata>
             <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                {{-- 左カラム: 連絡先系 --}}
+                {{-- 左カラム: 作者 → ライセンス → Email → URL --}}
                 <div class="space-y-2">
                     @if(! empty($card['authorName']))
                         <div class="flex items-start gap-3">
                             <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.author') }}</dt>
                             <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $card['authorName'] }}</dd>
+                        </div>
+                    @endif
+
+                    @if(! empty($card['license']))
+                        <div class="flex items-start gap-3">
+                            <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.license') }}</dt>
+                            <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $card['license'] }}</dd>
                         </div>
                     @endif
 
@@ -94,15 +101,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endif
                 </div>
 
-                {{-- 右カラム: 技術情報系 --}}
+                {{-- 右カラム: 名前空間 → スラッグ → パッケージ名 → ディレクトリ --}}
                 <div class="space-y-2">
-                    @if(! empty($card['license']))
-                        <div class="flex items-start gap-3">
-                            <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.license') }}</dt>
-                            <dd class="text-gray-900 dark:text-gray-200 min-w-0 break-words">{{ $card['license'] }}</dd>
-                        </div>
-                    @endif
-
                     @if(! empty($rawData['namespace']))
                         <div class="flex items-start gap-3">
                             <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.namespace') }}</dt>
