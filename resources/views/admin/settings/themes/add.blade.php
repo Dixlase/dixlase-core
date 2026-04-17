@@ -212,6 +212,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         id="downloadingThemeModal"
         iconType="loading"
         :title="__('admin/settings/themes/add.online.downloading_title')"
+        message=""
         :dismissible="false"
         :hideActions="true"
     >
