@@ -92,6 +92,11 @@ jobs:
               [ -f .env ] && docker exec compose-php-1 chown www-data:www-data /var/www/apps/$SITE/.env
               docker exec compose-php-1 chmod -R 777 /var/www/apps/$SITE/storage /var/www/apps/$SITE/bootstrap/cache
 
+              # 6-b. public ディレクトリを www-data が書き込めるようにする（インストーラの権限チェック対応）
+              # deploy ユーザーは www-data グループに所属していないため、
+              # chgrp の代わりに "other" への write 権限付与で対応
+              chmod o+w public 2>/dev/null || true
+
               # 7. キャッシュクリア（コンテナ内で実行してパス不一致を防ぐ）
               if [ -f artisan ]; then
                 docker exec compose-php-1 php /var/www/apps/$SITE/artisan config:clear
