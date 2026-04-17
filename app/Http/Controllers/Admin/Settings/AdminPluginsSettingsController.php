@@ -510,115 +510,52 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         // ZIPファイルを一時保存
         $file = $request->file('plugin_file');
         $fileName = $file->getClientOriginalName();
-        $tempPath = storage_path('app/temp/plugins/'.$fileName);
-        $file->move(storage_path('app/temp/plugins'), $fileName);
+        $tempDir = storage_path('app/temp/plugins');
+        File::ensureDirectoryExists($tempDir);
+        $tempPath = $tempDir.'/'.$fileName;
+        $file->move($tempDir, $fileName);
 
-        // ZIP展開
-        $zip = new ZipArchive();
-        if ($zip->open($tempPath) === true) {
-            try {
-                // プラグインフォルダ名取得（ZIP内の最初のディレクトリ）
-                $pluginDir = null;
-                $dirs = [];
+        try {
+            // ソースダウンロードと同じ共通処理で展開・配置・ディレクトリ名解決
+            $result = $this->extractAndPlacePlugin($tempPath);
 
-                for ($i = 0; $i < $zip->numFiles; $i++) {
-                    $entry = $zip->getNameIndex($i);
-                    if ($entry !== false) {
-                        $pathParts = explode('/', $entry);
-                        if (! empty($pathParts[0])) {
-                            $dirs[] = $pathParts[0];
-                        }
-                    }
-                }
-
-                $dirs = array_unique($dirs);
-                $pluginDir = reset($dirs);
-
-                if (! $pluginDir) {
-                    $zip->close();
-                    File::delete($tempPath);
-
-                    return redirect()->route('admin.settings.plugins.add')
-                        ->with('error', __('admin/settings/plugins/add.messages.no_valid_directory'));
-                }
-
-                $destinationPath = base_path('plugins/'.$pluginDir);
-
-                // プラグインフォルダが既に存在しているか確認
-                if (File::exists($destinationPath)) {
-                    $zip->close();
-                    File::delete($tempPath);
-
-                    return redirect()->route('admin.settings.plugins.add')
-                        ->with('error', __('admin/settings/plugins/add.messages.directory_exists', ['directory' => $pluginDir]));
-                }
-
-                // ZIPを解凍
-                $zip->extractTo(base_path('plugins'));
-                $zip->close();
-                File::delete($tempPath);
-
-                // composer.jsonの存在確認
-                $composerPath = base_path("plugins/{$pluginDir}/composer.json");
-                if (! File::exists($composerPath)) {
-                    File::deleteDirectory($destinationPath);
-
-                    return redirect()->route('admin.settings.plugins.add')
-                        ->with('error', __('admin/settings/plugins/add.messages.composer_not_found'));
-                }
-
-                // .git/info/excludeにプラグインの除外ルールを追加
-                GitExcludeHelper::addPluginExclusion($pluginDir);
-
-                // .gitignoreにプラグインの除外ルールを追加
-                GitIgnoreHelper::addPluginExclusion($pluginDir);
-
-                // composer.local.jsonを更新
-                ComposerLocalHelper::syncAutoload();
-
-                // アップロード後に自動監査を実行
-                $pluginJsonPath = base_path("plugins/{$pluginDir}/plugin.json");
-                if (File::exists($pluginJsonPath)) {
-                    try {
-                        $pluginData = json_decode(File::get($pluginJsonPath), true);
-                        $pluginSlug = $pluginData['slug'] ?? Str::slug($pluginDir);
-                        $this->runPluginAudit($pluginSlug);
-                    } catch (\Exception $e) {
-                        Log::warning('Auto-audit after upload failed', [
-                            'directory' => $pluginDir,
-                            'error' => $e->getMessage(),
-                        ]);
-                    }
-                }
-
-                return redirect()->route('admin.settings.plugins.index')
-                    ->with('success', __('admin/settings/plugins/add.messages.upload_success'))
-                    ->with('uploaded_plugin_directory', $pluginDir);
-            } catch (\Exception $e) {
-                // 例外発生時にクリーンアップ
-                if (isset($destinationPath) && File::exists($destinationPath)) {
-                    File::deleteDirectory($destinationPath);
-                }
-                if (File::exists($tempPath)) {
-                    File::delete($tempPath);
-                }
-                Log::error('Plugin upload failed', [
-                    'directory' => $pluginDir ?? 'unknown',
-                    'error' => $e->getMessage(),
-                ]);
-
+            if (! $result['success']) {
                 return redirect()->route('admin.settings.plugins.add')
-                    ->with('error', __('admin/settings/plugins/add.messages.upload_failed', ['error' => $e->getMessage()]));
+                    ->with('error', $result['error'] ?? __('admin/settings/plugins/add.messages.zip_extract_failed'));
             }
-        }
 
-        // ZIP展開失敗
-        if (File::exists($tempPath)) {
-            File::delete($tempPath);
-        }
+            $pluginDir = $result['directory'];
 
-        return redirect()->route('admin.settings.plugins.add')
-            ->with('error', __('admin/settings/plugins/add.messages.zip_extract_failed'));
+            // 新規配置時は過去の監査結果を破棄し未スキャン状態に戻す（plugin.json の slug を利用）
+            $pluginJsonPath = base_path("plugins/{$pluginDir}/plugin.json");
+            $slugFromManifest = null;
+            if (File::exists($pluginJsonPath)) {
+                try {
+                    $pluginData = json_decode(File::get($pluginJsonPath), true);
+                    if (is_array($pluginData) && isset($pluginData['slug']) && is_string($pluginData['slug'])) {
+                        $slugFromManifest = $pluginData['slug'];
+                    }
+                } catch (\Exception) {
+                    // ignore
+                }
+            }
+            $this->purgeAuditRecordsForSlug($slugFromManifest ?? Str::slug($pluginDir), $pluginDir);
+
+            return redirect()->route('admin.settings.plugins.index')
+                ->with('success', __('admin/settings/plugins/add.messages.upload_success'))
+                ->with('uploaded_plugin_directory', $pluginDir);
+        } catch (\Throwable $e) {
+            if (File::exists($tempPath)) {
+                File::delete($tempPath);
+            }
+            Log::error('Plugin upload failed', [
+                'file' => $fileName,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('admin.settings.plugins.add')
+                ->with('error', __('admin/settings/plugins/add.messages.upload_failed', ['error' => $e->getMessage()]));
+        }
     }
 
     /**

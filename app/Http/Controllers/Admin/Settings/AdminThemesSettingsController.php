@@ -322,89 +322,53 @@ class AdminThemesSettingsController extends AdminLoggedInController
      */
     public function upload(AdminThemeUploadRequest $request)
     {
-        $zip = new \ZipArchive();
         $uploadedFile = $request->file('theme');
-        $themeDirectory = resource_path('views/themes/');
+        $fileName = $uploadedFile->getClientOriginalName();
+        $tempDir = storage_path('app/temp/themes');
+        File::ensureDirectoryExists($tempDir);
+        $tempPath = $tempDir.'/'.$fileName;
+        $uploadedFile->move($tempDir, $fileName);
 
-        // ZIPファイル名からディレクトリ名を生成
-        $originalName = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
-        $directoryName = Str::slug($originalName);
-        $themePath = $themeDirectory.$directoryName;
+        try {
+            // ソースダウンロードと同じ共通処理で展開・配置・ディレクトリ名解決
+            $result = $this->extractAndPlaceTheme($tempPath);
 
-        if (is_dir($themePath)) {
-            return redirect()->route('admin.settings.themes.add')
-                ->with('error', "テーマディレクトリ '{$directoryName}' がすでに存在します。");
-        }
-
-        if ($zip->open($uploadedFile->path()) === true) {
-            try {
-                // ZIP内の最初のディレクトリ名を取得
-                $extractedRootDir = null;
-                for ($i = 0; $i < $zip->numFiles; $i++) {
-                    $stat = $zip->statIndex($i);
-                    $filename = $stat['name'];
-
-                    if (strpos($filename, '/') !== false) {
-                        $extractedRootDir = explode('/', $filename)[0];
-                        break;
-                    }
-                }
-
-                if (! $extractedRootDir) {
-                    return redirect()->route('admin.settings.themes.add')
-                        ->with('error', 'ZIPファイルに有効なディレクトリが含まれていません。');
-                }
-
-                // ZIPを解凍
-                $zip->extractTo($themeDirectory);
-                $zip->close();
-
-                // 解凍されたディレクトリのパス
-                $extractedDirPath = $themeDirectory.'/'.$extractedRootDir;
-                $renamedDirPath = $themeDirectory.'/'.$directoryName;
-
-                // 解凍されたディレクトリをリネーム
-                if (is_dir($extractedDirPath) && basename($extractedDirPath) !== $directoryName) {
-                    File::move($extractedDirPath, $renamedDirPath);
-                }
-
-                // theme.jsonの存在確認
-                $themeJsonPath = $renamedDirPath.'/theme.json';
-                if (! file_exists($themeJsonPath)) {
-                    File::deleteDirectory($renamedDirPath);
-
-                    return redirect()->route('admin.settings.themes.add')
-                        ->with('error', 'theme.json が見つかりません。');
-                }
-
-                // .git/info/excludeにテーマの除外ルールを追加
-                GitExcludeHelper::addThemeExclusion($directoryName);
-
-                // .gitignoreにテーマの除外ルールを追加
-                GitIgnoreHelper::addThemeExclusion($directoryName);
-
-                // composer.local.jsonを更新
-                ComposerLocalHelper::syncAutoload();
-
-                return redirect()->route('admin.settings.themes.index')
-                    ->with('success', 'テーマのアップロードが完了しました。一覧からインストールしてください。')
-                    ->with('uploaded_theme_directory', $directoryName);
-            } catch (\Exception $e) {
-                // 例外発生時にディレクトリを削除
-                if (isset($renamedDirPath) && is_dir($renamedDirPath)) {
-                    File::deleteDirectory($renamedDirPath);
-                }
-                Log::error('Theme upload failed', [
-                    'directory' => $directoryName,
-                    'error' => $e->getMessage(),
-                ]);
-
+            if (! $result['success']) {
                 return redirect()->route('admin.settings.themes.add')
-                    ->with('error', 'テーマのアップロードに失敗しました: '.$e->getMessage());
+                    ->with('error', $result['error'] ?? 'ZIPファイルの解凍に失敗しました。');
             }
-        } else {
+
+            $themeDir = $result['directory'];
+
+            // 新規配置時は過去の監査結果を破棄し未スキャン状態に戻す
+            $themeJsonPath = base_path("themes/{$themeDir}/theme.json");
+            $slugFromManifest = null;
+            if (File::exists($themeJsonPath)) {
+                try {
+                    $themeData = json_decode(File::get($themeJsonPath), true);
+                    if (is_array($themeData) && isset($themeData['slug']) && is_string($themeData['slug'])) {
+                        $slugFromManifest = $themeData['slug'];
+                    }
+                } catch (\Exception) {
+                    // ignore
+                }
+            }
+            $this->purgeAuditRecordsForSlug($slugFromManifest ?? Str::slug($themeDir), $themeDir);
+
+            return redirect()->route('admin.settings.themes.index')
+                ->with('success', 'テーマのアップロードが完了しました。一覧からインストールしてください。')
+                ->with('uploaded_theme_directory', $themeDir);
+        } catch (\Throwable $e) {
+            if (File::exists($tempPath)) {
+                File::delete($tempPath);
+            }
+            Log::error('Theme upload failed', [
+                'file' => $fileName,
+                'error' => $e->getMessage(),
+            ]);
+
             return redirect()->route('admin.settings.themes.add')
-                ->with('error', 'ZIPファイルの解凍に失敗しました。');
+                ->with('error', 'テーマのアップロードに失敗しました: '.$e->getMessage());
         }
     }
 
