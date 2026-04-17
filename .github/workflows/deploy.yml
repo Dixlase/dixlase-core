@@ -92,6 +92,13 @@ jobs:
               [ -f .env ] && docker exec compose-php-1 chown www-data:www-data /var/www/apps/$SITE/.env
               docker exec compose-php-1 chmod -R 777 /var/www/apps/$SITE/storage /var/www/apps/$SITE/bootstrap/cache
 
+              # 6-b. public/ ディレクトリのグループを www-data に戻す
+              # 手順1の chown -R 1001:1001 で www-data グループ設定が消えるため、毎回再適用
+              # deploy ユーザーは www-data グループのメンバーなので両者が書き込み可能
+              docker exec compose-php-1 chgrp -R www-data /var/www/apps/$SITE/public
+              docker exec compose-php-1 chmod -R g+w /var/www/apps/$SITE/public
+              docker exec compose-php-1 find /var/www/apps/$SITE/public -type d -exec chmod g+s {} +
+
               # 7. キャッシュクリア（コンテナ内で実行してパス不一致を防ぐ）
               if [ -f artisan ]; then
                 docker exec compose-php-1 php /var/www/apps/$SITE/artisan config:clear
