@@ -55,6 +55,13 @@ return [
     'cancel' => 'Cancel',
     'confirm' => 'Confirm',
 
+    // CSRF / Session Expired
+    'csrf' => [
+        'title' => 'Session Expired',
+        'message' => 'Your session has expired due to inactivity. Please reload the page and try again.',
+        'reload' => 'Reload Page',
+    ],
+
     // Form Operations
     'submit' => 'Submit',
     'send' => 'Send',
