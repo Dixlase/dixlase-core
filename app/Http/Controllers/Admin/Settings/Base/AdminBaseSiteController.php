@@ -61,11 +61,10 @@ class AdminBaseSiteController extends AdminLoggedInController
             return [$key => $locale['name']];
         })->toArray();
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.base.site');
-        $this->viewParams['seoPluginEnabled'] = \App\Helpers\PluginHelper::isEnabled('dixlase-seo');
-        // プラグインファイルが追加されているか（プラグインマスターで操作可能な状態か）を判定
-        // ディレクトリ存在 または DBレコード存在のいずれかがあればプラグインマスターに遷移させる
-        $this->viewParams['seoPluginFilesPresent'] = is_dir(base_path('plugins/DixlaseSEO'))
-            || \App\Models\Plugin::where('slug', 'dixlase-seo')->exists();
+        // capability ベースの検出に変更（サードパーティSEOプラグインにも対応）
+        // プラグインは plugin.json で `"capabilities": ["seo"]` を宣言することで認識される
+        $this->viewParams['seoPluginEnabled'] = \App\Helpers\PluginHelper::hasCapability('seo');
+        $this->viewParams['seoPluginFilesPresent'] = \App\Helpers\PluginHelper::hasCapabilityInAnyInstalled('seo');
 
         return view('admin.settings.base.site', $this->viewParams);
     }

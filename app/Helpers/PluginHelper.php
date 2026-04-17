@@ -71,6 +71,166 @@ class PluginHelper
     }
 
     /**
+     * 有効化プラグインの capability 情報のランタイムキャッシュ
+     *
+     * @var array<string, array<int, string>>|null [slug => [capability, ...]]
+     */
+    private static ?array $enabledCapabilityCache = null;
+
+    /**
+     * ファイル存在プラグイン（有効化問わず）の capability 情報のランタイムキャッシュ
+     *
+     * @var array<string, array<int, string>>|null [directory => [capability, ...]]
+     */
+    private static ?array $installedCapabilityCache = null;
+
+    /**
+     * 有効化されているプラグインのうち、指定 capability を宣言するものがあるか
+     *
+     * plugin.json の `capabilities` 配列（例: ["seo", "backup"]）を走査します。
+     * capabilities 未定義のプラグインは無視されます。
+     *
+     * @param  string  $capability  capability 識別子（例: 'seo'）
+     */
+    public static function hasCapability(string $capability): bool
+    {
+        $map = self::getEnabledCapabilityMap();
+
+        foreach ($map as $capabilities) {
+            if (in_array($capability, $capabilities, true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * ファイルが追加されている（ディレクトリ存在）プラグインに、
+     * 指定 capability を宣言するものがあるか
+     *
+     * 有効化されていなくても plugin.json さえあれば検出します。
+     * 「追加済みだが未有効化」のプラグインを案内したい場合などに使用。
+     *
+     * @param  string  $capability  capability 識別子
+     */
+    public static function hasCapabilityInAnyInstalled(string $capability): bool
+    {
+        $map = self::getInstalledCapabilityMap();
+
+        foreach ($map as $capabilities) {
+            if (in_array($capability, $capabilities, true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * ランタイムキャッシュを破棄（主にテスト用）
+     */
+    public static function clearCapabilityCache(): void
+    {
+        self::$enabledCapabilityCache = null;
+        self::$installedCapabilityCache = null;
+    }
+
+    /**
+     * 有効化プラグインの capability マップを取得
+     *
+     * @return array<string, array<int, string>>
+     */
+    private static function getEnabledCapabilityMap(): array
+    {
+        if (self::$enabledCapabilityCache !== null) {
+            return self::$enabledCapabilityCache;
+        }
+
+        $map = [];
+        foreach (self::getEnabledPlugins() as $plugin) {
+            $json = self::readPluginJson(self::getPluginPath($plugin->directory));
+            $map[$plugin->slug] = self::extractCapabilities($json);
+        }
+
+        return self::$enabledCapabilityCache = $map;
+    }
+
+    /**
+     * ファイル存在プラグインの capability マップを取得
+     *
+     * @return array<string, array<int, string>>
+     */
+    private static function getInstalledCapabilityMap(): array
+    {
+        if (self::$installedCapabilityCache !== null) {
+            return self::$installedCapabilityCache;
+        }
+
+        $map = [];
+        $pluginsDir = base_path('plugins');
+        if (! File::isDirectory($pluginsDir)) {
+            return self::$installedCapabilityCache = $map;
+        }
+
+        foreach (File::directories($pluginsDir) as $dir) {
+            $json = self::readPluginJson($dir);
+            if ($json === null) {
+                continue;
+            }
+            $map[basename($dir)] = self::extractCapabilities($json);
+        }
+
+        return self::$installedCapabilityCache = $map;
+    }
+
+    /**
+     * plugin.json を読み取る
+     *
+     * @return array<string, mixed>|null
+     */
+    private static function readPluginJson(string $pluginPath): ?array
+    {
+        $jsonPath = $pluginPath.'/plugin.json';
+        if (! File::exists($jsonPath)) {
+            return null;
+        }
+
+        try {
+            $data = json_decode(File::get($jsonPath), true, 512, JSON_THROW_ON_ERROR);
+
+            return is_array($data) ? $data : null;
+        } catch (\JsonException $e) {
+            Log::warning('PluginHelper: Failed to parse plugin.json', [
+                'path' => $jsonPath,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * plugin.json から capabilities を抽出
+     *
+     * @param  array<string, mixed>|null  $json
+     * @return array<int, string>
+     */
+    private static function extractCapabilities(?array $json): array
+    {
+        if ($json === null) {
+            return [];
+        }
+
+        $capabilities = $json['capabilities'] ?? [];
+        if (! is_array($capabilities)) {
+            return [];
+        }
+
+        return array_values(array_filter($capabilities, 'is_string'));
+    }
+
+    /**
      * プラグインのパスを取得
      *
      * @param  string  $directory  プラグインのディレクトリ名
