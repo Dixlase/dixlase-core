@@ -879,14 +879,29 @@ class AdminThemesSettingsController extends AdminLoggedInController
             $diskSlugs = collect($this->getUninstalledThemes())->pluck('slug')->toArray();
             $excludeSlugs = array_merge($installedSlugs, $diskSlugs);
 
+            // slug が文字列でないエントリは壊れたマニフェストとして除外する
             $filtered = array_values(array_filter(
                 $available,
-                fn (array $theme) => ! in_array($theme['slug'], $excludeSlugs)
+                function (array $theme) use ($excludeSlugs) {
+                    if (! isset($theme['slug']) || ! is_string($theme['slug']) || $theme['slug'] === '') {
+                        Log::warning('Online theme entry dropped due to invalid slug', ['entry' => $theme]);
+
+                        return false;
+                    }
+
+                    return ! in_array($theme['slug'], $excludeSlugs);
+                }
             ));
+
+            // 文字列フィールドを API レスポンス時点で正規化
+            $normalized = array_map(
+                fn (array $theme) => $this->normalizeExtensionEntry($theme),
+                $filtered
+            );
 
             return response()->json([
                 'success' => true,
-                'themes' => $filtered,
+                'themes' => $normalized,
             ]);
         } catch (\Throwable $e) {
             return response()->json([
@@ -895,6 +910,35 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 'themes' => [],
             ]);
         }
+    }
+
+    /**
+     * API レスポンス用に文字列フィールドを明示的に正規化する
+     *
+     * @param  array<string, mixed>  $entry
+     * @return array<string, mixed>
+     */
+    protected function normalizeExtensionEntry(array $entry): array
+    {
+        $locale = app()->getLocale();
+        $stringFields = ['slug', 'version', 'author', 'email', 'url', 'license', 'package_name', 'namespace', 'thumbnail_url', 'source_name', 'repository_url', 'updated_at'];
+        foreach ($stringFields as $field) {
+            if (isset($entry[$field]) && ! is_string($entry[$field])) {
+                $entry[$field] = null;
+            }
+        }
+        foreach (['name', 'description'] as $field) {
+            if (isset($entry[$field]) && is_array($entry[$field])) {
+                $entry[$field] = $entry[$field][$locale] ?? $entry[$field]['en'] ?? $entry[$field]['ja'] ?? null;
+                if (! is_string($entry[$field])) {
+                    $entry[$field] = null;
+                }
+            } elseif (isset($entry[$field]) && ! is_string($entry[$field])) {
+                $entry[$field] = null;
+            }
+        }
+
+        return $entry;
     }
 
     /**

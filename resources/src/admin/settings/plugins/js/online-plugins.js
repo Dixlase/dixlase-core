@@ -79,7 +79,7 @@ Alpine.data('onlinePlugins', (config) => ({
             window.openModal('downloadingPluginModal');
         }
 
-        // hidden form を使って POST リクエストを送信（CSRF 対応）
+        // hidden form を構築して送信。モーダルが確実に描画されるよう次フレームで submit する
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = config.downloadUrl;
@@ -97,6 +97,10 @@ Alpine.data('onlinePlugins', (config) => ({
         form.appendChild(slugInput);
 
         document.body.appendChild(form);
-        form.submit();
+
+        // 2 回 RAF を挟んでモーダルの開く遷移を描画してからフォーム送信する
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => form.submit());
+        });
     },
 }));
