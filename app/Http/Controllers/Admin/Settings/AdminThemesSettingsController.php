@@ -902,8 +902,9 @@ class AdminThemesSettingsController extends AdminLoggedInController
      */
     public function downloadFromSource(Request $request, \App\Services\Extension\ExtensionSourceManager $manager)
     {
+        // 厳密な slug 形式チェック（[object Object] 等の不正値を明示的に弾く）
         $request->validate([
-            'slug' => 'required|string|max:100',
+            'slug' => ['required', 'string', 'max:100', 'regex:/^[a-z0-9][a-z0-9-]*$/'],
         ]);
 
         $slug = $request->input('slug');
