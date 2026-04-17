@@ -1321,6 +1321,9 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             if ($result['success']) {
                 $displayName = $result['name'] ?? $slug;
 
+                // 新規ダウンロード時は過去の監査結果を破棄し未スキャン状態に戻す
+                $this->purgeAuditRecordsForSlug($slug, $result['directory'] ?? null);
+
                 return redirect()->route('admin.settings.plugins.index')
                     ->with('success', __('admin/settings/plugins/add.messages.download_success', ['name' => $displayName]))
                     ->with('uploaded_plugin_directory', $result['directory']);
@@ -1337,6 +1340,31 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             return redirect()->route('admin.settings.plugins.add')
                 ->with('error', __('admin/settings/plugins/add.messages.download_failed', ['error' => $e->getMessage()]));
         }
+    }
+
+    /**
+     * 指定したプラグインの過去の監査レコードを削除する（再ダウンロード時に未スキャン状態へ戻すため）
+     */
+    protected function purgeAuditRecordsForSlug(string $slug, ?string $directory = null): void
+    {
+        $slugsToPurge = [$slug];
+
+        // plugin.json の slug がリクエストの slug と異なる場合に備えて追加
+        if ($directory) {
+            $pluginJsonPath = base_path("plugins/{$directory}/plugin.json");
+            if (File::exists($pluginJsonPath)) {
+                try {
+                    $data = json_decode(File::get($pluginJsonPath), true);
+                    if (is_array($data) && isset($data['slug']) && is_string($data['slug']) && $data['slug'] !== '') {
+                        $slugsToPurge[] = $data['slug'];
+                    }
+                } catch (\Exception) {
+                    // ignore
+                }
+            }
+        }
+
+        PluginAudit::whereIn('plugin_slug', array_unique($slugsToPurge))->delete();
     }
 
     /**
