@@ -1607,7 +1607,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
             $plugin->update([
                 'author_id' => $data['author_id'] ?? null,
-                'publisher_key_id' => $data['publisher_key_id'] ?? null,
+                'authority_key_id' => $data['authority_key_id'] ?? null,
                 'signing_key_id' => $data['signing']['key_id'] ?? null,
                 'installation_method' => $installationMethod,
                 'installed_from_url' => $sourceUrl,

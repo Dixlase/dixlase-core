@@ -196,7 +196,7 @@ enum PluginHealthStatus: string
 
             // サプライチェーン防御用メタデータ
             'missing_author_id' => -3,
-            'missing_publisher_key_id' => -3,
+            'missing_authority_key_id' => -3,
 
             // 権限関連
             'permission_undeclared_minor' => -5,

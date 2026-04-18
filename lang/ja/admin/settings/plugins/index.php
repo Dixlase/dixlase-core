@@ -297,6 +297,11 @@ return [
         'no_plugin_name' => 'プラグイン名なし',
     ],
 
+    'capabilities' => [
+        'title' => '提供機能',
+        'description' => 'このプラグインが提供する機能の宣言です。コアや他プラグインがこの宣言を参照して機能を検出します。',
+    ],
+
     'permissions' => [
         'health_status' => '健全性',
         'health_healthy' => '良好',
@@ -406,7 +411,7 @@ return [
         'health_issue_signature_unsigned' => '署名: 未署名',
         'health_issue_signature_invalid' => '署名: 無効',
         'health_issue_missing_author_id' => 'メタデータ: author_id 未定義',
-        'health_issue_missing_publisher_key_id' => 'メタデータ: publisher_key_id 未定義',
+        'health_issue_missing_authority_key_id' => 'メタデータ: authority_key_id 未定義',
         'health_issue_permission_undefined' => '権限: 未定義',
         'health_issue_permission_undeclared_minor' => '権限: 未宣言の使用（軽微）',
         'health_issue_permission_undeclared_major' => '権限: 未宣言の使用（重大）',

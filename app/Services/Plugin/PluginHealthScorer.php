@@ -117,7 +117,7 @@ class PluginHealthScorer
             $issues = array_merge($issues, $this->evaluateRiskPermissions($permissions, $deductionRules));
         }
 
-        // 7. サプライチェーン防御用メタデータの評価（author_id / publisher_key_id）
+        // 7. サプライチェーン防御用メタデータの評価（author_id / authority_key_id）
         $issues = array_merge($issues, $this->evaluateSupplyChainMetadata($pluginSlug, $deductionRules));
 
         // 合計スコアの算出
@@ -433,7 +433,7 @@ class PluginHealthScorer
     }
 
     /**
-     * サプライチェーン防御用メタデータ（author_id / publisher_key_id）の評価
+     * サプライチェーン防御用メタデータ（author_id / authority_key_id）の評価
      *
      * plugin.json に必要なメタデータが欠落している場合は health_issue として記録する。
      *
@@ -468,12 +468,12 @@ class PluginHealthScorer
             );
         }
 
-        if (empty($data['publisher_key_id'])) {
+        if (empty($data['authority_key_id'])) {
             $issues[] = new HealthIssue(
-                type: 'missing_publisher_key_id',
+                type: 'missing_authority_key_id',
                 severity: 'warning',
-                description: 'plugin.json に publisher_key_id が定義されていません。',
-                deduction: $deductionRules['missing_publisher_key_id'] ?? -3,
+                description: 'plugin.json に authority_key_id が定義されていません。',
+                deduction: $deductionRules['missing_authority_key_id'] ?? -3,
             );
         }
 

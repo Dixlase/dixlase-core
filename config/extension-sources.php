@@ -30,7 +30,7 @@ return [
 
     // 新規プラグイン・テーマ作成時のデフォルト値（dls:make:plugin / dls:make:theme）
     'default_author_id' => env('DIXLASE_DEFAULT_AUTHOR_ID', ''),
-    'default_publisher_key_id' => env('DIXLASE_DEFAULT_PUBLISHER_KEY_ID', 'dixlase-authority-2026'),
+    'default_authority_key_id' => env('DIXLASE_DEFAULT_AUTHORITY_KEY_ID', 'dixlase-authority-2026'),
 
     // Preset source definitions (hardcoded official sources)
     'presets' => [

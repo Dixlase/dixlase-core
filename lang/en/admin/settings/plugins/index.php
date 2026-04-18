@@ -297,6 +297,11 @@ return [
         'no_plugin_name' => 'No plugin name',
     ],
 
+    'capabilities' => [
+        'title' => 'Provided Capabilities',
+        'description' => 'Features this plugin declares it provides. Core and other plugins use this declaration to detect capabilities.',
+    ],
+
     'permissions' => [
         'health_status' => 'Health Status',
         'health_healthy' => 'Healthy',
@@ -406,7 +411,7 @@ return [
         'health_issue_signature_unsigned' => 'Signature: Unsigned',
         'health_issue_signature_invalid' => 'Signature: Invalid',
         'health_issue_missing_author_id' => 'Metadata: author_id missing',
-        'health_issue_missing_publisher_key_id' => 'Metadata: publisher_key_id missing',
+        'health_issue_missing_authority_key_id' => 'Metadata: authority_key_id missing',
         'health_issue_permission_undefined' => 'Permissions: Not Defined',
         'health_issue_permission_undeclared_minor' => 'Permission: Undeclared Usage (Minor)',
         'health_issue_permission_undeclared_major' => 'Permission: Undeclared Usage (Major)',
