@@ -55,7 +55,7 @@ class Plugin extends Model
         'last_version_check',
         'signing_key_id',
         'author_id',
-        'publisher_key_id',
+        'authority_key_id',
         'installed_from_url',
         'installation_method',
     ];

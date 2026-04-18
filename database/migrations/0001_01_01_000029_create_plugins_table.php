@@ -51,7 +51,7 @@ return new class extends Migration
             // サプライチェーン攻撃防御用カラム
             $table->string('signing_key_id')->nullable()->index(); // 初回インストール時の署名鍵ID
             $table->string('author_id')->nullable()->index(); // plugin.json の author_id
-            $table->string('publisher_key_id')->nullable(); // 配布者の署名鍵ID
+            $table->string('authority_key_id')->nullable(); // Authority 公開鍵 ID（配信元の Ed25519 鍵を識別）
             $table->string('installed_from_url')->nullable(); // インストール元URL
             $table->string('installation_method')->nullable(); // upload/marketplace/cli/github
             $table->timestamp('installed_at')->nullable(); // インストール日時
