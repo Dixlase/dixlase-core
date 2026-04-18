@@ -60,6 +60,20 @@ class SafeMode
             }
         }
 
+        // TEMP DEBUG: 全リクエストのセッション状態を記録
+        \Log::debug('SafeMode middleware', [
+            'url' => $request->fullUrl(),
+            'path' => $request->path(),
+            'is_admin_route' => $this->isAdminRoute($request),
+            'session_id' => session()->getId(),
+            'session_cookie_name' => config('session.cookie'),
+            'cookie_header' => $request->header('Cookie'),
+            'auth_check' => auth()->check(),
+            'auth_id' => auth()->id(),
+            'safe_mode_csp' => session('safe_mode_csp'),
+            'app_env' => app()->environment(),
+        ]);
+
         // テーマセーフモードが有効かつフロント側の場合、ビュー名前空間をオーバーライド
         if ($this->safeModeService->isActive(SafeModeEnum::Theme) && ! $this->isAdminRoute($request)) {
             $this->overrideThemeViewNamespace();
@@ -70,10 +84,17 @@ class SafeMode
 
     /**
      * 管理画面ルートかどうかを判定
+     *
+     * 注意: `config/admin/url.php` は Laravel により `admin.url` キーに展開されるため、
+     * 実際の管理 URL を取るには `admin.url.admin_url` を参照する必要がある。
+     * `config('admin.url')` 単独だとファイルの配列全体が返り str_starts_with が TypeError で落ちる。
      */
     protected function isAdminRoute(Request $request): bool
     {
-        return str_starts_with($request->path(), 'admin') || str_starts_with($request->path(), config('admin.url', 'admin'));
+        $path = $request->path();
+        $adminUrl = config('admin.url.admin_url', 'admin');
+
+        return str_starts_with($path, 'admin') || str_starts_with($path, $adminUrl);
     }
 
     /**
