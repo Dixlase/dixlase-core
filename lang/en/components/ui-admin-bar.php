@@ -24,4 +24,15 @@ return [
     'dashboard' => 'Dashboard',
     'theme_settings' => 'Theme Settings',
     'profile' => 'Profile Settings',
+
+    // Environment badges
+    'env_production' => 'Production',
+    'env_staging' => 'Staging',
+    'env_local' => 'Local',
+    'env_development' => 'Development',
+    'env_tooltip' => 'Current environment: :env',
+
+    // Debug badge
+    'debug_label' => 'Debug',
+    'debug_tooltip' => 'Debug mode is enabled',
 ];

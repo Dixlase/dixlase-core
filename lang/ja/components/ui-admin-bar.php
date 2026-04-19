@@ -24,4 +24,15 @@ return [
     'dashboard' => 'ダッシュボード',
     'theme_settings' => 'テーマ設定',
     'profile' => 'プロフィール設定',
+
+    // 環境バッジ
+    'env_production' => '本番',
+    'env_staging' => 'ステージング',
+    'env_local' => 'ローカル',
+    'env_development' => '開発',
+    'env_tooltip' => '現在の環境: :env',
+
+    // デバッグバッジ
+    'debug_label' => 'Debug',
+    'debug_tooltip' => 'デバッグモードが有効です',
 ];
