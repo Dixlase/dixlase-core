@@ -63,7 +63,7 @@ class DashboardPresenterTest extends TestCase
         $keys = array_column($result, 'key');
         $this->assertContains('maintenance_mode', $keys);
         $this->assertContains('safe_mode', $keys);
-        $this->assertContains('site_mode', $keys);
+        $this->assertContains('environment', $keys);
         $this->assertContains('https', $keys);
         $this->assertContains('csp_mode', $keys);
         $this->assertContains('debug_mode', $keys);
@@ -292,9 +292,40 @@ class DashboardPresenterTest extends TestCase
             $this->assertArrayHasKey('description', $item);
             $this->assertArrayHasKey('url', $item);
             $this->assertArrayHasKey('requires_advanced_mode', $item);
-            $this->assertContains($item['status'], ['ok', 'warning', 'recommendation']);
+            $this->assertContains($item['status'], ['ok', 'warning', 'recommendation', 'critical']);
             $this->assertIsBool($item['requires_advanced_mode']);
         }
+    }
+
+    /**
+     * decorateSiteHealthItems は表示用クラスを追加する
+     */
+    public function test_decorate_site_health_items_adds_display_classes(): void
+    {
+        $items = [
+            ['key' => 'a', 'status' => 'ok', 'icon' => 'fa', 'label' => 'A', 'description' => 'd', 'url' => '/a', 'requires_advanced_mode' => false],
+            ['key' => 'b', 'status' => 'critical', 'icon' => 'fa', 'label' => 'B', 'description' => 'd', 'url' => null, 'requires_advanced_mode' => false],
+            ['key' => 'c', 'status' => 'warning', 'icon' => 'fa', 'label' => 'C', 'description' => 'd', 'url' => '/c', 'requires_advanced_mode' => true],
+        ];
+
+        $result = DashboardPresenter::decorateSiteHealthItems($items, false);
+
+        foreach ($result as $item) {
+            $this->assertArrayHasKey('border_bg_class', $item);
+            $this->assertArrayHasKey('icon_color_class', $item);
+            $this->assertArrayHasKey('badge_class', $item);
+            $this->assertArrayHasKey('badge_label', $item);
+            $this->assertArrayHasKey('is_clickable', $item);
+        }
+
+        $this->assertTrue($result[0]['is_clickable'], 'url あり + simple モードでも requires_advanced_mode=false ならクリック可能');
+        $this->assertFalse($result[1]['is_clickable'], 'url なしならクリック不可');
+        $this->assertFalse($result[2]['is_clickable'], 'requires_advanced_mode=true + simple モードではクリック不可');
+
+        $advancedResult = DashboardPresenter::decorateSiteHealthItems($items, true);
+        $this->assertTrue($advancedResult[2]['is_clickable'], 'requires_advanced_mode=true でも advanced モードならクリック可能');
+
+        $this->assertStringContainsString('red', $result[1]['border_bg_class'], 'critical ステータスは red の表示');
     }
 
     /**
