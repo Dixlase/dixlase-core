@@ -34,7 +34,6 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // セッション開始後に実行するミドルウェア
         $middleware->appendToGroup('web', [
-            \App\Http\Middleware\DebugCsrf::class, // TEMP DEBUG: CSRF 419 調査用（調査後削除）
             \App\Http\Middleware\CheckMaintenanceMode::class, // メンテナンスモードチェック（認証状態を参照するためセッション後に実行）
             \App\Http\Middleware\SafeMode::class, // セーフモード検出（認証後に実行、CSP/プラグイン/テーマ対応）
             \App\Http\Middleware\BlockPluginRoutes::class, // プラグインセーフモード時のルートブロック
