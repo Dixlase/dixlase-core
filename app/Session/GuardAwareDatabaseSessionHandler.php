@@ -48,6 +48,13 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     protected $guardResolvers = [];
 
     /**
+     * 解決済みの管理 URL セグメント（プロセス内キャッシュ）
+     *
+     * @var string|null
+     */
+    protected static $resolvedAdminUrl = null;
+
+    /**
      * ガード別のテーブル設定を登録
      */
     public function setGuardTable(string $guard, string $table): void
@@ -106,10 +113,12 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
         // パスベースのガード判定（優先順位が高い）
 
         // 管理画面の場合は member ガード。
-        // 管理 URL はユーザーが任意にカスタマイズ可能なため、config の値でも照合する。
+        // 管理 URL はユーザーが任意にカスタマイズ可能なため、DB から動的に解決した値で照合する。
+        // config('admin.url.admin_url') はデフォルト値 'admin' しか返さないため、
+        // DB の base_settings.admin_url を静的キャッシュ付きで参照する。
         // これを怠ると admin_url が "admin" 以外のとき session が既定の sessions テーブルに書かれ、
         // 管理画面リクエスト間で _token が不整合となり 419（CSRF mismatch）が発生する。
-        $adminUrl = config('admin.url.admin_url', 'admin');
+        $adminUrl = $this->resolveAdminUrl();
         if (str_starts_with($path, 'admin') || ($adminUrl !== '' && str_starts_with($path, $adminUrl))) {
             $this->currentGuard = 'member';
 
@@ -128,6 +137,35 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
         $this->currentGuard = null;
 
         return null;
+    }
+
+    /**
+     * 管理画面 URL を DB から解決する（プロセス内キャッシュ付き）
+     *
+     * BaseSetting::getValue を使うのが本筋だが、handler は早期ブート段階でも
+     * 呼ばれ得るため Schema::hasTable で守る。DB 未接続時は config デフォルトに
+     * フォールバック。空文字は「管理 URL 判定を無効化」ではなく「config 値を使用」とする。
+     */
+    protected function resolveAdminUrl(): string
+    {
+        if (self::$resolvedAdminUrl !== null) {
+            return self::$resolvedAdminUrl;
+        }
+
+        $configDefault = config('admin.url.admin_url', 'admin') ?: 'admin';
+
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('base_settings')) {
+                $dbValue = \App\Models\BaseSetting::getValue('admin_url', $configDefault);
+                if (is_string($dbValue) && $dbValue !== '') {
+                    return self::$resolvedAdminUrl = $dbValue;
+                }
+            }
+        } catch (\Throwable $e) {
+            // DB 未接続 / インストール前等は config デフォルトへ
+        }
+
+        return self::$resolvedAdminUrl = $configDefault;
     }
 
     /**

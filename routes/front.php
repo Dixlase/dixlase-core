@@ -88,6 +88,9 @@ Route::middleware(['web', 'front.ip'])->group(
         })->name('test.front.log');
 
         // テーマのアセットファイル
+        // 静的ファイル配信なのでセッション・CSRF を通さない。
+        // 1 ページ内で並列 GET されると同じ session_id で複数の空セッション
+        // write が競合し、管理画面側の members_sessions を消して 419 を引き起こす。
         Route::get('assets/{type}/{file}', function ($type, $file) {
             $basePath = match ($type) {
                 'theme' => base_path('themes/'.getActiveThemeDirectory().'/assets'), // アクティブテーマのディレクトリ名を取得
@@ -102,7 +105,14 @@ Route::middleware(['web', 'front.ip'])->group(
             }
 
             return response()->file($filePath);
-        })->where('file', '.*');
+        })
+            ->where('file', '.*')
+            ->withoutMiddleware([
+                \Illuminate\Session\Middleware\StartSession::class,
+                \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+                \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+                \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+            ]);
     }
 );
 
