@@ -60,20 +60,6 @@ class SafeMode
             }
         }
 
-        // TEMP DEBUG: 全リクエストのセッション状態を記録
-        \Log::debug('SafeMode middleware', [
-            'url' => $request->fullUrl(),
-            'path' => $request->path(),
-            'is_admin_route' => $this->isAdminRoute($request),
-            'session_id' => session()->getId(),
-            'session_cookie_name' => config('session.cookie'),
-            'cookie_header' => $request->header('Cookie'),
-            'auth_check' => auth()->check(),
-            'auth_id' => auth()->id(),
-            'safe_mode_csp' => session('safe_mode_csp'),
-            'app_env' => app()->environment(),
-        ]);
-
         // テーマセーフモードが有効かつフロント側の場合、ビュー名前空間をオーバーライド
         if ($this->safeModeService->isActive(SafeModeEnum::Theme) && ! $this->isAdminRoute($request)) {
             $this->overrideThemeViewNamespace();
