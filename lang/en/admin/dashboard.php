@@ -46,7 +46,7 @@ return [
     'debug_mode_warning' => 'Debug mode is enabled in production. This may expose sensitive information.',
     'debug_mode_dev_ok' => 'Debug mode is enabled (development/staging).',
     'debug_mode_ok' => 'Debug mode is disabled.',
-    'extension_mode' => 'Extension Security Preset',
+    'extension_mode' => 'Extension Security Settings',
     'extension_mode_strict' => 'Strict preset is active. Signatures required and only healthy extensions allowed.',
     'extension_mode_balanced' => 'Balanced preset is active. Trusted sources and monitored extensions allowed.',
     'extension_mode_development' => 'Development preset is active. Security checks are relaxed — not recommended for production.',

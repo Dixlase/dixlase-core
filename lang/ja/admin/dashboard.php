@@ -46,7 +46,7 @@ return [
     'debug_mode_warning' => '本番環境でデバッグモードが有効です。機密情報が漏洩する可能性があります。',
     'debug_mode_dev_ok' => 'デバッグモードが有効です（開発・ステージング環境）。',
     'debug_mode_ok' => 'デバッグモードは無効です。',
-    'extension_mode' => '拡張機能セキュリティプリセット',
+    'extension_mode' => '拡張機能セキュリティ設定',
     'extension_mode_strict' => '厳格モードが有効です。署名必須で健全な拡張機能のみ許可されます。',
     'extension_mode_balanced' => 'バランスモードが有効です。信頼できる配布元と監視済みの拡張機能が許可されます。',
     'extension_mode_development' => '開発モードが有効です。セキュリティチェックが緩和されています — 本番環境では非推奨。',

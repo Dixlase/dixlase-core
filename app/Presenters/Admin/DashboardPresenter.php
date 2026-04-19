@@ -198,8 +198,8 @@ class DashboardPresenter
             'icon' => $httpsIcon,
             'label' => __('admin/dashboard.https_status'),
             'description' => $httpsDescription,
-            'url' => route('admin.settings.security.environment'),
-            'requires_advanced_mode' => true,
+            'url' => route('admin.settings.base.admin'),
+            'requires_advanced_mode' => false,
         ];
 
         // CSPモード（無効=critical, development=warning, standard以上=ok）
