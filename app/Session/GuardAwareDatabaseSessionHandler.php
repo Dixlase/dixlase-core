@@ -105,14 +105,18 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
 
         // パスベースのガード判定（優先順位が高い）
 
-        // 管理画面の場合はmemberガード
-        if (str_starts_with($path, 'admin')) {
+        // 管理画面の場合は member ガード。
+        // 管理 URL はユーザーが任意にカスタマイズ可能なため、config の値でも照合する。
+        // これを怠ると admin_url が "admin" 以外のとき session が既定の sessions テーブルに書かれ、
+        // 管理画面リクエスト間で _token が不整合となり 419（CSRF mismatch）が発生する。
+        $adminUrl = config('admin.url.admin_url', 'admin');
+        if (str_starts_with($path, 'admin') || ($adminUrl !== '' && str_starts_with($path, $adminUrl))) {
             $this->currentGuard = 'member';
 
             return 'member';
         }
 
-        // Mypageの場合はuserガード
+        // Mypage の場合は user ガード
         if (str_starts_with($path, 'mypage')) {
             $this->currentGuard = 'user';
 
