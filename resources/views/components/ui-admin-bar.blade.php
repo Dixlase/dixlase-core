@@ -80,6 +80,61 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
                 </nav>
+
+                {{-- 環境・デバッグバッジ --}}
+                @php
+                    $currentEnv = app()->environment();
+                    $envBadgeClass = match ($currentEnv) {
+                        'production' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                        'staging' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+                        'local' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                        default => 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+                    };
+                    $envLabelKey = 'components/ui-admin-bar.env_'.$currentEnv;
+                    $envLabel = __($envLabelKey);
+                    if ($envLabel === $envLabelKey) {
+                        $envLabel = ucfirst($currentEnv);
+                    }
+                    $envTooltip = __('components/ui-admin-bar.env_tooltip', ['env' => $envLabel]);
+                    $debugEnabled = (bool) config('app.debug');
+                    $envHref = Route::has('admin.settings.security.environment')
+                        ? route('admin.settings.security.environment')
+                        : null;
+                @endphp
+
+                <div class="flex items-center space-x-2 ml-2">
+                    @if($envHref)
+                        <a href="{{ $envHref }}"
+                           title="{{ $envTooltip }}"
+                           class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $envBadgeClass }} hover:opacity-80 transition-opacity">
+                            <i class="fas fa-server mr-1"></i>
+                            <span class="hidden sm:inline">{{ $envLabel }}</span>
+                        </a>
+                    @else
+                        <span title="{{ $envTooltip }}"
+                              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $envBadgeClass }}">
+                            <i class="fas fa-server mr-1"></i>
+                            <span class="hidden sm:inline">{{ $envLabel }}</span>
+                        </span>
+                    @endif
+
+                    @if($debugEnabled)
+                        @if($envHref)
+                            <a href="{{ $envHref }}"
+                               title="{{ __('components/ui-admin-bar.debug_tooltip') }}"
+                               class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:opacity-80 transition-opacity">
+                                <i class="fas fa-bug mr-1"></i>
+                                <span class="hidden sm:inline">{{ __('components/ui-admin-bar.debug_label') }}</span>
+                            </a>
+                        @else
+                            <span title="{{ __('components/ui-admin-bar.debug_tooltip') }}"
+                                  class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                <i class="fas fa-bug mr-1"></i>
+                                <span class="hidden sm:inline">{{ __('components/ui-admin-bar.debug_label') }}</span>
+                            </span>
+                        @endif
+                    @endif
+                </div>
             </div>
 
             {{-- 右側: ユーザー情報 --}}
