@@ -183,77 +183,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
             $this->performInsert($sessionId, $payload);
         }
 
-        // 他のガードテーブルにもセッションを同期
-        // これにより、異なるガード間でセッションが共有される
-        $this->syncToOtherTables($sessionId, $data);
-
         return $this->exists = true;
-    }
-
-    /**
-     * 他のガードテーブルにセッションを同期
-     *
-     * @param  string  $sessionId
-     * @param  string  $data
-     */
-    protected function syncToOtherTables($sessionId, $data): void
-    {
-        $currentTable = $this->getTable();
-        $basePayload = [
-            'payload' => base64_encode($data),
-            'last_activity' => $this->currentTime(),
-            'ip_address' => $this->ipAddress(),
-            'user_agent' => $this->userAgent(),
-        ];
-
-        // 各ガードテーブルに同期
-        foreach ($this->guardTables as $guard => $table) {
-            if ($table === $currentTable) {
-                continue;
-            }
-
-            // テーブルに応じたペイロードを作成
-            $payload = $basePayload;
-            if ($guard === 'member') {
-                $payload['member_id'] = null; // 他ガードからの同期なのでnull
-            } else {
-                $payload['user_id'] = null; // 他ガードからの同期なのでnull
-            }
-
-            $this->syncToTable($table, $sessionId, $payload);
-        }
-    }
-
-    /**
-     * 指定テーブルにセッションを同期
-     *
-     * @param  string  $table
-     * @param  string  $sessionId
-     * @param  array  $payload
-     */
-    protected function syncToTable($table, $sessionId, $payload): void
-    {
-        try {
-            $exists = $this->connection->table($table)
-                ->where('id', $sessionId)
-                ->exists();
-
-            if ($exists) {
-                $this->connection->table($table)
-                    ->where('id', $sessionId)
-                    ->update($payload);
-            } else {
-                $this->connection->table($table)
-                    ->insert(array_merge(['id' => $sessionId], $payload));
-            }
-        } catch (\Exception $e) {
-            // 同期エラーは無視（メインテーブルへの書き込みは成功している）
-            \Log::warning('[Session] Failed to sync to table', [
-                'table' => $table,
-                'session_id' => $sessionId,
-                'error' => $e->getMessage(),
-            ]);
-        }
     }
 
     /**
