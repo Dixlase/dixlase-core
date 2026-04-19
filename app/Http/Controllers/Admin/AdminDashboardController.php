@@ -22,6 +22,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\AdminModeHelper;
 use App\Presenters\Admin\DashboardPresenter;
 use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
@@ -82,7 +83,7 @@ class AdminDashboardController extends AdminLoggedInController
         }
 
         // ダッシュボード表示データ
-        $this->viewParams['securityOverview'] = DashboardPresenter::securityOverview($user);
+        $this->viewParams['siteHealth'] = DashboardPresenter::siteHealth($user);
         $this->viewParams['mailStatus'] = DashboardPresenter::mailServerStatus();
         $this->viewParams['captchaStatus'] = DashboardPresenter::captchaStatus();
         $this->viewParams['systemInfo'] = DashboardPresenter::systemInfo();
@@ -91,6 +92,7 @@ class AdminDashboardController extends AdminLoggedInController
         $this->viewParams['extensionOverview'] = DashboardPresenter::extensionOverview();
         $this->viewParams['memberOverview'] = DashboardPresenter::memberOverview();
         $this->viewParams['recentActivity'] = DashboardPresenter::recentActivity();
+        $this->viewParams['isAdvancedMode'] = AdminModeHelper::isAdvancedMode();
 
         return view('admin::dashboard', $this->viewParams);
     }

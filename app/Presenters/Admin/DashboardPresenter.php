@@ -22,6 +22,7 @@
 
 namespace App\Presenters\Admin;
 
+use App\Contracts\Plugin\SignatureVerifierInterface;
 use App\Contracts\PluginIntegration\DashboardNotificationProviderInterface;
 use App\Contracts\PluginIntegration\DashboardWidgetProviderInterface;
 use App\DTO\PluginIntegration\DashboardNotificationDTO;
@@ -30,13 +31,16 @@ use App\Enums\AuthenticationMode;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use App\Enums\PluginHealthStatus;
+use App\Helpers\AdminModeHelper;
 use App\Helpers\CaptchaHelper;
 use App\Helpers\ConfigHelper;
 use App\Models\AuditLog;
 use App\Models\BaseSetting;
+use App\Models\FileIntegrityAudit;
 use App\Models\Member;
 use App\Models\Plugin;
 use App\Models\PluginAudit;
+use App\Models\SecuritySetting;
 use App\Models\Theme;
 use App\Services\Plugin\PluginServiceResolver;
 use App\Services\SafeModeService;
@@ -46,19 +50,20 @@ use Illuminate\Support\Carbon;
 /**
  * ダッシュボード表示データのPresenter
  *
- * セキュリティ概要・メール状態・CAPTCHA状態・システム情報・
+ * サイトヘルス・メール状態・CAPTCHA状態・システム情報・
  * プラグインウィジェットをビュー向けの配列として生成します。
  */
 class DashboardPresenter
 {
     /**
-     * セキュリティ概要を取得
+     * サイトヘルス（運用状態の各種チェック）を取得
      *
-     * @return array<int, array{key: string, status: string, icon: string, label: string, description: string}>
+     * @return array<int, array{key: string, status: string, icon: string, label: string, description: string, url: string|null, requires_advanced_mode: bool}>
      */
-    public static function securityOverview(Member $user): array
+    public static function siteHealth(Member $user): array
     {
         $items = [];
+        $isProduction = app()->environment('production');
 
         // メンテナンスモード
         $maintenanceActive = ConfigHelper::getMaintenanceMode();
@@ -70,6 +75,8 @@ class DashboardPresenter
             'description' => $maintenanceActive
                 ? __('admin/dashboard.maintenance_mode_active')
                 : __('admin/dashboard.maintenance_mode_inactive'),
+            'url' => route('admin.settings.base.maintenance'),
+            'requires_advanced_mode' => false,
         ];
 
         // セーフモード
@@ -83,10 +90,53 @@ class DashboardPresenter
             'description' => $safeModeActive
                 ? __('admin/dashboard.safe_mode_active')
                 : __('admin/dashboard.safe_mode_inactive'),
+            'url' => null,
+            'requires_advanced_mode' => false,
+        ];
+
+        // サイトモード（local / staging / production）
+        $siteEnv = app()->environment();
+        $items[] = [
+            'key' => 'site_mode',
+            'status' => 'ok',
+            'icon' => 'fas fa-server',
+            'label' => __('admin/dashboard.site_mode'),
+            'description' => __('admin/dashboard.site_mode_'.$siteEnv, ['env' => $siteEnv]),
+            'url' => route('admin.settings.security.environment'),
+            'requires_advanced_mode' => true,
+        ];
+
+        // HTTPS（force_ssl 設定 + 現在のリクエストの両方を確認）
+        $forceSsl = (bool) SecuritySetting::get('force_ssl', config('security.force_ssl', false));
+        $isCurrentSecure = request()->isSecure();
+        if ($forceSsl) {
+            $httpsStatus = 'ok';
+            $httpsDescription = __('admin/dashboard.https_force_ssl_enabled');
+            $httpsIcon = 'fas fa-lock';
+        } elseif ($isProduction) {
+            $httpsStatus = 'warning';
+            $httpsDescription = __('admin/dashboard.https_production_no_force');
+            $httpsIcon = 'fas fa-unlock';
+        } elseif ($isCurrentSecure) {
+            $httpsStatus = 'ok';
+            $httpsDescription = __('admin/dashboard.https_current_secure');
+            $httpsIcon = 'fas fa-lock';
+        } else {
+            $httpsStatus = 'recommendation';
+            $httpsDescription = __('admin/dashboard.https_disabled');
+            $httpsIcon = 'fas fa-unlock';
+        }
+        $items[] = [
+            'key' => 'https',
+            'status' => $httpsStatus,
+            'icon' => $httpsIcon,
+            'label' => __('admin/dashboard.https_status'),
+            'description' => $httpsDescription,
+            'url' => route('admin.settings.security.environment'),
+            'requires_advanced_mode' => true,
         ];
 
         // CSPモード不整合（本番環境 + 開発用CSP）
-        $isProduction = app()->environment('production');
         $cspMode = ConfigHelper::get('csp.base.mode', 'csp_mode', 'development');
         $cspMismatch = $isProduction && $cspMode === 'development';
         $items[] = [
@@ -97,6 +147,8 @@ class DashboardPresenter
             'description' => $cspMismatch
                 ? __('admin/dashboard.csp_development_warning')
                 : __('admin/dashboard.csp_mode_ok'),
+            'url' => route('admin.settings.security.csp'),
+            'requires_advanced_mode' => true,
         ];
 
         // デバッグモード（本番環境）
@@ -109,6 +161,78 @@ class DashboardPresenter
             'description' => $debugInProduction
                 ? __('admin/dashboard.debug_mode_warning')
                 : __('admin/dashboard.debug_mode_ok'),
+            'url' => route('admin.settings.security.environment'),
+            'requires_advanced_mode' => true,
+        ];
+
+        // 拡張機能モード（簡単/詳細）
+        $extensionMode = AdminModeHelper::getCurrentMode();
+        $items[] = [
+            'key' => 'extension_mode',
+            'status' => 'ok',
+            'icon' => 'fas fa-toggle-on',
+            'label' => __('admin/dashboard.extension_mode'),
+            'description' => __('admin/dashboard.extension_mode_'.strtolower($extensionMode->name)),
+            'url' => route('admin.settings.base.mode'),
+            'requires_advanced_mode' => false,
+        ];
+
+        // 公開鍵（鍵管理サイトから取得できているか）
+        $signatureVerifier = app(SignatureVerifierInterface::class);
+        $signatureAvailable = $signatureVerifier->isAvailable();
+        $items[] = [
+            'key' => 'public_key',
+            'status' => $signatureAvailable ? 'ok' : 'recommendation',
+            'icon' => 'fas fa-key',
+            'label' => __('admin/dashboard.public_key_status'),
+            'description' => $signatureAvailable
+                ? __('admin/dashboard.public_key_available')
+                : __('admin/dashboard.public_key_unavailable'),
+            'url' => route('admin.settings.security.extensions'),
+            'requires_advanced_mode' => true,
+        ];
+
+        // エラー通知
+        $notificationEnabled = (bool) SecuritySetting::get('notification_enabled', false);
+        $items[] = [
+            'key' => 'error_notification',
+            'status' => $notificationEnabled ? 'ok' : 'recommendation',
+            'icon' => 'fas fa-bell',
+            'label' => __('admin/dashboard.error_notification_status'),
+            'description' => $notificationEnabled
+                ? __('admin/dashboard.error_notification_enabled')
+                : __('admin/dashboard.error_notification_disabled'),
+            'url' => route('admin.settings.security.notifications'),
+            'requires_advanced_mode' => true,
+        ];
+
+        // ファイル整合性
+        $latestAudit = FileIntegrityAudit::getLatestCore();
+        if ($latestAudit === null) {
+            $integrityStatus = 'recommendation';
+            $integrityDescription = __('admin/dashboard.file_integrity_no_baseline');
+        } else {
+            $integrityStatus = match ($latestAudit->status) {
+                FileIntegrityAudit::STATUS_OK => 'ok',
+                FileIntegrityAudit::STATUS_WARNING => 'warning',
+                FileIntegrityAudit::STATUS_CRITICAL => 'warning',
+                default => 'recommendation',
+            };
+            $integrityDescription = match ($latestAudit->status) {
+                FileIntegrityAudit::STATUS_OK => __('admin/dashboard.file_integrity_ok'),
+                FileIntegrityAudit::STATUS_WARNING => __('admin/dashboard.file_integrity_warning', ['count' => $latestAudit->changed_files_count]),
+                FileIntegrityAudit::STATUS_CRITICAL => __('admin/dashboard.file_integrity_critical', ['count' => $latestAudit->suspicious_files_count]),
+                default => __('admin/dashboard.file_integrity_no_baseline'),
+            };
+        }
+        $items[] = [
+            'key' => 'file_integrity',
+            'status' => $integrityStatus,
+            'icon' => 'fas fa-fingerprint',
+            'label' => __('admin/dashboard.file_integrity_status'),
+            'description' => $integrityDescription,
+            'url' => route('admin.settings.security.integrity'),
+            'requires_advanced_mode' => true,
         ];
 
         // 2FA状態（全体設定 + プロフィール設定を考慮した実際の状態）
@@ -126,6 +250,8 @@ class DashboardPresenter
             'description' => $twoFaEnabled
                 ? __('admin/dashboard.two_fa_enabled', ['method' => $actualMode->twoFactorLabel()])
                 : __('admin/dashboard.two_fa_disabled'),
+            'url' => route('admin.settings.security.two-fa'),
+            'requires_advanced_mode' => false,
         ];
 
         return $items;
@@ -134,7 +260,7 @@ class DashboardPresenter
     /**
      * メールサーバー状態を取得
      *
-     * @return array{status: string, icon: string, label: string, description: string, mailer: string}
+     * @return array{status: string, icon: string, label: string, description: string, mailer: string, url: string|null, requires_advanced_mode: bool}
      */
     public static function mailServerStatus(): array
     {
@@ -142,6 +268,7 @@ class DashboardPresenter
         $host = ConfigHelper::getMailHost();
         $port = ConfigHelper::getMailPort();
         $fromAddress = ConfigHelper::getMailFromAddress();
+        $url = route('admin.settings.base.mail');
 
         // log / array / mailpit ドライバーは警告（開発用）
         if (in_array($mailer, ['log', 'array', 'mailpit'], true)) {
@@ -151,6 +278,8 @@ class DashboardPresenter
                 'label' => __('admin/dashboard.mail_status'),
                 'description' => __('admin/dashboard.mail_using_log_driver', ['driver' => $mailer]),
                 'mailer' => $mailer,
+                'url' => $url,
+                'requires_advanced_mode' => false,
             ];
         }
 
@@ -163,6 +292,8 @@ class DashboardPresenter
                 'label' => __('admin/dashboard.mail_status'),
                 'description' => __('admin/dashboard.mail_not_configured'),
                 'mailer' => $mailer,
+                'url' => $url,
+                'requires_advanced_mode' => false,
             ];
         }
 
@@ -178,6 +309,8 @@ class DashboardPresenter
                 'label' => __('admin/dashboard.mail_status'),
                 'description' => __('admin/dashboard.mail_test_not_completed'),
                 'mailer' => $mailer,
+                'url' => $url,
+                'requires_advanced_mode' => false,
             ];
         }
 
@@ -187,17 +320,20 @@ class DashboardPresenter
             'label' => __('admin/dashboard.mail_status'),
             'description' => __('admin/dashboard.mail_configured'),
             'mailer' => $mailer,
+            'url' => $url,
+            'requires_advanced_mode' => false,
         ];
     }
 
     /**
      * CAPTCHA状態を取得
      *
-     * @return array{status: string, icon: string, label: string, description: string}
+     * @return array{status: string, icon: string, label: string, description: string, url: string|null, requires_advanced_mode: bool}
      */
     public static function captchaStatus(): array
     {
         $settings = CaptchaHelper::getSettings();
+        $url = route('admin.settings.security.captcha');
 
         $isConfigured = $settings['enabled']
             && ! empty($settings['site_key'])
@@ -212,6 +348,8 @@ class DashboardPresenter
                 'icon' => 'fas fa-robot',
                 'label' => __('admin/dashboard.captcha_status'),
                 'description' => __('admin/dashboard.captcha_test_not_completed'),
+                'url' => $url,
+                'requires_advanced_mode' => false,
             ];
         }
 
@@ -222,6 +360,8 @@ class DashboardPresenter
             'description' => $isConfigured
                 ? __('admin/dashboard.captcha_configured')
                 : __('admin/dashboard.captcha_not_configured'),
+            'url' => $url,
+            'requires_advanced_mode' => false,
         ];
     }
 

@@ -41,9 +41,9 @@ class DashboardPresenterTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * securityOverview は5項目を返すことを確認
+     * siteHealth は11項目を返すことを確認
      */
-    public function test_security_overview_returns_five_items(): void
+    public function test_site_health_returns_eleven_items(): void
     {
         $safeModeService = Mockery::mock(SafeModeService::class);
         $safeModeService->shouldReceive('hasAnyActive')->andReturn(false);
@@ -56,22 +56,28 @@ class DashboardPresenterTest extends TestCase
         $user = new Member();
         $user->two_fa_mode = AuthenticationMode::Disabled->value;
 
-        $result = DashboardPresenter::securityOverview($user);
+        $result = DashboardPresenter::siteHealth($user);
 
-        $this->assertCount(5, $result);
+        $this->assertCount(11, $result);
 
         $keys = array_column($result, 'key');
         $this->assertContains('maintenance_mode', $keys);
         $this->assertContains('safe_mode', $keys);
+        $this->assertContains('site_mode', $keys);
+        $this->assertContains('https', $keys);
         $this->assertContains('csp_mode', $keys);
         $this->assertContains('debug_mode', $keys);
+        $this->assertContains('extension_mode', $keys);
+        $this->assertContains('public_key', $keys);
+        $this->assertContains('error_notification', $keys);
+        $this->assertContains('file_integrity', $keys);
         $this->assertContains('two_fa', $keys);
     }
 
     /**
      * 2FAが無効の場合、recommendationステータスを返す
      */
-    public function test_security_overview_two_fa_recommendation_when_disabled(): void
+    public function test_site_health_two_fa_recommendation_when_disabled(): void
     {
         $safeModeService = Mockery::mock(SafeModeService::class);
         $safeModeService->shouldReceive('hasAnyActive')->andReturn(false);
@@ -84,7 +90,7 @@ class DashboardPresenterTest extends TestCase
         $user = new Member();
         $user->two_fa_mode = AuthenticationMode::Disabled->value;
 
-        $result = DashboardPresenter::securityOverview($user);
+        $result = DashboardPresenter::siteHealth($user);
 
         $twoFa = collect($result)->firstWhere('key', 'two_fa');
         $this->assertEquals('recommendation', $twoFa['status']);
@@ -93,7 +99,7 @@ class DashboardPresenterTest extends TestCase
     /**
      * 2FAが有効（常に有効）の場合、okステータスを返す
      */
-    public function test_security_overview_two_fa_ok_when_always_enabled(): void
+    public function test_site_health_two_fa_ok_when_always_enabled(): void
     {
         $safeModeService = Mockery::mock(SafeModeService::class);
         $safeModeService->shouldReceive('hasAnyActive')->andReturn(false);
@@ -107,7 +113,7 @@ class DashboardPresenterTest extends TestCase
         $user = new Member();
         $user->two_fa_mode = AuthenticationMode::Always->value;
 
-        $result = DashboardPresenter::securityOverview($user);
+        $result = DashboardPresenter::siteHealth($user);
 
         $twoFa = collect($result)->firstWhere('key', 'two_fa');
         $this->assertEquals('ok', $twoFa['status']);
@@ -261,9 +267,9 @@ class DashboardPresenterTest extends TestCase
     }
 
     /**
-     * 各securityOverview項目に必要なキーが含まれる
+     * 各siteHealth項目に必要なキーが含まれる
      */
-    public function test_security_overview_items_have_required_keys(): void
+    public function test_site_health_items_have_required_keys(): void
     {
         $safeModeService = Mockery::mock(SafeModeService::class);
         $safeModeService->shouldReceive('hasAnyActive')->andReturn(false);
@@ -276,7 +282,7 @@ class DashboardPresenterTest extends TestCase
         $user = new Member();
         $user->two_fa_mode = AuthenticationMode::Disabled->value;
 
-        $result = DashboardPresenter::securityOverview($user);
+        $result = DashboardPresenter::siteHealth($user);
 
         foreach ($result as $item) {
             $this->assertArrayHasKey('key', $item);
@@ -284,7 +290,10 @@ class DashboardPresenterTest extends TestCase
             $this->assertArrayHasKey('icon', $item);
             $this->assertArrayHasKey('label', $item);
             $this->assertArrayHasKey('description', $item);
+            $this->assertArrayHasKey('url', $item);
+            $this->assertArrayHasKey('requires_advanced_mode', $item);
             $this->assertContains($item['status'], ['ok', 'warning', 'recommendation']);
+            $this->assertIsBool($item['requires_advanced_mode']);
         }
     }
 

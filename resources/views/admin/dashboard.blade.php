@@ -49,9 +49,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @include('admin.dashboard._getting-started')
         @endif
 
-        {{-- セキュリティ概要（両モード） --}}
+        {{-- サイトヘルス（両モード） --}}
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-            @include('admin.dashboard._security-overview')
+            @include('admin.dashboard._site-health')
         </div>
 
         {{-- 拡張機能概要 & メンバー概要（両モード） --}}
