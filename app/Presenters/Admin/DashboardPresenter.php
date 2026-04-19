@@ -28,10 +28,11 @@ use App\Contracts\PluginIntegration\DashboardWidgetProviderInterface;
 use App\DTO\PluginIntegration\DashboardNotificationDTO;
 use App\DTO\PluginIntegration\DashboardWidgetDTO;
 use App\Enums\AuthenticationMode;
+use App\Enums\CspMode;
+use App\Enums\ExtensionSecurityPreset;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use App\Enums\PluginHealthStatus;
-use App\Helpers\AdminModeHelper;
 use App\Helpers\CaptchaHelper;
 use App\Helpers\ConfigHelper;
 use App\Models\AuditLog;
@@ -55,6 +56,64 @@ use Illuminate\Support\Carbon;
  */
 class DashboardPresenter
 {
+    /**
+     * ステータスに応じた表示クラスセットを取得
+     *
+     * @return array{border_bg: string, icon_color: string, badge: string, badge_label: string}
+     */
+    private static function statusClasses(string $status): array
+    {
+        return match ($status) {
+            'critical' => [
+                'border_bg' => 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20',
+                'icon_color' => 'text-red-600 dark:text-red-400',
+                'badge' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                'badge_label' => __('admin/dashboard.status_critical'),
+            ],
+            'warning' => [
+                'border_bg' => 'border-yellow-300 dark:border-yellow-600 bg-yellow-50 dark:bg-yellow-900/20',
+                'icon_color' => 'text-yellow-600 dark:text-yellow-400',
+                'badge' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                'badge_label' => __('admin/dashboard.status_warning'),
+            ],
+            'recommendation' => [
+                'border_bg' => 'border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20',
+                'icon_color' => 'text-amber-600 dark:text-amber-400',
+                'badge' => 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
+                'badge_label' => __('admin/dashboard.status_recommendation'),
+            ],
+            default => [
+                'border_bg' => 'border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20',
+                'icon_color' => 'text-green-600 dark:text-green-400',
+                'badge' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                'badge_label' => __('admin/dashboard.status_ok'),
+            ],
+        };
+    }
+
+    /**
+     * サイトヘルス項目に表示用クラスを付与する
+     *
+     * @param  array<int, array<string, mixed>>  $items
+     * @return array<int, array<string, mixed>>
+     */
+    public static function decorateSiteHealthItems(array $items, bool $isAdvancedMode): array
+    {
+        return array_map(function (array $item) use ($isAdvancedMode) {
+            $classes = self::statusClasses($item['status'] ?? 'ok');
+            $requiresAdvanced = (bool) ($item['requires_advanced_mode'] ?? false);
+            $isClickable = ! empty($item['url']) && (! $requiresAdvanced || $isAdvancedMode);
+
+            return array_merge($item, [
+                'border_bg_class' => $classes['border_bg'],
+                'icon_color_class' => $classes['icon_color'],
+                'badge_class' => $classes['badge'],
+                'badge_label' => $classes['badge_label'],
+                'is_clickable' => $isClickable,
+            ]);
+        }, $items);
+    }
+
     /**
      * サイトヘルス（運用状態の各種チェック）を取得
      *
@@ -94,20 +153,27 @@ class DashboardPresenter
             'requires_advanced_mode' => false,
         ];
 
-        // サイトモード（local / staging / production）
+        // 環境設定（local / staging / production）
         $siteEnv = app()->environment();
+        $envStatus = match ($siteEnv) {
+            'local' => 'warning',
+            default => 'ok',
+        };
+        $envDescKey = in_array($siteEnv, ['local', 'staging', 'production'], true)
+            ? 'admin/dashboard.environment_'.$siteEnv
+            : 'admin/dashboard.environment_other';
         $items[] = [
-            'key' => 'site_mode',
-            'status' => 'ok',
+            'key' => 'environment',
+            'status' => $envStatus,
             'icon' => 'fas fa-server',
-            'label' => __('admin/dashboard.site_mode'),
-            'description' => __('admin/dashboard.site_mode_'.$siteEnv, ['env' => $siteEnv]),
+            'label' => __('admin/dashboard.environment_settings'),
+            'description' => __($envDescKey, ['env' => $siteEnv]),
             'url' => route('admin.settings.security.environment'),
             'requires_advanced_mode' => true,
         ];
 
-        // HTTPS（force_ssl 設定 + 現在のリクエストの両方を確認）
-        $forceSsl = (bool) SecuritySetting::get('force_ssl', config('security.force_ssl', false));
+        // HTTPS（force_ssl は base_settings に保存される）
+        $forceSsl = (bool) (int) BaseSetting::get('force_ssl', 0);
         $isCurrentSecure = request()->isSecure();
         if ($forceSsl) {
             $httpsStatus = 'ok';
@@ -136,45 +202,67 @@ class DashboardPresenter
             'requires_advanced_mode' => true,
         ];
 
-        // CSPモード不整合（本番環境 + 開発用CSP）
-        $cspMode = ConfigHelper::get('csp.base.mode', 'csp_mode', 'development');
-        $cspMismatch = $isProduction && $cspMode === 'development';
+        // CSPモード（無効=critical, development=warning, standard以上=ok）
+        $cspEnabled = (bool) (int) SecuritySetting::get('csp_enabled', 1);
+        $cspModeValue = (int) SecuritySetting::get('csp_mode', CspMode::default()->value);
+        $cspMode = CspMode::fromValue($cspModeValue) ?? CspMode::default();
+        if (! $cspEnabled) {
+            $cspStatus = 'critical';
+            $cspIcon = 'fas fa-lock-open';
+            $cspDescription = __('admin/dashboard.csp_disabled');
+        } elseif ($cspMode === CspMode::Development) {
+            $cspStatus = 'warning';
+            $cspIcon = 'fas fa-lock';
+            $cspDescription = __('admin/dashboard.csp_development_warning');
+        } else {
+            $cspStatus = 'ok';
+            $cspIcon = 'fas fa-lock';
+            $cspDescription = __('admin/dashboard.csp_mode_ok');
+        }
         $items[] = [
             'key' => 'csp_mode',
-            'status' => $cspMismatch ? 'warning' : 'ok',
-            'icon' => 'fas fa-lock',
+            'status' => $cspStatus,
+            'icon' => $cspIcon,
             'label' => __('admin/dashboard.csp_mode'),
-            'description' => $cspMismatch
-                ? __('admin/dashboard.csp_development_warning')
-                : __('admin/dashboard.csp_mode_ok'),
+            'description' => $cspDescription,
             'url' => route('admin.settings.security.csp'),
             'requires_advanced_mode' => true,
         ];
 
-        // デバッグモード（本番環境）
-        $debugInProduction = $isProduction && config('app.debug');
+        // デバッグモード（本番環境で有効=warning、非本番で有効=ok、無効=ok）
+        $debugEnabled = (bool) config('app.debug');
+        if ($debugEnabled && $isProduction) {
+            $debugStatus = 'warning';
+            $debugDescription = __('admin/dashboard.debug_mode_warning');
+        } elseif ($debugEnabled) {
+            $debugStatus = 'ok';
+            $debugDescription = __('admin/dashboard.debug_mode_dev_ok');
+        } else {
+            $debugStatus = 'ok';
+            $debugDescription = __('admin/dashboard.debug_mode_ok');
+        }
         $items[] = [
             'key' => 'debug_mode',
-            'status' => $debugInProduction ? 'warning' : 'ok',
+            'status' => $debugStatus,
             'icon' => 'fas fa-bug',
             'label' => __('admin/dashboard.debug_mode'),
-            'description' => $debugInProduction
-                ? __('admin/dashboard.debug_mode_warning')
-                : __('admin/dashboard.debug_mode_ok'),
+            'description' => $debugDescription,
             'url' => route('admin.settings.security.environment'),
             'requires_advanced_mode' => true,
         ];
 
-        // 拡張機能モード（簡単/詳細）
-        $extensionMode = AdminModeHelper::getCurrentMode();
+        // 拡張機能セキュリティプリセット（Development=warning, それ以外=ok）
+        $presetValue = (string) SecuritySetting::get('extension_security_preset', ExtensionSecurityPreset::default()->value);
+        $preset = ExtensionSecurityPreset::tryFrom($presetValue) ?? ExtensionSecurityPreset::default();
+        $presetStatus = $preset === ExtensionSecurityPreset::Development ? 'warning' : 'ok';
         $items[] = [
             'key' => 'extension_mode',
-            'status' => 'ok',
+            'status' => $presetStatus,
             'icon' => 'fas fa-toggle-on',
             'label' => __('admin/dashboard.extension_mode'),
-            'description' => __('admin/dashboard.extension_mode_'.strtolower($extensionMode->name)),
-            'url' => route('admin.settings.base.mode'),
-            'requires_advanced_mode' => false,
+            'description' => __('admin/dashboard.extension_mode_'.$preset->value),
+            'url' => route('admin.settings.security.extensions'),
+            'requires_advanced_mode' => true,
         ];
 
         // 公開鍵（鍵管理サイトから取得できているか）
@@ -215,7 +303,7 @@ class DashboardPresenter
             $integrityStatus = match ($latestAudit->status) {
                 FileIntegrityAudit::STATUS_OK => 'ok',
                 FileIntegrityAudit::STATUS_WARNING => 'warning',
-                FileIntegrityAudit::STATUS_CRITICAL => 'warning',
+                FileIntegrityAudit::STATUS_CRITICAL => 'critical',
                 default => 'recommendation',
             };
             $integrityDescription = match ($latestAudit->status) {

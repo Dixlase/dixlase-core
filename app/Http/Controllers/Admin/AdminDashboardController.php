@@ -83,16 +83,22 @@ class AdminDashboardController extends AdminLoggedInController
         }
 
         // ダッシュボード表示データ
-        $this->viewParams['siteHealth'] = DashboardPresenter::siteHealth($user);
-        $this->viewParams['mailStatus'] = DashboardPresenter::mailServerStatus();
-        $this->viewParams['captchaStatus'] = DashboardPresenter::captchaStatus();
+        $isAdvancedMode = AdminModeHelper::isAdvancedMode();
+        $mailStatus = DashboardPresenter::mailServerStatus();
+        $captchaStatus = DashboardPresenter::captchaStatus();
+        $siteHealthItems = array_merge(
+            DashboardPresenter::siteHealth($user),
+            [array_merge(['key' => 'mail'], $mailStatus)],
+            [array_merge(['key' => 'captcha'], $captchaStatus)],
+        );
+        $this->viewParams['siteHealth'] = DashboardPresenter::decorateSiteHealthItems($siteHealthItems, $isAdvancedMode);
         $this->viewParams['systemInfo'] = DashboardPresenter::systemInfo();
         $this->viewParams['pluginWidgets'] = DashboardPresenter::pluginWidgets();
         $this->viewParams['pluginNotifications'] = DashboardPresenter::pluginNotifications();
         $this->viewParams['extensionOverview'] = DashboardPresenter::extensionOverview();
         $this->viewParams['memberOverview'] = DashboardPresenter::memberOverview();
         $this->viewParams['recentActivity'] = DashboardPresenter::recentActivity();
-        $this->viewParams['isAdvancedMode'] = AdminModeHelper::isAdvancedMode();
+        $this->viewParams['isAdvancedMode'] = $isAdvancedMode;
 
         return view('admin::dashboard', $this->viewParams);
     }

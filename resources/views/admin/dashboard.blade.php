@@ -50,9 +50,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
 
         {{-- サイトヘルス（両モード） --}}
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-            @include('admin.dashboard._site-health')
-        </div>
+        @include('admin.dashboard._site-health')
 
         {{-- 拡張機能概要 & メンバー概要（両モード） --}}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
