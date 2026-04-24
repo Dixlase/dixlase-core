@@ -608,4 +608,7 @@ return [
             'profile_editable' => 'パスキー認証の利用可否を設定できます',
         ],
     ],
+
+    'source_code' => 'ソース',
+    'source_code_title' => 'この Dixlase CMS のソースコードを取得（AGPL §13）',
 ];

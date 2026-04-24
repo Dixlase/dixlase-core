@@ -49,6 +49,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <main>
                 {{ $slot }}
             </main>
+
+            {{-- AGPL §13: 実行中インスタンスのソースコード取得先を公開する --}}
+            <footer class="py-4 text-center text-xs text-gray-500">
+                <span class="font-semibold">{{ config('app.software_name', 'Dixlase') }}</span>
+                &middot;
+                <a href="{{ config('dixlase.license_url', 'https://www.gnu.org/licenses/agpl-3.0.html') }}" target="_blank" rel="noopener" class="underline hover:text-gray-700">
+                    {{ config('dixlase.license_label', 'AGPLv3') }}
+                </a>
+                &middot;
+                <a href="{{ config('dixlase.source_url', 'https://github.com/Dixlase/dixlase-core') }}" target="_blank" rel="noopener" class="underline hover:text-gray-700">
+                    {{ __('common.source_code') }}
+                </a>
+            </footer>
         </div>
 
     </body>

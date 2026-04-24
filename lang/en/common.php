@@ -419,4 +419,7 @@ return [
             'profile_editable' => 'You can configure passkey authentication availability',
         ],
     ],
+
+    'source_code' => 'Source',
+    'source_code_title' => 'Get the source code of this Dixlase CMS instance (AGPL §13)',
 ];
