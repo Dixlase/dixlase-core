@@ -3,7 +3,7 @@
 **Version:** 1.0
 **Effective Date:** 2026-04-24
 
-This Copyright Policy ("Policy") governs contributions to the Dixlase CMS project ("Dixlase"), operated by exc-D inc. ("exc-D"). By contributing to Dixlase, you agree to the terms of this Policy.
+This Copyright Policy ("Policy") governs contributions to the Dixlase project ("Dixlase"), operated by exc-D inc. ("exc-D"). By contributing to Dixlase, you agree to the terms of this Policy.
 
 For the Japanese version, see [COPYRIGHT-POLICY.ja.md](./COPYRIGHT-POLICY.ja.md). In case of any inconsistency between the English and Japanese versions, the Japanese version shall prevail.
 
@@ -17,7 +17,7 @@ To maintain this dual licensing model, exc-D inc. needs to hold the necessary ri
 
 ## 2. Scope of This Policy
 
-This Policy applies to all contributions to the Dixlase **core repository** at https://github.com/dixlase/dixlase, including but not limited to:
+This Policy applies to all contributions to the Dixlase **core repository** at https://github.com/Dixlase/dixlase-core, including but not limited to:
 
 - Program code (PHP, JavaScript, CSS, configuration files, etc.)
 - Documentation (Markdown, code comments, etc.)
@@ -107,7 +107,7 @@ This Policy is governed by the laws of Japan. Any disputes arising out of or in 
 
 For questions about this Policy, contact exc-D inc. at:
 
-- Email: contact@exc-d.com
+- Email: office@exc-d.com
 - Website: https://exc-d.com
 
 ---

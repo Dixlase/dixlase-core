@@ -6,7 +6,7 @@ Dixlase へのコントリビューションにご関心をお寄せいただき
 
 Dixlase へは様々な形で貢献いただけます:
 
-- **バグ報告・機能提案** [Issue を開く](https://github.com/dixlase/dixlase/issues)
+- **バグ報告・機能提案** [Issue を開く](https://github.com/Dixlase/dixlase-core/issues)
 - **コード提供** Pull Request の提出(バグ修正、新機能、パフォーマンス改善など)
 - **ドキュメント改善** ガイド、API ドキュメント、翻訳など
 - **他のユーザーのサポート** Discussions やコミュニティチャンネルでの支援
@@ -37,7 +37,7 @@ Dixlase は **デュアルライセンス方式**(AGPL v3 + 商用ライセン�
 
 ### 2. Issue の検索または作成
 
-- [オープンな Issue](https://github.com/dixlase/dixlase/issues) を閲覧し、取り組みたいものを探す
+- [オープンな Issue](https://github.com/Dixlase/dixlase-core/issues) を閲覧し、取り組みたいものを探す
 - 大きな変更の場合は、まず Issue を開いて提案について議論してください
 - 作業を開始することを Issue にコメントで知らせてください
 
@@ -107,8 +107,8 @@ git checkout -b feature/your-feature-name
 
 コントリビューションに関するご質問は、以下までお気軽にどうぞ:
 
-- GitHub で [Discussion](https://github.com/dixlase/dixlase/discussions) を開く
+- GitHub で [Discussion](https://github.com/Dixlase/dixlase-core/discussions) を開く
 - コミュニティチャンネルに参加([README.ja.md](./README.ja.md) にリンクあり)
-- contact@exc-d.com までメール
+- office@exc-d.com までメール
 
 Dixlase をより良くするための皆様のご協力に感謝いたします!

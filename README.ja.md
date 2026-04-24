@@ -26,8 +26,8 @@
 ### 1. リポジトリをクローン
 
 ```bash
-git clone https://github.com/dixlase/dixlase.git
-cd dixlase/docker
+git clone https://github.com/Dixlase/dixlase-core.git
+cd dixlase-core/docker
 ```
 
 ### 2. Docker コンテナを起動
@@ -99,7 +99,7 @@ Dixlase CMS は**デュアルライセンス**で配布されています:
 - **オープンソースライセンス**: [GNU Affero General Public License v3](./LICENSE-ja) および Dixlase プラグイン・テーマ例外条項
 - **商用ライセンス**: AGPL v3 の条件に準拠できない用途(クローズドソース SaaS での改変版配布など)に対して、別途商用ライセンスをご用意しています。
 
-商用ライセンスに関するお問い合わせは **contact@exc-d.com** までお願いします。
+商用ライセンスに関するお問い合わせは **office@exc-d.com** までお願いします。
 
 ### プラグイン・テーマについて
 
