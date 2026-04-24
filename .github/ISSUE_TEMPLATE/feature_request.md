@@ -4,6 +4,14 @@ about: Suggest a new feature or improvement / 新機能または改善の提案
 labels: enhancement
 ---
 
+> ⚠️ **Do NOT report security vulnerabilities here.** Use GitHub's
+> [private vulnerability reporting](https://github.com/Dixlase/dixlase-core/security/advisories/new)
+> or email `security@exc-d.com`. See [SECURITY.md](../../SECURITY.md) for details.
+>
+> ⚠️ **セキュリティ脆弱性はここで報告しないでください。**
+> [プライベート脆弱性報告](https://github.com/Dixlase/dixlase-core/security/advisories/new)
+> または `security@exc-d.com` へメールしてください。詳細は [SECURITY.ja.md](../../SECURITY.ja.md) を参照。
+
 ## Feature Description / 機能の説明
 
 ## Use Case / ユースケース
