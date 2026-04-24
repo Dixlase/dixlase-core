@@ -90,10 +90,35 @@ This allows VSCode or Cursor to directly run Laravel commands and generate compo
 
 ---
 
+## 📖 Project Documents
+
+- [Contributing Guide](./CONTRIBUTING.md) — How to contribute
+- [Copyright Policy](./COPYRIGHT-POLICY.md) — Contributor Assignment Agreement (CAA)
+- [Security Policy](./SECURITY.md) — Reporting vulnerabilities
+- [Plugin API](./PLUGIN-API.md) — Plugin API boundary definition
+
+---
+
 ## 📜 License
 
-- Core: **AGPL v3**
-- Plugins: separate licenses (commercial/OSS)
+Dixlase CMS is distributed under a **dual license**:
+
+- **Open Source License**: [GNU Affero General Public License v3](./LICENSE) with the Dixlase Plugin and Theme Exception.
+- **Commercial License**: For use cases where AGPL v3 compliance is not feasible (e.g., distributing modified versions in closed-source SaaS), a separate commercial license is available.
+
+For commercial license inquiries, please contact **contact@exc-d.com**.
+
+### Plugins and Themes
+
+Plugins and themes that interact with Dixlase CMS exclusively through the [Plugin API](./PLUGIN-API.md) are not considered derivative works and may be distributed under **any license of your choice, including proprietary licenses**. See the [Dixlase Plugin and Theme Exception](./LICENSE) for the full terms.
+
+### Source Code Availability (AGPL §13)
+
+If you run Dixlase CMS on a server and make it accessible to users over a network, AGPL §13 requires that users be able to obtain the source code of your running version. Ensure that the "Source" link in your admin footer (or equivalent) is accessible to users. The URL advertised there is configurable via the `DIXLASE_SOURCE_URL` environment variable.
+
+### Contribution Licensing
+
+Contributions to the Dixlase core repository are subject to our [Copyright Policy](./COPYRIGHT-POLICY.md). Please read it before submitting a pull request.
 
 ---
 
