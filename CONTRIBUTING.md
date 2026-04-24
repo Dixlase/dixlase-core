@@ -6,7 +6,7 @@ Thank you for your interest in contributing to Dixlase! This document outlines h
 
 There are many ways to contribute to Dixlase:
 
-- **Report bugs** or suggest features by [opening an issue](https://github.com/dixlase/dixlase/issues)
+- **Report bugs** or suggest features by [opening an issue](https://github.com/Dixlase/dixlase-core/issues)
 - **Submit code** via pull requests (bug fixes, new features, performance improvements)
 - **Improve documentation** including guides, API docs, and translations
 - **Help others** in discussions and community channels
@@ -37,7 +37,7 @@ Follow the setup instructions in [README.md](./README.md) to get a working devel
 
 ### 2. Find or Create an Issue
 
-- Browse [open issues](https://github.com/dixlase/dixlase/issues) for something to work on
+- Browse [open issues](https://github.com/Dixlase/dixlase-core/issues) for something to work on
 - For larger changes, please open an issue first to discuss your proposal
 - Comment on an issue to let others know you're working on it
 
@@ -107,8 +107,8 @@ Contributors are credited in the project's commit history, release notes, and co
 
 If you have questions about contributing, feel free to:
 
-- Open a [discussion](https://github.com/dixlase/dixlase/discussions) on GitHub
+- Open a [discussion](https://github.com/Dixlase/dixlase-core/discussions) on GitHub
 - Join our community channels (links in [README.md](./README.md))
-- Email us at contact@exc-d.com
+- Email us at office@exc-d.com
 
 Thank you for helping make Dixlase better!

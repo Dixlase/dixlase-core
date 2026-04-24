@@ -3,7 +3,7 @@
 **バージョン:** 1.0
 **発効日:** 2026-04-24
 
-本コピーライトポリシー(以下「本ポリシー」といいます)は、exc-D inc.(以下「exc-D」といいます)が運営する Dixlase CMS プロジェクト(以下「Dixlase」といいます)に対するコントリビューションに関する規定を定めるものです。Dixlase にコントリビュートすることにより、あなたは本ポリシーの条項に同意したものとみなされます。
+本コピーライトポリシー(以下「本ポリシー」といいます)は、exc-D inc.(以下「exc-D」といいます)が運営する Dixlase プロジェクト(以下「Dixlase」といいます)に対するコントリビューションに関する規定を定めるものです。Dixlase にコントリビュートすることにより、あなたは本ポリシーの条項に同意したものとみなされます。
 
 英語版は [COPYRIGHT-POLICY.md](./COPYRIGHT-POLICY.md) をご覧ください。英語版と日本語版の間に不一致がある場合、日本語版が優先されます。
 
@@ -17,7 +17,7 @@ Dixlase は、GNU Affero General Public License バージョン 3(以下「AGPL�
 
 ## 2. 本ポリシーの適用範囲
 
-本ポリシーは、https://github.com/dixlase/dixlase に存在する Dixlase の**コアリポジトリ**へのすべてのコントリビューションに適用されます。以下を含みますが、これらに限定されません:
+本ポリシーは、https://github.com/Dixlase/dixlase-core に存在する Dixlase の**コアリポジトリ**へのすべてのコントリビューションに適用されます。以下を含みますが、これらに限定されません:
 
 - プログラムコード(PHP、JavaScript、CSS、設定ファイル等)
 - ドキュメンテーション(Markdown、コードコメント等)
@@ -107,7 +107,7 @@ exc-D inc. は、本ポリシーを随時更新することがあります。重
 
 本ポリシーに関するご質問は、以下までご連絡ください:
 
-- Email: contact@exc-d.com
+- Email: office@exc-d.com
 - Website: https://exc-d.com
 
 ---

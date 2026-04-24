@@ -26,8 +26,8 @@ Our mission is to create **the world's most secure CMS**, released as open-sourc
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/dixlase/dixlase.git
-cd dixlase/docker
+git clone https://github.com/Dixlase/dixlase-core.git
+cd dixlase-core/docker
 ```
 
 ### 2. Start Docker containers
@@ -106,7 +106,7 @@ Dixlase CMS is distributed under a **dual license**:
 - **Open Source License**: [GNU Affero General Public License v3](./LICENSE) with the Dixlase Plugin and Theme Exception.
 - **Commercial License**: For use cases where AGPL v3 compliance is not feasible (e.g., distributing modified versions in closed-source SaaS), a separate commercial license is available.
 
-For commercial license inquiries, please contact **contact@exc-d.com**.
+For commercial license inquiries, please contact **office@exc-d.com**.
 
 ### Plugins and Themes
 
