@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\ForceHttps::class, // FORCE_SSL有効時にHTTPS強制リダイレクト
             \App\Http\Middleware\ApplySessionConfig::class, // セッション設定の動的適用
             \App\Http\Middleware\ContentSecurityPolicy::class, // CSPヘッダー付与
+            \App\Http\Middleware\AppendSourceCodeHeader::class, // AGPL §13: X-Source-Code ヘッダー付与
         ]);
 
         // CSPレポートエンドポイントをCSRF検証から除外

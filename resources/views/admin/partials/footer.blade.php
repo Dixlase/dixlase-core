@@ -22,7 +22,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <span class="font-semibold">{{ config('app.software_name', 'Dixlase') }}</span>
     v{{ config('app.version', '1.0.0') }} &middot;
     &copy; {{ date('Y') }} exc-D inc. &middot;
-    <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" class="underline hover:text-gray-700 dark:hover:text-gray-300">
-        AGPLv3
+    <a href="{{ config('dixlase.license_url', 'https://www.gnu.org/licenses/agpl-3.0.html') }}" target="_blank" rel="noopener" class="underline hover:text-gray-700 dark:hover:text-gray-300">
+        {{ config('dixlase.license_label', 'AGPLv3') }}
+    </a> &middot;
+    <a href="{{ config('dixlase.source_url', 'https://github.com/Dixlase/dixlase-core') }}" target="_blank" rel="noopener" class="underline hover:text-gray-700 dark:hover:text-gray-300" title="{{ __('common.source_code_title') }}">
+        {{ __('common.source_code') }}
     </a>
 </footer>
