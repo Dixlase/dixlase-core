@@ -1,7 +1,27 @@
+/*
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * Common table styles shared across admin, install, and front screens.
@@ -118,7 +138,15 @@
 
                 &:before {
                     content: attr(data-label) ": ";
-                    @apply inline-block min-w-[80px] font-bold text-gray-700 dark:text-gray-300;
+                    display: inline-block;
+                    min-width: 80px;
+                    font-weight: 700;
+                    color: var(--color-gray-700);
+                }
+
+                // ダークモード対応（@apply dark:* が空の :is() を生成する問題の回避）
+                :where(.dark, .dark *) &:before {
+                    color: var(--color-gray-300);
                 }
             }
 
