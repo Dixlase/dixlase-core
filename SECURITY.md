@@ -46,13 +46,13 @@ The PGP key will be published on this page once generated. In the meantime, plea
 
 We aim to acknowledge all security reports promptly and handle them responsibly.
 
-| Stage | Target Timeline |
-|-------|-----------------|
-| Acknowledgment of receipt | Within 3 business days |
-| Initial assessment | Within 7 business days |
-| Remediation plan | Within 14 business days (for confirmed issues) |
-| Patch release | Depends on severity and complexity |
-| Public disclosure | Coordinated with reporter, typically 90 days or upon patch release |
+Our process is as follows:
+
+1. **Acknowledgment** — We confirm receipt once we have seen the report
+2. **Initial Assessment** — We reproduce the issue and assess impact and severity
+3. **Remediation Plan** — For confirmed issues, we develop a fix strategy
+4. **Patch Release** — We release a patch as promptly as severity and complexity allow
+5. **Public Disclosure** — Coordinated with the reporter, after the patch is available
 
 For critical vulnerabilities actively exploited in the wild, we will work to release a patch as quickly as possible.
 
