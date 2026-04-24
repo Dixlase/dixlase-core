@@ -1,0 +1,15 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Vulnerability / セキュリティ脆弱性の報告
+    url: https://github.com/Dixlase/dixlase-core/security/advisories/new
+    about: >-
+      Do NOT report security vulnerabilities in public issues. Use GitHub's
+      private vulnerability reporting or email security@exc-d.com. See
+      SECURITY.md for details. / セキュリティ脆弱性は公開 Issue で報告せず、
+      GitHub のプライベート脆弱性報告または security@exc-d.com へメールしてください。
+      詳細は SECURITY.md を参照。
+  - name: Question / 質問・相談
+    url: https://github.com/Dixlase/dixlase-core/discussions
+    about: >-
+      For usage questions, ideas, or general discussion, please use GitHub
+      Discussions. / 使い方の質問やアイディア共有は GitHub Discussions へ。
