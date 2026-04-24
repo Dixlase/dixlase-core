@@ -1,5 +1,25 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 /*
 |--------------------------------------------------------------------------
 | Two-Factor Authentication Configuration
@@ -29,7 +49,7 @@ return [
             'Opera' => '/Opera|OPR/i',
             'Internet Explorer' => '/MSIE|Trident/i',
         ],
-        
+
         'operating_systems' => [
             'Windows' => '/Windows/i',
             'macOS' => '/Macintosh|Mac OS X/i',
@@ -39,14 +59,14 @@ return [
             'Android' => '/Android/i',
             'iOS' => '/iOS/i',
         ],
-        
+
         // デフォルト名称
         'defaults' => [
             'browser' => 'Unknown Browser',
             'os' => 'Unknown OS',
             'device' => 'Unknown Device',
         ],
-        
+
         // 除外パターン（Safariの検出でChromeを除外するなど）
         'exclusions' => [
             'Safari' => ['/Chrome/i'], // SafariとしてマッチしてもChromeが含まれていたら除外
