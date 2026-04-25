@@ -1,7 +1,7 @@
 # Dixlase Copyright Policy
 
-**Version:** 1.0
-**Effective Date:** 2026-04-24
+**Version:** 1.1
+**Effective Date:** 2026-04-25
 
 This Copyright Policy ("Policy") governs contributions to the Dixlase project ("Dixlase"), operated by exc-D inc. ("exc-D"). By contributing to Dixlase, you agree to the terms of this Policy.
 
@@ -34,12 +34,14 @@ This Policy does **not** apply to:
 
 When you submit a contribution to Dixlase, you agree that, at the time your contribution is accepted into the project, the economic copyright (財産権としての著作権) in your contribution is assigned to exc-D inc., to the extent your contribution qualifies as a copyrightable work under applicable law.
 
+This assignment is unconditional and irrevocable, and takes effect at the moment your contribution is accepted into the project. Once accepted, the assignment cannot be withdrawn.
+
 This assignment allows exc-D inc. to:
 
 - Distribute your contribution under the AGPL v3 and the Dixlase Plugin and Theme Exception
 - Distribute your contribution under a commercial license to parties who do not wish to comply with the AGPL
 - Relicense your contribution as part of future licensing strategies consistent with the mission of Dixlase
-- Transfer your contribution, together with other parts of Dixlase, to a non-profit organization or similar public-interest entity in the future (see Section 10)
+- Transfer your contribution, together with other parts of Dixlase, to a non-profit organization or similar public-interest entity in the future (see Section 11)
 
 ## 4. Waiver of Moral Rights
 
@@ -79,31 +81,37 @@ If your contribution incorporates materials owned by third parties (such as open
 - Clearly identify the third-party materials and their licenses in your contribution
 - Open an issue or contact the maintainers before submitting the pull request to discuss the inclusion
 
-## 9. Disclaimers
+## 9. Indemnification
+
+To the extent permitted by applicable law, you agree to indemnify and hold harmless exc-D inc., its successors, and any party who receives your contribution through exc-D inc., from and against any claims, damages, losses, liabilities, and reasonable expenses (including reasonable attorneys' fees) arising out of or related to a knowing breach of your representations in Section 6 or your obligations regarding third-party materials in Section 8.
+
+This Section does not apply to good-faith contributions where you sincerely believed your representations to be true at the time of submission.
+
+## 10. Disclaimers
 
 Your contribution is provided "as is," without warranties of any kind. exc-D inc. is under no obligation to accept, use, or distribute any particular contribution.
 
-## 10. Future Transition to a Non-Profit or Public-Interest Entity
+## 11. Future Transition to a Non-Profit or Public-Interest Entity
 
 exc-D inc. currently operates and manages Dixlase. However, exc-D inc. does not intend to hold Dixlase as a permanent private asset. Depending on the growth of the project, the development of the community, and public-interest considerations that may emerge, exc-D inc. may explore the option of transferring the management of Dixlase — including the copyright in contributions — to a non-profit organization or other public-interest entity in the future.
 
 There is no specific plan or commitment to carry out such a transition at this time, and this Policy does not create any obligation to do so. Contributors acknowledge that by agreeing to this Policy, they understand this long-term vision and consent to the possibility of such a future transfer as part of exc-D inc.'s stewardship of Dixlase.
 
-## 11. How You Agree to This Policy
+## 12. How You Agree to This Policy
 
 By submitting a contribution to the Dixlase core repository — whether through a pull request, a commit, an issue, a discussion post, or any other means — you agree to the terms of this Policy.
 
 We may in the future adopt more explicit acceptance mechanisms (such as a CLA Assistant bot), but the act of contributing is itself considered your agreement to this Policy.
 
-## 12. Changes to This Policy
+## 13. Changes to This Policy
 
 exc-D inc. may update this Policy from time to time. Significant changes will be announced publicly through the project's repository and communication channels. Contributions submitted after the effective date of a revised Policy are subject to the revised Policy. Contributions already accepted remain governed by the Policy in effect at the time they were submitted.
 
-## 13. Governing Law and Jurisdiction
+## 14. Governing Law and Jurisdiction
 
 This Policy is governed by the laws of Japan. Any disputes arising out of or in connection with this Policy shall be submitted to the exclusive jurisdiction of the Tokyo District Court as the court of first instance.
 
-## 14. Contact
+## 15. Contact
 
 For questions about this Policy, contact exc-D inc. at:
 
