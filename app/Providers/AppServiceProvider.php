@@ -70,6 +70,11 @@ class AppServiceProvider extends ServiceProvider
             return new PluginPermissionService();
         });
 
+        // パターン検出レジストリ（デフォルトパターンを全登録した状態で配布）
+        $this->app->singleton(\App\Services\Plugin\Scanning\PatternRegistry::class, function () {
+            return \App\Services\Plugin\Scanning\PatternRegistry::createDefault();
+        });
+
         // ファイル暗号化サービスをバインド
         $this->app->bind(FileEncryptionServiceInterface::class, CoreFileEncryptionService::class);
 
