@@ -23,12 +23,13 @@
 以下は最優先（v0.1.0 前に必ず解消）または高優先（リリース直後に解消）として分類され、すでに完了しています:
 
 - **ライセンス整合性** — AGPL v3 + 商用デュアル構造、プラグイン API 例外条項、全ソースファイルへのライセンスヘッダー（`cbe43495`, `320f1fb0`, `6a04b7ef`）
-- **CAA の法的完全性・日英整合** — [`COPYRIGHT-POLICY.md`](./COPYRIGHT-POLICY.md) / [`COPYRIGHT-POLICY.ja.md`](./COPYRIGHT-POLICY.ja.md)
+- **CAA の法的完全性・日英整合** — [`COPYRIGHT-POLICY.md`](./COPYRIGHT-POLICY.md) / [`COPYRIGHT-POLICY.ja.md`](./COPYRIGHT-POLICY.ja.md)、v1.1 で不可撤回性の明示および補償条項を追加（`647de24b`）
 - **AGPL §13 ソース提供導線** — 運用インスタンスのソース取得 URL を管理画面で提示（`b703e583`）
 - **GitHub Community Standards** — [`CONTRIBUTING.md`](./CONTRIBUTING.md)、[`SECURITY.md`](./SECURITY.md)、Issue テンプレート、PR テンプレート（`a237b8d7`, `8ec1dcea`）
 - **ソースライセンスヘッダー** — PHP・JS・CSS・テスト全般に AGPL ヘッダー
-- **CAA のスコープと抜け穴** — `COPYRIGHT-POLICY.md` 内で対応
-- **コントリビューション運用フロー** — ブランチ運用、サインオフ、レビュー方針を `CONTRIBUTING.md` に記載
+- **CAA のスコープと抜け穴** — `COPYRIGHT-POLICY.md` v1.1（第6、8、9条）で対応
+- **コントリビューション運用フロー** — ブランチ運用、Conventional Commits ガイダンス、機能提案窓口、レビュー方針を `CONTRIBUTING.md` に記載
+- **リリース前のコントリビューター履歴** — v0.1.0 前のコミットはすべて創業者によるもので、外部からの遡及同意取得は不要。古いメールアドレスは `.mailmap` で正準 identity に統合
 - **セキュリティ報告の実効性** — 協調的開示・セーフハーバー・スコープ条項を `SECURITY.md` に記載
 
 ---

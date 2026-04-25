@@ -61,15 +61,28 @@ Use descriptive branch names such as `fix/login-redirect` or `feature/two-factor
 
 ### 5. Commit Your Changes
 
-Write clear commit messages that explain *what* changed and *why*:
+Use [Conventional Commits](https://www.conventionalcommits.org/) style for the commit subject:
+
+- `feat:` — a new feature
+- `fix:` — a bug fix
+- `refactor:` — code restructuring without behavior change
+- `docs:` — documentation only
+- `test:` — adding or updating tests
+- `chore:` — tooling, dependencies, or other maintenance
+
+Write commit messages that explain *what* changed and *why*:
 
 ```
-Short summary (50 chars or less)
+feat: add two-factor authentication for admin login
 
-More detailed explanation if necessary. Wrap lines at around 72
+Detailed explanation of the change. Wrap lines at around 72
 characters. Explain the problem this commit is solving and why
 this particular solution was chosen.
+
+Closes #123
 ```
+
+Core maintainers additionally include a Japanese summary for the project's bilingual history. External contributors are **not** required to do this — English-only commits are welcome.
 
 ### 6. Submit a Pull Request
 
@@ -94,6 +107,17 @@ When reporting bugs, please include:
 - Expected vs. actual behavior
 - Environment details (OS, PHP version, browser, etc.)
 - Relevant logs or error messages
+
+## Suggesting Features
+
+When proposing a new feature, open an issue describing:
+
+- The use case or problem the feature addresses
+- The proposed behavior or API
+- Alternatives you considered
+- Whether you are willing to help implement it
+
+For larger or design-heavy proposals, starting a thread in [GitHub Discussions](https://github.com/Dixlase/dixlase-core/discussions) before opening an issue is encouraged.
 
 ## Reporting Security Vulnerabilities
 

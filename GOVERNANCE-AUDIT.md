@@ -23,12 +23,13 @@ Items are not dismissed; they are queued.
 These were classified as critical (must-fix before v0.1.0) or high-priority (must-fix immediately after) and have been completed:
 
 - **License consistency** — AGPL v3 + commercial dual-license structure, Plugin API Exception, license headers across all source files (`cbe43495`, `320f1fb0`, `6a04b7ef`)
-- **CAA legal completeness, EN/JA parity** — [`COPYRIGHT-POLICY.md`](./COPYRIGHT-POLICY.md) / [`COPYRIGHT-POLICY.ja.md`](./COPYRIGHT-POLICY.ja.md)
+- **CAA legal completeness, EN/JA parity** — [`COPYRIGHT-POLICY.md`](./COPYRIGHT-POLICY.md) / [`COPYRIGHT-POLICY.ja.md`](./COPYRIGHT-POLICY.ja.md); strengthened to v1.1 with explicit irrevocability and an indemnification clause (`647de24b`)
 - **AGPL §13 source-provisioning surface** — running-instance source URL exposed via admin (`b703e583`)
 - **GitHub Community Standards** — [`CONTRIBUTING.md`](./CONTRIBUTING.md), [`SECURITY.md`](./SECURITY.md), issue templates, PR template (`a237b8d7`, `8ec1dcea`)
 - **Source license headers** — AGPL headers across PHP, JS, CSS, tests
-- **CAA scope and edge cases** — handled inline in `COPYRIGHT-POLICY.md`
-- **Contribution operational flow** — branching, sign-off, review expectations in `CONTRIBUTING.md`
+- **CAA scope and edge cases** — handled inline in `COPYRIGHT-POLICY.md` v1.1 (Sections 6, 8, 9)
+- **Contribution operational flow** — branching, conventional-commit guidance, feature-proposal route, review expectations in `CONTRIBUTING.md`
+- **Pre-release contributor history** — all commits before v0.1.0 are by the founder; no external retroactive consent required. Legacy email identities are consolidated via `.mailmap`
 - **Security disclosure effectiveness** — coordinated disclosure, safe harbor, scope clauses in `SECURITY.md`
 
 ---
