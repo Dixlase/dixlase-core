@@ -30,9 +30,8 @@ return new class extends Migration
     {
         Schema::create('front_page_revisions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('front_page_id')
-                ->constrained('front_pages')
-                ->cascadeOnDelete();
+            // FK は add_foreign_key_constraints (999999) でまとめて追加（front_pages.id への cascade）
+            $table->unsignedBigInteger('front_page_id');
             // 全フィールド（title, content, custom_js, custom_css, storage_type, editor_type, status など）の完全スナップショット
             $table->json('snapshot');
             // auto: 自動保存 / manual: 手動作成 / restore_backup: 復元前バックアップ
@@ -40,10 +39,8 @@ return new class extends Migration
             $table->string('note')->nullable();
             // 保護フラグ。true の場合は自動保持件数超過時の自動削除対象外となる
             $table->boolean('is_protected')->default(false);
-            $table->foreignId('created_by')
-                ->nullable()
-                ->constrained('members')
-                ->nullOnDelete();
+            // FK は add_foreign_key_constraints (999999) でまとめて追加（members.id への nullOnDelete）
+            $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('created_at')->nullable();
 
             $table->index(['front_page_id', 'created_at']);
