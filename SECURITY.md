@@ -20,9 +20,10 @@ During the early development phase, only the latest development version is suppo
 
 ### How to Report
 
-Send vulnerability reports to:
+You can submit a vulnerability report through either of the following private channels:
 
-**Email:** security@exc-d.com
+- **GitHub Private Vulnerability Reporting (preferred)** — [Open a security advisory](https://github.com/Dixlase/dixlase-core/security/advisories/new). Submissions are protected by HTTPS and visible only to maintainers.
+- **Email:** security@exc-d.com
 
 Please include as much of the following information as possible:
 
@@ -40,7 +41,7 @@ For highly sensitive reports, you may encrypt your report using our PGP key:
 - **Fingerprint:** *(To be published)*
 - **Public key:** *(To be published)*
 
-The PGP key will be published on this page once generated. In the meantime, please use email encryption if supported by your mail provider.
+The PGP key will be published on this page once generated. Until then, **GitHub Private Vulnerability Reporting** is the recommended encrypted alternative — submissions are protected by HTTPS and accessible only to maintainers. Email encryption is also acceptable if supported by your mail provider.
 
 ## What to Expect
 
