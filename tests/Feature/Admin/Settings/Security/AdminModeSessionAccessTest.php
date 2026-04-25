@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,8 +28,6 @@ use App\Enums\MemberStatus;
 use App\Helpers\AdminModeHelper;
 use App\Helpers\ConfigHelper;
 use App\Http\Middleware\CheckInstallationReady;
-use App\Http\Middleware\CheckMenuAccess;
-use App\Http\Middleware\CheckMenuEdit;
 use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Models\BaseSetting;
 use App\Models\Member;
@@ -223,5 +221,4 @@ class AdminModeSessionAccessTest extends TestCase
         $this->assertArrayHasKey('settings.security.session', $results);
         $this->assertTrue($results['settings.security.session']);
     }
-
 }

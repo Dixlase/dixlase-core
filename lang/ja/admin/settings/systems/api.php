@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@ return [
     'rate_limit_help' => 'APIキーごとに個別設定がない場合に適用されるデフォルトのレート制限です。',
     'requests_per_minute' => 'リクエスト/分',
     'update_success' => 'API設定を更新しました。',
-    
+
     // APIキー管理
     'api_keys' => 'APIキー管理',
     'create_key' => '新規APIキー作成',
@@ -59,7 +59,7 @@ return [
     'regenerate_confirm' => 'このAPIキーを再生成しますか？現在のキーは無効になります。',
     'revoke_confirm' => 'このAPIキーを削除しますか？この操作は取り消せません。',
     'key_details' => 'APIキー詳細',
-    
+
     // 成功メッセージ
     'key_generated' => 'APIキーを生成しました。',
     'key_generated_warning' => '重要: このAPIキーは一度だけ表示されます',

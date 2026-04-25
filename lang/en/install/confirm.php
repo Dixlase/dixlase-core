@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,6 +28,8 @@ return [
     'confirm_button' => 'Install',
     'installing' => 'Installing...',
     'installing_description' => 'Please do not close this page. This may take a moment.',
+    'installing_description_line1' => 'Please do not close this page.',
+    'installing_description_line2' => 'This may take a moment.',
 
     // Confirmation Page Related
     'settings_review' => 'Settings Review',

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,12 +24,12 @@ return [
     'security_title' => 'Security Settings',
     'security_header' => 'Security Settings (Optional)',
     'security_description' => 'Configure admin panel URL and IP restrictions.<br>IP restrictions can be configured after installation.',
-    
+
     'site_url' => 'Front Page URL',
     'admin_url' => 'Admin Panel URL',
     'admin_url_security_note' => 'In production environments, it is recommended to set the admin panel URL to something other than "admin" that is difficult to guess.',
     'force_ssl' => 'Force SSL (HTTPS)',
-    
+
     // IP Restrictions
     'ip_restrictions' => 'IP Address Restrictions',
     'enable_allowed_admin_ips' => 'Allow only specific IP addresses to access admin panel',

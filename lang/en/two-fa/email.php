@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@
  */
 
 return [
-    'prompt' => <<<TEXT
+    'prompt' => <<<'TEXT'
 We have sent you an email with an authentication code.
 Please enter the 6-digit authentication code from the email.
 TEXT,

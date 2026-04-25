@@ -1,8 +1,9 @@
 <?php
+
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -92,7 +93,7 @@ return [
             'description' => 'テーマ/プラグイン開発用。すべて動作するが違反を記録。',
             'description_en' => 'For theme/plugin development. Everything works but violations are logged.',
         ],
-        
+
         // 標準モード: 本番推奨、nonce付きインラインのみ許可
         'standard' => [
             'header' => 'Content-Security-Policy',
@@ -110,7 +111,7 @@ return [
             'description' => '本番運用推奨。ヘルパー経由のインラインは許可。',
             'description_en' => 'Recommended for production. Inline via helpers allowed.',
         ],
-        
+
         /*
         // 厳格モード: 最大セキュリティ、外部JSのみ（初期バージョンでは未実装）
         'strict' => [
@@ -154,4 +155,4 @@ return [
     | 推奨: 16バイト以上（Base64エンコード後は約22文字）
     |
     */
-    'nonce_length' => 16,];
+    'nonce_length' => 16, ];

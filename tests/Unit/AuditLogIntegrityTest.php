@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -213,7 +213,7 @@ class AuditLogIntegrityTest extends TestCase
         $result = $this->service->verifyChain(null, null, false);
 
         $this->assertFalse($result['is_valid'], 'Should detect sequence gap');
-        
+
         // chain_brokenまたはsequence_gapエラーが含まれることを確認
         $hasGapError = false;
         foreach ($result['errors'] as $error) {

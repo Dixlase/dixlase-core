@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -127,14 +127,14 @@ return [
     'settings_updated' => 'CAPTCHA settings have been updated.',
     'token_required' => 'CAPTCHA token is required',
     'secret_key_required' => 'Secret key is required',
-    
+
     // Form settings
     'form_settings_title' => 'CAPTCHA Settings by Form',
     'form_settings_description' => 'Select which forms should use CAPTCHA verification. All forms defined in core and plugins are displayed here.',
     'route' => 'Route',
     'plugin' => 'Plugin',
     'no_forms_available' => 'No forms available.',
-    
+
     // Categories
     'categories' => [
         'admin' => 'Admin Panel',
@@ -142,7 +142,7 @@ return [
         'contact' => 'Contact',
         'comment' => 'Comments',
     ],
-    
+
     // Form names
     'forms' => [
         'admin_login' => 'Admin Login',

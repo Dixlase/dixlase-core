@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,12 +24,12 @@ return [
     'security_title' => 'セキュリティ設定',
     'security_header' => 'セキュリティ設定(任意)',
     'security_description' => '管理画面のURLやIP制限を設定します。<br>IP制限はインストール後に設定することも可能です。',
-    
+
     'site_url' => 'フロントページURL',
     'admin_url' => '管理画面URL',
     'admin_url_security_note' => '本番環境では管理画面URLは「admin」以外の予想されにくいURLを設定することを推奨します。',
     'force_ssl' => 'SSL（HTTPS）を強制する',
-    
+
     // IP制限
     'ip_restrictions' => 'IPアドレス制限',
     'enable_allowed_admin_ips' => '特定のIPアドレスのみ管理画面へのアクセスを許可',

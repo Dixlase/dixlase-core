@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,14 +24,14 @@ return [
     'database_title' => 'データベース設定',
     'database_header' => 'データベース情報を入力してください',
     'database_description' => 'システムで使用するデータベースの設定を行います。',
-    
+
     // データベース設定関連
     'database_connection_settings' => 'データベース接続設定',
     'database_connection_details' => 'データベース接続詳細',
     'data_preservation_settings' => 'データ保持設定',
     'database_preservation_options' => 'データベース保持オプション',
     'database_connection_test' => 'データベース接続テスト',
-    
+
     'db_connection' => 'データベースの種類',
     'db_host' => 'データベースホスト',
     'db_port' => 'データベースポート',
@@ -39,10 +39,10 @@ return [
     'db_username' => 'データベースユーザー名',
     'db_password' => 'データベースパスワード',
     'db_password_required' => 'データベースパスワードは必須です。',
-    
+
     'preserve_database' => 'データベースをリセットしない',
     'preserve_database_help' => 'チェックを入れると、既存のデータを保持したまま必要な更新のみを適用します。チェックを外すと、インストール時に既存のデータがすべて削除されます。',
-    
+
     'test_db_connection' => '接続テスト',
     'db_connection_success' => 'データベース接続成功！',
     'db_connection_error' => 'データベース接続に失敗しました: :error',

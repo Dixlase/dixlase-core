@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,13 +22,13 @@
 
 return [
     'title' => '二段階認証',
-    
+
     // 二段階認証方法
     'method' => [
         'email' => 'メール認証',
         'passkey' => 'Passkey認証',
     ],
-    
+
     // セキュリティレベル
     'security' => [
         'level' => [
@@ -45,23 +45,23 @@ return [
         'recommended' => '推奨',
         'backup' => 'バックアップ',
     ],
-    
+
     // 認証方法切り替え
     'switch_method_prompt' => '別の認証方法に切り替える',
     'switch_to_passkey' => 'Passkey認証に切り替える',
     'switch_to_email' => 'メール認証に切り替える',
-    
+
     // 共通
     'back_to_login' => 'ログイン画面に戻る',
     'alternative_methods_prompt' => '別の認証方法を使用しますか？',
     'awaiting_approval' => '承認待機中...',
-    
+
     // ロックアウト
     'lockout' => [
         'message' => '二段階認証の試行回数が上限に達しました。:minutes分後に再度お試しください。',
         'locked' => '二段階認証の試行回数が上限に達しました。:minutes分間ロックされます。',
     ],
-    
+
     // 2FAモード
     'mode' => [
         'disabled' => '無効',

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -55,7 +55,7 @@ return [
     'zip_max_file_count' => '最大ファイル数',
     'times' => '倍',
     'files' => '個',
-    
+
     'success' => [
         'settings_updated' => 'メディア設定が更新されました。',
     ],

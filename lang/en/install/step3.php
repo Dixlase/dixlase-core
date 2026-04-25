@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,14 +24,14 @@ return [
     'database_title' => 'Database Settings',
     'database_header' => 'Database Configuration',
     'database_description' => 'Configure the database to be used by the system.',
-    
+
     // Database Settings Related
     'database_connection_settings' => 'Database Connection Settings',
     'database_connection_details' => 'Database Connection Details',
     'data_preservation_settings' => 'Data Preservation Settings',
     'database_preservation_options' => 'Database Preservation Options',
     'database_connection_test' => 'Database Connection Test',
-    
+
     'db_connection' => 'Database Type',
     'db_host' => 'Database Host',
     'db_port' => 'Database Port',
@@ -39,10 +39,10 @@ return [
     'db_username' => 'Database Username',
     'db_password' => 'Database Password',
     'db_password_required' => 'Database password is required.',
-    
+
     'preserve_database' => 'Do not reset database',
     'preserve_database_help' => 'If checked, existing data will be preserved and only necessary updates will be applied. If unchecked, all existing data will be deleted during installation.',
-    
+
     'test_db_connection' => 'Test Connection',
     'db_connection_success' => 'Database connection successful!',
     'db_connection_error' => 'Failed to connect to database: :error',

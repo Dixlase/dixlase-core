@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,11 +21,11 @@
  */
 
 return [
-    //ログイン時のメール通知設定
+    // ログイン時のメール通知設定
     'global_login_notification_mail_mode' => [0, 1, 2, 3], // 0: 無効, 1: 異なる端末/IP時のみ有効, 2: 常に有効, 3: メンバーのプロフィール設定を反映
     'members_login_notification_mail_mode' => [0, 1, 2], // 0: 無効, 1: 異なる端末/IP時のみ有効, 2: 常に有効
 
-    //二段階認証の設定
+    // 二段階認証の設定
     'global_two_fa_mode' => [0, 1, 2, 3], // 0: 無効, 1: 異なるデバイス・IP時のみ, 2: 常に有効, 3: メンバーのプロフィール設定に従う
     'members_two_factor_mode' => [0, 1, 2], // 0: 無効, 1: 異なるデバイス・IP時のみ, 2: 常に有効
 ];

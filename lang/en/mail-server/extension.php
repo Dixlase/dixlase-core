@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,11 +27,11 @@ return [
     'subject_enabled' => '[:app_name] :type ":name" has been enabled',
     'subject_disabled' => '[:app_name] :type ":name" has been disabled',
     'subject_unhealthy_warning' => '[:app_name Warning] :type requiring health attention has been operated',
-    
+
     // Types
     'type_plugin' => 'Plugin',
     'type_theme' => 'Theme',
-    
+
     // Body
     'greeting' => 'Dear System Administrator',
     'message_installed' => ':type ":name" has been installed.',
@@ -39,7 +39,7 @@ return [
     'message_enabled' => ':type ":name" has been enabled.',
     'message_disabled' => ':type ":name" has been disabled.',
     'message_unhealthy_warning' => 'A :type with health status other than "Healthy" has been operated. Please review the details.',
-    
+
     // Details
     'details_title' => 'Operation Details',
     'extension_name' => 'Extension Name',
@@ -57,10 +57,10 @@ return [
     'health_needs_attention' => 'Needs Attention',
     'health_not_verified' => 'Not Verified',
     'version' => 'Version',
-    
+
     // Warning Messages
     'unhealthy_notice' => 'This extension has a health status of ":level". We recommend reviewing the features and permissions it uses.',
-    
+
     // Footer
     'regards' => 'Best regards,',
     'auto_notification' => 'This notification is automatically sent based on security settings.',

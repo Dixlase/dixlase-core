@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -34,7 +34,7 @@ return [
     'expiration' => 'This verification link will expire in :minutes minutes.',
     'security_notice' => '【IMPORTANT】If you did not request this email, please ignore it. Your account will not be activated unless you click the verification link. A third party may have mistakenly registered using this email address, but your personal information will not be compromised.',
     'regards' => 'Best regards',
-    
+
     // Member Email Verification
     'member' => [
         'subject' => 'Verify Email Address Change',
@@ -54,7 +54,7 @@ return [
         'security_notice' => '【IMPORTANT】If you did not request this email, please ignore it. Your account will not be activated unless you click the verification link. A third party may have mistakenly registered using this email address, but your personal information will not be compromised.',
         'regards' => 'Best regards',
     ],
-    
+
     // Member Verification Completed Notification
     'member_verification_completed' => [
         'subject' => 'Account Verification Completed',

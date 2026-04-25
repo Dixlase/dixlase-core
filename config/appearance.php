@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -41,7 +41,7 @@ return [
             'body' => 'bg-white text-gray-900 dark:bg-gray-950 dark:text-white transition-colors duration-300',
             'header' => 'bg-gray-200 dark:bg-gray-800 border-gray-300 dark:border-gray-700',
             'logo' => 'text-gray-900 dark:text-white',
-            'aside' => 'bg-gray-100 dark:bg-gray-800 text-gray-900 border-r border-gray-300  dark:text-white dark:border-r dark:border-gray-700 ' . config('appearance.transition_class'),
+            'aside' => 'bg-gray-100 dark:bg-gray-800 text-gray-900 border-r border-gray-300  dark:text-white dark:border-r dark:border-gray-700 '.config('appearance.transition_class'),
             'main' => 'bg-white text-gray-900 dark:bg-black dark:text-white',
             'title' => 'bg-gray-100 text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white',
             'heading' => 'text-gray-800 dark:text-white',
@@ -56,7 +56,7 @@ return [
         ],
         'sidebar' => [
             'normal' => 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white',
-            'active' => 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600'
+            'active' => 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600',
         ],
         'table' => [
             'table' => 'w-full text-sm text-left rtl:text-right mb-4',

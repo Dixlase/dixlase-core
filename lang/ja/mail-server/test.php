@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,7 +38,7 @@ return [
     'mail_test_warning_temporary' => 'テスト結果は一時的に保存されます。更新ボタンを押すまで、設定やテスト結果は保存されません。',
     'mail_receive_test_completed' => 'メール受信テストが完了しました。設定を保存してください。',
     'connection_test_required' => '接続テストを先に実行してください。',
-    
+
     // テストメール内容
     'test_mail' => [
         'subject' => 'メール送信テスト',
@@ -69,7 +69,7 @@ return [
         'success' => 'テストメールが正常に送信されました。受信トレイをご確認ください。',
         'failed' => 'メール送信に失敗しました: :error',
     ],
-    
+
     // メールテスト機能（共通）
     'test_functions' => [
         'test_connection_button' => '接続テスト',
@@ -101,7 +101,7 @@ return [
         'send_test' => 'メール送信テスト',
         'receive_test' => 'メール受信確認',
     ],
-    
+
     // 3段階メールテスト機能
     'test_advanced' => [
         'test_email_subject' => 'メールサーバー設定テスト',
@@ -128,10 +128,10 @@ return [
             'next_steps_title' => '次のステップ',
             'next_steps' => [
                 'close_window' => 'このウィンドウを閉じる',
-                'continue_install' => 'インストール画面に戻って設定を続行する'
+                'continue_install' => 'インストール画面に戻って設定を続行する',
             ],
             'close_button' => 'ウィンドウを閉じる',
-            'completed_message' => 'メール受信確認が完了しました'
+            'completed_message' => 'メール受信確認が完了しました',
         ],
         'three_stage_test_incomplete' => '3段階メールテストが未完了です',
         'three_stage_test_complete' => '3段階メールテストが完了しました',
@@ -139,7 +139,7 @@ return [
         'send_test' => 'メール送信テスト',
         'receive_test' => 'メール受信確認',
     ],
-    
+
     // JavaScript用メッセージ
     'js_messages' => [
         'test_route_not_set' => 'テストルートが設定されていません',

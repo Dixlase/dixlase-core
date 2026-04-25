@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -127,14 +127,14 @@ return [
     'settings_updated' => 'CAPTCHA設定が更新されました。',
     'token_required' => 'CAPTCHAトークンが必要です',
     'secret_key_required' => 'シークレットキーが必要です',
-    
+
     // フォーム設定
     'form_settings_title' => 'フォームごとのCAPTCHA設定',
     'form_settings_description' => 'CAPTCHAを適用するフォームを選択してください。コアとプラグインで定義されたすべてのフォームが表示されます。',
     'route' => 'ルート',
     'plugin' => 'プラグイン',
     'no_forms_available' => '利用可能なフォームがありません。',
-    
+
     // カテゴリ
     'categories' => [
         'admin' => '管理画面',
@@ -142,7 +142,7 @@ return [
         'contact' => 'お問い合わせ',
         'comment' => 'コメント',
     ],
-    
+
     // フォーム名
     'forms' => [
         'admin_login' => '管理画面ログイン',

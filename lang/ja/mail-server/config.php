@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,7 +36,7 @@ return [
         'tls' => 'TLS（推奨）',
         'ssl' => 'SSL',
     ],
-    
+
     // メールサーバー設定フィールド
     'server_settings' => [
         'mailer' => 'メーラー',
@@ -48,7 +48,7 @@ return [
         'mail_from_address' => '送信元メールアドレス',
         'mail_from_name' => '送信元名',
     ],
-    
+
     // メール設定・テスト共通
     'settings' => [
         'mailer' => 'Mailer',
@@ -73,7 +73,7 @@ return [
         'save_settings_reminder' => '設定を保存してください',
         'save_settings_reminder_message' => '変更を有効にするため、必ず設定を保存してください。',
     ],
-    
+
     // バリデーションメッセージ
     'validation' => [
         'mail_mailer_required' => 'メーラーを選択してください。',
@@ -82,7 +82,7 @@ return [
         'mail_port_numeric' => 'メールポートは数値で入力してください。',
         'mail_from_address_email' => '送信元アドレスは有効なメールアドレスである必要があります。',
     ],
-    
+
     // コントローラーメッセージ
     'controller_messages' => [
         'settings_updated' => '設定が更新されました。',
