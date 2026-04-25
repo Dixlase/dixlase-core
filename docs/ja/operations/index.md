@@ -31,3 +31,9 @@ CAPTCHA、Content Security Policy、二段階認証などでサイトを保護�
 個別の管理機能の詳細ガイドです。
 
 - [機能ガイド](features/index.md)
+
+## アップグレード
+
+リリース済みバージョン間で Dixlase をアップグレードする際の Runbook。
+
+- [Dixlase アップグレード手順](upgrading.md)
