@@ -34,6 +34,30 @@ These were classified as critical (must-fix before v0.1.0) or high-priority (mus
 
 ---
 
+## Release-day Checklist
+
+The following operational items can only be verified or activated at the moment the repository is published. Walk through this list when cutting v0.1.0 and confirm each item before announcing the release.
+
+### Email and Reporting Operations (F-1)
+
+- [ ] Send a test message to `security@exc-d.com` from an external address and confirm receipt
+- [ ] Verify DNS MX records and any forwarding aliases resolve to the maintainer inbox
+- [ ] Decide and document the acknowledgment policy: auto-reply, 24-hour human response, or rely on GitHub PVR notifications only
+
+### GitHub Repository Settings (F-5, H-3)
+
+- [ ] Make the repository public (`Settings → General → Change repository visibility`)
+- [ ] Enable **Private vulnerability reporting** (`Settings → Code security`) — this activates the `/security/advisories/new` link surfaced in `SECURITY.md` and the issue templates
+- [ ] Confirm the Security tab is visible and renders `SECURITY.md` at `/security/policy`
+- [ ] Verify the Community Standards page shows green checks for everything except Code of Conduct (deferred — see Low Priority)
+- [ ] Enable Dependabot alerts and security updates
+- [ ] Enable Secret scanning (free for public repositories)
+- [ ] Add branch protection on `main`: required PR reviews, required status checks, force-push blocked
+
+When each item is completed, move the corresponding entry to **Items Already Resolved** with the date and any relevant configuration reference.
+
+---
+
 ## Medium Priority — Phased Post-v0.1.0
 
 ### I. Structural and Adversarial Scenarios

@@ -34,6 +34,30 @@
 
 ---
 
+## リリース当日チェックリスト
+
+以下の運用項目はリポジトリ公開のタイミングでのみ検証・有効化が可能です。v0.1.0 をカットする際、本リストを通しで確認してからリリースをアナウンスしてください。
+
+### メールおよび報告経路の運用（F-1）
+
+- [ ] 外部アドレスから `security@exc-d.com` にテストメールを送信し、受信を確認
+- [ ] DNS MX レコードと転送エイリアスがメンテナーの受信箱に解決していることを確認
+- [ ] 受信確認の方針を決めて文書化: 自動返信／24時間以内の人的対応／GitHub PVR の通知のみ、のいずれか
+
+### GitHub リポジトリ設定（F-5, H-3）
+
+- [ ] リポジトリを Public にする（`Settings → General → Change repository visibility`）
+- [ ] **Private vulnerability reporting** を有効化（`Settings → Code security`）— これにより `SECURITY.md` および Issue テンプレートで参照している `/security/advisories/new` リンクが機能する
+- [ ] Security タブが表示され、`/security/policy` で `SECURITY.md` が描画されることを確認
+- [ ] Community Standards ページで Code of Conduct 以外がすべて緑チェックであることを確認（CoC は先送り — 「低優先」参照）
+- [ ] Dependabot アラートおよびセキュリティ更新を有効化
+- [ ] Secret scanning を有効化（公開リポジトリでは無料）
+- [ ] `main` にブランチ保護を追加: PR レビュー必須、ステータスチェック必須、force-push 禁止
+
+各項目が完了したら、当該エントリを **解消済み項目** へ日付および参照可能な設定情報とともに移動する。
+
+---
+
 ## 中優先 — リリース後に段階的に対応
 
 ### I. 構造的・敵対的シナリオ
