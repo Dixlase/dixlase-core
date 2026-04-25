@@ -97,7 +97,7 @@ When each item is completed, move the corresponding entry to **Items Already Res
 **Trigger:** First sign of third-party commercial use of the name; before any expanded marketing push; **target trademark filing decision: 2026-Q3**.
 
 #### I-3. Long-term Governance / Bus Factor
-**Snapshot:** Single-key-person project. exc-D inc. is the corporate steward; no secondary entity. Nonprofit transition is mentioned in `COPYRIGHT-POLICY.md` as a possibility but has no documented criteria.
+**Snapshot:** Single-key-person project. exc-D inc. is the corporate steward; no secondary entity. `COPYRIGHT-POLICY.md` Section 11 lists six possible future governance arrangements (continued operation, partner program, nonprofit transfer, community board, hybrid, or other) but does not document criteria for choosing among them.
 
 **Trigger:** When active contributor count exceeds 10; annual corporate governance review.
 
@@ -184,7 +184,7 @@ The following decisions established during pre-v0.1.0 review remain authoritativ
 - License propagation is blocked by the Plugin API Exception (four-condition test)
 - CAA assigns economic copyright to exc-D inc. (assignment model, EC-CUBE precedent)
 - Author's moral rights non-exercise clause (Japan-law adaptation)
-- Future transition to a nonprofit steward is mentioned with reservation language
+- Future governance is described in `COPYRIGHT-POLICY.md` Section 11 as a set of possible options (continued operation, multi-stakeholder partner program, nonprofit transfer, community board, hybrid, or other), with reservation language and minimum commitments (AGPL continuity, transparency, advance notice) regardless of which path is chosen
 - "Commit = consent" lightweight model from launch; CLA Assistant migration deferred
 - Commercial license operates on a "contact us" intake from launch; terms TBD
 - "Dixlase" trademarks are held by exc-D inc. and not granted via the Plugin API Exception
