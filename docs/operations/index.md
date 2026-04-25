@@ -31,3 +31,9 @@ Recover from incidents with safe mode, emergency lockdown, and CAPTCHA recovery 
 Detailed guides for specific admin features.
 
 - [Features Guide](features/index.md)
+
+## Upgrading
+
+Runbook for upgrading a Dixlase installation between released versions.
+
+- [Upgrading Dixlase](upgrading.md)
