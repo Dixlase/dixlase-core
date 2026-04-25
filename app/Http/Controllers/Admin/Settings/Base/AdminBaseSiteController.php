@@ -32,7 +32,7 @@ use App\Http\Requests\Admin\Settings\Base\AdminBaseSiteUpdateRequest;
 
 class AdminBaseSiteController extends AdminLoggedInController
 {
-    protected const SETTING_KEYS = ['app_name', 'locale', 'timezone'];
+    protected const SETTING_KEYS = ['app_name', 'locale', 'display_timezone'];
 
     protected BaseSettingRepositoryInterface $baseSettingRepository;
 
@@ -50,7 +50,7 @@ class AdminBaseSiteController extends AdminLoggedInController
         $settings = [
             'app_name' => ConfigHelper::getAppName(),
             'locale' => $this->getSystemLocale(),
-            'timezone' => ConfigHelper::getAppTimezone(),
+            'display_timezone' => ConfigHelper::getDisplayTimezone(),
         ];
 
         $timezones = TimezoneHelper::getTimezonesWithUtcOffset();
@@ -81,21 +81,20 @@ class AdminBaseSiteController extends AdminLoggedInController
             settingsPage: 'base.site',
             settingKeys: static::SETTING_KEYS,
             writeCallback: function ($repo, $data) {
-                // .envに保存
+                // .env にはデプロイ時に決まる項目のみ保存（APP_TIMEZONE は UTC 固定で触らない）
                 $availableLocales = config('admin.locale.available', []);
                 EnvHelper::update([
                     'app_name' => $data['app_name'],
                     'locale' => $data['locale'],
-                    'timezone' => $data['timezone'],
                     'faker_locale' => $availableLocales[$data['locale']]['faker_locale'] ?? 'ja_JA',
                     'fallback_locale' => $data['locale'],
                 ]);
 
-                // DBに保存
+                // DBに保存（display_timezone は表示用 TZ。Carbon/DB の TZ は常に UTC）
                 $repo->setMultiple([
                     'app_name' => $data['app_name'],
                     'locale' => $data['locale'],
-                    'timezone' => $data['timezone'],
+                    'display_timezone' => $data['display_timezone'],
                 ]);
             },
         )->execute($actor, $request->validated());

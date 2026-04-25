@@ -46,7 +46,7 @@ class AdminBaseSiteUpdateRequest extends FormRequest
             'site_description' => 'nullable|string|max:1000',
             'site_keywords' => 'nullable|string|max:500',
             'locale' => 'required|string|in:'.implode(',', array_keys(config('admin.locale.available', []))),
-            'timezone' => 'required|string|timezone',
+            'display_timezone' => 'required|string|timezone',
         ];
     }
 }
