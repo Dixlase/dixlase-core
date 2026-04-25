@@ -23,6 +23,8 @@
 namespace App\Events;
 
 /**
+ * @api プラグイン/テーマから使用可能な安定APIです
+ *
  * Dixlase Core Events
  *
  * This class defines all core event names that plugins can listen to.
