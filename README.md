@@ -96,6 +96,7 @@ This allows VSCode or Cursor to directly run Laravel commands and generate compo
 - [Copyright Policy](./COPYRIGHT-POLICY.md) — Contributor Assignment Agreement (CAA)
 - [Security Policy](./SECURITY.md) — Reporting vulnerabilities
 - [Plugin API](./PLUGIN-API.md) — Plugin API boundary definition
+- [Governance Audit](./GOVERNANCE-AUDIT.md) — Deferred governance, legal, and operational items
 
 ---
 

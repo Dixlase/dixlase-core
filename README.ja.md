@@ -89,6 +89,7 @@ VSCode や Cursor から Laravel のコマンド実行やコンポーネント�
 - [コピーライトポリシー](./COPYRIGHT-POLICY.ja.md) — コントリビューター同意書(CAA)
 - [セキュリティポリシー](./SECURITY.ja.md) — 脆弱性の報告
 - [Plugin API](./PLUGIN-API.md) — Plugin API 境界定義
+- [ガバナンス監査](./GOVERNANCE-AUDIT.ja.md) — 先送りされたガバナンス・法務・運用項目
 
 ---
 
