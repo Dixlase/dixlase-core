@@ -1,6 +1,6 @@
 # Dixlase Copyright Policy
 
-**Version:** 1.1
+**Version:** 1.2
 **Effective Date:** 2026-04-25
 
 This Copyright Policy ("Policy") governs contributions to the Dixlase project ("Dixlase"), operated by exc-D inc. ("exc-D"). By contributing to Dixlase, you agree to the terms of this Policy.
@@ -41,7 +41,7 @@ This assignment allows exc-D inc. to:
 - Distribute your contribution under the AGPL v3 and the Dixlase Plugin and Theme Exception
 - Distribute your contribution under a commercial license to parties who do not wish to comply with the AGPL
 - Relicense your contribution as part of future licensing strategies consistent with the mission of Dixlase
-- Transfer your contribution, together with other parts of Dixlase, to a non-profit organization or similar public-interest entity in the future (see Section 11)
+- Transfer your contribution, together with other parts of Dixlase, as part of any future governance arrangement (see Section 11)
 
 ## 4. Waiver of Moral Rights
 
@@ -91,11 +91,24 @@ This Section does not apply to good-faith contributions where you sincerely beli
 
 Your contribution is provided "as is," without warranties of any kind. exc-D inc. is under no obligation to accept, use, or distribute any particular contribution.
 
-## 11. Future Transition to a Non-Profit or Public-Interest Entity
+## 11. Future Governance of Dixlase
 
-exc-D inc. currently operates and manages Dixlase. However, exc-D inc. does not intend to hold Dixlase as a permanent private asset. Depending on the growth of the project, the development of the community, and public-interest considerations that may emerge, exc-D inc. may explore the option of transferring the management of Dixlase — including the copyright in contributions — to a non-profit organization or other public-interest entity in the future.
+exc-D inc. currently operates and manages Dixlase. However, exc-D inc. does not insist on holding Dixlase as a permanent private asset. Depending on the growth of the project, the development of the community, and public-interest considerations that may emerge, exc-D inc. may consider various options for the future governance of Dixlase, including but not limited to:
 
-There is no specific plan or commitment to carry out such a transition at this time, and this Policy does not create any obligation to do so. Contributors acknowledge that by agreeing to this Policy, they understand this long-term vision and consent to the possibility of such a future transfer as part of exc-D inc.'s stewardship of Dixlase.
+1. Continued operation by exc-D inc.
+2. Transition to a more distributed, multi-stakeholder governance structure through mechanisms such as a certified partner program
+3. Transfer of management and/or rights to a non-profit organization or other public-interest entity
+4. Opening governance through measures such as establishing a board that includes community representatives
+5. Hybrid structures combining the above
+6. Other arrangements deemed appropriate
+
+At this time, no specific plan or commitment exists regarding any of these options, and this Policy does not create any obligation to carry out any particular transition. By agreeing to this Policy, contributors acknowledge that exc-D inc. may consider appropriate governance arrangements aimed at the long-term health of Dixlase, and consent to the possibility of such future changes.
+
+Regardless of which governance arrangement is adopted, exc-D inc. will endeavor to respect the following principles:
+
+- Continued distribution as free software under the AGPL v3
+- Transparent communication with the community
+- Advance notice of significant governance changes
 
 ## 12. How You Agree to This Policy
 
