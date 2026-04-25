@@ -34,7 +34,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'translate-x-0': rightSidebarCollapsed,
             '-translate-x-80': !rightSidebarCollapsed
         }"
-        :style="rightSidebarReady ? 'transition: translate 200ms ease-in-out, transform 200ms ease-in-out' : ''"
+        :style="rightSidebarReady ? 'transition: translate 300ms ease-in-out, transform 300ms ease-in-out' : ''"
         :aria-label="rightSidebarCollapsed ? '{{ $openLabel }}' : '{{ $closeLabel }}'">
     <i class="fas text-sm" :class="rightSidebarCollapsed ? 'fa-chevron-left' : 'fa-chevron-right'"></i>
 </button>

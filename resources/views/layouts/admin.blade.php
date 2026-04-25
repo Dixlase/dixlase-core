@@ -127,7 +127,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             'translate-x-0': sidebarCollapsed,
                             'translate-x-64': !sidebarCollapsed
                         }"
-                        :style="sidebarReady ? 'transition: transform 200ms ease-in-out' : ''"
+                        :style="sidebarReady ? 'transition: translate 300ms ease-in-out, transform 300ms ease-in-out' : ''"
                         aria-label="Toggle sidebar menu">
                     <i class="fas text-sm" :class="sidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
                 </button>
