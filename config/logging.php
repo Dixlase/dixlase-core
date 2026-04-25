@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -84,7 +84,7 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
         ],
-        
+
         'dixlase' => [
             'driver' => 'daily',
             'path' => storage_path('logs/dixlase.log'),
@@ -117,7 +117,7 @@ return [
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
         ],
@@ -155,7 +155,7 @@ return [
             'path' => storage_path('logs/dixlase.log'),
         ],
 
-        //管理画面のアクティビティ
+        // 管理画面のアクティビティ
         'admin_activity' => [
             'driver' => 'daily',
             'formatter' => env('LOG_STDERR_FORMATTER'),
@@ -164,7 +164,7 @@ return [
             'days' => env('LOG_DAILY_DAYS', 14),
         ],
 
-        //管理画面のエラー
+        // 管理画面のエラー
         'admin_error' => [
             'driver' => 'daily',
             'formatter' => env('LOG_STDERR_FORMATTER'),
@@ -173,7 +173,7 @@ return [
             'days' => env('LOG_DAILY_DAYS', 14),
         ],
 
-        //フロントページの操作
+        // フロントページの操作
         'front_activity' => [
             'driver' => 'daily',
             'formatter' => env('LOG_STDERR_FORMATTER'),
@@ -182,7 +182,7 @@ return [
             'days' => env('LOG_DAILY_DAYS', 14),
         ],
 
-        //フロントページのエラー
+        // フロントページのエラー
         'front_error' => [
             'driver' => 'daily',
             'formatter' => env('LOG_STDERR_FORMATTER'),

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@
  */
 
 return [
-    'prompt' => <<<TEXT
+    'prompt' => <<<'TEXT'
 認証コードが書かれたメールを送信しました。
 メールに書かれている6桁の認証コードを入力してください。
 TEXT,

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -62,7 +62,7 @@ return [
         'close_button' => 'ウィンドウを閉じる',
         'error_occurred' => 'メール受信確認でエラーが発生しました。',
     ],
-    
+
     // メール受信確認機能（共通）
     'verification_token_invalid' => 'メール認証トークンが無効です。',
     'verification_error_message' => 'メール認証処理中にエラーが発生しました: :error',
@@ -78,6 +78,6 @@ return [
             'data_saved' => 'データは一時的に保存されています',
         ],
         'close_button' => 'ウィンドウを閉じる',
-        'completed_message' => 'メール受信確認が完了しました'
+        'completed_message' => 'メール受信確認が完了しました',
     ],
 ];

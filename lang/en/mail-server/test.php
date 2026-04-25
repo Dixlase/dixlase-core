@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,7 +38,7 @@ return [
     'mail_test_warning_temporary' => 'Test results are temporarily stored. Settings and test results will not be saved until you press the update button.',
     'mail_receive_test_completed' => 'Mail receive test completed. Please save settings.',
     'connection_test_required' => 'Please run connection test first.',
-    
+
     // Test Mail Content
     'test_mail' => [
         'subject' => 'Mail Send Test',
@@ -69,7 +69,7 @@ Clicking this link will complete the full mail functionality test.',
         'success' => 'Test email sent successfully. Please check your inbox.',
         'failed' => 'Mail send failed: :error',
     ],
-    
+
     // Mail Test Functions (Common)
     'test_functions' => [
         'test_connection_button' => 'Test Connection',
@@ -101,7 +101,7 @@ Clicking this link will complete the full mail functionality test.',
         'send_test' => 'Mail Send Test',
         'receive_test' => 'Mail Receive Verification',
     ],
-    
+
     // 3-Stage Mail Test Functionality
     'test_advanced' => [
         'test_email_subject' => 'Mail Server Configuration Test',
@@ -128,10 +128,10 @@ Clicking this link will complete the full mail functionality test.',
             'next_steps_title' => 'Next Steps',
             'next_steps' => [
                 'close_window' => 'Close this window',
-                'continue_install' => 'Return to the installation screen to continue setup'
+                'continue_install' => 'Return to the installation screen to continue setup',
             ],
             'close_button' => 'Close Window',
-            'completed_message' => 'Mail receipt verification completed'
+            'completed_message' => 'Mail receipt verification completed',
         ],
         'three_stage_test_incomplete' => '3-stage mail test incomplete',
         'three_stage_test_complete' => '3-stage mail test complete',
@@ -139,7 +139,7 @@ Clicking this link will complete the full mail functionality test.',
         'send_test' => 'Mail Send Test',
         'receive_test' => 'Mail Receipt Verification',
     ],
-    
+
     // JavaScript Messages
     'js_messages' => [
         'test_route_not_set' => 'Test route is not configured',

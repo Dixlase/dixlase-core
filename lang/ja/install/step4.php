@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,11 +24,11 @@ return [
     'mail_title' => 'メールサーバー設定',
     'mail_header' => 'メールサーバー設定(任意)',
     'mail_description' => 'アプリケーションがメールを送信するために使用する<br>メールサーバーの情報を入力します。<br>この設定はスキップしてインストール後に設定することも可能です。',
-    
+
     // メールサーバー設定関連
     'mail_server_settings' => 'メールサーバー設定',
     'mail_connection_test' => 'メール接続テスト',
-    
+
     // メールテスト機能
     'mail_test' => [
         'title' => 'メールテスト',
@@ -37,7 +37,7 @@ return [
     ],
     'mail_test_description' => 'メールサーバーの接続とメール送信をテストできます。',
     'mail_test_description_admin_email' => 'テストメールは基本設定で入力した管理者メールアドレスに送信されます。',
-    
+
     'mail_test_advanced' => [
         'three_stage_test_incomplete' => '3段階メールテストが未完了です',
         'three_stage_test_complete' => '3段階メールテストが完了しました',

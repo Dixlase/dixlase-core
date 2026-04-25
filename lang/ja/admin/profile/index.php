@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 return [
     'heading' => 'プロフィール設定',
     'description' => 'アカウント情報、セキュリティ設定、外観などを管理します。',
-    
+
     'basic_info' => '基本情報',
     'password' => 'パスワード設定',
     'password_description' => 'パスワードを変更します',
@@ -32,7 +32,7 @@ return [
     'notifications_description' => 'ログイン通知などの設定',
     'two_factor' => '二段階認証設定',
     'two_factor_management' => '二段階認証管理',
-    
+
     'passkey_count' => 'パスキー: :count個',
     'recovery_codes_count' => '回復コード: :count個',
 ];

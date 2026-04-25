@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,8 +21,8 @@
 
 namespace Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
 use App\Enums\LogLevel;
+use PHPUnit\Framework\TestCase;
 
 class LogLevelTest extends TestCase
 {
@@ -80,7 +80,7 @@ class LogLevelTest extends TestCase
         $this->assertEquals(LogLevel::Notice, LogLevel::fromString('notice'));
         $this->assertEquals(LogLevel::Info, LogLevel::fromString('info'));
         $this->assertEquals(LogLevel::Debug, LogLevel::fromString('debug'));
-        
+
         // Test invalid string returns null
         $this->assertNull(LogLevel::fromString('invalid'));
         $this->assertNull(LogLevel::fromString(''));
@@ -93,7 +93,7 @@ class LogLevelTest extends TestCase
     {
         $expected = [8, 7, 6, 5, 4]; // Emergency, Alert, Critical, Error, Warning
         $actual = LogLevel::getNotificationLevels();
-        
+
         $this->assertEquals($expected, $actual);
         $this->assertCount(5, $actual);
     }
@@ -105,7 +105,7 @@ class LogLevelTest extends TestCase
     {
         $expected = [8, 7, 6, 5]; // Emergency, Alert, Critical, Error
         $actual = LogLevel::getDefaultNotificationLevels();
-        
+
         $this->assertEquals($expected, $actual);
         $this->assertCount(4, $actual);
     }
@@ -117,7 +117,7 @@ class LogLevelTest extends TestCase
     {
         $expected = [8, 7, 6, 5, 4, 3, 2, 1]; // All levels
         $actual = LogLevel::getAllLevels();
-        
+
         $this->assertEquals($expected, $actual);
         $this->assertCount(8, $actual);
     }
@@ -129,7 +129,7 @@ class LogLevelTest extends TestCase
     {
         $expected = ['emergency', 'alert', 'critical', 'error', 'warning', 'notice', 'info', 'debug'];
         $actual = LogLevel::getAllLevelStrings();
-        
+
         $this->assertEquals($expected, $actual);
         $this->assertCount(8, $actual);
     }
@@ -141,7 +141,7 @@ class LogLevelTest extends TestCase
     {
         $expected = ['emergency', 'alert', 'critical', 'error', 'warning'];
         $actual = LogLevel::getNotificationLevelStrings();
-        
+
         $this->assertEquals($expected, $actual);
         $this->assertCount(5, $actual);
     }
@@ -153,7 +153,7 @@ class LogLevelTest extends TestCase
     {
         $expected = ['emergency', 'alert', 'critical', 'error'];
         $actual = LogLevel::getDefaultNotificationLevelStrings();
-        
+
         $this->assertEquals($expected, $actual);
         $this->assertCount(4, $actual);
     }
@@ -166,11 +166,11 @@ class LogLevelTest extends TestCase
         $defaultLevels = LogLevel::getDefaultNotificationLevels();
         $json = json_encode($defaultLevels);
         $decoded = json_decode($json, true);
-        
+
         $this->assertEquals('[8,7,6,5]', $json);
         $this->assertEquals($defaultLevels, $decoded);
         $this->assertTrue(is_array($decoded));
-        
+
         // Test all notification levels
         $notificationLevels = LogLevel::getNotificationLevels();
         $json = json_encode($notificationLevels);
@@ -198,14 +198,14 @@ class LogLevelTest extends TestCase
     public function test_notification_levels_exclude_low_priority()
     {
         $notificationLevels = LogLevel::getNotificationLevels();
-        
+
         // Should include these
         $this->assertContains(LogLevel::Emergency->value, $notificationLevels);
         $this->assertContains(LogLevel::Alert->value, $notificationLevels);
         $this->assertContains(LogLevel::Critical->value, $notificationLevels);
         $this->assertContains(LogLevel::Error->value, $notificationLevels);
         $this->assertContains(LogLevel::Warning->value, $notificationLevels);
-        
+
         // Should exclude these
         $this->assertNotContains(LogLevel::Notice->value, $notificationLevels);
         $this->assertNotContains(LogLevel::Info->value, $notificationLevels);
@@ -218,13 +218,13 @@ class LogLevelTest extends TestCase
     public function test_default_notification_levels_exclude_warning_and_lower()
     {
         $defaultLevels = LogLevel::getDefaultNotificationLevels();
-        
+
         // Should include these
         $this->assertContains(LogLevel::Emergency->value, $defaultLevels);
         $this->assertContains(LogLevel::Alert->value, $defaultLevels);
         $this->assertContains(LogLevel::Critical->value, $defaultLevels);
         $this->assertContains(LogLevel::Error->value, $defaultLevels);
-        
+
         // Should exclude these
         $this->assertNotContains(LogLevel::Warning->value, $defaultLevels);
         $this->assertNotContains(LogLevel::Notice->value, $defaultLevels);

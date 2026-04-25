@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,7 +31,7 @@ return [
         'registered_at' => '登録日時',
         'last_used' => '最終使用',
     ],
-    
+
     // 回復コード管理
     'recovery_codes' => [
         'title' => '回復コード',

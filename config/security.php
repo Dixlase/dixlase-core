@@ -1,8 +1,9 @@
 <?php
+
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,14 +24,14 @@ return [
 
     // 管理画面へのアクセスを許可するIPアドレス
     'allowed_admin_ips' => [
-        //'127.0.0.1', // 例: ローカルIP
-        //'192.168.1.10',
+        // '127.0.0.1', // 例: ローカルIP
+        // '192.168.1.10',
         '10.5.1.148',
-        '0.0.0.0'
+        '0.0.0.0',
     ],
     // 管理画面へのアクセスを拒否するIPアドレス
     'blocked_admin_ips' => [
-        //'123.456.789.0', // 例: 拒否するIP
+        // '123.456.789.0', // 例: 拒否するIP
     ],
 
     // フロントエンドへのアクセスを許可するIPアドレス
@@ -57,10 +58,10 @@ return [
     'pwned_passwords' => [
         // Have I Been Pwned API エンドポイント
         'api_endpoint' => env('PWNED_PASSWORDS_API_ENDPOINT', 'https://api.pwnedpasswords.com'),
-        
+
         // APIリクエストのタイムアウト（秒）
         'timeout' => env('PWNED_PASSWORDS_TIMEOUT', 5),
-        
+
         // 障害時の挙動: 'fail_open'（許可）または 'fail_closed'（拒否）
         'on_failure' => env('PWNED_PASSWORDS_ON_FAILURE', 'fail_open'),
     ],
@@ -76,25 +77,25 @@ return [
     'audit_log' => [
         // ログ保持期間（日数）- 0は無期限
         'retention_days' => env('AUDIT_LOG_RETENTION_DAYS', 365),
-        
+
         // アーカイブを有効にするか
         'archive_enabled' => env('AUDIT_LOG_ARCHIVE_ENABLED', true),
-        
+
         // アーカイブ保存先（storage/app配下のパス）
         'archive_path' => env('AUDIT_LOG_ARCHIVE_PATH', 'audit-archives'),
-        
+
         // アーカイブ形式: 'json' または 'csv'
         'archive_format' => env('AUDIT_LOG_ARCHIVE_FORMAT', 'json'),
-        
+
         // アーカイブ前の最小経過日数
         'archive_after_days' => env('AUDIT_LOG_ARCHIVE_AFTER_DAYS', 90),
-        
+
         // 自動クリーンアップを有効にするか
         'auto_cleanup_enabled' => env('AUDIT_LOG_AUTO_CLEANUP', false),
-        
+
         // クリーンアップ時にアーカイブを保持するか
         'keep_archives' => env('AUDIT_LOG_KEEP_ARCHIVES', true),
-        
+
         // 重要度別の保持期間（日数）- nullはデフォルトを使用
         'retention_by_severity' => [
             'critical' => env('AUDIT_LOG_RETENTION_CRITICAL', null), // 無期限推奨
@@ -102,7 +103,7 @@ return [
             'warning' => env('AUDIT_LOG_RETENTION_WARNING', null),
             'info' => env('AUDIT_LOG_RETENTION_INFO', null),
         ],
-        
+
         // 日次署名（Daily Seal）の保持期間（日数）
         'daily_seal_retention_days' => env('AUDIT_LOG_SEAL_RETENTION_DAYS', 730), // 2年
     ],
@@ -120,13 +121,13 @@ return [
     'external_services' => [
         // CAPTCHA障害時
         'captcha_on_failure' => env('CAPTCHA_ON_FAILURE', 'fail_closed'),
-        
+
         // CAPTCHAタイムアウト（秒）
         'captcha_timeout' => env('CAPTCHA_TIMEOUT', 10),
-        
+
         // GeoIP障害時（将来用）
         'geoip_on_failure' => env('GEOIP_ON_FAILURE', 'fail_open'),
-        
+
         // GeoIPタイムアウト（秒）（将来用）
         'geoip_timeout' => env('GEOIP_TIMEOUT', 5),
     ],

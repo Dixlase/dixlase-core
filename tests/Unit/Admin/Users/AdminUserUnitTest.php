@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,13 +20,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 namespace Tests\Unit\Admin\Users;
 
-use PHPUnit\Framework\TestCase;
-use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\Admin\Users\AdminUserStoreRequest;
-
+use Illuminate\Support\Facades\Validator;
+use PHPUnit\Framework\TestCase;
 
 class AdminUserUnitTest extends TestCase
 {

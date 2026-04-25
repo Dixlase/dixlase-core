@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,11 +24,11 @@ return [
     'mail_title' => 'Mail Server Settings',
     'mail_header' => 'Mail Server Settings (Optional)',
     'mail_description' => 'Enter the mail server information that the application will use to send emails.<br>You can skip this step and configure it after installation.',
-    
+
     // Mail Server Settings Related
     'mail_server_settings' => 'Mail Server Settings',
     'mail_connection_test' => 'Mail Connection Test',
-    
+
     // Mail Test Features
     'mail_test' => [
         'title' => 'Mail Test',
@@ -37,7 +37,7 @@ return [
     ],
     'mail_test_description' => 'You can test mail server connection and mail sending.',
     'mail_test_description_admin_email' => 'Test email will be sent to the admin email address entered in basic settings.',
-    
+
     'mail_test_advanced' => [
         'three_stage_test_incomplete' => '3-stage mail test incomplete',
         'three_stage_test_complete' => '3-stage mail test complete',

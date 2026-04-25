@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -62,7 +62,7 @@ return [
         'close_button' => 'Close Window',
         'error_occurred' => 'Mail verification error occurred.',
     ],
-    
+
     // Mail Verification Functions (Common)
     'verification_token_invalid' => 'Mail verification token is invalid.',
     'verification_error_message' => 'An error occurred during mail verification: :error',
@@ -78,6 +78,6 @@ return [
             'data_saved' => 'Data is temporarily saved',
         ],
         'close_button' => 'Close Window',
-        'completed_message' => 'Mail verification has been completed'
+        'completed_message' => 'Mail verification has been completed',
     ],
 ];

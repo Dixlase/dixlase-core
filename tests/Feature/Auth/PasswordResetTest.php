@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,6 @@ use App\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
-use Illuminate\Support\Facades\Log;
 
 class PasswordResetTest extends TestCase
 {
@@ -48,19 +47,15 @@ class PasswordResetTest extends TestCase
 
     public function test_reset_password_link_can_be_requested(): void
     {
-
         Notification::fake();
-
 
         $user = User::factory()->create();
 
-
         $this->post('/mypage/forgot-password', ['email' => $user->email]);
-        
+
         Notification::assertSentTo($user, ResetPassword::class);
 
-
-        //Notification::assertSentTo($user, ResetPassword::class);
+        // Notification::assertSentTo($user, ResetPassword::class);
     }
 
     public function test_reset_password_screen_can_be_rendered(): void
@@ -72,7 +67,7 @@ class PasswordResetTest extends TestCase
         $this->post('/mypage/forgot-password', ['email' => $user->email]);
 
         Notification::assertSentTo($user, ResetPassword::class, function ($notification) {
-            $response = $this->get('/mypage/reset-password/' . $notification->token);
+            $response = $this->get('/mypage/reset-password/'.$notification->token);
 
             $response->assertStatus(200);
 

@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2025 exc-D inc.
+ * Copyright (C) 2026 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,7 +19,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 
 return [
 
@@ -314,13 +313,13 @@ return [
         'content' => '内容',
         'description' => '説明',
         'token' => 'トークン',
-        
+
         // プロフィール・セキュリティ関連
         'appearance' => '外観設定',
         'login_notification_mode' => 'ログイン通知設定',
         'two_fa_mode' => '二段階認証設定',
         'two_fa_method' => '二段階認証方法',
-        
+
         // インストール関連
         'site_name' => 'サイト名',
         'admin_email' => '管理者メールアドレス',
