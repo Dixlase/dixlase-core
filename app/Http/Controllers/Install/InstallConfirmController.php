@@ -175,7 +175,8 @@ class InstallConfirmController extends BaseInstallController
                 'APP_DEBUG' => $data['app_debug'] ? 'true' : 'false',
                 'APP_URL' => $appUrl,
                 'APP_LOCALE' => $data['app_locale'] ?? 'ja',
-                'APP_TIMEZONE' => $data['app_timezone'] ?? 'Asia/Tokyo',
+                // APP_TIMEZONE は UTC 固定（保存・計算は UTC。表示用 TZ は base_settings.display_timezone で管理）
+                'APP_TIMEZONE' => 'UTC',
                 'INSTALLED' => 'false',
                 'FORCE_SSL' => $data['force_ssl'] ? 'true' : 'false',
                 'MAINTENANCE_MODE' => 'false',
@@ -459,7 +460,7 @@ class InstallConfirmController extends BaseInstallController
         $baseSettings = [
             'app_name' => $data['site_name'],
             'locale' => $data['app_locale'] ?? 'ja',
-            'timezone' => $data['app_timezone'] ?? 'Asia/Tokyo',
+            'display_timezone' => $data['app_timezone'] ?? 'Asia/Tokyo',
             'mail_mailer' => $data['mail_mailer'] ?? 'smtp',
             'mail_host' => $data['mail_host'] ?? 'localhost',
             'mail_port' => (string) ($data['mail_port'] ?? 587),

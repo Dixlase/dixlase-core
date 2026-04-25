@@ -222,11 +222,14 @@ class ConfigHelper
     }
 
     /**
-     * Get application timezone
+     * 表示用タイムゾーンを取得する
+     *
+     * 保存・計算は常に UTC（config('app.timezone')）で行い、本メソッドは
+     * Blade や通知メールで現地時刻に変換する際に使う。値は base_settings.display_timezone。
      */
-    public static function getAppTimezone(): string
+    public static function getDisplayTimezone(): string
     {
-        return self::get('app.timezone', 'timezone', 'Asia/Tokyo', 'string', 'BaseSetting');
+        return self::get('app.display_timezone', 'display_timezone', 'Asia/Tokyo', 'string', 'BaseSetting');
     }
 
     /**

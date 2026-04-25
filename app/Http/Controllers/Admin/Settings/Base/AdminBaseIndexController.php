@@ -54,7 +54,7 @@ class AdminBaseIndexController extends AdminLoggedInController
         $appName = ConfigHelper::getAppName();
         $siteDescription = $this->baseSettingRepository->get('site_description', '');
         $locale = ConfigHelper::getAppLocale();
-        $timezone = ConfigHelper::getAppTimezone();
+        $timezone = ConfigHelper::getDisplayTimezone();
 
         // 管理画面設定
         $adminUrl = $this->baseSettingRepository->get('admin_url', config('admin.admin_url'));

@@ -84,9 +84,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <fieldset>
             <legend>{{ __('common.timezone') }}</legend>
             <x-form-select
-                name="timezone"
+                name="display_timezone"
                 :options="$timezones"
-                :value="$settings['timezone']"
+                :value="$settings['display_timezone']"
             />
         </fieldset>
     </section>
