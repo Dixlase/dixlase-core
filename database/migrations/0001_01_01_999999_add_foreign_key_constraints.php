@@ -102,6 +102,26 @@ return new class extends Migration
                 ->nullOnDelete();
         });
 
+        // front_page_revisions.created_by -> members.id
+        Schema::table('front_page_revisions', function (Blueprint $table) {
+            $table->foreign('created_by')
+                ->references('id')
+                ->on('members')
+                ->nullOnDelete();
+        });
+
+        // ========================================
+        // front_pages テーブルへの外部キー
+        // ========================================
+
+        // front_page_revisions.front_page_id -> front_pages.id
+        Schema::table('front_page_revisions', function (Blueprint $table) {
+            $table->foreign('front_page_id')
+                ->references('id')
+                ->on('front_pages')
+                ->cascadeOnDelete();
+        });
+
         // ========================================
         // api_keys テーブルへの外部キー
         // ========================================
@@ -282,6 +302,12 @@ return new class extends Migration
         // file_integrity_audits
         Schema::table('file_integrity_audits', function (Blueprint $table) {
             $table->dropForeign(['initiated_by_id']);
+        });
+
+        // front_page_revisions
+        Schema::table('front_page_revisions', function (Blueprint $table) {
+            $table->dropForeign(['front_page_id']);
+            $table->dropForeign(['created_by']);
         });
 
         // security_events
