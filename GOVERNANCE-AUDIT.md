@@ -44,15 +44,39 @@ The following operational items can only be verified or activated at the moment 
 - [ ] Verify DNS MX records and any forwarding aliases resolve to the maintainer inbox
 - [ ] Decide and document the acknowledgment policy: auto-reply, 24-hour human response, or rely on GitHub PVR notifications only
 
-### GitHub Repository Settings (F-5, H-3)
+### Repository Visibility and Access (H-1)
 
 - [ ] Make the repository public (`Settings → General → Change repository visibility`)
+- [ ] Confirm the list of accounts with Admin permission is intentional and minimal (`Settings → Collaborators and teams`)
+- [ ] Add branch protection on `main`: required PR reviews, required status checks, force-push blocked
+
+### Repository Metadata (H-2)
+
+- [ ] Set a clear repository description (top of `Settings → General` or via the home page Edit button)
+- [ ] Set the Website URL to `https://dixlase.com`
+- [ ] Add Topics relevant to the project (e.g., `cms`, `laravel`, `agpl`, `dual-license`, `php`)
+- [ ] Verify GitHub auto-detects the license as `AGPL-3.0` (shown on the repository home page; if not, confirm `LICENSE` is in the GitHub-recognized form)
+
+### Security Settings (F-5, H-3)
+
 - [ ] Enable **Private vulnerability reporting** (`Settings → Code security`) — this activates the `/security/advisories/new` link surfaced in `SECURITY.md` and the issue templates
 - [ ] Confirm the Security tab is visible and renders `SECURITY.md` at `/security/policy`
-- [ ] Verify the Community Standards page shows green checks for everything except Code of Conduct (deferred — see Low Priority)
 - [ ] Enable Dependabot alerts and security updates
 - [ ] Enable Secret scanning (free for public repositories)
-- [ ] Add branch protection on `main`: required PR reviews, required status checks, force-push blocked
+- [ ] Enable Code scanning (CodeQL or an equivalent default workflow)
+
+### Community Standards (H-4)
+
+On `https://github.com/Dixlase/dixlase-core/community`, verify the following entries are green:
+
+- [ ] Description (also covered by H-2)
+- [ ] README
+- [ ] Code of Conduct — **expected red until adopted; deferred per Low Priority**
+- [ ] Contributing
+- [ ] License
+- [ ] Security policy
+- [ ] Issue templates
+- [ ] Pull request template
 
 When each item is completed, move the corresponding entry to **Items Already Resolved** with the date and any relevant configuration reference.
 

@@ -44,15 +44,39 @@
 - [ ] DNS MX レコードと転送エイリアスがメンテナーの受信箱に解決していることを確認
 - [ ] 受信確認の方針を決めて文書化: 自動返信／24時間以内の人的対応／GitHub PVR の通知のみ、のいずれか
 
-### GitHub リポジトリ設定（F-5, H-3）
+### リポジトリの可視性とアクセス制御（H-1）
 
 - [ ] リポジトリを Public にする（`Settings → General → Change repository visibility`）
+- [ ] Admin 権限保有者リストが意図通り最小限であることを確認（`Settings → Collaborators and teams`）
+- [ ] `main` にブランチ保護を追加: PR レビュー必須、ステータスチェック必須、force-push 禁止
+
+### リポジトリのメタデータ（H-2）
+
+- [ ] リポジトリ説明文を設定（`Settings → General` 上部、またはリポジトリトップの Edit ボタン）
+- [ ] Website URL を `https://dixlase.com` に設定
+- [ ] プロジェクトに関連する Topics を追加（例: `cms`, `laravel`, `agpl`, `dual-license`, `php`）
+- [ ] GitHub が `LICENSE` を `AGPL-3.0` として自動認識していることを確認（リポジトリトップに表示。表示されない場合は `LICENSE` が GitHub 認識可能な形式かを確認）
+
+### セキュリティ設定（F-5, H-3）
+
 - [ ] **Private vulnerability reporting** を有効化（`Settings → Code security`）— これにより `SECURITY.md` および Issue テンプレートで参照している `/security/advisories/new` リンクが機能する
 - [ ] Security タブが表示され、`/security/policy` で `SECURITY.md` が描画されることを確認
-- [ ] Community Standards ページで Code of Conduct 以外がすべて緑チェックであることを確認（CoC は先送り — 「低優先」参照）
 - [ ] Dependabot アラートおよびセキュリティ更新を有効化
 - [ ] Secret scanning を有効化（公開リポジトリでは無料）
-- [ ] `main` にブランチ保護を追加: PR レビュー必須、ステータスチェック必須、force-push 禁止
+- [ ] Code scanning（CodeQL または同等のデフォルトワークフロー）を有効化
+
+### Community Standards（H-4）
+
+`https://github.com/Dixlase/dixlase-core/community` で各項目が緑チェックになっていることを確認:
+
+- [ ] Description（H-2 でもカバー）
+- [ ] README
+- [ ] Code of Conduct — **採用するまで赤になる想定。低優先で先送り済み**
+- [ ] Contributing
+- [ ] License
+- [ ] Security policy
+- [ ] Issue templates
+- [ ] Pull request template
 
 各項目が完了したら、当該エントリを **解消済み項目** へ日付および参照可能な設定情報とともに移動する。
 
