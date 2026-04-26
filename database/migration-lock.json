@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "generated_at": "2026-04-25T08:25:07+00:00",
+    "generated_at": "2026-04-26T10:58:13+00:00",
     "description": "Dixlase migration immutability lockfile. Do not edit manually. Regenerate with `php artisan dls:migration:lint --lock`.",
     "files": {
         "database/migrations/0001_01_01_000000_create_base_settings_table.php": "ac754d0eadb9b88625abdbf688148e044489211b020d36daec90ffe4d3c984cf",
@@ -17,7 +17,7 @@
         "database/migrations/0001_01_01_000011_create_extension_sources_table.php": "4ee7b73b5da27f39a838ecb2ba835b2e0bba9c60e0efe04cbed83c19fefe8260",
         "database/migrations/0001_01_01_000012_create_file_integrity_audits_table.php": "f018b21a3f678ab50df9c1b770894b1b3f00997dad6a5e32728dd0fcb2719309",
         "database/migrations/0001_01_01_000013_create_front_pages_table.php": "0282fec43b82145d63bf08a89ed0e9319d8b08e37bc1ec590bd0a898d85806f1",
-        "database/migrations/0001_01_01_000014_create_front_page_revisions_table.php": "b1a3456daec4d27e5d6d8444cef47cf6ad586be139b47f5bbd8fa230327e699a",
+        "database/migrations/0001_01_01_000014_create_front_page_revisions_table.php": "1fb2cefb001da6cd429ed3c71f0bcd74c83f7c4f1f9b546a1c8de32c58f332e4",
         "database/migrations/0001_01_01_000015_create_front_settings_table.php": "51c6a8531e4d66a86728515e598329f2e0254893b853eae21eb93ff7c3b61e71",
         "database/migrations/0001_01_01_000016_create_lockdown_table.php": "83f01e0859ae5afdd7bbd3c741e1d60a225724d018a25d022ffa57fe1906a2f2",
         "database/migrations/0001_01_01_000017_create_media_table.php": "c0988497f0a8acd899f47f1701d83dc4b20121d0a4ad8feffd1790fbf620ba63",
@@ -46,7 +46,7 @@
         "database/migrations/0001_01_01_000040_create_webhook_dead_letters_table.php": "5044e57950a79cdf6d46e6f552232fad7994f6ef7948ac3b7bbada57214a5f6d",
         "database/migrations/0001_01_01_000041_create_webhook_deliveries_table.php": "0a3b4831d71de83396cc98fe60a04b08346c83172b3a097acfc84052b0e1e8c4",
         "database/migrations/0001_01_01_000042_create_webhooks_table.php": "b42257ca1cb22e107db832687c531630aae08eb1f71b0d09f197d152dc5096a3",
-        "database/migrations/0001_01_01_999999_add_foreign_key_constraints.php": "4190a25be9075b67cb4fe2992b156414bf3dfebeab1c877ea07f7ca7881a53f8",
+        "database/migrations/0001_01_01_999999_add_foreign_key_constraints.php": "7308f886400b9ddca71987f82df8d3fcf925f7a913a9c418b292553532a3489d",
         "plugins/DixlaseAuthority/database/migrations/0001_01_01_000001_create_plg_dixlase_authority_signing_keys_table.php": "80005f2884a8d3e95507a58364c99ddb4b559e86b3b9f3448ff2b0450037f975",
         "plugins/DixlaseAuthority/database/migrations/0001_01_01_000002_create_plg_dixlase_authority_plugin_signatures_table.php": "1b26f7e605f0c7aa294d47f3d21f032fd9b41cca42d36dd3f3015468e69f9e04",
         "plugins/DixlaseAuthority/database/migrations/0001_01_01_000003_create_plg_dixlase_authority_settings_table.php": "04684afe8154c9f855b47ab2907f066e3adc4efc01d2df3a02c933633b26713c",

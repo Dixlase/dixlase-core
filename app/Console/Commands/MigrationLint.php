@@ -42,7 +42,8 @@ class MigrationLint extends Command
      */
     protected $signature = 'dls:migration:lint
                             {--lock : 現在のマイグレーションからロックファイルを生成する}
-                            {--json : 結果を JSON 形式で出力する}';
+                            {--json : 結果を JSON 形式で出力する}
+                            {--base-path= : スキャン基準パスを上書きする（テスト用途、本番では指定しない）}';
 
     /**
      * The console command description.
@@ -58,13 +59,21 @@ class MigrationLint extends Command
 
     public function handle(): int
     {
-        $this->lockFilePath = base_path('database/migration-lock.json');
+        $this->lockFilePath = $this->basePath().'/database/migration-lock.json';
 
         if ($this->option('lock')) {
             return $this->generateLockfile();
         }
 
         return $this->verifyLockfile();
+    }
+
+    /**
+     * スキャン基準パス。テスト時は --base-path で差し替え可能。
+     */
+    protected function basePath(): string
+    {
+        return $this->option('base-path') ?: base_path();
     }
 
     /**
@@ -262,7 +271,7 @@ class MigrationLint extends Command
      */
     protected function collectMigrationFiles(): array
     {
-        $basePath = base_path();
+        $basePath = $this->basePath();
         $files = [];
 
         $directories = ['database/migrations'];
