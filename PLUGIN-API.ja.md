@@ -1,61 +1,61 @@
-# Dixlase CMS Plugin API Boundary
+# Dixlase CMS プラグイン API 境界
 
-**Version:** dev
-**Last Updated:** 2026-04-25
-**Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE)
+**バージョン:** dev
+**最終更新日:** 2026-04-25
+**目的:** AGPL ライセンス例外条項のための公開プラグイン API 境界の定義（LICENSE を参照）
 
-This document defines all components that form the "Plugin API" -- the public interfaces,
-services, and configurations that plugins and themes are permitted to use without triggering
-AGPL copyleft obligations under the Dixlase Plugin and Theme Exception.
-
----
-
-## Stability Pledge
-
-**Frozen as of:** v0.1.0 release (see `CHANGELOG.md` for the exact release date)
-**Coverage:** every Plugin API element listed in this document, for the version range `^0.1`
-**Backward compatibility:** no breaking changes will be introduced within `^0.1`. Plugins and themes built against v0.1.0 will continue to work on every v0.1.x release without modification.
-
-### Deprecation Policy
-
-When a Plugin API element must change in a backward-incompatible way:
-
-1. **Minor release** (e.g. v0.2.0): the change ships as an additive new symbol. The old symbol remains and is marked with PHPDoc `@deprecated`, plus a runtime warning where feasible.
-2. **Next major release** (e.g. v1.0.0 after a v0.x deprecation): the deprecated symbol is removed. A migration guide is published in `CHANGELOG.md` and the replacement is described in this document.
-3. Plugin and theme authors are guaranteed at least one full minor cycle to migrate.
-
-### Announcement Channels
-
-Additions, deprecations, and breaking changes to the Plugin API are announced through:
-
-- **`CHANGELOG.md`** in the core repository (authoritative source)
-- **GitHub Releases** of `Dixlase/Core`
-- **GitHub Discussions** of `Dixlase/Core` for advance notice and migration guidance
-
-Plugin and theme authors are encouraged to subscribe to GitHub releases of the core repository.
+このドキュメントは「プラグイン API」を構成するすべてのコンポーネントを定義します。
+プラグインおよびテーマが Dixlase プラグイン・テーマ例外に基づき、AGPL のコピーレフト義務を
+発生させることなく使用できる公開インターフェース、サービス、設定を示します。
 
 ---
 
-## Licensing Your Plugin or Theme
+## 安定性宣言（Stability Pledge）
 
-Plugins and themes that interact with Dixlase CMS **exclusively through the interfaces listed in this document** are **not** considered derivative works of Dixlase CMS. You may distribute them under any license of your choice, including proprietary licenses.
+**凍結時点:** v0.1.0 リリース時（正確なリリース日は `CHANGELOG.md` を参照）
+**対象範囲:** 本ドキュメントに列挙された全 Plugin API 要素、バージョン範囲 `^0.1`
+**後方互換性:** `^0.1` の範囲では破壊的変更を行いません。v0.1.0 向けに作成したプラグイン・テーマは、全ての v0.1.x リリースで修正不要のまま動作し続けます。
 
-This right is granted by the **Dixlase Plugin and Theme Exception** (see the `LICENSE` file, Section "Additional permission under GNU AGPL version 3 section 7"). The exception applies when all of the following conditions are met:
+### 廃止ポリシー
 
-1. Your plugin/theme communicates with Dixlase CMS only through the Plugin API defined in this document.
-2. Your plugin/theme does not modify, replace, or monkey-patch any core source file.
-3. Your plugin/theme does not bypass or replicate internal core implementations.
-4. Your plugin/theme is loaded through the standard loading mechanism (`PluginLoaderTrait` / `ThemeLoaderTrait`) and resides in the `plugins/` or `themes/` directory.
+Plugin API の要素を後方非互換に変更する必要が生じた場合:
 
-If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 terms.
+1. **マイナーリリース**（例: v0.2.0）: 新しいシンボルを追加形式で導入し、旧シンボルは残したまま PHPDoc `@deprecated` を付与し、可能な箇所ではランタイム警告を発します。
+2. **次のメジャーリリース**（例: v0.x で deprecation した場合は v1.0.0）: 廃止予定シンボルを削除します。`CHANGELOG.md` に移行ガイドを掲載し、置換先を本ドキュメントに記載します。
+3. プラグイン・テーマ作者には、最低 1 マイナーサイクル分の移行猶予を保証します。
+
+### 告知チャネル
+
+Plugin API への追加・廃止予告・破壊的変更は、以下のチャネルで告知します:
+
+- **`CHANGELOG.md`**（コアリポジトリ、正本）
+- **GitHub Releases**（`Dixlase/Core`）
+- **GitHub Discussions**（`Dixlase/Core`、事前告知と移行ガイダンス）
+
+プラグイン・テーマ作者はコアリポジトリの GitHub Releases を subscribe しておくことを推奨します。
 
 ---
 
-## 1. Contracts / Interfaces
+## プラグイン・テーマのライセンスについて
+
+Dixlase CMS と**このドキュメントに記載されたインターフェースのみを通じて**連携するプラグインおよびテーマは、Dixlase CMS の派生物とは**みなされません**。プロプライエタリライセンスを含む、任意のライセンスで配布することができます。
+
+この権利は **Dixlase プラグイン・テーマ例外条項**（`LICENSE` ファイルの「GNU AGPL バージョン3 第7条に基づく追加許可」セクションを参照）によって付与されます。例外は以下の全条件を満たす場合に適用されます:
+
+1. プラグイン/テーマが、このドキュメントに定義された Plugin API のみを通じて Dixlase CMS と通信すること。
+2. プラグイン/テーマが、コアのソースファイルを変更・置換・モンキーパッチしないこと。
+3. プラグイン/テーマが、コアの内部実装を迂回・複製しないこと。
+4. プラグイン/テーマが、標準の読み込み機構（`PluginLoaderTrait` / `ThemeLoaderTrait`）を通じて読み込まれ、`plugins/` または `themes/` ディレクトリに配置されていること。
+
+いずれかの条件を満たさない場合、プラグイン/テーマは AGPL-3.0 の全条項の対象となります。
+
+---
+
+## 1. コントラクト / インターフェース
 
 ### 1.1 Service Contracts
 
-| Contract | Description |
+| コントラクト | 説明 |
 |---|---|
 | `App\Contracts\Action\ActionInterface` | Contract for all CMS business operations |
 | `App\Contracts\Action\Actor` | Represents the entity performing an operation |
@@ -77,7 +77,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 ### 1.2 Plugin Integration Contracts
 
-| Contract | Description |
+| コントラクト | 説明 |
 |---|---|
 | `App\Contracts\PluginIntegration\DashboardNotificationProviderInterface` | ダッシュボード通知を提供するプラグインの契約 |
 | `App\Contracts\PluginIntegration\DashboardWidgetProviderInterface` | ダッシュボードウィジェットを提供するプラグインの契約 |
@@ -90,7 +90,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 ### 1.3 Plugin Capability Contracts
 
-| Contract | Description |
+| コントラクト | 説明 |
 |---|---|
 | `App\Contracts\Plugin\ApiResourceProviderInterface` | APIリソースプロバイダーインターフェース |
 | `App\Contracts\Plugin\ContentProviderCapableInterface` | コンテンツ提供機能を宣言するインターフェース |
@@ -102,7 +102,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 ### 1.4 Repository Contracts
 
-| Contract | Description |
+| コントラクト | 説明 |
 |---|---|
 | `App\Contracts\Repositories\ApiSettingRepositoryInterface` | API設定リポジトリインターフェース |
 | `App\Contracts\Repositories\BaseSettingRepositoryInterface` | 基本設定リポジトリインターフェース |
@@ -116,9 +116,9 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 ---
 
-## 2. Traits for Plugin Use
+## 2. プラグイン用トレイト
 
-| Trait | Description |
+| トレイト | 説明 |
 |---|---|
 | `App\Traits\AdminInterfaceTrait` | 管理画面の共通インターフェース初期化トレイト |
 | `App\Traits\AdminLoggedInTrait` | 管理画面ログイン後の共通初期化トレイト |
@@ -145,16 +145,16 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 ---
 
-## 3. Base Controllers for Extension
+## 3. 拡張用ベースコントローラー
 
-| Controller | Description |
+| コントローラー | 説明 |
 |---|---|
 | `App\Http\Controllers\Admin\AdminController` | 管理画面基底コントローラー |
 | `App\Http\Controllers\Admin\AdminLoggedInController` | 認証必須の管理画面コントローラー |
 
 ---
 
-## 4. Data Transfer Objects (DTOs)
+## 4. データ転送オブジェクト（DTO）
 
 ### 4.1 Action DTOs
 
@@ -222,7 +222,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 ---
 
-## 5. Enums
+## 5. Enum
 
 ### 5.1 System Enums
 
@@ -251,9 +251,9 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 ---
 
-## 6. Blade Components
+## 6. Blade コンポーネント
 
-### 6.1 Form Components
+### 6.1 フォームコンポーネント
 
 `x-form-text`, `x-form-email`, `x-form-textarea`, `x-form-select`,
 `x-form-checkbox`, `x-form-checkbox-group`, `x-form-toggle`, `x-form-toggle-group`,
@@ -262,7 +262,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 `x-form-input-with-label`, `x-form-password-tools`, `x-form-required-badge`,
 `x-form-content-editor`
 
-### 6.2 UI Components
+### 6.2 UI コンポーネント
 
 `x-ui-modal`, `x-ui-modal-vanilla`, `x-ui-notification`, `x-ui-livewire-notification`,
 `x-ui-livewire-modal`, `x-ui-message`, `x-ui-flash-message`, `x-ui-status-badge`,
@@ -270,11 +270,11 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 `x-ui-maintenance-banner`, `x-ui-admin-maintenance-banner`, `x-ui-system-banner`,
 `x-ui-appearance-mode-selector`, `x-ui-language-switcher`, `x-ui-admin-bar`
 
-`x-ui-datetime` renders a UTC-stored datetime as a `<time>` element converted into the site's
-`display_timezone`. Props: `:value` (Carbon/DateTimeInterface/string/int/null),
-`format` (PHP date format or one of `date|datetime|full|iso`), `empty-label` (fallback string).
+`x-ui-datetime` は UTC で保存された日時をサイトの `display_timezone` に変換して `<time>` 要素として描画する。
+プロパティ: `:value`（Carbon / DateTimeInterface / 文字列 / int / null）、
+`format`（PHP date format または `date|datetime|full|iso` のキー）、`empty-label`（null/空文字時の代替表示）。
 
-### 6.3 Admin Components
+### 6.3 管理画面コンポーネント
 
 `x-admin.save-button`, `x-admin.delete-button`, `x-admin.danger-zone`,
 `x-admin.account-status`, `x-admin.right-sidebar`,
@@ -283,18 +283,18 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 `x-admin.theme-preview-sidebar-section`,
 `x-revision.list`, `x-revision.diff`
 
-### 6.4 Front-end Components
+### 6.4 フロントエンドコンポーネント
 
 `x-front.button`, `x-front.card`, `x-front.breadcrumb`, `x-front.navigation`
 
-### 6.5 Content Editor Components
+### 6.5 コンテンツエディタコンポーネント
 
 `x-content-editor.tabs`, `x-content-editor.preview-tabs`,
 `x-content-editor.preview-pane`, `x-content-editor.new-tab-preview`,
 `x-content-editor.scroll-buttons`, `x-content-editor.storage-info`,
 `x-content-editor.type-badge`
 
-### 6.6 Security & Auth Components
+### 6.6 セキュリティ・認証コンポーネント
 
 `x-captcha`,
 `x-security.login-attempt-limit-settings`, `x-security.login-identifier-mode-selector`,
@@ -306,36 +306,36 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 `x-auth.reset-password`, `x-auth.verification-notice`, `x-auth.login-field`,
 `x-application-logo`, `x-auth-session-status`
 
-### 6.7 Media Components
+### 6.7 メディアコンポーネント
 
 `x-media.picker`, `x-media.selector`
 
 ---
 
-## 7. Middleware Groups for Plugins
+## 7. プラグイン用ミドルウェアグループ
 
-### 7.1 API Middleware
+### 7.1 API ミドルウェア
 
-| Group | Description |
+| グループ | 説明 |
 |---|---|
-| `plugin.api` | Authenticated API routes (ApiKey auth + rate limiting + logging) |
-| `plugin.api.public` | Public API routes (rate limiting + logging, no auth) |
+| `plugin.api` | 認証付き API ルート（ApiKey 認証 + レート制限 + ログ） |
+| `plugin.api.public` | 公開 API ルート（レート制限 + ログ、認証なし） |
 
-### 7.2 Web Middleware
+### 7.2 Web ミドルウェア
 
-| Group | Description |
+| グループ | 説明 |
 |---|---|
-| `plugin` | Basic plugin routes (session, cookies, view sharing, bindings) |
-| `plugin.web` | Plugin front-end routes (with IP filtering) |
-| `plugin.admin` | Plugin admin routes (auth required + IP filtering) |
+| `plugin` | 基本プラグインルート（セッション、クッキー、ビュー共有、バインディング） |
+| `plugin.web` | プラグインフロントエンドルート（IP フィルタリング付き） |
+| `plugin.admin` | プラグイン管理画面ルート（認証必須 + IP フィルタリング） |
 
 ---
 
-## 8. Configuration Structures
+## 8. 設定ファイル構造
 
-### 8.1 Admin Navigation
+### 8.1 管理画面ナビゲーション
 
-**File:** `plugins/{Name}/config/admin/navigation.php`
+**ファイル:** `plugins/{Name}/config/admin/navigation.php`
 
 ```php
 return [
@@ -350,9 +350,9 @@ return [
 ];
 ```
 
-### 8.2 Role Permissions
+### 8.2 ロール権限
 
-**File:** `plugins/{Name}/config/admin/roles.php`
+**ファイル:** `plugins/{Name}/config/admin/roles.php`
 
 ```php
 return [
@@ -365,9 +365,9 @@ return [
 ];
 ```
 
-### 8.3 Database Cleanup
+### 8.3 データベースクリーンアップ
 
-**File:** `plugins/{Name}/config/admin/database-cleanup.php`
+**ファイル:** `plugins/{Name}/config/admin/database-cleanup.php`
 
 ```php
 return [
@@ -384,31 +384,31 @@ return [
 
 ---
 
-## 9. Injectable Services
+## 9. 注入可能なサービス
 
-**Naming conventions:** services follow these suffix conventions to make their role clear. When implementing a plugin-side service, prefer the same suffixes for consistency with the core API.
+**命名規約:** サービスは役割を明確にするため以下のサフィックス規約に従います。プラグイン側でサービスを実装する場合も、コア API との一貫性のため同じサフィックス規約に従うことを推奨します。
 
-| Suffix | Role | Examples |
+| サフィックス | 役割 | 例 |
 |---|---|---|
-| `*Service` | Business logic / orchestration acting on data | `PasswordService`, `EditorManager` |
-| `*Registry` | Registration, lookup, and listing of pluggable items | `PermissionRegistry`, `CspPolicyRegistry`, `RouteSlugRegistry` |
-| `*Manager` | Lifecycle control (enable, disable, initialize, refresh) | `AdminNavigationManager` |
-| `*Resolver` | Dependency or capability resolution at request time | `PluginServiceResolver` |
+| `*Service` | データに対するビジネスロジック・オーケストレーション | `PasswordService`, `EditorManager` |
+| `*Registry` | プラガブル要素の登録・検索・一覧化 | `PermissionRegistry`, `CspPolicyRegistry`, `RouteSlugRegistry` |
+| `*Manager` | ライフサイクル管理（有効化、無効化、初期化、再読み込み） | `AdminNavigationManager` |
+| `*Resolver` | 実行時の依存・能力解決 | `PluginServiceResolver` |
 
-### 9.1 Plugin/Theme Services
+### 9.1 プラグイン/テーマサービス
 
-The services marked with `@api` below can be directly injected via DI.
-The remaining services are accessed via their respective interfaces (see Section 1).
+以下の `@api` マーク付きサービスは DI で直接注入できます。
+その他のサービスはインターフェース経由でアクセスします（セクション 1 を参照）。
 
-- `App\Services\Plugin\DeclaresVerifier` — `@api`, direct DI
-- `App\Services\Plugin\PluginPermissionService` — `@api`, direct DI
-- `App\Services\Plugin\PluginServiceResolver` — `@api`, direct DI
-- `App\Services\Plugin\CoreSignatureVerifier` — use `SignatureVerifierInterface` instead
+- `App\Services\Plugin\DeclaresVerifier` — `@api`、直接 DI
+- `App\Services\Plugin\PluginPermissionService` — `@api`、直接 DI
+- `App\Services\Plugin\PluginServiceResolver` — `@api`、直接 DI
+- `App\Services\Plugin\CoreSignatureVerifier` — 代わりに `SignatureVerifierInterface` を使用
 - `App\Services\Theme\ThemePermissionService`
 - `App\Services\PluginMigrator`
 - `App\Services\PluginMigrationRepository`
 
-### 9.2 Core Services
+### 9.2 コアサービス
 
 - `App\Services\PermissionService`
 - `App\Services\PermissionRegistry`
@@ -426,12 +426,12 @@ The remaining services are accessed via their respective interfaces (see Section
 - `App\Services\RouteSlugRegistry`
 - `App\Services\SystemWarningService`
 
-### 9.3 Mail & Logging
+### 9.3 メール & ログ
 
-- `App\Contracts\Mail\MailServiceInterface` (via container binding)
-- `App\Contracts\Logging\LogServiceInterface` (via container binding)
+- `App\Contracts\Mail\MailServiceInterface`（コンテナバインディング経由）
+- `App\Contracts\Logging\LogServiceInterface`（コンテナバインディング経由）
 
-### 9.4 Security Services
+### 9.4 セキュリティサービス
 
 - `App\Services\CaptchaTestService`
 - `App\Services\CaptchaFailoverService`
@@ -443,83 +443,83 @@ The remaining services are accessed via their respective interfaces (see Section
 - `App\Services\TwoFa\TwoFaRecoveryCodeService`
 - `App\Services\EmailAuthenticationService`
 
-### 9.5 API & CSP Services
+### 9.5 API & CSP サービス
 
 - `App\Services\ApiRateLimitService`
 - `App\Services\Csp\CspPolicyRegistry`
 - `App\Services\Csp\CspBuilder`
 - `App\Services\Csp\CspNonceGenerator`
 
-### 9.6 Helper Classes
+### 9.6 ヘルパークラス
 
-| Helper | Description |
+| ヘルパー | 説明 |
 |---|---|
-| `App\Helpers\CaptchaHelper` | CAPTCHA enablement check, widget rendering, and driver configuration |
-| `App\Helpers\ConfigHelper` | Security and session configuration retrieval (incl. `getDisplayTimezone()`) |
-| `App\Helpers\DateTimeHelper` | UTC→display timezone conversion and formatting (named formats, DST safe, null tolerant) |
-| `App\Helpers\ComposerLocalHelper` | composer-local.json management |
-| `App\Helpers\GitExcludeHelper` | .git/info/exclude file management |
-| `App\Helpers\GitIgnoreHelper` | .gitignore file management |
-| `App\Helpers\GlobalHelper` | Global helper functions (shortcode_parse, etc.) |
-| `App\Helpers\LocaleHelper` | Locale detection and language settings |
-| `App\Helpers\LoginHelper` | Login authentication, 2FA check, and session management |
-| `App\Helpers\LoginLockoutHelper` | Login lockout detection and recording |
-| `App\Helpers\PluginHelper` | Plugin enablement status, paths, and route loading |
-| `App\Helpers\TwoFaHelper` | Two-factor authentication code generation, sending, and settings |
+| `App\Helpers\CaptchaHelper` | CAPTCHA 有効判定・ウィジェット描画・ドライバー設定ヘルパー |
+| `App\Helpers\ConfigHelper` | セキュリティ設定・セッション設定の取得ヘルパー（`getDisplayTimezone()` を含む） |
+| `App\Helpers\DateTimeHelper` | UTC→表示用 TZ 変換とフォーマット（名前付きフォーマット・DST 対応・null 許容） |
+| `App\Helpers\ComposerLocalHelper` | composer-local.json の管理ヘルパー |
+| `App\Helpers\GitExcludeHelper` | .git/info/exclude ファイル管理ヘルパー |
+| `App\Helpers\GitIgnoreHelper` | .gitignore ファイル管理ヘルパー |
+| `App\Helpers\GlobalHelper` | グローバルヘルパー関数（shortcode_parse 等） |
+| `App\Helpers\LocaleHelper` | 言語設定・ロケール判定ヘルパー |
+| `App\Helpers\LoginHelper` | ログイン認証・2FA チェック・セッション管理ヘルパー |
+| `App\Helpers\LoginLockoutHelper` | ログインロックアウト判定・記録ヘルパー |
+| `App\Helpers\PluginHelper` | プラグイン有効状態・パス・ルート読み込みヘルパー |
+| `App\Helpers\TwoFaHelper` | 二段階認証コード生成・送信・設定取得ヘルパー |
 
-### 9.7 Actors
+### 9.7 アクター
 
-- `App\Actors\MemberActor` — Member actor implementation for the Action framework
+- `App\Actors\MemberActor` — Action フレームワーク用のメンバーアクター実装
 
-### 9.8 Events
+### 9.8 イベント
 
-- `App\Events\AuditLogCreated` — Audit log creation event (for SIEM integration and plugin hooks)
-- `App\Events\SecurityAlertEvent` — Security alert event
-- `App\Events\DixlaseEvents` — Constants for all core event names that plugins can listen to (see below)
+- `App\Events\AuditLogCreated` — 監査ログ作成イベント（SIEM 連携・プラグインフック用）
+- `App\Events\SecurityAlertEvent` — セキュリティアラートイベント
+- `App\Events\DixlaseEvents` — プラグインがリッスン可能なコアイベント名定数（下表参照）
 
-**Event name constants** (`App\Events\DixlaseEvents::*`): plugins may use any of the following constants as `Event::listen()` targets. The class is part of the Plugin API; constant additions are non-breaking. Removing a constant follows the deprecation policy.
+**イベント名定数** (`App\Events\DixlaseEvents::*`): プラグインは以下の定数を `Event::listen()` のターゲットに使用できます。クラス自体が Plugin API の一部であり、定数の追加は非破壊変更として扱います。定数の削除は廃止ポリシーに従います。
 
-| Category | Constants |
+| カテゴリ | 定数 |
 |---|---|
-| Backup lifecycle | `BACKUP_STARTED`, `BACKUP_COMPLETED`, `BACKUP_FAILED`, `BACKUP_CLEANUP_STARTED`, `BACKUP_CLEANUP_COMPLETED`, `BACKUP_RESTORE_STARTED`, `BACKUP_RESTORE_COMPLETED`, `BACKUP_RESTORE_FAILED` |
-| Backup encryption | `BACKUP_ENCRYPTING`, `BACKUP_ENCRYPTED`, `BACKUP_ENCRYPTION_FAILED` |
-| Backup verification | `BACKUP_VERIFYING`, `BACKUP_VERIFIED`, `BACKUP_VERIFICATION_FAILED` |
-| Deploy | `DEPLOY_BEFORE`, `DEPLOY_AFTER`, `DEPLOY_FAILED`, `DEPLOY_SYNC_BEFORE`, `DEPLOY_SYNC_AFTER`, `DEPLOY_DATABASE_BEFORE`, `DEPLOY_DATABASE_AFTER` |
-| Translation | `LOCALE_CHANGED`, `TRANSLATION_MODEL_RETRIEVED`, `TRANSLATION_MODEL_SAVING`, `TRANSLATION_MODEL_SAVED`, `TRANSLATION_MODEL_DELETED`, `TRANSLATION_FIELD_UPDATED`, `TRANSLATION_FIELD_DELETED` |
-| Plugin lifecycle | `PLUGIN_INSTALLING`, `PLUGIN_INSTALLED`, `PLUGIN_ACTIVATING`, `PLUGIN_ACTIVATED`, `PLUGIN_DEACTIVATING`, `PLUGIN_DEACTIVATED`, `PLUGIN_UNINSTALLING`, `PLUGIN_UNINSTALLED`, `PLUGIN_UPDATING`, `PLUGIN_UPDATED` |
-| Theme lifecycle | `THEME_ACTIVATING`, `THEME_ACTIVATED` |
-| Cache | `CACHE_CLEARING`, `CACHE_CLEARED` |
-| Maintenance | `MAINTENANCE_ENABLED`, `MAINTENANCE_DISABLED` |
-| Security | `INTEGRITY_SCAN_STARTED`, `INTEGRITY_SCAN_COMPLETED`, `SECURITY_ALERT`, `BOT_DETECTED`, `LOGIN_ANOMALY_DETECTED` |
-| Audit | `AUDIT_LOG_CREATED` |
-| AI (reserved) | `AI_OPERATION_LOGGED` |
+| バックアップライフサイクル | `BACKUP_STARTED`, `BACKUP_COMPLETED`, `BACKUP_FAILED`, `BACKUP_CLEANUP_STARTED`, `BACKUP_CLEANUP_COMPLETED`, `BACKUP_RESTORE_STARTED`, `BACKUP_RESTORE_COMPLETED`, `BACKUP_RESTORE_FAILED` |
+| バックアップ暗号化 | `BACKUP_ENCRYPTING`, `BACKUP_ENCRYPTED`, `BACKUP_ENCRYPTION_FAILED` |
+| バックアップ検証 | `BACKUP_VERIFYING`, `BACKUP_VERIFIED`, `BACKUP_VERIFICATION_FAILED` |
+| デプロイ | `DEPLOY_BEFORE`, `DEPLOY_AFTER`, `DEPLOY_FAILED`, `DEPLOY_SYNC_BEFORE`, `DEPLOY_SYNC_AFTER`, `DEPLOY_DATABASE_BEFORE`, `DEPLOY_DATABASE_AFTER` |
+| 翻訳 | `LOCALE_CHANGED`, `TRANSLATION_MODEL_RETRIEVED`, `TRANSLATION_MODEL_SAVING`, `TRANSLATION_MODEL_SAVED`, `TRANSLATION_MODEL_DELETED`, `TRANSLATION_FIELD_UPDATED`, `TRANSLATION_FIELD_DELETED` |
+| プラグインライフサイクル | `PLUGIN_INSTALLING`, `PLUGIN_INSTALLED`, `PLUGIN_ACTIVATING`, `PLUGIN_ACTIVATED`, `PLUGIN_DEACTIVATING`, `PLUGIN_DEACTIVATED`, `PLUGIN_UNINSTALLING`, `PLUGIN_UNINSTALLED`, `PLUGIN_UPDATING`, `PLUGIN_UPDATED` |
+| テーマライフサイクル | `THEME_ACTIVATING`, `THEME_ACTIVATED` |
+| キャッシュ | `CACHE_CLEARING`, `CACHE_CLEARED` |
+| メンテナンス | `MAINTENANCE_ENABLED`, `MAINTENANCE_DISABLED` |
+| セキュリティ | `INTEGRITY_SCAN_STARTED`, `INTEGRITY_SCAN_COMPLETED`, `SECURITY_ALERT`, `BOT_DETECTED`, `LOGIN_ANOMALY_DETECTED` |
+| 監査 | `AUDIT_LOG_CREATED` |
+| AI（予約） | `AI_OPERATION_LOGGED` |
 
-Helper methods: `DixlaseEvents::all()` returns every event name; `DixlaseEvents::byCategory(string $category)` filters by category prefix.
+ヘルパーメソッド: `DixlaseEvents::all()` で全イベント名を取得、`DixlaseEvents::byCategory(string $category)` でカテゴリプレフィックスでフィルタ。
 
-### 9.9 Validation Rules
+### 9.9 バリデーションルール
 
-- `App\Rules\UniqueContentSlug` — Content slug uniqueness validation
-- `App\Rules\UniqueRouteSlug` — Route slug uniqueness validation
+- `App\Rules\UniqueContentSlug` — コンテンツスラッグの一意性バリデーション
+- `App\Rules\UniqueRouteSlug` — ルートスラッグの一意性バリデーション
 
 ---
 
-## 10. Eloquent Models
+## 10. Eloquent モデル
 
-### 10.1 User/Member Models
+### 10.1 ユーザー/メンバーモデル
 
 - `App\Models\Member`
 
-### 10.2 Content Models
+### 10.2 コンテンツモデル
 
 - `App\Models\FrontPage`
 - `App\Models\Media`
 
-### 10.3 Plugin/Extension Models
+### 10.3 プラグイン/拡張モデル
 
 - `App\Models\Plugin`
 - `App\Models\Theme`
 
-### 10.4 System Models
+### 10.4 システムモデル
 
 - `App\Models\BaseSetting`
 - `App\Models\SecuritySetting`
@@ -527,21 +527,21 @@ Helper methods: `DixlaseEvents::all()` returns every event name; `DixlaseEvents:
 
 ---
 
-## 11. Global Helper Functions
+## 11. グローバルヘルパー関数
 
-| Function | Description |
+| 関数 | 説明 |
 |---|---|
-| `shortcode_parse(string $content): string` | Parse and execute shortcodes in content |
+| `shortcode_parse(string $content): string` | コンテンツ内のショートコードを解析・実行する |
 
 ---
 
-## 12. Plugin Architecture Requirements
+## 12. プラグインアーキテクチャ要件
 
-### 12.1 Plugin Directory Structure
+### 12.1 プラグインディレクトリ構造
 
 ```
 plugins/PluginName/
-├── plugin.json              # Required: metadata, permissions, declares
+├── plugin.json              # 必須: メタデータ、権限、宣言
 ├── composer.json
 ├── app/
 │   └── Providers/
@@ -561,20 +561,20 @@ plugins/PluginName/
 └── tests/
 ```
 
-### 12.2 Self-Containment Principle
+### 12.2 自己完結原則
 
-Plugins are architecturally self-contained — all plugin files reside within `plugins/PluginName/` and **do not modify any core source files**. Specifically:
+プラグインはアーキテクチャ上自己完結しています — すべてのプラグインファイルは `plugins/PluginName/` 内に配置され、**コアのソースファイルを一切改変しません**。具体的には:
 
-- **Config files** (`config/admin/navigation.php`, `roles.php`, etc.) are provided within the plugin directory and merged into the application by `PluginLoaderTrait` at boot time. Core config files are never overwritten.
-- **Route files** (`routes/`) are auto-loaded from the plugin directory. Core route files are not modified.
-- **Migrations** (`database/migrations/`) manage only plugin-owned tables. Core database schema is not altered.
-- **Views and translations** (`resources/views/`, `lang/`) are namespaced under the plugin's slug and do not replace core templates.
+- **設定ファイル**（`config/admin/navigation.php`、`roles.php` 等）はプラグインディレクトリ内に提供され、`PluginLoaderTrait` によって起動時にアプリケーションへマージされます。コアの設定ファイルは上書きされません。
+- **ルートファイル**（`routes/`）はプラグインディレクトリから自動読み込みされます。コアのルートファイルは改変されません。
+- **マイグレーション**（`database/migrations/`）はプラグイン固有のテーブルのみを管理します。コアのデータベーススキーマは変更されません。
+- **ビューと翻訳**（`resources/views/`、`lang/`）はプラグインの slug で名前空間化され、コアのテンプレートを置き換えません。
 
-This self-containment means that installing or removing a plugin involves only adding or deleting its directory — no core files are touched. For license purposes, providing plugin-specific config, routes, views, and migrations through this architecture **does not constitute modification of core source files**.
+この自己完結性により、プラグインのインストール・アンインストールはディレクトリの追加・削除のみで完結し、コアファイルには一切触れません。ライセンス上、このアーキテクチャを通じてプラグイン固有の設定・ルート・ビュー・マイグレーションを提供することは、**コアソースファイルの改変には該当しません**。
 
-### 12.3 ServiceProvider Requirements
+### 12.3 ServiceProvider 要件
 
-Plugins must provide a ServiceProvider that uses `PluginLoaderTrait`:
+プラグインは `PluginLoaderTrait` を使用する ServiceProvider を提供する必要があります:
 
 ```php
 namespace Plugins\PluginName\App\Providers;
@@ -591,7 +591,7 @@ class PluginNameServiceProvider extends ServiceProvider
 }
 ```
 
-### 12.4 plugin.json Schema
+### 12.4 plugin.json スキーマ
 
 ```json
 {
@@ -628,7 +628,7 @@ class PluginNameServiceProvider extends ServiceProvider
 
 ---
 
-## 13. Translation Structure
+## 13. 翻訳ファイル構造
 
 ```
 plugins/PluginName/lang/
@@ -646,9 +646,9 @@ plugins/PluginName/lang/
 
 ---
 
-## 14. `@api` PHPDoc Tag Convention
+## 14. `@api` PHPDoc タグ規約
 
-All classes that form the Plugin API are annotated with the `@api` PHPDoc tag:
+プラグイン API を構成するすべてのクラスには `@api` PHPDoc タグが付与されています:
 
 ```php
 /**
@@ -656,30 +656,30 @@ All classes that form the Plugin API are annotated with the `@api` PHPDoc tag:
  */
 ```
 
-### Guidelines for Plugin Developers
-- **Safe to depend on:** Classes with `@api` tag are stable and covered by the license exception
-- **Avoid depending on:** Classes without `@api` tag are internal implementation details
-- **PHPStan enforcement:** DixlaseDevKit provides a PHPStan rule that warns about non-`@api` imports
-- **Quick check:** Run `dls:plugin:check-api {plugin-name}` to scan your plugin for non-API imports
+### プラグイン開発者向けガイドライン
+- **依存して安全:** `@api` タグ付きクラスは安定しており、ライセンス例外の対象です
+- **依存を避ける:** `@api` タグなしのクラスは内部実装の詳細です
+- **PHPStan 強制:** DixlaseDevKit は非 `@api` インポートに対する PHPStan ルールを提供します
+- **クイックチェック:** `dls:plugin:check-api {plugin-name}` でプラグインの非 API インポートをスキャンできます
 
-### Guidelines for Core Contributors
-- Add `@api` to any new class intended for plugin/theme use
-- Removing `@api` from an existing class is a breaking change requiring a major version bump
-- Run `dls:plugin:check-api` (DixlaseDevKit) to verify API surface consistency
+### コアコントリビューター向けガイドライン
+- プラグイン/テーマでの使用を意図した新しいクラスには `@api` を追加する
+- 既存クラスから `@api` を削除する場合はメジャーバージョンアップが必要な破壊的変更です
+- `dls:plugin:check-api`（DixlaseDevKit）で API サーフェスの一貫性を検証できます
 
 ---
 
-## 15. What Is NOT Part of the Plugin API
+## 15. プラグイン API に含まれないもの
 
-The following are **internal implementation details** and are NOT covered by the exception:
+以下は**内部実装の詳細**であり、例外の対象に含まれ**ません**:
 
-- Internal controller logic beyond base classes listed above
-- Service class implementations (use contracts/interfaces instead)
-- Undocumented model scope methods
-- Request validation classes (Form Requests)
-- Internal event handling infrastructure
-- Internal job queue infrastructure (except `ShouldQueue` interface)
-- Private/protected methods of any listed class
-- Database schema internals not exposed through models
+- 上記に記載されたベースクラス以外の内部コントローラーロジック
+- サービスクラスの実装（代わりにコントラクト/インターフェースを使用）
+- ドキュメント化されていないモデルスコープメソッド
+- リクエストバリデーションクラス（Form Request）
+- 内部イベントハンドリング基盤
+- 内部ジョブキュー基盤（`ShouldQueue` インターフェースを除く）
+- リストされたクラスの private/protected メソッド
+- モデルを通じて公開されていないデータベーススキーマの内部
 
-Plugins relying on internal components become derivative works subject to full AGPL-3.0 terms.
+内部コンポーネントに依存するプラグインは、完全な AGPL-3.0 条件の対象となる派生著作物となります。
