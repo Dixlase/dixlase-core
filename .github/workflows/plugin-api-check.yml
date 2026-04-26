@@ -1,0 +1,119 @@
+name: Plugin API Boundary Check
+
+on:
+  push:
+    branches:
+      - main
+      - v0.1.0
+      - 'feature/**'
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  pull_request:
+    branches:
+      - main
+      - v0.1.0
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+jobs:
+  # ============================================
+  # Plugin API Boundary Check (@api)
+  #
+  # Each registered plugin is scanned for `use App\*` imports that reference
+  # core classes lacking the @api PHPDoc tag. Plugins that depend on non-@api
+  # core internals fall outside the AGPL Plugin and Theme Exception, so this
+  # check guards against accidental coupling.
+  #
+  # During the alpha phase the job is informational (continue-on-error: true).
+  # After v0.1.0 stabilises, drop continue-on-error and let violations fail CI.
+  # ============================================
+  plugin-api-check:
+    name: Scan plugins against @api boundary
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SUBMODULE_PAT }}
+
+      - name: Fetch registered submodules
+        env:
+          SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
+        run: |
+          git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+          if [ -f .gitmodules ]; then
+            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
+              name=$(echo "$key" | sed 's/^submodule\.\(.*\)\.path$/\1/')
+              echo "Initializing: $name ($path)"
+              git submodule init "$path" 2>&1 || true
+            done
+            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
+              git submodule update --depth=1 --force "$path" 2>&1 || echo "WARN: Failed to update $path (continuing)"
+            done
+          fi
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, intl, pdo_mysql, fileinfo, ctype, curl, dom, json, openssl, tokenizer, xml, bcmath
+          coverage: none
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-8.2-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-8.2-
+
+      - name: Generate plugin autoload mappings
+        run: php scripts/sync-local-autoload.php
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Scan each plugin for non-@api core imports
+        # dls:plugin:check-api is provided by DixlaseDevKit. It scans `use App\*`
+        # statements in the target plugin and verifies the referenced class
+        # carries the @api PHPDoc tag.
+        #
+        # DevKit and CoreDevKit are excluded because they intentionally reach
+        # into core internals as development tooling.
+        run: |
+          VIOLATIONS=()
+          for plugin_dir in plugins/Dixlase*/; do
+            [ -d "$plugin_dir" ] || continue
+            plugin=$(basename "$plugin_dir")
+            case "$plugin" in
+              DixlaseDevKit|DixlaseCoreDevKit)
+                echo "::group::Skipping $plugin (development tooling)"
+                echo "::endgroup::"
+                continue
+                ;;
+            esac
+            echo "::group::Checking $plugin"
+            if ! php artisan dls:plugin:check-api "$plugin" --strict; then
+              VIOLATIONS+=("$plugin")
+            fi
+            echo "::endgroup::"
+          done
+          if [ ${#VIOLATIONS[@]} -gt 0 ]; then
+            echo "::warning::Plugin API boundary violations detected in: ${VIOLATIONS[*]}"
+            echo "Run 'php artisan dls:plugin:check-api <plugin>' locally to inspect each violation."
+          else
+            echo "All plugins respect the @api boundary."
+          fi
+        continue-on-error: true
