@@ -25,10 +25,23 @@ class DateTimeHelperTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // ConfigHelper::getFromDatabase は INSTALLED=true の場合のみ DB を読むため、テスト中は明示的に有効化する
+        // phpunit.xml が $_ENV/$_SERVER 経由で false を設定しているため、3 経路すべて上書きする
+        putenv('INSTALLED=true');
+        $_ENV['INSTALLED'] = 'true';
+        $_SERVER['INSTALLED'] = 'true';
+    }
+
     protected function tearDown(): void
     {
         // 副作用を残さないよう、設定値を都度クリーンアップする
         BaseSetting::query()->where('name', 'display_timezone')->delete();
+        putenv('INSTALLED=false');
+        $_ENV['INSTALLED'] = 'false';
+        $_SERVER['INSTALLED'] = 'false';
         parent::tearDown();
     }
 
@@ -94,7 +107,7 @@ class DateTimeHelperTest extends TestCase
         $this->setDisplayTimezone('Asia/Tokyo');
 
         // 2026-04-24 00:00:00 UTC のエポック秒
-        $epoch = 1777593600;
+        $epoch = 1776988800;
         $this->assertSame('2026-04-24 09:00', DateTimeHelper::display($epoch));
     }
 
@@ -139,10 +152,6 @@ class DateTimeHelperTest extends TestCase
 
     private function setDisplayTimezone(string $tz): void
     {
-        BaseSetting::query()->updateOrCreate(
-            ['name' => 'display_timezone'],
-            ['value' => $tz]
-        );
-        // ConfigHelper は値を毎回 DB から読むためキャッシュクリアは不要
+        BaseSetting::setValue('display_timezone', $tz);
     }
 }
