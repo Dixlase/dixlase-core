@@ -5,7 +5,7 @@
 
 This Copyright Policy ("Policy") governs contributions to the Dixlase project ("Dixlase"), operated by exc-D inc. ("exc-D"). By contributing to Dixlase, you agree to the terms of this Policy.
 
-For the Japanese version, see [COPYRIGHT-POLICY.ja.md](./COPYRIGHT-POLICY.ja.md). In case of any inconsistency between the English and Japanese versions, the Japanese version shall prevail.
+The Japanese version of this Policy is published as [COPYRIGHT-POLICY.ja.md](./COPYRIGHT-POLICY.ja.md). In case of any inconsistency between the English and Japanese versions, the Japanese version shall prevail.
 
 ---
 

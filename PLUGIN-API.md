@@ -1,7 +1,7 @@
 # Dixlase CMS Plugin API Boundary
 
 **Version:** dev
-**Last Updated:** 2026-04-25
+**Last Updated:** 2026-04-27
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,

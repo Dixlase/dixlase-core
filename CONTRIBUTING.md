@@ -1,6 +1,6 @@
 # Contributing to Dixlase
 
-Thank you for your interest in contributing to Dixlase! This document outlines how to participate in the project. For the Japanese version, see [CONTRIBUTING.ja.md](./CONTRIBUTING.ja.md).
+Thank you for your interest in contributing to Dixlase! This document outlines how to participate in the project.
 
 ## Ways to Contribute
 
