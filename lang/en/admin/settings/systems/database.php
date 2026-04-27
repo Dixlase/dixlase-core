@@ -88,6 +88,11 @@ return [
         'description' => 'Delete expired or removed backup records',
         'default_days' => '365 days',
     ],
+    'restore_records' => [
+        'name' => 'Restore Records',
+        'description' => 'Delete restore history records older than the specified retention period',
+        'default_days' => '365 days',
+    ],
     'audit_logs' => [
         'name' => 'Audit Logs',
         'description' => 'Delete audit log records older than the specified retention period',

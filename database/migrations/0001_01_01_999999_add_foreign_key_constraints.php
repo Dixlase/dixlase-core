@@ -237,6 +237,37 @@ return new class extends Migration
                 ->on('extension_sources')
                 ->nullOnDelete();
         });
+
+        // ========================================
+        // restore_records テーブルへの外部キー
+        // ========================================
+
+        // restore_records.backup_record_id -> backup_records.id
+        // バックアップ削除後も履歴を保持するため nullOnDelete
+        Schema::table('restore_records', function (Blueprint $table) {
+            $table->foreign('backup_record_id')
+                ->references('id')
+                ->on('backup_records')
+                ->nullOnDelete();
+        });
+
+        // restore_records.pre_restore_backup_id -> backup_records.id
+        // セーフティスナップショット削除後も履歴を保持するため nullOnDelete
+        Schema::table('restore_records', function (Blueprint $table) {
+            $table->foreign('pre_restore_backup_id')
+                ->references('id')
+                ->on('backup_records')
+                ->nullOnDelete();
+        });
+
+        // restore_records.restored_by -> members.id
+        // メンバー削除後も履歴を保持するため nullOnDelete
+        Schema::table('restore_records', function (Blueprint $table) {
+            $table->foreign('restored_by')
+                ->references('id')
+                ->on('members')
+                ->nullOnDelete();
+        });
     }
 
     /**
@@ -244,6 +275,13 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // restore_records
+        Schema::table('restore_records', function (Blueprint $table) {
+            $table->dropForeign(['restored_by']);
+            $table->dropForeign(['pre_restore_backup_id']);
+            $table->dropForeign(['backup_record_id']);
+        });
+
         // themes.source_id
         Schema::table('themes', function (Blueprint $table) {
             $table->dropForeign(['source_id']);
