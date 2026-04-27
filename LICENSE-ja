@@ -1,13 +1,26 @@
 =======================================================================
 
-    DIXLASE CMS
+    DIXLASE
 
     Copyright (C) 2026 exc-D inc. <https://exc-d.com>
 
-    Dixlase CMS は、Free Software Foundation が公開する GNU Affero
-    General Public License バージョン 3 の条項および Dixlase
-    プラグイン・テーマ例外条項(本ファイル末尾に記載)の下で
-    配布されています。
+    Dixlase はデュアルライセンス方式で配布されています。
+    以下のいずれかの条件で利用することができます:
+
+      (a) Free Software Foundation が公開する GNU Affero General
+          Public License バージョン 3 の条項および Dixlase
+          プラグイン・テーマ例外条項(本ファイル末尾に記載); または
+
+      (b) exc-D inc. から提供される商用ライセンス
+          (詳細は LICENSE.commercial、または
+          office@exc-d.com までお問い合わせください)。
+
+    Dixlase コアリポジトリへのコントリビューションは、
+    Dixlase コピーライトポリシー(COPYRIGHT-POLICY.ja.md 参照)に
+    従います。
+
+    商用ライセンス契約を締結していない場合、本ファイルは以下の
+    AGPL の条項の下で配布されます。
 
     以下、GNU Affero General Public License の全文です。
 
@@ -689,9 +702,9 @@ For more information on this, and how to apply and follow the GNU AGPL, see
 
 GNU AGPL バージョン3 第7条に基づく追加許可:
 
-GNU Affero General Public License の特別例外として、Dixlase CMS の著作権者は、
-Plugin API（Dixlase CMS と共に配布される PLUGIN-API.md ファイルに定義）のみを
-通じて Dixlase CMS と連携するプラグインおよびテーマを、Dixlase CMS の派生物と
+GNU Affero General Public License の特別例外として、Dixlase の著作権者は、
+Plugin API（Dixlase と共に配布される PLUGIN-API.md ファイルに定義）のみを
+通じて Dixlase と連携するプラグインおよびテーマを、Dixlase の派生物と
 みなすことなく頒布できる追加許可を付与します。したがって、これらのプラグインおよび
 テーマは GNU Affero General Public License の要件の対象とはなりません。
 
@@ -700,10 +713,10 @@ Plugin API（Dixlase CMS と共に配布される PLUGIN-API.md ファイルに�
   1. プラグインまたはテーマが、PLUGIN-API.md に文書化されたインターフェース、
      コントラクト、トレイト、ベースクラス、DTO、Enum、Bladeコンポーネント、
      ミドルウェアグループ、設定構造、注入可能なサービス、Eloquentモデル、
-     およびヘルパー関数（「Plugin API」）のみを通じて Dixlase CMS と
+     およびヘルパー関数（「Plugin API」）のみを通じて Dixlase と
      通信すること。
 
-  2. プラグインまたはテーマが、Dixlase CMS のコアソースファイルを変更、
+  2. プラグインまたはテーマが、Dixlase のコアソースファイルを変更、
      置換、またはモンキーパッチしないこと。
 
   3. プラグインまたはテーマが、Plugin API に記載された公開コントラクトおよび
@@ -715,7 +728,7 @@ Plugin API（Dixlase CMS と共に配布される PLUGIN-API.md ファイルに�
      指定された plugins/ または themes/ ディレクトリに配置されていること。
 
 上記の条件のいずれかが満たされない場合、そのプラグインまたはテーマは
-Dixlase CMS の派生物とみなされ、GNU Affero General Public License の
+Dixlase の派生物とみなされ、GNU Affero General Public License の
 全条項が適用されます。
 
 疑義を避けるために:
@@ -723,21 +736,18 @@ Dixlase CMS の派生物とみなされ、GNU Affero General Public License の
   - 上記の全条件を満たすプラグインおよびテーマは、プロプライエタリライセンスを
     含む任意のライセンスで配布することができます。
 
-  - この例外は、Dixlase CMS コア自体を GNU Affero General Public License から
+  - この例外は、Dixlase コア自体を GNU Affero General Public License から
     免除するものではありません。コアファイルへの変更は、引き続き AGPL-3.0 の
     全条項の対象となります。
 
-  - Plugin API の定義（PLUGIN-API.md）は Dixlase CMS とともにバージョニング
+  - Plugin API の定義（PLUGIN-API.md）は Dixlase とともにバージョニング
     されます。適用される Plugin API は、プラグインまたはテーマが対象とする
-    Dixlase CMS の特定リリースと共に配布されたバージョンです。
+    Dixlase の特定リリースと共に配布されたバージョンです。
 
   - この例外は、プラグインまたはテーマの出所を説明するために合理的かつ
     慣習的に必要な場合を除き、exc-D inc. または Dixlase の商号、
     商標、サービスマーク、または製品名を使用する許可を付与するものでは
     ありません。
 
-Dixlase CMS コアを変更して再配布する場合、この例外を削除することを選択
+Dixlase コアを変更して再配布する場合、この例外を削除することを選択
 できます。例外を削除しない場合、この例外は変更されたバージョンにも適用されます。
-
-言語: 本ファイルは英語版(LICENSE)と日本語版(LICENSE-ja)で提供されます。
-両版の間に不一致がある場合、日本語版が優先されます。

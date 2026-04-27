@@ -1,13 +1,25 @@
 =======================================================================
 
-    DIXLASE CMS
+    DIXLASE
 
     Copyright (C) 2026 exc-D inc. <https://exc-d.com>
 
-    Dixlase CMS is distributed under the terms of the GNU Affero
-    General Public License version 3, as published by the Free Software
-    Foundation, together with the Dixlase Plugin and Theme Exception
-    (included at the end of this file).
+    Dixlase is dual-licensed. You may use it under either:
+
+      (a) the GNU Affero General Public License version 3, as published
+          by the Free Software Foundation, together with the Dixlase
+          Plugin and Theme Exception (included at the end of this file);
+          or
+
+      (b) a commercial license agreement obtained from
+          exc-D inc. (see LICENSE.commercial for details, or
+          contact office@exc-d.com).
+
+    Contributions to the Dixlase Core repository are governed by the
+    Dixlase Copyright Policy (see COPYRIGHT-POLICY.md).
+
+    Unless you have entered into a commercial license agreement, this
+    file is governed by the AGPL terms below.
 
     The full text of the GNU Affero General Public License follows.
 
@@ -690,23 +702,23 @@ For more information on this, and how to apply and follow the GNU AGPL, see
 Additional permission under GNU AGPL version 3 section 7:
 
 As a special exception to the GNU Affero General Public License, the
-copyright holders of Dixlase CMS grant you additional permission to
-convey plugins and themes that interact with Dixlase CMS solely through
+copyright holders of Dixlase grant you additional permission to
+convey plugins and themes that interact with Dixlase solely through
 the Plugin API (as defined in the file PLUGIN-API.md distributed with
-Dixlase CMS) without those plugins or themes being considered derivative
-works of Dixlase CMS, and therefore without being subject to the
+Dixlase) without those plugins or themes being considered derivative
+works of Dixlase, and therefore without being subject to the
 requirements of the GNU Affero General Public License.
 
 This exception applies only when ALL of the following conditions are met:
 
-  1. The plugin or theme communicates with Dixlase CMS exclusively
+  1. The plugin or theme communicates with Dixlase exclusively
      through the interfaces, contracts, traits, base classes, DTOs,
      enums, Blade components, middleware groups, configuration
      structures, injectable services, Eloquent models, and helper
      functions documented in PLUGIN-API.md (the "Plugin API").
 
   2. The plugin or theme does not modify, replace, or monkey-patch any
-     core source file of Dixlase CMS.
+     core source file of Dixlase.
 
   3. The plugin or theme does not bypass, circumvent, or replicate the
      internal implementation of core services except through the
@@ -717,7 +729,7 @@ This exception applies only when ALL of the following conditions are met:
      resides in the designated plugins/ or themes/ directory.
 
 If any of the above conditions are not met, the plugin or theme is
-considered a derivative work of Dixlase CMS, and the full terms of the
+considered a derivative work of Dixlase, and the full terms of the
 GNU Affero General Public License apply to it.
 
 For the avoidance of doubt:
@@ -725,13 +737,13 @@ For the avoidance of doubt:
   - Plugins and themes that meet all conditions above may be distributed
     under any license of your choice, including proprietary licenses.
 
-  - This exception does not exempt the Dixlase CMS core itself from the
+  - This exception does not exempt the Dixlase core itself from the
     GNU Affero General Public License. Modifications to core files
     remain subject to the full AGPL-3.0 terms.
 
   - The Plugin API definition (PLUGIN-API.md) is versioned together with
-    Dixlase CMS. The applicable Plugin API is the version distributed
-    with the specific release of Dixlase CMS that the plugin or theme
+    Dixlase. The applicable Plugin API is the version distributed
+    with the specific release of Dixlase that the plugin or theme
     targets.
 
   - This exception does not grant permission to use the trade names,
@@ -739,10 +751,6 @@ For the avoidance of doubt:
     Dixlase, except as required for reasonable and customary use in
     describing the origin of the plugin or theme.
 
-If you modify Dixlase CMS core and redistribute it, you may choose to
+If you modify Dixlase core and redistribute it, you may choose to
 remove this exception. If you do not remove the exception, the exception
 also applies to your modified version.
-
-Language: This file is provided in English (LICENSE) and Japanese
-(LICENSE-ja) editions. In case of any inconsistency between the two
-editions, the Japanese edition shall prevail.
