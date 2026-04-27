@@ -41,6 +41,22 @@ CLAUDE.md
 AGENTS.md
 PLUGIN-API.md
 
+# Localized JA reference files (generated; primary repo content is English).
+# Templates inside plugins/**, themes/**, .claude/** are kept as sources for
+# the generators in DixlaseCoreDevKit (governance, readme, plugin-api).
+#
+# Exception: legal documents (CAA / Copyright Policy) are tracked in BOTH
+# languages because the Japanese version is legally authoritative ("the
+# Japanese version shall prevail" clause in COPYRIGHT-POLICY) and must be
+# auditable via git history and PR diffs. LICENSE / LICENSE-ja /
+# LICENSE.commercial / LICENSE.commercial-ja have no .md suffix and are
+# not matched by this pattern.
+*.ja.md
+!plugins/**/*.ja.md
+!themes/**/*.ja.md
+!.claude/**/*.ja.md
+!COPYRIGHT-POLICY.ja.md
+
 # Dixlase カスタム
 # カスタムファイルを入れるディレクトリを除外
 custom/*
@@ -49,23 +65,16 @@ custom/*
 # プラグイン: 個別のリポジトリとして管理（.git/info/excludeで追跡）
 # テーマ: DixlaseOnePageはGit Submoduleとしてコアに同梱
 plugins/*
-!plugins/DixlaseDeploy/
-!plugins/DixlaseGUIEditorLite/
 !plugins/DixlaseInquiry/
 !plugins/DixlaseLegal/
-!plugins/DixlaseMenu/
 !plugins/DixlaseMenus/
 !plugins/DixlasePages/
 !plugins/DixlaseSEO/
+!plugins/DixlaseSigner/
 !plugins/DixlaseUsers/
-!plugins/DixlaseBlog/
-!plugins/DixlaseDocs/
 !plugins/DixlaseDevKit/
-!plugins/DixlaseCoreDev/
 !plugins/DixlaseCoreDevKit/
 !plugins/DixlaseAuthority/
-!plugins/DixlaseBackup/
-!plugins/DixlaseMultilingual/
 themes/*
 !themes/DixlaseOnePage/
 
