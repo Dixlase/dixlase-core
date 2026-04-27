@@ -107,6 +107,15 @@ return [
         'additional_conditions' => 'expired_or_deleted',
     ],
 
+    'restore_records' => [
+        'table' => 'restore_records',
+        'date_column' => 'restored_at',
+        'default_days' => 365,
+        'name' => 'admin/settings/systems/database.restore_records.name',
+        'description' => 'admin/settings/systems/database.restore_records.description',
+        'enabled' => true,
+    ],
+
     'audit_logs' => [
         'table' => 'audit_logs',
         'date_column' => 'occurred_at',

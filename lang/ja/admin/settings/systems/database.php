@@ -88,6 +88,11 @@ return [
         'description' => '期限切れまたは削除済みのバックアップ記録を削除します',
         'default_days' => '365日',
     ],
+    'restore_records' => [
+        'name' => '復元履歴',
+        'description' => '指定した保持期間より古い復元履歴レコードを削除します',
+        'default_days' => '365日',
+    ],
     'audit_logs' => [
         'name' => '監査ログ',
         'description' => '指定した保持期間より古い監査ログレコードを削除します',
