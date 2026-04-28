@@ -6,6 +6,19 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * Dixlase is dual-licensed. You may use this file under either:
+ *
+ *   (a) the GNU Affero General Public License version 3 or later, as
+ *       published by the Free Software Foundation, together with the
+ *       Dixlase Plugin and Theme Exception (see LICENSE
+ *       for full exception terms); or
+ *
+ *   (b) a commercial license agreement obtained from exc-D inc.
+ *       (see LICENSE.commercial, or contact office@exc-d.com).
+ *
+ * Unless you have entered into a commercial license agreement, this
+ * file is governed by the AGPL terms below.
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -105,16 +118,16 @@ class ThemeAudit extends Command
      */
     protected function resolveThemeDirectory(string $input): ?string
     {
-        // 1. Str::studly で変換して探す
+        // 1. Str::studly で変換して探す（case-sensitive な厳密マッチ）
         $studlyName = Str::studly(str_replace('-', '_', $input));
-        $path = base_path("themes/{$studlyName}");
-        if (File::isDirectory($path)) {
+        $path = $this->findDirectoryCaseSensitive(base_path('themes'), $studlyName);
+        if ($path !== null) {
             return $path;
         }
 
-        // 2. 入力そのままで探す
-        $path = base_path("themes/{$input}");
-        if (File::isDirectory($path)) {
+        // 2. 入力そのままで探す（case-sensitive）
+        $path = $this->findDirectoryCaseSensitive(base_path('themes'), $input);
+        if ($path !== null) {
             return $path;
         }
 
@@ -135,6 +148,26 @@ class ThemeAudit extends Command
                         return $dir;
                     }
                 }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * ケースセンシティブにディレクトリを検索する。
+     *
+     * macOS のケース非依存ファイルシステムでも正確なディレクトリ名を返す。
+     */
+    protected function findDirectoryCaseSensitive(string $parentDir, string $name): ?string
+    {
+        if (! File::isDirectory($parentDir)) {
+            return null;
+        }
+
+        foreach (File::directories($parentDir) as $dir) {
+            if (basename($dir) === $name) {
+                return $dir;
             }
         }
 
