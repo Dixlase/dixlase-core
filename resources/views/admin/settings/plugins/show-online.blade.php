@@ -23,6 +23,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto max-w-5xl">
 
+    {{-- 戻るボタン（上部） --}}
+    <div class="mb-4">
+        <a href="{{ route('admin.settings.plugins.add') }}" class="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+            <i class="fas fa-arrow-left"></i>{{ __('admin/settings/plugins/show.back_to_add') }}
+        </a>
+    </div>
+
     {{-- ヘッダー（拡張機能詳細カード共通コンポーネント） --}}
     <x-admin.extension-detail
         :title="$details['name'] ?? $details['slug']"
