@@ -6,6 +6,19 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * Dixlase is dual-licensed. You may use this file under either:
+ *
+ *   (a) the GNU Affero General Public License version 3 or later, as
+ *       published by the Free Software Foundation, together with the
+ *       Dixlase Plugin and Theme Exception (see LICENSE
+ *       for full exception terms); or
+ *
+ *   (b) a commercial license agreement obtained from exc-D inc.
+ *       (see LICENSE.commercial, or contact office@exc-d.com).
+ *
+ * Unless you have entered into a commercial license agreement, this
+ * file is governed by the AGPL terms below.
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -95,11 +108,15 @@ class PluginAudit extends Command
         // plugin.json から宣言された権限を取得
         $declaredPermissions = $this->getDeclaredPermissions($pluginJsonPath);
 
+        // plugin.json から宣言された capabilities を取得（情報表示用）
+        $declaredCapabilities = $this->getDeclaredCapabilities($pluginJsonPath);
+
         // コードを解析して実際に使用されている権限を検出
         $detectedPermissions = $this->analyzePluginCode($pluginDir);
 
         // 比較結果を生成
         $auditResult = $this->comparePermissions($declaredPermissions, $detectedPermissions);
+        $auditResult['capabilities'] = $declaredCapabilities;
 
         // 結果をDBに永続化（JSONモード時はコントローラーが保存するためスキップ）
         if (! $isJson) {
@@ -151,24 +168,24 @@ class PluginAudit extends Command
      */
     protected function resolvePluginDirectory(string $input): ?string
     {
-        // 1. Str::studly で変換して探す
+        // 1. Str::studly で変換して探す（case-sensitive な厳密マッチ）
         $studlyName = Str::studly(str_replace('-', '_', $input));
-        $path = base_path("plugins/{$studlyName}");
-        if (File::isDirectory($path)) {
+        $path = $this->findDirectoryCaseSensitive(base_path('plugins'), $studlyName);
+        if ($path !== null) {
             return $path;
         }
 
-        // 2. 入力そのままで探す
-        $path = base_path("plugins/{$input}");
-        if (File::isDirectory($path)) {
+        // 2. 入力そのままで探す（case-sensitive）
+        $path = $this->findDirectoryCaseSensitive(base_path('plugins'), $input);
+        if ($path !== null) {
             return $path;
         }
 
         // 3. DB の directory カラムから探す（インストール済みプラグイン）
         $plugin = \App\Models\Plugin::where('slug', $input)->first();
         if ($plugin && $plugin->directory) {
-            $path = base_path("plugins/{$plugin->directory}");
-            if (File::isDirectory($path)) {
+            $path = $this->findDirectoryCaseSensitive(base_path('plugins'), $plugin->directory);
+            if ($path !== null) {
                 return $path;
             }
         }
@@ -190,6 +207,26 @@ class PluginAudit extends Command
                         return $dir;
                     }
                 }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * ケースセンシティブにディレクトリを検索する。
+     *
+     * macOS のケース非依存ファイルシステムでも正確なディレクトリ名を返す。
+     */
+    protected function findDirectoryCaseSensitive(string $parentDir, string $name): ?string
+    {
+        if (! File::isDirectory($parentDir)) {
+            return null;
+        }
+
+        foreach (File::directories($parentDir) as $dir) {
+            if (basename($dir) === $name) {
+                return $dir;
             }
         }
 
@@ -226,6 +263,31 @@ class PluginAudit extends Command
         }
 
         return $permissions;
+    }
+
+    /**
+     * plugin.json から宣言された capabilities を取得
+     *
+     * capabilities はプラグインが提供する機能の宣言（例: ["seo", "backup"]）。
+     * コアや他プラグインからの機能検出に使われる情報メタデータで、
+     * 未宣言でも監査上のエラーにはならない。
+     *
+     * @return array<int, string>
+     */
+    protected function getDeclaredCapabilities(string $pluginJsonPath): array
+    {
+        if (! File::exists($pluginJsonPath)) {
+            return [];
+        }
+
+        $data = json_decode(File::get($pluginJsonPath), true);
+        $capabilities = $data['capabilities'] ?? [];
+
+        if (! is_array($capabilities)) {
+            return [];
+        }
+
+        return array_values(array_filter($capabilities, 'is_string'));
     }
 
     /**
