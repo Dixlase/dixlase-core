@@ -6,6 +6,21 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
+ * Dixlase is dual-licensed. You may use this file under either:
+ *
+ *   (a) the GNU Affero General Public License version 3 or later, as
+ *       published by the Free Software Foundation, together with the
+ *       Dixlase Plugin and Theme Exception (see LICENSE
+ *       for full exception terms); or
+ *
+ *   (b) a commercial license agreement obtained from exc-D inc.
+ *       (see LICENSE.commercial, or contact office@exc-d.com).
+ *
+ * Unless you have entered into a commercial license agreement, this
+ * file is governed by the AGPL terms below.
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,8 +43,6 @@ use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 
 /**
- * @api リビジョン差分のサイドバイサイド表示用 Presenter
- *
  * 任意の 2 つのテキストを行単位で比較し、Git 風に左右に並べた表示行の配列を返す。
  * 各行は ['status' => 'same|removed|added|changed', 'left' => ?string, 'right' => ?string]
  */
