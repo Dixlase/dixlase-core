@@ -6,6 +6,19 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * Dixlase is dual-licensed. You may use this file under either:
+ *
+ *   (a) the GNU Affero General Public License version 3 or later, as
+ *       published by the Free Software Foundation, together with the
+ *       Dixlase Plugin and Theme Exception (see LICENSE
+ *       for full exception terms); or
+ *
+ *   (b) a commercial license agreement obtained from exc-D inc.
+ *       (see LICENSE.commercial, or contact office@exc-d.com).
+ *
+ * Unless you have entered into a commercial license agreement, this
+ * file is governed by the AGPL terms below.
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,15 +35,20 @@
 
 namespace App\Services;
 
+use App\Contracts\PluginIntegration\CaptchaFormProviderInterface;
 use App\Models\CaptchaEnabledForm;
+use App\Services\Plugin\PluginServiceResolver;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\File;
 
 /**
  * @internal コア専用。プラグイン/テーマから参照しないこと
  */
 class CaptchaService
 {
+    public function __construct(
+        protected PluginServiceResolver $pluginServiceResolver,
+    ) {}
+
     /**
      * Get all form definitions from core and plugins.
      */
@@ -46,59 +64,38 @@ class CaptchaService
     }
 
     /**
-     * Get form definitions from all plugins.
+     * Get form definitions from all plugins via the "captcha" capability.
+     *
+     * Plugins implement CaptchaFormProviderInterface and tag it under
+     * `plugin.capabilities`. PluginServiceResolver checks plugin permissions
+     * and skips disabled or untrusted providers.
+     *
+     * @return array<string, array<string, mixed>>
      */
     protected function getPluginForms(): array
     {
         $pluginForms = [];
-        $pluginsPath = base_path('plugins');
 
-        if (! File::exists($pluginsPath)) {
-            return $pluginForms;
-        }
+        $results = $this->pluginServiceResolver->resolveAll(CaptchaFormProviderInterface::class);
 
-        // Get only installed and enabled plugins (use directory column)
-        $enabledPlugins = \App\Models\Plugin::whereNotNull('installed_at')
-            ->whereNotNull('enabled_at')
-            ->pluck('directory')
-            ->toArray();
-
-        $pluginDirs = File::directories($pluginsPath);
-
-        foreach ($pluginDirs as $pluginDir) {
-            $pluginName = basename($pluginDir);
-
-            // Skip if plugin is not installed or not enabled
-            if (! in_array($pluginName, $enabledPlugins)) {
+        foreach ($results as $result) {
+            if (! $result->isResolved()) {
                 continue;
             }
 
-            // plugin.jsonからslugを取得（フォールバック: ディレクトリ名）
-            $pluginJsonPath = $pluginDir.'/plugin.json';
-            $pluginSlug = $pluginName; // デフォルトはディレクトリ名
-
-            if (File::exists($pluginJsonPath)) {
-                $pluginJson = json_decode(File::get($pluginJsonPath), true);
-                if (isset($pluginJson['slug'])) {
-                    $pluginSlug = $pluginJson['slug'];
-                }
+            $provider = $result->instance;
+            if (! $provider instanceof CaptchaFormProviderInterface) {
+                continue;
             }
 
-            $captchaConfigPath = $pluginDir.'/config/captcha.php';
+            $pluginSlug = $provider->getPluginSlug();
 
-            if (File::exists($captchaConfigPath)) {
-                $config = include $captchaConfigPath;
-
-                if (isset($config['forms']) && is_array($config['forms'])) {
-                    foreach ($config['forms'] as $key => $form) {
-                        // Use slug as prefix (fallback to directory name)
-                        $formKey = $pluginSlug.'.'.$key;
-                        $pluginForms[$formKey] = array_merge($form, [
-                            'plugin' => $pluginName,
-                            'plugin_slug' => $pluginSlug,
-                        ]);
-                    }
-                }
+            foreach ($provider->getCaptchaForms() as $form) {
+                $formKey = $pluginSlug.'.'.$form->key;
+                $pluginForms[$formKey] = array_merge($form->toArray(), [
+                    'plugin' => $pluginSlug,
+                    'plugin_slug' => $pluginSlug,
+                ]);
             }
         }
 

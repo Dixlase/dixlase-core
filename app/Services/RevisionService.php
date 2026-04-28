@@ -6,6 +6,21 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
+ * Dixlase is dual-licensed. You may use this file under either:
+ *
+ *   (a) the GNU Affero General Public License version 3 or later, as
+ *       published by the Free Software Foundation, together with the
+ *       Dixlase Plugin and Theme Exception (see LICENSE
+ *       for full exception terms); or
+ *
+ *   (b) a commercial license agreement obtained from exc-D inc.
+ *       (see LICENSE.commercial, or contact office@exc-d.com).
+ *
+ * Unless you have entered into a commercial license agreement, this
+ * file is governed by the AGPL terms below.
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -30,8 +45,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 /**
- * @api 任意の Revisionable コンテンツに対してリビジョンの記録・復元・削除を扱う汎用サービス
- *
  * コア・プラグイン・テーマ問わず、`Revisionable` を実装するモデルを受けて以下を提供する:
  *   - 保存時スナップショット記録（差分がなければスキップ）
  *   - 保持件数超過時の自動削除（保護フラグは除外）
