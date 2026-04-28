@@ -6,7 +6,20 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
- * @api プラグイン/テーマから使用可能な安定APIです
+ * @api Stable API available for plugins/themes
+ *
+ * Dixlase is dual-licensed. You may use this file under either:
+ *
+ *   (a) the GNU Affero General Public License version 3 or later, as
+ *       published by the Free Software Foundation, together with the
+ *       Dixlase Plugin and Theme Exception (see LICENSE
+ *       for full exception terms); or
+ *
+ *   (b) a commercial license agreement obtained from exc-D inc.
+ *       (see LICENSE.commercial, or contact office@exc-d.com).
+ *
+ * Unless you have entered into a commercial license agreement, this
+ * file is governed by the AGPL terms below.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -30,8 +43,6 @@ use DateTimeZone;
 use Throwable;
 
 /**
- * @api プラグイン/テーマから使用可能な安定APIです
- *
  * 日時を表示用タイムゾーンに変換してフォーマットするヘルパー。
  *
  * Dixlase は保存・計算を常に UTC（config('app.timezone')）で行い、
