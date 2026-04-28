@@ -15,19 +15,36 @@ There are many ways to contribute to Dixlase:
 
 ## Before You Contribute
 
-### Important: Copyright Policy
+### Important: Contributor License Agreement (CLA)
 
-Dixlase is distributed under a **dual license** (AGPL v3 + commercial). To maintain this licensing model, contributions to the Dixlase **core repository** require agreement to our [Copyright Policy](./COPYRIGHT-POLICY.md).
+Dixlase is distributed under a **dual license** (AGPL v3 + commercial). To maintain this licensing model, contributions to the Dixlase **core repository** require a signed Contributor License Agreement.
 
-**By submitting a pull request, commit, or issue to this repository, you agree to the terms outlined in the Copyright Policy.** In summary:
+Two CLA forms are available depending on who is contributing:
 
-- The economic copyright of your contribution is assigned to exc-D inc.
-- You agree not to exercise moral rights over the contribution
-- You confirm that you have the right to contribute the code
+- **[Individual CLA](./CLA-INDIVIDUAL.md)** — for any person contributing on their own behalf.
+- **[Corporate CLA](./CLA-CORPORATE.md)** — for an organization that wants to authorize its employees to contribute on its behalf. Sign this in addition to (or instead of) the Individual CLA when contributions are part of an employment relationship and the employer asserts rights in the work.
 
-Please read [COPYRIGHT-POLICY.md](./COPYRIGHT-POLICY.md) in full before your first contribution.
+In summary, under the CLA:
 
-> **Note on plugins and themes:** If you are developing a plugin or theme that uses Dixlase's Plugin API (see [PLUGIN-API.md](./PLUGIN-API.md)), you retain full copyright and can license your work under any license you choose. The Copyright Policy only applies to contributions to the Dixlase core repository.
+- You **retain ownership** of your contribution
+- You **grant exc-D inc.** a perpetual, worldwide, irrevocable, sublicensable license sufficient to support the dual-license model
+- You **agree not to assert moral rights** in a way that would prevent the exercise of that license
+- You **confirm** you are authorized to grant the license (employer permission, original creation, third-party material disclosure)
+
+#### How to submit your CLA (interim process)
+
+While Dixlase is in v0.1.x, CLA submission is handled by email:
+
+1. Read [`CLA-INDIVIDUAL.md`](./CLA-INDIVIDUAL.md) (and [`CLA-CORPORATE.md`](./CLA-CORPORATE.md) if applicable) in full
+2. Fill in the contributor information fields and sign at the bottom
+3. Email the completed file to **office@exc-d.com** with the subject `CLA submission — <your name or organization>`
+4. Wait for confirmation before submitting your first pull request
+
+A future Dixlase release will introduce automated CLA signing (e.g. via [CLA Assistant](https://cla-assistant.io/)) integrated with GitHub PRs. Until then, the email process above applies.
+
+For the broader licensing context, see the [Copyright Policy](./COPYRIGHT-POLICY.md).
+
+> **Note on plugins and themes:** If you are developing a plugin or theme that uses Dixlase's Plugin API (see [PLUGIN-API.md](./PLUGIN-API.md)), you retain full copyright and can license your work under any license you choose. The CLA only applies to contributions to the Dixlase core repository.
 
 ## How to Contribute Code
 
@@ -125,7 +142,7 @@ For larger or design-heavy proposals, starting a thread in [GitHub Discussions](
 
 ## Contribution Attribution
 
-Contributors are credited in the project's commit history, release notes, and contributor acknowledgments. While the economic copyright is transferred to exc-D inc. under the Copyright Policy, your authorship is recognized and respected.
+Contributors are credited in the project's commit history, release notes, and contributor acknowledgments. The CLA preserves your right to be identified as the author of your contributions (see CLA Section 11).
 
 ## Questions?
 

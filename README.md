@@ -93,10 +93,11 @@ This allows VSCode or Cursor to directly run Laravel commands and generate compo
 ## 📖 Project Documents
 
 - [Contributing Guide](./CONTRIBUTING.md) — How to contribute
-- [Copyright Policy](./COPYRIGHT-POLICY.md) — Contributor Assignment Agreement (CAA)
+- [Copyright Policy](./COPYRIGHT-POLICY.md) — Dual-license stance and CLA model overview
+- [Individual CLA](./CLA-INDIVIDUAL.md) — For individual contributors
+- [Corporate CLA](./CLA-CORPORATE.md) — For organizations contributing on behalf of employees
 - [Security Policy](./SECURITY.md) — Reporting vulnerabilities
 - [Plugin API](./PLUGIN-API.md) — Plugin API boundary definition
-- [Governance Audit](./GOVERNANCE-AUDIT.md) — Deferred governance, legal, and operational items
 
 ---
 
@@ -119,7 +120,7 @@ If you run Dixlase CMS on a server and make it accessible to users over a networ
 
 ### Contribution Licensing
 
-Contributions to the Dixlase core repository are subject to our [Copyright Policy](./COPYRIGHT-POLICY.md). Please read it before submitting a pull request.
+Contributions to the Dixlase core repository are governed by a Contributor License Agreement. Sign [CLA-INDIVIDUAL.md](./CLA-INDIVIDUAL.md) (and [CLA-CORPORATE.md](./CLA-CORPORATE.md) if you are contributing on behalf of an organization), and submit it to **office@exc-d.com** before opening your first pull request. See the [Copyright Policy](./COPYRIGHT-POLICY.md) for the broader licensing structure and the [Contributing Guide](./CONTRIBUTING.md) for the full CLA submission process.
 
 ---
 

@@ -1,136 +1,119 @@
 # Dixlase Copyright Policy
 
-**Version:** 1.2
+**Version:** 2.0
 **Effective Date:** 2026-04-25
 
-This Copyright Policy ("Policy") governs contributions to the Dixlase project ("Dixlase"), operated by exc-D inc. ("exc-D"). By contributing to Dixlase, you agree to the terms of this Policy.
+This Copyright Policy ("Policy") explains the licensing structure of the Dixlase project, operated by exc-D inc. ("exc-D"), and how rights in contributions to it are handled. It is a high-level stance document. The legally operative instruments are referenced in Section 5.
 
-The Japanese version of this Policy is published as [COPYRIGHT-POLICY.ja.md](./COPYRIGHT-POLICY.ja.md). In case of any inconsistency between the English and Japanese versions, the Japanese version shall prevail.
+The Japanese version of this Policy is published as [COPYRIGHT-POLICY.ja.md](./COPYRIGHT-POLICY.ja.md). In case of any inconsistency between the English and Japanese versions, the **Japanese version shall prevail**.
 
 ---
 
 ## 1. Purpose
 
-Dixlase is distributed under a dual licensing model: the GNU Affero General Public License version 3 ("AGPL") with the Dixlase Plugin and Theme Exception, and a commercial license offered separately by exc-D inc.
+This Policy describes:
 
-To maintain this dual licensing model, exc-D inc. needs to hold the necessary rights in all contributions to the Dixlase core. This Policy sets out how those rights are handled.
+- The dual licensing model under which Dixlase core is distributed
+- The boundary between the Dixlase core and plugins/themes
+- The contributor agreement model used for the core
+- The principles that govern future arrangements
 
-## 2. Scope of This Policy
+It is not itself a contract. The contractual instruments are listed in Section 5; in case of any conflict between this Policy and an operative instrument, the operative instrument prevails.
 
-This Policy applies to all contributions to the Dixlase **core repository** at https://github.com/Dixlase/dixlase-core, including but not limited to:
+## 2. Dual Licensing Model
 
-- Program code (PHP, JavaScript, CSS, configuration files, etc.)
-- Documentation (Markdown, code comments, etc.)
-- Translations and localization data
-- Bug reports, feature suggestions, and design ideas submitted via issues or pull requests
-- Any other materials submitted to the repository
+The Dixlase core is distributed under two parallel licenses, and recipients choose one:
 
-This Policy does **not** apply to:
+  (a) the GNU Affero General Public License version 3 ("AGPL"), together with the Dixlase Plugin and Theme Exception, as set out in [`LICENSE`](./LICENSE); and
 
-- Plugins and themes distributed separately that use the Plugin API (as defined in `PLUGIN-API.md`). Authors of such plugins and themes retain full copyright and may license their work as they choose.
-- Code contributed to third-party repositories that are merely referenced or depended upon by Dixlase.
+  (b) a separate commercial license offered by exc-D, as set out in [`LICENSE.commercial`](./LICENSE.commercial), for parties who do not wish to comply with the AGPL.
 
-## 3. Assignment of Economic Copyright
+Both licenses cover the same software; they differ only in obligations.
 
-When you submit a contribution to Dixlase, you agree that, at the time your contribution is accepted into the project, the economic copyright (財産権としての著作権) in your contribution is assigned to exc-D inc., to the extent your contribution qualifies as a copyrightable work under applicable law.
+## 3. Plugin and Theme Exception
 
-This assignment is unconditional and irrevocable, and takes effect at the moment your contribution is accepted into the project. Once accepted, the assignment cannot be withdrawn.
+The Plugin and Theme Exception is defined in [`LICENSE`](./LICENSE) and bounded by [`PLUGIN-API.md`](./PLUGIN-API.md). Authors of plugins and themes that satisfy the four-condition test in the Exception retain full copyright in their plugin/theme code and may distribute it under any license of their choice, including proprietary licenses. The Exception is one-way: it does not allow modified core code to be re-characterized as a plugin to escape the AGPL.
 
-This assignment allows exc-D inc. to:
+## 4. Contribution Model
 
-- Distribute your contribution under the AGPL v3 and the Dixlase Plugin and Theme Exception
-- Distribute your contribution under a commercial license to parties who do not wish to comply with the AGPL
-- Relicense your contribution as part of future licensing strategies consistent with the mission of Dixlase
-- Transfer your contribution, together with other parts of Dixlase, as part of any future governance arrangement (see Section 11)
+Contributions to the Dixlase **core repository** at https://github.com/Dixlase/dixlase-core are governed by a Contributor License Agreement ("CLA") model:
 
-## 4. Waiver of Moral Rights
+| Contributor type | Agreement |
+|---|---|
+| Individual person | [`CLA-INDIVIDUAL.md`](./CLA-INDIVIDUAL.md) |
+| Organization (covering its employees) | [`CLA-CORPORATE.md`](./CLA-CORPORATE.md) |
 
-To the maximum extent permitted by applicable law, you agree not to exercise your author's moral rights (著作者人格権) — including but not limited to the right of disclosure (公表権), the right of attribution (氏名表示権), and the right to preserve integrity (同一性保持権) — against exc-D inc., its successors, or any party who receives the contribution through exc-D inc.
+Under the CLA model:
 
-This waiver is necessary to allow exc-D inc. to modify, adapt, translate, combine, and distribute your contribution as part of the ongoing development of Dixlase.
+- Contributors **retain ownership** of their contributions
+- Contributors **grant exc-D** a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable, sublicensable license sufficient to support the dual licensing model in Section 2
+- Contributors agree not to assert moral rights in a way that would prevent the exercise of that license
+- Contributors confirm authority to grant the license (employer permission, original creation, third-party material disclosure)
 
-## 5. Rights You Retain
+This Policy applies to contributions to the **core repository**. Plugins and themes distributed separately are outside its scope (see Section 3).
 
-Despite assigning economic copyright to exc-D inc., you retain the following:
+## 5. Operative Legal Instruments
 
-- **Free use of your own contribution:** You may continue to use, modify, and distribute your own contribution in your own projects, under the AGPL v3 or any other license of your choice.
-- **AGPL rights:** All rights granted to users under the AGPL v3 apply equally to you with respect to Dixlase as a whole.
-- **Recognition as an author:** Your authorship will be reflected in the project's commit history, release notes, and contributor acknowledgments.
+The legally operative documents are:
 
-In other words, this Policy does not prevent you from using your own code elsewhere. It only gives exc-D inc. the rights needed to distribute Dixlase under its dual licensing model.
+| Layer | Document |
+|---|---|
+| Open-source license (downstream recipients) | [`LICENSE`](./LICENSE) — AGPL v3 + Plugin and Theme Exception |
+| Commercial license (downstream recipients) | [`LICENSE.commercial`](./LICENSE.commercial) |
+| Individual contributor agreement | [`CLA-INDIVIDUAL.md`](./CLA-INDIVIDUAL.md) |
+| Corporate contributor agreement | [`CLA-CORPORATE.md`](./CLA-CORPORATE.md) |
+| Plugin API boundary | [`PLUGIN-API.md`](./PLUGIN-API.md) |
 
-## 6. Your Representations
+This Policy is a stance summary, not a contract. Where its summary statements differ from an operative document, the operative document controls.
 
-By submitting a contribution, you represent that:
+## 6. Contributor Recognition
 
-- You are the sole author of the contribution, or you have obtained all necessary rights and permissions to submit it under this Policy
-- Your contribution does not knowingly infringe any third party's intellectual property rights
-- If you are an employee contributing on your own behalf, you have confirmed with your employer that your contribution is not owned by your employer, or you have obtained your employer's approval
-- If you are contributing as part of your employment duties, you have authority to bind your employer to this Policy (see Section 7)
-- You are at least 18 years of age, or, if younger, you have obtained your parent's or legal guardian's consent
+Authorship is recognized in the project's commit history, release notes, and contributor acknowledgements regardless of which agreement form a contributor signs. The CLA preserves the contributor's right to be identified as the author of their contributions; see CLA Section 11 for moral rights handling.
 
-## 7. Contributions on Behalf of an Employer
+## 7. Future Governance of Dixlase
 
-If you are contributing on behalf of your employer or as part of your employment, your employer is deemed to be bound by this Policy to the same extent as you are. Please ensure that you have the necessary authority before submitting contributions on your employer's behalf.
+exc-D currently operates and manages Dixlase. exc-D does not insist on holding Dixlase as a permanent private asset. Depending on the growth of the project, the development of the community, and public-interest considerations that may emerge, exc-D may consider various options for future governance, including but not limited to:
 
-## 8. Third-Party Materials
-
-If your contribution incorporates materials owned by third parties (such as open source libraries, fonts, or images), you must:
-
-- Ensure that the third-party materials are compatible with the AGPL v3
-- Clearly identify the third-party materials and their licenses in your contribution
-- Open an issue or contact the maintainers before submitting the pull request to discuss the inclusion
-
-## 9. Indemnification
-
-To the extent permitted by applicable law, you agree to indemnify and hold harmless exc-D inc., its successors, and any party who receives your contribution through exc-D inc., from and against any claims, damages, losses, liabilities, and reasonable expenses (including reasonable attorneys' fees) arising out of or related to a knowing breach of your representations in Section 6 or your obligations regarding third-party materials in Section 8.
-
-This Section does not apply to good-faith contributions where you sincerely believed your representations to be true at the time of submission.
-
-## 10. Disclaimers
-
-Your contribution is provided "as is," without warranties of any kind. exc-D inc. is under no obligation to accept, use, or distribute any particular contribution.
-
-## 11. Future Governance of Dixlase
-
-exc-D inc. currently operates and manages Dixlase. However, exc-D inc. does not insist on holding Dixlase as a permanent private asset. Depending on the growth of the project, the development of the community, and public-interest considerations that may emerge, exc-D inc. may consider various options for the future governance of Dixlase, including but not limited to:
-
-1. Continued operation by exc-D inc.
-2. Transition to a more distributed, multi-stakeholder governance structure through mechanisms such as a certified partner program
+1. Continued operation by exc-D
+2. Transition to a more distributed, multi-stakeholder governance structure (e.g. a certified partner program)
 3. Transfer of management and/or rights to a non-profit organization or other public-interest entity
 4. Opening governance through measures such as establishing a board that includes community representatives
 5. Hybrid structures combining the above
 6. Other arrangements deemed appropriate
 
-At this time, no specific plan or commitment exists regarding any of these options, and this Policy does not create any obligation to carry out any particular transition. By agreeing to this Policy, contributors acknowledge that exc-D inc. may consider appropriate governance arrangements aimed at the long-term health of Dixlase, and consent to the possibility of such future changes.
+At this time, no specific plan or commitment exists regarding any of these options, and this Policy does not create any obligation to carry out any particular transition. The CLA model used in Section 4 is designed to enable such transitions without re-papering existing contributors: the license grant runs to "exc-D inc. **and its successors**" (see CLA Section 4), so that a successor entity can continue distribution under the same terms.
 
-Regardless of which governance arrangement is adopted, exc-D inc. will endeavor to respect the following principles:
+Regardless of which arrangement is adopted, exc-D will endeavor to respect the following principles:
 
 - Continued distribution as free software under the AGPL v3
 - Transparent communication with the community
 - Advance notice of significant governance changes
 
-## 12. How You Agree to This Policy
+## 8. Migration Notice (CAA → CLA)
 
-By submitting a contribution to the Dixlase core repository — whether through a pull request, a commit, an issue, a discussion post, or any other means — you agree to the terms of this Policy.
+Versions 1.0 through 1.2 of this Policy operated under a Contributor Assignment Agreement (CAA) model, in which the economic copyright in each contribution was assigned to exc-D. With v0.1.0 of Dixlase, the project migrated to the Contributor License Agreement (CLA) model described in Section 4.
 
-We may in the future adopt more explicit acceptance mechanisms (such as a CLA Assistant bot), but the act of contributing is itself considered your agreement to this Policy.
+- Contributions **accepted before v0.1.0** remain governed by the CAA terms in effect at the time they were submitted; those rights stay with exc-D as previously assigned.
+- Contributions **on or after v0.1.0** are governed by the CLA.
+- The current CLA is an **interim version** pending formal legal review; see the notice at the top of [`CLA-INDIVIDUAL.md`](./CLA-INDIVIDUAL.md) and [`CLA-CORPORATE.md`](./CLA-CORPORATE.md).
 
-## 13. Changes to This Policy
+This migration was made to lower contribution friction, align with the global OSS norm (Apache, Eclipse, OpenStack, jQuery, LibreOffice all use CLA-style models), and improve compatibility with international jurisdictions where outright copyright assignment is restricted.
 
-exc-D inc. may update this Policy from time to time. Significant changes will be announced publicly through the project's repository and communication channels. Contributions submitted after the effective date of a revised Policy are subject to the revised Policy. Contributions already accepted remain governed by the Policy in effect at the time they were submitted.
+## 9. Changes to This Policy
 
-## 14. Governing Law and Jurisdiction
+exc-D may update this Policy from time to time. Substantive changes will be announced publicly through the project repository before they take effect. Changes to operative legal instruments (CLA, LICENSE files) follow their own versioning and notification rules.
+
+## 10. Governing Law and Jurisdiction
 
 This Policy is governed by the laws of Japan. Any disputes arising out of or in connection with this Policy shall be submitted to the exclusive jurisdiction of the Tokyo District Court as the court of first instance.
 
-## 15. Contact
+## 11. Contact
 
-For questions about this Policy, contact exc-D inc. at:
+For questions about this Policy, contact exc-D at:
 
 - Email: office@exc-d.com
 - Website: https://exc-d.com
 
 ---
 
-**By submitting a contribution to Dixlase, you acknowledge that you have read, understood, and agree to this Copyright Policy.**
+**This Policy summarizes the licensing structure of Dixlase as of the version stated above. The operative legal instruments listed in Section 5 control in case of conflict.**
