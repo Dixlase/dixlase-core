@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * Dixlase is dual-licensed. You may use this file under either:
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
@@ -38,8 +40,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @api Stable API available for plugins/themes
- *
  * CAPTCHA-enabled form registry. Plugins/themes that integrate forms with CAPTCHA
  * (e.g. inquiry forms, custom auth flows) may reference this model directly.
  */
