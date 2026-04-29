@@ -39,9 +39,9 @@ class SignatureVerifierBindingTest extends TestCase
     }
 
     /**
-     * デフォルトではCoreSignatureVerifierにバインドされるテスト
+     * デフォルトでは CoreSignatureVerifier にバインドされるテスト
      */
-    public function test_default_binding_is_core_stub(): void
+    public function test_default_binding_is_core_signature_verifier(): void
     {
         $verifier = $this->app->make(SignatureVerifierInterface::class);
 
@@ -49,12 +49,15 @@ class SignatureVerifierBindingTest extends TestCase
     }
 
     /**
-     * CoreSignatureVerifier の isAvailable() が false を返すテスト
+     * CoreSignatureVerifier の isAvailable() が true を返すテスト
+     *
+     * 旧スタブ実装では false を返していたが、コアに Ed25519 検証を
+     * 実装したため常に利用可能となった。
      */
-    public function test_core_stub_is_not_available(): void
+    public function test_core_signature_verifier_is_available(): void
     {
         $verifier = $this->app->make(SignatureVerifierInterface::class);
 
-        $this->assertFalse($verifier->isAvailable());
+        $this->assertTrue($verifier->isAvailable());
     }
 }

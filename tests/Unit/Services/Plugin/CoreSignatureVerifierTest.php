@@ -23,6 +23,7 @@
 namespace Tests\Unit\Services\Plugin;
 
 use App\DTO\Plugin\SignatureVerificationResult;
+use App\Services\Plugin\AuthorityPublicKeyResolver;
 use App\Services\Plugin\CoreSignatureVerifier;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
@@ -34,15 +35,22 @@ class CoreSignatureVerifierTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->verifier = new CoreSignatureVerifier();
+
+        // Resolver をモックし、常に null を返すことで「公開鍵が取得できない」状況を
+        // シミュレートする。これにより検証は PENDING で終わり、ネットワーク・DB に
+        // 触れずに type/key_id 等の前段ロジックを純粋にテストできる。
+        $resolver = $this->createMock(AuthorityPublicKeyResolver::class);
+        $resolver->method('resolve')->willReturn(null);
+
+        $this->verifier = new CoreSignatureVerifier($resolver);
     }
 
     /**
-     * isAvailable() が false を返すテスト
+     * isAvailable() が true を返すテスト（実装版になったため）
      */
-    public function test_is_available_returns_false(): void
+    public function test_is_available_returns_true(): void
     {
-        $this->assertFalse($this->verifier->isAvailable());
+        $this->assertTrue($this->verifier->isAvailable());
     }
 
     /**
