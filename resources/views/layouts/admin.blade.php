@@ -4,6 +4,8 @@ This file is part of Dixlase.
 Copyright (C) 2026 exc-D inc.
 https://exc-d.com
 
+@api Available for plugins/themes via @extends('layouts.admin')
+
 Dixlase is dual-licensed. You may use this file under either:
 
   (a) the GNU Affero General Public License version 3 or later, as
