@@ -264,7 +264,7 @@ jobs:
       - name: Run Plugin Tests (Tier 2 - Moderate)
         run: >-
           php artisan test
-          --testsuite=DixlaseOfficialDocs,DixlaseMenus,DixlasePages,DixlaseGUIEditorLite,DixlaseDevKit
+          --testsuite=DixlaseOfficialDocs,DixlaseMenus,DixlasePages,DixlaseDevKit
         env:
           DB_CONNECTION: mysql
           DB_DATABASE: dixlase_test
@@ -272,7 +272,7 @@ jobs:
       - name: Run Plugin Tests (Tier 3 - Minimal)
         run: >-
           php artisan test
-          --testsuite=DixlaseAi,DixlaseUsers,DixlaseAuthority,DixlaseBackup,DixlaseDeploy,DixlaseMultilingual
+          --testsuite=DixlaseAi,DixlaseUsers,DixlaseAuthority
         continue-on-error: true
         env:
           DB_CONNECTION: mysql

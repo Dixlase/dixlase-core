@@ -37,6 +37,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @api Stable API available for plugins/themes
+ *
+ * CAPTCHA-enabled form registry. Plugins/themes that integrate forms with CAPTCHA
+ * (e.g. inquiry forms, custom auth flows) may reference this model directly.
+ */
 class CaptchaEnabledForm extends Model
 {
     /**
@@ -80,23 +86,16 @@ class CaptchaEnabledForm extends Model
 
     /**
      * Check if a form is enabled.
-     *
-     * @param string $formKey
-     * @return bool
      */
     public static function isFormEnabled(string $formKey): bool
     {
         $form = static::where('form_key', $formKey)->first();
-        
+
         return $form ? $form->enabled : false;
     }
 
     /**
      * Enable a form.
-     *
-     * @param string $formKey
-     * @param string|null $provider
-     * @return static
      */
     public static function enableForm(string $formKey, ?string $provider = null): static
     {
@@ -111,9 +110,6 @@ class CaptchaEnabledForm extends Model
 
     /**
      * Disable a form.
-     *
-     * @param string $formKey
-     * @return bool
      */
     public static function disableForm(string $formKey): bool
     {

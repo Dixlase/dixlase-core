@@ -39,6 +39,7 @@ namespace App\Helpers;
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\Process\Process;
 
 class ComposerLocalHelper
 {
@@ -97,11 +98,47 @@ class ComposerLocalHelper
             $json = json_encode($composerLocal, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             file_put_contents($composerLocalPath, json_encode($composerLocal, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
+            // composer.local.json を反映するため autoload を再生成。
+            // 失敗してもプラグイン配置自体は完了しているため warn のみで継続。
+            self::regenerateAutoload();
+
             return true;
         } catch (\Exception $e) {
             Log::error('Failed to sync composer.local.json: '.$e->getMessage());
 
             return false;
+        }
+    }
+
+    /**
+     * composer dump-autoload を実行して autoload classmap / psr-4 を再生成する。
+     *
+     * プラグイン/テーマの追加・削除直後に呼び出して、新しい PSR-4 マッピングを
+     * Laravel ランタイムに反映する。composer バイナリが利用できない環境では
+     * 警告ログを残して続行する（致命的エラーにはしない）。
+     */
+    protected static function regenerateAutoload(): void
+    {
+        try {
+            $process = new Process(
+                ['composer', 'dump-autoload', '--optimize', '--no-scripts'],
+                base_path(),
+                null,
+                null,
+                60
+            );
+            $process->run();
+
+            if (! $process->isSuccessful()) {
+                Log::warning('composer dump-autoload failed after composer.local.json sync', [
+                    'exit_code' => $process->getExitCode(),
+                    'stderr' => $process->getErrorOutput(),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Failed to regenerate autoload', [
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 

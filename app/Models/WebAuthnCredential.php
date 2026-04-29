@@ -38,6 +38,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Laragear\WebAuthn\Models\WebAuthnCredential as BaseWebAuthnCredential;
 
+/**
+ * @api Stable API available for plugins/themes
+ *
+ * WebAuthn credential record (extends Laragear\WebAuthn base model).
+ * Plugins/themes that handle passkey/WebAuthn authentication may reference this model directly.
+ */
 class WebAuthnCredential extends BaseWebAuthnCredential
 {
     /**
@@ -57,29 +63,30 @@ class WebAuthnCredential extends BaseWebAuthnCredential
         // 保存前にmember_idとnameを自動設定（Laragear\WebAuthnがauthenticatable_idとaliasを設定する）
         static::creating(function ($model) {
             // authenticatable_idからmember_idを設定
-            if (empty($model->member_id) && !empty($model->authenticatable_id)) {
+            if (empty($model->member_id) && ! empty($model->authenticatable_id)) {
                 $model->member_id = $model->authenticatable_id;
             }
             // aliasからnameを設定
-            if (empty($model->name) && !empty($model->alias)) {
+            if (empty($model->name) && ! empty($model->alias)) {
                 $model->name = $model->alias;
             }
         });
     }
-    
+
     /**
      * user_idミューテーター: member_idから自動生成
      */
     public function setUserIdAttribute($value)
     {
         // 値が設定されている場合はそのまま使用
-        if (!empty($value)) {
+        if (! empty($value)) {
             $this->attributes['user_id'] = $value;
+
             return;
         }
-        
+
         // member_idからUUIDを生成
-        if (!empty($this->member_id)) {
+        if (! empty($this->member_id)) {
             $member = \App\Models\Member::find($this->member_id);
             if ($member) {
                 $this->attributes['user_id'] = $member->webAuthnId()->toString();
@@ -133,8 +140,6 @@ class WebAuthnCredential extends BaseWebAuthnCredential
     /**
      * Get the casts array.
      * 親クラスのencryptedキャストを完全に無効化
-     *
-     * @return array
      */
     public function getCasts(): array
     {
@@ -143,6 +148,7 @@ class WebAuthnCredential extends BaseWebAuthnCredential
         unset($casts['public_key']);
         // 通常の文字列として扱う
         $casts['public_key'] = 'string';
+
         return $casts;
     }
 
@@ -163,7 +169,6 @@ class WebAuthnCredential extends BaseWebAuthnCredential
         // 暗号化せずにそのまま保存
         $this->attributes['public_key'] = $value;
     }
-
 
     /**
      * Get the member that owns the credential.

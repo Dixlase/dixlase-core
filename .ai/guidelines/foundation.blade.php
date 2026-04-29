@@ -1,3 +1,23 @@
+{{--
+This file is part of Dixlase Core DevKit.
+
+Copyright (C) 2026 exc-D inc.
+https://exc-d.com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+--}}
+
 @php
 /** @var \Laravel\Boost\Install\GuidelineAssist $assist */
 $bladePhp = '@' . 'php';
@@ -39,21 +59,13 @@ This project has domain-specific skills available. Always activate the relevant 
 ## Git Commit Messages
 - Do not include `Co-Authored-By` lines in commit messages.
 - Use conventional commit format (e.g. `feat:`, `fix:`, `refactor:`).
-- Write the commit message in **bilingual format**.
-- Place both English and Japanese titles consecutively at the top, followed by English bullet points, a `----` separator, then Japanese bullet points.
-- The Japanese title line does **not** include the conventional commit prefix (e.g. no `feat:` / `fix:`).
-- Example:
+- **English-only commits are accepted as the default.** A bilingual format (English + Japanese) is also accepted, primarily used by core maintainers to keep the project's bilingual history readable for Japanese-speaking contributors. See the Japanese guidelines (`CLAUDE.ja.md` / `guidelines-ja/foundation.blade.php`) for the bilingual layout if you choose that style.
+- Example (English-only):
   ```
   feat: add user profile page
-  ユーザープロフィールページを追加
 
   - Add ProfileController with show/edit actions
   - Create profile Blade views with avatar upload
-
-  ----
-
-  - ProfileControllerにshow/editアクションを追加
-  - アバターアップロード付きプロフィールBladeビューを作成
   ```
 
 ## View Logic Separation Rules

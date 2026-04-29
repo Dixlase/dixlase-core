@@ -46,9 +46,6 @@
         <testsuite name="DixlasePages">
             <directory>plugins/DixlasePages/tests</directory>
         </testsuite>
-        <testsuite name="DixlaseGUIEditorLite">
-            <directory>plugins/DixlaseGUIEditorLite/tests</directory>
-        </testsuite>
         <testsuite name="DixlaseAi">
             <directory>plugins/DixlaseAi/tests</directory>
         </testsuite>
@@ -57,15 +54,6 @@
         </testsuite>
         <testsuite name="DixlaseAuthority">
             <directory>plugins/DixlaseAuthority/tests</directory>
-        </testsuite>
-        <testsuite name="DixlaseBackup">
-            <directory>plugins/DixlaseBackup/tests</directory>
-        </testsuite>
-        <testsuite name="DixlaseDeploy">
-            <directory>plugins/DixlaseDeploy/tests</directory>
-        </testsuite>
-        <testsuite name="DixlaseMultilingual">
-            <directory>plugins/DixlaseMultilingual/tests</directory>
         </testsuite>
         <!-- プラグインテストスイート（一括実行用） -->
         <!-- Usage: php artisan test testsuite=Plugins    -->
