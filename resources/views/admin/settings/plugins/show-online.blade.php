@@ -177,7 +177,34 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @push('modals')
-    {{-- ダウンロード中モーダル（ダウンロードボタンクリック時に openModal で開く） --}}
+    {{-- ダウンロード確認モーダル --}}
+    <x-ui-modal
+        id="confirmDownloadPluginModal"
+        :title="__('admin/settings/plugins/add.online.download_confirm_title')"
+        :message="__('admin/settings/plugins/add.online.download_confirm_message', ['name' => $details['name'] ?? $details['slug']])"
+        iconType="info"
+        confirmColor="blue"
+    >
+        <x-slot:footer>
+            <x-form-button
+                type="button"
+                :label="__('common.cancel')"
+                variant="secondary"
+                class="mx-2"
+                @click="close()"
+            />
+            <x-form-button
+                type="button"
+                :label="__('admin/settings/plugins/add.online.download')"
+                variant="primary"
+                icon="fas fa-download"
+                class="confirm-download-btn mx-2"
+                :data-name="$details['name'] ?? $details['slug']"
+            />
+        </x-slot:footer>
+    </x-ui-modal>
+
+    {{-- ダウンロード中モーダル --}}
     <x-ui-modal
         id="downloadingPluginModal"
         iconType="loading"
@@ -196,20 +223,34 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @push('scripts')
     <script @cspNonce>
         (function () {
-            const btn = document.querySelector('.download-trigger-btn');
+            const triggerBtn = document.querySelector('.download-trigger-btn');
+            const confirmBtn = document.querySelector('.confirm-download-btn');
             const form = document.getElementById('download-form');
-            if (! btn || ! form) {
+            if (! triggerBtn || ! confirmBtn || ! form) {
                 return;
             }
-            btn.addEventListener('click', function () {
-                if (btn.disabled) {
+
+            // 詳細ページのダウンロードボタンをクリック → 確認モーダルを開く
+            triggerBtn.addEventListener('click', function () {
+                if (typeof window.openModal === 'function') {
+                    window.openModal('confirmDownloadPluginModal');
+                }
+            });
+
+            // 確認モーダル内のダウンロードボタンをクリック → 進行モーダルを開いて送信
+            confirmBtn.addEventListener('click', function () {
+                if (confirmBtn.disabled) {
                     return;
                 }
-                btn.disabled = true;
-                const name = btn.dataset.name || '';
+                confirmBtn.disabled = true;
+                triggerBtn.disabled = true;
+                const name = confirmBtn.dataset.name || '';
                 const nameEl = document.getElementById('downloadingPluginName');
                 if (nameEl) {
                     nameEl.textContent = name;
+                }
+                if (typeof window.closeModal === 'function') {
+                    window.closeModal('confirmDownloadPluginModal');
                 }
                 if (typeof window.openModal === 'function') {
                     window.openModal('downloadingPluginModal');
