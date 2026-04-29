@@ -46,10 +46,13 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Base class for all CMS actions
+ * @api Stable API available for plugins/themes
+ *
+ * Base class for all CMS actions.
  *
  * Provides a template method pattern: authorize → execute → audit → events.
  * Subclasses implement the specific business logic in handle().
+ * Plugins/themes may extend this class to define their own auditable actions.
  */
 abstract class AbstractAction implements ActionInterface
 {

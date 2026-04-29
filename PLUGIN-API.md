@@ -542,6 +542,7 @@ Helper methods: `DixlaseEvents::all()` returns every event name; `DixlaseEvents:
 | Function | Description |
 |---|---|
 | `shortcode_parse(string $content): string` | Parse and execute shortcodes in content |
+| `render_x_cloak_style(): string` | Render the `[x-cloak]` style block to suppress Alpine.js flicker on initial render |
 
 ---
 
