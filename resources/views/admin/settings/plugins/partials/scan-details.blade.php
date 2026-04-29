@@ -4,22 +4,31 @@ This file is part of Dixlase.
 Copyright (C) 2026 exc-D inc.
 https://exc-d.com
 
+Dixlase is dual-licensed. You may use this file under either:
+
+  (a) the GNU Affero General Public License version 3 or later, as
+      published by the Free Software Foundation, together with the
+      Dixlase Plugin and Theme Exception (see LICENSE
+      for full exception terms); or
+
+  (b) a commercial license agreement obtained from exc-D inc.
+      (see LICENSE.commercial, or contact office@exc-d.com).
+
+Unless you have entered into a commercial license agreement, this
+file is governed by the AGPL terms below.
+
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-スキャン結果の統一表示パーシャル
-詳細ページとバッジモーダルで共有。以下の順序で表示:
-1. 健全性スコア
-2. 指摘事項（減点理由）
-3. 監査警告（不一致時）
-4. CSP診断警告（非準拠時）
-5. 署名ステータス
-6. 権限定義の整合性
-7. CSPモード互換性バロメータ
-8. セキュリティプリセット互換性バロメータ
-9. 権限情報（カテゴリ一覧）
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 <div class="text-left space-y-4">
@@ -212,7 +221,25 @@ the Free Software Foundation, either version 3 of the License, or
         </div>
     @endif
 
-    {{-- 9. 権限情報（カテゴリ一覧 + 確認理由） --}}
+    {{-- 9. 提供機能（capabilities 宣言） --}}
+    @if(! empty($card['capabilities']))
+        <div>
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                <i class="fas fa-cubes mr-1 text-blue-500 dark:text-blue-400"></i>
+                {{ __('admin/settings/plugins/index.capabilities.title') }}
+            </h4>
+            <div class="flex flex-wrap gap-1">
+                @foreach($card['capabilities'] as $capability)
+                    <span class="inline-block bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs font-medium">
+                        {{ $capability }}
+                    </span>
+                @endforeach
+            </div>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/index.capabilities.description') }}</p>
+        </div>
+    @endif
+
+    {{-- 10. 権限情報（カテゴリ一覧 + 確認理由） --}}
     <div>
         <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin/settings/plugins/index.permissions.permission_info') }}</h4>
         @if($card['hasPermissions'])
