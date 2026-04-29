@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * Dixlase is dual-licensed. You may use this file under either:
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
@@ -38,8 +40,6 @@ namespace App\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @api Stable API available for plugins/themes
- *
  * Audit Facade — convenience accessor for AuditService.
  * Plugins/themes may use this facade to log auditable events
  * (auth, security, content, plugin lifecycle, etc.).

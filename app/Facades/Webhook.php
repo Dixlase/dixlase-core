@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * Dixlase is dual-licensed. You may use this file under either:
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
@@ -41,8 +43,6 @@ use App\Services\WebhookDispatcher;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @api Stable API available for plugins/themes
- *
  * Webhook Facade
  *
  * Provides a convenient static interface to the WebhookDispatcher service.

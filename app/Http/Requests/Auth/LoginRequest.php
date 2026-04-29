@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * Dixlase is dual-licensed. You may use this file under either:
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
@@ -43,8 +45,6 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
- * @api Stable API available for plugins/themes
- *
  * Form request for the standard login flow (validates credentials, throttles attempts).
  * Plugins/themes that build custom auth controllers may extend or compose this request.
  */

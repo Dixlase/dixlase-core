@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * Dixlase is dual-licensed. You may use this file under either:
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
@@ -39,8 +41,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Laragear\WebAuthn\Models\WebAuthnCredential as BaseWebAuthnCredential;
 
 /**
- * @api Stable API available for plugins/themes
- *
  * WebAuthn credential record (extends Laragear\WebAuthn base model).
  * Plugins/themes that handle passkey/WebAuthn authentication may reference this model directly.
  */

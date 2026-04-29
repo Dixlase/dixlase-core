@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * Dixlase is dual-licensed. You may use this file under either:
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
@@ -44,8 +46,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * @api Stable API available for plugins/themes
- *
  * Admin utilities (admin URL prefix, navigation cache, permission helpers).
  * Plugins/themes that build admin views/middleware/routes may use this helper.
  */

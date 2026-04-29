@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * Dixlase is dual-licensed. You may use this file under either:
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
@@ -38,8 +40,6 @@ namespace App\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @api Stable API available for plugins/themes
- *
  * PluginPermission Facade — convenience accessor for PluginPermissionService.
  * Plugins/themes may use this facade to verify their declared permissions
  * (e.g. PluginPermission::check('my-plugin', 'database.own_tables')).

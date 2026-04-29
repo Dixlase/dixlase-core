@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * Dixlase is dual-licensed. You may use this file under either:
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
@@ -41,8 +43,6 @@ use Exception;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @api Stable API available for plugins/themes
- *
  * BaseSettings Facade — convenience accessor for reading core base settings.
  * Plugins/themes may use BaseSettings::get('site_name') etc. to read core
  * configuration without instantiating the underlying model directly.
