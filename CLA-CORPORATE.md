@@ -1,6 +1,6 @@
 # Dixlase Software Grant and Corporate Contributor License Agreement
 
-**Version:** 1.0.0-interim
+**Version:** 1.0
 **Effective Date:** 2026-04-25
 
 This Agreement is adapted from the Apache Software Foundation Software Grant and Corporate Contributor License Agreement (v r190612), with modifications for Dixlase.

@@ -1,6 +1,6 @@
 # Dixlase Individual Contributor License Agreement
 
-**Version:** 1.0.0-interim
+**Version:** 1.0
 **Effective Date:** 2026-04-25
 
 This Agreement is adapted from the Apache Software Foundation Individual Contributor License Agreement v2.2, with modifications for Dixlase.

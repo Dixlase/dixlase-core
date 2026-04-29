@@ -1,6 +1,6 @@
 # Dixlase 個人コントリビューターライセンス契約
 
-**バージョン:** 1.0.0-interim
+**バージョン:** 1.0
 **発効日:** 2026-04-25
 
 本契約は、Apache Software Foundation Individual Contributor License Agreement v2.2 をもとに、Dixlase 用に修正したものです。

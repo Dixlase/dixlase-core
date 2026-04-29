@@ -1,6 +1,6 @@
 # Dixlase Copyright Policy
 
-**Version:** 2.0
+**Version:** 1.0
 **Effective Date:** 2026-04-25
 
 This Copyright Policy ("Policy") explains the licensing structure of the Dixlase project, operated by exc-D inc. ("exc-D"), and how rights in contributions to it are handled. It is a high-level stance document. The legally operative instruments are referenced in Section 5.
@@ -89,25 +89,15 @@ Regardless of which arrangement is adopted, exc-D will endeavor to respect the f
 - Transparent communication with the community
 - Advance notice of significant governance changes
 
-## 8. Migration Notice (CAA → CLA)
-
-Versions 1.0 through 1.2 of this Policy operated under a Contributor Assignment Agreement (CAA) model, in which the economic copyright in each contribution was assigned to exc-D. With v0.1.0 of Dixlase, the project migrated to the Contributor License Agreement (CLA) model described in Section 4.
-
-- Contributions **accepted before v0.1.0** remain governed by the CAA terms in effect at the time they were submitted; those rights stay with exc-D as previously assigned.
-- Contributions **on or after v0.1.0** are governed by the CLA.
-- The current CLA is an **interim version** pending formal legal review; see the notice at the top of [`CLA-INDIVIDUAL.md`](./CLA-INDIVIDUAL.md) and [`CLA-CORPORATE.md`](./CLA-CORPORATE.md).
-
-This migration was made to lower contribution friction, align with the global OSS norm (Apache, Eclipse, OpenStack, jQuery, LibreOffice all use CLA-style models), and improve compatibility with international jurisdictions where outright copyright assignment is restricted.
-
-## 9. Changes to This Policy
+## 8. Changes to This Policy
 
 exc-D may update this Policy from time to time. Substantive changes will be announced publicly through the project repository before they take effect. Changes to operative legal instruments (CLA, LICENSE files) follow their own versioning and notification rules.
 
-## 10. Governing Law and Jurisdiction
+## 9. Governing Law and Jurisdiction
 
 This Policy is governed by the laws of Japan. Any disputes arising out of or in connection with this Policy shall be submitted to the exclusive jurisdiction of the Tokyo District Court as the court of first instance.
 
-## 11. Contact
+## 10. Contact
 
 For questions about this Policy, contact exc-D at:
 
