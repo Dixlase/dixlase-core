@@ -47,10 +47,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <img
             src="{{ $thumbnailUrl ?: $fallbackThumbnailUrl }}"
             alt="{{ $title }}"
-            class="w-full h-full object-cover"
-            x-data
+            class="w-full h-full object-cover extension-detail-thumbnail"
             @if($fallbackThumbnailUrl)
-                x-on:error="$el.src = '{{ $fallbackThumbnailUrl }}'; $el.onerror = null;"
+                data-fallback-src="{{ $fallbackThumbnailUrl }}"
             @endif
         >
     </div>

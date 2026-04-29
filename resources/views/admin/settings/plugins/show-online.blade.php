@@ -222,6 +222,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @push('scripts')
     <script @cspNonce>
+        // サムネイル取得失敗時のフォールバック（CSP対応）
+        (function () {
+            document.querySelectorAll('img[data-fallback-src]').forEach(function (img) {
+                img.addEventListener('error', function () {
+                    const fallback = img.dataset.fallbackSrc;
+                    if (fallback && img.src !== fallback) {
+                        img.src = fallback;
+                    }
+                }, { once: true });
+            });
+        })();
+
         (function () {
             const triggerBtn = document.querySelector('.download-trigger-btn');
             const confirmBtn = document.querySelector('.confirm-download-btn');
