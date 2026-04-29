@@ -1,6 +1,6 @@
 # Dixlase ソフトウェア提供および法人コントリビューターライセンス契約
 
-**バージョン:** 1.0.0-interim
+**バージョン:** 1.0
 **発効日:** 2026-04-25
 
 本契約は、Apache Software Foundation Software Grant and Corporate Contributor License Agreement(v r190612)をもとに、Dixlase 用に修正したものです。
