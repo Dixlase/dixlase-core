@@ -559,6 +559,68 @@ Facades are wired via the standard Laravel facade pattern; see each facade file 
 
 ---
 
+## 11.5 Read-only Core Config Keys
+
+Plugins/themes may read the following core config keys via Laravel's `config()` helper. These keys are part of the Plugin API stability pledge: their names and value shapes will not change incompatibly within a major version. Treat them as **read-only** — write only via the responsible core service.
+
+### 11.5.1 Admin Settings (`config/admin.php`)
+
+| Key | Type | Description |
+|---|---|---|
+| `admin.admin_url` | `string` | Admin URL prefix (e.g. `admin`). Used to build admin route paths. |
+| `admin.mediaPath` | `string` | Public media path (used by URL helpers). |
+| `admin.files.mediaPath` | `string` | Filesystem media path (used by storage operations). |
+
+### 11.5.2 Security (`config/security.php`)
+
+| Key | Type | Description |
+|---|---|---|
+| `security.admin_url` | `string` | Admin URL prefix (security mirror, prefer `admin.admin_url`). |
+
+### 11.5.3 Content Security Policy (`config/csp.php`)
+
+| Key | Type | Description |
+|---|---|---|
+| `csp.base.mode` | `string` | Active CSP mode (`development`, `standard`, `strict`). |
+| `csp.base.admin_mode` | `string` | Admin-area CSP mode override. |
+| `csp.base.modes` | `array` | Map of mode → directive set. |
+| `csp.base.nonce_length` | `int` | Nonce byte length. |
+| `csp.base.report_uri` | `string\|null` | CSP violation report endpoint. |
+| `csp.directives` | `array` | Resolved CSP directives. |
+| `csp.domains` | `array` | Allowed external domains. |
+
+### 11.5.4 Localization (`config/language.php`)
+
+| Key | Type | Description |
+|---|---|---|
+| `language.default` | `string` | Default locale (e.g. `en`). |
+| `language.languages` | `array` | Supported locale list. |
+| `language.translations` | `array` | Locale → display-name map. |
+
+### 11.5.5 Regions (`config/regions.php`)
+
+| Key | Type | Description |
+|---|---|---|
+| `regions.countries` | `array` | Country code → name map. |
+| `regions.prefectures` | `array` | Prefecture code → name map (Japan-specific). |
+
+### 11.5.6 Themes (`config/themes.php`)
+
+| Key | Type | Description |
+|---|---|---|
+| `themes.theme_directory` | `string` | Themes directory path (relative to base). |
+
+### 11.5.7 Extension Sources (`config/extension-sources.php`)
+
+| Key | Type | Description |
+|---|---|---|
+| `extension-sources.default_author_id` | `string\|null` | Default author ID for new extension entries. |
+| `extension-sources.default_authority_key_id` | `string\|null` | Default Ed25519 authority key ID. |
+
+> **Not Plugin API:** Laravel built-in config (`app.*`, `auth.*`, `cache.*`, `queue.*`, `session.*`, `mail.*`, `database.*`, `filesystems.*`, etc.) follows Laravel's own stability — refer to Laravel documentation. Other core configs not listed here may change without notice.
+
+---
+
 ## 12. Plugin Architecture Requirements
 
 ### 12.1 Plugin Directory Structure
