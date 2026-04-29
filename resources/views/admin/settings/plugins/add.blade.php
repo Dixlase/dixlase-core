@@ -247,8 +247,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         confirmColor="blue"
     >
         <div class="modal-message text-center">
-            <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/plugins/add.online.download_confirm_message', ['name' => '']) }}</p>
-            <p id="confirmDownloadPluginName" class="font-medium"></p>
+            <p id="confirmDownloadPluginMessage"
+               class="text-sm text-gray-700 dark:text-gray-300"
+               data-template="{{ __('admin/settings/plugins/add.online.download_confirm_message', ['name' => '__NAME__']) }}"></p>
         </div>
         <x-slot:footer>
             <x-form-button

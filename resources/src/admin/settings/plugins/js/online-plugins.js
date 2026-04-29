@@ -71,9 +71,10 @@ Alpine.data('onlinePlugins', (config) => ({
         // ダウンロード前に確認モーダルを表示
         this.pendingPlugin = plugin;
         const name = typeof plugin.name === 'string' ? plugin.name : slug;
-        const nameEl = document.getElementById('confirmDownloadPluginName');
-        if (nameEl) {
-            nameEl.textContent = name;
+        const messageEl = document.getElementById('confirmDownloadPluginMessage');
+        if (messageEl) {
+            const template = messageEl.dataset.template || '';
+            messageEl.textContent = template.replace('__NAME__', name);
         }
         if (typeof window.openModal === 'function') {
             window.openModal('confirmDownloadPluginModal');
