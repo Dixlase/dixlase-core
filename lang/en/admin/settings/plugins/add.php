@@ -63,6 +63,8 @@ return [
         'source_not_configured' => 'Extension source is not configured.',
         'configure_link' => 'Configure in Security Settings',
         'download' => 'Download',
+        'download_confirm_title' => 'Download Plugin',
+        'download_confirm_message' => 'Do you want to download plugin ":name"?',
         'downloading' => 'Downloading...',
         'downloading_title' => 'Downloading Plugin',
         'downloading_wait' => 'Please wait until the download completes.',

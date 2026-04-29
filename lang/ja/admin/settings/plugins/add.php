@@ -63,6 +63,8 @@ return [
         'source_not_configured' => '拡張機能ソースが設定されていません。',
         'configure_link' => 'セキュリティ設定で設定する',
         'download' => 'ダウンロード',
+        'download_confirm_title' => 'プラグインのダウンロード',
+        'download_confirm_message' => 'プラグイン「:name」をダウンロードしますか？',
         'downloading' => 'ダウンロード中...',
         'downloading_title' => 'プラグインをダウンロード中',
         'downloading_wait' => 'ダウンロードが完了するまでお待ちください。',
