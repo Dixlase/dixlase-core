@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f593354345cfc336fca77cb818871e60",
+    "content-hash": "8dd2208747f8147dc0fd16067e7fde10",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -7667,16 +7667,16 @@
         },
         {
             "name": "laravel/mcp",
-            "version": "v0.5.6",
+            "version": "v0.5.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/mcp.git",
-                "reference": "87905978bf2a230d6c01f8d03e172249e37917f7"
+                "reference": "39e8da60eb7bce4737c5d868d35a3fe78938c129"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/mcp/zipball/87905978bf2a230d6c01f8d03e172249e37917f7",
-                "reference": "87905978bf2a230d6c01f8d03e172249e37917f7",
+                "url": "https://api.github.com/repos/laravel/mcp/zipball/39e8da60eb7bce4737c5d868d35a3fe78938c129",
+                "reference": "39e8da60eb7bce4737c5d868d35a3fe78938c129",
                 "shasum": ""
             },
             "require": {
@@ -7736,7 +7736,7 @@
                 "issues": "https://github.com/laravel/mcp/issues",
                 "source": "https://github.com/laravel/mcp"
             },
-            "time": "2026-02-09T22:08:43+00:00"
+            "time": "2026-02-17T19:05:53+00:00"
         },
         {
             "name": "laravel/pint",
@@ -9897,5 +9897,5 @@
         "php": "^8.2"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }

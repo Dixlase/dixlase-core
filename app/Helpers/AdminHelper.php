@@ -44,7 +44,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @api Stable API available for plugins/themes
+ *
+ * Admin utilities (admin URL prefix, navigation cache, permission helpers).
+ * Plugins/themes that build admin views/middleware/routes may use this helper.
  */
 class AdminHelper
 {
