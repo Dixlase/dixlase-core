@@ -42,6 +42,12 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @api Stable API available for plugins/themes
+ *
+ * Form request for the standard login flow (validates credentials, throttles attempts).
+ * Plugins/themes that build custom auth controllers may extend or compose this request.
+ */
 class LoginRequest extends FormRequest
 {
     /**
@@ -113,6 +119,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
+        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
     }
 }
