@@ -125,6 +125,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                      csrfToken: '{{ csrf_token() }}',
                      defaultThumbnail: '{{ asset('assets/images/plugin-default.svg') }}'
                  })"
+                 x-init="
+                     const btn = document.getElementById('confirmDownloadPluginBtn');
+                     if (btn) { btn.addEventListener('click', () => confirmDownload()); }
+                 "
             >
                 <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
                     <h2 class="text-2xl font-bold mb-2 text-gray-700 dark:text-white">{{ __('admin/settings/plugins/add.online.title') }}</h2>
@@ -234,6 +238,37 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @push('modals')
+    {{-- ダウンロード確認モーダル --}}
+    <x-ui-modal
+        id="confirmDownloadPluginModal"
+        :title="__('admin/settings/plugins/add.online.download_confirm_title')"
+        message=""
+        iconType="info"
+        confirmColor="blue"
+    >
+        <div class="modal-message text-center">
+            <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/plugins/add.online.download_confirm_message', ['name' => '']) }}</p>
+            <p id="confirmDownloadPluginName" class="font-medium"></p>
+        </div>
+        <x-slot:footer>
+            <x-form-button
+                type="button"
+                :label="__('common.cancel')"
+                variant="secondary"
+                class="mx-2"
+                @click="close()"
+            />
+            <x-form-button
+                type="button"
+                id="confirmDownloadPluginBtn"
+                :label="__('admin/settings/plugins/add.online.download')"
+                variant="primary"
+                icon="fas fa-download"
+                class="mx-2"
+            />
+        </x-slot:footer>
+    </x-ui-modal>
+
     {{-- ダウンロード中モーダル（onlinePlugins.download() から openModal で呼び出す） --}}
     <x-ui-modal
         id="downloadingPluginModal"
