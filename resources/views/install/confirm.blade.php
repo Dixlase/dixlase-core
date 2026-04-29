@@ -4,6 +4,19 @@ This file is part of Dixlase.
 Copyright (C) 2026 exc-D inc.
 https://exc-d.com
 
+Dixlase is dual-licensed. You may use this file under either:
+
+  (a) the GNU Affero General Public License version 3 or later, as
+      published by the Free Software Foundation, together with the
+      Dixlase Plugin and Theme Exception (see LICENSE
+      for full exception terms); or
+
+  (b) a commercial license agreement obtained from exc-D inc.
+      (see LICENSE.commercial, or contact office@exc-d.com).
+
+Unless you have entered into a commercial license agreement, this
+file is governed by the AGPL terms below.
+
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -201,7 +214,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <!-- インストール実行フォーム -->
 <div x-data="{ installing: false }">
     <form action="{{ route('install.confirm.store') }}" method="POST" class="space-y-4"
-          @submit="installing = true">
+          @submit="installing = true; $nextTick(() => openModal('installProgressModal'))">
         @csrf
         <nav aria-label="{{ __('install/common.form_navigation') }}" class="flex justify-center">
             <a href="{{ route('install.mail') }}"
@@ -214,28 +227,31 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     class="bg-blue-600 dark:bg-blue-500 text-white py-2 px-4 mx-4 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
                 <span x-show="!installing">{{ __('install/confirm.confirm_button') }}</span>
                 <span x-show="installing" x-cloak class="flex items-center">
-                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                    <i class="fas fa-spinner fa-spin mr-2"></i>
                     {{ __('install/confirm.installing') }}
                 </span>
             </button>
         </nav>
     </form>
-
-    {{-- インストール中オーバーレイ --}}
-    <div x-show="installing" x-cloak
-         class="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center"
-         aria-live="assertive" role="status">
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-2xl text-center max-w-sm mx-4">
-            <svg class="animate-spin h-12 w-12 text-blue-600 dark:text-blue-400 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p class="text-lg font-semibold text-gray-800 dark:text-white mb-2">{{ __('install/confirm.installing') }}</p>
-            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('install/confirm.installing_description') }}</p>
-        </div>
-    </div>
 </div>
+
+{{-- インストール中モーダル --}}
+<x-ui-modal
+    id="installProgressModal"
+    :title="__('install/confirm.installing')"
+    message=""
+    iconType="info"
+    :dismissible="false"
+    :closeOnly="true"
+>
+    <p class="text-sm text-gray-700 dark:text-gray-300 text-center">
+        {{ __('install/confirm.installing_description_line1') }}<br>
+        {{ __('install/confirm.installing_description_line2') }}
+    </p>
+    <x-slot:footer>
+        <div class="flex items-center justify-center w-full py-1">
+            <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
+        </div>
+    </x-slot:footer>
+</x-ui-modal>
 @endsection
