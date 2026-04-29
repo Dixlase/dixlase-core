@@ -1,7 +1,7 @@
 # Dixlase CMS Plugin API Boundary
 
 **Version:** dev
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-04-29
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -79,6 +79,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 | Contract | Description |
 |---|---|
+| `App\Contracts\PluginIntegration\CaptchaFormProviderInterface` | CAPTCHA フォームを提供するプラグイン用 Contract |
 | `App\Contracts\PluginIntegration\DashboardNotificationProviderInterface` | ダッシュボード通知を提供するプラグインの契約 |
 | `App\Contracts\PluginIntegration\DashboardWidgetProviderInterface` | ダッシュボードウィジェットを提供するプラグインの契約 |
 | `App\Contracts\PluginIntegration\LinkableInterface` | リンク可能なコンテンツの最小契約 |
@@ -198,6 +199,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 ### 4.9 Plugin Integration DTOs
 
+- `App\DTO\PluginIntegration\CaptchaFormDTO`
 - `App\DTO\PluginIntegration\DashboardNotificationDTO`
 - `App\DTO\PluginIntegration\DashboardWidgetDTO`
 - `App\DTO\PluginIntegration\LinkableDTO`
@@ -309,6 +311,14 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 ### 6.7 Media Components
 
 `x-media.picker`, `x-media.selector`
+
+### 6.8 Layout Templates
+
+Plugins/themes may extend the following Blade layouts via `@extends('layouts.{name}')`. These are stable layouts marked with `@api` and committed to backwards compatibility under the [Stability Pledge](#stability-pledge).
+
+| Layout | Usage | Description |
+|---|---|---|
+| `layouts.admin` | `@extends('layouts.admin')` | Admin panel layout (sidebar, top bar, dark mode, flash messages). Used by all admin pages including plugin admin views. |
 
 ---
 
