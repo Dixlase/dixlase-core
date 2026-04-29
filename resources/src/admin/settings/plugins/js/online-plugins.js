@@ -28,6 +28,7 @@ Alpine.data('onlinePlugins', (config) => ({
     errorMessage: '',
     downloadingSlug: null,
     downloadingName: '',
+    pendingPlugin: null,
 
     init() {
         this.fetchPlugins();
@@ -61,16 +62,39 @@ Alpine.data('onlinePlugins', (config) => ({
         if (this.downloadingSlug) return;
 
         // API が想定外の型を返した場合に備え、slug を文字列化して防御する。
-        // 非文字列・空文字の場合は送信しない（サーバ側は空以外を受け付ける）。
         const slug = typeof plugin.slug === 'string' ? plugin.slug.trim() : '';
         if (! slug) {
             console.warn('[onlinePlugins] plugin.slug is not a usable string:', plugin.slug);
             return;
         }
+
+        // ダウンロード前に確認モーダルを表示
+        this.pendingPlugin = plugin;
+        const name = typeof plugin.name === 'string' ? plugin.name : slug;
+        const nameEl = document.getElementById('confirmDownloadPluginName');
+        if (nameEl) {
+            nameEl.textContent = name;
+        }
+        if (typeof window.openModal === 'function') {
+            window.openModal('confirmDownloadPluginModal');
+        }
+    },
+
+    confirmDownload() {
+        const plugin = this.pendingPlugin;
+        if (! plugin || this.downloadingSlug) return;
+
+        const slug = typeof plugin.slug === 'string' ? plugin.slug.trim() : '';
+        if (! slug) return;
+
+        this.pendingPlugin = null;
         this.downloadingSlug = slug;
         this.downloadingName = typeof plugin.name === 'string' ? plugin.name : slug;
 
-        // 共通モーダルコンポーネントを開く（Alpine スコープ越えを避けるため DOM に直接書き込む）
+        if (typeof window.closeModal === 'function') {
+            window.closeModal('confirmDownloadPluginModal');
+        }
+
         const nameEl = document.getElementById('downloadingPluginName');
         if (nameEl) {
             nameEl.textContent = this.downloadingName;
