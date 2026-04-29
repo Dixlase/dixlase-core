@@ -40,6 +40,13 @@ use App\Models\BaseSetting;
 use Exception;
 use Illuminate\Support\Facades\Facade;
 
+/**
+ * @api Stable API available for plugins/themes
+ *
+ * BaseSettings Facade — convenience accessor for reading core base settings.
+ * Plugins/themes may use BaseSettings::get('site_name') etc. to read core
+ * configuration without instantiating the underlying model directly.
+ */
 class BaseSettings extends Facade
 {
     public static function get(string $key, $default = null)

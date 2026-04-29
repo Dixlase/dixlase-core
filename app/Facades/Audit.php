@@ -38,7 +38,11 @@ namespace App\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * Audit Facade
+ * @api Stable API available for plugins/themes
+ *
+ * Audit Facade — convenience accessor for AuditService.
+ * Plugins/themes may use this facade to log auditable events
+ * (auth, security, content, plugin lifecycle, etc.).
  *
  * @method static \App\Models\AuditLog|null log(array $data)
  * @method static \App\Models\AuditLog|null logAuth(string $action, array $data = [])

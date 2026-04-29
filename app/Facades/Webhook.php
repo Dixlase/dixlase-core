@@ -41,9 +41,12 @@ use App\Services\WebhookDispatcher;
 use Illuminate\Support\Facades\Facade;
 
 /**
+ * @api Stable API available for plugins/themes
+ *
  * Webhook Facade
  *
  * Provides a convenient static interface to the WebhookDispatcher service.
+ * Plugins/themes may dispatch their own events via Webhook::dispatch().
  *
  * Usage:
  * ```php

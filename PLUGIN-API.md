@@ -511,6 +511,19 @@ Helper methods: `DixlaseEvents::all()` returns every event name; `DixlaseEvents:
 - `App\Rules\UniqueContentSlug` — Content slug uniqueness validation
 - `App\Rules\UniqueRouteSlug` — Route slug uniqueness validation
 
+### 9.10 Facades (Convenience Accessors)
+
+Convenience static accessors for the most common core services. Plugins/themes may use these facades instead of injecting the underlying service.
+
+| Facade | Underlying Service | Purpose |
+|---|---|---|
+| `App\Facades\Audit` | `App\Services\AuditService` | Log auditable events (auth, security, content, plugin lifecycle, etc.) |
+| `App\Facades\BaseSettings` | `App\Models\BaseSetting` | Read core base settings (`BaseSettings::get('site_name')`) |
+| `App\Facades\PluginPermission` | `App\Services\Plugin\PluginPermissionService` | Verify plugin declared permissions |
+| `App\Facades\Webhook` | `App\Services\WebhookDispatcher` | Dispatch webhook events from plugin code |
+
+Facades are wired via the standard Laravel facade pattern; see each facade file for the full `@method` PHPDoc list.
+
 ---
 
 ## 10. Eloquent Models
