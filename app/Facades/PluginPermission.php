@@ -38,7 +38,11 @@ namespace App\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * プラグイン権限ファサード
+ * @api Stable API available for plugins/themes
+ *
+ * PluginPermission Facade — convenience accessor for PluginPermissionService.
+ * Plugins/themes may use this facade to verify their declared permissions
+ * (e.g. PluginPermission::check('my-plugin', 'database.own_tables')).
  *
  * @method static bool check(string $pluginSlug, string $permission)
  * @method static bool has(string $pluginSlug, string $permission)
