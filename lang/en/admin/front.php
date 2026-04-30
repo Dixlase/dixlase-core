@@ -98,6 +98,7 @@ return [
         'heading' => 'Edit Front Page',
         'description' => 'Edit the front page content.',
 
+        'meta_section' => 'Metadata',
         'editor_type_label' => 'Editor Type',
         'lang_label' => 'Language',
         'content_label' => 'Content',

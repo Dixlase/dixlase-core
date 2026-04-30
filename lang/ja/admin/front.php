@@ -99,6 +99,7 @@ return [
         'heading' => 'フロントページ編集',
         'description' => 'フロントページのコンテンツを編集します。',
 
+        'meta_section' => 'メタ情報',
         'editor_type_label' => 'エディタータイプ',
         'lang_label' => '言語',
         'content_label' => 'コンテンツ',
