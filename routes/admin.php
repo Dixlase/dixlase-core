@@ -587,11 +587,20 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.systems.database')
                     ->name('database.cleanup');
 
-                // バックアップ管理（プレースホルダー: Phase D で UI 実装予定）
+                // バックアップ管理
                 Route::prefix('backup')->name('backup.')->group(function () {
                     Route::get('/', [Systems\AdminSystemBackupController::class, 'index'])
                         ->middleware('check.menu.access:settings.systems.backup.index')
                         ->name('index');
+                    Route::post('/', [Systems\AdminSystemBackupController::class, 'create'])
+                        ->middleware('check.menu.edit:settings.systems.backup.index')
+                        ->name('create');
+                    Route::get('/{backup}/download', [Systems\AdminSystemBackupController::class, 'download'])
+                        ->middleware('check.menu.access:settings.systems.backup.index')
+                        ->name('download');
+                    Route::delete('/{backup}', [Systems\AdminSystemBackupController::class, 'destroy'])
+                        ->middleware('check.menu.edit:settings.systems.backup.index')
+                        ->name('destroy');
                     Route::get('/restores', [Systems\AdminSystemBackupController::class, 'restores'])
                         ->middleware('check.menu.access:settings.systems.backup.restores')
                         ->name('restores');
