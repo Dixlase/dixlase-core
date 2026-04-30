@@ -26,6 +26,8 @@ use App\Contracts\Backup\BackupServiceInterface;
 use App\Contracts\Verification\FileVerificationServiceInterface;
 use App\DTO\Backup\BackupResultDTO;
 use App\Events\DixlaseEvents;
+use App\Facades\Audit;
+use App\Models\AuditLog;
 use App\Models\BackupRecord;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -113,6 +115,21 @@ class CoreBackupService implements BackupServiceInterface
                 'duration' => $duration,
             ]);
 
+            Audit::log([
+                'action' => AuditLog::ACTION_BACKUP_CREATED,
+                'category' => AuditLog::CATEGORY_SYSTEM,
+                'severity' => AuditLog::SEVERITY_NOTICE,
+                'actor' => auth()->user(),
+                'target' => $record,
+                'context' => [
+                    'type' => $type,
+                    'targets' => $targets,
+                    'file_name' => $fileName,
+                    'file_size' => $fileSize,
+                    'duration_seconds' => round($duration, 2),
+                ],
+            ]);
+
             return BackupResultDTO::success(
                 backupRecordId: $record->id,
                 filePath: $zipPath,
@@ -130,6 +147,18 @@ class CoreBackupService implements BackupServiceInterface
                 'type' => $type,
                 'error' => $e->getMessage(),
                 'exception' => $e,
+            ]);
+
+            Audit::log([
+                'action' => AuditLog::ACTION_BACKUP_FAILED,
+                'category' => AuditLog::CATEGORY_SYSTEM,
+                'severity' => AuditLog::SEVERITY_WARNING,
+                'actor' => auth()->user(),
+                'context' => [
+                    'type' => $type,
+                    'targets' => $targets,
+                    'error' => $e->getMessage(),
+                ],
             ]);
 
             return BackupResultDTO::failure($e->getMessage());
@@ -165,7 +194,24 @@ class CoreBackupService implements BackupServiceInterface
             }
         }
 
-        return $record->markAsDeleted();
+        $marked = $record->markAsDeleted();
+
+        if ($marked) {
+            Audit::log([
+                'action' => AuditLog::ACTION_BACKUP_DELETED,
+                'category' => AuditLog::CATEGORY_SYSTEM,
+                'severity' => AuditLog::SEVERITY_NOTICE,
+                'actor' => auth()->user(),
+                'target' => $record,
+                'context' => [
+                    'type' => $record->type,
+                    'file_name' => $record->file_name,
+                    'file_size' => $record->file_size,
+                ],
+            ]);
+        }
+
+        return $marked;
     }
 
     /**

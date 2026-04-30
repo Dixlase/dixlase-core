@@ -269,6 +269,21 @@ class AuditLog extends Model
     public const ACTION_THEME_UPDATED = 'theme_updated';
 
     // ========================================
+    // Action（アクション）定数 - バックアップ関連
+    // ========================================
+    public const ACTION_BACKUP_CREATED = 'backup_created';
+
+    public const ACTION_BACKUP_FAILED = 'backup_failed';
+
+    public const ACTION_BACKUP_DELETED = 'backup_deleted';
+
+    public const ACTION_BACKUP_RESTORED = 'backup_restored';
+
+    public const ACTION_BACKUP_RESTORE_FAILED = 'backup_restore_failed';
+
+    public const ACTION_BACKUP_ROLLED_BACK = 'backup_rolled_back';
+
+    // ========================================
     // Action（アクション）定数 - 設定関連
     // ========================================
     public const ACTION_SETTINGS_UPDATED = 'settings_updated';
@@ -701,6 +716,8 @@ class AuditLog extends Model
             self::ACTION_MEMBER_DELETED,
             self::ACTION_BOT_LOGIN_DETECTED, self::ACTION_BOT_SCRAPING_DETECTED,
             self::ACTION_AI_RATE_LIMIT_HIT, self::ACTION_AI_BULK_OPERATION,
+            self::ACTION_BACKUP_FAILED, self::ACTION_BACKUP_RESTORED,
+            self::ACTION_BACKUP_RESTORE_FAILED, self::ACTION_BACKUP_ROLLED_BACK,
         ];
 
         $noticeActions = [
@@ -711,6 +728,7 @@ class AuditLog extends Model
             self::ACTION_THEME_INSTALLED, self::ACTION_THEME_ENABLED,
             self::ACTION_STEP_UP_AUTH_REQUIRED, self::ACTION_SETTINGS_UPDATED,
             self::ACTION_MEMBER_CREATED, self::ACTION_ROLE_CHANGED,
+            self::ACTION_BACKUP_CREATED, self::ACTION_BACKUP_DELETED,
         ];
 
         if (in_array($action, $criticalActions)) {

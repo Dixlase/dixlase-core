@@ -27,6 +27,8 @@ use App\Contracts\Backup\RestoreServiceInterface;
 use App\Contracts\Verification\FileVerificationServiceInterface;
 use App\DTO\Backup\RestoreResultDTO;
 use App\Events\DixlaseEvents;
+use App\Facades\Audit;
+use App\Models\AuditLog;
 use App\Models\BackupRecord;
 use App\Models\RestoreRecord;
 use Illuminate\Support\Facades\DB;
@@ -131,6 +133,20 @@ class CoreRestoreService implements RestoreServiceInterface
                 'targets' => $targets,
             ]);
 
+            Audit::log([
+                'action' => AuditLog::ACTION_BACKUP_RESTORED,
+                'category' => AuditLog::CATEGORY_SYSTEM,
+                'severity' => AuditLog::SEVERITY_WARNING,
+                'actor' => auth()->user(),
+                'target' => $restoreRecord,
+                'context' => [
+                    'backup_record_id' => $backup->id,
+                    'pre_restore_backup_id' => $preRestoreBackupId,
+                    'targets' => $targets,
+                    'duration_seconds' => round($duration, 2),
+                ],
+            ]);
+
             return RestoreResultDTO::success(
                 restoreRecordId: $restoreRecord->id,
                 preRestoreBackupRecordId: $preRestoreBackupId,
@@ -147,6 +163,19 @@ class CoreRestoreService implements RestoreServiceInterface
                 'path' => $backup->file_path,
                 'error' => $e->getMessage(),
                 'exception' => $e,
+            ]);
+
+            Audit::log([
+                'action' => AuditLog::ACTION_BACKUP_RESTORE_FAILED,
+                'category' => AuditLog::CATEGORY_SYSTEM,
+                'severity' => AuditLog::SEVERITY_WARNING,
+                'actor' => auth()->user(),
+                'target' => $restoreRecord,
+                'context' => [
+                    'backup_record_id' => $backup->id,
+                    'targets' => $targets,
+                    'error' => $e->getMessage(),
+                ],
             ]);
 
             return RestoreResultDTO::failure($e->getMessage(), $restoreRecord->id);
@@ -169,6 +198,19 @@ class CoreRestoreService implements RestoreServiceInterface
 
         if ($result->success) {
             $restore->markAsRolledBack();
+
+            Audit::log([
+                'action' => AuditLog::ACTION_BACKUP_ROLLED_BACK,
+                'category' => AuditLog::CATEGORY_SYSTEM,
+                'severity' => AuditLog::SEVERITY_WARNING,
+                'actor' => auth()->user(),
+                'target' => $restore,
+                'context' => [
+                    'original_backup_id' => $restore->backup_record_id,
+                    'pre_restore_backup_id' => $preRestoreBackup->id,
+                    'targets' => $restore->targets,
+                ],
+            ]);
         }
 
         return $result;
