@@ -28,10 +28,13 @@ const SIGNATURE_STYLES = {
     'official': { bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-700 dark:text-blue-300', icon: 'fa-shield-alt' },
     'verified': { bg: 'bg-green-50 dark:bg-green-900/20', text: 'text-green-700 dark:text-green-300', icon: 'fa-check-circle' },
     'partner': { bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-700 dark:text-indigo-300', icon: 'fa-handshake' },
+    // 'valid' = 署名検証成功（CoreSignatureVerifier が返すステータス）
+    'valid': { bg: 'bg-green-50 dark:bg-green-900/20', text: 'text-green-700 dark:text-green-300', icon: 'fa-check-circle' },
     'signed': { bg: 'bg-green-50 dark:bg-green-900/20', text: 'text-green-700 dark:text-green-300', icon: 'fa-check' },
     'invalid': { bg: 'bg-red-50 dark:bg-red-900/20', text: 'text-red-700 dark:text-red-300', icon: 'fa-times-circle' },
     'unsigned': { bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-300', icon: 'fa-exclamation-triangle' },
     'pending': { bg: 'bg-gray-50 dark:bg-gray-900/20', text: 'text-gray-700 dark:text-gray-300', icon: 'fa-clock' },
+    'pending_verification': { bg: 'bg-gray-50 dark:bg-gray-900/20', text: 'text-gray-700 dark:text-gray-300', icon: 'fa-clock' },
 };
 
 /**
