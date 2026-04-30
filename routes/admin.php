@@ -506,6 +506,9 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/themes/update/{id}', [AdminThemesSettingsController::class, 'updateTheme'])
                     ->middleware('check.menu.edit:settings.themes')
                     ->name('settings.themes.update');
+                Route::post('/settings/themes/update-all', [AdminThemesSettingsController::class, 'bulkUpdate'])
+                    ->middleware('check.menu.edit:settings.themes')
+                    ->name('settings.themes.update-all');
             });
 
             // プラグイン設定（権限チェック付き）
@@ -546,6 +549,9 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/plugins/update/{id}', [AdminPluginsSettingsController::class, 'updatePlugin'])
                     ->middleware('check.menu.edit:settings.plugins')
                     ->name('settings.plugins.update');
+                Route::post('/settings/plugins/update-all', [AdminPluginsSettingsController::class, 'bulkUpdate'])
+                    ->middleware('check.menu.edit:settings.plugins')
+                    ->name('settings.plugins.update-all');
             });
 
             // システム設定（権限チェック付き）

@@ -71,6 +71,32 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <span x-text="checking ? '{{ __('admin/settings/themes/index.updates.checking') }}' : '{{ __('admin/settings/themes/index.updates.check') }}'"></span>
                     </button>
                 </div>
+
+                {{-- すべて更新ボタン（更新可能なテーマがある時のみ） --}}
+                @if(count($updatableExtensions) > 0)
+                    <form action="{{ route('admin.settings.themes.update-all') }}" method="POST" class="inline-block" id="bulkUpdateThemesForm">
+                        @csrf
+                        <x-form-button
+                            type="button"
+                            :label="__('admin/settings/themes/index.updates.update_all_button')"
+                            variant="primary"
+                            icon="fas fa-cloud-download-alt"
+                            @click="openModal('bulkUpdateThemesModal')"
+                        />
+                    </form>
+
+                    <x-ui-modal
+                        id="bulkUpdateThemesModal"
+                        :title="__('admin/settings/themes/index.updates.update_all_confirm_title')"
+                        :message="__('admin/settings/themes/index.updates.update_all_confirm_message', ['count' => count($updatableExtensions)])"
+                        icon_type="info"
+                        confirm_color="blue"
+                        :confirm_label="__('admin/settings/themes/index.updates.update_all_button')"
+                        :cancel_label="__('common.cancel')"
+                        form="bulkUpdateThemesForm"
+                    />
+                @endif
+
                 <a href="{{ route('admin.settings.themes.add') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
                     <i class="fas fa-plus mr-2"></i>
                     {{ __('admin/settings/themes/index.add_theme') }}

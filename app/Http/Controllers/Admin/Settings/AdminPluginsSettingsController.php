@@ -1499,6 +1499,39 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
+     * 更新可能な全プラグインを順次アップデート（dls:source:update --all --type=plugin に委譲）
+     */
+    public function bulkUpdate(): \Illuminate\Http\RedirectResponse
+    {
+        $updatable = Plugin::query()->whereNotNull('available_version')->pluck('slug')->all();
+        if (empty($updatable)) {
+            return redirect()->route('admin.settings.plugins.index')
+                ->with('info', __('admin/settings/plugins/index.updates.all_up_to_date'));
+        }
+
+        // 個別更新コマンドを順次呼ぶ（pipeline / 履歴 / メタデータ更新は個別側で実施）
+        $total = count($updatable);
+        $succeeded = 0;
+        $failed = 0;
+        foreach ($updatable as $slug) {
+            $code = \Illuminate\Support\Facades\Artisan::call('dls:plugin:update', [
+                'slug' => $slug,
+                '--force' => true,
+            ]);
+            $code === 0 ? $succeeded++ : $failed++;
+        }
+
+        $summary = __('admin/settings/plugins/index.updates.update_all_summary', [
+            'total' => $total,
+            'succeeded' => $succeeded,
+            'failed' => $failed,
+        ]);
+
+        return redirect()->route('admin.settings.plugins.index')
+            ->with($failed === 0 ? 'success' : 'error', $summary);
+    }
+
+    /**
      * アップデートチェック（AJAX）
      */
     public function checkUpdates(\App\Services\Extension\ExtensionSourceManager $manager): \Illuminate\Http\JsonResponse
