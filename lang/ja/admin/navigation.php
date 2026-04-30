@@ -178,6 +178,12 @@ return [
             'api' => 'API管理',
             'cache' => 'キャッシュ管理',
             'database' => 'データベース管理',
+            'backup' => [
+                'text' => 'バックアップ',
+                'index' => 'バックアップ一覧',
+                'restores' => '復元履歴',
+                'settings' => 'バックアップ設定',
+            ],
             'logs' => [
                 'text' => 'ログ管理',
                 'audit' => '監査ログ',
