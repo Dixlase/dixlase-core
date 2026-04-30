@@ -146,6 +146,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-slot:metadata>
 
         <x-slot:actions>
+            {{-- アップデートボタン（インストール済み + 更新可能時のみ） --}}
+            @if($isInstalled && ($card['hasUpdateAvailable'] ?? false))
+                <form action="{{ route('admin.settings.plugins.update', $card['id']) }}" method="POST" class="inline-block">
+                    @csrf
+                    <x-form-button
+                        type="submit"
+                        :label="__('admin/settings/plugins/index.updates.update_to_version', ['version' => $card['availableVersion']])"
+                        variant="primary"
+                        size="xs"
+                        icon="fas fa-arrow-up"
+                        class="py-2 px-3"
+                    />
+                </form>
+            @endif
+
             {{-- アクションボタン（一覧ページと同じ2段階モーダルフローを使用） --}}
             @if($isInstalled)
                 @include('admin.settings.plugins.partials.installed-actions', ['card' => $card])

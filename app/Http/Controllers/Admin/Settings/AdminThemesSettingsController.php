@@ -125,11 +125,24 @@ class AdminThemesSettingsController extends AdminLoggedInController
             $uninstalledThemeCards[] = ExtensionCardPresenter::forTheme($theme, $activeThemeId);
         }
 
+        // 「すべて更新」ボタン用：available_version が立っているテーマのリスト
+        $updatableExtensions = collect($themeCards)
+            ->filter(fn (array $c) => ! empty($c['hasUpdateAvailable']))
+            ->map(fn (array $c) => [
+                'id' => $c['id'],
+                'name' => $c['name'] ?? $c['slug'],
+                'currentVersion' => $c['version'] ?? '',
+                'availableVersion' => $c['availableVersion'] ?? '',
+            ])
+            ->values()
+            ->all();
+
         $this->viewParams['themes'] = $themes;
         $this->viewParams['uninstalledThemes'] = $uninstalledThemes;
         $this->viewParams['activeThemeId'] = $activeThemeId;
         $this->viewParams['themeCards'] = $themeCards;
         $this->viewParams['uninstalledThemeCards'] = $uninstalledThemeCards;
+        $this->viewParams['updatableExtensions'] = $updatableExtensions;
 
         return view('admin::settings.themes.index', $this->viewParams);
     }
@@ -1095,6 +1108,38 @@ class AdminThemesSettingsController extends AdminLoggedInController
 
             return ['success' => false, 'error' => $e->getMessage()];
         }
+    }
+
+    /**
+     * 更新可能な全テーマを順次アップデート
+     */
+    public function bulkUpdate(): \Illuminate\Http\RedirectResponse
+    {
+        $updatable = Theme::query()->whereNotNull('available_version')->pluck('slug')->all();
+        if (empty($updatable)) {
+            return redirect()->route('admin.settings.themes.index')
+                ->with('info', __('admin/settings/themes/index.updates.all_up_to_date'));
+        }
+
+        $total = count($updatable);
+        $succeeded = 0;
+        $failed = 0;
+        foreach ($updatable as $slug) {
+            $code = \Illuminate\Support\Facades\Artisan::call('dls:theme:update', [
+                'slug' => $slug,
+                '--force' => true,
+            ]);
+            $code === 0 ? $succeeded++ : $failed++;
+        }
+
+        $summary = __('admin/settings/themes/index.updates.update_all_summary', [
+            'total' => $total,
+            'succeeded' => $succeeded,
+            'failed' => $failed,
+        ]);
+
+        return redirect()->route('admin.settings.themes.index')
+            ->with($failed === 0 ? 'success' : 'error', $summary);
     }
 
     /**
