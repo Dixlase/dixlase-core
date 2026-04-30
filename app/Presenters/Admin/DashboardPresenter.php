@@ -552,6 +552,10 @@ class DashboardPresenter
         $themesInstalled = Theme::query()->installed()->count();
         $themesEnabled = Theme::query()->installed()->get()->filter(fn (Theme $t) => $t->isEnabled())->count();
 
+        // アップデート可能件数（available_version が設定されているレコード）
+        $pluginUpdatesAvailable = Plugin::query()->whereNotNull('available_version')->count();
+        $themeUpdatesAvailable = Theme::query()->whereNotNull('available_version')->count();
+
         // 健全性ステータス別カウント（監査済みプラグインのみ）
         $healthCounts = [];
         foreach (PluginHealthStatus::cases() as $status) {
@@ -577,6 +581,11 @@ class DashboardPresenter
             'themes' => [
                 'installed' => $themesInstalled,
                 'enabled' => $themesEnabled,
+            ],
+            'updates' => [
+                'plugins' => $pluginUpdatesAvailable,
+                'themes' => $themeUpdatesAvailable,
+                'total' => $pluginUpdatesAvailable + $themeUpdatesAvailable,
             ],
             'health' => $healthCounts,
             'has_audits' => $hasAudits,

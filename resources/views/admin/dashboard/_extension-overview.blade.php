@@ -65,6 +65,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
+    {{-- アップデート可能件数 --}}
+    @if(($extensionOverview['updates']['total'] ?? 0) > 0)
+        <div class="mb-4 p-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
+            <a href="{{ route('admin.settings.plugins.index') }}" class="flex items-center justify-between gap-3 text-sm">
+                <span class="flex items-center gap-2 text-blue-800 dark:text-blue-200 font-medium">
+                    <i class="fas fa-arrow-up"></i>
+                    {{ __('admin/dashboard.updates_available_label') }}: {{ $extensionOverview['updates']['total'] }}
+                </span>
+                <span class="text-blue-700 dark:text-blue-300 text-xs">
+                    {{ __('admin/dashboard.updates_available_summary', [
+                        'plugins' => $extensionOverview['updates']['plugins'],
+                        'themes' => $extensionOverview['updates']['themes'],
+                    ]) }}
+                    <i class="fas fa-arrow-right ml-1"></i>
+                </span>
+            </a>
+        </div>
+    @endif
+
     {{-- 健全性サマリー（詳細モードのみ） --}}
     <div x-show="isDetailed" x-cloak>
         <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

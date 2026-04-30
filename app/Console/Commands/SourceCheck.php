@@ -35,12 +35,16 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Plugin;
+use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
+use App\Services\SystemNotificationService;
 use Illuminate\Console\Command;
 
 class SourceCheck extends Command
 {
-    protected $signature = 'dls:source:check';
+    protected $signature = 'dls:source:check
+                            {--no-notify : Skip notification email even if new updates are found}';
 
     protected $description = 'Check all installed extensions for available updates';
 
@@ -77,6 +81,108 @@ class SourceCheck extends Command
             );
         }
 
+        // 同一バージョンの再通知抑制：last_notified_version != available_version のものだけ通知
+        if (! $this->option('no-notify')) {
+            $this->notifyAdmin($pluginUpdates, $themeUpdates);
+        }
+
         return self::SUCCESS;
+    }
+
+    /**
+     * 新たに見つかった更新を管理者にメール通知し、last_notified_version を進める。
+     *
+     * @param  array<int, array{slug: string, current: string, available: string, source_id: int|null}>  $pluginUpdates
+     * @param  array<int, array{slug: string, current: string, available: string, source_id: int|null}>  $themeUpdates
+     */
+    protected function notifyAdmin(array $pluginUpdates, array $themeUpdates): void
+    {
+        $newPluginUpdates = $this->filterUnnotified($pluginUpdates, Plugin::class);
+        $newThemeUpdates = $this->filterUnnotified($themeUpdates, Theme::class);
+
+        if (empty($newPluginUpdates) && empty($newThemeUpdates)) {
+            $this->line('No new (unnotified) updates. Skipping notification email.');
+
+            return;
+        }
+
+        $totalCount = count($newPluginUpdates) + count($newThemeUpdates);
+        $subject = __('admin/extensions/notifications.update_available_subject', ['count' => $totalCount]);
+        $body = $this->buildNotificationBody($newPluginUpdates, $newThemeUpdates);
+
+        $sent = app(SystemNotificationService::class)->sendAdminNotification(
+            $subject,
+            $body,
+            ['type' => 'extension_update_available', 'count' => $totalCount]
+        );
+
+        if (! $sent) {
+            $this->warn('Notification email could not be sent (mail server not configured or notifications disabled).');
+
+            return;
+        }
+
+        // 通知に成功したものだけ last_notified_version を更新
+        foreach ($newPluginUpdates as $update) {
+            Plugin::query()->where('slug', $update['slug'])->update(['last_notified_version' => $update['available']]);
+        }
+        foreach ($newThemeUpdates as $update) {
+            Theme::query()->where('slug', $update['slug'])->update(['last_notified_version' => $update['available']]);
+        }
+
+        $this->info("Notification email sent ({$totalCount} new update(s)).");
+    }
+
+    /**
+     * available_version が last_notified_version と異なるものだけ抽出する。
+     *
+     * @param  array<int, array{slug: string, current: string, available: string, source_id: int|null}>  $updates
+     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass
+     * @return array<int, array{slug: string, current: string, available: string, source_id: int|null}>
+     */
+    protected function filterUnnotified(array $updates, string $modelClass): array
+    {
+        $filtered = [];
+        foreach ($updates as $update) {
+            $row = $modelClass::query()->where('slug', $update['slug'])->first();
+            if (! $row) {
+                continue;
+            }
+            if ($row->last_notified_version === $update['available']) {
+                continue;
+            }
+            $filtered[] = $update;
+        }
+
+        return $filtered;
+    }
+
+    /**
+     * @param  array<int, array{slug: string, current: string, available: string, source_id: int|null}>  $pluginUpdates
+     * @param  array<int, array{slug: string, current: string, available: string, source_id: int|null}>  $themeUpdates
+     */
+    protected function buildNotificationBody(array $pluginUpdates, array $themeUpdates): string
+    {
+        $lines = [];
+
+        if (! empty($pluginUpdates)) {
+            $lines[] = __('admin/extensions/notifications.plugin_updates_heading');
+            foreach ($pluginUpdates as $u) {
+                $lines[] = "- {$u['slug']}: v{$u['current']} → v{$u['available']}";
+            }
+            $lines[] = '';
+        }
+
+        if (! empty($themeUpdates)) {
+            $lines[] = __('admin/extensions/notifications.theme_updates_heading');
+            foreach ($themeUpdates as $u) {
+                $lines[] = "- {$u['slug']}: v{$u['current']} → v{$u['available']}";
+            }
+            $lines[] = '';
+        }
+
+        $lines[] = __('admin/extensions/notifications.review_in_admin');
+
+        return implode("\n", $lines);
     }
 }
