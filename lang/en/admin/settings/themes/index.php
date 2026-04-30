@@ -211,6 +211,7 @@ return [
         'signature_verified' => 'Verified',
         'signature_partner' => 'Partner',
         'signature_signed' => 'Signed',
+        'signature_valid' => 'Signed',
         'signature_invalid' => 'Invalid Signature',
         'signature_unsigned' => 'Unsigned',
         'signature_invalid_warning' => '⚠️ This theme\'s signature is invalid. It may have been tampered with.',
