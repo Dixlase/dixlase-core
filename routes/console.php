@@ -53,3 +53,49 @@ Schedule::command('maintenance:check-auto-release')
     ->everyMinute()
     ->withoutOverlapping()
     ->runInBackground();
+
+// 拡張機能アップデートチェック（毎時 cron が tick、設定された間隔が経過していたら実際に走らせる）
+//
+// `extension_update_check_interval` 設定（86400 / 43200 / 21600 / 0=manual）で間隔を制御。
+// `when()` 内で「前回チェックから設定間隔以上経過したか」を判定して実行可否を決める。
+// 設定変更時に cron を組み直す必要がない設計（hourly ティックで再評価される）。
+Schedule::command('dls:source:check')
+    ->hourly()
+    ->when(function () {
+        // インストール完了前は走らせない
+        $installed = $_SERVER['INSTALLED'] ?? $_ENV['INSTALLED'] ?? env('INSTALLED') ?? config('app.installed');
+        if ($installed !== 'true' && $installed !== true) {
+            return false;
+        }
+
+        try {
+            $interval = (int) (\App\Services\SecuritySettingsRegistry::get('extension_update_check_interval')
+                ?? config('extension-sources.check_interval', 86400));
+        } catch (\Throwable) {
+            return false;
+        }
+
+        // 0 は手動チェックのみ（自動実行しない）
+        if ($interval <= 0) {
+            return false;
+        }
+
+        // 前回チェック時刻の最大値（プラグイン・テーマ横断）。一度も走っていなければ即実行。
+        try {
+            $lastPlugin = \App\Models\Plugin::query()->max('last_version_check');
+            $lastTheme = \App\Models\Theme::query()->max('last_version_check');
+        } catch (\Throwable) {
+            return false;
+        }
+
+        $candidates = array_filter([$lastPlugin, $lastTheme]);
+        if (empty($candidates)) {
+            return true;
+        }
+        $lastCheck = \Carbon\Carbon::parse(max($candidates));
+
+        return $lastCheck->lt(now()->subSeconds($interval));
+    })
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->appendOutputTo(storage_path('logs/source-check.log'));
