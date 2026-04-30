@@ -245,6 +245,22 @@ return [
                             'access_roles' => MemberRole::SUPER_ADMIN->value,
                             'view_roles' => MemberRole::SUPER_ADMIN->value,
                         ],
+                        'backup' => [
+                            'children' => [
+                                'index' => [
+                                    'access_roles' => MemberRole::SUPER_ADMIN->value,
+                                    'view_roles' => MemberRole::SUPER_ADMIN->value,
+                                ],
+                                'restores' => [
+                                    'access_roles' => MemberRole::SUPER_ADMIN->value,
+                                    'view_roles' => MemberRole::SUPER_ADMIN->value,
+                                ],
+                                'settings' => [
+                                    'access_roles' => MemberRole::SUPER_ADMIN->value,
+                                    'view_roles' => MemberRole::SUPER_ADMIN->value,
+                                ],
+                            ],
+                        ],
                         'api' => [
                             'access_roles' => MemberRole::SUPER_ADMIN->value,
                             'view_roles' => MemberRole::SUPER_ADMIN->value,
