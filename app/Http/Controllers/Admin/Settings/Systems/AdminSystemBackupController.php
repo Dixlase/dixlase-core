@@ -22,29 +22,45 @@
 
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
+use App\Contracts\Backup\BackupServiceInterface;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Http\Requests\Admin\Settings\Systems\AdminSystemBackupCreateRequest;
+use App\Models\BackupRecord;
+use Illuminate\Http\RedirectResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * バックアップ管理コントローラー
- *
- * Phase E プレースホルダー: ナビゲーションを動作させるための最小実装。
- * Phase D で UI（一覧/作成/復元実行/設定）を実装する。
  */
 class AdminSystemBackupController extends AdminLoggedInController
 {
+    public function __construct(
+        protected BackupServiceInterface $backupService,
+    ) {
+        parent::__construct();
+    }
+
     /**
      * バックアップ一覧/作成画面
      */
     public function index()
     {
+        $records = BackupRecord::query()
+            ->whereNotIn('status', [BackupRecord::STATUS_DELETED])
+            ->orderByDesc('created_at')
+            ->get();
+
+        $this->viewParams['records'] = $records;
+        $this->viewParams['availableTargets'] = $this->backupService->getAvailableTargets();
+        $this->viewParams['defaultTargets'] = $this->backupService->getDefaultTargets();
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.backup');
 
         return view('admin::settings.systems.backup.index', $this->viewParams);
     }
 
     /**
-     * 復元履歴画面
+     * 復元履歴画面（D2 で実装）
      */
     public function restores()
     {
@@ -54,12 +70,87 @@ class AdminSystemBackupController extends AdminLoggedInController
     }
 
     /**
-     * バックアップ設定画面
+     * バックアップ設定画面（D3 で実装）
      */
     public function settings()
     {
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.backup.settings');
 
         return view('admin::settings.systems.backup.settings', $this->viewParams);
+    }
+
+    /**
+     * バックアップ実行
+     */
+    public function create(AdminSystemBackupCreateRequest $request): RedirectResponse
+    {
+        $validated = $request->validated();
+
+        $options = [];
+        if (! empty($validated['retention_days'])) {
+            $options['retention_days'] = (int) $validated['retention_days'];
+        }
+
+        $result = $this->backupService->backup($validated['targets'], $options);
+
+        if (! $result->success) {
+            return redirect()
+                ->route('admin.settings.systems.backup.index')
+                ->with('error', __('admin/settings/systems/backup/index.flash.create_failed', ['error' => $result->error]));
+        }
+
+        return redirect()
+            ->route('admin.settings.systems.backup.index')
+            ->with('success', __('admin/settings/systems/backup/index.flash.create_success', [
+                'size' => $this->formatBytes($result->fileSize ?? 0),
+                'duration' => round($result->duration ?? 0, 2),
+            ]));
+    }
+
+    /**
+     * バックアップ削除
+     */
+    public function destroy(BackupRecord $backup): RedirectResponse
+    {
+        $deleted = $this->backupService->delete($backup);
+
+        if (! $deleted) {
+            return redirect()
+                ->route('admin.settings.systems.backup.index')
+                ->with('error', __('admin/settings/systems/backup/index.flash.delete_failed'));
+        }
+
+        return redirect()
+            ->route('admin.settings.systems.backup.index')
+            ->with('success', __('admin/settings/systems/backup/index.flash.delete_success'));
+    }
+
+    /**
+     * バックアップファイルのダウンロード
+     */
+    public function download(BackupRecord $backup): BinaryFileResponse|RedirectResponse
+    {
+        if ($backup->status === BackupRecord::STATUS_DELETED || ! $backup->file_path || ! file_exists($backup->file_path)) {
+            return redirect()
+                ->route('admin.settings.systems.backup.index')
+                ->with('error', __('admin/settings/systems/backup/index.flash.download_failed'));
+        }
+
+        return response()->download($backup->file_path, $backup->file_name);
+    }
+
+    /**
+     * バイトサイズを人間可読形式に変換
+     */
+    private function formatBytes(int $bytes): string
+    {
+        if ($bytes === 0) {
+            return '0 B';
+        }
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $i = (int) floor(log($bytes, 1024));
+        $i = min($i, count($units) - 1);
+
+        return round($bytes / pow(1024, $i), $i > 0 ? 2 : 0).' '.$units[$i];
     }
 }
