@@ -99,6 +99,10 @@ return [
         'description' => 'Edit the front page content.',
 
         'meta_section' => 'Metadata',
+        'revisions_section' => 'Revisions',
+        'revisions_button' => 'Revision History',
+        'storage_locked_help' => 'Storage type can only be selected at initial creation. To change it, reset and recreate.',
+        'storage_file_path' => 'File path:',
         'editor_type_label' => 'Editor Type',
         'lang_label' => 'Language',
         'content_label' => 'Content',

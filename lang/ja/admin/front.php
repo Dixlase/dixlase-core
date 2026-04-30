@@ -100,6 +100,10 @@ return [
         'description' => 'フロントページのコンテンツを編集します。',
 
         'meta_section' => 'メタ情報',
+        'revisions_section' => 'リビジョン',
+        'revisions_button' => 'リビジョン履歴',
+        'storage_locked_help' => '保存形式は初回作成時のみ選択できます。変更するにはリセットして再作成してください。',
+        'storage_file_path' => 'ファイルパス:',
         'editor_type_label' => 'エディタータイプ',
         'lang_label' => '言語',
         'content_label' => 'コンテンツ',
