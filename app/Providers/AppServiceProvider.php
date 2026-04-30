@@ -35,6 +35,8 @@
 
 namespace App\Providers;
 
+use App\Contracts\Backup\BackupServiceInterface;
+use App\Contracts\Backup\RestoreServiceInterface;
 use App\Contracts\Encryption\FileEncryptionServiceInterface;
 use App\Contracts\FileIntegrity\FileIntegrityServiceInterface;
 use App\Contracts\LegalPage\LegalPageServiceInterface;
@@ -46,6 +48,8 @@ use App\Contracts\Theme\ThemePermissionServiceInterface;
 use App\Contracts\TwoFa\TwoFaPasskeyServiceInterface;
 use App\Contracts\Verification\FileVerificationServiceInterface;
 use App\Models\SecuritySetting;
+use App\Services\Backup\CoreBackupService;
+use App\Services\Backup\CoreRestoreService;
 use App\Services\Encryption\CoreFileEncryptionService;
 use App\Services\FileIntegrityService;
 use App\Services\LegalPageService;
@@ -87,6 +91,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Services\Plugin\Scanning\PatternRegistry::class, function () {
             return \App\Services\Plugin\Scanning\PatternRegistry::createDefault();
         });
+
+        // バックアップサービスをバインド（バックアッププラグインが上書き可能）
+        $this->app->bind(BackupServiceInterface::class, CoreBackupService::class);
+
+        // 復元サービスをバインド（バックアッププラグインが上書き可能）
+        $this->app->bind(RestoreServiceInterface::class, CoreRestoreService::class);
 
         // ファイル暗号化サービスをバインド
         $this->app->bind(FileEncryptionServiceInterface::class, CoreFileEncryptionService::class);
