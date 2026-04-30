@@ -74,11 +74,29 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
      * 誤検出になり改ざん扱いされる。
      */
     private const DEFAULT_EXCLUDE_PATTERNS = [
+        // VCS / CI
         '.git',
         '.github',
+        '.gitattributes',
+        // OS が生成するファイル
         '.DS_Store',
-        '.editorconfig',
         '__MACOSX',
+        'Thumbs.db',
+        'desktop.ini',
+        // IDE / エディタ設定（ユーザー環境ごとに異なる、機能に無関係）
+        '.editorconfig',
+        '.vscode',
+        '.idea',
+        '.fleet',
+        '.zed',
+        '.nova',
+        '.phpactor.json',
+        // AI アシスタント設定（メンテナ専用、配布物の挙動に無関係）
+        'CLAUDE.md',
+        'CLAUDE.ja.md',
+        '.claude',
+        '.mcp.json',
+        // 署名ファイル自身（自己ハッシュ循環の回避）
         'signature.sig',
     ];
 
