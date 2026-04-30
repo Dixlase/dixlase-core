@@ -186,21 +186,47 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <i class="fas fa-globe"></i>
                         {{ $langName }}
                     </span>
-                    <a href="{{ route('admin.front.revisions.index') }}"
-                       class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:text-gray-800 dark:hover:text-white">
-                        <i class="fas fa-clock-rotate-left"></i>
-                        {{ __('admin/front/revisions.heading') }}
-                    </a>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+                        <i class="fas fa-lock text-gray-500 dark:text-gray-400"></i>
+                        {{ $storageOptions[$storageType]['label'] ?? $storageType }}
+                    </span>
+                </div>
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    {{ __('admin/front.edit.storage_locked_help') }}
+                </p>
+
+                {{-- ファイル保存時のパス表示 --}}
+                <div x-show="isFileStorage" x-cloak class="mt-3 text-xs space-y-1">
+                    <div>
+                        <span class="text-gray-500 dark:text-gray-400">{{ __('admin/front.edit.storage_file_path') }}</span>
+                        <span class="font-mono text-blue-600 dark:text-blue-400 break-all" x-text="filePath"></span>
+                    </div>
+                    <div x-show="isHtmlEditor && jsFilePath" x-cloak>
+                        <span class="text-gray-500 dark:text-gray-400">JS:</span>
+                        <span class="font-mono text-blue-600 dark:text-blue-400 break-all" x-text="jsFilePath"></span>
+                    </div>
+                    <div x-show="isHtmlEditor && cssFilePath" x-cloak>
+                        <span class="text-gray-500 dark:text-gray-400">CSS:</span>
+                        <span class="font-mono text-blue-600 dark:text-blue-400 break-all" x-text="cssFilePath"></span>
+                    </div>
                 </div>
             </div>
 
-            {{-- 保存方法（初回作成時のみ選択可能。編集時はロック表示） --}}
-            <x-content-editor.storage-info
-                :storageOptions="$storageOptions"
-                :storageType="$storageType"
-                :showJsCss="true"
-                :locked="true"
-            />
+            {{-- リビジョン --}}
+            <div>
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                    {{ __('admin/front.edit.revisions_section') }}
+                </h3>
+                <x-form-button
+                    type="link"
+                    variant="secondary"
+                    size="sm"
+                    icon="fas fa-clock-rotate-left"
+                    :href="route('admin.front.revisions.index')"
+                >
+                    {{ __('admin/front.edit.revisions_button') }}
+                </x-form-button>
+            </div>
 
             {{-- リセット --}}
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-red-300 dark:border-red-700/50 p-6">
