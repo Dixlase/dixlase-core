@@ -125,6 +125,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'official' => __('admin/settings/plugins/index.permissions.signature_official'),
             'verified' => __('admin/settings/plugins/index.permissions.signature_verified'),
             'partner' => __('admin/settings/plugins/index.permissions.signature_partner'),
+            // 'valid' = CoreSignatureVerifier が返すステータス。'signed' と同じ表示文言。
+            'valid' => __('admin/settings/plugins/index.permissions.signature_valid'),
             'signed' => __('admin/settings/plugins/index.permissions.signature_signed'),
             'invalid' => __('admin/settings/plugins/index.permissions.signature_invalid'),
             'unsigned' => __('admin/settings/plugins/index.permissions.signature_unsigned'),
