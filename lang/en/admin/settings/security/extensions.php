@@ -55,6 +55,8 @@ return [
         'signature_settings' => 'Signature Requirements',
         'require_signature' => 'Require Signature',
         'require_signature_help' => 'When enabled, prohibits installation/activation of unsigned plugins and themes.',
+        'signature_required_warning' => 'Signature is required: unsigned plugins and themes cannot be installed or activated.',
+        'signature_authority_url_label' => 'Plugin signatures are verified using public keys fetched from the following Authority:',
         'permission_settings' => 'Permission Definition Requirements',
         'require_permission_definition' => 'Require Permission Definition',
         'require_permission_definition_help' => 'When enabled, prohibits installation of extensions without permission information in plugin.json/theme.json.',

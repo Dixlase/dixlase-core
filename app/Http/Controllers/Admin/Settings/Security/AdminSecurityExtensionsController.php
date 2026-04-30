@@ -138,6 +138,8 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
         $this->viewParams['checkIntervalOptions'] = $checkIntervalOptions;
         $this->viewParams['sourceReferenceUrl'] = 'https://github.com/'.config('extension-sources.github.default_owner', 'Dixlase');
         $this->viewParams['hasSourceToken'] = $hasSourceToken;
+        // 署名検証用 Authority の URL を表示用に渡す（透明性のため常時表示）
+        $this->viewParams['authorityUrl'] = config('dixlase-authority.url');
 
         return view('admin.settings.security.extensions', $this->viewParams);
     }

@@ -135,7 +135,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- 署名要件 -->
                 <fieldset>
                     <legend>{{ __('admin/settings/security/extensions.security.signature_settings') }}</legend>
-                    
+
                     <x-form-toggle
                         :label="__('admin/settings/security/extensions.security.require_signature')"
                         id="extension_require_signature"
@@ -144,6 +144,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         xModel="requireSignature"
                     />
                     <p>{{ __('admin/settings/security/extensions.security.require_signature_help') }}</p>
+
+                    {{-- 必須にしている場合の追加警告（トグル ON 時のみ表示） --}}
+                    <div
+                        x-show="requireSignature"
+                        x-cloak
+                        class="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"
+                    >
+                        <p class="text-sm text-amber-800 dark:text-amber-200">
+                            <span class="font-semibold">⚠️</span>
+                            {{ __('admin/settings/security/extensions.security.signature_required_warning') }}
+                        </p>
+                    </div>
+
+                    {{-- Authority URL の開示（トグル状態に関わらず常時表示） --}}
+                    <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                        <p class="text-sm text-blue-800 dark:text-blue-200">
+                            {{ __('admin/settings/security/extensions.security.signature_authority_url_label') }}
+                        </p>
+                        <p class="mt-1 font-mono text-sm text-blue-900 dark:text-blue-100 break-all">
+                            {{ $authorityUrl }}
+                        </p>
+                    </div>
                 </fieldset>
 
                 <!-- 権限定義要件 -->

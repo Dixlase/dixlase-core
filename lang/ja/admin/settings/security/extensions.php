@@ -56,6 +56,8 @@ return [
         'signature_settings' => '署名要件',
         'require_signature' => '署名を必須にする',
         'require_signature_help' => '有効にすると、署名されていないプラグインやテーマのインストール・有効化を禁止します。',
+        'signature_required_warning' => '署名を必須にしているため、署名されていないプラグインやテーマはインストール・有効化できません。',
+        'signature_authority_url_label' => 'プラグイン署名は次の Authority から取得した公開鍵で検証されます:',
         'permission_settings' => '権限定義要件',
         'require_permission_definition' => '権限定義を必須にする',
         'require_permission_definition_help' => '有効にすると、plugin.json/theme.jsonに権限情報が定義されていない拡張機能のインストールを禁止します。',
