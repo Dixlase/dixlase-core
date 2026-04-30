@@ -22,15 +22,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
     <section>
-        <h2>{{ __('admin/settings/systems/backup.heading') }}</h2>
+        <h2>{{ __('admin/settings/systems/backup/index.heading') }}</h2>
         <p class="mb-4 text-gray-600 dark:text-gray-300">
-            {{ __('admin/settings/systems/backup.description') }}
+            {{ __('admin/settings/systems/backup/index.description') }}
         </p>
 
         <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
             <p class="text-yellow-800 dark:text-yellow-200">
                 <i class="fas fa-tools mr-2"></i>
-                {{ __('admin/settings/systems/backup.placeholder') }}
+                {{ __('admin/settings/systems/backup/index.placeholder') }}
             </p>
         </div>
     </section>
