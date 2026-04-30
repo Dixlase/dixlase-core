@@ -49,21 +49,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
         @method('PUT')
 
-        {{-- ===== エディタータイプ + 言語バッジ + プレビュートグル ===== --}}
+        {{-- ===== プレビュートグル ===== --}}
         <div class="flex flex-wrap items-center gap-3 mb-4 text-xs">
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
-                <i class="{{ $editorTypeIcon }}" style="color: {{ $editorTypeColor }}"></i>
-                {{ $editorTypeLabel }}
-            </span>
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
-                <i class="fas fa-globe"></i>
-                {{ $langName }}
-            </span>
-            <a href="{{ route('admin.front.revisions.index') }}"
-               class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:text-gray-800 dark:hover:text-white">
-                <i class="fas fa-clock-rotate-left"></i>
-                {{ __('admin/front/revisions.heading') }}
-            </a>
             <button type="button" @click="togglePreview()"
                 class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-colors"
                 :class="previewVisible
@@ -184,6 +171,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :openLabel="__('admin/front.edit.sidebar_open')"
             :closeLabel="__('admin/front.edit.sidebar_close')"
         >
+
+            {{-- メタ情報 --}}
+            <div>
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                    {{ __('admin/front.edit.meta_section') }}
+                </h3>
+                <div class="flex flex-wrap items-center gap-2 text-xs">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+                        <i class="{{ $editorTypeIcon }}" style="color: {{ $editorTypeColor }}"></i>
+                        {{ $editorTypeLabel }}
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+                        <i class="fas fa-globe"></i>
+                        {{ $langName }}
+                    </span>
+                    <a href="{{ route('admin.front.revisions.index') }}"
+                       class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:text-gray-800 dark:hover:text-white">
+                        <i class="fas fa-clock-rotate-left"></i>
+                        {{ __('admin/front/revisions.heading') }}
+                    </a>
+                </div>
+            </div>
 
             {{-- 保存方法（初回作成時のみ選択可能。編集時はロック表示） --}}
             <x-content-editor.storage-info
