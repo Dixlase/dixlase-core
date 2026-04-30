@@ -182,15 +182,15 @@ return [
                         'route' => 'admin.settings.base.editor',
                         'icon' => 'fas fa-fw fa-pen-nib',
                     ],
-                    'mode' => [
-                        'text' => 'admin/navigation.settings.base.mode',
-                        'route' => 'admin.settings.base.mode',
-                        'icon' => 'fas fa-fw fa-sliders-h',
-                    ],
                     'content' => [
                         'text' => 'admin/navigation.settings.base.content',
                         'route' => 'admin.settings.base.content',
                         'icon' => 'fas fa-fw fa-file-lines',
+                    ],
+                    'mode' => [
+                        'text' => 'admin/navigation.settings.base.mode',
+                        'route' => 'admin.settings.base.mode',
+                        'icon' => 'fas fa-fw fa-sliders-h',
                     ],
                 ],
             ],
