@@ -146,8 +146,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <p>{{ __('admin/settings/security/extensions.security.require_signature_help') }}</p>
 
                     {{-- 必須にしている場合の追加警告（トグル ON 時のみ表示） --}}
+                    {{-- form-toggle は内部で xModel を文字列 '0'/'1' に切り替えるため、
+                         単純な truthy 判定だと '0' も真になってしまう。
+                         初期値（boolean）と toggle 後（'1'/'0'）の両方に対応するため
+                         数値的等価で比較する。 --}}
                     <div
-                        x-show="requireSignature"
+                        x-show="requireSignature == 1"
                         x-cloak
                         class="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"
                     >
