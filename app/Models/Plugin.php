@@ -66,6 +66,7 @@ class Plugin extends Model
         'source_repo',
         'available_version',
         'last_version_check',
+        'last_notified_version',
         'signing_key_id',
         'author_id',
         'authority_key_id',

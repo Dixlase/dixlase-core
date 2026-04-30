@@ -123,6 +123,9 @@ return [
     'health_overview' => '健全性の概要',
     'manage_plugins' => 'プラグイン管理',
     'no_audits' => 'プラグインの監査はまだ実行されていません。',
+    'updates_available_label' => 'アップデート可能',
+    'updates_available_summary' => 'プラグイン :plugins 件 / テーマ :themes 件',
+    'updates_all_up_to_date' => 'すべて最新です',
 
     // メンバー概要
     'member_overview' => 'メンバー概要',

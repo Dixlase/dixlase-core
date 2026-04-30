@@ -75,6 +75,7 @@ class Theme extends Model
         'source_repo',
         'available_version',
         'last_version_check',
+        'last_notified_version',
     ];
 
     /**

@@ -123,6 +123,9 @@ return [
     'health_overview' => 'Health Overview',
     'manage_plugins' => 'Manage Plugins',
     'no_audits' => 'No plugin audits have been performed yet.',
+    'updates_available_label' => 'Updates Available',
+    'updates_available_summary' => ':plugins plugin(s) / :themes theme(s)',
+    'updates_all_up_to_date' => 'All up to date',
 
     // Member overview
     'member_overview' => 'Member Overview',
