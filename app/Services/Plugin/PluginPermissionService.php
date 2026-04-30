@@ -585,8 +585,12 @@ class PluginPermissionService implements PluginPermissionServiceInterface
             }
         }
         if (! empty($permissions['content']['write_other_plugins'] ?? [])) {
-            $score -= 2;
-            $reasons[] = ['key' => 'content.write_other_plugins', 'severity' => 'high', 'score' => -2];
+            // プラグイン間連携は Dixlase の正当な統合パターン（例: SEO による
+            // ページのメタデータ書込み）のため、リスクスコアからは減点しない。
+            // ただし「他プラグインのテーブルを書く」事実は運用者に可視化したい
+            // ので、severity=medium（黄色）の attention reason として残し、
+            // 数値バッジは付けない（score=0）。
+            $reasons[] = ['key' => 'content.write_other_plugins', 'severity' => 'medium', 'score' => 0];
         }
 
         // 中リスク権限（減点小）
