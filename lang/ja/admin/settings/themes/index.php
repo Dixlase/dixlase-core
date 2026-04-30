@@ -211,6 +211,7 @@ return [
         'signature_verified' => '認証済み',
         'signature_partner' => 'パートナー',
         'signature_signed' => '署名済み',
+        'signature_valid' => '署名あり',
         'signature_invalid' => '署名無効',
         'signature_unsigned' => '未署名',
         'signature_invalid_warning' => '⚠️ このテーマの署名は無効です。改ざんされている可能性があります。',

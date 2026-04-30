@@ -383,6 +383,7 @@ return [
         'signature_verified' => 'Verified',
         'signature_partner' => 'Partner',
         'signature_signed' => 'Signed',
+        'signature_valid' => 'Signed',
         'signature_invalid' => 'Invalid Signature',
         'signature_unsigned' => 'Unsigned',
         'signature_pending_verification' => 'Pending Verification',
