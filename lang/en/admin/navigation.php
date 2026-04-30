@@ -179,6 +179,12 @@ return [
             'api' => 'API Management',
             'cache' => 'Cache',
             'database' => 'Database',
+            'backup' => [
+                'text' => 'Backup',
+                'index' => 'Backups',
+                'restores' => 'Restore History',
+                'settings' => 'Backup Settings',
+            ],
             'logs' => [
                 'text' => 'Log Management',
                 'audit' => 'Audit Logs',

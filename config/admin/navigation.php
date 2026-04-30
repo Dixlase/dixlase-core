@@ -306,6 +306,27 @@ return [
                         'route' => 'admin.settings.systems.database',
                         'icon' => 'fas fa-fw fa-database',
                     ],
+                    'backup' => [
+                        'text' => 'admin/navigation.settings.systems.backup.text',
+                        'icon' => 'fas fa-fw fa-archive',
+                        'children' => [
+                            'index' => [
+                                'text' => 'admin/navigation.settings.systems.backup.index',
+                                'route' => 'admin.settings.systems.backup.index',
+                                'icon' => 'fas fa-fw fa-box-archive',
+                            ],
+                            'restores' => [
+                                'text' => 'admin/navigation.settings.systems.backup.restores',
+                                'route' => 'admin.settings.systems.backup.restores',
+                                'icon' => 'fas fa-fw fa-clock-rotate-left',
+                            ],
+                            'settings' => [
+                                'text' => 'admin/navigation.settings.systems.backup.settings',
+                                'route' => 'admin.settings.systems.backup.settings',
+                                'icon' => 'fas fa-fw fa-sliders',
+                            ],
+                        ],
+                    ],
                     'api' => [
                         'text' => 'admin/navigation.settings.systems.api',
                         'route' => 'admin.settings.systems.api',
