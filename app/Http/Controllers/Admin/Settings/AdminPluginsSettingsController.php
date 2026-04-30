@@ -142,6 +142,19 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         // セキュリティモードに基づくスキャン必須判定
         $scanRequired = self::isScanRequired();
 
+        // 「すべて更新」ボタン用：available_version が立っているプラグインのリスト（JS から逐次更新）
+        $updatableExtensions = collect($pluginCards)
+            ->filter(fn (array $c) => ! empty($c['hasUpdateAvailable']))
+            ->map(fn (array $c) => [
+                'id' => $c['id'],
+                'name' => $c['translatedName'] ?? $c['name'] ?? $c['slug'],
+                'currentVersion' => $c['version'] ?? '',
+                'availableVersion' => $c['availableVersion'] ?? '',
+                'updateUrl' => route('admin.settings.plugins.update', $c['id']),
+            ])
+            ->values()
+            ->all();
+
         $this->viewParams['plugins'] = $plugins;
         $this->viewParams['uninstalledPlugins'] = $uninstalledPlugins;
         $this->viewParams['pluginCards'] = $pluginCards;
@@ -150,6 +163,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $this->viewParams['scanRequired'] = $scanRequired;
         $this->viewParams['isSimpleMode'] = \App\Helpers\AdminModeHelper::isSimpleMode();
         $this->viewParams['heading'] = __('admin/settings/plugins/index.heading');
+        $this->viewParams['updatableExtensions'] = $updatableExtensions;
 
         return view('admin::settings.plugins.index', $this->viewParams);
     }
