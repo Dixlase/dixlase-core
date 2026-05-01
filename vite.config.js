@@ -59,7 +59,18 @@ export default defineConfig(({ command }) => ({
             __dirname + '/storage/app/private/front/**/*.blade.php',
             __dirname + '/storage/app/private/front/**/*.html',
             __dirname + '/storage/app/private/front/**/*.md',
-        ]),
+        ], {
+            // Laravel が動的にコンパイルする中間ファイル群を除外
+            // （ブラウザがメニュー遷移中にこれらが書き換わると、
+            //  Vite の WebSocket リロード信号で navigation がキャンセルされる）
+            ignored: [
+                '**/storage/framework/**',
+                '**/bootstrap/cache/**',
+                '**/node_modules/**',
+                '**/vendor/**',
+                '**/.git/**',
+            ],
+        }),
     ],
     base: command === 'build' ? '/assets/build/' : '/', // 本番環境でのアセットのベースパス
     build: {
