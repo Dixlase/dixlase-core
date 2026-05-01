@@ -584,6 +584,9 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/cache/clear', [Systems\AdminSystemCacheController::class, 'clear'])
                     ->middleware('check.menu.edit:settings.systems.cache')
                     ->name('cache.clear');
+                Route::post('/cache/rebuild', [Systems\AdminSystemCacheController::class, 'rebuild'])
+                    ->middleware('check.menu.edit:settings.systems.cache')
+                    ->name('cache.rebuild');
 
                 // データベース管理（かんたんモード: Hidden）
                 Route::get('/database', [Systems\AdminSystemDatabaseController::class, 'index'])
