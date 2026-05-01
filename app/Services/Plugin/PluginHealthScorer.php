@@ -38,6 +38,7 @@ namespace App\Services\Plugin;
 use App\DTO\Plugin\HealthIssue;
 use App\DTO\Plugin\HealthScoreResult;
 use App\Enums\ExtensionSecurityLevel;
+use App\Enums\ExtensionSecurityPreset;
 use App\Enums\PluginEnableAction;
 use App\Enums\PluginHealthStatus;
 use App\Models\PluginAudit;
@@ -536,13 +537,26 @@ class PluginHealthScorer
      * セキュリティ設定（extension_plugin_max_health_level）で許可された
      * 健全性レベル内であれば、致命的問題があっても確認付きで有効化可能。
      * 許可範囲外のステータスの場合のみブロックする。
+     *
+     * Exception: when the active extension security preset is Development,
+     * health-based gating is bypassed (max level forced to NotVerified) so
+     * low-scoring plugins can still be installed/enabled with a warning.
      */
     public function determineEnableAction(HealthScoreResult $result, ?ExtensionSecurityLevel $maxAllowedLevel = null): PluginEnableAction
     {
         if ($maxAllowedLevel === null) {
-            $maxAllowedLevel = ExtensionSecurityLevel::from(
-                (int) SecuritySettingsRegistry::get('extension_plugin_max_health_level', ExtensionSecurityLevel::Warning->value)
+            $preset = (string) SecuritySettingsRegistry::get(
+                'extension_security_preset',
+                ExtensionSecurityPreset::default()->value,
             );
+
+            if ($preset === ExtensionSecurityPreset::Development->value) {
+                $maxAllowedLevel = ExtensionSecurityLevel::NotVerified;
+            } else {
+                $maxAllowedLevel = ExtensionSecurityLevel::from(
+                    (int) SecuritySettingsRegistry::get('extension_plugin_max_health_level', ExtensionSecurityLevel::Warning->value)
+                );
+            }
         }
 
         // セキュリティ設定で許可されていないステータスはブロック
@@ -614,5 +628,47 @@ class PluginHealthScorer
         $currentHash = $this->computeFilesHash($pluginSlug);
 
         return $currentHash !== $audit->files_hash;
+    }
+
+    /**
+     * プラグインソースの最終変更時刻（mtime）を取得する高速版検出。
+     *
+     * computeFilesHash() と異なり、md5 計算を行わずに mtime のみを取る。
+     * ページ表示時のファイル変更検知用。
+     *
+     * Returns null if the plugin directory does not exist.
+     */
+    public function latestSourceMtime(string $pluginSlug): ?int
+    {
+        $pluginName = Str::studly(str_replace('-', '_', $pluginSlug));
+        $pluginPath = base_path("plugins/{$pluginName}");
+
+        if (! File::isDirectory($pluginPath)) {
+            return null;
+        }
+
+        $latest = 0;
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($pluginPath, RecursiveDirectoryIterator::SKIP_DOTS | RecursiveDirectoryIterator::FOLLOW_SYMLINKS),
+        );
+        $iterator->setMaxDepth(20);
+
+        foreach ($iterator as $file) {
+            if (! $file->isFile()) {
+                continue;
+            }
+
+            $ext = $file->getExtension();
+            $filename = $file->getFilename();
+
+            if ($ext === 'php' || $ext === 'js' || str_ends_with($filename, '.blade.php')) {
+                $mtime = $file->getMTime();
+                if ($mtime > $latest) {
+                    $latest = $mtime;
+                }
+            }
+        }
+
+        return $latest > 0 ? $latest : null;
     }
 }

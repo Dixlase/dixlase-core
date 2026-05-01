@@ -146,4 +146,91 @@ class PluginAuditTest extends TestCase
         $result = PluginAudit::getBySlug('nonexistent-plugin');
         $this->assertNull($result);
     }
+
+    /**
+     * health_issues 列が JSON として保存・復元されるテスト
+     */
+    public function test_save_audit_result_stores_health_issues(): void
+    {
+        $issues = [
+            [
+                'type' => 'signature_unsigned',
+                'severity' => 'warning',
+                'description' => 'No signature',
+                'evidence' => [],
+                'deduction' => -10,
+            ],
+            [
+                'type' => 'permission_undefined',
+                'severity' => 'warning',
+                'description' => 'permissions セクションが未定義です。',
+                'evidence' => [],
+                'deduction' => -10,
+            ],
+        ];
+
+        PluginAudit::saveAuditResult('test-plugin', [
+            'health_score' => 80,
+            'health_status' => 'advisory',
+            'health_issues' => $issues,
+        ]);
+
+        $fresh = PluginAudit::getBySlug('test-plugin');
+        $this->assertIsArray($fresh->health_issues);
+        $this->assertCount(2, $fresh->health_issues);
+        $this->assertSame('signature_unsigned', $fresh->health_issues[0]['type']);
+        $this->assertSame(-10, $fresh->health_issues[0]['deduction']);
+    }
+
+    /**
+     * owned_tables 列が JSON として保存・復元されるテスト
+     */
+    public function test_save_audit_result_stores_owned_tables(): void
+    {
+        PluginAudit::saveAuditResult('test-plugin', [
+            'health_score' => 100,
+            'health_status' => 'healthy',
+            'owned_tables' => ['plg_test_pages', 'plg_test_settings'],
+        ]);
+
+        $fresh = PluginAudit::getBySlug('test-plugin');
+        $this->assertSame(['plg_test_pages', 'plg_test_settings'], $fresh->owned_tables);
+
+        $array = $fresh->toAuditArray();
+        $this->assertArrayHasKey('owned_tables', $array);
+        $this->assertSame(['plg_test_pages', 'plg_test_settings'], $array['owned_tables']);
+    }
+
+    /**
+     * health_issues / owned_tables 未指定時は空配列にフォールバックするテスト
+     */
+    public function test_save_audit_result_defaults_health_issues_and_owned_tables_to_empty(): void
+    {
+        PluginAudit::saveAuditResult('test-plugin', [
+            'health_score' => 100,
+        ]);
+
+        $fresh = PluginAudit::getBySlug('test-plugin');
+        $this->assertSame([], $fresh->health_issues);
+        $this->assertSame([], $fresh->owned_tables);
+    }
+
+    /**
+     * toAuditArray() が health_issues / owned_tables を含むテスト
+     */
+    public function test_to_audit_array_includes_health_issues_and_owned_tables(): void
+    {
+        $audit = PluginAudit::saveAuditResult('test-plugin', [
+            'health_score' => 90,
+            'health_issues' => [['type' => 'foo', 'severity' => 'info', 'description' => '', 'evidence' => [], 'deduction' => 0]],
+            'owned_tables' => ['plg_a', 'plg_b'],
+        ]);
+
+        $array = $audit->toAuditArray();
+
+        $this->assertArrayHasKey('health_issues', $array);
+        $this->assertArrayHasKey('owned_tables', $array);
+        $this->assertCount(1, $array['health_issues']);
+        $this->assertSame(['plg_a', 'plg_b'], $array['owned_tables']);
+    }
 }

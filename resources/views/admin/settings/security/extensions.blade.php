@@ -277,6 +277,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <p class="mt-2">{{ __('admin/settings/security/extensions.security.theme_health_level_help') }}</p>
                 </fieldset>
 
+                <!-- 監査スキャン期限日数 -->
+                <fieldset>
+                    <legend>{{ __('admin/settings/security/extensions.security.audit_max_age_days') }}</legend>
+                    <p>{{ __('admin/settings/security/extensions.security.audit_max_age_days_help') }}</p>
+
+                    <div class="mt-3 flex items-center gap-2 max-w-xs">
+                        <x-form-text
+                            type="number"
+                            id="extension_audit_max_age_days"
+                            name="extension_audit_max_age_days"
+                            :value="old('extension_audit_max_age_days', $settings['extension_audit_max_age_days'])"
+                            min="1"
+                            max="365"
+                            step="1"
+                            required
+                        />
+                        <span class="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{{ __('admin/settings/security/extensions.security.audit_max_age_days_unit') }}</span>
+                    </div>
+                </fieldset>
+
                 <!-- ロジックを含むテーマ -->
                 <fieldset>
                     <legend>{{ __('admin/settings/security/extensions.security.logic_themes') }}</legend>

@@ -102,6 +102,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <span x-text="checking ? '{{ __('admin/settings/plugins/index.updates.checking') }}' : '{{ __('admin/settings/plugins/index.updates.check') }}'"></span>
                     </button>
                 </div>
+                {{-- 全プラグイン再スキャンボタン --}}
+                <form action="{{ route('admin.settings.plugins.audit-all') }}" method="POST" class="inline-block" id="bulkAuditPluginsForm">
+                    @csrf
+                    <x-form-button
+                        type="button"
+                        :label="__('admin/settings/plugins/index.audit.audit_all_button')"
+                        variant="secondary"
+                        icon="fas fa-search"
+                        @click="openModal('bulkAuditPluginsModal')"
+                    />
+
+                    <x-ui-modal
+                        id="bulkAuditPluginsModal"
+                        :title="__('admin/settings/plugins/index.audit.audit_all_confirm_title')"
+                        :message="__('admin/settings/plugins/index.audit.audit_all_confirm_message')"
+                        icon_type="info"
+                        confirm_color="blue"
+                        :confirm_label="__('admin/settings/plugins/index.audit.audit_all_button')"
+                        :cancel_label="__('common.cancel')"
+                        form="bulkAuditPluginsForm"
+                    />
+                </form>
+
                 {{-- すべて更新ボタン（更新可能なプラグインがある時のみ） --}}
                 @if(count($updatableExtensions) > 0)
                     <form action="{{ route('admin.settings.plugins.update-all') }}" method="POST" class="inline-block" id="bulkUpdatePluginsForm">

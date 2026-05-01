@@ -195,6 +195,32 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
+            {{-- スキャン鮮度バッジ --}}
+            @if(! empty($card['scanFreshness']) && in_array($card['scanFreshness']['state'], ['unscanned', 'expired', 'files_changed'], true))
+                @php($freshness = $card['scanFreshness'])
+                <div class="flex items-center gap-2 mt-2 px-2 py-1 rounded text-xs
+                    @if($freshness['state'] === 'unscanned') bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300
+                    @elseif($freshness['state'] === 'files_changed') bg-orange-50 text-orange-800 border border-orange-200 dark:bg-orange-900/20 dark:text-orange-200 dark:border-orange-800
+                    @else bg-yellow-50 text-yellow-800 border border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-200 dark:border-yellow-800
+                    @endif">
+                    <i class="
+                        @if($freshness['state'] === 'unscanned') fas fa-question-circle
+                        @elseif($freshness['state'] === 'files_changed') fas fa-code-branch
+                        @else fas fa-history
+                        @endif
+                    "></i>
+                    <span>
+                        @if($freshness['state'] === 'unscanned')
+                            {{ __('admin/settings/themes/index.scan_status.unscanned') }}
+                        @elseif($freshness['state'] === 'files_changed')
+                            {{ __('admin/settings/themes/index.scan_status.files_changed') }}
+                        @else
+                            {{ __('admin/settings/themes/index.scan_status.expired', ['age' => $freshness['ageDays'] ?? '?', 'max' => $freshness['maxAgeDays']]) }}
+                        @endif
+                    </span>
+                </div>
+            @endif
+
             {{-- スキャンボタン --}}
             <div class="flex justify-center items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
                 <x-form-button

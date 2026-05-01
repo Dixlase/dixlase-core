@@ -66,6 +66,9 @@ return [
         'plugin_health_level_help' => 'Set the health level of plugins allowed for installation/activation.',
         'theme_health_level' => 'Theme Allowed Health Level',
         'theme_health_level_help' => 'Set the health level of themes allowed for installation/activation.',
+        'audit_max_age_days' => 'Audit Scan Expiry (Days)',
+        'audit_max_age_days_help' => 'Plugins/themes whose last scan is older than this many days will display a "Scan Expired" badge. Enter a value between 1 and 365 days.',
+        'audit_max_age_days_unit' => 'days',
         'current_setting' => 'Current Setting',
         'health_level' => [
             'healthy' => 'Healthy',

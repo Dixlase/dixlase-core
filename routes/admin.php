@@ -495,6 +495,9 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/themes/audit', [AdminThemesSettingsController::class, 'audit'])
                     ->middleware('check.menu.edit:settings.themes')
                     ->name('settings.themes.audit');
+                Route::post('/settings/themes/audit-all', [AdminThemesSettingsController::class, 'auditAll'])
+                    ->middleware('check.menu.edit:settings.themes')
+                    ->name('settings.themes.audit-all');
                 Route::get('/settings/themes/available-from-source', [AdminThemesSettingsController::class, 'availableFromSource'])
                     ->name('settings.themes.available-from-source');
                 Route::post('/settings/themes/download-from-source', [AdminThemesSettingsController::class, 'downloadFromSource'])

@@ -54,6 +54,11 @@ class ThemeAudit extends Model
         'csp_requires_inline_css',
         'csp_violations',
         'csp_summary',
+        'health_score',
+        'health_status',
+        'health_issues',
+        'owned_tables',
+        'files_hash',
         'audited_at',
     ];
 
@@ -65,6 +70,9 @@ class ThemeAudit extends Model
         'csp_requires_inline_css' => 'boolean',
         'csp_violations' => 'array',
         'csp_summary' => 'array',
+        'health_score' => 'integer',
+        'health_issues' => 'array',
+        'owned_tables' => 'array',
         'audited_at' => 'datetime',
     ];
 
@@ -97,6 +105,11 @@ class ThemeAudit extends Model
                 'csp_requires_inline_css' => $result['csp_requires_inline_css'] ?? false,
                 'csp_violations' => $result['csp_violations'] ?? [],
                 'csp_summary' => $result['csp_summary'] ?? [],
+                'health_score' => $result['health_score'] ?? null,
+                'health_status' => $result['health_status'] ?? null,
+                'health_issues' => $result['health_issues'] ?? [],
+                'owned_tables' => $result['owned_tables'] ?? [],
+                'files_hash' => $result['files_hash'] ?? null,
                 'audited_at' => now(),
             ]
         );
@@ -121,6 +134,11 @@ class ThemeAudit extends Model
             'csp_requires_inline_css' => $this->csp_requires_inline_css,
             'csp_violations' => $this->csp_violations ?? [],
             'csp_summary' => $this->csp_summary ?? [],
+            'health_score' => $this->health_score,
+            'health_status' => $this->health_status,
+            'health_issues' => $this->health_issues ?? [],
+            'owned_tables' => $this->owned_tables ?? [],
+            'files_hash' => $this->files_hash,
             'audited_at' => $this->audited_at?->toDateTimeString(),
         ];
     }

@@ -95,6 +95,17 @@ return [
         'invalid_slug' => 'テーマスラッグが無効です。',
         'completed' => 'テーマのスキャンが完了しました。',
         'failed' => 'テーマのスキャンに失敗しました。',
+        'audit_all_button' => '全テーマを再スキャン',
+        'audit_all_confirm_title' => '全テーマの再スキャン',
+        'audit_all_confirm_message' => 'インストール済みおよびアンインストール済みのすべてのテーマを順次スキャンします。完了までしばらくお待ちください。',
+        'audit_all_summary' => ':total 件中 :succeeded 件のスキャンが完了しました（失敗 :failed 件）。',
+    ],
+
+    // スキャン鮮度バッジ
+    'scan_status' => [
+        'unscanned' => '未スキャン — 再スキャンを実行してください',
+        'expired' => 'スキャン期限切れ（前回 :age 日前 / 期限 :max 日）',
+        'files_changed' => 'ファイル変更検知 — 再スキャン推奨',
     ],
 
     // バッジラベル（カード表示用）

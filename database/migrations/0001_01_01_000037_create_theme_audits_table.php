@@ -72,6 +72,17 @@ return new class extends Migration
             $table->json('csp_summary')->nullable()
                 ->comment('CSP違反のサマリー');
 
+            // 健全性スコア
+            $table->integer('health_score')->nullable()->comment('健全性スコア（0-100）');
+            $table->string('health_status')->nullable()->comment('健全性ステータス: healthy/advisory/needs_attention/not_verified');
+            $table->json('health_issues')->nullable()->comment('健全性指摘（減点理由）一覧');
+
+            // データベース所有テーブル（PluginTableInspector 結果のキャッシュ）
+            $table->json('owned_tables')->nullable()->comment('テーマが作成・所有するテーブル名');
+
+            // 再スキャン判定用ファイルハッシュ
+            $table->string('files_hash')->nullable()->comment('コードファイルハッシュ（再スキャン判定用）');
+
             $table->timestamp('audited_at')->nullable();
             $table->timestamps();
 

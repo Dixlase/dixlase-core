@@ -100,6 +100,10 @@ return [
         'invalid_slug' => 'プラグインスラッグが無効です。',
         'completed' => 'プラグインのスキャンが完了しました。',
         'failed' => 'プラグインのスキャンに失敗しました。',
+        'audit_all_button' => '全プラグインを再スキャン',
+        'audit_all_confirm_title' => '全プラグインの再スキャン',
+        'audit_all_confirm_message' => 'インストール済みおよびアンインストール済みのすべてのプラグインを順次スキャンします。完了までしばらくお待ちください。',
+        'audit_all_summary' => ':total 件中 :succeeded 件のスキャンが完了しました（失敗 :failed 件）。',
     ],
 
     // 有効化アクション（PluginEnableAction Enum）
@@ -115,6 +119,13 @@ return [
     'rescan' => [
         'files_changed' => '前回のスキャン以降にプラグインファイルが変更されています。再スキャンします...',
         'auto_triggered' => '自動セキュリティスキャンを実行しました。',
+    ],
+
+    // スキャン鮮度バッジ
+    'scan_status' => [
+        'unscanned' => '未スキャン — 再スキャンを実行してください',
+        'expired' => 'スキャン期限切れ（前回 :age 日前 / 期限 :max 日）',
+        'files_changed' => 'ファイル変更検知 — 再スキャン推奨',
     ],
 
     // 健全性指摘の説明

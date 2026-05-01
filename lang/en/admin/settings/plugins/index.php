@@ -100,6 +100,10 @@ return [
         'invalid_slug' => 'Invalid plugin slug.',
         'completed' => 'Plugin scan completed.',
         'failed' => 'Plugin scan failed.',
+        'audit_all_button' => 'Re-scan All Plugins',
+        'audit_all_confirm_title' => 'Re-scan All Plugins',
+        'audit_all_confirm_message' => 'Sequentially scan all installed and uninstalled plugins. This may take a moment.',
+        'audit_all_summary' => 'Scanned :succeeded of :total plugin(s) (:failed failed).',
     ],
 
     // Enable Action (PluginEnableAction Enum)
@@ -115,6 +119,13 @@ return [
     'rescan' => [
         'files_changed' => 'Plugin files have changed since the last scan. Re-scanning...',
         'auto_triggered' => 'Automatic security scan triggered.',
+    ],
+
+    // Scan freshness badges
+    'scan_status' => [
+        'unscanned' => 'Not scanned — please run a scan',
+        'expired' => 'Scan expired (last scanned :age days ago / max :max)',
+        'files_changed' => 'Files changed — re-scan recommended',
     ],
 
     // Health Issue Descriptions

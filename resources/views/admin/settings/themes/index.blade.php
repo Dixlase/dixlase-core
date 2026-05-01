@@ -72,6 +72,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </button>
                 </div>
 
+                {{-- 全テーマ再スキャンボタン --}}
+                <form action="{{ route('admin.settings.themes.audit-all') }}" method="POST" class="inline-block" id="bulkAuditThemesForm">
+                    @csrf
+                    <x-form-button
+                        type="button"
+                        :label="__('admin/settings/themes/index.audit.audit_all_button')"
+                        variant="secondary"
+                        icon="fas fa-search"
+                        @click="openModal('bulkAuditThemesModal')"
+                    />
+
+                    <x-ui-modal
+                        id="bulkAuditThemesModal"
+                        :title="__('admin/settings/themes/index.audit.audit_all_confirm_title')"
+                        :message="__('admin/settings/themes/index.audit.audit_all_confirm_message')"
+                        icon_type="info"
+                        confirm_color="blue"
+                        :confirm_label="__('admin/settings/themes/index.audit.audit_all_button')"
+                        :cancel_label="__('common.cancel')"
+                        form="bulkAuditThemesForm"
+                    />
+                </form>
+
                 {{-- すべて更新ボタン（更新可能なテーマがある時のみ） --}}
                 @if(count($updatableExtensions) > 0)
                     <form action="{{ route('admin.settings.themes.update-all') }}" method="POST" class="inline-block" id="bulkUpdateThemesForm">

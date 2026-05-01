@@ -75,6 +75,10 @@ return new class extends Migration
             // 健全性スコア
             $table->integer('health_score')->nullable()->comment('健全性スコア（0-100）');
             $table->string('health_status')->nullable()->comment('健全性ステータス: healthy/advisory/needs_attention/not_verified');
+            $table->json('health_issues')->nullable()->comment('健全性指摘（減点理由）一覧。HealthScoreResult::$issues の永続化');
+
+            // データベース所有テーブル（PluginTableInspector 結果のキャッシュ）
+            $table->json('owned_tables')->nullable()->comment('プラグインが作成・所有するテーブル名。スキャン時に自動抽出');
 
             // 再スキャン判定用ファイルハッシュ
             $table->string('files_hash')->nullable()->comment('コードファイルハッシュ（再スキャン判定用）');
