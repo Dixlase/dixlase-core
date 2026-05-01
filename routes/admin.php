@@ -538,6 +538,9 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/plugins/audit', [AdminPluginsSettingsController::class, 'audit'])
                     ->middleware('check.menu.edit:settings.plugins')
                     ->name('settings.plugins.audit');
+                Route::post('/settings/plugins/audit-all', [AdminPluginsSettingsController::class, 'auditAll'])
+                    ->middleware('check.menu.edit:settings.plugins')
+                    ->name('settings.plugins.audit-all');
                 Route::get('/settings/plugins/available-from-source', [AdminPluginsSettingsController::class, 'availableFromSource'])
                     ->name('settings.plugins.available-from-source');
                 Route::post('/settings/plugins/download-from-source', [AdminPluginsSettingsController::class, 'downloadFromSource'])
@@ -613,6 +616,9 @@ Route::prefix($adminUrl)->name('admin.')
                     Route::get('/settings', [Systems\AdminSystemBackupController::class, 'settings'])
                         ->middleware('check.menu.access:settings.systems.backup.settings')
                         ->name('settings');
+                    Route::post('/settings', [Systems\AdminSystemBackupController::class, 'updateSettings'])
+                        ->middleware('check.menu.edit:settings.systems.backup.settings')
+                        ->name('settings.update');
                 });
 
                 // 監査ログ（かんたんモード: Full）

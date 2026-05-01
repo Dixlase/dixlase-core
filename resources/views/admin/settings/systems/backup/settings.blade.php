@@ -21,17 +21,75 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-    <section>
-        <h2>{{ __('admin/settings/systems/backup/settings.heading') }}</h2>
-        <p class="mb-4 text-gray-600 dark:text-gray-300">
-            {{ __('admin/settings/systems/backup/settings.description') }}
-        </p>
+<section>
+    <h2>{{ __('admin/settings/systems/backup/settings.heading') }}</h2>
+    <p class="mb-6 text-gray-600 dark:text-gray-300">
+        {{ __('admin/settings/systems/backup/settings.description') }}
+    </p>
 
-        <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
-            <p class="text-yellow-800 dark:text-yellow-200">
-                <i class="fas fa-tools mr-2"></i>
-                {{ __('admin/settings/systems/backup/settings.placeholder') }}
+    <form action="{{ route('admin.settings.systems.backup.settings.update') }}"
+          method="POST"
+          class="max-w-2xl">
+        @csrf
+
+        {{-- デフォルトのバックアップ対象 --}}
+        <div class="mb-6">
+            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">
+                {{ __('admin/settings/systems/backup/settings.form.default_targets_label') }}
+            </label>
+            <div class="space-y-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                @foreach($availableTargets as $target)
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox"
+                               name="default_targets[]"
+                               value="{{ $target }}"
+                               class="checkbox-common"
+                               @if(in_array($target, old('default_targets', $defaultTargets), true)) checked @endif>
+                        <span class="text-sm text-gray-700 dark:text-gray-200">
+                            {{ __('admin/settings/systems/backup/settings.targets.' . $target) }}
+                        </span>
+                    </label>
+                @endforeach
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                <i class="fas fa-info-circle mr-1"></i>
+                {{ __('admin/settings/systems/backup/settings.form.default_targets_help') }}
             </p>
+            @error('default_targets')
+                <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ $message }}</p>
+            @enderror
         </div>
-    </section>
+
+        {{-- デフォルト保持期間 --}}
+        <div class="mb-6">
+            <label for="defaultRetentionDays" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">
+                {{ __('admin/settings/systems/backup/settings.form.default_retention_label') }}
+            </label>
+            <input type="number"
+                   id="defaultRetentionDays"
+                   name="default_retention_days"
+                   min="1"
+                   max="3650"
+                   value="{{ old('default_retention_days', $defaultRetentionDays) }}"
+                   class="input-common input-md">
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <i class="fas fa-info-circle mr-1"></i>
+                {{ __('admin/settings/systems/backup/settings.form.default_retention_help') }}
+            </p>
+            @error('default_retention_days')
+                <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+        {{-- 保存ボタン --}}
+        <div class="flex justify-end">
+            <x-form-button
+                type="submit"
+                variant="primary"
+                :label="__('admin/settings/systems/backup/settings.form.save_button')"
+                icon="fas fa-save"
+            />
+        </div>
+    </form>
+</section>
 @endsection
