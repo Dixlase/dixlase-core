@@ -53,7 +53,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <thead class="bg-gray-100 dark:bg-gray-700">
                     <tr>
                         <th class="px-4 py-2 text-left">{{ __('admin/settings/systems/backup/index.table.created_at') }}</th>
-                        <th class="px-4 py-2 text-left">{{ __('admin/settings/systems/backup/index.table.type') }}</th>
                         <th class="px-4 py-2 text-left">{{ __('admin/settings/systems/backup/index.table.targets') }}</th>
                         <th class="px-4 py-2 text-right">{{ __('admin/settings/systems/backup/index.table.size') }}</th>
                         <th class="px-4 py-2 text-left">{{ __('admin/settings/systems/backup/index.table.status') }}</th>
@@ -66,11 +65,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @foreach($records as $record)
                         <tr class="border-b border-gray-200 dark:border-gray-700">
                             <td class="px-4 py-2 whitespace-nowrap">{{ $record->created_at?->format('Y-m-d H:i:s') }}</td>
-                            <td class="px-4 py-2">
-                                <span class="px-2 py-0.5 text-xs rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200">
-                                    {{ __('admin/settings/systems/backup/index.types.' . $record->type) }}
-                                </span>
-                            </td>
                             <td class="px-4 py-2">
                                 <div class="flex flex-wrap gap-1">
                                     @foreach($record->targets ?? [] as $target)
