@@ -353,4 +353,78 @@ class ThemeHealthScorer
 
         return in_array($permission, $highRiskPermissions, true);
     }
+
+    /**
+     * テーマのコードファイルのハッシュを計算（再スキャン判定用）
+     */
+    public function computeFilesHash(string $themeSlug): string
+    {
+        $themePath = base_path("themes/{$themeSlug}");
+
+        if (! \Illuminate\Support\Facades\File::isDirectory($themePath)) {
+            return '';
+        }
+
+        $hashes = [];
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($themePath, \RecursiveDirectoryIterator::SKIP_DOTS | \RecursiveDirectoryIterator::FOLLOW_SYMLINKS),
+        );
+        $iterator->setMaxDepth(20);
+
+        foreach ($iterator as $file) {
+            if (! $file->isFile()) {
+                continue;
+            }
+
+            $ext = $file->getExtension();
+            $filename = $file->getFilename();
+
+            if ($ext === 'php' || $ext === 'js' || str_ends_with($filename, '.blade.php')) {
+                $hashes[] = md5_file($file->getPathname());
+            }
+        }
+
+        sort($hashes);
+
+        return md5(implode('', $hashes));
+    }
+
+    /**
+     * テーマソースの最終変更時刻（mtime）を取得する高速版検出。
+     *
+     * computeFilesHash() と異なり、md5 計算を行わずに mtime のみを取る。
+     * ページ表示時のファイル変更検知用。
+     */
+    public function latestSourceMtime(string $themeSlug): ?int
+    {
+        $themePath = base_path("themes/{$themeSlug}");
+
+        if (! \Illuminate\Support\Facades\File::isDirectory($themePath)) {
+            return null;
+        }
+
+        $latest = 0;
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($themePath, \RecursiveDirectoryIterator::SKIP_DOTS | \RecursiveDirectoryIterator::FOLLOW_SYMLINKS),
+        );
+        $iterator->setMaxDepth(20);
+
+        foreach ($iterator as $file) {
+            if (! $file->isFile()) {
+                continue;
+            }
+
+            $ext = $file->getExtension();
+            $filename = $file->getFilename();
+
+            if ($ext === 'php' || $ext === 'js' || str_ends_with($filename, '.blade.php')) {
+                $mtime = $file->getMTime();
+                if ($mtime > $latest) {
+                    $latest = $mtime;
+                }
+            }
+        }
+
+        return $latest > 0 ? $latest : null;
+    }
 }

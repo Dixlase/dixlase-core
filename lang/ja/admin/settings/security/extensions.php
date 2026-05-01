@@ -67,6 +67,9 @@ return [
         'plugin_health_level_help' => 'インストール・有効化を許可するプラグインの健全性レベルを設定します。',
         'theme_health_level' => 'テーマの許可健全性レベル',
         'theme_health_level_help' => 'インストール・有効化を許可するテーマの健全性レベルを設定します。',
+        'audit_max_age_days' => '監査スキャンの期限日数',
+        'audit_max_age_days_help' => '前回スキャンからこの日数を超えたプラグイン/テーマには「スキャン期限切れ」バッジが表示されます。1〜365 日で指定してください。',
+        'audit_max_age_days_unit' => '日',
         'current_setting' => '現在の設定',
         'health_level' => [
             'healthy' => '良好（Healthy）',

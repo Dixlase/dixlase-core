@@ -35,6 +35,8 @@
 
 namespace App\Presenters\Admin;
 
+use App\DTO\Plugin\HealthIssue;
+use App\DTO\Plugin\HealthScoreResult;
 use App\Enums\ExtensionSecurityLevel;
 use App\Enums\ExtensionSecurityPreset;
 use App\Enums\PluginEnableAction;
@@ -44,6 +46,7 @@ use App\Services\Plugin\PluginHealthScorer;
 use App\Services\SecuritySettingsRegistry;
 use App\Services\Theme\ThemeHealthScorer;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 class ExtensionCardPresenter
@@ -208,6 +211,10 @@ class ExtensionCardPresenter
             // Update availability
             'hasUpdateAvailable' => $isModel && $theme->hasUpdateAvailable(),
             'availableVersion' => $isModel ? $theme->available_version : null,
+            // Owned database tables (auto-detected from migrations or declared in theme.json)
+            'ownedTablesData' => self::buildOwnedTablesData('theme', $directory, $auditResult),
+            // Scan freshness (badge state + thresholds)
+            'scanFreshness' => self::buildScanFreshness($auditResult, (bool) ($isModel ? ($theme->files_changed ?? false) : ($theme['files_changed'] ?? false))),
         ];
     }
 
@@ -271,28 +278,30 @@ class ExtensionCardPresenter
         $enableWarnings = $isModel ? self::computePluginEnableWarnings($plugin, $permissionSummary) : [];
         $installWarnings = ! $isModel ? self::computeInstallWarnings($permissionSummary, 'admin/settings/plugins/index') : [];
 
-        // 有効化ポリシーと健全性スコアを算出（computeBadgeより先に実行）
+        // 有効化ポリシーと健全性スコアを算出（DB の plugin_audits 結果のみを参照する。
+        // ライブ再計算は dls:plugin:audit / 再スキャンボタン経由でしか行わない）
         $enableAction = PluginEnableAction::Allowed;
-        $healthScore = null;
-        $healthStatus = null;
-        $healthIssues = [];
         $trustLevel = null;
-        try {
-            $healthScorer = app(PluginHealthScorer::class);
-            $healthResult = $healthScorer->calculate($slug);
-            $healthScore = $healthResult->score;
-            $healthStatus = $healthResult->status->value;
-            $healthIssues = array_values(array_filter(
-                array_map(fn ($i) => $i->jsonSerialize(), $healthResult->issues),
-                fn ($i) => ($i['deduction'] ?? 0) !== 0,
-            ));
-            $enableAction = $healthScorer->determineEnableAction($healthResult);
-        } catch (\Exception $e) {
-            Log::error('ExtensionCardPresenter: health calculation failed', [
-                'plugin' => $slug,
-                'error' => $e->getMessage(),
-                'file' => $e->getFile().':'.$e->getLine(),
-            ]);
+        $healthScore = $auditResult['health_score'] ?? null;
+        $healthStatus = $auditResult['health_status'] ?? null;
+        $healthIssuesRaw = $auditResult['health_issues'] ?? [];
+        $healthIssues = array_values(array_filter(
+            $healthIssuesRaw,
+            fn ($i) => is_array($i) && ($i['deduction'] ?? 0) !== 0,
+        ));
+
+        if ($auditedAt !== null) {
+            try {
+                $healthScorer = app(PluginHealthScorer::class);
+                $synthetic = self::buildHealthResultFromAudit($healthScore, $healthStatus, $healthIssuesRaw);
+                $enableAction = $healthScorer->determineEnableAction($synthetic);
+            } catch (\Exception $e) {
+                Log::error('ExtensionCardPresenter: enable action resolution failed', [
+                    'plugin' => $slug,
+                    'error' => $e->getMessage(),
+                    'file' => $e->getFile().':'.$e->getLine(),
+                ]);
+            }
         }
 
         $badge = self::computeBadge($permissionSummary, 'admin/settings/plugins/index', $healthStatus);
@@ -392,6 +401,10 @@ class ExtensionCardPresenter
             // Update availability
             'hasUpdateAvailable' => $isModel && $plugin->hasUpdateAvailable(),
             'availableVersion' => $isModel ? $plugin->available_version : null,
+            // Owned database tables (auto-detected from migrations or declared in plugin.json)
+            'ownedTablesData' => self::buildOwnedTablesData('plugin', $directory, $auditResult),
+            // Scan freshness (badge state + thresholds)
+            'scanFreshness' => self::buildScanFreshness($auditResult, (bool) ($isModel ? ($plugin->files_changed ?? false) : ($plugin['files_changed'] ?? false))),
             // Simple mode display data
             ...self::computeSimpleDisplayData($healthStatus, $operationStatus, $auditedAt),
         ];
@@ -1049,5 +1062,161 @@ class ExtensionCardPresenter
         // Once scanned, do not force re-scan for install/enable flow.
         // Users can manually re-scan from the card if files have changed.
         return $auditedAt === null;
+    }
+
+    /**
+     * Determine scan freshness state based on audit row + caller-supplied flags.
+     *
+     * Returned state is one of:
+     *   - 'unscanned'      audit_at is null
+     *   - 'files_changed'  $filesChanged is true (caller decides via mtime/hash)
+     *   - 'expired'        audited_at older than max age days
+     *   - 'fresh'          recent and unchanged
+     *
+     * @param  array<string, mixed>  $auditResult  plugin_audits row (toAuditArray)
+     * @param  bool  $filesChanged  precomputed flag; controller compares latest mtime vs audited_at
+     * @return array{state: string, maxAgeDays: int, ageDays: ?int}
+     */
+    public static function buildScanFreshness(array $auditResult, bool $filesChanged = false): array
+    {
+        $maxAgeDays = (int) SecuritySettingsRegistry::get('extension_audit_max_age_days', 30);
+        if ($maxAgeDays < 1) {
+            $maxAgeDays = 30;
+        }
+
+        $auditedAt = $auditResult['audited_at'] ?? null;
+
+        if ($auditedAt === null) {
+            return ['state' => 'unscanned', 'maxAgeDays' => $maxAgeDays, 'ageDays' => null];
+        }
+
+        if ($filesChanged) {
+            return ['state' => 'files_changed', 'maxAgeDays' => $maxAgeDays, 'ageDays' => null];
+        }
+
+        try {
+            $ageDays = (int) Carbon::parse($auditedAt)->diffInDays(Carbon::now());
+        } catch (\Exception $e) {
+            $ageDays = null;
+        }
+
+        if ($ageDays !== null && $ageDays > $maxAgeDays) {
+            return ['state' => 'expired', 'maxAgeDays' => $maxAgeDays, 'ageDays' => $ageDays];
+        }
+
+        return ['state' => 'fresh', 'maxAgeDays' => $maxAgeDays, 'ageDays' => $ageDays];
+    }
+
+    /**
+     * Reconstruct a HealthScoreResult from persisted plugin_audits data.
+     *
+     * Used to drive determineEnableAction() without re-running live evaluators.
+     *
+     * @param  array<int, array<string, mixed>>  $issuesRaw
+     */
+    private static function buildHealthResultFromAudit(?int $score, ?string $statusValue, array $issuesRaw): HealthScoreResult
+    {
+        $status = $statusValue !== null
+            ? (PluginHealthStatus::tryFrom($statusValue) ?? PluginHealthStatus::NotVerified)
+            : PluginHealthStatus::NotVerified;
+
+        $issues = [];
+        $hasCritical = false;
+        foreach ($issuesRaw as $entry) {
+            if (! is_array($entry)) {
+                continue;
+            }
+            $issue = new HealthIssue(
+                type: (string) ($entry['type'] ?? ''),
+                severity: (string) ($entry['severity'] ?? 'info'),
+                description: (string) ($entry['description'] ?? ''),
+                evidence: is_array($entry['evidence'] ?? null) ? $entry['evidence'] : [],
+                deduction: (int) ($entry['deduction'] ?? 0),
+            );
+            $issues[] = $issue;
+            if ($issue->isCritical()) {
+                $hasCritical = true;
+            }
+        }
+
+        return new HealthScoreResult(
+            score: (int) ($score ?? 0),
+            status: $status,
+            issues: $issues,
+            hasCriticalIssue: $hasCritical,
+        );
+    }
+
+    /**
+     * Build the "owned tables" / "writes to other plugins" display data.
+     *
+     * Resolution order:
+     *   1. plugin.json `permissions.database.owned_table_names` — manual declaration overrides auto-detect
+     *   2. plugin_audits.owned_tables                           — auto-detected at scan time and persisted
+     *
+     * `writes_to_other_plugin_tables` is read from plugin.json only — it cannot
+     * be auto-detected (writes via Eloquent / contracts have no static schema marker).
+     *
+     * Live migration scanning is intentionally *not* performed here so the page
+     * stays cache-only. Detection happens during dls:plugin:audit / re-scan.
+     *
+     * @param  string  $type  'plugin' or 'theme'
+     * @param  array<string, mixed>  $auditResult  plugin_audits row (toAuditArray)
+     * @return array{
+     *     tables: array<int, string>,
+     *     tables_source: 'declared'|'detected'|'none',
+     *     has_migrations: bool,
+     *     writes_to_other_plugin_tables: array<string, array<int, string>>,
+     * }
+     */
+    public static function buildOwnedTablesData(string $type, string $directory, array $auditResult = []): array
+    {
+        $baseDir = $type === 'theme' ? 'themes' : 'plugins';
+        $manifestFile = $type === 'theme' ? 'theme.json' : 'plugin.json';
+        $extensionDir = base_path("{$baseDir}/{$directory}");
+
+        $declaredTables = [];
+        $writesToOther = [];
+        $manifestPath = "{$extensionDir}/{$manifestFile}";
+        if (File::exists($manifestPath)) {
+            $manifest = json_decode(File::get($manifestPath), true);
+            if (is_array($manifest)) {
+                $declaredTables = $manifest['permissions']['database']['owned_table_names']
+                    ?? $manifest['database']['owned_table_names']
+                    ?? [];
+                $writesToOther = $manifest['permissions']['database']['writes_to_other_plugin_tables']
+                    ?? $manifest['database']['writes_to_other_plugin_tables']
+                    ?? [];
+                if (! is_array($declaredTables)) {
+                    $declaredTables = [];
+                }
+                if (! is_array($writesToOther)) {
+                    $writesToOther = [];
+                }
+            }
+        }
+
+        $detectedTables = $auditResult['owned_tables'] ?? [];
+        if (! is_array($detectedTables)) {
+            $detectedTables = [];
+        }
+
+        if (! empty($declaredTables)) {
+            $tables = array_values(array_unique(array_filter(array_map('strval', $declaredTables))));
+            $source = 'declared';
+        } elseif (! empty($detectedTables)) {
+            $tables = array_values(array_filter(array_map('strval', $detectedTables)));
+            $source = 'detected';
+        } else {
+            $tables = [];
+            $source = 'none';
+        }
+
+        return [
+            'tables' => $tables,
+            'tables_source' => $source,
+            'has_migrations' => ! empty($detectedTables) || ! empty($declaredTables),
+            'writes_to_other_plugin_tables' => $writesToOther,
+        ];
     }
 }

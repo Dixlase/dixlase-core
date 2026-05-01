@@ -95,6 +95,17 @@ return [
         'invalid_slug' => 'Invalid theme slug.',
         'completed' => 'Theme scan completed.',
         'failed' => 'Theme scan failed.',
+        'audit_all_button' => 'Re-scan All Themes',
+        'audit_all_confirm_title' => 'Re-scan All Themes',
+        'audit_all_confirm_message' => 'Sequentially scan all installed and uninstalled themes. This may take a moment.',
+        'audit_all_summary' => 'Scanned :succeeded of :total theme(s) (:failed failed).',
+    ],
+
+    // Scan freshness badges
+    'scan_status' => [
+        'unscanned' => 'Not scanned — please run a scan',
+        'expired' => 'Scan expired (last scanned :age days ago / max :max)',
+        'files_changed' => 'Files changed — re-scan recommended',
     ],
 
     // Badge Labels (for card display)

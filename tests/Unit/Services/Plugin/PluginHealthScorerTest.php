@@ -904,6 +904,34 @@ class PluginHealthScorerTest extends TestCase
     }
 
     /**
+     * Development プリセットが設定されている場合、低スコアでも Blocked にならないテスト
+     *
+     * 既知の不整合: extension_security_preset を development に切り替えても、
+     * extension_plugin_max_health_level は古い値のまま残ることがある。
+     * その状態でも開発モードの意図を尊重して、Blocked を返さないことを保証する。
+     */
+    public function test_enable_action_uses_preset_when_max_level_omitted(): void
+    {
+        \App\Services\SecuritySettingsRegistry::set('extension_security_preset', 'development');
+        // 古い厳しい値が残っている状態を再現（プリセットを尊重して上書きされるべき）
+        \App\Services\SecuritySettingsRegistry::set('extension_plugin_max_health_level', \App\Enums\ExtensionSecurityLevel::Healthy->value);
+
+        $result = new HealthScoreResult(
+            score: 50,
+            status: PluginHealthStatus::NeedsAttention,
+            issues: [],
+            hasCriticalIssue: false,
+        );
+
+        // $maxAllowedLevel を渡さずプリセットから自動解決させる
+        $action = $this->scorer->determineEnableAction($result);
+
+        // Development プリセットでは status=NeedsAttention でも Blocked にしない
+        $this->assertNotEquals(\App\Enums\PluginEnableAction::Blocked, $action);
+        $this->assertEquals(\App\Enums\PluginEnableAction::AcknowledgementRequired, $action);
+    }
+
+    /**
      * 厳格モード（Healthyのみ）ではAdvisoryもBlockedになるテスト
      */
     public function test_enable_action_strict_blocks_advisory(): void

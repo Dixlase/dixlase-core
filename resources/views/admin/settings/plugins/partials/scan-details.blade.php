@@ -221,7 +221,63 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    {{-- 9. 提供機能（capabilities 宣言） --}}
+    {{-- 9. データベーステーブル（所有テーブル + 他プラグインへの書き込み先） --}}
+    @if(! empty($card['ownedTablesData']) && ($card['ownedTablesData']['has_migrations'] || ! empty($card['ownedTablesData']['tables']) || ! empty($card['ownedTablesData']['writes_to_other_plugin_tables'])))
+        <div>
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                <i class="fas fa-database mr-1 text-blue-500 dark:text-blue-400"></i>
+                {{ __('admin/settings/plugins/index.permissions.database_owned_tables_label') }}
+            </h4>
+
+            @if(! empty($card['ownedTablesData']['tables']))
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                    {{ __('admin/settings/plugins/index.permissions.database_owned_tables_description') }}
+                </p>
+                <ul class="space-y-1 mb-2">
+                    @foreach($card['ownedTablesData']['tables'] as $tableName)
+                        <li class="flex items-center gap-2 text-xs">
+                            <i class="fas fa-table text-gray-400"></i>
+                            <code class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-0.5 rounded font-mono">{{ $tableName }}</code>
+                        </li>
+                    @endforeach
+                </ul>
+                <p class="text-xs text-gray-400 dark:text-gray-500 italic">
+                    @if($card['ownedTablesData']['tables_source'] === 'declared')
+                        {{ __('admin/settings/plugins/index.permissions.database_owned_tables_source_declared') }}
+                    @else
+                        {{ __('admin/settings/plugins/index.permissions.database_owned_tables_source_detected') }}
+                    @endif
+                </p>
+            @else
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ __('admin/settings/plugins/index.permissions.database_owned_tables_empty') }}
+                </p>
+            @endif
+
+            @if(! empty($card['ownedTablesData']['writes_to_other_plugin_tables']))
+                <div class="mt-3">
+                    <h5 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                        <i class="fas fa-arrow-right text-orange-500 dark:text-orange-400 mr-1"></i>
+                        {{ __('admin/settings/plugins/index.permissions.database_writes_to_other_label') }}
+                    </h5>
+                    <ul class="space-y-1">
+                        @foreach($card['ownedTablesData']['writes_to_other_plugin_tables'] as $targetSlug => $targetTables)
+                            <li class="text-xs">
+                                <span class="text-gray-600 dark:text-gray-400">{{ __('admin/settings/plugins/index.permissions.database_writes_to_other_target', ['slug' => $targetSlug]) }}</span>
+                                <div class="mt-1 ml-4 flex flex-wrap gap-1">
+                                    @foreach((array) $targetTables as $targetTable)
+                                        <code class="bg-orange-50 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 px-2 py-0.5 rounded font-mono">{{ $targetTable }}</code>
+                                    @endforeach
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+        </div>
+    @endif
+
+    {{-- 10. 提供機能（capabilities 宣言） --}}
     @if(! empty($card['capabilities']))
         <div>
             <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
@@ -239,7 +295,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    {{-- 10. 権限情報（カテゴリ一覧 + 確認理由） --}}
+    {{-- 11. 権限情報（カテゴリ一覧 + 確認理由） --}}
     <div>
         <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin/settings/plugins/index.permissions.permission_info') }}</h4>
         @if($card['hasPermissions'])

@@ -56,6 +56,7 @@ use App\Services\Extension\ExtensionSourceManager;
 use App\Services\ExtensionOperationService;
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\Plugin\PluginPermissionService;
+use App\Services\Plugin\PluginTableInspector;
 use App\Services\SecuritySettingsRegistry;
 use App\Traits\PluginLoaderTrait;
 use Illuminate\Http\JsonResponse;
@@ -80,10 +81,21 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         // インストール済みプラグイン
         $plugins = Plugin::all();
 
-        // 権限サービスとCSP診断サービスを取得
+        // 権限サービスとファイル変更検知用の健全性スコアラ
         $permissionService = app(PluginPermissionService::class);
-        $cspDiagnosticService = app(CspDiagnosticService::class);
-        $cspLoader = app(CspExtensionLoader::class);
+        $healthScorer = app(PluginHealthScorer::class);
+
+        // アンインストール済みプラグインを先に検出（バッチクエリで使うスラッグを集めるため）
+        $uninstalledPlugins = $this->getUninstalledPlugins();
+
+        // 全プラグインの監査結果を 1 クエリで取得（N+1 回避）
+        $allSlugs = array_filter(array_merge(
+            $plugins->pluck('slug')->all(),
+            array_column($uninstalledPlugins, 'slug'),
+        ));
+        $auditMap = ! empty($allSlugs)
+            ? PluginAudit::whereIn('plugin_slug', $allSlugs)->get()->keyBy('plugin_slug')
+            : collect();
 
         // 各プラグインに設定画面があるかチェック、翻訳された名前と説明を取得
         foreach ($plugins as $plugin) {
@@ -93,32 +105,26 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
             // 権限サマリーを取得（監査結果を含む）
             $summary = $permissionService->getSummary($plugin->slug);
-            $summary['audit'] = $this->getPluginAuditResult($plugin->slug);
+            $summary['audit'] = $this->buildAuditArrayFromMap($auditMap, $plugin->slug);
             $plugin->permission_summary = $summary;
 
-            // CSP診断結果を取得（ディレクトリ名を使用）
-            $pluginPath = base_path('plugins/'.$plugin->directory);
-            $plugin->csp_diagnostic = $cspDiagnosticService->diagnosePlugin($pluginPath);
+            // CSP 互換性情報は監査結果（plugin_audits）から復元する
+            $plugin->csp_compatibility = $this->buildCspCompatibilityFromAudit($summary['audit']);
+            $plugin->csp_diagnostic = null;
 
-            // CSP互換性情報を取得
-            $plugin->csp_compatibility = $cspLoader->getCspCompatibility('plugin', $plugin->slug);
+            // ファイル変更検知（mtime ベースで軽量判定）
+            $plugin->files_changed = $this->detectFilesChanged($plugin->slug, $auditMap, $healthScorer);
         }
-
-        // アンインストール済みプラグインを検出
-        $uninstalledPlugins = $this->getUninstalledPlugins();
 
         // アンインストール済みプラグインにも権限サマリーと監査結果を追加
         foreach ($uninstalledPlugins as &$plugin) {
             $summary = $permissionService->getSummary($plugin['slug']);
-            $summary['audit'] = $this->getPluginAuditResult($plugin['slug']);
+            $summary['audit'] = $this->buildAuditArrayFromMap($auditMap, $plugin['slug']);
             $plugin['permission_summary'] = $summary;
 
-            // CSP診断結果を取得（ディレクトリ名を使用）
-            $pluginPath = base_path('plugins/'.$plugin['directory']);
-            $plugin['csp_diagnostic'] = $cspDiagnosticService->diagnosePlugin($pluginPath);
-
-            // CSP互換性情報を取得
-            $plugin['csp_compatibility'] = $cspLoader->getCspCompatibility('plugin', $plugin['slug']);
+            $plugin['csp_compatibility'] = $this->buildCspCompatibilityFromAudit($summary['audit']);
+            $plugin['csp_diagnostic'] = null;
+            $plugin['files_changed'] = $this->detectFilesChanged($plugin['slug'], $auditMap, $healthScorer);
         }
         unset($plugin);
 
@@ -211,6 +217,75 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
+     * バッチ取得した監査結果コレクションから 1 件の audit array を取り出す。
+     *
+     * 監査未実行のプラグインには空テンプレートを返す。
+     *
+     * @param  \Illuminate\Support\Collection<string, PluginAudit>  $auditMap
+     * @return array<string, mixed>
+     */
+    protected function buildAuditArrayFromMap(\Illuminate\Support\Collection $auditMap, string $slug): array
+    {
+        $audit = $auditMap->get($slug);
+        if ($audit instanceof PluginAudit) {
+            return $audit->toAuditArray();
+        }
+
+        return [
+            'has_mismatches' => false,
+            'mismatches' => [],
+            'matches_count' => 0,
+            'total_checked' => 0,
+            'audited_at' => null,
+        ];
+    }
+
+    /**
+     * mtime ベースでプラグインファイルがスキャン後に変更されたかを判定する。
+     *
+     * 一覧表示用の軽量判定。md5 計算を行わず、PHP/JS/Blade の最終変更時刻のみを比較する。
+     * - 監査未実行（audited_at null）→ false（バッジは「未スキャン」が優先）
+     * - 最終変更時刻が監査時刻より新しい → true
+     */
+    protected function detectFilesChanged(string $slug, \Illuminate\Support\Collection $auditMap, PluginHealthScorer $healthScorer): bool
+    {
+        $audit = $auditMap->get($slug);
+        if (! $audit instanceof PluginAudit || $audit->audited_at === null) {
+            return false;
+        }
+
+        $latestMtime = $healthScorer->latestSourceMtime($slug);
+        if ($latestMtime === null) {
+            return false;
+        }
+
+        return $latestMtime > $audit->audited_at->getTimestamp();
+    }
+
+    /**
+     * 監査結果から CSP 互換性配列を組み立てる。
+     *
+     * 旧来 CspExtensionLoader::getCspCompatibility() が返していた構造に合わせる。
+     * ライブスキャン（CspDiagnosticService::diagnosePlugin / CspComplianceScanner）は
+     * 再スキャン時のみ実行し、ページ表示時は plugin_audits の結果のみを使う。
+     *
+     * @param  array<string, mixed>  $audit
+     * @return array<string, mixed>
+     */
+    protected function buildCspCompatibilityFromAudit(array $audit): array
+    {
+        return [
+            'status' => $audit['csp_status'] ?? 'not_checked',
+            'requires_inline_js' => (bool) ($audit['csp_requires_inline_js'] ?? false),
+            'requires_inline_css' => (bool) ($audit['csp_requires_inline_css'] ?? false),
+            'has_csp_config' => false,
+            'csp_ready' => ! ($audit['csp_requires_inline_js'] ?? false),
+            'violations' => $audit['csp_violations'] ?? [],
+            'summary' => $audit['csp_summary'] ?? [],
+        ];
+    }
+
+    /**
      * プラグインを監査してDBに保存
      */
     protected function runPluginAudit(string $pluginSlug): array
@@ -251,8 +326,14 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 $cspScanner = app(\App\Services\Csp\CspComplianceScanner::class);
                 $cspCompatibility = $cspScanner->scanPlugin($pluginSlug);
 
-                // ファイルハッシュを算出（再スキャン判定用）
-                $filesHash = app(PluginHealthScorer::class)->computeFilesHash($pluginSlug);
+                // ファイルハッシュ（再スキャン判定用）と健全性スコア
+                $healthScorer = app(PluginHealthScorer::class);
+                $filesHash = $healthScorer->computeFilesHash($pluginSlug);
+
+                // owned_tables を抽出（マイグレーションから自動検出）
+                $pluginName = \Illuminate\Support\Str::studly(str_replace('-', '_', $pluginSlug));
+                $extensionDir = base_path("plugins/{$pluginName}");
+                $tableInspection = app(PluginTableInspector::class)->inspect($extensionDir);
 
                 $auditData = [
                     'has_mismatches' => ! empty($result['mismatches'] ?? []),
@@ -269,12 +350,30 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                     'csp_violations' => $cspCompatibility['violations'] ?? [],
                     'csp_summary' => $cspCompatibility['summary'] ?? [],
                     'files_hash' => $filesHash,
+                    'owned_tables' => $tableInspection['tables'],
                 ];
 
                 Log::info('Plugin audit data', ['plugin' => $pluginSlug, 'data' => $auditData]);
 
-                // DBに保存
+                // DBに保存（健全性スコア計算前のベースデータ）
                 $audit = PluginAudit::saveAuditResult($pluginSlug, $auditData);
+
+                // 健全性スコア計算とその指摘一覧を永続化
+                // calculate() は plugin_audits の行を参照するため、saveAuditResult 後に実行する
+                try {
+                    $healthResult = $healthScorer->calculate($pluginSlug);
+                    $audit->update([
+                        'health_score' => $healthResult->score,
+                        'health_status' => $healthResult->status->value,
+                        'health_issues' => array_map(fn ($issue) => $issue->jsonSerialize(), $healthResult->issues),
+                    ]);
+                    $audit->refresh();
+                } catch (\Exception $e) {
+                    Log::warning('Health score persist failed during audit', [
+                        'plugin' => $pluginSlug,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
 
                 Log::info('Plugin audit saved', ['plugin' => $pluginSlug, 'audit_id' => $audit->id]);
 
@@ -385,6 +484,48 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             'cspBarometerItems' => $cspBarometerItems,
             'presetBarometerItems' => $presetBarometerItems,
         ]);
+    }
+
+    /**
+     * 全プラグインを順次再スキャン
+     *
+     * インストール済み + アンインストール済みすべてのプラグインに対して runPluginAudit() を実行する。
+     * 同期実行 → 完了後にフラッシュメッセージ付きで一覧へリダイレクト。
+     */
+    public function auditAll(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $failed = [];
+
+        $installed = Plugin::all()->pluck('slug')->all();
+        $uninstalled = array_column($this->getUninstalledPlugins(), 'slug');
+        $allSlugs = array_values(array_unique(array_filter(array_merge($installed, $uninstalled))));
+
+        foreach ($allSlugs as $slug) {
+            try {
+                $this->runPluginAudit($slug);
+            } catch (\Exception $e) {
+                $failed[] = $slug;
+                Log::error('Plugin audit-all: per-plugin failure', [
+                    'plugin' => $slug,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        $total = count($allSlugs);
+        $succeeded = $total - count($failed);
+
+        $message = __('admin/settings/plugins/index.audit.audit_all_summary', [
+            'total' => $total,
+            'succeeded' => $succeeded,
+            'failed' => count($failed),
+        ]);
+
+        $redirect = redirect()->route('admin.settings.plugins.index');
+
+        return empty($failed)
+            ? $redirect->with('success', $message)
+            : $redirect->with('warning', $message);
     }
 
     public function add()

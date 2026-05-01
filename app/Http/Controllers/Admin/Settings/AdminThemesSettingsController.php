@@ -45,8 +45,6 @@ use App\Http\Requests\Admin\Settings\AdminThemeUploadRequest;
 use App\Models\Theme;
 use App\Models\ThemeAudit;
 use App\Presenters\Admin\ExtensionCardPresenter;
-use App\Services\Csp\CspDiagnosticService;
-use App\Services\Csp\CspExtensionLoader;
 use App\Services\ExtensionOperationService;
 use App\Services\Theme\ThemeHealthScorer;
 use App\Services\Theme\ThemePermissionService;
@@ -73,10 +71,21 @@ class AdminThemesSettingsController extends AdminLoggedInController
             ->first();
         $activeThemeId = $themeSetting ? (int) $themeSetting->value : null;
 
-        // 権限サービスとCSP診断サービスを取得
+        // 権限サービスと健全性スコアラ（ファイル変更検知用）
         $permissionService = app(ThemePermissionService::class);
-        $cspDiagnosticService = app(CspDiagnosticService::class);
-        $cspLoader = app(CspExtensionLoader::class);
+        $healthScorer = app(\App\Services\Theme\ThemeHealthScorer::class);
+
+        // アンインストール済みテーマを先に検出（バッチクエリで使うスラッグを集めるため）
+        $uninstalledThemes = $this->getUninstalledThemes();
+
+        // 全テーマの監査結果を 1 クエリで取得（N+1 回避）
+        $allSlugs = array_filter(array_merge(
+            $themes->pluck('slug')->all(),
+            array_column($uninstalledThemes, 'slug'),
+        ));
+        $auditMap = ! empty($allSlugs)
+            ? ThemeAudit::whereIn('theme_slug', $allSlugs)->get()->keyBy('theme_slug')
+            : collect();
 
         // テーマ設定機能の有無をチェック
         // データベースのhas_settingsカラムを優先し、nullの場合のみファイルチェック
@@ -87,33 +96,28 @@ class AdminThemesSettingsController extends AdminLoggedInController
 
             // 権限サマリーを取得（監査結果を含む）
             $summary = $permissionService->getSummary($theme->slug);
-            $summary['audit'] = $this->getThemeAuditResult($theme->slug);
+            $summary['audit'] = $this->buildThemeAuditArrayFromMap($auditMap, $theme->slug);
             $theme->permission_summary = $summary;
 
-            // CSP診断結果を取得
-            $themePath = base_path('themes/'.$theme->slug);
-            $theme->csp_diagnostic = $cspDiagnosticService->diagnoseTheme($themePath);
+            // CSP 互換性は監査結果（theme_audits）から復元する
+            $theme->csp_compatibility = $this->buildCspCompatibilityFromAudit($summary['audit']);
+            $theme->csp_diagnostic = null;
 
-            // CSP互換性情報を取得
-            $theme->csp_compatibility = $cspLoader->getCspCompatibility('theme', $theme->slug);
+            // ファイル変更検知（mtime ベース）
+            $theme->files_changed = $this->detectThemeFilesChanged($theme->slug, $auditMap, $healthScorer);
         }
-
-        // アンインストール済みテーマを検出
-        $uninstalledThemes = $this->getUninstalledThemes();
 
         // アンインストール済みテーマにも権限サマリーと監査結果を追加
         foreach ($uninstalledThemes as &$theme) {
             $summary = $permissionService->getSummary($theme['slug']);
-            $summary['audit'] = $this->getThemeAuditResult($theme['slug']);
+            $summary['audit'] = $this->buildThemeAuditArrayFromMap($auditMap, $theme['slug']);
             $theme['permission_summary'] = $summary;
 
-            // CSP診断結果を取得
-            $themePath = base_path('themes/'.$theme['slug']);
-            $theme['csp_diagnostic'] = $cspDiagnosticService->diagnoseTheme($themePath);
-
-            // CSP互換性情報を取得
-            $theme['csp_compatibility'] = $cspLoader->getCspCompatibility('theme', $theme['slug']);
+            $theme['csp_compatibility'] = $this->buildCspCompatibilityFromAudit($summary['audit']);
+            $theme['csp_diagnostic'] = null;
+            $theme['files_changed'] = $this->detectThemeFilesChanged($theme['slug'], $auditMap, $healthScorer);
         }
+        unset($theme);
 
         // カードデータを事前計算
         $themeCards = [];
@@ -169,6 +173,65 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
+     * バッチ取得した監査結果コレクションから 1 件の audit array を取り出す。
+     *
+     * @param  \Illuminate\Support\Collection<string, ThemeAudit>  $auditMap
+     * @return array<string, mixed>
+     */
+    protected function buildThemeAuditArrayFromMap(\Illuminate\Support\Collection $auditMap, string $slug): array
+    {
+        $audit = $auditMap->get($slug);
+        if ($audit instanceof ThemeAudit) {
+            return $audit->toAuditArray();
+        }
+
+        return [
+            'has_mismatches' => false,
+            'mismatches' => [],
+            'matches_count' => 0,
+            'total_checked' => 0,
+            'audited_at' => null,
+        ];
+    }
+
+    /**
+     * 監査結果から CSP 互換性配列を組み立てる。
+     *
+     * @param  array<string, mixed>  $audit
+     * @return array<string, mixed>
+     */
+    protected function buildCspCompatibilityFromAudit(array $audit): array
+    {
+        return [
+            'status' => $audit['csp_status'] ?? 'not_checked',
+            'requires_inline_js' => (bool) ($audit['csp_requires_inline_js'] ?? false),
+            'requires_inline_css' => (bool) ($audit['csp_requires_inline_css'] ?? false),
+            'has_csp_config' => false,
+            'csp_ready' => ! ($audit['csp_requires_inline_js'] ?? false),
+            'violations' => $audit['csp_violations'] ?? [],
+            'summary' => $audit['csp_summary'] ?? [],
+        ];
+    }
+
+    /**
+     * mtime ベースでテーマファイルがスキャン後に変更されたかを判定する。
+     */
+    protected function detectThemeFilesChanged(string $slug, \Illuminate\Support\Collection $auditMap, ThemeHealthScorer $healthScorer): bool
+    {
+        $audit = $auditMap->get($slug);
+        if (! $audit instanceof ThemeAudit || $audit->audited_at === null) {
+            return false;
+        }
+
+        $latestMtime = $healthScorer->latestSourceMtime($slug);
+        if ($latestMtime === null) {
+            return false;
+        }
+
+        return $latestMtime > $audit->audited_at->getTimestamp();
+    }
+
+    /**
      * テーマを監査してDBに保存
      */
     protected function runThemeAudit(string $themeSlug): array
@@ -219,6 +282,12 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 $cspScanner = app(\App\Services\Csp\CspComplianceScanner::class);
                 $cspCompatibility = $cspScanner->scanTheme($themeSlug);
 
+                // ファイルハッシュ + owned_tables（マイグレーションから自動検出）
+                $healthScorer = app(\App\Services\Theme\ThemeHealthScorer::class);
+                $filesHash = $healthScorer->computeFilesHash($themeSlug);
+                $extensionDir = base_path("themes/{$themeSlug}");
+                $tableInspection = app(\App\Services\Plugin\PluginTableInspector::class)->inspect($extensionDir);
+
                 $auditData = [
                     'has_mismatches' => ! empty($mismatches),
                     'mismatches' => $mismatches,
@@ -233,12 +302,30 @@ class AdminThemesSettingsController extends AdminLoggedInController
                     'csp_requires_inline_css' => $cspCompatibility['requires_inline_css'] ?? false,
                     'csp_violations' => $cspCompatibility['violations'] ?? [],
                     'csp_summary' => $cspCompatibility['summary'] ?? [],
+                    'files_hash' => $filesHash,
+                    'owned_tables' => $tableInspection['tables'],
                 ];
 
                 Log::info('Theme audit data prepared', ['theme' => $themeSlug, 'mismatches_count' => count($mismatches)]);
 
-                // DBに保存
+                // DBに保存（健全性スコア計算前のベースデータ）
                 $audit = ThemeAudit::saveAuditResult($themeSlug, $auditData);
+
+                // 健全性スコアと指摘一覧を後追いで永続化
+                try {
+                    $healthResult = $healthScorer->calculate($themeSlug);
+                    $audit->update([
+                        'health_score' => $healthResult->score,
+                        'health_status' => $healthResult->status->value,
+                        'health_issues' => array_map(fn ($issue) => $issue->jsonSerialize(), $healthResult->issues),
+                    ]);
+                    $audit->refresh();
+                } catch (\Exception $e) {
+                    Log::warning('Theme health score persist failed during audit', [
+                        'theme' => $themeSlug,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
 
                 Log::info('Theme audit saved', ['theme' => $themeSlug, 'audit_id' => $audit->id]);
 
@@ -332,6 +419,47 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 'message' => __('admin/settings/themes.audit.failed').': '.$e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * 全テーマを順次再スキャン
+     *
+     * インストール済み + アンインストール済みすべてのテーマに対して runThemeAudit() を実行する。
+     */
+    public function auditAll(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $failed = [];
+
+        $installed = Theme::all()->pluck('slug')->all();
+        $uninstalled = array_column($this->getUninstalledThemes(), 'slug');
+        $allSlugs = array_values(array_unique(array_filter(array_merge($installed, $uninstalled))));
+
+        foreach ($allSlugs as $slug) {
+            try {
+                $this->runThemeAudit($slug);
+            } catch (\Exception $e) {
+                $failed[] = $slug;
+                Log::error('Theme audit-all: per-theme failure', [
+                    'theme' => $slug,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        $total = count($allSlugs);
+        $succeeded = $total - count($failed);
+
+        $message = __('admin/settings/themes/index.audit.audit_all_summary', [
+            'total' => $total,
+            'succeeded' => $succeeded,
+            'failed' => count($failed),
+        ]);
+
+        $redirect = redirect()->route('admin.settings.themes.index');
+
+        return empty($failed)
+            ? $redirect->with('success', $message)
+            : $redirect->with('warning', $message);
     }
 
     // テーマ追加

@@ -436,6 +436,13 @@ class SecuritySettingsRegistry
                 'default' => 3,
                 'description' => 'テーマの最大許可健全性レベル',
             ],
+            'extension_audit_max_age_days' => [
+                'category' => self::CATEGORY_EXTENSION,
+                'source' => 'security_settings',
+                'type' => 'int',
+                'default' => 30,
+                'description' => '監査スキャン期限日数（これを超えると「期限切れ」バッジが表示される）',
+            ],
             'extension_allow_logic_themes' => [
                 'category' => self::CATEGORY_EXTENSION,
                 'source' => 'security_settings',

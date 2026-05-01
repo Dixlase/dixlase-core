@@ -76,6 +76,7 @@ class AdminModeAutoConfigService
             'settings.security.session' => 'applySessionDefaults',
             'settings.security.csp' => 'applyCspDefaults',
             'settings.security.environment' => 'applyEnvironmentDefaults',
+            'settings.security.extensions' => 'applyExtensionsDefaults',
             'media.settings' => 'applyMediaDefaults',
         ];
 
@@ -255,5 +256,17 @@ class AdminModeAutoConfigService
         $this->mediaSettingRepository->set('mime_validation_enabled', '1');
         $this->mediaSettingRepository->set('svg_sanitization_enabled', '1');
         $this->mediaSettingRepository->set('zip_security_enabled', '1');
+    }
+
+    /**
+     * 拡張機能セキュリティ設定の自動設定値を適用
+     *
+     * 対象: settings.security.extensions (Partial)
+     * プリセット・各種フラグはユーザー操作可。以下のパラメータを自動設定:
+     * - extension_audit_max_age_days: 30 日（監査スキャンの期限を 1 ヶ月に固定）
+     */
+    public function applyExtensionsDefaults(): void
+    {
+        $this->securitySettingRepository->set('extension_audit_max_age_days', '30');
     }
 }

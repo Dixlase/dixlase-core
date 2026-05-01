@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 setModalIconType('pluginActionStage2Modal', 'info');
                 contentHtml = `
-                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                    <p class="text-sm text-gray-700 dark:text-gray-300 text-center">
                         <strong>${currentAction.pluginName}</strong>
                     </p>
                 `;
