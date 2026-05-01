@@ -15,5 +15,52 @@
 return [
     'heading' => 'Restore History',
     'description' => 'View the history of restore operations and roll back to the previous state if needed.',
+
+    'table' => [
+        'caption' => 'Restore History',
+        'restored_at' => 'Restored At',
+        'backup' => 'From Backup',
+        'targets' => 'Targets',
+        'restored_by' => 'Restored By',
+        'duration' => 'Duration',
+        'status' => 'Status',
+        'actions' => 'Actions',
+        'no_records' => 'No restore operations have been performed yet.',
+        'backup_deleted' => '(deleted)',
+    ],
+
+    'targets' => [
+        'database' => 'Database',
+        'media' => 'Media',
+        'private' => 'Private',
+        'custom' => 'Custom',
+        'logs' => 'Logs',
+    ],
+
+    'statuses' => [
+        'pending' => 'Pending',
+        'in_progress' => 'In Progress',
+        'completed' => 'Completed',
+        'failed' => 'Failed',
+        'rolled_back' => 'Rolled Back',
+    ],
+
+    'actions' => [
+        'rollback' => 'Rollback',
+    ],
+
+    'rollback_modal' => [
+        'title' => 'Rollback Restore',
+        'message' => 'This will restore the state from before the original restore (using the safety snapshot). The current state will be overwritten. Continue?',
+        'confirm_label' => 'Rollback',
+        'cancel_label' => 'Cancel',
+    ],
+
+    'flash' => [
+        'rollback_success' => 'Rollback completed successfully (:duration s).',
+        'rollback_failed' => 'Rollback failed: :error',
+        'rollback_unavailable' => 'This restore cannot be rolled back.',
+    ],
+
     'placeholder' => 'This page is under construction. The full UI will be available in an upcoming release.',
 ];

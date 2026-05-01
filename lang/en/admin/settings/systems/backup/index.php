@@ -28,6 +28,14 @@ return [
         'cancel_label' => 'Cancel',
     ],
 
+    // 復元
+    'restore_modal' => [
+        'title' => 'Restore From Backup',
+        'message' => 'This will overwrite the current state with the backup contents. A safety snapshot of the current state will be taken automatically before restore. Continue?',
+        'confirm_label' => 'Restore',
+        'cancel_label' => 'Cancel',
+    ],
+
     // 削除
     'delete_modal' => [
         'title' => 'Delete Backup',
@@ -84,6 +92,7 @@ return [
     // アクションボタン
     'actions' => [
         'download' => 'Download',
+        'restore' => 'Restore',
         'delete' => 'Delete',
     ],
 
@@ -94,6 +103,9 @@ return [
         'delete_success' => 'Backup deleted successfully.',
         'delete_failed' => 'Failed to delete backup.',
         'download_failed' => 'Backup file not found.',
+        'restore_success' => 'Restore completed successfully (:duration s). A safety snapshot was taken automatically.',
+        'restore_failed' => 'Restore failed: :error',
+        'restore_unavailable' => 'This backup is not available for restore.',
     ],
 
     // バリデーション

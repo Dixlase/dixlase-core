@@ -598,12 +598,18 @@ Route::prefix($adminUrl)->name('admin.')
                     Route::get('/{backup}/download', [Systems\AdminSystemBackupController::class, 'download'])
                         ->middleware('check.menu.access:settings.systems.backup.index')
                         ->name('download');
+                    Route::post('/{backup}/restore', [Systems\AdminSystemBackupController::class, 'restore'])
+                        ->middleware('check.menu.edit:settings.systems.backup.index')
+                        ->name('restore');
                     Route::delete('/{backup}', [Systems\AdminSystemBackupController::class, 'destroy'])
                         ->middleware('check.menu.edit:settings.systems.backup.index')
                         ->name('destroy');
                     Route::get('/restores', [Systems\AdminSystemBackupController::class, 'restores'])
                         ->middleware('check.menu.access:settings.systems.backup.restores')
                         ->name('restores');
+                    Route::post('/restores/{restore}/rollback', [Systems\AdminSystemBackupController::class, 'rollback'])
+                        ->middleware('check.menu.edit:settings.systems.backup.restores')
+                        ->name('restores.rollback');
                     Route::get('/settings', [Systems\AdminSystemBackupController::class, 'settings'])
                         ->middleware('check.menu.access:settings.systems.backup.settings')
                         ->name('settings');
