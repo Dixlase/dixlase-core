@@ -38,6 +38,7 @@ namespace App\Http\Controllers\Admin\Settings\Systems;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Systems\AdminSystemCacheClearRequest;
+use App\Http\Requests\Admin\Settings\Systems\AdminSystemCacheRebuildRequest;
 use Illuminate\Support\Facades\Artisan;
 
 class AdminSystemCacheController extends AdminLoggedInController
@@ -57,21 +58,29 @@ class AdminSystemCacheController extends AdminLoggedInController
                 'name' => __('admin/settings/systems/cache.config_cache.name'),
                 'description' => __('admin/settings/systems/cache.config_cache.description'),
                 'command' => 'config:clear',
+                'rebuild_command' => 'config:cache',
+                'rebuildable' => true,
             ],
             'route' => [
                 'name' => __('admin/settings/systems/cache.route_cache.name'),
                 'description' => __('admin/settings/systems/cache.route_cache.description'),
                 'command' => 'route:clear',
+                'rebuild_command' => 'route:cache',
+                'rebuildable' => true,
             ],
             'view' => [
                 'name' => __('admin/settings/systems/cache.view_cache.name'),
                 'description' => __('admin/settings/systems/cache.view_cache.description'),
                 'command' => 'view:clear',
+                'rebuild_command' => 'view:cache',
+                'rebuildable' => true,
             ],
             'application' => [
                 'name' => __('admin/settings/systems/cache.application_cache.name'),
                 'description' => __('admin/settings/systems/cache.application_cache.description'),
                 'command' => 'cache:clear',
+                'rebuild_command' => null,
+                'rebuildable' => false,
             ],
         ];
 
@@ -114,6 +123,55 @@ class AdminSystemCacheController extends AdminLoggedInController
                     Artisan::call('view:clear');
                     Artisan::call('cache:clear');
                     $message = __('admin/settings/systems/cache.success_all');
+                    break;
+                default:
+                    $success = false;
+                    $message = __('admin/settings/systems/cache.error_invalid_type');
+            }
+        } catch (\Exception $e) {
+            $success = false;
+            $message = __('admin/settings/systems/cache.error_general', ['error' => $e->getMessage()]);
+        }
+
+        if ($success) {
+            return redirect()->route('admin.settings.systems.cache')
+                ->with('success', $message);
+        } else {
+            return redirect()->route('admin.settings.systems.cache')
+                ->with('error', $message);
+        }
+    }
+
+    /**
+     * 個別キャッシュ再生成
+     *
+     * Note: 'application' (cache:cache) は Laravel に存在しないため対象外。
+     */
+    public function rebuild(AdminSystemCacheRebuildRequest $request)
+    {
+        $type = $request->validated()['type'];
+        $message = '';
+        $success = true;
+
+        try {
+            switch ($type) {
+                case 'config':
+                    Artisan::call('config:cache');
+                    $message = __('admin/settings/systems/cache.success_rebuild_config');
+                    break;
+                case 'route':
+                    Artisan::call('route:cache');
+                    $message = __('admin/settings/systems/cache.success_rebuild_route');
+                    break;
+                case 'view':
+                    Artisan::call('view:cache');
+                    $message = __('admin/settings/systems/cache.success_rebuild_view');
+                    break;
+                case 'all':
+                    Artisan::call('config:cache');
+                    Artisan::call('route:cache');
+                    Artisan::call('view:cache');
+                    $message = __('admin/settings/systems/cache.success_rebuild_all');
                     break;
                 default:
                     $success = false;
