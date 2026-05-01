@@ -148,6 +148,36 @@ class PluginManifestSyncServiceTest extends TestCase
         $this->assertSame(['dixlase-seo'], $written['permissions']['content']['read_other_plugins']);
     }
 
+    /** @test */
+    public function sync_preserves_empty_object_as_object_not_array(): void
+    {
+        // 元 JSON で `"files": {}`（空オブジェクト）だったフィールドが、再エンコード時に
+        // `[]`（空配列）にならず `{}` として保持されることを確認する。
+        $rawJson = <<<'JSON'
+{
+    "slug": "test-plugin",
+    "declares": {"migrations": false},
+    "permissions": {
+        "database": {"own_tables": false, "core_tables": []}
+    },
+    "files": {},
+    "signing": {"algo": "ed25519"}
+}
+JSON;
+        File::put("{$this->tempDir}/plugin.json", $rawJson);
+
+        // ディレクトリを変更してドリフトを起こす
+        File::makeDirectory("{$this->tempDir}/database/migrations", 0755, true);
+        File::put("{$this->tempDir}/database/migrations/2024_01_01.php", '<?php');
+
+        $service = $this->makeService();
+        $service->sync($this->tempDir, 'plugin');
+
+        $written = File::get("{$this->tempDir}/plugin.json");
+        $this->assertStringContainsString('"files": {}', $written);
+        $this->assertStringNotContainsString('"files": []', $written);
+    }
+
     protected function makeService(): PluginManifestSyncService
     {
         return new PluginManifestSyncService(PatternRegistry::createDefault());
