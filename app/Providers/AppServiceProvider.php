@@ -234,36 +234,39 @@ class AppServiceProvider extends ServiceProvider
         $activeThemeDirectory = config('themes.active_theme', 'default-theme'); // アクティブなテーマ
         $defaultTheme = config('themes.default_theme', 'default-theme'); // デフォルトテーマ
 
-        // カスタムファイルのディレクトリを追加
-        $customFilesDir = base_path(config('custom.custom_files_dir', 'custom'));
+        // カスタムファイルのディレクトリ（base_path 相対のパス）
+        $customFilesDir = config('custom.custom_files_dir', 'custom');
+
+        // 存在するディレクトリのみを返すヘルパー（view:cache が存在しないディレクトリで失敗するのを防ぐ）
+        $existingDirs = fn (array $paths) => array_values(array_filter($paths, 'is_dir'));
 
         // 管理画面のテンプレートの読み込みがviews_customのほうを優先されるように設定
-        View::addNamespace('admin', [
+        View::addNamespace('admin', $existingDirs([
             base_path("{$customFilesDir}/resources/views/{$adminTheme}"),
             resource_path("views/{$adminTheme}"),
-        ]);
+        ]));
 
         // 共用コンポーネントの読み込みがviews_customのほうを優先されるように設定
-        View::addNamespace('components', [
+        View::addNamespace('components', $existingDirs([
             base_path("{$customFilesDir}/resources/views/components"), // カスタムコンポーネントを優先
             resource_path('views/components'),       // デフォルトコンポーネント
-        ]);
+        ]));
 
         // 共通レイアウトの名前空間
-        View::addNamespace('layouts', [
+        View::addNamespace('layouts', $existingDirs([
             base_path("{$customFilesDir}/resources/views/layouts"), // カスタムレイアウトを優先
             resource_path('views/layouts'),       // デフォルトレイアウト
-        ]);
+        ]));
 
         // 現在有効化されているテーマを取得
         $enabledThemeDirectory = $this->getEnabledThemeDirectory();
 
         // テーマファイルの読み込み、カスタムテーマの読み込みがcustom/resources/viewsのほうを優先されるように設定
-        View::addNamespace('themes', [
+        View::addNamespace('themes', $existingDirs([
             base_path("{$customFilesDir}/{$themeDirectory}/{$enabledThemeDirectory}/resources/views"),
             base_path("{$themeDirectory}/{$enabledThemeDirectory}/resources/views"),
             base_path("{$themeDirectory}/{$defaultTheme}/resources/views"),
-        ]);
+        ]));
 
         // カスタムファイルのディレクトリを追加
         $customFilesPath = base_path(config('custom.custom_files_dir', 'custom'));
