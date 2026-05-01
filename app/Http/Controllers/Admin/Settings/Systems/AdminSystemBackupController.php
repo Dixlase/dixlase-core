@@ -27,7 +27,9 @@ use App\Contracts\Backup\RestoreServiceInterface;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Systems\AdminSystemBackupCreateRequest;
+use App\Http\Requests\Admin\Settings\Systems\AdminSystemBackupSettingsRequest;
 use App\Models\BackupRecord;
+use App\Models\BaseSetting;
 use App\Models\RestoreRecord;
 use Illuminate\Http\RedirectResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -37,6 +39,16 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  */
 class AdminSystemBackupController extends AdminLoggedInController
 {
+    /**
+     * 設定キー: デフォルトのバックアップ対象（JSON配列）
+     */
+    private const SETTING_DEFAULT_TARGETS = 'backup.default_targets';
+
+    /**
+     * 設定キー: デフォルトの保持日数
+     */
+    private const SETTING_DEFAULT_RETENTION_DAYS = 'backup.default_retention_days';
+
     public function __construct(
         protected BackupServiceInterface $backupService,
         protected RestoreServiceInterface $restoreService,
@@ -56,7 +68,8 @@ class AdminSystemBackupController extends AdminLoggedInController
 
         $this->viewParams['records'] = $records;
         $this->viewParams['availableTargets'] = $this->backupService->getAvailableTargets();
-        $this->viewParams['defaultTargets'] = $this->backupService->getDefaultTargets();
+        $this->viewParams['defaultTargets'] = $this->resolveDefaultTargets();
+        $this->viewParams['defaultRetentionDays'] = $this->resolveDefaultRetentionDays();
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.backup');
 
         return view('admin::settings.systems.backup.index', $this->viewParams);
@@ -79,13 +92,72 @@ class AdminSystemBackupController extends AdminLoggedInController
     }
 
     /**
-     * バックアップ設定画面（D3 で実装）
+     * バックアップ設定画面
      */
     public function settings()
     {
+        $this->viewParams['availableTargets'] = $this->backupService->getAvailableTargets();
+        $this->viewParams['defaultTargets'] = $this->resolveDefaultTargets();
+        $this->viewParams['defaultRetentionDays'] = $this->resolveDefaultRetentionDays();
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.backup.settings');
 
         return view('admin::settings.systems.backup.settings', $this->viewParams);
+    }
+
+    /**
+     * バックアップ設定の保存
+     */
+    public function updateSettings(AdminSystemBackupSettingsRequest $request): RedirectResponse
+    {
+        $validated = $request->validated();
+
+        BaseSetting::setValue(self::SETTING_DEFAULT_TARGETS, json_encode(array_values($validated['default_targets'])));
+
+        $retentionDays = $validated['default_retention_days'] ?? null;
+        BaseSetting::setValue(
+            self::SETTING_DEFAULT_RETENTION_DAYS,
+            $retentionDays === null ? '' : (string) $retentionDays,
+        );
+
+        return redirect()
+            ->route('admin.settings.systems.backup.settings')
+            ->with('success', __('admin/settings/systems/backup/settings.flash.update_success'));
+    }
+
+    /**
+     * 保存済みデフォルト対象を取得（未設定なら API デフォルト）
+     *
+     * @return string[]
+     */
+    private function resolveDefaultTargets(): array
+    {
+        $stored = BaseSetting::getValue(self::SETTING_DEFAULT_TARGETS);
+        if (! is_string($stored) || $stored === '') {
+            return $this->backupService->getDefaultTargets();
+        }
+
+        $decoded = json_decode($stored, true);
+        if (! is_array($decoded) || empty($decoded)) {
+            return $this->backupService->getDefaultTargets();
+        }
+
+        // 利用可能な対象のみに絞る
+        return array_values(array_intersect($decoded, $this->backupService->getAvailableTargets()));
+    }
+
+    /**
+     * 保存済みデフォルト保持日数を取得
+     */
+    private function resolveDefaultRetentionDays(): ?int
+    {
+        $stored = BaseSetting::getValue(self::SETTING_DEFAULT_RETENTION_DAYS);
+        if (! is_string($stored) || $stored === '') {
+            return null;
+        }
+
+        $value = (int) $stored;
+
+        return $value > 0 ? $value : null;
     }
 
     /**

@@ -189,7 +189,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                        name="retention_days"
                        min="1"
                        max="3650"
-                       value="{{ old('retention_days') }}"
+                       value="{{ old('retention_days', $defaultRetentionDays) }}"
                        class="input-common input-md">
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     <i class="fas fa-info-circle mr-1"></i>
