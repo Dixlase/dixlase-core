@@ -105,10 +105,13 @@ class PluginManifestSyncService
             throw new \RuntimeException("Manifest file not found: {$manifestPath}");
         }
 
-        $before = json_decode(File::get($manifestPath), true);
+        $rawJson = File::get($manifestPath);
+        $before = json_decode($rawJson, true);
         if (! is_array($before)) {
             throw new \RuntimeException("Manifest is not valid JSON: {$manifestPath}");
         }
+        // 元 JSON で `{}` だったキーを記録（再エンコード時に `[]` 化されないように object 化する）
+        $emptyObjectKeys = $this->detectEmptyObjectKeys($rawJson);
 
         $scan = $this->patternRegistry->scan($pluginDir, $type);
         $detected = $scan['permissions'];
@@ -126,6 +129,7 @@ class PluginManifestSyncService
             'changed' => ! empty($changes),
             'changes' => $changes,
             'evidence' => $scan['evidence'],
+            'empty_object_keys' => $emptyObjectKeys,
         ];
     }
 
@@ -139,11 +143,74 @@ class PluginManifestSyncService
         $result = $this->diff($pluginDir, $type);
 
         if ($result['changed']) {
-            $json = json_encode($result['after'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            // 空オブジェクト ({}) のまま残すべきキーは stdClass に変換（PHP の json_decode で
+            // `{}` が `[]` に変換される問題を、再エンコード時に元の形へ戻すための補正）
+            $payload = $this->restoreEmptyObjectShape($result['after'], $result['empty_object_keys'] ?? []);
+            $json = json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             File::put($result['manifest_path'], $json."\n");
         }
 
         return $result;
+    }
+
+    /**
+     * 元の JSON 文字列で `{}`（空オブジェクト）だったキーパスを抽出する。
+     *
+     * 再エンコード時にそのキーが空配列のままだと `[]` として出力されてしまうため、
+     * stdClass にキャストして元の形を保てるようにする目的で使う。
+     *
+     * @return array<int, string> ドット記法のパス（例: ["files", "permissions._notes"])
+     */
+    protected function detectEmptyObjectKeys(string $rawJson): array
+    {
+        $keys = [];
+
+        // トップレベル `"key": {}` 検出
+        if (preg_match_all('/^\s{4}"([^"]+)"\s*:\s*\{\s*\}/m', $rawJson, $matches)) {
+            foreach ($matches[1] as $key) {
+                $keys[] = $key;
+            }
+        }
+        // `permissions._notes: {}` のような 1 段ネストも対応
+        if (preg_match_all('/^\s{8}"([^"]+)"\s*:\s*\{\s*\}/m', $rawJson, $matches)) {
+            // ネスト元の親キーを推定するのは難しいので、全 1 段ネストキーを記録（特に _notes 想定）
+            foreach ($matches[1] as $key) {
+                $keys[] = "*.{$key}";
+            }
+        }
+
+        return $keys;
+    }
+
+    /**
+     * detectEmptyObjectKeys() で検出したパスについて、空配列を stdClass に置換する。
+     *
+     * @param  array<string, mixed>  $manifest
+     * @param  array<int, string>  $emptyObjectKeys
+     * @return array<string, mixed>
+     */
+    protected function restoreEmptyObjectShape(array $manifest, array $emptyObjectKeys): array
+    {
+        foreach ($emptyObjectKeys as $path) {
+            // ワイルドカードネスト: 例 `*.{key}` は全トップレベル子配列のうち `{key}` が空ならオブジェクト化
+            if (str_starts_with($path, '*.')) {
+                $childKey = substr($path, 2);
+                foreach ($manifest as $topKey => $topVal) {
+                    if (is_array($topVal) && isset($topVal[$childKey]) && is_array($topVal[$childKey]) && empty($topVal[$childKey])) {
+                        $manifest[$topKey][$childKey] = (object) [];
+                    }
+                }
+
+                continue;
+            }
+
+            // トップレベル単純パス
+            if (isset($manifest[$path]) && is_array($manifest[$path]) && empty($manifest[$path])) {
+                $manifest[$path] = (object) [];
+            }
+        }
+
+        return $manifest;
     }
 
     /**
