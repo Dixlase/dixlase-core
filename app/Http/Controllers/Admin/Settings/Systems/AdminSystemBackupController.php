@@ -23,10 +23,12 @@
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
 use App\Contracts\Backup\BackupServiceInterface;
+use App\Contracts\Backup\RestoreServiceInterface;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Systems\AdminSystemBackupCreateRequest;
 use App\Models\BackupRecord;
+use App\Models\RestoreRecord;
 use Illuminate\Http\RedirectResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -37,6 +39,7 @@ class AdminSystemBackupController extends AdminLoggedInController
 {
     public function __construct(
         protected BackupServiceInterface $backupService,
+        protected RestoreServiceInterface $restoreService,
     ) {
         parent::__construct();
     }
@@ -60,10 +63,16 @@ class AdminSystemBackupController extends AdminLoggedInController
     }
 
     /**
-     * 復元履歴画面（D2 で実装）
+     * 復元履歴画面
      */
     public function restores()
     {
+        $records = RestoreRecord::query()
+            ->with(['backupRecord', 'preRestoreBackup', 'restoredBy'])
+            ->orderByDesc('restored_at')
+            ->get();
+
+        $this->viewParams['records'] = $records;
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.backup.restores');
 
         return view('admin::settings.systems.backup.restores', $this->viewParams);
@@ -123,6 +132,58 @@ class AdminSystemBackupController extends AdminLoggedInController
         return redirect()
             ->route('admin.settings.systems.backup.index')
             ->with('success', __('admin/settings/systems/backup/index.flash.delete_success'));
+    }
+
+    /**
+     * バックアップから復元
+     */
+    public function restore(BackupRecord $backup): RedirectResponse
+    {
+        if ($backup->status !== BackupRecord::STATUS_COMPLETED) {
+            return redirect()
+                ->route('admin.settings.systems.backup.index')
+                ->with('error', __('admin/settings/systems/backup/index.flash.restore_unavailable'));
+        }
+
+        $result = $this->restoreService->restore($backup);
+
+        if (! $result->success) {
+            return redirect()
+                ->route('admin.settings.systems.backup.index')
+                ->with('error', __('admin/settings/systems/backup/index.flash.restore_failed', ['error' => $result->error]));
+        }
+
+        return redirect()
+            ->route('admin.settings.systems.backup.restores')
+            ->with('success', __('admin/settings/systems/backup/index.flash.restore_success', [
+                'duration' => round($result->duration ?? 0, 2),
+            ]));
+    }
+
+    /**
+     * 復元のロールバック
+     */
+    public function rollback(RestoreRecord $restore): RedirectResponse
+    {
+        if (! $restore->canRollback()) {
+            return redirect()
+                ->route('admin.settings.systems.backup.restores')
+                ->with('error', __('admin/settings/systems/backup/restores.flash.rollback_unavailable'));
+        }
+
+        $result = $this->restoreService->rollback($restore);
+
+        if (! $result->success) {
+            return redirect()
+                ->route('admin.settings.systems.backup.restores')
+                ->with('error', __('admin/settings/systems/backup/restores.flash.rollback_failed', ['error' => $result->error]));
+        }
+
+        return redirect()
+            ->route('admin.settings.systems.backup.restores')
+            ->with('success', __('admin/settings/systems/backup/restores.flash.rollback_success', [
+                'duration' => round($result->duration ?? 0, 2),
+            ]));
     }
 
     /**

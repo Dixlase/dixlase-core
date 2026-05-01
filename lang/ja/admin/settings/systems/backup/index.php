@@ -28,6 +28,14 @@ return [
         'cancel_label' => 'キャンセル',
     ],
 
+    // 復元
+    'restore_modal' => [
+        'title' => 'バックアップから復元',
+        'message' => '現在の状態をバックアップの内容で上書きします。復元前に現在の状態のセーフティスナップショットが自動的に取得されます。続行しますか？',
+        'confirm_label' => '復元',
+        'cancel_label' => 'キャンセル',
+    ],
+
     // 削除
     'delete_modal' => [
         'title' => 'バックアップを削除',
@@ -84,6 +92,7 @@ return [
     // アクションボタン
     'actions' => [
         'download' => 'ダウンロード',
+        'restore' => '復元',
         'delete' => '削除',
     ],
 
@@ -94,6 +103,9 @@ return [
         'delete_success' => 'バックアップを削除しました。',
         'delete_failed' => 'バックアップの削除に失敗しました。',
         'download_failed' => 'バックアップファイルが見つかりません。',
+        'restore_success' => '復元が完了しました（:duration 秒）。セーフティスナップショットが自動取得されています。',
+        'restore_failed' => '復元に失敗しました: :error',
+        'restore_unavailable' => 'このバックアップは復元できません。',
     ],
 
     // バリデーション

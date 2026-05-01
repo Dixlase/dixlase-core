@@ -111,13 +111,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 {{ $record->hash ? substr($record->hash, 0, 12) . '...' : '-' }}
                             </td>
                             <td class="px-4 py-2 text-right whitespace-nowrap">
-                                <div class="flex justify-end gap-2">
+                                <div class="flex justify-end gap-3">
                                     @if($record->status === 'completed')
                                         <a href="{{ route('admin.settings.systems.backup.download', $record) }}"
                                            class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
                                            title="{{ __('admin/settings/systems/backup/index.actions.download') }}">
                                             <i class="fas fa-download"></i>
                                         </a>
+                                        <button type="button"
+                                                @click="openModal('restoreBackupModal{{ $record->id }}')"
+                                                class="text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300"
+                                                title="{{ __('admin/settings/systems/backup/index.actions.restore') }}">
+                                            <i class="fas fa-rotate-left"></i>
+                                        </button>
                                     @endif
                                     <button type="button"
                                             @click="openModal('deleteBackupModal{{ $record->id }}')"
@@ -192,6 +198,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </form>
     </x-ui-modal>
+
+    {{-- 復元フォーム + 復元確認モーダル（完了済みレコードのみ） --}}
+    @foreach($records as $record)
+        @if($record->status === 'completed')
+            <form id="restoreBackupForm{{ $record->id }}"
+                  action="{{ route('admin.settings.systems.backup.restore', $record) }}"
+                  method="POST"
+                  class="hidden">
+                @csrf
+            </form>
+
+            <x-ui-modal
+                id="restoreBackupModal{{ $record->id }}"
+                :title="__('admin/settings/systems/backup/index.restore_modal.title')"
+                :message="__('admin/settings/systems/backup/index.restore_modal.message')"
+                :confirm-label="__('admin/settings/systems/backup/index.restore_modal.confirm_label')"
+                :cancel-label="__('admin/settings/systems/backup/index.restore_modal.cancel_label')"
+                icon-type="warning"
+                confirm-color="yellow"
+                form="restoreBackupForm{{ $record->id }}"
+            />
+        @endif
+    @endforeach
 
     {{-- 削除フォーム + 削除確認モーダル（レコードごと） --}}
     @foreach($records as $record)
