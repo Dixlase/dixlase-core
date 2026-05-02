@@ -281,6 +281,19 @@ return new class extends Migration
                 ->on('members')
                 ->nullOnDelete();
         });
+
+        // ========================================
+        // sites テーブルへの外部キー (multisite foundation)
+        // ========================================
+
+        // site_settings.site_id -> sites.id
+        // サイトが削除されたら設定も削除（cascade）
+        Schema::table('site_settings', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
     }
 
     /**
@@ -288,6 +301,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // site_settings.site_id
+        Schema::table('site_settings', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
         // restore_records
         Schema::table('restore_records', function (Blueprint $table) {
             $table->dropForeign(['restored_by']);
