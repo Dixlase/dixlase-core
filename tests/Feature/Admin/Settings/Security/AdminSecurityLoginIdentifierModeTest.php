@@ -28,9 +28,9 @@ use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use App\Helpers\AdminModeHelper;
 use App\Http\Middleware\EnsureEmailIsVerified;
-use App\Models\BaseSetting;
 use App\Models\Member;
 use App\Models\SecuritySetting;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -58,10 +58,10 @@ class AdminSecurityLoginIdentifierModeTest extends TestCase
         $_ENV['INSTALLED'] = 'true';
         $_SERVER['INSTALLED'] = 'true';
 
-        BaseSetting::setValue('site_name', 'Test Site');
+        SiteSetting::setValue('site_name', 'Test Site');
 
         // 詳細モードに設定（設定ページへのアクセスに必要）
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
         AdminModeHelper::clearCache();
 
         $this->admin = Member::create([

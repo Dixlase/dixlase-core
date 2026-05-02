@@ -40,7 +40,7 @@ use App\Enums\AuthenticationMode;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Security\AdminSecurityTwoFaUpdateRequest;
-use App\Models\BaseSetting;
+use App\Models\SiteSetting;
 
 class AdminSecurityTwoFaController extends AdminLoggedInController
 {
@@ -115,7 +115,7 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
 
         // メールサーバー設定状態
         $isMailServerTested = $this->isMailServerTested();
-        $mailConnectionTestDate = BaseSetting::getValue('mail_connection_test_date');
+        $mailConnectionTestDate = SiteSetting::getValue('mail_connection_test_date');
 
         $this->viewParams['twoFaMode'] = $twoFaMode;
         $this->viewParams['twoFaEnabled'] = $twoFaMode !== AuthenticationMode::Disabled->value;
@@ -172,9 +172,9 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
 
     protected function isMailServerTested(): bool
     {
-        $connectionTested = (bool) BaseSetting::getValue('mail_connection_tested', false);
-        $sendTested = (bool) BaseSetting::getValue('mail_send_tested', false);
-        $receiveTested = (bool) BaseSetting::getValue('mail_receive_tested', false);
+        $connectionTested = (bool) SiteSetting::getValue('mail_connection_tested', false);
+        $sendTested = (bool) SiteSetting::getValue('mail_send_tested', false);
+        $receiveTested = (bool) SiteSetting::getValue('mail_receive_tested', false);
 
         return $connectionTested && $sendTested && $receiveTested;
     }

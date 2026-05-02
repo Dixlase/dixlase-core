@@ -27,10 +27,10 @@ use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use App\Http\Middleware\CheckInstallationReady;
 use App\Http\Middleware\ContentSecurityPolicy;
-use App\Models\BaseSetting;
 use App\Models\Member;
 use App\Models\MemberTwoFaToken;
 use App\Models\SecuritySetting;
+use App\Models\SiteSetting;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -86,9 +86,9 @@ class AdminTwoFaFlowTest extends TestCase
         SecuritySetting::setValue('two_fa_lockout_duration', 30);
         SecuritySetting::setValue('login_attempt_limit_enabled', false);
 
-        BaseSetting::setValue('mail_connection_tested', true);
-        BaseSetting::setValue('mail_send_tested', true);
-        BaseSetting::setValue('mail_receive_tested', true);
+        SiteSetting::setValue('mail_connection_tested', true);
+        SiteSetting::setValue('mail_send_tested', true);
+        SiteSetting::setValue('mail_receive_tested', true);
     }
 
     protected function tearDown(): void

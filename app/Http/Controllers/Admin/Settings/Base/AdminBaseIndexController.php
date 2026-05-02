@@ -35,7 +35,7 @@
 
 namespace App\Http\Controllers\Admin\Settings\Base;
 
-use App\Contracts\Repositories\BaseSettingRepositoryInterface;
+use App\Contracts\Repositories\SiteSettingRepositoryInterface;
 use App\Enums\AdminMode;
 use App\Enums\MenuVisibility;
 use App\Helpers\AdminModeHelper;
@@ -45,12 +45,12 @@ use App\Services\Editor\EditorManager;
 
 class AdminBaseIndexController extends AdminLoggedInController
 {
-    protected BaseSettingRepositoryInterface $baseSettingRepository;
+    protected SiteSettingRepositoryInterface $baseSettingRepository;
 
     protected EditorManager $editorManager;
 
     public function __construct(
-        BaseSettingRepositoryInterface $baseSettingRepository,
+        SiteSettingRepositoryInterface $baseSettingRepository,
         EditorManager $editorManager,
     ) {
         parent::__construct();

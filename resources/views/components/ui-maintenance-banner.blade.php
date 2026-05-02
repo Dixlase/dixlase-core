@@ -45,15 +45,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             $showBanner = false;
         } else {
             // メンテナンスモード設定を取得
-            $maintenanceMode = DB::table('base_settings')
+            $maintenanceMode = DB::table('site_settings')
                 ->where('name', 'maintenance_mode')
                 ->value('value');
             
-            $maintenanceMessage = DB::table('base_settings')
+            $maintenanceMessage = DB::table('site_settings')
                 ->where('name', 'maintenance_message')
                 ->value('value');
             
-            $maintenanceReleaseAt = DB::table('base_settings')
+            $maintenanceReleaseAt = DB::table('site_settings')
                 ->where('name', 'maintenance_release_at')
                 ->value('value');
             

@@ -101,7 +101,7 @@ class CheckMaintenanceMode
      */
     private function getMaintenanceSettings(): array
     {
-        $settings = DB::table('base_settings')
+        $settings = DB::table('site_settings')
             ->whereIn('name', [
                 'maintenance_mode',
                 'maintenance_message',

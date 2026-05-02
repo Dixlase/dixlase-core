@@ -29,8 +29,8 @@ use App\Helpers\AdminModeHelper;
 use App\Helpers\ConfigHelper;
 use App\Http\Middleware\CheckInstallationReady;
 use App\Http\Middleware\EnsureEmailIsVerified;
-use App\Models\BaseSetting;
 use App\Models\Member;
+use App\Models\SiteSetting;
 use App\Services\AdminModeAutoConfigService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -65,7 +65,7 @@ class AdminModeSessionAccessTest extends TestCase
             resource_path("views/{$adminTheme}"),
         ]);
 
-        BaseSetting::setValue('site_name', 'Test Site');
+        SiteSetting::setValue('site_name', 'Test Site');
 
         $this->superAdmin = Member::create([
             'account_name' => 'superadmin',
@@ -91,7 +91,7 @@ class AdminModeSessionAccessTest extends TestCase
 
     public function test_simple_mode_redirects_session_settings_get(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -103,7 +103,7 @@ class AdminModeSessionAccessTest extends TestCase
 
     public function test_simple_mode_blocks_session_settings_post(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -123,7 +123,7 @@ class AdminModeSessionAccessTest extends TestCase
 
     public function test_advanced_mode_allows_session_settings_get(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -134,7 +134,7 @@ class AdminModeSessionAccessTest extends TestCase
 
     public function test_advanced_mode_allows_session_settings_post(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -154,7 +154,7 @@ class AdminModeSessionAccessTest extends TestCase
     public function test_switching_to_simple_mode_applies_session_defaults(): void
     {
         // 事前に詳細モードでセッション設定を変更
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
         AdminModeHelper::clearCache();
 
         ConfigHelper::setSessionLifetime(60);
@@ -176,7 +176,7 @@ class AdminModeSessionAccessTest extends TestCase
     public function test_switching_to_advanced_mode_does_not_change_settings(): void
     {
         // 事前にかんたんモードでセッション設定がデフォルト値
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
         AdminModeHelper::clearCache();
 
         $currentLifetime = ConfigHelper::getSessionLifetime();

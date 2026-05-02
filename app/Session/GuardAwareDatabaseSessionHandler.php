@@ -128,7 +128,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
         // 管理画面の場合は member ガード。
         // 管理 URL はユーザーが任意にカスタマイズ可能なため、DB から動的に解決した値で照合する。
         // config('admin.url.admin_url') はデフォルト値 'admin' しか返さないため、
-        // DB の base_settings.admin_url を静的キャッシュ付きで参照する。
+        // DB の site_settings.admin_url を静的キャッシュ付きで参照する。
         // これを怠ると admin_url が "admin" 以外のとき session が既定の sessions テーブルに書かれ、
         // 管理画面リクエスト間で _token が不整合となり 419（CSRF mismatch）が発生する。
         $adminUrl = $this->resolveAdminUrl();
@@ -155,7 +155,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     /**
      * 管理画面 URL を DB から解決する（プロセス内キャッシュ付き）
      *
-     * BaseSetting::getValue を使うのが本筋だが、handler は早期ブート段階でも
+     * SiteSetting::getValue を使うのが本筋だが、handler は早期ブート段階でも
      * 呼ばれ得るため Schema::hasTable で守る。DB 未接続時は config デフォルトに
      * フォールバック。空文字は「管理 URL 判定を無効化」ではなく「config 値を使用」とする。
      */
@@ -168,8 +168,8 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
         $configDefault = config('admin.url.admin_url', 'admin') ?: 'admin';
 
         try {
-            if (\Illuminate\Support\Facades\Schema::hasTable('base_settings')) {
-                $dbValue = \App\Models\BaseSetting::getValue('admin_url', $configDefault);
+            if (\Illuminate\Support\Facades\Schema::hasTable('site_settings')) {
+                $dbValue = \App\Models\SiteSetting::getValue('admin_url', $configDefault);
                 if (is_string($dbValue) && $dbValue !== '') {
                     return self::$resolvedAdminUrl = $dbValue;
                 }

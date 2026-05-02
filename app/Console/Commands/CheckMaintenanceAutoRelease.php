@@ -61,7 +61,7 @@ class CheckMaintenanceAutoRelease extends Command
     public function handle(): int
     {
         // メンテナンスモード設定を取得
-        $settings = DB::table('base_settings')
+        $settings = DB::table('site_settings')
             ->whereIn('name', [
                 'maintenance_mode',
                 'maintenance_auto_release',
@@ -75,7 +75,7 @@ class CheckMaintenanceAutoRelease extends Command
         $releaseAt = $settings['maintenance_release_at'] ?? null;
 
         // メンテナンスモードが無効、または自動解除が無効な場合は何もしない
-        if (!$maintenanceMode || !$autoRelease || !$releaseAt) {
+        if (! $maintenanceMode || ! $autoRelease || ! $releaseAt) {
             return self::SUCCESS;
         }
 
@@ -83,7 +83,7 @@ class CheckMaintenanceAutoRelease extends Command
         $releaseTime = \Carbon\Carbon::parse($releaseAt);
         if (now()->gte($releaseTime)) {
             // メンテナンスモードを解除
-            DB::table('base_settings')
+            DB::table('site_settings')
                 ->where('name', 'maintenance_mode')
                 ->update([
                     'value' => '0',
@@ -91,7 +91,7 @@ class CheckMaintenanceAutoRelease extends Command
                 ]);
 
             // 自動解除設定もリセット
-            DB::table('base_settings')
+            DB::table('site_settings')
                 ->whereIn('name', ['maintenance_auto_release', 'maintenance_start_at', 'maintenance_release_at'])
                 ->update([
                     'value' => null,

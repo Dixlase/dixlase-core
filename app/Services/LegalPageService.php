@@ -38,7 +38,7 @@
 namespace App\Services;
 
 use App\Contracts\LegalPage\LegalPageServiceInterface;
-use App\Contracts\Repositories\BaseSettingRepositoryInterface;
+use App\Contracts\Repositories\SiteSettingRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -47,7 +47,7 @@ use Illuminate\Support\Facades\Log;
  * 法務ページレジストリサービス
  *
  * コアとプラグインの法務ページ種別を統合管理し、
- * dls_base_settings テーブルに URL を保存する。
+ * dls_site_settings テーブルに URL を保存する。
  */
 class LegalPageService implements LegalPageServiceInterface
 {
@@ -58,7 +58,7 @@ class LegalPageService implements LegalPageServiceInterface
     private ?array $mergedPageTypes = null;
 
     public function __construct(
-        private BaseSettingRepositoryInterface $settingRepository,
+        private SiteSettingRepositoryInterface $settingRepository,
     ) {}
 
     /**

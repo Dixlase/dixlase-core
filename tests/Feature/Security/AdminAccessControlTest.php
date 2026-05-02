@@ -178,7 +178,7 @@ class AdminAccessControlTest extends TestCase
     // 基本設定: ADMIN 以上
     // =========================================================================
 
-    public function test_super_admin_can_access_base_settings(): void
+    public function test_super_admin_can_access_site_settings(): void
     {
         $response = $this->actingAs($this->superAdmin, 'member')
             ->get(route('admin.settings.base.index'));
@@ -186,7 +186,7 @@ class AdminAccessControlTest extends TestCase
         $response->assertOk();
     }
 
-    public function test_admin_can_access_base_settings(): void
+    public function test_admin_can_access_site_settings(): void
     {
         $response = $this->actingAs($this->admin, 'member')
             ->get(route('admin.settings.base.index'));
@@ -194,7 +194,7 @@ class AdminAccessControlTest extends TestCase
         $response->assertOk();
     }
 
-    public function test_editor_cannot_access_base_settings(): void
+    public function test_editor_cannot_access_site_settings(): void
     {
         $response = $this->actingAs($this->editor, 'member')
             ->get(route('admin.settings.base.index'));

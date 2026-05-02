@@ -57,14 +57,14 @@ class SettingsDetectionPattern extends DetectionPattern
     {
         return match ($this->subKey) {
             'read_core' => [
-                '/BaseSetting::(get|getValue|find|first|all)/i',
+                '/SiteSetting::(get|getValue|find|first|all)/i',
                 '/SecuritySetting::(get|getValue|find|first|all)/i',
                 '/config\s*\(\s*[\'"]app\./i',
                 '/config\s*\(\s*[\'"]mail\./i',
                 '/config\s*\(\s*[\'"]database\./i',
             ],
             'write_own' => [
-                '/BaseSetting::(set|setValue|update|create)/i',
+                '/SiteSetting::(set|setValue|update|create)/i',
                 '/SecuritySetting::(set|setValue|update|create)/i',
             ],
             default => [],

@@ -25,8 +25,8 @@ namespace Tests\Feature\Security;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use App\Http\Middleware\CheckInstallationReady;
-use App\Models\BaseSetting;
 use App\Models\Member;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\View;
@@ -110,9 +110,9 @@ class MiddlewareChainTest extends TestCase
     {
         $this->withoutMiddleware([CheckInstallationReady::class]);
 
-        BaseSetting::setValue('maintenance_mode', '1');
-        BaseSetting::setValue('maintenance_message', 'Under maintenance');
-        BaseSetting::setValue('site_name', 'Test Site');
+        SiteSetting::setValue('maintenance_mode', '1');
+        SiteSetting::setValue('maintenance_message', 'Under maintenance');
+        SiteSetting::setValue('site_name', 'Test Site');
 
         $response = $this->get('/');
         $statusCode = $response->getStatusCode();
@@ -128,9 +128,9 @@ class MiddlewareChainTest extends TestCase
     {
         $this->withoutMiddleware([CheckInstallationReady::class]);
 
-        BaseSetting::setValue('maintenance_mode', '1');
-        BaseSetting::setValue('maintenance_message', 'Under maintenance');
-        BaseSetting::setValue('site_name', 'Test Site');
+        SiteSetting::setValue('maintenance_mode', '1');
+        SiteSetting::setValue('maintenance_message', 'Under maintenance');
+        SiteSetting::setValue('site_name', 'Test Site');
 
         $admin = $this->createAdmin();
 

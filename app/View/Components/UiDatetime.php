@@ -42,7 +42,7 @@ use Illuminate\View\Component;
 use Illuminate\View\View;
 
 /**
- * UTC で保存された日時を base_settings.display_timezone に変換して
+ * UTC で保存された日時を site_settings.display_timezone に変換して
  * <time> 要素として描画するコンポーネント。
  *
  * 使い方:

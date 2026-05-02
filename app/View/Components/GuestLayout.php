@@ -66,11 +66,11 @@ class GuestLayout extends Component
                 $this->theme = Config::get('admin.theme', 'light');
             } else {
                 // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
-                $this->site_name = DB::table('base_settings')->where('name', 'site_name')->value('value')
+                $this->site_name = DB::table('site_settings')->where('name', 'site_name')->value('value')
                     ?? env('APP_NAME', 'Dixlase');
 
                 // データベースからテーマ情報を取得。取得できなかった場合はコンフィグからデフォルト値を使用
-                $this->theme = DB::table('base_settings')->where('name', 'admin_theme')->value('value')
+                $this->theme = DB::table('site_settings')->where('name', 'admin_theme')->value('value')
                     ?? Config::get('admin.theme', 'light'); // デフォルト値を 'light' に設定
             }
         } catch (\Exception $e) {

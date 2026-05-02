@@ -71,7 +71,7 @@ class PluginInstallSecurityTest extends TestCase
             resource_path("views/{$adminTheme}"),
         ]);
 
-        \App\Models\BaseSetting::setValue('site_name', 'Test Site');
+        \App\Models\SiteSetting::setValue('site_name', 'Test Site');
 
         $this->admin = Member::create([
             'account_name' => 'testadmin',

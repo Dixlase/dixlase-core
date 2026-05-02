@@ -27,8 +27,8 @@ use App\Http\Middleware\CheckInstallationReady;
 use App\Http\Middleware\CheckMenuAccess;
 use App\Http\Middleware\CheckMenuEdit;
 use App\Http\Middleware\EnsureEmailIsVerified;
-use App\Models\BaseSetting;
 use App\Models\Member;
+use App\Models\SiteSetting;
 use App\Services\Editor\EditorManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -56,7 +56,7 @@ class AdminBaseEditorSettingTest extends TestCase
         putenv('INSTALLED=true');
         $_ENV['INSTALLED'] = 'true';
 
-        BaseSetting::setValue('site_name', 'Test Site');
+        SiteSetting::setValue('site_name', 'Test Site');
 
         $this->admin = Member::factory()->create([
             'role' => MemberRole::SUPER_ADMIN,
@@ -111,7 +111,7 @@ class AdminBaseEditorSettingTest extends TestCase
         $response->assertRedirect(route('admin.settings.base.editor'));
         $this->assertEquals(
             'dixlase-gui-editor-lite',
-            BaseSetting::get(EditorManager::PREFERRED_GUI_EDITOR_KEY),
+            SiteSetting::get(EditorManager::PREFERRED_GUI_EDITOR_KEY),
         );
     }
 
@@ -125,7 +125,7 @@ class AdminBaseEditorSettingTest extends TestCase
         $response->assertRedirect(route('admin.settings.base.editor'));
         $this->assertEquals(
             '',
-            BaseSetting::get(EditorManager::PREFERRED_GUI_EDITOR_KEY),
+            SiteSetting::get(EditorManager::PREFERRED_GUI_EDITOR_KEY),
         );
     }
 

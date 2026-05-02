@@ -35,15 +35,15 @@
 
 namespace App\Repositories;
 
-use App\Contracts\Repositories\BaseSettingRepositoryInterface;
-use App\Models\BaseSetting;
+use App\Contracts\Repositories\SiteSettingRepositoryInterface;
+use App\Models\SiteSetting;
 
 /**
  * @internal コア専用。プラグイン/テーマから参照しないこと
  *
  * 基本設定リポジトリ実装
  */
-class BaseSettingRepository extends AbstractSettingRepository implements BaseSettingRepositoryInterface
+class SiteSettingRepository extends AbstractSettingRepository implements SiteSettingRepositoryInterface
 {
     /**
      * コンストラクタ
@@ -51,7 +51,7 @@ class BaseSettingRepository extends AbstractSettingRepository implements BaseSet
     public function __construct()
     {
         $this->cachePrefix = 'base_setting:';
-        $this->cacheAllKey = 'base_settings_all';
+        $this->cacheAllKey = 'site_settings_all';
         $this->cacheTtl = 10;
     }
 
@@ -60,15 +60,15 @@ class BaseSettingRepository extends AbstractSettingRepository implements BaseSet
      */
     protected function getModelClass(): string
     {
-        return BaseSetting::class;
+        return SiteSetting::class;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function findWithRelations(string $name): ?BaseSetting
+    public function findWithRelations(string $name): ?SiteSetting
     {
-        return BaseSetting::with('defaultOgpImage')
+        return SiteSetting::with('defaultOgpImage')
             ->where('name', $name)
             ->first();
     }

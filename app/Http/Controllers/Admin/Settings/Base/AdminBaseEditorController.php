@@ -37,7 +37,7 @@ namespace App\Http\Controllers\Admin\Settings\Base;
 
 use App\Actions\Settings\UpdateSettingsAction;
 use App\Actors\MemberActor;
-use App\Contracts\Repositories\BaseSettingRepositoryInterface;
+use App\Contracts\Repositories\SiteSettingRepositoryInterface;
 use App\Helpers\AdminHelper;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
@@ -52,7 +52,7 @@ class AdminBaseEditorController extends AdminLoggedInController
     protected const SETTING_KEYS = ['preferred_gui_editor'];
 
     public function __construct(
-        protected BaseSettingRepositoryInterface $baseSettingRepository,
+        protected SiteSettingRepositoryInterface $baseSettingRepository,
         protected EditorManager $editorManager,
     ) {
         parent::__construct();

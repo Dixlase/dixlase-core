@@ -15,7 +15,7 @@
 namespace Tests\Unit\Helpers;
 
 use App\Helpers\DateTimeHelper;
-use App\Models\BaseSetting;
+use App\Models\SiteSetting;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,7 +38,7 @@ class DateTimeHelperTest extends TestCase
     protected function tearDown(): void
     {
         // 副作用を残さないよう、設定値を都度クリーンアップする
-        BaseSetting::query()->where('name', 'display_timezone')->delete();
+        SiteSetting::query()->where('name', 'display_timezone')->delete();
         putenv('INSTALLED=false');
         $_ENV['INSTALLED'] = 'false';
         $_SERVER['INSTALLED'] = 'false';
@@ -57,7 +57,7 @@ class DateTimeHelperTest extends TestCase
 
     public function test_d_bに値がない場合は_asia_tokyoにフォールバックする(): void
     {
-        // BaseSetting に display_timezone を設定しない
+        // SiteSetting に display_timezone を設定しない
 
         $result = DateTimeHelper::display('2026-04-24 00:00:00', 'datetime');
 
@@ -152,6 +152,6 @@ class DateTimeHelperTest extends TestCase
 
     private function setDisplayTimezone(string $tz): void
     {
-        BaseSetting::setValue('display_timezone', $tz);
+        SiteSetting::setValue('display_timezone', $tz);
     }
 }

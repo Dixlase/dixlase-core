@@ -39,7 +39,7 @@ namespace App\Services;
 
 use App\Contracts\RouteSlugProvider;
 use App\DTO\RouteSlug\RegisteredSlug;
-use App\Repositories\BaseSettingRepository;
+use App\Repositories\SiteSettingRepository;
 
 /**
  * ルートスラッグレジストリ
@@ -181,7 +181,7 @@ class RouteSlugRegistry
     protected function getCoreAdminSlug(): array
     {
         try {
-            $repo = app(BaseSettingRepository::class);
+            $repo = app(SiteSettingRepository::class);
             $adminUrl = $repo->get('admin_url', config('admin.url.admin_url', 'admin'));
         } catch (\Exception $e) {
             $adminUrl = config('admin.url.admin_url', 'admin');

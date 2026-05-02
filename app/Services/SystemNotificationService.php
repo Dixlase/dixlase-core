@@ -37,7 +37,7 @@
 
 namespace App\Services;
 
-use App\Models\BaseSetting;
+use App\Models\SiteSetting;
 use App\Notifications\SystemErrorNotification;
 use Exception;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -214,12 +214,12 @@ class SystemNotificationService
     public function getNotificationEmail(): string
     {
         // システム管理者メールアドレスを優先、なければnotification_emailを使用
-        $adminEmail = BaseSetting::getValue('system_admin_email', '');
+        $adminEmail = SiteSetting::getValue('system_admin_email', '');
         if (! empty($adminEmail)) {
             return $adminEmail;
         }
 
-        return BaseSetting::getValue('notification_email', '');
+        return SiteSetting::getValue('notification_email', '');
     }
 
     /**

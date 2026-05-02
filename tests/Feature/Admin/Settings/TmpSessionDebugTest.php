@@ -48,7 +48,7 @@ class TmpSessionDebugTest extends TestCase
             base_path("{$customFilesDir}/resources/views/{$adminTheme}"),
             resource_path("views/{$adminTheme}"),
         ]);
-        \App\Models\BaseSetting::setValue('site_name', 'Test Site');
+        \App\Models\SiteSetting::setValue('site_name', 'Test Site');
         $admin = Member::create([
             'account_name' => 'testadmin',
             'display_name' => 'Test Admin',

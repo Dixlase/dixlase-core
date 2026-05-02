@@ -24,7 +24,7 @@ namespace Tests\Unit\Services;
 
 use App\Contracts\RouteSlugProvider;
 use App\DTO\RouteSlug\RegisteredSlug;
-use App\Repositories\BaseSettingRepository;
+use App\Repositories\SiteSettingRepository;
 use App\Services\RouteSlugRegistry;
 use Mockery;
 use Tests\TestCase;
@@ -43,12 +43,12 @@ class RouteSlugRegistryTest extends TestCase
         // 予約スラッグ設定をセット
         config(['admin.reserved-slugs.reserved' => ['api', 'login', 'storage']]);
 
-        // BaseSettingRepository をモックして admin_url を返す
-        $mockRepo = Mockery::mock(BaseSettingRepository::class);
+        // SiteSettingRepository をモックして admin_url を返す
+        $mockRepo = Mockery::mock(SiteSettingRepository::class);
         $mockRepo->shouldReceive('get')
             ->with('admin_url', Mockery::any())
             ->andReturn('admin');
-        $this->app->instance(BaseSettingRepository::class, $mockRepo);
+        $this->app->instance(SiteSettingRepository::class, $mockRepo);
 
         $this->registry = new RouteSlugRegistry();
     }

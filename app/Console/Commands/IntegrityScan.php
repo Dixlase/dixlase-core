@@ -36,9 +36,9 @@
 namespace App\Console\Commands;
 
 use App\Mail\FileIntegrityAlertMail;
-use App\Models\BaseSetting;
 use App\Models\FileIntegrityAudit;
 use App\Models\SecuritySetting;
+use App\Models\SiteSetting;
 use App\Services\FileIntegrityService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
@@ -71,29 +71,29 @@ class IntegrityScan extends Command
         $scope = $this->option('scope');
         $outputJson = $this->option('json');
 
-        if (!$outputJson) {
+        if (! $outputJson) {
             $this->info(__('admin/command.integrity.starting_scan'));
             $this->newLine();
         }
 
         // 現在はコアのみサポート
         if ($scope !== 'core') {
-            if (!$outputJson) {
+            if (! $outputJson) {
                 $this->warn(__('admin/command.integrity.scope_not_supported', ['scope' => $scope]));
                 $this->info(__('admin/command.integrity.using_core_scope'));
             }
             $scope = 'core';
         }
 
-        if (!$outputJson) {
+        if (! $outputJson) {
             $this->output->write(__('admin/command.integrity.scanning'));
         }
 
         // スキャン実行（スケジュール実行の場合はTRIGGER_SCHEDULE）
-        $trigger = $this->option('scheduled') 
-            ? FileIntegrityAudit::TRIGGER_SCHEDULE 
+        $trigger = $this->option('scheduled')
+            ? FileIntegrityAudit::TRIGGER_SCHEDULE
             : FileIntegrityAudit::TRIGGER_MANUAL;
-        
+
         $audit = $service->scanCore(
             $trigger,
             FileIntegrityAudit::INITIATED_BY_CLI
@@ -106,10 +106,11 @@ class IntegrityScan extends Command
 
         if ($outputJson) {
             $this->outputJson($audit);
+
             return $audit->hasIssues() ? Command::FAILURE : Command::SUCCESS;
         }
 
-        $this->info(' ' . __('common.done'));
+        $this->info(' '.__('common.done'));
         $this->newLine();
 
         // 結果を表示
@@ -129,29 +130,31 @@ class IntegrityScan extends Command
             FILTER_VALIDATE_BOOLEAN
         );
 
-        if (!$notificationEnabled) {
-            if (!$outputJson) {
+        if (! $notificationEnabled) {
+            if (! $outputJson) {
                 $this->line(__('admin/command.integrity.notification_disabled'));
             }
+
             return;
         }
 
         // 通知先メールアドレスを取得
-        $notificationEmail = BaseSetting::getValue('notification_email');
+        $notificationEmail = SiteSetting::getValue('notification_email');
         if (empty($notificationEmail)) {
-            if (!$outputJson) {
+            if (! $outputJson) {
                 $this->warn(__('admin/command.integrity.no_notification_email'));
             }
+
             return;
         }
 
         try {
             Mail::to($notificationEmail)->send(new FileIntegrityAlertMail($audit));
-            if (!$outputJson) {
+            if (! $outputJson) {
                 $this->info(__('admin/command.integrity.notification_sent', ['email' => $notificationEmail]));
             }
         } catch (\Exception $e) {
-            if (!$outputJson) {
+            if (! $outputJson) {
                 $this->error(__('admin/command.integrity.notification_failed', ['error' => $e->getMessage()]));
             }
         }
@@ -164,20 +167,20 @@ class IntegrityScan extends Command
     {
         // ステータス表示
         $statusLabel = match ($audit->status) {
-            FileIntegrityAudit::STATUS_OK => '<fg=green>' . __('admin/command.integrity.status_ok') . '</>',
-            FileIntegrityAudit::STATUS_WARNING => '<fg=yellow>' . __('admin/command.integrity.status_warning') . '</>',
-            FileIntegrityAudit::STATUS_CRITICAL => '<fg=red>' . __('admin/command.integrity.status_critical') . '</>',
+            FileIntegrityAudit::STATUS_OK => '<fg=green>'.__('admin/command.integrity.status_ok').'</>',
+            FileIntegrityAudit::STATUS_WARNING => '<fg=yellow>'.__('admin/command.integrity.status_warning').'</>',
+            FileIntegrityAudit::STATUS_CRITICAL => '<fg=red>'.__('admin/command.integrity.status_critical').'</>',
             default => $audit->status,
         };
 
-        $this->line(__('admin/command.integrity.status') . ': ' . $statusLabel);
-        $this->line(__('admin/command.integrity.files_scanned') . ': ' . $audit->total_files_scanned);
-        $this->line(__('admin/command.integrity.duration') . ': ' . $audit->duration_ms . 'ms');
+        $this->line(__('admin/command.integrity.status').': '.$statusLabel);
+        $this->line(__('admin/command.integrity.files_scanned').': '.$audit->total_files_scanned);
+        $this->line(__('admin/command.integrity.duration').': '.$audit->duration_ms.'ms');
         $this->newLine();
 
         // サマリー
         if ($audit->summary) {
-            $this->line(__('admin/command.integrity.summary') . ': ' . $audit->summary);
+            $this->line(__('admin/command.integrity.summary').': '.$audit->summary);
             $this->newLine();
         }
 
@@ -194,37 +197,37 @@ class IntegrityScan extends Command
     {
         // 変更されたファイル
         $changed = $audit->getChangedFiles();
-        if (!empty($changed)) {
+        if (! empty($changed)) {
             $this->warn(__('admin/command.integrity.changed_files', ['count' => count($changed)]));
             foreach ($changed as $file) {
-                $this->line('  <fg=yellow>M</> ' . $file['path']);
+                $this->line('  <fg=yellow>M</> '.$file['path']);
             }
             $this->newLine();
         }
 
         // 追加されたファイル
         $added = $audit->getAddedFiles();
-        if (!empty($added)) {
+        if (! empty($added)) {
             $this->warn(__('admin/command.integrity.added_files', ['count' => count($added)]));
             foreach ($added as $file) {
-                $this->line('  <fg=green>A</> ' . $file['path']);
+                $this->line('  <fg=green>A</> '.$file['path']);
             }
             $this->newLine();
         }
 
         // 削除されたファイル
         $removed = $audit->getRemovedFiles();
-        if (!empty($removed)) {
+        if (! empty($removed)) {
             $this->error(__('admin/command.integrity.removed_files', ['count' => count($removed)]));
             foreach ($removed as $file) {
-                $this->line('  <fg=red>D</> ' . $file['path']);
+                $this->line('  <fg=red>D</> '.$file['path']);
             }
             $this->newLine();
         }
 
         // 疑わしいファイル
         $suspicious = $audit->getSuspiciousFiles();
-        if (!empty($suspicious)) {
+        if (! empty($suspicious)) {
             $this->error(__('admin/command.integrity.suspicious_files', ['count' => count($suspicious)]));
             foreach ($suspicious as $file) {
                 $reason = match ($file['reason'] ?? '') {
@@ -232,7 +235,7 @@ class IntegrityScan extends Command
                     'unknown_php_in_public' => __('admin/command.integrity.reason_unknown_php_in_public'),
                     default => $file['reason'] ?? '',
                 };
-                $this->line('  <fg=red>!</> ' . $file['path'] . ' (' . $reason . ')');
+                $this->line('  <fg=red>!</> '.$file['path'].' ('.$reason.')');
             }
             $this->newLine();
         }

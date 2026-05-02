@@ -6,8 +6,6 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
- * @api Stable API available for plugins/themes
- *
  * Dixlase is dual-licensed. You may use this file under either:
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
@@ -35,21 +33,37 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Contracts\Repositories;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use App\Models\BaseSetting;
-
-/**
- * 基本設定リポジトリインターフェース
- *
- * サイトの基本設定（サイト名、OGP画像など）を管理します。
- */
-interface BaseSettingRepositoryInterface extends SettingRepositoryInterface
+return new class extends Migration
 {
+    protected $table = 'site_settings';
+
     /**
-     * リレーションを含めて設定を取得
+     * Run the migrations.
      *
-     * @param  string  $name  設定名
+     * @return void
      */
-    public function findWithRelations(string $name): ?BaseSetting;
-}
+    public function up()
+    {
+        Schema::create($this->table, function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('name', 255)->nullable();
+            $table->text('value')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists($this->table);
+    }
+};

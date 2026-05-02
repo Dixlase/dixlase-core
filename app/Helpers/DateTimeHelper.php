@@ -46,7 +46,7 @@ use Throwable;
  * 日時を表示用タイムゾーンに変換してフォーマットするヘルパー。
  *
  * Dixlase は保存・計算を常に UTC（config('app.timezone')）で行い、
- * 表示時にのみ base_settings.display_timezone へ変換する。本ヘルパーは
+ * 表示時にのみ site_settings.display_timezone へ変換する。本ヘルパーは
  * その表示変換とフォーマットを集約する。Blade では <x-ui-datetime> の
  * 内部実装として使われるため、テンプレートから直接呼ばないこと。
  */

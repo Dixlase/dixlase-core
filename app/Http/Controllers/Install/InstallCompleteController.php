@@ -70,10 +70,10 @@ class InstallCompleteController extends BaseInstallController
 
         Log::channel('install')->info('インストール完了画面を表示（ボタン押下待ち）');
 
-        // base_settingsから管理画面URLを取得（セッションはconfirm処理後にクリアされている可能性がある）
+        // site_settingsから管理画面URLを取得（セッションはconfirm処理後にクリアされている可能性がある）
         $adminSlug = 'admin';
         try {
-            $dbAdminUrl = DB::table('base_settings')
+            $dbAdminUrl = DB::table('site_settings')
                 ->where('name', 'admin_url')
                 ->value('value');
             if ($dbAdminUrl) {
@@ -91,9 +91,9 @@ class InstallCompleteController extends BaseInstallController
         if ($envForceSsl === 'true' || $envForceSsl === true) {
             $forceSsl = true;
         } else {
-            // base_settingsからも確認
+            // site_settingsからも確認
             try {
-                $forceSsl = DB::table('base_settings')
+                $forceSsl = DB::table('site_settings')
                     ->where('name', 'force_ssl')
                     ->value('value') === '1';
             } catch (\Exception $e) {
@@ -131,10 +131,10 @@ class InstallCompleteController extends BaseInstallController
         $adminUrl = rtrim($appUrl.'/'.$adminSlug, '/');
         $adminLoginUrl = $adminUrl.'/login';
 
-        // admin_modeをbase_settingsから取得
+        // admin_modeをsite_settingsから取得
         $isSimpleMode = false;
         try {
-            $adminMode = DB::table('base_settings')
+            $adminMode = DB::table('site_settings')
                 ->where('name', 'admin_mode')
                 ->value('value');
             $isSimpleMode = ($adminMode === '0' || $adminMode === null);

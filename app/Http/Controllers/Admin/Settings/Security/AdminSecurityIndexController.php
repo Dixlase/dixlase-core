@@ -41,8 +41,8 @@ use App\Enums\ExtensionSecurityPreset;
 use App\Enums\MenuVisibility;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Models\BaseSetting;
 use App\Models\FileIntegrityAudit;
+use App\Models\SiteSetting;
 use App\Services\CaptchaTestService;
 use App\Services\FileIntegrityService;
 
@@ -63,9 +63,9 @@ class AdminSecurityIndexController extends AdminLoggedInController
     {
         // メールテスト状態を取得
         $sessionTestResults = session('mail_test_results', []);
-        $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? BaseSetting::getValue('mail_connection_tested', false));
-        $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? BaseSetting::getValue('mail_send_tested', false));
-        $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
+        $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? SiteSetting::getValue('mail_connection_tested', false));
+        $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? SiteSetting::getValue('mail_send_tested', false));
+        $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? SiteSetting::getValue('mail_receive_tested', false));
         $mailTestComplete = $mailConnectionTested && $mailSendTested && $mailReceiveTested;
 
         // CAPTCHAテスト状態を取得

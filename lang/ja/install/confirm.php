@@ -48,7 +48,7 @@ return [
     'settings_review' => '設定内容の確認',
     'basic_settings' => '基本設定',
     'app_settings' => 'アプリケーション設定',
-    'database_settings' => 'データベース設定',
+    'datasite_settings' => 'データベース設定',
     'mail_settings' => 'メール設定',
     'security_settings' => 'セキュリティ設定',
 

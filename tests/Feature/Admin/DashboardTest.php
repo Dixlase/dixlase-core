@@ -24,8 +24,8 @@ namespace Tests\Feature\Admin;
 
 use App\Http\Middleware\CheckInstallationReady;
 use App\Http\Middleware\ContentSecurityPolicy;
-use App\Models\BaseSetting;
 use App\Models\Member;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\View;
 use Tests\TestCase;
@@ -54,7 +54,7 @@ class DashboardTest extends TestCase
             resource_path("views/{$adminTheme}"),
         ]);
 
-        BaseSetting::setValue('site_name', 'Test');
+        SiteSetting::setValue('site_name', 'Test');
     }
 
     protected function tearDown(): void

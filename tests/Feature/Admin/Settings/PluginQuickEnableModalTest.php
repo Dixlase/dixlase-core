@@ -67,8 +67,8 @@ class PluginQuickEnableModalTest extends TestCase
             resource_path("views/{$adminTheme}"),
         ]);
 
-        // base_settings に site_name を挿入（CheckInstallationReady のステップ6を通過させる）
-        \App\Models\BaseSetting::setValue('site_name', 'Test Site');
+        // site_settings に site_name を挿入（CheckInstallationReady のステップ6を通過させる）
+        \App\Models\SiteSetting::setValue('site_name', 'Test Site');
 
         // スーパー管理者を作成（プラグイン設定へのアクセス権を持つ）
         // email_verified_at を設定して verified ミドルウェアを通過させる

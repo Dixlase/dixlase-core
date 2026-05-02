@@ -106,7 +106,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- データベース設定 -->
     <article aria-labelledby="database-settings-heading">
-        <h3 id="database-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install/confirm.database_settings') }}</h3>
+        <h3 id="database-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install/confirm.datasite_settings') }}</h3>
         <ul class="space-y-1 text-gray-700 dark:text-gray-300">
             <!-- ✅ DB情報 -->
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install/confirm.db_connection') }}:</strong> {{ ucfirst($data['db_connection']) }}</li>

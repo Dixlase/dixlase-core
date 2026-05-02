@@ -38,7 +38,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class BaseSettingsTableSeeder extends Seeder
+class SiteSettingsTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -91,7 +91,7 @@ class BaseSettingsTableSeeder extends Seeder
         ];
 
         foreach ($settings as $setting) {
-            DB::table('base_settings')->updateOrInsert(
+            DB::table('site_settings')->updateOrInsert(
                 ['name' => $setting['name']],
                 ['value' => $setting['value'], 'created_at' => now(), 'updated_at' => now()]
             );

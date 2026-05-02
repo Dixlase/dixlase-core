@@ -40,7 +40,7 @@ use App\DTO\Mail\MailAttachmentDTO;
 use App\DTO\Mail\MailConfigDTO;
 use App\DTO\Mail\MailMessageDTO;
 use App\DTO\Mail\MailResultDTO;
-use App\Models\BaseSetting;
+use App\Models\SiteSetting;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -331,16 +331,16 @@ class MailService implements MailServiceInterface
     {
         // DBから設定を取得（存在する場合）
         try {
-            if (class_exists(BaseSetting::class)) {
+            if (class_exists(SiteSetting::class)) {
                 return new MailConfigDTO(
-                    mailer: BaseSetting::getValue('mail_mailer', config('mail.default', 'smtp')),
-                    host: BaseSetting::getValue('mail_host', config('mail.mailers.smtp.host', '')),
-                    port: (int) BaseSetting::getValue('mail_port', config('mail.mailers.smtp.port', 587)),
-                    username: BaseSetting::getValue('mail_username', config('mail.mailers.smtp.username')),
-                    password: BaseSetting::getValue('mail_password', config('mail.mailers.smtp.password')),
-                    encryption: BaseSetting::getValue('mail_encryption', config('mail.mailers.smtp.encryption', 'tls')),
-                    fromAddress: BaseSetting::getValue('mail_from_address', config('mail.from.address', '')),
-                    fromName: BaseSetting::getValue('mail_from_name', config('mail.from.name')),
+                    mailer: SiteSetting::getValue('mail_mailer', config('mail.default', 'smtp')),
+                    host: SiteSetting::getValue('mail_host', config('mail.mailers.smtp.host', '')),
+                    port: (int) SiteSetting::getValue('mail_port', config('mail.mailers.smtp.port', 587)),
+                    username: SiteSetting::getValue('mail_username', config('mail.mailers.smtp.username')),
+                    password: SiteSetting::getValue('mail_password', config('mail.mailers.smtp.password')),
+                    encryption: SiteSetting::getValue('mail_encryption', config('mail.mailers.smtp.encryption', 'tls')),
+                    fromAddress: SiteSetting::getValue('mail_from_address', config('mail.from.address', '')),
+                    fromName: SiteSetting::getValue('mail_from_name', config('mail.from.name')),
                 );
             }
         } catch (\Exception $e) {

@@ -22,7 +22,7 @@
 
 namespace Tests\Unit\Services;
 
-use App\Contracts\Repositories\BaseSettingRepositoryInterface;
+use App\Contracts\Repositories\SiteSettingRepositoryInterface;
 use App\Services\LegalPageService;
 use Illuminate\Database\Eloquent\Model;
 use Mockery;
@@ -30,7 +30,7 @@ use Tests\TestCase;
 
 class LegalPageServiceTest extends TestCase
 {
-    private BaseSettingRepositoryInterface&\Mockery\MockInterface $repository;
+    private SiteSettingRepositoryInterface&\Mockery\MockInterface $repository;
 
     private LegalPageService $service;
 
@@ -73,7 +73,7 @@ class LegalPageServiceTest extends TestCase
         // テスト用のページ種別を明示的にセット（コア config が空のため）
         config(['admin.legal-pages' => $this->testPageTypes]);
 
-        $this->repository = Mockery::mock(BaseSettingRepositoryInterface::class);
+        $this->repository = Mockery::mock(SiteSettingRepositoryInterface::class);
         $this->service = new LegalPageService($this->repository);
     }
 

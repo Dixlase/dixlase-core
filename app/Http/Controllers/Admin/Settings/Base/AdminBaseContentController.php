@@ -37,7 +37,7 @@ namespace App\Http\Controllers\Admin\Settings\Base;
 
 use App\Actions\Settings\UpdateSettingsAction;
 use App\Actors\MemberActor;
-use App\Contracts\Repositories\BaseSettingRepositoryInterface;
+use App\Contracts\Repositories\SiteSettingRepositoryInterface;
 use App\Helpers\AdminHelper;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
@@ -56,9 +56,9 @@ class AdminBaseContentController extends AdminLoggedInController
         FrontPageRevisionService::SETTING_KEY_RETENTION,
     ];
 
-    protected BaseSettingRepositoryInterface $baseSettingRepository;
+    protected SiteSettingRepositoryInterface $baseSettingRepository;
 
-    public function __construct(BaseSettingRepositoryInterface $baseSettingRepository)
+    public function __construct(SiteSettingRepositoryInterface $baseSettingRepository)
     {
         parent::__construct();
         $this->baseSettingRepository = $baseSettingRepository;

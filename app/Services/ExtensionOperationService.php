@@ -40,8 +40,8 @@ use App\Facades\Audit;
 use App\Helpers\AdminHelper;
 use App\Mail\ExtensionOperationNotificationMail;
 use App\Models\AuditLog;
-use App\Models\BaseSetting;
 use App\Models\SecuritySetting;
+use App\Models\SiteSetting;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -217,7 +217,7 @@ class ExtensionOperationService
             return;
         }
 
-        $adminEmail = BaseSetting::getValue('admin_email');
+        $adminEmail = SiteSetting::getValue('admin_email');
         if (empty($adminEmail)) {
             return;
         }

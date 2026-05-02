@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * Dixlase is dual-licensed. You may use this file under either:
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
@@ -33,37 +35,48 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace App\Models;
 
-return new class extends Migration
+use App\Contracts\Repositories\SiteSettingRepositoryInterface;
+use App\Models\Traits\UsesSettingRepositoryTrait;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * 基本設定モデル
+ *
+ * @deprecated 静的メソッドは非推奨です。SiteSettingRepositoryを使用してください。
+ */
+class SiteSetting extends Model
 {
-    protected $table = 'base_settings';
+    use UsesSettingRepositoryTrait;
 
     /**
-     * Run the migrations.
+     * テーブル名
      *
-     * @return void
+     * @var string
      */
-    public function up()
+    protected $table = 'site_settings';
+
+    /**
+     * ホワイトリスト
+     *
+     * @var array
+     */
+    protected $fillable = ['name', 'value'];
+
+    /**
+     * デフォルトOGP画像とのリレーション
+     */
+    public function defaultOgpImage()
     {
-        Schema::create($this->table, function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->string('name', 255)->nullable();
-            $table->text('value')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        return $this->belongsTo(Media::class, 'default_ogp_image_id');
     }
 
     /**
-     * Reverse the migrations.
-     *
-     * @return void
+     * {@inheritDoc}
      */
-    public function down()
+    protected static function getRepositoryInterface(): string
     {
-        Schema::dropIfExists($this->table);
+        return SiteSettingRepositoryInterface::class;
     }
-};
+}

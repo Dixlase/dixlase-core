@@ -38,7 +38,7 @@ namespace App\Http\Requests\Admin\Settings;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class AdminBaseSettingsRequest extends FormRequest
+class AdminSiteSettingsRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
