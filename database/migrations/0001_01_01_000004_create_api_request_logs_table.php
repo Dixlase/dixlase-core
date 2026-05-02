@@ -49,6 +49,7 @@ return new class extends Migration
     {
         Schema::create('api_request_logs', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('site_id')->index();
 
             // ========================================
             // APIキー情報

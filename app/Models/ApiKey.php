@@ -35,15 +35,19 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToSite;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 class ApiKey extends Model
 {
+    use BelongsToSite;
+
     protected $table = 'api_keys';
 
     protected $fillable = [
+        'site_id',
         'name',
         'key_hash',
         'key_prefix',
@@ -74,6 +78,7 @@ class ApiKey extends Model
     // ========================================
 
     public const ENV_LIVE = 'live';
+
     public const ENV_TEST = 'test';
 
     // ========================================
@@ -81,10 +86,15 @@ class ApiKey extends Model
     // ========================================
 
     public const SCOPE_READ_EVENTS = 'read:events';
+
     public const SCOPE_WRITE_EVENTS = 'write:events';
+
     public const SCOPE_READ_TRANSLATIONS = 'read:translations';
+
     public const SCOPE_WRITE_TRANSLATIONS = 'write:translations';
+
     public const SCOPE_READ_CONTENT = 'read:content';
+
     public const SCOPE_WRITE_CONTENT = 'write:content';
 
     /**
@@ -120,12 +130,12 @@ class ApiKey extends Model
 
     /**
      * 新しいAPIキーを生成
-     * 
-     * @param string $name キー名
-     * @param string $environment 環境（live/test）
-     * @param array $scopes 権限スコープ
-     * @param int|null $createdBy 作成者ID
-     * @param array $options その他のオプション
+     *
+     * @param  string  $name  キー名
+     * @param  string  $environment  環境（live/test）
+     * @param  array  $scopes  権限スコープ
+     * @param  int|null  $createdBy  作成者ID
+     * @param  array  $options  その他のオプション
      * @return array ['model' => ApiKey, 'plain_key' => string]
      */
     public static function generate(
@@ -137,14 +147,14 @@ class ApiKey extends Model
     ): array {
         // プレフィックス生成
         $prefix = $environment === self::ENV_TEST ? 'dxl_test_' : 'dxl_live_';
-        
+
         // ランダムキー生成（32文字）
         $randomKey = Str::random(32);
-        $plainKey = $prefix . $randomKey;
-        
+        $plainKey = $prefix.$randomKey;
+
         // ハッシュ化
         $keyHash = hash('sha256', $plainKey);
-        
+
         $apiKey = self::create([
             'name' => $name,
             'key_hash' => $keyHash,
@@ -158,7 +168,7 @@ class ApiKey extends Model
             'expires_at' => $options['expires_at'] ?? null,
             'description' => $options['description'] ?? null,
         ]);
-        
+
         return [
             'model' => $apiKey,
             'plain_key' => $plainKey,
@@ -167,27 +177,27 @@ class ApiKey extends Model
 
     /**
      * APIキーを検証
-     * 
-     * @param string $plainKey 平文のAPIキー
+     *
+     * @param  string  $plainKey  平文のAPIキー
      * @return self|null 有効なAPIキーモデル、または無効な場合はnull
      */
     public static function validate(string $plainKey): ?self
     {
         $keyHash = hash('sha256', $plainKey);
-        
+
         $apiKey = self::where('key_hash', $keyHash)
             ->where('is_active', true)
             ->first();
-        
-        if (!$apiKey) {
+
+        if (! $apiKey) {
             return null;
         }
-        
+
         // 有効期限チェック
         if ($apiKey->expires_at && now()->greaterThan($apiKey->expires_at)) {
             return null;
         }
-        
+
         return $apiKey;
     }
 
@@ -237,7 +247,7 @@ class ApiKey extends Model
         if (empty($this->allowed_ips)) {
             return true;
         }
-        
+
         return in_array($ip, $this->allowed_ips);
     }
 
@@ -246,10 +256,10 @@ class ApiKey extends Model
      */
     public function isExpired(): bool
     {
-        if (!$this->expires_at) {
+        if (! $this->expires_at) {
             return false;
         }
-        
+
         return now()->greaterThan($this->expires_at);
     }
 
@@ -258,7 +268,7 @@ class ApiKey extends Model
      */
     public function getMaskedKey(): string
     {
-        return $this->key_prefix . str_repeat('*', 8) . '...';
+        return $this->key_prefix.str_repeat('*', 8).'...';
     }
 
     // ========================================
@@ -288,7 +298,7 @@ class ApiKey extends Model
     {
         return $query->where(function ($q) {
             $q->whereNull('expires_at')
-              ->orWhere('expires_at', '>', now());
+                ->orWhere('expires_at', '>', now());
         });
     }
 }
