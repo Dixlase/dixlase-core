@@ -215,7 +215,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     @endif
                                     <li>
                                         @if(!empty($breadcrumb['route']))
-                                            <a href="{{ route($breadcrumb['route']) }}" class="{{ $loop->last ? 'text-gray-900 dark:text-white font-medium' : 'hover:text-gray-700 dark:hover:text-white' }}">
+                                            <a href="{{ route($breadcrumb['route'], $breadcrumb['params'] ?? []) }}" class="{{ $loop->last ? 'text-gray-900 dark:text-white font-medium' : 'hover:text-gray-700 dark:hover:text-white' }}">
                                                 {{ $breadcrumb['label'] }}
                                             </a>
                                         @else
