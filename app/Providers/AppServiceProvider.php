@@ -44,6 +44,7 @@ use App\Contracts\Logging\LogServiceInterface;
 use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Plugin\PluginPermissionServiceInterface;
 use App\Contracts\Plugin\SignatureVerifierInterface;
+use App\Contracts\Site\SiteContextInterface;
 use App\Contracts\Theme\ThemePermissionServiceInterface;
 use App\Contracts\TwoFa\TwoFaPasskeyServiceInterface;
 use App\Contracts\Verification\FileVerificationServiceInterface;
@@ -58,6 +59,7 @@ use App\Services\MailService;
 use App\Services\Plugin\CoreSignatureVerifier;
 use App\Services\Plugin\PluginPermissionService;
 use App\Services\RouteSlugRegistry;
+use App\Services\Site\SiteContext;
 use App\Services\Theme\ThemePermissionService;
 use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\Verification\CoreFileVerificationService;
@@ -133,6 +135,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TwoFaPasskeyServiceInterface::class, TwoFaPasskeyService::class);
         $this->app->bind(PluginPermissionServiceInterface::class, PluginPermissionService::class);
         $this->app->bind(ThemePermissionServiceInterface::class, ThemePermissionService::class);
+
+        // Bind SiteContext as singleton so the resolved current site
+        // persists across the request lifecycle.
+        $this->app->singleton(SiteContextInterface::class, SiteContext::class);
 
         // Laragear WebAuthnのWebAuthnCredentialモデルをカスタムモデルにバインド
         $this->app->bind(
