@@ -37,6 +37,7 @@ namespace App\Http\Controllers\Install;
 
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\GitIgnoreHelper;
+use App\Services\Site\SettingResolver;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -488,40 +489,24 @@ class InstallConfirmController extends BaseInstallController
             'admin_mode' => (string) ($data['install_mode'] ?? 0),
         ];
 
+        // Route through SettingResolver so each key lands in the correct
+        // multisite-aware store: Global keys (app_name, admin_url,
+        // system_admin_email, admin_mode, force_ssl) go to global_settings;
+        // PerSite keys (maintenance_mode, site_name, locale, timezone,
+        // mail_*_tested) go to site_settings for the primary site;
+        // Overridable keys (mail_*) default to global_settings.
+        $resolver = app(SettingResolver::class);
+
         foreach ($baseSettings as $name => $value) {
-            if (! DB::connection('mysql')->table('site_settings')->where('name', $name)->exists()) {
-                DB::connection('mysql')->table('site_settings')->insert([
-                    'name' => $name,
-                    'value' => $value,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-                Log::channel('install')->info("initializeDatabase - {$name}新規作成: {$value}");
-            } else {
-                DB::connection('mysql')->table('site_settings')
-                    ->where('name', $name)
-                    ->update(['value' => $value, 'updated_at' => now()]);
-                Log::channel('install')->info("initializeDatabase - {$name}更新: {$value}");
-            }
+            $resolver->set($name, $value);
+            Log::channel('install')->info("initializeDatabase - {$name}: {$value}");
         }
 
-        // 管理画面URLを追加
-        if (! DB::connection('mysql')->table('site_settings')->where('name', 'admin_url')->exists()) {
-            DB::connection('mysql')->table('site_settings')->insert([
-                'name' => 'admin_url',
-                'value' => $data['admin_url'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            Log::channel('install')->info('initializeDatabase - admin_url新規作成: '.$data['admin_url']);
-        } else {
-            DB::connection('mysql')->table('site_settings')
-                ->where('name', 'admin_url')
-                ->update(['value' => $data['admin_url'], 'updated_at' => now()]);
-            Log::channel('install')->info('initializeDatabase - admin_url更新: '.$data['admin_url']);
-        }
+        // 管理画面URL（admin_url は Global scope なので global_settings へ）
+        $resolver->set('admin_url', $data['admin_url']);
+        Log::channel('install')->info('initializeDatabase - admin_url: '.$data['admin_url']);
 
-        // メールテスト結果を保存
+        // メールテスト結果を保存（PerSite scope）
         Log::channel('install')->info('initializeDatabase - メールテスト結果保存開始');
         $mailTestFields = [
             'mail_connection_tested' => $data['mail_connection_tested'] ?? 0,
@@ -534,27 +519,14 @@ class InstallConfirmController extends BaseInstallController
 
         foreach ($mailTestFields as $fieldName => $fieldValue) {
             if ($fieldValue !== null) {
-                if (! DB::connection('mysql')->table('site_settings')->where('name', $fieldName)->exists()) {
-                    DB::connection('mysql')->table('site_settings')->insert([
-                        'name' => $fieldName,
-                        'value' => $fieldValue,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                    Log::channel('install')->info("initializeDatabase - {$fieldName}新規作成: {$fieldValue}");
-                } else {
-                    DB::connection('mysql')->table('site_settings')
-                        ->where('name', $fieldName)
-                        ->update(['value' => $fieldValue, 'updated_at' => now()]);
-                    Log::channel('install')->info("initializeDatabase - {$fieldName}更新: {$fieldValue}");
-                }
+                $resolver->set($fieldName, $fieldValue);
+                Log::channel('install')->info("initializeDatabase - {$fieldName}: {$fieldValue}");
             }
         }
         Log::channel('install')->info('initializeDatabase - メールテスト結果保存完了');
 
-        // security_settingsの各設定を更新または作成
+        // セキュリティ系設定（すべて Global scope、自動的に global_settings へ）
         $securitySettings = [
-            'admin_url' => $data['admin_url'],
             'enable_allowed_admin_ips' => $data['enable_allowed_admin_ips'] ?? 0,
             'allowed_admin_ips' => ($data['enable_allowed_admin_ips'] ?? 0) ? ($data['allowed_admin_ips'] ?? '') : '',
             'enable_blocked_admin_ips' => $data['enable_blocked_admin_ips'] ?? 0,
@@ -569,18 +541,7 @@ class InstallConfirmController extends BaseInstallController
         ];
 
         foreach ($securitySettings as $name => $value) {
-            if (DB::table('security_settings')->where('name', $name)->exists()) {
-                DB::table('security_settings')
-                    ->where('name', $name)
-                    ->update(['value' => $value, 'updated_at' => now()]);
-            } else {
-                DB::table('security_settings')->insert([
-                    'name' => $name,
-                    'value' => $value,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
+            $resolver->set($name, $value);
         }
 
         // 管理者アカウント処理
