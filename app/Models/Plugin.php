@@ -39,12 +39,53 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * プラグインメタデータモデル
  */
 class Plugin extends Model
 {
+    /**
+     * Boot hook: keep site_plugin_activations in sync with the legacy
+     * enabled_at flag for v0.1.0. When the activation table is missing
+     * (during installation) or the primary site has not been seeded yet,
+     * the sync is silently skipped. v2 admin UIs will manage activation
+     * rows directly per-site.
+     */
+    protected static function booted(): void
+    {
+        static::saved(function (Plugin $plugin): void {
+            if (! $plugin->wasChanged('enabled_at')) {
+                return;
+            }
+            self::syncPrimarySiteActivation($plugin);
+        });
+    }
+
+    private static function syncPrimarySiteActivation(Plugin $plugin): void
+    {
+        if (! Schema::hasTable('site_plugin_activations')) {
+            return;
+        }
+        if (! Schema::hasTable('sites')) {
+            return;
+        }
+
+        $primarySite = Site::primary();
+        if ($primarySite === null) {
+            return;
+        }
+
+        SitePluginActivation::query()->updateOrCreate(
+            ['site_id' => $primarySite->id, 'plugin_id' => $plugin->id],
+            [
+                'is_active' => $plugin->enabled_at !== null,
+                'activated_at' => $plugin->enabled_at,
+            ]
+        );
+    }
+
     /**
      * 複数代入の許可フィールド
      */
