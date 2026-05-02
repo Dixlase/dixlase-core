@@ -66,6 +66,7 @@ class RestoreRecord extends Model
     protected $table = 'restore_records';
 
     protected $fillable = [
+        'site_id',
         'backup_record_id',
         'restored_by',
         'restored_by_name',

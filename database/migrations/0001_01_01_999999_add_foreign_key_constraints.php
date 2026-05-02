@@ -431,6 +431,30 @@ return new class extends Migration
                 ->on('sites')
                 ->cascadeOnDelete();
         });
+
+        // security_events.site_id -> sites.id (nullOnDelete; preserve history)
+        Schema::table('security_events', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->nullOnDelete();
+        });
+
+        // restore_records.site_id -> sites.id (nullOnDelete; preserve history)
+        Schema::table('restore_records', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->nullOnDelete();
+        });
+
+        // backup_records.site_id -> sites.id (nullOnDelete; preserve history)
+        Schema::table('backup_records', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->nullOnDelete();
+        });
     }
 
     /**
@@ -438,6 +462,21 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // backup_records.site_id
+        Schema::table('backup_records', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
+        // restore_records.site_id
+        Schema::table('restore_records', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
+        // security_events.site_id
+        Schema::table('security_events', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
         // lockdown_history.site_id
         Schema::table('lockdown_history', function (Blueprint $table) {
             $table->dropForeign(['site_id']);

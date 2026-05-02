@@ -50,6 +50,10 @@ return new class extends Migration
         Schema::create('backup_records', function (Blueprint $table) {
             $table->id();
 
+            // Multisite scope. Site-scoped backups carry the site id;
+            // network-wide backups leave it null.
+            $table->unsignedBigInteger('site_id')->nullable()->index();
+
             // どのプラグインが作成したか
             $table->string('plugin_slug', 100)->index();
 

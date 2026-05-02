@@ -50,6 +50,10 @@ return new class extends Migration
         Schema::create('restore_records', function (Blueprint $table) {
             $table->id();
 
+            // Multisite scope. Site-scoped restores carry the site id;
+            // network-wide restores leave it null.
+            $table->unsignedBigInteger('site_id')->nullable()->index();
+
             // どのバックアップから復元したか（バックアップ削除後も履歴を保持）
             $table->unsignedBigInteger('backup_record_id')->nullable()->index();
 
