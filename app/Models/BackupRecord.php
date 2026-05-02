@@ -82,6 +82,7 @@ class BackupRecord extends Model
     protected $table = 'backup_records';
 
     protected $fillable = [
+        'site_id',
         'plugin_slug',
         'type',
         'targets',

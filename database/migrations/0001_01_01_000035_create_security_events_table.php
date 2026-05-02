@@ -50,6 +50,10 @@ return new class extends Migration
         Schema::create('security_events', function (Blueprint $table) {
             $table->id();
 
+            // Multisite scope. Site-scoped events carry the site id;
+            // network-wide / system events leave it null.
+            $table->unsignedBigInteger('site_id')->nullable()->index();
+
             // イベント発生者（nullable: システムイベントの場合はnull）
             $table->unsignedBigInteger('member_id')->nullable()->index();
 
