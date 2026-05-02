@@ -35,6 +35,8 @@
 
 namespace Database\Seeders;
 
+use App\Enums\SettingScope;
+use App\Services\Site\SettingDefinitionRegistry;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -90,16 +92,34 @@ class SiteSettingsTableSeeder extends Seeder
             ['name' => 'twitter_card_type', 'value' => 'summary_large_image'],
         ];
 
-        // Seed for the primary site (id=1). Multisite installations will
-        // inherit overridable settings via SettingResolver in later phases;
-        // additional sites get their own per-site rows when created.
+        // Route each seeded value to the right storage tier based on its
+        // registered SettingScope:
+        //   - Global keys     -> global_settings (network-wide)
+        //   - Overridable     -> global_settings (network-wide default;
+        //                       sites override per-site as needed)
+        //   - PerSite         -> site_settings for the primary site (id=1)
+        // Unregistered keys are skipped to keep the registry authoritative.
         $primarySiteId = 1;
+        $registry = app(SettingDefinitionRegistry::class);
+        $now = now();
 
         foreach ($settings as $setting) {
-            DB::table('site_settings')->updateOrInsert(
-                ['name' => $setting['name'], 'site_id' => $primarySiteId],
-                ['value' => $setting['value'], 'created_at' => now(), 'updated_at' => now()]
-            );
+            $definition = $registry->get($setting['name']);
+            if ($definition === null) {
+                continue;
+            }
+
+            if ($definition->scope === SettingScope::PerSite) {
+                DB::table('site_settings')->updateOrInsert(
+                    ['name' => $setting['name'], 'site_id' => $primarySiteId],
+                    ['value' => $setting['value'], 'created_at' => $now, 'updated_at' => $now]
+                );
+            } else {
+                DB::table('global_settings')->updateOrInsert(
+                    ['name' => $setting['name']],
+                    ['value' => $setting['value'], 'created_at' => $now, 'updated_at' => $now]
+                );
+            }
         }
     }
 }
