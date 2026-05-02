@@ -33,28 +33,38 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
-class DatabaseSeeder extends Seeder
+class SitesSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * Seed the primary site (id=1).
+     *
+     * In v0.1.0 the installation has a single primary site. Additional
+     * sites can be created via dls:site:create in later phases.
      */
     public function run(): void
     {
-        $this->call([
-            SitesSeeder::class,
-            ApiSettingsTableSeeder::class,
-            BaseSettingsTableSeeder::class,
-            FrontSettingsTableSeeder::class,
-            MediaTableSeeder::class,
-            MediaSettingsSeeder::class,
-            MembersSettingsSeeder::class,
-            SecuritySettingsTableSeeder::class,
-            ThemeSettingsTableSeeder::class,
-            ThemesTableSeeder::class,
-        ]);
+        DB::table('sites')->updateOrInsert(
+            ['id' => 1],
+            [
+                'slug' => 'main',
+                'name' => 'Main Site',
+                'description' => null,
+                'host' => null,
+                'path_prefix' => null,
+                'primary_locale' => config('app.locale', 'en'),
+                'timezone' => config('app.timezone', 'UTC'),
+                'is_primary' => true,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
     }
 }
