@@ -33,28 +33,45 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Database\Seeders;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Database\Seeder;
-
-class DatabaseSeeder extends Seeder
+return new class extends Migration
 {
+    protected $table = 'sites';
+
     /**
-     * Seed the application's database.
+     * Run the migrations.
      */
-    public function run(): void
+    public function up(): void
     {
-        $this->call([
-            SitesSeeder::class,
-            ApiSettingsTableSeeder::class,
-            BaseSettingsTableSeeder::class,
-            FrontSettingsTableSeeder::class,
-            MediaTableSeeder::class,
-            MediaSettingsSeeder::class,
-            MembersSettingsSeeder::class,
-            SecuritySettingsTableSeeder::class,
-            ThemeSettingsTableSeeder::class,
-            ThemesTableSeeder::class,
-        ]);
+        Schema::create($this->table, function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('slug', 64)->unique();
+            $table->string('name', 255);
+            $table->text('description')->nullable();
+            $table->string('host', 255)->nullable();
+            $table->string('path_prefix', 64)->nullable();
+            $table->string('primary_locale', 10);
+            $table->string('timezone', 64);
+            $table->boolean('is_primary')->default(false);
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            $table->softDeletes();
+
+            $table->unique(['host', 'path_prefix']);
+            $table->index('host');
+            $table->index('is_primary');
+            $table->index('is_active');
+        });
     }
-}
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists($this->table);
+    }
+};

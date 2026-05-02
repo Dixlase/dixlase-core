@@ -33,28 +33,55 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Database\Seeders;
+declare(strict_types=1);
 
-use Illuminate\Database\Seeder;
+namespace Database\Factories;
 
-class DatabaseSeeder extends Seeder
+use App\Models\Site;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Site>
+ */
+class SiteFactory extends Factory
 {
+    protected $model = Site::class;
+
     /**
-     * Seed the application's database.
+     * @return array<string, mixed>
      */
-    public function run(): void
+    public function definition(): array
     {
-        $this->call([
-            SitesSeeder::class,
-            ApiSettingsTableSeeder::class,
-            BaseSettingsTableSeeder::class,
-            FrontSettingsTableSeeder::class,
-            MediaTableSeeder::class,
-            MediaSettingsSeeder::class,
-            MembersSettingsSeeder::class,
-            SecuritySettingsTableSeeder::class,
-            ThemeSettingsTableSeeder::class,
-            ThemesTableSeeder::class,
+        return [
+            'slug' => fake()->unique()->slug(2),
+            'name' => fake()->company(),
+            'description' => fake()->optional()->sentence(),
+            'host' => fake()->optional()->domainName(),
+            'path_prefix' => null,
+            'primary_locale' => fake()->randomElement(['en', 'ja']),
+            'timezone' => fake()->randomElement(['UTC', 'Asia/Tokyo', 'America/New_York']),
+            'is_primary' => false,
+            'is_active' => true,
+        ];
+    }
+
+    /**
+     * Mark the site as primary.
+     */
+    public function primary(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_primary' => true,
+        ]);
+    }
+
+    /**
+     * Mark the site as inactive.
+     */
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
         ]);
     }
 }
