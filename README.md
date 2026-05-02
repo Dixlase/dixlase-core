@@ -105,14 +105,14 @@ This allows VSCode or Cursor to directly run Laravel commands and generate compo
 
 Dixlase CMS is distributed under a **dual license**:
 
-- **Open Source License**: [GNU Affero General Public License v3](./LICENSE) with the Dixlase Plugin and Theme Exception.
-- **Commercial License**: For use cases where AGPL v3 compliance is not feasible (e.g., distributing modified versions in closed-source SaaS), a separate commercial license is available.
+- **Open Source License**: [GNU Affero General Public License v3](./LICENSE) with the Dixlase Plugin and Theme Exception (see [LICENSE-EXCEPTIONS](./LICENSE-EXCEPTIONS)).
+- **Commercial License**: For use cases where AGPL v3 compliance is not feasible (e.g., distributing modified versions in closed-source SaaS), a separate commercial license is available — see [LICENSE.commercial](./LICENSE.commercial) (currently a draft) or contact **office@exc-d.com**.
 
-For commercial license inquiries, please contact **office@exc-d.com**.
+A short overview of how these files fit together is in [NOTICE](./NOTICE) ([日本語](./NOTICE.ja)).
 
 ### Plugins and Themes
 
-Plugins and themes that interact with Dixlase CMS exclusively through the [Plugin API](./PLUGIN-API.md) are not considered derivative works and may be distributed under **any license of your choice, including proprietary licenses**. See the [Dixlase Plugin and Theme Exception](./LICENSE) for the full terms.
+Plugins and themes that interact with Dixlase CMS exclusively through the [Plugin API](./PLUGIN-API.md) are not considered derivative works and may be distributed under **any license of your choice, including proprietary licenses**. See [LICENSE-EXCEPTIONS](./LICENSE-EXCEPTIONS) for the full terms.
 
 ### Source Code Availability (AGPL §13)
 

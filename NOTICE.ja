@@ -1,0 +1,39 @@
+=======================================================================
+
+    DIXLASE
+
+    Copyright (C) 2026 exc-D inc. <https://exc-d.com>
+
+    Dixlase はデュアルライセンス方式で配布されています。
+    以下のいずれかの条件で利用することができます:
+
+      (a) Free Software Foundation が公開する GNU Affero General
+          Public License バージョン 3 の条項、および Dixlase
+          プラグイン・テーマ例外条項(LICENSE-EXCEPTIONS に全文記載);
+          または
+
+      (b) exc-D inc. から提供される商用ライセンス
+          (詳細は LICENSE.commercial、または
+          office@exc-d.com までお問い合わせください)。
+
+    Dixlase コアリポジトリへのコントリビューションは、
+    Dixlase コピーライトポリシー(COPYRIGHT-POLICY.ja.md 参照)に
+    従います。
+
+    商用ライセンス契約を締結していない場合、本プロジェクトは
+    LICENSE ファイル記載の AGPL の条項の下で配布されます。
+
+=======================================================================
+
+ファイル構成:
+
+    LICENSE               GNU Affero General Public License v3 原文
+    LICENSE-EXCEPTIONS    Dixlase プラグイン・テーマ例外条項
+                          (AGPL §7 に基づく追加許可)
+    LICENSE.commercial    商用ライセンス条項(別途契約)
+    NOTICE                プロジェクト著作権とデュアルライセンス概要
+                          (英語版)
+    NOTICE.ja             本ファイル(日本語版)
+    LICENSE-EXCEPTIONS.ja LICENSE-EXCEPTIONS の日本語版
+
+=======================================================================

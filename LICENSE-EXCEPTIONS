@@ -1,0 +1,70 @@
+=======================================================================
+
+    DIXLASE PLUGIN AND THEME EXCEPTION
+
+    Version 1.0, 2026
+
+    Copyright (C) 2026 exc-D inc. <https://exc-d.com>
+
+=======================================================================
+
+This file grants an additional permission under section 7 of the GNU
+Affero General Public License version 3, as published in the LICENSE
+file in this same directory. It is intended to be read together with
+that LICENSE file.
+
+Additional permission under GNU AGPL version 3 section 7:
+
+As a special exception to the GNU Affero General Public License, the
+copyright holders of Dixlase grant you additional permission to
+convey plugins and themes that interact with Dixlase solely through
+the Plugin API (as defined in the file PLUGIN-API.md distributed with
+Dixlase) without those plugins or themes being considered derivative
+works of Dixlase, and therefore without being subject to the
+requirements of the GNU Affero General Public License.
+
+This exception applies only when ALL of the following conditions are met:
+
+  1. The plugin or theme communicates with Dixlase exclusively
+     through the interfaces, contracts, traits, base classes, DTOs,
+     enums, Blade components, middleware groups, configuration
+     structures, injectable services, Eloquent models, and helper
+     functions documented in PLUGIN-API.md (the "Plugin API").
+
+  2. The plugin or theme does not modify, replace, or monkey-patch any
+     core source file of Dixlase.
+
+  3. The plugin or theme does not bypass, circumvent, or replicate the
+     internal implementation of core services except through the
+     published contracts and interfaces listed in the Plugin API.
+
+  4. The plugin or theme is loaded through the standard plugin/theme
+     loading mechanism (PluginLoaderTrait / ThemeLoaderTrait) and
+     resides in the designated plugins/ or themes/ directory.
+
+If any of the above conditions are not met, the plugin or theme is
+considered a derivative work of Dixlase, and the full terms of the
+GNU Affero General Public License apply to it.
+
+For the avoidance of doubt:
+
+  - Plugins and themes that meet all conditions above may be distributed
+    under any license of your choice, including proprietary licenses.
+
+  - This exception does not exempt the Dixlase core itself from the
+    GNU Affero General Public License. Modifications to core files
+    remain subject to the full AGPL-3.0 terms.
+
+  - The Plugin API definition (PLUGIN-API.md) is versioned together with
+    Dixlase. The applicable Plugin API is the version distributed
+    with the specific release of Dixlase that the plugin or theme
+    targets.
+
+  - This exception does not grant permission to use the trade names,
+    trademarks, service marks, or product names of exc-D inc. or
+    Dixlase, except as required for reasonable and customary use in
+    describing the origin of the plugin or theme.
+
+If you modify Dixlase core and redistribute it, you may choose to
+remove this exception. If you do not remove the exception, the exception
+also applies to your modified version.
