@@ -52,9 +52,11 @@ class FrontSettingsTableSeeder extends Seeder
             ['name' => 'front_description', 'value' => ''],
         ];
 
+        $primarySiteId = 1;
+
         foreach ($settings as $setting) {
-            FrontSetting::updateOrCreate(
-                ['name' => $setting['name']],
+            FrontSetting::withoutGlobalScope('belongs_to_site')->updateOrCreate(
+                ['name' => $setting['name'], 'site_id' => $primarySiteId],
                 ['value' => $setting['value'], 'created_at' => now(), 'updated_at' => now()]
             );
         }

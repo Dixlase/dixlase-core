@@ -38,6 +38,7 @@
 namespace App\Models;
 
 use App\Contracts\Repositories\FrontSettingRepositoryInterface;
+use App\Models\Traits\BelongsToSite;
 use App\Models\Traits\UsesSettingRepositoryTrait;
 use Illuminate\Database\Eloquent\Model;
 
@@ -48,11 +49,13 @@ use Illuminate\Database\Eloquent\Model;
  */
 class FrontSetting extends Model
 {
+    use BelongsToSite;
     use UsesSettingRepositoryTrait;
 
     protected $table = 'front_settings';
 
     protected $fillable = [
+        'site_id',
         'name',
         'value',
         'front_ogp_image_id',

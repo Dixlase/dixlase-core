@@ -43,6 +43,7 @@ return new class extends Migration
     {
         Schema::create('front_page_revisions', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('site_id')->index();
             // FK は add_foreign_key_constraints (999999) でまとめて追加（front_pages.id への cascade）
             $table->unsignedBigInteger('front_page_id');
             // 全フィールド（title, content, custom_js, custom_css, storage_type, editor_type, status など）の完全スナップショット

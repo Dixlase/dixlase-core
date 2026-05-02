@@ -35,6 +35,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToSite;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -45,6 +46,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class FrontPageRevision extends Model
 {
+    use BelongsToSite;
+
     protected $table = 'front_page_revisions';
 
     public const TYPE_AUTO = 'auto';
@@ -55,6 +58,7 @@ class FrontPageRevision extends Model
 
     /** @var list<string> */
     protected $fillable = [
+        'site_id',
         'front_page_id',
         'snapshot',
         'type',
