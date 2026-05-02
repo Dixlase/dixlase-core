@@ -68,8 +68,13 @@ class MediaSettingsSeeder extends Seeder
             ['name' => 'zip_max_file_count', 'value' => '1000'],        // ZIP内最大ファイル数
         ];
 
+        $primarySiteId = 1;
+
         foreach ($defaultSettings as $setting) {
-            MediaSetting::updateOrCreate(['name' => $setting['name']], $setting);
+            MediaSetting::withoutGlobalScope('belongs_to_site')->updateOrCreate(
+                ['name' => $setting['name'], 'site_id' => $primarySiteId],
+                ['value' => $setting['value']]
+            );
         }
     }
 }

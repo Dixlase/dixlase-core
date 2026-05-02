@@ -50,6 +50,7 @@ return new class extends Migration
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('site_id')->index();
             $table->string('name');
             $table->string('caption')->nullable();
             $table->text('description')->nullable();

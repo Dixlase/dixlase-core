@@ -327,6 +327,22 @@ return new class extends Migration
                 ->on('sites')
                 ->cascadeOnDelete();
         });
+
+        // media.site_id -> sites.id (cascade)
+        Schema::table('media', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
+
+        // media_settings.site_id -> sites.id (cascade)
+        Schema::table('media_settings', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
     }
 
     /**
@@ -334,6 +350,16 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // media_settings.site_id
+        Schema::table('media_settings', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
+        // media.site_id
+        Schema::table('media', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
         // front_settings.site_id
         Schema::table('front_settings', function (Blueprint $table) {
             $table->dropForeign(['site_id']);

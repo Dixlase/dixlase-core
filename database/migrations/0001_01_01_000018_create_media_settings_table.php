@@ -48,10 +48,13 @@ return new class extends Migration
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->unsignedBigInteger('site_id')->index();
             $table->string('name', 255)->nullable();
             $table->text('value')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->unique(['name', 'site_id']);
         });
     }
 
