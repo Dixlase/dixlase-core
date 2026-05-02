@@ -78,6 +78,12 @@ return [
             'throw' => false,
         ],
 
+        // Multisite storage disks. Resolved at request time by
+        // App\Services\Site\SiteStorage so the site_id is always current
+        // and config caching doesn't freeze it. Use SiteStorage::private(),
+        // SiteStorage::public(), or SiteStorage::global() rather than
+        // hard-coding paths.
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
