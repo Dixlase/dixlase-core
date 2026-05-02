@@ -1,31 +1,3 @@
-=======================================================================
-
-    DIXLASE
-
-    Copyright (C) 2026 exc-D inc. <https://exc-d.com>
-
-    Dixlase is dual-licensed. You may use it under either:
-
-      (a) the GNU Affero General Public License version 3, as published
-          by the Free Software Foundation, together with the Dixlase
-          Plugin and Theme Exception (included at the end of this file);
-          or
-
-      (b) a commercial license agreement obtained from
-          exc-D inc. (see LICENSE.commercial for details, or
-          contact office@exc-d.com).
-
-    Contributions to the Dixlase Core repository are governed by the
-    Dixlase Copyright Policy (see COPYRIGHT-POLICY.md).
-
-    Unless you have entered into a commercial license agreement, this
-    file is governed by the AGPL terms below.
-
-    The full text of the GNU Affero General Public License follows.
-
-=======================================================================
-
-
                     GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007
 
@@ -88,20 +60,19 @@ modification follow.
 
   0. Definitions.
 
-  "This License" refers to version 3 of the GNU Affero General Public
-License.
+  "This License" refers to version 3 of the GNU Affero General Public License.
 
-  "Copyright" also means copyright-like laws that apply to other kinds
-of works, such as semiconductor masks.
+  "Copyright" also means copyright-like laws that apply to other kinds of
+works, such as semiconductor masks.
 
   "The Program" refers to any copyrightable work licensed under this
 License.  Each licensee is addressed as "you".  "Licensees" and
 "recipients" may be individuals or organizations.
 
-  To "modify" a work means to copy from or adapt all or part of the
-work in a fashion requiring copyright permission, other than the making
-of an exact copy.  The resulting work is called a "modified version" of
-the earlier work or a work "based on" the earlier work.
+  To "modify" a work means to copy from or adapt all or part of the work
+in a fashion requiring copyright permission, other than the making of an
+exact copy.  The resulting work is called a "modified version" of the
+earlier work or a work "based on" the earlier work.
 
   A "covered work" means either the unmodified Program or a work based
 on the Program.
@@ -161,8 +132,9 @@ linked subprograms that the work is specifically designed to require,
 such as by intimate data communication or control flow between those
 subprograms and other parts of the work.
 
-  The Corresponding Source need not include anything that users can
-regenerate automatically from other parts of the Corresponding Source.
+  The Corresponding Source need not include anything that users
+can regenerate automatically from other parts of the Corresponding
+Source.
 
   The Corresponding Source for a work in source code form is that
 same work.
@@ -272,9 +244,9 @@ in one of these ways:
 
     b) Convey the object code in, or embodied in, a physical product
     (including a physical distribution medium), accompanied by a
-    written offer, valid for at least three years and valid for as long
-    as you offer spare parts or customer support for that product model,
-    to give anyone who possesses the object code either (1) a
+    written offer, valid for at least three years and valid for as
+    long as you offer spare parts or customer support for that product
+    model, to give anyone who possesses the object code either (1) a
     copy of the Corresponding Source for all the software in the
     product that is covered by this License, on a durable physical
     medium customarily used for software interchange, for a price no
@@ -302,9 +274,9 @@ in one of these ways:
     available for as long as needed to satisfy these requirements.
 
     e) Convey the object code using peer-to-peer transmission, provided
-    you inform other peers where the object code and Corresponding Source
-    of the work are being offered to the general public at no charge under
-    subsection 6d.
+    you inform other peers where the object code and Corresponding
+    Source of the work are being offered to the general public at no
+    charge under subsection 6d.
 
   A separable portion of the object code, whose source code is excluded
 from the Corresponding Source as a System Library, need not be
@@ -336,11 +308,11 @@ specifically for use in, a User Product, and the conveying occurs as
 part of a transaction in which the right of possession and use of the
 User Product is transferred to the recipient in perpetuity or for a
 fixed term (regardless of how the transaction is characterized), the
-Corresponding Source conveyed under this section must be accompanied by
-the Installation Information.  But this requirement does not apply if
-neither you nor any third party retains the ability to install modified
-object code on the User Product (for example, the work has been installed
-in ROM).
+Corresponding Source conveyed under this section must be accompanied
+by the Installation Information.  But this requirement does not apply
+if neither you nor any third party retains the ability to install
+modified object code on the User Product (for example, the work has
+been installed in ROM).
 
   The requirement to provide Installation Information does not include a
 requirement to continue to provide support service, warranty, or updates
@@ -375,8 +347,8 @@ additional permissions on material, added by you to a covered work,
 for which you have or can give appropriate copyright permission.
 
   Notwithstanding any other provision of this License, for material you
-add to a covered work, you may (if authorized by the copyright holders
-of that material) supplement the terms of this License with terms:
+add to a covered work, you may (if authorized by the copyright holders of
+that material) supplement the terms of this License with terms:
 
     a) Disclaiming warranty or limiting liability differently from the
     terms of sections 15 and 16 of this License; or
@@ -417,8 +389,8 @@ additional terms that apply to those files, or a notice indicating
 where to find the applicable terms.
 
   Additional terms, permissive or non-permissive, may be stated in the
-form of a separately written license, or stated as exceptions; the
-above requirements apply either way.
+form of a separately written license, or stated as exceptions;
+the above requirements apply either way.
 
   8. Termination.
 
@@ -661,8 +633,8 @@ the "copyright" line and a pointer to where the full notice is found.
     Copyright (C) <year>  <name of author>
 
     This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as published
-    by the Free Software Foundation, either version 3 of the License, or
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
     This program is distributed in the hope that it will be useful,
@@ -687,70 +659,3 @@ specific requirements.
 if any, to sign a "copyright disclaimer" for the program, if necessary.
 For more information on this, and how to apply and follow the GNU AGPL, see
 <https://www.gnu.org/licenses/>.
-
-
-=======================================================================
-
-    DIXLASE PLUGIN AND THEME EXCEPTION
-
-    Version 1.0, 2026
-
-    Copyright (C) 2026 exc-D inc. <https://exc-d.com>
-
-=======================================================================
-
-Additional permission under GNU AGPL version 3 section 7:
-
-As a special exception to the GNU Affero General Public License, the
-copyright holders of Dixlase grant you additional permission to
-convey plugins and themes that interact with Dixlase solely through
-the Plugin API (as defined in the file PLUGIN-API.md distributed with
-Dixlase) without those plugins or themes being considered derivative
-works of Dixlase, and therefore without being subject to the
-requirements of the GNU Affero General Public License.
-
-This exception applies only when ALL of the following conditions are met:
-
-  1. The plugin or theme communicates with Dixlase exclusively
-     through the interfaces, contracts, traits, base classes, DTOs,
-     enums, Blade components, middleware groups, configuration
-     structures, injectable services, Eloquent models, and helper
-     functions documented in PLUGIN-API.md (the "Plugin API").
-
-  2. The plugin or theme does not modify, replace, or monkey-patch any
-     core source file of Dixlase.
-
-  3. The plugin or theme does not bypass, circumvent, or replicate the
-     internal implementation of core services except through the
-     published contracts and interfaces listed in the Plugin API.
-
-  4. The plugin or theme is loaded through the standard plugin/theme
-     loading mechanism (PluginLoaderTrait / ThemeLoaderTrait) and
-     resides in the designated plugins/ or themes/ directory.
-
-If any of the above conditions are not met, the plugin or theme is
-considered a derivative work of Dixlase, and the full terms of the
-GNU Affero General Public License apply to it.
-
-For the avoidance of doubt:
-
-  - Plugins and themes that meet all conditions above may be distributed
-    under any license of your choice, including proprietary licenses.
-
-  - This exception does not exempt the Dixlase core itself from the
-    GNU Affero General Public License. Modifications to core files
-    remain subject to the full AGPL-3.0 terms.
-
-  - The Plugin API definition (PLUGIN-API.md) is versioned together with
-    Dixlase. The applicable Plugin API is the version distributed
-    with the specific release of Dixlase that the plugin or theme
-    targets.
-
-  - This exception does not grant permission to use the trade names,
-    trademarks, service marks, or product names of exc-D inc. or
-    Dixlase, except as required for reasonable and customary use in
-    describing the origin of the plugin or theme.
-
-If you modify Dixlase core and redistribute it, you may choose to
-remove this exception. If you do not remove the exception, the exception
-also applies to your modified version.

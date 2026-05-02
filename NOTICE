@@ -1,0 +1,37 @@
+=======================================================================
+
+    DIXLASE
+
+    Copyright (C) 2026 exc-D inc. <https://exc-d.com>
+
+    Dixlase is dual-licensed. You may use it under either:
+
+      (a) the GNU Affero General Public License version 3, as published
+          by the Free Software Foundation, together with the Dixlase
+          Plugin and Theme Exception (see LICENSE-EXCEPTIONS for the
+          full exception terms); or
+
+      (b) a commercial license agreement obtained from exc-D inc.
+          (see LICENSE.commercial for details, or contact
+          office@exc-d.com).
+
+    Contributions to the Dixlase Core repository are governed by the
+    Dixlase Copyright Policy (see COPYRIGHT-POLICY.md).
+
+    Unless you have entered into a commercial license agreement, this
+    project is governed by the AGPL terms in the LICENSE file.
+
+=======================================================================
+
+File map:
+
+    LICENSE              GNU Affero General Public License v3 (verbatim)
+    LICENSE-EXCEPTIONS   Dixlase Plugin and Theme Exception (additional
+                         permission under AGPL §7)
+    LICENSE.commercial   Commercial license terms (separate agreement)
+    NOTICE               This file — project copyright and dual-license
+                         summary (English)
+    NOTICE.ja            Japanese counterpart of this file
+    LICENSE-EXCEPTIONS.ja Japanese counterpart of LICENSE-EXCEPTIONS
+
+=======================================================================
