@@ -46,11 +46,13 @@ return new class extends Migration
     {
         Schema::create('captcha_enabled_forms', function (Blueprint $table) {
             $table->id();
-            $table->string('form_key')->unique()->comment('Form identifier (e.g., admin_login, user_register)');
+            $table->unsignedBigInteger('site_id')->index();
+            $table->string('form_key')->comment('Form identifier (e.g., admin_login, user_register)');
             $table->boolean('enabled')->default(true)->comment('Whether CAPTCHA is enabled for this form');
             $table->string('provider')->nullable()->comment('Optional: Override default CAPTCHA provider for this form');
             $table->timestamps();
 
+            $table->unique(['site_id', 'form_key']);
             $table->index('enabled');
         });
     }

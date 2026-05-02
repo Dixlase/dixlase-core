@@ -399,6 +399,38 @@ return new class extends Migration
                 ->on('sites')
                 ->cascadeOnDelete();
         });
+
+        // theme_settings.site_id -> sites.id (cascade)
+        Schema::table('theme_settings', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
+
+        // captcha_enabled_forms.site_id -> sites.id (cascade)
+        Schema::table('captcha_enabled_forms', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
+
+        // lockdown_status.site_id -> sites.id (cascade)
+        Schema::table('lockdown_status', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
+
+        // lockdown_history.site_id -> sites.id (cascade)
+        Schema::table('lockdown_history', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
     }
 
     /**
@@ -406,6 +438,26 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // lockdown_history.site_id
+        Schema::table('lockdown_history', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
+        // lockdown_status.site_id
+        Schema::table('lockdown_status', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
+        // captcha_enabled_forms.site_id
+        Schema::table('captcha_enabled_forms', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
+        // theme_settings.site_id
+        Schema::table('theme_settings', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
         // custom_role_permission_overrides.site_id
         Schema::table('custom_role_permission_overrides', function (Blueprint $table) {
             $table->dropForeign(['site_id']);
