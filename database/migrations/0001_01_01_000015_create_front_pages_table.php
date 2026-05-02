@@ -46,6 +46,7 @@ return new class extends Migration
     {
         Schema::create('front_pages', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('site_id')->index();
             $table->string('page_type', 50)->default('main_content');
             $table->string('lang', 10)->default('en');
             $table->string('title')->nullable();
@@ -57,7 +58,7 @@ return new class extends Migration
             $table->tinyInteger('status')->default(1);
             $table->timestamps();
 
-            $table->unique(['page_type', 'lang']);
+            $table->unique(['site_id', 'page_type', 'lang']);
         });
     }
 

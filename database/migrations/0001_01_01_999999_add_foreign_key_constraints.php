@@ -303,6 +303,30 @@ return new class extends Migration
                 ->on('sites')
                 ->nullOnDelete();
         });
+
+        // front_pages.site_id -> sites.id (cascade)
+        Schema::table('front_pages', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
+
+        // front_page_revisions.site_id -> sites.id (cascade)
+        Schema::table('front_page_revisions', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
+
+        // front_settings.site_id -> sites.id (cascade)
+        Schema::table('front_settings', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
     }
 
     /**
@@ -310,6 +334,21 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // front_settings.site_id
+        Schema::table('front_settings', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
+        // front_page_revisions.site_id
+        Schema::table('front_page_revisions', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
+        // front_pages.site_id
+        Schema::table('front_pages', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
         // audit_logs.site_id
         Schema::table('audit_logs', function (Blueprint $table) {
             $table->dropForeign(['site_id']);
