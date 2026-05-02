@@ -55,6 +55,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->use([
             \Illuminate\Http\Middleware\TrustProxies::class, // リバースプロキシ背後でHTTPS/IPを認識
             \App\Http\Middleware\CheckInstallationReady::class, // インストール準備状況チェック + インストール状態チェック
+            \App\Http\Middleware\ResolveSiteContext::class, // マルチサイト対応のための現在のサイト解決（v0.1.0 では primary site 固定）
             \App\Http\Middleware\ForceHttps::class, // FORCE_SSL有効時にHTTPS強制リダイレクト
             \App\Http\Middleware\ApplySessionConfig::class, // セッション設定の動的適用
             \App\Http\Middleware\ContentSecurityPolicy::class, // CSPヘッダー付与
