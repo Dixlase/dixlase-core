@@ -33,38 +33,40 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Models;
+declare(strict_types=1);
 
-use App\Contracts\Repositories\ApiSettingRepositoryInterface;
-use App\Models\Traits\UsesSettingRepositoryTrait;
-use Illuminate\Database\Eloquent\Model;
+namespace App\Settings;
+
+use App\Enums\SettingScope;
+use App\Services\Site\SettingDefinition;
+use App\Services\Site\SettingDefinitionRegistry;
 
 /**
- * API settings model.
- *
- * After the multisite consolidation API keys live in global_settings
- * alongside other network-wide values. This model remains for legacy
- * ApiSetting::getValue() / setValue() callsites and direct queries; its
- * table is now global_settings.
- *
- * @deprecated 静的メソッドは非推奨です。ApiSettingRepositoryを使用してください。
+ * Registers API-subsystem setting keys (network-wide policy).
  */
-class ApiSetting extends Model
+class ApiSettingDefinitions
 {
-    use UsesSettingRepositoryTrait;
-
-    protected $table = 'global_settings';
-
-    protected $fillable = [
-        'name',
-        'value',
-    ];
-
-    /**
-     * {@inheritDoc}
-     */
-    protected static function getRepositoryInterface(): string
+    public static function register(SettingDefinitionRegistry $registry): void
     {
-        return ApiSettingRepositoryInterface::class;
+        $registry->register(new SettingDefinition(
+            name: 'api_enabled',
+            scope: SettingScope::Global,
+            default: false,
+            type: 'bool',
+        ));
+
+        $registry->register(new SettingDefinition(
+            name: 'api_rate_limit',
+            scope: SettingScope::Global,
+            default: 60,
+            type: 'int',
+        ));
+
+        $registry->register(new SettingDefinition(
+            name: 'api_signature_required',
+            scope: SettingScope::Global,
+            default: true,
+            type: 'bool',
+        ));
     }
 }

@@ -64,7 +64,9 @@ use App\Services\Site\SiteContext;
 use App\Services\Theme\ThemePermissionService;
 use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\Verification\CoreFileVerificationService;
+use App\Settings\ApiSettingDefinitions;
 use App\Settings\CoreSettingDefinitions;
+use App\Settings\SecuritySettingDefinitions;
 use App\Traits\CustomFilesLoaderTrait;
 use App\Traits\PluginLoaderTrait;
 use App\Traits\ThemeLoaderTrait;
@@ -163,7 +165,10 @@ class AppServiceProvider extends ServiceProvider
         // reads/writes correctly. Runs before the .env-presence check so
         // tests and CLI tooling have access to the registry without
         // requiring a real environment file.
-        CoreSettingDefinitions::register($this->app->make(SettingDefinitionRegistry::class));
+        $registry = $this->app->make(SettingDefinitionRegistry::class);
+        CoreSettingDefinitions::register($registry);
+        SecuritySettingDefinitions::register($registry);
+        ApiSettingDefinitions::register($registry);
 
         // .envファイルが存在しない場合はスキップ
         if (! file_exists(base_path('.env'))) {

@@ -42,7 +42,12 @@ use App\Models\Traits\UsesSettingRepositoryTrait;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * セキュリティ設定モデル
+ * Security policy settings model.
+ *
+ * After the multisite consolidation security keys live in global_settings
+ * alongside other network-wide values. This model remains for legacy
+ * SecuritySetting::getValue() / setValue() callsites and direct queries;
+ * its table is now global_settings.
  *
  * @deprecated 静的メソッドは非推奨です。SecuritySettingRepositoryを使用してください。
  */
@@ -50,7 +55,7 @@ class SecuritySetting extends Model
 {
     use UsesSettingRepositoryTrait;
 
-    protected $table = 'security_settings';
+    protected $table = 'global_settings';
 
     protected $fillable = [
         'name',
