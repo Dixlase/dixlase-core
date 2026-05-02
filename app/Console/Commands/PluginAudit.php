@@ -64,7 +64,7 @@ class PluginAudit extends Command
      */
     protected array $coreTables = [
         'users', 'members', 'plugins', 'media', 'settings',
-        'base_settings', 'member_settings', 'security_settings',
+        'site_settings', 'member_settings', 'security_settings',
         'password_reset_tokens', 'sessions', 'cache', 'jobs',
         'failed_jobs', 'members_login_attempts',
     ];

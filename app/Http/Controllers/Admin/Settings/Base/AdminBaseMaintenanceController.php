@@ -35,7 +35,7 @@
 
 namespace App\Http\Controllers\Admin\Settings\Base;
 
-use App\Contracts\Repositories\BaseSettingRepositoryInterface;
+use App\Contracts\Repositories\SiteSettingRepositoryInterface;
 use App\Helpers\AdminModeHelper;
 use App\Helpers\ConfigHelper;
 use App\Helpers\EnvHelper;
@@ -46,9 +46,9 @@ class AdminBaseMaintenanceController extends AdminLoggedInController
 {
     protected const SETTING_KEYS = ['maintenance_mode', 'maintenance_message', 'maintenance_auto_release', 'maintenance_start_at', 'maintenance_release_at'];
 
-    protected BaseSettingRepositoryInterface $baseSettingRepository;
+    protected SiteSettingRepositoryInterface $baseSettingRepository;
 
-    public function __construct(BaseSettingRepositoryInterface $baseSettingRepository)
+    public function __construct(SiteSettingRepositoryInterface $baseSettingRepository)
     {
         parent::__construct();
         $this->baseSettingRepository = $baseSettingRepository;

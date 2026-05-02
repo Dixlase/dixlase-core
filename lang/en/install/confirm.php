@@ -48,7 +48,7 @@ return [
     'settings_review' => 'Settings Review',
     'basic_settings' => 'Basic Settings',
     'app_settings' => 'Application Settings',
-    'database_settings' => 'Database Settings',
+    'datasite_settings' => 'Database Settings',
     'mail_settings' => 'Mail Settings',
     'security_settings' => 'Security Settings',
 

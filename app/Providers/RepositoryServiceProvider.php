@@ -37,20 +37,20 @@ namespace App\Providers;
 
 use App\Contracts\Admin\AdminNavigationManagerInterface;
 use App\Contracts\Repositories\ApiSettingRepositoryInterface;
-use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 use App\Contracts\Repositories\FrontSettingRepositoryInterface;
 use App\Contracts\Repositories\MediaRepositoryInterface;
 use App\Contracts\Repositories\MediaSettingRepositoryInterface;
 use App\Contracts\Repositories\PluginRepositoryInterface;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
+use App\Contracts\Repositories\SiteSettingRepositoryInterface;
 use App\Contracts\Repositories\ThemeRepositoryInterface;
 use App\Repositories\ApiSettingRepository;
-use App\Repositories\BaseSettingRepository;
 use App\Repositories\FrontSettingRepository;
 use App\Repositories\MediaRepository;
 use App\Repositories\MediaSettingRepository;
 use App\Repositories\PluginRepository;
 use App\Repositories\SecuritySettingRepository;
+use App\Repositories\SiteSettingRepository;
 use App\Repositories\ThemeRepository;
 use App\Services\Admin\AdminNavigationManager;
 use Illuminate\Support\ServiceProvider;
@@ -67,10 +67,10 @@ class RepositoryServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // BaseSetting リポジトリのバインディング
+        // SiteSetting リポジトリのバインディング
         $this->app->bind(
-            BaseSettingRepositoryInterface::class,
-            BaseSettingRepository::class
+            SiteSettingRepositoryInterface::class,
+            SiteSettingRepository::class
         );
 
         // SecuritySetting リポジトリのバインディング

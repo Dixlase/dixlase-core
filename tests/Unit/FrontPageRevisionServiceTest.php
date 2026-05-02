@@ -27,9 +27,9 @@ namespace Tests\Unit;
 use App\Enums\ContentEditorType;
 use App\Enums\ContentStatus;
 use App\Enums\ContentStorageType;
-use App\Models\BaseSetting;
 use App\Models\FrontPage;
 use App\Models\FrontPageRevision;
+use App\Models\SiteSetting;
 use App\Services\FrontPageRevisionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -102,7 +102,7 @@ class FrontPageRevisionServiceTest extends TestCase
 
     public function test_record_prunes_old_revisions_beyond_retention(): void
     {
-        BaseSetting::setValue(FrontPageRevisionService::SETTING_KEY_RETENTION, 3);
+        SiteSetting::setValue(FrontPageRevisionService::SETTING_KEY_RETENTION, 3);
 
         $page = $this->makeFrontPage('v0');
         for ($i = 1; $i <= 5; $i++) {
@@ -115,7 +115,7 @@ class FrontPageRevisionServiceTest extends TestCase
 
     public function test_record_returns_null_when_retention_is_zero(): void
     {
-        BaseSetting::setValue(FrontPageRevisionService::SETTING_KEY_RETENTION, 0);
+        SiteSetting::setValue(FrontPageRevisionService::SETTING_KEY_RETENTION, 0);
         $page = $this->makeFrontPage('hello');
 
         $rev = $this->service->record($page);
@@ -167,10 +167,10 @@ class FrontPageRevisionServiceTest extends TestCase
 
     public function test_retention_count_is_clamped(): void
     {
-        BaseSetting::setValue(FrontPageRevisionService::SETTING_KEY_RETENTION, 99999);
+        SiteSetting::setValue(FrontPageRevisionService::SETTING_KEY_RETENTION, 99999);
         $this->assertSame(FrontPageRevisionService::MAX_RETENTION, $this->service->getRetentionCount());
 
-        BaseSetting::setValue(FrontPageRevisionService::SETTING_KEY_RETENTION, -5);
+        SiteSetting::setValue(FrontPageRevisionService::SETTING_KEY_RETENTION, -5);
         $this->assertSame(0, $this->service->getRetentionCount());
     }
 }

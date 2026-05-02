@@ -35,37 +35,21 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Facades;
+namespace App\Contracts\Repositories;
 
-use App\Helpers\EnvHelper;
-use App\Models\BaseSetting;
-use Exception;
-use Illuminate\Support\Facades\Facade;
+use App\Models\SiteSetting;
 
 /**
- * BaseSettings Facade — convenience accessor for reading core base settings.
- * Plugins/themes may use BaseSettings::get('site_name') etc. to read core
- * configuration without instantiating the underlying model directly.
+ * 基本設定リポジトリインターフェース
+ *
+ * サイトの基本設定（サイト名、OGP画像など）を管理します。
  */
-class BaseSettings extends Facade
+interface SiteSettingRepositoryInterface extends SettingRepositoryInterface
 {
-    public static function get(string $key, $default = null)
-    {
-        $envKey = EnvHelper::toEnvKey($key);
-        if (in_array($envKey, EnvHelper::getEnvMap())) {
-            return env($envKey, $default);
-        }
-
-        return BaseSetting::getValue($key, $default);
-    }
-
-    public static function set(string $key, $value): void
-    {
-        // .env 設定の場合は例外を投げる
-        if (EnvHelper::isEnvKey($key)) {
-            throw new Exception("{$key} は .env 設定のため、BaseSettings では変更できません");
-        }
-
-        BaseSetting::setValue($key, $value);
-    }
+    /**
+     * リレーションを含めて設定を取得
+     *
+     * @param  string  $name  設定名
+     */
+    public function findWithRelations(string $name): ?SiteSetting;
 }

@@ -37,8 +37,8 @@
 
 namespace App\Helpers;
 
-use App\Models\BaseSetting;
 use App\Models\SecuritySetting;
+use App\Models\SiteSetting;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
@@ -54,7 +54,7 @@ class ConfigHelper
      * @param  string  $dbKey  Database key for model (e.g., 'session_driver', 'app_name', 'mail_host')
      * @param  mixed  $default  Default value if neither database nor config has the value
      * @param  string  $type  Return type: 'string', 'bool', 'int', 'float'
-     * @param  string  $model  Model class to use: 'SecuritySetting', 'BaseSetting'
+     * @param  string  $model  Model class to use: 'SecuritySetting', 'SiteSetting'
      * @return mixed
      */
     public static function get(string $configKey, string $dbKey, $default, string $type = 'string', string $model = 'SecuritySetting')
@@ -89,9 +89,9 @@ class ConfigHelper
 
         try {
             switch ($model) {
-                case 'BaseSetting':
-                    if (Schema::hasTable('base_settings')) {
-                        return BaseSetting::get($key, null);
+                case 'SiteSetting':
+                    if (Schema::hasTable('site_settings')) {
+                        return SiteSetting::get($key, null);
                     }
                     break;
                 case 'SecuritySetting':
@@ -113,9 +113,9 @@ class ConfigHelper
     {
         try {
             switch ($model) {
-                case 'BaseSetting':
-                    if (Schema::hasTable('base_settings')) {
-                        BaseSetting::setValue($key, $value);
+                case 'SiteSetting':
+                    if (Schema::hasTable('site_settings')) {
+                        SiteSetting::setValue($key, $value);
                     }
                     break;
                 case 'SecuritySetting':
@@ -223,7 +223,7 @@ class ConfigHelper
      */
     public static function getAppName(): string
     {
-        return self::get('app.name', 'app_name', 'Dixlase', 'string', 'BaseSetting');
+        return self::get('app.name', 'app_name', 'Dixlase', 'string', 'SiteSetting');
     }
 
     /**
@@ -231,18 +231,18 @@ class ConfigHelper
      */
     public static function getAppLocale(): string
     {
-        return self::get('app.locale', 'locale', 'en', 'string', 'BaseSetting');
+        return self::get('app.locale', 'locale', 'en', 'string', 'SiteSetting');
     }
 
     /**
      * 表示用タイムゾーンを取得する
      *
      * 保存・計算は常に UTC（config('app.timezone')）で行い、本メソッドは
-     * Blade や通知メールで現地時刻に変換する際に使う。値は base_settings.display_timezone。
+     * Blade や通知メールで現地時刻に変換する際に使う。値は site_settings.display_timezone。
      */
     public static function getDisplayTimezone(): string
     {
-        return self::get('app.display_timezone', 'display_timezone', 'Asia/Tokyo', 'string', 'BaseSetting');
+        return self::get('app.display_timezone', 'display_timezone', 'Asia/Tokyo', 'string', 'SiteSetting');
     }
 
     /**
@@ -250,7 +250,7 @@ class ConfigHelper
      */
     public static function getMaintenanceMode(): bool
     {
-        return self::get('app.maintenance_mode', 'maintenance_mode', false, 'bool', 'BaseSetting');
+        return self::get('app.maintenance_mode', 'maintenance_mode', false, 'bool', 'SiteSetting');
     }
 
     /**
@@ -258,7 +258,7 @@ class ConfigHelper
      */
     public static function getMaintenanceMessage(): string
     {
-        return self::get('app.maintenance_message', 'maintenance_message', '現在メンテナンス中です。しばらくお待ちください。', 'string', 'BaseSetting');
+        return self::get('app.maintenance_message', 'maintenance_message', '現在メンテナンス中です。しばらくお待ちください。', 'string', 'SiteSetting');
     }
 
     /**
@@ -266,7 +266,7 @@ class ConfigHelper
      */
     public static function getNotificationEnabled(): bool
     {
-        return self::get('app.notification_enabled', 'notification_enabled', false, 'bool', 'BaseSetting');
+        return self::get('app.notification_enabled', 'notification_enabled', false, 'bool', 'SiteSetting');
     }
 
     /**
@@ -274,7 +274,7 @@ class ConfigHelper
      */
     public static function getNotificationEmail(): string
     {
-        return BaseSetting::get('system_admin_email', '');
+        return SiteSetting::get('system_admin_email', '');
     }
 
     // ===== Mail Configuration Methods =====
@@ -284,7 +284,7 @@ class ConfigHelper
      */
     public static function getMailMailer(): string
     {
-        return self::get('mail.default', 'mail_mailer', 'smtp', 'string', 'BaseSetting');
+        return self::get('mail.default', 'mail_mailer', 'smtp', 'string', 'SiteSetting');
     }
 
     /**
@@ -292,7 +292,7 @@ class ConfigHelper
      */
     public static function getMailHost(): string
     {
-        return self::get('mail.mailers.smtp.host', 'mail_host', 'smtp.example.com', 'string', 'BaseSetting');
+        return self::get('mail.mailers.smtp.host', 'mail_host', 'smtp.example.com', 'string', 'SiteSetting');
     }
 
     /**
@@ -300,7 +300,7 @@ class ConfigHelper
      */
     public static function getMailPort(): int
     {
-        return self::get('mail.mailers.smtp.port', 'mail_port', 587, 'int', 'BaseSetting');
+        return self::get('mail.mailers.smtp.port', 'mail_port', 587, 'int', 'SiteSetting');
     }
 
     /**
@@ -308,7 +308,7 @@ class ConfigHelper
      */
     public static function getMailUsername(): string
     {
-        return self::get('mail.mailers.smtp.username', 'mail_username', '', 'string', 'BaseSetting');
+        return self::get('mail.mailers.smtp.username', 'mail_username', '', 'string', 'SiteSetting');
     }
 
     /**
@@ -316,7 +316,7 @@ class ConfigHelper
      */
     public static function getMailPassword(): string
     {
-        return self::get('mail.mailers.smtp.password', 'mail_password', '', 'string', 'BaseSetting');
+        return self::get('mail.mailers.smtp.password', 'mail_password', '', 'string', 'SiteSetting');
     }
 
     /**
@@ -324,7 +324,7 @@ class ConfigHelper
      */
     public static function getMailEncryption(): string
     {
-        return self::get('mail.mailers.smtp.encryption', 'mail_encryption', 'tls', 'string', 'BaseSetting');
+        return self::get('mail.mailers.smtp.encryption', 'mail_encryption', 'tls', 'string', 'SiteSetting');
     }
 
     /**
@@ -332,7 +332,7 @@ class ConfigHelper
      */
     public static function getMailFromAddress(): string
     {
-        return self::get('mail.from.address', 'mail_from_address', 'no-reply@example.com', 'string', 'BaseSetting');
+        return self::get('mail.from.address', 'mail_from_address', 'no-reply@example.com', 'string', 'SiteSetting');
     }
 
     // ===== Session Configuration Application =====

@@ -28,9 +28,9 @@ use App\Http\Middleware\CheckInstallationReady;
 use App\Http\Middleware\CheckMenuAccess;
 use App\Http\Middleware\CheckMenuEdit;
 use App\Http\Middleware\EnsureEmailIsVerified;
-use App\Models\BaseSetting;
 use App\Models\ExtensionSource;
 use App\Models\Member;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -67,7 +67,7 @@ class PluginSourceInstallTest extends TestCase
             resource_path("views/{$adminTheme}"),
         ]);
 
-        BaseSetting::setValue('site_name', 'Test Site');
+        SiteSetting::setValue('site_name', 'Test Site');
 
         $this->admin = Member::create([
             'account_name' => 'testadmin',

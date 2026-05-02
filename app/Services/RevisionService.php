@@ -40,7 +40,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Contracts\Revisionable;
-use App\Models\BaseSetting;
+use App\Models\SiteSetting;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -187,7 +187,7 @@ class RevisionService
      */
     public function getRetentionCount(): int
     {
-        $value = (int) BaseSetting::getValue(self::SETTING_KEY_RETENTION, self::DEFAULT_RETENTION);
+        $value = (int) SiteSetting::getValue(self::SETTING_KEY_RETENTION, self::DEFAULT_RETENTION);
 
         return max(0, min(self::MAX_RETENTION, $value));
     }

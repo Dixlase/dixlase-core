@@ -37,7 +37,7 @@
 
 namespace App\Traits;
 
-use App\Models\BaseSetting;
+use App\Models\SiteSetting;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
@@ -284,7 +284,7 @@ trait MailTestTrait
             } else {
                 // 管理画面時はmail_test_resultsまたはDBから確認
                 $sessionTestResults = session('mail_test_results', []);
-                $connectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? BaseSetting::getValue('mail_connection_tested', false));
+                $connectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? SiteSetting::getValue('mail_connection_tested', false));
             }
 
             if (! $connectionTested) {
@@ -337,7 +337,7 @@ trait MailTestTrait
             if ($context === 'install') {
                 session(['install_mail_verification_token' => $verificationToken]);
             } else {
-                BaseSetting::setValue('mail_verification_token', $verificationToken);
+                SiteSetting::setValue('mail_verification_token', $verificationToken);
             }
 
             // 認証リンクを生成
@@ -420,9 +420,9 @@ trait MailTestTrait
                 $installData = session('install_data', []);
                 $alreadyVerified = isset($installData['mail_receive_tested']) && $installData['mail_receive_tested'] == 1;
             } else {
-                $storedToken = BaseSetting::getValue('mail_verification_token');
+                $storedToken = SiteSetting::getValue('mail_verification_token');
                 $testResults = session('mail_test_results', []);
-                $dbMailReceiveTested = BaseSetting::getValue('mail_receive_tested');
+                $dbMailReceiveTested = SiteSetting::getValue('mail_receive_tested');
 
                 // セッションまたはDBで認証済みかチェック
                 $alreadyVerified = (isset($testResults['mail_receive_tested']) && $testResults['mail_receive_tested'] == 1)
@@ -471,7 +471,7 @@ trait MailTestTrait
             if ($context === 'install') {
                 session()->forget('install_mail_verification_token');
             } else {
-                BaseSetting::setValue('mail_verification_token', null);
+                SiteSetting::setValue('mail_verification_token', null);
             }
 
             // 共有コンポーネントを使用

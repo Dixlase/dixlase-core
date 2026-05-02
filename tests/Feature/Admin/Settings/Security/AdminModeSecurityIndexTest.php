@@ -30,8 +30,8 @@ use App\Http\Middleware\CheckInstallationReady;
 use App\Http\Middleware\CheckMenuAccess;
 use App\Http\Middleware\CheckMenuEdit;
 use App\Http\Middleware\EnsureEmailIsVerified;
-use App\Models\BaseSetting;
 use App\Models\Member;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\View;
@@ -67,7 +67,7 @@ class AdminModeSecurityIndexTest extends TestCase
             resource_path("views/{$adminTheme}"),
         ]);
 
-        BaseSetting::setValue('site_name', 'Test Site');
+        SiteSetting::setValue('site_name', 'Test Site');
 
         $this->superAdmin = Member::create([
             'account_name' => 'superadmin',
@@ -93,7 +93,7 @@ class AdminModeSecurityIndexTest extends TestCase
 
     public function test_simple_mode_shows_summary_cards_without_links_for_hidden_subpages(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -117,7 +117,7 @@ class AdminModeSecurityIndexTest extends TestCase
 
     public function test_simple_mode_shows_visible_subpage_cards(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -133,7 +133,7 @@ class AdminModeSecurityIndexTest extends TestCase
 
     public function test_simple_mode_does_not_show_readonly_banner(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -151,7 +151,7 @@ class AdminModeSecurityIndexTest extends TestCase
 
     public function test_advanced_mode_shows_all_subpage_cards(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -175,7 +175,7 @@ class AdminModeSecurityIndexTest extends TestCase
 
     public function test_advanced_mode_does_not_show_auto_configured_text(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')

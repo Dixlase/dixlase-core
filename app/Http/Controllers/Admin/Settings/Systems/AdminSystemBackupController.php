@@ -29,8 +29,8 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Systems\AdminSystemBackupCreateRequest;
 use App\Http\Requests\Admin\Settings\Systems\AdminSystemBackupSettingsRequest;
 use App\Models\BackupRecord;
-use App\Models\BaseSetting;
 use App\Models\RestoreRecord;
+use App\Models\SiteSetting;
 use Illuminate\Http\RedirectResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -111,10 +111,10 @@ class AdminSystemBackupController extends AdminLoggedInController
     {
         $validated = $request->validated();
 
-        BaseSetting::setValue(self::SETTING_DEFAULT_TARGETS, json_encode(array_values($validated['default_targets'])));
+        SiteSetting::setValue(self::SETTING_DEFAULT_TARGETS, json_encode(array_values($validated['default_targets'])));
 
         $retentionDays = $validated['default_retention_days'] ?? null;
-        BaseSetting::setValue(
+        SiteSetting::setValue(
             self::SETTING_DEFAULT_RETENTION_DAYS,
             $retentionDays === null ? '' : (string) $retentionDays,
         );
@@ -131,7 +131,7 @@ class AdminSystemBackupController extends AdminLoggedInController
      */
     private function resolveDefaultTargets(): array
     {
-        $stored = BaseSetting::getValue(self::SETTING_DEFAULT_TARGETS);
+        $stored = SiteSetting::getValue(self::SETTING_DEFAULT_TARGETS);
         if (! is_string($stored) || $stored === '') {
             return $this->backupService->getDefaultTargets();
         }
@@ -150,7 +150,7 @@ class AdminSystemBackupController extends AdminLoggedInController
      */
     private function resolveDefaultRetentionDays(): ?int
     {
-        $stored = BaseSetting::getValue(self::SETTING_DEFAULT_RETENTION_DAYS);
+        $stored = SiteSetting::getValue(self::SETTING_DEFAULT_RETENTION_DAYS);
         if (! is_string($stored) || $stored === '') {
             return null;
         }

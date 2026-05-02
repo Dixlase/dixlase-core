@@ -22,13 +22,13 @@
 
 namespace Tests\Unit\Models;
 
-use App\Models\BaseSetting;
 use App\Models\SecuritySetting;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * 設定モデル（BaseSetting, SecuritySetting）の Unit テスト
+ * 設定モデル（SiteSetting, SecuritySetting）の Unit テスト
  *
  * setValue/getValue の基本動作、存在しないキーのデフォルト値、上書き動作を検証
  */
@@ -37,34 +37,34 @@ class SettingModelTest extends TestCase
     use RefreshDatabase;
 
     // =========================================================================
-    // BaseSetting
+    // SiteSetting
     // =========================================================================
 
     public function test_base_setting_set_and_get_value(): void
     {
-        BaseSetting::setValue('site_name', 'Test Site');
+        SiteSetting::setValue('site_name', 'Test Site');
 
-        $this->assertEquals('Test Site', BaseSetting::getValue('site_name'));
+        $this->assertEquals('Test Site', SiteSetting::getValue('site_name'));
     }
 
     public function test_base_setting_get_returns_default_for_missing_key(): void
     {
-        $this->assertEquals('default', BaseSetting::getValue('nonexistent_key', 'default'));
+        $this->assertEquals('default', SiteSetting::getValue('nonexistent_key', 'default'));
     }
 
     public function test_base_setting_overwrite_existing_value(): void
     {
-        BaseSetting::setValue('site_name', 'Original');
-        BaseSetting::setValue('site_name', 'Updated');
+        SiteSetting::setValue('site_name', 'Original');
+        SiteSetting::setValue('site_name', 'Updated');
 
-        $this->assertEquals('Updated', BaseSetting::getValue('site_name'));
+        $this->assertEquals('Updated', SiteSetting::getValue('site_name'));
     }
 
     public function test_base_setting_stores_in_database(): void
     {
-        BaseSetting::setValue('test_key', 'test_value');
+        SiteSetting::setValue('test_key', 'test_value');
 
-        $this->assertDatabaseHas('base_settings', [
+        $this->assertDatabaseHas('site_settings', [
             'name' => 'test_key',
             'value' => 'test_value',
         ]);
@@ -72,9 +72,9 @@ class SettingModelTest extends TestCase
 
     public function test_base_setting_boolean_value(): void
     {
-        BaseSetting::setValue('feature_enabled', '1');
+        SiteSetting::setValue('feature_enabled', '1');
 
-        $this->assertTrue((bool) BaseSetting::getValue('feature_enabled'));
+        $this->assertTrue((bool) SiteSetting::getValue('feature_enabled'));
     }
 
     // =========================================================================
@@ -117,10 +117,10 @@ class SettingModelTest extends TestCase
 
     public function test_base_and_security_settings_are_independent(): void
     {
-        BaseSetting::setValue('shared_key', 'base_value');
+        SiteSetting::setValue('shared_key', 'base_value');
         SecuritySetting::setValue('shared_key', 'security_value');
 
-        $this->assertEquals('base_value', BaseSetting::getValue('shared_key'));
+        $this->assertEquals('base_value', SiteSetting::getValue('shared_key'));
         $this->assertEquals('security_value', SecuritySetting::getValue('shared_key'));
     }
 }

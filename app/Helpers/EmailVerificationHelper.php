@@ -272,8 +272,8 @@ class EmailVerificationHelper
     protected function sendAdminNotification($user, string $context): void
     {
         try {
-            $adminEmail = \App\Models\BaseSetting::getValue('system_admin_email')
-                ?? \App\Models\BaseSetting::getValue('notification_email');
+            $adminEmail = \App\Models\SiteSetting::getValue('system_admin_email')
+                ?? \App\Models\SiteSetting::getValue('notification_email');
 
             if (! $adminEmail) {
                 Log::info('[Email Verification] No admin email configured, skipping admin notification');

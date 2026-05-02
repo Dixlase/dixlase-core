@@ -25,10 +25,10 @@ namespace Tests\Unit\Presenters\Admin;
 use App\Enums\AuthenticationMode;
 use App\Enums\MemberStatus;
 use App\Models\AuditLog;
-use App\Models\BaseSetting;
 use App\Models\Member;
 use App\Models\Plugin;
 use App\Models\SecuritySetting;
+use App\Models\SiteSetting;
 use App\Presenters\Admin\DashboardPresenter;
 use App\Services\SafeModeService;
 use App\Services\TwoFa\TwoFaStatusService;
@@ -145,9 +145,9 @@ class DashboardPresenterTest extends TestCase
         ]);
 
         // All mail tests must be completed for 'ok' status
-        BaseSetting::set('mail_connection_tested', true);
-        BaseSetting::set('mail_send_tested', true);
-        BaseSetting::set('mail_receive_tested', true);
+        SiteSetting::set('mail_connection_tested', true);
+        SiteSetting::set('mail_send_tested', true);
+        SiteSetting::set('mail_receive_tested', true);
 
         $result = DashboardPresenter::mailServerStatus();
 

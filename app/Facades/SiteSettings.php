@@ -35,48 +35,37 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Models;
+namespace App\Facades;
 
-use App\Contracts\Repositories\BaseSettingRepositoryInterface;
-use App\Models\Traits\UsesSettingRepositoryTrait;
-use Illuminate\Database\Eloquent\Model;
+use App\Helpers\EnvHelper;
+use App\Models\SiteSetting;
+use Exception;
+use Illuminate\Support\Facades\Facade;
 
 /**
- * 基本設定モデル
- *
- * @deprecated 静的メソッドは非推奨です。BaseSettingRepositoryを使用してください。
+ * SiteSettings Facade — convenience accessor for reading core base settings.
+ * Plugins/themes may use SiteSettings::get('site_name') etc. to read core
+ * configuration without instantiating the underlying model directly.
  */
-class BaseSetting extends Model
+class SiteSettings extends Facade
 {
-    use UsesSettingRepositoryTrait;
-
-    /**
-     * テーブル名
-     *
-     * @var string
-     */
-    protected $table = 'base_settings';
-
-    /**
-     * ホワイトリスト
-     *
-     * @var array
-     */
-    protected $fillable = ['name', 'value'];
-
-    /**
-     * デフォルトOGP画像とのリレーション
-     */
-    public function defaultOgpImage()
+    public static function get(string $key, $default = null)
     {
-        return $this->belongsTo(Media::class, 'default_ogp_image_id');
+        $envKey = EnvHelper::toEnvKey($key);
+        if (in_array($envKey, EnvHelper::getEnvMap())) {
+            return env($envKey, $default);
+        }
+
+        return SiteSetting::getValue($key, $default);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected static function getRepositoryInterface(): string
+    public static function set(string $key, $value): void
     {
-        return BaseSettingRepositoryInterface::class;
+        // .env 設定の場合は例外を投げる
+        if (EnvHelper::isEnvKey($key)) {
+            throw new Exception("{$key} は .env 設定のため、SiteSettings では変更できません");
+        }
+
+        SiteSetting::setValue($key, $value);
     }
 }

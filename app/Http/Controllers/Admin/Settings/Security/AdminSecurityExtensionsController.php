@@ -42,8 +42,8 @@ use App\Enums\SecurityAction;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Security\AdminSecurityExtensionsUpdateRequest;
-use App\Models\BaseSetting;
 use App\Models\ExtensionSource;
+use App\Models\SiteSetting;
 use App\Services\Extension\ExtensionSourceManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -106,9 +106,9 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
 
         // メールテスト状態を取得
         $sessionTestResults = session('mail_test_results', []);
-        $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? BaseSetting::getValue('mail_connection_tested', false));
-        $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? BaseSetting::getValue('mail_send_tested', false));
-        $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
+        $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? SiteSetting::getValue('mail_connection_tested', false));
+        $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? SiteSetting::getValue('mail_send_tested', false));
+        $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? SiteSetting::getValue('mail_receive_tested', false));
 
         // ソースプリセット情報を構築
         $sourcePresets = collect(config('extension-sources.presets', []))->map(fn (array $preset, string $type) => [

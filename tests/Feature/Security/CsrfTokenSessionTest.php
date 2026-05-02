@@ -28,8 +28,8 @@ use App\Http\Middleware\CheckInstallationReady;
 use App\Http\Middleware\CheckMenuAccess;
 use App\Http\Middleware\CheckMenuEdit;
 use App\Http\Middleware\EnsureEmailIsVerified;
-use App\Models\BaseSetting;
 use App\Models\Member;
+use App\Models\SiteSetting;
 use App\Session\GuardAwareDatabaseSessionHandler;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -76,7 +76,7 @@ class CsrfTokenSessionTest extends TestCase
             resource_path("views/{$adminTheme}"),
         ]);
 
-        BaseSetting::setValue('site_name', 'Test Site');
+        SiteSetting::setValue('site_name', 'Test Site');
 
         $this->admin = Member::create([
             'account_name' => 'csrfadmin',
@@ -217,13 +217,13 @@ class CsrfTokenSessionTest extends TestCase
      * GuardAwareDatabaseSessionHandler が DB の admin_url を優先する
      *
      * 8f575c07 の修正点：config('admin.url.admin_url') はデフォルト値しか
-     * 返さないため、必ず DB の base_settings.admin_url を参照する必要がある。
+     * 返さないため、必ず DB の site_settings.admin_url を参照する必要がある。
      * カスタム admin_url 設定環境で session が誤テーブルに書かれて 419 が
      * 発生していた事象の回帰検知。
      */
     public function test_guard_aware_handler_resolves_admin_url_from_database(): void
     {
-        BaseSetting::setValue('admin_url', 'my-custom-cp');
+        SiteSetting::setValue('admin_url', 'my-custom-cp');
 
         $handler = new GuardAwareDatabaseSessionHandler(
             app('db')->connection(),
@@ -250,8 +250,8 @@ class CsrfTokenSessionTest extends TestCase
      */
     public function test_guard_aware_handler_falls_back_to_config_default(): void
     {
-        // base_settings に admin_url レコードが存在しない状態
-        BaseSetting::query()->where('name', 'admin_url')->delete();
+        // site_settings に admin_url レコードが存在しない状態
+        SiteSetting::query()->where('name', 'admin_url')->delete();
 
         $handler = new GuardAwareDatabaseSessionHandler(
             app('db')->connection(),
@@ -281,7 +281,7 @@ class CsrfTokenSessionTest extends TestCase
      */
     public function test_guard_aware_handler_routes_admin_path_to_member_guard(): void
     {
-        BaseSetting::setValue('admin_url', 'admin');
+        SiteSetting::setValue('admin_url', 'admin');
         $this->resetGuardAwareCache();
 
         $handler = new GuardAwareDatabaseSessionHandler(
@@ -322,7 +322,7 @@ class CsrfTokenSessionTest extends TestCase
      */
     public function test_guard_aware_handler_routes_custom_admin_url_to_member_guard(): void
     {
-        BaseSetting::setValue('admin_url', 'manage');
+        SiteSetting::setValue('admin_url', 'manage');
         $this->resetGuardAwareCache();
 
         $handler = new GuardAwareDatabaseSessionHandler(
@@ -356,7 +356,7 @@ class CsrfTokenSessionTest extends TestCase
      */
     public function test_guard_aware_handler_returns_null_for_guest_path(): void
     {
-        BaseSetting::setValue('admin_url', 'admin');
+        SiteSetting::setValue('admin_url', 'admin');
         $this->resetGuardAwareCache();
 
         $handler = new GuardAwareDatabaseSessionHandler(

@@ -27,9 +27,9 @@ namespace Tests\Unit;
 use App\Enums\ContentEditorType;
 use App\Enums\ContentStatus;
 use App\Enums\ContentStorageType;
-use App\Models\BaseSetting;
 use App\Models\FrontPage;
 use App\Models\FrontPageRevision;
+use App\Models\SiteSetting;
 use App\Services\RevisionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -64,7 +64,7 @@ class RevisionProtectionTest extends TestCase
 
     public function test_prune_keeps_protected_revisions_even_beyond_retention(): void
     {
-        BaseSetting::setValue(RevisionService::SETTING_KEY_RETENTION, 3);
+        SiteSetting::setValue(RevisionService::SETTING_KEY_RETENTION, 3);
 
         $page = $this->makeFrontPage('v0');
 
@@ -96,7 +96,7 @@ class RevisionProtectionTest extends TestCase
 
     public function test_prune_never_deletes_protected_revisions(): void
     {
-        BaseSetting::setValue(RevisionService::SETTING_KEY_RETENTION, 2);
+        SiteSetting::setValue(RevisionService::SETTING_KEY_RETENTION, 2);
 
         $page = $this->makeFrontPage('v0');
 
@@ -124,7 +124,7 @@ class RevisionProtectionTest extends TestCase
 
     public function test_prune_exceeds_retention_when_all_revisions_are_protected(): void
     {
-        BaseSetting::setValue(RevisionService::SETTING_KEY_RETENTION, 2);
+        SiteSetting::setValue(RevisionService::SETTING_KEY_RETENTION, 2);
 
         $page = $this->makeFrontPage('v0');
 

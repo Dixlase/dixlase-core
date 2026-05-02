@@ -39,7 +39,7 @@ namespace App\Services\Editor;
 
 use App\Contracts\Plugin\EditorCapableInterface;
 use App\DTO\Editor\EditorInfo;
-use App\Models\BaseSetting;
+use App\Models\SiteSetting;
 use App\Services\Plugin\PluginServiceResolver;
 
 /**
@@ -108,7 +108,7 @@ class EditorManager
             return $editors[0];
         }
 
-        $preferredSlug = BaseSetting::get(self::PREFERRED_GUI_EDITOR_KEY);
+        $preferredSlug = SiteSetting::get(self::PREFERRED_GUI_EDITOR_KEY);
         if ($preferredSlug) {
             foreach ($editors as $editor) {
                 if ($editor->pluginSlug === $preferredSlug) {

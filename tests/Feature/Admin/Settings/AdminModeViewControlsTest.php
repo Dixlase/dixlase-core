@@ -30,8 +30,8 @@ use App\Http\Middleware\CheckInstallationReady;
 use App\Http\Middleware\CheckMenuAccess;
 use App\Http\Middleware\CheckMenuEdit;
 use App\Http\Middleware\EnsureEmailIsVerified;
-use App\Models\BaseSetting;
 use App\Models\Member;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\View;
@@ -67,7 +67,7 @@ class AdminModeViewControlsTest extends TestCase
             resource_path("views/{$adminTheme}"),
         ]);
 
-        BaseSetting::setValue('site_name', 'Test Site');
+        SiteSetting::setValue('site_name', 'Test Site');
 
         $this->superAdmin = Member::create([
             'account_name' => 'superadmin',
@@ -93,7 +93,7 @@ class AdminModeViewControlsTest extends TestCase
 
     public function test_login_page_shows_partial_notice_in_simple_mode(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -105,7 +105,7 @@ class AdminModeViewControlsTest extends TestCase
 
     public function test_login_page_no_partial_notice_in_advanced_mode(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -117,7 +117,7 @@ class AdminModeViewControlsTest extends TestCase
 
     public function test_captcha_page_no_partial_notice_in_simple_mode(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -130,7 +130,7 @@ class AdminModeViewControlsTest extends TestCase
 
     public function test_two_fa_page_shows_partial_notice_in_simple_mode(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -146,7 +146,7 @@ class AdminModeViewControlsTest extends TestCase
 
     public function test_login_page_hides_attempt_limit_section_in_simple_mode(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -159,7 +159,7 @@ class AdminModeViewControlsTest extends TestCase
 
     public function test_login_page_shows_attempt_limit_section_in_advanced_mode(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -172,7 +172,7 @@ class AdminModeViewControlsTest extends TestCase
 
     public function test_two_fa_page_hides_detailed_settings_in_simple_mode(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -185,7 +185,7 @@ class AdminModeViewControlsTest extends TestCase
 
     public function test_two_fa_page_shows_detailed_settings_in_advanced_mode(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')

@@ -75,7 +75,7 @@ trait AdminInterfaceTrait
         }
 
         try {
-            if (! Schema::hasTable('base_settings')) {
+            if (! Schema::hasTable('site_settings')) {
                 return;
             }
         } catch (\Exception $e) {
@@ -83,7 +83,7 @@ trait AdminInterfaceTrait
         }
 
         $this->getSiteName();
-        $this->getBaseSettings();
+        $this->getSiteSettings();
         $this->setRouteName();
         $this->setHeading();
     }
@@ -92,14 +92,14 @@ trait AdminInterfaceTrait
     {
         $this->siteName = env('APP_NAME')
             ?? config('app.name')
-            ?? DB::table('base_settings')->where('name', 'site_name')->value('value')
+            ?? DB::table('site_settings')->where('name', 'site_name')->value('value')
             ?? 'Dixlase';
         $this->viewParams['site_name'] = $this->siteName;
     }
 
-    protected function getBaseSettings()
+    protected function getSiteSettings()
     {
-        $this->settings = DB::table('base_settings')->get()->keyBy('name')->toArray();
+        $this->settings = DB::table('site_settings')->get()->keyBy('name')->toArray();
         $this->viewParams['settings'] = $this->settings;
     }
 

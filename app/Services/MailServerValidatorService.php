@@ -37,7 +37,7 @@
 
 namespace App\Services;
 
-use App\Models\BaseSetting;
+use App\Models\SiteSetting;
 use Illuminate\Support\Facades\Log;
 
 class MailServerValidatorService
@@ -71,9 +71,9 @@ class MailServerValidatorService
      */
     public static function isMailServerTested(): bool
     {
-        $connectionTested = (bool) BaseSetting::getValue('mail_connection_tested', false);
-        $sendTested = (bool) BaseSetting::getValue('mail_send_tested', false);
-        $receiveTested = (bool) BaseSetting::getValue('mail_receive_tested', false);
+        $connectionTested = (bool) SiteSetting::getValue('mail_connection_tested', false);
+        $sendTested = (bool) SiteSetting::getValue('mail_send_tested', false);
+        $receiveTested = (bool) SiteSetting::getValue('mail_receive_tested', false);
 
         $allTested = $connectionTested && $sendTested && $receiveTested;
 

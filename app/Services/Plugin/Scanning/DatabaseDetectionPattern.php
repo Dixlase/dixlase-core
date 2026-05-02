@@ -86,8 +86,8 @@ class DatabaseDetectionPattern extends DetectionPattern
                 '/Schema::(create|table)\s*\(\s*[\'"](\w+)[\'"]/i',
             ],
             'core_tables_read', 'core_tables_write' => [
-                '/\\\\App\\\\Models\\\\(User|Member|Plugin|Media|Setting|BaseSetting|SecuritySetting)/i',
-                '/DB::table\s*\(\s*[\'"](users|members|plugins|media|settings|base_settings|security_settings)[\'"]\)/i',
+                '/\\\\App\\\\Models\\\\(User|Member|Plugin|Media|Setting|SiteSetting|SecuritySetting)/i',
+                '/DB::table\s*\(\s*[\'"](users|members|plugins|media|settings|site_settings|security_settings)[\'"]\)/i',
             ],
             default => [],
         };

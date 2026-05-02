@@ -49,12 +49,12 @@ use App\Enums\PluginHealthStatus;
 use App\Helpers\CaptchaHelper;
 use App\Helpers\ConfigHelper;
 use App\Models\AuditLog;
-use App\Models\BaseSetting;
 use App\Models\FileIntegrityAudit;
 use App\Models\Member;
 use App\Models\Plugin;
 use App\Models\PluginAudit;
 use App\Models\SecuritySetting;
+use App\Models\SiteSetting;
 use App\Models\Theme;
 use App\Services\Plugin\PluginServiceResolver;
 use App\Services\SafeModeService;
@@ -185,8 +185,8 @@ class DashboardPresenter
             'requires_advanced_mode' => true,
         ];
 
-        // HTTPS（force_ssl は base_settings に保存される）
-        $forceSsl = (bool) (int) BaseSetting::get('force_ssl', 0);
+        // HTTPS（force_ssl は site_settings に保存される）
+        $forceSsl = (bool) (int) SiteSetting::get('force_ssl', 0);
         $isCurrentSecure = request()->isSecure();
         if ($forceSsl) {
             $httpsStatus = 'ok';
@@ -399,9 +399,9 @@ class DashboardPresenter
         }
 
         // メール接続テスト・送信テスト・受信テストの結果を確認
-        $connectionTested = (bool) BaseSetting::get('mail_connection_tested', false);
-        $sendTested = (bool) BaseSetting::get('mail_send_tested', false);
-        $receiveTested = (bool) BaseSetting::get('mail_receive_tested', false);
+        $connectionTested = (bool) SiteSetting::get('mail_connection_tested', false);
+        $sendTested = (bool) SiteSetting::get('mail_send_tested', false);
+        $receiveTested = (bool) SiteSetting::get('mail_receive_tested', false);
 
         if (! $connectionTested || ! $sendTested || ! $receiveTested) {
             return [

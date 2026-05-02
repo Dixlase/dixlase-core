@@ -37,7 +37,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\LoginIdentifierMode;
 use App\Models\Member;
-use App\Repositories\BaseSettingRepository;
+use App\Repositories\SiteSettingRepository;
 
 /**
  * 管理画面のログインコントローラー
@@ -49,9 +49,9 @@ class AdminLoginController extends AdminController
     use \App\Traits\AccountVerificationTrait;
     use \App\Traits\LoginTrait;
 
-    protected BaseSettingRepository $baseSettingRepository;
+    protected SiteSettingRepository $baseSettingRepository;
 
-    public function __construct(BaseSettingRepository $baseSettingRepository)
+    public function __construct(SiteSettingRepository $baseSettingRepository)
     {
         parent::__construct();
         $this->baseSettingRepository = $baseSettingRepository;

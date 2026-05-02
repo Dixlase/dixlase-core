@@ -47,7 +47,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SitesSeeder::class,
             ApiSettingsTableSeeder::class,
-            BaseSettingsTableSeeder::class,
+            SiteSettingsTableSeeder::class,
             FrontSettingsTableSeeder::class,
             MediaTableSeeder::class,
             MediaSettingsSeeder::class,

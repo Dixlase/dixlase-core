@@ -35,7 +35,7 @@
 
 namespace App\Http\Controllers\Admin\Settings\Base;
 
-use App\Contracts\Repositories\BaseSettingRepositoryInterface;
+use App\Contracts\Repositories\SiteSettingRepositoryInterface;
 use App\Enums\AdminMode;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
@@ -47,9 +47,9 @@ class AdminBaseModeController extends AdminLoggedInController
 {
     protected const SETTING_KEYS = ['admin_mode'];
 
-    protected BaseSettingRepositoryInterface $baseSettingRepository;
+    protected SiteSettingRepositoryInterface $baseSettingRepository;
 
-    public function __construct(BaseSettingRepositoryInterface $baseSettingRepository)
+    public function __construct(SiteSettingRepositoryInterface $baseSettingRepository)
     {
         parent::__construct();
         $this->baseSettingRepository = $baseSettingRepository;

@@ -269,7 +269,7 @@ class CheckInstallationReady
             }
 
             // ステップ4: 主要テーブルの存在チェック（念のため）
-            $requiredTables = ['members', 'base_settings', 'themes'];
+            $requiredTables = ['members', 'site_settings', 'themes'];
             $tableStatus = [];
 
             foreach ($requiredTables as $table) {
@@ -306,15 +306,15 @@ class CheckInstallationReady
                 Log::channel('install')->info('CheckInstallationReady: 管理者ユーザー存在確認');
             }
 
-            // ステップ6: base_settingsに基本データが存在するかチェック（さらなる確認）
-            $hasSiteName = DB::table('base_settings')
+            // ステップ6: site_settingsに基本データが存在するかチェック（さらなる確認）
+            $hasSiteName = DB::table('site_settings')
                 ->where('name', 'site_name')
                 ->exists();
             $debugInfo['step6_site_name'] = $hasSiteName ? 'OK' : 'NG';
 
             if (! $hasSiteName) {
                 if ($logToInstall) {
-                    Log::channel('install')->info('CheckInstallationReady: base_settingsに初期データが存在しません');
+                    Log::channel('install')->info('CheckInstallationReady: site_settingsに初期データが存在しません');
                 }
 
                 return false;

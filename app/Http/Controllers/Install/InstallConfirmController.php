@@ -188,7 +188,7 @@ class InstallConfirmController extends BaseInstallController
                 'APP_DEBUG' => $data['app_debug'] ? 'true' : 'false',
                 'APP_URL' => $appUrl,
                 'APP_LOCALE' => $data['app_locale'] ?? 'ja',
-                // APP_TIMEZONE は UTC 固定（保存・計算は UTC。表示用 TZ は base_settings.display_timezone で管理）
+                // APP_TIMEZONE は UTC 固定（保存・計算は UTC。表示用 TZ は site_settings.display_timezone で管理）
                 'APP_TIMEZONE' => 'UTC',
                 'INSTALLED' => 'false',
                 'FORCE_SSL' => $data['force_ssl'] ? 'true' : 'false',
@@ -468,7 +468,7 @@ class InstallConfirmController extends BaseInstallController
     {
         Log::channel('install')->info('initializeDatabase - 開始: admin_email='.$data['admin_email'].', admin_account_name='.$data['admin_account_name']);
 
-        Log::channel('install')->info('initializeDatabase - base_settings更新開始');
+        Log::channel('install')->info('initializeDatabase - site_settings更新開始');
 
         $baseSettings = [
             'app_name' => $data['site_name'],
@@ -489,8 +489,8 @@ class InstallConfirmController extends BaseInstallController
         ];
 
         foreach ($baseSettings as $name => $value) {
-            if (! DB::connection('mysql')->table('base_settings')->where('name', $name)->exists()) {
-                DB::connection('mysql')->table('base_settings')->insert([
+            if (! DB::connection('mysql')->table('site_settings')->where('name', $name)->exists()) {
+                DB::connection('mysql')->table('site_settings')->insert([
                     'name' => $name,
                     'value' => $value,
                     'created_at' => now(),
@@ -498,7 +498,7 @@ class InstallConfirmController extends BaseInstallController
                 ]);
                 Log::channel('install')->info("initializeDatabase - {$name}新規作成: {$value}");
             } else {
-                DB::connection('mysql')->table('base_settings')
+                DB::connection('mysql')->table('site_settings')
                     ->where('name', $name)
                     ->update(['value' => $value, 'updated_at' => now()]);
                 Log::channel('install')->info("initializeDatabase - {$name}更新: {$value}");
@@ -506,8 +506,8 @@ class InstallConfirmController extends BaseInstallController
         }
 
         // 管理画面URLを追加
-        if (! DB::connection('mysql')->table('base_settings')->where('name', 'admin_url')->exists()) {
-            DB::connection('mysql')->table('base_settings')->insert([
+        if (! DB::connection('mysql')->table('site_settings')->where('name', 'admin_url')->exists()) {
+            DB::connection('mysql')->table('site_settings')->insert([
                 'name' => 'admin_url',
                 'value' => $data['admin_url'],
                 'created_at' => now(),
@@ -515,7 +515,7 @@ class InstallConfirmController extends BaseInstallController
             ]);
             Log::channel('install')->info('initializeDatabase - admin_url新規作成: '.$data['admin_url']);
         } else {
-            DB::connection('mysql')->table('base_settings')
+            DB::connection('mysql')->table('site_settings')
                 ->where('name', 'admin_url')
                 ->update(['value' => $data['admin_url'], 'updated_at' => now()]);
             Log::channel('install')->info('initializeDatabase - admin_url更新: '.$data['admin_url']);
@@ -534,8 +534,8 @@ class InstallConfirmController extends BaseInstallController
 
         foreach ($mailTestFields as $fieldName => $fieldValue) {
             if ($fieldValue !== null) {
-                if (! DB::connection('mysql')->table('base_settings')->where('name', $fieldName)->exists()) {
-                    DB::connection('mysql')->table('base_settings')->insert([
+                if (! DB::connection('mysql')->table('site_settings')->where('name', $fieldName)->exists()) {
+                    DB::connection('mysql')->table('site_settings')->insert([
                         'name' => $fieldName,
                         'value' => $fieldValue,
                         'created_at' => now(),
@@ -543,7 +543,7 @@ class InstallConfirmController extends BaseInstallController
                     ]);
                     Log::channel('install')->info("initializeDatabase - {$fieldName}新規作成: {$fieldValue}");
                 } else {
-                    DB::connection('mysql')->table('base_settings')
+                    DB::connection('mysql')->table('site_settings')
                         ->where('name', $fieldName)
                         ->update(['value' => $fieldValue, 'updated_at' => now()]);
                     Log::channel('install')->info("initializeDatabase - {$fieldName}更新: {$fieldValue}");

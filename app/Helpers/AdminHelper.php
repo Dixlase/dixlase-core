@@ -38,8 +38,8 @@
 namespace App\Helpers;
 
 use App\Enums\MemberRole;
-use App\Models\BaseSetting;
 use App\Models\Member;
+use App\Models\SiteSetting;
 use App\Services\PermissionRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -91,8 +91,8 @@ class AdminHelper
         }
 
         try {
-            if (Schema::hasTable('base_settings')) {
-                return BaseSetting::getValue('admin_url', $configDefault);
+            if (Schema::hasTable('site_settings')) {
+                return SiteSetting::getValue('admin_url', $configDefault);
             }
 
             return $configDefault;

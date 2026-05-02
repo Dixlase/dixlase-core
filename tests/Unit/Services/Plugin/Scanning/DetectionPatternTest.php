@@ -249,7 +249,7 @@ class DetectionPatternTest extends TestCase
     public function test_settings_excludes_use_import(): void
     {
         $pattern = new SettingsDetectionPattern('read_core');
-        $content = "<?php\nuse App\\Models\\BaseSetting;\n\nclass Test {}\n";
+        $content = "<?php\nuse App\\Models\\SiteSetting;\n\nclass Test {}\n";
 
         $results = $pattern->scan($content, 'app/Test.php');
         $this->assertEmpty($results);

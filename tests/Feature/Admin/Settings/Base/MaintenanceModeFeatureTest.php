@@ -24,8 +24,8 @@ namespace Tests\Feature\Admin\Settings\Base;
 
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
-use App\Models\BaseSetting;
 use App\Models\Member;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -76,8 +76,8 @@ class MaintenanceModeFeatureTest extends TestCase
 
     public function test_guest_sees_503_during_maintenance(): void
     {
-        BaseSetting::setValue('maintenance_mode', '1');
-        BaseSetting::setValue('maintenance_message', 'メンテナンス中です');
+        SiteSetting::setValue('maintenance_mode', '1');
+        SiteSetting::setValue('maintenance_message', 'メンテナンス中です');
 
         $response = $this->get('/');
 
@@ -87,7 +87,7 @@ class MaintenanceModeFeatureTest extends TestCase
 
     public function test_guest_does_not_see_503_when_maintenance_off(): void
     {
-        BaseSetting::setValue('maintenance_mode', '0');
+        SiteSetting::setValue('maintenance_mode', '0');
 
         $response = $this->get('/');
 
@@ -100,8 +100,8 @@ class MaintenanceModeFeatureTest extends TestCase
 
     public function test_authenticated_admin_does_not_see_503_during_maintenance(): void
     {
-        BaseSetting::setValue('maintenance_mode', '1');
-        BaseSetting::setValue('maintenance_message', 'メンテナンス中');
+        SiteSetting::setValue('maintenance_mode', '1');
+        SiteSetting::setValue('maintenance_message', 'メンテナンス中');
 
         $response = $this->actingAs($this->admin, 'member')
             ->get('/');
@@ -115,9 +115,9 @@ class MaintenanceModeFeatureTest extends TestCase
 
     public function test_guest_not_blocked_before_scheduled_maintenance_starts(): void
     {
-        BaseSetting::setValue('maintenance_mode', '1');
-        BaseSetting::setValue('maintenance_message', 'メンテナンス中');
-        BaseSetting::setValue('maintenance_start_at', now()->addHour()->format('Y-m-d H:i:s'));
+        SiteSetting::setValue('maintenance_mode', '1');
+        SiteSetting::setValue('maintenance_message', 'メンテナンス中');
+        SiteSetting::setValue('maintenance_start_at', now()->addHour()->format('Y-m-d H:i:s'));
 
         $response = $this->get('/');
 
@@ -126,9 +126,9 @@ class MaintenanceModeFeatureTest extends TestCase
 
     public function test_guest_sees_503_after_scheduled_maintenance_starts(): void
     {
-        BaseSetting::setValue('maintenance_mode', '1');
-        BaseSetting::setValue('maintenance_message', 'メンテナンス中');
-        BaseSetting::setValue('maintenance_start_at', now()->subHour()->format('Y-m-d H:i:s'));
+        SiteSetting::setValue('maintenance_mode', '1');
+        SiteSetting::setValue('maintenance_message', 'メンテナンス中');
+        SiteSetting::setValue('maintenance_start_at', now()->subHour()->format('Y-m-d H:i:s'));
 
         $response = $this->get('/');
 
@@ -137,10 +137,10 @@ class MaintenanceModeFeatureTest extends TestCase
 
     public function test_guest_not_blocked_after_maintenance_release_time(): void
     {
-        BaseSetting::setValue('maintenance_mode', '1');
-        BaseSetting::setValue('maintenance_message', 'メンテナンス中');
-        BaseSetting::setValue('maintenance_auto_release', '1');
-        BaseSetting::setValue('maintenance_release_at', now()->subHour()->format('Y-m-d H:i:s'));
+        SiteSetting::setValue('maintenance_mode', '1');
+        SiteSetting::setValue('maintenance_message', 'メンテナンス中');
+        SiteSetting::setValue('maintenance_auto_release', '1');
+        SiteSetting::setValue('maintenance_release_at', now()->subHour()->format('Y-m-d H:i:s'));
 
         $response = $this->get('/');
 
@@ -153,8 +153,8 @@ class MaintenanceModeFeatureTest extends TestCase
 
     public function test_admin_path_not_blocked_during_maintenance(): void
     {
-        BaseSetting::setValue('maintenance_mode', '1');
-        BaseSetting::setValue('maintenance_message', 'メンテナンス中');
+        SiteSetting::setValue('maintenance_mode', '1');
+        SiteSetting::setValue('maintenance_message', 'メンテナンス中');
 
         $response = $this->actingAs($this->admin, 'member')
             ->get(route('admin.dashboard'));

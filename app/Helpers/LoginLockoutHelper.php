@@ -262,7 +262,7 @@ class LoginLockoutHelper
     {
         try {
             // 通知先メールアドレスを取得
-            $notificationEmail = \App\Models\BaseSetting::getValue('notification_email');
+            $notificationEmail = \App\Models\SiteSetting::getValue('notification_email');
 
             if (empty($notificationEmail)) {
                 Log::warning('ロックアウト通知: 管理者メールアドレスが設定されていません');

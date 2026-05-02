@@ -60,13 +60,13 @@ class AdminModeHelper
         }
 
         try {
-            if (! Schema::hasTable('base_settings')) {
+            if (! Schema::hasTable('site_settings')) {
                 self::$currentMode = AdminMode::default();
 
                 return self::$currentMode;
             }
 
-            $value = DB::table('base_settings')
+            $value = DB::table('site_settings')
                 ->where('name', 'admin_mode')
                 ->value('value');
 
@@ -120,8 +120,8 @@ class AdminModeHelper
 
         // 保存済み設定を取得
         try {
-            if (Schema::hasTable('base_settings')) {
-                $json = DB::table('base_settings')
+            if (Schema::hasTable('site_settings')) {
+                $json = DB::table('site_settings')
                     ->where('name', 'admin_mode_visibilities')
                     ->value('value');
 

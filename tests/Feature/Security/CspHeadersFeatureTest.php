@@ -24,9 +24,9 @@ namespace Tests\Feature\Security;
 
 use App\Enums\MemberRole;
 use App\Http\Middleware\CheckInstallationReady;
-use App\Models\BaseSetting;
 use App\Models\Member;
 use App\Models\SecuritySetting;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\View;
 use Tests\TestCase;
@@ -59,7 +59,7 @@ class CspHeadersFeatureTest extends TestCase
             resource_path("views/{$adminTheme}"),
         ]);
 
-        BaseSetting::setValue('site_name', 'Test');
+        SiteSetting::setValue('site_name', 'Test');
 
         // CSPを有効化
         config(['csp.enabled' => true]);

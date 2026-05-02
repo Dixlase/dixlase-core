@@ -30,8 +30,8 @@ use App\Http\Middleware\CheckInstallationReady;
 use App\Http\Middleware\CheckMenuAccess;
 use App\Http\Middleware\CheckMenuEdit;
 use App\Http\Middleware\EnsureEmailIsVerified;
-use App\Models\BaseSetting;
 use App\Models\Member;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\View;
@@ -67,7 +67,7 @@ class AdminModeFileLogsTest extends TestCase
             resource_path("views/{$adminTheme}"),
         ]);
 
-        BaseSetting::setValue('site_name', 'Test Site');
+        SiteSetting::setValue('site_name', 'Test Site');
 
         $this->superAdmin = Member::create([
             'account_name' => 'superadmin',
@@ -93,7 +93,7 @@ class AdminModeFileLogsTest extends TestCase
 
     public function test_simple_mode_redirects_file_logs_to_audit_logs(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -104,7 +104,7 @@ class AdminModeFileLogsTest extends TestCase
 
     public function test_simple_mode_redirects_file_logs_download_to_audit_logs(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -115,7 +115,7 @@ class AdminModeFileLogsTest extends TestCase
 
     public function test_simple_mode_allows_audit_logs_access(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Simple->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')
@@ -130,7 +130,7 @@ class AdminModeFileLogsTest extends TestCase
 
     public function test_advanced_mode_allows_file_logs_access(): void
     {
-        BaseSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
         AdminModeHelper::clearCache();
 
         $response = $this->actingAs($this->superAdmin, 'member')

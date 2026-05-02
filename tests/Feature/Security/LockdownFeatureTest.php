@@ -25,9 +25,9 @@ namespace Tests\Feature\Security;
 use App\Enums\MemberRole;
 use App\Http\Middleware\CheckInstallationReady;
 use App\Http\Middleware\ContentSecurityPolicy;
-use App\Models\BaseSetting;
 use App\Models\LockdownStatus;
 use App\Models\Member;
+use App\Models\SiteSetting;
 use App\Services\LockdownService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\View;
@@ -62,7 +62,7 @@ class LockdownFeatureTest extends TestCase
             resource_path("views/{$adminTheme}"),
         ]);
 
-        BaseSetting::setValue('site_name', 'Test');
+        SiteSetting::setValue('site_name', 'Test');
 
         LockdownService::clearCache();
     }
