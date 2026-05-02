@@ -37,27 +37,24 @@
 
 declare(strict_types=1);
 
-namespace App\Models;
+namespace App\Services\Site\Exceptions;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use RuntimeException;
 
 /**
- * Network-wide setting.
+ * Thrown when SettingResolver is asked about a key that has no
+ * corresponding SettingDefinition registered.
  *
- * Holds settings that apply across the entire installation rather than to
- * a single site. Examples: license keys, network-wide trust roots, default
- * values for overridable settings. Per-site values live in SiteSetting.
- *
- * Read access in application code should typically go through
- * App\Services\Site\SettingResolver, which merges global defaults with
- * per-site overrides based on the setting definition.
+ * Forces every setting key to be declared in SettingDefinitionRegistry
+ * before it can be read or written, which prevents typos and undocumented
+ * settings from creeping in.
  */
-class GlobalSetting extends Model
+class UnknownSettingException extends RuntimeException
 {
-    use HasFactory;
-
-    protected $table = 'global_settings';
-
-    protected $fillable = ['name', 'value'];
+    public function __construct(public readonly string $key)
+    {
+        parent::__construct(
+            "Setting key '{$key}' is not registered in SettingDefinitionRegistry."
+        );
+    }
 }
