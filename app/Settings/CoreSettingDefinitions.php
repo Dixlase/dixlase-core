@@ -95,6 +95,23 @@ class CoreSettingDefinitions
             type: 'string',
         ));
 
+        // Generic admin email (legacy alias used by the extension subsystem).
+        $registry->register(new SettingDefinition(
+            name: 'admin_email',
+            scope: SettingScope::Global,
+            default: '',
+            type: 'string',
+        ));
+
+        // Admin UI complexity mode (e.g. simple / advanced) applied across
+        // all sites. Personal preferences live elsewhere.
+        $registry->register(new SettingDefinition(
+            name: 'admin_mode',
+            scope: SettingScope::Global,
+            default: 'simple',
+            type: 'string',
+        ));
+
         // ------------------------------------------------------------------
         // Per-site
         // ------------------------------------------------------------------
@@ -192,6 +209,25 @@ class CoreSettingDefinitions
             type: 'string',
         ));
 
+        // Display name of the site (shown in front-end chrome, OGP, etc.).
+        // Note: Site::name on the model holds the canonical site name; this
+        // setting key remains for backward compatibility with legacy reads.
+        $registry->register(new SettingDefinition(
+            name: 'site_name',
+            scope: SettingScope::PerSite,
+            default: '',
+            type: 'string',
+        ));
+
+        // Display timezone for date/time rendering (separate from the
+        // canonical sites.timezone column for legacy callers).
+        $registry->register(new SettingDefinition(
+            name: 'display_timezone',
+            scope: SettingScope::PerSite,
+            default: null,
+            type: 'string',
+        ));
+
         // Per-site OGP and SEO defaults.
         $registry->register(new SettingDefinition(
             name: 'default_ogp_image_id',
@@ -262,6 +298,24 @@ class CoreSettingDefinitions
         ));
         $registry->register(new SettingDefinition(
             name: 'mail_from_address',
+            scope: SettingScope::Overridable,
+            default: '',
+            type: 'string',
+        ));
+
+        // Display name shown in the From: header. Pairs with mail_from_address.
+        $registry->register(new SettingDefinition(
+            name: 'mail_from_name',
+            scope: SettingScope::Overridable,
+            default: '',
+            type: 'string',
+        ));
+
+        // Email address used for system-generated notifications (login
+        // lockouts, email verifications, etc.). Site operators can override
+        // the network default.
+        $registry->register(new SettingDefinition(
+            name: 'notification_email',
             scope: SettingScope::Overridable,
             default: '',
             type: 'string',
