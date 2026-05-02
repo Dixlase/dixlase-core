@@ -296,6 +296,11 @@ return [
                 'text' => 'admin/navigation.settings.systems.text',
                 'icon' => 'fas fa-fw fa-server',
                 'children' => [
+                    'updates' => [
+                        'text' => 'admin/navigation.settings.systems.updates',
+                        'route' => 'admin.settings.systems.updates.index',
+                        'icon' => 'fas fa-fw fa-cloud-arrow-down',
+                    ],
                     'cache' => [
                         'text' => 'admin/navigation.settings.systems.cache',
                         'route' => 'admin.settings.systems.cache',

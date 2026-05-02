@@ -579,6 +579,19 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.systems.api')
                     ->name('api.regenerate-key');
 
+                // 統合アップデート管理（コア / プラグイン / テーマ）
+                Route::prefix('updates')->name('updates.')->group(function () {
+                    Route::get('/', [Systems\AdminSystemUpdatesController::class, 'index'])
+                        ->middleware('check.menu.access:settings.systems.updates')
+                        ->name('index');
+                    Route::post('/check', [Systems\AdminSystemUpdatesController::class, 'check'])
+                        ->middleware('check.menu.edit:settings.systems.updates')
+                        ->name('check');
+                    Route::post('/apply', [Systems\AdminSystemUpdatesController::class, 'apply'])
+                        ->middleware('check.menu.edit:settings.systems.updates')
+                        ->name('apply');
+                });
+
                 // キャッシュ管理（かんたんモード: Full）
                 Route::get('/cache', [Systems\AdminSystemCacheController::class, 'index'])->name('cache');
                 Route::post('/cache/clear', [Systems\AdminSystemCacheController::class, 'clear'])

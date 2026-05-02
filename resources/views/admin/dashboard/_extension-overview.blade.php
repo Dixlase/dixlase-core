@@ -65,10 +65,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    {{-- アップデート可能件数 --}}
+    {{-- アップデート可能件数（クリックで統合アップデート管理ページへ） --}}
     @if(($extensionOverview['updates']['total'] ?? 0) > 0)
         <div class="mb-4 p-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
-            <a href="{{ route('admin.settings.plugins.index') }}" class="flex items-center justify-between gap-3 text-sm">
+            <a href="{{ route('admin.settings.systems.updates.index') }}" class="flex items-center justify-between gap-3 text-sm">
                 <span class="flex items-center gap-2 text-blue-800 dark:text-blue-200 font-medium">
                     <i class="fas fa-arrow-up"></i>
                     {{ __('admin/dashboard.updates_available_label') }}: {{ $extensionOverview['updates']['total'] }}

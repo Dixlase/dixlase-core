@@ -126,6 +126,7 @@ return [
 
         // 全体設定 > システム
         'settings.systems' => MenuVisibility::Partial,
+        'settings.systems.updates' => MenuVisibility::Full,
         'settings.systems.cache' => MenuVisibility::Full,
         'settings.systems.database' => MenuVisibility::Hidden,
         'settings.systems.api' => MenuVisibility::Hidden,

@@ -175,6 +175,7 @@ return [
         ],
         'systems' => [
             'text' => 'システム',
+            'updates' => 'アップデート管理',
             'api' => 'API管理',
             'cache' => 'キャッシュ管理',
             'database' => 'データベース管理',

@@ -74,21 +74,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </span>
         </div>
 
-        {{-- アップデート通知 --}}
+        {{-- アップデート通知（クリックで統合アップデート管理ページへ） --}}
         @if($card['hasUpdateAvailable'] ?? false)
-            <div class="flex items-center justify-between mb-2 px-2 py-1 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded text-xs text-indigo-700 dark:text-indigo-300">
+            <a href="{{ route('admin.settings.systems.updates.index', ['target' => 'theme:' . $card['slug']]) }}"
+               class="flex items-center justify-between mb-2 px-2 py-1 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded text-xs text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors">
                 <span class="flex items-center gap-1.5">
                     <i class="fas fa-arrow-up"></i>
                     {{ __('admin/settings/themes/index.update_available', ['version' => $card['availableVersion']]) }}
                 </span>
-                <form method="POST" action="{{ route('admin.settings.themes.update', $card['id']) }}">
-                    @csrf
-                    <button type="submit" class="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded transition-colors">
-                        <i class="fas fa-download text-[10px]"></i>
-                        {{ __('admin/settings/themes/index.updates.update_button') }}
-                    </button>
-                </form>
-            </div>
+                <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
         @endif
 
         {{-- 説明 --}}

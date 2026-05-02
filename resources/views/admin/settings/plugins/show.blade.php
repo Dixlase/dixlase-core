@@ -69,9 +69,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
 
             @if($card['hasUpdateAvailable'] ?? false)
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                    <i class="fas fa-arrow-up mr-1"></i>v{{ $card['availableVersion'] }} {{ __('admin/settings/plugins/show.update_available') }}
-                </span>
+                <a href="{{ route('admin.settings.systems.updates.index', ['target' => 'plugin:' . $card['slug']]) }}"
+                   class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors">
+                    <i class="fas fa-arrow-up"></i>v{{ $card['availableVersion'] }} {{ __('admin/settings/plugins/show.update_available') }}
+                    <i class="fas fa-arrow-right text-[10px]"></i>
+                </a>
             @endif
         </x-slot:badges>
 
@@ -146,20 +148,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-slot:metadata>
 
         <x-slot:actions>
-            {{-- アップデートボタン（インストール済み + 更新可能時のみ） --}}
-            @if($isInstalled && ($card['hasUpdateAvailable'] ?? false))
-                <form action="{{ route('admin.settings.plugins.update', $card['id']) }}" method="POST" class="inline-block">
-                    @csrf
-                    <x-form-button
-                        type="submit"
-                        :label="__('admin/settings/plugins/index.updates.update_to_version', ['version' => $card['availableVersion']])"
-                        variant="primary"
-                        size="xs"
-                        icon="fas fa-arrow-up"
-                        class="py-2 px-3"
-                    />
-                </form>
-            @endif
+            {{-- 更新は統合アップデート管理ページに集約（個別ボタンは廃止） --}}
 
             {{-- アクションボタン（一覧ページと同じ2段階モーダルフローを使用） --}}
             @if($isInstalled)
