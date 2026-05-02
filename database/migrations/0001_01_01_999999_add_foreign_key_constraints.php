@@ -343,6 +343,30 @@ return new class extends Migration
                 ->on('sites')
                 ->cascadeOnDelete();
         });
+
+        // webhooks.site_id -> sites.id (cascade)
+        Schema::table('webhooks', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
+
+        // webhook_deliveries.site_id -> sites.id (cascade)
+        Schema::table('webhook_deliveries', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
+
+        // webhook_dead_letters.site_id -> sites.id (cascade)
+        Schema::table('webhook_dead_letters', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
     }
 
     /**
@@ -350,6 +374,21 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // webhook_dead_letters.site_id
+        Schema::table('webhook_dead_letters', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
+        // webhook_deliveries.site_id
+        Schema::table('webhook_deliveries', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
+        // webhooks.site_id
+        Schema::table('webhooks', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
         // media_settings.site_id
         Schema::table('media_settings', function (Blueprint $table) {
             $table->dropForeign(['site_id']);

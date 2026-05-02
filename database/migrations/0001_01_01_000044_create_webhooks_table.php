@@ -53,6 +53,7 @@ return new class extends Migration
     {
         Schema::create('webhooks', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('site_id')->index();
             $table->string('name', 100);
             $table->string('url', 2048);
             $table->string('secret', 128);

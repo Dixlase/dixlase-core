@@ -37,6 +37,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToSite;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -68,7 +69,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class WebhookDeadLetter extends Model
 {
+    use BelongsToSite;
+
     protected $fillable = [
+        'site_id',
         'webhook_id',
         'delivery_id',
         'event_id',
@@ -212,7 +216,7 @@ class WebhookDeadLetter extends Model
         return array_map(function ($attempt) {
             return [
                 'attempt' => $attempt['attempt'] ?? 0,
-                'timestamp' => isset($attempt['timestamp']) 
+                'timestamp' => isset($attempt['timestamp'])
                     ? \Carbon\Carbon::parse($attempt['timestamp'])->format('Y-m-d H:i:s')
                     : null,
                 'status_code' => $attempt['status_code'] ?? null,
