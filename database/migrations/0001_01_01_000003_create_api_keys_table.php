@@ -49,6 +49,7 @@ return new class extends Migration
     {
         Schema::create('api_keys', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('site_id')->index();
 
             // キー名（識別用）
             $table->string('name', 100);

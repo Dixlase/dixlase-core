@@ -367,6 +367,22 @@ return new class extends Migration
                 ->on('sites')
                 ->cascadeOnDelete();
         });
+
+        // api_keys.site_id -> sites.id (cascade)
+        Schema::table('api_keys', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
+
+        // api_request_logs.site_id -> sites.id (cascade)
+        Schema::table('api_request_logs', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
     }
 
     /**
@@ -374,6 +390,16 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // api_request_logs.site_id
+        Schema::table('api_request_logs', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
+        // api_keys.site_id
+        Schema::table('api_keys', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
         // webhook_dead_letters.site_id
         Schema::table('webhook_dead_letters', function (Blueprint $table) {
             $table->dropForeign(['site_id']);

@@ -35,20 +35,24 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToSite;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Carbon\Carbon;
 
 /**
  * APIリクエストログモデル
- * 
+ *
  * β版でのAPIレートリミット機能の基盤として使用
  */
 class ApiRequestLog extends Model
 {
+    use BelongsToSite;
+
     protected $table = 'api_request_logs';
 
     protected $fillable = [
+        'site_id',
         'api_key_id',
         'api_key_prefix',
         'method',
@@ -161,6 +165,7 @@ class ApiRequestLog extends Model
     public static function logRequest(array $data): static
     {
         $data['requested_at'] = $data['requested_at'] ?? Carbon::now();
+
         return static::create($data);
     }
 
@@ -170,6 +175,7 @@ class ApiRequestLog extends Model
     public static function cleanupOldLogs(int $daysOld = 30): int
     {
         $cutoffDate = Carbon::now()->subDays($daysOld);
+
         return static::where('requested_at', '<', $cutoffDate)->delete();
     }
 
@@ -183,7 +189,7 @@ class ApiRequestLog extends Model
     public static function getUsageStats(int $apiKeyId, int $days = 7): array
     {
         $cutoffDate = Carbon::now()->subDays($days);
-        
+
         $logs = static::where('api_key_id', $apiKeyId)
             ->where('requested_at', '>=', $cutoffDate)
             ->get();
@@ -209,7 +215,7 @@ class ApiRequestLog extends Model
     public static function getEndpointStats(int $days = 7): array
     {
         $cutoffDate = Carbon::now()->subDays($days);
-        
+
         $logs = static::where('requested_at', '>=', $cutoffDate)->get();
 
         $endpoints = [];
@@ -232,7 +238,7 @@ class ApiRequestLog extends Model
     public static function getHourlyDistribution(int $days = 1): array
     {
         $cutoffDate = Carbon::now()->subDays($days);
-        
+
         $logs = static::where('requested_at', '>=', $cutoffDate)->get();
 
         $hours = [];
@@ -254,7 +260,7 @@ class ApiRequestLog extends Model
     public static function getErrorAnalysis(int $days = 7): array
     {
         $cutoffDate = Carbon::now()->subDays($days);
-        
+
         $logs = static::where('requested_at', '>=', $cutoffDate)
             ->where('response_code', '>=', 400)
             ->get();
