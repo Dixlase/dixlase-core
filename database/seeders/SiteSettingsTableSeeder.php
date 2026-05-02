@@ -90,9 +90,14 @@ class SiteSettingsTableSeeder extends Seeder
             ['name' => 'twitter_card_type', 'value' => 'summary_large_image'],
         ];
 
+        // Seed for the primary site (id=1). Multisite installations will
+        // inherit overridable settings via SettingResolver in later phases;
+        // additional sites get their own per-site rows when created.
+        $primarySiteId = 1;
+
         foreach ($settings as $setting) {
             DB::table('site_settings')->updateOrInsert(
-                ['name' => $setting['name']],
+                ['name' => $setting['name'], 'site_id' => $primarySiteId],
                 ['value' => $setting['value'], 'created_at' => now(), 'updated_at' => now()]
             );
         }

@@ -38,6 +38,7 @@
 namespace App\Models;
 
 use App\Contracts\Repositories\SiteSettingRepositoryInterface;
+use App\Models\Traits\BelongsToSite;
 use App\Models\Traits\UsesSettingRepositoryTrait;
 use Illuminate\Database\Eloquent\Model;
 
@@ -48,6 +49,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class SiteSetting extends Model
 {
+    use BelongsToSite;
     use UsesSettingRepositoryTrait;
 
     /**
@@ -62,7 +64,7 @@ class SiteSetting extends Model
      *
      * @var array
      */
-    protected $fillable = ['name', 'value'];
+    protected $fillable = ['name', 'value', 'site_id'];
 
     /**
      * デフォルトOGP画像とのリレーション
