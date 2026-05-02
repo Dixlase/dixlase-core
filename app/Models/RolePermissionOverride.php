@@ -35,15 +35,19 @@
 
 namespace App\Models;
 
+use App\Enums\MemberRole;
+use App\Models\Traits\BelongsToSite;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Enums\MemberRole;
 
 class RolePermissionOverride extends Model
 {
+    use BelongsToSite;
+
     protected $table = 'role_permission_overrides';
 
     protected $fillable = [
+        'site_id',
         'source_type',
         'source_id',
         'menu_key',
@@ -61,6 +65,7 @@ class RolePermissionOverride extends Model
      * ソース種別定数
      */
     public const SOURCE_CORE = 'core';
+
     public const SOURCE_PLUGIN = 'plugin';
 
     /**
@@ -79,7 +84,7 @@ class RolePermissionOverride extends Model
         if ($userRole === MemberRole::SUPER_ADMIN) {
             return true;
         }
-        
+
         return $userRole->value >= ($this->access_roles ?? MemberRole::GUEST->value);
     }
 
@@ -91,7 +96,7 @@ class RolePermissionOverride extends Model
         if ($userRole === MemberRole::SUPER_ADMIN) {
             return true;
         }
-        
+
         return $userRole->value >= ($this->view_roles ?? MemberRole::GUEST->value);
     }
 
@@ -133,11 +138,11 @@ class RolePermissionOverride extends Model
     public static function getAllPluginOverrides(?string $pluginSlug = null): \Illuminate\Database\Eloquent\Collection
     {
         $query = static::where('source_type', self::SOURCE_PLUGIN);
-        
+
         if ($pluginSlug !== null) {
             $query->where('source_id', $pluginSlug);
         }
-        
+
         return $query->get();
     }
 
@@ -158,10 +163,10 @@ class RolePermissionOverride extends Model
                 'updated_by' => $updatedBy,
             ]
         );
-        
+
         // キャッシュをクリア
         \App\Services\PermissionRegistry::clearMenuCache($menuKey);
-        
+
         return $result;
     }
 
@@ -182,10 +187,10 @@ class RolePermissionOverride extends Model
                 'updated_by' => $updatedBy,
             ]
         );
-        
+
         // キャッシュをクリア
         \App\Services\PermissionRegistry::clearMenuCache($menuKey, $pluginSlug);
-        
+
         return $result;
     }
 
@@ -198,10 +203,10 @@ class RolePermissionOverride extends Model
             ->whereNull('source_id')
             ->where('menu_key', $menuKey)
             ->delete() > 0;
-        
+
         // キャッシュをクリア
         \App\Services\PermissionRegistry::clearMenuCache($menuKey);
-        
+
         return $result;
     }
 
@@ -214,10 +219,10 @@ class RolePermissionOverride extends Model
             ->where('source_id', $pluginSlug)
             ->where('menu_key', $menuKey)
             ->delete() > 0;
-        
+
         // キャッシュをクリア
         \App\Services\PermissionRegistry::clearMenuCache($menuKey, $pluginSlug);
-        
+
         return $result;
     }
 

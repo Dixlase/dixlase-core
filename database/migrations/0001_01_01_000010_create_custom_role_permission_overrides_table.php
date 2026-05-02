@@ -52,6 +52,7 @@ return new class extends Migration
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('site_id')->index();
 
             // 対象カスタムロール（外部キー制約は add_foreign_key_constraints で追加）
             $table->unsignedBigInteger('custom_role_id');
@@ -67,8 +68,8 @@ return new class extends Migration
 
             $table->timestamps();
 
-            // ロールごとに同一権限は1つだけ
-            $table->unique(['custom_role_id', 'permission'], 'custom_role_perm_unique');
+            // ロールごとに同一権限は1つだけ（site スコープ込み）
+            $table->unique(['site_id', 'custom_role_id', 'permission'], 'custom_role_perm_unique');
 
             // インデックス
             $table->index('custom_role_id', 'custom_role_perm_role_idx');
