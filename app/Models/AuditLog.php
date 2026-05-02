@@ -37,6 +37,7 @@ namespace App\Models;
 
 use App\Enums\OperationRiskLevel;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Str;
 
@@ -53,6 +54,7 @@ class AuditLog extends Model
         'occurred_at',
         'severity',
         'outcome',
+        'site_id',
         'category',
         'action',
         'actor_type',
@@ -351,6 +353,18 @@ class AuditLog extends Model
     public function target(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    /**
+     * Site this event belongs to.
+     *
+     * Nullable: system / network-wide events leave site_id null. The
+     * BelongsToSite global scope is intentionally not applied so admin
+     * dashboards can show network-wide and site-scoped events together.
+     */
+    public function site(): BelongsTo
+    {
+        return $this->belongsTo(Site::class);
     }
 
     // ========================================

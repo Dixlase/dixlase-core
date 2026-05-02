@@ -294,6 +294,15 @@ return new class extends Migration
                 ->on('sites')
                 ->cascadeOnDelete();
         });
+
+        // audit_logs.site_id -> sites.id
+        // 監査ログは履歴として保持。サイト削除時は site_id を NULL にする
+        Schema::table('audit_logs', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->nullOnDelete();
+        });
     }
 
     /**
@@ -301,6 +310,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // audit_logs.site_id
+        Schema::table('audit_logs', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
         // site_settings.site_id
         Schema::table('site_settings', function (Blueprint $table) {
             $table->dropForeign(['site_id']);

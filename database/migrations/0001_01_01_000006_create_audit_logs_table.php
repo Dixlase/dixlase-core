@@ -70,6 +70,11 @@ return new class extends Migration
             // outcome: success, failure, denied, pending, unknown
             $table->string('outcome', 20)->default('success')->index();
 
+            // Multisite scope. Site-scoped events carry the site id; system /
+            // network-wide events (cron, install, maintenance, etc.) leave it
+            // null. Foreign key added in 999999.
+            $table->unsignedBigInteger('site_id')->nullable()->index();
+
             // ========================================
             // 種別・アクション
             // ========================================
