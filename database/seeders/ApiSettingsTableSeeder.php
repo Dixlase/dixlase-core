@@ -35,7 +35,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\ApiSetting;
+use App\Models\GlobalSetting;
 use Illuminate\Database\Seeder;
 
 class ApiSettingsTableSeeder extends Seeder
@@ -46,19 +46,19 @@ class ApiSettingsTableSeeder extends Seeder
     public function run(): void
     {
         // API機能の有効/無効
-        ApiSetting::updateOrCreate(
+        GlobalSetting::updateOrCreate(
             ['name' => 'api_enabled'],
             ['value' => '0']
         );
 
         // デフォルトレート制限（1分あたりのリクエスト数）
-        ApiSetting::updateOrCreate(
+        GlobalSetting::updateOrCreate(
             ['name' => 'api_rate_limit'],
             ['value' => '60']
         );
 
         // 署名検証を必須にするか
-        ApiSetting::updateOrCreate(
+        GlobalSetting::updateOrCreate(
             ['name' => 'api_signature_required'],
             ['value' => '1']
         );

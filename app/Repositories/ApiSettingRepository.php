@@ -33,23 +33,30 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+declare(strict_types=1);
+
 namespace App\Repositories;
 
 use App\Contracts\Repositories\ApiSettingRepositoryInterface;
 use App\Models\ApiSetting;
+use App\Models\GlobalSetting;
+use App\Services\Site\Exceptions\UnknownSettingException;
+use App\Services\Site\SettingDefinitionRegistry;
+use App\Services\Site\SettingResolver;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * @internal コア専用。プラグイン/テーマから参照しないこと
  *
- * API設定リポジトリ実装
+ * API settings repository. Delegates to SettingResolver so API policy
+ * keys live in the multisite-aware global_settings store.
  */
 class ApiSettingRepository extends AbstractSettingRepository implements ApiSettingRepositoryInterface
 {
-    /**
-     * コンストラクタ
-     */
-    public function __construct()
-    {
+    public function __construct(
+        private readonly SettingResolver $resolver,
+        private readonly SettingDefinitionRegistry $registry,
+    ) {
         $this->cachePrefix = 'api_setting:';
         $this->cacheAllKey = 'api_settings_all';
         $this->cacheTtl = 10;
@@ -64,16 +71,66 @@ class ApiSettingRepository extends AbstractSettingRepository implements ApiSetti
     }
 
     /**
-     * boolean値を'1'/'0'に変換
-     *
      * {@inheritDoc}
      */
-    protected function transformValueForStorage(mixed $value): mixed
+    public function get(string $name, mixed $default = null): mixed
     {
-        if (is_bool($value)) {
-            return $value ? '1' : '0';
+        $value = $this->resolver->get($name);
+
+        return $value ?? $default;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function set(string $name, mixed $value): Model
+    {
+        $this->resolver->set($name, $value);
+        $this->clearCache($name);
+
+        return GlobalSetting::query()->where('name', $name)->first()
+            ?? new GlobalSetting(['name' => $name]);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return array<string, mixed>
+     */
+    public function all(): array
+    {
+        $result = [];
+        foreach ($this->registry->all() as $name => $_definition) {
+            $result[$name] = $this->resolver->get($name);
         }
 
-        return $value;
+        return $result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function has(string $name): bool
+    {
+        try {
+            return $this->resolver->get($name) !== null;
+        } catch (UnknownSettingException) {
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function delete(string $name): bool
+    {
+        try {
+            $this->resolver->delete($name);
+            $this->clearCache($name);
+
+            return true;
+        } catch (UnknownSettingException) {
+            return false;
+        }
     }
 }
