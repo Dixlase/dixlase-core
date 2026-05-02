@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -36,7 +36,6 @@
 namespace App\Http\Controllers\Install;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
@@ -70,16 +69,15 @@ class InstallCompleteController extends BaseInstallController
 
         Log::channel('install')->info('インストール完了画面を表示（ボタン押下待ち）');
 
-        // site_settingsから管理画面URLを取得（セッションはconfirm処理後にクリアされている可能性がある）
+        // 管理画面URLを取得（admin_url は Global scope なので SettingResolver 経由で global_settings から）
         $adminSlug = 'admin';
         try {
-            $dbAdminUrl = DB::table('site_settings')
-                ->where('name', 'admin_url')
-                ->value('value');
+            $resolver = app(\App\Services\Site\SettingResolver::class);
+            $dbAdminUrl = $resolver->get('admin_url');
             if ($dbAdminUrl) {
                 $adminSlug = $dbAdminUrl;
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::channel('install')->warning('admin_url設定の取得に失敗: '.$e->getMessage());
         }
 
@@ -91,12 +89,11 @@ class InstallCompleteController extends BaseInstallController
         if ($envForceSsl === 'true' || $envForceSsl === true) {
             $forceSsl = true;
         } else {
-            // site_settingsからも確認
+            // global_settings からも確認（force_ssl は Global scope）
             try {
-                $forceSsl = DB::table('site_settings')
-                    ->where('name', 'force_ssl')
-                    ->value('value') === '1';
-            } catch (\Exception $e) {
+                $resolver = app(\App\Services\Site\SettingResolver::class);
+                $forceSsl = (bool) $resolver->get('force_ssl');
+            } catch (\Throwable $e) {
                 Log::channel('install')->warning('force_ssl設定の取得に失敗: '.$e->getMessage());
             }
         }
@@ -131,14 +128,13 @@ class InstallCompleteController extends BaseInstallController
         $adminUrl = rtrim($appUrl.'/'.$adminSlug, '/');
         $adminLoginUrl = $adminUrl.'/login';
 
-        // admin_modeをsite_settingsから取得
+        // admin_mode を取得（Global scope なので SettingResolver 経由で global_settings から）
         $isSimpleMode = false;
         try {
-            $adminMode = DB::table('site_settings')
-                ->where('name', 'admin_mode')
-                ->value('value');
-            $isSimpleMode = ($adminMode === '0' || $adminMode === null);
-        } catch (\Exception $e) {
+            $resolver = app(\App\Services\Site\SettingResolver::class);
+            $adminMode = $resolver->get('admin_mode');
+            $isSimpleMode = ((string) $adminMode === '0' || $adminMode === null);
+        } catch (\Throwable $e) {
             Log::channel('install')->warning('admin_mode設定の取得に失敗: '.$e->getMessage());
         }
 
