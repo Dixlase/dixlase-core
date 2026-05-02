@@ -35,22 +35,25 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Contracts\Repositories\MediaSettingRepositoryInterface;
+use App\Models\Traits\BelongsToSite;
 use App\Models\Traits\UsesSettingRepositoryTrait;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * メディア設定モデル
- * 
+ *
  * @deprecated 静的メソッドは非推奨です。MediaSettingRepositoryを使用してください。
  */
 class MediaSetting extends Model
 {
+    use BelongsToSite;
     use UsesSettingRepositoryTrait;
 
     protected $table = 'media_settings';
 
     protected $fillable = [
+        'site_id',
         'name',
         'value',
     ];
