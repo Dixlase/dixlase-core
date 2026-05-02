@@ -56,6 +56,21 @@ This project has domain-specific skills available. Always activate the relevant 
 - Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
 - Check for existing components to reuse before writing a new one.
 
+## Comments
+- **Code comments and PHPDoc descriptions must be in English** (project default since v0.1.0).
+- Allowed exceptions where Japanese is fine:
+  - Test fixtures and inline test data (intentional — exercises i18n)
+  - `lang/ja/` translation arrays
+  - `*.ja.md` documentation files
+  - Bilingual commit-message bullets (optional, see "Git Commit Messages")
+  - Existing entries in `comment-translations/` (those are the source-of-truth Japanese keys)
+- **When you touch a file that still has Japanese comments**, follow the lazy migration workflow:
+  1. `dls:comment:extract --path=<file>` — capture the Japanese into the translation dictionary
+  2. `dls:comment:translate --file=<dict>` — let Claude API fill the English values; entries are auto-marked `machine` (unreviewed)
+  3. Replace the Japanese in the source with the exact English values from the dictionary
+  4. Stage source and dictionary together
+- Don't write new Japanese comments. If you find yourself wanting to, write the comment in English and (optionally) add the term to `comment-translations/_glossary.php` so future translations stay consistent.
+
 ## Git Commit Messages
 - Do not include `Co-Authored-By` lines in commit messages.
 - Use conventional commit format (e.g. `feat:`, `fix:`, `refactor:`).
