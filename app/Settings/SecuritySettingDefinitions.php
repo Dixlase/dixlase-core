@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -76,10 +76,22 @@ class SecuritySettingDefinitions
             // Password policy
             'password_min_length' => ['default' => 8, 'type' => 'int'],
             'password_require_uppercase' => ['default' => true, 'type' => 'bool'],
+            'password_require_lowercase' => ['default' => false, 'type' => 'bool'],
             'password_require_number' => ['default' => true, 'type' => 'bool'],
             'password_require_symbol' => ['default' => true, 'type' => 'bool'],
             'password_reset_enabled' => ['default' => false, 'type' => 'bool'],
             'pwned_password_check_enabled' => ['default' => true, 'type' => 'bool'],
+            'password_check_pwned' => ['default' => true, 'type' => 'bool'],
+
+            // Password policy defaults (used by reset-to-default UI)
+            'password_min_length_default' => ['default' => 8, 'type' => 'int'],
+            'password_require_uppercase_default' => ['default' => true, 'type' => 'bool'],
+            'password_require_number_default' => ['default' => true, 'type' => 'bool'],
+            'password_require_symbol_default' => ['default' => true, 'type' => 'bool'],
+            'password_reset_enabled_default' => ['default' => false, 'type' => 'bool'],
+
+            // Login identifier mode (0=email, 1=email or account, 2=account name only)
+            'login_identifier_mode' => ['default' => 1, 'type' => 'int'],
 
             // Login attempt rate limiting
             'login_attempt_limit_enabled' => ['default' => true, 'type' => 'bool'],
@@ -91,6 +103,14 @@ class SecuritySettingDefinitions
             'login_notification_mode' => ['type' => 'string'],
             'login_notification_send_to_system' => ['default' => true, 'type' => 'bool'],
             'login_notification_system_email' => ['default' => '', 'type' => 'string'],
+
+            // Login attempt defaults (used by reset-to-default UI)
+            'login_attempt_limit_enabled_default' => ['default' => true, 'type' => 'bool'],
+            'login_attempt_max_attempts_default' => ['default' => 5, 'type' => 'int'],
+            'login_attempt_max_attempts_ip_default' => ['default' => 10, 'type' => 'int'],
+            'login_attempt_time_window_default' => ['default' => 15, 'type' => 'int'],
+            'login_attempt_lockout_duration_default' => ['default' => 30, 'type' => 'int'],
+            'login_attempt_lockout_notification_enabled_default' => ['default' => true, 'type' => 'bool'],
 
             // Two-factor authentication
             'two_fa_mode' => ['type' => 'string'],
@@ -108,6 +128,8 @@ class SecuritySettingDefinitions
 
             // CAPTCHA
             'captcha_enabled' => ['default' => false, 'type' => 'bool'],
+            'captcha_site_key' => ['default' => '', 'type' => 'string'],
+            'captcha_secret_key' => ['default' => '', 'type' => 'string'],
             'captcha_driver' => ['type' => 'string'],
             'captcha_authentication_result' => ['type' => 'string'],
             'captcha_auto_failover_enabled' => ['default' => false, 'type' => 'bool'],
@@ -149,6 +171,10 @@ class SecuritySettingDefinitions
             'session_encrypt' => ['default' => true, 'type' => 'bool'],
             'session_lifetime' => ['default' => 120, 'type' => 'int'],
 
+            // Session defaults (used by reset-to-default UI)
+            'session_encrypt_default' => ['default' => true, 'type' => 'bool'],
+            'session_lifetime_default' => ['default' => 120, 'type' => 'int'],
+
             // Extension (plugin/theme) install policy
             'extension_security_preset' => ['type' => 'string'],
             'extension_require_signature' => ['default' => true, 'type' => 'bool'],
@@ -168,6 +194,7 @@ class SecuritySettingDefinitions
             // Content Security Policy
             'csp_enabled' => ['default' => true, 'type' => 'bool'],
             'csp_mode' => ['type' => 'string'],
+            'csp_admin_mode' => ['type' => 'string'],
             'csp_log_violations' => ['default' => true, 'type' => 'bool'],
             'csp_trusted_domains' => ['default' => '', 'type' => 'string'],
             'csp_denied_domains' => ['default' => '', 'type' => 'string'],
