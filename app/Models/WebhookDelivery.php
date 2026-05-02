@@ -37,6 +37,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToSite;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
@@ -67,12 +68,18 @@ use Illuminate\Support\Str;
  */
 class WebhookDelivery extends Model
 {
+    use BelongsToSite;
+
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_SUCCESS = 'success';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_RETRYING = 'retrying';
 
     protected $fillable = [
+        'site_id',
         'event_id',
         'nonce',
         'webhook_id',
@@ -151,7 +158,7 @@ class WebhookDelivery extends Model
     public function scopeReadyForRetry($query)
     {
         return $query->where('status', self::STATUS_RETRYING)
-                     ->where('next_retry_at', '<=', now());
+            ->where('next_retry_at', '<=', now());
     }
 
     // =========================================================================
@@ -179,10 +186,7 @@ class WebhookDelivery extends Model
     /**
      * Mark as failed
      *
-     * @param string $errorMessage
-     * @param int|null $responseCode
-     * @param string|null $responseBody
-     * @param array $attemptLog Optional attempt log entry for dead letter tracking
+     * @param  array  $attemptLog  Optional attempt log entry for dead letter tracking
      */
     public function markAsFailed(string $errorMessage, ?int $responseCode = null, ?string $responseBody = null, array $attemptLog = []): void
     {
@@ -196,7 +200,7 @@ class WebhookDelivery extends Model
             'next_retry_at' => $canRetry ? $this->calculateNextRetry() : null,
         ]);
 
-        if (!$canRetry) {
+        if (! $canRetry) {
             $this->webhook->recordFailure();
             $this->markAsDeadLetter();
         }
@@ -312,7 +316,7 @@ class WebhookDelivery extends Model
     public function scopeUnnotifiedDeadLetters($query)
     {
         return $query->where('is_dead_letter', true)
-                     ->where('dead_letter_notified', false);
+            ->where('dead_letter_notified', false);
     }
 
     /**

@@ -53,6 +53,7 @@ return new class extends Migration
     {
         Schema::create('webhook_dead_letters', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('site_id')->index();
             $table->unsignedBigInteger('webhook_id');
             $table->unsignedBigInteger('delivery_id');
             $table->uuid('event_id');

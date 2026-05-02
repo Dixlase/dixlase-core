@@ -54,6 +54,7 @@ return new class extends Migration
     {
         Schema::create('webhook_deliveries', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('site_id')->index();
 
             // 冪等性のためのイベントID（UUID）
             $table->uuid('event_id')->nullable();
