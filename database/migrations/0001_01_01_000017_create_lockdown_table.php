@@ -54,6 +54,7 @@ return new class extends Migration
         // ロックダウン状態テーブル
         Schema::create('lockdown_status', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('site_id')->index();
 
             // ロックダウンの種類
             // full: 全アクセス遮断（SUPER_ADMIN以外）
@@ -102,6 +103,7 @@ return new class extends Migration
         // ロックダウン履歴テーブル
         Schema::create('lockdown_history', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('site_id')->index();
 
             // アクション: activated, deactivated, extended, modified
             $table->string('action', 20);

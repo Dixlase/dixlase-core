@@ -37,6 +37,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToSite;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -54,18 +55,25 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class LockdownHistory extends Model
 {
+    use BelongsToSite;
+
     protected $table = 'lockdown_history';
 
     public $timestamps = false;
 
     // アクションタイプ
     public const ACTION_ACTIVATED = 'activated';
+
     public const ACTION_DEACTIVATED = 'deactivated';
+
     public const ACTION_EXTENDED = 'extended';
+
     public const ACTION_MODIFIED = 'modified';
+
     public const ACTION_AUTO_RELEASED = 'auto_released';
 
     protected $fillable = [
+        'site_id',
         'action',
         'type',
         'reason',

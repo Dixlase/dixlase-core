@@ -37,6 +37,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToSite;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -60,15 +61,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class LockdownStatus extends Model
 {
+    use BelongsToSite;
+
     protected $table = 'lockdown_status';
 
     // ロックダウンタイプ
     public const TYPE_FULL = 'full';           // 全アクセス遮断
+
     public const TYPE_ADMIN = 'admin';         // 管理画面のみ
+
     public const TYPE_API = 'api';             // APIのみ
+
     public const TYPE_LOGIN = 'login';         // ログインのみ
 
     protected $fillable = [
+        'site_id',
         'type',
         'is_active',
         'reason',
@@ -133,6 +140,7 @@ class LockdownStatus extends Model
         if ($type) {
             $query->ofType($type);
         }
+
         return $query->first();
     }
 
@@ -153,6 +161,7 @@ class LockdownStatus extends Model
         if (self::isLocked(self::TYPE_FULL)) {
             return true;
         }
+
         return self::isLocked($type);
     }
 
@@ -164,6 +173,7 @@ class LockdownStatus extends Model
         if (empty($this->allowed_ips)) {
             return false;
         }
+
         return in_array($ip, $this->allowed_ips, true);
     }
 
@@ -175,6 +185,7 @@ class LockdownStatus extends Model
         if (empty($this->allowed_members)) {
             return false;
         }
+
         return in_array($memberId, $this->allowed_members, true);
     }
 
@@ -183,9 +194,10 @@ class LockdownStatus extends Model
      */
     public function shouldAutoRelease(): bool
     {
-        if (!$this->auto_release_at) {
+        if (! $this->auto_release_at) {
             return false;
         }
+
         return now()->gte($this->auto_release_at);
     }
 

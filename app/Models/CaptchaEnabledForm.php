@@ -37,6 +37,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToSite;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -45,6 +46,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class CaptchaEnabledForm extends Model
 {
+    use BelongsToSite;
+
     /**
      * The table associated with the model.
      *
@@ -58,6 +61,7 @@ class CaptchaEnabledForm extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'site_id',
         'form_key',
         'enabled',
         'provider',
