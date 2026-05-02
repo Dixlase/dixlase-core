@@ -51,6 +51,7 @@ return new class extends Migration
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('site_id')->index();
 
             // ソース種別: core / plugin
             $table->string('source_type', 20)->default('core');
@@ -72,8 +73,8 @@ return new class extends Migration
 
             $table->timestamps();
 
-            // source_type + source_id + menu_key でユニーク
-            $table->unique(['source_type', 'source_id', 'menu_key'], 'role_override_unique');
+            // site + source_type + source_id + menu_key でユニーク
+            $table->unique(['site_id', 'source_type', 'source_id', 'menu_key'], 'role_override_unique');
 
             // インデックス
             $table->index(['source_type', 'source_id'], 'role_override_source_idx');

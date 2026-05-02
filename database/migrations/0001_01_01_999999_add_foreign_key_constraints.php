@@ -383,6 +383,22 @@ return new class extends Migration
                 ->on('sites')
                 ->cascadeOnDelete();
         });
+
+        // role_permission_overrides.site_id -> sites.id (cascade)
+        Schema::table('role_permission_overrides', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
+
+        // custom_role_permission_overrides.site_id -> sites.id (cascade)
+        Schema::table('custom_role_permission_overrides', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
     }
 
     /**
@@ -390,6 +406,16 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // custom_role_permission_overrides.site_id
+        Schema::table('custom_role_permission_overrides', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
+        // role_permission_overrides.site_id
+        Schema::table('role_permission_overrides', function (Blueprint $table) {
+            $table->dropForeign(['site_id']);
+        });
+
         // api_request_logs.site_id
         Schema::table('api_request_logs', function (Blueprint $table) {
             $table->dropForeign(['site_id']);
