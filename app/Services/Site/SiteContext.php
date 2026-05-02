@@ -39,6 +39,8 @@ namespace App\Services\Site;
 
 use App\Contracts\Site\SiteContextInterface;
 use App\Models\Site;
+use App\Models\SitePluginActivation;
+use App\Models\SiteThemeActivation;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -79,6 +81,21 @@ class SiteContext implements SiteContextInterface
             return false;
         }
 
+        // Site-aware path: consult site_plugin_activations once available.
+        // Fallback path: derive from the global plugins.enabled_at flag for
+        // installations that have not yet populated the activation table.
+        if (Schema::hasTable('site_plugin_activations')) {
+            return SitePluginActivation::query()
+                ->where('site_id', $this->currentSiteId())
+                ->where('is_active', true)
+                ->whereIn('plugin_id', function ($subquery) use ($slug) {
+                    $subquery->select('id')
+                        ->from('plugins')
+                        ->where('slug', $slug);
+                })
+                ->exists();
+        }
+
         return DB::table('plugins')
             ->where('slug', $slug)
             ->whereNotNull('enabled_at')
@@ -89,6 +106,21 @@ class SiteContext implements SiteContextInterface
     {
         if (! Schema::hasTable('themes')) {
             return false;
+        }
+
+        // Site-aware path: consult site_theme_activations once available.
+        // Fallback path: compare against the legacy config('themes.active_theme')
+        // when the activation table has not been populated yet.
+        if (Schema::hasTable('site_theme_activations')) {
+            return SiteThemeActivation::query()
+                ->where('site_id', $this->currentSiteId())
+                ->where('is_active', true)
+                ->whereIn('theme_id', function ($subquery) use ($slug) {
+                    $subquery->select('id')
+                        ->from('themes')
+                        ->where('slug', $slug);
+                })
+                ->exists();
         }
 
         $activeDirectory = config('themes.active_theme');
