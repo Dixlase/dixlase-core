@@ -59,6 +59,7 @@ use App\Services\MailService;
 use App\Services\Plugin\CoreSignatureVerifier;
 use App\Services\Plugin\PluginPermissionService;
 use App\Services\RouteSlugRegistry;
+use App\Services\Site\SettingDefinitionRegistry;
 use App\Services\Site\SiteContext;
 use App\Services\Theme\ThemePermissionService;
 use App\Services\TwoFa\TwoFaPasskeyService;
@@ -139,6 +140,11 @@ class AppServiceProvider extends ServiceProvider
         // Bind SiteContext as singleton so the resolved current site
         // persists across the request lifecycle.
         $this->app->singleton(SiteContextInterface::class, SiteContext::class);
+
+        // SettingDefinitionRegistry holds the catalog of known setting keys
+        // and their scopes. Bound as singleton so registrations from
+        // service providers are visible across the whole request.
+        $this->app->singleton(SettingDefinitionRegistry::class);
 
         // Laragear WebAuthnのWebAuthnCredentialモデルをカスタムモデルにバインド
         $this->app->bind(
