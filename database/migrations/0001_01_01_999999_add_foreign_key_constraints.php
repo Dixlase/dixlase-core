@@ -455,6 +455,30 @@ return new class extends Migration
                 ->on('sites')
                 ->nullOnDelete();
         });
+
+        // site_plugin_activations -> sites / plugins
+        Schema::table('site_plugin_activations', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+            $table->foreign('plugin_id')
+                ->references('id')
+                ->on('plugins')
+                ->cascadeOnDelete();
+        });
+
+        // site_theme_activations -> sites / themes
+        Schema::table('site_theme_activations', function (Blueprint $table) {
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+            $table->foreign('theme_id')
+                ->references('id')
+                ->on('themes')
+                ->cascadeOnDelete();
+        });
     }
 
     /**
@@ -462,6 +486,18 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // site_theme_activations
+        Schema::table('site_theme_activations', function (Blueprint $table) {
+            $table->dropForeign(['theme_id']);
+            $table->dropForeign(['site_id']);
+        });
+
+        // site_plugin_activations
+        Schema::table('site_plugin_activations', function (Blueprint $table) {
+            $table->dropForeign(['plugin_id']);
+            $table->dropForeign(['site_id']);
+        });
+
         // backup_records.site_id
         Schema::table('backup_records', function (Blueprint $table) {
             $table->dropForeign(['site_id']);
