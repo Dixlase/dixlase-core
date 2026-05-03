@@ -44,93 +44,93 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * 監査ログサービス
+ * Audit log service
  *
- * 統一APIを提供し、プラグインからも利用可能
+ * Provides unified API, available from plugins
  */
 class AuditService
 {
     /**
-     * 現在のリクエストID（1リクエスト内で共通）
+     * Current request ID (shared within a single request)
      */
     protected ?string $requestId = null;
 
     /**
-     * 現在のプラグインコンテキスト
+     * Current plugin context
      */
     protected ?string $currentPlugin = null;
 
     protected ?string $currentPluginVersion = null;
 
     /**
-     * なりすまし操作者ID
+     * Impersonated actor ID
      */
     protected ?int $impersonatedById = null;
 
     /**
-     * ファイルログを有効にするか
+     * Whether to enable file logging
      */
     protected bool $fileLoggingEnabled = true;
 
     /**
-     * 操作元チャネル (web, api, cli, scheduler, ai_plugin, webhook, queue)
+     * Source channel (web, api, cli, scheduler, ai_plugin, webhook, queue)
      */
     protected ?string $actorSource = null;
 
     /**
-     * 監査ログを記録（DB + ファイル）
+     * Record audit log (DB + file)
      */
     public function log(array $data): ?AuditLog
     {
         try {
-            // リクエストIDを自動設定
+            // Auto-set request ID
             if (! isset($data['request_id'])) {
                 $data['request_id'] = $this->getRequestId();
             }
 
-            // プラグインコンテキストを自動設定
+            // Auto-set plugin context
             if (! isset($data['plugin_name']) && $this->currentPlugin) {
                 $data['plugin_name'] = $this->currentPlugin;
                 $data['plugin_version'] = $this->currentPluginVersion;
             }
 
-            // なりすましIDを自動設定
+            // Auto-set impersonation ID
             if (! isset($data['impersonated_by_id']) && $this->impersonatedById) {
                 $data['impersonated_by_id'] = $this->impersonatedById;
             }
 
-            // 操作元チャネルを自動設定
+            // Auto-set source channel
             if (! isset($data['actor_source'])) {
                 $data['actor_source'] = $this->getActorSource();
             }
 
-            // AI生成フラグを自動設定
+            // Auto-set AI generation flag
             if (! isset($data['is_ai_generated'])) {
                 $data['is_ai_generated'] = ($data['actor_source'] ?? null) === AuditLog::ACTOR_SOURCE_AI_PLUGIN;
             }
 
             $auditLog = null;
 
-            // DBに保存（テーブルが存在する場合のみ）
+            // Save to DB (only if table exists)
             if (Schema::hasTable('audit_logs')) {
                 $auditLog = AuditLog::log($data);
             }
 
-            // ファイルにも出力
+            // Output to file as well
             if ($this->fileLoggingEnabled) {
                 $this->writeToFile($data, $auditLog);
             }
 
-            // SIEM連携用イベントを発火
+            // Fire event for SIEM integration
             if ($auditLog) {
                 event(new AuditLogCreated($auditLog));
             }
 
             return $auditLog;
         } catch (\Throwable $e) {
-            // 監査ログの記録失敗はアプリケーションを止めない
+            // Audit log recording failure does not stop the application
             Log::error('Audit log failed', [
                 'error' => $e->getMessage(),
                 'data' => $data,
@@ -141,12 +141,12 @@ class AuditService
     }
 
     /**
-     * ファイルにログを出力
+     * Output log to file
      */
     protected function writeToFile(array $data, ?AuditLog $auditLog = null): void
     {
         try {
-            // actorの情報を取得
+            // Get actor information
             $actorInfo = 'system';
             if (isset($data['actor']) && $data['actor'] instanceof Model) {
                 $actorInfo = class_basename($data['actor']).':'.$data['actor']->getKey();
@@ -158,7 +158,7 @@ class AuditService
                 $actorInfo = $auditLog->actor_name;
             }
 
-            // targetの情報を取得
+            // Get target information
             $targetInfo = null;
             if (isset($data['target']) && $data['target'] instanceof Model) {
                 $targetInfo = class_basename($data['target']).':'.$data['target']->getKey();
@@ -166,7 +166,7 @@ class AuditService
                 $targetInfo = $auditLog->target_label;
             }
 
-            // ログメッセージを構築
+            // Build log message
             $logData = [
                 'id' => $auditLog?->id,
                 'category' => $data['category'] ?? 'unknown',
@@ -182,21 +182,21 @@ class AuditService
                 'is_ai_generated' => $data['is_ai_generated'] ?? false,
             ];
 
-            // contextからmessageを取得
+            // Get message from context
             if (isset($data['context']['message'])) {
                 $logData['message'] = $data['context']['message'];
             }
 
-            // JSON形式でログ出力（1行1レコード、SIEM連携しやすい形式）
+            // Output log in JSON format (one record per line, SIEM-friendly format)
             Log::channel('audit')->info(json_encode($logData, JSON_UNESCAPED_UNICODE));
         } catch (\Throwable $e) {
-            // ファイル出力失敗は無視（DBには記録済み）
+            // Ignore file output failure (already recorded in DB)
             Log::warning('Audit file log failed: '.$e->getMessage());
         }
     }
 
     /**
-     * 認証ログを記録
+     * Record authentication log
      */
     public function logAuth(string $action, array $data = []): ?AuditLog
     {
@@ -207,7 +207,7 @@ class AuditService
     }
 
     /**
-     * セキュリティログを記録
+     * Record security log
      */
     public function logSecurity(string $action, array $data = []): ?AuditLog
     {
@@ -219,7 +219,7 @@ class AuditService
     }
 
     /**
-     * 拡張機能ログを記録
+     * Record extension log
      */
     public function logExtension(string $action, array $data = []): ?AuditLog
     {
@@ -231,7 +231,7 @@ class AuditService
     }
 
     /**
-     * アカウントログを記録
+     * Record account log
      */
     public function logAccount(string $action, array $data = []): ?AuditLog
     {
@@ -242,7 +242,7 @@ class AuditService
     }
 
     /**
-     * システムログを記録
+     * Record system log
      */
     public function logSystem(string $action, array $data = []): ?AuditLog
     {
@@ -253,7 +253,7 @@ class AuditService
     }
 
     /**
-     * コンテンツログを記録
+     * Record content log
      */
     public function logContent(string $action, array $data = []): ?AuditLog
     {
@@ -264,7 +264,7 @@ class AuditService
     }
 
     /**
-     * プラグインログを記録
+     * Record plugin log
      */
     public function logPlugin(string $action, array $data = []): ?AuditLog
     {
@@ -275,7 +275,7 @@ class AuditService
     }
 
     /**
-     * AI操作ログを記録
+     * Record AI operation log
      */
     public function logAi(string $action, array $data = []): ?AuditLog
     {
@@ -304,11 +304,11 @@ class AuditService
     }
 
     // ========================================
-    // コンテキスト管理
+    // Context management
     // ========================================
 
     /**
-     * リクエストIDを取得（なければ生成）
+     * Get request ID (generate if not exists)
      */
     public function getRequestId(): string
     {
@@ -320,7 +320,7 @@ class AuditService
     }
 
     /**
-     * リクエストIDを設定
+     * Set request ID
      */
     public function setRequestId(string $requestId): self
     {
@@ -330,7 +330,7 @@ class AuditService
     }
 
     /**
-     * 操作元チャネルを設定
+     * Set operation source channel
      */
     public function setActorSource(?string $source): self
     {
@@ -340,7 +340,7 @@ class AuditService
     }
 
     /**
-     * 操作元チャネルを取得（未設定なら自動検出）
+     * Get operation source channel (auto-detect if not set)
      */
     public function getActorSource(): ?string
     {
@@ -361,7 +361,7 @@ class AuditService
     }
 
     /**
-     * プラグインコンテキストを設定
+     * Set plugin context
      */
     public function setPluginContext(?string $pluginName, ?string $version = null): self
     {
@@ -372,7 +372,7 @@ class AuditService
     }
 
     /**
-     * プラグインコンテキストをクリア
+     * Clear plugin context
      */
     public function clearPluginContext(): self
     {
@@ -383,7 +383,7 @@ class AuditService
     }
 
     /**
-     * なりすましIDを設定
+     * Set impersonation ID
      */
     public function setImpersonatedBy(?int $memberId): self
     {
@@ -393,7 +393,7 @@ class AuditService
     }
 
     /**
-     * ファイルログを有効化
+     * Enable file logging
      */
     public function enableFileLogging(): self
     {
@@ -403,7 +403,7 @@ class AuditService
     }
 
     /**
-     * ファイルログを無効化
+     * Disable file logging
      */
     public function disableFileLogging(): self
     {
@@ -413,7 +413,7 @@ class AuditService
     }
 
     /**
-     * ファイルログが有効かどうか
+     * Check if file logging is enabled
      */
     public function isFileLoggingEnabled(): bool
     {
@@ -421,11 +421,11 @@ class AuditService
     }
 
     // ========================================
-    // 便利メソッド
+    // Convenience methods
     // ========================================
 
     /**
-     * 変更差分を生成
+     * Generate change diff
      */
     public function diff(array $before, array $after): array
     {
@@ -448,7 +448,7 @@ class AuditService
     }
 
     /**
-     * モデルの変更をログ
+     * Log model changes
      */
     public function logModelChange(
         Model $model,
@@ -458,7 +458,7 @@ class AuditService
     ): ?AuditLog {
         $context = [];
 
-        // 変更前後の値を取得
+        // Get before/after values
         if ($model->wasRecentlyCreated) {
             $context['after'] = $model->getAttributes();
         } elseif ($model->wasChanged()) {
@@ -470,7 +470,7 @@ class AuditService
             );
         }
 
-        // 追加コンテキストをマージ
+        // Merge additional context
         if ($additionalContext) {
             $context = array_merge($context, $additionalContext);
         }
@@ -485,7 +485,7 @@ class AuditService
     }
 
     /**
-     * 設定変更をログ
+     * Log settings change
      */
     public function logSettingsChange(
         string $settingKey,
@@ -515,13 +515,13 @@ class AuditService
     }
 
     /**
-     * 設定の一括変更をログ（1ページ分を1エントリで記録）
+     * Log bulk settings changes (record one page as one entry)
      *
-     * @param  string  $settingsPage  ページ識別子 (例: "security.password")
-     * @param  array  $before  変更前の設定 ['key' => value, ...]
-     * @param  array  $after  変更後の設定 ['key' => value, ...]
-     * @param  Model|null  $actor  操作者
-     * @param  array  $sensitiveKeys  マスク対象のキー名
+     * @param  string  $settingsPage  Page identifier (e.g., "security.password")
+     * @param  array  $before  Settings before change ['key' => value, ...]
+     * @param  array  $after  Settings after change ['key' => value, ...]
+     * @param  Model|null  $actor  Operator
+     * @param  array  $sensitiveKeys  Key names to mask
      */
     public function logBulkSettingsChange(
         string $settingsPage,
@@ -530,7 +530,7 @@ class AuditService
         ?Model $actor = null,
         array $sensitiveKeys = [],
     ): ?AuditLog {
-        // 型の不一致による偽の差分を防ぐため、スカラー値を文字列に統一（配列はそのまま）
+        // Normalize scalar values to strings to prevent false diffs from type mismatches (arrays are left as-is)
         $before = array_map(fn ($v) => $v === null ? null : (is_array($v) ? $v : (string) $v), $before);
         $after = array_map(fn ($v) => $v === null ? null : (is_array($v) ? $v : (string) $v), $after);
 
@@ -540,7 +540,7 @@ class AuditService
             return null;
         }
 
-        // 機密値をマスク
+        // Mask sensitive values
         foreach ($sensitiveKeys as $key) {
             if (isset($diff[$key])) {
                 $diff[$key]['from'] = $diff[$key]['from'] ? '********' : null;
@@ -564,11 +564,11 @@ class AuditService
     }
 
     // ========================================
-    // クエリヘルパー
+    // Query helpers
     // ========================================
 
     /**
-     * 行為者のログを取得
+     * Get logs by actor
      */
     public function getLogsForActor(Model $actor, int $limit = 50)
     {
@@ -579,7 +579,7 @@ class AuditService
     }
 
     /**
-     * 対象のログを取得
+     * Get target logs
      */
     public function getLogsForTarget(Model $target, int $limit = 50)
     {
@@ -590,7 +590,7 @@ class AuditService
     }
 
     /**
-     * リクエストIDで関連ログを取得
+     * Get related logs by request ID
      */
     public function getLogsForRequest(string $requestId)
     {
@@ -600,7 +600,7 @@ class AuditService
     }
 
     /**
-     * 最近の警告以上のログを取得
+     * Get recent logs at warning level or above
      */
     public function getRecentWarnings(int $hours = 24, int $limit = 100)
     {
@@ -612,7 +612,7 @@ class AuditService
     }
 
     /**
-     * 最近の失敗ログを取得
+     * Get recent failed logs
      */
     public function getRecentFailures(int $hours = 24, int $limit = 100)
     {
@@ -624,26 +624,26 @@ class AuditService
     }
 
     // ========================================
-    // 重大操作ログ（β版 強制再認証の基盤）
+    // Critical operation log (foundation for forced re-authentication in beta)
     // ========================================
 
     /**
-     * 危険な操作をログ（High/Criticalレベル）
+     * Log dangerous operations (High/Critical level)
      *
-     * β版で強制再認証を実装する際の基盤
+     * Foundation for implementing forced re-authentication in beta
      */
     public function logDangerousOperation(string $action, array $data = []): ?AuditLog
     {
         $riskLevel = AuditLog::getRiskLevelForAction($action);
 
-        // contextにリスクレベル情報を追加
+        // Add risk level information to context
         $context = $data['context'] ?? [];
         $context['risk_level'] = $riskLevel->toString();
         $context['risk_level_value'] = $riskLevel->value;
         $context['requires_step_up_auth'] = $riskLevel->requiresStepUpAuth();
         $data['context'] = $context;
 
-        // 危険な操作は警告レベル以上で記録
+        // Dangerous operations are logged at warning level or above
         if ($riskLevel->isDangerous() && ! isset($data['severity'])) {
             $data['severity'] = $riskLevel->isCritical()
                 ? AuditLog::SEVERITY_CRITICAL
@@ -656,7 +656,7 @@ class AuditService
     }
 
     /**
-     * クリティカルな操作をログ
+     * Log critical operations
      */
     public function logCriticalOperation(string $action, array $data = []): ?AuditLog
     {
@@ -666,7 +666,7 @@ class AuditService
     }
 
     /**
-     * 最近の危険な操作を取得
+     * Get recent dangerous operations
      */
     public function getRecentDangerousOperations(int $hours = 24, int $limit = 100)
     {
@@ -678,7 +678,7 @@ class AuditService
     }
 
     /**
-     * 最近のクリティカルな操作を取得
+     * Get recent critical operations
      */
     public function getRecentCriticalOperations(int $hours = 24, int $limit = 100)
     {
@@ -690,7 +690,7 @@ class AuditService
     }
 
     /**
-     * 指定リスクレベル以上の操作を取得
+     * Get operations at or above specified risk level
      */
     public function getOperationsWithMinRiskLevel(
         OperationRiskLevel $minLevel,
@@ -705,7 +705,7 @@ class AuditService
     }
 
     /**
-     * 行為者の危険な操作履歴を取得
+     * Get dangerous operation history by actor
      */
     public function getDangerousOperationsForActor(Model $actor, int $limit = 50)
     {
@@ -717,7 +717,7 @@ class AuditService
     }
 
     /**
-     * 対象に対する危険な操作履歴を取得
+     * Get dangerous operation history for target
      */
     public function getDangerousOperationsForTarget(Model $target, int $limit = 50)
     {
@@ -729,7 +729,7 @@ class AuditService
     }
 
     /**
-     * 危険な操作の統計を取得
+     * Get statistics of dangerous operations
      */
     public function getDangerousOperationStats(int $hours = 24): array
     {
@@ -748,18 +748,18 @@ class AuditService
         foreach ($logs as $log) {
             $riskLevel = $log->getRiskLevel();
 
-            // リスクレベル別
+            // By risk level
             if ($riskLevel->isCritical()) {
                 $stats['by_risk_level']['critical']++;
             } else {
                 $stats['by_risk_level']['high']++;
             }
 
-            // アクション別
+            // By action
             $action = $log->action;
             $stats['by_action'][$action] = ($stats['by_action'][$action] ?? 0) + 1;
 
-            // 行為者別
+            // By actor
             $actorKey = $log->actor_name ?? 'unknown';
             $stats['by_actor'][$actorKey] = ($stats['by_actor'][$actorKey] ?? 0) + 1;
         }

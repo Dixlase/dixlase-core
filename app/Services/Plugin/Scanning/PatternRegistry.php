@@ -40,68 +40,68 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  *
- * 検出パターンの一元管理レジストリ
+ * Centralized registry for detection patterns
  *
- * 登録されたDetectionPatternインスタンスを使って
- * プラグイン・テーマのコードをスキャンし、権限使用を検出します。
+ * Uses registered DetectionPattern instances to
+ * scan plugin/theme code and detect permission usage
  */
 class PatternRegistry
 {
     /**
-     * 登録済みパターン
+     * Registered patterns
      *
      * @var array<string, DetectionPattern>
      */
     protected array $patterns = [];
 
     /**
-     * 全デフォルトパターンを登録したレジストリを生成
+     * Create a registry with all default patterns registered
      */
     public static function createDefault(): static
     {
         $registry = new static();
 
-        // データベース
+        // Database
         $registry->register(new DatabaseDetectionPattern('own_tables'));
         $registry->register(new DatabaseDetectionPattern('core_tables_read'));
         $registry->register(new DatabaseDetectionPattern('core_tables_write'));
 
-        // ストレージ
+        // Storage
         $registry->register(new StorageDetectionPattern('own_directory'));
         $registry->register(new StorageDetectionPattern('public_uploads'));
         $registry->register(new StorageDetectionPattern('temp_files'));
 
-        // 設定
+        // Settings
         $registry->register(new SettingsDetectionPattern('read_core'));
         $registry->register(new SettingsDetectionPattern('write_own'));
 
-        // メンバー
+        // Member
         $registry->register(new MemberDetectionPattern('read'));
         $registry->register(new MemberDetectionPattern('write'));
         $registry->register(new MemberDetectionPattern('create'));
         $registry->register(new MemberDetectionPattern('delete'));
 
-        // メール
+        // Mail
         $registry->register(new MailDetectionPattern('send'));
         $registry->register(new MailDetectionPattern('bulk_send'));
 
-        // システム
+        // System
         $registry->register(new SystemDetectionPattern('register_shortcodes'));
         $registry->register(new MiddlewareDetectionPattern());
         $registry->register(new SystemDetectionPattern('register_commands'));
         $registry->register(new SystemDetectionPattern('register_blade_directives'));
         $registry->register(new SystemDetectionPattern('modify_routes'));
 
-        // 危険API
+        // Dangerous API
         $registry->register(new DangerousApiPattern('exec'));
         $registry->register(new DangerousApiPattern('env_access'));
 
-        // 外部リソース（プラグイン・テーマ共通）
+        // External resources (common to plugins/themes)
         $registry->register(new ExternalResourceDetectionPattern());
 
-        // テーマアセット
+        // Theme assets
         $registry->register(new ThemeAssetDetectionPattern('custom_css'));
         $registry->register(new ThemeAssetDetectionPattern('custom_js'));
         $registry->register(new ThemeAssetDetectionPattern('external_resources'));
@@ -110,7 +110,7 @@ class PatternRegistry
     }
 
     /**
-     * パターンを登録
+     * Register a pattern
      */
     public function register(DetectionPattern $pattern): void
     {
@@ -118,7 +118,7 @@ class PatternRegistry
     }
 
     /**
-     * 指定種別に適用可能なパターン一覧を取得
+     * Get list of patterns applicable to the specified type
      *
      * @param  string  $type  'plugin' or 'theme'
      * @return array<string, DetectionPattern>
@@ -132,7 +132,7 @@ class PatternRegistry
     }
 
     /**
-     * 全パターンを取得
+     * Get all patterns
      *
      * @return array<string, DetectionPattern>
      */
@@ -142,9 +142,9 @@ class PatternRegistry
     }
 
     /**
-     * 指定ディレクトリをスキャンし、権限使用を検出
+     * Scan the specified directory and detect permission usage
      *
-     * @param  string  $extensionDir  拡張機能のルートディレクトリ
+     * @param  string  $extensionDir  Extension root directory
      * @param  string  $type  'plugin' or 'theme'
      * @return array{permissions: array<string, bool>, evidence: array<string, array>}
      */
@@ -158,7 +158,7 @@ class PatternRegistry
             $found = false;
             $foundEvidence = [];
 
-            // ファイルパターンの存在確認
+            // Check if file pattern exists
             foreach ($pattern->filePatterns() as $filePattern) {
                 $files = $this->globRecursive("{$extensionDir}/{$filePattern}");
                 foreach ($files as $file) {
@@ -170,7 +170,7 @@ class PatternRegistry
                 }
             }
 
-            // コードスキャン
+            // Code scan
             if (! empty($pattern->regexPatterns())) {
                 $codeFiles = $this->getCodeFiles($extensionDir, $type);
                 foreach ($codeFiles as $file) {
@@ -198,7 +198,7 @@ class PatternRegistry
     }
 
     /**
-     * コードファイル一覧を取得
+     * Get code file list
      *
      * @return array<string>
      */
@@ -210,7 +210,7 @@ class PatternRegistry
             return $files;
         }
 
-        // スキャン対象から除外するディレクトリ
+        // Directories to exclude from scan
         $excludeDirs = ['tests', 'vendor', 'node_modules'];
 
         $iterator = new RecursiveIteratorIterator(
@@ -222,7 +222,7 @@ class PatternRegistry
                 continue;
             }
 
-            // 除外ディレクトリ内のファイルをスキップ
+            // Skip files in excluded directories
             $relativePath = str_replace($dir.'/', '', $file->getPathname());
             $topDir = explode('/', $relativePath)[0] ?? '';
             if (in_array($topDir, $excludeDirs, true)) {
@@ -232,14 +232,14 @@ class PatternRegistry
             $ext = $file->getExtension();
             $filename = $file->getFilename();
 
-            // PHPファイル
+            // PHP files
             if ($ext === 'php') {
                 $files[] = $file->getPathname();
 
                 continue;
             }
 
-            // テーマの場合はJSやBladeも対象
+            // For themes, JS and Blade files are also included
             if ($type === 'theme') {
                 if ($ext === 'js' || str_ends_with($filename, '.blade.php')) {
                     $files[] = $file->getPathname();
@@ -251,7 +251,7 @@ class PatternRegistry
     }
 
     /**
-     * globパターンを再帰的に展開
+     * Recursively expand glob pattern
      *
      * @return array<string>
      */

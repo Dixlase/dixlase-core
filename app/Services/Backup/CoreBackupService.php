@@ -33,25 +33,25 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 /**
- * コアバックアップサービス
+ * Core backup service
  *
- * 手動バックアップのデフォルト実装です。
- * 対象: データベース、メディア、storage/app/private、custom/、（オプション）storage/logs
+ * Default implementation for manual backups
+ * Targets: database, media, storage/app/private, custom/, (optional) storage/logs
  *
- * スケジュール実行・暗号化・リモートストレージ等の高度な機能は
- * バックアッププラグインで上書きします。
+ * Advanced features such as scheduled execution, encryption, and remote storage
+ * are overridden by backup plugins
  */
 class CoreBackupService implements BackupServiceInterface
 {
     /**
-     * デフォルトでバックアップ対象に含まれない（オプション）対象
+     * Optional targets not included in backup by default
      */
     private const OPTIONAL_TARGETS = [
         BackupServiceInterface::TARGET_LOGS,
     ];
 
     /**
-     * private 対象から除外するサブディレクトリ
+     * Subdirectories to exclude from private target
      */
     private const PRIVATE_EXCLUDE_DIRS = [
         'backups',
@@ -59,7 +59,7 @@ class CoreBackupService implements BackupServiceInterface
     ];
 
     /**
-     * INSERT 文の1バッチあたりの行数
+     * Number of rows per batch for INSERT statements
      */
     private const DUMP_BATCH_SIZE = 100;
 
@@ -215,7 +215,7 @@ class CoreBackupService implements BackupServiceInterface
     }
 
     /**
-     * 受け取った targets を有効なもののみに正規化
+     * Normalize received targets to only valid ones
      *
      * @param  string[]  $targets
      * @return string[]
@@ -226,7 +226,7 @@ class CoreBackupService implements BackupServiceInterface
     }
 
     /**
-     * targets からバックアップタイプを決定
+     * Determine backup type from targets
      *
      * @param  string[]  $targets
      */
@@ -246,7 +246,7 @@ class CoreBackupService implements BackupServiceInterface
     }
 
     /**
-     * バックアップアーカイブを構築
+     * Build backup archive
      *
      * @param  string[]  $targets
      */
@@ -276,7 +276,7 @@ class CoreBackupService implements BackupServiceInterface
     }
 
     /**
-     * 指定対象を ZIP に追加
+     * Add specified targets to ZIP
      */
     private function addTargetToZip(\ZipArchive $zip, string $target, string $tempDir): void
     {
@@ -296,7 +296,7 @@ class CoreBackupService implements BackupServiceInterface
     }
 
     /**
-     * データベースダンプを生成して ZIP に追加
+     * Generate database dump and add to ZIP
      */
     private function addDatabaseToZip(\ZipArchive $zip, string $tempDir): void
     {
@@ -316,7 +316,7 @@ class CoreBackupService implements BackupServiceInterface
     }
 
     /**
-     * データベースを SQL 形式でダンプ（ストリームに書き込み）
+     * Dump database in SQL format (write to stream)
      *
      * @param  resource  $handle
      */
@@ -339,7 +339,7 @@ class CoreBackupService implements BackupServiceInterface
     }
 
     /**
-     * MySQL データベースのダンプ
+     * Dump MySQL database
      *
      * @param  resource  $handle
      */
@@ -361,7 +361,7 @@ class CoreBackupService implements BackupServiceInterface
     }
 
     /**
-     * SQLite データベースのダンプ
+     * Dump SQLite database
      *
      * @param  resource  $handle
      */
@@ -369,7 +369,7 @@ class CoreBackupService implements BackupServiceInterface
     {
         fwrite($handle, "PRAGMA foreign_keys = OFF;\n\n");
 
-        // SQLite の sqlite_master からテーブル一覧を取得
+        // Get table list from sqlite_master in SQLite
         if ($prefix === '') {
             $rows = DB::select(
                 "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name",
@@ -392,7 +392,7 @@ class CoreBackupService implements BackupServiceInterface
     }
 
     /**
-     * SQLite の1テーブルをダンプ
+     * Dump a single table in SQLite
      *
      * @param  resource  $handle
      */
@@ -401,7 +401,7 @@ class CoreBackupService implements BackupServiceInterface
         fwrite($handle, "\n-- Table: {$table}\n");
         fwrite($handle, "DROP TABLE IF EXISTS \"{$table}\";\n");
 
-        // CREATE TABLE 文を取得
+        // Get CREATE TABLE statement
         $createRows = DB::select("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?", [$table]);
         if (empty($createRows)) {
             return;
@@ -409,7 +409,7 @@ class CoreBackupService implements BackupServiceInterface
         $createStatement = (array) $createRows[0];
         fwrite($handle, ($createStatement['sql'] ?? '').";\n\n");
 
-        // データ
+        // Data
         $offset = 0;
         $pdo = DB::getPdo();
 
@@ -451,7 +451,7 @@ class CoreBackupService implements BackupServiceInterface
     }
 
     /**
-     * バックアップ対象のテーブル一覧を取得（プレフィックスでフィルタ）
+     * Get list of tables to backup (filtered by prefix)
      *
      * @return string[]
      */
@@ -474,7 +474,7 @@ class CoreBackupService implements BackupServiceInterface
     }
 
     /**
-     * 1テーブルをダンプ
+     * Dump a single table
      *
      * @param  resource  $handle
      */
@@ -532,9 +532,9 @@ class CoreBackupService implements BackupServiceInterface
     }
 
     /**
-     * ディレクトリを ZIP に追加
+     * Add directory to ZIP
      *
-     * @param  string[]  $excludeDirs  ソース直下で除外するディレクトリ名
+     * @param  string[]  $excludeDirs  Directory names to exclude directly under source
      */
     private function addDirectoryToZip(\ZipArchive $zip, string $sourceDir, string $namespace, array $excludeDirs = []): void
     {
@@ -549,7 +549,7 @@ class CoreBackupService implements BackupServiceInterface
             new \RecursiveCallbackFilterIterator(
                 new \RecursiveDirectoryIterator($sourceDir, \RecursiveDirectoryIterator::SKIP_DOTS),
                 function ($current, $key, $iterator) use ($sourceDir, $excludeDirs) {
-                    // 直下のディレクトリで excludeDirs に該当するものは除外
+                    // Exclude directories directly under that match excludeDirs
                     if ($current->isDir()) {
                         $relativePath = substr($current->getPathname(), strlen($sourceDir) + 1);
                         $topLevelName = explode(DIRECTORY_SEPARATOR, $relativePath)[0] ?? '';
@@ -576,7 +576,7 @@ class CoreBackupService implements BackupServiceInterface
     }
 
     /**
-     * BackupRecord を作成
+     * Create BackupRecord
      *
      * @param  string[]  $targets
      * @param  array<string,mixed>  $options
@@ -616,7 +616,7 @@ class CoreBackupService implements BackupServiceInterface
     }
 
     /**
-     * 一時作業ディレクトリを作成
+     * Create temporary working directory
      */
     private function createTempDir(): string
     {
@@ -631,7 +631,7 @@ class CoreBackupService implements BackupServiceInterface
     }
 
     /**
-     * バックアップ保存先ディレクトリを確保
+     * Ensure backup destination directory exists
      */
     private function ensureBackupDirectory(): string
     {
@@ -644,7 +644,7 @@ class CoreBackupService implements BackupServiceInterface
     }
 
     /**
-     * バックアップファイル名を生成
+     * Generate backup file name
      */
     private function generateFileName(string $type): string
     {
@@ -656,7 +656,7 @@ class CoreBackupService implements BackupServiceInterface
     }
 
     /**
-     * 一時ディレクトリを再帰的に削除
+     * Recursively delete temporary directory
      */
     private function cleanupTempDir(string $tempDir): void
     {

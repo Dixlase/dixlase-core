@@ -44,27 +44,27 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  *
- * セキュリティ設定統一レジストリ
+ * Unified security settings registry
  *
- * 散らばったセキュリティ設定を一元管理するサービス
- * カテゴリ別に設定を整理し、一貫したAPIを提供
+ * Service for centralized management of scattered security settings
+ * Organizes settings by category and provides a consistent API
  */
 class SecuritySettingsRegistry
 {
     /**
-     * キャッシュキープレフィックス
+     * Cache key prefix
      */
     protected const CACHE_PREFIX = 'security_settings:';
 
     /**
-     * キャッシュTTL（秒）
+     * Cache TTL (seconds)
      */
     protected const CACHE_TTL = 300;
 
     /**
-     * 設定カテゴリ
+     * Settings categories
      */
     public const CATEGORY_AUTH = 'auth';
 
@@ -87,18 +87,18 @@ class SecuritySettingsRegistry
     public const CATEGORY_LOCKDOWN = 'lockdown';
 
     /**
-     * 設定定義
+     * Settings definitions
      * [key => [category, source, type, default, description]]
      */
     protected static array $definitions = [];
 
     /**
-     * 初期化フラグ
+     * Initialization flag
      */
     protected static bool $initialized = false;
 
     /**
-     * 設定定義を初期化
+     * Initialize settings definitions
      */
     protected static function initialize(): void
     {
@@ -108,159 +108,159 @@ class SecuritySettingsRegistry
 
         self::$definitions = [
             // =========================================================================
-            // 認証設定 (auth)
+            // Authentication settings (auth)
             // =========================================================================
             'two_fa_enabled' => [
                 'category' => self::CATEGORY_AUTH,
                 'source' => 'members_settings',
                 'type' => 'bool',
                 'default' => false,
-                'description' => '二段階認証の有効/無効',
+                'description' => __('services/security_settings_registry.two_factor_auth_toggle'),
             ],
             'two_fa_mode' => [
                 'category' => self::CATEGORY_AUTH,
                 'source' => 'members_settings',
                 'type' => 'string',
                 'default' => 'optional',
-                'description' => '二段階認証モード（optional/required/disabled）',
+                'description' => __('services/security_settings_registry.two_factor_auth_mode'),
             ],
             'password_min_length' => [
                 'category' => self::CATEGORY_AUTH,
                 'source' => 'members_settings',
                 'type' => 'int',
                 'default' => 8,
-                'description' => 'パスワード最小文字数',
+                'description' => __('services/security_settings_registry.password_min_length'),
             ],
             'password_require_mixed_case' => [
                 'category' => self::CATEGORY_AUTH,
                 'source' => 'members_settings',
                 'type' => 'bool',
                 'default' => true,
-                'description' => 'パスワードに大文字小文字を必須にするか',
+                'description' => __('services/security_settings_registry.password_require_mixed_case'),
             ],
             'password_require_numbers' => [
                 'category' => self::CATEGORY_AUTH,
                 'source' => 'members_settings',
                 'type' => 'bool',
                 'default' => true,
-                'description' => 'パスワードに数字を必須にするか',
+                'description' => __('services/security_settings_registry.password_require_numbers'),
             ],
             'password_require_symbols' => [
                 'category' => self::CATEGORY_AUTH,
                 'source' => 'members_settings',
                 'type' => 'bool',
                 'default' => false,
-                'description' => 'パスワードに記号を必須にするか',
+                'description' => __('services/security_settings_registry.password_require_symbols'),
             ],
             'password_check_pwned' => [
                 'category' => self::CATEGORY_AUTH,
                 'source' => 'members_settings',
                 'type' => 'bool',
                 'default' => true,
-                'description' => '漏洩パスワードチェックを有効にするか',
+                'description' => __('services/security_settings_registry.password_breach_check_enabled'),
             ],
 
             // =========================================================================
-            // ログイン設定 (login)
+            // Login settings (login)
             // =========================================================================
             'login_max_attempts' => [
                 'category' => self::CATEGORY_LOGIN,
                 'source' => 'members_settings',
                 'type' => 'int',
                 'default' => 5,
-                'description' => 'ログイン試行回数上限',
+                'description' => __('services/security_settings_registry.login_max_attempts'),
             ],
             'login_lockout_duration' => [
                 'category' => self::CATEGORY_LOGIN,
                 'source' => 'members_settings',
                 'type' => 'int',
                 'default' => 15,
-                'description' => 'ロックアウト時間（分）',
+                'description' => __('services/security_settings_registry.lockout_duration_minutes'),
             ],
             'login_notification_enabled' => [
                 'category' => self::CATEGORY_LOGIN,
                 'source' => 'members_settings',
                 'type' => 'bool',
                 'default' => true,
-                'description' => 'ログイン通知を有効にするか',
+                'description' => __('services/security_settings_registry.login_notification_enabled'),
             ],
             'lockout_notification_enabled' => [
                 'category' => self::CATEGORY_LOGIN,
                 'source' => 'members_settings',
                 'type' => 'bool',
                 'default' => true,
-                'description' => 'ロックアウト通知を有効にするか',
+                'description' => __('services/security_settings_registry.lockout_notification_enabled'),
             ],
 
             // =========================================================================
-            // セッション設定 (session)
+            // Session settings (session)
             // =========================================================================
             'session_driver' => [
                 'category' => self::CATEGORY_SESSION,
                 'source' => 'security_settings',
                 'type' => 'string',
                 'default' => 'file',
-                'description' => 'セッションドライバー',
+                'description' => __('services/security_settings_registry.session_driver'),
             ],
             'session_lifetime' => [
                 'category' => self::CATEGORY_SESSION,
                 'source' => 'security_settings',
                 'type' => 'int',
                 'default' => 120,
-                'description' => 'セッション有効期間（分）',
+                'description' => __('services/security_settings_registry.session_lifetime_minutes'),
             ],
             'session_encrypt' => [
                 'category' => self::CATEGORY_SESSION,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => false,
-                'description' => 'セッション暗号化',
+                'description' => __('services/security_settings_registry.session_encryption'),
             ],
             'members_session_lifetime_enabled' => [
                 'category' => self::CATEGORY_SESSION,
                 'source' => 'members_settings',
                 'type' => 'bool',
                 'default' => false,
-                'description' => 'メンバー用セッション有効期間を有効にするか',
+                'description' => __('services/security_settings_registry.member_session_lifetime_enabled'),
             ],
             'members_session_lifetime' => [
                 'category' => self::CATEGORY_SESSION,
                 'source' => 'members_settings',
                 'type' => 'int',
                 'default' => 120,
-                'description' => 'メンバー用セッション有効期間（分）',
+                'description' => __('services/security_settings_registry.member_session_lifetime_minutes'),
             ],
 
             // =========================================================================
-            // CAPTCHA設定 (captcha)
+            // CAPTCHA settings (captcha)
             // =========================================================================
             'captcha_enabled' => [
                 'category' => self::CATEGORY_CAPTCHA,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => false,
-                'description' => 'CAPTCHA有効/無効',
+                'description' => __('services/security_settings_registry.captcha_toggle'),
             ],
             'captcha_driver' => [
                 'category' => self::CATEGORY_CAPTCHA,
                 'source' => 'security_settings',
                 'type' => 'string',
                 'default' => 'google',
-                'description' => 'CAPTCHAドライバー',
+                'description' => __('services/security_settings_registry.captcha_driver'),
             ],
             'captcha_site_key' => [
                 'category' => self::CATEGORY_CAPTCHA,
                 'source' => 'security_settings',
                 'type' => 'string',
                 'default' => '',
-                'description' => 'CAPTCHAサイトキー',
+                'description' => __('services/security_settings_registry.captcha_site_key'),
             ],
             'captcha_secret_key' => [
                 'category' => self::CATEGORY_CAPTCHA,
                 'source' => 'security_settings',
                 'type' => 'string',
                 'default' => '',
-                'description' => 'CAPTCHAシークレットキー',
+                'description' => __('services/security_settings_registry.captcha_secret_key'),
                 'sensitive' => true,
             ],
             'captcha_google_version' => [
@@ -268,265 +268,265 @@ class SecuritySettingsRegistry
                 'source' => 'security_settings',
                 'type' => 'string',
                 'default' => 'v3',
-                'description' => 'Google reCAPTCHAバージョン',
+                'description' => __('services/security_settings_registry.recaptcha_version'),
             ],
             'captcha_google_min_score' => [
                 'category' => self::CATEGORY_CAPTCHA,
                 'source' => 'security_settings',
                 'type' => 'float',
                 'default' => 0.5,
-                'description' => 'Google reCAPTCHA最小スコア',
+                'description' => __('services/security_settings_registry.recaptcha_min_score'),
             ],
 
             // =========================================================================
-            // IP制限設定 (ip)
+            // IP restriction settings (ip)
             // =========================================================================
             'enable_allowed_admin_ips' => [
                 'category' => self::CATEGORY_IP,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => false,
-                'description' => '管理画面IP許可リストを有効にするか',
+                'description' => __('services/security_settings_registry.admin_ip_allowlist_enabled'),
             ],
             'allowed_admin_ips' => [
                 'category' => self::CATEGORY_IP,
                 'source' => 'security_settings',
                 'type' => 'string',
                 'default' => '',
-                'description' => '管理画面許可IPリスト',
+                'description' => __('services/security_settings_registry.admin_ip_allowlist'),
             ],
             'enable_blocked_admin_ips' => [
                 'category' => self::CATEGORY_IP,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => false,
-                'description' => '管理画面IPブロックリストを有効にするか',
+                'description' => __('services/security_settings_registry.admin_ip_blocklist_enabled'),
             ],
             'blocked_admin_ips' => [
                 'category' => self::CATEGORY_IP,
                 'source' => 'security_settings',
                 'type' => 'string',
                 'default' => '',
-                'description' => '管理画面ブロックIPリスト',
+                'description' => __('services/security_settings_registry.admin_ip_blocklist'),
             ],
             'enable_allowed_front_ips' => [
                 'category' => self::CATEGORY_IP,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => false,
-                'description' => 'フロントIP許可リストを有効にするか',
+                'description' => __('services/security_settings_registry.front_ip_allowlist_enabled'),
             ],
             'allowed_front_ips' => [
                 'category' => self::CATEGORY_IP,
                 'source' => 'security_settings',
                 'type' => 'string',
                 'default' => '',
-                'description' => 'フロント許可IPリスト',
+                'description' => __('services/security_settings_registry.front_ip_allowlist'),
             ],
             'enable_blocked_front_ips' => [
                 'category' => self::CATEGORY_IP,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => false,
-                'description' => 'フロントIPブロックリストを有効にするか',
+                'description' => __('services/security_settings_registry.front_ip_blocklist_enabled'),
             ],
             'blocked_front_ips' => [
                 'category' => self::CATEGORY_IP,
                 'source' => 'security_settings',
                 'type' => 'string',
                 'default' => '',
-                'description' => 'フロントブロックIPリスト',
+                'description' => __('services/security_settings_registry.front_ip_blocklist'),
             ],
 
             // =========================================================================
-            // CSP設定 (csp)
+            // CSP settings (csp)
             // =========================================================================
             'csp_enabled' => [
                 'category' => self::CATEGORY_CSP,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => true,
-                'description' => 'CSP有効/無効',
+                'description' => __('services/security_settings_registry.csp_toggle'),
             ],
             'csp_mode' => [
                 'category' => self::CATEGORY_CSP,
                 'source' => 'security_settings',
                 'type' => 'int',
                 'default' => 1,
-                'description' => 'CSPモード（0: development, 1: standard, 2: strict）',
+                'description' => __('services/security_settings_registry.csp_mode'),
             ],
             'csp_log_violations' => [
                 'category' => self::CATEGORY_CSP,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => true,
-                'description' => 'CSP違反をログに記録するか',
+                'description' => __('services/security_settings_registry.csp_log_violations'),
             ],
             'csp_trusted_domains' => [
                 'category' => self::CATEGORY_CSP,
                 'source' => 'security_settings',
                 'type' => 'string',
                 'default' => '',
-                'description' => '信頼済みドメイン（改行区切り）',
+                'description' => __('services/security_settings_registry.trusted_domains'),
             ],
             'csp_denied_domains' => [
                 'category' => self::CATEGORY_CSP,
                 'source' => 'security_settings',
                 'type' => 'string',
                 'default' => '',
-                'description' => '拒否ドメイン（改行区切り）',
+                'description' => __('services/security_settings_registry.denied_domains'),
             ],
             'csp_blocklist_check_enabled' => [
                 'category' => self::CATEGORY_CSP,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => false,
-                'description' => 'CSPブロックリスト検出を有効にするか',
+                'description' => __('services/security_settings_registry.csp_blocklist_detection_enabled'),
             ],
             'csp_blocklist_action' => [
                 'category' => self::CATEGORY_CSP,
                 'source' => 'security_settings',
                 'type' => 'int',
                 'default' => 0,
-                'description' => 'CSPブロックリスト検出時のアクション（0: warn, 1: block）',
+                'description' => __('services/security_settings_registry.csp_blocklist_action'),
             ],
 
             // =========================================================================
-            // 拡張機能セキュリティ設定 (extension)
+            // Extension security settings (extension)
             // =========================================================================
             'extension_security_preset' => [
                 'category' => self::CATEGORY_EXTENSION,
                 'source' => 'security_settings',
                 'type' => 'string',
                 'default' => 'balanced',
-                'description' => '拡張機能セキュリティプリセット',
+                'description' => __('services/security_settings_registry.extension_security_preset'),
             ],
             'extension_require_signature' => [
                 'category' => self::CATEGORY_EXTENSION,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => false,
-                'description' => '署名を必須にするか',
+                'description' => __('services/security_settings_registry.signature_required'),
             ],
             'extension_require_permission_definition' => [
                 'category' => self::CATEGORY_EXTENSION,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => false,
-                'description' => '権限定義を必須にするか',
+                'description' => __('services/security_settings_registry.permission_definition_required'),
             ],
             'extension_allow_undefined_permissions' => [
                 'category' => self::CATEGORY_EXTENSION,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => true,
-                'description' => '未定義の権限を許可するか',
+                'description' => __('services/security_settings_registry.allow_undefined_permissions'),
             ],
             'extension_plugin_max_health_level' => [
                 'category' => self::CATEGORY_EXTENSION,
                 'source' => 'security_settings',
                 'type' => 'int',
                 'default' => 2,
-                'description' => 'プラグインの最大許可健全性レベル',
+                'description' => __('services/security_settings_registry.plugin_max_health_level'),
             ],
             'extension_theme_max_health_level' => [
                 'category' => self::CATEGORY_EXTENSION,
                 'source' => 'security_settings',
                 'type' => 'int',
                 'default' => 3,
-                'description' => 'テーマの最大許可健全性レベル',
+                'description' => __('services/security_settings_registry.theme_max_health_level'),
             ],
             'extension_audit_max_age_days' => [
                 'category' => self::CATEGORY_EXTENSION,
                 'source' => 'security_settings',
                 'type' => 'int',
                 'default' => 30,
-                'description' => '監査スキャン期限日数（これを超えると「期限切れ」バッジが表示される）',
+                'description' => __('services/security_settings_registry.audit_scan_expiration_days'),
             ],
             'extension_allow_logic_themes' => [
                 'category' => self::CATEGORY_EXTENSION,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => true,
-                'description' => 'ロジックを含むテーマを許可するか',
+                'description' => __('services/security_settings_registry.allow_themes_with_logic'),
             ],
             'extension_permission_mismatch_action' => [
                 'category' => self::CATEGORY_EXTENSION,
                 'source' => 'security_settings',
                 'type' => 'string',
                 'default' => 'warn',
-                'description' => '権限不一致時の動作',
+                'description' => __('services/security_settings_registry.permission_mismatch_behavior'),
             ],
             'extension_notify_on_install' => [
                 'category' => self::CATEGORY_EXTENSION,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => true,
-                'description' => 'インストール時に通知するか',
+                'description' => __('services/security_settings_registry.notify_on_install'),
             ],
             'extension_notify_on_uninstall' => [
                 'category' => self::CATEGORY_EXTENSION,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => true,
-                'description' => 'アンインストール時に通知するか',
+                'description' => __('services/security_settings_registry.notify_on_uninstall'),
             ],
             'extension_log_operations' => [
                 'category' => self::CATEGORY_EXTENSION,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => true,
-                'description' => '拡張機能操作をログに記録するか',
+                'description' => __('services/security_settings_registry.log_extension_operations'),
             ],
 
             // =========================================================================
-            // 通知設定 (notification)
+            // Notification settings (notification)
             // =========================================================================
             'notification_enabled' => [
                 'category' => self::CATEGORY_NOTIFICATION,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => true,
-                'description' => 'システム通知を有効にするか',
+                'description' => __('services/security_settings_registry.system_notifications_enabled'),
             ],
             'notification_log_levels' => [
                 'category' => self::CATEGORY_NOTIFICATION,
                 'source' => 'security_settings',
                 'type' => 'string',
                 'default' => '8,7,6,5',
-                'description' => '通知するログレベル（カンマ区切り）',
+                'description' => __('services/security_settings_registry.notification_log_levels'),
             ],
 
             // =========================================================================
-            // API設定 (api)
+            // API settings (api)
             // =========================================================================
             'api_rate_limit_enabled' => [
                 'category' => self::CATEGORY_API,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => true,
-                'description' => 'APIレートリミットを有効にするか',
+                'description' => __('services/security_settings_registry.api_rate_limit_enabled'),
             ],
             'api_rate_limit_per_minute' => [
                 'category' => self::CATEGORY_API,
                 'source' => 'security_settings',
                 'type' => 'int',
                 'default' => 60,
-                'description' => '1分あたりのAPIリクエスト上限',
+                'description' => __('services/security_settings_registry.api_requests_per_minute'),
             ],
             'api_signature_required' => [
                 'category' => self::CATEGORY_API,
                 'source' => 'security_settings',
                 'type' => 'bool',
                 'default' => true,
-                'description' => 'API署名を必須にするか',
+                'description' => __('services/security_settings_registry.api_signature_required'),
             ],
             'api_timestamp_tolerance' => [
                 'category' => self::CATEGORY_API,
                 'source' => 'security_settings',
                 'type' => 'int',
                 'default' => 300,
-                'description' => 'APIタイムスタンプ許容範囲（秒）',
+                'description' => __('services/security_settings_registry.api_timestamp_tolerance_seconds'),
             ],
         ];
 
@@ -534,49 +534,49 @@ class SecuritySettingsRegistry
     }
 
     /**
-     * 設定値を取得
+     * Get settings value
      *
-     * @param  string  $key  設定キー
-     * @param  mixed  $default  デフォルト値（nullの場合は定義のデフォルトを使用）
+     * @param  string  $key  Settings key
+     * @param  mixed  $default  Default value (if null, use the default from the definition)
      * @return mixed
      */
     public static function get(string $key, $default = null)
     {
         self::initialize();
 
-        // キャッシュから取得
+        // Get from cache
         $cacheKey = self::CACHE_PREFIX.$key;
         $cached = Cache::get($cacheKey);
         if ($cached !== null) {
             return $cached;
         }
 
-        // 定義を取得
+        // Get definition
         $definition = self::$definitions[$key] ?? null;
         if (! $definition) {
             return $default;
         }
 
-        // デフォルト値を決定
+        // Determine default value
         $defaultValue = $default ?? $definition['default'];
 
-        // データベースから取得
+        // Get from database
         $value = self::getFromSource($key, $definition['source'], $defaultValue);
 
-        // 型変換
+        // Type conversion
         $value = self::castValue($value, $definition['type']);
 
-        // キャッシュに保存
+        // Save to cache
         Cache::put($cacheKey, $value, self::CACHE_TTL);
 
         return $value;
     }
 
     /**
-     * 設定値を設定
+     * Set settings value
      *
-     * @param  string  $key  設定キー
-     * @param  mixed  $value  値
+     * @param  string  $key  Settings key
+     * @param  mixed  $value  Value
      */
     public static function set(string $key, $value): bool
     {
@@ -587,23 +587,23 @@ class SecuritySettingsRegistry
             return false;
         }
 
-        // 型変換
+        // Type conversion
         $value = self::castValue($value, $definition['type']);
 
-        // データベースに保存
+        // Save to database
         $result = self::setToSource($key, $value, $definition['source']);
 
-        // キャッシュをクリア
+        // Clear cache
         self::clearCache($key);
 
         return $result;
     }
 
     /**
-     * 複数の設定値を一括設定
+     * Bulk set multiple settings values
      *
      * @param  array  $settings  [key => value]
-     * @return int 設定された件数
+     * @return int Number of settings set
      */
     public static function setMultiple(array $settings): int
     {
@@ -618,9 +618,9 @@ class SecuritySettingsRegistry
     }
 
     /**
-     * カテゴリ別に設定を取得
+     * Get settings by category
      *
-     * @param  string  $category  カテゴリ
+     * @param  string  $category  Category
      */
     public static function getByCategory(string $category): array
     {
@@ -637,9 +637,9 @@ class SecuritySettingsRegistry
     }
 
     /**
-     * 全設定を取得
+     * Get all settings
      *
-     * @param  bool  $includeSensitive  機密情報を含めるか
+     * @param  bool  $includeSensitive  Whether to include sensitive information
      */
     public static function getAll(bool $includeSensitive = false): array
     {
@@ -657,9 +657,9 @@ class SecuritySettingsRegistry
     }
 
     /**
-     * カテゴリ別にグループ化した全設定を取得
+     * Get all settings grouped by category
      *
-     * @param  bool  $includeSensitive  機密情報を含めるか
+     * @param  bool  $includeSensitive  Whether to include sensitive information
      */
     public static function getAllGrouped(bool $includeSensitive = false): array
     {
@@ -686,9 +686,9 @@ class SecuritySettingsRegistry
     }
 
     /**
-     * 設定定義を取得
+     * Get settings definition
      *
-     * @param  string|null  $key  特定のキー（nullで全て）
+     * @param  string|null  $key  Specific key (null for all)
      */
     public static function getDefinition(?string $key = null): ?array
     {
@@ -702,7 +702,7 @@ class SecuritySettingsRegistry
     }
 
     /**
-     * 設定が存在するか
+     * Check if settings exist
      */
     public static function has(string $key): bool
     {
@@ -712,9 +712,9 @@ class SecuritySettingsRegistry
     }
 
     /**
-     * キャッシュをクリア
+     * Clear cache
      *
-     * @param  string|null  $key  特定のキー（nullで全て）
+     * @param  string|null  $key  Specific key (null for all)
      */
     public static function clearCache(?string $key = null): void
     {
@@ -731,7 +731,7 @@ class SecuritySettingsRegistry
     }
 
     /**
-     * 利用可能なカテゴリ一覧を取得
+     * Get available category list
      */
     public static function getCategories(): array
     {
@@ -750,7 +750,7 @@ class SecuritySettingsRegistry
     }
 
     /**
-     * データソースから値を取得
+     * Get value from data source
      */
     protected static function getFromSource(string $key, string $source, $default)
     {
@@ -773,12 +773,12 @@ class SecuritySettingsRegistry
     }
 
     /**
-     * データソースに値を設定
+     * Set value to data source
      */
     protected static function setToSource(string $key, $value, string $source): bool
     {
         try {
-            // 値を文字列に変換
+            // Convert value to string
             $stringValue = is_bool($value) ? ($value ? '1' : '0') : (string) $value;
 
             switch ($source) {
@@ -805,7 +805,7 @@ class SecuritySettingsRegistry
     }
 
     /**
-     * 値を型変換
+     * Cast value to type
      */
     protected static function castValue($value, string $type)
     {
@@ -829,9 +829,9 @@ class SecuritySettingsRegistry
     }
 
     /**
-     * 設定のエクスポート（バックアップ用）
+     * Export settings (for backup)
      *
-     * @param  bool  $includeSensitive  機密情報を含めるか
+     * @param  bool  $includeSensitive  Whether to include sensitive information
      */
     public static function export(bool $includeSensitive = false): array
     {
@@ -843,10 +843,10 @@ class SecuritySettingsRegistry
     }
 
     /**
-     * 設定のインポート（リストア用）
+     * Import settings (for restore)
      *
-     * @param  array  $data  エクスポートされたデータ
-     * @return int インポートされた件数
+     * @param  array  $data  Exported data
+     * @return int Number of imported items
      */
     public static function import(array $data): int
     {

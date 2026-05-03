@@ -42,7 +42,7 @@ use App\Models\WebhookDelivery;
 use Illuminate\Support\Facades\Log;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugin/theme
  *
  * Webhook Dead Letter Service
  *

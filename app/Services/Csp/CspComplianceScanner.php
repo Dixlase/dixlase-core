@@ -41,16 +41,16 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
 /**
- * プラグイン/テーマのファイルを実際にスキャンして
- * CSP準拠状況を検証するサービス
+ * Actually scan plugin/theme files to
+ * Service to verify CSP compliance status
  *
- * plugin.json の宣言ではなく、実際のコードを解析して
- * インラインスクリプト・スタイル・イベントハンドラを検出する
+ * Analyze actual code instead of plugin.json declarations to
+ * Detect inline scripts, styles, and event handlers
  */
 class CspComplianceScanner
 {
     /**
-     * インラインイベントハンドラ属性のリスト
+     * List of inline event handler attributes
      *
      * @var array<string>
      */
@@ -70,9 +70,9 @@ class CspComplianceScanner
     ];
 
     /**
-     * プラグインのCSP準拠状況をスキャン
+     * Scan plugin CSP compliance status
      *
-     * @param  string  $slug  プラグインスラッグ
+     * @param  string  $slug  Plugin slug
      * @return array{
      *     status: string,
      *     requires_inline_js: bool,
@@ -90,9 +90,9 @@ class CspComplianceScanner
     }
 
     /**
-     * テーマのCSP準拠状況をスキャン
+     * Scan theme CSP compliance status
      *
-     * @param  string  $slug  テーマスラッグ
+     * @param  string  $slug  Theme slug
      */
     public function scanTheme(string $slug): array
     {
@@ -102,27 +102,27 @@ class CspComplianceScanner
     }
 
     /**
-     * スラッグから実際のディレクトリパスを解決する
+     * Resolve actual directory path from slug
      *
-     * スラッグはkebab-case（例: dixlase-legal）だが、
-     * ディレクトリ名はPascalCase（例: DixlaseLegal）のため変換が必要
+     * Slug is kebab-case (e.g. dixlase-legal), but
+     * Directory name is PascalCase (e.g. DixlaseLegal) so conversion is needed
      */
     protected function resolveDirectory(string $baseDir, string $slug): string
     {
-        // StudlyCase変換を試行（dixlase-legal → DixlaseLegal）
+        // Try StudlyCase conversion (dixlase-legal → DixlaseLegal)
         $studlyName = Str::studly(str_replace('-', '_', $slug));
         $path = base_path("{$baseDir}/{$studlyName}");
         if (File::isDirectory($path)) {
             return $path;
         }
 
-        // スラッグそのままを試行
+        // Try slug as-is
         $path = base_path("{$baseDir}/{$slug}");
         if (File::isDirectory($path)) {
             return $path;
         }
 
-        // ディレクトリ一覧からkebab-case比較で検索
+        // Search from directory list by kebab-case comparison
         $parentDir = base_path($baseDir);
         if (File::isDirectory($parentDir)) {
             foreach (File::directories($parentDir) as $dir) {
@@ -132,16 +132,16 @@ class CspComplianceScanner
             }
         }
 
-        // 見つからない場合はスラッグのままのパスを返す（scan()側でunknownになる）
+        // If not found, return path with slug as-is (will become unknown on scan() side)
         return base_path("{$baseDir}/{$slug}");
     }
 
     /**
-     * ディレクトリのCSP準拠状況をスキャン
+     * Scan directory CSP compliance status
      *
-     * @param  string  $dir  スキャン対象ディレクトリ
-     * @param  string  $type  'plugin' または 'theme'
-     * @param  string  $slug  スラッグ
+     * @param  string  $dir  Directory to scan
+     * @param  string  $type  'plugin' or 'theme'
+     * @param  string  $slug  Slug
      */
     protected function scan(string $dir, string $type, string $slug): array
     {
@@ -157,7 +157,7 @@ class CspComplianceScanner
             return $this->buildResult('unknown', false, false, $slug, $type, $violations, $summary);
         }
 
-        // Bladeファイルとビューファイルをスキャン
+        // Scan Blade files and view files
         $bladeFiles = $this->getBladeFiles($dir);
         foreach ($bladeFiles as $filePath) {
             $content = File::get($filePath);
@@ -169,7 +169,7 @@ class CspComplianceScanner
             $this->detectJavascriptUrls($content, $relativePath, $violations, $summary);
         }
 
-        // plugin.json / theme.json からCSP設定の有無を確認
+        // Check for CSP settings in plugin.json / theme.json
         $metaFile = $type === 'plugin' ? "{$dir}/plugin.json" : "{$dir}/theme.json";
         $hasCspConfig = false;
         if (File::exists($metaFile)) {
@@ -177,7 +177,7 @@ class CspComplianceScanner
             $hasCspConfig = isset($json['csp']);
         }
 
-        // 結果を判定
+        // Evaluate results
         $requiresInlineJs = $summary['inline_scripts'] > 0 || $summary['event_handlers'] > 0 || $summary['javascript_urls'] > 0;
         $requiresInlineCss = $summary['inline_styles'] > 0;
 
@@ -193,15 +193,15 @@ class CspComplianceScanner
     }
 
     /**
-     * インラインスクリプトタグを検出
+     * Detect inline script tags
      *
-     * `<script>` タグのうち、src属性なし（インラインコード）のものを検出する
-     * Blade @push('scripts') 内の外部ファイル読み込みは除外
-     * JSON設定ブロック (type="application/json") は除外
+     * Detect `<script>` tags without src attribute (inline code)
+     * Exclude external file loads inside Blade @push('scripts')
+     * Exclude JSON settings blocks (type="application/json")
      */
     protected function detectInlineScripts(string $content, string $filePath, array &$violations, array &$summary): void
     {
-        // <script> タグを検出（src属性なし、type="application/json" 以外）
+        // Detect <script> tags (without src attribute, excluding type="application/json")
         $pattern = '/<script\b(?![^>]*\bsrc\s*=)[^>]*>/i';
 
         if (preg_match_all($pattern, $content, $matches, PREG_OFFSET_CAPTURE)) {
@@ -209,17 +209,17 @@ class CspComplianceScanner
                 $tag = $match[0];
                 $offset = $match[1];
 
-                // type="application/json" や type="application/ld+json" は除外
+                // Exclude type="application/json" and type="application/ld+json"
                 if (preg_match('/type\s*=\s*["\']application\/(json|ld\+json)["\']/i', $tag)) {
                     continue;
                 }
 
-                // @cspNonce 付きはCSP準拠のため除外
+                // Exclude @cspNonce as it is CSP-compliant
                 if (str_contains($tag, '@cspNonce')) {
                     continue;
                 }
 
-                // Bladeコメント内は除外
+                // Exclude inside Blade comments
                 if ($this->isInsideBladeComment($content, $offset)) {
                     continue;
                 }
@@ -238,10 +238,10 @@ class CspComplianceScanner
     }
 
     /**
-     * インラインスタイルタグを検出
+     * Detect inline style tags
      *
-     * `<style>` タグを検出する
-     * Tailwind の @apply を含む場合も検出対象
+     * Detect `<style>` tags
+     * Also detect cases containing Tailwind's @apply
      */
     protected function detectInlineStyles(string $content, string $filePath, array &$violations, array &$summary): void
     {
@@ -252,12 +252,12 @@ class CspComplianceScanner
                 $tag = $match[0];
                 $offset = $match[1];
 
-                // @cspNonce 付きはCSP準拠のため除外
+                // Exclude @cspNonce as it is CSP-compliant
                 if (str_contains($tag, '@cspNonce')) {
                     continue;
                 }
 
-                // Bladeコメント内は除外
+                // Exclude inside Blade comments
                 if ($this->isInsideBladeComment($content, $offset)) {
                     continue;
                 }
@@ -276,14 +276,14 @@ class CspComplianceScanner
     }
 
     /**
-     * インラインイベントハンドラ属性を検出
+     * Detect inline event handler attributes
      *
-     * onclick, onchange 等のインラインイベントハンドラを検出する
-     * Alpine.js のディレクティブ (@click, x-on:click 等) は除外
+     * Detect inline event handlers such as onclick, onchange, etc.
+     * Exclude Alpine.js directives (@click, x-on:click, etc.)
      */
     protected function detectEventHandlers(string $content, string $filePath, array &$violations, array &$summary): void
     {
-        // イベントハンドラ属性のパターン（HTML属性として出現するもの）
+        // Event handler attribute patterns (those appearing as HTML attributes)
         $attrList = implode('|', self::EVENT_HANDLER_ATTRIBUTES);
         $pattern = '/\b('.$attrList.')\s*=\s*["\'][^"\']*["\']/i';
 
@@ -292,12 +292,12 @@ class CspComplianceScanner
                 $text = $match[0];
                 $offset = $match[1];
 
-                // Bladeコメント・HTMLコメント内は除外
+                // Exclude inside Blade comments and HTML comments
                 if ($this->isInsideBladeComment($content, $offset) || $this->isInsideHtmlComment($content, $offset)) {
                     continue;
                 }
 
-                // PHPコメント内は除外（PHPDoc、行コメント）
+                // Exclude PHP comments (PHPDoc, line comments)
                 if ($this->isInsidePhpComment($content, $offset)) {
                     continue;
                 }
@@ -316,9 +316,9 @@ class CspComplianceScanner
     }
 
     /**
-     * javascript: URL を検出
+     * Detect javascript: URLs
      *
-     * href="javascript:..." 等のパターンを検出する
+     * Detect patterns like href="javascript:..."
      */
     protected function detectJavascriptUrls(string $content, string $filePath, array &$violations, array &$summary): void
     {
@@ -329,7 +329,7 @@ class CspComplianceScanner
                 $text = $match[0];
                 $offset = $match[1];
 
-                // コメント内は除外
+                // Exclude comments
                 if ($this->isInsideBladeComment($content, $offset) || $this->isInsideHtmlComment($content, $offset)) {
                     continue;
                 }
@@ -348,7 +348,7 @@ class CspComplianceScanner
     }
 
     /**
-     * Bladeファイル一覧を取得
+     * Get Blade file list
      *
      * @return array<string>
      */
@@ -370,7 +370,7 @@ class CspComplianceScanner
                 continue;
             }
 
-            // 除外ディレクトリ内のファイルをスキップ
+            // Skip files in excluded directories
             $relativePath = str_replace($dir.'/', '', $file->getPathname());
             $topDir = explode('/', $relativePath)[0] ?? '';
             if (in_array($topDir, $excludeDirs, true)) {
@@ -379,7 +379,7 @@ class CspComplianceScanner
 
             $filename = $file->getFilename();
 
-            // Bladeテンプレートファイル（.blade.php）のみ対象
+            // Only target Blade template files (.blade.php)
             if (str_ends_with($filename, '.blade.php')) {
                 $files[] = $file->getPathname();
             }
@@ -389,7 +389,7 @@ class CspComplianceScanner
     }
 
     /**
-     * CSPステータスを判定
+     * Determine CSP status
      */
     protected function determineStatus(bool $requiresInlineJs, bool $requiresInlineCss, bool $hasCspConfig): string
     {
@@ -409,7 +409,7 @@ class CspComplianceScanner
     }
 
     /**
-     * スキャン結果を構築
+     * Build scan results
      *
      * @param  array<array>  $violations
      * @param  array<string, int>  $summary
@@ -423,7 +423,7 @@ class CspComplianceScanner
         array $violations,
         array $summary,
     ): array {
-        // plugin.json の宣言も確認
+        // Also check plugin.json declarations
         $metaFile = $type === 'plugin'
             ? base_path("plugins/{$slug}/plugin.json")
             : base_path("themes/{$slug}/theme.json");
@@ -446,11 +446,11 @@ class CspComplianceScanner
     }
 
     /**
-     * Bladeコメント内かどうかを判定
+     * Determine if inside Blade comment
      */
     protected function isInsideBladeComment(string $content, int $offset): bool
     {
-        // offset以前の最後の {{-- を探し、対応する --}} がoffset以降にあるかチェック
+        // Find the last {{-- before offset and check if corresponding --}} exists after offset
         $before = substr($content, 0, $offset);
         $openPos = strrpos($before, '{{--');
         if ($openPos === false) {
@@ -463,7 +463,7 @@ class CspComplianceScanner
     }
 
     /**
-     * HTMLコメント内かどうかを判定
+     * Determine if inside HTML comment
      */
     protected function isInsideHtmlComment(string $content, int $offset): bool
     {
@@ -473,7 +473,7 @@ class CspComplianceScanner
             return false;
         }
 
-        // Bladeコメントの場合はスキップ（別メソッドで処理）
+        // Skip Blade comments (handled by separate method)
         if (substr($content, $openPos, 4) === '{{--') {
             return false;
         }
@@ -484,22 +484,22 @@ class CspComplianceScanner
     }
 
     /**
-     * PHPコメント内かどうかを判定
+     * Determine if inside PHP comment
      */
     protected function isInsidePhpComment(string $content, int $offset): bool
     {
-        // 対象行を取得
+        // Get target line
         $before = substr($content, 0, $offset);
         $lineStart = strrpos($before, "\n");
         $lineStart = $lineStart === false ? 0 : $lineStart + 1;
         $line = substr($content, $lineStart, $offset - $lineStart);
 
-        // 行コメント
+        // Line comment
         if (preg_match('/\/\//', $line) || preg_match('/^\s*\*/', $line) || preg_match('/^\s*#/', $line)) {
             return true;
         }
 
-        // ブロックコメント
+        // Block comment
         $beforeStr = substr($content, 0, $offset);
         $lastOpen = strrpos($beforeStr, '/*');
         if ($lastOpen !== false) {
@@ -513,7 +513,7 @@ class CspComplianceScanner
     }
 
     /**
-     * オフセットから行番号を算出
+     * Calculate line number from offset
      */
     protected function getLineNumber(string $content, int $offset): int
     {
@@ -521,7 +521,7 @@ class CspComplianceScanner
     }
 
     /**
-     * マッチ文字列を表示用に切り詰め
+     * Truncate matched string for display
      */
     protected function truncateMatch(string $text, int $maxLength = 80): string
     {

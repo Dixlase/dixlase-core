@@ -39,24 +39,24 @@ use App\Services\Plugin\Scanning\PatternRegistry;
 use Illuminate\Support\Facades\File;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  *
- * plugin.json の permissions / declares セクションを実装コードに合わせて自動同期する。
+ * Auto-sync the permissions/declares sections of plugin.json to match the implementation code.
  *
- * - permissions: PatternRegistry の検出結果から true/false を埋める
- * - declares: 実ファイル存在から true/false／配列を埋める
+ * - permissions: Fill true/false from PatternRegistry detection results
+ * - declares: Fill true/false/arrays from actual file existence
  *
- * 手動編集された `_optional`、`_notes`、`content.read_other_plugins` 等の
- * 「人間が判断して書く」フィールドは温存する。
+ * Preserve fields that are "written by human judgment" such as manually edited
+ * `_optional`, `_notes`, `content.read_other_plugins`, etc.
  */
 class PluginManifestSyncService
 {
     /**
-     * plugin.json の permissions ツリーに書き込む対象キー（dot 記法）。
+     * Target keys (dot notation) to write to the permissions tree in plugin.json.
      *
-     * PatternRegistry はスキャナ用の追加カテゴリ（dangerous_api / csp /
-     * database.core_tables_read 等）も検出するが、それらは健全性スコア専用で
-     * manifest の permissions セクションには載せない（schema が異なる）。
+     * PatternRegistry also detects additional categories for scanning (dangerous_api / csp /
+     * database.core_tables_read, etc.), but they are only for health scoring and
+     * not included in the manifest's permissions section (different schema).
      */
     private const MANIFEST_PERMISSION_KEYS = [
         'database.own_tables',
@@ -83,9 +83,9 @@ class PluginManifestSyncService
     ) {}
 
     /**
-     * 同期結果（変更前後の plugin.json と差分情報）を返す。
+     * Returns the sync result (plugin.json before/after changes and diff information).
      *
-     * 書き込みは行わない（差分計算のみ）。実ファイル更新は呼び出し側で行う。
+     * Does not write (diff calculation only). Actual file update is done by the caller.
      *
      * @return array{
      *     manifest_path: string,
@@ -110,7 +110,7 @@ class PluginManifestSyncService
         if (! is_array($before)) {
             throw new \RuntimeException("Manifest is not valid JSON: {$manifestPath}");
         }
-        // 元 JSON で `{}` だったキーを記録（再エンコード時に `[]` 化されないように object 化する）
+        // Record keys that were `{}` in the original JSON (convert to object to prevent becoming `[]` on re-encoding)
         $emptyObjectKeys = $this->detectEmptyObjectKeys($rawJson);
 
         $scan = $this->patternRegistry->scan($pluginDir, $type);
@@ -134,17 +134,17 @@ class PluginManifestSyncService
     }
 
     /**
-     * 同期を実行して manifest を書き込む。
+     * Execute sync and write the manifest.
      *
-     * @return array 同 diff() の戻り値
+     * @return array Return value of diff() above
      */
     public function sync(string $pluginDir, string $type = 'plugin'): array
     {
         $result = $this->diff($pluginDir, $type);
 
         if ($result['changed']) {
-            // 空オブジェクト ({}) のまま残すべきキーは stdClass に変換（PHP の json_decode で
-            // `{}` が `[]` に変換される問題を、再エンコード時に元の形へ戻すための補正）
+            // Convert keys that should remain as empty objects ({}) to stdClass (correction to restore
+            // original form on re-encoding due to PHP json_decode converting `{}` to `[]`)
             $payload = $this->restoreEmptyObjectShape($result['after'], $result['empty_object_keys'] ?? []);
             $json = json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             File::put($result['manifest_path'], $json."\n");
@@ -154,26 +154,26 @@ class PluginManifestSyncService
     }
 
     /**
-     * 元の JSON 文字列で `{}`（空オブジェクト）だったキーパスを抽出する。
+     * Extract key paths that were `{}` (empty objects) in the original JSON string.
      *
-     * 再エンコード時にそのキーが空配列のままだと `[]` として出力されてしまうため、
-     * stdClass にキャストして元の形を保てるようにする目的で使う。
+     * This is because if the key remains an empty array on re-encoding, it will be output as `[]`,
+     * Used to cast to stdClass to preserve the original shape
      *
-     * @return array<int, string> ドット記法のパス（例: ["files", "permissions._notes"])
+     * @return array<int, string> Dot notation paths (e.g., ["files", "permissions._notes"])
      */
     protected function detectEmptyObjectKeys(string $rawJson): array
     {
         $keys = [];
 
-        // トップレベル `"key": {}` 検出
+        // Detect top-level `"key": {}`
         if (preg_match_all('/^\s{4}"([^"]+)"\s*:\s*\{\s*\}/m', $rawJson, $matches)) {
             foreach ($matches[1] as $key) {
                 $keys[] = $key;
             }
         }
-        // `permissions._notes: {}` のような 1 段ネストも対応
+        // Also handle 1-level nesting like `permissions._notes: {}`
         if (preg_match_all('/^\s{8}"([^"]+)"\s*:\s*\{\s*\}/m', $rawJson, $matches)) {
-            // ネスト元の親キーを推定するのは難しいので、全 1 段ネストキーを記録（特に _notes 想定）
+            // Record all 1-level nested keys (especially for _notes) since inferring the parent key is difficult
             foreach ($matches[1] as $key) {
                 $keys[] = "*.{$key}";
             }
@@ -183,7 +183,7 @@ class PluginManifestSyncService
     }
 
     /**
-     * detectEmptyObjectKeys() で検出したパスについて、空配列を stdClass に置換する。
+     * Replace empty arrays with stdClass for paths detected by detectEmptyObjectKeys()
      *
      * @param  array<string, mixed>  $manifest
      * @param  array<int, string>  $emptyObjectKeys
@@ -192,7 +192,7 @@ class PluginManifestSyncService
     protected function restoreEmptyObjectShape(array $manifest, array $emptyObjectKeys): array
     {
         foreach ($emptyObjectKeys as $path) {
-            // ワイルドカードネスト: 例 `*.{key}` は全トップレベル子配列のうち `{key}` が空ならオブジェクト化
+            // Wildcard nesting: e.g., `*.{key}` objectifies `{key}` in all top-level child arrays if empty
             if (str_starts_with($path, '*.')) {
                 $childKey = substr($path, 2);
                 foreach ($manifest as $topKey => $topVal) {
@@ -204,7 +204,7 @@ class PluginManifestSyncService
                 continue;
             }
 
-            // トップレベル単純パス
+            // Top-level simple path
             if (isset($manifest[$path]) && is_array($manifest[$path]) && empty($manifest[$path])) {
                 $manifest[$path] = (object) [];
             }
@@ -214,31 +214,31 @@ class PluginManifestSyncService
     }
 
     /**
-     * 検出された権限を既存の permissions ツリーにマージする。
+     * Merge detected permissions into the existing permissions tree
      *
-     * - dot 記法の検出結果（`mail.send` 等）をネスト構造に展開
-     * - 検出なし（false）でもツリーには残す（未使用を明示）
-     * - `_optional` / `_notes` / `content.read_other_plugins` 等の手動入力は温存
+     * - Expand dot notation detection results (e.g., `mail.send`) into nested structure
+     * - Keep in tree even if not detected (false) to indicate unused
+     * - Preserve manual inputs like `_optional` / `_notes` / `content.read_other_plugins`
      */
     protected function mergePermissions(array $existing, array $detected): array
     {
         $merged = $existing;
 
-        // manifest schema にあるキーのみを対象にする
+        // Only target keys that exist in the manifest schema
         foreach (self::MANIFEST_PERMISSION_KEYS as $key) {
             $value = $detected[$key] ?? false;
             $segments = explode('.', $key);
             $this->setNested($merged, $segments, (bool) $value);
         }
 
-        // permissions セクションのテンプレートを保証（false で埋める）
+        // Ensure permissions section template (fill with false)
         $merged = $this->ensurePermissionShape($merged);
 
         return $merged;
     }
 
     /**
-     * permissions セクションが期待する構造（カテゴリ全列挙）になっていることを保証する。
+     * Ensure the permissions section has the expected structure (all categories enumerated)
      */
     protected function ensurePermissionShape(array $permissions): array
     {
@@ -279,12 +279,12 @@ class PluginManifestSyncService
             ],
         ];
 
-        // 既存 permissions の値で defaults を上書き（カテゴリ単位で再帰マージ）
+        // Overwrite defaults with existing permissions values (recursive merge per category)
         foreach ($defaults as $cat => $defaultValues) {
             $permissions[$cat] = array_merge($defaultValues, $permissions[$cat] ?? []);
         }
 
-        // 手動入力フィールド（温存）
+        // Manual input fields (preserved)
         $permissions['_optional'] = $permissions['_optional'] ?? [];
         $permissions['_notes'] = $permissions['_notes'] ?? ['ja' => '', 'en' => ''];
 
@@ -292,7 +292,7 @@ class PluginManifestSyncService
     }
 
     /**
-     * declares セクションを実ファイルから解決する。
+     * Resolve the declares section from actual files
      */
     protected function resolveDeclares(string $pluginDir, array $existing, string $type): array
     {
@@ -305,34 +305,34 @@ class PluginManifestSyncService
         $configs['navigation'] = File::exists("{$pluginDir}/config/admin/navigation.php");
         $declares['configs'] = $configs;
 
-        // contracts: app/Contracts/PluginIntegration/*.php または app/Contracts/*.php の存在
+        // contracts: existence of app/Contracts/PluginIntegration/*.php or app/Contracts/*.php
         $contractsDir = "{$pluginDir}/app/Contracts";
         $contracts = [];
         if (File::isDirectory($contractsDir)) {
             $contracts = $this->collectClassNames($contractsDir);
         }
-        // 既存の手動値も含めて重複排除
+        // Deduplicate including existing manual values
         $existingContracts = $existing['contracts'] ?? [];
         if (is_array($existingContracts)) {
             $contracts = array_values(array_unique(array_merge($contracts, $existingContracts)));
         }
         $declares['contracts'] = $contracts;
 
-        // migrations: ファイル存在
+        // migrations: file exists
         $declares['migrations'] = File::isDirectory("{$pluginDir}/database/migrations")
             && count(File::files("{$pluginDir}/database/migrations")) > 0;
 
-        // commands: ファイル存在
+        // commands: file exists
         $commandsDir = "{$pluginDir}/app/Console/Commands";
         $declares['commands'] = File::isDirectory($commandsDir)
             && count(File::allFiles($commandsDir)) > 0;
 
-        // middleware: ファイル存在
+        // middleware: file exists
         $middlewareDir = "{$pluginDir}/app/Http/Middleware";
         $declares['middleware'] = File::isDirectory($middlewareDir)
             && count(File::allFiles($middlewareDir)) > 0;
 
-        // assets セクション（既存の手動入力を温存）
+        // assets section (preserve existing manual entries)
         if (isset($existing['assets'])) {
             $declares['assets'] = $existing['assets'];
         }
@@ -341,7 +341,7 @@ class PluginManifestSyncService
     }
 
     /**
-     * ディレクトリ配下の PHP クラス名を収集する。
+     * Collect PHP class names under the directory
      *
      * @return array<int, string>
      */
@@ -362,7 +362,7 @@ class PluginManifestSyncService
     }
 
     /**
-     * ネストした配列の指定パスに値をセットする。
+     * Set a value at the specified path in a nested array
      *
      * @param  array<int, string>  $segments
      */
@@ -383,7 +383,7 @@ class PluginManifestSyncService
     }
 
     /**
-     * before / after の差分を平坦化して返す（人間表示用）。
+     * Flatten and return the diff between before/after (for human display)
      *
      * @return array<int, array{path: string, before: mixed, after: mixed}>
      */
@@ -412,7 +412,7 @@ class PluginManifestSyncService
     }
 
     /**
-     * 配列がリスト（数値キー）かどうか。
+     * Check if array is a list (numeric keys)
      */
     protected function isList(array $arr): bool
     {

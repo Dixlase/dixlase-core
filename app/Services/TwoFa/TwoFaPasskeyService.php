@@ -47,23 +47,23 @@ use Illuminate\Support\Str;
 class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
 {
     /**
-     * Passkeyが利用可能かどうか
+     * Check if Passkey is available
      */
     public function isAvailable(): bool
     {
-        // HTTPSが有効かチェック（localhostは除外）
+        // Check if HTTPS is enabled (excluding localhost)
         if (request()->getHost() === 'localhost' || request()->getHost() === '127.0.0.1') {
             return true;
         }
 
-        // 本番環境ではHTTPS必須
+        // HTTPS is required in production environment
         return request()->secure();
     }
 
     /**
-     * ユーザーがPasskey認証情報を持っているか
+     * Check if user has Passkey credentials
      *
-     * LaragearのwebauthnCredentials()リレーションを使用
+     * Use Laragear's webauthnCredentials() relation
      */
     public function hasCredentials(TwoFaInterface $user): bool
     {
@@ -71,11 +71,11 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     }
 
     /**
-     * Passkeyチャレンジを生成（2FA用）
+     * Generate Passkey challenge (for 2FA)
      */
     public function generatePasskeyChallenge($user): array
     {
-        // Phase 3で実装予定
+        // Planned for implementation in Phase 3
         Log::info('[Passkey] Challenge generation requested', [
             'member_id' => $user->id,
         ]);
@@ -87,24 +87,24 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     }
 
     /**
-     * ログイン用のパスキーチャレンジを生成
+     * Generate passkey challenge for login
      *
-     * Laragear\WebAuthnを使用して安全なチャレンジを生成
+     * Generate secure challenge using Laragear\WebAuthn
      */
     public function generateLoginChallenge(TwoFaInterface $user): array
     {
         try {
-            // Laragear WebAuthn v4: AssertionCreationオブジェクトを作成
+            // Laragear WebAuthn v4: Create AssertionCreation object
             $assertionCreation = new \Laragear\WebAuthn\Assertion\Creator\AssertionCreation($user);
 
-            // AssertionCreatorパイプラインを実行
+            // Execute AssertionCreator pipeline
             $assertionCreator = app(\Laragear\WebAuthn\Assertion\Creator\AssertionCreator::class);
             $result = $assertionCreator->send($assertionCreation)->thenReturn();
 
-            // JsonTransportオブジェクトから配列に変換
+            // Convert from JsonTransport object to array
             $jsonData = is_array($result->json) ? $result->json : $result->json->toArray();
 
-            // デバッグ: チャレンジに含まれるallowCredentialsを確認
+            // Debug: Check allowCredentials included in challenge
             $allowCredentials = $jsonData['allowCredentials'] ?? [];
             Log::info('[Passkey] Login challenge generated (Laragear)', [
                 'member_id' => $user->getId(),
@@ -126,17 +126,17 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     }
 
     /**
-     * ログイン用のパスキー認証を検証
+     * Verify passkey authentication for login
      *
-     * Laragear\WebAuthnを使用して暗号署名を検証
+     * Verify cryptographic signature using Laragear\WebAuthn
      */
     public function verifyLoginChallenge(TwoFaInterface $user, array $data, ?string $challengeId = null): bool
     {
         try {
-            // Laragear WebAuthn v4: JsonTransportを作成（リクエストのJSONデータを渡す）
+            // Laragear WebAuthn v4: Create JsonTransport (pass request JSON data)
             $jsonTransport = new \Laragear\WebAuthn\JsonTransport(request()->json()->all());
 
-            // デバッグ: userHandleとcredential情報をログ出力
+            // Debug: Log userHandle and credential information
             $userHandle = request()->json('response.userHandle');
             $credentialId = request()->json('id');
             $credential = \App\Models\WebAuthnCredential::find($credentialId);
@@ -151,13 +151,13 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
                 'credential_class' => $credential ? get_class($credential) : null,
             ]);
 
-            // AssertionValidationオブジェクトを作成
+            // Create AssertionValidation object
             $assertionValidation = new \Laragear\WebAuthn\Assertion\Validator\AssertionValidation(
                 $jsonTransport,
                 $user
             );
 
-            // AssertionValidatorパイプラインを実行
+            // Execute AssertionValidator pipeline
             $assertionValidator = app(\Laragear\WebAuthn\Assertion\Validator\AssertionValidator::class);
             $result = $assertionValidator->send($assertionValidation)->thenReturn();
 
@@ -187,11 +187,11 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     }
 
     /**
-     * Passkey認証を検証
+     * Verify Passkey authentication
      */
     public function validatePasskeyAuth($user, $input): bool
     {
-        // Phase 3で実装予定
+        // Planned for implementation in Phase 3
         Log::info('[Passkey] Authentication validation requested', [
             'member_id' => $user->id,
         ]);
@@ -200,9 +200,9 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     }
 
     /**
-     * ユーザーの全Passkeyデバイスを取得
+     * Get all Passkey devices for the user
      *
-     * @deprecated getCredentials()を使用してください
+     * @deprecated Use getCredentials() instead.
      */
     public function getDevices(TwoFaInterface $user)
     {
@@ -210,35 +210,35 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     }
 
     // ========================================
-    // WebAuthn (Biometric) 機能
+    // WebAuthn (Biometric) functionality
     // ========================================
 
     /**
-     * WebAuthn認証情報を登録
+     * Register WebAuthn credentials
      */
     public function registerCredential(TwoFaInterface $user, array $credentialData, ?string $deviceName = null)
     {
         try {
-            // JsonTransportオブジェクトを作成
+            // Create JsonTransport object
             $jsonTransport = new \Laragear\WebAuthn\JsonTransport($credentialData);
 
-            // AttestationValidationオブジェクトを作成
+            // Create AttestationValidation object
             $attestationValidation = new \Laragear\WebAuthn\Attestation\Validator\AttestationValidation(
                 $user,
                 $jsonTransport
             );
 
-            // AttestationValidatorパイプラインを実行
+            // Execute AttestationValidator pipeline
             $attestationValidator = app(\Laragear\WebAuthn\Attestation\Validator\AttestationValidator::class);
             $result = $attestationValidator->send($attestationValidation)->thenReturn();
 
-            // デバイス名を設定
+            // Set device name
             if ($deviceName) {
                 $result->credential->alias = $deviceName;
                 $result->credential->save();
             }
 
-            Log::info('[Passkey] 認証情報登録成功 (Laragear)', [
+            Log::info('[Passkey] Credential registration successful (Laragear)', [
                 'member_id' => $user->getId(),
                 'credential_id' => $result->credential->id,
                 'device_name' => $deviceName ?? $this->generateDeviceName(),
@@ -257,7 +257,7 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     }
 
     /**
-     * WebAuthn認証を検証
+     * Verify WebAuthn authentication
      */
     public function verifyAssertion(TwoFaInterface $user, array $assertionData): bool
     {
@@ -266,7 +266,7 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
             ->first();
 
         if (! $credential) {
-            Log::warning("[Passkey] 認証情報が見つかりません: ユーザーID {$user->getId()}");
+            Log::warning("[Passkey] Credential not found: User ID {$user->getId()}");
 
             return false;
         }
@@ -274,7 +274,7 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
         $response = $assertionData['response'] ?? [];
 
         if (empty($response['signature']) || empty($response['authenticatorData']) || empty($response['clientDataJSON'])) {
-            Log::warning("[Passkey] 不完全なレスポンスデータ: ユーザーID {$user->getId()}");
+            Log::warning("[Passkey] Incomplete response data: User ID {$user->getId()}");
 
             return false;
         }
@@ -287,16 +287,16 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
         );
 
         if ($isValid) {
-            Log::info("[Passkey] 認証成功: ユーザーID {$user->getId()}");
+            Log::info("[Passkey] Authentication successful: User ID {$user->getId()}");
         } else {
-            Log::warning("[Passkey] 認証失敗: ユーザーID {$user->getId()}");
+            Log::warning("[Passkey] Authentication failed: User ID {$user->getId()}");
         }
 
         return $isValid;
     }
 
     /**
-     * WebAuthn認証情報一覧を取得
+     * Get WebAuthn credentials list
      */
     public function getCredentials(TwoFaInterface $user)
     {
@@ -306,7 +306,7 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     }
 
     /**
-     * WebAuthn認証情報を削除
+     * Delete WebAuthn credentials
      */
     public function revokeCredential(TwoFaInterface $user, string $credentialId): bool
     {
@@ -315,14 +315,14 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
             ->delete();
 
         if ($deleted) {
-            Log::info("[Passkey] 認証情報削除: ユーザーID {$user->getId()}, 認証情報ID: {$credentialId}");
+            Log::info("[Passkey] Credential deleted: User ID {$user->getId()}, Credential ID: {$credentialId}");
         }
 
         return $deleted > 0;
     }
 
     /**
-     * すべてのWebAuthn認証情報を削除
+     * Delete all WebAuthn credentials
      */
     public function revokeAllCredentials(TwoFaInterface $user): int
     {
@@ -330,26 +330,26 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
         $deleted = $user->twoFaPasskeys()->delete();
 
         if ($deleted) {
-            Log::info("[Passkey] すべての認証情報削除: ユーザーID {$user->getId()}, 削除数: {$count}");
+            Log::info("[Passkey] All credentials deleted: User ID {$user->getId()}, Count: {$count}");
         }
 
         return $count;
     }
 
     /**
-     * WebAuthn登録チャレンジを生成
+     * Generate WebAuthn registration challenge
      */
     public function generateRegistrationChallenge(TwoFaInterface $user): array
     {
         try {
-            // AttestationCreationオブジェクトを作成
+            // Create AttestationCreation object
             $attestationCreation = new \Laragear\WebAuthn\Attestation\Creator\AttestationCreation($user);
 
-            // AttestationCreatorパイプラインを実行
+            // Execute AttestationCreator pipeline
             $attestationCreator = app(\Laragear\WebAuthn\Attestation\Creator\AttestationCreator::class);
             $result = $attestationCreator->send($attestationCreation)->thenReturn();
 
-            // JsonTransportオブジェクトから配列に変換
+            // Convert from JsonTransport object to array
             $jsonData = is_array($result->json) ? $result->json : $result->json->toArray();
 
             Log::info('[Passkey] Registration challenge generated (Laragear)', [
@@ -369,7 +369,7 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     }
 
     /**
-     * WebAuthn認証チャレンジを生成
+     * Generate WebAuthn authentication challenge
      */
     public function generateAuthenticationChallenge(TwoFaInterface $user): array
     {
@@ -380,7 +380,7 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
         $allowCredentials = $credentials->map(function ($credential) {
             return [
                 'type' => 'public-key',
-                'id' => $credential->id, // credential_idではなくid
+                'id' => $credential->id, // id instead of credential_id
                 'transports' => json_decode($credential->transports ?? '["internal","hybrid"]', true),
             ];
         })->toArray();
@@ -399,7 +399,7 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     }
 
     /**
-     * デバイス名を生成
+     * Generate device name
      */
     private function generateDeviceName(): string
     {
@@ -421,21 +421,21 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     }
 
     /**
-     * 署名を検証（簡略化版）
+     * Verify signature (simplified version)
      */
     private function verifySignature(string $publicKey, string $signature, string $authenticatorData, string $clientDataJSON): bool
     {
         try {
             $storedChallenge = session('webauthn_challenge');
             if (! $storedChallenge) {
-                Log::warning('[Passkey] セッションにチャレンジが存在しません');
+                Log::warning('[Passkey] Challenge does not exist in session');
 
                 return false;
             }
 
             $clientData = json_decode(base64_decode($clientDataJSON), true);
             if (! $clientData) {
-                Log::warning('[Passkey] clientDataJSONのデコードに失敗');
+                Log::warning('[Passkey] Failed to decode clientDataJSON');
 
                 return false;
             }
@@ -446,36 +446,36 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
             $normalizedReceived = str_replace(['+', '/', '='], ['-', '_', ''], $receivedChallenge);
 
             if ($normalizedStored !== $normalizedReceived) {
-                Log::warning('[Passkey] チャレンジが一致しません');
+                Log::warning('[Passkey] Challenge does not match');
 
                 return false;
             }
 
             session()->forget('webauthn_challenge');
 
-            Log::info('[Passkey] 署名検証成功（簡略版）');
+            Log::info('[Passkey] Signature verification succeeded (simplified)');
 
             return true;
         } catch (\Exception $e) {
-            Log::error('[Passkey] 署名検証エラー: '.$e->getMessage());
+            Log::error('[Passkey] Signature verification error: '.$e->getMessage());
 
             return false;
         }
     }
 
     // ========================================
-    // 信頼済みデバイス管理
+    // Trusted device management
     // ========================================
 
     /**
-     * 現在のデバイスが信頼済みかチェック
+     * Check if current device is trusted
      */
     public function isTrustedDevice(Member $member): bool
     {
         $deviceToken = request()->cookie('trusted_device_token');
         $trustedDevice = null;
 
-        // Cookieトークンで検証
+        // Verify with cookie token
         if ($deviceToken) {
             $hashedToken = hash('sha256', $deviceToken);
 
@@ -484,11 +484,11 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
                 ->first();
 
             if ($trustedDevice) {
-                Log::info("[Passkey] Cookie認証成功: ユーザーID {$member->id}");
+                Log::info("[Passkey] Cookie authentication succeeded: User ID {$member->id}");
             }
         }
 
-        // Cookieがない場合、IP + User Agentで検証
+        // If no cookie, verify with IP + User Agent
         if (! $trustedDevice) {
             $ipAddress = request()->ip();
             $userAgent = request()->userAgent();
@@ -500,9 +500,9 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
                 ->first();
 
             if ($trustedDevice) {
-                Log::info("[Passkey] IP+UA認証成功: ユーザーID {$member->id}");
+                Log::info("[Passkey] IP+UA authentication succeeded: User ID {$member->id}");
 
-                // Cookieを再設定
+                // Reset cookie
                 $tokenLength = config('two-fa.device_token_length', 64);
                 $newToken = Str::random($tokenLength);
                 $hashedToken = hash('sha256', $newToken);
@@ -524,12 +524,12 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
         }
 
         if (! $trustedDevice) {
-            Log::info("[Passkey] 信頼済みデバイスなし: ユーザーID {$member->id}");
+            Log::info("[Passkey] No trusted device: User ID {$member->id}");
 
             return false;
         }
 
-        // 有効期限チェック（セキュリティ設定から）
+        // Check expiration (from security settings)
         $expirationDays = (int) \App\Models\SecuritySetting::getValue(
             'trusted_device_expire_days',
             config('two-fa.device_expiration_days', 30)
@@ -538,7 +538,7 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
         $expirationDate = $trustedDevice->updated_at->addDays($expirationDays);
 
         if (now()->greaterThan($expirationDate)) {
-            Log::info("[Passkey] デバイス有効期限切れ: ユーザーID {$member->id}");
+            Log::info("[Passkey] Device expired: User ID {$member->id}");
 
             return false;
         }
@@ -549,7 +549,7 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     }
 
     /**
-     * 信頼済みデバイスを削除
+     * Delete trusted device
      */
     public function revokeDevice(Member $member, int $deviceId): bool
     {
@@ -558,14 +558,14 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
             ->delete();
 
         if ($deleted) {
-            Log::info("[Passkey] 信頼済みデバイス削除: ユーザーID {$member->id}, デバイスID: {$deviceId}");
+            Log::info("[Passkey] Trusted device deleted: User ID {$member->id}, Device ID: {$deviceId}");
         }
 
         return $deleted > 0;
     }
 
     /**
-     * 信頼済みデバイス一覧を取得
+     * Get trusted device list
      */
     public function getTrustedDevices(Member $member)
     {
@@ -575,7 +575,7 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     }
 
     /**
-     * すべての信頼済みデバイスを削除
+     * Delete all trusted devices
      */
     public function revokeAllTrustedDevices(Member $member): int
     {
@@ -583,7 +583,7 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
         $deleted = MembersTrustedDevice::where('member_id', $member->id)->delete();
 
         if ($deleted) {
-            Log::info("[Passkey] すべての信頼済みデバイス削除: ユーザーID {$member->id}, 削除数: {$count}");
+            Log::info("[Passkey] All trusted devices deleted: User ID {$member->id}, Count: {$count}");
         }
 
         return $count;

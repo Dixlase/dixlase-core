@@ -41,30 +41,30 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  */
 class TwoFaCodeService
 {
     /**
-     * 認証コードを生成してデータベースに保存
+     * Generate authentication code and save to database
      *
-     * @param  mixed  $user  ユーザーモデル（Member または DixlaseUsersUser）
-     * @param  int|null  $expireMinutes  有効期限（分）
-     * @return string 生成されたコード（平文）
+     * @param  mixed  $user  User model (Member or DixlaseUsersUser)
+     * @param  int|null  $expireMinutes  Expiration time (minutes)
+     * @return string Generated code (plain text)
      */
     public function generate($user, ?int $expireMinutes = null): string
     {
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-        // デフォルトの有効期限設定（セキュリティ設定から）
+        // Default expiration settings (from security settings)
         if ($expireMinutes === null) {
             $expireMinutes = (int) \App\Models\SecuritySetting::getValue('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
         }
 
-        // 古いコードを削除
+        // Delete old codes
         MemberTwoFaToken::where('member_id', $user->id)->delete();
 
-        // 新しいコードを保存
+        // Save new code
         MemberTwoFaToken::create([
             'member_id' => $user->id,
             'code' => Hash::make($code),
@@ -80,19 +80,19 @@ class TwoFaCodeService
     }
 
     /**
-     * 認証コードを生成してメール送信
+     * Generate authentication code and send email
      *
-     * @param  mixed  $user  ユーザーモデル（Member または DixlaseUsersUser）
-     * @param  string  $mailClass  メールクラス名
-     * @param  int|null  $expireMinutes  有効期限（分）
-     * @param  string  $context  コンテキスト（admin, user等）
-     * @return string 生成されたコード
+     * @param  mixed  $user  User model (Member or DixlaseUsersUser)
+     * @param  string  $mailClass  Mail class name
+     * @param  int|null  $expireMinutes  Expiration time (minutes)
+     * @param  string  $context  Context (admin, user, etc.)
+     * @return string Generated code
      *
-     * @throws \Exception メール設定が未完了またはメール送信に失敗した場合
+     * @throws \Exception When email settings are incomplete or email sending fails
      */
     public function generateAndSend($user, string $mailClass, ?int $expireMinutes = null, string $context = 'admin'): string
     {
-        // メール設定チェック（TwoFaHelperを使用）
+        // Check email settings (using TwoFaHelper)
         $helper = app(\App\Helpers\TwoFaHelper::class);
         if (! $helper->isMailConfigured()) {
             Log::error('[2FA Code] Mail not configured');
@@ -101,13 +101,13 @@ class TwoFaCodeService
 
         $code = $this->generate($user, $expireMinutes);
 
-        // メール送信
+        // Send email
         try {
             if ($mailClass === \App\Mail\TwoFaCodeMail::class) {
-                // 汎用メールクラスの場合はコンテキストを渡す
+                // Pass context for generic mail class
                 Mail::to($user->email)->send(new $mailClass($code, $context));
             } else {
-                // 既存のメールクラスの場合は従来通り
+                // For existing mail class, use conventional method
                 Mail::to($user->email)->send(new $mailClass($code));
             }
 
@@ -127,11 +127,11 @@ class TwoFaCodeService
     }
 
     /**
-     * 認証コードを検証
+     * Verify authentication code
      *
-     * @param  mixed  $user  ユーザーモデル（Member または DixlaseUsersUser）
-     * @param  string  $inputCode  入力されたコード
-     * @return bool 検証結果
+     * @param  mixed  $user  User model (Member or DixlaseUsersUser)
+     * @param  string  $inputCode  Input code
+     * @return bool Verification result
      */
     public function validate($user, string $inputCode): bool
     {
@@ -145,7 +145,7 @@ class TwoFaCodeService
             return false;
         }
 
-        // 有効期限チェック
+        // Check expiration
         if (now()->greaterThan($token->expires_at)) {
             Log::warning('[2FA Code] Token expired', [
                 'user_id' => $user->id,
@@ -155,7 +155,7 @@ class TwoFaCodeService
             return false;
         }
 
-        // コード検証
+        // Verify code
         if (! Hash::check($inputCode, $token->code)) {
             Log::warning('[2FA Code] Invalid code', [
                 'user_id' => $user->id,
@@ -164,7 +164,7 @@ class TwoFaCodeService
             return false;
         }
 
-        // 使い切りコードなので削除
+        // Delete as it's a one-time use code
         $token->delete();
 
         Log::info('[2FA Code] Validated successfully', [
@@ -175,9 +175,9 @@ class TwoFaCodeService
     }
 
     /**
-     * 有効なコードが存在するかチェック
+     * Check if a valid code exists
      *
-     * @param  mixed  $user  ユーザーモデル（Member または DixlaseUsersUser）
+     * @param  mixed  $user  User model (Member or DixlaseUsersUser)
      */
     public function hasValidCode($user): bool
     {
@@ -187,10 +187,10 @@ class TwoFaCodeService
     }
 
     /**
-     * コードの残り有効時間（分）を取得
+     * Get remaining validity time (minutes) of the code
      *
-     * @param  mixed  $user  ユーザーモデル（Member または DixlaseUsersUser）
-     * @return int|null 残り時間（分）、コードがない場合はnull
+     * @param  mixed  $user  User model (Member or DixlaseUsersUser)
+     * @return int|null Remaining time (minutes), null if no code exists
      */
     public function getRemainingTime($user): ?int
     {
@@ -204,10 +204,10 @@ class TwoFaCodeService
     }
 
     /**
-     * 全てのコードを削除
+     * Delete all codes
      *
-     * @param  mixed  $user  ユーザーモデル（Member または DixlaseUsersUser）
-     * @return int 削除されたコード数
+     * @param  mixed  $user  User model (Member or DixlaseUsersUser)
+     * @return int Number of deleted codes
      */
     public function revokeAll($user): int
     {
@@ -223,9 +223,9 @@ class TwoFaCodeService
     }
 
     /**
-     * 期限切れコードをクリーンアップ
+     * Clean up expired codes
      *
-     * @return int 削除されたコード数
+     * @return int Number of deleted codes
      */
     public function cleanupExpired(): int
     {

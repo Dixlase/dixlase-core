@@ -40,7 +40,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  */
 class TwoFaAttemptService
 {
@@ -52,7 +52,7 @@ class TwoFaAttemptService
     }
 
     /**
-     * 2FA試行を記録
+     * Record 2FA attempt
      */
     public function recordAttempt(TwoFaInterface $user, string $attemptType, bool $successful): void
     {
@@ -72,7 +72,7 @@ class TwoFaAttemptService
     }
 
     /**
-     * ロックアウト状態かチェック
+     * Check if locked out
      */
     public function isLockedOut(TwoFaInterface $user): bool
     {
@@ -89,7 +89,7 @@ class TwoFaAttemptService
     }
 
     /**
-     * ロックアウト解除までの残り時間（分）を取得
+     * Get remaining time until lockout release (minutes)
      */
     public function getRemainingLockoutTime(TwoFaInterface $user): ?int
     {
@@ -105,7 +105,7 @@ class TwoFaAttemptService
     }
 
     /**
-     * 試行回数制限に達しているかチェック
+     * Check if attempt limit has been reached
      */
     public function hasReachedMaxAttempts(TwoFaInterface $user): bool
     {
@@ -121,7 +121,7 @@ class TwoFaAttemptService
     }
 
     /**
-     * 残りの試行可能回数を取得
+     * Get remaining number of attempts
      */
     public function getRemainingAttempts(TwoFaInterface $user): int
     {
@@ -136,14 +136,14 @@ class TwoFaAttemptService
     }
 
     /**
-     * 最後のロックアウト時刻を取得
+     * Get last lockout time
      */
     protected function getLastLockoutTime(TwoFaInterface $user): ?Carbon
     {
         $maxAttempts = $this->getMaxAttempts();
         $timeWindow = $this->getAttemptWindow();
 
-        // 時間枠内の失敗試行を取得
+        // Get failed attempts within time window
         $attempts = $user->twoFaAttempts()
             ->where('successful', false)
             ->where('created_at', '>=', Carbon::now()->subMinutes($timeWindow))
@@ -151,7 +151,7 @@ class TwoFaAttemptService
             ->take($maxAttempts)
             ->get();
 
-        // 最大試行回数に達している場合、最後の失敗時刻を返す
+        // Return last failure time if maximum attempts reached
         if ($attempts->count() >= $maxAttempts) {
             return $attempts->first()->created_at;
         }
@@ -160,18 +160,18 @@ class TwoFaAttemptService
     }
 
     /**
-     * 成功時の処理（失敗記録をクリア）
+     * Process on success (clear failure records)
      */
     public function handleSuccess(TwoFaInterface $user): void
     {
-        // 成功を記録（attempt_typeは呼び出し元で指定）
+        // Record success (attempt_type specified by caller)
         Log::info('[2FA Attempt] Success - clearing failed attempts', [
             'user_id' => $user->getId(),
         ]);
     }
 
     /**
-     * 最大試行回数を取得
+     * Get maximum number of attempts
      */
     protected function getMaxAttempts(): int
     {
@@ -179,7 +179,7 @@ class TwoFaAttemptService
     }
 
     /**
-     * 試行制限の時間枠（分）を取得
+     * Get time window for attempt limit (minutes)
      */
     protected function getAttemptWindow(): int
     {
@@ -187,7 +187,7 @@ class TwoFaAttemptService
     }
 
     /**
-     * ロックアウト時間（分）を取得
+     * Get lockout duration (minutes)
      */
     protected function getLockoutDuration(): int
     {
@@ -195,7 +195,7 @@ class TwoFaAttemptService
     }
 
     /**
-     * ロックアウト通知が有効かチェック
+     * Check if lockout notification is enabled
      */
     public function isLockoutNotificationEnabled(): bool
     {

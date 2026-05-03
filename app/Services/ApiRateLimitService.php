@@ -43,29 +43,29 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 /**
- * APIレートリミットサービス
+ * API Rate Limit Service
  *
- * β版でのAPIレートリミット機能の基盤として使用
+ * Used as the foundation for API rate limiting functionality in beta version
  */
 class ApiRateLimitService
 {
     /**
-     * デフォルトのレートリミット（1分あたり）
+     * Default rate limit (per minute)
      */
     protected int $defaultRateLimit = 60;
 
     /**
-     * デフォルトのIP別レートリミット（1分あたり）
+     * Default per-IP rate limit (per minute)
      */
     protected int $defaultIpRateLimit = 100;
 
     /**
-     * レートリミットウィンドウ（秒）
+     * Rate limit window (seconds)
      */
     protected int $windowSeconds = 60;
 
     /**
-     * APIキーのレートリミットをチェック
+     * Check rate limit for API key
      */
     public function checkRateLimit(ApiKey $apiKey): array
     {
@@ -85,7 +85,7 @@ class ApiRateLimitService
     }
 
     /**
-     * IP別レートリミットをチェック
+     * Check per-IP rate limit
      */
     public function checkIpRateLimit(string $ipAddress, ?int $limit = null): array
     {
@@ -105,7 +105,7 @@ class ApiRateLimitService
     }
 
     /**
-     * エンドポイント別レートリミットをチェック
+     * Check per-endpoint rate limit
      */
     public function checkEndpointRateLimit(
         string $endpoint,
@@ -127,7 +127,7 @@ class ApiRateLimitService
     }
 
     /**
-     * APIリクエストを記録
+     * Record API request
      */
     public function logRequest(
         Request $request,
@@ -163,16 +163,16 @@ class ApiRateLimitService
     }
 
     /**
-     * エンドポイントを抽出（パラメータを正規化）
+     * Extract endpoint (normalize parameters)
      */
     protected function extractEndpoint(Request $request): string
     {
         $path = $request->path();
 
-        // 数値IDを{id}に置換
+        // Replace numeric IDs with {id}
         $endpoint = preg_replace('/\/\d+/', '/{id}', $path);
 
-        // UUIDを{uuid}に置換
+        // Replace UUIDs with {uuid}
         $endpoint = preg_replace(
             '/\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i',
             '/{uuid}',
@@ -183,7 +183,7 @@ class ApiRateLimitService
     }
 
     /**
-     * レートリミットヘッダーを生成
+     * Generate rate limit headers
      */
     public function getRateLimitHeaders(array $rateLimitInfo): array
     {
@@ -195,7 +195,7 @@ class ApiRateLimitService
     }
 
     /**
-     * レートリミット超過時のレスポンスデータを生成
+     * Generate response data when rate limit is exceeded
      */
     public function getRateLimitExceededResponse(array $rateLimitInfo): array
     {
@@ -209,7 +209,7 @@ class ApiRateLimitService
     }
 
     /**
-     * APIキーの使用統計を取得
+     * Get usage statistics for API key
      */
     public function getApiKeyStats(int $apiKeyId, int $days = 7): array
     {
@@ -217,7 +217,7 @@ class ApiRateLimitService
     }
 
     /**
-     * 全体のAPI使用統計を取得
+     * Get overall API usage statistics
      */
     public function getOverallStats(int $days = 7): array
     {
@@ -246,7 +246,7 @@ class ApiRateLimitService
     }
 
     /**
-     * レートリミット設定を更新
+     * Update rate limit settings
      */
     public function setDefaultRateLimit(int $limit): self
     {
@@ -256,7 +256,7 @@ class ApiRateLimitService
     }
 
     /**
-     * IP別レートリミット設定を更新
+     * Update per-IP rate limit settings
      */
     public function setDefaultIpRateLimit(int $limit): self
     {
@@ -266,7 +266,7 @@ class ApiRateLimitService
     }
 
     /**
-     * ウィンドウサイズを更新
+     * Update window size
      */
     public function setWindowSeconds(int $seconds): self
     {
@@ -276,7 +276,7 @@ class ApiRateLimitService
     }
 
     /**
-     * 古いログをクリーンアップ
+     * Clean up old logs
      */
     public function cleanupOldLogs(int $daysOld = 30): int
     {

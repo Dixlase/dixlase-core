@@ -36,7 +36,7 @@
 namespace App\Services;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  */
 class ShortcodeManager
 {
@@ -77,7 +77,7 @@ class ShortcodeManager
             return $shortcode->render($attr, $content);
         }
 
-        return $m[0]; // マッチした文字列をそのまま返す
+        return $m[0]; // Return the matched string as-is
     }
 
     protected function getRegex()

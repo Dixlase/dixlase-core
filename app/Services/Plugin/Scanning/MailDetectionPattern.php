@@ -36,12 +36,12 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  *
- * メール関連の検出パターン
+ * Mail-related detection patterns
  *
- * mail.send と mail.bulk_send を検出します。
- * use文のインポートのみ、Mailable クラス定義のみの場合は除外します。
+ * Detects mail.send and mail.bulk_send
+ * Excludes cases with only use statement imports or only Mailable class definitions
  */
 class MailDetectionPattern extends DetectionPattern
 {
@@ -66,7 +66,7 @@ class MailDetectionPattern extends DetectionPattern
             'bulk_send' => [
                 '/Mail::queue\s*\(/i',
                 '/Mail::later\s*\(/i',
-                // each内のクロージャでMail使用（同一行〜数行以内）
+                // Mail usage in closure within each (same line to within a few lines)
                 '/->each\s*\(\s*function[^}]{0,200}Mail::/i',
             ],
             default => [],
@@ -74,7 +74,7 @@ class MailDetectionPattern extends DetectionPattern
     }
 
     /**
-     * use文のインポートのみは除外、クラス定義内のMailableは有効
+     * Excludes only use statement imports, Mailable within class definitions is valid
      */
     public function validateMatch(string $match, string $line, string $fileContent, string $filePath): bool
     {
@@ -84,7 +84,7 @@ class MailDetectionPattern extends DetectionPattern
 
         $trimmedLine = ltrim($line);
 
-        // use文のインポートのみは除外
+        // Excludes only use statement imports
         if (str_starts_with($trimmedLine, 'use ') && ! str_contains($trimmedLine, '(')) {
             return false;
         }

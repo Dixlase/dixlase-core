@@ -42,9 +42,9 @@ use App\Models\SecuritySetting;
 /**
  * CSP Builder
  *
- * CSPヘッダー文字列を構築するサービス。
- * 設定ファイル、データベース設定、プラグイン/テーマからのポリシーを
- * マージしてCSPヘッダーを生成する。
+ * Service for building CSP header strings.
+ * Merges policies from config files, database settings, and plugins/themes
+ * to generate CSP headers.
  */
 class CspBuilder
 {
@@ -53,7 +53,7 @@ class CspBuilder
     protected CspPolicyRegistry $registry;
 
     /**
-     * 現在のコンテキスト（admin/front）
+     * Current context (admin/front)
      */
     protected string $context = 'front';
 
@@ -66,7 +66,7 @@ class CspBuilder
     }
 
     /**
-     * コンテキストを設定
+     * Set context
      */
     public function setContext(string $context): self
     {
@@ -76,15 +76,15 @@ class CspBuilder
     }
 
     /**
-     * CSPヘッダー文字列を構築
+     * Build CSP header string
      */
     public function build(): string
     {
-        // セーフモードの場合はCSPヘッダーを送出しない。
-        // 空文字列をブラウザに送るとUAによって解釈が揺れる（無視/全拒否）ため、
-        // 呼び出し側（ContentSecurityPolicy ミドルウェア）で空文字を検知し
-        // ヘッダー自体を付与しない実装とする。
-        // X-Frame-Options 等の追加セキュリティヘッダーは引き続き付与される。
+        // Do not send CSP header in safe mode.
+        // Sending an empty string to browsers causes inconsistent interpretation by UA (ignore/deny all),
+        // so the caller (ContentSecurityPolicy middleware) detects the empty string
+        // and does not add the header itself.
+        // Additional security headers such as X-Frame-Options will continue to be added.
         if (session('safe_mode_csp')) {
             return '';
         }
@@ -96,50 +96,50 @@ class CspBuilder
     }
 
     /**
-     * すべてのソースからディレクティブを収集
+     * Collect directives from all sources
      */
     protected function collectAllDirectives(): array
     {
-        // 1. 設定ファイルのデフォルトディレクティブ
+        // 1. Default directives from config file
         $directives = config('csp.directives', []);
 
-        // 1.5. 開発環境の場合、Vite開発サーバー用ドメインを追加
+        // 1.5. In development environment, add domain for Vite dev server
         $directives = $this->addViteDevServerDirectives($directives);
 
-        // 2. 信頼済みドメインを追加
+        // 2. Add trusted domains
         $trustedDomains = $this->getTrustedDomains();
         $directives = $this->addTrustedDomains($directives, $trustedDomains);
 
-        // 3. コンテキスト固有のディレクティブを追加
+        // 3. Add context-specific directives
         $contextDirectives = $this->getContextDirectives();
         $directives = $this->mergeDirectives($directives, $contextDirectives);
 
-        // 4. 管理画面専用のディレクティブを追加
+        // 4. Add admin panel specific directives
         if ($this->isAdminContext()) {
             $adminDirectives = config('csp.admin', []);
             $directives = $this->mergeDirectives($directives, $adminDirectives);
         }
 
-        // 5. データベースからの追加ディレクティブ
+        // 5. Additional directives from database
         $dbDirectives = $this->getDatabaseDirectives();
         $directives = $this->mergeDirectives($directives, $dbDirectives);
 
-        // 6. プラグイン/テーマからのディレクティブ
+        // 6. Directives from plugins/themes
         $registryDirectives = $this->registry->collectDirectives();
         $directives = $this->mergeDirectives($directives, $registryDirectives);
 
-        // 7. 拒否ドメインを除外（最優先）
+        // 7. Exclude denied domains (highest priority)
         $directives = $this->filterDeniedDomains($directives);
 
-        // 8. レポートURIを追加
+        // 8. Add report URI
         $directives = $this->addReportUri($directives);
 
         return $directives;
     }
 
     /**
-     * Vite開発サーバーが稼働中の場合、CSPディレクティブを追加
-     * hotファイルの存在で判定（APP_ENVに依存しない）
+     * Add CSP directive if Vite dev server is running
+     * Determined by existence of hot file (independent of APP_ENV)
      */
     protected function addViteDevServerDirectives(array $directives): array
     {
@@ -161,7 +161,7 @@ class CspBuilder
     }
 
     /**
-     * 管理画面コンテキストかどうかを判定
+     * Determine if admin panel context
      */
     protected function isAdminContext(): bool
     {
@@ -170,18 +170,18 @@ class CspBuilder
             return false;
         }
 
-        // URLパスが /admin で始まる場合は管理画面
+        // If URL path starts with /admin, it's the admin panel
         return str_starts_with($request->path(), 'admin');
     }
 
     /**
-     * 信頼済みドメインを取得
+     * Get trusted domains
      */
     protected function getTrustedDomains(): array
     {
         $configDomains = config('csp.trusted_domains', []);
 
-        // データベースから追加の信頼済みドメインを取得
+        // Get additional trusted domains from database
         try {
             $dbDomains = SecuritySetting::get('csp_trusted_domains', '');
             if (! empty($dbDomains)) {
@@ -189,17 +189,17 @@ class CspBuilder
                 $configDomains = array_merge($configDomains, $dbDomains);
             }
         } catch (\Exception $e) {
-            // データベース未設定時は無視
+            // Ignore if database is not configured
         }
 
         return array_unique($configDomains);
     }
 
     /**
-     * 拒否ドメインを取得
+     * Get denied domains
      *
-     * これらのドメインはplugin.json/theme.jsonで宣言されていても
-     * CSPに追加されない（最優先でブロック）
+     * These domains will not be added to CSP even if declared in plugin.json/theme.json
+     * (blocked with highest priority)
      */
     protected function getDeniedDomains(): array
     {
@@ -211,26 +211,26 @@ class CspBuilder
                 $deniedDomains = array_filter(array_map('trim', explode("\n", $dbDomains)));
             }
         } catch (\Exception $e) {
-            // データベース未設定時は無視
+            // Ignore if database is not configured
         }
 
         return array_unique($deniedDomains);
     }
 
     /**
-     * ドメインが拒否リストに含まれているかチェック
+     * Check if domain is in deny list
      */
     protected function isDeniedDomain(string $domain): bool
     {
         $deniedDomains = $this->getDeniedDomains();
 
         foreach ($deniedDomains as $denied) {
-            // 完全一致
+            // Exact match
             if ($domain === $denied) {
                 return true;
             }
 
-            // ワイルドカードマッチング（*.example.com）
+            // Wildcard matching (*.example.com)
             if (str_starts_with($denied, '*.')) {
                 $baseDomain = substr($denied, 2);
                 if (str_ends_with($domain, $baseDomain) || $domain === $baseDomain) {
@@ -238,7 +238,7 @@ class CspBuilder
                 }
             }
 
-            // URLからドメイン部分を抽出してチェック
+            // Extract domain part from URL and check
             $parsedDomain = parse_url($domain, PHP_URL_HOST);
             if ($parsedDomain) {
                 if ($parsedDomain === $denied) {
@@ -257,32 +257,32 @@ class CspBuilder
     }
 
     /**
-     * ディレクティブから拒否ドメインを除外
+     * Exclude denied domains from directive
      */
     protected function filterDeniedDomains(array $directives): array
     {
         foreach ($directives as $directive => &$values) {
             $values = array_filter($values, function ($value) {
-                // 特殊値（'self', 'none', 'nonce'等）は除外しない
+                // Do not exclude special values ('self', 'none', 'nonce', etc.)
                 if (str_starts_with($value, "'") && str_ends_with($value, "'")) {
                     return true;
                 }
-                // data:, blob: 等のスキームも除外しない
+                // Do not exclude schemes like data:, blob:, etc.
                 if (preg_match('/^[a-z]+:$/', $value)) {
                     return true;
                 }
 
-                // 拒否ドメインに含まれていなければ許可
+                // Allow if not in denied domains
                 return ! $this->isDeniedDomain($value);
             });
-            $values = array_values($values); // インデックスを振り直し
+            $values = array_values($values); // Reindex
         }
 
         return $directives;
     }
 
     /**
-     * 信頼済みドメインを適切なディレクティブに追加
+     * Add trusted domains to appropriate directives
      */
     protected function addTrustedDomains(array $directives, array $domains): array
     {
@@ -290,14 +290,14 @@ class CspBuilder
             return $directives;
         }
 
-        // domain_detection_keywordsとmulti_purpose_keywordsを取得
+        // Get domain_detection_keywords and multi_purpose_keywords
         $detectionKeywords = config('csp.domain_detection_keywords', []);
         $multiPurposeKeywords = config('csp.multi_purpose_keywords', []);
 
         foreach ($domains as $domain) {
             $addedToDirectives = [];
 
-            // Multi-purpose keywordsをチェック（優先）
+            // Check multi-purpose keywords (priority)
             foreach ($multiPurposeKeywords as $keyword => $targetDirectives) {
                 if (stripos($domain, $keyword) !== false) {
                     foreach ($targetDirectives as $directive) {
@@ -309,7 +309,7 @@ class CspBuilder
                 }
             }
 
-            // 通常のdetection keywordsをチェック
+            // Check regular detection keywords
             foreach ($detectionKeywords as $directive => $keywords) {
                 foreach ($keywords as $keyword) {
                     if (stripos($domain, $keyword) !== false) {
@@ -317,12 +317,12 @@ class CspBuilder
                             $this->addDomainToDirective($directives, $directive, $domain);
                             $addedToDirectives[] = $directive;
                         }
-                        break; // 同じディレクティブに複数回追加しない
+                        break; // Don't add to the same directive multiple times
                     }
                 }
             }
 
-            // どのキーワードにもマッチしない場合は、デフォルトでstyle-srcに追加
+            // If no keywords match, add to style-src by default
             if (empty($addedToDirectives)) {
                 $this->addDomainToDirective($directives, 'style-src', $domain);
             }
@@ -332,7 +332,7 @@ class CspBuilder
     }
 
     /**
-     * ドメインを指定されたディレクティブに追加
+     * Add domain to specified directive
      */
     protected function addDomainToDirective(array &$directives, string $directive, string $domain): void
     {
@@ -345,7 +345,7 @@ class CspBuilder
     }
 
     /**
-     * コンテキスト固有のディレクティブを取得
+     * Get context-specific directives
      */
     protected function getContextDirectives(): array
     {
@@ -355,14 +355,14 @@ class CspBuilder
     }
 
     /**
-     * データベースからディレクティブを取得
+     * Get directives from database
      */
     protected function getDatabaseDirectives(): array
     {
         $directives = [];
 
         try {
-            // カスタムディレクティブ（JSON形式で保存）
+            // Custom directives (stored in JSON format)
             $customDirectives = SecuritySetting::get('csp_custom_directives', '');
             if (! empty($customDirectives)) {
                 $decoded = json_decode($customDirectives, true);
@@ -371,14 +371,14 @@ class CspBuilder
                 }
             }
         } catch (\Exception $e) {
-            // データベース未設定時は無視
+            // Ignore if database is not configured
         }
 
         return $directives;
     }
 
     /**
-     * ディレクティブをマージ
+     * Merge directives
      */
     protected function mergeDirectives(array $base, array $additional): array
     {
@@ -387,7 +387,7 @@ class CspBuilder
                 $base[$directive] = [];
             }
 
-            // 'none'が含まれる場合は、'none'のみにする
+            // If 'none' is included, use only 'none'
             $valuesArray = (array) $values;
             if (in_array("'none'", $valuesArray, true)) {
                 $base[$directive] = ["'none'"];
@@ -395,7 +395,7 @@ class CspBuilder
                 continue;
             }
 
-            // 既存に'none'がある場合は、新しい値で上書き
+            // If 'none' exists, overwrite with new values
             if (in_array("'none'", $base[$directive], true)) {
                 $base[$directive] = $valuesArray;
 
@@ -413,7 +413,7 @@ class CspBuilder
     }
 
     /**
-     * レポートURIを追加
+     * Add report URI
      */
     protected function addReportUri(array $directives): array
     {
@@ -422,16 +422,16 @@ class CspBuilder
         if (! empty($reportUri)) {
             $directives['report-uri'] = [$reportUri];
 
-            // report-to ディレクティブも追加（新しいブラウザ向け）
-            // report-toはグループ名を指定するため、別途Report-Toヘッダーが必要
-            // ここではreport-uriのみ使用
+            // Also add report-to directive (for newer browsers)
+            // report-to specifies a group name, so a separate Report-To header is required
+            // Use only report-uri here
         }
 
         return $directives;
     }
 
     /**
-     * ディレクティブを処理（nonce置換等）
+     * Process directives (nonce replacement, etc.)
      */
     protected function processDirectives(array $directives): array
     {
@@ -439,7 +439,7 @@ class CspBuilder
 
         foreach ($directives as $directive => &$values) {
             $values = array_map(function ($value) use ($nonce) {
-                // 'nonce' プレースホルダーを実際のnonce値に置換
+                // Replace 'nonce' placeholder with actual nonce value
                 if ($value === "'nonce'") {
                     return $nonce;
                 }
@@ -448,20 +448,20 @@ class CspBuilder
             }, $values);
         }
 
-        // CSPモード設定に基づいてディレクティブを調整
+        // Adjust directives based on CSP mode settings
         $directives = $this->applyModeSettings($directives);
 
         return $directives;
     }
 
     /**
-     * CSPモード設定に基づいてディレクティブを調整
+     * Adjust directives based on CSP mode settings
      */
     protected function applyModeSettings(array $directives): array
     {
         $mode = $this->getCspMode();
 
-        // config/csp/base.phpから直接modes設定を読み込み
+        // Load modes settings directly from config/csp/base.php
         $baseConfig = require config_path('csp/base.php');
         $modeConfig = $baseConfig['modes'][$mode] ?? [];
 
@@ -469,19 +469,19 @@ class CspBuilder
             return $directives;
         }
 
-        // 開発モードの場合
+        // Development mode
         if ($mode === 'development') {
-            // 'strict-dynamic'を削除（'unsafe-inline'と競合するため）
+            // Remove 'strict-dynamic' (conflicts with 'unsafe-inline')
             $directives['script-src'] = array_filter($directives['script-src'], function ($value) {
                 return $value !== "'strict-dynamic'";
             });
 
-            // allow_unsafe_inlineがtrueの場合のみ'unsafe-inline'を追加
+            // Add 'unsafe-inline' only when allow_unsafe_inline is true
             $allowUnsafeInline = $modeConfig['allow_unsafe_inline'] ?? false;
             if ($allowUnsafeInline && ! in_array("'unsafe-inline'", $directives['script-src'])) {
                 $directives['script-src'][] = "'unsafe-inline'";
             } elseif (! $allowUnsafeInline) {
-                // allow_unsafe_inlineがfalseの場合は'unsafe-inline'を削除
+                // Remove 'unsafe-inline' when allow_unsafe_inline is false
                 $directives['script-src'] = array_filter($directives['script-src'], function ($value) {
                     return $value !== "'unsafe-inline'";
                 });
@@ -489,9 +489,9 @@ class CspBuilder
 
             $directives['script-src'] = array_values($directives['script-src']);
         } else {
-            // 標準・厳格モード
+            // Standard and strict modes
 
-            // allow_evalがfalseの場合、'unsafe-eval'を削除
+            // Remove 'unsafe-eval' when allow_eval is false
             $allowEval = $modeConfig['allow_eval'] ?? true;
             if ($allowEval === false) {
                 $directives['script-src'] = array_filter($directives['script-src'], function ($value) {
@@ -499,7 +499,7 @@ class CspBuilder
                 });
             }
 
-            // allow_inline_scriptsがfalseの場合、'unsafe-inline'を削除
+            // Remove 'unsafe-inline' when allow_inline_scripts is false
             $allowInlineScripts = $modeConfig['allow_inline_scripts'] ?? true;
             if ($allowInlineScripts === false) {
                 $directives['script-src'] = array_filter($directives['script-src'], function ($value) {
@@ -507,11 +507,11 @@ class CspBuilder
                 });
             }
 
-            // strict_dynamicがfalseの場合、'strict-dynamic'を削除
+            // Remove 'strict-dynamic' when strict_dynamic is false
             $strictDynamic = $modeConfig['strict_dynamic'] ?? false;
 
-            // Vite開発サーバー使用時は強制的にstrict_dynamicを無効化
-            // （strict-dynamicとVite HMRは互換性がないため）
+            // Force disable strict_dynamic when using Vite dev server
+            // (strict-dynamic is incompatible with Vite HMR)
             if (function_exists('is_vite_dev_server') && is_vite_dev_server()) {
                 $strictDynamic = false;
             }
@@ -525,11 +525,11 @@ class CspBuilder
             $directives['script-src'] = array_values($directives['script-src']);
         }
 
-        // script-src-attrの制御
-        // ベース値は'none'（onclick等のインラインハンドラをブロック）。
-        // 開発モードのみ、既存テーマ/プラグイン互換のため'unsafe-inline'に緩和する。
-        // 標準モード以降では block_script_attr 設定に関わらず'none'を維持し、
-        // 設定ミスでインラインハンドラが解禁されないようにする。
+        // Control script-src-attr
+        // Base value is 'none' (blocks inline handlers like onclick)
+        // Only in development mode, relax to 'unsafe-inline' for compatibility with existing themes/plugins
+        // In standard mode and beyond, maintain 'none' regardless of block_script_attr settings,
+        // preventing inline handlers from being allowed due to misconfiguration
         $blockScriptAttr = $modeConfig['block_script_attr'] ?? true;
         if ($mode === 'development' && $blockScriptAttr === false) {
             $directives['script-src-attr'] = ["'unsafe-inline'"];
@@ -537,35 +537,35 @@ class CspBuilder
             $directives['script-src-attr'] = ["'none'"];
         }
 
-        // style-srcの制御
+        // Control style-src
         if (isset($directives['style-src'])) {
             $allowInlineStyles = $modeConfig['allow_inline_styles'] ?? true;
 
             if ($mode === 'development') {
-                // 開発モード: unsafe-inlineを維持
+                // Development mode: maintain unsafe-inline
                 if (! in_array("'unsafe-inline'", $directives['style-src'])) {
                     $directives['style-src'][] = "'unsafe-inline'";
                 }
             } elseif ($mode === 'standard') {
-                // 標準モード: allow_inline_stylesに従う
+                // Standard mode: follow allow_inline_styles
                 if ($allowInlineStyles === false) {
                     $directives['style-src'] = array_filter($directives['style-src'], function ($value) {
                         return $value !== "'unsafe-inline'";
                     });
-                    // nonceを追加（まだ存在しない場合）
+                    // Add nonce (if not already present)
                     if (! in_array("'nonce'", $directives['style-src'])) {
                         $directives['style-src'][] = "'nonce'";
                     }
                 }
             } elseif ($mode === 'strict') {
-                // 厳格モード: allow_inline_stylesに従う
+                // Strict mode: follow allow_inline_styles
                 if ($allowInlineStyles === true) {
-                    // Alpine.js用にunsafe-inlineを追加
+                    // Add unsafe-inline for Alpine.js
                     if (! in_array("'unsafe-inline'", $directives['style-src'])) {
                         $directives['style-src'][] = "'unsafe-inline'";
                     }
                 } else {
-                    // 外部CSSのみ（unsafe-inlineとnonceを削除）
+                    // External CSS only (remove unsafe-inline and nonce)
                     $directives['style-src'] = array_filter($directives['style-src'], function ($value) {
                         return $value !== "'unsafe-inline'" && $value !== "'nonce'";
                     });
@@ -579,11 +579,11 @@ class CspBuilder
     }
 
     /**
-     * CSPモード（development/standard/strict）を取得
+     * Get CSP mode (development/standard/strict)
      */
     protected function getCspMode(): string
     {
-        // 管理画面コンテキストの場合、admin_modeを優先
+        // Prioritize admin_mode for admin panel context
         if ($this->isAdminContext()) {
             $adminMode = $this->getAdminCspMode();
             if ($adminMode !== null) {
@@ -591,11 +591,11 @@ class CspBuilder
             }
         }
 
-        // データベースの設定を優先
+        // Prioritize database settings
         try {
             $dbMode = SecuritySetting::get('csp_mode');
             if (! empty($dbMode)) {
-                // 数値文字列を文字列モード名に変換
+                // Convert numeric string to string mode name
                 $modeMap = [
                     '0' => 'development',
                     '1' => 'standard',
@@ -605,7 +605,7 @@ class CspBuilder
                     2 => 'strict',
                 ];
 
-                // 数値の場合は変換、文字列の場合はそのまま
+                // Convert if numeric, keep as-is if string
                 if (isset($modeMap[$dbMode])) {
                     return $modeMap[$dbMode];
                 }
@@ -613,28 +613,28 @@ class CspBuilder
                 return $dbMode;
             }
         } catch (\Exception $e) {
-            // データベース未設定時は設定ファイルの値を使用
+            // Use config file value when database settings not set
         }
 
-        // 設定ファイルのデフォルト値（config/csp/base.phpから直接読み込み）
+        // Config file default value (loaded directly from config/csp/base.php)
         $baseConfig = require config_path('csp/base.php');
 
         return $baseConfig['mode'] ?? 'development';
     }
 
     /**
-     * 管理画面専用のCSPモードを取得
+     * Get CSP mode specific to admin panel
      */
     protected function getAdminCspMode(): ?string
     {
-        // 設定ファイルのadmin_mode
+        // admin_mode from config file
         $configAdminMode = config('csp.admin_mode');
 
-        // データベースの設定を優先
+        // Prioritize database settings
         try {
             $dbAdminMode = SecuritySetting::get('csp_admin_mode');
             if (! empty($dbAdminMode)) {
-                // 数値文字列を文字列モード名に変換
+                // Convert numeric string to string mode name
                 $modeMap = [
                     '0' => 'development',
                     '1' => 'standard',
@@ -644,7 +644,7 @@ class CspBuilder
                     2 => 'strict',
                 ];
 
-                // 数値の場合は変換、文字列の場合はそのまま
+                // Convert if numeric, keep as-is if string
                 if (isset($modeMap[$dbAdminMode])) {
                     return $modeMap[$dbAdminMode];
                 }
@@ -652,14 +652,14 @@ class CspBuilder
                 return $dbAdminMode;
             }
         } catch (\Exception $e) {
-            // データベース未設定時は設定ファイルの値を使用
+            // Use config file value when database settings not set
         }
 
         return $configAdminMode;
     }
 
     /**
-     * ディレクティブをCSPヘッダー文字列にフォーマット
+     * Format directives to CSP header string
      */
     protected function formatDirectives(array $directives): string
     {
@@ -678,40 +678,40 @@ class CspBuilder
     }
 
     /**
-     * CSPが有効かどうかを確認
+     * Check if CSP is enabled
      */
     public function isEnabled(): bool
     {
-        // 設定ファイルのデフォルト値
+        // Config file default value
         $configEnabled = config('csp.enabled', true);
 
-        // データベースの設定を優先
+        // Prioritize database settings
         try {
             $dbEnabled = SecuritySetting::get('csp_enabled');
             if ($dbEnabled !== null) {
                 return filter_var($dbEnabled, FILTER_VALIDATE_BOOLEAN);
             }
         } catch (\Exception $e) {
-            // データベース未設定時は設定ファイルの値を使用
+            // Use config file value when database settings not set
         }
 
         return $configEnabled;
     }
 
     /**
-     * CSPヘッダー名を取得
+     * Get CSP header name
      */
     public function getHeaderName(): string
     {
         $mode = $this->getCspMode();
         $modeConfig = config("csp.modes.{$mode}", []);
 
-        // モード設定からヘッダー名を取得
+        // Get header name from mode settings
         if (isset($modeConfig['header'])) {
             return $modeConfig['header'];
         }
 
-        // デフォルトはContent-Security-Policy
+        // Default is Content-Security-Policy
         return 'Content-Security-Policy';
     }
 }

@@ -43,14 +43,14 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
- * CAPTCHAフェイルオーバーサービス
+ * CAPTCHA failover service
  *
- * 複数のCAPTCHAサービスを管理し、障害時に自動/手動で切り替え可能にする
+ * Manages multiple CAPTCHA services and enables automatic/manual switching during failures
  */
 class CaptchaFailoverService
 {
     /**
-     * キャッシュキー
+     * Cache key
      */
     private const CACHE_KEY_FAILURE_COUNT = 'captcha_failure_count';
 
@@ -59,31 +59,31 @@ class CaptchaFailoverService
     private const CACHE_KEY_ACTIVE_PROVIDER = 'captcha_active_provider';
 
     /**
-     * フェイルオーバー設定
+     * Failover settings
      */
-    private const FAILURE_THRESHOLD = 3;  // この回数連続失敗でフェイルオーバー
+    private const FAILURE_THRESHOLD = 3;  // Failover after this many consecutive failures
 
-    private const FAILURE_WINDOW_MINUTES = 5;  // 失敗カウントのウィンドウ
+    private const FAILURE_WINDOW_MINUTES = 5;  // Failure count window
 
-    private const COOLDOWN_MINUTES = 30;  // フェイルオーバー後のクールダウン
+    private const COOLDOWN_MINUTES = 30;  // Cooldown after failover
 
     /**
-     * 現在アクティブなプロバイダーを取得
+     * Get currently active provider
      */
     public static function getActiveProvider(): string
     {
-        // キャッシュに一時的なアクティブプロバイダーがあればそれを使用
+        // Use temporary active provider from cache if available
         $cachedProvider = Cache::get(self::CACHE_KEY_ACTIVE_PROVIDER);
         if ($cachedProvider) {
             return $cachedProvider;
         }
 
-        // デフォルトは設定されたプライマリプロバイダー
+        // Defaults to configured primary provider
         return SecuritySetting::get('captcha_driver', CaptchaProvider::GOOGLE->value);
     }
 
     /**
-     * プロバイダーごとの設定を取得
+     * Get settings for each provider
      */
     public static function getProviderConfig(string $provider): array
     {
@@ -104,7 +104,7 @@ class CaptchaFailoverService
     }
 
     /**
-     * プロバイダーの設定を保存
+     * Save provider settings
      */
     public static function saveProviderConfig(string $provider, array $config): void
     {
@@ -123,7 +123,7 @@ class CaptchaFailoverService
             SecuritySetting::set("{$prefix}_verified", $config['verified'] ? '1' : '0');
         }
 
-        // Google Enterprise固有の設定
+        // Google Enterprise specific settings
         if ($provider === CaptchaProvider::GOOGLE_ENTERPRISE->value) {
             if (isset($config['project_id'])) {
                 SecuritySetting::set("{$prefix}_project_id", $config['project_id']);
@@ -133,7 +133,7 @@ class CaptchaFailoverService
             }
         }
 
-        // Google reCAPTCHA固有の設定
+        // Google reCAPTCHA specific settings
         if ($provider === CaptchaProvider::GOOGLE->value) {
             if (isset($config['version'])) {
                 SecuritySetting::set("{$prefix}_version", $config['version']);
@@ -145,7 +145,7 @@ class CaptchaFailoverService
     }
 
     /**
-     * 設定済みで有効なプロバイダー一覧を取得
+     * Get list of configured and enabled providers
      */
     public static function getConfiguredProviders(): array
     {
@@ -166,14 +166,14 @@ class CaptchaFailoverService
     }
 
     /**
-     * フェイルオーバー可能なプロバイダーを取得
+     * Get failover-capable providers
      */
     public static function getFailoverProvider(): ?string
     {
         $currentProvider = self::getActiveProvider();
         $configuredProviders = self::getConfiguredProviders();
 
-        // フェイルオーバー優先順位を取得
+        // Get failover priority
         $priority = self::getFailoverPriority();
 
         foreach ($priority as $provider) {
@@ -189,7 +189,7 @@ class CaptchaFailoverService
     }
 
     /**
-     * フェイルオーバー優先順位を取得
+     * Get failover priority
      */
     public static function getFailoverPriority(): array
     {
@@ -199,7 +199,7 @@ class CaptchaFailoverService
             return array_filter(explode(',', $priority));
         }
 
-        // デフォルト優先順位
+        // Default priority
         return [
             CaptchaProvider::TURNSTILE->value,
             CaptchaProvider::GOOGLE_ENTERPRISE->value,
@@ -208,7 +208,7 @@ class CaptchaFailoverService
     }
 
     /**
-     * フェイルオーバー優先順位を設定
+     * Set failover priority
      */
     public static function setFailoverPriority(array $priority): void
     {
@@ -216,7 +216,7 @@ class CaptchaFailoverService
     }
 
     /**
-     * 検証失敗を記録
+     * Record verification failure
      */
     public static function recordFailure(string $provider, string $errorType): void
     {
@@ -236,14 +236,14 @@ class CaptchaFailoverService
             'threshold' => self::FAILURE_THRESHOLD,
         ]);
 
-        // 自動フェイルオーバーが有効で閾値を超えた場合
+        // If automatic failover is enabled and threshold is exceeded
         if (self::isAutoFailoverEnabled() && $count >= self::FAILURE_THRESHOLD) {
             self::triggerAutoFailover($provider);
         }
     }
 
     /**
-     * 検証成功を記録（失敗カウントをリセット）
+     * Record verification success (reset failure count)
      */
     public static function recordSuccess(string $provider): void
     {
@@ -252,7 +252,7 @@ class CaptchaFailoverService
     }
 
     /**
-     * 自動フェイルオーバーを実行
+     * Execute automatic failover
      */
     protected static function triggerAutoFailover(string $failedProvider): void
     {
@@ -266,7 +266,7 @@ class CaptchaFailoverService
             return;
         }
 
-        // 一時的にアクティブプロバイダーを切り替え
+        // Temporarily switch active provider
         Cache::put(
             self::CACHE_KEY_ACTIVE_PROVIDER,
             $failoverProvider,
@@ -279,7 +279,7 @@ class CaptchaFailoverService
             'cooldown_minutes' => self::COOLDOWN_MINUTES,
         ]);
 
-        // 監査ログに記録
+        // Record in audit log
         if (class_exists(AuditService::class)) {
             AuditService::log(
                 action: 'captcha_auto_failover',
@@ -293,12 +293,12 @@ class CaptchaFailoverService
             );
         }
 
-        // 管理者に通知
+        // Notify administrator
         self::notifyAdminOfFailover($failedProvider, $failoverProvider);
     }
 
     /**
-     * 手動でプロバイダーを切り替え
+     * Manually switch provider
      */
     public static function switchProvider(string $provider, bool $permanent = false): bool
     {
@@ -324,15 +324,15 @@ class CaptchaFailoverService
         }
 
         if ($permanent) {
-            // 永続的な切り替え（プライマリプロバイダーを変更）
+            // Permanent switch (change primary provider)
             SecuritySetting::set('captcha_driver', $provider);
             Cache::forget(self::CACHE_KEY_ACTIVE_PROVIDER);
 
-            // 互換性のため、統一キーも更新
+            // Update unified key for compatibility
             SecuritySetting::set('captcha_site_key', $config['site_key']);
             SecuritySetting::set('captcha_secret_key', $config['secret_key']);
         } else {
-            // 一時的な切り替え
+            // Temporary switch
             Cache::put(
                 self::CACHE_KEY_ACTIVE_PROVIDER,
                 $provider,
@@ -345,7 +345,7 @@ class CaptchaFailoverService
             'permanent' => $permanent,
         ]);
 
-        // 監査ログに記録
+        // Record in audit log
         if (class_exists(AuditService::class)) {
             AuditService::log(
                 action: 'captcha_provider_switched',
@@ -363,13 +363,13 @@ class CaptchaFailoverService
     }
 
     /**
-     * 一時的な切り替えをリセット（プライマリに戻す）
+     * Reset temporary switch (revert to primary)
      */
     public static function resetToDefault(): void
     {
         Cache::forget(self::CACHE_KEY_ACTIVE_PROVIDER);
 
-        // 全プロバイダーの失敗カウントをリセット
+        // Reset failure count for all providers
         foreach (CaptchaProvider::cases() as $provider) {
             Cache::forget(self::CACHE_KEY_FAILURE_COUNT.":{$provider->value}");
             Cache::forget(self::CACHE_KEY_LAST_FAILURE.":{$provider->value}");
@@ -379,7 +379,7 @@ class CaptchaFailoverService
     }
 
     /**
-     * 自動フェイルオーバーが有効かどうか
+     * Whether automatic failover is enabled
      */
     public static function isAutoFailoverEnabled(): bool
     {
@@ -390,7 +390,7 @@ class CaptchaFailoverService
     }
 
     /**
-     * 自動フェイルオーバーの有効/無効を設定
+     * Enable/disable automatic failover
      */
     public static function setAutoFailoverEnabled(bool $enabled): void
     {
@@ -398,7 +398,7 @@ class CaptchaFailoverService
     }
 
     /**
-     * 現在のステータスを取得
+     * Get current status
      */
     public static function getStatus(): array
     {
@@ -436,7 +436,7 @@ class CaptchaFailoverService
     }
 
     /**
-     * プロバイダーのプレフィックスを取得
+     * Get provider prefix
      */
     private static function getProviderPrefix(string $provider): string
     {
@@ -449,7 +449,7 @@ class CaptchaFailoverService
     }
 
     /**
-     * フェイルオーバー発生時に管理者へ通知
+     * Notify administrator when failover occurs
      */
     protected static function notifyAdminOfFailover(string $failedProvider, string $newProvider): void
     {

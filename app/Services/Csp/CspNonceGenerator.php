@@ -40,18 +40,18 @@ namespace App\Services\Csp;
 /**
  * CSP Nonce Generator
  *
- * リクエストごとに一意のnonceを生成・管理するサービス。
- * nonceはインラインスクリプト/スタイルの許可に使用される。
+ * Service for generating and managing a unique nonce per request
+ * The nonce is used to allow inline scripts/styles
  */
 class CspNonceGenerator
 {
     /**
-     * 現在のリクエストのnonce値
+     * Nonce value for the current request
      */
     protected ?string $nonce = null;
 
     /**
-     * nonce生成時のバイト長
+     * Byte length when generating nonce
      */
     protected int $nonceLength;
 
@@ -61,10 +61,10 @@ class CspNonceGenerator
     }
 
     /**
-     * 現在のリクエスト用のnonceを取得
+     * Get the nonce for the current request
      *
-     * まだ生成されていない場合は新規生成する。
-     * 同一リクエスト内では常に同じnonceを返す。
+     * Generate a new one if not yet generated
+     * Always returns the same nonce within the same request
      */
     public function getNonce(): string
     {
@@ -76,9 +76,9 @@ class CspNonceGenerator
     }
 
     /**
-     * 新しいnonceを生成
+     * Generate a new nonce
      *
-     * 暗号学的に安全なランダムバイトからBase64エンコードされた文字列を生成。
+     * Generate a Base64 encoded string from cryptographically secure random bytes
      */
     protected function generateNonce(): string
     {
@@ -88,9 +88,9 @@ class CspNonceGenerator
     }
 
     /**
-     * nonceをリセット
+     * Reset the nonce
      *
-     * 通常は使用しないが、テスト等で必要な場合に使用。
+     * Not normally used, but can be used when needed for testing, etc.
      */
     public function resetNonce(): void
     {
@@ -98,9 +98,9 @@ class CspNonceGenerator
     }
 
     /**
-     * CSPディレクティブ用のnonce文字列を取得
+     * Get the nonce string for CSP directive
      *
-     * 例: 'nonce-abc123...'
+     * Example: 'nonce-abc123...'
      */
     public function getNonceDirective(): string
     {
@@ -108,9 +108,9 @@ class CspNonceGenerator
     }
 
     /**
-     * HTML属性用のnonce文字列を取得
+     * Get the nonce string for HTML attribute
      *
-     * 例: nonce="abc123..."
+     * Example: nonce="abc123..."
      */
     public function getNonceAttribute(): string
     {

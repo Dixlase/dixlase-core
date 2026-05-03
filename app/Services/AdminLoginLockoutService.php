@@ -44,7 +44,7 @@ use Illuminate\Http\Request;
 class AdminLoginLockoutService
 {
     /**
-     * ログイン試行制限が有効かどうかを確認
+     * Check if login attempt restrictions are enabled
      */
     public function isLockoutEnabled(): bool
     {
@@ -52,7 +52,7 @@ class AdminLoginLockoutService
     }
 
     /**
-     * ロックアウト通知が有効かどうかを確認
+     * Check if lockout notifications are enabled
      */
     public function isNotificationEnabled(): bool
     {
@@ -60,7 +60,7 @@ class AdminLoginLockoutService
     }
 
     /**
-     * 指定した識別子がロックアウトされているかを確認
+     * Check if the specified identifier is locked out
      */
     public function isLockedOut(string $identifier): bool
     {
@@ -78,7 +78,7 @@ class AdminLoginLockoutService
     }
 
     /**
-     * IPアドレスがロックアウトされているかを確認
+     * Check if the IP address is locked out
      */
     public function isIpLockedOut(string $ipAddress): bool
     {
@@ -92,14 +92,14 @@ class AdminLoginLockoutService
             $settings['time_window']
         );
 
-        // IP用の最大試行回数を取得（セキュリティ設定から）
+        // Get maximum attempts for IP (from security settings)
         $maxAttemptsForIp = SecuritySetting::get('login_attempt_max_attempts_ip', $settings['max_attempts'] * 2);
 
         return $failedAttempts >= $maxAttemptsForIp;
     }
 
     /**
-     * ロックアウト解除までの残り時間（分）を取得
+     * Get remaining time until lockout release (in minutes)
      */
     public function getLockoutRemainingMinutes(string $identifier): ?int
     {
@@ -109,21 +109,21 @@ class AdminLoginLockoutService
     }
 
     /**
-     * 成功したログイン後の処理
+     * Process after successful login
      */
     public function handleSuccessfulLogin(string $identifier, ?\Illuminate\Http\Request $request = null): void
     {
-        // 成功したログイン試行を記録（行動分析データ付き）
+        // Record successful login attempt (with behavioral analysis data)
         $request = $request ?? request();
         $behaviorService = app(\App\Services\LoginBehaviorService::class);
         $behaviorService->recordLoginAttempt($identifier, $request, true);
 
-        // 失敗した試行記録をクリア
+        // Clear failed attempt records
         LoginLockoutHelper::clearFailedAttempts($identifier);
     }
 
     /**
-     * 失敗したログイン後の処理
+     * Process after failed login
      */
     public function handleFailedLogin(Request $request, string $identifier, ?string $failureReason = null): array
     {
@@ -131,7 +131,7 @@ class AdminLoginLockoutService
     }
 
     /**
-     * ロックアウト状態の詳細情報を取得
+     * Get detailed information about lockout status
      */
     public function getLockoutStatusDetails(string $identifier, string $ipAddress): array
     {
@@ -139,7 +139,7 @@ class AdminLoginLockoutService
     }
 
     /**
-     * ロックアウトエラーメッセージを生成
+     * Generate lockout error message
      */
     public function generateLockoutMessage(array $lockoutInfo): string
     {

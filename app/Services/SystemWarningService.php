@@ -38,16 +38,16 @@
 namespace App\Services;
 
 /**
- * システム警告バナーレジストリ
+ * System warning banner registry
  *
- * 複数機能が独立して警告バナーを登録できる Provider パターンのサービス。
- * register() で警告判定関数を登録し、getActiveBanners() で評価結果を取得する。
+ * A Provider pattern service that allows multiple features to independently register warning banners.
+ * Register warning check functions with register() and retrieve evaluation results with getActiveBanners().
  *
- * バナー配列のシェイプ:
+ * Banner array shape:
  *  - level: 'error' | 'warning' | 'info'
- *  - icon: Font Awesome クラス
- *  - title: 見出し文字列
- *  - message: 説明文
+ *  - icon: Font Awesome class
+ *  - title: heading text
+ *  - message: description text
  *  - actions: array<int, array{label:string, url:string, style:string, method:string}>
  */
 class SystemWarningService
@@ -56,7 +56,7 @@ class SystemWarningService
     protected array $providers = [];
 
     /**
-     * 警告判定プロバイダを登録する
+     * Register a warning check provider
      *
      * @param  callable():(array<int, array<string, mixed>>|null)  $provider
      */
@@ -66,7 +66,7 @@ class SystemWarningService
     }
 
     /**
-     * 現在アクティブな警告バナー一覧を取得する
+     * Retrieve list of currently active warning banners
      *
      * @return array<int, array<string, mixed>>
      */

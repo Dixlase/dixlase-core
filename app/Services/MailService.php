@@ -46,21 +46,21 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * メール送信サービス
+ * Mail sending service
  *
- * Contract対応のメール送信機能を提供します。
+ * Provides Contract-compatible mail sending functionality
  */
 class MailService implements MailServiceInterface
 {
     /**
-     * メールを送信
+     * Send mail
      */
     public function send(MailMessageDTO $message, ?MailConfigDTO $config = null): MailResultDTO
     {
         try {
-            // カスタム設定がある場合は一時的に適用
+            // Temporarily apply custom settings if present
             if ($config) {
                 $this->applyConfig($config);
             }
@@ -68,25 +68,25 @@ class MailService implements MailServiceInterface
             $recipients = $message->getRecipients();
 
             Mail::send([], [], function ($mail) use ($message) {
-                // 宛先
+                // Recipient
                 $mail->to($message->getRecipients());
 
-                // 件名
+                // Subject
                 $mail->subject($message->subject);
 
-                // 本文
+                // Body
                 if ($message->isHtml) {
                     $mail->html($message->body);
                 } else {
                     $mail->text($message->body);
                 }
 
-                // 送信元
+                // From
                 if ($message->from) {
                     $mail->from($message->from, $message->fromName);
                 }
 
-                // 返信先
+                // Reply-to
                 if ($message->replyTo) {
                     $mail->replyTo($message->replyTo);
                 }
@@ -101,7 +101,7 @@ class MailService implements MailServiceInterface
                     $mail->bcc($message->bcc);
                 }
 
-                // 添付ファイル
+                // Attachments
                 foreach ($message->attachments as $attachment) {
                     if ($attachment instanceof MailAttachmentDTO && $attachment->exists()) {
                         $mail->attach($attachment->path, [
@@ -111,13 +111,13 @@ class MailService implements MailServiceInterface
                     }
                 }
 
-                // カスタムヘッダー
+                // Custom headers
                 foreach ($message->headers as $name => $value) {
                     $mail->getHeaders()->addTextHeader($name, $value);
                 }
             });
 
-            Log::channel('admin_activity')->info('メール送信成功', [
+            Log::channel('admin_activity')->info(__('services/mail_service.mail_sent_success'), [
                 'to' => $recipients,
                 'subject' => $message->subject,
                 'meta' => $message->meta,
@@ -125,7 +125,7 @@ class MailService implements MailServiceInterface
 
             return MailResultDTO::success($recipients);
         } catch (\Exception $e) {
-            Log::channel('admin_error')->error('メール送信失敗', [
+            Log::channel('admin_error')->error(__('services/mail_service.mail_sent_failure'), [
                 'to' => $message->getRecipients(),
                 'subject' => $message->subject,
                 'error' => $e->getMessage(),
@@ -137,7 +137,7 @@ class MailService implements MailServiceInterface
     }
 
     /**
-     * 複数のメールを一括送信
+     * Send multiple mails in bulk
      */
     public function sendMany(array $messages, ?MailConfigDTO $config = null): array
     {
@@ -151,19 +151,19 @@ class MailService implements MailServiceInterface
     }
 
     /**
-     * キューにメールを追加（非同期送信）
+     * Add mail to queue (asynchronous sending)
      */
     public function queue(MailMessageDTO $message, ?MailConfigDTO $config = null, ?string $queue = null): MailResultDTO
     {
         try {
-            // カスタム設定がある場合は一時的に適用
+            // Temporarily apply custom settings if present
             if ($config) {
                 $this->applyConfig($config);
             }
 
             $recipients = $message->getRecipients();
 
-            // キューに追加
+            // Add to queue
             Mail::queue([], [], function ($mail) use ($message) {
                 $mail->to($message->getRecipients());
                 $mail->subject($message->subject);
@@ -200,7 +200,7 @@ class MailService implements MailServiceInterface
                 }
             });
 
-            Log::channel('admin_activity')->info('メールをキューに追加', [
+            Log::channel('admin_activity')->info(__('services/mail_service.add_mail_to_queue'), [
                 'to' => $recipients,
                 'subject' => $message->subject,
                 'queue' => $queue,
@@ -208,7 +208,7 @@ class MailService implements MailServiceInterface
 
             return MailResultDTO::queued($recipients);
         } catch (\Exception $e) {
-            Log::channel('admin_error')->error('メールキュー追加失敗', [
+            Log::channel('admin_error')->error(__('services/mail_service.mail_queue_add_failure'), [
                 'to' => $message->getRecipients(),
                 'subject' => $message->subject,
                 'error' => $e->getMessage(),
@@ -219,7 +219,7 @@ class MailService implements MailServiceInterface
     }
 
     /**
-     * SMTP接続テスト
+     * SMTP connection test
      */
     public function testConnection(MailConfigDTO $config): MailResultDTO
     {
@@ -234,7 +234,7 @@ class MailService implements MailServiceInterface
             $port = $config->port;
             $encryption = $config->encryption;
 
-            // ソケット接続でSMTPサーバーに接続テスト
+            // Test connection to SMTP server via socket connection
             $context = stream_context_create();
 
             if ($encryption === 'ssl') {
@@ -257,7 +257,7 @@ class MailService implements MailServiceInterface
                 ]));
             }
 
-            // SMTPレスポンスを読み取り
+            // Read SMTP response
             $response = fgets($socket);
 
             if (! $response || ! str_starts_with($response, '220')) {
@@ -265,7 +265,7 @@ class MailService implements MailServiceInterface
                 throw new \Exception(__('mail-server/test.test_advanced.smtp_response_invalid', ['response' => trim($response)]));
             }
 
-            // STARTTLSが必要な場合
+            // If STARTTLS is required
             if ($encryption === 'tls') {
                 fwrite($socket, "EHLO localhost\r\n");
                 $response = fgets($socket);
@@ -284,7 +284,7 @@ class MailService implements MailServiceInterface
                 }
             }
 
-            // 認証テスト
+            // Authentication test
             if ($config->requiresAuth()) {
                 fwrite($socket, "EHLO localhost\r\n");
                 $response = fgets($socket);
@@ -314,7 +314,7 @@ class MailService implements MailServiceInterface
                 }
             }
 
-            // 接続を閉じる
+            // Close the connection
             fwrite($socket, "QUIT\r\n");
             fclose($socket);
 
@@ -325,11 +325,11 @@ class MailService implements MailServiceInterface
     }
 
     /**
-     * 現在のメール設定を取得
+     * Get current mail settings
      */
     public function getConfig(): MailConfigDTO
     {
-        // DBから設定を取得（存在する場合）
+        // Get settings from DB (if exists)
         try {
             if (class_exists(SiteSetting::class)) {
                 return new MailConfigDTO(
@@ -344,14 +344,14 @@ class MailService implements MailServiceInterface
                 );
             }
         } catch (\Exception $e) {
-            // DBエラーの場合はconfig設定にフォールバック
+            // Fall back to config settings in case of DB error
         }
 
         return MailConfigDTO::fromSystemConfig();
     }
 
     /**
-     * メール設定が有効かどうか
+     * Whether mail settings are enabled
      */
     public function isConfigured(): bool
     {
@@ -359,7 +359,7 @@ class MailService implements MailServiceInterface
     }
 
     /**
-     * 設定を一時的に適用
+     * Apply settings temporarily
      */
     protected function applyConfig(MailConfigDTO $config): void
     {

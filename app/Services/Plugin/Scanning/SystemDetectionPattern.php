@@ -36,12 +36,12 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * システム関連の検出パターン
+ * System-related detection patterns
  *
  * system.register_shortcodes, system.register_commands,
- * system.register_blade_directives, system.modify_routes を検出します。
+ * Detects system.register_blade_directives and system.modify_routes
  */
 class SystemDetectionPattern extends DetectionPattern
 {

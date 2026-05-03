@@ -44,7 +44,7 @@ use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
  * GitHub Source Provider
  *
@@ -100,7 +100,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     }
 
     /**
-     * 指定したスラッグの詳細データを取得する
+     * Retrieve detailed data for the specified slug
      *
      * @return array<string, mixed>|null
      */
@@ -108,14 +108,14 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     {
         $repoName = $this->buildRepoName($slug, $extensionType);
 
-        // リポジトリ情報を取得（default_branch などを取得するため）
+        // Retrieve repository information (to obtain default_branch, etc.)
         $repoResponse = $this->client()->get("{$this->baseUrl}/repos/{$this->owner}/{$repoName}");
         if ($repoResponse->failed()) {
             return null;
         }
         $repo = $repoResponse->json();
 
-        // manifest を取得
+        // Retrieve manifest
         $manifest = $this->fetchManifest($repoName, $extensionType);
         if ($manifest === null) {
             return null;
@@ -127,7 +127,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
             : ($extensionType === 'theme' ? 'screenshot.png' : 'thumbnail.png');
 
         return [
-            // slug は URL から受け取った値を固定で返す（manifest の slug フィールドは信頼しない）
+            // Return the slug value received from URL as fixed (do not trust the slug field in manifest)
             'slug' => $slug,
             'name' => $this->resolveLocalizedString($manifest['name'] ?? null) ?? ($repo['description'] ?? $slug),
             'description' => $this->resolveLocalizedString($manifest['description'] ?? null) ?? $repo['description'] ?? null,
@@ -156,16 +156,16 @@ class GitHubSourceProvider implements ExtensionSourceInterface
             return ReleaseInfo::fromGitHub($response->json(), $slug, $extensionType);
         }
 
-        // Release がない場合はデフォルトブランチの情報から疑似 Release を生成
+        // Generate pseudo-release from default branch information if no release exists
         return $this->getDefaultBranchReleaseInfo($slug, $extensionType);
     }
 
     public function downloadRelease(string $slug, string $version, string $extensionType = 'plugin'): string
     {
-        // Release からの取得を試みる
+        // Attempt to retrieve from release
         $release = $this->findRelease($slug, $version, $extensionType);
 
-        // Release がない場合はデフォルトブランチの zipball にフォールバック
+        // Fall back to default branch zipball if no release exists
         if ($release === null) {
             $downloadUrl = $this->getDefaultBranchZipballUrl($slug, $extensionType);
             if ($downloadUrl === null) {
@@ -196,7 +196,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     }
 
     /**
-     * デフォルトブランチから疑似 ReleaseInfo を生成
+     * Generate pseudo-ReleaseInfo from default branch
      */
     protected function getDefaultBranchReleaseInfo(string $slug, string $extensionType): ?ReleaseInfo
     {
@@ -219,7 +219,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     }
 
     /**
-     * デフォルトブランチの zipball URL を取得
+     * Retrieve zipball URL of default branch
      */
     protected function getDefaultBranchZipballUrl(string $slug, string $extensionType): ?string
     {
@@ -249,7 +249,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     public function checkConnection(): array
     {
         try {
-            // トークンがある場合は認証エンドポイント、ない場合はオーナー情報で接続確認
+            // Verify connection with authentication endpoint if token exists, otherwise with owner information
             if ($this->token) {
                 return $this->checkAuthenticatedConnection();
             }
@@ -265,7 +265,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     }
 
     /**
-     * トークン認証ありの接続テスト（GET /user）
+     * Connection test with token authentication (GET /user)
      *
      * @return array{success: bool, message: string, details: array<string, mixed>}
      */
@@ -296,7 +296,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     }
 
     /**
-     * トークンなしの接続テスト（GET /users/{owner}）
+     * Connection test without token (GET /users/{owner})
      *
      * @return array{success: bool, message: string, details: array<string, mixed>}
      */
@@ -370,9 +370,9 @@ class GitHubSourceProvider implements ExtensionSourceInterface
                     continue;
                 }
 
-                // slug はリポジトリ名から必ず導出する（manifest の slug フィールドは信頼せず固定）
+                // Always derive slug from repository name (do not trust the slug field in manifest; use fixed value)
                 $slug = substr($name, strlen($prefix));
-                // plugin.json / theme.json から正式な名前・説明・バージョンを取得
+                // Retrieve official name, description, and version from plugin.json / theme.json
                 $manifest = $this->fetchManifest($name, $extensionType) ?? [];
                 $defaultBranch = $repo['default_branch'] ?? 'main';
                 $thumbnailFile = is_string($manifest['thumbnail'] ?? null)
@@ -397,7 +397,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     }
 
     /**
-     * リポジトリから plugin.json / theme.json を取得
+     * Retrieve plugin.json / theme.json from repository
      *
      * @return array<string, mixed>|null
      */
@@ -437,10 +437,10 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     }
 
     /**
-     * 多言語対応の文字列フィールドを現在のロケールで解決する
+     * Resolve multilingual string fields with current locale
      *
-     * 文字列はそのまま返し、連想配列（例: `{ja: "...", en: "..."}`）は現在のロケールで解決する。
-     * 解決不能な値（オブジェクト・数値など）は null を返し、フロントで `[object Object]` として文字列化されるのを防ぐ。
+     * Return strings as-is, and resolve associative arrays (e.g., `{ja: "...", en: "..."}`) with current locale
+     * Return null for unresolvable values (objects, numbers, etc.) to prevent them from being stringified as `[object Object]` on the frontend
      */
     protected function resolveLocalizedString(mixed $value): ?string
     {
@@ -459,10 +459,10 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     }
 
     /**
-     * 文字列フィールドを厳密にチェックする（多言語解決は行わない）
+     * Strictly check string fields (do not perform multilingual resolution)
      *
-     * 本来文字列であるべきフィールド（slug, version, license 等）に対して使用する。
-     * 文字列以外が来た場合は null を返す。
+     * Used for fields that should be strings (slug, version, license, etc.)
+     * Returns null if a non-string value is received
      */
     protected function resolveString(mixed $value): ?string
     {

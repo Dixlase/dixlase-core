@@ -40,20 +40,20 @@ namespace App\Services;
 use App\Traits\ManagesContentFiles;
 
 /**
- * コンテンツファイル管理サービス
- * ページ、ブログ記事などのファイルベースのコンテンツ保存を管理
- * ManagesContentFilesトレイトを使用して共通機能を提供
+ * Content file management service
+ * Manages file-based content storage for pages, blog posts, etc.
+ * Provides common functionality using the ManagesContentFiles trait
  */
 class ContentFileService
 {
     use ManagesContentFiles;
 
     /**
-     * コンストラクタ
+     * Constructor
      *
-     * @param  string  $basePath  ベースパス（例: 'pages', 'posts'）
-     * @param  string  $disk  ディスク名
-     * @param  string  $defaultLocale  デフォルト言語
+     * @param  string  $basePath  Base path (e.g., 'pages', 'posts')
+     * @param  string  $disk  Disk name
+     * @param  string  $defaultLocale  Default language
      */
     public function __construct(string $basePath = 'content', string $disk = 'local', string $defaultLocale = 'en')
     {

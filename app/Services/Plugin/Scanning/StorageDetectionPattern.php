@@ -36,11 +36,11 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * ストレージ関連の検出パターン
+ * Storage-related detection pattern
  *
- * storage.own_directory, storage.public_uploads, storage.temp_files を検出します。
+ * Detects storage.own_directory, storage.public_uploads, storage.temp_files
  */
 class StorageDetectionPattern extends DetectionPattern
 {
@@ -75,7 +75,7 @@ class StorageDetectionPattern extends DetectionPattern
     }
 
     /**
-     * use文のインポートのみは除外
+     * Exclude use statement imports only
      */
     public function validateMatch(string $match, string $line, string $fileContent, string $filePath): bool
     {
@@ -85,7 +85,7 @@ class StorageDetectionPattern extends DetectionPattern
 
         $trimmedLine = ltrim($line);
 
-        // use文のインポートのみは除外
+        // Exclude use statement imports only
         if (str_starts_with($trimmedLine, 'use ')) {
             return false;
         }

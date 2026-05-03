@@ -38,16 +38,16 @@ namespace App\Services\Media;
 use Illuminate\Support\Facades\Log;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * SVGサニタイザーサービス
+ * SVG sanitizer service
  *
- * SVGファイルから危険な要素・属性・外部参照を除去する
+ * Remove dangerous elements, attributes, and external references from SVG files
  */
 class SvgSanitizerService
 {
     /**
-     * 許可するSVG要素
+     * Allowed SVG elements
      */
     protected array $allowedElements = [
         'svg', 'g', 'defs', 'symbol', 'use', 'title', 'desc',
@@ -64,21 +64,21 @@ class SvgSanitizerService
     ];
 
     /**
-     * 禁止する要素（危険）
+     * Forbidden elements (dangerous)
      */
     protected array $forbiddenElements = [
         'script', 'foreignObject', 'iframe', 'object', 'embed',
         'applet', 'meta', 'link', 'style', 'base',
         'form', 'input', 'button', 'select', 'textarea',
         'audio', 'video', 'source', 'track',
-        'animate', 'animateMotion', 'animateTransform', 'set', // アニメーション要素も除去
+        'animate', 'animateMotion', 'animateTransform', 'set', // also remove animation elements
     ];
 
     /**
-     * 禁止する属性（イベントハンドラ等）
+     * Forbidden attributes (event handlers, etc.)
      */
     protected array $forbiddenAttributes = [
-        // イベントハンドラ
+        // Event handlers
         'onload', 'onerror', 'onclick', 'onmouseover', 'onmouseout',
         'onmousedown', 'onmouseup', 'onmousemove', 'onfocus', 'onblur',
         'onchange', 'onsubmit', 'onreset', 'onselect', 'onkeydown',
@@ -91,11 +91,11 @@ class SvgSanitizerService
         'onloadstart', 'onpause', 'onplay', 'onplaying', 'onprogress',
         'onratechange', 'onseeked', 'onseeking', 'onstalled', 'onsuspend',
         'ontimeupdate', 'onvolumechange', 'onwaiting', 'ontoggle',
-        'onbegin', 'onend', 'onrepeat', // SVGアニメーションイベント
+        'onbegin', 'onend', 'onrepeat', // SVG animation events
     ];
 
     /**
-     * 禁止する属性値パターン（正規表現）
+     * Forbidden attribute value patterns (regex)
      */
     protected array $forbiddenAttributePatterns = [
         '/javascript:/i',
@@ -106,15 +106,15 @@ class SvgSanitizerService
     ];
 
     /**
-     * SVGコンテンツをサニタイズする
+     * Sanitize SVG content
      */
     public function sanitize(string $svgContent): string
     {
-        // XMLとして解析
+        // Parse as XML
         libxml_use_internal_errors(true);
         $dom = new \DOMDocument();
 
-        // SVGをロード（UTF-8エンコーディングを明示）
+        // Load SVG (explicitly specify UTF-8 encoding)
         $svgContent = $this->ensureUtf8($svgContent);
         $loaded = $dom->loadXML($svgContent, LIBXML_NONET | LIBXML_NOENT);
 
@@ -126,7 +126,7 @@ class SvgSanitizerService
             return '';
         }
 
-        // ルート要素がsvgであることを確認
+        // Verify that root element is svg
         $root = $dom->documentElement;
         if (! $root || strtolower($root->nodeName) !== 'svg') {
             Log::warning('Invalid SVG: root element is not svg');
@@ -134,10 +134,10 @@ class SvgSanitizerService
             return '';
         }
 
-        // 再帰的にサニタイズ
+        // Sanitize recursively
         $this->sanitizeNode($root);
 
-        // 外部参照を除去
+        // Remove external references
         $this->removeExternalReferences($root);
 
         $result = $dom->saveXML($root);
@@ -146,7 +146,7 @@ class SvgSanitizerService
     }
 
     /**
-     * ノードを再帰的にサニタイズ
+     * Sanitize nodes recursively
      */
     protected function sanitizeNode(\DOMNode $node): void
     {
@@ -157,24 +157,24 @@ class SvgSanitizerService
         /** @var \DOMElement $node */
         $nodeName = strtolower($node->nodeName);
 
-        // 禁止要素は削除
+        // Remove forbidden elements
         if (in_array($nodeName, $this->forbiddenElements)) {
             $node->parentNode?->removeChild($node);
 
             return;
         }
 
-        // 許可されていない要素も削除
+        // Remove non-allowed elements as well
         if (! in_array($nodeName, $this->allowedElements)) {
             $node->parentNode?->removeChild($node);
 
             return;
         }
 
-        // 属性をサニタイズ
+        // Sanitize attributes
         $this->sanitizeAttributes($node);
 
-        // 子ノードを逆順で処理（削除時のインデックスずれを防ぐ）
+        // Process child nodes in reverse order (prevent index shift on deletion)
         $children = [];
         foreach ($node->childNodes as $child) {
             $children[] = $child;
@@ -186,7 +186,7 @@ class SvgSanitizerService
     }
 
     /**
-     * 属性をサニタイズ
+     * Sanitize attributes
      */
     protected function sanitizeAttributes(\DOMElement $element): void
     {
@@ -196,21 +196,21 @@ class SvgSanitizerService
             $attrName = strtolower($attr->nodeName);
             $attrValue = $attr->nodeValue;
 
-            // 禁止属性を削除
+            // Remove forbidden attributes
             if (in_array($attrName, $this->forbiddenAttributes)) {
                 $attributesToRemove[] = $attr->nodeName;
 
                 continue;
             }
 
-            // on*で始まる属性を削除（イベントハンドラ）
+            // Remove attributes starting with on* (event handlers)
             if (str_starts_with($attrName, 'on')) {
                 $attributesToRemove[] = $attr->nodeName;
 
                 continue;
             }
 
-            // 禁止パターンをチェック
+            // Check for forbidden patterns
             foreach ($this->forbiddenAttributePatterns as $pattern) {
                 if (preg_match($pattern, $attrValue)) {
                     $attributesToRemove[] = $attr->nodeName;
@@ -225,20 +225,20 @@ class SvgSanitizerService
     }
 
     /**
-     * 外部参照を除去
+     * Remove external references
      */
     protected function removeExternalReferences(\DOMElement $element): void
     {
-        // xlink:href や href の外部参照をチェック
+        // Check xlink:href and href for external references
         $hrefAttrs = ['href', 'xlink:href'];
 
         foreach ($hrefAttrs as $attr) {
             if ($element->hasAttribute($attr)) {
                 $value = $element->getAttribute($attr);
 
-                // 外部URLを除去（#で始まる内部参照は許可）
+                // Remove external URLs (allow internal references starting with #)
                 if (! str_starts_with($value, '#') && ! str_starts_with($value, 'data:image/')) {
-                    // data:image/は画像埋め込みなので許可するが、他のdata:は禁止
+                    // Allow data:image/ for embedded images, but forbid other data: schemes
                     if (str_starts_with($value, 'data:') && ! preg_match('/^data:image\/(png|jpeg|gif|webp);base64,/i', $value)) {
                         $element->removeAttribute($attr);
                     } elseif (preg_match('/^https?:\/\//i', $value) || preg_match('/^\/\//i', $value)) {
@@ -248,7 +248,7 @@ class SvgSanitizerService
             }
         }
 
-        // 子要素も処理
+        // Process child elements as well
         foreach ($element->childNodes as $child) {
             if ($child->nodeType === XML_ELEMENT_NODE) {
                 $this->removeExternalReferences($child);
@@ -257,14 +257,14 @@ class SvgSanitizerService
     }
 
     /**
-     * UTF-8エンコーディングを確保
+     * Ensure UTF-8 encoding
      */
     protected function ensureUtf8(string $content): string
     {
-        // BOMを除去
+        // Remove BOM
         $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
 
-        // XML宣言がない場合は追加
+        // Add XML declaration if not present
         if (! preg_match('/^<\?xml/i', $content)) {
             $content = '<?xml version="1.0" encoding="UTF-8"?>'.$content;
         }
@@ -273,7 +273,7 @@ class SvgSanitizerService
     }
 
     /**
-     * ファイルをサニタイズして保存
+     * Sanitize and save file
      */
     public function sanitizeFile(string $inputPath, ?string $outputPath = null): bool
     {
@@ -297,7 +297,7 @@ class SvgSanitizerService
     }
 
     /**
-     * SVGが安全かどうかをチェック（サニタイズせずに検証のみ）
+     * Check if SVG is safe (validation only, without sanitizing)
      */
     public function isSafe(string $svgContent): bool
     {
@@ -322,7 +322,7 @@ class SvgSanitizerService
     }
 
     /**
-     * ノードの安全性を再帰的にチェック
+     * Recursively check node safety
      */
     protected function checkNodeSafety(\DOMNode $node): bool
     {
@@ -333,12 +333,12 @@ class SvgSanitizerService
         /** @var \DOMElement $node */
         $nodeName = strtolower($node->nodeName);
 
-        // 禁止要素があれば安全でない
+        // Unsafe if forbidden elements exist
         if (in_array($nodeName, $this->forbiddenElements)) {
             return false;
         }
 
-        // 属性をチェック
+        // Check attributes
         foreach ($node->attributes as $attr) {
             $attrName = strtolower($attr->nodeName);
             $attrValue = $attr->nodeValue;
@@ -354,7 +354,7 @@ class SvgSanitizerService
             }
         }
 
-        // 子ノードをチェック
+        // Check child nodes
         foreach ($node->childNodes as $child) {
             if (! $this->checkNodeSafety($child)) {
                 return false;

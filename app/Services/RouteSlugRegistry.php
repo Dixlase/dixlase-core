@@ -42,33 +42,33 @@ use App\DTO\RouteSlug\RegisteredSlug;
 use App\Repositories\SiteSettingRepository;
 
 /**
- * ルートスラッグレジストリ
+ * Route Slug Registry
  *
- * システム全体のトップレベルURLスラッグを収集・管理するレジストリ。
- * プラグインが登録したプロバイダー、コア設定、予約パスを統合し、
- * スラッグの重複チェックを行う。
+ * Registry that collects and manages system-wide top-level URL slugs.
+ * Integrates plugin-registered providers, Core settings, and reserved paths,
+ * and performs slug duplication checks.
  */
 class RouteSlugRegistry
 {
     /**
-     * 登録されたスラッグプロバイダー
+     * Registered slug providers
      *
      * @var array<string, RouteSlugProvider>
      */
     protected array $providers = [];
 
     /**
-     * メモ化されたスラッグキャッシュ
+     * Memoized slug cache
      *
      * @var array<RegisteredSlug>|null
      */
     protected ?array $cachedSlugs = null;
 
     /**
-     * スラッグプロバイダーを登録
+     * Register a slug provider
      *
-     * @param  string  $name  プロバイダー名（プラグインスラッグ等）
-     * @param  RouteSlugProvider  $provider  プロバイダーインスタンス
+     * @param  string  $name  Provider name (plugin slug, etc.)
+     * @param  RouteSlugProvider  $provider  Provider instance
      */
     public function registerProvider(string $name, RouteSlugProvider $provider): void
     {
@@ -77,7 +77,7 @@ class RouteSlugRegistry
     }
 
     /**
-     * スラッグプロバイダーを登録解除
+     * Unregister a slug provider
      */
     public function unregisterProvider(string $name): void
     {
@@ -86,7 +86,7 @@ class RouteSlugRegistry
     }
 
     /**
-     * 全登録済みスラッグを取得
+     * Get all registered slugs
      *
      * @return array<RegisteredSlug>
      */
@@ -98,16 +98,16 @@ class RouteSlugRegistry
 
         $slugs = [];
 
-        // 1. システム予約パスを追加
+        // 1. Add system reserved paths
         $reserved = config('admin.reserved-slugs.reserved', []);
         foreach ($reserved as $path) {
             $slugs[] = RegisteredSlug::reserved($path);
         }
 
-        // 2. コア動的スラッグ（admin_url）を追加
+        // 2. Add Core dynamic slugs (admin_url)
         $slugs = array_merge($slugs, $this->getCoreAdminSlug());
 
-        // 3. プロバイダーからスラッグを収集
+        // 3. Collect slugs from providers
         foreach ($this->providers as $provider) {
             $providerSlugs = $provider->getRouteSlugs();
             foreach ($providerSlugs as $slug) {
@@ -121,11 +121,11 @@ class RouteSlugRegistry
     }
 
     /**
-     * スラッグの競合を検索
+     * Search for slug conflicts
      *
-     * @param  string  $slug  チェック対象のスラッグ
-     * @param  string|null  $excludeOwner  除外するオーナー（自身のスラッグを除外）
-     * @return RegisteredSlug|null 競合するスラッグ。競合なしの場合はnull
+     * @param  string  $slug  Slug to check
+     * @param  string|null  $excludeOwner  Owner to exclude (exclude own slug)
+     * @return RegisteredSlug|null Conflicting slug. Returns null if no conflict
      */
     public function findConflict(string $slug, ?string $excludeOwner = null): ?RegisteredSlug
     {
@@ -145,10 +145,10 @@ class RouteSlugRegistry
     }
 
     /**
-     * スラッグが使用可能か判定
+     * Determine if a slug is available
      *
-     * @param  string  $slug  チェック対象のスラッグ
-     * @param  string|null  $excludeOwner  除外するオーナー
+     * @param  string  $slug  Slug to check
+     * @param  string|null  $excludeOwner  Owner to exclude
      */
     public function isAvailable(string $slug, ?string $excludeOwner = null): bool
     {
@@ -156,7 +156,7 @@ class RouteSlugRegistry
     }
 
     /**
-     * 登録されたプロバイダー名一覧を取得
+     * Get list of registered provider names
      *
      * @return array<string>
      */
@@ -166,7 +166,7 @@ class RouteSlugRegistry
     }
 
     /**
-     * メモ化キャッシュをクリア
+     * Clear memoization cache
      */
     public function clearCache(): void
     {
@@ -174,7 +174,7 @@ class RouteSlugRegistry
     }
 
     /**
-     * コアの管理画面URLスラッグを取得
+     * Get Core admin panel URL slug
      *
      * @return array<RegisteredSlug>
      */

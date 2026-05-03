@@ -52,12 +52,12 @@ class EmailAuthenticationService
     }
 
     /**
-     * メール認証コードを生成してメール送信
+     * Generate and send email authentication code
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  string  $context  コンテキスト（admin, user等）
-     * @param  int|null  $expireMinutes  有効期限（分）
-     * @return string 生成されたコード
+     * @param  mixed  $user  User model
+     * @param  string  $context  Context (admin, user, etc.)
+     * @param  int|null  $expireMinutes  Expiration time (minutes)
+     * @return string Generated code
      */
     public function generateAndSendCode($user, string $context = 'admin', ?int $expireMinutes = null): string
     {
@@ -70,11 +70,11 @@ class EmailAuthenticationService
     }
 
     /**
-     * メール認証コードを検証
+     * Verify email authentication code
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  string  $inputCode  入力されたコード
-     * @return bool 検証結果
+     * @param  mixed  $user  User model
+     * @param  string  $inputCode  Entered code
+     * @return bool Verification result
      */
     public function validateCode($user, string $inputCode): bool
     {
@@ -82,23 +82,23 @@ class EmailAuthenticationService
     }
 
     /**
-     * カスタムメールクラスを使用してコードを生成・送信
+     * Generate and send code using custom mail class
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  string  $mailClass  メールクラス名
-     * @param  int|null  $expireMinutes  有効期限（分）
-     * @return string 生成されたコード
+     * @param  mixed  $user  User model
+     * @param  string  $mailClass  Mail class name
+     * @param  int|null  $expireMinutes  Expiration time (minutes)
+     * @return string Generated code
      */
     public function generateAndSendCodeWithCustomMail($user, string $mailClass, ?int $expireMinutes = null): string
     {
         $code = $this->codeService->generate($user, $expireMinutes);
 
-        // カスタムメールクラスでメール送信
+        // Send email with custom mail class
         try {
             Mail::to($user->email)->send(new $mailClass($code));
-            Log::info("[Email Auth] カスタムメール送信成功: ユーザーID {$user->id}, メールクラス: {$mailClass}");
+            Log::info("[Email Auth] Custom email sent successfully: User ID {$user->id}, Mail class: {$mailClass}");
         } catch (\Exception $e) {
-            Log::error("[Email Auth] カスタムメール送信失敗: ユーザーID {$user->id}, エラー: ".$e->getMessage());
+            Log::error("[Email Auth] Custom email send failed: User ID {$user->id}, Error: ".$e->getMessage());
             throw $e;
         }
 
@@ -106,24 +106,24 @@ class EmailAuthenticationService
     }
 
     /**
-     * メール認証が利用可能かどうかを確認
+     * Check if email authentication is available
      */
     public function isAvailable(): bool
     {
-        // メールサーバーの設定状況を確認
+        // Check mail server configuration status
         try {
             $mailConfig = config('mail');
 
             return ! empty($mailConfig['default']) && ! empty($mailConfig['mailers'][$mailConfig['default']]);
         } catch (\Exception $e) {
-            Log::error('[Email Auth] 設定確認エラー: '.$e->getMessage());
+            Log::error('[Email Auth] Configuration check error: '.$e->getMessage());
 
             return false;
         }
     }
 
     /**
-     * メール認証の統計情報を取得
+     * Get email authentication statistics
      */
     public function getStats(): array
     {
@@ -139,7 +139,7 @@ class EmailAuthenticationService
                 'success_rate' => $totalTokens > 0 ? round(($activeTokens / $totalTokens) * 100, 2) : 0,
             ];
         } catch (\Exception $e) {
-            Log::error('[Email Auth] 統計取得エラー: '.$e->getMessage());
+            Log::error('[Email Auth] Statistics retrieval error: '.$e->getMessage());
 
             return [
                 'total_tokens' => 0,
@@ -151,28 +151,28 @@ class EmailAuthenticationService
     }
 
     /**
-     * 期限切れトークンをクリーンアップ
+     * Clean up expired tokens
      *
-     * @return int 削除されたトークン数
+     * @return int Number of deleted tokens
      */
     public function cleanupExpiredTokens(): int
     {
         try {
             $deleted = \App\Models\MemberTwoFaToken::where('expires_at', '<', now())->delete();
-            Log::info("[Email Auth] 期限切れトークンクリーンアップ: {$deleted}件削除");
+            Log::info("[Email Auth] Expired token cleanup: {$deleted} deleted");
 
             return $deleted;
         } catch (\Exception $e) {
-            Log::error('[Email Auth] クリーンアップエラー: '.$e->getMessage());
+            Log::error('[Email Auth] Cleanup error: '.$e->getMessage());
 
             return 0;
         }
     }
 
     /**
-     * 特定ユーザーのアクティブなトークンを取得
+     * Get active tokens for specific user
      *
-     * @param  mixed  $user  ユーザーモデル
+     * @param  mixed  $user  User model
      * @return \App\Models\MemberTwoFaToken|null
      */
     public function getActiveToken($user)
@@ -184,31 +184,31 @@ class EmailAuthenticationService
     }
 
     /**
-     * 特定ユーザーのトークンを無効化
+     * Invalidate tokens for specific user
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @return int 削除されたトークン数
+     * @param  mixed  $user  User model
+     * @return int Number of deleted tokens
      */
     public function revokeUserTokens($user): int
     {
         try {
             $deleted = \App\Models\MemberTwoFaToken::where('member_id', $user->id)->delete();
-            Log::info("[Email Auth] ユーザートークン無効化: ユーザーID {$user->id}, {$deleted}件削除");
+            Log::info("[Email Auth] User tokens invalidated: User ID {$user->id}, {$deleted} deleted");
 
             return $deleted;
         } catch (\Exception $e) {
-            Log::error("[Email Auth] トークン無効化エラー: ユーザーID {$user->id}, エラー: ".$e->getMessage());
+            Log::error("[Email Auth] Token invalidation error: User ID {$user->id}, Error: ".$e->getMessage());
 
             return 0;
         }
     }
 
     /**
-     * コード再送信の制限チェック
+     * Check code resend rate limit
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  int  $limitMinutes  制限時間（分）
-     * @return bool 再送信可能かどうか
+     * @param  mixed  $user  User model
+     * @param  int  $limitMinutes  Rate limit time (minutes)
+     * @return bool Whether resending is allowed
      */
     public function canResendCode($user, int $limitMinutes = 1): bool
     {
@@ -226,17 +226,17 @@ class EmailAuthenticationService
     }
 
     /**
-     * コード再送信（制限チェック付き）
+     * Resend code (with rate limit check)
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  string  $context  コンテキスト（admin, user等）
-     * @param  int  $limitMinutes  制限時間（分）
-     * @return string|null 生成されたコード（制限に引っかかった場合はnull）
+     * @param  mixed  $user  User model
+     * @param  string  $context  Context (admin, user, etc.)
+     * @param  int  $limitMinutes  Rate limit time (minutes)
+     * @return string|null Generated code (null if rate limit exceeded)
      */
     public function resendCode($user, string $context = 'admin', int $limitMinutes = 1): ?string
     {
         if (! $this->canResendCode($user, $limitMinutes)) {
-            Log::warning("[Email Auth] コード再送信制限: ユーザーID {$user->id}");
+            Log::warning("[Email Auth] Code resend rate limited: User ID {$user->id}");
 
             return null;
         }

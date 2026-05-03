@@ -44,10 +44,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
- * コンテンツプレビュー用レンダリングサービス
+ * Rendering service for content preview
  *
- * エディタータイプに応じてコンテンツをHTMLに変換し、
- * ショートコードを展開します。管理画面のプレビュー機能で使用します。
+ * Converts content to HTML according to editor type
+ * and expands shortcodes. Used in the admin panel preview feature.
  */
 class ContentPreviewService
 {
@@ -56,10 +56,10 @@ class ContentPreviewService
     ) {}
 
     /**
-     * コンテンツをプレビュー用HTMLにレンダリング
+     * Render content to HTML for preview
      *
-     * @param  string  $content  生コンテンツ
-     * @param  ContentEditorType  $editorType  エディタータイプ
+     * @param  string  $content  Raw content
+     * @param  ContentEditorType  $editorType  Editor type
      */
     public function render(string $content, ContentEditorType $editorType): string
     {
@@ -77,7 +77,7 @@ class ContentPreviewService
 
             return shortcode_parse($html);
         } catch (\Exception $e) {
-            Log::warning('コンテンツプレビューのレンダリングに失敗', [
+            Log::warning('Failed to render content preview', [
                 'editor_type' => $editorType->slug(),
                 'error' => $e->getMessage(),
             ]);
@@ -87,10 +87,10 @@ class ContentPreviewService
     }
 
     /**
-     * Markdown の緩和前処理
+     * Markdown lenient preprocessing
      *
-     * 見出し記号（#）の後にスペースがない場合に自動補正する。
-     * 例: `#見出し` → `# 見出し`、`##見出し` → `## 見出し`
+     * Auto-correct when there's no space after heading markers (#)
+     * Example: `#見出し` → `# 見出し`, `##見出し` → `## 見出し`
      */
     protected function normalizeMarkdown(string $content): string
     {
@@ -98,10 +98,10 @@ class ContentPreviewService
     }
 
     /**
-     * エディタータイプスラッグからコンテンツをプレビュー用HTMLにレンダリング
+     * Render content to HTML for preview from editor type slug
      *
-     * @param  string  $content  生コンテンツ
-     * @param  string  $editorTypeSlug  エディタータイプのスラッグ（例: 'html', 'markdown'）
+     * @param  string  $content  Raw content
+     * @param  string  $editorTypeSlug  Editor type slug (e.g., 'html', 'markdown')
      */
     public function renderFromSlug(string $content, string $editorTypeSlug): string
     {

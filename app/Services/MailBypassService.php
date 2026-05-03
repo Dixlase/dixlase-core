@@ -39,42 +39,42 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  *
- * メール送信緊急バイパスサービス（ブレークグラス）
+ * Mail sending emergency bypass service (break glass)
  *
- * SMTPサーバー障害時に、メール依存機能を一時的にバイパスする
+ * Temporarily bypass mail-dependent features when SMTP server fails
  *
- * 対象機能:
- * - 2FA（メール認証をスキップ）
- * - パスワードリセット（メール送信をスキップして直接リセット可能に）
+ * Target features:
+ * - 2FA (skip email authentication)
+ * - Password reset (skip email sending and allow direct reset)
  *
- * 特徴:
- * - 時間制限付き（最大120分）
- * - スコープ指定可能（two_fa, password_reset, all）
- * - 監査ログに必ず記録
- * - 自動で期限切れ
+ * Features:
+ * - Time-limited (max 120 minutes)
+ * - Specifiable scope (two_fa, password_reset, all)
+ * - Always recorded in audit log
+ * - Automatic expiration
  */
 class MailBypassService
 {
     /**
-     * キャッシュキー
+     * Cache key
      */
     private const CACHE_KEY_BYPASS = 'mail_bypass';
 
     private const CACHE_KEY_BYPASS_DATA = 'mail_bypass_data';
 
     /**
-     * 最大バイパス時間（分）
+     * Maximum bypass time (minutes)
      */
     public const MAX_BYPASS_MINUTES = 120;
 
     /**
-     * バイパスを有効化
+     * Enable bypass
      */
     public static function enable(int $minutes, string $scope, string $reason): bool
     {
-        // 最大時間を制限
+        // Limit to maximum time
         $minutes = min($minutes, self::MAX_BYPASS_MINUTES);
 
         $expiresAt = now()->addMinutes($minutes);
@@ -89,7 +89,7 @@ class MailBypassService
         ];
 
         try {
-            // キャッシュに保存（期限付き）
+            // Store in cache (with expiration)
             Cache::put(self::CACHE_KEY_BYPASS, true, $expiresAt);
             Cache::put(self::CACHE_KEY_BYPASS_DATA, $data, $expiresAt);
 
@@ -111,7 +111,7 @@ class MailBypassService
     }
 
     /**
-     * バイパスを無効化
+     * Disable bypass
      */
     public static function disable(): void
     {
@@ -122,7 +122,7 @@ class MailBypassService
     }
 
     /**
-     * バイパスがアクティブかチェック
+     * Check if bypass is active
      */
     public static function isActive(?string $scope = null): bool
     {
@@ -130,12 +130,12 @@ class MailBypassService
             return false;
         }
 
-        // スコープが指定されている場合、スコープもチェック
+        // If scope is specified, check scope as well
         if ($scope !== null) {
             $data = Cache::get(self::CACHE_KEY_BYPASS_DATA, []);
             $bypassScope = $data['scope'] ?? 'two_fa';
 
-            // 'all' スコープは全てにマッチ
+            // 'all' scope matches everything
             if ($bypassScope === 'all') {
                 return true;
             }
@@ -147,7 +147,7 @@ class MailBypassService
     }
 
     /**
-     * 2FAメール認証をスキップすべきかチェック
+     * Check if 2FA email authentication should be skipped
      */
     public static function shouldSkipTwoFaMail(): bool
     {
@@ -155,7 +155,7 @@ class MailBypassService
     }
 
     /**
-     * パスワードリセットメールをスキップすべきかチェック
+     * Check if password reset email should be skipped
      */
     public static function shouldSkipPasswordResetMail(): bool
     {
@@ -163,7 +163,7 @@ class MailBypassService
     }
 
     /**
-     * バイパスの状態を取得
+     * Get bypass status
      */
     public static function getStatus(): array
     {

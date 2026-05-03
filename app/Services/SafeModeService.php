@@ -39,23 +39,23 @@ use App\Enums\SafeMode;
 use Illuminate\Support\Facades\Log;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * セーフモード管理サービス
+ * Safe mode management service
  *
- * セッションベースのセーフモードの有効化/無効化を管理する。
- * DB書き込みなし、セッションのみで動作する。
+ * Manages enabling/disabling of session-based safe mode
+ * Operates on session only, no database writes
  */
 class SafeModeService
 {
     /**
-     * 指定したセーフモードを有効化
+     * Enable the specified safe mode
      */
     public function activate(SafeMode $mode): void
     {
         session([$mode->sessionKey() => true]);
 
-        Log::channel('admin_activity')->warning('セーフモード有効化: '.$mode->value, [
+        Log::channel('admin_activity')->warning(__('services/safe_mode_service.safe_mode_enabled').$mode->value, [
             'mode' => $mode->value,
             'user_id' => auth()->id(),
             'user_name' => auth()->user()->name ?? 'unknown',
@@ -67,13 +67,13 @@ class SafeModeService
     }
 
     /**
-     * 指定したセーフモードを無効化
+     * Disable the specified safe mode
      */
     public function deactivate(SafeMode $mode): void
     {
         session()->forget($mode->sessionKey());
 
-        Log::channel('admin_activity')->info('セーフモード無効化: '.$mode->value, [
+        Log::channel('admin_activity')->info(__('services/safe_mode_service.safe_mode_disabled').$mode->value, [
             'mode' => $mode->value,
             'user_id' => auth()->id(),
             'user_name' => auth()->user()->name ?? 'unknown',
@@ -83,7 +83,7 @@ class SafeModeService
     }
 
     /**
-     * すべてのセーフモードを無効化
+     * Disable all safe modes
      */
     public function deactivateAll(): void
     {
@@ -95,7 +95,7 @@ class SafeModeService
     }
 
     /**
-     * 指定したセーフモードが有効かどうか
+     * Whether the specified safe mode is enabled
      */
     public function isActive(SafeMode $mode): bool
     {
@@ -103,7 +103,7 @@ class SafeModeService
     }
 
     /**
-     * 有効なセーフモード一覧を取得
+     * Get list of enabled safe modes
      *
      * @return SafeMode[]
      */
@@ -121,7 +121,7 @@ class SafeModeService
     }
 
     /**
-     * いずれかのセーフモードが有効かどうか
+     * Whether any safe mode is enabled
      */
     public function hasAnyActive(): bool
     {

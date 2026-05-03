@@ -41,20 +41,20 @@ use App\Models\FrontPage;
 use App\Models\FrontPageRevision;
 
 /**
- * フロントページ専用のリビジョンサービス（薄いファサード）
+ * Front page specific revision service (thin facade)
  *
- * 実際のロジックは汎用の {@see RevisionService} に委譲する。
- * 既存呼び出し（Actions, Controllers, テスト）の後方互換性を保つためにのみ存在する。
+ * Delegates actual logic to the generic {@see RevisionService}
+ * Exists only to maintain backward compatibility for existing calls (Actions, Controllers, tests)
  */
 class FrontPageRevisionService
 {
-    /** @deprecated {@see RevisionService::SETTING_KEY_RETENTION} を参照 */
+    /** @deprecated See {@see RevisionService::SETTING_KEY_RETENTION} */
     public const SETTING_KEY_RETENTION = RevisionService::SETTING_KEY_RETENTION;
 
-    /** @deprecated {@see RevisionService::DEFAULT_RETENTION} を参照 */
+    /** @deprecated See {@see RevisionService::DEFAULT_RETENTION} */
     public const DEFAULT_RETENTION = RevisionService::DEFAULT_RETENTION;
 
-    /** @deprecated {@see RevisionService::MAX_RETENTION} を参照 */
+    /** @deprecated See {@see RevisionService::MAX_RETENTION} */
     public const MAX_RETENTION = RevisionService::MAX_RETENTION;
 
     public function __construct(protected RevisionService $service) {}

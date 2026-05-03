@@ -42,15 +42,15 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 /**
- * プラグイン declares セクション検証サービス
+ * Plugin declares section verification service
  *
- * plugin.json の declares セクションと実際のファイル構成を照合し、
- * 宣言とファイルの不一致を検出します。
+ * Compares the declares section of plugin.json with the actual file structure,
+ * and detects mismatches between declarations and files
  */
 class DeclaresVerifier
 {
     /**
-     * declares セクションを検証する
+     * Verify the declares section
      */
     public function verify(string $pluginSlug): DeclaresVerificationResult
     {
@@ -74,31 +74,31 @@ class DeclaresVerifier
         $declares = $data['declares'] ?? null;
         $issues = [];
 
-        // configs の検証
+        // Verify configs
         $configIssues = $this->verifyConfigs($pluginDir, $declares['configs'] ?? []);
         $issues = array_merge($issues, $configIssues);
 
-        // contracts の検証
+        // Verify contracts
         $contractIssues = $this->verifyContracts($pluginDir, $declares['contracts'] ?? []);
         $issues = array_merge($issues, $contractIssues);
 
-        // migrations の検証
+        // Verify migrations
         $migrationIssues = $this->verifyMigrations($pluginDir, $declares['migrations'] ?? false);
         $issues = array_merge($issues, $migrationIssues);
 
-        // commands の検証
+        // Verify commands
         $commandIssues = $this->verifyCommands($pluginDir, $declares['commands'] ?? false);
         $issues = array_merge($issues, $commandIssues);
 
-        // middleware の検証
+        // Verify middleware
         $middlewareIssues = $this->verifyMiddleware($pluginDir, $declares['middleware'] ?? false);
         $issues = array_merge($issues, $middlewareIssues);
 
-        // assets の検証
+        // Verify assets
         $assetIssues = $this->verifyAssets($pluginDir, $declares['assets'] ?? null);
         $issues = array_merge($issues, $assetIssues);
 
-        // 宣言数と実際の数を計算
+        // Calculate declared count and actual count
         $declaredCount = $this->countDeclared($declares);
         $actualCount = $this->countActual($pluginDir);
 
@@ -110,7 +110,7 @@ class DeclaresVerifier
     }
 
     /**
-     * configs の検証（roles, database_cleanup, navigation）
+     * Verify configs (roles, database_cleanup, navigation)
      *
      * @return array<array{key: string, type: string, description: string}>
      */
@@ -131,13 +131,13 @@ class DeclaresVerifier
                 $issues[] = [
                     'key' => "configs.{$key}",
                     'type' => 'declared_but_missing',
-                    'description' => "declares.configs.{$key} は true ですが、{$relativePath} が存在しません。",
+                    'description' => __('services/plugin/declares_verifier.declares_config_true_but_path_missing', ['key' => $key, 'relativePath' => $relativePath]),
                 ];
             } elseif (! $isDeclared && $fileExists) {
                 $issues[] = [
                     'key' => "configs.{$key}",
                     'type' => 'exists_but_undeclared',
-                    'description' => "{$relativePath} が存在しますが、declares.configs.{$key} が false です。",
+                    'description' => __('services/plugin/declares_verifier.path_exists_but_declares_config_false', ['relativePath' => $relativePath, 'key' => $key]),
                 ];
             }
         }
@@ -146,7 +146,7 @@ class DeclaresVerifier
     }
 
     /**
-     * contracts の検証
+     * Verify contracts
      *
      * @return array<array{key: string, type: string, description: string}>
      */
@@ -154,9 +154,9 @@ class DeclaresVerifier
     {
         $issues = [];
 
-        // 宣言されたコントラクトのインターフェースファイルが存在するか
+        // Check if interface files for declared contracts exist
         foreach ($declaredContracts as $contract) {
-            // コントラクト名からファイルパスを推測
+            // Infer file path from contract name
             // App\Contracts\PluginIntegration\FooInterface → app/Contracts/PluginIntegration/FooInterface.php
             $contractPath = str_replace('\\', '/', $contract);
             $contractPath = str_replace('App/', 'app/', $contractPath);
@@ -166,7 +166,7 @@ class DeclaresVerifier
                 $issues[] = [
                     'key' => "contracts.{$contract}",
                     'type' => 'declared_but_missing',
-                    'description' => "宣言されたコントラクト {$contract} のファイルが見つかりません。",
+                    'description' => __('services/plugin/declares_verifier.declared_contract_file_not_found', ['contract' => $contract]),
                 ];
             }
         }
@@ -175,7 +175,7 @@ class DeclaresVerifier
     }
 
     /**
-     * migrations の検証
+     * Verify migrations
      *
      * @return array<array{key: string, type: string, description: string}>
      */
@@ -189,13 +189,13 @@ class DeclaresVerifier
             $issues[] = [
                 'key' => 'migrations',
                 'type' => 'declared_but_missing',
-                'description' => 'declares.migrations は true ですが、マイグレーションファイルが存在しません。',
+                'description' => __('services/plugin/declares_verifier.migrations_true_but_files_missing'),
             ];
         } elseif (! $isDeclared && $hasMigrations) {
             $issues[] = [
                 'key' => 'migrations',
                 'type' => 'exists_but_undeclared',
-                'description' => 'マイグレーションファイルが存在しますが、declares.migrations が false です。',
+                'description' => __('services/plugin/declares_verifier.migration_files_exist_but_false'),
             ];
         }
 
@@ -203,7 +203,7 @@ class DeclaresVerifier
     }
 
     /**
-     * commands の検証
+     * Verify commands
      *
      * @return array<array{key: string, type: string, description: string}>
      */
@@ -217,13 +217,13 @@ class DeclaresVerifier
             $issues[] = [
                 'key' => 'commands',
                 'type' => 'declared_but_missing',
-                'description' => 'declares.commands は true ですが、コマンドファイルが存在しません。',
+                'description' => __('services/plugin/declares_verifier.commands_true_but_files_missing'),
             ];
         } elseif (! $isDeclared && $hasCommands) {
             $issues[] = [
                 'key' => 'commands',
                 'type' => 'exists_but_undeclared',
-                'description' => 'コマンドファイルが存在しますが、declares.commands が false です。',
+                'description' => __('services/plugin/declares_verifier.command_files_exist_but_false'),
             ];
         }
 
@@ -231,7 +231,7 @@ class DeclaresVerifier
     }
 
     /**
-     * middleware の検証
+     * Verify middleware
      *
      * @return array<array{key: string, type: string, description: string}>
      */
@@ -245,13 +245,13 @@ class DeclaresVerifier
             $issues[] = [
                 'key' => 'middleware',
                 'type' => 'declared_but_missing',
-                'description' => 'declares.middleware は true ですが、ミドルウェアファイルが存在しません。',
+                'description' => __('services/plugin/declares_verifier.middleware_true_but_files_missing'),
             ];
         } elseif (! $isDeclared && $hasMiddleware) {
             $issues[] = [
                 'key' => 'middleware',
                 'type' => 'exists_but_undeclared',
-                'description' => 'ミドルウェアファイルが存在しますが、declares.middleware が false です。',
+                'description' => __('services/plugin/declares_verifier.middleware_files_exist_but_false'),
             ];
         }
 
@@ -259,7 +259,7 @@ class DeclaresVerifier
     }
 
     /**
-     * assets の検証
+     * Verify assets
      *
      * @param  array{common?: string[], admin?: string[], front?: string[]}|false|null  $declaredAssets
      * @return array<array{key: string, type: string, description: string}>
@@ -271,12 +271,12 @@ class DeclaresVerifier
         $hasAssetFiles = $this->hasAssetSourceFiles($resourceSrcDir);
 
         if ($declaredAssets === false) {
-            // アセットなし宣言だが、実際にアセットファイルが存在する場合
+            // When declared as no assets but asset files actually exist
             if ($hasAssetFiles) {
                 $issues[] = [
                     'key' => 'assets',
                     'type' => 'exists_but_undeclared',
-                    'description' => 'resources/src/ にアセットファイルが存在しますが、declares.assets が false です。',
+                    'description' => __('services/plugin/declares_verifier.asset_files_exist_but_false'),
                 ];
             }
 
@@ -284,7 +284,7 @@ class DeclaresVerifier
         }
 
         if (is_array($declaredAssets)) {
-            // 宣言された各アセットファイルが存在するか検証
+            // Verify that each declared asset file exists
             foreach (['common', 'admin', 'front'] as $scope) {
                 $files = $declaredAssets[$scope] ?? [];
                 foreach ($files as $file) {
@@ -293,7 +293,7 @@ class DeclaresVerifier
                         $issues[] = [
                             'key' => "assets.{$scope}.{$file}",
                             'type' => 'declared_but_missing',
-                            'description' => "declares.assets.{$scope} に {$file} が宣言されていますが、resources/src/{$file} が存在しません。",
+                            'description' => __('services/plugin/declares_verifier.asset_declared_but_file_missing', ['scope' => $scope, 'file' => $file, 'file2' => $file]),
                         ];
                     }
                 }
@@ -302,12 +302,12 @@ class DeclaresVerifier
             return $issues;
         }
 
-        // 未宣言（null）だが、実際にアセットファイルが存在する場合
+        // When undeclared (null) but asset files actually exist
         if ($hasAssetFiles) {
             $issues[] = [
                 'key' => 'assets',
                 'type' => 'exists_but_undeclared',
-                'description' => 'resources/src/ にアセットファイルが存在しますが、declares.assets が未宣言です。',
+                'description' => __('services/plugin/declares_verifier.asset_files_exist_but_not_declared'),
             ];
         }
 
@@ -315,7 +315,7 @@ class DeclaresVerifier
     }
 
     /**
-     * resources/src/ 配下にアセットソースファイルが存在するか
+     * Check if asset source files exist under resources/src/
      */
     protected function hasAssetSourceFiles(string $resourceSrcDir): bool
     {
@@ -323,7 +323,7 @@ class DeclaresVerifier
             return false;
         }
 
-        // js/ または css/ ディレクトリにファイルがあるか確認
+        // Check if files exist in js/ or css/ directories
         foreach (['js', 'css', 'admin'] as $subDir) {
             $dir = "{$resourceSrcDir}/{$subDir}";
             if (File::isDirectory($dir) && count(File::allFiles($dir)) > 0) {
@@ -335,7 +335,7 @@ class DeclaresVerifier
     }
 
     /**
-     * 宣言されたアイテム数を計算
+     * Calculate the number of declared items
      */
     protected function countDeclared(?array $declares): int
     {
@@ -355,14 +355,14 @@ class DeclaresVerifier
         // contracts
         $count += count($declares['contracts'] ?? []);
 
-        // boolean フィールド
+        // boolean fields
         foreach (['migrations', 'commands', 'middleware'] as $key) {
             if ($declares[$key] ?? false) {
                 $count++;
             }
         }
 
-        // assets（false でも宣言としてカウント、null/未設定はカウントしない）
+        // assets (false counts as a declaration, null/unset does not count)
         if (array_key_exists('assets', $declares)) {
             $count++;
         }
@@ -371,7 +371,7 @@ class DeclaresVerifier
     }
 
     /**
-     * 実際に存在するアイテム数を計算
+     * Calculate the number of items that actually exist
      */
     protected function countActual(string $pluginDir): int
     {
@@ -407,7 +407,7 @@ class DeclaresVerifier
             $count++;
         }
 
-        // assets（resources/src/ にアセットファイルが存在するか）
+        // assets (whether asset files exist in resources/src/)
         if ($this->hasAssetSourceFiles("{$pluginDir}/resources/src")) {
             $count++;
         }

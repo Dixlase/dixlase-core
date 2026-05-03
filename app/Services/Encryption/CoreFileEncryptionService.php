@@ -40,53 +40,53 @@ use App\DTO\Encryption\EncryptionResultDTO;
 use App\Exceptions\DecryptionException;
 
 /**
- * コアファイル暗号化サービス
+ * Core file encryption service
  *
- * AES-256-GCM を使用したファイル暗号化のデフォルト実装です。
- * チャンク単位で処理するため、大きなバックアップファイルでもメモリを圧迫しません。
+ * Default implementation of file encryption using AES-256-GCM
+ * Processes in chunks to avoid memory pressure even with large backup files
  *
- * ファイルフォーマット:
+ * File format:
  * [MAGIC: "DXLE" 4bytes][VERSION: 1byte][ALGORITHM: 1byte][IV: 12bytes][TAG: 16bytes][ENCRYPTED_DATA...]
  */
 class CoreFileEncryptionService implements FileEncryptionServiceInterface
 {
     /**
-     * マジックバイト（ファイル識別用）
+     * Magic bytes (for file identification)
      */
     private const MAGIC = 'DXLE';
 
     /**
-     * フォーマットバージョン
+     * Format version
      */
     private const VERSION = 1;
 
     /**
-     * アルゴリズム識別子（AES-256-GCM = 1）
+     * Algorithm identifier (AES-256-GCM = 1)
      */
     private const ALGORITHM_ID = 1;
 
     /**
-     * OpenSSL アルゴリズム名
+     * OpenSSL algorithm name
      */
     private const CIPHER = 'aes-256-gcm';
 
     /**
-     * IV サイズ（バイト）
+     * IV size (bytes)
      */
     private const IV_LENGTH = 12;
 
     /**
-     * GCM タグサイズ（バイト）
+     * GCM tag size (bytes)
      */
     private const TAG_LENGTH = 16;
 
     /**
-     * ヘッダーサイズ: MAGIC(4) + VERSION(1) + ALGORITHM(1) + IV(12) + TAG(16) = 34
+     * Header size: MAGIC(4) + VERSION(1) + ALGORITHM(1) + IV(12) + TAG(16) = 34
      */
     private const HEADER_SIZE = 34;
 
     /**
-     * 暗号化チャンクサイズ（1MB）
+     * Encryption chunk size (1MB)
      */
     private const CHUNK_SIZE = 1048576;
 
@@ -122,7 +122,7 @@ class CoreFileEncryptionService implements FileEncryptionServiceInterface
             $originalSize = filesize($sourcePath);
             $iv = random_bytes(self::IV_LENGTH);
 
-            // ソースファイルの全内容を読み込み（チャンク分割は将来の大容量ファイル対応で拡張）
+            // Read entire source file contents (chunk splitting will be extended for large files in the future)
             $plaintext = file_get_contents($sourcePath);
             if ($plaintext === false) {
                 return EncryptionResultDTO::failure(
@@ -152,7 +152,7 @@ class CoreFileEncryptionService implements FileEncryptionServiceInterface
                 );
             }
 
-            // ヘッダー + 暗号文を書き込み
+            // Write header + ciphertext
             $header = self::MAGIC
                 .chr(self::VERSION)
                 .chr(self::ALGORITHM_ID)
@@ -175,7 +175,7 @@ class CoreFileEncryptionService implements FileEncryptionServiceInterface
                 $written,
             );
         } catch (\Throwable $e) {
-            // 失敗時に中間ファイルを削除
+            // Delete intermediate file on failure
             if (file_exists($destPath)) {
                 @unlink($destPath);
             }
@@ -207,29 +207,29 @@ class CoreFileEncryptionService implements FileEncryptionServiceInterface
             }
 
             try {
-                // ヘッダー読み込み
+                // Read header
                 $header = fread($handle, self::HEADER_SIZE);
                 if ($header === false || strlen($header) < self::HEADER_SIZE) {
                     throw new DecryptionException('Failed to read file header');
                 }
 
-                // マジックバイト検証
+                // Verify magic bytes
                 $magic = substr($header, 0, 4);
                 if ($magic !== self::MAGIC) {
                     throw new DecryptionException('Invalid file format: magic bytes mismatch');
                 }
 
-                // バージョン検証
+                // Verify version
                 $version = ord($header[4]);
                 if ($version !== self::VERSION) {
                     throw new DecryptionException("Unsupported format version: {$version}");
                 }
 
-                // IV とタグを抽出
+                // Extract IV and tag
                 $iv = substr($header, 6, self::IV_LENGTH);
                 $tag = substr($header, 18, self::TAG_LENGTH);
 
-                // 暗号文を読み込み
+                // Read ciphertext
                 $ciphertext = stream_get_contents($handle);
                 if ($ciphertext === false) {
                     throw new DecryptionException('Failed to read encrypted data');
@@ -258,7 +258,7 @@ class CoreFileEncryptionService implements FileEncryptionServiceInterface
 
             return $destPath;
         } catch (DecryptionException $e) {
-            // 失敗時に中間ファイルを削除
+            // Delete intermediate file on failure
             if (file_exists($destPath)) {
                 @unlink($destPath);
             }
@@ -302,7 +302,7 @@ class CoreFileEncryptionService implements FileEncryptionServiceInterface
     }
 
     /**
-     * 暗号化キーを解決（null の場合は APP_KEY を使用）
+     * Resolve encryption key (use APP_KEY if null)
      */
     private function resolveKey(?string $key): string
     {
@@ -319,21 +319,21 @@ class CoreFileEncryptionService implements FileEncryptionServiceInterface
     }
 
     /**
-     * キーを32バイトに正規化
+     * Normalize key to 32 bytes
      *
-     * Base64エンコードされたキーをデコードし、必要に応じてハッシュで32バイトに変換します。
+     * Decode base64-encoded key and convert to 32 bytes with hash if necessary
      */
     private function normalizeKey(string $key): string
     {
-        // Laravel の APP_KEY 形式（base64:xxxx）
+        // Laravel APP_KEY format (base64:xxxx)
         if (str_starts_with($key, 'base64:')) {
             $key = base64_decode(substr($key, 7));
         } elseif (base64_encode(base64_decode($key, true)) === $key) {
-            // Base64エンコードされたキー
+            // Base64-encoded key
             $key = base64_decode($key);
         }
 
-        // 32バイトでなければハッシュで変換
+        // Convert with hash if not 32 bytes
         if (strlen($key) !== 32) {
             $key = hash('sha256', $key, true);
         }

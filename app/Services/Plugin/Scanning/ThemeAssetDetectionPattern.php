@@ -36,11 +36,11 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * テーマアセット関連の検出パターン（テーマ専用）
+ * Detection patterns for theme assets (theme only)
  *
- * assets.custom_css, assets.custom_js, assets.external_resources を検出します。
+ * Detects assets.custom_css, assets.custom_js, assets.external_resources
  */
 class ThemeAssetDetectionPattern extends DetectionPattern
 {

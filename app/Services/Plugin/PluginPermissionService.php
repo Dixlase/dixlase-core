@@ -46,30 +46,30 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
- * プラグイン権限管理サービス
+ * Plugin permission management service
  *
- * plugin.jsonのpermissionsセクションを読み取り、
- * プラグインの権限チェックを行うサービスです。
+ * Reads the permissions section of plugin.json
+ * and performs plugin permission checks
  */
 class PluginPermissionService implements PluginPermissionServiceInterface
 {
     /**
-     * キャッシュキーのプレフィックス
+     * Cache key prefix
      */
     protected const CACHE_PREFIX = 'plugin_permissions_';
 
     /**
-     * キャッシュの有効期限（秒）
+     * Cache expiration time (seconds)
      */
     protected const CACHE_TTL = 3600;
 
     /**
-     * 読み込み済みの権限データ
+     * Loaded permission data
      */
     protected array $loadedPermissions = [];
 
     /**
-     * デフォルトの権限設定
+     * Default permission settings
      */
     protected array $defaultPermissions = [
         'database' => [
@@ -110,10 +110,10 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     ];
 
     /**
-     * プラグインの権限をチェック
+     * Check plugin permission
      *
-     * @param  string  $pluginSlug  プラグインのスラッグ（例: dixlase-inquiry）
-     * @param  string  $permission  権限キー（例: mail.send, database.own_tables）
+     * @param  string  $pluginSlug  Plugin slug (e.g., dixlase-inquiry)
+     * @param  string  $permission  Permission key (e.g., mail.send, database.own_tables)
      */
     public function check(string $pluginSlug, string $permission): bool
     {
@@ -129,7 +129,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * プラグインが特定の権限を持っているか確認（エイリアス）
+     * Check if plugin has a specific permission (alias)
      */
     public function has(string $pluginSlug, string $permission): bool
     {
@@ -137,16 +137,16 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * プラグインの全権限を取得
+     * Get all plugin permissions
      */
     public function getPermissions(string $pluginSlug): ?array
     {
-        // メモリキャッシュを確認
+        // Check memory cache
         if (isset($this->loadedPermissions[$pluginSlug])) {
             return $this->loadedPermissions[$pluginSlug];
         }
 
-        // ファイルキャッシュを確認
+        // Check file cache
         $cacheKey = self::CACHE_PREFIX.$pluginSlug;
         $cached = Cache::get($cacheKey);
 
@@ -156,14 +156,14 @@ class PluginPermissionService implements PluginPermissionServiceInterface
             return $cached;
         }
 
-        // plugin.jsonから読み込み
+        // Load from plugin.json
         $permissions = $this->loadPermissionsFromFile($pluginSlug);
 
         if ($permissions !== null) {
-            // デフォルト値とマージ
+            // Merge with default values
             $permissions = $this->mergeWithDefaults($permissions);
 
-            // キャッシュに保存
+            // Save to cache
             Cache::put($cacheKey, $permissions, self::CACHE_TTL);
             $this->loadedPermissions[$pluginSlug] = $permissions;
         }
@@ -172,7 +172,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * plugin.jsonから権限を読み込み
+     * Load permissions from plugin.json
      */
     protected function loadPermissionsFromFile(string $pluginSlug): ?array
     {
@@ -195,7 +195,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
             return null;
         }
 
-        // permissionsセクションが存在しない場合はnullを返す
+        // Return null if permissions section does not exist
         if (! isset($data['permissions']) || empty($data['permissions'])) {
             return null;
         }
@@ -204,9 +204,9 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * プラグインの _optional 権限リストを取得
+     * Get plugin _optional permission list
      *
-     * @return array<string> オプショナル権限キーのリスト
+     * @return array<string> List of optional permission keys
      */
     public function getOptionalPermissions(string $pluginSlug): array
     {
@@ -216,9 +216,9 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * プラグインの _notes を取得
+     * Get the _notes of the plugin
      *
-     * @return array{ja?: string, en?: string} 権限使用理由の説明
+     * @return array{ja?: string, en?: string} Description of permission usage reason
      */
     public function getPermissionNotes(string $pluginSlug): array
     {
@@ -228,7 +228,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * 権限キーがオプショナルかどうかを判定
+     * Determine if a permission key is optional
      */
     public function isOptionalPermission(string $pluginSlug, string $permissionKey): bool
     {
@@ -236,7 +236,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * plugin.json から生の permissions を取得（_optional, _notes 含む）
+     * Get raw permissions from plugin.json (including _optional, _notes)
      */
     protected function getRawPermissions(string $pluginSlug): array
     {
@@ -256,17 +256,17 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * デフォルト値とマージ
+     * Merge with default values
      *
-     * _optional と _notes はメタデータのため、マージ対象から除外します。
+     * _optional and _notes are metadata, so they are excluded from the merge target.
      */
     protected function mergeWithDefaults(array $permissions): array
     {
-        // メタデータを退避
+        // Save metadata
         $optional = $permissions['_optional'] ?? [];
         $notes = $permissions['_notes'] ?? [];
 
-        // メタデータを除外してマージ
+        // Merge excluding metadata
         $filtered = array_diff_key($permissions, ['_optional' => true, '_notes' => true]);
 
         // Normalize legacy core_tables format to core_tables_read/core_tables_write
@@ -287,7 +287,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
 
         $merged = array_replace_recursive($this->defaultPermissions, $filtered);
 
-        // メタデータを復元
+        // Restore metadata
         if (! empty($optional)) {
             $merged['_optional'] = $optional;
         }
@@ -299,7 +299,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * ドット記法の権限キーを解決
+     * Resolve dot notation permission key
      */
     protected function resolvePermission(array $permissions, string $key): bool
     {
@@ -313,7 +313,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
             $value = $value[$part];
         }
 
-        // 配列の場合は空でないかチェック
+        // Check if array is not empty
         if (is_array($value)) {
             return ! empty($value);
         }
@@ -322,10 +322,10 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * プラグインが特定のコアテーブルにアクセスできるかチェック
+     * Check if plugin can access a specific Core table
      *
-     * @param  string  $table  テーブル名
-     * @param  string  $access  アクセスタイプ（read, write）
+     * @param  string  $table  Table name
+     * @param  string  $access  Access type (read, write)
      */
     public function canAccessCoreTable(string $pluginSlug, string $table, string $access = 'read'): bool
     {
@@ -335,24 +335,24 @@ class PluginPermissionService implements PluginPermissionServiceInterface
             return false;
         }
 
-        // 書き込みの場合は core_tables_write をチェック
+        // Check core_tables_write for write access
         if ($access === 'write') {
             $writeTables = $permissions['database']['core_tables_write'] ?? [];
 
             return in_array($table, $writeTables, true);
         }
 
-        // 読み取りの場合は core_tables_read をチェック
+        // Check core_tables_read for read access
         $readTables = $permissions['database']['core_tables_read'] ?? [];
 
         return in_array($table, $readTables, true);
     }
 
     /**
-     * プラグインが他のプラグインのコンテンツにアクセスできるかチェック
+     * Check if plugin can access content of other plugins
      *
-     * @param  string  $targetPlugin  アクセス先のプラグイン
-     * @param  string  $access  アクセスタイプ（read, write）
+     * @param  string  $targetPlugin  Target plugin to access
+     * @param  string  $access  Access type (read, write)
      */
     public function canAccessOtherPlugin(string $pluginSlug, string $targetPlugin, string $access = 'read'): bool
     {
@@ -365,7 +365,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
         $key = $access === 'write' ? 'write_other_plugins' : 'read_other_plugins';
         $allowedPlugins = $permissions['content'][$key] ?? [];
 
-        // ワイルドカード対応
+        // Wildcard support
         if (in_array('*', $allowedPlugins)) {
             return true;
         }
@@ -374,19 +374,19 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * プラグインの権限サマリーを取得（管理画面表示用）
+     * Get plugin permission summary (for admin panel display)
      */
     public function getSummary(string $pluginSlug): array
     {
         $permissions = $this->getPermissions($pluginSlug);
         $signatureInfo = $this->getSignatureInfo($pluginSlug);
 
-        // 監査結果を取得
+        // Get audit results
         $audit = PluginAudit::getBySlug($pluginSlug);
         $auditData = $audit ? $audit->toAuditArray() : [];
 
         if ($permissions === null) {
-            // 権限定義がない場合でも、監査結果があればそれを使用
+            // Use audit results even if there is no permission definition
             $riskLevel = $auditData['risk_level'] ?? 'unknown';
 
             return [
@@ -402,8 +402,8 @@ class PluginPermissionService implements PluginPermissionServiceInterface
             ];
         }
 
-        // リスクレベルと理由を常に現在のスコアリングルールで再計算
-        // （監査DBのキャッシュはスコアリングルール変更後に陳腐化するため）
+        // Always recalculate risk level and reason using current scoring rules
+        // (cached audit DB data becomes stale after scoring rule changes)
         $mismatches = $auditData['mismatches'] ?? [];
         $riskResult = $this->calculateUnifiedRiskLevel($permissions, $mismatches);
         $riskLevel = $riskResult['level'];
@@ -424,7 +424,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
             'audit' => $auditData,
         ];
 
-        // メタデータキーを除外してカテゴリごとの権限をまとめる
+        // Exclude metadata keys and group permissions by category
         $metadataKeys = ['_optional', '_notes'];
         foreach ($permissions as $category => $perms) {
             if (in_array($category, $metadataKeys, true)) {
@@ -448,11 +448,11 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * プラグインの署名情報を取得
+     * Get plugin signature information
      *
-     * SignatureVerifierInterface を使用して署名検証を行います。
-     * DixlaseDevKit プラグインがインストール済みの場合は Ed25519 ベースの検証、
-     * 未インストールの場合はスタブ実装（メタデータ読み取りのみ）を使用します。
+     * Performs signature verification using SignatureVerifierInterface.
+     * If DixlaseDevKit plugin is installed, uses Ed25519-based verification;
+     * if not installed, uses stub implementation (metadata reading only).
      */
     public function getSignatureInfo(string $pluginSlug): array
     {
@@ -463,7 +463,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * 権限が有効かどうかを判定
+     * Determine if permission is enabled
      *
      * @param  mixed  $value
      */
@@ -480,7 +480,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * リスクレベルを計算
+     * Calculate risk level
      *
      * @return string low, medium, high
      */
@@ -492,7 +492,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * リスクレベル文字列からスコアを計算
+     * Calculate score from risk level string
      */
     protected function calculateRiskScore(string $level): int
     {
@@ -505,23 +505,23 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * 宣言された権限と不一致情報からリスクレベルを統一計算
+     * Uniformly calculate risk level from declared permissions and mismatch information
      *
-     * 宣言ベースのスコアリングに加え、未宣言使用（undeclared_usage）の
-     * 不一致ペナルティを加算して統一的なリスクレベルを返します。
+     * In addition to declaration-based scoring, adds
+     * mismatch penalty for undeclared_usage to return a unified risk level.
      *
-     * @param  array  $declaredPermissions  plugin.json の permissions
-     * @param  array  $mismatches  権限の不一致リスト（comparePermissions() の結果）
+     * @param  array  $declaredPermissions  permissions in plugin.json
+     * @param  array  $mismatches  Permission mismatch list (result of comparePermissions())
      * @return array{level: string, reasons: array, score: int}
      */
     public function calculateUnifiedRiskLevel(array $declaredPermissions, array $mismatches = []): array
     {
-        // 宣言ベースのスコアリング（内部は負のスコアを使用するため、正の値に変換）
+        // Declaration-based scoring (converts to positive value since internally uses negative scores)
         $result = $this->calculateRiskLevelWithReasons($declaredPermissions);
         $score = abs($result['score']);
         $reasons = array_map(fn ($r) => array_merge($r, ['score' => abs($r['score'])]), $result['reasons']);
 
-        // 未宣言使用の不一致ペナルティ
+        // Mismatch penalty for undeclared usage
         $undeclaredCount = count(array_filter($mismatches, fn ($m) => ($m['type'] ?? '') === 'undeclared_usage'));
         if ($undeclaredCount > 0) {
             $penalty = $undeclaredCount * 2;
@@ -529,7 +529,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
             $reasons[] = ['key' => 'mismatch.undeclared_usage', 'severity' => 'high', 'score' => $penalty, 'count' => $undeclaredCount];
         }
 
-        // しきい値判定
+        // Threshold determination
         $level = 'low';
         if ($score >= 7) {
             $level = 'high';
@@ -545,9 +545,9 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * リスクレベルと理由を計算
+     * Calculate risk level and reason
      *
-     * @deprecated calculateUnifiedRiskLevel() を使用してください。
+     * @deprecated Use calculateUnifiedRiskLevel() instead.
      *
      * @return array ['level' => string, 'reasons' => array, 'score' => int]
      */
@@ -556,7 +556,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
         $score = 0;
         $reasons = [];
 
-        // 高リスク権限（減点大）
+        // High-risk permissions (large penalty)
         if ($permissions['members']['write'] ?? false) {
             $score -= 3;
             $reasons[] = ['key' => 'members.write', 'severity' => 'high', 'score' => -3];
@@ -575,25 +575,25 @@ class PluginPermissionService implements PluginPermissionServiceInterface
         }
         if ($permissions['storage']['public_uploads'] ?? false) {
             if ($permissions['storage']['own_directory'] ?? false) {
-                // 中リスク: 専用ディレクトリ内で公開アップロード
+                // Medium risk: public upload within dedicated directory
                 $score -= 2;
                 $reasons[] = ['key' => 'storage.public_uploads_own_dir', 'severity' => 'medium', 'score' => -2];
             } else {
-                // 高リスク: 公開ディレクトリ直接使用
+                // High risk: direct use of public directory
                 $score -= 4;
                 $reasons[] = ['key' => 'storage.public_uploads_no_own_dir', 'severity' => 'high', 'score' => -4];
             }
         }
         if (! empty($permissions['content']['write_other_plugins'] ?? [])) {
-            // プラグイン間連携は Dixlase の正当な統合パターン（例: SEO による
-            // ページのメタデータ書込み）のため、リスクスコアからは減点しない。
-            // ただし「他プラグインのテーブルを書く」事実は運用者に可視化したい
-            // ので、severity=medium（黄色）の attention reason として残し、
-            // 数値バッジは付けない（score=0）。
+            // Inter-plugin cooperation is a legitimate integration pattern in Dixlase (e.g., SEO
+            // writing page metadata), so no penalty is applied to the risk score.
+            // However, the fact that it "writes to other plugin tables" should be visible to operators,
+            // so it remains as an attention reason with severity=medium (yellow),
+            // with no numeric badge (score=0).
             $reasons[] = ['key' => 'content.write_other_plugins', 'severity' => 'medium', 'score' => 0];
         }
 
-        // 中リスク権限（減点小）
+        // Medium-risk permissions (small penalty)
         if (! empty($permissions['database']['core_tables_write'] ?? [])) {
             $score -= 1;
             $reasons[] = ['key' => 'database.core_tables_write', 'severity' => 'medium', 'score' => -1];
@@ -614,9 +614,9 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * キャッシュをクリア
+     * Clear cache
      *
-     * @param  string|null  $pluginSlug  特定のプラグインのみクリアする場合
+     * @param  string|null  $pluginSlug  When clearing only a specific plugin
      */
     public function clearCache(?string $pluginSlug = null): void
     {
@@ -624,15 +624,15 @@ class PluginPermissionService implements PluginPermissionServiceInterface
             Cache::forget(self::CACHE_PREFIX.$pluginSlug);
             unset($this->loadedPermissions[$pluginSlug]);
         } else {
-            // 全プラグインのキャッシュをクリア
+            // Clear cache for all plugins
             $this->loadedPermissions = [];
-            // Note: 全キャッシュクリアはCache::flush()を使うか、
-            // プラグイン一覧から個別にクリアする必要がある
+            // Note: To clear all cache, use Cache::flush() or
+            // clear individually from the plugin list
         }
     }
 
     /**
-     * スラッグをプラグイン名に変換
+     * Convert slug to plugin name
      *
      * @param  string  $slug  dixlase-inquiry
      * @return string DixlaseInquiry
@@ -643,7 +643,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * プラグイン名をスラッグに変換
+     * Convert plugin name to slug
      *
      * @param  string  $name  DixlaseInquiry
      * @return string dixlase-inquiry
@@ -654,9 +654,9 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * 権限違反をログに記録
+     * Log permission violation
      *
-     * @param  string  $action  実行しようとしたアクション
+     * @param  string  $action  Action attempted to execute
      */
     public function logViolation(string $pluginSlug, string $permission, string $action = ''): void
     {
@@ -669,7 +669,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
     }
 
     /**
-     * 権限チェックを行い、違反時は例外をスロー
+     * Check permission and throw exception on violation
      *
      * @throws \App\Exceptions\PluginPermissionException
      */

@@ -38,33 +38,33 @@ namespace App\Services\Media;
 use ZipArchive;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * ZIPセキュリティサービス
+ * ZIP security service
  *
- * ZIPファイルのセキュリティチェック（ZIP爆弾対策、圧縮率チェック等）
+ * Security checks for ZIP files (ZIP bomb protection, compression ratio check, etc.)
  */
 class ZipSecurityService
 {
     /**
-     * デフォルトの最大圧縮率（展開後サイズ / 圧縮サイズ）
-     * 100 = 100倍まで許可
+     * Default maximum compression ratio (uncompressed size / compressed size)
+     * 100 = allow up to 100x
      */
     protected int $maxCompressionRatio = 100;
 
     /**
-     * デフォルトの最大ファイル数
+     * Default maximum number of files
      */
     protected int $maxFileCount = 1000;
 
     /**
-     * デフォルトの最大展開後サイズ（バイト）
+     * Default maximum uncompressed size (bytes)
      * 1GB = 1073741824
      */
     protected int $maxUncompressedSize = 1073741824;
 
     /**
-     * 禁止する拡張子
+     * Forbidden extensions
      */
     protected array $forbiddenExtensions = [
         'exe', 'bat', 'cmd', 'com', 'msi', 'scr', 'pif',
@@ -78,7 +78,7 @@ class ZipSecurityService
     ];
 
     /**
-     * ZIPファイルのセキュリティチェック結果
+     * ZIP file security check result
      */
     public function check(string $filePath): ZipCheckResult
     {
@@ -103,7 +103,7 @@ class ZipSecurityService
         $uncompressedSize = 0;
         $fileCount = $zip->numFiles;
 
-        // ファイル数チェック
+        // File count check
         if ($fileCount > $this->maxFileCount) {
             $result->addError('too_many_files', __('admin/media/security.zip.too_many_files', [
                 'count' => $fileCount,
@@ -113,7 +113,7 @@ class ZipSecurityService
 
         $result->setFileCount($fileCount);
 
-        // 各ファイルをチェック
+        // Check each file
         for ($i = 0; $i < $fileCount; $i++) {
             $stat = $zip->statIndex($i);
 
@@ -125,14 +125,14 @@ class ZipSecurityService
             $fileSize = $stat['size'];
             $uncompressedSize += $fileSize;
 
-            // パストラバーサルチェック
+            // Path traversal check
             if ($this->hasPathTraversal($fileName)) {
                 $result->addError('path_traversal', __('admin/media/security.zip.path_traversal', [
                     'file' => $fileName,
                 ]));
             }
 
-            // 禁止拡張子チェック
+            // Forbidden extension check
             $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
             if (in_array($extension, $this->forbiddenExtensions)) {
                 $result->addWarning('forbidden_extension', __('admin/media/security.zip.forbidden_extension', [
@@ -141,7 +141,7 @@ class ZipSecurityService
                 ]));
             }
 
-            // 隠しファイルチェック
+            // Hidden file check
             $baseName = basename($fileName);
             if (str_starts_with($baseName, '.') && $baseName !== '.') {
                 $result->addWarning('hidden_file', __('admin/media/security.zip.hidden_file', [
@@ -153,7 +153,7 @@ class ZipSecurityService
         $result->setUncompressedSize($uncompressedSize);
         $result->setCompressedSize($compressedSize);
 
-        // 展開後サイズチェック
+        // Uncompressed size check
         if ($uncompressedSize > $this->maxUncompressedSize) {
             $result->addError('size_exceeded', __('admin/media/security.zip.size_exceeded', [
                 'size' => $this->formatBytes($uncompressedSize),
@@ -161,7 +161,7 @@ class ZipSecurityService
             ]));
         }
 
-        // 圧縮率チェック（ZIP爆弾対策）
+        // Compression ratio check (ZIP bomb protection)
         if ($compressedSize > 0) {
             $ratio = $uncompressedSize / $compressedSize;
             $result->setCompressionRatio($ratio);
@@ -180,16 +180,16 @@ class ZipSecurityService
     }
 
     /**
-     * パストラバーサルをチェック
+     * Check for path traversal
      */
     protected function hasPathTraversal(string $path): bool
     {
-        // ../ や ..\\ を含むパスは危険
+        // Paths containing ../ or ..\\ are dangerous
         if (str_contains($path, '../') || str_contains($path, '..\\')) {
             return true;
         }
 
-        // 絶対パスは危険
+        // Absolute paths are dangerous
         if (str_starts_with($path, '/') || preg_match('/^[a-zA-Z]:/', $path)) {
             return true;
         }
@@ -198,7 +198,7 @@ class ZipSecurityService
     }
 
     /**
-     * バイト数を人間が読みやすい形式にフォーマット
+     * Format byte count in human-readable format
      */
     protected function formatBytes(int $bytes): string
     {
@@ -214,7 +214,7 @@ class ZipSecurityService
     }
 
     /**
-     * 最大圧縮率を設定
+     * Set maximum compression ratio
      */
     public function setMaxCompressionRatio(int $ratio): self
     {
@@ -224,7 +224,7 @@ class ZipSecurityService
     }
 
     /**
-     * 最大ファイル数を設定
+     * Set maximum number of files
      */
     public function setMaxFileCount(int $count): self
     {
@@ -234,7 +234,7 @@ class ZipSecurityService
     }
 
     /**
-     * 最大展開後サイズを設定
+     * Set maximum extracted size
      */
     public function setMaxUncompressedSize(int $size): self
     {
@@ -244,7 +244,7 @@ class ZipSecurityService
     }
 
     /**
-     * 禁止拡張子を追加
+     * Add forbidden extension
      */
     public function addForbiddenExtension(string $extension): self
     {
@@ -255,7 +255,7 @@ class ZipSecurityService
 }
 
 /**
- * ZIPチェック結果クラス
+ * ZIP check result class
  */
 class ZipCheckResult
 {
