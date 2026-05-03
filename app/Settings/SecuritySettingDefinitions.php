@@ -115,6 +115,8 @@ class SecuritySettingDefinitions
             // Two-factor authentication
             'two_fa_mode' => ['type' => 'string'],
             'two_fa_passkey_mode' => ['type' => 'string'],
+            'default_two_fa_method' => ['default' => 0, 'type' => 'int'],
+            'force_two_fa' => ['default' => false, 'type' => 'bool'],
             'two_fa_passkey_max_devices' => ['default' => 5, 'type' => 'int'],
             'two_fa_expire_minutes' => ['default' => 10, 'type' => 'int'],
             'two_fa_resend_interval_seconds' => ['default' => 60, 'type' => 'int'],
@@ -199,6 +201,7 @@ class SecuritySettingDefinitions
             'csp_trusted_domains' => ['default' => '', 'type' => 'string'],
             'csp_denied_domains' => ['default' => '', 'type' => 'string'],
             'csp_custom_directives' => ['default' => '', 'type' => 'string'],
+            'csp_custom_directives_mode' => ['type' => 'string'],
             'csp_blocklist_check_enabled' => ['default' => true, 'type' => 'bool'],
             'csp_blocklist_action' => ['type' => 'string'],
             'csp_blocklist_enabled_categories' => ['default' => '', 'type' => 'string'],
