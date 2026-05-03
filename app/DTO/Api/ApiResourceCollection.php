@@ -42,18 +42,18 @@ namespace App\DTO\Api;
 use JsonSerializable;
 
 /**
- * APIリソースコレクションDTO
+ * API resource collection DTO
  *
- * ページネーション情報付きのリソース一覧を表現します。
+ * Represents a resource list with pagination information
  */
 final readonly class ApiResourceCollection implements JsonSerializable
 {
     /**
-     * @param  ApiResourceDTO[]  $items  リソース配列
-     * @param  int  $total  総件数
-     * @param  int  $page  現在のページ番号
-     * @param  int  $perPage  ページあたりの件数
-     * @param  int  $lastPage  最終ページ番号
+     * @param  ApiResourceDTO[]  $items  Resource array
+     * @param  int  $total  Total count
+     * @param  int  $page  Current page number
+     * @param  int  $perPage  Items per page
+     * @param  int  $lastPage  Last page number
      */
     public function __construct(
         public array $items,
@@ -64,7 +64,7 @@ final readonly class ApiResourceCollection implements JsonSerializable
     ) {}
 
     /**
-     * JSON形式にシリアライズ
+     * Serialize to JSON format
      *
      * @return array<string, mixed>
      */

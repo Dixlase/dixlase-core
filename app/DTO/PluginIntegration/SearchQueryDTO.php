@@ -38,19 +38,19 @@
 namespace App\DTO\PluginIntegration;
 
 /**
- * 検索クエリDTO
+ * Search Query DTO
  *
- * プラグイン間でコンテンツ検索を行う際の
- * 検索条件を表現する不変データオブジェクトです。
+ * Immutable data object representing search conditions
+ * for performing content searches between plugins
  */
 final readonly class SearchQueryDTO
 {
     /**
-     * @param  string  $q  検索キーワード
-     * @param  int  $page  ページ番号（1始まり）
-     * @param  int  $perPage  1ページあたりの件数
-     * @param  array<string,scalar|array|null>  $filters  フィルタ条件
-     * @param  array<string,'asc'|'desc'>  $sort  ソート条件
+     * @param  string  $q  Search keyword
+     * @param  int  $page  Page number (1-based)
+     * @param  int  $perPage  Items per page
+     * @param  array<string,scalar|array|null>  $filters  Filter conditions
+     * @param  array<string,'asc'|'desc'>  $sort  Sort conditions
      */
     public function __construct(
         public string $q = '',
@@ -61,7 +61,7 @@ final readonly class SearchQueryDTO
     ) {}
 
     /**
-     * 検索キーワードが指定されているか
+     * Check if search keyword is specified
      */
     public function hasQuery(): bool
     {
@@ -69,9 +69,9 @@ final readonly class SearchQueryDTO
     }
 
     /**
-     * 特定のフィルタが指定されているか
+     * Check if a specific filter is specified
      *
-     * @param  string  $key  フィルタキー
+     * @param  string  $key  Filter key
      */
     public function hasFilter(string $key): bool
     {
@@ -79,10 +79,10 @@ final readonly class SearchQueryDTO
     }
 
     /**
-     * フィルタ値を取得
+     * Get filter value
      *
-     * @param  string  $key  フィルタキー
-     * @param  mixed  $default  デフォルト値
+     * @param  string  $key  Filter key
+     * @param  mixed  $default  Default value
      */
     public function getFilter(string $key, mixed $default = null): mixed
     {
@@ -90,7 +90,7 @@ final readonly class SearchQueryDTO
     }
 
     /**
-     * ソート条件が指定されているか
+     * Check if sort conditions are specified
      */
     public function hasSort(): bool
     {
@@ -98,7 +98,7 @@ final readonly class SearchQueryDTO
     }
 
     /**
-     * 配列からDTOを生成
+     * Create DTO from array
      *
      * @param  array<string,mixed>  $data
      */
@@ -114,7 +114,7 @@ final readonly class SearchQueryDTO
     }
 
     /**
-     * リクエストからDTOを生成
+     * Create DTO from request
      */
     public static function fromRequest(\Illuminate\Http\Request $request): self
     {
@@ -128,7 +128,7 @@ final readonly class SearchQueryDTO
     }
 
     /**
-     * 配列形式に変換
+     * Convert to array format
      *
      * @return array<string,mixed>
      */
@@ -144,9 +144,9 @@ final readonly class SearchQueryDTO
     }
 
     /**
-     * 検索キーワードを変更した新しいDTOを生成
+     * Create new DTO with modified search keyword
      *
-     * @param  string  $q  新しい検索キーワード
+     * @param  string  $q  New search keyword
      */
     public function withQuery(string $q): self
     {
@@ -160,9 +160,9 @@ final readonly class SearchQueryDTO
     }
 
     /**
-     * ページ番号を変更した新しいDTOを生成
+     * Create new DTO with modified page number
      *
-     * @param  int  $page  新しいページ番号
+     * @param  int  $page  New page number
      */
     public function withPage(int $page): self
     {
@@ -176,9 +176,9 @@ final readonly class SearchQueryDTO
     }
 
     /**
-     * フィルタを追加した新しいDTOを生成
+     * Generate a new DTO with added filter
      *
-     * @param  array<string,mixed>  $filters  追加するフィルタ
+     * @param  array<string,mixed>  $filters  Filter to add
      */
     public function withFilters(array $filters): self
     {
@@ -192,9 +192,9 @@ final readonly class SearchQueryDTO
     }
 
     /**
-     * ソート条件を変更した新しいDTOを生成
+     * Generate a new DTO with modified sort condition
      *
-     * @param  array<string,'asc'|'desc'>  $sort  新しいソート条件
+     * @param  array<string,'asc'|'desc'>  $sort  New sort condition
      */
     public function withSort(array $sort): self
     {

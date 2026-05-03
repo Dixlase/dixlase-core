@@ -40,25 +40,25 @@ namespace App\DTO\Mail;
 use JsonSerializable;
 
 /**
- * メールメッセージDTO
+ * Mail Message DTO
  *
- * メール送信に必要な情報を保持する不変データオブジェクトです。
+ * Immutable data object that holds information required for sending email
  */
 final readonly class MailMessageDTO implements JsonSerializable
 {
     /**
-     * @param  string|array<string>  $to  宛先メールアドレス
-     * @param  string  $subject  件名
-     * @param  string  $body  本文（HTMLまたはテキスト）
-     * @param  bool  $isHtml  HTML形式かどうか
-     * @param  string|null  $from  送信元メールアドレス
-     * @param  string|null  $fromName  送信元名
-     * @param  string|null  $replyTo  返信先メールアドレス
-     * @param  array<string>  $cc  CCメールアドレス
-     * @param  array<string>  $bcc  BCCメールアドレス
-     * @param  array<MailAttachmentDTO>  $attachments  添付ファイル
-     * @param  array<string,mixed>  $headers  カスタムヘッダー
-     * @param  array<string,mixed>  $meta  メタデータ（ログ用など）
+     * @param  string|array<string>  $to  Recipient email address
+     * @param  string  $subject  Subject
+     * @param  string  $body  Body (HTML or text)
+     * @param  bool  $isHtml  Whether it is HTML format
+     * @param  string|null  $from  Sender email address
+     * @param  string|null  $fromName  Sender name
+     * @param  string|null  $replyTo  Reply-to email address
+     * @param  array<string>  $cc  CC email address
+     * @param  array<string>  $bcc  BCC email address
+     * @param  array<MailAttachmentDTO>  $attachments  Attachments
+     * @param  array<string,mixed>  $headers  Custom headers
+     * @param  array<string,mixed>  $meta  Metadata (for logging, etc.)
      */
     public function __construct(
         public string|array $to,
@@ -76,7 +76,7 @@ final readonly class MailMessageDTO implements JsonSerializable
     ) {}
 
     /**
-     * 宛先を配列で取得
+     * Get recipients as array
      *
      * @return array<string>
      */
@@ -86,7 +86,7 @@ final readonly class MailMessageDTO implements JsonSerializable
     }
 
     /**
-     * 添付ファイルがあるか
+     * Check if there are attachments
      */
     public function hasAttachments(): bool
     {
@@ -94,7 +94,7 @@ final readonly class MailMessageDTO implements JsonSerializable
     }
 
     /**
-     * CCがあるか
+     * Check if there are CC recipients
      */
     public function hasCc(): bool
     {
@@ -102,7 +102,7 @@ final readonly class MailMessageDTO implements JsonSerializable
     }
 
     /**
-     * BCCがあるか
+     * Check if there are BCC recipients
      */
     public function hasBcc(): bool
     {
@@ -110,7 +110,7 @@ final readonly class MailMessageDTO implements JsonSerializable
     }
 
     /**
-     * JSON形式にシリアライズ
+     * Serialize to JSON format
      *
      * @return array<string,mixed>
      */
@@ -133,7 +133,7 @@ final readonly class MailMessageDTO implements JsonSerializable
     }
 
     /**
-     * 配列形式に変換
+     * Convert to array format
      *
      * @return array<string,mixed>
      */
@@ -143,7 +143,7 @@ final readonly class MailMessageDTO implements JsonSerializable
     }
 
     /**
-     * 配列からDTOを生成
+     * Create DTO from array
      *
      * @param  array<string,mixed>  $data
      */
@@ -166,9 +166,9 @@ final readonly class MailMessageDTO implements JsonSerializable
     }
 
     /**
-     * 件名を変更した新しいDTOを生成
+     * Create a new DTO with modified subject
      *
-     * @param  string  $subject  新しい件名
+     * @param  string  $subject  New subject
      */
     public function withSubject(string $subject): self
     {
@@ -189,9 +189,9 @@ final readonly class MailMessageDTO implements JsonSerializable
     }
 
     /**
-     * 宛先を変更した新しいDTOを生成
+     * Create a new DTO with modified recipient
      *
-     * @param  string|array<string>  $to  新しい宛先
+     * @param  string|array<string>  $to  New recipient
      */
     public function withTo(string|array $to): self
     {
@@ -212,9 +212,9 @@ final readonly class MailMessageDTO implements JsonSerializable
     }
 
     /**
-     * メタデータを追加した新しいDTOを生成
+     * Create a new DTO with added metadata
      *
-     * @param  array<string,mixed>  $meta  追加するメタデータ
+     * @param  array<string,mixed>  $meta  Metadata to add
      */
     public function withMeta(array $meta): self
     {

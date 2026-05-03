@@ -39,17 +39,17 @@ use App\Enums\PluginHealthStatus;
 use JsonSerializable;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * 健全性スコア計算結果DTO
+ * Health score calculation result DTO
  */
 final readonly class HealthScoreResult implements JsonSerializable
 {
     /**
-     * @param  int  $score  健全性スコア（0-100）
-     * @param  PluginHealthStatus  $status  健全性ステータス
-     * @param  array<HealthIssue>  $issues  検出された問題のリスト
-     * @param  bool  $hasCriticalIssue  致命的な問題があるか
+     * @param  int  $score  Health score (0-100)
+     * @param  PluginHealthStatus  $status  Health status
+     * @param  array<HealthIssue>  $issues  List of detected issues
+     * @param  bool  $hasCriticalIssue  Whether there are critical issues
      */
     public function __construct(
         public int $score,
@@ -59,7 +59,7 @@ final readonly class HealthScoreResult implements JsonSerializable
     ) {}
 
     /**
-     * 健全かどうか
+     * Whether healthy
      */
     public function isHealthy(): bool
     {
@@ -67,7 +67,7 @@ final readonly class HealthScoreResult implements JsonSerializable
     }
 
     /**
-     * 未確認かどうか（監査未実行・権限未定義）
+     * Whether unconfirmed (audit not executed or permission undefined)
      */
     public function isNotVerified(): bool
     {
@@ -75,7 +75,7 @@ final readonly class HealthScoreResult implements JsonSerializable
     }
 
     /**
-     * 有効化可能かどうかの簡易チェック
+     * Simple check for whether activation is possible
      */
     public function needsAttention(): bool
     {
@@ -83,7 +83,7 @@ final readonly class HealthScoreResult implements JsonSerializable
     }
 
     /**
-     * 問題数を取得
+     * Get number of issues
      */
     public function issueCount(): int
     {

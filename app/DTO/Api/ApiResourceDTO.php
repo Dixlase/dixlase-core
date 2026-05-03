@@ -42,27 +42,27 @@ namespace App\DTO\Api;
 use JsonSerializable;
 
 /**
- * APIリソースDTO
+ * API Resource DTO
  *
- * プラグインが提供するコンテンツリソースをAPI経由で公開する際の
- * 統一データ構造です。
+ * Unified data structure for making content resources provided by plugins public via API
+ * Unified data structure
  */
 final readonly class ApiResourceDTO implements JsonSerializable
 {
     /**
-     * @param  string  $id  リソースID（ULID/UUID）
-     * @param  string  $type  リソースタイプ（'page', 'post' 等）
-     * @param  string  $slug  スラッグ
-     * @param  string|null  $title  タイトル
-     * @param  string|null  $content  HTML本文
-     * @param  string|null  $excerpt  抜粋
-     * @param  string|null  $metaDescription  メタディスクリプション
-     * @param  string  $status  ステータス（'published', 'draft', 'scheduled'）
-     * @param  string|null  $publishedAt  公開日時（ISO 8601）
-     * @param  string|null  $updatedAt  更新日時（ISO 8601）
-     * @param  string|null  $url  フロントURL
-     * @param  string  $source  プラグインスラッグ
-     * @param  array<string, mixed>  $meta  拡張メタデータ
+     * @param  string  $id  Resource ID (ULID/UUID)
+     * @param  string  $type  Resource type ('page', 'post', etc.)
+     * @param  string  $slug  Slug
+     * @param  string|null  $title  Title
+     * @param  string|null  $content  HTML body
+     * @param  string|null  $excerpt  Excerpt
+     * @param  string|null  $metaDescription  Meta description
+     * @param  string  $status  Status ('published', 'draft', 'scheduled')
+     * @param  string|null  $publishedAt  Published date and time (ISO 8601)
+     * @param  string|null  $updatedAt  Updated date and time (ISO 8601)
+     * @param  string|null  $url  Front URL
+     * @param  string  $source  Plugin slug
+     * @param  array<string, mixed>  $meta  Extended metadata
      */
     public function __construct(
         public string $id,
@@ -81,7 +81,7 @@ final readonly class ApiResourceDTO implements JsonSerializable
     ) {}
 
     /**
-     * JSON形式にシリアライズ
+     * Serialize to JSON format
      *
      * @return array<string, mixed>
      */

@@ -41,19 +41,19 @@ use App\Contracts\Plugin\PluginCapabilityInterface;
 use JsonSerializable;
 
 /**
- * 機能解決結果のDTO
+ * DTO for capability resolution result
  *
- * PluginServiceResolver による機能解決の結果を保持します。
- * 解決成功時はインスタンスを、失敗時は理由を含みます。
+ * Holds the result of capability resolution by PluginServiceResolver.
+ * Contains the instance on successful resolution, or the reason on failure.
  */
 final readonly class CapabilityResolutionResult implements JsonSerializable
 {
     /**
-     * @param  bool  $resolved  解決に成功したか
-     * @param  PluginCapabilityInterface|null  $instance  解決されたインスタンス
-     * @param  string|null  $pluginSlug  対象プラグインのスラッグ
-     * @param  string|null  $failureReason  失敗理由
-     * @param  string|null  $deniedPermission  拒否された権限キー
+     * @param  bool  $resolved  Whether resolution succeeded
+     * @param  PluginCapabilityInterface|null  $instance  Resolved instance
+     * @param  string|null  $pluginSlug  Target plugin slug
+     * @param  string|null  $failureReason  Failure reason
+     * @param  string|null  $deniedPermission  Denied permission key
      */
     public function __construct(
         public bool $resolved,
@@ -64,7 +64,7 @@ final readonly class CapabilityResolutionResult implements JsonSerializable
     ) {}
 
     /**
-     * 解決成功の結果を生成
+     * Create a successful resolution result
      */
     public static function success(PluginCapabilityInterface $instance): self
     {
@@ -76,7 +76,7 @@ final readonly class CapabilityResolutionResult implements JsonSerializable
     }
 
     /**
-     * 権限不足による失敗結果を生成
+     * Create a failure result due to insufficient permission
      */
     public static function permissionDenied(string $pluginSlug, string $permission): self
     {
@@ -89,7 +89,7 @@ final readonly class CapabilityResolutionResult implements JsonSerializable
     }
 
     /**
-     * 機能が利用不可による失敗結果を生成
+     * Create a failure result due to unavailable capability
      */
     public static function unavailable(string $pluginSlug): self
     {
@@ -101,7 +101,7 @@ final readonly class CapabilityResolutionResult implements JsonSerializable
     }
 
     /**
-     * 実装が見つからない失敗結果を生成
+     * Create a failure result due to implementation not found
      */
     public static function notFound(?string $pluginSlug = null): self
     {
@@ -113,7 +113,7 @@ final readonly class CapabilityResolutionResult implements JsonSerializable
     }
 
     /**
-     * 解決に成功したか
+     * Whether resolution succeeded
      */
     public function isResolved(): bool
     {
@@ -121,7 +121,7 @@ final readonly class CapabilityResolutionResult implements JsonSerializable
     }
 
     /**
-     * 権限不足で失敗したか
+     * Whether it failed due to insufficient permission
      */
     public function isPermissionDenied(): bool
     {

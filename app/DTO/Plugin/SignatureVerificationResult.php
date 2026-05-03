@@ -40,16 +40,16 @@ namespace App\DTO\Plugin;
 use JsonSerializable;
 
 /**
- * 署名検証結果DTO
+ * Signature verification result DTO
  *
- * コア側の署名検証結果を表現します。
- * DixlaseDevKit プラグインの SignatureResult から変換、
- * またはスタブ実装から直接生成されます。
+ * Represents the Core signature verification result
+ * Converted from DixlaseDevKit plugin's SignatureResult,
+ * or generated directly from stub implementation
  */
 final readonly class SignatureVerificationResult implements JsonSerializable
 {
     /**
-     * ステータス定数
+     * Status constants
      */
     public const STATUS_VALID = 'valid';
 
@@ -66,14 +66,14 @@ final readonly class SignatureVerificationResult implements JsonSerializable
     public const STATUS_PENDING = 'pending_verification';
 
     /**
-     * @param  string  $status  検証ステータス
-     * @param  string|null  $type  署名タイプ（official, verified, partner）
-     * @param  string|null  $signedBy  署名者
-     * @param  string|null  $signedAt  署名日時
-     * @param  string|null  $keyId  鍵ID
-     * @param  string|null  $keyLabel  鍵ラベル
-     * @param  string|null  $message  メッセージ
-     * @param  array  $errors  エラー一覧
+     * @param  string  $status  Verification status
+     * @param  string|null  $type  Signature type (official, verified, partner)
+     * @param  string|null  $signedBy  Signer
+     * @param  string|null  $signedAt  Signature timestamp
+     * @param  string|null  $keyId  Key ID
+     * @param  string|null  $keyLabel  Key label
+     * @param  string|null  $message  Message
+     * @param  array  $errors  Error list
      */
     public function __construct(
         public string $status,
@@ -87,7 +87,7 @@ final readonly class SignatureVerificationResult implements JsonSerializable
     ) {}
 
     /**
-     * 署名が有効かどうか
+     * Whether the signature is valid
      */
     public function isValid(): bool
     {
@@ -95,7 +95,7 @@ final readonly class SignatureVerificationResult implements JsonSerializable
     }
 
     /**
-     * 未署名かどうか
+     * Whether it is unsigned
      */
     public function isUnsigned(): bool
     {
@@ -103,7 +103,7 @@ final readonly class SignatureVerificationResult implements JsonSerializable
     }
 
     /**
-     * 署名が無効かどうか（改ざんの可能性）
+     * Whether the signature is invalid (possible tampering)
      */
     public function isInvalid(): bool
     {
@@ -111,29 +111,29 @@ final readonly class SignatureVerificationResult implements JsonSerializable
     }
 
     /**
-     * 未署名の結果を生成
+     * Generate unsigned result
      */
     public static function unsigned(?string $message = null): self
     {
         return new self(
             status: self::STATUS_UNSIGNED,
-            message: $message ?? '署名がありません。',
+            message: $message ?? 'No signature.',
         );
     }
 
     /**
-     * 検証保留の結果を生成
+     * Generate pending verification result
      */
     public static function pending(?string $message = null): self
     {
         return new self(
             status: self::STATUS_PENDING,
-            message: $message ?? '署名検証モジュールが利用できません。',
+            message: $message ?? 'Signature verification module is unavailable.',
         );
     }
 
     /**
-     * 有効な署名結果を生成
+     * Generate valid signature result
      */
     public static function valid(string $keyId, ?string $keyLabel = null, ?string $signedBy = null, ?string $signedAt = null, ?string $type = null): self
     {
@@ -144,24 +144,24 @@ final readonly class SignatureVerificationResult implements JsonSerializable
             signedAt: $signedAt,
             keyId: $keyId,
             keyLabel: $keyLabel,
-            message: '署名は有効です。',
+            message: 'Signature is valid.',
         );
     }
 
     /**
-     * 無効な署名結果を生成
+     * Generate invalid signature result
      */
     public static function invalid(?string $message = null, array $errors = []): self
     {
         return new self(
             status: self::STATUS_INVALID,
-            message: $message ?? '署名が無効です。',
+            message: $message ?? 'Signature is invalid.',
             errors: $errors,
         );
     }
 
     /**
-     * エラー結果を生成
+     * Generate error result
      */
     public static function error(string $message, array $errors = []): self
     {

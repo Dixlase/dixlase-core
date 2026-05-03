@@ -41,22 +41,22 @@ use App\Contracts\PluginIntegration\LinkableInterface;
 use JsonSerializable;
 
 /**
- * リンク可能なコンテンツのDTO
+ * DTO for linkable content
  *
- * プラグイン間でコンテンツ情報を受け渡しする際の
- * 不変データオブジェクトです。
+ * Immutable data object for passing content information
+ * between plugins
  */
 final readonly class LinkableDTO implements JsonSerializable, LinkableInterface
 {
     /**
-     * @param  string  $id  コンテンツID（ULID/UUID）
-     * @param  string  $title  コンテンツタイトル
-     * @param  string  $url  コンテンツURL
-     * @param  string  $type  コンテンツタイプ（'post', 'page', 'media', etc.）
-     * @param  string  $source  データソース（'core' または プラグインスラッグ）
-     * @param  string|null  $sourceTable  ソーステーブル名（オプション）
-     * @param  string|null  $locale  ロケール（'ja', 'en', etc.）
-     * @param  array<string,mixed>  $meta  追加メタデータ
+     * @param  string  $id  Content ID (ULID/UUID)
+     * @param  string  $title  Content title
+     * @param  string  $url  Content URL
+     * @param  string  $type  Content type ('post', 'page', 'media', etc.)
+     * @param  string  $source  Data source ('core' or plugin slug)
+     * @param  string|null  $sourceTable  Source table name (optional)
+     * @param  string|null  $locale  Locale ('ja', 'en', etc.)
+     * @param  array<string,mixed>  $meta  Additional metadata
      */
     public function __construct(
         public string $id,
@@ -70,7 +70,7 @@ final readonly class LinkableDTO implements JsonSerializable, LinkableInterface
     ) {}
 
     /**
-     * コンテンツIDを取得
+     * Get content ID
      */
     public function getId(): string
     {
@@ -78,7 +78,7 @@ final readonly class LinkableDTO implements JsonSerializable, LinkableInterface
     }
 
     /**
-     * コンテンツタイトルを取得
+     * Get content title
      */
     public function getTitle(): string
     {
@@ -86,7 +86,7 @@ final readonly class LinkableDTO implements JsonSerializable, LinkableInterface
     }
 
     /**
-     * コンテンツURLを取得
+     * Get content URL
      */
     public function getUrl(): string
     {
@@ -94,7 +94,7 @@ final readonly class LinkableDTO implements JsonSerializable, LinkableInterface
     }
 
     /**
-     * コンテンツタイプを取得
+     * Get content type
      */
     public function getType(): string
     {
@@ -102,7 +102,7 @@ final readonly class LinkableDTO implements JsonSerializable, LinkableInterface
     }
 
     /**
-     * データソースを取得
+     * Get data source
      */
     public function getSource(): string
     {
@@ -110,7 +110,7 @@ final readonly class LinkableDTO implements JsonSerializable, LinkableInterface
     }
 
     /**
-     * ソーステーブル名を取得
+     * Get source table name
      */
     public function getSourceTable(): ?string
     {
@@ -118,7 +118,7 @@ final readonly class LinkableDTO implements JsonSerializable, LinkableInterface
     }
 
     /**
-     * JSON形式にシリアライズ
+     * Serialize to JSON format
      *
      * @return array<string,mixed>
      */
@@ -137,7 +137,7 @@ final readonly class LinkableDTO implements JsonSerializable, LinkableInterface
     }
 
     /**
-     * 配列形式に変換
+     * Convert to array format
      *
      * @return array<string,mixed>
      */
@@ -147,7 +147,7 @@ final readonly class LinkableDTO implements JsonSerializable, LinkableInterface
     }
 
     /**
-     * コアのコンテンツかどうか判定
+     * Determine if content is from Core
      */
     public function isCore(): bool
     {
@@ -155,7 +155,7 @@ final readonly class LinkableDTO implements JsonSerializable, LinkableInterface
     }
 
     /**
-     * プラグインのコンテンツかどうか判定
+     * Determine if this is plugin content
      */
     public function isPlugin(): bool
     {
@@ -163,9 +163,9 @@ final readonly class LinkableDTO implements JsonSerializable, LinkableInterface
     }
 
     /**
-     * 特定のプラグインのコンテンツかどうか判定
+     * Determine if this is content from a specific plugin
      *
-     * @param  string  $pluginSlug  プラグインスラッグ
+     * @param  string  $pluginSlug  Plugin slug
      */
     public function isFromPlugin(string $pluginSlug): bool
     {
@@ -173,7 +173,7 @@ final readonly class LinkableDTO implements JsonSerializable, LinkableInterface
     }
 
     /**
-     * 配列からDTOを生成
+     * Create DTO from array
      *
      * @param  array<string,mixed>  $data
      */
@@ -192,9 +192,9 @@ final readonly class LinkableDTO implements JsonSerializable, LinkableInterface
     }
 
     /**
-     * タイトルを変更した新しいDTOを生成（不変オブジェクトパターン）
+     * Create new DTO with changed title (immutable object pattern)
      *
-     * @param  string  $title  新しいタイトル
+     * @param  string  $title  New title
      */
     public function withTitle(string $title): self
     {
@@ -211,9 +211,9 @@ final readonly class LinkableDTO implements JsonSerializable, LinkableInterface
     }
 
     /**
-     * URLを変更した新しいDTOを生成（不変オブジェクトパターン）
+     * Create new DTO with changed URL (immutable object pattern)
      *
-     * @param  string  $url  新しいURL
+     * @param  string  $url  New URL
      */
     public function withUrl(string $url): self
     {
@@ -230,9 +230,9 @@ final readonly class LinkableDTO implements JsonSerializable, LinkableInterface
     }
 
     /**
-     * メタデータを追加した新しいDTOを生成（不変オブジェクトパターン）
+     * Create new DTO with added metadata (immutable object pattern)
      *
-     * @param  array<string,mixed>  $meta  追加するメタデータ
+     * @param  array<string,mixed>  $meta  Metadata to add
      */
     public function withMeta(array $meta): self
     {

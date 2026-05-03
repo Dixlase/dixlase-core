@@ -25,15 +25,15 @@
 namespace App\DTO\Backup;
 
 /**
- * 復元結果DTO
+ * Restore Result DTO
  *
- * 復元処理の結果を保持する不変データオブジェクトです。
+ * Immutable data object that holds the result of a restore operation
  */
 final readonly class RestoreResultDTO
 {
     /**
-     * @param  string[]  $targets  実際に復元された対象
-     * @param  array<string,mixed>  $metadata  追加メタデータ
+     * @param  string[]  $targets  Actually restored target
+     * @param  array<string,mixed>  $metadata  Additional metadata
      */
     public function __construct(
         public bool $success,
@@ -46,7 +46,7 @@ final readonly class RestoreResultDTO
     ) {}
 
     /**
-     * 成功結果を生成
+     * Generate success result
      *
      * @param  string[]  $targets
      * @param  array<string,mixed>  $metadata
@@ -69,7 +69,7 @@ final readonly class RestoreResultDTO
     }
 
     /**
-     * 失敗結果を生成
+     * Generate failure result
      */
     public static function failure(string $error, ?int $restoreRecordId = null): self
     {

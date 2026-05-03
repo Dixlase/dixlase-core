@@ -25,15 +25,15 @@
 namespace App\DTO\Backup;
 
 /**
- * バックアップ結果DTO
+ * Backup Result DTO
  *
- * バックアップ処理の結果を保持する不変データオブジェクトです。
+ * Immutable data object that holds the result of a backup operation
  */
 final readonly class BackupResultDTO
 {
     /**
-     * @param  string[]  $targets  バックアップに含まれる対象
-     * @param  array<string,mixed>  $metadata  追加メタデータ
+     * @param  string[]  $targets  Targets included in the backup
+     * @param  array<string,mixed>  $metadata  Additional metadata
      */
     public function __construct(
         public bool $success,
@@ -47,7 +47,7 @@ final readonly class BackupResultDTO
     ) {}
 
     /**
-     * 成功結果を生成
+     * Generate success result
      *
      * @param  string[]  $targets
      * @param  array<string,mixed>  $metadata
@@ -72,7 +72,7 @@ final readonly class BackupResultDTO
     }
 
     /**
-     * 失敗結果を生成
+     * Generate failure result
      */
     public static function failure(string $error, ?int $backupRecordId = null): self
     {

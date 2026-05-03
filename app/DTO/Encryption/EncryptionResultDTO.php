@@ -38,9 +38,9 @@
 namespace App\DTO\Encryption;
 
 /**
- * 暗号化結果DTO
+ * Encryption Result DTO
  *
- * ファイル暗号化処理の結果を保持する不変データオブジェクトです。
+ * Immutable data object that holds the result of file encryption processing
  */
 final readonly class EncryptionResultDTO
 {
@@ -54,7 +54,7 @@ final readonly class EncryptionResultDTO
     ) {}
 
     /**
-     * 成功結果を生成
+     * Create success result
      */
     public static function success(string $outputPath, string $algorithm, int $originalSize, int $encryptedSize): self
     {
@@ -62,7 +62,7 @@ final readonly class EncryptionResultDTO
     }
 
     /**
-     * 失敗結果を生成
+     * Create failure result
      */
     public static function failure(string $error, string $outputPath = '', string $algorithm = ''): self
     {

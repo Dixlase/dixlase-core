@@ -40,9 +40,9 @@ namespace App\DTO\Mail;
 use JsonSerializable;
 
 /**
- * メール設定DTO
+ * Mail settings DTO
  *
- * メールサーバー設定を保持する不変データオブジェクトです。
+ * Immutable data object that holds mail server settings
  */
 final readonly class MailConfigDTO implements JsonSerializable
 {
@@ -59,15 +59,15 @@ final readonly class MailConfigDTO implements JsonSerializable
     public const ENCRYPTION_SSL = 'ssl';
 
     /**
-     * @param  string  $mailer  メーラー（smtp, sendmail, log）
-     * @param  string  $host  SMTPホスト
-     * @param  int  $port  SMTPポート
-     * @param  string|null  $username  SMTP認証ユーザー名
-     * @param  string|null  $password  SMTP認証パスワード
-     * @param  string  $encryption  暗号化方式（'', 'tls', 'ssl'）
-     * @param  string  $fromAddress  デフォルト送信元アドレス
-     * @param  string|null  $fromName  デフォルト送信元名
-     * @param  int  $timeout  接続タイムアウト（秒）
+     * @param  string  $mailer  Mailer (smtp, sendmail, log)
+     * @param  string  $host  SMTP host
+     * @param  int  $port  SMTP port
+     * @param  string|null  $username  SMTP authentication username
+     * @param  string|null  $password  SMTP authentication password
+     * @param  string  $encryption  Encryption method ('', 'tls', 'ssl')
+     * @param  string  $fromAddress  Default sender address
+     * @param  string|null  $fromName  Default sender name
+     * @param  int  $timeout  Connection timeout (seconds)
      */
     public function __construct(
         public string $mailer = self::MAILER_SMTP,
@@ -82,7 +82,7 @@ final readonly class MailConfigDTO implements JsonSerializable
     ) {}
 
     /**
-     * SMTPかどうか
+     * Whether SMTP
      */
     public function isSmtp(): bool
     {
@@ -90,7 +90,7 @@ final readonly class MailConfigDTO implements JsonSerializable
     }
 
     /**
-     * 認証が必要かどうか
+     * Whether authentication is required
      */
     public function requiresAuth(): bool
     {
@@ -98,7 +98,7 @@ final readonly class MailConfigDTO implements JsonSerializable
     }
 
     /**
-     * 暗号化が有効かどうか
+     * Whether encryption is enabled
      */
     public function hasEncryption(): bool
     {
@@ -106,7 +106,7 @@ final readonly class MailConfigDTO implements JsonSerializable
     }
 
     /**
-     * 設定が有効かどうか（最低限の設定があるか）
+     * Whether settings are valid (minimum settings exist)
      */
     public function isValid(): bool
     {
@@ -118,7 +118,7 @@ final readonly class MailConfigDTO implements JsonSerializable
     }
 
     /**
-     * JSON形式にシリアライズ（パスワードは除外）
+     * Serialize to JSON format (excluding password)
      *
      * @return array<string,mixed>
      */
@@ -133,12 +133,12 @@ final readonly class MailConfigDTO implements JsonSerializable
             'from_address' => $this->fromAddress,
             'from_name' => $this->fromName,
             'timeout' => $this->timeout,
-            // パスワードは含めない
+            // password is intentionally excluded
         ];
     }
 
     /**
-     * 配列形式に変換
+     * Convert to array format
      *
      * @return array<string,mixed>
      */
@@ -148,7 +148,7 @@ final readonly class MailConfigDTO implements JsonSerializable
     }
 
     /**
-     * 配列からDTOを生成
+     * Generate DTO from array
      *
      * @param  array<string,mixed>  $data
      */
@@ -168,7 +168,7 @@ final readonly class MailConfigDTO implements JsonSerializable
     }
 
     /**
-     * システム設定からDTOを生成
+     * Generate DTO from system settings
      */
     public static function fromSystemConfig(): self
     {
@@ -186,7 +186,7 @@ final readonly class MailConfigDTO implements JsonSerializable
     }
 
     /**
-     * Laravelのメール設定配列に変換
+     * Convert to Laravel mail settings array
      *
      * @return array<string,mixed>
      */

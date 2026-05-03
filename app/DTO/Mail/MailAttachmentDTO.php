@@ -40,16 +40,16 @@ namespace App\DTO\Mail;
 use JsonSerializable;
 
 /**
- * メール添付ファイルDTO
+ * Mail Attachment DTO
  *
- * メールの添付ファイル情報を保持する不変データオブジェクトです。
+ * Immutable data object that holds mail attachment information
  */
 final readonly class MailAttachmentDTO implements JsonSerializable
 {
     /**
-     * @param  string  $path  ファイルパス
-     * @param  string|null  $name  表示名（nullの場合はファイル名を使用）
-     * @param  string|null  $mime  MIMEタイプ（nullの場合は自動検出）
+     * @param  string  $path  File path
+     * @param  string|null  $name  Display name (uses filename if null)
+     * @param  string|null  $mime  MIME type (auto-detected if null)
      */
     public function __construct(
         public string $path,
@@ -58,10 +58,10 @@ final readonly class MailAttachmentDTO implements JsonSerializable
     ) {}
 
     /**
-     * ファイルパスから生成
+     * Create from file path
      *
-     * @param  string  $path  ファイルパス
-     * @param  string|null  $name  表示名
+     * @param  string  $path  File path
+     * @param  string|null  $name  Display name
      */
     public static function fromPath(string $path, ?string $name = null): self
     {
@@ -72,10 +72,10 @@ final readonly class MailAttachmentDTO implements JsonSerializable
     }
 
     /**
-     * ストレージパスから生成
+     * Create from storage path
      *
-     * @param  string  $storagePath  ストレージ相対パス
-     * @param  string|null  $name  表示名
+     * @param  string  $storagePath  Storage relative path
+     * @param  string|null  $name  Display name
      */
     public static function fromStorage(string $storagePath, ?string $name = null): self
     {
@@ -86,7 +86,7 @@ final readonly class MailAttachmentDTO implements JsonSerializable
     }
 
     /**
-     * 表示名を取得
+     * Get display name
      */
     public function getDisplayName(): string
     {
@@ -94,7 +94,7 @@ final readonly class MailAttachmentDTO implements JsonSerializable
     }
 
     /**
-     * ファイルが存在するか
+     * Check if file exists
      */
     public function exists(): bool
     {
@@ -102,7 +102,7 @@ final readonly class MailAttachmentDTO implements JsonSerializable
     }
 
     /**
-     * ファイルサイズを取得
+     * Get file size
      */
     public function getSize(): ?int
     {
@@ -114,7 +114,7 @@ final readonly class MailAttachmentDTO implements JsonSerializable
     }
 
     /**
-     * JSON形式にシリアライズ
+     * Serialize to JSON format
      *
      * @return array<string,mixed>
      */
@@ -129,7 +129,7 @@ final readonly class MailAttachmentDTO implements JsonSerializable
     }
 
     /**
-     * 配列形式に変換
+     * Convert to array format
      *
      * @return array<string,mixed>
      */
@@ -139,7 +139,7 @@ final readonly class MailAttachmentDTO implements JsonSerializable
     }
 
     /**
-     * 配列からDTOを生成
+     * Create DTO from array
      *
      * @param  array<string,mixed>  $data
      */

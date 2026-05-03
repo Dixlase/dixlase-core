@@ -40,9 +40,9 @@ namespace App\DTO\FileIntegrity;
 use JsonSerializable;
 
 /**
- * ファイル変更DTO
+ * File Change DTO
  *
- * ファイルの変更情報を保持する不変データオブジェクトです。
+ * Immutable data object that holds file change information
  */
 final readonly class FileChangeDTO implements JsonSerializable
 {
@@ -55,11 +55,11 @@ final readonly class FileChangeDTO implements JsonSerializable
     public const TYPE_SUSPICIOUS = 'suspicious';
 
     /**
-     * @param  string  $path  ファイルパス
-     * @param  string  $type  変更タイプ（changed, added, removed, suspicious）
-     * @param  string|null  $oldHash  変更前ハッシュ
-     * @param  string|null  $newHash  変更後ハッシュ
-     * @param  string|null  $reason  理由（suspiciousの場合）
+     * @param  string  $path  File path
+     * @param  string  $type  Change type (changed, added, removed, suspicious)
+     * @param  string|null  $oldHash  Hash before change
+     * @param  string|null  $newHash  Hash after change
+     * @param  string|null  $reason  Reason (for suspicious case)
      */
     public function __construct(
         public string $path,
@@ -70,11 +70,11 @@ final readonly class FileChangeDTO implements JsonSerializable
     ) {}
 
     /**
-     * 変更されたファイルを生成
+     * Create a changed file
      *
-     * @param  string  $path  ファイルパス
-     * @param  string  $oldHash  変更前ハッシュ
-     * @param  string  $newHash  変更後ハッシュ
+     * @param  string  $path  File path
+     * @param  string  $oldHash  Hash before change
+     * @param  string  $newHash  Hash after change
      */
     public static function changed(string $path, string $oldHash, string $newHash): self
     {
@@ -87,10 +87,10 @@ final readonly class FileChangeDTO implements JsonSerializable
     }
 
     /**
-     * 追加されたファイルを生成
+     * Create an added file
      *
-     * @param  string  $path  ファイルパス
-     * @param  string  $newHash  ハッシュ
+     * @param  string  $path  File path
+     * @param  string  $newHash  Hash
      */
     public static function added(string $path, string $newHash): self
     {
@@ -102,10 +102,10 @@ final readonly class FileChangeDTO implements JsonSerializable
     }
 
     /**
-     * 削除されたファイルを生成
+     * Create a removed file
      *
-     * @param  string  $path  ファイルパス
-     * @param  string  $oldHash  削除前ハッシュ
+     * @param  string  $path  File path
+     * @param  string  $oldHash  Hash before removal
      */
     public static function removed(string $path, string $oldHash): self
     {
@@ -117,11 +117,11 @@ final readonly class FileChangeDTO implements JsonSerializable
     }
 
     /**
-     * 疑わしいファイルを生成
+     * Create a suspicious file
      *
-     * @param  string  $path  ファイルパス
-     * @param  string  $hash  ハッシュ
-     * @param  string  $reason  理由
+     * @param  string  $path  File path
+     * @param  string  $hash  Hash
+     * @param  string  $reason  Reason
      */
     public static function suspicious(string $path, string $hash, string $reason): self
     {
@@ -134,7 +134,7 @@ final readonly class FileChangeDTO implements JsonSerializable
     }
 
     /**
-     * 変更タイプか
+     * Is change type
      */
     public function isChanged(): bool
     {
@@ -142,7 +142,7 @@ final readonly class FileChangeDTO implements JsonSerializable
     }
 
     /**
-     * 追加タイプか
+     * Is added type
      */
     public function isAdded(): bool
     {
@@ -150,7 +150,7 @@ final readonly class FileChangeDTO implements JsonSerializable
     }
 
     /**
-     * 削除タイプか
+     * Is removed type
      */
     public function isRemoved(): bool
     {
@@ -158,7 +158,7 @@ final readonly class FileChangeDTO implements JsonSerializable
     }
 
     /**
-     * 疑わしいタイプか
+     * Is suspicious type
      */
     public function isSuspicious(): bool
     {
@@ -166,7 +166,7 @@ final readonly class FileChangeDTO implements JsonSerializable
     }
 
     /**
-     * JSON形式にシリアライズ
+     * Serialize to JSON format
      *
      * @return array<string,mixed>
      */
@@ -182,7 +182,7 @@ final readonly class FileChangeDTO implements JsonSerializable
     }
 
     /**
-     * 配列形式に変換
+     * Convert to array format
      *
      * @return array<string,mixed>
      */
@@ -192,7 +192,7 @@ final readonly class FileChangeDTO implements JsonSerializable
     }
 
     /**
-     * 配列からDTOを生成
+     * Generate DTO from array
      *
      * @param  array<string,mixed>  $data
      */
