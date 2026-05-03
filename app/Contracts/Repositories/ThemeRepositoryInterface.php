@@ -38,24 +38,24 @@
 namespace App\Contracts\Repositories;
 
 /**
- * テーマリポジトリインターフェース
+ * Theme repository interface
  *
- * 有効化されたテーマの情報を取得するための抽象レイヤー。
- * Theme Eloquent モデルや DB ファサードへの直接依存を排除し、SDK分離を可能にする。
+ * Abstraction layer for retrieving activated theme information
+ * Eliminates direct dependencies on Theme Eloquent models and DB facades, enabling SDK separation
  */
 interface ThemeRepositoryInterface
 {
     /**
-     * 有効なテーマIDを取得
+     * Retrieve active theme ID
      *
-     * theme_settingsテーブルが存在しない場合はデフォルト値 1 を返す。
+     * Returns default value 1 if theme_settings table does not exist
      */
     public function getEnabledThemeId(): int;
 
     /**
-     * 有効なテーマのディレクトリ名を取得
+     * Retrieve active theme directory name
      *
-     * テーマが見つからない場合は config('themes.default_theme') にフォールバックする。
+     * Falls back to config('themes.default_theme') if theme is not found
      */
     public function getEnabledThemeDirectory(): string;
 }

@@ -38,48 +38,48 @@
 namespace App\Contracts\PluginIntegration;
 
 /**
- * リンク可能なコンテンツの最小契約
+ * Minimal contract for linkable content
  *
- * プラグイン間連携の基盤として使用します。
- * メニュー、検索、タグ付けなど、複数のプラグインで
- * コンテンツを参照する際の共通インターフェースです。
+ * Used as foundation for plugin integration
+ * Common interface for referencing content across multiple plugins
+ * such as menus, search, and tagging
  */
 interface LinkableInterface
 {
     /**
-     * コンテンツの一意なID（ULID/UUID）を取得
+     * Get the unique ID (ULID/UUID) of the content
      */
     public function getId(): string;
 
     /**
-     * コンテンツのタイトルを取得
+     * Get the title of the content
      */
     public function getTitle(): string;
 
     /**
-     * コンテンツのURLを取得
+     * Get the URL of the content
      */
     public function getUrl(): string;
 
     /**
-     * コンテンツのタイプを取得
+     * Get the type of the content
      *
-     * 例: 'post', 'page', 'media', 'product', 'inquiry'
+     * e.g., 'post', 'page', 'media', 'product', 'inquiry'
      */
     public function getType(): string;
 
     /**
-     * コンテンツのソース（提供元）を取得
+     * Get the source (provider) of the content
      *
-     * - コアの場合: 'core'
-     * - プラグインの場合: プラグインスラッグ（例: 'dixlase-blog'）
+     * - For Core: 'core'
+     * - For plugin: plugin slug (e.g., 'dixlase-blog')
      */
     public function getSource(): string;
 
     /**
-     * コンテンツのソーステーブル名を取得（オプション）
+     * Get the source table name of the content (optional)
      *
-     * デバッグやデータ整合性チェックに使用
+     * Used for debugging and data integrity checks
      */
     public function getSourceTable(): ?string;
 }

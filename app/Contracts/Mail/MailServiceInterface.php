@@ -42,53 +42,53 @@ use App\DTO\Mail\MailMessageDTO;
 use App\DTO\Mail\MailResultDTO;
 
 /**
- * メール送信サービスの契約
+ * Mail service contract
  *
- * コアおよびプラグインからメール送信機能を利用するための
- * 統一インターフェースを提供します。
+ * Provides a unified interface for using mail functionality
+ * from Core and plugins
  */
 interface MailServiceInterface
 {
     /**
-     * メールを送信
+     * Send an email
      *
-     * @param  MailMessageDTO  $message  メールメッセージ
-     * @param  MailConfigDTO|null  $config  カスタム設定（nullの場合はシステム設定を使用）
+     * @param  MailMessageDTO  $message  Mail message
+     * @param  MailConfigDTO|null  $config  Custom settings (use system settings if null)
      */
     public function send(MailMessageDTO $message, ?MailConfigDTO $config = null): MailResultDTO;
 
     /**
-     * 複数のメールを一括送信
+     * Send multiple emails in bulk
      *
-     * @param  array<MailMessageDTO>  $messages  メールメッセージの配列
-     * @param  MailConfigDTO|null  $config  カスタム設定
+     * @param  array<MailMessageDTO>  $messages  Array of mail messages
+     * @param  MailConfigDTO|null  $config  Custom settings
      * @return array<MailResultDTO>
      */
     public function sendMany(array $messages, ?MailConfigDTO $config = null): array;
 
     /**
-     * キューにメールを追加（非同期送信）
+     * Add email to queue (asynchronous sending)
      *
-     * @param  MailMessageDTO  $message  メールメッセージ
-     * @param  MailConfigDTO|null  $config  カスタム設定
-     * @param  string|null  $queue  キュー名
+     * @param  MailMessageDTO  $message  Mail message
+     * @param  MailConfigDTO|null  $config  Custom settings
+     * @param  string|null  $queue  Queue name
      */
     public function queue(MailMessageDTO $message, ?MailConfigDTO $config = null, ?string $queue = null): MailResultDTO;
 
     /**
-     * SMTP接続テスト
+     * Test SMTP connection
      *
-     * @param  MailConfigDTO  $config  メール設定
+     * @param  MailConfigDTO  $config  Mail settings
      */
     public function testConnection(MailConfigDTO $config): MailResultDTO;
 
     /**
-     * 現在のメール設定を取得
+     * Get current mail settings
      */
     public function getConfig(): MailConfigDTO;
 
     /**
-     * メール設定が有効かどうか
+     * Whether mail settings are valid
      */
     public function isConfigured(): bool;
 }

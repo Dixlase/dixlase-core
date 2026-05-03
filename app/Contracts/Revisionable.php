@@ -40,19 +40,19 @@ declare(strict_types=1);
 namespace App\Contracts;
 
 /**
- * 各プラグイン/テーマは自身のリビジョンテーブルと Eloquent モデルを持ちつつ、
- * このインターフェースを実装することで共通の `RevisionService` によって
- * 履歴記録・復元・自動削除・保護を統一的に扱える。
+ * Each plugin/theme has its own revision table and Eloquent model, and by
+ * implementing this interface, the common `RevisionService` can
+ * handle history recording, restoration, auto-deletion, and protection in a unified manner
  *
- * テーブル命名規則:
- * - コア: `{entity}_revisions`（例: `front_page_revisions`）
- * - プラグイン: `dls_plg_{slug}_{entity}_revisions`
- * - テーマ: `dls_thm_{slug}_{entity}_revisions`
+ * Table naming convention:
+ * - Core: `{entity}_revisions` (e.g. `front_page_revisions`)
+ * - plugin: `dls_plg_{slug}_{entity}_revisions`
+ * - theme: `dls_thm_{slug}_{entity}_revisions`
  *
- * 各リビジョンテーブルは以下のカラムを持つこと:
+ * Each revision table must have the following columns:
  * - id (bigint, PK)
- * - {foreignKey} (bigint, 親コンテンツへの FK、CASCADE DELETE)
- * - snapshot (json, `revisionableFields()` のスナップショット)
+ * - {foreignKey} (bigint, FK to parent content, CASCADE DELETE)
+ * - snapshot (json, snapshot of `revisionableFields()`)
  * - type (string, 'auto' | 'manual' | 'restore_backup')
  * - note (string, nullable)
  * - is_protected (boolean, default false)
@@ -62,26 +62,26 @@ namespace App\Contracts;
 interface Revisionable
 {
     /**
-     * リビジョンを格納する Eloquent モデルの完全修飾クラス名を返す。
+     * Returns the fully qualified class name of the Eloquent model that stores revisions
      *
-     * 例: `\App\Models\FrontPageRevision::class`
+     * e.g. `\App\Models\FrontPageRevision::class`
      *
      * @return class-string<\Illuminate\Database\Eloquent\Model>
      */
     public function revisionModel(): string;
 
     /**
-     * リビジョンテーブルに存在する、親コンテンツを指す外部キーカラム名を返す。
+     * Returns the foreign key column name in the revision table that references the parent content
      *
-     * 例: 'front_page_id'
+     * e.g. 'front_page_id'
      */
     public function revisionForeignKey(): string;
 
     /**
-     * スナップショットに含めるコンテンツ側の属性名リスト。
+     * List of content attribute names to include in the snapshot
      *
-     * ここで列挙したカラムのみが `snapshot` JSON に保存され、
-     * 復元時にも同じカラムのみが書き戻される。
+     * Only the columns listed here will be saved in the `snapshot` JSON, and
+     * only the same columns will be written back during restoration
      *
      * @return list<string>
      */

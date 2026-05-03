@@ -38,28 +38,28 @@
 namespace App\Contracts\Plugin;
 
 /**
- * メール送信機能を宣言するインターフェース
+ * Interface declaring mail sending functionality
  *
- * メール送信機能を持つプラグインが実装します。
- * plugin.json の permissions.mail.send が true であることが前提です。
+ * Implemented by plugins with mail sending functionality.
+ * Assumes that permissions.mail.send in plugin.json is true.
  *
- * PluginServiceResolver 経由で解決する際に、
- * 'mail.send' 権限が自動的にチェックされます。
+ * When resolved via PluginServiceResolver,
+ * 'mail.send' permission is automatically checked.
  */
 interface MailCapableInterface extends PluginCapabilityInterface
 {
     /**
-     * このインターフェースに必要な権限キー
+     * Permission key required for this interface
      */
     public const REQUIRED_PERMISSION = 'mail.send';
 
     /**
-     * メール送信をサポートしているか
+     * Whether mail sending is supported
      */
     public function supportsMailSending(): bool;
 
     /**
-     * 一括送信をサポートしているか
+     * Whether bulk sending is supported
      */
     public function supportsBulkMailSending(): bool;
 }

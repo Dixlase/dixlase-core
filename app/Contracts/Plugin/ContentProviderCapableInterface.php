@@ -38,23 +38,23 @@
 namespace App\Contracts\Plugin;
 
 /**
- * コンテンツ提供機能を宣言するインターフェース
+ * Interface declaring content provider capability
  *
- * 他のプラグインにコンテンツを提供するプラグインが実装します。
- * 既存の LinkableProviderInterface を拡張し、
- * PluginServiceResolver で権限チェック付きの解決を可能にします。
+ * Implemented by plugins that provide content to other plugins
+ * Extends the existing LinkableProviderInterface and
+ * enables resolution with permission checks in PluginServiceResolver
  */
 interface ContentProviderCapableInterface extends PluginCapabilityInterface
 {
     /**
-     * 提供するコンテンツの種類を取得
+     * Get the types of content to provide
      *
-     * @return array<string> 例: ['page', 'post']
+     * @return array<string> Example: ['page', 'post']
      */
     public function getContentTypes(): array;
 
     /**
-     * 指定したコンテンツタイプを提供しているか
+     * Check if the specified content type is provided
      */
     public function providesContentType(string $type): bool;
 }

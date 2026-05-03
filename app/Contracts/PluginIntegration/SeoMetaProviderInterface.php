@@ -40,65 +40,65 @@ namespace App\Contracts\PluginIntegration;
 use App\DTO\PluginIntegration\SeoMetaDTO;
 
 /**
- * コンテンツ単位のSEOメタ情報の読み書きを提供するインターフェース
+ * Interface to provide read/write access to SEO meta information per content
  *
- * SEOプラグインが実装を提供し、ページ生成系プラグイン（固定ページ、
- * リーガルページ、ブログ記事など）から利用されます。SEOプラグイン
- * 未インストール時はこの契約の実装はコンテナに登録されないため、
- * 呼び出し側は `app()->has(SeoMetaProviderInterface::class)` で
- * チェックしてから解決するか、optional resolution パターンを使用してください。
+ * SEO plugins provide the implementation, which is used by page generation plugins (static pages,
+ * legal pages, blog posts, etc.). When the SEO plugin
+ * is not installed, no implementation of this contract is registered in the container, so
+ * callers should check with `app()->has(SeoMetaProviderInterface::class)`
+ * before resolving, or use the optional resolution pattern.
  *
- * メタ情報は `(plugin_slug, entity_id)` のペアで一意に識別されます。
- * `plugin_slug` は呼び出し元プラグインのスラッグ（例: `dixlase-pages`）、
- * `entity_id` は各プラグイン内での対象エンティティの識別子
- * （通常はコンテンツモデルのID）を文字列として渡します。
+ * Meta information is uniquely identified by the `(plugin_slug, entity_id)` pair.
+ * `plugin_slug` is the slug of the calling plugin (e.g. `dixlase-pages`),
+ * `entity_id` is the identifier of the target entity within each plugin
+ * (typically the content model ID) passed as a string.
  */
 interface SeoMetaProviderInterface
 {
     /**
-     * 指定プラグインの指定エンティティのメタ情報を取得
+     * Get meta information for the specified entity of the specified plugin
      *
-     * @param  string  $pluginSlug  呼び出し元プラグインのスラッグ
-     * @param  string  $entityId  対象エンティティのID
-     * @return SeoMetaDTO|null 未登録の場合はnull
+     * @param  string  $pluginSlug  Slug of the calling plugin
+     * @param  string  $entityId  ID of the target entity
+     * @return SeoMetaDTO|null null if not registered
      */
     public function getMeta(string $pluginSlug, string $entityId): ?SeoMetaDTO;
 
     /**
-     * メタ情報を保存（upsert）
+     * Save (upsert) meta information
      *
-     * @param  string  $pluginSlug  呼び出し元プラグインのスラッグ
-     * @param  string  $entityId  対象エンティティのID
-     * @param  SeoMetaDTO  $meta  保存するメタ情報
+     * @param  string  $pluginSlug  Slug of the calling plugin
+     * @param  string  $entityId  ID of the target entity
+     * @param  SeoMetaDTO  $meta  Meta information to save
      */
     public function saveMeta(string $pluginSlug, string $entityId, SeoMetaDTO $meta): void;
 
     /**
-     * 単一のメタ情報を削除
+     * Delete a single meta information entry
      *
-     * @param  string  $pluginSlug  呼び出し元プラグインのスラッグ
-     * @param  string  $entityId  対象エンティティのID
+     * @param  string  $pluginSlug  Slug of the calling plugin
+     * @param  string  $entityId  ID of the target entity
      */
     public function deleteMeta(string $pluginSlug, string $entityId): void;
 
     /**
-     * 指定プラグインの全メタ情報を一括削除
+     * Bulk delete all meta information for the specified plugin
      *
-     * プラグインアンインストール時のカスケードクリーンアップに使用します。
+     * Used for cascade cleanup when uninstalling a plugin.
      *
-     * @param  string  $pluginSlug  対象プラグインのスラッグ
-     * @return int 削除された件数
+     * @param  string  $pluginSlug  Slug of the target plugin
+     * @return int Number of deleted items
      */
     public function purgeByPlugin(string $pluginSlug): int;
 
     /**
-     * SEOプラグインの設定で、指定プラグインのSEOメタ機能が
-     * 有効化されているかを確認
+     * Check if the SEO meta feature for the specified plugin is
+     * enabled in the SEO plugin settings
      *
-     * 各ページ生成プラグインの編集画面でSEOフィールドを表示するかどうかの
-     * 判定に使用します。
+     * Used to determine whether to display SEO fields on the edit screen
+     * of each page generation plugin
      *
-     * @param  string  $pluginSlug  対象プラグインのスラッグ
+     * @param  string  $pluginSlug  Slug of the target plugin
      */
     public function isEnabledForPlugin(string $pluginSlug): bool;
 }

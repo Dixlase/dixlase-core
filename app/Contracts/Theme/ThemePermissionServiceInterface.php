@@ -38,70 +38,70 @@
 namespace App\Contracts\Theme;
 
 /**
- * テーマ権限管理サービスの契約
+ * Theme permission management service interface
  *
- * theme.json の permissions セクションを読み取り、
- * テーマの権限チェック・サマリー取得・違反記録等を提供します。
+ * Reads the permissions section from theme.json and
+ * provides theme permission checks, summary retrieval, violation logging, etc.
  */
 interface ThemePermissionServiceInterface
 {
     /**
-     * テーマの権限をチェック
+     * Check theme permission
      *
-     * @param  string  $themeSlug  テーマのスラッグ（例: dixlase-one-page）
-     * @param  string  $permission  権限キー（例: assets.custom_js, database.own_tables）
+     * @param  string  $themeSlug  Theme slug (e.g., dixlase-one-page)
+     * @param  string  $permission  Permission key (e.g., assets.custom_js, database.own_tables)
      */
     public function check(string $themeSlug, string $permission): bool;
 
     /**
-     * テーマが特定の権限を持っているか確認（エイリアス）
+     * Check if theme has a specific permission (alias)
      */
     public function has(string $themeSlug, string $permission): bool;
 
     /**
-     * テーマの全権限を取得
+     * Get all theme permissions
      */
     public function getPermissions(string $themeSlug): ?array;
 
     /**
-     * テーマの権限サマリーを取得（管理画面表示用）
+     * Get theme permission summary (for admin panel display)
      */
     public function getSummary(string $themeSlug): array;
 
     /**
-     * テーマの署名情報を取得
+     * Get theme signature information
      */
     public function getSignatureInfo(string $themeSlug): array;
 
     /**
-     * 宣言された権限と不一致情報からリスクレベルを統一計算
+     * Calculate unified risk level from declared permissions and mismatch information
      *
-     * @param  array  $declaredPermissions  theme.json の permissions
-     * @param  array  $mismatches  権限の不一致リスト
+     * @param  array  $declaredPermissions  Permissions from theme.json
+     * @param  array  $mismatches  List of permission mismatches
      * @return array{level: string, reasons: array, score: int}
      */
     public function calculateUnifiedRiskLevel(array $declaredPermissions, array $mismatches = []): array;
 
     /**
-     * リスクレベルと理由を計算
+     * Calculate risk level and reason
      *
-     * @deprecated calculateUnifiedRiskLevel() を使用してください。
+     * @deprecated Use calculateUnifiedRiskLevel() instead.
      *
      * @return array{level: string, reasons: array, score: int}
      */
     public function calculateRiskLevelWithReasons(array $permissions): array;
 
     /**
-     * キャッシュをクリア
+     * Clear cache
      *
-     * @param  string|null  $themeSlug  特定のテーマのみクリアする場合
+     * @param  string|null  $themeSlug  If clearing only a specific theme
      */
     public function clearCache(?string $themeSlug = null): void;
 
     /**
-     * 権限違反をログに記録
+     * Log permission violation
      *
-     * @param  string  $action  実行しようとしたアクション
+     * @param  string  $action  Action that was attempted
      */
     public function logViolation(string $themeSlug, string $permission, string $action = ''): void;
 }

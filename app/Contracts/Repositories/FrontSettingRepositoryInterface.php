@@ -40,16 +40,16 @@ namespace App\Contracts\Repositories;
 use App\Models\FrontSetting;
 
 /**
- * フロント設定リポジトリインターフェース
+ * Front settings repository interface
  *
- * フロントページの設定（OGP画像、説明文など）を管理します。
+ * Manages front page settings (OGP images, descriptions, etc.)
  */
 interface FrontSettingRepositoryInterface extends SettingRepositoryInterface
 {
     /**
-     * リレーションを含めて設定を取得
+     * Get settings including relations
      *
-     * @param  string  $name  設定名
+     * @param  string  $name  Setting name
      */
     public function findWithRelations(string $name): ?FrontSetting;
 }

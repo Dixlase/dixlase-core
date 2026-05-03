@@ -29,29 +29,29 @@ use App\Models\BackupRecord;
 use App\Models\RestoreRecord;
 
 /**
- * 復元サービスインターフェース
+ * Restore service interface
  *
- * バックアップからの復元およびロールバックを提供します。
- * 復元前に自動的にセーフティスナップショット（現在状態のバックアップ）を取得し、
- * 失敗時のロールバックを可能にします。
+ * Provides restore and rollback from backups.
+ * Automatically takes a safety snapshot (backup of current state) before restore,
+ * enabling rollback on failure.
  */
 interface RestoreServiceInterface
 {
     /**
-     * バックアップから復元を実行
+     * Execute restore from backup
      *
-     * 実行前に自動的にセーフティスナップショットを取得します。
+     * Automatically takes a safety snapshot before execution.
      *
-     * @param  BackupRecord  $backup  復元元のバックアップ
-     * @param  string[]  $targets  復元する対象（空配列の場合はバックアップに含まれる全対象）
-     * @param  array<string,mixed>  $options  追加オプション（例: ['skip_pre_restore_backup' => false]）
+     * @param  BackupRecord  $backup  Backup to restore from
+     * @param  string[]  $targets  Targets to restore (if empty array, all targets included in backup)
+     * @param  array<string,mixed>  $options  Additional options (e.g., ['skip_pre_restore_backup' => false])
      */
     public function restore(BackupRecord $backup, array $targets = [], array $options = []): RestoreResultDTO;
 
     /**
-     * 復元のロールバック（セーフティスナップショットからの復元）
+     * Rollback restore (restore from safety snapshot)
      *
-     * canRollback() が true の RestoreRecord にのみ実行可能です。
+     * Can only be executed on RestoreRecord where canRollback() is true.
      */
     public function rollback(RestoreRecord $restore): RestoreResultDTO;
 }

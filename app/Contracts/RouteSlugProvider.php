@@ -42,9 +42,9 @@ use App\DTO\RouteSlug\RegisteredSlug;
 /**
  * Route Slug Provider Interface
  *
- * プラグイン・テーマが管理するURLスラッグを提供するためのインターフェース。
- * このインターフェースを実装することで、トップレベルURLスラッグの
- * 重複チェックに参加できる。
+ * Interface for providing URL slugs managed by plugins and themes
+ * By implementing this interface, you can participate in
+ * duplicate checking for top-level URL slugs
  *
  * @example
  * class MyPluginRouteSlugProvider implements RouteSlugProvider
@@ -65,9 +65,9 @@ use App\DTO\RouteSlug\RegisteredSlug;
 interface RouteSlugProvider
 {
     /**
-     * 管理対象のルートスラッグ一覧を取得
+     * Get list of managed route slugs
      *
-     * @return array<RegisteredSlug> 登録済みスラッグの配列
+     * @return array<RegisteredSlug> Array of registered slugs
      */
     public function getRouteSlugs(): array;
 }

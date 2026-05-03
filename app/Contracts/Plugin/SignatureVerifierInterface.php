@@ -40,26 +40,26 @@ namespace App\Contracts\Plugin;
 use App\DTO\Plugin\SignatureVerificationResult;
 
 /**
- * 署名検証コントラクト
+ * Signature verification contract
  *
- * コア側で署名検証の抽象化を提供します。
- * DixlaseDevKit プラグインがインストール済みの場合は Ed25519 ベースの
- * 検証を実行し、未インストール時はスタブ実装が unsigned を返します。
+ * Provides signature verification abstraction on the Core side.
+ * When the DixlaseDevKit plugin is installed, performs Ed25519-based
+ * verification; when not installed, the stub implementation returns unsigned.
  */
 interface SignatureVerifierInterface
 {
     /**
-     * プラグインの署名を検証する
+     * Verify plugin signature
      *
-     * @param  string  $pluginSlug  プラグインのスラッグ（kebab-case）
-     * @return SignatureVerificationResult 検証結果
+     * @param  string  $pluginSlug  Plugin slug (kebab-case)
+     * @return SignatureVerificationResult Verification result
      */
     public function verify(string $pluginSlug): SignatureVerificationResult;
 
     /**
-     * 署名検証が利用可能かどうか
+     * Whether signature verification is available
      *
-     * DixlaseDevKit プラグインがインストールされていない場合は false を返します。
+     * Returns false when the DixlaseDevKit plugin is not installed.
      */
     public function isAvailable(): bool;
 }

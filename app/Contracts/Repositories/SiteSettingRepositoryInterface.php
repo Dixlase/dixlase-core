@@ -40,16 +40,16 @@ namespace App\Contracts\Repositories;
 use App\Models\SiteSetting;
 
 /**
- * 基本設定リポジトリインターフェース
+ * Site settings repository interface
  *
- * サイトの基本設定（サイト名、OGP画像など）を管理します。
+ * Manages site basic settings (site name, OGP image, etc.)
  */
 interface SiteSettingRepositoryInterface extends SettingRepositoryInterface
 {
     /**
-     * リレーションを含めて設定を取得
+     * Get settings including relations
      *
-     * @param  string  $name  設定名
+     * @param  string  $name  Setting name
      */
     public function findWithRelations(string $name): ?SiteSetting;
 }

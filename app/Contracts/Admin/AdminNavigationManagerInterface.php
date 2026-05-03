@@ -38,30 +38,30 @@
 namespace App\Contracts\Admin;
 
 /**
- * 管理画面ナビゲーション管理インターフェース
+ * Admin panel navigation manager interface
  *
- * プラグインのナビゲーション設定をコアのナビゲーションにマージするための抽象レイヤー。
- * AdminHelper への直接依存を排除し、SDK分離を可能にする。
+ * Abstraction layer for merging plugin navigation settings into Core navigation
+ * Eliminates direct dependency on AdminHelper and enables SDK separation
  */
 interface AdminNavigationManagerInterface
 {
     /**
-     * 新構造のナビゲーションファイル (config/admin/navigation.php) をマージ
+     * Merge new-structure navigation file (config/admin/navigation.php)
      *
-     * _insert_before / _insert_after による順序制御をサポートする。
-     * ファイルが存在しない場合は何もしない。
+     * Supports ordering via _insert_before / _insert_after.
+     * Does nothing if the file does not exist
      *
-     * @param  string  $configFile  プラグインのナビゲーション設定ファイルパス
+     * @param  string  $configFile  Plugin navigation settings file path
      */
     public function mergeNavigationFile(string $configFile): void;
 
     /**
-     * 旧構造のナビゲーション設定 (admin.php の nav キー) をマージ
+     * Merge old-structure navigation settings (nav key in admin.php)
      *
-     * _insert_before / _insert_after による順序制御をサポートする。
-     * ファイルが存在しない場合、または nav キーがない場合は何もしない。
+     * Supports ordering via _insert_before / _insert_after.
+     * Does nothing if the file does not exist or the nav key is not present
      *
-     * @param  string  $configFile  プラグインの admin 設定ファイルパス
+     * @param  string  $configFile  Plugin admin settings file path
      */
     public function mergeNavConfig(string $configFile): void;
 }

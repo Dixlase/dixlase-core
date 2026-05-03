@@ -40,74 +40,74 @@ namespace App\Contracts\Repositories;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 設定リポジトリベースインターフェース
+ * Settings repository base interface
  *
- * すべての設定系リポジトリが実装すべき共通メソッドを定義します。
+ * Defines common methods that all settings repositories should implement.
  */
 interface SettingRepositoryInterface
 {
     /**
-     * すべての設定を取得
+     * Get all settings
      *
      * @return array<string, mixed>
      */
     public function all(): array;
 
     /**
-     * 特定のキーの値を取得
+     * Get value for a specific key
      *
-     * @param  string  $name  設定名
-     * @param  mixed  $default  デフォルト値
+     * @param  string  $name  Setting name
+     * @param  mixed  $default  Default value
      */
     public function get(string $name, mixed $default = null): mixed;
 
     /**
-     * 複数のキーの値を一括取得
+     * Get values for multiple keys at once
      *
-     * @param  array<string>  $names  設定名の配列
-     * @param  mixed  $default  デフォルト値
+     * @param  array<string>  $names  Array of setting names
+     * @param  mixed  $default  Default value
      * @return array<string, mixed>
      */
     public function getMultiple(array $names, mixed $default = null): array;
 
     /**
-     * 設定値を保存
+     * Save setting value
      *
-     * @param  string  $name  設定名
-     * @param  mixed  $value  設定値
+     * @param  string  $name  Setting name
+     * @param  mixed  $value  Setting value
      */
     public function set(string $name, mixed $value): Model;
 
     /**
-     * 複数の設定値を一括保存
+     * Save multiple setting values at once
      *
-     * @param  array<string, mixed>  $settings  設定の配列
+     * @param  array<string, mixed>  $settings  Settings array
      */
     public function setMultiple(array $settings): bool;
 
     /**
-     * 設定が存在するか確認
+     * Check if setting exists
      *
-     * @param  string  $name  設定名
+     * @param  string  $name  Setting name
      */
     public function has(string $name): bool;
 
     /**
-     * 設定を削除
+     * Delete setting
      *
-     * @param  string  $name  設定名
+     * @param  string  $name  Setting name
      */
     public function delete(string $name): bool;
 
     /**
-     * キャッシュをクリア
+     * Clear cache
      *
-     * @param  string|null  $name  特定のキーのみクリアする場合は指定
+     * @param  string|null  $name  Specify if clearing only a specific key
      */
     public function clearCache(?string $name = null): void;
 
     /**
-     * すべてのキャッシュをクリア
+     * Clear all cache
      */
     public function clearAllCache(): void;
 }

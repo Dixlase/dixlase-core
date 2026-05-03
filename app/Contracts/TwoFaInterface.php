@@ -40,62 +40,62 @@ namespace App\Contracts;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * 二段階認証機能を持つユーザーのインターフェース
+ * Interface for users with two-factor authentication functionality
  */
 interface TwoFaInterface
 {
     /**
-     * ユーザーIDを取得
+     * Get user ID
      */
     public function getId(): int;
 
     /**
-     * メールアドレスを取得
+     * Get email address
      */
     public function getEmail(): string;
 
     /**
-     * 表示名を取得
+     * Get display name
      */
     public function getDisplayName(): string;
 
     /**
-     * アカウント名を取得
+     * Get account name
      */
     public function getAccountName(): ?string;
 
     /**
-     * 二段階認証モードを取得
+     * Get two-factor authentication mode
      */
     public function getTwoFaMode(): int;
 
     /**
-     * パスキーが有効かどうか
+     * Whether passkey is enabled
      */
     public function isTwoFaPasskeyEnabled(): bool;
 
     /**
-     * デフォルトの二段階認証方法を取得
+     * Get default two-factor authentication method
      */
     public function getTwoFaDefaultMethod(): int;
 
     /**
-     * パスキーデバイスのリレーション
+     * Passkey devices relation
      */
     public function twoFaPasskeys(): HasMany;
 
     /**
-     * 回復コードのリレーション
+     * Recovery codes relation
      */
     public function twoFaRecoveryCodes(): HasMany;
 
     /**
-     * 二段階認証試行のリレーション
+     * Two-factor authentication attempts relation
      */
     public function twoFaAttempts(): HasMany;
 
     /**
-     * 二段階認証トークンのリレーション
+     * Two-factor authentication tokens relation
      */
     public function twoFaTokens(): HasMany;
 }

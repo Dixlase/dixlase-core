@@ -38,110 +38,110 @@
 namespace App\Contracts\Plugin;
 
 /**
- * プラグイン権限管理サービスの契約
+ * Contract for plugin permission management service
  *
- * plugin.json の permissions セクションを読み取り、
- * プラグインの権限チェック・サマリー取得・違反記録等を提供します。
+ * Reads the permissions section of plugin.json and
+ * provides plugin permission checks, summary retrieval, violation recording, etc.
  */
 interface PluginPermissionServiceInterface
 {
     /**
-     * プラグインの権限をチェック
+     * Check plugin permission
      *
-     * @param  string  $pluginSlug  プラグインのスラッグ（例: dixlase-inquiry）
-     * @param  string  $permission  権限キー（例: mail.send, database.own_tables）
+     * @param  string  $pluginSlug  Plugin slug (e.g., dixlase-inquiry)
+     * @param  string  $permission  Permission key (e.g., mail.send, database.own_tables)
      */
     public function check(string $pluginSlug, string $permission): bool;
 
     /**
-     * プラグインが特定の権限を持っているか確認（エイリアス）
+     * Check if plugin has a specific permission (alias)
      */
     public function has(string $pluginSlug, string $permission): bool;
 
     /**
-     * プラグインの全権限を取得
+     * Get all permissions for plugin
      */
     public function getPermissions(string $pluginSlug): ?array;
 
     /**
-     * プラグインの _optional 権限リストを取得
+     * Get the _optional permission list for plugin
      *
-     * @return array<string> オプショナル権限キーのリスト
+     * @return array<string> List of optional permission keys
      */
     public function getOptionalPermissions(string $pluginSlug): array;
 
     /**
-     * プラグインの _notes を取得
+     * Get the _notes for plugin
      *
-     * @return array{ja?: string, en?: string} 権限使用理由の説明
+     * @return array{ja?: string, en?: string} Description of permission usage reason
      */
     public function getPermissionNotes(string $pluginSlug): array;
 
     /**
-     * 権限キーがオプショナルかどうかを判定
+     * Determine if permission key is optional
      */
     public function isOptionalPermission(string $pluginSlug, string $permissionKey): bool;
 
     /**
-     * プラグインが特定のコアテーブルにアクセスできるかチェック
+     * Check if plugin can access a specific Core table
      *
-     * @param  string  $table  テーブル名
-     * @param  string  $access  アクセスタイプ（read, write）
+     * @param  string  $table  Table name
+     * @param  string  $access  Access type (read, write)
      */
     public function canAccessCoreTable(string $pluginSlug, string $table, string $access = 'read'): bool;
 
     /**
-     * プラグインが他のプラグインのコンテンツにアクセスできるかチェック
+     * Check if plugin can access another plugin's content
      *
-     * @param  string  $targetPlugin  アクセス先のプラグイン
-     * @param  string  $access  アクセスタイプ（read, write）
+     * @param  string  $targetPlugin  Target plugin to access
+     * @param  string  $access  Access type (read, write)
      */
     public function canAccessOtherPlugin(string $pluginSlug, string $targetPlugin, string $access = 'read'): bool;
 
     /**
-     * プラグインの権限サマリーを取得（管理画面表示用）
+     * Get plugin permission summary (for admin panel display)
      */
     public function getSummary(string $pluginSlug): array;
 
     /**
-     * プラグインの署名情報を取得
+     * Get plugin signature information
      */
     public function getSignatureInfo(string $pluginSlug): array;
 
     /**
-     * 宣言された権限と不一致情報からリスクレベルを統一計算
+     * Calculate unified risk level from declared permissions and mismatch information
      *
-     * @param  array  $declaredPermissions  plugin.json の permissions
-     * @param  array  $mismatches  権限の不一致リスト
+     * @param  array  $declaredPermissions  permissions from plugin.json
+     * @param  array  $mismatches  List of permission mismatches
      * @return array{level: string, reasons: array, score: int}
      */
     public function calculateUnifiedRiskLevel(array $declaredPermissions, array $mismatches = []): array;
 
     /**
-     * リスクレベルと理由を計算
+     * Calculate risk level and reason
      *
-     * @deprecated calculateUnifiedRiskLevel() を使用してください。
+     * @deprecated Use calculateUnifiedRiskLevel() instead.
      *
      * @return array{level: string, reasons: array, score: int}
      */
     public function calculateRiskLevelWithReasons(array $permissions): array;
 
     /**
-     * キャッシュをクリア
+     * Clear cache
      *
-     * @param  string|null  $pluginSlug  特定のプラグインのみクリアする場合
+     * @param  string|null  $pluginSlug  To clear only a specific plugin
      */
     public function clearCache(?string $pluginSlug = null): void;
 
     /**
-     * 権限違反をログに記録
+     * Log permission violation
      *
-     * @param  string  $action  実行しようとしたアクション
+     * @param  string  $action  Action that was attempted to execute
      */
     public function logViolation(string $pluginSlug, string $permission, string $action = ''): void;
 
     /**
-     * 権限チェックを行い、違反時は例外をスロー
+     * Perform permission check and throw exception on violation
      *
      * @throws \App\Exceptions\PluginPermissionException
      */

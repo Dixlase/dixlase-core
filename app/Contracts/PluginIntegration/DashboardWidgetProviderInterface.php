@@ -41,16 +41,16 @@ use App\Contracts\Plugin\PluginCapabilityInterface;
 use App\DTO\PluginIntegration\DashboardWidgetDTO;
 
 /**
- * ダッシュボードウィジェットを提供するプラグインの契約
+ * Contract for plugins that provide dashboard widgets
  *
- * プラグインがダッシュボードにコンテンツ概要（件数やステータス等）を
- * 表示するためのインターフェースです。
- * PluginCapabilityInterface を継承し、PluginServiceResolver 経由で自動発見されます。
+ * Interface for plugins to display content summaries (counts, statuses, etc.)
+ * on the dashboard
+ * Extends PluginCapabilityInterface and is auto-discovered via PluginServiceResolver
  */
 interface DashboardWidgetProviderInterface extends PluginCapabilityInterface
 {
     /**
-     * ダッシュボードウィジェットの一覧を取得
+     * Get list of dashboard widgets
      *
      * @return DashboardWidgetDTO[]
      */

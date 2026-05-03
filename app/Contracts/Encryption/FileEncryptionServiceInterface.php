@@ -40,45 +40,45 @@ namespace App\Contracts\Encryption;
 use App\DTO\Encryption\EncryptionResultDTO;
 
 /**
- * ファイル暗号化サービスインターフェース
+ * File encryption service interface
  *
- * バックアップ暗号化、添付ファイル保護等に使用します。
+ * Used for backup encryption, attachment protection, etc.
  */
 interface FileEncryptionServiceInterface
 {
     /**
-     * ファイルを暗号化
+     * Encrypt a file
      *
-     * @param  string  $sourcePath  暗号化するファイルのパス
-     * @param  string  $destPath  暗号化されたファイルの出力先パス
-     * @param  string|null  $key  暗号化キー（null の場合は APP_KEY を使用）
+     * @param  string  $sourcePath  Path to the file to encrypt
+     * @param  string  $destPath  Output path for the encrypted file
+     * @param  string|null  $key  Encryption key (uses APP_KEY if null)
      */
     public function encryptFile(string $sourcePath, string $destPath, ?string $key = null): EncryptionResultDTO;
 
     /**
-     * ファイルを復号
+     * Decrypt a file
      *
-     * @param  string  $sourcePath  暗号化されたファイルのパス
-     * @param  string  $destPath  復号されたファイルの出力先パス
-     * @param  string|null  $key  復号キー（null の場合は APP_KEY を使用）
-     * @return string 復号されたファイルのパス
+     * @param  string  $sourcePath  Path to the encrypted file
+     * @param  string  $destPath  Output path for the decrypted file
+     * @param  string|null  $key  Decryption key (uses APP_KEY if null)
+     * @return string Path to the decrypted file
      *
-     * @throws \App\Exceptions\DecryptionException 復号に失敗した場合
+     * @throws \App\Exceptions\DecryptionException If decryption fails
      */
     public function decryptFile(string $sourcePath, string $destPath, ?string $key = null): string;
 
     /**
-     * 暗号化アルゴリズムの識別子を取得
+     * Get the encryption algorithm identifier
      */
     public function getAlgorithm(): string;
 
     /**
-     * 新しい暗号化キーを生成
+     * Generate a new encryption key
      */
     public function generateKey(): string;
 
     /**
-     * ファイルが暗号化されているかをヘッダーのマジックバイトで判定
+     * Determine if a file is encrypted by checking the magic bytes in the header
      */
     public function isEncrypted(string $filePath): bool;
 }

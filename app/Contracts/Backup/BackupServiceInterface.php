@@ -28,64 +28,64 @@ use App\DTO\Backup\BackupResultDTO;
 use App\Models\BackupRecord;
 
 /**
- * バックアップサービスインターフェース
+ * Backup service interface
  *
- * バックアップの作成・削除・対象列挙を提供します。
- * デフォルト実装（CoreBackupService）は手動バックアップのみをサポートします。
- * スケジュール実行・暗号化・リモートストレージ等の高度な機能は
- * バックアッププラグインで上書きします。
+ * Provides backup creation, deletion, and target enumeration
+ * Default implementation (CoreBackupService) supports manual backups only
+ * Advanced features such as scheduled execution, encryption, remote storage, etc.
+ * are overridden by backup plugins
  */
 interface BackupServiceInterface
 {
     /**
-     * バックアップ対象: データベース全体
+     * Backup target: entire database
      */
     public const TARGET_DATABASE = 'database';
 
     /**
-     * バックアップ対象: メディア（アップロードファイル）
+     * Backup target: media (uploaded files)
      */
     public const TARGET_MEDIA = 'media';
 
     /**
-     * バックアップ対象: storage/app/private（ページ等のファイル保存コンテンツ）
+     * Backup target: storage/app/private (file-stored content such as pages)
      */
     public const TARGET_PRIVATE = 'private';
 
     /**
-     * バックアップ対象: custom/（サイト固有カスタマイズ）
+     * Backup target: custom/ (site-specific customizations)
      */
     public const TARGET_CUSTOM = 'custom';
 
     /**
-     * バックアップ対象: storage/logs（オプション、デフォルト OFF）
+     * Backup target: storage/logs (optional, default OFF)
      */
     public const TARGET_LOGS = 'logs';
 
     /**
-     * バックアップを実行
+     * Execute backup
      *
-     * @param  string[]  $targets  バックアップ対象（TARGET_* 定数の配列）
-     * @param  array<string,mixed>  $options  追加オプション（例: ['retention_days' => 30]）
+     * @param  string[]  $targets  Backup targets (array of TARGET_* constants)
+     * @param  array<string,mixed>  $options  Additional options (e.g., ['retention_days' => 30])
      */
     public function backup(array $targets, array $options = []): BackupResultDTO;
 
     /**
-     * 利用可能なバックアップ対象の一覧を取得
+     * Get list of available backup targets
      *
-     * @return string[] TARGET_* 定数の配列
+     * @return string[] Array of TARGET_* constants
      */
     public function getAvailableTargets(): array;
 
     /**
-     * デフォルトのバックアップ対象を取得（オプション項目を除く）
+     * Get default backup targets (excluding optional items)
      *
-     * @return string[] TARGET_* 定数の配列
+     * @return string[] Array of TARGET_* constants
      */
     public function getDefaultTargets(): array;
 
     /**
-     * バックアップを削除（ファイル + BackupRecord のステータス更新）
+     * Delete backup (file + BackupRecord status update)
      */
     public function delete(BackupRecord $record): bool;
 }

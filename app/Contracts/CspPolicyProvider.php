@@ -40,9 +40,9 @@ namespace App\Contracts;
 /**
  * CSP Policy Provider Interface
  *
- * プラグイン・テーマがCSPポリシーを提供するためのインターフェース。
- * このインターフェースを実装することで、拡張機能が必要とする
- * 外部リソースをCSPに追加できる。
+ * Interface for plugins and themes to provide CSP policies.
+ * By implementing this interface, extensions can add external resources
+ * they require to the CSP.
  *
  * @example
  * class MyPluginServiceProvider implements CspPolicyProvider
@@ -60,25 +60,25 @@ namespace App\Contracts;
 interface CspPolicyProvider
 {
     /**
-     * CSPディレクティブを取得
+     * Get CSP directives.
      *
-     * @return array<string, array<string>> ディレクティブ名 => 値の配列
+     * @return array<string, array<string>> Map of directive name => list of allowed sources
      *
-     * 使用可能なディレクティブ:
-     * - default-src: デフォルトのフォールバック
-     * - script-src: スクリプトソース
-     * - style-src: スタイルソース
-     * - img-src: 画像ソース
-     * - font-src: フォントソース
-     * - connect-src: 接続先（XHR, fetch, WebSocket等）
-     * - media-src: メディアソース（audio, video）
-     * - object-src: オブジェクトソース（plugin, embed, object）
-     * - frame-src: フレームソース
-     * - frame-ancestors: フレーム祖先
-     * - form-action: フォーム送信先
-     * - base-uri: ベースURI
-     * - manifest-src: マニフェストソース
-     * - worker-src: ワーカーソース
+     * Available directives:
+     * - default-src: Default fallback
+     * - script-src: Script sources
+     * - style-src: Style sources
+     * - img-src: Image sources
+     * - font-src: Font sources
+     * - connect-src: Connection targets (XHR, fetch, WebSocket, etc.)
+     * - media-src: Media sources (audio, video)
+     * - object-src: Object sources (plugin, embed, object)
+     * - frame-src: Frame sources
+     * - frame-ancestors: Frame ancestors
+     * - form-action: Form action targets
+     * - base-uri: Base URI
+     * - manifest-src: Manifest sources
+     * - worker-src: Worker sources
      */
     public function getCspDirectives(): array;
 }

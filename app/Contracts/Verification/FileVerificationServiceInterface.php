@@ -38,31 +38,31 @@
 namespace App\Contracts\Verification;
 
 /**
- * ファイル整合性検証サービスインターフェース
+ * File integrity verification service interface
  *
- * バックアップファイルのハッシュ検証に使用します。
+ * Used for hash verification of backup files
  */
 interface FileVerificationServiceInterface
 {
     /**
-     * ファイルのハッシュを生成
+     * Generate hash of file
      *
-     * @param  string  $filePath  ハッシュを計算するファイルのパス
-     * @param  string  $algorithm  ハッシュアルゴリズム（デフォルト: sha256）
+     * @param  string  $filePath  Path to the file to calculate hash for
+     * @param  string  $algorithm  Hash algorithm (default: sha256)
      */
     public function hashFile(string $filePath, string $algorithm = 'sha256'): string;
 
     /**
-     * ファイルのハッシュが期待値と一致するか検証
+     * Verify that the file hash matches the expected value
      *
-     * @param  string  $filePath  検証するファイルのパス
-     * @param  string  $expectedHash  期待されるハッシュ値
-     * @param  string  $algorithm  ハッシュアルゴリズム（デフォルト: sha256）
+     * @param  string  $filePath  Path to the file to verify
+     * @param  string  $expectedHash  Expected hash value
+     * @param  string  $algorithm  Hash algorithm (default: sha256)
      */
     public function verifyHash(string $filePath, string $expectedHash, string $algorithm = 'sha256'): bool;
 
     /**
-     * サポートされているハッシュアルゴリズムの一覧を取得
+     * Get list of supported hash algorithms
      *
      * @return string[]
      */
