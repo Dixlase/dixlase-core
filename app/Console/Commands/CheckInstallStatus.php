@@ -161,24 +161,26 @@ class CheckInstallStatus extends Command
         }
         $this->newLine();
 
-        // 6. site_settings
+        // 6. site_settings (primary site, site_id=1)
         try {
             if (DB::getSchemaBuilder()->hasTable('site_settings')) {
                 $hasSiteName = DB::table('site_settings')
+                    ->where('site_id', 1)
                     ->where('name', 'site_name')
                     ->exists();
 
-                $this->info('6. site_settings (site_name): '.($hasSiteName ? '✅ 存在' : '❌ 不在'));
+                $this->info('6. site_settings (site_name @ primary site): '.($hasSiteName ? '✅ 存在' : '❌ 不在'));
 
                 if ($hasSiteName) {
                     $siteName = DB::table('site_settings')
+                        ->where('site_id', 1)
                         ->where('name', 'site_name')
                         ->value('value');
                     $this->line("   サイト名: {$siteName}");
                 }
             }
-        } catch (\Exception $e) {
-            $this->error('6. site_settingsチェックエラー: '.$e->getMessage());
+        } catch (\Throwable $e) {
+            $this->error('6. site_settings チェックエラー: '.$e->getMessage());
         }
         $this->newLine();
 
@@ -244,9 +246,10 @@ class CheckInstallStatus extends Command
                 return false;
             }
 
-            $hasSiteName = DB::table('site_settings')->where('name', 'site_name')->exists();
-
-            return $hasSiteName;
+            return DB::table('site_settings')
+                ->where('site_id', 1)
+                ->where('name', 'site_name')
+                ->exists();
         } catch (\Exception $e) {
             return false;
         }
