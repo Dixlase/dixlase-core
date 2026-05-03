@@ -33,14 +33,18 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use App\Contracts\Site\SiteContextInterface;
+use App\Helpers\LocaleHelper;
 use App\Helpers\PluginHelper;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\Front\FrontCustomAssetController;
 use App\Http\Controllers\Front\FrontWelcomeController;
+use App\Http\Middleware\SetFrontLocale;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 
-// CSP違反レポートエンドポイント（認証不要、セッション・CSPミドルウェア除外）
+// CSP violation report endpoint (no auth, session/CSP middleware excluded).
+// Stays outside the locale group because a single canonical URL is required.
 Route::post('/csp-report', [CspReportController::class, 'report'])
     ->name('csp.report')
     ->withoutMiddleware([
@@ -51,25 +55,60 @@ Route::post('/csp-report', [CspReportController::class, 'report'])
         \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
     ]);
 
-// インストール済みの場合にアクセス可能なルート
-Route::middleware(['web', 'front.ip'])->group(
-    function () {
+// Theme/admin/plugin static asset delivery.
+// Stays outside the locale group: assets are language-neutral and need a
+// single canonical URL so the browser cache key is shared across locales.
+// Session/CSRF middleware are excluded so concurrent GETs don't fight over
+// the session id and accidentally invalidate the admin's session.
+Route::get('assets/{type}/{file}', function ($type, $file) {
+    $basePath = match ($type) {
+        'theme' => base_path('themes/'.getActiveThemeDirectory().'/assets'),
+        'admin' => base_path('resources/admin/assets'),
+        'plugin' => base_path("plugins/{$file}/assets"),
+        default => abort(404),
+    };
+
+    $filePath = "{$basePath}/{$file}";
+    if (! File::exists($filePath)) {
+        abort(404);
+    }
+
+    return response()->file($filePath);
+})
+    ->where('file', '.*')
+    ->withoutMiddleware([
+        \Illuminate\Session\Middleware\StartSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+    ]);
+
+// Front page custom JS/CSS external file delivery.
+// Stays outside the locale group so the URL stays cache-key-stable.
+Route::get('/front/custom-script.js', [FrontCustomAssetController::class, 'script'])
+    ->name('front.custom-script')
+    ->middleware('front.ip')
+    ->withoutMiddleware([\App\Http\Middleware\ContentSecurityPolicy::class]);
+
+Route::get('/front/custom-style.css', [FrontCustomAssetController::class, 'style'])
+    ->name('front.custom-style')
+    ->middleware('front.ip')
+    ->withoutMiddleware([\App\Http\Middleware\ContentSecurityPolicy::class]);
+
+// Locale-prefixed front-end routes.
+// Plugin web routes are loaded inside this group so they inherit the
+// /{locale}/ prefix and the SetFrontLocale resolution.
+Route::prefix('{locale}')
+    ->where(['locale' => 'ja|en'])
+    ->middleware(['web', 'front.ip', SetFrontLocale::class])
+    ->group(function () {
         Route::get('/', [FrontWelcomeController::class, 'index'])->name('welcome');
 
-        // Front page custom JS/CSS external file delivery (CSP middleware excluded for non-HTML responses)
-        Route::get('/front/custom-script.js', [FrontCustomAssetController::class, 'script'])
-            ->name('front.custom-script')
-            ->withoutMiddleware([\App\Http\Middleware\ContentSecurityPolicy::class]);
-
-        Route::get('/front/custom-style.css', [FrontCustomAssetController::class, 'style'])
-            ->name('front.custom-style')
-            ->withoutMiddleware([\App\Http\Middleware\ContentSecurityPolicy::class]);
-
-        // フロントログテスト用ルート（開発用）
+        // Front log test route (development only).
         Route::get('/test-front-log', function () {
-            \Illuminate\Support\Facades\Log::channel('front_activity')->info('フロント操作ログテスト', [
-                'action' => 'ページ閲覧',
-                'page' => 'テストページ',
+            \Illuminate\Support\Facades\Log::channel('front_activity')->info('Front activity log test', [
+                'action' => 'page_view',
+                'page' => 'test_page',
                 'user_id' => null,
                 'ip_address' => request()->ip(),
                 'user_agent' => request()->userAgent(),
@@ -78,8 +117,8 @@ Route::middleware(['web', 'front.ip'])->group(
                 'timestamp' => now()->toDateTimeString(),
             ]);
 
-            \Illuminate\Support\Facades\Log::channel('front_error')->error('フロントエラーログテスト', [
-                'error' => 'テストエラー',
+            \Illuminate\Support\Facades\Log::channel('front_error')->error('Front error log test', [
+                'error' => 'test_error',
                 'error_type' => 'test_error',
                 'user_id' => null,
                 'ip_address' => request()->ip(),
@@ -91,43 +130,68 @@ Route::middleware(['web', 'front.ip'])->group(
 
             return response()->json([
                 'success' => true,
-                'message' => 'フロントログを出力しました',
+                'message' => 'Front log test executed.',
                 'logs' => [
-                    'front_activity' => 'storage/logs/front_activity.log または front_activity-'.now()->format('Y-m-d').'.log',
-                    'front_error' => 'storage/logs/front_error.log または front_error-'.now()->format('Y-m-d').'.log',
+                    'front_activity' => 'storage/logs/front_activity.log or front_activity-'.now()->format('Y-m-d').'.log',
+                    'front_error' => 'storage/logs/front_error.log or front_error-'.now()->format('Y-m-d').'.log',
                 ],
                 'admin_url' => route('admin.settings.systems.logs.files', ['type' => 'front_activity']),
             ]);
         })->name('test.front.log');
 
-        // テーマのアセットファイル
-        // 静的ファイル配信なのでセッション・CSRF を通さない。
-        // 1 ページ内で並列 GET されると同じ session_id で複数の空セッション
-        // write が競合し、管理画面側の members_sessions を消して 419 を引き起こす。
-        Route::get('assets/{type}/{file}', function ($type, $file) {
-            $basePath = match ($type) {
-                'theme' => base_path('themes/'.getActiveThemeDirectory().'/assets'), // アクティブテーマのディレクトリ名を取得
-                'admin' => base_path('resources/admin/assets'),
-                'plugin' => base_path("plugins/{$file}/assets"), // `file` をプラグイン名として扱う
-                default => abort(404),
-            };
+        // Plugin web routes (auto-wrapped in the locale group so plugin
+        // authors can write ordinary route definitions).
+        PluginHelper::loadEnabledWebRoutes();
+    });
 
-            $filePath = "{$basePath}/{$file}";
-            if (! File::exists($filePath)) {
-                abort(404);
-            }
-
-            return response()->file($filePath);
-        })
-            ->where('file', '.*')
-            ->withoutMiddleware([
-                \Illuminate\Session\Middleware\StartSession::class,
-                \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-                \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-                \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
-            ]);
+// Catch-all for locale-less front URLs: 302 redirect to the same path
+// under a resolved locale. Runs after every locale-prefixed route has
+// had a chance to match. Resolution mirrors SetFrontLocale (minus URL):
+// Cookie > Accept-Language > Site.primary_locale > config fallback.
+// 302 (not 301) keeps v2 free to change the strategy without poisoning
+// caches.
+Route::get('/{any?}', function ($any = '') {
+    // If the path already begins with a supported locale, the request
+    // legitimately reached the catch-all because no locale-group route
+    // matched (i.e. genuine 404). Don't double-prefix the path.
+    $first = explode('/', trim((string) $any, '/'))[0] ?? '';
+    if ($first !== '' && LocaleHelper::isSupported($first)) {
+        abort(404);
     }
-);
 
-// プラグインのWebルートを読み込む
-PluginHelper::loadEnabledWebRoutes();
+    $locale = LocaleHelper::getCookieLocale();
+
+    if ($locale === null) {
+        $header = request()->header('Accept-Language');
+        if (is_string($header) && $header !== '') {
+            foreach (explode(',', $header) as $entry) {
+                $code = strtolower(substr(trim(explode(';', $entry)[0]), 0, 2));
+                if ($code !== '' && LocaleHelper::isSupported($code)) {
+                    $locale = $code;
+                    break;
+                }
+            }
+        }
+    }
+
+    if ($locale === null) {
+        try {
+            $siteLocale = app(SiteContextInterface::class)->currentSite()->primary_locale ?? null;
+            if (is_string($siteLocale) && LocaleHelper::isSupported($siteLocale)) {
+                $locale = $siteLocale;
+            }
+        } catch (\Throwable) {
+            // SiteContext may be unavailable during install; fall through.
+        }
+    }
+
+    if ($locale === null) {
+        $fallback = (string) config('app.fallback_locale', LocaleHelper::getDefaultLocale());
+        $locale = LocaleHelper::isSupported($fallback) ? $fallback : LocaleHelper::getDefaultLocale();
+    }
+
+    $query = request()->getQueryString();
+    $target = '/'.$locale.($any === '' ? '' : '/'.ltrim($any, '/')).($query !== null ? '?'.$query : '');
+
+    return redirect($target, 302);
+})->where('any', '.*')->name('locale.fallback');
