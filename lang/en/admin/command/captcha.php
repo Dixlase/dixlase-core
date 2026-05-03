@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,37 +35,37 @@
 
 return [
 
-        'status_title' => '[CAPTCHA Failover Status]',
-        'setting' => 'Setting',
-        'value' => 'Value',
-        'primary_provider' => 'Primary Provider',
-        'active_provider' => 'Active Provider',
-        'is_failed_over' => 'Failed Over',
-        'auto_failover' => 'Auto Failover',
-        'configured_providers' => '[Configured Providers]',
-        'provider' => 'Provider',
-        'configured' => 'Configured',
-        'enabled' => 'Enabled',
-        'verified' => 'Verified',
-        'failures' => 'Failures',
-        'provider_required' => '--provider option is required.',
-        'invalid_provider' => 'Invalid provider: :provider',
-        'valid_providers' => 'Valid providers',
-        'confirm_permanent_switch' => 'Permanently switch to :provider?',
-        'cancelled' => 'Operation cancelled.',
-        'switched' => '✅ Switched to :provider (:type)',
-        'permanent' => 'permanent',
-        'temporary' => 'temporary',
-        'switch_failed' => 'Switch failed. Please verify the provider is configured, enabled, and verified.',
-        'reset_success' => '✅ Reset to default provider.',
-        'available_providers' => '[Available Providers]',
-        'usage' => 'Usage:',
-        'action_status' => 'Show current status',
-        'action_switch' => 'Temporarily switch provider',
-        'action_switch_permanent' => 'Permanently switch provider',
-        'action_reset' => 'Reset to default',
-        'action_providers' => 'List available providers',
-        'action_auto_on' => 'Enable auto failover',
-        'action_auto_off' => 'Disable auto failover',
-        'auto_failover_set' => '✅ Auto failover set to :status.',
+    'status_title' => '[CAPTCHA Failover Status]',
+    'setting' => 'Setting',
+    'value' => 'Value',
+    'primary_provider' => 'Primary Provider',
+    'active_provider' => 'Active Provider',
+    'is_failed_over' => 'Failed Over',
+    'auto_failover' => 'Auto Failover',
+    'configured_providers' => '[Configured Providers]',
+    'provider' => 'Provider',
+    'configured' => 'Configured',
+    'enabled' => 'Enabled',
+    'verified' => 'Verified',
+    'failures' => 'Failures',
+    'provider_required' => '--provider option is required.',
+    'invalid_provider' => 'Invalid provider: :provider',
+    'valid_providers' => 'Valid providers',
+    'confirm_permanent_switch' => 'Permanently switch to :provider?',
+    'cancelled' => 'Operation cancelled.',
+    'switched' => '✅ Switched to :provider (:type)',
+    'permanent' => 'permanent',
+    'temporary' => 'temporary',
+    'switch_failed' => 'Switch failed. Please verify the provider is configured, enabled, and verified.',
+    'reset_success' => '✅ Reset to default provider.',
+    'available_providers' => '[Available Providers]',
+    'usage' => 'Usage:',
+    'action_status' => 'Show current status',
+    'action_switch' => 'Temporarily switch provider',
+    'action_switch_permanent' => 'Permanently switch provider',
+    'action_reset' => 'Reset to default',
+    'action_providers' => 'List available providers',
+    'action_auto_on' => 'Enable auto failover',
+    'action_auto_off' => 'Disable auto failover',
+    'auto_failover_set' => '✅ Auto failover set to :status.',
 ];

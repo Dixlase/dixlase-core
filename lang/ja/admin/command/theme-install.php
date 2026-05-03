@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,10 +35,10 @@
 
 return [
 
-        'description' => 'テーマをデータベースにインストールします',
-        'theme_name_prompt' => 'インストールするテーマ名',
-        'theme_not_found' => 'テーマ \':themeName\' はテーマディレクトリに存在しません。',
-        'already_registered' => 'テーマ \':themeName\' は既にデータベースに登録されています。',
-        'registered' => 'テーマ \':themeName\' をデータベースに登録しました。',
-        'enable_help' => '次のコマンドで有効化できます: php artisan dls:theme:enable :themeName',
+    'description' => 'テーマをデータベースにインストールします',
+    'theme_name_prompt' => 'インストールするテーマ名',
+    'theme_not_found' => 'テーマ \':themeName\' はテーマディレクトリに存在しません。',
+    'already_registered' => 'テーマ \':themeName\' は既にデータベースに登録されています。',
+    'registered' => 'テーマ \':themeName\' をデータベースに登録しました。',
+    'enable_help' => '次のコマンドで有効化できます: php artisan dls:theme:enable :themeName',
 ];

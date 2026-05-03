@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -70,14 +70,16 @@ class ThemeMigrateRollback extends Command
         $migrationsPath = "{$themePath}/database/migrations";
 
         // テーマディレクトリの存在確認
-        if (!File::isDirectory($themePath)) {
+        if (! File::isDirectory($themePath)) {
             $this->error("Theme directory not found: {$themePath}");
+
             return 1;
         }
 
         // マイグレーションディレクトリの存在確認
-        if (!File::isDirectory($migrationsPath)) {
+        if (! File::isDirectory($migrationsPath)) {
             $this->warn("No migrations directory found for theme: {$themeName}");
+
             return 0;
         }
 

@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -107,7 +107,7 @@ class AuditLogIntegrityCommand extends Command
             'remaining' => $result['remaining'],
         ]));
 
-        if (!empty($result['errors'])) {
+        if (! empty($result['errors'])) {
             $this->warn(__('admin/command.audit.integrity.build_errors', [
                 'count' => count($result['errors']),
             ]));
@@ -150,15 +150,15 @@ class AuditLogIntegrityCommand extends Command
             $this->info(__('admin/command.audit.integrity.chain_valid'));
         } else {
             $this->error(__('admin/command.audit.integrity.chain_invalid'));
-            
-            if (!empty($result['errors'])) {
+
+            if (! empty($result['errors'])) {
                 $this->newLine();
                 $this->warn(__('admin/command.audit.integrity.tampered_records'));
                 foreach (array_slice($result['errors'], 0, 10) as $error) {
-                    $this->line("  - ID {$error['id']}: " . implode(', ', $error['errors']));
+                    $this->line("  - ID {$error['id']}: ".implode(', ', $error['errors']));
                 }
                 if (count($result['errors']) > 10) {
-                    $this->line("  ... " . __('admin/command.audit.integrity.and_more', [
+                    $this->line('  ... '.__('admin/command.audit.integrity.and_more', [
                         'count' => count($result['errors']) - 10,
                     ]));
                 }
@@ -179,6 +179,7 @@ class AuditLogIntegrityCommand extends Command
             $date = \Carbon\Carbon::parse($dateString);
         } catch (\Exception $e) {
             $this->error(__('admin/command.audit.integrity.invalid_date'));
+
             return self::FAILURE;
         }
 
@@ -188,8 +189,9 @@ class AuditLogIntegrityCommand extends Command
 
         $result = $this->service->verifyDailySeal($date);
 
-        if (!$result['exists']) {
+        if (! $result['exists']) {
             $this->warn(__('admin/command.audit.integrity.seal_not_found'));
+
             return self::FAILURE;
         }
 
@@ -208,6 +210,7 @@ class AuditLogIntegrityCommand extends Command
             $this->info(__('admin/command.audit.integrity.seal_valid'));
         } else {
             $this->error(__('admin/command.audit.integrity.seal_invalid'));
+
             return self::FAILURE;
         }
 
@@ -235,7 +238,7 @@ class AuditLogIntegrityCommand extends Command
         } else {
             $this->table(
                 [__('admin/command.audit.integrity.date'), __('admin/command.audit.integrity.log_count'), __('admin/command.audit.integrity.status')],
-                array_map(fn($r) => [$r['date'], $r['log_count'], $r['status']], $results)
+                array_map(fn ($r) => [$r['date'], $r['log_count'], $r['status']], $results)
             );
             $this->info(__('admin/command.audit.integrity.seals_created', ['count' => count($results)]));
         }
@@ -252,6 +255,7 @@ class AuditLogIntegrityCommand extends Command
             $date = \Carbon\Carbon::parse($dateString);
         } catch (\Exception $e) {
             $this->error(__('admin/command.audit.integrity.invalid_date'));
+
             return self::FAILURE;
         }
 
@@ -322,10 +326,10 @@ class AuditLogIntegrityCommand extends Command
     {
         $this->error(__('admin/command.audit.integrity.unknown_action', ['action' => $action]));
         $this->line(__('admin/command.audit.integrity.available_actions'));
-        $this->line('  - build   : ' . __('admin/command.audit.integrity.action_build'));
-        $this->line('  - verify  : ' . __('admin/command.audit.integrity.action_verify'));
-        $this->line('  - seal    : ' . __('admin/command.audit.integrity.action_seal'));
-        $this->line('  - stats   : ' . __('admin/command.audit.integrity.action_stats'));
+        $this->line('  - build   : '.__('admin/command.audit.integrity.action_build'));
+        $this->line('  - verify  : '.__('admin/command.audit.integrity.action_verify'));
+        $this->line('  - seal    : '.__('admin/command.audit.integrity.action_seal'));
+        $this->line('  - stats   : '.__('admin/command.audit.integrity.action_stats'));
 
         return self::FAILURE;
     }

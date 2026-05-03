@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,10 +35,10 @@
 
 return [
 
-        'description' => 'Install a theme into the database',
-        'theme_name_prompt' => 'The name of the theme to install',
-        'theme_not_found' => 'Theme \':themeName\' does not exist in the themes directory.',
-        'already_registered' => 'Theme \':themeName\' is already registered in the database.',
-        'registered' => 'Theme \':themeName\' has been registered in the database.',
-        'enable_help' => 'You can now enable it using: php artisan dls:theme:enable :themeName',
+    'description' => 'Install a theme into the database',
+    'theme_name_prompt' => 'The name of the theme to install',
+    'theme_not_found' => 'Theme \':themeName\' does not exist in the themes directory.',
+    'already_registered' => 'Theme \':themeName\' is already registered in the database.',
+    'registered' => 'Theme \':themeName\' has been registered in the database.',
+    'enable_help' => 'You can now enable it using: php artisan dls:theme:enable :themeName',
 ];

@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,8 +35,6 @@
 
 namespace App\Console\Traits;
 
-use Exception;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
 /**
@@ -47,8 +45,7 @@ trait ThemeManagementTrait
     /**
      * テーマディレクトリのパスを取得
      *
-     * @param string $themeName テーマ名
-     * @return string
+     * @param  string  $themeName  テーマ名
      */
     protected function getThemePath(string $themeName): string
     {
@@ -58,44 +55,43 @@ trait ThemeManagementTrait
     /**
      * テーマが存在するか確認
      *
-     * @param string $themeName テーマ名
-     * @return bool
+     * @param  string  $themeName  テーマ名
      */
     protected function themeExists(string $themeName): bool
     {
         $themePath = $this->getThemePath($themeName);
+
         return File::isDirectory($themePath) && File::exists("{$themePath}/theme.json");
     }
 
     /**
      * テーマ情報を取得
      *
-     * @param string $themeName テーマ名
-     * @return array|null
+     * @param  string  $themeName  テーマ名
      */
     protected function getThemeInfo(string $themeName): ?array
     {
         $themePath = $this->getThemePath($themeName);
         $themeJsonPath = "{$themePath}/theme.json";
 
-        if (!File::exists($themeJsonPath)) {
+        if (! File::exists($themeJsonPath)) {
             return null;
         }
 
         $content = File::get($themeJsonPath);
+
         return json_decode($content, true);
     }
 
     /**
      * テーマの名前空間を取得
      *
-     * @param string $themeName テーマ名
-     * @return string
+     * @param  string  $themeName  テーマ名
      */
     protected function getThemeNamespace(string $themeName): string
     {
         $themeInfo = $this->getThemeInfo($themeName);
-        
+
         if ($themeInfo && isset($themeInfo['namespace'])) {
             return $themeInfo['namespace'];
         }
@@ -107,32 +103,30 @@ trait ThemeManagementTrait
     /**
      * テーマのテーブルプレフィックスを取得
      *
-     * @param string $themeName テーマ名
-     * @return string
+     * @param  string  $themeName  テーマ名
      */
     protected function getThemeTablePrefix(string $themeName): string
     {
         $themeInfo = $this->getThemeInfo($themeName);
-        
+
         if ($themeInfo && isset($themeInfo['table_prefix'])) {
             return $themeInfo['table_prefix'];
         }
 
         // デフォルトのプレフィックスを生成（例: thm_my_theme_）
         $slug = $themeInfo['slug'] ?? strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $themeName));
-        return 'thm_' . str_replace('-', '_', $slug) . '_';
+
+        return 'thm_'.str_replace('-', '_', $slug).'_';
     }
 
     /**
      * 利用可能なテーマのリストを取得
-     *
-     * @return array
      */
     protected function getAvailableThemes(): array
     {
         $themesPath = base_path('themes');
-        
-        if (!File::isDirectory($themesPath)) {
+
+        if (! File::isDirectory($themesPath)) {
             return [];
         }
 
@@ -152,9 +146,8 @@ trait ThemeManagementTrait
     /**
      * テーマのディレクトリ構造を作成
      *
-     * @param string $themeName テーマ名
-     * @param array $directories 作成するディレクトリのリスト
-     * @return void
+     * @param  string  $themeName  テーマ名
+     * @param  array  $directories  作成するディレクトリのリスト
      */
     protected function createThemeDirectories(string $themeName, array $directories): void
     {
@@ -162,7 +155,7 @@ trait ThemeManagementTrait
 
         foreach ($directories as $directory) {
             $fullPath = "{$themePath}/{$directory}";
-            if (!File::isDirectory($fullPath)) {
+            if (! File::isDirectory($fullPath)) {
                 File::makeDirectory($fullPath, 0755, true);
             }
         }
@@ -171,9 +164,8 @@ trait ThemeManagementTrait
     /**
      * テーマファイルを削除
      *
-     * @param string $themeName テーマ名
-     * @param string $relativePath テーマディレクトリからの相対パス
-     * @return bool
+     * @param  string  $themeName  テーマ名
+     * @param  string  $relativePath  テーマディレクトリからの相対パス
      */
     protected function deleteThemeFile(string $themeName, string $relativePath): bool
     {
@@ -190,9 +182,8 @@ trait ThemeManagementTrait
     /**
      * テーマディレクトリを削除
      *
-     * @param string $themeName テーマ名
-     * @param string $relativePath テーマディレクトリからの相対パス
-     * @return bool
+     * @param  string  $themeName  テーマ名
+     * @param  string  $relativePath  テーマディレクトリからの相対パス
      */
     protected function deleteThemeDirectory(string $themeName, string $relativePath): bool
     {

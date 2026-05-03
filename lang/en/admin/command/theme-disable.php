@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,13 +35,13 @@
 
 return [
 
-        'description' => 'Disable a theme',
-        'theme_name_prompt' => 'The name of the theme to disable',
-        'no_enabled_themes' => 'No enabled themes found.',
-        'theme_not_found' => 'Theme \':themeName\' not found.',
-        'not_installed' => 'Theme \':themeName\' is not installed.',
-        'already_disabled' => 'Theme \':themeName\' is already disabled.',
-        'disabled' => 'Disabled theme: :themeName',
-        'list_headers' => ['Name', 'Slug'],
-        'disable_help' => 'To disable a theme, run: php artisan dls:theme:disable <theme-name>',
+    'description' => 'Disable a theme',
+    'theme_name_prompt' => 'The name of the theme to disable',
+    'no_enabled_themes' => 'No enabled themes found.',
+    'theme_not_found' => 'Theme \':themeName\' not found.',
+    'not_installed' => 'Theme \':themeName\' is not installed.',
+    'already_disabled' => 'Theme \':themeName\' is already disabled.',
+    'disabled' => 'Disabled theme: :themeName',
+    'list_headers' => ['Name', 'Slug'],
+    'disable_help' => 'To disable a theme, run: php artisan dls:theme:disable <theme-name>',
 ];

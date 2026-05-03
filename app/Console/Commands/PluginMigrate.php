@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,14 +35,12 @@
 
 namespace App\Console\Commands;
 
-use App\Services\PluginMigrator;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Console\Command;
 use App\Console\Traits\PluginManagementTrait;
+use App\Services\PluginMigrator;
+use Illuminate\Console\Command;
 
 class PluginMigrate extends Command
 {
-
     use PluginManagementTrait;
 
     /**
@@ -90,14 +88,16 @@ class PluginMigrate extends Command
         $options = $this->processOptions($options);
 
         // プラグインディレクトリの存在確認
-        if (!$this->pluginExists($plugin)) {
+        if (! $this->pluginExists($plugin)) {
             $this->error("Plugin [{$plugin}] does not exist.");
+
             return Command::FAILURE;
         }
 
         // マイグレーションディレクトリの存在確認
-        if (!$this->migrationPathExists($plugin)) {
+        if (! $this->migrationPathExists($plugin)) {
             $this->error("Migration directory does not exist for plugin [{$plugin}].");
+
             return Command::FAILURE;
         }
 
@@ -111,14 +111,15 @@ class PluginMigrate extends Command
                 $this->info("No migrations to run for plugin [{$plugin}].");
             } else {
                 foreach ($migrated as $file) {
-                    $this->info("Migrated: " . $file);
+                    $this->info('Migrated: '.$file);
                 }
                 $this->info("Migrations for plugin [{$plugin}] completed successfully.");
             }
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error("Error during migration: " . $e->getMessage());
+            $this->error('Error during migration: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

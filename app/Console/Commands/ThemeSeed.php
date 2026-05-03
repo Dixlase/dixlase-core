@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -69,15 +69,17 @@ class ThemeSeed extends Command
         $seederClassName = $this->option('class');
 
         // テーマディレクトリの存在確認
-        if (!File::isDirectory($themePath)) {
+        if (! File::isDirectory($themePath)) {
             $this->error("Theme directory not found: {$themePath}");
+
             return 1;
         }
 
         // シーダークラスの確認
         $fullSeederClass = "Themes\\{$themeName}\\Database\\Seeders\\{$seederClassName}";
-        if (!class_exists($fullSeederClass)) {
+        if (! class_exists($fullSeederClass)) {
             $this->error("Seeder class not found: {$fullSeederClass}");
+
             return 1;
         }
 
@@ -91,9 +93,11 @@ class ThemeSeed extends Command
 
             $this->info(Artisan::output());
             $this->info("Seeding completed successfully for theme: {$themeName}");
+
             return 0;
         } catch (\Exception $e) {
-            $this->error("Error executing seeder: " . $e->getMessage());
+            $this->error('Error executing seeder: '.$e->getMessage());
+
             return 1;
         }
     }

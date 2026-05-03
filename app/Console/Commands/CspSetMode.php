@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -62,31 +62,32 @@ class CspSetMode extends Command
     {
         try {
             $mode = $this->argument('mode');
-            
+
             // モードの検証
             $validModes = ['development', 'standard', 'strict'];
-            if (!in_array($mode, $validModes)) {
+            if (! in_array($mode, $validModes)) {
                 $this->error("❌ 無効なモード: {$mode}");
-                $this->info("有効なモード: " . implode(', ', $validModes));
+                $this->info('有効なモード: '.implode(', ', $validModes));
+
                 return Command::FAILURE;
             }
-            
+
             // モードを数値に変換
-            $modeValue = match($mode) {
+            $modeValue = match ($mode) {
                 'development' => 0,
                 'standard' => 1,
                 'strict' => 2,
             };
-            
+
             // CSPモードを変更
             SecuritySetting::set('csp_mode', $modeValue);
-            
+
             // キャッシュをクリア
             Cache::flush();
-            
+
             $this->info("✅ CSPモードを {$mode} に変更しました");
-            $this->info('📝 ログ: CSPモードが変更されました - ' . now());
-            
+            $this->info('📝 ログ: CSPモードが変更されました - '.now());
+
             // ログに記録
             \Log::channel('stack')->warning('CSPモード変更コマンド実行', [
                 'command' => 'dixlase:csp:set',
@@ -94,10 +95,11 @@ class CspSetMode extends Command
                 'user' => 'CLI',
                 'timestamp' => now(),
             ]);
-            
+
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error('❌ CSPモードの変更に失敗しました: ' . $e->getMessage());
+            $this->error('❌ CSPモードの変更に失敗しました: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

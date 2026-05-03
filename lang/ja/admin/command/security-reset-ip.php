@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,35 +35,35 @@
 
 return [
 
-        'table_not_found' => 'security_settingsテーブルが見つかりません。',
-        'usage' => '使用方法:',
-        'option_show' => '現在のIP制限設定を表示',
-        'option_disable_all' => '全てのIP制限を無効化',
-        'option_add_ip' => '許可リストにIPを追加',
-        'option_remove_blocked' => 'ブロックリストからIPを削除',
-        'option_force' => '確認なしで実行',
-        'current_settings' => '【管理画面IP制限設定】',
-        'front_settings' => '【フロントIP制限設定】',
-        'setting' => '設定項目',
-        'value' => '値',
-        'admin_allow_enabled' => '許可リスト有効',
-        'admin_allowed_ips' => '許可IPリスト',
-        'admin_block_enabled' => 'ブロックリスト有効',
-        'admin_blocked_ips' => 'ブロックIPリスト',
-        'front_allow_enabled' => '許可リスト有効',
-        'front_allowed_ips' => '許可IPリスト',
-        'front_block_enabled' => 'ブロックリスト有効',
-        'front_blocked_ips' => 'ブロックIPリスト',
-        'none' => '（なし）',
-        'confirm_disable_all' => '⚠️ 全てのIP制限を無効化しますか？これによりどのIPからでもアクセス可能になります。',
-        'confirm_add_ip' => 'IP :ip を許可リストに追加しますか？',
-        'confirm_remove_ip' => 'IP :ip をブロックリストから削除しますか？',
-        'cancelled' => '操作がキャンセルされました。',
-        'disabled_all' => '✅ 全てのIP制限が無効化されました。',
-        'security_warning' => '⚠️ セキュリティ上の理由から、復旧後は適切なIP制限を再設定してください。',
-        'invalid_ip' => '無効なIPアドレス: :ip',
-        'ip_already_exists' => 'IP :ip は既に許可リストに存在します。',
-        'ip_added' => '✅ IP :ip を許可リストに追加しました。',
-        'ip_not_in_blocklist' => 'IP :ip はブロックリストに存在しません。',
-        'ip_removed' => '✅ IP :ip をブロックリストから削除しました。',
+    'table_not_found' => 'security_settingsテーブルが見つかりません。',
+    'usage' => '使用方法:',
+    'option_show' => '現在のIP制限設定を表示',
+    'option_disable_all' => '全てのIP制限を無効化',
+    'option_add_ip' => '許可リストにIPを追加',
+    'option_remove_blocked' => 'ブロックリストからIPを削除',
+    'option_force' => '確認なしで実行',
+    'current_settings' => '【管理画面IP制限設定】',
+    'front_settings' => '【フロントIP制限設定】',
+    'setting' => '設定項目',
+    'value' => '値',
+    'admin_allow_enabled' => '許可リスト有効',
+    'admin_allowed_ips' => '許可IPリスト',
+    'admin_block_enabled' => 'ブロックリスト有効',
+    'admin_blocked_ips' => 'ブロックIPリスト',
+    'front_allow_enabled' => '許可リスト有効',
+    'front_allowed_ips' => '許可IPリスト',
+    'front_block_enabled' => 'ブロックリスト有効',
+    'front_blocked_ips' => 'ブロックIPリスト',
+    'none' => '（なし）',
+    'confirm_disable_all' => '⚠️ 全てのIP制限を無効化しますか？これによりどのIPからでもアクセス可能になります。',
+    'confirm_add_ip' => 'IP :ip を許可リストに追加しますか？',
+    'confirm_remove_ip' => 'IP :ip をブロックリストから削除しますか？',
+    'cancelled' => '操作がキャンセルされました。',
+    'disabled_all' => '✅ 全てのIP制限が無効化されました。',
+    'security_warning' => '⚠️ セキュリティ上の理由から、復旧後は適切なIP制限を再設定してください。',
+    'invalid_ip' => '無効なIPアドレス: :ip',
+    'ip_already_exists' => 'IP :ip は既に許可リストに存在します。',
+    'ip_added' => '✅ IP :ip を許可リストに追加しました。',
+    'ip_not_in_blocklist' => 'IP :ip はブロックリストに存在しません。',
+    'ip_removed' => '✅ IP :ip をブロックリストから削除しました。',
 ];

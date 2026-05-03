@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,15 +35,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\SecuritySetting;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
-use App\Models\SecuritySetting;
 
 /**
  * CSP Report Controller
- * 
+ *
  * CSP違反レポートを受信・処理するコントローラー。
  * ブラウザからのCSP違反レポートを受け取り、ログに記録する。
  */
@@ -79,7 +79,7 @@ class CspReportController extends Controller
     public function report(Request $request): JsonResponse
     {
         // ログ記録が無効な場合は何もしない
-        if (!config('csp.log_violations', true)) {
+        if (! config('csp.log_violations', true)) {
             return response()->json(['status' => 'ignored']);
         }
 
@@ -109,7 +109,7 @@ class CspReportController extends Controller
         // 設定で除外が無効な場合はfalse
         try {
             $excludeDevTools = SecuritySetting::get('csp_exclude_dev_tools', true);
-            if (!$excludeDevTools) {
+            if (! $excludeDevTools) {
                 return false;
             }
         } catch (\Exception $e) {
@@ -140,6 +140,7 @@ class CspReportController extends Controller
         if ($this->isLocalDevInlineViolation($report)) {
             return true;
         }
+
         return false;
     }
 
@@ -164,7 +165,7 @@ class CspReportController extends Controller
         }
 
         // script-src関連の違反のみ対象
-        if (!str_contains($directive, 'script-src')) {
+        if (! str_contains($directive, 'script-src')) {
             return false;
         }
 
@@ -185,7 +186,7 @@ class CspReportController extends Controller
     protected function parseReport(Request $request): array
     {
         $content = $request->getContent();
-        
+
         if (empty($content)) {
             return [];
         }
@@ -196,6 +197,7 @@ class CspReportController extends Controller
             Log::channel(config('csp.log_channel', 'csp'))->warning('CSP Report: Invalid JSON received', [
                 'content' => substr($content, 0, 500),
             ]);
+
             return [];
         }
 
@@ -236,7 +238,7 @@ class CspReportController extends Controller
         ];
 
         // nullの項目を除去
-        $logData = array_filter($logData, fn($v) => $v !== null);
+        $logData = array_filter($logData, fn ($v) => $v !== null);
 
         // ログレベルを決定（eval等の危険な違反は警告レベルを上げる）
         $level = $this->determineLogLevel($logData);

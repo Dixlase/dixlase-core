@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -77,8 +77,9 @@ class SyncGitExclude extends Command
     public function handle(): int
     {
         // .gitディレクトリが存在しない場合はエラー
-        if (!File::exists(base_path('.git'))) {
+        if (! File::exists(base_path('.git'))) {
             $this->error(__('admin/command.git_sync.git_not_found'));
+
             return self::FAILURE;
         }
 
@@ -116,15 +117,15 @@ class SyncGitExclude extends Command
 
         // 現在の.git/info/excludeの内容を取得
         $currentContent = File::exists($excludePath) ? File::get($excludePath) : '';
-        
+
         // 現在登録されているプラグインとテーマを抽出
         $currentPlugins = [];
         $currentThemes = [];
-        
+
         if ($currentContent) {
             preg_match_all('/!plugins\/([^\s\/]+)/', $currentContent, $matches);
             $currentPlugins = $matches[1] ?? [];
-            
+
             preg_match_all('/!themes\/([^\s\/]+)/', $currentContent, $matches);
             $currentThemes = $matches[1] ?? [];
         }
@@ -143,20 +144,21 @@ class SyncGitExclude extends Command
         $this->displayCurrentState($currentPlugins, $currentThemes, $actualPlugins, $actualThemes);
 
         // 変更内容を表示
-        $hasPluginChanges = !empty($pluginsToAdd) || !empty($pluginsToRemove);
-        $hasThemeChanges = !empty($themesToAdd) || !empty($themesToRemove);
+        $hasPluginChanges = ! empty($pluginsToAdd) || ! empty($pluginsToRemove);
+        $hasThemeChanges = ! empty($themesToAdd) || ! empty($themesToRemove);
 
-        if (!$themesOnly && $hasPluginChanges) {
+        if (! $themesOnly && $hasPluginChanges) {
             $this->displayChanges('Plugins', $pluginsToAdd, $pluginsToRemove);
         }
 
-        if (!$pluginsOnly && $hasThemeChanges) {
+        if (! $pluginsOnly && $hasThemeChanges) {
             $this->displayChanges('Themes', $themesToAdd, $themesToRemove);
         }
 
         // 変更がない場合
-        if ((!$hasPluginChanges || $themesOnly) && (!$hasThemeChanges || $pluginsOnly)) {
+        if ((! $hasPluginChanges || $themesOnly) && (! $hasThemeChanges || $pluginsOnly)) {
             $this->info(__('admin/command.git_sync.exclude_in_sync'));
+
             return self::SUCCESS;
         }
 
@@ -164,12 +166,14 @@ class SyncGitExclude extends Command
         if ($dryRun) {
             $this->newLine();
             $this->warn(__('admin/command.git_sync.dry_run'));
+
             return self::SUCCESS;
         }
 
         // 確認
-        if (!$force && !$this->confirm(__('admin/command.git_sync.confirm_apply'), true)) {
+        if (! $force && ! $this->confirm(__('admin/command.git_sync.confirm_apply'), true)) {
             $this->info(__('admin/command.git_sync.cancelled'));
+
             return self::SUCCESS;
         }
 
@@ -196,11 +200,11 @@ class SyncGitExclude extends Command
     {
         try {
             $excludePath = $this->getExcludeFilePath();
-            
+
             // .git/info/excludeファイルが存在しない場合は作成
-            if (!File::exists($excludePath)) {
+            if (! File::exists($excludePath)) {
                 $directory = dirname($excludePath);
-                if (!File::exists($directory)) {
+                if (! File::exists($directory)) {
                     File::makeDirectory($directory, 0755, true);
                 }
                 File::put($excludePath, "# Git exclude rules\n");
@@ -212,20 +216,22 @@ class SyncGitExclude extends Command
             // 既に追加されている場合はスキップ
             if (str_contains($content, $pluginPath)) {
                 $this->info(__('admin/command.git_sync.already_exists', ['path' => $pluginPath]));
+
                 return true;
             }
 
             // プラグインセクションを探す
             $lines = explode("\n", $content);
             $this->addToSection($lines, 'Plugin', 'plugins', [$pluginName]);
-            
+
             $content = implode("\n", $lines);
             File::put($excludePath, $content);
 
             return true;
         } catch (\Exception $e) {
             $this->error(__('admin/command.git_sync.failed', ['error' => $e->getMessage()]));
-            Log::error("Failed to add plugin exclusion: " . $e->getMessage());
+            Log::error('Failed to add plugin exclusion: '.$e->getMessage());
+
             return false;
         }
     }
@@ -238,7 +244,7 @@ class SyncGitExclude extends Command
         try {
             $excludePath = $this->getExcludeFilePath();
 
-            if (!File::exists($excludePath)) {
+            if (! File::exists($excludePath)) {
                 return true;
             }
 
@@ -246,7 +252,7 @@ class SyncGitExclude extends Command
             $pluginPath = "!plugins/{$pluginName}";
 
             $lines = explode("\n", $content);
-            $filteredLines = array_filter($lines, fn($line) => trim($line) !== $pluginPath);
+            $filteredLines = array_filter($lines, fn ($line) => trim($line) !== $pluginPath);
 
             $content = implode("\n", array_values($filteredLines));
             File::put($excludePath, $content);
@@ -254,7 +260,8 @@ class SyncGitExclude extends Command
             return true;
         } catch (\Exception $e) {
             $this->error(__('admin/command.git_sync.failed', ['error' => $e->getMessage()]));
-            Log::error("Failed to remove plugin exclusion: " . $e->getMessage());
+            Log::error('Failed to remove plugin exclusion: '.$e->getMessage());
+
             return false;
         }
     }
@@ -266,10 +273,10 @@ class SyncGitExclude extends Command
     {
         try {
             $excludePath = $this->getExcludeFilePath();
-            
-            if (!File::exists($excludePath)) {
+
+            if (! File::exists($excludePath)) {
                 $directory = dirname($excludePath);
-                if (!File::exists($directory)) {
+                if (! File::exists($directory)) {
                     File::makeDirectory($directory, 0755, true);
                 }
                 File::put($excludePath, "# Git exclude rules\n");
@@ -280,19 +287,21 @@ class SyncGitExclude extends Command
 
             if (str_contains($content, $themePath)) {
                 $this->info(__('admin/command.git_sync.already_exists', ['path' => $themePath]));
+
                 return true;
             }
 
             $lines = explode("\n", $content);
             $this->addToSection($lines, 'Theme', 'themes', [$themeName]);
-            
+
             $content = implode("\n", $lines);
             File::put($excludePath, $content);
 
             return true;
         } catch (\Exception $e) {
             $this->error(__('admin/command.git_sync.failed', ['error' => $e->getMessage()]));
-            Log::error("Failed to add theme exclusion: " . $e->getMessage());
+            Log::error('Failed to add theme exclusion: '.$e->getMessage());
+
             return false;
         }
     }
@@ -305,7 +314,7 @@ class SyncGitExclude extends Command
         try {
             $excludePath = $this->getExcludeFilePath();
 
-            if (!File::exists($excludePath)) {
+            if (! File::exists($excludePath)) {
                 return true;
             }
 
@@ -313,7 +322,7 @@ class SyncGitExclude extends Command
             $themePath = "!themes/{$themeName}";
 
             $lines = explode("\n", $content);
-            $filteredLines = array_filter($lines, fn($line) => trim($line) !== $themePath);
+            $filteredLines = array_filter($lines, fn ($line) => trim($line) !== $themePath);
 
             $content = implode("\n", array_values($filteredLines));
             File::put($excludePath, $content);
@@ -321,7 +330,8 @@ class SyncGitExclude extends Command
             return true;
         } catch (\Exception $e) {
             $this->error(__('admin/command.git_sync.failed', ['error' => $e->getMessage()]));
-            Log::error("Failed to remove theme exclusion: " . $e->getMessage());
+            Log::error('Failed to remove theme exclusion: '.$e->getMessage());
+
             return false;
         }
     }
@@ -331,7 +341,7 @@ class SyncGitExclude extends Command
      */
     protected function detectDirectories(string $path, array $exclude = []): array
     {
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             return [];
         }
 
@@ -340,13 +350,14 @@ class SyncGitExclude extends Command
 
         foreach ($directories as $directory) {
             $name = basename($directory);
-            
-            if (!str_starts_with($name, '.') && !in_array($name, $exclude)) {
+
+            if (! str_starts_with($name, '.') && ! in_array($name, $exclude)) {
                 $names[] = $name;
             }
         }
 
         sort($names);
+
         return $names;
     }
 
@@ -364,7 +375,7 @@ class SyncGitExclude extends Command
         );
         $this->newLine();
 
-        if (!empty($actualPlugins)) {
+        if (! empty($actualPlugins)) {
             $this->info(__('admin/command.git_sync.plugins_found'));
             foreach ($actualPlugins as $plugin) {
                 $status = in_array($plugin, $currentPlugins) ? '<fg=green>✓</>' : '<fg=yellow>○</>';
@@ -373,7 +384,7 @@ class SyncGitExclude extends Command
             $this->newLine();
         }
 
-        if (!empty($actualThemes)) {
+        if (! empty($actualThemes)) {
             $this->info(__('admin/command.git_sync.themes_found'));
             foreach ($actualThemes as $theme) {
                 $status = in_array($theme, $currentThemes) ? '<fg=green>✓</>' : '<fg=yellow>○</>';
@@ -388,23 +399,23 @@ class SyncGitExclude extends Command
      */
     protected function displayChanges(string $type, array $toAdd, array $toRemove): void
     {
-        if (!empty($toAdd)) {
-            $this->info("{$type} " . __('admin/command.git_sync.to_add'));
+        if (! empty($toAdd)) {
+            $this->info("{$type} ".__('admin/command.git_sync.to_add'));
             foreach ($toAdd as $name) {
                 $typeLower = strtolower($type);
                 $this->line("  <fg=green>+ !{$typeLower}/{$name}</>");
             }
         }
 
-        if (!empty($toRemove)) {
-            $this->warn("{$type} " . __('admin/command.git_sync.to_remove'));
+        if (! empty($toRemove)) {
+            $this->warn("{$type} ".__('admin/command.git_sync.to_remove'));
             foreach ($toRemove as $name) {
                 $typeLower = strtolower($type);
                 $this->line("  <fg=red>- !{$typeLower}/{$name}</>");
             }
         }
 
-        if (!empty($toAdd) || !empty($toRemove)) {
+        if (! empty($toAdd) || ! empty($toRemove)) {
             $this->newLine();
         }
     }
@@ -424,33 +435,33 @@ class SyncGitExclude extends Command
 
         // 削除処理
         foreach ($pluginsToRemove as $plugin) {
-            $lines = array_filter($lines, fn($line) => trim($line) !== "!plugins/{$plugin}");
+            $lines = array_filter($lines, fn ($line) => trim($line) !== "!plugins/{$plugin}");
         }
         foreach ($themesToRemove as $theme) {
-            $lines = array_filter($lines, fn($line) => trim($line) !== "!themes/{$theme}");
+            $lines = array_filter($lines, fn ($line) => trim($line) !== "!themes/{$theme}");
         }
 
         $lines = array_values($lines);
 
         // プラグインセクションを探して追加
-        if (!empty($pluginsToAdd)) {
+        if (! empty($pluginsToAdd)) {
             $this->addToSection($lines, 'Plugin', 'plugins', $pluginsToAdd);
         }
 
         // テーマセクションを探して追加
-        if (!empty($themesToAdd)) {
+        if (! empty($themesToAdd)) {
             $this->addToSection($lines, 'Theme', 'themes', $themesToAdd);
         }
 
         // ファイルに書き込み
         $content = implode("\n", $lines);
-        
+
         // ディレクトリが存在しない場合は作成
         $directory = dirname($excludePath);
-        if (!File::exists($directory)) {
+        if (! File::exists($directory)) {
             File::makeDirectory($directory, 0755, true);
         }
-        
+
         File::put($excludePath, $content);
     }
 
@@ -499,11 +510,12 @@ class SyncGitExclude extends Command
     {
         $excludePath = base_path('.git/info/exclude');
 
-        if (!File::exists($excludePath)) {
+        if (! File::exists($excludePath)) {
             return false;
         }
 
         $content = File::get($excludePath);
+
         return str_contains($content, "!plugins/{$pluginName}");
     }
 
@@ -514,11 +526,12 @@ class SyncGitExclude extends Command
     {
         $excludePath = base_path('.git/info/exclude');
 
-        if (!File::exists($excludePath)) {
+        if (! File::exists($excludePath)) {
             return false;
         }
 
         $content = File::get($excludePath);
+
         return str_contains($content, "!themes/{$themeName}");
     }
 }

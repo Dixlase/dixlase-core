@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,13 +35,13 @@
 
 return [
 
-        'description' => 'プラグインのファイルとディレクトリを削除します（アンインストール済みである必要があります）。',
-        'not_found' => 'プラグインディレクトリ \':directory\' は見つかりません。',
-        'still_installed' => 'プラグイン \':pluginName\' はまだインストールされています。',
-        'uninstall_first' => '削除する前に、まず `plugin:uninstall` コマンドでプラグインをアンインストールしてください。',
-        'confirm' => 'プラグインディレクトリ \':directory\' とその中のすべてのファイルを削除しますか？この操作は取り消せません。',
-        'cancelled' => '削除がキャンセルされました。',
-        'deleted' => 'プラグインディレクトリ \':path\' を削除しました。',
-        'failed' => 'プラグインディレクトリの削除に失敗しました: :error',
-        'completed' => 'プラグイン \':directory\' の削除が完了しました。',
+    'description' => 'プラグインのファイルとディレクトリを削除します（アンインストール済みである必要があります）。',
+    'not_found' => 'プラグインディレクトリ \':directory\' は見つかりません。',
+    'still_installed' => 'プラグイン \':pluginName\' はまだインストールされています。',
+    'uninstall_first' => '削除する前に、まず `plugin:uninstall` コマンドでプラグインをアンインストールしてください。',
+    'confirm' => 'プラグインディレクトリ \':directory\' とその中のすべてのファイルを削除しますか？この操作は取り消せません。',
+    'cancelled' => '削除がキャンセルされました。',
+    'deleted' => 'プラグインディレクトリ \':path\' を削除しました。',
+    'failed' => 'プラグインディレクトリの削除に失敗しました: :error',
+    'completed' => 'プラグイン \':directory\' の削除が完了しました。',
 ];

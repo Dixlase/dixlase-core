@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -39,7 +39,6 @@ use App\Console\Traits\PluginManagementTrait;
 use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
 
-
 class PluginMigrateRefresh extends Command
 {
     use PluginManagementTrait;
@@ -53,7 +52,6 @@ class PluginMigrateRefresh extends Command
                             {plugin : The name of the plugin (e.g. EventsPlugin)}
                             {--step= : Number of migrations to rollback}
                             {--force : Force the operation to run when in production}';
-
 
     /**
      * The console command description.
@@ -86,16 +84,17 @@ class PluginMigrateRefresh extends Command
         $options = $this->processOptions($options);
 
         // プラグインディレクトリの存在確認
-        if (!$this->pluginExists($plugin)) {
+        if (! $this->pluginExists($plugin)) {
             $this->error("Plugin [{$plugin}] does not exist.");
+
             return Command::FAILURE;
         }
 
-        if (!$this->migrationPathExists($plugin)) {
+        if (! $this->migrationPathExists($plugin)) {
             $this->error("Migration directory does not exist for plugin [{$plugin}].");
+
             return Command::FAILURE;
         }
-
 
         // マイグレーションのリフレッシュ処理
         $this->info("Rolling back all migrations for plugin [{$plugin}]...");
@@ -110,14 +109,15 @@ class PluginMigrateRefresh extends Command
                 $this->info("No migrations to run for plugin [{$plugin}].");
             } else {
                 foreach ($migrated as $file) {
-                    $this->info("Migrated: " . $file);
+                    $this->info('Migrated: '.$file);
                 }
                 $this->info("Migrations for plugin [{$plugin}] refreshed successfully.");
             }
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error("Error during refresh: " . $e->getMessage());
+            $this->error('Error during refresh: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

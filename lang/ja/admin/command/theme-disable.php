@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,13 +35,13 @@
 
 return [
 
-        'description' => 'テーマを無効化します',
-        'theme_name_prompt' => '無効化するテーマ名',
-        'no_enabled_themes' => '有効なテーマが見つかりませんでした。',
-        'theme_not_found' => 'テーマ \':themeName\' が見つかりません。',
-        'not_installed' => 'テーマ \':themeName\' はインストールされていません。',
-        'already_disabled' => 'テーマ \':themeName\' は既に無効化されています。',
-        'disabled' => 'テーマを無効化しました: :themeName',
-        'list_headers' => ['名前', 'スラッグ'],
-        'disable_help' => 'テーマを無効化するには、次のコマンドを実行してください: php artisan dls:theme:disable <theme-name>',
+    'description' => 'テーマを無効化します',
+    'theme_name_prompt' => '無効化するテーマ名',
+    'no_enabled_themes' => '有効なテーマが見つかりませんでした。',
+    'theme_not_found' => 'テーマ \':themeName\' が見つかりません。',
+    'not_installed' => 'テーマ \':themeName\' はインストールされていません。',
+    'already_disabled' => 'テーマ \':themeName\' は既に無効化されています。',
+    'disabled' => 'テーマを無効化しました: :themeName',
+    'list_headers' => ['名前', 'スラッグ'],
+    'disable_help' => 'テーマを無効化するには、次のコマンドを実行してください: php artisan dls:theme:disable <theme-name>',
 ];

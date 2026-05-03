@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,13 +35,13 @@
 
 return [
 
-        'description' => 'Delete plugin files and directories (plugin must be uninstalled first).',
-        'not_found' => 'Plugin directory \':directory\' not found.',
-        'still_installed' => 'Plugin \':pluginName\' is still installed.',
-        'uninstall_first' => 'Please uninstall the plugin first using `plugin:uninstall` command before deleting.',
-        'confirm' => 'Are you sure you want to delete plugin directory \':directory\' and all its files? This action cannot be undone.',
-        'cancelled' => 'Deletion cancelled.',
-        'deleted' => 'Plugin directory \':path\' has been deleted.',
-        'failed' => 'Failed to delete plugin directory: :error',
-        'completed' => 'Plugin \':directory\' has been deleted successfully.',
+    'description' => 'Delete plugin files and directories (plugin must be uninstalled first).',
+    'not_found' => 'Plugin directory \':directory\' not found.',
+    'still_installed' => 'Plugin \':pluginName\' is still installed.',
+    'uninstall_first' => 'Please uninstall the plugin first using `plugin:uninstall` command before deleting.',
+    'confirm' => 'Are you sure you want to delete plugin directory \':directory\' and all its files? This action cannot be undone.',
+    'cancelled' => 'Deletion cancelled.',
+    'deleted' => 'Plugin directory \':path\' has been deleted.',
+    'failed' => 'Failed to delete plugin directory: :error',
+    'completed' => 'Plugin \':directory\' has been deleted successfully.',
 ];

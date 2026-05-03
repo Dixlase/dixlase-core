@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -54,20 +54,20 @@ class AdminSystemApiGenerateKeyRequest extends FormRequest
     {
         // 空文字列をnullに変換
         $data = [];
-        
+
         if ($this->rate_limit === '') {
             $data['rate_limit'] = null;
         }
-        
+
         if ($this->expires_at === '') {
             $data['expires_at'] = null;
         }
-        
+
         if ($this->description === '') {
             $data['description'] = null;
         }
-        
-        if (!empty($data)) {
+
+        if (! empty($data)) {
             $this->merge($data);
         }
     }

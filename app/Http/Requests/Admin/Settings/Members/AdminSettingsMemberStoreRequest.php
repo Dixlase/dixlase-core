@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,16 +35,17 @@
 
 namespace App\Http\Requests\Admin\Settings\Members;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use App\Enums\MemberRole;
 use App\Models\SecuritySetting;
 use App\Services\PasswordService;
 use App\Traits\TwoFa\TwoFactorEnableCheck;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class AdminSettingsMemberStoreRequest extends FormRequest
 {
     use TwoFactorEnableCheck;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -63,7 +64,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
         // 管理者IDがリクエストされているかで判断
         $isUpdate = $this->route('member') !== null;
         $member = $this->route('member');
-        
+
         // 初期メンバー（ID=1）かどうか
         $isInitialAdmin = $member && $member->id === 1;
 
@@ -81,7 +82,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
             $passwordRequireLowercase,
             $passwordRequireNumber,
             $passwordRequireSymbol,
-            !$isUpdate // 新規作成時は必須、編集時は任意
+            ! $isUpdate // 新規作成時は必須、編集時は任意
         );
 
         $rules = [
@@ -97,7 +98,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
             ],
             'password' => $passwordRules,
             // 初期メンバーの場合はroleを任意（フィールドが送信されないため）
-            'role' => $isInitialAdmin 
+            'role' => $isInitialAdmin
                 ? ['nullable', Rule::in(array_column(MemberRole::cases(), 'value'))]
                 : ['required', Rule::in(array_column(MemberRole::cases(), 'value'))],
             'locale' => 'nullable|string|in:ja,en',
@@ -112,10 +113,10 @@ class AdminSettingsMemberStoreRequest extends FormRequest
         ];
 
         // メールアドレス確認のバリデーション
-        if (!$isUpdate) {
+        if (! $isUpdate) {
             // 新規作成時は必須
             $rules['email_confirmation'] = 'required|email|same:email';
-        } else if ($member && $this->input('email') !== $member->email) {
+        } elseif ($member && $this->input('email') !== $member->email) {
             // 編集時にメールアドレスが変更された場合も必須
             $rules['email_confirmation'] = 'required|email|same:email';
         }
@@ -130,7 +131,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
     {
         // 全体設定で二段階認証が強制されている場合、個別設定を上書き
         $globalTwoFaMode = (int) SecuritySetting::getValue('two_fa_mode', 3); // 3 = プロフィール設定に従う
-        
+
         if ($globalTwoFaMode !== 3) {
             // 全体設定が「プロフィール設定に従う」以外の場合、全体設定を強制
             $this->merge([
@@ -147,12 +148,12 @@ class AdminSettingsMemberStoreRequest extends FormRequest
         $validator->after(function ($validator) {
             $member = $this->route('member');
             $twoFaMode = (int) $this->input('two_fa_mode', 0);
-            
+
             // 2FAを有効化しようとしている場合（モード1または2）
             if ($twoFaMode === 1 || $twoFaMode === 2) {
                 // 既存メンバーの編集の場合のみチェック
                 if ($member) {
-                    if (!$member->canEnableTwoFa()) {
+                    if (! $member->canEnableTwoFa()) {
                         $validator->errors()->add(
                             'two_fa_mode',
                             __('admin/members/validation.two_fa_cannot_enable')
@@ -163,7 +164,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
                 // （作成後に回復コードやパスキーを登録できるため）
                 else {
                     $mailConfigured = \App\Services\MailServerValidatorService::isMailServerTested();
-                    if (!$mailConfigured) {
+                    if (! $mailConfigured) {
                         $validator->errors()->add(
                             'two_fa_mode',
                             __('admin/members/validation.two_fa_cannot_enable_new_member')

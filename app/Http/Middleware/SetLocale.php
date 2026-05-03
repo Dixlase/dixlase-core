@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -42,7 +42,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * 言語設定ミドルウェア
- * 
+ *
  * URLから言語を検出し、アプリケーションの言語を設定します。
  * サブディレクトリ方式: /ja/about, /en/contact
  */
@@ -75,14 +75,14 @@ class SetLocale
         // 1. 管理メンバーのプロフィール言語設定を最優先（管理バー表示時）
         if (auth('member')->check()) {
             $member = auth('member')->user();
-            
+
             if ($member && $member->locale) {
                 $memberLocale = $member->locale;
                 // Enumの場合は値を取得
                 if ($memberLocale instanceof \App\Enums\Locale) {
                     $memberLocale = $memberLocale->value;
                 }
-                
+
                 if (LocaleHelper::isSupported($memberLocale)) {
                     return $memberLocale;
                 }
@@ -109,6 +109,7 @@ class SetLocale
 
         // 5. デフォルト言語
         $defaultLocale = LocaleHelper::getDefaultLocale();
+
         return $defaultLocale;
     }
 
@@ -118,22 +119,22 @@ class SetLocale
     protected function getBrowserLocale(Request $request): ?string
     {
         $acceptLanguage = $request->header('Accept-Language');
-        
-        if (!$acceptLanguage) {
+
+        if (! $acceptLanguage) {
             return null;
         }
 
         // Accept-Languageヘッダーをパース
         // 例: "ja,en-US;q=0.9,en;q=0.8"
         $languages = explode(',', $acceptLanguage);
-        
+
         foreach ($languages as $language) {
             // q値を削除
             $locale = trim(explode(';', $language)[0]);
-            
+
             // 言語コードのみを抽出（ja-JP → ja）
             $locale = strtolower(substr($locale, 0, 2));
-            
+
             if (LocaleHelper::isSupported($locale)) {
                 return $locale;
             }

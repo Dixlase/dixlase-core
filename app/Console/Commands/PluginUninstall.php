@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -36,19 +36,17 @@
 namespace App\Console\Commands;
 
 use App\Console\Traits\PluginManagementTrait;
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
+use App\Providers\PluginServiceProvider;
 use App\Services\PluginMigrator;
+use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use App\Providers\PluginServiceProvider;
 
 class PluginUninstall extends Command
 {
-
     use PluginManagementTrait;
 
     /**
@@ -59,6 +57,7 @@ class PluginUninstall extends Command
     protected $signature = 'dls:plugin:uninstall {pluginName}
                             {--rollback : Rollback database migrations}
                             {--force : Force uninstall even if plugin is enabled}';
+
     /**
      * Create a new command instance.
      *
@@ -76,7 +75,7 @@ class PluginUninstall extends Command
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
         parent::initialize($input, $output);
-        
+
         // アンインストール対象のプラグイン名を取得
         $pluginName = $input->getArgument('pluginName');
         if ($pluginName) {
@@ -84,7 +83,7 @@ class PluginUninstall extends Command
             putenv("PLUGIN_UNINSTALLING={$pluginName}");
             config(['app.plugin_uninstalling' => $pluginName]);
             $this->info("DEBUG: Early flag set for plugin: {$pluginName}");
-            $this->info("DEBUG: ENV variable: " . getenv('PLUGIN_UNINSTALLING'));
+            $this->info('DEBUG: ENV variable: '.getenv('PLUGIN_UNINSTALLING'));
         }
     }
 
@@ -96,27 +95,30 @@ class PluginUninstall extends Command
         $pluginName = $this->argument('pluginName');
         $plugin = DB::table('plugins')->where('name', $pluginName)->first();
 
-        if (!$plugin) {
+        if (! $plugin) {
             $this->error(__('admin/command.plugin_uninstall.not_found', ['pluginName' => $pluginName]));
+
             return 1;
         }
 
         // 有効化状態チェック
-        if (!is_null($plugin->enabled_at) && !$this->option('force')) {
+        if (! is_null($plugin->enabled_at) && ! $this->option('force')) {
             $this->error(__('admin/command.plugin_uninstall.still_enabled', ['pluginName' => $pluginName]));
             $this->warn(__('admin/command.plugin_uninstall.disable_first'));
+
             return 1;
         }
 
-        $pluginPath = base_path('plugins/' . $plugin->directory);
+        $pluginPath = base_path('plugins/'.$plugin->directory);
 
         // アンインストール確認（--no-interactionオプションがない場合のみ）
-        if (!$this->option('no-interaction')) {
+        if (! $this->option('no-interaction')) {
             $this->warn(__('admin/command.plugin_uninstall.confirm', ['pluginName' => $pluginName]));
             $answer = $this->ask('yes/no を入力してください');
-            
-            if (!in_array(strtolower($answer), ['yes', 'y'])) {
+
+            if (! in_array(strtolower($answer), ['yes', 'y'])) {
                 $this->info(__('admin/command.plugin_uninstall.cancelled'));
+
                 return 0;
             }
         }
@@ -125,7 +127,7 @@ class PluginUninstall extends Command
         config(['app.plugin_uninstalling' => $pluginName]);
 
         // --forceオプションが指定されている場合のみ無効化を実行
-        if (!is_null($plugin->enabled_at) && $this->option('force')) {
+        if (! is_null($plugin->enabled_at) && $this->option('force')) {
             $this->warn(__('admin/command.plugin_uninstall.force_disabling', ['pluginName' => $pluginName]));
             $this->disablePlugin($pluginName);
             $plugin = DB::table('plugins')->where('name', $pluginName)->first();
@@ -136,7 +138,7 @@ class PluginUninstall extends Command
             $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $plugin->slug);
             // 全てのマイグレーションをロールバックするため、stepを大きな値に設定
             $migrator->rollback($plugin->directory, ['step' => 999]);
-        } else if (!$this->option('no-interaction') && $this->confirm(__('admin/command.plugin_uninstall.rollback_confirm', ['pluginName' => $pluginName]), false)) {
+        } elseif (! $this->option('no-interaction') && $this->confirm(__('admin/command.plugin_uninstall.rollback_confirm', ['pluginName' => $pluginName]), false)) {
             $this->info(__('admin/command.plugin_uninstall.rollback_running'));
             $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $plugin->slug);
             // 全てのマイグレーションをロールバックするため、stepを大きな値に設定
@@ -164,7 +166,7 @@ class PluginUninstall extends Command
 
         $this->info(__('admin/command.plugin_uninstall.completed', ['pluginName' => $pluginName]));
         $this->info(__('admin/command.plugin_uninstall.delete_hint'));
-        
+
         return 0;
     }
 }

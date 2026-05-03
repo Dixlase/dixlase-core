@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,11 +35,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\SecuritySetting;
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
-use App\Models\SecuritySetting;
 use Illuminate\Support\Facades\Schema;
+use Symfony\Component\HttpFoundation\Response;
 
 class AdminIpFilter
 {
@@ -63,15 +63,15 @@ class AdminIpFilter
 
         // セキュリティ設定テーブルが存在する場合のみ値を取得
         if (Schema::hasTable('security_settings')) {
-            $enableAllowedIps = (bool)SecuritySetting::get('enable_allowed_admin_ips', 0);
+            $enableAllowedIps = (bool) SecuritySetting::get('enable_allowed_admin_ips', 0);
             $allowedIps = array_filter(explode(',', SecuritySetting::get('allowed_admin_ips', '')));
-            
-            $enableBlockedIps = (bool)SecuritySetting::get('enable_blocked_admin_ips', 0);
+
+            $enableBlockedIps = (bool) SecuritySetting::get('enable_blocked_admin_ips', 0);
             $blockedIps = array_filter(explode(',', SecuritySetting::get('blocked_admin_ips', '')));
         }
 
         // 許可リストが有効でない場合はIP制限をスキップ
-        if (!$enableAllowedIps && !$enableBlockedIps) {
+        if (! $enableAllowedIps && ! $enableBlockedIps) {
             return $next($request);
         }
 
@@ -79,7 +79,7 @@ class AdminIpFilter
             abort(403, 'Access Denied.');
         }
 
-        if ($enableAllowedIps && !in_array($request->ip(), $allowedIps)) {
+        if ($enableAllowedIps && ! in_array($request->ip(), $allowedIps)) {
             abort(403, 'Unauthorized Access.');
         }
 

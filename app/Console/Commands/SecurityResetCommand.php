@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -42,7 +42,7 @@ use Illuminate\Support\Facades\Cache;
 
 /**
  * セキュリティ設定緊急リセットコマンド（ブレークグラス）
- * 
+ *
  * セキュリティ設定の破損・暴走時に、安全なデフォルト値にリセットする
  * - 不正な設定値でログイン不能
  * - 存在しないCAPTCHAドライバ指定
@@ -92,7 +92,7 @@ class SecurityResetCommand extends Command
     protected function resetMinimal(): int
     {
         $reason = $this->getRequiredReason();
-        if (!$reason) {
+        if (! $reason) {
             return self::FAILURE;
         }
 
@@ -105,8 +105,9 @@ class SecurityResetCommand extends Command
         $this->line(__('admin/command.security_reset.minimal_description'));
         $this->newLine();
 
-        if (!$this->option('force') && !$this->confirm(__('admin/command.security_reset.confirm_minimal'))) {
+        if (! $this->option('force') && ! $this->confirm(__('admin/command.security_reset.confirm_minimal'))) {
             $this->info(__('admin/command.security_reset.cancelled'));
+
             return self::SUCCESS;
         }
 
@@ -149,7 +150,7 @@ class SecurityResetCommand extends Command
     protected function resetFull(): int
     {
         $reason = $this->getRequiredReason();
-        if (!$reason) {
+        if (! $reason) {
             return self::FAILURE;
         }
 
@@ -166,8 +167,9 @@ class SecurityResetCommand extends Command
         }
         $this->newLine();
 
-        if (!$this->option('force') && !$this->confirm(__('admin/command.security_reset.confirm_full'))) {
+        if (! $this->option('force') && ! $this->confirm(__('admin/command.security_reset.confirm_full'))) {
             $this->info(__('admin/command.security_reset.cancelled'));
+
             return self::SUCCESS;
         }
 
@@ -175,10 +177,10 @@ class SecurityResetCommand extends Command
         $previousSettings = $this->getCurrentSecuritySettings();
 
         // Apply default settings
-        $defaultSettings = $category 
+        $defaultSettings = $category
             ? $this->getDefaultSettingsForCategory($category)
             : $this->getFullDefaultSettings();
-        
+
         $this->applySettings($defaultSettings);
 
         // Clear all security-related caches
@@ -227,8 +229,8 @@ class SecurityResetCommand extends Command
         ];
 
         foreach ($categories as $category => $keys) {
-            $this->info("【" . strtoupper($category) . "】");
-            
+            $this->info('【'.strtoupper($category).'】');
+
             $rows = [];
             foreach ($keys as $key) {
                 $value = $settings[$key] ?? '-';
@@ -241,7 +243,7 @@ class SecurityResetCommand extends Command
                 }
                 $rows[] = [$key, $value];
             }
-            
+
             $this->table(
                 [__('admin/command.security_reset.setting'), __('admin/command.security_reset.value')],
                 $rows
@@ -257,10 +259,10 @@ class SecurityResetCommand extends Command
      */
     protected function exportSettings(): int
     {
-        $path = $this->option('export-path') ?? storage_path('app/security_settings_backup_' . date('Y-m-d_His') . '.json');
-        
+        $path = $this->option('export-path') ?? storage_path('app/security_settings_backup_'.date('Y-m-d_His').'.json');
+
         $settings = $this->getCurrentSecuritySettings();
-        
+
         $export = [
             'exported_at' => now()->toIso8601String(),
             'settings' => $settings,
@@ -279,7 +281,7 @@ class SecurityResetCommand extends Command
     protected function getCurrentSecuritySettings(): array
     {
         $settings = [];
-        
+
         $keys = [
             'two_fa_enabled', 'two_fa_mode',
             'captcha_enabled', 'captcha_driver', 'captcha_site_key', 'captcha_authentication_result',
@@ -406,10 +408,10 @@ class SecurityResetCommand extends Command
      */
     protected function exportCurrentSettings(): void
     {
-        $path = storage_path('app/security_settings_pre_reset_' . date('Y-m-d_His') . '.json');
-        
+        $path = storage_path('app/security_settings_pre_reset_'.date('Y-m-d_His').'.json');
+
         $settings = $this->getCurrentSecuritySettings();
-        
+
         $export = [
             'exported_at' => now()->toIso8601String(),
             'reason' => 'pre_reset_backup',
@@ -428,12 +430,13 @@ class SecurityResetCommand extends Command
     {
         $reason = $this->option('reason');
 
-        if (!$reason) {
+        if (! $reason) {
             $reason = $this->ask(__('admin/command.security_reset.reason_prompt'));
         }
 
-        if (!$reason) {
+        if (! $reason) {
             $this->error(__('admin/command.security_reset.reason_required'));
+
             return null;
         }
 
@@ -447,10 +450,10 @@ class SecurityResetCommand extends Command
     {
         $this->error(__('admin/command.security_reset.invalid_action', ['action' => $action]));
         $this->line(__('admin/command.security_reset.valid_actions'));
-        $this->line('  - minimal : ' . __('admin/command.security_reset.action_minimal'));
-        $this->line('  - full    : ' . __('admin/command.security_reset.action_full'));
-        $this->line('  - status  : ' . __('admin/command.security_reset.action_status'));
-        $this->line('  - export  : ' . __('admin/command.security_reset.action_export'));
+        $this->line('  - minimal : '.__('admin/command.security_reset.action_minimal'));
+        $this->line('  - full    : '.__('admin/command.security_reset.action_full'));
+        $this->line('  - status  : '.__('admin/command.security_reset.action_status'));
+        $this->line('  - export  : '.__('admin/command.security_reset.action_export'));
 
         return self::FAILURE;
     }

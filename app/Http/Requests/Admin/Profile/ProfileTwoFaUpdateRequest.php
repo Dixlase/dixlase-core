@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -36,9 +36,9 @@
 namespace App\Http\Requests\Admin\Profile;
 
 use App\Enums\AuthenticationMode;
+use App\Traits\TwoFa\TwoFactorEnableCheck;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
-use App\Traits\TwoFa\TwoFactorEnableCheck;
 
 class ProfileTwoFaUpdateRequest extends FormRequest
 {
@@ -65,11 +65,11 @@ class ProfileTwoFaUpdateRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $twoFaMode = (int) $this->input('two_fa_mode', 0);
-            
+
             // 2FAを有効化しようとしている場合（モード1または2）
             // プロフィール画面ではメールサーバーテスト済みかチェック
             if ($twoFaMode === 1 || $twoFaMode === 2) {
-                if (!\App\Services\MailServerValidatorService::isMailServerTested()) {
+                if (! \App\Services\MailServerValidatorService::isMailServerTested()) {
                     $validator->errors()->add(
                         'two_fa_mode',
                         __('admin/profile/validation.two_fa_cannot_enable')

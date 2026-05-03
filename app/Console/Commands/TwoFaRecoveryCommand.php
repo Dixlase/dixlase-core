@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -43,7 +43,7 @@ use Illuminate\Support\Facades\Hash;
 
 /**
  * 二段階認証緊急復旧コマンド（ブレークグラス）
- * 
+ *
  * 二段階認証で完全に詰んだ管理者を救済するための緊急復旧機能
  * - メール認証できない（メールサーバー障害等）
  * - デバイス認証できない（デバイス紛失等）
@@ -91,12 +91,12 @@ class TwoFaRecoveryCommand extends Command
     protected function disableTwoFa(): int
     {
         $member = $this->findMember();
-        if (!$member) {
+        if (! $member) {
             return self::FAILURE;
         }
 
         $reason = $this->getRequiredReason();
-        if (!$reason) {
+        if (! $reason) {
             return self::FAILURE;
         }
 
@@ -107,8 +107,9 @@ class TwoFaRecoveryCommand extends Command
         $this->warn(__('admin/command.two_fa_recovery.warning_disable'));
         $this->newLine();
 
-        if (!$this->option('force') && !$this->confirm(__('admin/command.two_fa_recovery.confirm_disable', ['name' => ($member->display_name ?? $member->account_name)]))) {
+        if (! $this->option('force') && ! $this->confirm(__('admin/command.two_fa_recovery.confirm_disable', ['name' => ($member->display_name ?? $member->account_name)]))) {
             $this->info(__('admin/command.two_fa_recovery.cancelled'));
+
             return self::SUCCESS;
         }
 
@@ -153,18 +154,19 @@ class TwoFaRecoveryCommand extends Command
     protected function resetRecoveryCodes(): int
     {
         $member = $this->findMember();
-        if (!$member) {
+        if (! $member) {
             return self::FAILURE;
         }
 
         $reason = $this->getRequiredReason();
-        if (!$reason) {
+        if (! $reason) {
             return self::FAILURE;
         }
 
         // Check if 2FA is enabled
         if ($member->two_fa_mode === AuthenticationMode::Disabled->value || $member->two_fa_mode === null) {
             $this->error(__('admin/command.two_fa_recovery.two_fa_not_enabled', ['name' => ($member->display_name ?? $member->account_name)]));
+
             return self::FAILURE;
         }
 
@@ -172,14 +174,15 @@ class TwoFaRecoveryCommand extends Command
         $this->warn(__('admin/command.two_fa_recovery.warning_reset_codes'));
         $this->newLine();
 
-        if (!$this->option('force') && !$this->confirm(__('admin/command.two_fa_recovery.confirm_reset_codes', ['name' => ($member->display_name ?? $member->account_name)]))) {
+        if (! $this->option('force') && ! $this->confirm(__('admin/command.two_fa_recovery.confirm_reset_codes', ['name' => ($member->display_name ?? $member->account_name)]))) {
             $this->info(__('admin/command.two_fa_recovery.cancelled'));
+
             return self::SUCCESS;
         }
 
         // Generate new recovery codes
         $codes = $this->generateRecoveryCodes();
-        $hashedCodes = array_map(fn($code) => Hash::make($code), $codes);
+        $hashedCodes = array_map(fn ($code) => Hash::make($code), $codes);
 
         $member->update([
             'two_fa_recovery_codes' => json_encode($hashedCodes),
@@ -191,11 +194,11 @@ class TwoFaRecoveryCommand extends Command
         // Display new codes
         $this->warn(__('admin/command.two_fa_recovery.new_codes_warning'));
         $this->newLine();
-        
+
         foreach ($codes as $index => $code) {
             $this->line(sprintf('  %d. %s', $index + 1, $code));
         }
-        
+
         $this->newLine();
         $this->warn(__('admin/command.two_fa_recovery.codes_save_warning'));
 
@@ -227,7 +230,7 @@ class TwoFaRecoveryCommand extends Command
 
         if ($memberOption) {
             $member = $this->findMember();
-            if (!$member) {
+            if (! $member) {
                 return self::FAILURE;
             }
             $this->showMemberTwoFaStatus($member);
@@ -249,6 +252,7 @@ class TwoFaRecoveryCommand extends Command
 
         if ($members->isEmpty()) {
             $this->info(__('admin/command.two_fa_recovery.no_members_with_two_fa'));
+
             return self::SUCCESS;
         }
 
@@ -257,7 +261,7 @@ class TwoFaRecoveryCommand extends Command
 
         $rows = [];
         foreach ($members as $member) {
-            $hasRecoveryCodes = !empty($member->two_fa_recovery_codes);
+            $hasRecoveryCodes = ! empty($member->two_fa_recovery_codes);
             $codesCount = $hasRecoveryCodes ? count(json_decode($member->two_fa_recovery_codes, true) ?? []) : 0;
 
             $rows[] = [
@@ -290,12 +294,13 @@ class TwoFaRecoveryCommand extends Command
     {
         $identifier = $this->option('member');
 
-        if (!$identifier) {
+        if (! $identifier) {
             $identifier = $this->ask(__('admin/command.two_fa_recovery.member_prompt'));
         }
 
-        if (!$identifier) {
+        if (! $identifier) {
             $this->error(__('admin/command.two_fa_recovery.member_required'));
+
             return null;
         }
 
@@ -304,8 +309,9 @@ class TwoFaRecoveryCommand extends Command
             ? Member::find($identifier)
             : Member::where('email', $identifier)->first();
 
-        if (!$member) {
+        if (! $member) {
             $this->error(__('admin/command.two_fa_recovery.member_not_found', ['identifier' => $identifier]));
+
             return null;
         }
 
@@ -319,12 +325,13 @@ class TwoFaRecoveryCommand extends Command
     {
         $reason = $this->option('reason');
 
-        if (!$reason) {
+        if (! $reason) {
             $reason = $this->ask(__('admin/command.two_fa_recovery.reason_prompt'));
         }
 
-        if (!$reason) {
+        if (! $reason) {
             $this->error(__('admin/command.two_fa_recovery.reason_required'));
+
             return null;
         }
 
@@ -339,7 +346,7 @@ class TwoFaRecoveryCommand extends Command
         $this->info(__('admin/command.two_fa_recovery.member_status_title', ['name' => ($member->display_name ?? $member->account_name)]));
         $this->newLine();
 
-        $hasRecoveryCodes = !empty($member->two_fa_recovery_codes);
+        $hasRecoveryCodes = ! empty($member->two_fa_recovery_codes);
         $codesCount = $hasRecoveryCodes ? count(json_decode($member->two_fa_recovery_codes, true) ?? []) : 0;
 
         $this->table(
@@ -392,8 +399,9 @@ class TwoFaRecoveryCommand extends Command
     {
         $codes = [];
         for ($i = 0; $i < $count; $i++) {
-            $codes[] = strtoupper(bin2hex(random_bytes(4))) . '-' . strtoupper(bin2hex(random_bytes(4)));
+            $codes[] = strtoupper(bin2hex(random_bytes(4))).'-'.strtoupper(bin2hex(random_bytes(4)));
         }
+
         return $codes;
     }
 
@@ -404,10 +412,10 @@ class TwoFaRecoveryCommand extends Command
     {
         $this->error(__('admin/command.two_fa_recovery.invalid_action', ['action' => $action]));
         $this->line(__('admin/command.two_fa_recovery.valid_actions'));
-        $this->line('  - disable     : ' . __('admin/command.two_fa_recovery.action_disable'));
-        $this->line('  - reset-codes : ' . __('admin/command.two_fa_recovery.action_reset_codes'));
-        $this->line('  - status      : ' . __('admin/command.two_fa_recovery.action_status'));
-        $this->line('  - list        : ' . __('admin/command.two_fa_recovery.action_list'));
+        $this->line('  - disable     : '.__('admin/command.two_fa_recovery.action_disable'));
+        $this->line('  - reset-codes : '.__('admin/command.two_fa_recovery.action_reset_codes'));
+        $this->line('  - status      : '.__('admin/command.two_fa_recovery.action_status'));
+        $this->line('  - list        : '.__('admin/command.two_fa_recovery.action_list'));
 
         return self::FAILURE;
     }

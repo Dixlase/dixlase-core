@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,30 +35,27 @@
 
 namespace App\Models\Traits;
 
-use App\Contracts\Repositories\SettingRepositoryInterface;
-
 /**
  * 設定モデル用Trait
- * 
+ *
  * 設定系モデルで共通の静的メソッドを提供します。
  * これらのメソッドは後方互換性のために残されていますが、
  * 新しいコードではRepositoryを直接使用することを推奨します。
- * 
+ *
  * @deprecated 静的メソッドは非推奨です。対応するRepositoryを使用してください。
  */
 trait UsesSettingRepositoryTrait
 {
     /**
      * リポジトリインターフェースのクラス名を取得
-     * 
-     * @return string
      */
     abstract protected static function getRepositoryInterface(): string;
 
     /**
      * すべての設定を取得
-     * 
+     *
      * @deprecated Repository::all() を使用してください
+     *
      * @return array<string, mixed>
      */
     public static function getAllSettings(): array
@@ -68,11 +65,11 @@ trait UsesSettingRepositoryTrait
 
     /**
      * 設定値を取得
-     * 
+     *
      * @deprecated Repository::get() を使用してください
-     * @param string $name 設定名
-     * @param mixed $default デフォルト値
-     * @return mixed
+     *
+     * @param  string  $name  設定名
+     * @param  mixed  $default  デフォルト値
      */
     public static function getValue(string $name, mixed $default = null): mixed
     {
@@ -81,11 +78,11 @@ trait UsesSettingRepositoryTrait
 
     /**
      * 設定値を保存
-     * 
+     *
      * @deprecated Repository::set() を使用してください
-     * @param string $name 設定名
-     * @param mixed $value 設定値
-     * @return \Illuminate\Database\Eloquent\Model
+     *
+     * @param  string  $name  設定名
+     * @param  mixed  $value  設定値
      */
     public static function setValue(string $name, mixed $value): \Illuminate\Database\Eloquent\Model
     {
@@ -94,10 +91,10 @@ trait UsesSettingRepositoryTrait
 
     /**
      * 複数の設定を一括保存
-     * 
+     *
      * @deprecated Repository::setMultiple() を使用してください
-     * @param array<string, mixed> $settings 設定の配列
-     * @return void
+     *
+     * @param  array<string, mixed>  $settings  設定の配列
      */
     public static function setMany(array $settings): void
     {
@@ -106,11 +103,11 @@ trait UsesSettingRepositoryTrait
 
     /**
      * SecuritySetting互換: get()メソッド
-     * 
+     *
      * @deprecated Repository::get() を使用してください
-     * @param string $key 設定キー
-     * @param mixed $default デフォルト値
-     * @return mixed
+     *
+     * @param  string  $key  設定キー
+     * @param  mixed  $default  デフォルト値
      */
     public static function get(string $key, mixed $default = null): mixed
     {
@@ -119,11 +116,11 @@ trait UsesSettingRepositoryTrait
 
     /**
      * SecuritySetting互換: set()メソッド
-     * 
+     *
      * @deprecated Repository::set() を使用してください
-     * @param string $key 設定キー
-     * @param mixed $value 設定値
-     * @return \Illuminate\Database\Eloquent\Model
+     *
+     * @param  string  $key  設定キー
+     * @param  mixed  $value  設定値
      */
     public static function set(string $key, mixed $value): \Illuminate\Database\Eloquent\Model
     {

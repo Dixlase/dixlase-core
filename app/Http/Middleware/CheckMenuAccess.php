@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,11 +35,11 @@
 
 namespace App\Http\Middleware;
 
-use Closure;
-use Illuminate\Http\Request;
 use App\Enums\MenuVisibility;
 use App\Helpers\AdminHelper;
 use App\Helpers\AdminModeHelper;
+use Closure;
+use Illuminate\Http\Request;
 
 class CheckMenuAccess
 {
@@ -51,7 +51,7 @@ class CheckMenuAccess
     public function handle(Request $request, Closure $next, string $menuKey): \Symfony\Component\HttpFoundation\Response
     {
         // 権限チェック
-        if (!AdminHelper::canAccessMenu($menuKey)) {
+        if (! AdminHelper::canAccessMenu($menuKey)) {
             abort(403, 'アクセス権限がありません。');
         }
 

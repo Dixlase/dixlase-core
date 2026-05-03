@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,10 +35,10 @@
 
 namespace App\Http\Controllers\Admin\Auth;
 
-use Illuminate\Routing\Controller;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controller;
 use Illuminate\Routing\RouteServiceProvider;
 
 class AdminVerifyEmailController extends Controller
@@ -49,13 +49,13 @@ class AdminVerifyEmailController extends Controller
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
         if ($request->user('members')->hasVerifiedEmail()) {
-            return redirect()->intended('/admin' . RouteServiceProvider::HOME . '?verified=1');
+            return redirect()->intended('/admin'.RouteServiceProvider::HOME.'?verified=1');
         }
 
         if ($request->user('members')->markEmailAsVerified()) {
             event(new Verified($request->user('members')));
         }
 
-        return redirect()->intended(route('admin.dashboard', absolute: false) . '?verified=1');
+        return redirect()->intended(route('admin.dashboard', absolute: false).'?verified=1');
     }
 }

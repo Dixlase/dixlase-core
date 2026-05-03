@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,9 +35,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\SecuritySetting;
 use Closure;
 use Illuminate\Http\Request;
-use App\Models\SecuritySetting;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckPasswordResetEnabled
@@ -51,8 +51,8 @@ class CheckPasswordResetEnabled
     {
         // パスワードリセット機能が有効かどうかをチェック
         $passwordResetEnabled = (bool) SecuritySetting::get('password_reset_enabled', false);
-        
-        if (!$passwordResetEnabled) {
+
+        if (! $passwordResetEnabled) {
             // パスワードリセット機能が無効の場合、404を返す
             abort(404);
         }

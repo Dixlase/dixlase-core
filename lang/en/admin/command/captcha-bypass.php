@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,34 +35,34 @@
 
 return [
 
-        'invalid_scope' => 'Invalid scope: :scope (use admin_login or all)',
-        'reason_prompt' => 'Enter the reason for enabling bypass',
-        'reason_required' => 'Reason is required.',
-        'warning' => '⚠️ Warning: CAPTCHA bypass poses a security risk.',
-        'confirm_details' => 'Settings: :minutes minutes, scope: :scope, reason: :reason',
-        'confirm_enable' => 'Enable CAPTCHA bypass?',
-        'cancelled' => 'Operation cancelled.',
-        'enabled' => '✅ CAPTCHA bypass enabled (:minutes minutes, until :expires_at)',
-        'enable_failed' => 'Failed to enable CAPTCHA bypass.',
-        'not_active' => 'CAPTCHA bypass is not currently active.',
-        'disabled' => '✅ CAPTCHA bypass has been disabled.',
-        'status_title' => '【CAPTCHA Bypass Status】',
-        'status_active' => '⚠️ Bypass is ACTIVE',
-        'status_inactive' => '✅ Bypass is inactive (normal operation)',
-        'field' => 'Field',
-        'value' => 'Value',
-        'scope' => 'Scope',
-        'reason' => 'Reason',
-        'expires_at' => 'Expires at',
-        'remaining' => 'Remaining',
-        'minutes' => 'minutes',
-        'enabled_at' => 'Enabled at',
-        'recent_history' => '【Recent Bypass History】',
-        'time' => 'Time',
-        'action' => 'Action',
-        'invalid_action' => 'Invalid action: :action',
-        'valid_actions' => 'Valid actions:',
-        'action_enable' => 'Enable bypass',
-        'action_disable' => 'Disable bypass',
-        'action_status' => 'Show current status',
+    'invalid_scope' => 'Invalid scope: :scope (use admin_login or all)',
+    'reason_prompt' => 'Enter the reason for enabling bypass',
+    'reason_required' => 'Reason is required.',
+    'warning' => '⚠️ Warning: CAPTCHA bypass poses a security risk.',
+    'confirm_details' => 'Settings: :minutes minutes, scope: :scope, reason: :reason',
+    'confirm_enable' => 'Enable CAPTCHA bypass?',
+    'cancelled' => 'Operation cancelled.',
+    'enabled' => '✅ CAPTCHA bypass enabled (:minutes minutes, until :expires_at)',
+    'enable_failed' => 'Failed to enable CAPTCHA bypass.',
+    'not_active' => 'CAPTCHA bypass is not currently active.',
+    'disabled' => '✅ CAPTCHA bypass has been disabled.',
+    'status_title' => '【CAPTCHA Bypass Status】',
+    'status_active' => '⚠️ Bypass is ACTIVE',
+    'status_inactive' => '✅ Bypass is inactive (normal operation)',
+    'field' => 'Field',
+    'value' => 'Value',
+    'scope' => 'Scope',
+    'reason' => 'Reason',
+    'expires_at' => 'Expires at',
+    'remaining' => 'Remaining',
+    'minutes' => 'minutes',
+    'enabled_at' => 'Enabled at',
+    'recent_history' => '【Recent Bypass History】',
+    'time' => 'Time',
+    'action' => 'Action',
+    'invalid_action' => 'Invalid action: :action',
+    'valid_actions' => 'Valid actions:',
+    'action_enable' => 'Enable bypass',
+    'action_disable' => 'Disable bypass',
+    'action_status' => 'Show current status',
 ];

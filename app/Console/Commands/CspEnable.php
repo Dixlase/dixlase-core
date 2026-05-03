@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -62,32 +62,33 @@ class CspEnable extends Command
     {
         try {
             $mode = $this->option('mode');
-            
+
             // モードの検証
             $validModes = ['development', 'standard', 'strict'];
-            if (!in_array($mode, $validModes)) {
+            if (! in_array($mode, $validModes)) {
                 $this->error("❌ 無効なモード: {$mode}");
-                $this->info("有効なモード: " . implode(', ', $validModes));
+                $this->info('有効なモード: '.implode(', ', $validModes));
+
                 return Command::FAILURE;
             }
-            
+
             // モードを数値に変換
-            $modeValue = match($mode) {
+            $modeValue = match ($mode) {
                 'development' => 0,
                 'standard' => 1,
                 'strict' => 2,
             };
-            
+
             // CSPを有効化
             SecuritySetting::set('csp_enabled', 1);
             SecuritySetting::set('csp_mode', $modeValue);
-            
+
             // キャッシュをクリア
             Cache::flush();
-            
+
             $this->info("✅ CSPを有効化しました (モード: {$mode})");
-            $this->info('📝 ログ: CSPが有効化されました - ' . now());
-            
+            $this->info('📝 ログ: CSPが有効化されました - '.now());
+
             // ログに記録
             \Log::channel('stack')->warning('CSP有効化コマンド実行', [
                 'command' => 'dixlase:csp:enable',
@@ -95,10 +96,11 @@ class CspEnable extends Command
                 'user' => 'CLI',
                 'timestamp' => now(),
             ]);
-            
+
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error('❌ CSPの有効化に失敗しました: ' . $e->getMessage());
+            $this->error('❌ CSPの有効化に失敗しました: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }
