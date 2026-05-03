@@ -38,10 +38,12 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Contracts\Site\SiteContextInterface;
+use App\Helpers\LocaleHelper;
 use App\Models\Site;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -66,12 +68,24 @@ class ResolveSiteContext
 
     public function handle(Request $request, Closure $next): Response
     {
+        $primaryLocale = null;
+
         if (Schema::hasTable('sites')) {
             $site = $this->resolveSite($request);
             if ($site !== null) {
                 $this->siteContext->setCurrent($site->id);
+                $primaryLocale = $site->primary_locale;
             }
         }
+
+        // Seed URL::defaults('locale') with the site's primary locale so
+        // any code that calls route() for a locale-prefixed front route
+        // (e.g. admin "view on front" links) generates a working URL even
+        // before SetFrontLocale / SetAdminLocale narrow the choice down.
+        $defaultLocale = is_string($primaryLocale) && LocaleHelper::isSupported($primaryLocale)
+            ? $primaryLocale
+            : (string) config('app.fallback_locale', LocaleHelper::getDefaultLocale());
+        URL::defaults(['locale' => $defaultLocale]);
 
         return $next($request);
     }
