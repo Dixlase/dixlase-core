@@ -39,6 +39,7 @@ use App\Helpers\PluginHelper;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\Front\FrontCustomAssetController;
 use App\Http\Controllers\Front\FrontWelcomeController;
+use App\Http\Controllers\Front\LocaleSwitchController;
 use App\Http\Middleware\SetFrontLocale;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -82,6 +83,14 @@ Route::get('assets/{type}/{file}', function ($type, $file) {
         \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
         \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
     ]);
+
+// Language switcher endpoint. Lives outside the locale group because
+// it is a control action, not localized content. The controller writes
+// the dixlase_locale cookie and 302-redirects to the same page under
+// the chosen locale.
+Route::post('/locale/switch', LocaleSwitchController::class)
+    ->name('locale.switch')
+    ->middleware('web');
 
 // Front page custom JS/CSS external file delivery.
 // Stays outside the locale group so the URL stays cache-key-stable.
