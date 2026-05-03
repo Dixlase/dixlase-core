@@ -59,64 +59,67 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 |---|---|
 | `App\Contracts\Action\ActionInterface` | Contract for all CMS business operations |
 | `App\Contracts\Action\Actor` | Represents the entity performing an operation |
-| `App\Contracts\Admin\AdminNavigationManagerInterface` | 管理画面ナビゲーション管理インターフェース |
-| `App\Contracts\Backup\BackupServiceInterface` | バックアップサービスインターフェース |
-| `App\Contracts\Backup\RestoreServiceInterface` | 復元サービスインターフェース |
+| `App\Contracts\Admin\AdminNavigationManagerInterface` | Admin panel navigation manager interface |
+| `App\Contracts\Backup\BackupServiceInterface` | Backup service interface |
+| `App\Contracts\Backup\RestoreServiceInterface` | Restore service interface |
 | `App\Contracts\CspPolicyProvider` | CSP Policy Provider Interface |
-| `App\Contracts\Encryption\FileEncryptionServiceInterface` | ファイル暗号化サービスインターフェース |
+| `App\Contracts\Encryption\FileEncryptionServiceInterface` | File encryption service interface |
 | `App\Contracts\Extension\ExtensionSourceInterface` | Extension Source Provider Interface |
-| `App\Contracts\FileIntegrity\FileIntegrityServiceInterface` | ファイル整合性チェックサービスの契約 |
-| `App\Contracts\LegalPage\LegalPageServiceInterface` | 法務ページレジストリサービスの契約 |
-| `App\Contracts\Logging\LogServiceInterface` | ログ出力サービスの契約 |
-| `App\Contracts\Mail\MailServiceInterface` | メール送信サービスの契約 |
-| `App\Contracts\Revisionable` | 各プラグイン/テーマは自身のリビジョンテーブルと Eloquent モデルを持ちつつ、 |
+| `App\Contracts\FileIntegrity\FileIntegrityServiceInterface` | File integrity check service contract |
+| `App\Contracts\I18n\LocalizedUrlProvider` | Exposes alternate-language URLs for the current request. |
+| `App\Contracts\I18n\MissingTranslationHandler` | Decides what to do when a route exists but no translation is available |
+| `App\Contracts\LegalPage\LegalPageServiceInterface` | Contract for legal page registry service |
+| `App\Contracts\Logging\LogServiceInterface` | Log service contract |
+| `App\Contracts\Mail\MailServiceInterface` | Mail service contract |
+| `App\Contracts\Revisionable` | Each plugin/theme has its own revision table and Eloquent model, and by |
 | `App\Contracts\RouteSlugProvider` | Route Slug Provider Interface |
 | `App\Contracts\Site\SiteContextInterface` | Provides the current site context for the request. |
-| `App\Contracts\Theme\ThemePermissionServiceInterface` | テーマ権限管理サービスの契約 |
+| `App\Contracts\Theme\ThemePermissionServiceInterface` | Theme permission management service interface |
 | `App\Contracts\TranslationResolver` | Translation Resolver Contract |
-| `App\Contracts\TwoFaInterface` | 二段階認証機能を持つユーザーのインターフェース |
-| `App\Contracts\TwoFa\TwoFaPasskeyServiceInterface` | Passkey（WebAuthn）認証サービスの契約 |
-| `App\Contracts\Verification\FileVerificationServiceInterface` | ファイル整合性検証サービスインターフェース |
+| `App\Contracts\TwoFaInterface` | Interface for users with two-factor authentication functionality |
+| `App\Contracts\TwoFa\TwoFaPasskeyServiceInterface` | Contract for Passkey (WebAuthn) authentication service |
+| `App\Contracts\Verification\FileVerificationServiceInterface` | File integrity verification service interface |
 
 ### 1.2 Plugin Integration Contracts
 
 | Contract | Description |
 |---|---|
-| `App\Contracts\PluginIntegration\CaptchaFormProviderInterface` | CAPTCHA フォームを提供するプラグイン用 Contract |
-| `App\Contracts\PluginIntegration\DashboardNotificationProviderInterface` | ダッシュボード通知を提供するプラグインの契約 |
-| `App\Contracts\PluginIntegration\DashboardWidgetProviderInterface` | ダッシュボードウィジェットを提供するプラグインの契約 |
-| `App\Contracts\PluginIntegration\LinkableInterface` | リンク可能なコンテンツの最小契約 |
-| `App\Contracts\PluginIntegration\LinkableProviderInterface` | リンク可能なコンテンツを提供するプラグインの契約 |
+| `App\Contracts\PluginIntegration\CaptchaFormProviderInterface` | Contract for plugins that provide CAPTCHA forms |
+| `App\Contracts\PluginIntegration\DashboardNotificationProviderInterface` | Contract for plugins that provide dashboard notifications |
+| `App\Contracts\PluginIntegration\DashboardWidgetProviderInterface` | Contract for plugins that provide dashboard widgets |
+| `App\Contracts\PluginIntegration\LinkableInterface` | Minimal contract for linkable content |
+| `App\Contracts\PluginIntegration\LinkableProviderInterface` | Contract for plugins that provide linkable content |
 | `App\Contracts\PluginIntegration\MenuProviderInterface` | Contract for plugins that provide navigation menus |
 | `App\Contracts\PluginIntegration\PreviewProviderInterface` | Contract for plugins that provide preview data |
-| `App\Contracts\PluginIntegration\PrivacyPolicyProviderInterface` | プライバシーポリシープロバイダーの契約 |
-| `App\Contracts\PluginIntegration\SeoMetaProviderInterface` | コンテンツ単位のSEOメタ情報の読み書きを提供するインターフェース |
+| `App\Contracts\PluginIntegration\PrivacyDataProviderInterface` | Contract that a plugin (or core subsystem) implements to declare which |
+| `App\Contracts\PluginIntegration\PrivacyPolicyProviderInterface` | Privacy policy provider contract |
+| `App\Contracts\PluginIntegration\SeoMetaProviderInterface` | Interface to provide read/write access to SEO meta information per content |
 
 ### 1.3 Plugin Capability Contracts
 
 | Contract | Description |
 |---|---|
-| `App\Contracts\Plugin\ApiResourceProviderInterface` | APIリソースプロバイダーインターフェース |
-| `App\Contracts\Plugin\ContentProviderCapableInterface` | コンテンツ提供機能を宣言するインターフェース |
-| `App\Contracts\Plugin\EditorCapableInterface` | エディター提供機能を宣言するインターフェース |
-| `App\Contracts\Plugin\MailCapableInterface` | メール送信機能を宣言するインターフェース |
-| `App\Contracts\Plugin\PluginCapabilityInterface` | プラグイン機能宣言の基底インターフェース |
-| `App\Contracts\Plugin\PluginPermissionServiceInterface` | プラグイン権限管理サービスの契約 |
-| `App\Contracts\Plugin\SignatureVerifierInterface` | 署名検証コントラクト |
+| `App\Contracts\Plugin\ApiResourceProviderInterface` | API resource provider interface |
+| `App\Contracts\Plugin\ContentProviderCapableInterface` | Interface declaring content provider capability |
+| `App\Contracts\Plugin\EditorCapableInterface` | Interface declaring editor provision functionality |
+| `App\Contracts\Plugin\MailCapableInterface` | Interface declaring mail sending functionality |
+| `App\Contracts\Plugin\PluginCapabilityInterface` | Base interface for plugin capability declaration |
+| `App\Contracts\Plugin\PluginPermissionServiceInterface` | Contract for plugin permission management service |
+| `App\Contracts\Plugin\SignatureVerifierInterface` | Signature verification contract |
 
 ### 1.4 Repository Contracts
 
 | Contract | Description |
 |---|---|
-| `App\Contracts\Repositories\ApiSettingRepositoryInterface` | API設定リポジトリインターフェース |
-| `App\Contracts\Repositories\FrontSettingRepositoryInterface` | フロント設定リポジトリインターフェース |
-| `App\Contracts\Repositories\MediaRepositoryInterface` | メディアリポジトリインターフェース |
-| `App\Contracts\Repositories\MediaSettingRepositoryInterface` | メディア設定リポジトリインターフェース |
-| `App\Contracts\Repositories\PluginRepositoryInterface` | プラグインリポジトリインターフェース |
-| `App\Contracts\Repositories\SecuritySettingRepositoryInterface` | セキュリティ設定リポジトリインターフェース |
-| `App\Contracts\Repositories\SettingRepositoryInterface` | 設定リポジトリベースインターフェース |
-| `App\Contracts\Repositories\SiteSettingRepositoryInterface` | 基本設定リポジトリインターフェース |
-| `App\Contracts\Repositories\ThemeRepositoryInterface` | テーマリポジトリインターフェース |
+| `App\Contracts\Repositories\ApiSettingRepositoryInterface` | API settings repository interface |
+| `App\Contracts\Repositories\FrontSettingRepositoryInterface` | Front settings repository interface |
+| `App\Contracts\Repositories\MediaRepositoryInterface` | Media repository interface |
+| `App\Contracts\Repositories\MediaSettingRepositoryInterface` | Media settings repository interface |
+| `App\Contracts\Repositories\PluginRepositoryInterface` | Plugin repository interface |
+| `App\Contracts\Repositories\SecuritySettingRepositoryInterface` | Security settings repository interface |
+| `App\Contracts\Repositories\SettingRepositoryInterface` | Settings repository base interface |
+| `App\Contracts\Repositories\SiteSettingRepositoryInterface` | Site settings repository interface |
+| `App\Contracts\Repositories\ThemeRepositoryInterface` | Theme repository interface |
 
 ---
 
@@ -219,14 +222,19 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\DTO\PluginIntegration\SearchQueryDTO`
 - `App\DTO\PluginIntegration\SeoMetaDTO`
 
-### 4.11 Plugin DTOs
+### 4.11 Plugin Privacy DTOs
+
+- `App\DTO\PluginPrivacy\UserDataDeletionDTO`
+- `App\DTO\PluginPrivacy\UserDataExportDTO`
+
+### 4.12 Plugin DTOs
 
 - `App\DTO\Plugin\CapabilityResolutionResult`
 - `App\DTO\Plugin\DeclaresVerificationResult`
 - `App\DTO\Plugin\EnabledPluginRecord`
 - `App\DTO\Plugin\SignatureVerificationResult`
 
-### 4.12 RouteSlug DTOs
+### 4.13 RouteSlug DTOs
 
 - `App\DTO\RouteSlug\RegisteredSlug`
 
@@ -259,6 +267,10 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\Enums\OperationRiskLevel`
 - `App\Enums\PasskeyMode`
 - `App\Enums\TwoFaMethod`
+
+### 5.4 Plugin Privacy Enums
+
+- `App\Enums\PluginPrivacy\DeletionMode`
 
 ---
 
