@@ -38,20 +38,20 @@
 namespace App\DTO\PluginIntegration;
 
 /**
- * ダッシュボードウィジェットDTO
+ * Dashboard Widget DTO
  *
- * プラグインがダッシュボードに表示するウィジェットデータを保持します。
+ * Holds widget data that the plugin displays on the dashboard
  */
 final readonly class DashboardWidgetDTO
 {
     /**
-     * @param  string  $key  ウィジェット固有キー（例: 'pages_count'）
-     * @param  string  $label  表示ラベル（翻訳済み文字列）
-     * @param  string|int  $value  メイン表示値（例: '12', 0）
-     * @param  string  $icon  Font Awesomeアイコンクラス（例: 'fas fa-file-alt'）
-     * @param  string|null  $url  詳細ページへのリンク（null可）
-     * @param  string|null  $description  補足説明（null可）
-     * @param  string  $color  カードカラー（'blue', 'green', 'purple', 'orange' 等）
+     * @param  string  $key  Widget unique key (e.g., 'pages_count')
+     * @param  string  $label  Display label (translated string)
+     * @param  string|int  $value  Main display value (e.g., '12', 0)
+     * @param  string  $icon  Font Awesome icon class (e.g., 'fas fa-file-alt')
+     * @param  string|null  $url  Link to detail page (nullable)
+     * @param  string|null  $description  Supplementary description (nullable)
+     * @param  string  $color  Card color ('blue', 'green', 'purple', 'orange', etc.)
      */
     public function __construct(
         public string $key,

@@ -40,15 +40,15 @@ namespace App\DTO\RouteSlug;
 use JsonSerializable;
 
 /**
- * 登録済みルートスラッグDTO
+ * Registered route slug DTO
  *
- * システム全体で使用されるURLスラッグの情報を保持する。
- * スラッグの競合検出に使用される。
+ * Holds information about URL slugs used throughout the system.
+ * Used for slug conflict detection.
  *
- * @param  string  $slug  スラッグ値（例: admin, pages）
- * @param  string  $owner  所有者ID（例: core:admin_url, dixlase-pages:pages_directory）
- * @param  string  $label  人間可読なラベル（翻訳キー）
- * @param  bool  $isReserved  システム予約パスか
+ * @param  string  $slug  Slug value (e.g., admin, pages)
+ * @param  string  $owner  Owner ID (e.g., core:admin_url, dixlase-pages:pages_directory)
+ * @param  string  $label  Human-readable label (translation key)
+ * @param  bool  $isReserved  Whether it is a system reserved path
  */
 final readonly class RegisteredSlug implements JsonSerializable
 {
@@ -81,7 +81,7 @@ final readonly class RegisteredSlug implements JsonSerializable
     }
 
     /**
-     * 配列から生成
+     * Create from array
      *
      * @param  array<string, mixed>  $data
      */
@@ -96,7 +96,7 @@ final readonly class RegisteredSlug implements JsonSerializable
     }
 
     /**
-     * システム予約パスとして生成
+     * Create as system reserved path
      */
     public static function reserved(string $slug): self
     {

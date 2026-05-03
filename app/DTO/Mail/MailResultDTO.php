@@ -40,9 +40,9 @@ namespace App\DTO\Mail;
 use JsonSerializable;
 
 /**
- * メール送信結果DTO
+ * Mail sending result DTO
  *
- * メール送信の結果を保持する不変データオブジェクトです。
+ * Immutable data object that holds the result of mail sending
  */
 final readonly class MailResultDTO implements JsonSerializable
 {
@@ -53,15 +53,15 @@ final readonly class MailResultDTO implements JsonSerializable
     public const STATUS_QUEUED = 'queued';
 
     /**
-     * @param  bool  $success  成功したかどうか
-     * @param  string  $status  ステータス（success, failed, queued）
-     * @param  string|null  $message  メッセージ
-     * @param  string|null  $messageId  メッセージID（送信成功時）
-     * @param  string|null  $error  エラーメッセージ（失敗時）
-     * @param  string|null  $errorCode  エラーコード（失敗時）
-     * @param  array<string>  $recipients  送信先
-     * @param  string  $sentAt  送信日時
-     * @param  array<string,mixed>  $meta  メタデータ
+     * @param  bool  $success  Whether it succeeded
+     * @param  string  $status  Status (success, failed, queued)
+     * @param  string|null  $message  Message
+     * @param  string|null  $messageId  Message ID (on successful sending)
+     * @param  string|null  $error  Error message (on failure)
+     * @param  string|null  $errorCode  Error code (on failure)
+     * @param  array<string>  $recipients  Recipient
+     * @param  string  $sentAt  Sent at
+     * @param  array<string,mixed>  $meta  Metadata
      */
     public function __construct(
         public bool $success,
@@ -76,11 +76,11 @@ final readonly class MailResultDTO implements JsonSerializable
     ) {}
 
     /**
-     * 成功結果を生成
+     * Generate success result
      *
-     * @param  array<string>  $recipients  送信先
-     * @param  string|null  $messageId  メッセージID
-     * @param  string|null  $message  メッセージ
+     * @param  array<string>  $recipients  Recipient
+     * @param  string|null  $messageId  Message ID
+     * @param  string|null  $message  Message
      */
     public static function success(array $recipients, ?string $messageId = null, ?string $message = null): self
     {
@@ -95,11 +95,11 @@ final readonly class MailResultDTO implements JsonSerializable
     }
 
     /**
-     * 失敗結果を生成
+     * Generate failure result
      *
-     * @param  string  $error  エラーメッセージ
-     * @param  string|null  $errorCode  エラーコード
-     * @param  array<string>  $recipients  送信先
+     * @param  string  $error  Error message
+     * @param  string|null  $errorCode  Error code
+     * @param  array<string>  $recipients  Recipient
      */
     public static function failed(string $error, ?string $errorCode = null, array $recipients = []): self
     {
@@ -114,10 +114,10 @@ final readonly class MailResultDTO implements JsonSerializable
     }
 
     /**
-     * キュー追加結果を生成
+     * Generate queue result
      *
-     * @param  array<string>  $recipients  送信先
-     * @param  string|null  $message  メッセージ
+     * @param  array<string>  $recipients  Recipient
+     * @param  string|null  $message  Message
      */
     public static function queued(array $recipients, ?string $message = null): self
     {
@@ -131,7 +131,7 @@ final readonly class MailResultDTO implements JsonSerializable
     }
 
     /**
-     * 成功したか
+     * Whether it succeeded
      */
     public function isSuccess(): bool
     {
@@ -139,7 +139,7 @@ final readonly class MailResultDTO implements JsonSerializable
     }
 
     /**
-     * 失敗したか
+     * Whether it failed
      */
     public function isFailed(): bool
     {
@@ -147,7 +147,7 @@ final readonly class MailResultDTO implements JsonSerializable
     }
 
     /**
-     * キューに追加されたか
+     * Whether it was queued
      */
     public function isQueued(): bool
     {
@@ -155,7 +155,7 @@ final readonly class MailResultDTO implements JsonSerializable
     }
 
     /**
-     * JSON形式にシリアライズ
+     * Serialize to JSON format
      *
      * @return array<string,mixed>
      */
@@ -175,7 +175,7 @@ final readonly class MailResultDTO implements JsonSerializable
     }
 
     /**
-     * 配列形式に変換
+     * Convert to array format
      *
      * @return array<string,mixed>
      */

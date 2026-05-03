@@ -40,9 +40,9 @@ namespace App\DTO\Logging;
 use JsonSerializable;
 
 /**
- * ログエントリDTO
+ * Log Entry DTO
  *
- * ログファイルから読み取ったエントリを保持する不変データオブジェクトです。
+ * Immutable data object that holds entries read from log files
  */
 final readonly class LogEntryDTO implements JsonSerializable
 {
@@ -63,13 +63,13 @@ final readonly class LogEntryDTO implements JsonSerializable
     public const LEVEL_EMERGENCY = 'emergency';
 
     /**
-     * @param  string  $level  ログレベル
-     * @param  string  $message  メッセージ
-     * @param  string  $channel  チャンネル名
-     * @param  string  $timestamp  タイムスタンプ
-     * @param  array<string,mixed>  $context  コンテキスト
-     * @param  string|null  $source  ソース（ファイル名など）
-     * @param  int|null  $line  行番号
+     * @param  string  $level  Log level
+     * @param  string  $message  Message
+     * @param  string  $channel  Channel name
+     * @param  string  $timestamp  Timestamp
+     * @param  array<string,mixed>  $context  Context
+     * @param  string|null  $source  Source (file name, etc.)
+     * @param  int|null  $line  Line number
      */
     public function __construct(
         public string $level,
@@ -82,7 +82,7 @@ final readonly class LogEntryDTO implements JsonSerializable
     ) {}
 
     /**
-     * エラーレベルかどうか
+     * Whether it is error level
      */
     public function isError(): bool
     {
@@ -95,7 +95,7 @@ final readonly class LogEntryDTO implements JsonSerializable
     }
 
     /**
-     * 警告レベルかどうか
+     * Whether it is warning level
      */
     public function isWarning(): bool
     {
@@ -103,7 +103,7 @@ final readonly class LogEntryDTO implements JsonSerializable
     }
 
     /**
-     * 情報レベルかどうか
+     * Whether it is info level
      */
     public function isInfo(): bool
     {
@@ -111,7 +111,7 @@ final readonly class LogEntryDTO implements JsonSerializable
     }
 
     /**
-     * デバッグレベルかどうか
+     * Whether it is debug level
      */
     public function isDebug(): bool
     {
@@ -119,7 +119,7 @@ final readonly class LogEntryDTO implements JsonSerializable
     }
 
     /**
-     * ログレベルの重要度を取得（数値）
+     * Get log level severity (numeric)
      */
     public function getSeverity(): int
     {
@@ -137,7 +137,7 @@ final readonly class LogEntryDTO implements JsonSerializable
     }
 
     /**
-     * JSON形式にシリアライズ
+     * Serialize to JSON format
      *
      * @return array<string,mixed>
      */
@@ -155,7 +155,7 @@ final readonly class LogEntryDTO implements JsonSerializable
     }
 
     /**
-     * 配列形式に変換
+     * Convert to array format
      *
      * @return array<string,mixed>
      */
@@ -165,7 +165,7 @@ final readonly class LogEntryDTO implements JsonSerializable
     }
 
     /**
-     * 配列からDTOを生成
+     * Create DTO from array
      *
      * @param  array<string,mixed>  $data
      */
@@ -183,14 +183,14 @@ final readonly class LogEntryDTO implements JsonSerializable
     }
 
     /**
-     * ログ行をパースしてDTOを生成
+     * Parse log line and create DTO
      *
-     * @param  string  $line  ログ行
-     * @param  string  $channel  チャンネル名
+     * @param  string  $line  Log line
+     * @param  string  $channel  Channel name
      */
     public static function fromLogLine(string $line, string $channel = 'default'): ?self
     {
-        // Laravel標準のログフォーマットをパース
+        // Parse Laravel standard log format
         // [2025-01-15 12:34:56] local.INFO: Message {"context":"value"}
         $pattern = '/^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] (\w+)\.(\w+): (.+)$/';
 
@@ -203,7 +203,7 @@ final readonly class LogEntryDTO implements JsonSerializable
         $level = strtolower($matches[3]);
         $messageWithContext = $matches[4];
 
-        // メッセージとコンテキストを分離
+        // Separate message and context
         $context = [];
         $message = $messageWithContext;
 

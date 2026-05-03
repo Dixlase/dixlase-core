@@ -40,9 +40,9 @@ namespace App\DTO\FileIntegrity;
 use JsonSerializable;
 
 /**
- * スキャン結果DTO
+ * Scan result DTO
  *
- * ファイル整合性スキャンの結果を保持する不変データオブジェクトです。
+ * Immutable data object that holds the results of a file integrity scan
  */
 final readonly class ScanResultDTO implements JsonSerializable
 {
@@ -53,24 +53,24 @@ final readonly class ScanResultDTO implements JsonSerializable
     public const STATUS_CRITICAL = 'critical';
 
     /**
-     * @param  string  $id  スキャンID（UUID）
-     * @param  string  $scope  スコープ
-     * @param  string|null  $identifier  プラグイン/テーマのスラッグ
-     * @param  string  $status  ステータス（ok, warning, critical）
-     * @param  string  $trigger  トリガー
-     * @param  string  $initiatedByType  実行者タイプ
-     * @param  int|null  $initiatedById  実行者ID
-     * @param  string  $hashAlgo  ハッシュアルゴリズム
-     * @param  string|null  $baselineVersion  ベースラインバージョン
-     * @param  int  $totalFilesScanned  スキャンしたファイル数
-     * @param  array<FileChangeDTO>  $changedFiles  変更されたファイル
-     * @param  array<FileChangeDTO>  $addedFiles  追加されたファイル
-     * @param  array<FileChangeDTO>  $removedFiles  削除されたファイル
-     * @param  array<FileChangeDTO>  $suspiciousFiles  疑わしいファイル
-     * @param  string  $startedAt  開始日時
-     * @param  string  $finishedAt  終了日時
-     * @param  int  $durationMs  実行時間（ミリ秒）
-     * @param  string  $summary  サマリー
+     * @param  string  $id  Scan ID (UUID)
+     * @param  string  $scope  Scope
+     * @param  string|null  $identifier  Plugin/theme slug
+     * @param  string  $status  Status (ok, warning, critical)
+     * @param  string  $trigger  Trigger
+     * @param  string  $initiatedByType  Executor type
+     * @param  int|null  $initiatedById  Executor ID
+     * @param  string  $hashAlgo  Hash algorithm
+     * @param  string|null  $baselineVersion  Baseline version
+     * @param  int  $totalFilesScanned  Number of scanned files
+     * @param  array<FileChangeDTO>  $changedFiles  Modified files
+     * @param  array<FileChangeDTO>  $addedFiles  Added files
+     * @param  array<FileChangeDTO>  $removedFiles  Deleted files
+     * @param  array<FileChangeDTO>  $suspiciousFiles  Suspicious files
+     * @param  string  $startedAt  Start datetime
+     * @param  string  $finishedAt  End datetime
+     * @param  int  $durationMs  Execution time (milliseconds)
+     * @param  string  $summary  Summary
      */
     public function __construct(
         public string $id,
@@ -94,7 +94,7 @@ final readonly class ScanResultDTO implements JsonSerializable
     ) {}
 
     /**
-     * 問題があるか
+     * Whether there are any issues
      */
     public function hasIssues(): bool
     {
@@ -102,7 +102,7 @@ final readonly class ScanResultDTO implements JsonSerializable
     }
 
     /**
-     * 重大な問題があるか
+     * Whether there are any critical issues
      */
     public function isCritical(): bool
     {
@@ -110,7 +110,7 @@ final readonly class ScanResultDTO implements JsonSerializable
     }
 
     /**
-     * 警告があるか
+     * Whether there are any warnings
      */
     public function isWarning(): bool
     {
@@ -118,7 +118,7 @@ final readonly class ScanResultDTO implements JsonSerializable
     }
 
     /**
-     * 正常か
+     * Whether it is normal
      */
     public function isOk(): bool
     {
@@ -126,7 +126,7 @@ final readonly class ScanResultDTO implements JsonSerializable
     }
 
     /**
-     * 変更されたファイル数を取得
+     * Get the number of modified files
      */
     public function getChangedCount(): int
     {
@@ -134,7 +134,7 @@ final readonly class ScanResultDTO implements JsonSerializable
     }
 
     /**
-     * 追加されたファイル数を取得
+     * Get the number of added files
      */
     public function getAddedCount(): int
     {
@@ -142,7 +142,7 @@ final readonly class ScanResultDTO implements JsonSerializable
     }
 
     /**
-     * 削除されたファイル数を取得
+     * Get the number of deleted files
      */
     public function getRemovedCount(): int
     {
@@ -150,7 +150,7 @@ final readonly class ScanResultDTO implements JsonSerializable
     }
 
     /**
-     * 疑わしいファイル数を取得
+     * Get the number of suspicious files
      */
     public function getSuspiciousCount(): int
     {
@@ -158,7 +158,7 @@ final readonly class ScanResultDTO implements JsonSerializable
     }
 
     /**
-     * 全ての変更ファイルを取得
+     * Get all modified files
      *
      * @return array<FileChangeDTO>
      */
@@ -173,7 +173,7 @@ final readonly class ScanResultDTO implements JsonSerializable
     }
 
     /**
-     * JSON形式にシリアライズ
+     * Serialize to JSON format
      *
      * @return array<string,mixed>
      */
@@ -206,7 +206,7 @@ final readonly class ScanResultDTO implements JsonSerializable
     }
 
     /**
-     * 配列形式に変換
+     * Convert to array format
      *
      * @return array<string,mixed>
      */

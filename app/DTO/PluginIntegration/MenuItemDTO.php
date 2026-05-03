@@ -40,26 +40,26 @@ namespace App\DTO\PluginIntegration;
 use JsonSerializable;
 
 /**
- * メニューアイテムのDTO
+ * DTO for menu item
  *
- * メニュープラグインで使用するメニューアイテムの
- * 不変データオブジェクトです。
+ * Immutable data object for menu items
+ * used by the menu plugin
  */
 final readonly class MenuItemDTO implements JsonSerializable
 {
     /**
-     * @param  string  $label  メニューラベル（表示名）
-     * @param  string  $url  メニューURL
-     * @param  string  $target  リンクターゲット（'_self', '_blank', '_parent', '_top'）
-     * @param  string|null  $sourceType  ソースタイプ（'custom', 'page', 'post', etc.）
-     * @param  string|null  $sourceId  ソースID（プラグインコンテンツのID）
-     * @param  string|null  $sourceProvider  ソースプロバイダー（プラグインスラッグ）
-     * @param  string|null  $iconClass  アイコンクラス（例: 'fas fa-home'）
-     * @param  string|null  $cssClass  CSSクラス
-     * @param  int  $displayOrder  表示順
-     * @param  bool  $isActive  有効/無効
-     * @param  array<string,mixed>  $meta  追加メタデータ
-     * @param  MenuItemDTO[]  $children  子メニューアイテム
+     * @param  string  $label  Menu label (display name)
+     * @param  string  $url  Menu URL
+     * @param  string  $target  Link target ('_self', '_blank', '_parent', '_top')
+     * @param  string|null  $sourceType  Source type ('custom', 'page', 'post', etc.)
+     * @param  string|null  $sourceId  Source ID (plugin content ID)
+     * @param  string|null  $sourceProvider  Source provider (plugin slug)
+     * @param  string|null  $iconClass  Icon class (e.g., 'fas fa-home')
+     * @param  string|null  $cssClass  CSS class
+     * @param  int  $displayOrder  Display order
+     * @param  bool  $isActive  Enabled/disabled
+     * @param  array<string,mixed>  $meta  Additional metadata
+     * @param  MenuItemDTO[]  $children  Child menu items
      */
     public function __construct(
         public string $label,
@@ -77,7 +77,7 @@ final readonly class MenuItemDTO implements JsonSerializable
     ) {}
 
     /**
-     * JSON形式にシリアライズ
+     * Serialize to JSON format
      *
      * @return array<string,mixed>
      */
@@ -100,7 +100,7 @@ final readonly class MenuItemDTO implements JsonSerializable
     }
 
     /**
-     * 配列形式に変換
+     * Convert to array format
      *
      * @return array<string,mixed>
      */
@@ -110,7 +110,7 @@ final readonly class MenuItemDTO implements JsonSerializable
     }
 
     /**
-     * 配列からDTOを生成
+     * Create DTO from array
      *
      * @param  array<string,mixed>  $data
      */
@@ -133,9 +133,9 @@ final readonly class MenuItemDTO implements JsonSerializable
     }
 
     /**
-     * LinkableDTOからMenuItemDTOを生成
+     * Create MenuItemDTO from LinkableDTO
      *
-     * @param  string  $target  リンクターゲット
+     * @param  string  $target  Link target
      */
     public static function fromLinkable(LinkableDTO $linkable, string $target = '_self'): self
     {
@@ -150,7 +150,7 @@ final readonly class MenuItemDTO implements JsonSerializable
     }
 
     /**
-     * カスタムURLかどうか判定
+     * Check if it is a custom URL
      */
     public function isCustomUrl(): bool
     {
@@ -158,7 +158,7 @@ final readonly class MenuItemDTO implements JsonSerializable
     }
 
     /**
-     * プラグインコンテンツかどうか判定
+     * Check if it is plugin content
      */
     public function isPluginContent(): bool
     {
@@ -166,9 +166,9 @@ final readonly class MenuItemDTO implements JsonSerializable
     }
 
     /**
-     * ターゲットを変更した新しいDTOを生成
+     * Generate a new DTO with changed target
      *
-     * @param  string  $target  新しいターゲット
+     * @param  string  $target  New target
      */
     public function withTarget(string $target): self
     {
@@ -189,9 +189,9 @@ final readonly class MenuItemDTO implements JsonSerializable
     }
 
     /**
-     * ラベルを変更した新しいDTOを生成
+     * Generate a new DTO with changed label
      *
-     * @param  string  $label  新しいラベル
+     * @param  string  $label  New label
      */
     public function withLabel(string $label): self
     {
@@ -212,7 +212,7 @@ final readonly class MenuItemDTO implements JsonSerializable
     }
 
     /**
-     * 子メニューを持つかどうか判定
+     * Check if it has child menus
      */
     public function hasChildren(): bool
     {
@@ -220,7 +220,7 @@ final readonly class MenuItemDTO implements JsonSerializable
     }
 
     /**
-     * メニューグループ（URLなしのドロップダウンコンテナ）かどうか判定
+     * Check if it is a menu group (dropdown container without URL)
      */
     public function isMenuGroup(): bool
     {

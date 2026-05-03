@@ -40,9 +40,9 @@ namespace App\DTO\FileIntegrity;
 use JsonSerializable;
 
 /**
- * スキャン対象DTO
+ * Scan target DTO
  *
- * ファイル整合性スキャンの対象を定義する不変データオブジェクトです。
+ * Immutable data object that defines the target for file integrity scanning
  */
 final readonly class ScanTargetDTO implements JsonSerializable
 {
@@ -55,11 +55,11 @@ final readonly class ScanTargetDTO implements JsonSerializable
     public const SCOPE_ALL = 'all';
 
     /**
-     * @param  string  $scope  スコープ（core, plugin, theme, all）
-     * @param  string|null  $identifier  プラグイン/テーマのスラッグ（scope=plugin/themeの場合）
-     * @param  array<string>  $paths  スキャン対象パス
-     * @param  array<string>  $ignorePatterns  除外パターン
-     * @param  string  $hashAlgo  ハッシュアルゴリズム
+     * @param  string  $scope  Scope (core, plugin, theme, all)
+     * @param  string|null  $identifier  Plugin/theme slug (when scope=plugin/theme)
+     * @param  array<string>  $paths  Scan target path
+     * @param  array<string>  $ignorePatterns  Exclusion patterns
+     * @param  string  $hashAlgo  Hash algorithm
      */
     public function __construct(
         public string $scope = self::SCOPE_CORE,
@@ -70,7 +70,7 @@ final readonly class ScanTargetDTO implements JsonSerializable
     ) {}
 
     /**
-     * コアスキャン用のターゲットを生成
+     * Generate target for Core scan
      */
     public static function core(): self
     {
@@ -106,9 +106,9 @@ final readonly class ScanTargetDTO implements JsonSerializable
     }
 
     /**
-     * プラグインスキャン用のターゲットを生成
+     * Generate target for plugin scan
      *
-     * @param  string  $pluginSlug  プラグインスラッグ
+     * @param  string  $pluginSlug  Plugin slug
      */
     public static function plugin(string $pluginSlug): self
     {
@@ -127,9 +127,9 @@ final readonly class ScanTargetDTO implements JsonSerializable
     }
 
     /**
-     * テーマスキャン用のターゲットを生成
+     * Generate target for theme scan
      *
-     * @param  string  $themeSlug  テーマスラッグ
+     * @param  string  $themeSlug  Theme slug
      */
     public static function theme(string $themeSlug): self
     {
@@ -148,7 +148,7 @@ final readonly class ScanTargetDTO implements JsonSerializable
     }
 
     /**
-     * JSON形式にシリアライズ
+     * Serialize to JSON format
      *
      * @return array<string,mixed>
      */
@@ -164,7 +164,7 @@ final readonly class ScanTargetDTO implements JsonSerializable
     }
 
     /**
-     * 配列形式に変換
+     * Convert to array format
      *
      * @return array<string,mixed>
      */
@@ -174,7 +174,7 @@ final readonly class ScanTargetDTO implements JsonSerializable
     }
 
     /**
-     * 配列からDTOを生成
+     * Generate DTO from array
      *
      * @param  array<string,mixed>  $data
      */
@@ -190,7 +190,7 @@ final readonly class ScanTargetDTO implements JsonSerializable
     }
 
     /**
-     * ベースラインファイル名を取得
+     * Get baseline file name
      */
     public function getBaselineFilename(): string
     {

@@ -40,17 +40,17 @@ namespace App\DTO\Plugin;
 use JsonSerializable;
 
 /**
- * 有効化されたプラグインの基本情報を保持するDTO
+ * DTO that holds basic information of an enabled plugin
  *
- * Plugin モデルに依存しない純粋な値オブジェクト。
- * PluginRepositoryInterface::getEnabled() の戻り値として使用される。
+ * Pure value object that does not depend on the Plugin model.
+ * Used as the return value of PluginRepositoryInterface::getEnabled().
  */
 final readonly class EnabledPluginRecord implements JsonSerializable
 {
     /**
-     * @param  string  $name  プラグイン名（例: DixlasePages）
-     * @param  string  $directory  プラグインディレクトリ名（例: DixlasePages）
-     * @param  string  $slug  プラグインスラッグ（例: dixlase-pages）
+     * @param  string  $name  Plugin name (e.g., DixlasePages)
+     * @param  string  $directory  Plugin directory name (e.g., DixlasePages)
+     * @param  string  $slug  Plugin slug (e.g., dixlase-pages)
      */
     public function __construct(
         public string $name,
@@ -59,7 +59,7 @@ final readonly class EnabledPluginRecord implements JsonSerializable
     ) {}
 
     /**
-     * 配列からインスタンスを生成
+     * Create instance from array
      *
      * @param  array{name: string, directory: string, slug: string}  $data
      */

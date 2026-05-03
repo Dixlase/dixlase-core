@@ -38,31 +38,31 @@
 namespace App\DTO\PluginIntegration;
 
 /**
- * ダッシュボード通知DTO
+ * Dashboard Notification DTO
  *
- * プラグイン・リモートサーバー・システムからダッシュボードに表示する
- * 警告・推奨・情報通知を保持します。
+ * Display warnings, recommendations, and informational notifications on the dashboard from plugins, remote servers, and system
+ * Holds warning, recommendation, and information notifications
  */
 final readonly class DashboardNotificationDTO
 {
-    /** @var string プラグインからの通知 */
+    /** @var string Notification from plugin */
     public const SOURCE_PLUGIN = 'plugin';
 
-    /** @var string リモートサーバーからの通知 */
+    /** @var string Notification from remote server */
     public const SOURCE_REMOTE = 'remote';
 
-    /** @var string システム内部からの通知 */
+    /** @var string Notification from system internal */
     public const SOURCE_SYSTEM = 'system';
 
     /**
-     * @param  string  $key  通知固有キー（例: 'inquiry_captcha_off'）
-     * @param  string  $level  通知レベル（'warning', 'recommendation', 'info'）
-     * @param  string  $message  通知メッセージ（翻訳済み文字列）
-     * @param  string  $icon  Font Awesomeアイコンクラス（例: 'fas fa-exclamation-triangle'）
-     * @param  string  $pluginName  プラグイン表示名（翻訳済み文字列）
-     * @param  string|null  $url  対応ページへのリンク（null可）
-     * @param  string|null  $actionLabel  アクションリンクのラベル（null可）
-     * @param  string  $source  通知ソース（'plugin', 'remote', 'system'）
+     * @param  string  $key  Notification unique key (e.g., 'inquiry_captcha_off')
+     * @param  string  $level  Notification level ('warning', 'recommendation', 'info')
+     * @param  string  $message  Notification message (translated string)
+     * @param  string  $icon  Font Awesome icon class (e.g., 'fas fa-exclamation-triangle')
+     * @param  string  $pluginName  Plugin display name (translated string)
+     * @param  string|null  $url  Link to corresponding page (nullable)
+     * @param  string|null  $actionLabel  Action link label (nullable)
+     * @param  string  $source  Notification source ('plugin', 'remote', 'system')
      */
     public function __construct(
         public string $key,

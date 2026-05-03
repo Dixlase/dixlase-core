@@ -40,21 +40,21 @@ namespace App\DTO\FileIntegrity;
 use JsonSerializable;
 
 /**
- * ベースラインDTO
+ * Baseline DTO
  *
- * ファイル整合性チェックの基準となるハッシュ情報を保持する不変データオブジェクトです。
+ * Immutable data object that holds hash information used as the baseline for file integrity checks
  */
 final readonly class BaselineDTO implements JsonSerializable
 {
     /**
-     * @param  string  $generatedAt  生成日時（ISO8601）
-     * @param  string  $appVersion  アプリケーションバージョン
-     * @param  string  $hashAlgo  ハッシュアルゴリズム
-     * @param  string  $scope  スコープ
-     * @param  string|null  $identifier  プラグイン/テーマのスラッグ
-     * @param  array<string>  $paths  スキャン対象パス
-     * @param  array<string>  $ignorePatterns  除外パターン
-     * @param  array<string,string>  $files  ファイルパス => ハッシュ値
+     * @param  string  $generatedAt  Generation datetime (ISO8601)
+     * @param  string  $appVersion  Application version
+     * @param  string  $hashAlgo  Hash algorithm
+     * @param  string  $scope  Scope
+     * @param  string|null  $identifier  Plugin/theme slug
+     * @param  array<string>  $paths  Scan target path
+     * @param  array<string>  $ignorePatterns  Exclusion patterns
+     * @param  array<string,string>  $files  File path => hash value
      */
     public function __construct(
         public string $generatedAt,
@@ -68,7 +68,7 @@ final readonly class BaselineDTO implements JsonSerializable
     ) {}
 
     /**
-     * ファイル数を取得
+     * Get file count
      */
     public function getFileCount(): int
     {
@@ -76,9 +76,9 @@ final readonly class BaselineDTO implements JsonSerializable
     }
 
     /**
-     * 特定のファイルのハッシュを取得
+     * Get hash of a specific file
      *
-     * @param  string  $path  ファイルパス
+     * @param  string  $path  File path
      */
     public function getFileHash(string $path): ?string
     {
@@ -86,9 +86,9 @@ final readonly class BaselineDTO implements JsonSerializable
     }
 
     /**
-     * ファイルが存在するか
+     * Check if file exists
      *
-     * @param  string  $path  ファイルパス
+     * @param  string  $path  File path
      */
     public function hasFile(string $path): bool
     {
@@ -96,7 +96,7 @@ final readonly class BaselineDTO implements JsonSerializable
     }
 
     /**
-     * JSON形式にシリアライズ
+     * Serialize to JSON format
      *
      * @return array<string,mixed>
      */
@@ -117,7 +117,7 @@ final readonly class BaselineDTO implements JsonSerializable
     }
 
     /**
-     * 配列形式に変換
+     * Convert to array format
      *
      * @return array<string,mixed>
      */
@@ -127,7 +127,7 @@ final readonly class BaselineDTO implements JsonSerializable
     }
 
     /**
-     * 配列からDTOを生成
+     * Create DTO from array
      *
      * @param  array<string,mixed>  $data
      */
@@ -148,7 +148,7 @@ final readonly class BaselineDTO implements JsonSerializable
     }
 
     /**
-     * メタ情報のみを取得
+     * Get metadata only
      *
      * @return array<string,mixed>
      */

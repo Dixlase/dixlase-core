@@ -41,9 +41,9 @@ use App\Contracts\Plugin\EditorCapableInterface;
 use JsonSerializable;
 
 /**
- * エディター情報のDTO
+ * DTO for editor information
  *
- * EditorCapableInterface の情報をビューに渡すためのデータ転送オブジェクト。
+ * Data transfer object for passing EditorCapableInterface information to views
  */
 final readonly class EditorInfo implements JsonSerializable
 {

@@ -40,20 +40,20 @@ namespace App\DTO\PluginIntegration;
 use JsonSerializable;
 
 /**
- * ページネーション結果DTO
+ * Paginated result DTO
  *
- * プラグイン間で検索結果を受け渡しする際の
- * ページネーション情報を含む不変データオブジェクトです。
+ * Immutable data object containing pagination information
+ * for passing search results between plugins
  *
  * @template T of JsonSerializable
  */
 final readonly class PaginatedResultDTO implements JsonSerializable
 {
     /**
-     * @param  array<T>  $items  検索結果アイテム
-     * @param  int  $total  総件数
-     * @param  int  $page  現在のページ番号
-     * @param  int  $perPage  1ページあたりの件数
+     * @param  array<T>  $items  Search result items
+     * @param  int  $total  Total count
+     * @param  int  $page  Current page number
+     * @param  int  $perPage  Items per page
      */
     public function __construct(
         public array $items,
@@ -63,7 +63,7 @@ final readonly class PaginatedResultDTO implements JsonSerializable
     ) {}
 
     /**
-     * 総ページ数を取得
+     * Get total number of pages
      */
     public function totalPages(): int
     {
@@ -75,7 +75,7 @@ final readonly class PaginatedResultDTO implements JsonSerializable
     }
 
     /**
-     * 次のページが存在するか
+     * Check if next page exists
      */
     public function hasNextPage(): bool
     {
@@ -83,7 +83,7 @@ final readonly class PaginatedResultDTO implements JsonSerializable
     }
 
     /**
-     * 前のページが存在するか
+     * Check if previous page exists
      */
     public function hasPreviousPage(): bool
     {
@@ -91,7 +91,7 @@ final readonly class PaginatedResultDTO implements JsonSerializable
     }
 
     /**
-     * 現在のページの開始位置（1始まり）
+     * Start position of current page (1-indexed)
      */
     public function from(): int
     {
@@ -103,7 +103,7 @@ final readonly class PaginatedResultDTO implements JsonSerializable
     }
 
     /**
-     * 現在のページの終了位置
+     * End position of current page
      */
     public function to(): int
     {
@@ -113,7 +113,7 @@ final readonly class PaginatedResultDTO implements JsonSerializable
     }
 
     /**
-     * 結果が空かどうか
+     * Check if result is empty
      */
     public function isEmpty(): bool
     {
@@ -121,7 +121,7 @@ final readonly class PaginatedResultDTO implements JsonSerializable
     }
 
     /**
-     * 結果が存在するかどうか
+     * Check if result exists
      */
     public function isNotEmpty(): bool
     {
@@ -129,7 +129,7 @@ final readonly class PaginatedResultDTO implements JsonSerializable
     }
 
     /**
-     * JSON形式にシリアライズ
+     * Serialize to JSON format
      *
      * @return array<string,mixed>
      */
@@ -152,7 +152,7 @@ final readonly class PaginatedResultDTO implements JsonSerializable
     }
 
     /**
-     * 配列形式に変換
+     * Convert to array format
      *
      * @return array<string,mixed>
      */
@@ -162,9 +162,9 @@ final readonly class PaginatedResultDTO implements JsonSerializable
     }
 
     /**
-     * Laravelのページネータから生成
+     * Create from Laravel paginator
      *
-     * @param  callable|null  $transformer  アイテム変換関数
+     * @param  callable|null  $transformer  Item transformation function
      */
     public static function fromPaginator(
         \Illuminate\Contracts\Pagination\LengthAwarePaginator $paginator,
@@ -185,7 +185,7 @@ final readonly class PaginatedResultDTO implements JsonSerializable
     }
 
     /**
-     * 配列から生成
+     * Create from array
      *
      * @param  array<string,mixed>  $data
      */
@@ -200,9 +200,9 @@ final readonly class PaginatedResultDTO implements JsonSerializable
     }
 
     /**
-     * アイテムを変換した新しいDTOを生成
+     * Create new DTO with transformed items
      *
-     * @param  callable  $callback  変換関数
+     * @param  callable  $callback  Conversion function
      */
     public function map(callable $callback): self
     {
@@ -215,9 +215,9 @@ final readonly class PaginatedResultDTO implements JsonSerializable
     }
 
     /**
-     * アイテムをフィルタした新しいDTOを生成
+     * Generate a new DTO with filtered items
      *
-     * @param  callable  $callback  フィルタ関数
+     * @param  callable  $callback  Filter function
      */
     public function filter(callable $callback): self
     {

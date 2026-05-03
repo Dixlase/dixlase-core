@@ -38,18 +38,18 @@ namespace App\DTO\Plugin;
 use JsonSerializable;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * 健全性チェックで検出された問題を表すDTO
+ * DTO representing an issue detected by health check
  */
 final readonly class HealthIssue implements JsonSerializable
 {
     /**
-     * @param  string  $type  問題の種別（getDeductionRules()のキーに対応）
-     * @param  string  $severity  重要度（critical, warning, info）
-     * @param  string  $description  問題の説明
-     * @param  array<array{file?: string, line?: int, match?: string}>  $evidence  検出根拠
-     * @param  int  $deduction  減点値（負の整数）
+     * @param  string  $type  Issue type (corresponds to getDeductionRules() keys)
+     * @param  string  $severity  Severity (critical, warning, info)
+     * @param  string  $description  Issue description
+     * @param  array<array{file?: string, line?: int, match?: string}>  $evidence  Detection evidence
+     * @param  int  $deduction  Deduction value (negative integer)
      */
     public function __construct(
         public string $type,
@@ -60,7 +60,7 @@ final readonly class HealthIssue implements JsonSerializable
     ) {}
 
     /**
-     * 致命的な問題かどうか
+     * Whether it is a critical issue
      */
     public function isCritical(): bool
     {

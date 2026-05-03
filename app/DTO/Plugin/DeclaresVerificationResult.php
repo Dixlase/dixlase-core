@@ -40,17 +40,17 @@ namespace App\DTO\Plugin;
 use JsonSerializable;
 
 /**
- * declares セクション検証結果DTO
+ * Declares section verification result DTO
  *
- * plugin.json の declares セクションと実際のファイル構成を
- * 照合した結果を表現します。
+ * Verifies the declares section of plugin.json against the actual file structure
+ * and represents the result
  */
 final readonly class DeclaresVerificationResult implements JsonSerializable
 {
     /**
-     * @param  array<array{key: string, type: string, description: string}>  $issues  検出された問題
-     * @param  int  $declaredCount  宣言されたアイテム数
-     * @param  int  $actualCount  実際に存在するアイテム数
+     * @param  array<array{key: string, type: string, description: string}>  $issues  Detected issues
+     * @param  int  $declaredCount  Number of declared items
+     * @param  int  $actualCount  Number of actually existing items
      */
     public function __construct(
         public array $issues = [],
@@ -59,7 +59,7 @@ final readonly class DeclaresVerificationResult implements JsonSerializable
     ) {}
 
     /**
-     * 問題がないかどうか
+     * Whether there are any issues
      */
     public function isClean(): bool
     {
@@ -67,7 +67,7 @@ final readonly class DeclaresVerificationResult implements JsonSerializable
     }
 
     /**
-     * 問題数を取得
+     * Get number of issues
      */
     public function issueCount(): int
     {
@@ -75,10 +75,10 @@ final readonly class DeclaresVerificationResult implements JsonSerializable
     }
 
     /**
-     * 健全性減点の合計を取得
+     * Get total health deduction
      *
-     * - 宣言あり + ファイルなし → -5
-     * - ファイルあり + 宣言なし → -2
+     * - Declared + file missing → -5
+     * - File exists + not declared → -2
      */
     public function totalDeduction(): int
     {
