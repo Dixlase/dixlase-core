@@ -40,6 +40,7 @@ use App\Helpers\AdminHelper;
 use App\Helpers\LocaleHelper;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -72,6 +73,10 @@ class SetAdminLocale
         $locale = $this->resolveLocale($request);
         if ($locale !== null && LocaleHelper::isSupported($locale)) {
             app()->setLocale($locale);
+            // Update URL::defaults so any front URL generated from an
+            // admin page (e.g. "view on front" links) honours the
+            // operator's chosen language.
+            URL::defaults(['locale' => $locale]);
         }
 
         return $next($request);

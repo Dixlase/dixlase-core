@@ -144,17 +144,22 @@ Route::prefix('{locale}')
         PluginHelper::loadEnabledWebRoutes();
     });
 
-// Catch-all for locale-less front URLs: 302 redirect to the same path
-// under a resolved locale. Runs after every locale-prefixed route has
-// had a chance to match. Resolution mirrors SetFrontLocale (minus URL):
-// Cookie > Accept-Language > Site.primary_locale > config fallback.
+// Fallback for locale-less front URLs: 302 redirect to the same path
+// under a resolved locale. Route::fallback() only fires when no other
+// route matched anywhere in the application (front + admin + install +
+// plugins), so admin URLs like /admin-kassy/login keep working.
+//
+// Resolution mirrors SetFrontLocale (minus URL):
+//   Cookie 'dixlase_locale' > Accept-Language > Site.primary_locale > config fallback
+//
 // 302 (not 301) keeps v2 free to change the strategy without poisoning
 // caches.
-Route::get('/{any?}', function ($any = '') {
-    // If the path already begins with a supported locale, the request
-    // legitimately reached the catch-all because no locale-group route
-    // matched (i.e. genuine 404). Don't double-prefix the path.
-    $first = explode('/', trim((string) $any, '/'))[0] ?? '';
+Route::fallback(function () {
+    $path = trim(request()->path(), '/');
+
+    // If the path already begins with a supported locale, this is a
+    // genuine 404 from inside the locale group. Don't loop.
+    $first = $path === '' ? '' : explode('/', $path)[0];
     if ($first !== '' && LocaleHelper::isSupported($first)) {
         abort(404);
     }
@@ -191,7 +196,7 @@ Route::get('/{any?}', function ($any = '') {
     }
 
     $query = request()->getQueryString();
-    $target = '/'.$locale.($any === '' ? '' : '/'.ltrim($any, '/')).($query !== null ? '?'.$query : '');
+    $target = '/'.$locale.($path === '' ? '' : '/'.$path).($query !== null ? '?'.$query : '');
 
     return redirect($target, 302);
-})->where('any', '.*')->name('locale.fallback');
+})->name('locale.fallback');
