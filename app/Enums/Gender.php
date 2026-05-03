@@ -40,8 +40,8 @@ namespace App\Enums;
 /**
  * Gender Enum
  *
- * 性別を表す列挙型。データベースには数値として保存される。
- * 翻訳キーは common.gender_* を使用。
+ * Enum representing gender. Stored as numeric values in the database.
+ * Uses translation keys common.gender_*
  */
 enum Gender: int
 {
@@ -52,7 +52,7 @@ enum Gender: int
     case PREFER_NOT_TO_SAY = 9;
 
     /**
-     * 翻訳キーを取得
+     * Get translation key
      */
     public function label(): string
     {
@@ -66,7 +66,7 @@ enum Gender: int
     }
 
     /**
-     * 翻訳キーの文字列を取得（__()なし）
+     * Get translation key string (without __())
      */
     public function translationKey(): string
     {
@@ -80,7 +80,7 @@ enum Gender: int
     }
 
     /**
-     * 値から名前を取得（デバッグ用）
+     * Get name from value (for debugging)
      */
     public function getName(): string
     {
@@ -88,7 +88,7 @@ enum Gender: int
     }
 
     /**
-     * 全ての選択肢を配列で取得（セレクトボックス用）
+     * Get all options as array (for select box)
      *
      * @return array<int, string>
      */
@@ -104,7 +104,7 @@ enum Gender: int
     }
 
     /**
-     * 基本的な選択肢のみ取得（男性・女性のみ）
+     * Get basic options only (male and female only)
      *
      * @return array<int, string>
      */
@@ -117,7 +117,7 @@ enum Gender: int
     }
 
     /**
-     * 拡張選択肢を取得（男性・女性・その他・回答しない）
+     * Get extended options (male, female, other, prefer not to answer)
      *
      * @return array<int, string>
      */
@@ -132,7 +132,7 @@ enum Gender: int
     }
 
     /**
-     * 値から対応するEnumケースを取得（nullセーフ）
+     * Get corresponding Enum case from value (null-safe)
      */
     public static function fromValue(?int $value): ?self
     {
@@ -144,7 +144,7 @@ enum Gender: int
     }
 
     /**
-     * 文字列名からEnumケースを取得
+     * Get Enum case from string name
      */
     public static function fromName(string $name): ?self
     {
@@ -159,7 +159,7 @@ enum Gender: int
     }
 
     /**
-     * 全てのケースを配列で取得
+     * Get all cases as array
      *
      * @return array<self>
      */
@@ -169,7 +169,7 @@ enum Gender: int
     }
 
     /**
-     * 値の配列を取得
+     * Get array of values
      *
      * @return array<int>
      */

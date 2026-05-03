@@ -38,7 +38,7 @@
 namespace App\Enums;
 
 /**
- * メンバーステータス定義
+ * Member status definition
  */
 enum MemberStatus: int
 {

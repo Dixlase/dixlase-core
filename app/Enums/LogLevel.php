@@ -38,7 +38,7 @@
 namespace App\Enums;
 
 /**
- * ログレベル定義
+ * Log level definitions
  */
 enum LogLevel: int
 {

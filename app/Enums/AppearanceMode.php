@@ -38,7 +38,7 @@
 namespace App\Enums;
 
 /**
- * 外観モード定義
+ * Appearance mode definition
  */
 enum AppearanceMode: int
 {

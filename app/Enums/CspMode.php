@@ -36,39 +36,39 @@
 namespace App\Enums;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * CSP (Content Security Policy) モード
+ * CSP (Content Security Policy) mode
  */
 enum CspMode: int
 {
     /**
-     * 開発モード
-     * - 緩やかなポリシー
-     * - インラインスクリプト許可
-     * - 開発・テスト環境向け
+     * Development mode
+     * - Relaxed policy
+     * - Inline scripts allowed
+     * - For development/test environments
      */
     case Development = 0;
 
     /**
-     * 標準モード（推奨）
-     * - バランスの取れたポリシー
-     * - 一般的なセキュリティ要件を満たす
-     * - 本番環境向け
+     * Standard mode (recommended)
+     * - Balanced policy
+     * - Meets general security requirements
+     * - For production environments
      */
     case Standard = 1;
 
     /*
-     * 厳格モード（初期バージョンでは未実装）
-     * - 最も厳しいポリシー
-     * - インラインスクリプト禁止
-     * - 高セキュリティ要件向け
+     * Strict mode (not implemented in initial version)
+     * - Strictest policy
+     * - Inline scripts prohibited
+     * - For high security requirements
      *
     case Strict = 2;
      */
 
     /**
-     * 翻訳キーを取得
+     * Get translation key
      */
     public function translationKey(): string
     {
@@ -76,7 +76,7 @@ enum CspMode: int
     }
 
     /**
-     * ラベルを取得
+     * Get label
      */
     public function label(): string
     {
@@ -84,7 +84,7 @@ enum CspMode: int
     }
 
     /**
-     * 説明を取得
+     * Get description
      */
     public function description(): string
     {
@@ -92,32 +92,32 @@ enum CspMode: int
     }
 
     /**
-     * 文字列表現を取得
+     * Get string representation
      */
     public function toString(): string
     {
         return match ($this) {
             self::Development => 'development',
             self::Standard => 'standard',
-            // self::Strict => 'strict', // 初期バージョンでは未実装
+            // self::Strict => 'strict', // Not implemented in initial version
         };
     }
 
     /**
-     * 文字列からEnumを取得
+     * Get Enum from string
      */
     public static function fromString(string $value): ?self
     {
         return match ($value) {
             'development' => self::Development,
             'standard' => self::Standard,
-            // 'strict' => self::Strict, // 初期バージョンでは未実装
+            // 'strict' => self::Strict, // Not implemented in initial version
             default => null,
         };
     }
 
     /**
-     * 数値からEnumを取得
+     * Get Enum from numeric value
      */
     public static function fromValue(int|string $value): ?self
     {
@@ -126,61 +126,61 @@ enum CspMode: int
         return match ($intValue) {
             0 => self::Development,
             1 => self::Standard,
-            // 2 => self::Strict, // 初期バージョンでは未実装
+            // 2 => self::Strict, // Not implemented in initial version
             default => null,
         };
     }
 
     /**
-     * CSSクラスを取得（色分け用）
+     * Get CSS class (for color coding)
      */
     public function cssClass(): string
     {
         return match ($this) {
             self::Development => 'text-yellow-600 dark:text-yellow-400',
             self::Standard => 'text-green-600 dark:text-green-400',
-            // self::Strict => 'text-red-600 dark:text-red-400', // 初期バージョンでは未実装
+            // self::Strict => 'text-red-600 dark:text-red-400', // Not implemented in initial version
         };
     }
 
     /**
-     * 色名を取得（radio-card-group用）
+     * Get color name (for radio-card-group)
      */
     public function colorName(): string
     {
         return match ($this) {
             self::Development => 'yellow',
             self::Standard => 'blue',
-            // self::Strict => 'red', // 初期バージョンでは未実装
+            // self::Strict => 'red', // Not implemented in initial version
         };
     }
 
     /**
-     * アイコンクラスを取得
+     * Get icon class
      */
     public function iconClass(): string
     {
         return match ($this) {
             self::Development => 'fas fa-code',
             self::Standard => 'fas fa-shield-alt',
-            // self::Strict => 'fas fa-lock', // 初期バージョンでは未実装
+            // self::Strict => 'fas fa-lock', // Not implemented in initial version
         };
     }
 
     /**
-     * 本番環境で推奨かどうか
+     * Whether recommended for production environment
      */
     public function isProductionRecommended(): bool
     {
         return match ($this) {
             self::Development => false,
             self::Standard => true,
-            // self::Strict => true, // 初期バージョンでは未実装
+            // self::Strict => true, // Not implemented in initial version
         };
     }
 
     /**
-     * デフォルト値を取得
+     * Get default value
      */
     public static function default(): self
     {
@@ -188,7 +188,7 @@ enum CspMode: int
     }
 
     /**
-     * すべてのモードを取得
+     * Get all modes
      */
     public static function all(): array
     {
@@ -196,7 +196,7 @@ enum CspMode: int
     }
 
     /**
-     * すべての文字列値を取得
+     * Get all string values
      */
     public static function getAllStrings(): array
     {
@@ -204,7 +204,7 @@ enum CspMode: int
     }
 
     /**
-     * バリデーションルール用の文字列を取得（数値版）
+     * Get string for validation rule (numeric version)
      */
     public static function validationRule(): string
     {
@@ -212,7 +212,7 @@ enum CspMode: int
     }
 
     /**
-     * すべての数値を取得
+     * Get all numeric values
      */
     public static function getAllValues(): array
     {
@@ -220,7 +220,7 @@ enum CspMode: int
     }
 
     /**
-     * 機能リストを取得
+     * Get feature list
      */
     public function features(): array
     {
@@ -231,7 +231,7 @@ enum CspMode: int
             __($baseKey.'_feature3'),
         ];
 
-        // feature4が存在する場合は追加
+        // Add if feature4 exists
         $feature4Key = $baseKey.'_feature4';
         if (__($feature4Key) !== $feature4Key) {
             $features[] = __($feature4Key);
@@ -241,7 +241,7 @@ enum CspMode: int
     }
 
     /**
-     * radio-card-groupコンポーネント用のオプション配列を取得
+     * Get options array for radio-card-group component
      */
     public static function getRadioCardOptions(): array
     {
@@ -256,7 +256,7 @@ enum CspMode: int
                 'features' => $mode->features(),
             ];
 
-            // 標準モードには推奨バッジを追加
+            // Add recommended badge to standard mode
             if ($mode === self::Standard) {
                 $option['badge'] = 'admin/settings/security/csp.recommended';
                 $option['badgeColor'] = 'blue';
@@ -265,7 +265,7 @@ enum CspMode: int
             $options[] = $option;
         }
 
-        // 厳格モード（将来実装予定の disabled カード）
+        // Strict mode (disabled card to be implemented in the future)
         $options[] = [
             'value' => '2',
             'label' => 'admin/settings/security/csp.mode_strict',

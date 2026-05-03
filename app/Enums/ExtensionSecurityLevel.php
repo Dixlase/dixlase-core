@@ -36,43 +36,43 @@
 namespace App\Enums;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * 拡張機能（プラグイン・テーマ）の健全性レベル
+ * Health level for extensions (plugins/themes)
  *
- * 健全性レベルは、拡張機能がシステムに与える影響の範囲を示します。
- * 「リスク」ではなく「健全性」という表現を使用することで、
- * 開発者に対してより前向きで建設的なフィードバックを提供します。
+ * Health level indicates the scope of impact an extension has on the system.
+ * By using the term "health" instead of "risk",
+ * we provide more positive and constructive feedback to developers.
  *
- * プリセットモード:
- * - Strict (厳格): 署名必須、権限定義必須、健全性「良好」のみ許可
- * - Balanced (バランス): 署名または信頼済みソース由来ならOK、「注意」まで許可
- * - Development (開発): 未署名や未定義もインストール可（警告表示）
+ * Preset modes:
+ * - Strict: Signature required, permission definition required, only "Good" health allowed
+ * - Balanced: OK if signed or from trusted source, allow up to "Caution"
+ * - Development: Unsigned or undefined can be installed (with warnings)
  */
 enum ExtensionSecurityLevel: int
 {
     /**
-     * 良好のみ - 基本機能のみを使用する拡張機能
+     * Good only - Extensions using only basic features
      */
     case Healthy = 0;
 
     /**
-     * 注意まで許可 - 一部の拡張機能を使用
+     * Allow up to Caution - Uses some extension features
      */
     case Warning = 1;
 
     /**
-     * 要確認まで許可 - より多くの機能を使用
+     * Allow up to Review Required - Uses more features
      */
     case NeedsAttention = 2;
 
     /**
-     * 未確認も許可 - すべての拡張機能を許可
+     * Allow Unverified - Allows all extensions
      */
     case NotVerified = 3;
 
     /**
-     * 翻訳キーを取得
+     * Get translation key
      */
     public function translationKey(): string
     {
@@ -85,7 +85,7 @@ enum ExtensionSecurityLevel: int
     }
 
     /**
-     * ラベルを取得
+     * Get label
      */
     public function label(): string
     {
@@ -93,7 +93,7 @@ enum ExtensionSecurityLevel: int
     }
 
     /**
-     * 短いラベルを取得（Range用）
+     * Get short label (for Range)
      */
     public function shortLabel(): string
     {
@@ -106,7 +106,7 @@ enum ExtensionSecurityLevel: int
     }
 
     /**
-     * 説明を取得
+     * Get description
      */
     public function description(): string
     {
@@ -119,7 +119,7 @@ enum ExtensionSecurityLevel: int
     }
 
     /**
-     * CSSクラスを取得（色分け用）
+     * Get CSS class (for color coding)
      */
     public function cssClass(): string
     {
@@ -132,7 +132,7 @@ enum ExtensionSecurityLevel: int
     }
 
     /**
-     * バッジクラスを取得
+     * Get badge class
      */
     public function badgeClass(): string
     {
@@ -145,7 +145,7 @@ enum ExtensionSecurityLevel: int
     }
 
     /**
-     * 指定された健全性レベルがこのレベル以下かどうかを判定
+     * Determine if the specified health level is at or below this level
      */
     public function allows(self $healthLevel): bool
     {
@@ -153,7 +153,7 @@ enum ExtensionSecurityLevel: int
     }
 
     /**
-     * すべてのレベルを取得
+     * Get all levels
      */
     public static function all(): array
     {
@@ -161,7 +161,7 @@ enum ExtensionSecurityLevel: int
     }
 
     /**
-     * Range用のラベル配列を取得
+     * Get label array for Range
      */
     public static function getRangeLabels(): array
     {
@@ -174,8 +174,8 @@ enum ExtensionSecurityLevel: int
     }
 
     /**
-     * Range用のラベル色配列を取得
-     * 良好→緑、注意→黄、要確認→オレンジ、未確認→赤
+     * Get label color array for Range
+     * Good→green, Caution→yellow, Needs Review→orange, Unconfirmed→red
      */
     public static function getRangeLabelColors(): array
     {
@@ -188,7 +188,7 @@ enum ExtensionSecurityLevel: int
     }
 
     /**
-     * デフォルト値を取得（バランスモード = Warning）
+     * Get default value (Balance mode = Warning)
      */
     public static function default(): self
     {

@@ -36,50 +36,50 @@
 namespace App\Enums;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * プラグイン・テーマの信頼度レベル
+ * Trust level for plugins and themes
  *
- * 信頼度は「出どころ・供給経路の確からしさ」を表します。
- * 署名鍵の発行元、配布経路、作者の認証などを評価します。
+ * Trust level represents the reliability of origin and distribution channel
+ * Evaluates signing key issuer, distribution channel, author authentication, etc.
  *
- * Health（健全性）との違い:
- * - Trust: 「誰から来たか」
- * - Health: 「中身が今どうか」
+ * Difference from Health:
+ * - Trust: "where it came from"
+ * - Health: "current state of contents"
  *
- * 例:
- * - Trust: Official / Health: NeedsAttention → 公式でも改ざん疑い
- * - Trust: Local / Health: Healthy → 自作でも整合性OK
+ * Examples:
+ * - Trust: Official / Health: NeedsAttention → suspected tampering even if official
+ * - Trust: Local / Health: Healthy → integrity OK even if self-made
  */
 enum PluginTrustLevel: string
 {
     /**
-     * 公式 - Dixlase公式による配布
+     * Official - Distributed by official Dixlase
      */
     case Official = 'official';
 
     /**
-     * 認証済み - 認証済みパブリッシャーによる配布
+     * Verified - Distributed by verified publisher
      */
     case Verified = 'verified';
 
     /**
-     * パートナー - Dixlaseパートナーによる配布
+     * Partner - Distributed by Dixlase partner
      */
     case Partner = 'partner';
 
     /**
-     * コミュニティ - 未認証の配布者
+     * Community - Unverified distributor
      */
     case Community = 'community';
 
     /**
-     * ローカル - 手動インストール/ローカル開発
+     * Local - Manual installation/local development
      */
     case Local = 'local';
 
     /**
-     * 翻訳キーを取得
+     * Get translation key
      */
     public function translationKey(): string
     {
@@ -87,7 +87,7 @@ enum PluginTrustLevel: string
     }
 
     /**
-     * ラベルを取得
+     * Get label
      */
     public function label(): string
     {
@@ -95,7 +95,7 @@ enum PluginTrustLevel: string
     }
 
     /**
-     * 説明を取得
+     * Get description
      */
     public function description(): string
     {
@@ -103,7 +103,7 @@ enum PluginTrustLevel: string
     }
 
     /**
-     * CSSクラスを取得（バッジ用）
+     * Get CSS class (for badge)
      */
     public function badgeClass(): string
     {
@@ -117,7 +117,7 @@ enum PluginTrustLevel: string
     }
 
     /**
-     * アイコンクラスを取得
+     * Get icon class
      */
     public function iconClass(): string
     {
@@ -131,7 +131,7 @@ enum PluginTrustLevel: string
     }
 
     /**
-     * 色名を取得
+     * Get color name
      */
     public function colorName(): string
     {
@@ -145,12 +145,12 @@ enum PluginTrustLevel: string
     }
 
     /**
-     * 署名検証結果から信頼度を判定
+     * Determine trust level from signature verification result
      *
-     * 署名が有効でなければ信頼度を降格する:
+     * Downgrade trust level if signature is invalid:
      * - unsigned/pending_verification → Local
      * - invalid/expired/error → Community
-     * - valid → fromSignatureType() で正しい Trust Level を算出
+     * - valid → calculate correct Trust Level with fromSignatureType()
      */
     public static function fromSignatureVerification(?string $signatureType, string $signatureStatus): self
     {
@@ -165,7 +165,7 @@ enum PluginTrustLevel: string
     }
 
     /**
-     * 署名タイプから信頼度を判定
+     * Determine trust level from signature type
      */
     public static function fromSignatureType(?string $signatureType): self
     {
@@ -179,7 +179,7 @@ enum PluginTrustLevel: string
     }
 
     /**
-     * 信頼度の優先順位を取得（高いほど信頼度が高い）
+     * Get trust level priority (higher value means higher trust)
      */
     public function priority(): int
     {
@@ -193,7 +193,7 @@ enum PluginTrustLevel: string
     }
 
     /**
-     * 本番環境で推奨されるかどうか
+     * Whether recommended for production environment
      */
     public function isProductionRecommended(): bool
     {
@@ -204,7 +204,7 @@ enum PluginTrustLevel: string
     }
 
     /**
-     * すべてのレベルを取得
+     * Get all levels
      */
     public static function all(): array
     {
@@ -212,7 +212,7 @@ enum PluginTrustLevel: string
     }
 
     /**
-     * 本番環境で推奨されるレベルのみ取得
+     * Get only levels recommended for production environment
      */
     public static function productionRecommended(): array
     {

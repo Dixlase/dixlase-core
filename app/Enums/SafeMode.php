@@ -36,26 +36,26 @@
 namespace App\Enums;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * セーフモードレベル
+ * Safe mode level
  *
- * システムリカバリーのためのセーフモードレベルを定義する。
- * CSP無効化、プラグイン無効化、テーマ無効化の3段階をサポート。
+ * Defines safe mode levels for system recovery.
+ * Supports three levels: CSP disabled, plugin disabled, theme disabled.
  */
 enum SafeMode: string
 {
-    /** CSPヘッダー無効化 */
+    /** CSP header disabled */
     case Csp = 'csp';
 
-    /** プラグインアセット/ルート無効化 */
+    /** Plugin assets/routes disabled */
     case Plugins = 'plugins';
 
-    /** テーマ無効化（フロント側のみ） */
+    /** Theme disabled (front-end only) */
     case Theme = 'theme';
 
     /**
-     * セッションキーを取得
+     * Get session key
      */
     public function sessionKey(): string
     {
@@ -63,7 +63,7 @@ enum SafeMode: string
     }
 
     /**
-     * バナー背景色のTailwindクラスを取得
+     * Get Tailwind class for banner background color
      */
     public function bannerBgClass(): string
     {
@@ -75,7 +75,7 @@ enum SafeMode: string
     }
 
     /**
-     * バナーボタン背景色のTailwindクラスを取得
+     * Get Tailwind class for banner button background color
      */
     public function bannerButtonClass(): string
     {
@@ -87,7 +87,7 @@ enum SafeMode: string
     }
 
     /**
-     * バナーリンクテキスト色のTailwindクラスを取得
+     * Get Tailwind class for banner link text color
      */
     public function bannerLinkTextClass(): string
     {
@@ -99,7 +99,7 @@ enum SafeMode: string
     }
 
     /**
-     * Font Awesomeアイコンクラスを取得
+     * Get Font Awesome icon class
      */
     public function iconClass(): string
     {
@@ -111,7 +111,7 @@ enum SafeMode: string
     }
 
     /**
-     * 関連する設定ページルート名を取得
+     * Get related settings page route name
      */
     public function settingsRoute(): string
     {
@@ -123,7 +123,7 @@ enum SafeMode: string
     }
 
     /**
-     * 翻訳キーのプレフィックスを取得
+     * Get translation key prefix
      */
     public function translationPrefix(): string
     {
@@ -131,7 +131,7 @@ enum SafeMode: string
     }
 
     /**
-     * URLパラメータ値からEnumを取得（カンマ区切り対応）
+     * Get Enum from URL parameter value (supports comma-separated)
      *
      * @return SafeMode[]
      */
@@ -139,7 +139,7 @@ enum SafeMode: string
     {
         $modes = [];
 
-        // ?safe=1 の後方互換性
+        // Backward compatibility for ?safe=1
         if ($param === '1') {
             return [self::Csp];
         }

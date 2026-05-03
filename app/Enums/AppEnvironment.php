@@ -36,9 +36,9 @@
 namespace App\Enums;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  *
- * アプリケーション環境定義
+ * Application environment definition
  */
 enum AppEnvironment: string
 {
@@ -47,7 +47,7 @@ enum AppEnvironment: string
     case Production = 'production';
 
     /**
-     * 翻訳キーを取得
+     * Get translation key
      */
     public function translationKey(): string
     {
@@ -59,7 +59,7 @@ enum AppEnvironment: string
     }
 
     /**
-     * 説明の翻訳キーを取得
+     * Get description translation key
      */
     public function descriptionKey(): string
     {
@@ -71,7 +71,7 @@ enum AppEnvironment: string
     }
 
     /**
-     * アイコンクラスを取得
+     * Get icon class
      */
     public function iconClass(): string
     {
@@ -83,7 +83,7 @@ enum AppEnvironment: string
     }
 
     /**
-     * 色名を取得（radio-card-group用）
+     * Get color name (for radio-card-group)
      */
     public function colorName(): string
     {
@@ -95,7 +95,7 @@ enum AppEnvironment: string
     }
 
     /**
-     * 本番環境かどうか
+     * Whether it is production environment
      */
     public function isProduction(): bool
     {
@@ -103,7 +103,7 @@ enum AppEnvironment: string
     }
 
     /**
-     * 開発環境かどうか
+     * Whether it is development environment
      */
     public function isDevelopment(): bool
     {
@@ -111,7 +111,7 @@ enum AppEnvironment: string
     }
 
     /**
-     * radio-card-groupコンポーネント用のオプション配列を取得
+     * Get options array for radio-card-group component
      */
     public static function getRadioCardOptions(): array
     {
@@ -130,7 +130,7 @@ enum AppEnvironment: string
     }
 
     /**
-     * すべての環境を取得
+     * Get all environments
      */
     public static function all(): array
     {
@@ -138,7 +138,7 @@ enum AppEnvironment: string
     }
 
     /**
-     * デフォルト値を取得
+     * Get default value
      */
     public static function default(): self
     {
@@ -146,7 +146,7 @@ enum AppEnvironment: string
     }
 
     /**
-     * 文字列から環境を取得
+     * Get environment from string
      */
     public static function fromString(?string $value): ?self
     {

@@ -38,7 +38,7 @@
 namespace App\Enums;
 
 /**
- * ロケール定義
+ * Locale definition
  */
 enum Locale: string
 {
@@ -46,7 +46,7 @@ enum Locale: string
     case ENGLISH = 'en';
 
     /**
-     * 表示用ラベルを取得
+     * Get display label
      */
     public function label(): string
     {
@@ -57,7 +57,7 @@ enum Locale: string
     }
 
     /**
-     * 全ての言語オプションを取得
+     * Get all language options
      */
     public static function options(): array
     {
@@ -67,7 +67,7 @@ enum Locale: string
     }
 
     /**
-     * 利用可能な言語コードの配列を取得
+     * Get array of available language codes
      */
     public static function values(): array
     {
@@ -75,7 +75,7 @@ enum Locale: string
     }
 
     /**
-     * デフォルト言語を取得
+     * Get default language
      */
     public static function default(): self
     {
@@ -83,7 +83,7 @@ enum Locale: string
     }
 
     /**
-     * 設定ファイルから利用可能な言語を取得
+     * Get available languages from settings file
      */
     public static function availableOptions(): array
     {
@@ -100,12 +100,12 @@ enum Locale: string
     }
 
     /**
-     * 言語コードが有効かチェック
+     * Check if language code is valid
      */
     public static function isValid(?string $locale): bool
     {
         if ($locale === null) {
-            return true; // null は有効（システムデフォルト使用）
+            return true; // null is valid (uses system default)
         }
 
         return in_array($locale, self::values());

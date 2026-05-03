@@ -38,20 +38,20 @@
 namespace App\Enums;
 
 /**
- * 認証モード（二段階認証・通知設定共通）
+ * Authentication mode (common to two-factor authentication and notification settings)
  *
- * メンバーとユーザーの両方で使用可能
- * 二段階認証と通知設定の両方で使用可能
+ * Can be used for both members and users
+ * Can be used for both two-factor authentication and notification settings
  */
 enum AuthenticationMode: int
 {
-    case Disabled = 0;              // 無効
-    case DifferentDevice = 1;       // 異なるデバイス・IPでのログイン時のみ
-    case Always = 2;                // 常に有効
-    case UseProfileSetting = 3;     // プロフィール設定に従う（全体設定専用）
+    case Disabled = 0;              // Disabled
+    case DifferentDevice = 1;       // Only on login from different device or IP
+    case Always = 2;                // Always enabled
+    case UseProfileSetting = 3;     // Follow profile settings (for global settings only)
 
     /**
-     * ラベルを取得（二段階認証用）
+     * Get label (for two-factor authentication)
      */
     public function twoFactorLabel(): string
     {
@@ -64,7 +64,7 @@ enum AuthenticationMode: int
     }
 
     /**
-     * ラベルを取得（通知設定用）
+     * Get label (for notification settings)
      */
     public function notificationLabel(): string
     {
@@ -77,7 +77,7 @@ enum AuthenticationMode: int
     }
 
     /**
-     * 翻訳キーを取得（二段階認証用）
+     * Get translation key (for two-factor authentication)
      */
     public function twoFactorTranslationKey(): string
     {
@@ -90,7 +90,7 @@ enum AuthenticationMode: int
     }
 
     /**
-     * 翻訳キーを取得（通知設定用）
+     * Get translation key (for notification settings)
      */
     public function notificationTranslationKey(): string
     {
@@ -103,7 +103,7 @@ enum AuthenticationMode: int
     }
 
     /**
-     * 二段階認証用のオプション配列を取得
+     * Get options array for two-factor authentication
      */
     public static function twoFactorOptions(): array
     {
@@ -116,7 +116,7 @@ enum AuthenticationMode: int
     }
 
     /**
-     * 二段階認証用の翻訳キー配列を取得
+     * Get translation key array for two-factor authentication
      */
     public static function twoFactorTranslationOptions(): array
     {
@@ -129,7 +129,7 @@ enum AuthenticationMode: int
     }
 
     /**
-     * 通知設定用のオプション配列を取得
+     * Get options array for notification settings
      */
     public static function notificationOptions(): array
     {
@@ -142,7 +142,7 @@ enum AuthenticationMode: int
     }
 
     /**
-     * 通知設定用の翻訳キー配列を取得
+     * Get translation key array for notification settings
      */
     public static function notificationTranslationOptions(): array
     {
@@ -155,7 +155,7 @@ enum AuthenticationMode: int
     }
 
     /**
-     * プロフィール設定用（UseProfileSettingを除く）
+     * For profile settings (excluding UseProfileSetting)
      */
     public static function forProfile(): array
     {
@@ -163,7 +163,7 @@ enum AuthenticationMode: int
     }
 
     /**
-     * プロフィール設定用の二段階認証オプション
+     * Two-factor authentication options for profile settings
      */
     public static function twoFactorProfileOptions(): array
     {
@@ -176,7 +176,7 @@ enum AuthenticationMode: int
     }
 
     /**
-     * プロフィール設定用の通知オプション
+     * Notification options for profile settings
      */
     public static function notificationProfileOptions(): array
     {
@@ -189,7 +189,7 @@ enum AuthenticationMode: int
     }
 
     /**
-     * 後方互換性のため（旧TwoFactorMode）
+     * For backward compatibility (former TwoFactorMode)
      */
     public function label(): string
     {
@@ -197,7 +197,7 @@ enum AuthenticationMode: int
     }
 
     /**
-     * 後方互換性のため（旧TwoFactorMode）
+     * For backward compatibility (former TwoFactorMode)
      */
     public function translationKey(): string
     {
@@ -205,7 +205,7 @@ enum AuthenticationMode: int
     }
 
     /**
-     * 後方互換性のため（旧TwoFactorMode）
+     * For backward compatibility (former TwoFactorMode)
      */
     public static function options(): array
     {
@@ -213,7 +213,7 @@ enum AuthenticationMode: int
     }
 
     /**
-     * 後方互換性のため（旧TwoFactorMode）
+     * For backward compatibility (former TwoFactorMode)
      */
     public static function translationOptions(): array
     {

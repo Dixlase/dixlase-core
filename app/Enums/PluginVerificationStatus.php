@@ -36,102 +36,102 @@
 namespace App\Enums;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * プラグイン・テーマの検証状態
+ * Plugin/theme verification status
  *
- * 署名と権限定義の検証状態を表します。
+ * Represents verification status of signature and permission definitions
  */
 enum PluginVerificationStatus: string
 {
     // ========================================
-    // 署名ステータス
+    // Signature status
     // ========================================
 
     /**
-     * 署名OK - 署名が有効で検証済み
+     * Signature OK - signature is valid and verified
      */
     case SignatureValid = 'signature_valid';
 
     /**
-     * 未署名 - 署名がない
+     * Unsigned - no signature
      */
     case SignatureUnsigned = 'signature_unsigned';
 
     /**
-     * 署名不一致 - 署名が無効（改ざんの可能性）
+     * Signature mismatch - invalid signature (possible tampering)
      */
     case SignatureInvalid = 'signature_invalid';
 
     /**
-     * 署名検証待ち - 署名はあるが未検証
+     * Signature pending - signature exists but not verified
      */
     case SignaturePending = 'signature_pending';
 
     // ========================================
-    // 権限定義ステータス
+    // Permission definition status
     // ========================================
 
     /**
-     * 権限定義OK - 宣言と実態が一致
+     * Permission definition OK - declaration matches actual
      */
     case PermissionOk = 'permission_ok';
 
     /**
-     * 権限未定義 - plugin.jsonにpermissionsがない
+     * Permission undefined - no permissions in plugin.json
      */
     case PermissionUndefined = 'permission_undefined';
 
     /**
-     * 権限不一致 - 宣言と実態が不一致
+     * Permission mismatch - declaration does not match actual
      */
     case PermissionMismatch = 'permission_mismatch';
 
     // ========================================
-    // スキャンステータス
+    // Scan status
     // ========================================
 
     /**
-     * スキャン未実行
+     * Scan not executed
      */
     case ScanNotPerformed = 'scan_not_performed';
 
     /**
-     * スキャン期限切れ（ルール更新後など）
+     * Scan expired (e.g., after rule update)
      */
     case ScanOutdated = 'scan_outdated';
 
     /**
-     * スキャン完了
+     * Scan completed
      */
     case ScanCompleted = 'scan_completed';
 
     // ========================================
-    // CSP適合性ステータス
+    // CSP compatibility status
     // ========================================
 
     /**
-     * CSP Ready - CSP完全対応
+     * CSP Ready - fully CSP compliant
      */
     case CspReady = 'csp_ready';
 
     /**
-     * CSP互換 - nonce付きで動作
+     * CSP compatible - works with nonce
      */
     case CspCompatible = 'csp_compatible';
 
     /**
-     * インラインJS必須 - CSP厳格モードで動作不可
+     * Inline JS required - cannot work in strict CSP mode
      */
     case CspInlineRequired = 'csp_inline_required';
 
     /**
-     * CSP未検証
+     * CSP not verified
      */
     case CspNotChecked = 'csp_not_checked';
 
     /**
-     * 翻訳キーを取得
+     * Get translation key
      */
     public function translationKey(): string
     {
@@ -139,7 +139,7 @@ enum PluginVerificationStatus: string
     }
 
     /**
-     * ラベルを取得
+     * Get label
      */
     public function label(): string
     {
@@ -147,23 +147,23 @@ enum PluginVerificationStatus: string
     }
 
     /**
-     * CSSクラスを取得（バッジ用）
+     * Get CSS class (for badge)
      */
     public function badgeClass(): string
     {
         return match ($this) {
-            // 署名
+            // Signature
             self::SignatureValid => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
             self::SignatureUnsigned => 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
             self::SignatureInvalid => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
             self::SignaturePending => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
 
-            // 権限
+            // Permission
             self::PermissionOk => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
             self::PermissionUndefined => 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
             self::PermissionMismatch => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
 
-            // スキャン
+            // Scan
             self::ScanNotPerformed => 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
             self::ScanOutdated => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
             self::ScanCompleted => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
@@ -177,23 +177,23 @@ enum PluginVerificationStatus: string
     }
 
     /**
-     * アイコンクラスを取得
+     * Get icon class
      */
     public function iconClass(): string
     {
         return match ($this) {
-            // 署名
+            // Signature
             self::SignatureValid => 'fas fa-check-circle',
             self::SignatureUnsigned => 'fas fa-file-signature',
             self::SignatureInvalid => 'fas fa-times-circle',
             self::SignaturePending => 'fas fa-clock',
 
-            // 権限
+            // Permission
             self::PermissionOk => 'fas fa-check-circle',
             self::PermissionUndefined => 'fas fa-question-circle',
             self::PermissionMismatch => 'fas fa-code-branch',
 
-            // スキャン
+            // Scan
             self::ScanNotPerformed => 'fas fa-search',
             self::ScanOutdated => 'fas fa-history',
             self::ScanCompleted => 'fas fa-check',
@@ -207,7 +207,7 @@ enum PluginVerificationStatus: string
     }
 
     /**
-     * 署名ステータスかどうか
+     * Whether it is signature status
      */
     public function isSignatureStatus(): bool
     {
@@ -220,7 +220,7 @@ enum PluginVerificationStatus: string
     }
 
     /**
-     * 権限ステータスかどうか
+     * Whether it is permission status
      */
     public function isPermissionStatus(): bool
     {
@@ -232,7 +232,7 @@ enum PluginVerificationStatus: string
     }
 
     /**
-     * スキャンステータスかどうか
+     * Whether it is scan status
      */
     public function isScanStatus(): bool
     {
@@ -244,7 +244,7 @@ enum PluginVerificationStatus: string
     }
 
     /**
-     * CSPステータスかどうか
+     * Whether it is CSP status
      */
     public function isCspStatus(): bool
     {
@@ -257,7 +257,7 @@ enum PluginVerificationStatus: string
     }
 
     /**
-     * 問題があるステータスかどうか
+     * Whether status has issues
      */
     public function hasIssue(): bool
     {
@@ -270,7 +270,7 @@ enum PluginVerificationStatus: string
     }
 
     /**
-     * 致命的な問題かどうか
+     * Whether it is a critical issue
      */
     public function isCritical(): bool
     {
@@ -281,7 +281,7 @@ enum PluginVerificationStatus: string
     }
 
     /**
-     * CSPモードに基づいて有効化可能かどうか
+     * Whether it can be enabled based on CSP mode
      */
     public function canActivateWithCspMode(string $cspMode): bool
     {
@@ -298,7 +298,7 @@ enum PluginVerificationStatus: string
     }
 
     /**
-     * 署名ステータスを取得
+     * Get signature status
      */
     public static function signatureStatuses(): array
     {
@@ -311,7 +311,7 @@ enum PluginVerificationStatus: string
     }
 
     /**
-     * 権限ステータスを取得
+     * Get permission status
      */
     public static function permissionStatuses(): array
     {
@@ -323,7 +323,7 @@ enum PluginVerificationStatus: string
     }
 
     /**
-     * CSPステータスを取得
+     * Get CSP status
      */
     public static function cspStatuses(): array
     {
