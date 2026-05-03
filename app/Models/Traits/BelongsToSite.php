@@ -60,9 +60,20 @@ use Throwable;
  *   - $query->allSites()             cross-site query
  *   - $query->forSite($siteId)       query a specific site
  *   - Model::withoutGlobalScope('belongs_to_site')->...
+ *
+ * To create a row without auto-injecting site_id (e.g. network-level rows
+ * with site_id = NULL such as CLI-issued network API keys):
+ *   - Model::withoutSiteContext(fn () => Model::create(['site_id' => null, ...]))
  */
 trait BelongsToSite
 {
+    /**
+     * Re-entrant counter of nested withoutSiteContext() blocks. While > 0
+     * the creating hook does not auto-inject site_id, so callers can write
+     * rows whose site_id is explicitly null (network-level rows).
+     */
+    private static int $belongsToSiteSuspendDepth = 0;
+
     public static function bootBelongsToSite(): void
     {
         static::addGlobalScope('belongs_to_site', function (Builder $query) {
@@ -77,6 +88,12 @@ trait BelongsToSite
         });
 
         static::creating(function (Model $model) {
+            if (static::$belongsToSiteSuspendDepth > 0) {
+                // Caller is inside withoutSiteContext(); honor whatever
+                // site_id (including null) was passed explicitly.
+                return;
+            }
+
             if (empty($model->getAttribute('site_id'))) {
                 try {
                     $model->setAttribute(
@@ -89,6 +106,26 @@ trait BelongsToSite
                 }
             }
         });
+    }
+
+    /**
+     * Run a callback with site context auto-injection disabled. Inside the
+     * callback, model creation does not auto-fill site_id, so callers can
+     * write rows with site_id = null (network-level rows). Re-entrant.
+     *
+     * @template T
+     *
+     * @param  callable(): T  $callback
+     * @return T
+     */
+    public static function withoutSiteContext(callable $callback): mixed
+    {
+        static::$belongsToSiteSuspendDepth++;
+        try {
+            return $callback();
+        } finally {
+            static::$belongsToSiteSuspendDepth--;
+        }
     }
 
     public function site(): BelongsTo

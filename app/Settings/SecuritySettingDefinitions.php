@@ -192,6 +192,9 @@ class SecuritySettingDefinitions
             'extension_notify_on_disable' => ['default' => true, 'type' => 'bool'],
             'extension_notify_on_unhealthy' => ['default' => true, 'type' => 'bool'],
             'extension_log_operations' => ['default' => true, 'type' => 'bool'],
+            'extension_audit_max_age_days' => ['default' => 30, 'type' => 'int'],
+            'extension_source_type' => ['default' => 'github', 'type' => 'string'],
+            'extension_update_check_interval' => ['default' => 86400, 'type' => 'int'],
 
             // Content Security Policy
             'csp_enabled' => ['default' => true, 'type' => 'bool'],
