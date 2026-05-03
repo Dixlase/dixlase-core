@@ -161,6 +161,14 @@ class AppServiceProvider extends ServiceProvider
             \Laragear\WebAuthn\Models\WebAuthnCredential::class,
             \App\Models\WebAuthnCredential::class
         );
+
+        // Tag the core member privacy provider so the privacy aggregator
+        // services (UserPrivacyExporter / UserPrivacyEraser) discover it
+        // alongside any plugin-provided implementations.
+        $this->app->tag(
+            [\App\Services\Privacy\Providers\CoreMemberPrivacyProvider::class],
+            \App\Services\Plugin\PluginServiceResolver::CAPABILITY_TAG,
+        );
     }
 
     /**
