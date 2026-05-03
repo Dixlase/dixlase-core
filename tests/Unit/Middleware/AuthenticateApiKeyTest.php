@@ -24,6 +24,8 @@ namespace Tests\Unit\Middleware;
 
 use App\Http\Middleware\AuthenticateApiKey;
 use App\Models\ApiKey;
+use App\Models\AuditLog;
+use App\Models\Site;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Tests\TestCase;
@@ -50,7 +52,8 @@ class AuthenticateApiKeyTest extends TestCase
         $response = $this->middleware->handle($request, fn () => response()->json(['ok' => true]));
 
         $this->assertEquals(401, $response->getStatusCode());
-        $this->assertEquals('unauthorized', json_decode($response->getContent(), true)['error']);
+        $body = json_decode($response->getContent(), true);
+        $this->assertSame('missing_credentials', $body['error']['code']);
     }
 
     /**
@@ -116,7 +119,9 @@ class AuthenticateApiKeyTest extends TestCase
         );
 
         $this->assertEquals(403, $response->getStatusCode());
-        $this->assertEquals('forbidden', json_decode($response->getContent(), true)['error']);
+        $body = json_decode($response->getContent(), true);
+        $this->assertSame('insufficient_scope', $body['error']['code']);
+        $this->assertSame(ApiKey::SCOPE_WRITE_CONTENT, $body['error']['details']['required_scope']);
     }
 
     /**
@@ -158,7 +163,8 @@ class AuthenticateApiKeyTest extends TestCase
         $response = $this->middleware->handle($request, fn () => response()->json(['ok' => true]));
 
         $this->assertEquals(403, $response->getStatusCode());
-        $this->assertEquals('forbidden', json_decode($response->getContent(), true)['error']);
+        $body = json_decode($response->getContent(), true);
+        $this->assertSame('ip_not_allowed', $body['error']['code']);
     }
 
     /**
@@ -195,5 +201,73 @@ class AuthenticateApiKeyTest extends TestCase
         $apiKey = $apiKeyData['model']->fresh();
         $this->assertEquals(1, $apiKey->usage_count);
         $this->assertNotNull($apiKey->last_used_at);
+    }
+
+    public function test_error_envelope_has_unified_structure_with_meta_block(): void
+    {
+        Site::factory()->primary()->create(['id' => 1]);
+
+        $request = Request::create('/api/test', 'GET');
+
+        $response = $this->middleware->handle($request, fn () => response()->json(['ok' => true]));
+
+        $this->assertEquals(401, $response->getStatusCode());
+        $body = json_decode($response->getContent(), true);
+
+        $this->assertArrayHasKey('error', $body);
+        $this->assertArrayHasKey('code', $body['error']);
+        $this->assertArrayHasKey('message', $body['error']);
+        $this->assertSame('missing_credentials', $body['error']['code']);
+
+        $this->assertArrayHasKey('meta', $body);
+        $this->assertArrayHasKey('timestamp', $body['meta']);
+        $this->assertArrayHasKey('site_id', $body['meta']);
+        $this->assertSame(1, $body['meta']['site_id']);
+    }
+
+    public function test_network_key_use_writes_audit_log_entry(): void
+    {
+        Site::factory()->primary()->create(['id' => 1]);
+
+        $apiKeyData = ApiKey::generateNetworkKey('Network Auth', [ApiKey::SCOPE_READ_CONTENT]);
+
+        $request = Request::create('/api/test', 'GET');
+        $request->headers->set('Authorization', 'Bearer '.$apiKeyData['plain_key']);
+
+        $response = $this->middleware->handle($request, fn () => response()->json(['ok' => true]));
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $audit = AuditLog::query()
+            ->where('action', 'network_api_key_used')
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($audit, 'Network key usage must produce an audit_logs entry');
+        $this->assertSame(AuditLog::CATEGORY_SECURITY, $audit->category);
+        $this->assertSame(AuditLog::SEVERITY_NOTICE, $audit->severity);
+        $this->assertSame($apiKeyData['model']->id, $audit->context['api_key_id'] ?? null);
+        $this->assertSame('GET', $audit->context['method'] ?? null);
+        $this->assertSame('api/test', $audit->context['path'] ?? null);
+    }
+
+    public function test_site_key_use_does_not_write_network_audit_log_entry(): void
+    {
+        Site::factory()->primary()->create(['id' => 1]);
+
+        $apiKeyData = ApiKey::generate('Site Auth', ApiKey::ENV_TEST, [ApiKey::SCOPE_READ_CONTENT]);
+
+        $request = Request::create('/api/test', 'GET');
+        $request->headers->set('Authorization', 'Bearer '.$apiKeyData['plain_key']);
+
+        $response = $this->middleware->handle($request, fn () => response()->json(['ok' => true]));
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $audit = AuditLog::query()
+            ->where('action', 'network_api_key_used')
+            ->first();
+
+        $this->assertNull($audit, 'Site keys must not trigger network_api_key_used audit entries');
     }
 }
