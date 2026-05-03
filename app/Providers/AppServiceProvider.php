@@ -48,7 +48,6 @@ use App\Contracts\Site\SiteContextInterface;
 use App\Contracts\Theme\ThemePermissionServiceInterface;
 use App\Contracts\TwoFa\TwoFaPasskeyServiceInterface;
 use App\Contracts\Verification\FileVerificationServiceInterface;
-use App\Models\SecuritySetting;
 use App\Services\Backup\CoreBackupService;
 use App\Services\Backup\CoreRestoreService;
 use App\Services\Encryption\CoreFileEncryptionService;
@@ -197,12 +196,12 @@ class AppServiceProvider extends ServiceProvider
         }
 
         try {
-            // セキュリティ設定でSSLを矯正しているかどうかを判定
-            // security_settingsテーブルのforce_sslの値を取得
-            // テーブルが存在しているか確認
-
-            if (Schema::hasTable('security_settings')) {
-                $forceSsl = SecuritySetting::get('force_ssl', config('security.force_ssl'));
+            // force_ssl は Global scope。multisite consolidation 後は
+            // global_settings に格納される。テーブル存在ガードを残し、
+            // 未作成（インストール中など）は config フォールバック。
+            if (Schema::hasTable('global_settings')) {
+                $forceSsl = app(\App\Services\Site\SettingResolver::class)->get('force_ssl')
+                    ?? config('security.force_ssl');
             } else {
                 $forceSsl = config('security.force_ssl');
             }

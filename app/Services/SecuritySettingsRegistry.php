@@ -757,7 +757,7 @@ class SecuritySettingsRegistry
         try {
             switch ($source) {
                 case 'security_settings':
-                    if (Schema::hasTable('security_settings')) {
+                    if (Schema::hasTable('global_settings')) {
                         return SecuritySetting::get($key, $default);
                     }
                     break;
@@ -783,7 +783,7 @@ class SecuritySettingsRegistry
 
             switch ($source) {
                 case 'security_settings':
-                    if (Schema::hasTable('security_settings')) {
+                    if (Schema::hasTable('global_settings')) {
                         SecuritySetting::set($key, $stringValue);
 
                         return true;
