@@ -296,6 +296,18 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('roles.update');
             });
 
+            // プライバシー (subject access export / erasure) — super-admin スタブ
+            Route::prefix('privacy/users')->name('privacy.users.')->group(function () {
+                Route::get('/', [\App\Http\Controllers\Admin\Privacy\UserDataController::class, 'index'])
+                    ->name('index');
+                Route::get('/{id}/export', [\App\Http\Controllers\Admin\Privacy\UserDataController::class, 'export'])
+                    ->whereNumber('id')
+                    ->name('export');
+                Route::post('/{id}/delete', [\App\Http\Controllers\Admin\Privacy\UserDataController::class, 'delete'])
+                    ->whereNumber('id')
+                    ->name('delete');
+            });
+
             // 全体設定
             // 基本設定（権限チェック付き）
             Route::middleware('check.menu.access:settings.base')->prefix('settings/base')->name('settings.base.')->group(function () {
