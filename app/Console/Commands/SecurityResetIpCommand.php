@@ -71,7 +71,7 @@ class SecurityResetIpCommand extends Command
      */
     public function handle(): int
     {
-        if (! Schema::hasTable('security_settings')) {
+        if (! Schema::hasTable('global_settings')) {
             $this->error(__('admin/command.security_reset_ip.table_not_found'));
 
             return Command::FAILURE;

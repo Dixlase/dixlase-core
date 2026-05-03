@@ -96,12 +96,13 @@ class ConfigHelper
                     break;
                 case 'SecuritySetting':
                 default:
-                    if (Schema::hasTable('security_settings')) {
+                    // multisite consolidation 後はセキュリティ系も global_settings に統合済み
+                    if (Schema::hasTable('global_settings')) {
                         return SecuritySetting::get($key, null);
                     }
                     break;
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // If there's any database error (e.g., during installation), return null
         }
     }
@@ -120,12 +121,12 @@ class ConfigHelper
                     break;
                 case 'SecuritySetting':
                 default:
-                    if (Schema::hasTable('security_settings')) {
+                    if (Schema::hasTable('global_settings')) {
                         SecuritySetting::set($key, $value);
                     }
                     break;
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error("Database write failed for {$model}::{$key}: ".$e->getMessage());
         }
     }
