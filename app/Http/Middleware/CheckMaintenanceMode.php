@@ -35,9 +35,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\Site\SettingResolver;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckMaintenanceMode
@@ -101,23 +101,16 @@ class CheckMaintenanceMode
      */
     private function getMaintenanceSettings(): array
     {
-        $settings = DB::table('site_settings')
-            ->whereIn('name', [
-                'maintenance_mode',
-                'maintenance_message',
-                'maintenance_auto_release',
-                'maintenance_start_at',
-                'maintenance_release_at',
-            ])
-            ->pluck('value', 'name')
-            ->toArray();
+        // maintenance_* keys are PerSite scope. SettingResolver routes
+        // through site_settings filtered by the current site automatically.
+        $resolver = app(SettingResolver::class);
 
         return [
-            'maintenance_mode' => ($settings['maintenance_mode'] ?? '0') === '1',
-            'maintenance_message' => $settings['maintenance_message'] ?? '現在メンテナンス中です。しばらくお待ちください。',
-            'maintenance_auto_release' => ($settings['maintenance_auto_release'] ?? '0') === '1',
-            'maintenance_start_at' => $settings['maintenance_start_at'] ?? null,
-            'maintenance_release_at' => $settings['maintenance_release_at'] ?? null,
+            'maintenance_mode' => (bool) $resolver->get('maintenance_mode'),
+            'maintenance_message' => $resolver->get('maintenance_message') ?: '現在メンテナンス中です。しばらくお待ちください。',
+            'maintenance_auto_release' => (bool) $resolver->get('maintenance_auto_release'),
+            'maintenance_start_at' => $resolver->get('maintenance_start_at'),
+            'maintenance_release_at' => $resolver->get('maintenance_release_at'),
         ];
     }
 

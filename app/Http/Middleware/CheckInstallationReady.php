@@ -306,15 +306,18 @@ class CheckInstallationReady
                 Log::channel('install')->info('CheckInstallationReady: 管理者ユーザー存在確認');
             }
 
-            // ステップ6: site_settingsに基本データが存在するかチェック（さらなる確認）
+            // ステップ6: 主要サイト (id=1) の site_settings に基本データが
+            // 存在するかをチェック (さらなる確認)。マルチサイト対応のため
+            // site_id でフィルタしながらクエリ。
             $hasSiteName = DB::table('site_settings')
+                ->where('site_id', 1)
                 ->where('name', 'site_name')
                 ->exists();
             $debugInfo['step6_site_name'] = $hasSiteName ? 'OK' : 'NG';
 
             if (! $hasSiteName) {
                 if ($logToInstall) {
-                    Log::channel('install')->info('CheckInstallationReady: site_settingsに初期データが存在しません');
+                    Log::channel('install')->info('CheckInstallationReady: site_settings に初期データが存在しません');
                 }
 
                 return false;

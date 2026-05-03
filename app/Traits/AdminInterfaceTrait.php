@@ -37,7 +37,8 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Facades\DB;
+use App\Contracts\Repositories\SiteSettingRepositoryInterface;
+use App\Services\Site\SettingResolver;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -75,10 +76,10 @@ trait AdminInterfaceTrait
         }
 
         try {
-            if (! Schema::hasTable('site_settings')) {
+            if (! Schema::hasTable('site_settings') || ! Schema::hasTable('global_settings')) {
                 return;
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return;
         }
 
@@ -90,16 +91,20 @@ trait AdminInterfaceTrait
 
     protected function getSiteName()
     {
+        // env > config > resolver (PerSite via SettingResolver) > fallback
         $this->siteName = env('APP_NAME')
             ?? config('app.name')
-            ?? DB::table('site_settings')->where('name', 'site_name')->value('value')
+            ?? app(SettingResolver::class)->get('site_name')
             ?? 'Dixlase';
         $this->viewParams['site_name'] = $this->siteName;
     }
 
     protected function getSiteSettings()
     {
-        $this->settings = DB::table('site_settings')->get()->keyBy('name')->toArray();
+        // Repository::all() iterates the SettingDefinitionRegistry and
+        // resolves each value via SettingResolver. The result is a
+        // flat [key => value] map (Global + PerSite + Overridable).
+        $this->settings = app(SiteSettingRepositoryInterface::class)->all();
         $this->viewParams['settings'] = $this->settings;
     }
 

@@ -197,13 +197,10 @@ class SystemNotificationService
     public function isNotificationEnabled(): bool
     {
         try {
-            // SecuritySettingから通知設定を取得
-            $enabled = \DB::table('security_settings')
-                ->where('name', 'notification_enabled')
-                ->value('value');
-
-            return (bool) $enabled;
-        } catch (\Exception $e) {
+            // notification_enabled is Global scope; SettingResolver routes
+            // through global_settings.
+            return (bool) app(\App\Services\Site\SettingResolver::class)->get('notification_enabled');
+        } catch (\Throwable $e) {
             return false;
         }
     }
