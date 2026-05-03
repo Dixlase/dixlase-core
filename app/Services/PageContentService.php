@@ -45,20 +45,20 @@ use Illuminate\Support\Str;
 use Parsedown;
 
 /**
- * ページコンテンツ管理サービス
+ * Page content management service
  *
- * ページコンテンツやフロントページのデザインなど、
- * 編集可能なコンテンツの保存・読み込み・変換を管理します。
+ * Manages page content, front page design, and other
+ * editable content saving, loading, and conversion
  */
 class PageContentService
 {
     /**
-     * ファイル保存のベースディレクトリ
+     * Base directory for file storage
      */
     protected string $baseDirectory = 'pages';
 
     /**
-     * ベースディレクトリを設定
+     * Set base directory
      */
     public function setBaseDirectory(string $directory): self
     {
@@ -68,12 +68,12 @@ class PageContentService
     }
 
     /**
-     * コンテンツを保存
+     * Save content
      *
-     * @param  string  $identifier  ページのスラッグやID
-     * @param  string  $content  コンテンツ
-     * @param  ContentStorageType  $storageType  保存方法
-     * @param  ContentEditorType  $editorType  エディタータイプ
+     * @param  string  $identifier  Page slug or ID
+     * @param  string  $content  Content
+     * @param  ContentStorageType  $storageType  Storage method
+     * @param  ContentEditorType  $editorType  Editor type
      * @return array ['success' => bool, 'path' => string|null, 'message' => string]
      */
     public function saveContent(
@@ -87,7 +87,7 @@ class PageContentService
                 return $this->saveToFile($identifier, $content, $editorType);
             }
 
-            // DATABASE の場合は呼び出し元で保存
+            // For DATABASE, save at caller side
             return [
                 'success' => true,
                 'path' => null,
@@ -110,12 +110,12 @@ class PageContentService
     }
 
     /**
-     * コンテンツを読み込み
+     * Load content
      *
-     * @param  string  $identifier  ページのスラッグやID
-     * @param  ContentStorageType  $storageType  保存方法
-     * @param  ContentEditorType  $editorType  エディタータイプ
-     * @param  string|null  $dbContent  DB保存の場合のコンテンツ
+     * @param  string  $identifier  Page slug or ID
+     * @param  ContentStorageType  $storageType  Storage method
+     * @param  ContentEditorType  $editorType  Editor type
+     * @param  string|null  $dbContent  Content for DB storage
      */
     public function loadContent(
         string $identifier,
@@ -128,7 +128,7 @@ class PageContentService
                 return $this->loadFromFile($identifier, $editorType);
             }
 
-            // DATABASE の場合
+            // For DATABASE
             return $dbContent;
         } catch (\Exception $e) {
             Log::error('Failed to load content', [
@@ -143,11 +143,11 @@ class PageContentService
     }
 
     /**
-     * コンテンツをレンダリング用に変換
+     * Convert content for rendering
      *
-     * @param  string  $content  コンテンツ
-     * @param  ContentEditorType  $editorType  エディタータイプ
-     * @param  ContentStorageType  $storageType  保存方法
+     * @param  string  $content  Content
+     * @param  ContentEditorType  $editorType  Editor type
+     * @param  ContentStorageType  $storageType  Storage method
      */
     public function renderContent(
         string $content,
@@ -159,7 +159,7 @@ class PageContentService
                 ContentEditorType::MARKDOWN => $this->renderMarkdown($content),
                 ContentEditorType::HTML => $content,
                 ContentEditorType::BLADE => $storageType === ContentStorageType::FILE
-                    ? $content // Bladeファイルは別途レンダリング
+                    ? $content // Blade files are rendered separately
                     : $content,
                 ContentEditorType::GUI => $this->renderGui($content),
             };
@@ -174,7 +174,7 @@ class PageContentService
     }
 
     /**
-     * ファイルに保存
+     * Save to file
      */
     protected function saveToFile(
         string $identifier,
@@ -184,13 +184,13 @@ class PageContentService
         $filename = $this->generateFilename($identifier, $editorType);
         $path = storage_path("app/{$this->baseDirectory}/{$filename}");
 
-        // ディレクトリが存在しない場合は作成
+        // Create directory if it doesn't exist
         $directory = dirname($path);
         if (! File::exists($directory)) {
             File::makeDirectory($directory, 0755, true);
         }
 
-        // ファイルに保存
+        // Save to file
         File::put($path, $content);
 
         return [
@@ -201,7 +201,7 @@ class PageContentService
     }
 
     /**
-     * ファイルから読み込み
+     * Load from file
      */
     protected function loadFromFile(
         string $identifier,
@@ -218,7 +218,7 @@ class PageContentService
     }
 
     /**
-     * ファイルを削除
+     * Delete file
      */
     public function deleteFile(string $identifier, ContentEditorType $editorType): bool
     {
@@ -245,7 +245,7 @@ class PageContentService
     }
 
     /**
-     * ファイル名を生成
+     * Generate filename
      */
     protected function generateFilename(string $identifier, ContentEditorType $editorType): string
     {
@@ -256,7 +256,7 @@ class PageContentService
     }
 
     /**
-     * ファイルパスを取得
+     * Get file path
      */
     public function getFilePath(string $identifier, ContentEditorType $editorType): string
     {
@@ -266,7 +266,7 @@ class PageContentService
     }
 
     /**
-     * ファイルが存在するか確認
+     * Check if file exists
      */
     public function fileExists(string $identifier, ContentEditorType $editorType): bool
     {
@@ -276,31 +276,31 @@ class PageContentService
     }
 
     /**
-     * Markdownをレンダリング
+     * Render Markdown
      */
     protected function renderMarkdown(string $content): string
     {
         $parsedown = new Parsedown();
-        $parsedown->setSafeMode(false); // HTMLタグを許可
+        $parsedown->setSafeMode(false); // Allow HTML tags
 
         return $parsedown->text($content);
     }
 
     /**
-     * GUIコンテンツをレンダリング（将来実装）
+     * Render GUI content (future implementation)
      */
     protected function renderGui(string $content): string
     {
-        // TODO: GUIエディタのJSON形式をHTMLに変換
-        // 現時点ではそのまま返す
+        // TODO: Convert GUI editor JSON format to HTML
+        // Return as-is for now
         return $content;
     }
 
     /**
-     * Bladeビューとしてレンダリング
+     * Render as Blade view
      *
-     * @param  string  $identifier  ページのスラッグやID
-     * @param  array  $data  ビューに渡すデータ
+     * @param  string  $identifier  Page slug or ID
+     * @param  array  $data  Data to pass to view
      */
     public function renderBladeView(string $identifier, array $data = []): string
     {
@@ -323,13 +323,13 @@ class PageContentService
     }
 
     /**
-     * 保存方法を変更（マイグレーション）
+     * Change storage method (migration)
      *
-     * @param  string  $identifier  ページのスラッグやID
-     * @param  ContentStorageType  $fromStorage  元の保存方法
-     * @param  ContentStorageType  $toStorage  新しい保存方法
-     * @param  ContentEditorType  $editorType  エディタータイプ
-     * @param  string|null  $dbContent  DB保存の場合のコンテンツ
+     * @param  string  $identifier  Page slug or ID
+     * @param  ContentStorageType  $fromStorage  Original storage method
+     * @param  ContentStorageType  $toStorage  New storage method
+     * @param  ContentEditorType  $editorType  Editor type
+     * @param  string|null  $dbContent  Content for DB storage
      * @return array ['success' => bool, 'content' => string|null, 'message' => string]
      */
     public function migrateStorage(
@@ -340,7 +340,7 @@ class PageContentService
         ?string $dbContent = null
     ): array {
         try {
-            // コンテンツを読み込み
+            // Load content
             $content = $this->loadContent($identifier, $fromStorage, $editorType, $dbContent);
 
             if ($content === null) {
@@ -351,10 +351,10 @@ class PageContentService
                 ];
             }
 
-            // 新しい保存方法で保存
+            // Save with new storage method
             $result = $this->saveContent($identifier, $content, $toStorage, $editorType);
 
-            // 元のファイルを削除（FILE → DATABASE の場合）
+            // Delete original file (when FILE → DATABASE)
             if ($fromStorage === ContentStorageType::FILE && $toStorage === ContentStorageType::DATABASE) {
                 $this->deleteFile($identifier, $editorType);
             }

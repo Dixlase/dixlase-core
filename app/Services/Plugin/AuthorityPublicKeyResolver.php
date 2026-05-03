@@ -6,7 +6,7 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core-only. Do not reference from plugins/themes.
  *
  * Dixlase is dual-licensed. You may use this file under either:
  *
@@ -42,46 +42,46 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Authority 公開鍵リゾルバ
+ * Authority public key resolver
  *
- * 鍵 ID から対応する公開鍵を解決する。優先順位は以下:
- *   1. ローカル DB キャッシュ（fresh）
- *   2. keys.dixlase.com から HTTPS フェッチ → DB キャッシュ更新 → 返却
- *   3. ローカル DB キャッシュ（stale でも、ネット不通時のフォールバックとして使用）
- *   4. null（取得不能）
+ * Resolve the corresponding public key from key ID. Priority order:
+ *   1. Local DB cache (fresh)
+ *   2. HTTPS fetch from keys.dixlase.com → update DB cache → return
+ *   3. Local DB cache (even if stale, used as fallback when network is unavailable)
+ *   4. null (unable to retrieve)
  *
- * 失効鍵の扱い: is_active=false の鍵も返す。過去に署名された
- * プラグインの検証を継続できるようにするため。検証側で
- * 「現在も新規署名に使えるか」と「過去署名が数学的に有効か」を区別する。
+ * Handling of revoked keys: also returns keys with is_active=false. This is to allow
+ * verification of plugins signed in the past to continue. The verifier should
+ * distinguish between "can still be used for new signatures" and "past signatures are mathematically valid".
  */
 class AuthorityPublicKeyResolver
 {
     /**
-     * 鍵 ID から公開鍵レコードを解決する
+     * Resolve public key record from key ID
      *
-     * @return AuthorityPublicKey|null 鍵が解決できれば DB レコード、できなければ null
+     * @return AuthorityPublicKey|null DB record if key can be resolved, null otherwise
      */
     public function resolve(string $keyId): ?AuthorityPublicKey
     {
         $cached = AuthorityPublicKey::where('key_id', $keyId)->first();
 
-        // キャッシュが有り、TTL 内 → そのまま返す
+        // If cache exists and within TTL → return as-is
         if ($cached !== null && ! $cached->isStale($this->cacheTtlHours())) {
             return $cached;
         }
 
-        // フェッチを試みる（成功したら DB に upsert）
+        // Attempt to fetch (upsert to DB if successful)
         $fetched = $this->fetchFromAuthority($keyId);
         if ($fetched !== null) {
             return $fetched;
         }
 
-        // フェッチ失敗 → stale キャッシュでもあれば返す（オフラインフォールバック）
+        // Fetch failed → return stale cache if available (offline fallback)
         return $cached;
     }
 
     /**
-     * Authority API から鍵を取得して DB に upsert する
+     * Fetch key from Authority API and upsert to DB
      */
     protected function fetchFromAuthority(string $keyId): ?AuthorityPublicKey
     {
@@ -144,7 +144,7 @@ class AuthorityPublicKeyResolver
     }
 
     /**
-     * キャッシュ TTL（時間）
+     * Cache TTL (hours)
      */
     protected function cacheTtlHours(): int
     {

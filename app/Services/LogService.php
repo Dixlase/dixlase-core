@@ -40,41 +40,41 @@ use App\DTO\Logging\LogContextDTO;
 use Illuminate\Support\Facades\Log;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * ログ出力サービス
+ * Log output service
  *
- * Contract対応の統一的なログ出力機能を提供します。
+ * Provides unified log output functionality compatible with Contract
  */
 class LogService implements LogServiceInterface
 {
     /**
-     * デフォルトチャンネル
+     * Default channel
      */
     protected string $defaultChannel = 'dixlase';
 
     /**
-     * 管理画面操作ログチャンネル
+     * Admin panel operation log channel
      */
     protected string $activityChannel = 'admin_activity';
 
     /**
-     * ログインログチャンネル
+     * Login log channel
      */
     protected string $loginChannel = 'admin_login';
 
     /**
-     * フロント操作ログチャンネル
+     * Front operation log channel
      */
     protected string $frontActivityChannel = 'front_activity';
 
     /**
-     * フロントエラーログチャンネル
+     * Front error log channel
      */
     protected string $frontErrorChannel = 'front_error';
 
     /**
-     * 情報ログを出力
+     * Output info log
      */
     public function info(string $message, LogContextDTO|array $context = [], ?string $channel = null): void
     {
@@ -82,7 +82,7 @@ class LogService implements LogServiceInterface
     }
 
     /**
-     * 警告ログを出力
+     * Output warning log
      */
     public function warning(string $message, LogContextDTO|array $context = [], ?string $channel = null): void
     {
@@ -90,7 +90,7 @@ class LogService implements LogServiceInterface
     }
 
     /**
-     * エラーログを出力
+     * Output error log
      */
     public function error(string $message, LogContextDTO|array $context = [], ?string $channel = null): void
     {
@@ -98,7 +98,7 @@ class LogService implements LogServiceInterface
     }
 
     /**
-     * デバッグログを出力
+     * Output debug log
      */
     public function debug(string $message, LogContextDTO|array $context = [], ?string $channel = null): void
     {
@@ -106,7 +106,7 @@ class LogService implements LogServiceInterface
     }
 
     /**
-     * 重大エラーログを出力
+     * Output critical error log
      */
     public function critical(string $message, LogContextDTO|array $context = [], ?string $channel = null): void
     {
@@ -114,18 +114,18 @@ class LogService implements LogServiceInterface
     }
 
     /**
-     * 操作ログを出力（管理画面操作など）
+     * Output operation log (admin panel operations, etc.)
      */
     public function activity(string $action, LogContextDTO|array $context = []): void
     {
         $contextArray = $this->normalizeContext($context);
         $contextArray['action'] = $action;
 
-        Log::channel($this->activityChannel)->info('管理画面操作', $contextArray);
+        Log::channel($this->activityChannel)->info(__('services/log_service.admin_panel_operation'), $contextArray);
     }
 
     /**
-     * ログインログを出力
+     * Output login log
      */
     public function login(string $action, LogContextDTO|array $context = []): void
     {
@@ -136,29 +136,29 @@ class LogService implements LogServiceInterface
     }
 
     /**
-     * フロント操作ログを出力
+     * Output front operation log
      */
     public function frontActivity(string $action, LogContextDTO|array $context = []): void
     {
         $contextArray = $this->normalizeContext($context);
         $contextArray['action'] = $action;
 
-        Log::channel($this->frontActivityChannel)->info('フロント操作', $contextArray);
+        Log::channel($this->frontActivityChannel)->info(__('services/log_service.front_end_operation'), $contextArray);
     }
 
     /**
-     * フロントエラーログを出力
+     * Output front error log
      */
     public function frontError(string $error, LogContextDTO|array $context = []): void
     {
         $contextArray = $this->normalizeContext($context);
         $contextArray['error'] = $error;
 
-        Log::channel($this->frontErrorChannel)->error('フロントエラー', $contextArray);
+        Log::channel($this->frontErrorChannel)->error(__('services/log_service.front_end_error'), $contextArray);
     }
 
     /**
-     * カスタムチャンネルにログを出力
+     * Output log to custom channel
      */
     public function log(string $channel, string $level, string $message, LogContextDTO|array $context = []): void
     {
@@ -167,13 +167,13 @@ class LogService implements LogServiceInterface
         try {
             Log::channel($channel)->log($level, $message, $contextArray);
         } catch (\Exception $e) {
-            // チャンネルが存在しない場合はデフォルトチャンネルにフォールバック
+            // Falls back to default channel if channel does not exist
             Log::channel($this->defaultChannel)->log($level, $message, $contextArray);
         }
     }
 
     /**
-     * 利用可能なログチャンネル一覧を取得
+     * Get list of available log channels
      */
     public function getAvailableChannels(): array
     {
@@ -181,7 +181,7 @@ class LogService implements LogServiceInterface
     }
 
     /**
-     * コンテキストを配列に正規化
+     * Normalize context to array
      *
      * @return array<string,mixed>
      */
@@ -195,12 +195,12 @@ class LogService implements LogServiceInterface
     }
 
     /**
-     * プラグイン用のログを出力
+     * Output log for plugin
      *
-     * @param  string  $pluginSlug  プラグインスラッグ
-     * @param  string  $level  ログレベル
-     * @param  string  $message  メッセージ
-     * @param  array<string,mixed>  $context  コンテキスト
+     * @param  string  $pluginSlug  Plugin slug
+     * @param  string  $level  Log level
+     * @param  string  $message  Message
+     * @param  array<string,mixed>  $context  Context
      */
     public function pluginLog(string $pluginSlug, string $level, string $message, array $context = []): void
     {
@@ -211,11 +211,11 @@ class LogService implements LogServiceInterface
     }
 
     /**
-     * プラグイン用の情報ログを出力
+     * Output info log for plugin
      *
-     * @param  string  $pluginSlug  プラグインスラッグ
-     * @param  string  $message  メッセージ
-     * @param  array<string,mixed>  $context  コンテキスト
+     * @param  string  $pluginSlug  Plugin slug
+     * @param  string  $message  Message
+     * @param  array<string,mixed>  $context  Context
      */
     public function pluginInfo(string $pluginSlug, string $message, array $context = []): void
     {
@@ -223,11 +223,11 @@ class LogService implements LogServiceInterface
     }
 
     /**
-     * プラグイン用のエラーログを出力
+     * Output error log for plugin
      *
-     * @param  string  $pluginSlug  プラグインスラッグ
-     * @param  string  $message  メッセージ
-     * @param  array<string,mixed>  $context  コンテキスト
+     * @param  string  $pluginSlug  Plugin slug
+     * @param  string  $message  Message
+     * @param  array<string,mixed>  $context  Context
      */
     public function pluginError(string $pluginSlug, string $message, array $context = []): void
     {
@@ -238,11 +238,11 @@ class LogService implements LogServiceInterface
     }
 
     /**
-     * 例外をログに記録
+     * Log exception
      *
-     * @param  \Throwable  $exception  例外
-     * @param  LogContextDTO|array  $context  追加コンテキスト
-     * @param  string|null  $channel  チャンネル名
+     * @param  \Throwable  $exception  Exception
+     * @param  LogContextDTO|array  $context  Additional context
+     * @param  string|null  $channel  Channel name
      */
     public function exception(\Throwable $exception, LogContextDTO|array $context = [], ?string $channel = null): void
     {

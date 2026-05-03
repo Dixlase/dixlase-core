@@ -45,7 +45,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  *
  * Webhook Dispatcher Service
  *

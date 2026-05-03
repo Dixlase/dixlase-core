@@ -36,13 +36,13 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * 外部リソース読み込みの検出パターン（プラグイン・テーマ共通）
+ * External resource detection patterns (common to plugins and themes)
  *
  * <script src="http(s)://...">、<link href="http(s)://...">、
- * <img src="http(s)://...">、fetch()、XMLHttpRequest の
- * 外部URL呼び出しを検出します。
+ * Detects <img src="http(s)://...">, fetch(), XMLHttpRequest
+ * external URL calls
  */
 class ExternalResourceDetectionPattern extends DetectionPattern
 {
@@ -62,43 +62,43 @@ class ExternalResourceDetectionPattern extends DetectionPattern
     public function regexPatterns(): array
     {
         return [
-            // script タグの外部ソース
+            // External sources in script tags
             '/<script[^>]+src=[\'"]https?:\/\//i',
-            // link タグの外部リソース
+            // External resources in link tags
             '/<link[^>]+href=[\'"]https?:\/\//i',
-            // img タグの外部画像
+            // External images in img tags
             '/<img[^>]+src=[\'"]https?:\/\//i',
-            // fetch() での外部URL呼び出し
+            // External URL calls with fetch()
             '/fetch\s*\(\s*[\'"]https?:\/\//i',
-            // XMLHttpRequest の open() での外部URL呼び出し
+            // External URL calls with XMLHttpRequest open()
             '/\.open\s*\(\s*[\'"][A-Z]+[\'"],\s*[\'"]https?:\/\//i',
-            // ES import での外部モジュール
+            // External modules with ES import
             '/import\s+.*from\s+[\'"]https?:\/\//i',
         ];
     }
 
     /**
-     * コンテキスト検証: コメント行・テスト用URL・CSP信頼済みドメインを除外
+     * Context validation: exclude comment lines, test URLs, and CSP trusted domains
      */
     public function validateMatch(string $match, string $line, string $fileContent, string $filePath): bool
     {
-        // 親クラスのコメント行除外
+        // Exclude comment lines from parent class
         if (! parent::validateMatch($match, $line, $fileContent, $filePath)) {
             return false;
         }
 
-        // HTMLコメント内は除外
+        // Exclude content within HTML comments
         $trimmedLine = trim($line);
         if (str_starts_with($trimmedLine, '<!--')) {
             return false;
         }
 
-        // Bladeコメント内は除外
+        // Exclude content within Blade comments
         if (str_starts_with($trimmedLine, '{{--')) {
             return false;
         }
 
-        // CSP信頼済みドメインは除外
+        // Exclude CSP trusted domains
         if ($this->isTrustedDomain($line)) {
             return false;
         }
@@ -107,13 +107,13 @@ class ExternalResourceDetectionPattern extends DetectionPattern
     }
 
     /**
-     * マッチした文字列がCSP信頼済みドメインを参照しているか判定
+     * Determine if matched string references a CSP trusted domain
      */
     protected function isTrustedDomain(string $match): bool
     {
         $trustedDomains = config('csp.domains.trusted_domains', []);
 
-        // CSPディレクティブに直接定義されたドメインも収集
+        // Also collect domains defined directly in CSP directives
         $directives = config('csp.directives', []);
         foreach ($directives as $sources) {
             if (! is_array($sources)) {

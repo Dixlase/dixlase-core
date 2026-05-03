@@ -42,25 +42,25 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * ログイン通知サービス
+ * Login notification service
  *
- * メンバー管理とユーザー管理の両方で使用できる共通のログイン通知機能を提供
- * 設定の取得は呼び出し側で行い、このサービスは通知ロジックのみを提供
+ * Provides common login notification functionality that can be used for both member and user management
+ * Settings retrieval is done by the caller, this service only provides notification logic
  */
 class LoginNotificationService
 {
     use DeviceDetectionTrait;
 
     /**
-     * ログイン通知を処理する
+     * Process login notification
      *
-     * @param  Model  $user  ユーザーモデル（Member または User）
-     * @param  Request  $request  リクエスト
-     * @param  callable  $getGlobalSetting  グローバル設定取得関数
-     * @param  string  $notificationClass  通知クラス名
-     * @param  string  $context  ログ用のコンテキスト名
+     * @param  Model  $user  User model (Member or User)
+     * @param  Request  $request  Request
+     * @param  callable  $getGlobalSetting  Global settings retrieval function
+     * @param  string  $notificationClass  Notification class name
+     * @param  string  $context  Context name for logging
      */
     public function handle(
         Model $user,
@@ -69,19 +69,19 @@ class LoginNotificationService
         string $notificationClass,
         string $context = 'Login notification'
     ): void {
-        // ログイン詳細データを準備
+        // Prepare login detail data
         $loginDetails = $this->prepareLoginDetails($request);
 
-        // メール送信可能性をチェック
+        // Check email sending availability
         if (! $this->canSendNotification($user, $context)) {
             Log::info($context.' skipped: Mail sending not available');
-            // ログイン情報は記録するが通知は送信しない
+            // Record login information but do not send notification
             $this->recordLoginInfo($user, $request);
 
             return;
         }
 
-        // IP/UAが取得できない場合は通知をスキップ
+        // Skip notification if IP/UA cannot be obtained
         $ip = $request->ip();
         $userAgent = $request->userAgent();
 
@@ -91,13 +91,13 @@ class LoginNotificationService
                 'user_agent' => $userAgent,
                 'user_id' => $user->id,
             ]);
-            // ログイン情報は記録するが通知は送信しない
+            // Record login information but do not send notification
             $this->recordLoginInfo($user, $request);
 
             return;
         }
 
-        // 通知送信判定
+        // Determine notification sending
         $isDifferentDevice = $this->isNewDevice($user, $ip, $userAgent);
         $shouldSendUser = $this->shouldSendUserNotification(
             $user,
@@ -113,7 +113,7 @@ class LoginNotificationService
             'shouldSendUser' => $shouldSendUser,
         ]);
 
-        // ユーザー通知を送信
+        // Send user notification
         if ($shouldSendUser) {
             Log::info('Sending '.$context, [
                 'user_email' => $user->email ?? 'N/A',
@@ -128,12 +128,12 @@ class LoginNotificationService
             ]);
         }
 
-        // ログイン情報を記録
+        // Record login information
         $this->recordLoginInfo($user, $request);
     }
 
     /**
-     * ログイン情報を記録する
+     * Record login information
      */
     protected function recordLoginInfo(Model $user, Request $request): void
     {
@@ -144,7 +144,7 @@ class LoginNotificationService
     }
 
     /**
-     * ログイン詳細データを準備する
+     * Prepare login detail data
      */
     protected function prepareLoginDetails(Request $request): array
     {
@@ -156,7 +156,7 @@ class LoginNotificationService
     }
 
     /**
-     * メール送信が可能かチェックし、不可の場合はログを出力
+     * Check if email sending is possible and output log if not
      */
     protected function canSendNotification(Model $user, string $context = 'Login notification'): bool
     {
@@ -174,7 +174,7 @@ class LoginNotificationService
     }
 
     /**
-     * ユーザー通知を送信すべきかどうかを判定する
+     * Determine whether to send user notification
      */
     protected function shouldSendUserNotification(
         Model $user,
@@ -195,12 +195,12 @@ class LoginNotificationService
     }
 
     /**
-     * プロフィール設定に基づいて通知を送信すべきかを判定
+     * Determine whether to send notification based on profile settings
      */
     protected function shouldSendBasedOnProfile(Model $user, string $ip, string $ua): bool
     {
         $profileValue = $user->login_notification_mode ?? 0;
-        // Enumオブジェクトの場合は値を取得、整数の場合はそのまま使用
+        // Get value if Enum object, use as-is if integer
         $profileValueInt = $profileValue instanceof AuthenticationMode ? $profileValue->value : $profileValue;
         $profileMode = $this->mapProfileValueToEnum($profileValueInt);
 
@@ -227,7 +227,7 @@ class LoginNotificationService
     }
 
     /**
-     * プロフィール設定の値をAuthenticationMode enumにマッピング
+     * Map profile settings value to AuthenticationMode enum
      */
     protected function mapProfileValueToEnum(int $profileValue): AuthenticationMode
     {

@@ -43,9 +43,9 @@ use App\Models\SiteSetting;
 use App\Services\Plugin\PluginServiceResolver;
 
 /**
- * エディタープラグインの検出・選択・レンダリングを管理するサービス
+ * Service that manages detection, selection, and rendering of editor plugins
  *
- * PluginServiceResolver をラップし、エディター固有の操作を提供します。
+ * Wraps PluginServiceResolver and provides editor-specific operations
  */
 class EditorManager
 {

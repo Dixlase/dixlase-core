@@ -39,17 +39,17 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  *
- * CSP診断サービス
+ * CSP diagnostic service
  *
- * テーマやプラグインのBladeファイルをスキャンして、
- * CSP非対応のインラインスクリプト/スタイルを検出します。
+ * Scans Blade files in themes and plugins to
+ * detect inline scripts/styles that are not CSP-compliant
  */
 class CspDiagnosticService
 {
     /**
-     * CSP対応済みのパターン（これらはスキップ）
+     * CSP-compliant patterns (these are skipped)
      */
     protected array $cspCompliantPatterns = [
         '/<script\s+[^>]*@cspNonce[^>]*>/i',
@@ -59,7 +59,7 @@ class CspDiagnosticService
     ];
 
     /**
-     * 外部スクリプト/スタイルのパターン（これらはスキップ）
+     * External script/style patterns (these are skipped)
      */
     protected array $externalResourcePatterns = [
         '/<script\s+[^>]*src\s*=/i',
@@ -67,7 +67,7 @@ class CspDiagnosticService
     ];
 
     /**
-     * インラインスクリプト/スタイルのパターン（検出対象）
+     * Inline script/style patterns (detection targets)
      */
     protected array $inlinePatterns = [
         'script' => '/<script(?:\s+[^>]*)?>(?!<\/script>)/i',
@@ -75,10 +75,10 @@ class CspDiagnosticService
     ];
 
     /**
-     * ディレクトリをスキャンしてCSP問題を検出
+     * Scan directory to detect CSP issues
      *
-     * @param  string  $directory  スキャン対象ディレクトリ
-     * @return array 検出結果
+     * @param  string  $directory  Directory to scan
+     * @return array Detection results
      */
     public function scanDirectory(string $directory): array
     {
@@ -98,7 +98,7 @@ class CspDiagnosticService
             return $results;
         }
 
-        // Bladeファイルを再帰的に取得
+        // Recursively retrieve Blade files
         $files = File::allFiles($directory);
         $bladeFiles = array_filter($files, function ($file) {
             return Str::endsWith($file->getFilename(), '.blade.php');
@@ -131,10 +131,10 @@ class CspDiagnosticService
     }
 
     /**
-     * 単一ファイルをスキャン
+     * Scan a single file
      *
-     * @param  string  $filePath  ファイルパス
-     * @return array 検出された問題
+     * @param  string  $filePath  File path
+     * @return array Detected issues
      */
     public function scanFile(string $filePath): array
     {
@@ -148,7 +148,7 @@ class CspDiagnosticService
         $lines = explode("\n", $content);
 
         foreach ($lines as $lineNumber => $line) {
-            // スクリプトタグをチェック
+            // Check script tags
             if (preg_match($this->inlinePatterns['script'], $line)) {
                 if (! $this->isCspCompliant($line, 'script') && ! $this->isExternalResource($line, 'script')) {
                     $issues[] = [
@@ -160,7 +160,7 @@ class CspDiagnosticService
                 }
             }
 
-            // スタイルタグをチェック
+            // Check style tags
             if (preg_match($this->inlinePatterns['style'], $line)) {
                 if (! $this->isCspCompliant($line, 'style') && ! $this->isExternalResource($line, 'style')) {
                     $issues[] = [
@@ -177,10 +177,10 @@ class CspDiagnosticService
     }
 
     /**
-     * CSP対応済みかチェック
+     * Check if CSP-compliant
      *
-     * @param  string  $line  行内容
-     * @param  string  $type  タイプ（script/style）
+     * @param  string  $line  Line content
+     * @param  string  $type  Type (script/style)
      */
     protected function isCspCompliant(string $line, string $type): bool
     {
@@ -194,10 +194,10 @@ class CspDiagnosticService
     }
 
     /**
-     * 外部リソースかチェック
+     * Check if external resource
      *
-     * @param  string  $line  行内容
-     * @param  string  $type  タイプ（script/style）
+     * @param  string  $line  Line content
+     * @param  string  $type  Type (script/style)
      */
     protected function isExternalResource(string $line, string $type): bool
     {
@@ -209,10 +209,10 @@ class CspDiagnosticService
     }
 
     /**
-     * プラグインのCSP対応状況を診断
+     * Diagnose CSP compatibility of plugin
      *
-     * @param  string  $pluginPath  プラグインのパス
-     * @return array 診断結果
+     * @param  string  $pluginPath  Plugin path
+     * @return array Diagnostic result
      */
     public function diagnosePlugin(string $pluginPath): array
     {
@@ -237,10 +237,10 @@ class CspDiagnosticService
     }
 
     /**
-     * テーマのCSP対応状況を診断
+     * Diagnose CSP compatibility of theme
      *
-     * @param  string  $themePath  テーマのパス
-     * @return array 診断結果
+     * @param  string  $themePath  Theme path
+     * @return array Diagnostic result
      */
     public function diagnoseTheme(string $themePath): array
     {
@@ -265,10 +265,10 @@ class CspDiagnosticService
     }
 
     /**
-     * 健全度スコアに影響するかどうかを判定
+     * Determine whether it affects the health score
      *
-     * @param  array  $diagnosticResult  診断結果
-     * @return array 健全度への影響
+     * @param  array  $diagnosticResult  Diagnostic result
+     * @return array Impact on health
      */
     public function getHealthImpact(array $diagnosticResult): array
     {

@@ -38,15 +38,15 @@ namespace App\Services\Verification;
 use App\Contracts\Verification\FileVerificationServiceInterface;
 
 /**
- * コアファイル検証サービス
+ * Core file verification service
  *
- * SHA-256 を使用したファイルハッシュ検証のデフォルト実装です。
- * hash_equals() によるタイミング攻撃防止を含みます。
+ * Default implementation of file hash verification using SHA-256
+ * Includes timing attack prevention via hash_equals()
  */
 class CoreFileVerificationService implements FileVerificationServiceInterface
 {
     /**
-     * サポートされているハッシュアルゴリズム
+     * Supported hash algorithms
      */
     private const SUPPORTED_ALGORITHMS = ['sha256', 'sha384', 'sha512'];
 
@@ -83,7 +83,7 @@ class CoreFileVerificationService implements FileVerificationServiceInterface
     }
 
     /**
-     * アルゴリズムがサポートされているか検証
+     * Verify if algorithm is supported
      */
     private function validateAlgorithm(string $algorithm): void
     {

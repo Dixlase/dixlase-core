@@ -42,21 +42,21 @@ use App\Models\AuditLogDailySeal;
 use Illuminate\Support\Facades\Log;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * 監査ログ整合性検証サービス
+ * Audit log integrity verification service
  *
- * ハッシュチェーンの検証、日次署名の作成・検証を行う
+ * Performs hash chain verification and creation/verification of daily signatures
  */
 class AuditLogIntegrityService
 {
     /**
-     * 署名用シークレットキーの設定キー
+     * Settings key for signature secret key
      */
     protected const SECRET_KEY_CONFIG = 'app.audit_log_secret';
 
     /**
-     * デフォルトのシークレットキー（APP_KEYを使用）
+     * Default secret key (uses APP_KEY)
      */
     protected function getSecretKey(): string
     {
@@ -64,12 +64,12 @@ class AuditLogIntegrityService
     }
 
     /**
-     * 指定範囲のログのハッシュチェーンを検証
+     * Verify hash chain of logs in specified range
      *
-     * @param  int|null  $fromId  開始ID（null=最初から）
-     * @param  int|null  $toId  終了ID（null=最後まで）
-     * @param  bool  $updateStatus  検証結果をDBに保存するか
-     * @return array 検証結果
+     * @param  int|null  $fromId  Start ID (null=from beginning)
+     * @param  int|null  $toId  End ID (null=to end)
+     * @param  bool  $updateStatus  Whether to save verification result to DB
+     * @return array Verification result
      */
     public function verifyChain(?int $fromId = null, ?int $toId = null, bool $updateStatus = true): array
     {
@@ -100,13 +100,13 @@ class AuditLogIntegrityService
             $isValid = true;
             $errors = [];
 
-            // ハッシュ検証
+            // Hash verification
             if (! $log->verifyHash()) {
                 $isValid = false;
                 $errors[] = 'hash_mismatch';
             }
 
-            // チェーンリンク検証（最初のレコード以外）
+            // Chain link verification (except first record)
             if ($previousHash !== null) {
                 if ($log->previous_hash !== $previousHash) {
                     $isValid = false;
@@ -117,7 +117,7 @@ class AuditLogIntegrityService
                     $errors[] = 'sequence_gap';
                 }
             } elseif ($log->previous_hash !== AuditLog::GENESIS_HASH && $fromId === null) {
-                // 最初のレコードでgenesis以外の場合（範囲指定なしの場合のみ）
+                // If first record is not genesis (only when range is not specified)
                 $isValid = false;
                 $errors[] = 'invalid_genesis';
             }
@@ -132,7 +132,7 @@ class AuditLogIntegrityService
                 ];
             }
 
-            // 検証結果を保存
+            // Save verification result
             if ($updateStatus) {
                 $log->markAsVerified($isValid);
             }
@@ -147,9 +147,9 @@ class AuditLogIntegrityService
     }
 
     /**
-     * 特定の日のログにハッシュチェーンを設定
+     * Set hash chain for logs of a specific day
      *
-     * @return array 処理結果
+     * @return array Processing result
      */
     public function buildChainForDate(\Carbon\Carbon $date): array
     {
@@ -181,10 +181,10 @@ class AuditLogIntegrityService
     }
 
     /**
-     * 未処理のログにハッシュチェーンを設定
+     * Set hash chain for unprocessed logs
      *
-     * @param  int  $limit  一度に処理する最大件数
-     * @return array 処理結果
+     * @param  int  $limit  Maximum number of records to process at once
+     * @return array Processing result
      */
     public function buildPendingChains(int $limit = 1000): array
     {
@@ -218,16 +218,16 @@ class AuditLogIntegrityService
     }
 
     /**
-     * 日次署名（シール）を作成
+     * Create daily signature (seal)
      */
     public function createDailySeal(\Carbon\Carbon $date): ?AuditLogDailySeal
     {
-        // 既にシールが存在する場合はスキップ
+        // Skip if a seal already exists
         if (AuditLogDailySeal::existsForDate($date)) {
             return AuditLogDailySeal::forDate($date);
         }
 
-        // その日のログを取得
+        // Get logs for the day
         $logs = AuditLog::whereDate('occurred_at', $date)
             ->withHashChain()
             ->orderBy('id')
@@ -240,7 +240,7 @@ class AuditLogIntegrityService
         $firstLog = $logs->first();
         $lastLog = $logs->last();
 
-        // シールを作成
+        // Create seal
         $seal = new AuditLogDailySeal([
             'seal_date' => $date,
             'first_log_id' => $firstLog->id,
@@ -252,7 +252,7 @@ class AuditLogIntegrityService
             'verification_status' => AuditLogDailySeal::STATUS_VALID,
         ]);
 
-        // 署名を生成
+        // Generate signature
         $seal->daily_signature = $seal->generateSignature($this->getSecretKey());
         $seal->save();
 
@@ -267,9 +267,9 @@ class AuditLogIntegrityService
     }
 
     /**
-     * 日次署名を検証
+     * Verify daily signature
      *
-     * @return array 検証結果
+     * @return array Verification result
      */
     public function verifyDailySeal(\Carbon\Carbon $date): array
     {
@@ -292,16 +292,16 @@ class AuditLogIntegrityService
             'checks' => [],
         ];
 
-        // 署名検証
+        // Signature verification
         $signatureValid = $seal->verifySignature($this->getSecretKey());
         $result['checks']['signature'] = $signatureValid;
 
-        // ログ件数検証
+        // Log count verification
         $actualCount = AuditLog::whereDate('occurred_at', $date)->count();
         $countValid = $actualCount === $seal->log_count;
         $result['checks']['log_count'] = $countValid;
 
-        // 最終ハッシュ検証
+        // Final hash verification
         $lastLog = AuditLog::whereDate('occurred_at', $date)
             ->withHashChain()
             ->orderBy('id', 'desc')
@@ -309,14 +309,14 @@ class AuditLogIntegrityService
         $hashValid = $lastLog && $lastLog->record_hash === $seal->final_hash;
         $result['checks']['final_hash'] = $hashValid;
 
-        // チェーン検証
+        // Chain verification
         $chainResult = $this->verifyChain($seal->first_log_id, $seal->last_log_id, false);
         $result['checks']['chain'] = $chainResult['is_valid'];
 
-        // 総合判定
+        // Overall determination
         $result['is_valid'] = $signatureValid && $countValid && $hashValid && $chainResult['is_valid'];
 
-        // ステータス更新
+        // Update status
         $seal->markAsVerified($result['is_valid']);
         $seal->addVerificationHistory($result['is_valid'], $result['is_valid'] ? null : json_encode($result['checks']));
 
@@ -324,9 +324,9 @@ class AuditLogIntegrityService
     }
 
     /**
-     * 過去N日分の日次署名を作成
+     * Create daily signatures for the past N days
      *
-     * @return array 処理結果
+     * @return array Processing result
      */
     public function createPendingSeals(int $days = 7): array
     {
@@ -336,15 +336,15 @@ class AuditLogIntegrityService
         for ($i = 1; $i <= $days; $i++) {
             $date = $today->copy()->subDays($i);
 
-            // 既にシールがある場合はスキップ
+            // Skip if seal already exists
             if (AuditLogDailySeal::existsForDate($date)) {
                 continue;
             }
 
-            // まずハッシュチェーンを構築
+            // First build hash chain
             $this->buildChainForDate($date);
 
-            // シールを作成
+            // Create seal
             $seal = $this->createDailySeal($date);
 
             if ($seal) {
@@ -360,7 +360,7 @@ class AuditLogIntegrityService
     }
 
     /**
-     * 統計情報を取得
+     * Get statistics
      */
     public function getStats(): array
     {
@@ -376,7 +376,7 @@ class AuditLogIntegrityService
     }
 
     /**
-     * 改ざんが検知されたログを取得
+     * Get logs where tampering was detected
      *
      * @return \Illuminate\Database\Eloquent\Collection
      */

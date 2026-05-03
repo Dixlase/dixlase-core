@@ -45,12 +45,12 @@ use App\Helpers\EnvHelper;
 use Illuminate\Support\Facades\Log;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  *
- * かんたんモードへの切り替え時に、Hidden/Partial項目の自動設定値を適用するサービス
+ * Service that applies auto-configuration values for Hidden/Partial items when switching to easy mode
  *
- * 各メニューの自動設定メソッドは個別に呼び出すことも、
- * applyAll() で一括適用することもできます。
+ * Auto-configuration methods for each menu can be called individually,
+ * or applied in bulk using applyAll()
  */
 class AdminModeAutoConfigService
 {
@@ -60,9 +60,9 @@ class AdminModeAutoConfigService
     ) {}
 
     /**
-     * 全てのHidden/Partial項目の自動設定値を一括適用
+     * Apply auto-configuration values for all Hidden/Partial items in bulk
      *
-     * @return array<string, bool> メニューキーごとの適用結果
+     * @return array<string, bool> Application result for each menu key
      */
     public function applyAll(): array
     {
@@ -85,13 +85,13 @@ class AdminModeAutoConfigService
                 $this->{$method}();
                 $results[$menuKey] = true;
 
-                Log::channel('admin_activity')->info("かんたんモード自動設定を適用: {$menuKey}", [
+                Log::channel('admin_activity')->info(__('services/admin_mode_auto_config_service.simple_mode_auto_config_applied', ['menuKey' => $menuKey]), [
                     'menu_key' => $menuKey,
                 ]);
             } catch (\Exception $e) {
                 $results[$menuKey] = false;
 
-                Log::channel('admin_activity')->error("かんたんモード自動設定の適用に失敗: {$menuKey}", [
+                Log::channel('admin_activity')->error(__('services/admin_mode_auto_config_service.simple_mode_auto_config_failed', ['menuKey' => $menuKey]), [
                     'menu_key' => $menuKey,
                     'error' => $e->getMessage(),
                 ]);
@@ -102,15 +102,15 @@ class AdminModeAutoConfigService
     }
 
     /**
-     * パスワード設定の自動設定値を適用
+     * Apply auto-configuration values for password settings
      *
-     * 対象: settings.security.password (Hidden)
-     * - password_min_length: 8文字（NIST推奨の下限）
-     * - password_require_uppercase: 有効（複雑性確保）
-     * - password_require_number: 有効（複雑性確保）
-     * - password_require_symbol: 有効（複雑性確保）
-     * - password_reset_enabled: 有効（利便性確保）
-     * - pwned_password_check_enabled: 有効（漏洩パスワード防止）
+     * Target: settings.security.password (Hidden)
+     * - password_min_length: 8 characters (NIST recommended minimum)
+     * - password_require_uppercase: enabled (ensures complexity)
+     * - password_require_number: enabled (ensures complexity)
+     * - password_require_symbol: enabled (ensures complexity)
+     * - password_reset_enabled: enabled (ensures convenience)
+     * - pwned_password_check_enabled: enabled (prevents leaked passwords)
      */
     public function applyPasswordDefaults(): void
     {
@@ -123,16 +123,16 @@ class AdminModeAutoConfigService
     }
 
     /**
-     * ログイン設定の自動設定値を適用（試行制限の詳細パラメータ）
+     * Apply auto-configuration values for login settings (detailed parameters for attempt limits)
      *
-     * 対象: settings.security.login (Partial)
-     * ログイン通知のON/OFF/条件はユーザー操作可。以下のパラメータを自動設定:
-     * - login_attempt_limit_enabled: 有効（ブルートフォース防御）
-     * - login_attempt_max_attempts: 5回
-     * - login_attempt_max_attempts_ip: 20回（共有IP環境考慮）
-     * - login_attempt_time_window: 15分
-     * - login_attempt_lockout_duration: 30分
-     * - login_attempt_lockout_notification_enabled: 有効（攻撃検知）
+     * Target: settings.security.login (Partial)
+     * Login notification ON/OFF/conditions can be set by user. Auto-configure the following parameters:
+     * - login_attempt_limit_enabled: enabled (brute force protection)
+     * - login_attempt_max_attempts: 5 times
+     * - login_attempt_max_attempts_ip: 20 times (considers shared IP environments)
+     * - login_attempt_time_window: 15 minutes
+     * - login_attempt_lockout_duration: 30 minutes
+     * - login_attempt_lockout_notification_enabled: enabled (attack detection)
      */
     public function applyLoginDefaults(): void
     {
@@ -145,19 +145,19 @@ class AdminModeAutoConfigService
     }
 
     /**
-     * 二段階認証設定の自動設定値を適用（詳細パラメータ）
+     * Apply auto-config values for two-factor authentication settings (detailed parameters)
      *
-     * 対象: settings.security.two-fa (Partial)
-     * 2FA/パスキーのON/OFF/条件はユーザー操作可。以下のパラメータを自動設定:
-     * - two_fa_passkey_max_devices: 5台
-     * - two_fa_expire_minutes: 10分
-     * - two_fa_resend_interval_seconds: 60秒（スパム防止）
-     * - two_fa_max_attempts: 5回
-     * - two_fa_attempt_window: 15分
-     * - two_fa_lockout_duration: 30分
-     * - two_fa_lockout_notification_enabled: 有効（セキュリティ監視）
-     * - two_fa_recovery_codes_count: 10個
-     * - two_fa_recovery_code_regenerate_interval: 24時間（= 1日、乱用防止）
+     * Target: settings.security.two-fa (Partial)
+     * 2FA/passkey ON/OFF/conditions can be controlled by user. Auto-configure the following parameters:
+     * - two_fa_passkey_max_devices: 5 devices
+     * - two_fa_expire_minutes: 10 minutes
+     * - two_fa_resend_interval_seconds: 60 seconds (spam prevention)
+     * - two_fa_max_attempts: 5 times
+     * - two_fa_attempt_window: 15 minutes
+     * - two_fa_lockout_duration: 30 minutes
+     * - two_fa_lockout_notification_enabled: enabled (security monitoring)
+     * - two_fa_recovery_codes_count: 10 codes
+     * - two_fa_recovery_code_regenerate_interval: 24 hours (= 1 day, abuse prevention)
      */
     public function applyTwoFaDefaults(): void
     {
@@ -173,11 +173,11 @@ class AdminModeAutoConfigService
     }
 
     /**
-     * エラー通知設定の自動設定値を適用
+     * Apply auto-config values for error notification settings
      *
-     * 対象: settings.security.notifications (Hidden)
-     * - notification_enabled: 有効（問題の早期検知）
-     * - notification_log_levels: Critical以上（Emergency=8, Alert=7, Critical=6）
+     * Target: settings.security.notifications (Hidden)
+     * - notification_enabled: enabled (early problem detection)
+     * - notification_log_levels: Critical and above (Emergency=8, Alert=7, Critical=6)
      */
     public function applyNotificationDefaults(): void
     {
@@ -192,11 +192,11 @@ class AdminModeAutoConfigService
     }
 
     /**
-     * セッション設定の自動設定値を適用
+     * Apply auto-config values for session settings
      *
-     * 対象: settings.security.session (Hidden)
-     * - session_lifetime: 120分（デフォルト値維持）
-     * - session_encrypt: false（デフォルト値維持）
+     * Target: settings.security.session (Hidden)
+     * - session_lifetime: 120 minutes (maintain default value)
+     * - session_encrypt: false (maintain default value)
      */
     public function applySessionDefaults(): void
     {
@@ -205,16 +205,16 @@ class AdminModeAutoConfigService
     }
 
     /**
-     * CSP設定の自動設定値を適用
+     * Apply auto-configuration values for CSP settings
      *
-     * 対象: settings.security.csp (Hidden)
-     * - csp_enabled: ON（セキュリティ基盤）
-     * - csp_mode: 標準モード（開発モード不要）
-     * - csp_log_violations: ON（調査に必須）
-     * - csp_exclude_dev_tools: ON（ノイズ軽減）
-     * - csp_blocklist_check_enabled: ON（セキュリティモニタリング）
-     * - csp_blocklist_action: 警告のみ（正規スクリプト遮断リスク回避）
-     * - csp_blocklist_enabled_categories: 全カテゴリON
+     * Target: settings.security.csp (Hidden)
+     * - csp_enabled: ON (security foundation)
+     * - csp_mode: standard mode (development mode not required)
+     * - csp_log_violations: ON (required for investigation)
+     * - csp_exclude_dev_tools: ON (reduce noise)
+     * - csp_blocklist_check_enabled: ON (security monitoring)
+     * - csp_blocklist_action: warning only (avoid risk of blocking legitimate scripts)
+     * - csp_blocklist_enabled_categories: all categories ON
      */
     public function applyCspDefaults(): void
     {
@@ -228,11 +228,11 @@ class AdminModeAutoConfigService
     }
 
     /**
-     * 環境設定の自動設定値を適用
+     * Apply auto-configuration values for environment settings
      *
-     * 対象: settings.security.environment (Hidden)
-     * - APP_ENV: production（本番環境）
-     * - APP_DEBUG: false（情報漏洩防止）
+     * Target: settings.security.environment (Hidden)
+     * - APP_ENV: production (production environment)
+     * - APP_DEBUG: false (prevent information leakage)
      */
     public function applyEnvironmentDefaults(): void
     {
@@ -243,13 +243,13 @@ class AdminModeAutoConfigService
     }
 
     /**
-     * メディア設定の自動設定値を適用
+     * Apply auto-configuration values for media settings
      *
-     * 対象: media.settings (Partial)
-     * ファイルタイプ・サイズ上限はユーザー操作可。以下のセキュリティ項目を自動設定:
-     * - mime_validation_enabled: 有効（ファイル偽装防止）
-     * - svg_sanitization_enabled: 有効（SVG内スクリプト防止）
-     * - zip_security_enabled: 有効（ZIP爆弾・悪意あるファイル検出）
+     * Target: media.settings (Partial)
+     * File type and size limits are user-configurable. Auto-configure the following security items:
+     * - mime_validation_enabled: enabled (prevent file spoofing)
+     * - svg_sanitization_enabled: enabled (prevents scripts in SVG)
+     * - zip_security_enabled: enabled (detects ZIP bombs and malicious files)
      */
     public function applyMediaDefaults(): void
     {
@@ -259,11 +259,11 @@ class AdminModeAutoConfigService
     }
 
     /**
-     * 拡張機能セキュリティ設定の自動設定値を適用
+     * Apply auto-configured values for extension security settings
      *
-     * 対象: settings.security.extensions (Partial)
-     * プリセット・各種フラグはユーザー操作可。以下のパラメータを自動設定:
-     * - extension_audit_max_age_days: 30 日（監査スキャンの期限を 1 ヶ月に固定）
+     * Target: settings.security.extensions (Partial)
+     * Presets and various flags are user-configurable. Auto-configure the following parameters:
+     * - extension_audit_max_age_days: 30 days (fixes audit scan deadline to 1 month)
      */
     public function applyExtensionsDefaults(): void
     {

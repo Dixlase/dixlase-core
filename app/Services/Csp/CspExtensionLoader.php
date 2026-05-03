@@ -41,25 +41,25 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  *
  * CSP Extension Loader
  *
- * プラグイン・テーマのplugin.json/theme.jsonからCSP設定を読み取り、
- * CspPolicyRegistryに自動登録するサービス。
+ * Reads CSP settings from plugin.json/theme.json of plugins and themes,
+ * and automatically registers them in CspPolicyRegistry
  *
- * 優先順位:
- * 1. 拒否ドメイン（管理者設定） - 最優先でブロック
- * 2. plugin.json/theme.jsonの宣言 - 基本的に自動許可
- * 3. 信頼済みドメイン（管理者設定） - 追加許可
+ * Priority:
+ * 1. Denied domains (administrator settings) - highest priority block
+ * 2. Declarations in plugin.json/theme.json - automatically allowed by default
+ * 3. Trusted domains (administrator settings) - additional allowance
  */
 class CspExtensionLoader
 {
     protected CspPolicyRegistry $registry;
 
     /**
-     * CSPディレクティブのマッピング
-     * plugin.json/theme.jsonのキー => CSPディレクティブ名
+     * CSP directive mapping
+     * plugin.json/theme.json key => CSP directive name
      */
     protected array $directiveMapping = [
         'scripts' => 'script-src',
@@ -78,7 +78,7 @@ class CspExtensionLoader
     }
 
     /**
-     * 有効なプラグイン・テーマからCSP設定を読み込み、レジストリに登録
+     * Load CSP settings from active plugins and themes, and register them in the registry
      */
     public function loadAll(): void
     {
@@ -87,7 +87,7 @@ class CspExtensionLoader
     }
 
     /**
-     * 有効なプラグインからCSP設定を読み込み
+     * Load CSP settings from active plugins
      */
     public function loadPlugins(): void
     {
@@ -103,12 +103,12 @@ class CspExtensionLoader
     }
 
     /**
-     * 有効なテーマからCSP設定を読み込み
+     * Load CSP settings from active themes
      */
     public function loadThemes(): void
     {
         try {
-            // 現在有効なテーマを取得
+            // Get the currently active theme
             $activeThemeId = \DB::table('theme_settings')
                 ->where('key', 'enabled_theme_id')
                 ->value('value');
@@ -125,7 +125,7 @@ class CspExtensionLoader
     }
 
     /**
-     * 特定のプラグインからCSP設定を読み込み
+     * Load CSP settings from a specific plugin
      */
     public function loadPlugin(string $slug): array
     {
@@ -136,7 +136,7 @@ class CspExtensionLoader
     }
 
     /**
-     * 特定のテーマからCSP設定を読み込み
+     * Load CSP settings from a specific theme
      */
     public function loadTheme(string $slug): array
     {
@@ -147,7 +147,7 @@ class CspExtensionLoader
     }
 
     /**
-     * JSONファイルからCSP設定を読み込み、レジストリに登録
+     * Load CSP settings from JSON file and register them in the registry
      */
     protected function loadFromJson(string $jsonPath, string $type, string $slug): array
     {
@@ -157,7 +157,7 @@ class CspExtensionLoader
 
         $cacheKey = "csp_extension_{$type}_{$slug}";
 
-        // キャッシュから取得を試みる
+        // Attempt to retrieve from cache
         $directives = Cache::remember($cacheKey, 3600, function () use ($jsonPath) {
             $content = File::get($jsonPath);
             $json = json_decode($content, true);
@@ -177,13 +177,13 @@ class CspExtensionLoader
     }
 
     /**
-     * CSP設定をパースしてディレクティブ配列に変換
+     * Parse CSP settings and convert to directive array
      */
     protected function parseCspConfig(array $cspConfig): array
     {
         $directives = [];
 
-        // external_domains セクションを処理
+        // Process external_domains section
         if (isset($cspConfig['external_domains']) && is_array($cspConfig['external_domains'])) {
             foreach ($cspConfig['external_domains'] as $key => $domains) {
                 if (! is_array($domains)) {
@@ -200,7 +200,7 @@ class CspExtensionLoader
             }
         }
 
-        // 後方互換性: 旧形式のキーもサポート
+        // Backward compatibility: also support legacy format keys
         foreach ($this->directiveMapping as $jsonKey => $directiveName) {
             if (isset($cspConfig[$jsonKey]) && is_array($cspConfig[$jsonKey])) {
                 $directives[$directiveName] = array_merge(
@@ -214,12 +214,12 @@ class CspExtensionLoader
     }
 
     /**
-     * ドメイン配列を正規化
+     * Normalize domain array
      */
     protected function normalizeDomains(array $domains): array
     {
         return array_map(function ($domain) {
-            // プロトコルがない場合はhttpsを追加
+            // Add https if protocol is missing
             if (! preg_match('/^https?:\/\//', $domain)) {
                 return 'https://'.$domain;
             }
@@ -229,7 +229,7 @@ class CspExtensionLoader
     }
 
     /**
-     * 拡張機能のCSP設定を取得（UIでの表示用）
+     * Get extension CSP settings (for UI display)
      */
     public function getExtensionCspInfo(string $type, string $slug): array
     {
@@ -272,40 +272,40 @@ class CspExtensionLoader
     }
 
     /**
-     * 拡張機能のCSPドメインをブロックリストと照合
+     * Check extension CSP domains against blocklist
      *
-     * @param  string  $type  'plugin' または 'theme'
-     * @param  string  $slug  スラッグ
-     * @return array ブロックリストにマッチしたドメインの情報
+     * @param  string  $type  'plugin' or 'theme'
+     * @param  string  $slug  Slug
+     * @return array Information about domains matched in blocklist
      */
     public function checkAgainstBlocklist(string $type, string $slug): array
     {
         $blocklistService = app(CspBlocklistService::class);
 
-        // ブロックリスト照合が無効な場合はスキップ
+        // Skip if blocklist checking is disabled
         if (! $blocklistService->isBlocklistCheckEnabled()) {
             return [];
         }
 
-        // 拡張機能のCSP情報を取得
+        // Get extension CSP information
         $cspInfo = $this->getExtensionCspInfo($type, $slug);
 
         if (! $cspInfo['has_csp'] || empty($cspInfo['domains'])) {
             return [];
         }
 
-        // ドメインリストを抽出
+        // Extract domain list
         $domains = array_keys($cspInfo['domains']);
 
-        // ブロックリストと照合
+        // Check against blocklist
         return $blocklistService->checkDomainsAgainstBlocklist($domains);
     }
 
     /**
-     * 複数の拡張機能のCSPドメインをブロックリストと照合
+     * Check multiple extensions' CSP domains against blocklist
      *
      * @param  array  $extensions  [['type' => 'plugin', 'slug' => 'xxx'], ...]
-     * @return array 拡張機能ごとのマッチ結果
+     * @return array Match results per extension
      */
     public function checkMultipleAgainstBlocklist(array $extensions): array
     {
@@ -331,10 +331,10 @@ class CspExtensionLoader
     }
 
     /**
-     * 拡張機能がインラインJSを必要とするかチェック
+     * Check if extension requires inline JS
      *
-     * @param  string  $type  'plugin' または 'theme'
-     * @param  string  $slug  スラッグ
+     * @param  string  $type  'plugin' or 'theme'
+     * @param  string  $slug  Slug
      */
     public function requiresInlineJs(string $type, string $slug): bool
     {
@@ -357,11 +357,11 @@ class CspExtensionLoader
     }
 
     /**
-     * 拡張機能のCSP対応状態を取得
+     * Get extension CSP compatibility status
      *
-     * @param  string  $type  'plugin' または 'theme'
-     * @param  string  $slug  スラッグ
-     * @return array CSP対応情報
+     * @param  string  $type  'plugin' or 'theme'
+     * @param  string  $slug  Slug
+     * @return array CSP compatibility information
      */
     public function getCspCompatibility(string $type, string $slug): array
     {
@@ -385,7 +385,7 @@ class CspExtensionLoader
             $requiresInlineJs = (bool) ($json['requires_inline_js'] ?? false);
             $hasCspConfig = isset($json['csp']);
 
-            // CSP Ready = インラインJS不要 かつ CSP設定がある（または外部リソースを使わない）
+            // CSP Ready = no inline JS required AND has CSP settings (or doesn't use external resources)
             $cspReady = ! $requiresInlineJs;
 
             if ($requiresInlineJs) {
@@ -413,10 +413,10 @@ class CspExtensionLoader
     }
 
     /**
-     * 厳格モードで拡張機能が有効化可能かチェック
+     * Check if extension can be activated in strict mode
      *
-     * @param  string  $type  'plugin' または 'theme'
-     * @param  string  $slug  スラッグ
+     * @param  string  $type  'plugin' or 'theme'
+     * @param  string  $slug  Slug
      * @return array ['allowed' => bool, 'reason' => string|null]
      */
     public function canEnableInStrictMode(string $type, string $slug): array
@@ -437,15 +437,15 @@ class CspExtensionLoader
     }
 
     /**
-     * キャッシュをクリア
+     * Clear cache
      */
     public function clearCache(?string $type = null, ?string $slug = null): void
     {
         if ($type && $slug) {
             Cache::forget("csp_extension_{$type}_{$slug}");
         } else {
-            // 全キャッシュクリアは個別に行う必要がある
-            // プラグイン・テーマの一覧を取得してクリア
+            // Full cache clearing must be done individually
+            // Get and clear the plugin and theme list
             try {
                 $plugins = Plugin::all();
                 foreach ($plugins as $plugin) {
@@ -457,13 +457,13 @@ class CspExtensionLoader
                     Cache::forget("csp_extension_theme_{$theme->slug}");
                 }
             } catch (\Exception $e) {
-                // データベース未設定時は無視
+                // Ignore if database is not configured
             }
         }
     }
 
     /**
-     * plugin.json/theme.jsonにCSPセクションを追加・更新
+     * Add or update CSP section in plugin.json/theme.json
      */
     public function updateCspConfig(string $type, string $slug, array $cspConfig): bool
     {

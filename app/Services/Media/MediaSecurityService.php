@@ -40,11 +40,11 @@ use Illuminate\Http\UploadedFile;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * メディアセキュリティサービス
+ * Media security service
  *
- * メディアファイルのセキュリティ機能を統合管理
+ * Centralized management of media file security features
  */
 class MediaSecurityService
 {
@@ -57,7 +57,7 @@ class MediaSecurityService
     protected MediaSettingRepositoryInterface $settingRepository;
 
     /**
-     * ファイルタイプ別のカテゴリ
+     * Categories by file type
      */
     protected array $fileTypeCategories = [
         'image' => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
@@ -67,7 +67,7 @@ class MediaSecurityService
     ];
 
     /**
-     * デフォルトのファイルタイプ別サイズ上限（KB）
+     * Default size limits by file type (KB)
      */
     protected array $defaultSizeLimits = [
         'image' => 10240,      // 10MB
@@ -89,14 +89,14 @@ class MediaSecurityService
     }
 
     /**
-     * アップロードファイルのセキュリティチェック
+     * Security check for uploaded files
      */
     public function validateUpload(UploadedFile $file): MediaSecurityResult
     {
         $result = new MediaSecurityResult();
         $extension = strtolower($file->getClientOriginalExtension());
 
-        // MIME実体検証
+        // MIME content verification
         if ($this->isMimeValidationEnabled()) {
             $mimeResult = $this->mimeValidator->validate($file);
             if (! $mimeResult->isValid()) {
@@ -109,7 +109,7 @@ class MediaSecurityService
             }
         }
 
-        // ファイルタイプ別サイズチェック
+        // Size check by file type
         $category = $this->getFileCategory($extension);
         $sizeLimit = $this->getSizeLimitForCategory($category);
         $fileSizeKb = $file->getSize() / 1024;
@@ -122,7 +122,7 @@ class MediaSecurityService
             ]));
         }
 
-        // SVGファイルの場合
+        // For SVG files
         if ($extension === 'svg') {
             $svgResult = $this->validateSvg($file);
             foreach ($svgResult['errors'] as $error) {
@@ -133,9 +133,9 @@ class MediaSecurityService
             }
         }
 
-        // ZIPファイルの場合
+        // For ZIP files
         if ($extension === 'zip' && $this->isZipSecurityEnabled()) {
-            // ZIP設定を適用
+            // Apply ZIP settings
             $this->zipSecurity
                 ->setMaxCompressionRatio((int) ($this->settingRepository->get('zip_max_compression_ratio') ?? 100))
                 ->setMaxFileCount((int) ($this->settingRepository->get('zip_max_file_count') ?? 1000));
@@ -155,7 +155,7 @@ class MediaSecurityService
     }
 
     /**
-     * SVGファイルを検証
+     * Validate SVG file
      */
     protected function validateSvg(UploadedFile $file): array
     {
@@ -169,7 +169,7 @@ class MediaSecurityService
             return ['errors' => $errors, 'warnings' => $warnings];
         }
 
-        // SVGが安全かチェック
+        // Check if SVG is safe
         if (! $this->svgSanitizer->isSafe($content)) {
             if ($this->isSvgSanitizationEnabled()) {
                 $warnings[] = ['code' => 'svg_will_sanitize', 'message' => __('admin/media/security.svg.will_sanitize')];
@@ -182,7 +182,7 @@ class MediaSecurityService
     }
 
     /**
-     * SVGファイルをサニタイズして保存
+     * Sanitize and save SVG file
      */
     public function sanitizeSvgIfNeeded(string $filePath): bool
     {
@@ -199,7 +199,7 @@ class MediaSecurityService
     }
 
     /**
-     * ファイルのカテゴリを取得
+     * Get file category
      */
     public function getFileCategory(string $extension): string
     {
@@ -215,7 +215,7 @@ class MediaSecurityService
     }
 
     /**
-     * カテゴリ別のサイズ上限を取得（KB）
+     * Get size limit by category (KB)
      */
     public function getSizeLimitForCategory(string $category): int
     {
@@ -229,7 +229,7 @@ class MediaSecurityService
     }
 
     /**
-     * SVGサニタイズが有効かどうか
+     * Whether SVG sanitization is enabled
      */
     public function isSvgSanitizationEnabled(): bool
     {
@@ -237,7 +237,7 @@ class MediaSecurityService
     }
 
     /**
-     * ZIPセキュリティチェックが有効かどうか
+     * Whether ZIP security check is enabled
      */
     public function isZipSecurityEnabled(): bool
     {
@@ -245,7 +245,7 @@ class MediaSecurityService
     }
 
     /**
-     * MIME実体検証が有効かどうか
+     * Whether MIME content verification is enabled
      */
     public function isMimeValidationEnabled(): bool
     {
@@ -253,19 +253,19 @@ class MediaSecurityService
     }
 
     /**
-     * セキュアなダウンロードレスポンスを生成
+     * Generate secure download response
      */
     public function createSecureDownloadResponse(string $filePath, string $fileName, string $mimeType): BinaryFileResponse
     {
         $response = response()->download($filePath, $fileName);
 
-        // セキュリティヘッダーを追加
+        // Add security headers
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'DENY');
         $response->headers->set('X-XSS-Protection', '1; mode=block');
         $response->headers->set('Content-Security-Policy', "default-src 'none'");
 
-        // 危険なファイルタイプは強制的にダウンロード
+        // Force download for dangerous file types
         $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
         if ($this->isDangerousExtension($extension)) {
             $response->headers->set('Content-Disposition', 'attachment; filename="'.$fileName.'"');
@@ -275,18 +275,18 @@ class MediaSecurityService
     }
 
     /**
-     * セキュアなインラインレスポンスを生成（プレビュー用）
+     * Generate secure inline response (for preview)
      */
     public function createSecureInlineResponse(string $filePath, string $fileName, string $mimeType): BinaryFileResponse
     {
         $response = response()->file($filePath);
 
-        // セキュリティヘッダーを追加
+        // Add security headers
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('X-XSS-Protection', '1; mode=block');
 
-        // SVGの場合は特別なCSPを設定
+        // Set special CSP for SVG
         $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
         if ($extension === 'svg') {
             $response->headers->set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'");
@@ -296,7 +296,7 @@ class MediaSecurityService
     }
 
     /**
-     * 危険な拡張子かどうか
+     * Whether the extension is dangerous
      */
     protected function isDangerousExtension(string $extension): bool
     {
@@ -306,7 +306,7 @@ class MediaSecurityService
     }
 
     /**
-     * 設定を取得
+     * Get settings
      */
     public function getSecuritySettings(): array
     {
@@ -325,7 +325,7 @@ class MediaSecurityService
 }
 
 /**
- * メディアセキュリティ結果クラス
+ * Media security result class
  */
 class MediaSecurityResult
 {

@@ -123,7 +123,7 @@ class CoreMemberPrivacyProvider implements PrivacyDataProviderInterface
     {
         return [
             'en' => 'Core admin member account, sessions, login attempts, two-factor records, WebAuthn credentials, and per-member audit / security event entries.',
-            'ja' => '管理メンバーアカウント、セッション、ログイン試行、2 段階認証情報、WebAuthn 認証情報、およびメンバーごとの監査ログ・セキュリティイベント。',
+            'ja' => __('services/privacy/providers/core_member_privacy_provider.member_account_session_auth_data'),
         ];
     }
 

@@ -36,19 +36,19 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * データベース関連の検出パターン
+ * Database-related detection patterns
  *
- * database.own_tables, database.core_tables_read, database.core_tables_write を検出します。
- * core_tables_read: コアテーブルへの参照（読み取り）を検出
- * core_tables_write: コアテーブルへの書き込み操作を検出
- * use文のインポートのみの場合は除外します。
+ * Detects database.own_tables, database.core_tables_read, database.core_tables_write
+ * core_tables_read: Detects references (reads) to Core tables
+ * core_tables_write: Detects write operations to Core tables
+ * Excludes cases where there are only use statement imports
  */
 class DatabaseDetectionPattern extends DetectionPattern
 {
     /**
-     * 書き込み操作を検出する正規表現パターン
+     * Regex pattern to detect write operations
      */
     protected const WRITE_PATTERNS = [
         '/->save\s*\(/i',
@@ -94,8 +94,8 @@ class DatabaseDetectionPattern extends DetectionPattern
     }
 
     /**
-     * use文のインポートのみの場合は除外
-     * core_tables_write の場合はファイル内に書き込み操作が存在するかも検証
+     * Exclude if only use statement imports
+     * For core_tables_write, also verify that write operations exist in the file
      */
     public function validateMatch(string $match, string $line, string $fileContent, string $filePath): bool
     {
@@ -103,7 +103,7 @@ class DatabaseDetectionPattern extends DetectionPattern
             return false;
         }
 
-        // core_tables_read / core_tables_write 共通: use文のインポートのみは除外
+        // Common to core_tables_read / core_tables_write: exclude use statement imports only
         if (in_array($this->subKey, ['core_tables_read', 'core_tables_write'], true)) {
             $trimmedLine = ltrim($line);
 
@@ -112,7 +112,7 @@ class DatabaseDetectionPattern extends DetectionPattern
             }
         }
 
-        // core_tables_write: ファイル内に書き込み操作が存在する場合のみ検出
+        // core_tables_write: detect only when write operations exist in the file
         if ($this->subKey === 'core_tables_write') {
             return $this->hasWriteOperations($fileContent);
         }
@@ -121,7 +121,7 @@ class DatabaseDetectionPattern extends DetectionPattern
     }
 
     /**
-     * ファイル内にコアテーブルへの書き込み操作が存在するか判定
+     * Determine if write operations to Core tables exist in the file
      */
     protected function hasWriteOperations(string $fileContent): bool
     {

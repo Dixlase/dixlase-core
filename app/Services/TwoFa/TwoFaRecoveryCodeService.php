@@ -52,26 +52,26 @@ class TwoFaRecoveryCodeService
     }
 
     /**
-     * 回復コードを生成
+     * Generate recovery codes
      *
-     * @return array 生成された回復コード（平文）の配列
+     * @return array Array of generated recovery codes (plaintext)
      */
     public function generate(TwoFaInterface $user): array
     {
-        // 生成個数を設定から取得（1-5個、デフォルト5個）
+        // Get number to generate from settings (1-5 codes, default 5)
         $count = (int) $this->settingModelClass::getValue('two_fa_recovery_codes_count', 5);
-        $count = max(1, min(5, $count)); // 1-5の範囲に制限
+        $count = max(1, min(5, $count)); // Limit to range of 1-5
 
-        // 既存の回復コードを全て無効化
+        // Invalidate all existing recovery codes
         $user->twoFaRecoveryCodes()->update(['disabled' => true]);
 
         $codes = [];
         for ($i = 0; $i < $count; $i++) {
-            // 20桁の数字を生成（5桁×4ブロック）
+            // Generate 20-digit number (5 digits × 4 blocks)
             $code = $this->generateCode();
             $codes[] = $code;
 
-            // ハッシュ化して保存
+            // Hash and save
             $user->twoFaRecoveryCodes()->create([
                 'code' => Hash::make($code),
                 'disabled' => false,
@@ -87,7 +87,7 @@ class TwoFaRecoveryCodeService
     }
 
     /**
-     * 20桁の回復コードを生成（5桁×4ブロック）
+     * Generate 20-digit recovery code (5 digits × 4 blocks)
      */
     protected function generateCode(): string
     {
@@ -100,14 +100,14 @@ class TwoFaRecoveryCodeService
     }
 
     /**
-     * 回復コードを検証
+     * Verify recovery code
      */
     public function validate(TwoFaInterface $user, string $code): bool
     {
-        // ハイフンやスペースを削除
+        // Remove hyphens and spaces
         $code = preg_replace('/[\s\-]/', '', $code);
 
-        // 有効な回復コードを取得
+        // Get valid recovery codes
         $recoveryCodes = $user->twoFaRecoveryCodes()
             ->where('disabled', false)
             ->whereNull('used_at')
@@ -115,7 +115,7 @@ class TwoFaRecoveryCodeService
 
         foreach ($recoveryCodes as $recoveryCode) {
             if (Hash::check($code, $recoveryCode->code)) {
-                // 使用済みとしてマーク
+                // Mark as used
                 $recoveryCode->markAsUsed();
 
                 Log::info('[Recovery Code] Code used successfully', [
@@ -135,7 +135,7 @@ class TwoFaRecoveryCodeService
     }
 
     /**
-     * 残りの有効な回復コード数を取得
+     * Get number of remaining valid recovery codes
      */
     public function getRemainingCount(TwoFaInterface $user): int
     {
@@ -146,20 +146,20 @@ class TwoFaRecoveryCodeService
     }
 
     /**
-     * 回復コードを再生成可能かチェック
+     * Check if recovery codes can be regenerated
      */
     public function canRegenerate(TwoFaInterface $user): bool
     {
-        // 最後に生成した日時を取得
+        // Get last generation date and time
         $lastGenerated = $user->twoFaRecoveryCodes()
             ->orderBy('created_at', 'desc')
             ->first();
 
         if (! $lastGenerated) {
-            return true; // 未生成の場合は生成可能
+            return true; // Can generate if not yet generated
         }
 
-        // 24時間経過しているかチェック
+        // Check if 24 hours have elapsed
         $interval = (int) $this->settingModelClass::getValue('two_fa_recovery_code_regenerate_interval', 24);
         $canRegenerateAt = $lastGenerated->created_at->addHours($interval);
 
@@ -167,7 +167,7 @@ class TwoFaRecoveryCodeService
     }
 
     /**
-     * 次回再生成可能な日時を取得
+     * Get next available regeneration date and time
      */
     public function getNextRegenerateTime(TwoFaInterface $user): ?Carbon
     {
@@ -185,7 +185,7 @@ class TwoFaRecoveryCodeService
     }
 
     /**
-     * 回復コードが存在するかチェック
+     * Check if recovery codes exist
      */
     public function hasRecoveryCodes(TwoFaInterface $user): bool
     {
@@ -195,21 +195,21 @@ class TwoFaRecoveryCodeService
     }
 
     /**
-     * 回復コードをフォーマット（表示用）
-     * 例: 12345-67890-12345-67890
+     * Format recovery code (for display)
+     * Example: 12345-67890-12345-67890
      */
     public function formatCode(string $code): string
     {
-        // 20桁を5桁ずつに分割
+        // Split 20 digits into 5-digit segments
         $blocks = str_split($code, 5);
 
         return implode('-', $blocks);
     }
 
     /**
-     * 全ての回復コードを削除（無効化）
+     * Delete (invalidate) all recovery codes
      *
-     * @return int 削除された回復コード数
+     * @return int Number of deleted recovery codes
      */
     public function revokeAll(TwoFaInterface $user): int
     {

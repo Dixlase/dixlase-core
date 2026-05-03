@@ -41,7 +41,7 @@ use App\Services\Plugin\PluginServiceResolver;
 use Illuminate\Support\Collection;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  */
 class CaptchaService
 {
@@ -116,7 +116,7 @@ class CaptchaService
      */
     public function isEnabled(string $formKey): bool
     {
-        // データベースにレコードが存在すれば有効
+        // Valid if a record exists in the database
         return CaptchaEnabledForm::where('form_key', $formKey)
             ->where('enabled', true)
             ->exists();
@@ -129,7 +129,7 @@ class CaptchaService
     public function updateFormSetting(string $formKey, bool $enabled, ?string $provider = null): void
     {
         if ($enabled) {
-            // 有効な場合のみデータベースに保存
+            // Save to database only when valid
             CaptchaEnabledForm::updateOrCreate(
                 ['form_key' => $formKey],
                 [
@@ -138,7 +138,7 @@ class CaptchaService
                 ]
             );
         } else {
-            // 無効な場合はレコードを削除
+            // Delete the record if invalid
             CaptchaEnabledForm::where('form_key', $formKey)->delete();
         }
     }

@@ -46,31 +46,31 @@ use Illuminate\Support\Facades\Cache;
 /**
  * Permission Registry Service
  *
- * デフォルト権限（config/roles.php）とオーバーライド（DB）を合成して
- * 実効権限（effective）を提供するサービス
+ * Merges default permissions (config/roles.php) and overrides (DB)
+ * Service that provides effective permissions
  */
 class PermissionRegistry
 {
     /**
-     * キャッシュTTL（秒）
+     * Cache TTL (seconds)
      */
     protected const CACHE_TTL = 300;
 
     /**
-     * キャッシュキープレフィックス
+     * Cache key prefix
      */
     protected const CACHE_PREFIX = 'permission_registry:';
 
     /**
-     * 登録されたプラグイン権限定義
+     * Registered plugin permission definitions
      *
      * @var array<string, array>
      */
     protected static array $pluginPermissions = [];
 
     /**
-     * プラグインの権限定義を登録
-     * ServiceProviderのregister()で呼び出す
+     * Register plugin permission definition
+     * Called in ServiceProvider's register()
      */
     public static function registerPlugin(string $pluginSlug, array $permissions): void
     {
@@ -79,7 +79,7 @@ class PermissionRegistry
     }
 
     /**
-     * プラグインの権限定義を登録解除
+     * Unregister plugin permission definition
      */
     public static function unregisterPlugin(string $pluginSlug): void
     {
@@ -88,9 +88,9 @@ class PermissionRegistry
     }
 
     /**
-     * 実効権限を取得（コア機能）
+     * Get effective permission (Core feature)
      *
-     * @param  string  $menuKey  メニューキー（例：settings.base.index）
+     * @param  string  $menuKey  Menu key (e.g., settings.base.index)
      * @return array{access_roles: int, view_roles: int}|null
      */
     public static function getEffective(string $menuKey): ?array
@@ -98,14 +98,14 @@ class PermissionRegistry
         $cacheKey = self::CACHE_PREFIX.'core:'.$menuKey;
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($menuKey) {
-            // デフォルト値を取得（ネスト構造から取得）
+            // Get default value (from nested structure)
             $default = self::getDefaultFromNestedConfig($menuKey);
 
             if ($default === null) {
                 return;
             }
 
-            // オーバーライドを取得
+            // Get override
             $override = RolePermissionOverride::getCoreOverride($menuKey);
 
             if ($override) {
@@ -129,9 +129,9 @@ class PermissionRegistry
     }
 
     /**
-     * ネスト構造のconfigからドット記法のキーで権限を取得
+     * Get permission from nested config using dot notation key
      *
-     * @param  string  $menuKey  ドット記法のメニューキー（例：settings.base.index）
+     * @param  string  $menuKey  Menu key in dot notation (e.g., settings.base.index)
      * @return array{access_roles: int, view_roles: int}|null
      */
     protected static function getDefaultFromNestedConfig(string $menuKey): ?array
@@ -145,19 +145,19 @@ class PermissionRegistry
                 return null;
             }
 
-            // 直接キーがある場合
+            // If direct key exists
             if (isset($current[$part])) {
-                // access_rolesがあれば権限定義
+                // If access_roles exists, it's a permission definition
                 if (isset($current[$part]['access_roles'])) {
                     return $current[$part];
                 }
-                // childrenがあればさらに深く
+                // If children exists, go deeper
                 if (isset($current[$part]['children'])) {
                     $current = $current[$part]['children'];
 
                     continue;
                 }
-                // それ以外は次の階層へ
+                // Otherwise, go to next level
                 $current = $current[$part];
 
                 continue;
@@ -166,7 +166,7 @@ class PermissionRegistry
             return null;
         }
 
-        // 最終的にaccess_rolesがあれば権限定義
+        // Finally, if access_roles exists, it's a permission definition
         if (is_array($current) && isset($current['access_roles'])) {
             return $current;
         }
@@ -175,10 +175,10 @@ class PermissionRegistry
     }
 
     /**
-     * 実効権限を取得（プラグイン機能）
+     * Get effective permission (plugin feature)
      *
-     * @param  string  $pluginSlug  プラグインスラッグ
-     * @param  string  $menuKey  メニューキー
+     * @param  string  $pluginSlug  Plugin slug
+     * @param  string  $menuKey  Menu key
      * @return array{access_roles: int, view_roles: int}|null
      */
     public static function getPluginEffective(string $pluginSlug, string $menuKey): ?array
@@ -186,18 +186,18 @@ class PermissionRegistry
         $cacheKey = self::CACHE_PREFIX."plugin:{$pluginSlug}:{$menuKey}";
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($pluginSlug, $menuKey) {
-            // プラグインのデフォルト値を取得
+            // Get plugin default value
             $default = self::getPluginDefault($pluginSlug, $menuKey);
 
             if ($default === null) {
-                // デフォルトがない場合はADMIN権限をデフォルトとする
+                // Use ADMIN permission as default when no default exists
                 $default = [
                     'access_roles' => MemberRole::ADMIN->value,
                     'view_roles' => MemberRole::ADMIN->value,
                 ];
             }
 
-            // オーバーライドを取得
+            // Get override
             $override = RolePermissionOverride::getPluginOverride($pluginSlug, $menuKey);
 
             if ($override) {
@@ -221,22 +221,22 @@ class PermissionRegistry
     }
 
     /**
-     * プラグインのデフォルト権限を取得（ネスト構造対応）
+     * Get plugin default permission (supports nested structure)
      */
     protected static function getPluginDefault(string $pluginSlug, string $menuKey): ?array
     {
-        // メモリ上の登録から取得
+        // Get from in-memory registration
         if (isset(self::$pluginPermissions[$pluginSlug][$menuKey])) {
             return self::$pluginPermissions[$pluginSlug][$menuKey];
         }
 
-        // プラグインのconfig/roles.phpから取得を試みる
+        // Attempt to get from plugin's config/roles.php
         $pluginRolesPath = base_path("plugins/{$pluginSlug}/config/roles.php");
         if (file_exists($pluginRolesPath)) {
             $pluginRoles = require $pluginRolesPath;
             $permissions = $pluginRoles['permissions'] ?? [];
 
-            // ネスト構造から取得
+            // Get from nested structure
             return self::getDefaultFromNestedArray($permissions, $menuKey);
         }
 
@@ -244,7 +244,7 @@ class PermissionRegistry
     }
 
     /**
-     * ネスト構造の配列からドット記法のキーで権限を取得
+     * Get permission from nested array using dot notation key
      */
     protected static function getDefaultFromNestedArray(array $permissions, string $menuKey): ?array
     {
@@ -256,19 +256,19 @@ class PermissionRegistry
                 return null;
             }
 
-            // 直接キーがある場合
+            // If direct key exists
             if (isset($current[$part])) {
-                // access_rolesがあれば権限定義
+                // If access_roles exists, it's a permission definition
                 if (isset($current[$part]['access_roles'])) {
                     return $current[$part];
                 }
-                // childrenがあればさらに深く
+                // If children exists, go deeper
                 if (isset($current[$part]['children'])) {
                     $current = $current[$part]['children'];
 
                     continue;
                 }
-                // それ以外は次の階層へ
+                // Otherwise, go to next level
                 $current = $current[$part];
 
                 continue;
@@ -277,7 +277,7 @@ class PermissionRegistry
             return null;
         }
 
-        // 最終的にaccess_rolesがあれば権限定義
+        // Finally, if access_roles exists, it's a permission definition
         if (is_array($current) && isset($current['access_roles'])) {
             return $current;
         }
@@ -286,8 +286,8 @@ class PermissionRegistry
     }
 
     /**
-     * コア機能の全権限定義を取得（デフォルト＋オーバーライド合成済み）
-     * ネスト構造を維持して返す
+     * Get all Core permission definitions (default + override merged)
+     * Return preserving nested structure
      */
     public static function getAllCorePermissions(): array
     {
@@ -302,8 +302,8 @@ class PermissionRegistry
     }
 
     /**
-     * コア機能の全権限定義をフラット形式で取得（デフォルト＋オーバーライド合成済み）
-     * キーはドット記法（例：settings.base.index）
+     * Get all Core permission definitions in flat format (default + override merged)
+     * Keys are in dot notation (e.g., settings.base.index)
      */
     public static function getAllCorePermissionsFlat(): array
     {
@@ -334,7 +334,7 @@ class PermissionRegistry
     }
 
     /**
-     * ネスト構造の権限定義をフラット化
+     * Flatten nested permission definitions
      */
     protected static function flattenPermissions(array $permissions, string $prefix, array &$result): void
     {
@@ -342,19 +342,19 @@ class PermissionRegistry
             $fullKey = $prefix ? "{$prefix}.{$key}" : $key;
 
             if (isset($value['access_roles'])) {
-                // 権限定義
+                // Permission definition
                 $result[$fullKey] = $value;
             }
 
             if (isset($value['children'])) {
-                // 子要素を再帰処理
+                // Recursively process child elements
                 self::flattenPermissions($value['children'], $fullKey, $result);
             }
         }
     }
 
     /**
-     * ネスト構造の権限定義にオーバーライドをマージ
+     * Merge overrides into nested permission definitions
      */
     protected static function mergePermissionsWithOverrides(array $permissions, $overrides, string $prefix = ''): array
     {
@@ -364,7 +364,7 @@ class PermissionRegistry
             $fullKey = $prefix ? "{$prefix}.{$key}" : $key;
 
             if (isset($value['access_roles'])) {
-                // 権限定義
+                // Permission definition
                 $override = $overrides->get($fullKey);
                 $result[$key] = [
                     'access_roles' => $override?->access_roles ?? $value['access_roles'],
@@ -374,7 +374,7 @@ class PermissionRegistry
                     'default_view_roles' => $value['view_roles'],
                 ];
 
-                // childrenがあれば再帰処理
+                // Recursively process if children exist
                 if (isset($value['children'])) {
                     $result[$key]['children'] = self::mergePermissionsWithOverrides(
                         $value['children'],
@@ -383,7 +383,7 @@ class PermissionRegistry
                     );
                 }
             } elseif (isset($value['children'])) {
-                // 権限定義なしでchildrenのみ
+                // Only children without permission definition
                 $result[$key] = [
                     'children' => self::mergePermissionsWithOverrides(
                         $value['children'],
@@ -398,18 +398,18 @@ class PermissionRegistry
     }
 
     /**
-     * プラグインの全権限定義を取得（デフォルト＋オーバーライド合成済み）
-     * ネスト構造を維持して返す
+     * Get all plugin permission definitions (default + override merged)
+     * Return preserving nested structure
      */
     public static function getAllPluginPermissions(string $pluginSlug): array
     {
         $cacheKey = self::CACHE_PREFIX."all_plugin:{$pluginSlug}";
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($pluginSlug) {
-            // プラグインのデフォルト権限を取得
+            // Get default permissions for plugin
             $defaults = self::$pluginPermissions[$pluginSlug] ?? [];
 
-            // config/roles.phpからも取得
+            // Also retrieved from config/roles.php
             $pluginRolesPath = base_path("plugins/{$pluginSlug}/config/roles.php");
             if (file_exists($pluginRolesPath)) {
                 $pluginRoles = require $pluginRolesPath;
@@ -423,18 +423,18 @@ class PermissionRegistry
     }
 
     /**
-     * プラグインの全権限定義をフラット形式で取得（デフォルト＋オーバーライド合成済み）
-     * キーはドット記法（例：pages.index）
+     * Get all plugin permission definitions in flat format (default + override merged)
+     * Keys are in dot notation (e.g., pages.index)
      */
     public static function getAllPluginPermissionsFlat(string $pluginSlug): array
     {
         $cacheKey = self::CACHE_PREFIX."all_plugin_flat:{$pluginSlug}";
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($pluginSlug) {
-            // プラグインのデフォルト権限を取得
+            // Get default permissions for plugin
             $defaults = self::$pluginPermissions[$pluginSlug] ?? [];
 
-            // config/roles.phpからも取得
+            // Also retrieved from config/roles.php
             $pluginRolesPath = base_path("plugins/{$pluginSlug}/config/roles.php");
             if (file_exists($pluginRolesPath)) {
                 $pluginRoles = require $pluginRolesPath;
@@ -464,18 +464,18 @@ class PermissionRegistry
     }
 
     /**
-     * 全プラグインの権限定義を取得
+     * Get permission definitions for all plugins
      */
     public static function getAllPluginsPermissions(): array
     {
         $result = [];
 
-        // メモリ上の登録
+        // Register in memory
         foreach (array_keys(self::$pluginPermissions) as $pluginSlug) {
             $result[$pluginSlug] = self::getAllPluginPermissions($pluginSlug);
         }
 
-        // pluginsディレクトリからも取得
+        // Also retrieved from plugins directory
         $pluginsPath = base_path('plugins');
         if (is_dir($pluginsPath)) {
             foreach (glob($pluginsPath.'/*/config/roles.php') as $rolesFile) {
@@ -490,7 +490,7 @@ class PermissionRegistry
     }
 
     /**
-     * ユーザーがメニューにアクセス可能かチェック（コア機能）
+     * Check if user can access menu (Core feature)
      */
     public static function canAccess(string $menuKey, MemberRole $userRole): bool
     {
@@ -501,7 +501,7 @@ class PermissionRegistry
         $effective = self::getEffective($menuKey);
 
         if ($effective === null) {
-            // 権限定義がない場合、子項目の権限をチェック
+            // If no permission definition exists, check child item permissions
             $allPermissions = self::getAllCorePermissionsFlat();
 
             foreach ($allPermissions as $key => $permission) {
@@ -519,7 +519,7 @@ class PermissionRegistry
     }
 
     /**
-     * ユーザーがメニューを閲覧可能かチェック（コア機能）
+     * Check if user can view menu (Core feature)
      */
     public static function canView(string $menuKey, MemberRole $userRole): bool
     {
@@ -530,7 +530,7 @@ class PermissionRegistry
         $effective = self::getEffective($menuKey);
 
         if ($effective === null) {
-            // 権限定義がない場合、子項目の権限をチェック
+            // If no permission definition exists, check child item permissions
             $allPermissions = self::getAllCorePermissionsFlat();
 
             foreach ($allPermissions as $key => $permission) {
@@ -548,7 +548,7 @@ class PermissionRegistry
     }
 
     /**
-     * ユーザーがプラグインメニューにアクセス可能かチェック
+     * Check if user can access plugin menu
      */
     public static function canAccessPlugin(string $pluginSlug, string $menuKey, MemberRole $userRole): bool
     {
@@ -559,7 +559,7 @@ class PermissionRegistry
         $effective = self::getPluginEffective($pluginSlug, $menuKey);
 
         if ($effective === null) {
-            // デフォルトがない場合はADMIN以上でアクセス可能
+            // If no default exists, accessible by ADMIN or higher
             return $userRole->value >= MemberRole::ADMIN->value;
         }
 
@@ -567,7 +567,7 @@ class PermissionRegistry
     }
 
     /**
-     * ユーザーがプラグインメニューを閲覧可能かチェック
+     * Check if user can view plugin menu
      */
     public static function canViewPlugin(string $pluginSlug, string $menuKey, MemberRole $userRole): bool
     {
@@ -585,11 +585,11 @@ class PermissionRegistry
     }
 
     /**
-     * キャッシュをクリア
+     * Clear cache
      */
     public static function clearCache(): void
     {
-        // コア権限キャッシュをクリア（フラット化してすべてのキーを取得）
+        // Clear Core permission cache (flatten and get all keys)
         $corePermissions = config('roles.permissions', []);
         $flat = [];
         self::flattenPermissions($corePermissions, '', $flat);
@@ -600,12 +600,12 @@ class PermissionRegistry
         Cache::forget(self::CACHE_PREFIX.'all_core');
         Cache::forget(self::CACHE_PREFIX.'all_core_flat');
 
-        // プラグイン権限キャッシュをクリア
+        // Clear plugin permission cache
         foreach (array_keys(self::$pluginPermissions) as $pluginSlug) {
-            // プラグイン全体のキャッシュをクリア
+            // Clear entire plugin cache
             Cache::forget(self::CACHE_PREFIX."all_plugin:{$pluginSlug}");
 
-            // プラグインの個別メニューキーのキャッシュをクリア
+            // Clear cache for individual plugin menu keys
             $pluginPerms = self::$pluginPermissions[$pluginSlug] ?? [];
             $pluginFlat = [];
             self::flattenPermissions($pluginPerms, '', $pluginFlat);
@@ -617,7 +617,7 @@ class PermissionRegistry
     }
 
     /**
-     * 特定のメニューキーのキャッシュをクリア
+     * Clear cache for specific menu key
      */
     public static function clearMenuCache(string $menuKey, ?string $pluginSlug = null): void
     {
@@ -633,7 +633,7 @@ class PermissionRegistry
     }
 
     /**
-     * 登録されているプラグインスラッグ一覧を取得
+     * Get list of registered plugin slugs
      */
     public static function getRegisteredPlugins(): array
     {

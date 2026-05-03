@@ -44,7 +44,7 @@ use Illuminate\Support\Facades\Log;
 class DatabaseCleanupService
 {
     /**
-     * コアのクリーンアップ設定を取得
+     * Get Core cleanup settings
      */
     public function getCoreCleanupConfig(): array
     {
@@ -56,7 +56,7 @@ class DatabaseCleanupService
     }
 
     /**
-     * プラグインのクリーンアップ設定を取得
+     * Get plugin cleanup settings
      */
     public function getPluginCleanupConfig(): array
     {
@@ -104,7 +104,7 @@ class DatabaseCleanupService
     }
 
     /**
-     * すべてのクリーンアップ設定を取得
+     * Get all cleanup settings
      */
     public function getAllCleanupConfig(): array
     {
@@ -115,7 +115,7 @@ class DatabaseCleanupService
     }
 
     /**
-     * 特定のクリーンアップ設定を取得
+     * Get specific cleanup settings
      */
     public function getCleanupConfig(string $type): ?array
     {
@@ -131,7 +131,7 @@ class DatabaseCleanupService
     }
 
     /**
-     * データベースクリーンアップを実行
+     * Execute database cleanup
      */
     public function cleanup(string $type, int $days, bool $force = false): array
     {
@@ -170,7 +170,7 @@ class DatabaseCleanupService
                 $query->where($dateColumn, '<', $cutoffDate);
             }
 
-            // 追加条件の適用
+            // Apply additional conditions
             if (isset($config['additional_conditions'])) {
                 if (is_callable($config['additional_conditions'])) {
                     $query = $config['additional_conditions']($query);
@@ -208,7 +208,7 @@ class DatabaseCleanupService
     }
 
     /**
-     * すべてのテーブルをクリーンアップ
+     * Clean up all tables
      */
     public function cleanupAll(int $days, bool $force = false): array
     {
@@ -235,7 +235,7 @@ class DatabaseCleanupService
     }
 
     /**
-     * 管理画面用の表示情報を取得
+     * Get display information for admin panel
      */
     public function getCleanupInfo(): array
     {
@@ -244,7 +244,7 @@ class DatabaseCleanupService
         $info = [];
 
         foreach ($coreConfig as $key => $config) {
-            // 名前を取得
+            // Get name
             $name = $config['name'] ?? '';
             if (is_string($name) && str_contains($name, '.')) {
                 $name = __($name);
@@ -252,7 +252,7 @@ class DatabaseCleanupService
                 $name = $name[$locale] ?? $name['en'] ?? $name['ja'] ?? '';
             }
 
-            // 説明を取得
+            // Get description
             $description = $config['description'] ?? '';
             if (is_string($description) && str_contains($description, '.')) {
                 $description = __($description);
@@ -272,7 +272,7 @@ class DatabaseCleanupService
     }
 
     /**
-     * プラグイン用の表示情報を取得
+     * Get display information for plugin
      */
     public function getPluginCleanupInfo(): array
     {
@@ -281,7 +281,7 @@ class DatabaseCleanupService
         $info = [];
 
         foreach ($pluginConfig as $key => $config) {
-            // 名前を取得
+            // Get name
             $name = $config['name'] ?? '';
             if (is_string($name) && str_contains($name, '.')) {
                 $name = __($name);
@@ -289,7 +289,7 @@ class DatabaseCleanupService
                 $name = $name[$locale] ?? $name['en'] ?? $name['ja'] ?? '';
             }
 
-            // 説明を取得
+            // Get description
             $description = $config['description'] ?? '';
             if (is_string($description) && str_contains($description, '.')) {
                 $description = __($description);
@@ -311,27 +311,27 @@ class DatabaseCleanupService
     }
 
     /**
-     * 追加条件を適用
+     * Apply additional conditions
      */
     protected function applyAdditionalCondition($query, string $condition, string $table)
     {
         switch ($condition) {
             case 'expired':
-                // 2FAトークン: 有効期限切れも削除
+                // 2FA tokens: delete expired ones as well
                 if ($table === 'members_two_fa_tokens') {
                     $query->orWhere('expires_at', '<', now());
                 }
                 break;
 
             case 'used':
-                // リカバリーコード: 使用済みも削除
+                // Recovery codes: delete used ones as well
                 if ($table === 'members_recovery_codes') {
                     $query->orWhereNotNull('used_at');
                 }
                 break;
 
             case 'unused':
-                // パスキー: 未使用かつ90日以上経過したものも削除
+                // Passkeys: delete unused ones older than 90 days as well
                 if ($table === 'webauthn_credentials') {
                     $query->orWhere(function ($q) {
                         $q->whereNull('last_used_at')
@@ -341,7 +341,7 @@ class DatabaseCleanupService
                 break;
 
             case 'expired_cache':
-                // キャッシュ: 有効期限切れのみ削除
+                // Cache: delete expired ones only
                 if ($table === 'cache') {
                     $query->where('expiration', '<', now()->timestamp);
                 }

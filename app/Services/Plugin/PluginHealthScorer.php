@@ -49,23 +49,23 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
 /**
- * プラグイン健全性スコアの唯一の計算元
+ * Sole source of plugin health score calculation
  *
- * PluginHealthStatus::getDeductionRules() を減点テーブルとして使用し、
- * 署名検証・権限整合性・CSP適合性・危険API検出・スキャン鮮度を評価して
- * 0-100点のスコアと健全性ステータスを返します。
+ * Uses PluginHealthStatus::getDeductionRules() as the deduction table,
+ * evaluates signature verification, permission integrity, CSP compliance, dangerous API detection, and scan freshness
+ * Returns a score from 0-100 and health status
  *
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  */
 class PluginHealthScorer
 {
     /**
-     * 初期スコア
+     * Initial score
      */
     protected const BASE_SCORE = 100;
 
     /**
-     * スキャン期限切れとみなす日数
+     * Days after which scan is considered expired
      */
     protected const SCAN_EXPIRY_DAYS = 30;
 
@@ -74,11 +74,11 @@ class PluginHealthScorer
     ) {}
 
     /**
-     * プラグインの健全性スコアを計算
+     * Calculate plugin health score
      */
     public function calculate(string $pluginSlug): HealthScoreResult
     {
-        // 前提条件チェック: NotVerified判定
+        // Prerequisite check: NotVerified determination
         $audit = PluginAudit::getBySlug($pluginSlug);
         $permissions = $this->permissionService->getPermissions($pluginSlug);
 
@@ -89,7 +89,7 @@ class PluginHealthScorer
                 issues: [new HealthIssue(
                     type: 'not_verified_no_scan',
                     severity: 'warning',
-                    description: '監査スキャンが未実行です。',
+                    description: __('services/plugin/plugin_health_scorer.audit_scan_not_executed'),
                     deduction: 0,
                 )],
                 hasCriticalIssue: false,
@@ -99,49 +99,49 @@ class PluginHealthScorer
         $deductionRules = PluginHealthStatus::getDeductionRules();
         $issues = [];
 
-        // permissions セクションが未定義の場合は減点して評価継続
+        // If permissions section is undefined, deduct points and continue evaluation
         if ($permissions === null) {
             $issues[] = new HealthIssue(
                 type: 'permission_undefined',
                 severity: 'warning',
-                description: 'permissions セクションが未定義です。',
+                description: __('services/plugin/plugin_health_scorer.permissions_section_undefined'),
                 deduction: $deductionRules['permission_undefined'] ?? -10,
             );
         }
 
-        // 1. 署名検証の評価
+        // 1. Signature verification evaluation
         $issues = array_merge($issues, $this->evaluateSignature($pluginSlug, $deductionRules));
 
-        // 2. 権限整合性の評価（permissions 未定義時はスキップ）
+        // 2. Permission integrity evaluation (skip if permissions undefined)
         if ($permissions !== null) {
             $issues = array_merge($issues, $this->evaluatePermissions($pluginSlug, $deductionRules));
         }
 
-        // 3. CSP適合性の評価
+        // 3. CSP compliance evaluation
         $issues = array_merge($issues, $this->evaluateCsp($pluginSlug, $deductionRules));
 
-        // 4. 危険API検出の評価
+        // 4. Dangerous API detection evaluation
         $issues = array_merge($issues, $this->evaluateDangerousApis($pluginSlug, $deductionRules));
 
-        // 5. スキャン鮮度の評価
+        // 5. Scan freshness evaluation
         $issues = array_merge($issues, $this->evaluateScanFreshness($pluginSlug, $deductionRules));
 
-        // 6. リスク権限の評価（public_uploads等）
+        // 6. Risky permission evaluation (public_uploads, etc.)
         if ($permissions !== null) {
             $issues = array_merge($issues, $this->evaluateRiskPermissions($permissions, $deductionRules));
         }
 
-        // 7. サプライチェーン防御用メタデータの評価（author_id / authority_key_id）
+        // 7. Supply chain defense metadata evaluation (author_id / authority_key_id)
         $issues = array_merge($issues, $this->evaluateSupplyChainMetadata($pluginSlug, $deductionRules));
 
-        // 合計スコアの算出
+        // Calculate total score
         $totalDeduction = array_sum(array_map(fn (HealthIssue $i) => $i->deduction, $issues));
         $score = max(0, self::BASE_SCORE + $totalDeduction);
 
-        // 致命的問題の判定
+        // Determine critical issues
         $hasCriticalIssue = $this->hasCriticalIssue($issues);
 
-        // ステータスの決定
+        // Determine status
         $status = PluginHealthStatus::fromScore($score, $hasCriticalIssue);
 
         return new HealthScoreResult(
@@ -153,7 +153,7 @@ class PluginHealthScorer
     }
 
     /**
-     * 署名検証の評価
+     * Evaluate signature verification
      *
      * @return array<HealthIssue>
      */
@@ -166,42 +166,42 @@ class PluginHealthScorer
             $issues[] = new HealthIssue(
                 type: 'signature_unsigned',
                 severity: 'warning',
-                description: '署名がありません。配布時は署名を推奨します。',
+                description: __('services/plugin/plugin_health_scorer.no_signature_recommend_signing'),
                 deduction: $deductionRules['signature_unsigned'] ?? -10,
             );
         } elseif ($signatureInfo['status'] === 'invalid') {
             $issues[] = new HealthIssue(
                 type: 'signature_invalid',
                 severity: 'critical',
-                description: '署名が無効です。改ざんの可能性があります。',
+                description: __('services/plugin/plugin_health_scorer.signature_invalid_tampering'),
                 deduction: $deductionRules['signature_invalid'] ?? -50,
             );
         } elseif ($signatureInfo['status'] === 'pending_verification') {
             $issues[] = new HealthIssue(
                 type: 'signature_pending_verification',
                 severity: 'warning',
-                description: '署名の検証が完了していません（公開鍵サーバー未接続）。',
+                description: __('services/plugin/plugin_health_scorer.signature_verification_incomplete_keyserver'),
                 deduction: $deductionRules['signature_pending_verification'] ?? -5,
             );
         } elseif ($signatureInfo['status'] === 'unknown_key') {
             $issues[] = new HealthIssue(
                 type: 'signature_unknown_key',
                 severity: 'warning',
-                description: '署名鍵が信頼済みとして登録されていません。',
+                description: __('services/plugin/plugin_health_scorer.signing_key_not_trusted'),
                 deduction: $deductionRules['signature_unknown_key'] ?? -15,
             );
         } elseif ($signatureInfo['status'] === 'expired') {
             $issues[] = new HealthIssue(
                 type: 'signature_expired',
                 severity: 'warning',
-                description: '署名に使用された鍵が失効しています。',
+                description: __('services/plugin/plugin_health_scorer.signing_key_revoked'),
                 deduction: $deductionRules['signature_expired'] ?? -20,
             );
         } elseif ($signatureInfo['status'] === 'error') {
             $issues[] = new HealthIssue(
                 type: 'signature_error',
                 severity: 'warning',
-                description: '署名検証中にエラーが発生しました。',
+                description: __('services/plugin/plugin_health_scorer.signature_verification_error'),
                 deduction: $deductionRules['signature_error'] ?? -10,
             );
         }
@@ -210,7 +210,7 @@ class PluginHealthScorer
     }
 
     /**
-     * 権限整合性の評価
+     * Evaluate permission consistency
      *
      * @return array<HealthIssue>
      */
@@ -219,25 +219,25 @@ class PluginHealthScorer
         $issues = [];
         $permissions = $this->permissionService->getPermissions($pluginSlug);
 
-        // 権限が定義されていない場合
+        // When permissions are not defined
         if ($permissions === null) {
             $issues[] = new HealthIssue(
                 type: 'permission_undefined',
                 severity: 'warning',
-                description: 'plugin.json に permissions セクションが定義されていません。',
+                description: __('services/plugin/plugin_health_scorer.permissions_not_defined_in_json'),
                 deduction: $deductionRules['permission_undefined'] ?? -10,
             );
 
             return $issues;
         }
 
-        // 監査結果から不一致を取得
+        // Get inconsistencies from audit results
         $audit = PluginAudit::getBySlug($pluginSlug);
         if ($audit === null || empty($audit->mismatches)) {
             return $issues;
         }
 
-        // _optional 権限を取得（未検出でもペナルティなし）
+        // Retrieve _optional permissions (no penalty even when not detected)
         $optionalPermissions = $this->permissionService->getOptionalPermissions($pluginSlug);
 
         foreach ($audit->mismatches as $mismatch) {
@@ -251,12 +251,12 @@ class PluginHealthScorer
                 $issues[] = new HealthIssue(
                     type: $issueType,
                     severity: $isMajor ? 'critical' : 'warning',
-                    description: "未宣言の権限使用: {$permission}",
+                    description: __('services/plugin/plugin_health_scorer.undeclared_permission_usage', ['permission' => $permission]),
                     evidence: $mismatch['evidence'] ?? [],
                     deduction: $deductionRules[$issueType] ?? ($isMajor ? -15 : -5),
                 );
             } elseif ($type === 'unused_declaration') {
-                // _optional に含まれる権限は未使用でもペナルティなし
+                // _optional permissions are exempt from penalties even when unused
                 if (in_array($permission, $optionalPermissions, true)) {
                     continue;
                 }
@@ -264,7 +264,7 @@ class PluginHealthScorer
                 $issues[] = new HealthIssue(
                     type: 'permission_unused',
                     severity: 'info',
-                    description: '未使用の権限宣言: '.$permission,
+                    description: __('services/plugin/plugin_health_scorer.unused_permission_declaration').$permission,
                     deduction: $deductionRules['permission_unused'] ?? -2,
                 );
             }
@@ -274,7 +274,7 @@ class PluginHealthScorer
     }
 
     /**
-     * CSP適合性の評価
+     * Evaluate CSP compliance
      *
      * @return array<HealthIssue>
      */
@@ -287,27 +287,27 @@ class PluginHealthScorer
             return $issues;
         }
 
-        // インラインCSS必須の場合
+        // When inline CSS is required
         if ($audit->csp_requires_inline_css) {
             $issues[] = new HealthIssue(
                 type: 'csp_inline_css_required',
                 severity: 'info',
-                description: 'インラインCSSが必要です。厳格モードでは動作しない可能性があります。',
+                description: __('services/plugin/plugin_health_scorer.inline_css_required_strict_mode'),
                 deduction: $deductionRules['csp_inline_css_required'] ?? -5,
             );
         }
 
-        // インラインJS必須の場合
+        // When inline JS is required
         if ($audit->csp_requires_inline_js) {
             $issues[] = new HealthIssue(
                 type: 'csp_inline_js_required',
                 severity: 'warning',
-                description: 'インラインJavaScriptが必要です。厳格モードでは動作しません。',
+                description: __('services/plugin/plugin_health_scorer.inline_js_required_strict_mode'),
                 deduction: $deductionRules['csp_inline_js_required'] ?? -10,
             );
         }
 
-        // CSPステータスに基づく評価
+        // Evaluate based on CSP status
         if ($audit->csp_status === 'inline_required') {
             $cspMode = config('dixlase.security.csp_mode', 'standard');
             $issueType = match ($cspMode) {
@@ -321,7 +321,7 @@ class PluginHealthScorer
                 $issues[] = new HealthIssue(
                     type: $issueType,
                     severity: $cspMode === 'strict' ? 'critical' : 'warning',
-                    description: "CSP違反が検出されました（{$cspMode}モード）。",
+                    description: __('services/plugin/plugin_health_scorer.csp_violation_detected', ['cspMode' => $cspMode]),
                     deduction: $deduction,
                 );
             }
@@ -331,7 +331,7 @@ class PluginHealthScorer
     }
 
     /**
-     * 危険API検出の評価
+     * Evaluate dangerous API detection
      *
      * @return array<HealthIssue>
      */
@@ -344,17 +344,17 @@ class PluginHealthScorer
             return $issues;
         }
 
-        // 監査結果から危険APIの検出を確認
+        // Check dangerous API detection from audit results
         foreach ($audit->mismatches as $mismatch) {
             $permission = $mismatch['permission'] ?? '';
             $evidence = $mismatch['evidence'] ?? [];
 
-            // 危険なAPI（exec/shell_exec等）の使用
+            // Use of dangerous APIs (exec/shell_exec, etc.)
             if ($this->isDangerousApiPermission($permission)) {
                 $issues[] = new HealthIssue(
                     type: 'dangerous_api_exec',
                     severity: 'critical',
-                    description: "危険なAPIが検出されました: {$permission}",
+                    description: __('services/plugin/plugin_health_scorer.dangerous_api_detected', ['permission' => $permission]),
                     evidence: $evidence,
                     deduction: $deductionRules['dangerous_api_exec'] ?? -30,
                 );
@@ -365,7 +365,7 @@ class PluginHealthScorer
     }
 
     /**
-     * スキャン鮮度の評価
+     * Evaluate scan freshness
      *
      * @return array<HealthIssue>
      */
@@ -378,7 +378,7 @@ class PluginHealthScorer
             $issues[] = new HealthIssue(
                 type: 'scan_not_performed',
                 severity: 'warning',
-                description: '監査スキャンが実行されていません。',
+                description: __('services/plugin/plugin_health_scorer.audit_scan_not_run'),
                 deduction: $deductionRules['scan_not_performed'] ?? -10,
             );
 
@@ -390,7 +390,7 @@ class PluginHealthScorer
             $issues[] = new HealthIssue(
                 type: 'scan_outdated',
                 severity: 'info',
-                description: "スキャンが古くなっています（{$daysSinceScan}日前）。再スキャンを推奨します。",
+                description: __('services/plugin/plugin_health_scorer.scan_outdated_rescan_recommended', ['daysSinceScan' => $daysSinceScan]),
                 deduction: $deductionRules['scan_outdated'] ?? -5,
             );
         }
@@ -399,7 +399,7 @@ class PluginHealthScorer
     }
 
     /**
-     * リスク権限の評価（public_uploads等の減点を健全性スコアに反映）
+     * Evaluate risky permissions (reflect deductions for public_uploads, etc. in health score)
      *
      * @return HealthIssue[]
      */
@@ -412,14 +412,14 @@ class PluginHealthScorer
                 $issues[] = new HealthIssue(
                     type: 'risk_public_uploads_own_dir',
                     severity: 'info',
-                    description: '専用ディレクトリ内で公開アップロードを使用します。',
+                    description: __('services/plugin/plugin_health_scorer.public_upload_in_dedicated_dir'),
                     deduction: $deductionRules['risk_public_uploads_own_dir'] ?? -2,
                 );
             } else {
                 $issues[] = new HealthIssue(
                     type: 'risk_public_uploads_no_own_dir',
                     severity: 'warning',
-                    description: '公開ディレクトリへ直接アップロードします。',
+                    description: __('services/plugin/plugin_health_scorer.direct_upload_to_public_dir'),
                     deduction: $deductionRules['risk_public_uploads_no_own_dir'] ?? -4,
                 );
             }
@@ -429,7 +429,7 @@ class PluginHealthScorer
             $issues[] = new HealthIssue(
                 type: 'risk_members_delete',
                 severity: 'warning',
-                description: 'メンバーの削除権限を使用します。',
+                description: __('services/plugin/plugin_health_scorer.uses_member_deletion_permission'),
                 deduction: $deductionRules['risk_members_delete'] ?? -4,
             );
         }
@@ -438,7 +438,7 @@ class PluginHealthScorer
             $issues[] = new HealthIssue(
                 type: 'risk_mail_bulk_send',
                 severity: 'warning',
-                description: 'メールの一括送信権限を使用します。',
+                description: __('services/plugin/plugin_health_scorer.uses_bulk_email_permission'),
                 deduction: $deductionRules['risk_mail_bulk_send'] ?? -3,
             );
         }
@@ -447,9 +447,9 @@ class PluginHealthScorer
     }
 
     /**
-     * サプライチェーン防御用メタデータ（author_id / authority_key_id）の評価
+     * Evaluate supply chain defense metadata (author_id / authority_key_id)
      *
-     * plugin.json に必要なメタデータが欠落している場合は health_issue として記録する。
+     * Record as health_issue when required metadata is missing in plugin.json
      *
      * @return array<HealthIssue>
      */
@@ -477,7 +477,7 @@ class PluginHealthScorer
             $issues[] = new HealthIssue(
                 type: 'missing_author_id',
                 severity: 'warning',
-                description: 'plugin.json に author_id が定義されていません。',
+                description: __('services/plugin/plugin_health_scorer.author_id_not_defined'),
                 deduction: $deductionRules['missing_author_id'] ?? -3,
             );
         }
@@ -486,7 +486,7 @@ class PluginHealthScorer
             $issues[] = new HealthIssue(
                 type: 'missing_authority_key_id',
                 severity: 'warning',
-                description: 'plugin.json に authority_key_id が定義されていません。',
+                description: __('services/plugin/plugin_health_scorer.authority_key_id_not_defined'),
                 deduction: $deductionRules['missing_authority_key_id'] ?? -3,
             );
         }
@@ -495,7 +495,7 @@ class PluginHealthScorer
     }
 
     /**
-     * 致命的な問題が含まれているか
+     * Whether critical issues are included
      */
     protected function hasCriticalIssue(array $issues): bool
     {
@@ -509,7 +509,7 @@ class PluginHealthScorer
     }
 
     /**
-     * 高リスク権限かどうか
+     * Whether it is a high-risk permission
      */
     protected function isHighRiskPermission(string $permission): bool
     {
@@ -524,7 +524,7 @@ class PluginHealthScorer
     }
 
     /**
-     * 危険なAPIに関連する権限かどうか
+     * Whether it is a permission related to dangerous APIs
      */
     protected function isDangerousApiPermission(string $permission): bool
     {
@@ -532,11 +532,11 @@ class PluginHealthScorer
     }
 
     /**
-     * 健全性スコアとセキュリティ設定に基づいて有効化アクションを判定
+     * Determine activation action based on health score and security settings
      *
-     * セキュリティ設定（extension_plugin_max_health_level）で許可された
-     * 健全性レベル内であれば、致命的問題があっても確認付きで有効化可能。
-     * 許可範囲外のステータスの場合のみブロックする。
+     * Allowed by security settings (extension_plugin_max_health_level)
+     * If within health level, can be enabled with confirmation even if critical issues exist
+     * Block only if status is outside allowed range
      *
      * Exception: when the active extension security preset is Development,
      * health-based gating is bypassed (max level forced to NotVerified) so
@@ -559,12 +559,12 @@ class PluginHealthScorer
             }
         }
 
-        // セキュリティ設定で許可されていないステータスはブロック
+        // Block status not allowed in security settings
         if (! $result->status->canActivate($maxAllowedLevel)) {
             return PluginEnableAction::Blocked;
         }
 
-        // セキュリティ設定で許可されている場合はスコアに基づいて判定
+        // If allowed in security settings, determine based on score
         if ($result->hasCriticalIssue || $result->score < 50) {
             return PluginEnableAction::AcknowledgementRequired;
         }
@@ -577,7 +577,7 @@ class PluginHealthScorer
     }
 
     /**
-     * プラグインのコードファイルのハッシュを計算（再スキャン判定用）
+     * Calculate hash of plugin code files (for rescan detection)
      */
     public function computeFilesHash(string $pluginSlug): string
     {
@@ -603,7 +603,7 @@ class PluginHealthScorer
             $ext = $file->getExtension();
             $filename = $file->getFilename();
 
-            // PHP, JS, Blade ファイルを対象
+            // Target PHP, JS, Blade files
             if ($ext === 'php' || $ext === 'js' || str_ends_with($filename, '.blade.php')) {
                 $hashes[] = md5_file($file->getPathname());
             }
@@ -615,7 +615,7 @@ class PluginHealthScorer
     }
 
     /**
-     * プラグインが再スキャンを必要とするかどうか
+     * Whether the plugin requires a rescan
      */
     public function needsRescan(string $pluginSlug): bool
     {
@@ -631,10 +631,10 @@ class PluginHealthScorer
     }
 
     /**
-     * プラグインソースの最終変更時刻（mtime）を取得する高速版検出。
+     * Fast detection that retrieves the last modified time (mtime) of plugin source
      *
-     * computeFilesHash() と異なり、md5 計算を行わずに mtime のみを取る。
-     * ページ表示時のファイル変更検知用。
+     * Unlike computeFilesHash(), only retrieves mtime without calculating md5
+     * For file change detection during page display
      *
      * Returns null if the plugin directory does not exist.
      */

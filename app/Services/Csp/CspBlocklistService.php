@@ -40,24 +40,24 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
  * CSP Blocklist Service
  *
- * 外部のブロックリストソースから悪意あるドメインや
- * トラッキングドメインを取得するサービス。
+ * Service to retrieve malicious domains and
+ * tracking domains from external blocklist sources
  *
- * ブロックリストのソースはconfig/csp.phpで設定可能。
+ * Blocklist sources can be configured in config/csp.php
  */
 class CspBlocklistService
 {
     /**
-     * 利用可能なブロックリストソース（configから読み込み）
+     * Available blocklist sources (loaded from config)
      */
     protected array $sources;
 
     /**
-     * キャッシュ時間（秒）
+     * Cache time (seconds)
      */
     protected int $cacheTtl;
 
@@ -68,7 +68,7 @@ class CspBlocklistService
     }
 
     /**
-     * 利用可能なブロックリストカテゴリを取得
+     * Retrieve available blocklist categories
      */
     public function getAvailableCategories(): array
     {
@@ -76,7 +76,7 @@ class CspBlocklistService
         $categories = [];
 
         foreach ($this->sources as $key => $source) {
-            // 言語に応じた名前と説明を取得（フォールバック付き）
+            // Get name and description based on language (with fallback)
             $name = $locale === 'en' && isset($source['name_en'])
                 ? $source['name_en']
                 : ($source['name'] ?? $key);
@@ -94,7 +94,7 @@ class CspBlocklistService
     }
 
     /**
-     * 指定カテゴリのブロックリストを取得
+     * Retrieve blocklist for specified category
      */
     public function getBlocklist(string $category, bool $forceRefresh = false): array
     {
@@ -123,14 +123,14 @@ class CspBlocklistService
         $domains = array_unique($domains);
         $domains = array_values(array_filter($domains));
 
-        // キャッシュに保存
+        // Save to cache
         Cache::put($cacheKey, $domains, $this->cacheTtl);
 
         return $domains;
     }
 
     /**
-     * 全カテゴリのブロックリストを取得
+     * Retrieve blocklists for all categories
      */
     public function getAllBlocklists(bool $forceRefresh = false): array
     {
@@ -143,7 +143,7 @@ class CspBlocklistService
     }
 
     /**
-     * 選択されたカテゴリのドメインを結合して取得
+     * Retrieve combined domains from selected categories
      */
     public function getSelectedBlocklists(array $categories, bool $forceRefresh = false): array
     {
@@ -156,15 +156,15 @@ class CspBlocklistService
     }
 
     /**
-     * 指定されたドメインがブロックリストに含まれているかチェック
+     * Check if specified domains are included in the blocklist
      *
-     * @param  array  $domainsToCheck  チェックするドメインの配列
-     * @param  array|null  $categories  チェックするカテゴリ（nullの場合は有効な全カテゴリ）
-     * @return array マッチしたドメインとカテゴリの情報
+     * @param  array  $domainsToCheck  Array of domains to check
+     * @param  array|null  $categories  Categories to check (all active categories if null)
+     * @return array Information about matched domains and categories
      */
     public function checkDomainsAgainstBlocklist(array $domainsToCheck, ?array $categories = null): array
     {
-        // 有効なカテゴリを取得
+        // Retrieve active categories
         $enabledCategories = $categories ?? $this->getEnabledCategories();
 
         if (empty($enabledCategories)) {
@@ -177,7 +177,7 @@ class CspBlocklistService
             $blocklist = $this->getBlocklist($category);
 
             foreach ($domainsToCheck as $domain) {
-                // ドメインを正規化
+                // Normalize domain
                 $normalizedDomain = $this->normalizeDomain($domain);
 
                 if (in_array($normalizedDomain, $blocklist, true)) {
@@ -194,7 +194,7 @@ class CspBlocklistService
     }
 
     /**
-     * 有効なブロックリストカテゴリを取得（セキュリティ設定から）
+     * Retrieve active blocklist categories (from security settings)
      */
     public function getEnabledCategories(): array
     {
@@ -211,24 +211,24 @@ class CspBlocklistService
     }
 
     /**
-     * ドメインを正規化（URLからホスト部分を抽出）
+     * Normalize domain (extract host part from URL)
      */
     protected function normalizeDomain(string $domain): string
     {
-        // URLの場合はホスト部分を抽出
+        // Extract host part if URL
         if (preg_match('/^https?:\/\//', $domain)) {
             $parsed = parse_url($domain);
             $domain = $parsed['host'] ?? $domain;
         }
 
-        // www.を除去
+        // Remove www.
         $domain = preg_replace('/^www\./', '', $domain);
 
         return strtolower(trim($domain));
     }
 
     /**
-     * カテゴリ名を取得
+     * Get category name
      */
     protected function getCategoryName(string $category): string
     {
@@ -245,7 +245,7 @@ class CspBlocklistService
     }
 
     /**
-     * ブロックリスト照合が有効かどうか
+     * Whether blocklist matching is enabled
      */
     public function isBlocklistCheckEnabled(): bool
     {
@@ -257,9 +257,9 @@ class CspBlocklistService
     }
 
     /**
-     * ブロックリスト検出時のアクションを取得
+     * Get action when blocklist is detected
      *
-     * @return string 'warn' または 'block'
+     * @return string 'warn' or 'block'
      */
     public function getBlocklistAction(): string
     {
@@ -274,7 +274,7 @@ class CspBlocklistService
     }
 
     /**
-     * ブロックリスト検出時にブロックするかどうか
+     * Whether to block when blocklist is detected
      */
     public function shouldBlockOnMatch(): bool
     {
@@ -282,7 +282,7 @@ class CspBlocklistService
     }
 
     /**
-     * リストをフェッチしてパース
+     * Fetch and parse list
      */
     protected function fetchAndParseList(string $url): array
     {
@@ -298,7 +298,7 @@ class CspBlocklistService
     }
 
     /**
-     * hostsファイル形式をパース
+     * Parse hosts file format
      */
     protected function parseHostsFile(string $content): array
     {
@@ -308,15 +308,15 @@ class CspBlocklistService
         foreach ($lines as $line) {
             $line = trim($line);
 
-            // コメント行をスキップ
+            // Skip comment lines
             if (empty($line) || str_starts_with($line, '#') || str_starts_with($line, '!')) {
                 continue;
             }
 
-            // hosts形式: 0.0.0.0 domain.com または 127.0.0.1 domain.com
+            // hosts format: 0.0.0.0 domain.com or 127.0.0.1 domain.com
             if (preg_match('/^(?:0\.0\.0\.0|127\.0\.0\.1)\s+(.+)$/i', $line, $matches)) {
                 $domain = trim($matches[1]);
-                // コメント部分を除去
+                // Remove comment part
                 $domain = preg_replace('/#.*$/', '', $domain);
                 $domain = trim($domain);
 
@@ -327,7 +327,7 @@ class CspBlocklistService
                 continue;
             }
 
-            // ドメインのみの形式
+            // Domain-only format
             if ($this->isValidDomain($line)) {
                 $domains[] = $line;
             }
@@ -337,21 +337,21 @@ class CspBlocklistService
     }
 
     /**
-     * 有効なドメイン名かチェック
+     * Check if valid domain name
      */
     protected function isValidDomain(string $domain): bool
     {
-        // 空、localhost、IPアドレスを除外
+        // Exclude empty, localhost, IP addresses
         if (empty($domain) || $domain === 'localhost') {
             return false;
         }
 
-        // IPアドレスを除外
+        // Exclude IP addresses
         if (filter_var($domain, FILTER_VALIDATE_IP)) {
             return false;
         }
 
-        // 基本的なドメイン形式チェック
+        // Basic domain format check
         if (! preg_match('/^[a-z0-9]([a-z0-9\-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9\-]*[a-z0-9])?)*$/i', $domain)) {
             return false;
         }
@@ -360,7 +360,7 @@ class CspBlocklistService
     }
 
     /**
-     * ブロックリストの統計情報を取得
+     * Get blocklist statistics
      */
     public function getStats(): array
     {
@@ -381,7 +381,7 @@ class CspBlocklistService
     }
 
     /**
-     * キャッシュをクリア
+     * Clear cache
      */
     public function clearCache(?string $category = null): void
     {

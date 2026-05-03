@@ -38,12 +38,12 @@ namespace App\Services\Admin;
 use App\Contracts\Admin\AdminNavigationManagerInterface;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  *
- * 管理画面ナビゲーション管理の具象実装
+ * Concrete implementation of admin panel navigation management
  *
- * プラグインのナビゲーション設定をコアの config('admin.navigation') にマージする。
- * _insert_before / _insert_after による順序制御、children のマージをサポートする。
+ * Merge plugin navigation settings into Core's config('admin.navigation')
+ * Supports ordering via _insert_before / _insert_after and children merging.
  */
 class AdminNavigationManager implements AdminNavigationManagerInterface
 {
@@ -88,10 +88,10 @@ class AdminNavigationManager implements AdminNavigationManagerInterface
     }
 
     /**
-     * 単一のナビゲーション項目をマージ
+     * Merge a single navigation item
      *
-     * @param  string  $key  ナビゲーションキー
-     * @param  array<string, mixed>  $value  ナビゲーション項目の設定
+     * @param  string  $key  Navigation key
+     * @param  array<string, mixed>  $value  Navigation item settings
      */
     private function mergeNavigationItem(string $key, array $value): void
     {
@@ -102,47 +102,47 @@ class AdminNavigationManager implements AdminNavigationManagerInterface
         } else {
             $existingValue = config("admin.navigation.{$key}");
             if ($existingValue !== null && is_array($existingValue)) {
-                // 既存の設定がある場合、childrenのみをマージし、他のプロパティは保持
+                // If existing settings exist, merge only children and preserve other properties
                 if (isset($value['children']) && is_array($value['children'])) {
                     $existingChildren = $existingValue['children'] ?? [];
                     $existingValue['children'] = $this->mergeChildren($existingChildren, $value['children']);
                 }
                 config(["admin.navigation.{$key}" => $existingValue]);
             } else {
-                // 新規追加
+                // Add new
                 config(["admin.navigation.{$key}" => $value]);
             }
         }
     }
 
     /**
-     * children 配列を再帰的にマージする
+     * Recursively merge children array
      *
-     * 既存の子要素のプロパティ（text, icon, route 等）を保持しつつ、
-     * 新しい children をマージする。新規キーはそのまま追加する。
+     * While preserving existing child element properties (text, icon, route, etc.),
+     * merge new children. Add new keys as-is
      *
-     * @param  array<string, mixed>  $existingChildren  既存の children 配列
-     * @param  array<string, mixed>  $newChildren  マージする children 配列
-     * @return array<string, mixed> マージ結果
+     * @param  array<string, mixed>  $existingChildren  Existing children array
+     * @param  array<string, mixed>  $newChildren  children array to merge
+     * @return array<string, mixed> Merge result
      */
     private function mergeChildren(array $existingChildren, array $newChildren): array
     {
         foreach ($newChildren as $childKey => $childValue) {
             if (isset($existingChildren[$childKey]) && is_array($existingChildren[$childKey]) && is_array($childValue)) {
-                // 既存の子要素がある場合、children を再帰マージし、他のプロパティは上書き
+                // If existing child elements exist, recursively merge children and overwrite other properties
                 if (isset($childValue['children']) && is_array($childValue['children'])) {
                     $existingGrandchildren = $existingChildren[$childKey]['children'] ?? [];
                     $existingChildren[$childKey]['children'] = $this->mergeChildren($existingGrandchildren, $childValue['children']);
                 }
 
-                // children 以外のプロパティが指定されていれば上書き
+                // Overwrite if properties other than children are specified
                 foreach ($childValue as $prop => $propValue) {
                     if ($prop !== 'children') {
                         $existingChildren[$childKey][$prop] = $propValue;
                     }
                 }
             } else {
-                // 新規の子要素はそのまま追加
+                // Add new child elements as-is
                 $existingChildren[$childKey] = $childValue;
             }
         }
@@ -151,12 +151,12 @@ class AdminNavigationManager implements AdminNavigationManagerInterface
     }
 
     /**
-     * 指定されたキーの前後に要素を挿入する
+     * Insert element before or after the specified key
      *
-     * @param  string  $configKey  config() に格納するキー
-     * @param  string  $insertKey  挿入するキー
-     * @param  array<string, mixed>  $insertValue  挿入するデータ
-     * @param  string  $targetKey  どのキーの前後に挿入するか
+     * @param  string  $configKey  Key to store in config()
+     * @param  string  $insertKey  Key to insert
+     * @param  array<string, mixed>  $insertValue  Data to insert
+     * @param  string  $targetKey  Before or after which key to insert
      * @param  string  $position  'before' or 'after'
      */
     private function insertOrdered(string $configKey, string $insertKey, array $insertValue, string $targetKey, string $position = 'before'): void
@@ -182,7 +182,7 @@ class AdminNavigationManager implements AdminNavigationManagerInterface
             }
         }
 
-        // ターゲットキーが存在しない場合は最後に追加
+        // Add at the end if target key does not exist
         if (! $inserted) {
             $newConfig[$insertKey] = $insertValue;
         }

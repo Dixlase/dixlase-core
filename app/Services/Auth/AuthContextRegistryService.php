@@ -38,22 +38,22 @@
 namespace App\Services\Auth;
 
 /**
- * 認証コンテキストレジストリ
+ * Authentication context registry
  *
- * プラグインが独自の認証コンテキスト（ルート、翻訳プレフィックスなど）を
- * 登録できるようにするためのレジストリサービス
+ * Registry service that allows plugins to register their own authentication contexts
+ * (routes, translation prefixes, etc.)
  */
 class AuthContextRegistryService
 {
     /**
-     * 登録された認証コンテキスト
+     * Registered authentication contexts
      *
      * @var array<string, array>
      */
     protected static array $contexts = [];
 
     /**
-     * デフォルトの管理者コンテキスト
+     * Default administrator context
      */
     protected static array $defaultAdminContext = [
         'guard' => 'member',
@@ -68,10 +68,10 @@ class AuthContextRegistryService
     ];
 
     /**
-     * 認証コンテキストを登録
+     * Register an authentication context
      *
-     * @param  string  $context  コンテキスト名（例: 'user', 'admin'）
-     * @param  array  $config  設定配列
+     * @param  string  $context  Context name (e.g., 'user', 'admin')
+     * @param  array  $config  Settings array
      */
     public static function register(string $context, array $config): void
     {
@@ -84,13 +84,13 @@ class AuthContextRegistryService
     }
 
     /**
-     * 登録されたコンテキストを取得
+     * Get a registered context
      *
-     * @param  string  $context  コンテキスト名
+     * @param  string  $context  Context name
      */
     public static function get(string $context): ?array
     {
-        // 管理者コンテキストはデフォルト設定を使用
+        // Administrator context uses default settings
         if ($context === 'admin') {
             return static::$defaultAdminContext;
         }
@@ -99,10 +99,10 @@ class AuthContextRegistryService
     }
 
     /**
-     * ルート名を取得
+     * Get route name
      *
-     * @param  string  $context  コンテキスト名
-     * @param  string  $routeKey  ルートキー（例: 'login', 'dashboard'）
+     * @param  string  $context  Context name
+     * @param  string  $routeKey  Route key (e.g., 'login', 'dashboard')
      */
     public static function getRoute(string $context, string $routeKey): ?string
     {
@@ -112,9 +112,9 @@ class AuthContextRegistryService
     }
 
     /**
-     * 翻訳プレフィックスを取得
+     * Get translation prefix
      *
-     * @param  string  $context  コンテキスト名
+     * @param  string  $context  Context name
      */
     public static function getTranslationPrefix(string $context): ?string
     {
@@ -124,9 +124,9 @@ class AuthContextRegistryService
     }
 
     /**
-     * エンティティタイプを取得
+     * Get entity type
      *
-     * @param  string  $context  コンテキスト名
+     * @param  string  $context  Context name
      */
     public static function getEntityType(string $context): ?string
     {
@@ -136,9 +136,9 @@ class AuthContextRegistryService
     }
 
     /**
-     * ガード名を取得
+     * Get guard name
      *
-     * @param  string  $context  コンテキスト名
+     * @param  string  $context  Context name
      */
     public static function getGuard(string $context): ?string
     {
@@ -148,7 +148,7 @@ class AuthContextRegistryService
     }
 
     /**
-     * すべての登録済みコンテキストを取得
+     * Get all registered contexts
      */
     public static function all(): array
     {
@@ -159,9 +159,9 @@ class AuthContextRegistryService
     }
 
     /**
-     * コンテキストが登録されているか確認
+     * Check if a context is registered
      *
-     * @param  string  $context  コンテキスト名
+     * @param  string  $context  Context name
      */
     public static function has(string $context): bool
     {
@@ -169,7 +169,7 @@ class AuthContextRegistryService
     }
 
     /**
-     * すべてのコンテキストをクリア（テスト用）
+     * Clear all contexts (for testing)
      */
     public static function clear(): void
     {

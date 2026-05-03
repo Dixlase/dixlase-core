@@ -42,26 +42,26 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
 /**
- * パスワードサービス
+ * Password Service
  *
- * パスワードに関する包括的な機能を提供：
- * - ハッシュ化・検証
- * - バリデーションルール構築
- * - パスワードリセット関連機能
+ * Provides comprehensive password functionality:
+ * - Hashing and verification
+ * - Validation rule construction
+ * - Password reset related features
  *
- * メンバー管理とユーザー管理の両方で使用可能
+ * Can be used for both member management and user management
  */
 class PasswordService
 {
     // =================================================================
-    // ハッシュ化・検証関連
+    // Hashing and verification related
     // =================================================================
 
     /**
-     * パスワードをハッシュ化（文字列を直接ハッシュ化）
+     * Hash password (directly hash string)
      *
-     * @param  string  $password  平文パスワード
-     * @return string ハッシュ化されたパスワード
+     * @param  string  $password  Plain text password
+     * @return string Hashed password
      */
     public static function hash(string $password): string
     {
@@ -69,13 +69,13 @@ class PasswordService
     }
 
     /**
-     * パスワードをハッシュ化（配列内のパスワードフィールドを処理）
+     * Hash password (process password field in array)
      *
-     * パスワードが空の場合は配列から削除します。
-     * パスワードが存在する場合はハッシュ化します。
+     * If password is empty, remove it from the array.
+     * If password exists, hash it.
      *
-     * @param  array  &$data  パスワードフィールドを含む配列（参照渡し）
-     * @param  string  $field  パスワードフィールド名（デフォルト: 'password'）
+     * @param  array  &$data  Array containing password fields (passed by reference)
+     * @param  string  $field  Password field name (default: 'password')
      */
     public static function hashPasswordIfPresent(array &$data, string $field = 'password'): void
     {
@@ -87,10 +87,10 @@ class PasswordService
     }
 
     /**
-     * パスワードを検証
+     * Verify password
      *
-     * @param  string  $password  平文パスワード
-     * @param  string  $hashedPassword  ハッシュ化されたパスワード
+     * @param  string  $password  Plain text password
+     * @param  string  $hashedPassword  Hashed password
      */
     public static function verify(string $password, string $hashedPassword): bool
     {
@@ -98,9 +98,9 @@ class PasswordService
     }
 
     /**
-     * パスワードの再ハッシュ化が必要かチェック
+     * Check if password needs rehashing
      *
-     * @param  string  $hashedPassword  ハッシュ化されたパスワード
+     * @param  string  $hashedPassword  Hashed password
      */
     public static function needsRehash(string $hashedPassword): bool
     {
@@ -108,21 +108,21 @@ class PasswordService
     }
 
     // =================================================================
-    // バリデーション関連
+    // Validation related
     // =================================================================
 
     /**
-     * パスワードバリデーションルールを構築
+     * Build password validation rules
      *
-     * 漏洩パスワードチェックはセキュリティ設定から自動的に取得されます
+     * Compromised password check is automatically retrieved from security settings
      *
-     * @param  int  $minLength  最小文字数
-     * @param  bool  $requireUppercase  大文字を必須にするか
-     * @param  bool  $requireLowercase  小文字を必須にするか
-     * @param  bool  $requireNumber  数字を必須にするか
-     * @param  bool  $requireSymbol  記号を必須にするか
-     * @param  bool  $isRequired  パスワード入力を必須にするか
-     * @return array バリデーションルール配列
+     * @param  int  $minLength  Minimum character count
+     * @param  bool  $requireUppercase  Whether to require uppercase letters
+     * @param  bool  $requireLowercase  Whether to require lowercase letters
+     * @param  bool  $requireNumber  Whether to require numbers
+     * @param  bool  $requireSymbol  Whether to require symbols
+     * @param  bool  $isRequired  Whether to require password input
+     * @return array Validation rules array
      */
     public static function buildPasswordRules(
         int $minLength,
@@ -134,10 +134,10 @@ class PasswordService
     ): array {
         $rules = $isRequired ? ['required'] : ['nullable'];
 
-        // Laravelのパスワードルールビルダーを使用
+        // Use Laravel's password rule builder
         $passwordRule = Password::min($minLength);
 
-        // 大文字と小文字の両方が必須の場合はmixedCaseを使用
+        // Use mixedCase if both uppercase and lowercase are required
         if ($requireUppercase && $requireLowercase) {
             $passwordRule->mixedCase();
         } elseif ($requireUppercase) {
@@ -157,7 +157,7 @@ class PasswordService
         $rules[] = $passwordRule;
         $rules[] = 'confirmed';
 
-        // 漏洩パスワードチェック（セキュリティ設定から自動取得）
+        // Compromised password check (automatically retrieved from security settings)
         $checkPwned = filter_var(
             \App\Models\SecuritySetting::get('pwned_password_check_enabled', false),
             FILTER_VALIDATE_BOOLEAN
@@ -171,14 +171,14 @@ class PasswordService
     }
 
     /**
-     * パスワード要件の説明文を生成
+     * Generate password requirements description
      *
-     * @param  int  $minLength  最小文字数
-     * @param  bool  $requireUppercase  大文字・小文字の混在を必須にするか
-     * @param  bool  $requireNumber  数字を必須にするか
-     * @param  bool  $requireSymbol  記号を必須にするか
-     * @param  string  $locale  ロケール（'ja' または 'en'）
-     * @return string パスワード要件の説明文
+     * @param  int  $minLength  Minimum character count
+     * @param  bool  $requireUppercase  Whether to require mixed case
+     * @param  bool  $requireNumber  Whether to require numbers
+     * @param  bool  $requireSymbol  Whether to require symbols
+     * @param  string  $locale  Locale ('ja' or 'en')
+     * @return string Password requirements description
      */
     public static function getPasswordRequirementsDescription(
         int $minLength,
@@ -207,9 +207,9 @@ class PasswordService
     }
 
     /**
-     * パスワードリセットが利用可能かチェック
+     * Check if password reset is available
      *
-     * @param  callable  $settingGetter  設定取得用のコールバック関数
+     * @param  callable  $settingGetter  Callback function for retrieving settings
      */
     public static function isPasswordResetAvailable(callable $settingGetter): bool
     {
@@ -219,9 +219,9 @@ class PasswordService
     }
 
     /**
-     * パスワードリセットが利用不可の場合404エラーを返す
+     * Return 404 error if password reset is unavailable
      *
-     * @param  callable  $settingGetter  設定取得用のコールバック関数
+     * @param  callable  $settingGetter  Callback function for retrieving settings
      */
     public static function abortIfPasswordResetUnavailable(callable $settingGetter): void
     {
@@ -231,14 +231,14 @@ class PasswordService
     }
 
     /**
-     * パスワードリセット用のバリデーションルールを取得
+     * Get validation rules for password reset
      *
-     * 漏洩パスワードチェックはセキュリティ設定から自動的に取得されます
+     * Compromised password check is automatically retrieved from security settings
      *
-     * @param  int  $minLength  最小文字数
-     * @param  bool  $requireUppercase  大文字・小文字の混在を必須にするか
-     * @param  bool  $requireNumber  数字を必須にするか
-     * @param  bool  $requireSymbol  記号を必須にするか
+     * @param  int  $minLength  Minimum character count
+     * @param  bool  $requireUppercase  Whether to require mixed case
+     * @param  bool  $requireNumber  Whether to require numbers
+     * @param  bool  $requireSymbol  Whether to require symbols
      */
     public static function getPasswordResetValidationRules(
         int $minLength,
@@ -261,7 +261,7 @@ class PasswordService
     }
 
     /**
-     * パスワードリセットリンク送信用のバリデーションルールを取得
+     * Get validation rules for sending password reset link
      */
     public static function getPasswordResetLinkValidationRules(): array
     {

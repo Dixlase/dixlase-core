@@ -43,37 +43,37 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
- * CAPTCHA緊急バイパスサービス（ブレークグラス）
+ * CAPTCHA emergency bypass service (break glass)
  *
- * CAPTCHAプロバイダ障害時に、管理者がログインできるよう
- * 一時的にCAPTCHA検証をバイパスする緊急復旧機能
+ * Allows administrators to log in during CAPTCHA provider outages
+ * Emergency recovery feature that temporarily bypasses CAPTCHA verification
  *
- * 特徴:
- * - 時間制限付き（最大60分）
- * - スコープ指定可能（admin_login, all）
- * - 監査ログに必ず記録
- * - 自動で期限切れ
+ * Features:
+ * - Time-limited (max 60 minutes)
+ * - Scoped (admin_login, all)
+ * - Always recorded in audit logs
+ * - Automatic expiration
  */
 class CaptchaBypassService
 {
     /**
-     * キャッシュキー
+     * Cache key
      */
     private const CACHE_KEY_BYPASS = 'captcha_bypass';
 
     private const CACHE_KEY_BYPASS_DATA = 'captcha_bypass_data';
 
     /**
-     * 最大バイパス時間（分）
+     * Maximum bypass time (minutes)
      */
     public const MAX_BYPASS_MINUTES = 60;
 
     /**
-     * バイパスを有効化
+     * Enable bypass
      */
     public static function enable(int $minutes, string $scope, string $reason): bool
     {
-        // 最大時間を制限
+        // Limit to maximum time
         $minutes = min($minutes, self::MAX_BYPASS_MINUTES);
 
         $expiresAt = now()->addMinutes($minutes);
@@ -88,7 +88,7 @@ class CaptchaBypassService
         ];
 
         try {
-            // キャッシュに保存（期限付き）
+            // Store in cache (with expiration)
             Cache::put(self::CACHE_KEY_BYPASS, true, $expiresAt);
             Cache::put(self::CACHE_KEY_BYPASS_DATA, $data, $expiresAt);
 
@@ -99,7 +99,7 @@ class CaptchaBypassService
                 'expires_at' => $expiresAt->toIso8601String(),
             ]);
 
-            // 管理者に通知
+            // Notify administrators
             self::notifyAdminOfBypass($scope, $reason, $minutes);
 
             return true;
@@ -113,7 +113,7 @@ class CaptchaBypassService
     }
 
     /**
-     * バイパスを無効化
+     * Disable bypass
      */
     public static function disable(): void
     {
@@ -124,7 +124,7 @@ class CaptchaBypassService
     }
 
     /**
-     * バイパスがアクティブかチェック
+     * Check if bypass is active
      */
     public static function isActive(?string $scope = null): bool
     {
@@ -132,12 +132,12 @@ class CaptchaBypassService
             return false;
         }
 
-        // スコープが指定されている場合、スコープもチェック
+        // If scope is specified, check scope as well
         if ($scope !== null) {
             $data = Cache::get(self::CACHE_KEY_BYPASS_DATA, []);
             $bypassScope = $data['scope'] ?? 'admin_login';
 
-            // 'all' スコープは全てにマッチ
+            // 'all' scope matches everything
             if ($bypassScope === 'all') {
                 return true;
             }
@@ -149,10 +149,10 @@ class CaptchaBypassService
     }
 
     /**
-     * 指定されたスコープでCAPTCHAをスキップすべきかチェック
+     * Check if CAPTCHA should be skipped for the specified scope
      *
-     * @param  string  $scope  チェックするスコープ（例: 'admin_login'）
-     * @return bool CAPTCHAをスキップすべきならtrue
+     * @param  string  $scope  Scope to check (e.g., 'admin_login')
+     * @return bool true if CAPTCHA should be skipped
      */
     public static function shouldSkipCaptcha(string $scope = 'admin_login'): bool
     {
@@ -160,7 +160,7 @@ class CaptchaBypassService
     }
 
     /**
-     * バイパスの状態を取得
+     * Get bypass status
      */
     public static function getStatus(): array
     {
@@ -192,7 +192,7 @@ class CaptchaBypassService
     }
 
     /**
-     * 最近のバイパス履歴を取得
+     * Get recent bypass history
      */
     public static function getRecentHistory(int $limit = 10): Collection
     {
@@ -203,7 +203,7 @@ class CaptchaBypassService
     }
 
     /**
-     * バイパス有効化時に管理者へ通知
+     * Notify administrator when bypass is enabled
      */
     protected static function notifyAdminOfBypass(string $scope, string $reason, int $minutes): void
     {

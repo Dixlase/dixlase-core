@@ -43,11 +43,11 @@ use App\Services\EmailAuthenticationService;
 use Illuminate\Support\Facades\Log;
 
 /**
- * 二段階認証サービス
+ * Two-factor authentication service
  *
- * 管理画面とユーザープラグインで共通の二段階認証機能を提供
- * コアの汎用サービス（TwoFaHelper、EmailAuthenticationServiceなど）を組み合わせて使用
- * 設定モデルクラスとコンテキストをコンストラクタで指定可能
+ * Provides common two-factor authentication functionality for admin panel and user plugin
+ * Uses a combination of Core generic services (TwoFaHelper, EmailAuthenticationService, etc.)
+ * Settings model class and context can be specified in constructor
  */
 class TwoFaService
 {
@@ -84,11 +84,11 @@ class TwoFaService
     }
 
     /**
-     * 二段階認証コードを生成してメール送信
+     * Generate and send two-factor authentication code via email
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  int|null  $method  認証方法（nullの場合は自動判定）
-     * @return string|array 生成されたコードまたはチャレンジデータ
+     * @param  mixed  $user  User model
+     * @param  int|null  $method  Authentication method (auto-detected if null)
+     * @return string|array Generated code or challenge data
      */
     public function generate($user, ?int $method = null)
     {
@@ -102,12 +102,12 @@ class TwoFaService
     }
 
     /**
-     * 二段階認証を検証
+     * Verify two-factor authentication
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  string|array  $input  入力されたコードまたは認証データ
-     * @param  int|null  $method  認証方法（nullの場合は自動判定）
-     * @return bool 検証結果
+     * @param  mixed  $user  User model
+     * @param  string|array  $input  Input code or authentication data
+     * @param  int|null  $method  Authentication method (auto-detected if null)
+     * @return bool Verification result
      */
     public function validate($user, $input, ?int $method = null): bool
     {
@@ -121,10 +121,10 @@ class TwoFaService
     }
 
     /**
-     * 二段階認証が必要かどうかを判定
+     * Determine whether two-factor authentication is required
      *
-     * @param  mixed  $member  ユーザーモデル
-     * @return bool 2FAが必要かどうか
+     * @param  mixed  $member  User model
+     * @return bool Whether 2FA is required
      */
     public function has($member): bool
     {
@@ -132,10 +132,10 @@ class TwoFaService
     }
 
     /**
-     * 異なる環境からのアクセスかどうかを判定
+     * Determine whether access is from a different environment
      *
-     * @param  mixed  $member  ユーザーモデル
-     * @return bool 異なる環境かどうか
+     * @param  mixed  $member  User model
+     * @return bool Whether it's a different environment
      */
     public function isDifferentEnvironment($member): bool
     {
@@ -143,7 +143,7 @@ class TwoFaService
     }
 
     /**
-     * システム設定を取得
+     * Get system settings
      */
     public function getSystemSettings(): array
     {
@@ -151,10 +151,10 @@ class TwoFaService
     }
 
     /**
-     * 使用する認証方法を取得
+     * Get authentication method to use
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @return int 認証方法
+     * @param  mixed  $user  User model
+     * @return int Authentication method
      */
     public function getEffectiveAuthMethod($user): int
     {
@@ -162,22 +162,22 @@ class TwoFaService
     }
 
     /**
-     * 利用可能な認証方法を取得
+     * Get available authentication methods
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @return array 利用可能な認証方法
+     * @param  mixed  $user  User model
+     * @return array Available authentication methods
      */
     public function getAvailableMethods($user): array
     {
         $systemSettings = $this->getSystemSettings();
         $methods = [];
 
-        // パスワードログイン後はパスキーを除外
+        // Exclude passkey after password login
         $authMethod = session('login.auth_method');
         $isPasswordLogin = $authMethod === 'password';
 
         foreach ($systemSettings['enabled_methods'] as $method) {
-            // パスワードログイン後はパスキーを使用不可
+            // Passkey cannot be used after password login
             if ($isPasswordLogin && $method === TwoFaMethod::PASSKEY->value) {
                 continue;
             }
@@ -201,23 +201,23 @@ class TwoFaService
     }
 
     /**
-     * 認証方法のセットアップが必要かどうかを判定
+     * Determine if authentication method setup is required
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  int  $method  認証方法
-     * @return bool セットアップが必要かどうか
+     * @param  mixed  $user  User model
+     * @param  int  $method  Authentication method
+     * @return bool Whether setup is required
      */
     private function isSetupRequired($user, int $method): bool
     {
         return match ($method) {
-            TwoFaMethod::EMAIL->value => false, // メール認証は常に利用可能
+            TwoFaMethod::EMAIL->value => false, // Email authentication is always available
             TwoFaMethod::PASSKEY->value => ! $this->passkeyAuth->hasCredentials($user),
             default => true,
         };
     }
 
     /**
-     * メール認証コードを生成
+     * Generate email authentication code
      */
     private function generateEmailCode($user): string
     {
@@ -225,7 +225,7 @@ class TwoFaService
     }
 
     /**
-     * Passkeyチャレンジを生成
+     * Generate passkey challenge
      */
     private function generatePasskeyChallenge($user): array
     {
@@ -233,11 +233,11 @@ class TwoFaService
     }
 
     /**
-     * メール認証コードを検証
+     * Verify email authentication code
      */
     private function validateEmailCode($user, string $inputCode): bool
     {
-        // ロックアウトチェック
+        // Lockout check
         if ($this->attemptService->isLockedOut($user)) {
             Log::warning('[2FA] Email code validation blocked - locked out', [
                 'user_id' => $user->id,
@@ -249,18 +249,18 @@ class TwoFaService
 
         $result = $this->emailAuth->validateCode($user, $inputCode);
 
-        // 試行を記録
+        // Record attempt
         $this->attemptService->recordAttempt($user, 'email', $result);
 
         return $result;
     }
 
     /**
-     * Passkey認証を検証
+     * Verify passkey authentication
      */
     private function validatePasskeyAuth($user, $input): bool
     {
-        // ロックアウトチェック
+        // Lockout check
         if ($this->attemptService->isLockedOut($user)) {
             Log::warning('[2FA] Passkey validation blocked - locked out', [
                 'user_id' => $user->id,
@@ -272,18 +272,18 @@ class TwoFaService
 
         $result = $this->passkeyAuth->validatePasskeyAuth($user, $input);
 
-        // 試行を記録
+        // Record attempt
         $this->attemptService->recordAttempt($user, 'passkey', $result);
 
         return $result;
     }
 
     /**
-     * 回復コードを検証
+     * Verify recovery code
      */
     public function validateRecoveryCode($user, string $code): bool
     {
-        // ロックアウトチェック
+        // Lockout check
         if ($this->attemptService->isLockedOut($user)) {
             Log::warning('[2FA] Recovery code validation blocked - locked out', [
                 'user_id' => $user->id,
@@ -295,11 +295,11 @@ class TwoFaService
 
         $result = $this->recoveryCode->validate($user, $code);
 
-        // 試行を記録
+        // Record attempt
         $this->attemptService->recordAttempt($user, 'recovery_code', $result);
 
         if ($result) {
-            // 残数を取得
+            // Get remaining count
             $remaining = $this->recoveryCode->getRemainingCount($user);
 
             Log::info('[2FA] Recovery code used', [
@@ -313,7 +313,7 @@ class TwoFaService
     }
 
     /**
-     * ロックアウト状態をチェック
+     * Check lockout status
      */
     public function checkLockout($user): array
     {
@@ -328,7 +328,7 @@ class TwoFaService
             ];
         }
 
-        // 試行回数制限チェック
+        // Check attempt limit
         if ($this->attemptService->hasReachedMaxAttempts($user)) {
             return [
                 'locked_out' => true,

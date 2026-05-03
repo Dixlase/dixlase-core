@@ -40,18 +40,18 @@ use App\Notifications\AdminLoginNotification;
 use App\Traits\LoginNotificationTrait;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * 管理画面ログイン通知サービス
+ * Admin panel login notification service
  *
- * LoginNotificationTraitを使用してメンバーのログイン通知を処理
+ * Processes member login notifications using LoginNotificationTrait
  */
 class AdminLoginNotificationService
 {
     use LoginNotificationTrait;
 
     /**
-     * グローバル設定のキー名を取得
+     * Retrieve global settings key name
      */
     protected function getGlobalSettingKey(): string
     {
@@ -59,7 +59,7 @@ class AdminLoginNotificationService
     }
 
     /**
-     * 設定値を取得する関数を取得（セキュリティ設定から）
+     * Retrieve function to retrieve settings value (from security settings)
      */
     protected function getSettingGetter(): callable
     {
@@ -67,7 +67,7 @@ class AdminLoginNotificationService
     }
 
     /**
-     * 通知クラス名を取得
+     * Retrieve notification class name
      */
     protected function getNotificationClass(): string
     {
@@ -75,7 +75,7 @@ class AdminLoginNotificationService
     }
 
     /**
-     * ログコンテキスト名を取得
+     * Retrieve log context name
      */
     protected function getLogContext(): string
     {

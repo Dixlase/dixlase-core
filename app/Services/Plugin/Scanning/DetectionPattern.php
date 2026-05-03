@@ -36,22 +36,22 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * 検出パターンの抽象基底クラス
+ * Abstract base class for detection patterns
  *
- * 各パターンクラスは特定の権限カテゴリに対応し、
- * コンテキストを考慮した検出ロジックを実装します。
+ * Each pattern class corresponds to a specific permission category
+ * and implements context-aware detection logic
  */
 abstract class DetectionPattern
 {
     /**
-     * パターンが対応する権限キー（ドット記法）
+     * Permission key this pattern corresponds to (dot notation)
      */
     abstract public function permissionKey(): string;
 
     /**
-     * パターンが対応する拡張機能種別（plugin, theme, both）
+     * Extension type this pattern corresponds to (plugin, theme, both)
      */
     public function applicableTo(): string
     {
@@ -59,7 +59,7 @@ abstract class DetectionPattern
     }
 
     /**
-     * 存在確認対象のファイルパターン
+     * File patterns to check for existence
      *
      * @return array<string>
      */
@@ -69,7 +69,7 @@ abstract class DetectionPattern
     }
 
     /**
-     * 検出対象の正規表現パターン
+     * Regular expression patterns for detection
      *
      * @return array<string>
      */
@@ -79,19 +79,19 @@ abstract class DetectionPattern
     }
 
     /**
-     * コンテキストを考慮してマッチ結果を検証する
+     * Validate match results considering context
      *
-     * 誤検出を減らすため、正規表現マッチ後にコンテキスト検証を行います。
-     * デフォルトではすべてのマッチを有効と判定します。
+     * Context validation is performed after regex matching to reduce false positives
+     * By default, all matches are considered valid
      *
-     * @param  string  $match  マッチした文字列
-     * @param  string  $line  マッチを含む行全体
-     * @param  string  $fileContent  ファイル全体の内容
-     * @param  string  $filePath  ファイルパス（拡張子ディレクトリからの相対パス）
+     * @param  string  $match  Matched string
+     * @param  string  $line  Full line containing the match
+     * @param  string  $fileContent  Full file content
+     * @param  string  $filePath  File path (relative to extension directory)
      */
     public function validateMatch(string $match, string $line, string $fileContent, string $filePath): bool
     {
-        // デフォルト: コメント行を除外
+        // Default: exclude comment lines
         $trimmedLine = ltrim($line);
 
         if (str_starts_with($trimmedLine, '//') || str_starts_with($trimmedLine, '*') || str_starts_with($trimmedLine, '/*')) {
@@ -102,7 +102,7 @@ abstract class DetectionPattern
     }
 
     /**
-     * ファイル内でパターンを検出し、検証済みの結果を返す
+     * Detect patterns in file and return validated results
      *
      * @return array<array{type: string, file: string, line: int, match: string}>
      */
@@ -132,7 +132,7 @@ abstract class DetectionPattern
     }
 
     /**
-     * 指定オフセット位置の行全体を取得
+     * Get full line at specified offset position
      */
     protected function getLineAtOffset(string $content, int $offset): string
     {

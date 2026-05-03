@@ -40,17 +40,17 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * ログイン行動分析サービス
+ * Login behavior analysis service
  *
- * β版での行動分析機能の基盤として使用
- * ログイン時のコンテキスト収集と異常検知を担当
+ * Used as the foundation for behavior analysis features in beta
+ * Handles context collection and anomaly detection during login
  */
 class LoginBehaviorService
 {
     /**
-     * リクエストからログインコンテキストを収集
+     * Collect login context from request
      */
     public function collectLoginContext(Request $request): array
     {
@@ -65,9 +65,9 @@ class LoginBehaviorService
     }
 
     /**
-     * デバイスフィンガープリントを生成
+     * Generate device fingerprint
      *
-     * UserAgent + Accept-Language + Accept-Encoding のハッシュ
+     * Hash of UserAgent + Accept-Language + Accept-Encoding
      */
     public function generateDeviceFingerprint(Request $request): string
     {
@@ -82,20 +82,20 @@ class LoginBehaviorService
     }
 
     /**
-     * IPアドレスから国コードを取得
+     * Get country code from IP address
      *
-     * β版でGeoIPライブラリを統合予定
-     * 現在はnullを返す（プレースホルダー）
+     * GeoIP library integration planned for beta
+     * Currently returns null (placeholder)
      */
     public function getCountryCode(Request $request): ?string
     {
-        // TODO: β版でGeoIP2/MaxMindを統合
-        // 現在はプレースホルダーとしてnullを返す
+        // TODO: Integrate GeoIP2/MaxMind in beta
+        // Currently returns null as a placeholder
         return null;
     }
 
     /**
-     * ログイン試行を記録（行動分析データ付き）
+     * Record login attempt (with behavior analysis data)
      */
     public function recordLoginAttempt(
         string $identifier,
@@ -138,7 +138,7 @@ class LoginBehaviorService
     }
 
     /**
-     * ログイン成功を記録
+     * Record login success
      */
     public function recordSuccessfulLogin(
         string $identifier,
@@ -149,7 +149,7 @@ class LoginBehaviorService
     }
 
     /**
-     * ログイン失敗を記録
+     * Record login failure
      */
     public function recordFailedLogin(
         string $identifier,
@@ -163,7 +163,7 @@ class LoginBehaviorService
     }
 
     /**
-     * 現在のログインが異常かどうかを判定
+     * Determine if current login is anomalous
      */
     public function detectAnomaly(string $identifier, Request $request): array
     {
@@ -178,7 +178,7 @@ class LoginBehaviorService
     }
 
     /**
-     * ユーザーの行動プロファイルを取得
+     * Get user's behavior profile
      */
     public function getBehaviorProfile(string $identifier, int $days = 30): array
     {
@@ -192,22 +192,22 @@ class LoginBehaviorService
     }
 
     /**
-     * リスクスコアを計算（β版で拡張予定）
+     * Calculate risk score (to be extended in beta)
      *
-     * @return int 0-100のリスクスコア
+     * @return int Risk score from 0-100
      */
     public function calculateRiskScore(string $identifier, Request $request): int
     {
         $anomaly = $this->detectAnomaly($identifier, $request);
         $riskScore = $anomaly['risk_score'];
 
-        // 追加のリスク要因（β版で拡張予定）
-        // - 連続失敗回数
-        // - 短時間での複数IP
-        // - VPN/Tor検知
-        // - ブルートフォース検知
+        // Additional risk factors (to be extended in beta)
+        // - Consecutive failure count
+        // - Multiple IPs in short time
+        // - VPN/Tor detection
+        // - Brute force detection
 
-        // 連続失敗回数によるリスク加算
+        // Add risk based on consecutive failure count
         $recentFailures = MemberLoginAttempt::getFailedAttemptsCount($identifier, 60);
         if ($recentFailures >= 3) {
             $riskScore += min($recentFailures * 5, 30);
@@ -217,7 +217,7 @@ class LoginBehaviorService
     }
 
     /**
-     * 高リスクログインの一覧を取得
+     * Get high-risk login list
      */
     public function getHighRiskLogins(int $hours = 24, int $minScore = 50, int $limit = 100)
     {
@@ -229,7 +229,7 @@ class LoginBehaviorService
     }
 
     /**
-     * 特定ユーザーの高リスクログイン履歴を取得
+     * Get high-risk login history for specific user
      */
     public function getHighRiskLoginsForUser(string $identifier, int $days = 30, int $minScore = 50)
     {
@@ -241,7 +241,7 @@ class LoginBehaviorService
     }
 
     /**
-     * ログイン行動の要約レポートを生成
+     * Generate summary report of login behavior
      */
     public function generateBehaviorReport(int $days = 7): array
     {

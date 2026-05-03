@@ -39,41 +39,41 @@ use App\Enums\AuthenticationMode;
 use App\Models\SecuritySetting;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * 二段階認証の状態判定サービス
+ * Two-factor authentication status determination service
  *
- * 全体設定とプロフィール設定を考慮した二段階認証の実際の状態を判定します。
+ * Determines the actual state of two-factor authentication considering global settings and profile settings
  */
 class TwoFaStatusService
 {
     /**
-     * 実際の二段階認証モードを取得
+     * Get the actual two-factor authentication mode
      *
      * @param  \App\Models\Member  $user
-     * @return int 実際の二段階認証モード
+     * @return int Actual two-factor authentication mode
      */
     public function getActualTwoFaMode($user): int
     {
-        // 全体設定を取得
+        // Get global settings
         $twoFaForceMode = (int) SecuritySetting::getValue('two_fa_mode', AuthenticationMode::UseProfileSetting->value);
         $profileTwoFaMode = is_int($user->two_fa_mode) ? $user->two_fa_mode : $user->two_fa_mode->value;
 
-        // 実際の二段階認証モードを判定
+        // Determine the actual two-factor authentication mode
         if ($twoFaForceMode === AuthenticationMode::UseProfileSetting->value) {
-            // プロフィール設定に従う場合はプロフィールの値を使用
+            // Use profile value when following profile settings
             return $profileTwoFaMode;
         } else {
-            // それ以外は全体設定を使用
+            // Otherwise use global settings
             return $twoFaForceMode;
         }
     }
 
     /**
-     * 二段階認証が有効かどうかを判定
+     * Determine whether two-factor authentication is enabled
      *
      * @param  \App\Models\Member  $user
-     * @return bool 二段階認証が有効な場合true
+     * @return bool True if two-factor authentication is enabled
      */
     public function isTwoFaEnabled($user): bool
     {
@@ -84,34 +84,34 @@ class TwoFaStatusService
     }
 
     /**
-     * 実際のパスキー有効状態を取得
+     * Get the actual passkey enabled state
      *
      * @param  \App\Models\Member  $user
-     * @return bool パスキーが有効な場合true
+     * @return bool True if passkey is enabled
      */
     public function isPasskeyEnabled($user): bool
     {
-        // 全体設定のパスキーモードを取得
+        // Get passkey mode from global settings
         $twoFaPasskeyMode = (int) SecuritySetting::getValue('two_fa_passkey_mode', '2');
 
-        // 実際のパスキー有効状態を判定
+        // Determine the actual passkey enabled state
         if ($twoFaPasskeyMode === 0) {
-            // 全体設定で無効
+            // Disabled in global settings
             return false;
         } elseif ($twoFaPasskeyMode === 1) {
-            // 全体設定で有効
+            // Enabled in global settings
             return true;
         } else {
-            // プロフィール設定に従う
+            // Follow profile settings
             return $user->two_fa_passkey_enabled ?? true;
         }
     }
 
     /**
-     * 回復コードの自動生成が必要かどうかを判定
+     * Determine whether automatic generation of recovery codes is necessary
      *
      * @param  \App\Models\Member  $user
-     * @return bool 回復コードの自動生成が必要な場合true
+     * @return bool True if automatic generation of recovery codes is necessary
      */
     public function shouldGenerateRecoveryCodes($user, TwoFaRecoveryCodeService $recoveryCodeService): bool
     {
@@ -119,14 +119,14 @@ class TwoFaStatusService
     }
 
     /**
-     * パスキー登録促進モーダルを表示すべきかどうかを判定
+     * Determine whether to display the passkey registration promotion modal
      *
      * @param  \App\Models\Member  $user
-     * @return bool パスキー登録促進モーダルを表示すべき場合true
+     * @return bool True if the passkey registration promotion modal should be displayed
      */
     public function shouldPromptPasskeyRegistration($user, TwoFaPasskeyService $passkeyService): bool
     {
-        // ユーザーがモーダルを非表示にしている場合は表示しない
+        // Do not display if the user has hidden the modal
         if ($user->passkey_prompt_dismissed ?? false) {
             return false;
         }
@@ -145,9 +145,9 @@ class TwoFaStatusService
     }
 
     /**
-     * 全体設定の二段階認証モードを取得
+     * Get the two-factor authentication mode from global settings
      *
-     * @return int 全体設定の二段階認証モード
+     * @return int Two-factor authentication mode from global settings
      */
     public function getGlobalTwoFaMode(): int
     {
@@ -155,9 +155,9 @@ class TwoFaStatusService
     }
 
     /**
-     * 全体設定のパスキーモードを取得
+     * Get passkey mode from global settings
      *
-     * @return int 全体設定のパスキーモード（0=無効、1=有効、2=プロフィールに従う）
+     * @return int Passkey mode from global settings (0=disabled, 1=enabled, 2=follow profile)
      */
     public function getGlobalPasskeyMode(): int
     {
@@ -165,9 +165,9 @@ class TwoFaStatusService
     }
 
     /**
-     * パスキーが全体設定で有効かどうかを判定（プロフィール設定を考慮しない）
+     * Determine whether passkey is enabled in global settings (without considering profile settings)
      *
-     * @return bool パスキーが全体設定で有効な場合true
+     * @return bool True if passkey is enabled in global settings
      */
     public function isPasskeyEnabledGlobally(): bool
     {

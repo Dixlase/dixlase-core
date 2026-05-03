@@ -46,12 +46,12 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  */
 class ExtensionOperationService
 {
     /**
-     * 操作種別定数
+     * Operation type constants
      */
     public const OPERATION_INSTALLED = 'installed';
 
@@ -62,34 +62,34 @@ class ExtensionOperationService
     public const OPERATION_DISABLED = 'disabled';
 
     /**
-     * 拡張機能種別定数
+     * Extension type constants
      */
     public const TYPE_PLUGIN = 'plugin';
 
     public const TYPE_THEME = 'theme';
 
     /**
-     * 拡張機能の操作を記録・通知する
+     * Record and notify extension operations
      *
-     * @param  string  $type  拡張機能種別 (plugin/theme)
-     * @param  string  $operation  操作種別 (installed/uninstalled/enabled/disabled)
-     * @param  array  $extensionData  拡張機能の詳細データ
+     * @param  string  $type  Extension type (plugin/theme)
+     * @param  string  $operation  Operation type (installed/uninstalled/enabled/disabled)
+     * @param  array  $extensionData  Extension detail data
      */
     public function recordOperation(string $type, string $operation, array $extensionData): void
     {
         $details = $this->buildOperationDetails($type, $operation, $extensionData);
 
-        // ログに記録
+        // Log the operation
         if ($this->shouldLogOperation()) {
             $this->logOperation($details, $operation);
         }
 
-        // メール通知
+        // Email notification
         $this->sendNotificationIfNeeded($details, $operation);
     }
 
     /**
-     * 操作詳細データを構築
+     * Build operation detail data
      */
     protected function buildOperationDetails(string $type, string $operation, array $extensionData): array
     {
@@ -109,42 +109,42 @@ class ExtensionOperationService
     }
 
     /**
-     * 現在のログインメンバーを安全に取得
-     * Artisanコマンド実行時など、認証ガードが利用できない場合はnullを返す
+     * Safely get the current logged-in member
+     * Return null when auth guard is unavailable, such as during Artisan command execution
      */
     protected function getCurrentMember(): ?object
     {
         try {
-            // adminガードが定義されているか確認
+            // Check if admin guard is defined
             if (! config('auth.guards.admin')) {
                 return null;
             }
 
             return Auth::guard('admin')->user();
         } catch (\Exception $e) {
-            // ガードが利用できない場合（CLIなど）
+            // When guard is unavailable (e.g., CLI)
             return null;
         }
     }
 
     /**
-     * 操作をログに記録（監査ログに統合）
+     * Log the operation (integrated with audit log)
      */
     protected function logOperation(array $details, string $operation): void
     {
-        // 監査ログのアクションを決定
+        // Determine audit log action
         $action = $this->getAuditAction($details['type'], $operation);
 
-        // 健全性が良好以外の場合は警告レベル
+        // Warning level if health status is not good
         $isUnhealthy = ! $this->isHealthStatusHealthy($details['health_status']) &&
             in_array($operation, [self::OPERATION_INSTALLED, self::OPERATION_ENABLED]);
 
         $severity = $isUnhealthy ? AuditLog::SEVERITY_WARNING : AuditLog::SEVERITY_NOTICE;
 
-        // 操作者を取得
+        // Get the operator
         $actor = AdminHelper::getMember();
 
-        // 監査ログに記録
+        // Record to audit log
         Audit::logExtension($action, [
             'actor' => $actor,
             'outcome' => AuditLog::OUTCOME_SUCCESS,
@@ -162,7 +162,7 @@ class ExtensionOperationService
     }
 
     /**
-     * 監査ログのアクションを取得
+     * Get audit log action
      */
     protected function getAuditAction(string $type, string $operation): string
     {
@@ -185,21 +185,21 @@ class ExtensionOperationService
     }
 
     /**
-     * 操作メッセージを生成
+     * Generate operation message
      */
     protected function getOperationMessage(array $details, string $operation): string
     {
-        $typeLabel = $details['type'] === self::TYPE_PLUGIN ? 'プラグイン' : 'テーマ';
+        $typeLabel = $details['type'] === self::TYPE_PLUGIN ? __('services/extension_operation_service.plugin') : __('services/extension_operation_service.theme');
         $operationLabels = [
-            self::OPERATION_INSTALLED => 'インストール',
-            self::OPERATION_UNINSTALLED => 'アンインストール',
-            self::OPERATION_ENABLED => '有効化',
-            self::OPERATION_DISABLED => '無効化',
+            self::OPERATION_INSTALLED => __('services/extension_operation_service.install'),
+            self::OPERATION_UNINSTALLED => __('services/extension_operation_service.uninstall'),
+            self::OPERATION_ENABLED => __('services/extension_operation_service.enable'),
+            self::OPERATION_DISABLED => __('services/extension_operation_service.disable'),
         ];
         $operationLabel = $operationLabels[$operation] ?? $operation;
 
         return sprintf(
-            '%s「%s」(v%s)を%sしました',
+            __('services/extension_operation_service.operation_success_message'),
             $typeLabel,
             $details['name'],
             $details['version'] ?? 'unknown',
@@ -208,11 +208,11 @@ class ExtensionOperationService
     }
 
     /**
-     * 必要に応じてメール通知を送信
+     * Send email notification if needed
      */
     protected function sendNotificationIfNeeded(array $details, string $operation): void
     {
-        // メールサーバーが設定されているか確認
+        // Check if mail server is configured
         if (! MailServerValidatorService::isMailServerTested()) {
             return;
         }
@@ -222,21 +222,21 @@ class ExtensionOperationService
             return;
         }
 
-        // 操作種別に応じた通知設定を確認
+        // Check notification settings according to operation type
         $shouldNotify = $this->shouldNotifyForOperation($operation);
 
         if ($shouldNotify) {
             $this->sendOperationNotification($adminEmail, $details, $operation);
         }
 
-        // 健全性警告の通知
+        // Health warning notification
         if ($this->shouldNotifyUnhealthy() && $this->isUnhealthyOperation($details, $operation)) {
             $this->sendUnhealthyWarningNotification($adminEmail, $details, $operation);
         }
     }
 
     /**
-     * 操作通知メールを送信
+     * Send operation notification email
      */
     protected function sendOperationNotification(string $email, array $details, string $operation): void
     {
@@ -251,7 +251,7 @@ class ExtensionOperationService
     }
 
     /**
-     * 健全性警告メールを送信
+     * Send health warning email
      */
     protected function sendUnhealthyWarningNotification(string $email, array $details, string $operation): void
     {
@@ -266,7 +266,7 @@ class ExtensionOperationService
     }
 
     /**
-     * 操作種別に応じた通知が有効か確認
+     * Check if notification is enabled according to operation type
      */
     protected function shouldNotifyForOperation(string $operation): bool
     {
@@ -286,7 +286,7 @@ class ExtensionOperationService
     }
 
     /**
-     * 健全性警告通知が有効か確認
+     * Check if health warning notification is enabled
      */
     protected function shouldNotifyUnhealthy(): bool
     {
@@ -294,7 +294,7 @@ class ExtensionOperationService
     }
 
     /**
-     * 操作ログが有効か確認
+     * Check if operation log is enabled
      */
     protected function shouldLogOperation(): bool
     {
@@ -302,11 +302,11 @@ class ExtensionOperationService
     }
 
     /**
-     * 健全性が良好以外の操作か確認
+     * Check if operation has non-healthy status
      */
     protected function isUnhealthyOperation(array $details, string $operation): bool
     {
-        // インストール・有効化時のみ健全性警告を送信
+        // Send health warning only during install/enable operations
         if (! in_array($operation, [self::OPERATION_INSTALLED, self::OPERATION_ENABLED])) {
             return false;
         }
@@ -315,9 +315,9 @@ class ExtensionOperationService
     }
 
     /**
-     * 健全性ステータスが「良好」かどうかを判定
+     * Determine if health status is "healthy"
      *
-     * PluginHealthStatus enum値（healthy）と旧リスクレベル値（low）の両方に対応
+     * Support both PluginHealthStatus enum value (healthy) and legacy risk level value (low)
      */
     protected function isHealthStatusHealthy(string $healthStatus): bool
     {

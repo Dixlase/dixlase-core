@@ -41,23 +41,23 @@ use App\Enums\PluginHealthStatus;
 use App\Models\ThemeAudit;
 
 /**
- * テーマ健全性スコアの計算元
+ * Calculates theme health score
  *
- * PluginHealthStatus::getDeductionRules() を減点テーブルとして使用し、
- * 署名検証・権限整合性・CSP適合性・危険API検出・スキャン鮮度を評価して
- * 0-100点のスコアと健全性ステータスを返します。
+ * Uses PluginHealthStatus::getDeductionRules() as the deduction table,
+ * evaluates signature verification, permission consistency, CSP compliance, dangerous API detection, and scan freshness
+ * to return a score of 0-100 and health status.
  *
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  */
 class ThemeHealthScorer
 {
     /**
-     * 初期スコア
+     * Initial score
      */
     protected const BASE_SCORE = 100;
 
     /**
-     * スキャン期限切れとみなす日数
+     * Days to consider scan expired
      */
     protected const SCAN_EXPIRY_DAYS = 30;
 
@@ -66,7 +66,7 @@ class ThemeHealthScorer
     ) {}
 
     /**
-     * テーマの健全性スコアを計算
+     * Calculate theme health score
      */
     public function calculate(string $themeSlug): HealthScoreResult
     {
@@ -80,7 +80,7 @@ class ThemeHealthScorer
                 issues: [new HealthIssue(
                     type: 'not_verified_no_scan',
                     severity: 'warning',
-                    description: '監査スキャンが未実行です。',
+                    description: __('services/theme/theme_health_scorer.audit_scan_not_executed'),
                     deduction: 0,
                 )],
                 hasCriticalIssue: false,
@@ -94,26 +94,26 @@ class ThemeHealthScorer
             $issues[] = new HealthIssue(
                 type: 'permission_undefined',
                 severity: 'warning',
-                description: 'permissions セクションが未定義です。',
+                description: __('services/theme/theme_health_scorer.permissions_section_undefined'),
                 deduction: $deductionRules['permission_undefined'] ?? -10,
             );
         }
 
-        // 1. 署名検証の評価
+        // 1. Evaluate signature verification
         $issues = array_merge($issues, $this->evaluateSignature($themeSlug, $deductionRules));
 
-        // 2. 権限整合性の評価
+        // 2. Evaluate permission consistency
         if ($permissions !== null) {
             $issues = array_merge($issues, $this->evaluatePermissions($themeSlug, $deductionRules));
         }
 
-        // 3. CSP適合性の評価
+        // 3. Evaluate CSP compliance
         $issues = array_merge($issues, $this->evaluateCsp($themeSlug, $deductionRules));
 
-        // 4. 危険API検出の評価
+        // 4. Evaluate dangerous API detection
         $issues = array_merge($issues, $this->evaluateDangerousApis($themeSlug, $deductionRules));
 
-        // 5. スキャン鮮度の評価
+        // 5. Evaluate scan freshness
         $issues = array_merge($issues, $this->evaluateScanFreshness($themeSlug, $deductionRules));
 
         $totalDeduction = array_sum(array_map(fn (HealthIssue $i) => $i->deduction, $issues));
@@ -131,7 +131,7 @@ class ThemeHealthScorer
     }
 
     /**
-     * 署名検証の評価
+     * Evaluate signature verification
      *
      * @return array<HealthIssue>
      */
@@ -144,14 +144,14 @@ class ThemeHealthScorer
             $issues[] = new HealthIssue(
                 type: 'signature_unsigned',
                 severity: 'warning',
-                description: '署名がありません。配布時は署名を推奨します。',
+                description: __('services/theme/theme_health_scorer.no_signature_recommend_signing'),
                 deduction: $deductionRules['signature_unsigned'] ?? -10,
             );
         } elseif ($signatureInfo['status'] === 'invalid') {
             $issues[] = new HealthIssue(
                 type: 'signature_invalid',
                 severity: 'critical',
-                description: '署名が無効です。改ざんの可能性があります。',
+                description: __('services/theme/theme_health_scorer.invalid_signature_tampering'),
                 deduction: $deductionRules['signature_invalid'] ?? -50,
             );
         }
@@ -160,7 +160,7 @@ class ThemeHealthScorer
     }
 
     /**
-     * 権限整合性の評価
+     * Evaluate permission consistency
      *
      * @return array<HealthIssue>
      */
@@ -189,7 +189,7 @@ class ThemeHealthScorer
                 $issues[] = new HealthIssue(
                     type: $issueType,
                     severity: $isMajor ? 'critical' : 'warning',
-                    description: "未宣言の権限使用: {$permission}",
+                    description: __('services/theme/theme_health_scorer.undeclared_permission_used', ['permission' => $permission]),
                     evidence: $mismatch['evidence'] ?? [],
                     deduction: $deductionRules[$issueType] ?? ($isMajor ? -15 : -5),
                 );
@@ -197,7 +197,7 @@ class ThemeHealthScorer
                 $issues[] = new HealthIssue(
                     type: 'permission_unused',
                     severity: 'info',
-                    description: '未使用の権限宣言: '.$permission,
+                    description: __('services/theme/theme_health_scorer.unused_permission_declaration').$permission,
                     deduction: $deductionRules['permission_unused'] ?? -2,
                 );
             }
@@ -207,7 +207,7 @@ class ThemeHealthScorer
     }
 
     /**
-     * CSP適合性の評価
+     * Evaluate CSP compliance
      *
      * @return array<HealthIssue>
      */
@@ -224,7 +224,7 @@ class ThemeHealthScorer
             $issues[] = new HealthIssue(
                 type: 'csp_inline_css_required',
                 severity: 'info',
-                description: 'インラインCSSが必要です。厳格モードでは動作しない可能性があります。',
+                description: __('services/theme/theme_health_scorer.inline_css_strict_mode_warning'),
                 deduction: $deductionRules['csp_inline_css_required'] ?? -5,
             );
         }
@@ -233,7 +233,7 @@ class ThemeHealthScorer
             $issues[] = new HealthIssue(
                 type: 'csp_inline_js_required',
                 severity: 'warning',
-                description: 'インラインJavaScriptが必要です。厳格モードでは動作しません。',
+                description: __('services/theme/theme_health_scorer.inline_js_strict_mode_error'),
                 deduction: $deductionRules['csp_inline_js_required'] ?? -10,
             );
         }
@@ -251,7 +251,7 @@ class ThemeHealthScorer
                 $issues[] = new HealthIssue(
                     type: $issueType,
                     severity: $cspMode === 'strict' ? 'critical' : 'warning',
-                    description: "CSP違反が検出されました（{$cspMode}モード）。",
+                    description: __('services/theme/theme_health_scorer.csp_violation_detected', ['cspMode' => $cspMode]),
                     deduction: $deduction,
                 );
             }
@@ -261,7 +261,7 @@ class ThemeHealthScorer
     }
 
     /**
-     * 危険API検出の評価
+     * Evaluate dangerous API detection
      *
      * @return array<HealthIssue>
      */
@@ -282,7 +282,7 @@ class ThemeHealthScorer
                 $issues[] = new HealthIssue(
                     type: 'dangerous_api_exec',
                     severity: 'critical',
-                    description: "危険なAPIが検出されました: {$permission}",
+                    description: __('services/theme/theme_health_scorer.dangerous_api_detected', ['permission' => $permission]),
                     evidence: $evidence,
                     deduction: $deductionRules['dangerous_api_exec'] ?? -30,
                 );
@@ -293,7 +293,7 @@ class ThemeHealthScorer
     }
 
     /**
-     * スキャン鮮度の評価
+     * Evaluate scan freshness
      *
      * @return array<HealthIssue>
      */
@@ -306,7 +306,7 @@ class ThemeHealthScorer
             $issues[] = new HealthIssue(
                 type: 'scan_not_performed',
                 severity: 'warning',
-                description: '監査スキャンが実行されていません。',
+                description: __('services/theme/theme_health_scorer.audit_scan_not_run'),
                 deduction: $deductionRules['scan_not_performed'] ?? -10,
             );
 
@@ -318,7 +318,7 @@ class ThemeHealthScorer
             $issues[] = new HealthIssue(
                 type: 'scan_outdated',
                 severity: 'info',
-                description: "スキャンが古くなっています（{$daysSinceScan}日前）。再スキャンを推奨します。",
+                description: __('services/theme/theme_health_scorer.scan_outdated_rescan_recommended', ['daysSinceScan' => $daysSinceScan]),
                 deduction: $deductionRules['scan_outdated'] ?? -5,
             );
         }
@@ -327,7 +327,7 @@ class ThemeHealthScorer
     }
 
     /**
-     * 致命的な問題が含まれているか
+     * Whether critical issues are present
      */
     protected function hasCriticalIssue(array $issues): bool
     {
@@ -341,7 +341,7 @@ class ThemeHealthScorer
     }
 
     /**
-     * 高リスク権限かどうか
+     * Whether high-risk permission
      */
     protected function isHighRiskPermission(string $permission): bool
     {
@@ -355,7 +355,7 @@ class ThemeHealthScorer
     }
 
     /**
-     * テーマのコードファイルのハッシュを計算（再スキャン判定用）
+     * Calculate hash of theme code files (for rescan detection)
      */
     public function computeFilesHash(string $themeSlug): string
     {
@@ -390,10 +390,10 @@ class ThemeHealthScorer
     }
 
     /**
-     * テーマソースの最終変更時刻（mtime）を取得する高速版検出。
+     * Fast detection that retrieves the last modified time (mtime) of theme source
      *
-     * computeFilesHash() と異なり、md5 計算を行わずに mtime のみを取る。
-     * ページ表示時のファイル変更検知用。
+     * Unlike computeFilesHash(), only retrieves mtime without performing md5 calculation
+     * For detecting file changes during page display
      */
     public function latestSourceMtime(string $themeSlug): ?int
     {

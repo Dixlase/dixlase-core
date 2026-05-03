@@ -35,15 +35,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 /**
- * コア復元サービス
+ * Core restore service
  *
- * バックアップからの復元およびロールバックのデフォルト実装です。
- * 復元前に自動的にセーフティスナップショットを取得します。
+ * Default implementation for restore and rollback from backup.
+ * Automatically takes a safety snapshot before restoration.
  */
 class CoreRestoreService implements RestoreServiceInterface
 {
     /**
-     * private 対象から保護するサブディレクトリ（復元時にも残す）
+     * Subdirectories to protect from target (preserve during restore)
      */
     private const PRIVATE_PRESERVE_DIRS = [
         'backups',
@@ -59,12 +59,12 @@ class CoreRestoreService implements RestoreServiceInterface
     {
         $startTime = microtime(true);
 
-        // バックアップファイルの存在確認
+        // Check backup file existence
         if (! $backup->file_path || ! file_exists($backup->file_path)) {
             return RestoreResultDTO::failure("Backup file not found: {$backup->file_path}");
         }
 
-        // ハッシュ検証（記録されている場合）
+        // Hash verification (if recorded)
         if ($backup->hash) {
             $algorithm = $backup->hash_algorithm ?: 'sha256';
             if (! $this->verifier->verifyHash($backup->file_path, $backup->hash, $algorithm)) {
@@ -72,7 +72,7 @@ class CoreRestoreService implements RestoreServiceInterface
             }
         }
 
-        // 復元対象を決定（指定が空ならバックアップ内の全対象）
+        // Determine restore targets (all targets in backup if not specified)
         $availableTargets = is_array($backup->targets) ? $backup->targets : [];
         $targets = empty($targets)
             ? $availableTargets
@@ -88,7 +88,7 @@ class CoreRestoreService implements RestoreServiceInterface
             'targets' => $targets,
         ]);
 
-        // ZIP を開く
+        // Open ZIP
         $zip = new \ZipArchive();
         if ($zip->open($backup->file_path) !== true) {
             Event::dispatch(DixlaseEvents::BACKUP_RESTORE_FAILED, [
@@ -100,7 +100,7 @@ class CoreRestoreService implements RestoreServiceInterface
             return RestoreResultDTO::failure('Failed to open backup archive');
         }
 
-        // 復元前のセーフティスナップショット
+        // Safety snapshot before restore
         $preRestoreBackupId = null;
         if (! ($options['skip_pre_restore_backup'] ?? false)) {
             $snapshot = $this->backupService->backup($targets, [
@@ -109,10 +109,10 @@ class CoreRestoreService implements RestoreServiceInterface
             if ($snapshot->success) {
                 $preRestoreBackupId = $snapshot->backupRecordId;
             }
-            // スナップショット失敗は致命的ではない（ログのみ）
+            // Snapshot failure is not fatal (log only)
         }
 
-        // RestoreRecord を作成
+        // Create RestoreRecord
         $restoreRecord = $this->createRestoreRecord($backup, $preRestoreBackupId, $targets);
 
         try {
@@ -193,7 +193,7 @@ class CoreRestoreService implements RestoreServiceInterface
             return RestoreResultDTO::failure('Pre-restore backup not found');
         }
 
-        // セーフティスナップショットから復元（さらにスナップショットは取らない）
+        // Restore from safety snapshot (do not take another snapshot)
         $result = $this->restore($preRestoreBackup, [], ['skip_pre_restore_backup' => true]);
 
         if ($result->success) {
@@ -217,7 +217,7 @@ class CoreRestoreService implements RestoreServiceInterface
     }
 
     /**
-     * RestoreRecord を作成
+     * Create RestoreRecord
      *
      * @param  string[]  $targets
      */
@@ -237,7 +237,7 @@ class CoreRestoreService implements RestoreServiceInterface
     }
 
     /**
-     * 指定対象を復元
+     * Restore specified targets
      */
     private function restoreTarget(\ZipArchive $zip, string $target): void
     {
@@ -257,7 +257,7 @@ class CoreRestoreService implements RestoreServiceInterface
     }
 
     /**
-     * データベースを復元（ZIP 内の database.sql を実行）
+     * Restore database (execute database.sql in ZIP)
      */
     private function restoreDatabase(\ZipArchive $zip): void
     {
@@ -278,7 +278,7 @@ class CoreRestoreService implements RestoreServiceInterface
     }
 
     /**
-     * SQL を文単位に分割（簡易パーサー）
+     * Split SQL into statements (simple parser)
      *
      * @return string[]
      */
@@ -289,12 +289,12 @@ class CoreRestoreService implements RestoreServiceInterface
 
         foreach (explode("\n", $sql) as $line) {
             $trimmed = ltrim($line);
-            // コメント行はスキップ
+            // Skip comment lines
             if (str_starts_with($trimmed, '--') || $trimmed === '') {
                 continue;
             }
             $current .= $line."\n";
-            // 行末が ; で終われば文を確定
+            // Finalize statement if line ends with ;
             if (preg_match('/;\s*$/', $line)) {
                 $statements[] = $current;
                 $current = '';
@@ -308,9 +308,9 @@ class CoreRestoreService implements RestoreServiceInterface
     }
 
     /**
-     * ディレクトリを復元（既存内容をクリアしてから ZIP から展開）
+     * Restore directory (clear existing contents then extract from ZIP)
      *
-     * @param  string[]  $preserveDirs  クリアから保護するサブディレクトリ
+     * @param  string[]  $preserveDirs  Subdirectories to protect from clearing
      */
     private function restoreDirectory(\ZipArchive $zip, string $namespace, string $destDir, array $preserveDirs = []): void
     {
@@ -318,10 +318,10 @@ class CoreRestoreService implements RestoreServiceInterface
             mkdir($destDir, 0755, true);
         }
 
-        // 既存内容をクリア（preserveDirs を除く）
+        // Clear existing contents (except preserveDirs)
         $this->clearDirectory($destDir, $preserveDirs);
 
-        // ZIP から該当 namespace のエントリを展開
+        // Extract entries for the corresponding namespace from ZIP
         $prefix = $namespace.'/';
         $extracted = 0;
 
@@ -332,7 +332,7 @@ class CoreRestoreService implements RestoreServiceInterface
             }
 
             $relativePath = substr($entryName, strlen($prefix));
-            // ディレクトリエントリは skip
+            // Skip directory entries
             if ($relativePath === '' || str_ends_with($relativePath, '/')) {
                 continue;
             }
@@ -352,7 +352,7 @@ class CoreRestoreService implements RestoreServiceInterface
     }
 
     /**
-     * ディレクトリの内容を削除（preserveDirs に含まれる直下のディレクトリは除外）
+     * Delete directory contents (excluding immediate subdirectories contained in preserveDirs)
      *
      * @param  string[]  $preserveDirs
      */
@@ -380,7 +380,7 @@ class CoreRestoreService implements RestoreServiceInterface
     }
 
     /**
-     * ディレクトリを再帰的に削除
+     * Recursively delete directory
      */
     private function removeDirectory(string $dir): void
     {

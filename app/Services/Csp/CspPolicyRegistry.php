@@ -42,29 +42,29 @@ use App\Contracts\CspPolicyProvider;
 /**
  * CSP Policy Registry
  *
- * プラグイン・テーマからのCSPポリシーを収集・管理するレジストリ。
+ * Registry for collecting and managing CSP policies from plugins and themes
  */
 class CspPolicyRegistry
 {
     /**
-     * 登録されたポリシープロバイダー
+     * Registered policy providers
      *
      * @var array<string, CspPolicyProvider>
      */
     protected array $providers = [];
 
     /**
-     * 直接登録されたディレクティブ
+     * Directly registered directives
      *
      * @var array<string, array<string>>
      */
     protected array $directives = [];
 
     /**
-     * ポリシープロバイダーを登録
+     * Register a policy provider
      *
-     * @param  string  $name  プロバイダー名（プラグイン/テーマ名）
-     * @param  CspPolicyProvider  $provider  プロバイダーインスタンス
+     * @param  string  $name  Provider name (plugin/theme name)
+     * @param  CspPolicyProvider  $provider  Provider instance
      */
     public function registerProvider(string $name, CspPolicyProvider $provider): void
     {
@@ -72,7 +72,7 @@ class CspPolicyRegistry
     }
 
     /**
-     * ポリシープロバイダーを登録解除
+     * Unregister a policy provider
      */
     public function unregisterProvider(string $name): void
     {
@@ -80,11 +80,11 @@ class CspPolicyRegistry
     }
 
     /**
-     * ディレクティブを直接追加
+     * Add a directive directly
      *
-     * @param  string  $directive  ディレクティブ名
-     * @param  array<string>  $values  値の配列
-     * @param  string|null  $source  ソース名（デバッグ用）
+     * @param  string  $directive  Directive name
+     * @param  array<string>  $values  Array of values
+     * @param  string|null  $source  Source name (for debugging)
      */
     public function addDirective(string $directive, array $values, ?string $source = null): void
     {
@@ -100,10 +100,10 @@ class CspPolicyRegistry
     }
 
     /**
-     * 複数のディレクティブを一括追加
+     * Add multiple directives in bulk
      *
      * @param  array<string, array<string>>  $directives
-     * @param  string|null  $source  ソース名（デバッグ用）
+     * @param  string|null  $source  Source name (for debugging)
      */
     public function addDirectives(array $directives, ?string $source = null): void
     {
@@ -113,7 +113,7 @@ class CspPolicyRegistry
     }
 
     /**
-     * 登録されたすべてのディレクティブを収集
+     * Collect all registered directives
      *
      * @return array<string, array<string>>
      */
@@ -121,7 +121,7 @@ class CspPolicyRegistry
     {
         $collected = $this->directives;
 
-        // プロバイダーからディレクティブを収集
+        // Collect directives from providers
         foreach ($this->providers as $name => $provider) {
             $providerDirectives = $provider->getCspDirectives();
 
@@ -142,7 +142,7 @@ class CspPolicyRegistry
     }
 
     /**
-     * 登録されたプロバイダー一覧を取得
+     * Get list of registered providers
      *
      * @return array<string>
      */
@@ -152,7 +152,7 @@ class CspPolicyRegistry
     }
 
     /**
-     * レジストリをクリア
+     * Clear the registry
      */
     public function clear(): void
     {

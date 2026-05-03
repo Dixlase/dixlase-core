@@ -36,12 +36,12 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * ミドルウェア登録の検出パターン
+ * Detection pattern for middleware registration
  *
- * system.register_middleware を検出します。
- * Route::middleware() による「使用」と、pushMiddleware() による「登録」を区別します。
+ * Detects system.register_middleware
+ * Distinguishes between "usage" via Route::middleware() and "registration" via pushMiddleware()
  */
 class MiddlewareDetectionPattern extends DetectionPattern
 {
@@ -65,8 +65,8 @@ class MiddlewareDetectionPattern extends DetectionPattern
     }
 
     /**
-     * Route::middleware() によるミドルウェアの「使用」は除外し、
-     * 「登録」のみを検出する
+     * Excludes middleware "usage" via Route::middleware(),
+     * detects only "registration"
      */
     public function validateMatch(string $match, string $line, string $fileContent, string $filePath): bool
     {
@@ -74,13 +74,13 @@ class MiddlewareDetectionPattern extends DetectionPattern
             return false;
         }
 
-        // ルート定義でのmiddleware使用は「登録」ではない
+        // Middleware usage in route definitions is not "registration"
         $trimmedLine = ltrim($line);
         if (preg_match('/^Route::/i', $trimmedLine) && str_contains($trimmedLine, 'middleware')) {
             return false;
         }
 
-        // チェーンメソッドでの ->middleware('name') は「使用」
+        // ->middleware('name') in method chains is "usage"
         if (preg_match('/->middleware\s*\(\s*[\'"]/i', $match)) {
             return false;
         }

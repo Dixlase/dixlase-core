@@ -36,12 +36,12 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * 危険なAPI呼び出しの検出パターン
+ * Detection patterns for dangerous API calls
  *
- * exec, shell_exec, eval, system, passthru, env()直接使用を検出します。
- * コメント行、文字列リテラル内は除外します。
+ * Detects direct use of exec, shell_exec, eval, system, passthru, and env()
+ * Excludes matches within comment lines and string literals
  */
 class DangerousApiPattern extends DetectionPattern
 {
@@ -69,7 +69,7 @@ class DangerousApiPattern extends DetectionPattern
     }
 
     /**
-     * コメント行、文字列リテラル内のマッチを除外
+     * Exclude matches within comment lines and string literals
      */
     public function validateMatch(string $match, string $line, string $fileContent, string $filePath): bool
     {
@@ -79,12 +79,12 @@ class DangerousApiPattern extends DetectionPattern
 
         $trimmedLine = ltrim($line);
 
-        // PHPDoc内のマッチは除外
+        // Exclude matches within PHPDoc
         if (str_starts_with($trimmedLine, '* ') || str_starts_with($trimmedLine, '/**')) {
             return false;
         }
 
-        // env()の場合、config ファイル内での使用は許容（Laravelの慣例）
+        // For env(), usage within config files is allowed (Laravel convention)
         if ($this->subKey === 'env_access') {
             if (str_contains($filePath, 'config/') || str_contains($filePath, 'config\\')) {
                 return false;

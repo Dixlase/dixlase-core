@@ -45,30 +45,30 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
- * テーマ権限管理サービス
+ * Theme permission management service
  *
- * theme.jsonのpermissionsセクションを読み取り、
- * テーマの権限チェックを行うサービスです。
+ * Reads the permissions section from theme.json
+ * Service for checking theme permissions
  */
 class ThemePermissionService implements ThemePermissionServiceInterface
 {
     /**
-     * キャッシュキーのプレフィックス
+     * Cache key prefix
      */
     protected const CACHE_PREFIX = 'theme_permissions_';
 
     /**
-     * キャッシュの有効期限（秒）
+     * Cache expiration time (seconds)
      */
     protected const CACHE_TTL = 3600;
 
     /**
-     * 読み込み済みの権限データ
+     * Loaded permission data
      */
     protected array $loadedPermissions = [];
 
     /**
-     * デフォルトの権限設定
+     * Default permission settings
      */
     protected array $defaultPermissions = [
         'database' => [
@@ -100,10 +100,10 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     ];
 
     /**
-     * テーマの権限をチェック
+     * Check theme permission
      *
-     * @param  string  $themeSlug  テーマのスラッグ（例: dixlase-one-page）
-     * @param  string  $permission  権限キー（例: assets.custom_js, database.own_tables）
+     * @param  string  $themeSlug  Theme slug (e.g., dixlase-one-page)
+     * @param  string  $permission  Permission key (e.g., assets.custom_js, database.own_tables)
      */
     public function check(string $themeSlug, string $permission): bool
     {
@@ -119,7 +119,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     }
 
     /**
-     * テーマが特定の権限を持っているか確認（エイリアス）
+     * Check if theme has a specific permission (alias)
      */
     public function has(string $themeSlug, string $permission): bool
     {
@@ -127,16 +127,16 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     }
 
     /**
-     * テーマの全権限を取得
+     * Get all permissions for theme
      */
     public function getPermissions(string $themeSlug): ?array
     {
-        // メモリキャッシュを確認
+        // Check memory cache
         if (isset($this->loadedPermissions[$themeSlug])) {
             return $this->loadedPermissions[$themeSlug];
         }
 
-        // ファイルキャッシュを確認
+        // Check file cache
         $cacheKey = self::CACHE_PREFIX.$themeSlug;
         $cached = Cache::get($cacheKey);
 
@@ -146,14 +146,14 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             return $cached;
         }
 
-        // theme.jsonから読み込み
+        // Load from theme.json
         $permissions = $this->loadPermissionsFromFile($themeSlug);
 
         if ($permissions !== null) {
-            // デフォルト値とマージ
+            // Merge with default values
             $permissions = $this->mergeWithDefaults($permissions);
 
-            // キャッシュに保存
+            // Save to cache
             Cache::put($cacheKey, $permissions, self::CACHE_TTL);
             $this->loadedPermissions[$themeSlug] = $permissions;
         }
@@ -162,7 +162,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     }
 
     /**
-     * theme.jsonから権限を読み込み
+     * Load permissions from theme.json
      */
     protected function loadPermissionsFromFile(string $themeSlug): ?array
     {
@@ -185,7 +185,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             return null;
         }
 
-        // permissionsセクションが存在しない場合はnullを返す
+        // Return null if permissions section does not exist
         if (! isset($data['permissions']) || empty($data['permissions'])) {
             return null;
         }
@@ -194,7 +194,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     }
 
     /**
-     * デフォルト値とマージ
+     * Merge with default values
      */
     protected function mergeWithDefaults(array $permissions): array
     {
@@ -202,7 +202,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     }
 
     /**
-     * ドット記法の権限キーを解決
+     * Resolve permission key in dot notation
      */
     protected function resolvePermission(array $permissions, string $key): bool
     {
@@ -216,7 +216,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             $value = $value[$part];
         }
 
-        // 配列の場合は空でないかチェック
+        // Check if array is not empty
         if (is_array($value)) {
             return ! empty($value);
         }
@@ -225,19 +225,19 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     }
 
     /**
-     * テーマの権限サマリーを取得（管理画面表示用）
+     * Get theme permission summary (for admin panel display)
      */
     public function getSummary(string $themeSlug): array
     {
         $permissions = $this->getPermissions($themeSlug);
         $signatureInfo = $this->getSignatureInfo($themeSlug);
 
-        // 監査結果を取得
+        // Get audit results
         $audit = ThemeAudit::getBySlug($themeSlug);
         $auditData = $audit ? $audit->toAuditArray() : [];
 
         if ($permissions === null) {
-            // 権限定義がない場合でも、監査結果があればそれを使用
+            // Use audit results if available, even when permission definition is missing
             $riskLevel = $auditData['risk_level'] ?? 'unknown';
 
             return [
@@ -251,8 +251,8 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             ];
         }
 
-        // リスクレベルと理由を常に現在のスコアリングルールで再計算
-        // （監査DBのキャッシュはスコアリングルール変更後に陳腐化するため）
+        // Always recalculate risk level and reason with current scoring rules
+        // (because audit DB cache becomes stale after scoring rule changes)
         $mismatches = $auditData['mismatches'] ?? [];
         $riskResult = $this->calculateUnifiedRiskLevel($permissions, $mismatches, $themeSlug);
         $riskLevel = $riskResult['level'];
@@ -269,7 +269,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             'audit' => $auditData,
         ];
 
-        // カテゴリごとの権限をまとめる
+        // Group permissions by category
         foreach ($permissions as $category => $perms) {
             $enabled = [];
             foreach ($perms as $key => $value) {
@@ -286,7 +286,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     }
 
     /**
-     * テーマの署名情報を取得
+     * Get theme signature information
      */
     public function getSignatureInfo(string $themeSlug): array
     {
@@ -303,7 +303,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             'key_id' => null,
         ];
 
-        // theme.json から signing 情報を読み取る
+        // Read signing information from theme.json
         if (File::exists($themeJsonPath)) {
             $content = File::get($themeJsonPath);
             $data = json_decode($content, true);
@@ -312,13 +312,13 @@ class ThemePermissionService implements ThemePermissionServiceInterface
                 $signing = $data['signing'];
                 $result['key_id'] = $signing['key_id'] ?? null;
 
-                // signature.sig ファイルの存在確認
+                // Check if signature.sig file exists
                 if (File::exists($signaturePath)) {
-                    // TODO: 実際の署名検証ロジックを実装
-                    // 現時点では署名ファイルが存在すれば valid とする（仮実装）
+                    // TODO: Implement actual signature verification logic
+                    // Currently treat as valid if signature file exists (temporary implementation)
                     $result['status'] = 'pending_verification';
 
-                    // 署名ファイルの内容を読み取る
+                    // Read signature file contents
                     $sigContent = File::get($signaturePath);
                     $sigData = json_decode($sigContent, true);
 
@@ -335,7 +335,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     }
 
     /**
-     * 署名タイプを判定
+     * Determine signature type
      */
     protected function determineSignatureType(?string $keyId): ?string
     {
@@ -343,7 +343,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             return null;
         }
 
-        // キーIDのプレフィックスで判定
+        // Determine by key ID prefix
         if (str_starts_with($keyId, 'dixlase-official')) {
             return 'official';
         }
@@ -358,7 +358,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     }
 
     /**
-     * 権限が有効かどうかを判定
+     * Determine if permission is enabled
      *
      * @param  mixed  $value
      */
@@ -375,7 +375,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     }
 
     /**
-     * リスクレベル文字列からスコアを計算
+     * Calculate score from risk level string
      */
     protected function calculateRiskScore(string $level): int
     {
@@ -388,23 +388,23 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     }
 
     /**
-     * 宣言された権限と不一致情報からリスクレベルを統一計算
+     * Calculate unified risk level from declared permissions and mismatch information
      *
-     * 宣言ベースのスコアリングに加え、未宣言使用（undeclared_usage）の
-     * 不一致ペナルティを加算して統一的なリスクレベルを返します。
+     * In addition to declaration-based scoring, add mismatch penalty for undeclared usage
+     * to return a unified risk level
      *
-     * @param  array  $declaredPermissions  theme.json の permissions
-     * @param  array  $mismatches  権限の不一致リスト（comparePermissions() の結果）
+     * @param  array  $declaredPermissions  permissions in theme.json
+     * @param  array  $mismatches  List of permission mismatches (result of comparePermissions())
      * @return array{level: string, reasons: array, score: int}
      */
     public function calculateUnifiedRiskLevel(array $declaredPermissions, array $mismatches = [], ?string $themeSlug = null): array
     {
-        // 宣言ベースのスコアリング
+        // Declaration-based scoring
         $result = $this->calculateRiskLevelWithReasons($declaredPermissions, $themeSlug);
         $score = $result['score'];
         $reasons = $result['reasons'];
 
-        // 未宣言使用の不一致ペナルティ
+        // Mismatch penalty for undeclared usage
         $undeclaredCount = count(array_filter($mismatches, fn ($m) => ($m['type'] ?? '') === 'undeclared_usage'));
         if ($undeclaredCount > 0) {
             $penalty = $undeclaredCount * 2;
@@ -412,7 +412,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             $reasons[] = ['key' => 'mismatch.undeclared_usage', 'severity' => 'high', 'score' => $penalty, 'count' => $undeclaredCount];
         }
 
-        // しきい値判定
+        // Threshold evaluation
         $level = 'low';
         if ($score >= 7) {
             $level = 'high';
@@ -428,9 +428,9 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     }
 
     /**
-     * リスクレベルと理由を計算
+     * Calculate risk level and reason
      *
-     * @deprecated calculateUnifiedRiskLevel() を使用してください。
+     * @deprecated Use calculateUnifiedRiskLevel() instead.
      *
      * @return array ['level' => string, 'reasons' => array, 'score' => int]
      */
@@ -439,7 +439,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
         $score = 0;
         $reasons = [];
 
-        // 高リスク権限（スコア2以上）
+        // High-risk permissions (score 2 or higher)
         if ($permissions['storage']['public_uploads'] ?? false) {
             $score += 2;
             $reasons[] = ['key' => 'storage.public_uploads', 'severity' => 'high', 'score' => 2];
@@ -454,7 +454,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             }
         }
 
-        // 中リスク権限（スコア1）
+        // Medium-risk permissions (score 1)
         if (! empty($permissions['database']['core_tables_write'] ?? [])) {
             $score += 1;
             $reasons[] = ['key' => 'database.core_tables_write', 'severity' => 'medium', 'score' => 1];
@@ -487,13 +487,13 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     }
 
     /**
-     * テーマの外部ドメインがコアの信頼リストに全て含まれるか判定
+     * Determine if all external domains of the theme are included in the Core trust list
      *
-     * CSPディレクティブ設定（style-src, font-src, script-src等）に含まれる
-     * ドメインと照合し、全ての外部ドメインが信頼済みであればtrueを返す。
+     * Included in CSP directive settings (style-src, font-src, script-src, etc.)
+     * Match against domains and return true if all external domains are trusted
      */
     /**
-     * テーマの外部ドメインが全て信頼リストに含まれるかチェックし、ドメイン一覧も返す
+     * Check if all external domains of the theme are included in the trust list and return the domain list as well
      *
      * @return array{all_trusted: bool, domains: list<string>}
      */
@@ -514,7 +514,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             return ['all_trusted' => false, 'domains' => []];
         }
 
-        // テーマが宣言している全外部ドメインを抽出
+        // Extract all external domains declared by the theme
         $themeDomains = [];
         foreach ($externalDomains as $domains) {
             if (is_array($domains)) {
@@ -531,7 +531,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
 
         $themeDomains = array_values(array_unique($themeDomains));
 
-        // コアCSPディレクティブから信頼ドメインのホスト名を収集
+        // Collect trusted domain hostnames from Core CSP directives
         $trustedHosts = [];
         $directives = config('csp.directives', []);
         foreach ($directives as $values) {
@@ -546,14 +546,14 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             }
         }
 
-        // config/csp/domains.php の trusted_domains も収集
+        // Also collect trusted_domains from config/csp/domains.php
         $configDomains = config('csp.domains.trusted_domains', []);
         foreach ($configDomains as $domain) {
             $host = parse_url($domain, PHP_URL_HOST) ?? $domain;
             $trustedHosts[$host] = true;
         }
 
-        // 全ての外部ドメインが信頼リストに含まれるかチェック
+        // Check if all external domains are included in the trust list
         foreach ($themeDomains as $host) {
             if (! isset($trustedHosts[$host])) {
                 return ['all_trusted' => false, 'domains' => $themeDomains];
@@ -564,9 +564,9 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     }
 
     /**
-     * キャッシュをクリア
+     * Clear cache
      *
-     * @param  string|null  $themeSlug  特定のテーマのみクリアする場合
+     * @param  string|null  $themeSlug  When clearing only a specific theme
      */
     public function clearCache(?string $themeSlug = null): void
     {
@@ -574,13 +574,13 @@ class ThemePermissionService implements ThemePermissionServiceInterface
             Cache::forget(self::CACHE_PREFIX.$themeSlug);
             unset($this->loadedPermissions[$themeSlug]);
         } else {
-            // 全テーマのキャッシュをクリア
+            // Clear cache for all themes
             $this->loadedPermissions = [];
         }
     }
 
     /**
-     * スラッグをテーマ名に変換
+     * Convert slug to theme name
      *
      * @param  string  $slug  dixlase-one-page
      * @return string DixlaseOnePage
@@ -591,7 +591,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     }
 
     /**
-     * テーマ名をスラッグに変換
+     * Convert theme name to slug
      *
      * @param  string  $name  DixlaseOnePage
      * @return string dixlase-one-page
@@ -602,9 +602,9 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     }
 
     /**
-     * 権限違反をログに記録
+     * Log permission violation
      *
-     * @param  string  $action  実行しようとしたアクション
+     * @param  string  $action  Action that was attempted
      */
     public function logViolation(string $themeSlug, string $permission, string $action = ''): void
     {

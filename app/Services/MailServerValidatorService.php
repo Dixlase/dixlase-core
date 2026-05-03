@@ -43,7 +43,7 @@ use Illuminate\Support\Facades\Log;
 class MailServerValidatorService
 {
     /**
-     * メールサーバーの設定が完了しているかチェック
+     * Check if mail server settings are complete
      */
     public static function isMailServerConfigured(): bool
     {
@@ -67,7 +67,7 @@ class MailServerValidatorService
     }
 
     /**
-     * メールサーバーのテストが全て完了しているかチェック
+     * Check if all mail server tests are complete
      */
     public static function isMailServerTested(): bool
     {
@@ -89,7 +89,7 @@ class MailServerValidatorService
     }
 
     /**
-     * メール送信が可能かどうかの総合チェック
+     * Comprehensive check whether mail sending is possible
      */
     public static function canSendMail(): bool
     {
@@ -97,16 +97,16 @@ class MailServerValidatorService
     }
 
     /**
-     * メール送信不可の理由を取得
+     * Get reason why mail sending is not possible
      */
     public static function getMailDisabledReason(): string
     {
         if (! self::isMailServerConfigured()) {
-            return 'メールサーバーの設定が未完了です';
+            return __('services/mail_server_validator.mail_server_not_configured');
         }
 
         if (! self::isMailServerTested()) {
-            return 'メールサーバーのテストが未完了です';
+            return __('services/mail_server_validator.mail_server_not_tested');
         }
 
         return '';

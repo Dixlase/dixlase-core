@@ -46,30 +46,30 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  *
- * 緊急ロックダウンサービス
+ * Emergency lockdown service
  *
- * セキュリティインシデント時の即座のシステム保護を提供
+ * Provides immediate system protection during security incidents
  */
 class LockdownService
 {
     /**
-     * キャッシュキー
+     * Cache key
      */
     protected const CACHE_KEY = 'lockdown_status';
 
-    protected const CACHE_TTL = 60; // 1分
+    protected const CACHE_TTL = 60; // 1 minute
 
     /**
-     * ロックダウンを発動
+     * Activate lockdown
      *
-     * @param  string  $type  ロックダウンタイプ
-     * @param  string  $reason  理由
-     * @param  int|null  $triggeredBy  発動者ID（null=システム自動）
-     * @param  int|null  $autoReleaseMinutes  自動解除までの分数
-     * @param  array|null  $allowedIps  許可するIPアドレス
-     * @param  array|null  $allowedMembers  許可するメンバーID
+     * @param  string  $type  Lockdown type
+     * @param  string  $reason  Reason
+     * @param  int|null  $triggeredBy  Activator ID (null=system automatic)
+     * @param  int|null  $autoReleaseMinutes  Minutes until automatic release
+     * @param  array|null  $allowedIps  Allowed IP addresses
+     * @param  array|null  $allowedMembers  Allowed member IDs
      */
     public static function activate(
         string $type = LockdownStatus::TYPE_FULL,
@@ -79,10 +79,10 @@ class LockdownService
         ?array $allowedIps = null,
         ?array $allowedMembers = null
     ): LockdownStatus {
-        // 既存のアクティブなロックダウンを解除
+        // Release existing active lockdown
         self::deactivateAll();
 
-        // 新しいロックダウンを作成
+        // Create new lockdown
         $lockdown = LockdownStatus::create([
             'type' => $type,
             'is_active' => true,
@@ -98,7 +98,7 @@ class LockdownService
             ],
         ]);
 
-        // 履歴を記録
+        // Record history
         LockdownHistory::record(
             LockdownHistory::ACTION_ACTIVATED,
             $type,
@@ -112,7 +112,7 @@ class LockdownService
             ]
         );
 
-        // 監査ログを記録
+        // Record audit log
         AuditLog::logSecurity('lockdown_activated', [
             'severity' => AuditLog::SEVERITY_ALERT,
             'context' => [
@@ -122,7 +122,7 @@ class LockdownService
             ],
         ]);
 
-        // キャッシュをクリア
+        // Clear cache
         self::clearCache();
 
         Log::channel('admin_error')->alert('Lockdown activated', [
@@ -135,10 +135,10 @@ class LockdownService
     }
 
     /**
-     * ロックダウンを解除
+     * Release lockdown
      *
-     * @param  int|null  $releasedBy  解除者ID
-     * @param  string|null  $reason  解除理由
+     * @param  int|null  $releasedBy  Releaser ID
+     * @param  string|null  $reason  Release reason
      */
     public static function deactivate(?int $releasedBy = null, ?string $reason = null): bool
     {
@@ -153,7 +153,7 @@ class LockdownService
             'released_at' => now(),
         ]);
 
-        // 履歴を記録
+        // Record history
         LockdownHistory::record(
             LockdownHistory::ACTION_DEACTIVATED,
             $lockdown->type,
@@ -165,7 +165,7 @@ class LockdownService
             ]
         );
 
-        // 監査ログを記録
+        // Record audit log
         AuditLog::logSecurity('lockdown_deactivated', [
             'severity' => AuditLog::SEVERITY_NOTICE,
             'context' => [
@@ -175,7 +175,7 @@ class LockdownService
             ],
         ]);
 
-        // キャッシュをクリア
+        // Clear cache
         self::clearCache();
 
         Log::channel('admin_activity')->info('Lockdown deactivated', [
@@ -187,7 +187,7 @@ class LockdownService
     }
 
     /**
-     * 全てのロックダウンを解除
+     * Release all lockdowns
      */
     public static function deactivateAll(): void
     {
@@ -199,7 +199,7 @@ class LockdownService
     }
 
     /**
-     * 自動解除をチェックして実行
+     * Check and execute auto-release
      */
     public static function checkAutoRelease(): bool
     {
@@ -213,7 +213,7 @@ class LockdownService
             'released_at' => now(),
         ]);
 
-        // 履歴を記録
+        // Record history
         LockdownHistory::record(
             LockdownHistory::ACTION_AUTO_RELEASED,
             $lockdown->type,
@@ -225,7 +225,7 @@ class LockdownService
             ]
         );
 
-        // 監査ログを記録
+        // Record audit log
         AuditLog::logSecurity('lockdown_auto_released', [
             'severity' => AuditLog::SEVERITY_NOTICE,
             'context' => [
@@ -243,7 +243,7 @@ class LockdownService
     }
 
     /**
-     * ロックダウン状態を取得（キャッシュ付き）
+     * Get lockdown status (with cache)
      */
     public static function getStatus(): ?LockdownStatus
     {
@@ -253,7 +253,7 @@ class LockdownService
     }
 
     /**
-     * ロックダウン中かどうか
+     * Whether in lockdown
      */
     public static function isLocked(?string $type = null): bool
     {
@@ -266,7 +266,7 @@ class LockdownService
             return true;
         }
 
-        // fullロックダウンは全てに影響
+        // Full lockdown affects everything
         if ($status->type === LockdownStatus::TYPE_FULL) {
             return true;
         }
@@ -275,35 +275,35 @@ class LockdownService
     }
 
     /**
-     * アクセスが許可されているかチェック
+     * Check if access is allowed
      *
-     * @param  string|null  $ip  IPアドレス
-     * @param  Member|null  $member  メンバー
-     * @param  string|null  $type  チェックするロックダウンタイプ
+     * @param  string|null  $ip  IP address
+     * @param  Member|null  $member  member
+     * @param  string|null  $type  Lockdown type to check
      */
     public static function isAccessAllowed(?string $ip = null, ?Member $member = null, ?string $type = null): bool
     {
         $status = self::getStatus();
         if (! $status) {
-            return true; // ロックダウンなし
+            return true; // No lockdown
         }
 
-        // タイプが指定されていて、そのタイプがロックされていない場合
+        // If type is specified and that type is not locked
         if ($type !== null && $status->type !== LockdownStatus::TYPE_FULL && $status->type !== $type) {
             return true;
         }
 
-        // SUPER_ADMINは常にアクセス可能
+        // SUPER_ADMIN always has access
         if ($member && $member->role === MemberRole::SUPER_ADMIN) {
             return true;
         }
 
-        // 許可されたIPかチェック
+        // Check if IP is allowed
         if ($ip && $status->isIpAllowed($ip)) {
             return true;
         }
 
-        // 許可されたメンバーかチェック
+        // Check if member is allowed
         if ($member && $status->isMemberAllowed($member->id)) {
             return true;
         }
@@ -312,10 +312,10 @@ class LockdownService
     }
 
     /**
-     * ロックダウンを延長
+     * Extend lockdown
      *
-     * @param  int  $additionalMinutes  追加する分数
-     * @param  int|null  $performedBy  実行者ID
+     * @param  int  $additionalMinutes  Minutes to add
+     * @param  int|null  $performedBy  Executor ID
      */
     public static function extend(int $additionalMinutes, ?int $performedBy = null): bool
     {
@@ -332,7 +332,7 @@ class LockdownService
             'auto_release_at' => $newAutoRelease,
         ]);
 
-        // 履歴を記録
+        // Record history
         LockdownHistory::record(
             LockdownHistory::ACTION_EXTENDED,
             $lockdown->type,
@@ -351,7 +351,7 @@ class LockdownService
     }
 
     /**
-     * 許可リストを更新
+     * Update allow list
      */
     public static function updateAllowList(
         ?array $allowedIps = null,
@@ -377,7 +377,7 @@ class LockdownService
 
         $lockdown->update($updates);
 
-        // 履歴を記録
+        // Record history
         LockdownHistory::record(
             LockdownHistory::ACTION_MODIFIED,
             $lockdown->type,
@@ -396,7 +396,7 @@ class LockdownService
     }
 
     /**
-     * 統計情報を取得
+     * Get statistics
      */
     public static function getStats(int $days = 30): array
     {
@@ -415,7 +415,7 @@ class LockdownService
     }
 
     /**
-     * キャッシュをクリア
+     * Clear cache
      */
     public static function clearCache(): void
     {

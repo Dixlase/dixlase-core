@@ -51,11 +51,11 @@ class PluginMigrationRepository extends DatabaseMigrationRepository
     }
 
     /**
-     * プラグイン名に基づいて実行済みマイグレーションを取得
+     * Get executed migrations based on plugin name
      */
     public function getRan($plugin = null)
     {
-        $plugin = $plugin ?? $this->plugin; // null の場合はインスタンス変数を使用
+        $plugin = $plugin ?? $this->plugin; // Use instance variable if null
 
         return $this->table()
             ->where('plugin', $plugin)
@@ -64,15 +64,15 @@ class PluginMigrationRepository extends DatabaseMigrationRepository
     }
 
     /**
-     * マイグレーションを記録
+     * Record migration
      */
     public function log($file, $batch, $plugin = null)
     {
-        $plugin = $plugin ?? $this->plugin; // プラグインが明示的に渡されなかった場合、インスタンス変数を使用
+        $plugin = $plugin ?? $this->plugin; // Use instance variable if plugin was not explicitly passed
 
         $this->table()->insert([
             'migration' => $file,
-            'plugin' => $plugin, // プラグイン識別子を追加
+            'plugin' => $plugin, // Add plugin identifier
             'batch' => $batch,
             'created_at' => now(),
             'updated_at' => now(),

@@ -41,13 +41,13 @@ use App\Enums\ContentStorageType;
 use App\Models\FrontPage;
 
 /**
- * フロントページコンテンツサービス
- * コアのContentFileServiceを継承し、フロントページ固有の機能を追加
+ * Front page content service
+ * Inherits from Core's ContentFileService and adds front page specific functionality
  */
 class FrontPageContentService extends ContentFileService
 {
     /**
-     * コンストラクタ
+     * Constructor
      */
     public function __construct()
     {
@@ -56,14 +56,14 @@ class FrontPageContentService extends ContentFileService
     }
 
     /**
-     * ファイルパスを取得する（フロントページ用にオーバーライド）
-     * コアでは1言語運用のため、ファイル名に言語コードを付けない
-     * 多言語対応は多言語プラグインが担う
+     * Retrieve file path (overridden for front page)
+     * Core operates with a single language, so language code is not appended to file name
+     * Multilingual support is handled by the multilingual plugin
      *
-     * @param  string  $slug  スラッグ（フロントページでは使用しない）
-     * @param  string  $locale  言語コード（コアでは未使用、プラグイン拡張用に残す）
-     * @param  string  $editorType  エディタータイプ
-     * @return string ファイルパス
+     * @param  string  $slug  Slug (not used on front page)
+     * @param  string  $locale  Language code (unused in Core, kept for plugin extension)
+     * @param  string  $editorType  Editor type
+     * @return string File path
      */
     public function getFilePath(string $slug, string $locale, string $editorType): string
     {
@@ -73,11 +73,11 @@ class FrontPageContentService extends ContentFileService
     }
 
     /**
-     * フロントページのコンテンツを取得する（DB or ファイル）
+     * Retrieve front page content (DB or file)
      *
-     * @param  FrontPage  $frontPage  フロントページモデル
-     * @param  string|null  $locale  言語コード（nullの場合は現在の言語）
-     * @return string|null コンテンツ
+     * @param  FrontPage  $frontPage  Front page model
+     * @param  string|null  $locale  Language code (current language if null)
+     * @return string|null Content
      */
     public function getContent(FrontPage $frontPage, ?string $locale = null): ?string
     {
@@ -91,12 +91,12 @@ class FrontPageContentService extends ContentFileService
     }
 
     /**
-     * フロントページのコンテンツを保存する（DB or ファイル）
+     * Save front page content (DB or file)
      *
-     * @param  FrontPage  $frontPage  フロントページモデル
-     * @param  string  $content  コンテンツ
-     * @param  string|null  $locale  言語コード（nullの場合は現在の言語）
-     * @return bool 保存成功時はtrue
+     * @param  FrontPage  $frontPage  Front page model
+     * @param  string  $content  Content
+     * @param  string|null  $locale  Language code (current language if null)
+     * @return bool True on successful save
      */
     public function saveContent(FrontPage $frontPage, string $content, ?string $locale = null): bool
     {
@@ -106,17 +106,17 @@ class FrontPageContentService extends ContentFileService
             return $this->saveToFile($frontPage->page_type, $locale, $frontPage->editor_type->slug(), $content);
         }
 
-        // データベースに保存（コントローラーで行う）
+        // Save to database (performed in controller)
         return true;
     }
 
     /**
-     * JS ファイルパスを取得する
-     * コアでは1言語運用のため、ファイル名に言語コードを付けない
+     * Retrieve JS file path
+     * Core operates with a single language, so language code is not appended to file name
      *
-     * @param  string  $slug  スラッグ（フロントページでは使用しない）
-     * @param  string  $locale  言語コード（コアでは未使用、プラグイン拡張用に残す）
-     * @return string ファイルパス
+     * @param  string  $slug  Slug (not used on front page)
+     * @param  string  $locale  Language code (unused in Core, kept for plugin extension)
+     * @return string File path
      */
     public function getJsFilePath(string $slug, string $locale): string
     {
@@ -124,12 +124,12 @@ class FrontPageContentService extends ContentFileService
     }
 
     /**
-     * CSS ファイルパスを取得する
-     * コアでは1言語運用のため、ファイル名に言語コードを付けない
+     * Retrieve CSS file path
+     * Core operates with a single language, so language code is not appended to file name
      *
-     * @param  string  $slug  スラッグ（フロントページでは使用しない）
-     * @param  string  $locale  言語コード（コアでは未使用、プラグイン拡張用に残す）
-     * @return string ファイルパス
+     * @param  string  $slug  Slug (not used on front page)
+     * @param  string  $locale  Language code (unused in Core, kept for plugin extension)
+     * @return string File path
      */
     public function getCssFilePath(string $slug, string $locale): string
     {
@@ -137,11 +137,11 @@ class FrontPageContentService extends ContentFileService
     }
 
     /**
-     * JS コンテンツを取得する（DB or ファイル）
+     * Retrieve JS content (DB or file)
      *
-     * @param  FrontPage  $frontPage  フロントページモデル
-     * @param  string|null  $locale  言語コード（nullの場合は現在の言語）
-     * @return string|null コンテンツ
+     * @param  FrontPage  $frontPage  Front page model
+     * @param  string|null  $locale  Language code (current language if null)
+     * @return string|null Content
      */
     public function getJsContent(FrontPage $frontPage, ?string $locale = null): ?string
     {
@@ -159,11 +159,11 @@ class FrontPageContentService extends ContentFileService
     }
 
     /**
-     * CSS コンテンツを取得する（DB or ファイル）
+     * Retrieve CSS content (DB or file)
      *
-     * @param  FrontPage  $frontPage  フロントページモデル
-     * @param  string|null  $locale  言語コード（nullの場合は現在の言語）
-     * @return string|null コンテンツ
+     * @param  FrontPage  $frontPage  Front page model
+     * @param  string|null  $locale  Language code (current language if null)
+     * @return string|null Content
      */
     public function getCssContent(FrontPage $frontPage, ?string $locale = null): ?string
     {
@@ -181,12 +181,12 @@ class FrontPageContentService extends ContentFileService
     }
 
     /**
-     * JS コンテンツをファイルに保存する
+     * Save JS content to file
      *
-     * @param  string  $slug  スラッグ
-     * @param  string  $locale  言語コード
-     * @param  string  $content  コンテンツ
-     * @return bool 保存成功時はtrue
+     * @param  string  $slug  Slug
+     * @param  string  $locale  Language code
+     * @param  string  $content  Content
+     * @return bool True on successful save
      */
     public function saveJsToFile(string $slug, string $locale, string $content): bool
     {
@@ -196,12 +196,12 @@ class FrontPageContentService extends ContentFileService
     }
 
     /**
-     * CSS コンテンツをファイルに保存する
+     * Save CSS content to file
      *
-     * @param  string  $slug  スラッグ
-     * @param  string  $locale  言語コード
-     * @param  string  $content  コンテンツ
-     * @return bool 保存成功時はtrue
+     * @param  string  $slug  Slug
+     * @param  string  $locale  Language code
+     * @param  string  $content  Content
+     * @return bool True on successful save
      */
     public function saveCssToFile(string $slug, string $locale, string $content): bool
     {
@@ -211,11 +211,11 @@ class FrontPageContentService extends ContentFileService
     }
 
     /**
-     * JS ファイルを削除する
+     * Delete JS file
      *
-     * @param  string  $slug  スラッグ
-     * @param  string  $locale  言語コード
-     * @return bool 削除成功時はtrue
+     * @param  string  $slug  Slug
+     * @param  string  $locale  Language code
+     * @return bool true on successful deletion
      */
     public function deleteJsFile(string $slug, string $locale): bool
     {
@@ -229,11 +229,11 @@ class FrontPageContentService extends ContentFileService
     }
 
     /**
-     * CSS ファイルを削除する
+     * Delete CSS file
      *
-     * @param  string  $slug  スラッグ
-     * @param  string  $locale  言語コード
-     * @return bool 削除成功時はtrue
+     * @param  string  $slug  Slug
+     * @param  string  $locale  Language code
+     * @return bool true on successful deletion
      */
     public function deleteCssFile(string $slug, string $locale): bool
     {

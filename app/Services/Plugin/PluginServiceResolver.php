@@ -42,17 +42,17 @@ use App\DTO\Plugin\CapabilityResolutionResult;
 use Illuminate\Support\Facades\Log;
 
 /**
- * プラグイン機能の権限チェック付き解決サービス
+ * Plugin capability resolution service with permission checking
  *
- * プラグインが提供する機能（PluginCapabilityInterface の実装）を
- * 権限チェック付きで解決します。
+ * Resolves plugin capabilities (implementations of PluginCapabilityInterface)
+ * with permission checking
  *
- * プラグインの ServiceProvider で以下のようにタグ付き登録:
+ * Register with tags in the plugin's ServiceProvider as follows:
  * ```php
  * $this->app->tag([MyMailCapable::class], 'plugin.capabilities');
  * ```
  *
- * 利用側:
+ * Usage:
  * ```php
  * $resolver = app(PluginServiceResolver::class);
  * $result = $resolver->resolve(MailCapableInterface::class);
@@ -61,19 +61,19 @@ use Illuminate\Support\Facades\Log;
 class PluginServiceResolver
 {
     /**
-     * サービスコンテナのタグ名
+     * Service container tag name
      */
     public const CAPABILITY_TAG = 'plugin.capabilities';
 
     /**
-     * インターフェースと必要権限のマッピング
+     * Mapping of interfaces to required permissions
      *
      * @var array<class-string<PluginCapabilityInterface>, string>
      */
     protected array $permissionMap = [];
 
     /**
-     * 手動登録された機能インスタンス
+     * Manually registered capability instances
      *
      * @var array<class-string<PluginCapabilityInterface>, array<PluginCapabilityInterface>>
      */
@@ -84,10 +84,10 @@ class PluginServiceResolver
     ) {}
 
     /**
-     * インターフェースに必要な権限を登録
+     * Register required permission for an interface
      *
-     * @param  class-string<PluginCapabilityInterface>  $interface  機能インターフェース
-     * @param  string  $permission  必要な権限キー（例: 'mail.send'）
+     * @param  class-string<PluginCapabilityInterface>  $interface  Capability interface
+     * @param  string  $permission  Required permission key (e.g., 'mail.send')
      */
     public function registerPermission(string $interface, string $permission): void
     {
@@ -95,10 +95,10 @@ class PluginServiceResolver
     }
 
     /**
-     * 機能インスタンスを手動登録
+     * Manually register a capability instance
      *
-     * @param  class-string<PluginCapabilityInterface>  $interface  機能インターフェース
-     * @param  PluginCapabilityInterface  $instance  実装インスタンス
+     * @param  class-string<PluginCapabilityInterface>  $interface  Capability interface
+     * @param  PluginCapabilityInterface  $instance  Implementation instance
      */
     public function register(string $interface, PluginCapabilityInterface $instance): void
     {
@@ -106,10 +106,10 @@ class PluginServiceResolver
     }
 
     /**
-     * 特定のインターフェースを実装する最初のプラグインを権限チェック付きで解決
+     * Resolve the first plugin that implements a specific interface with permission checking
      *
-     * @param  class-string<PluginCapabilityInterface>  $interface  機能インターフェース
-     * @param  string|null  $pluginSlug  特定のプラグインに限定する場合
+     * @param  class-string<PluginCapabilityInterface>  $interface  Capability interface
+     * @param  string|null  $pluginSlug  When limiting to a specific plugin
      */
     public function resolve(string $interface, ?string $pluginSlug = null): CapabilityResolutionResult
     {
@@ -133,9 +133,9 @@ class PluginServiceResolver
     }
 
     /**
-     * 特定のインターフェースを実装する全プラグインを権限チェック付きで解決
+     * Resolve all plugins that implement a specific interface with permission checking
      *
-     * @param  class-string<PluginCapabilityInterface>  $interface  機能インターフェース
+     * @param  class-string<PluginCapabilityInterface>  $interface  Capability interface
      * @return array<CapabilityResolutionResult>
      */
     public function resolveAll(string $interface): array
@@ -151,10 +151,10 @@ class PluginServiceResolver
     }
 
     /**
-     * 特定のインターフェースが利用可能か確認
+     * Check if a specific interface is available
      *
-     * @param  class-string<PluginCapabilityInterface>  $interface  機能インターフェース
-     * @param  string|null  $pluginSlug  特定のプラグインに限定する場合
+     * @param  class-string<PluginCapabilityInterface>  $interface  Capability interface
+     * @param  string|null  $pluginSlug  When limiting to a specific plugin
      */
     public function has(string $interface, ?string $pluginSlug = null): bool
     {
@@ -162,7 +162,7 @@ class PluginServiceResolver
     }
 
     /**
-     * 登録済みの機能インターフェース一覧を取得
+     * Get list of registered capability interfaces
      *
      * @return array<class-string<PluginCapabilityInterface>>
      */
@@ -175,7 +175,7 @@ class PluginServiceResolver
     }
 
     /**
-     * 特定のインターフェースの全インスタンスを取得（権限チェックなし）
+     * Get all instances of a specific interface (without permission checking)
      *
      * @param  class-string<PluginCapabilityInterface>  $interface
      * @return array<PluginCapabilityInterface>
@@ -184,7 +184,7 @@ class PluginServiceResolver
     {
         $instances = $this->registered[$interface] ?? [];
 
-        // サービスコンテナのタグからも取得
+        // Also retrieve from service container tags
         try {
             $tagged = app()->tagged(self::CAPABILITY_TAG);
             foreach ($tagged as $service) {
@@ -193,14 +193,14 @@ class PluginServiceResolver
                 }
             }
         } catch (\Throwable) {
-            // タグが未登録の場合は無視
+            // Ignore if tag is not registered
         }
 
         return $instances;
     }
 
     /**
-     * 権限チェックを行い結果をラップ
+     * Perform permission check and wrap result
      *
      * @param  class-string<PluginCapabilityInterface>  $interface
      */
@@ -208,15 +208,15 @@ class PluginServiceResolver
     {
         $pluginSlug = $instance->getPluginSlug();
 
-        // 機能が利用不可の場合
+        // When feature is unavailable
         if (! $instance->isCapabilityAvailable()) {
             return CapabilityResolutionResult::unavailable($pluginSlug);
         }
 
-        // 権限チェック
+        // Permission check
         $requiredPermission = $this->getRequiredPermission($interface);
         if ($requiredPermission !== null && ! $this->permissionService->check($pluginSlug, $requiredPermission)) {
-            Log::warning('プラグイン機能の権限チェックに失敗', [
+            Log::warning('Plugin feature permission check failed', [
                 'plugin' => $pluginSlug,
                 'interface' => $interface,
                 'permission' => $requiredPermission,
@@ -229,18 +229,18 @@ class PluginServiceResolver
     }
 
     /**
-     * インターフェースに必要な権限キーを取得
+     * Get required permission key for interface
      *
      * @param  class-string<PluginCapabilityInterface>  $interface
      */
     protected function getRequiredPermission(string $interface): ?string
     {
-        // 手動登録された権限マップを優先
+        // Prioritize manually registered permission map
         if (isset($this->permissionMap[$interface])) {
             return $this->permissionMap[$interface];
         }
 
-        // インターフェースの REQUIRED_PERMISSION 定数を確認
+        // Check REQUIRED_PERMISSION constant of interface
         if (defined("{$interface}::REQUIRED_PERMISSION")) {
             return constant("{$interface}::REQUIRED_PERMISSION");
         }
@@ -249,7 +249,7 @@ class PluginServiceResolver
     }
 
     /**
-     * 同一プラグインの重複インスタンスかどうか確認
+     * Check if duplicate instance of same plugin
      *
      * @param  array<PluginCapabilityInterface>  $existing
      */

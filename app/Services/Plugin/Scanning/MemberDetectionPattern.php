@@ -36,12 +36,12 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * メンバー関連の検出パターン
+ * Detection patterns for member-related operations
  *
- * members.read, members.write, members.create, members.delete を検出します。
- * use文のインポートのみは除外します。
+ * Detects members.read, members.write, members.create, members.delete
+ * Excludes use statement imports only.
  */
 class MemberDetectionPattern extends DetectionPattern
 {
@@ -79,7 +79,7 @@ class MemberDetectionPattern extends DetectionPattern
     }
 
     /**
-     * use文のインポートのみは除外
+     * Excludes use statement imports only
      */
     public function validateMatch(string $match, string $line, string $fileContent, string $filePath): bool
     {
@@ -89,7 +89,7 @@ class MemberDetectionPattern extends DetectionPattern
 
         $trimmedLine = ltrim($line);
 
-        // use文のインポートのみは除外
+        // Excludes use statement imports only
         if (str_starts_with($trimmedLine, 'use ')) {
             return false;
         }

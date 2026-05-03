@@ -44,14 +44,14 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 /**
- * 法務ページレジストリサービス
+ * Legal page registry service
  *
- * コアとプラグインの法務ページ種別を統合管理し、
- * dls_site_settings テーブルに URL を保存する。
+ * Manages Core and plugin legal page types in a unified manner,
+ * stores URLs in the dls_site_settings table
  */
 class LegalPageService implements LegalPageServiceInterface
 {
-    /** @var string 設定キーのプレフィックス */
+    /** @var string settings key prefix */
     private const SETTING_PREFIX = 'legal_page_url:';
 
     /** @var array<string, array{name: string, description: string, required: bool, icon: string, required_by?: list<string>}>|null */
@@ -62,7 +62,7 @@ class LegalPageService implements LegalPageServiceInterface
     ) {}
 
     /**
-     * コア + プラグインの統合ページ種別一覧を取得
+     * Get merged list of Core + plugin page types
      *
      * @return array<string, array{name: string, description: string, required: bool, icon: string, required_by?: list<string>}>
      */
@@ -74,15 +74,15 @@ class LegalPageService implements LegalPageServiceInterface
 
         $coreTypes = config('admin.legal-pages', []);
 
-        // プラグインのオーバーライドを読み込み
+        // Load plugin overrides
         $pluginOverrides = $this->loadPluginOverrides();
 
-        // マージ処理
+        // Merge process
         $merged = $coreTypes;
 
         foreach ($pluginOverrides as $slug => $override) {
             if (isset($merged[$slug])) {
-                // 既存エントリのオーバーライド
+                // Override existing entries
                 if (! empty($override['required'])) {
                     $merged[$slug]['required'] = true;
                     $merged[$slug]['required_by'] = array_merge(
@@ -90,7 +90,7 @@ class LegalPageService implements LegalPageServiceInterface
                         $override['required_by'] ?? []
                     );
                 }
-                // name/description/icon はプラグイン側で上書き可能
+                // name/description/icon can be overridden by plugins
                 if (isset($override['name'])) {
                     $merged[$slug]['name'] = $override['name'];
                 }
@@ -101,7 +101,7 @@ class LegalPageService implements LegalPageServiceInterface
                     $merged[$slug]['icon'] = $override['icon'];
                 }
             } else {
-                // プラグイン独自の新規ページ種別
+                // New page types unique to plugins
                 $merged[$slug] = $override;
             }
         }
@@ -112,7 +112,7 @@ class LegalPageService implements LegalPageServiceInterface
     }
 
     /**
-     * 指定ページ種別が必須かどうかを判定
+     * Determine if the specified page type is required
      */
     public function isRequired(string $slug): bool
     {
@@ -122,7 +122,7 @@ class LegalPageService implements LegalPageServiceInterface
     }
 
     /**
-     * 指定ページ種別の URL が設定済みかどうかを判定
+     * Determine if the URL for the specified page type is configured
      */
     public function exists(string $slug): bool
     {
@@ -132,7 +132,7 @@ class LegalPageService implements LegalPageServiceInterface
     }
 
     /**
-     * 指定ページ種別の URL を取得
+     * Get the URL for the specified page type
      */
     public function url(string $slug): ?string
     {
@@ -142,7 +142,7 @@ class LegalPageService implements LegalPageServiceInterface
     }
 
     /**
-     * 必須だが URL 未設定のページ種別一覧を取得
+     * Get list of required page types without configured URLs
      *
      * @return array<string, array{name: string, description: string, required: bool, icon: string}>
      */
@@ -160,7 +160,7 @@ class LegalPageService implements LegalPageServiceInterface
     }
 
     /**
-     * 指定ページ種別の URL を設定（null で削除）
+     * Set the URL for the specified page type (null to delete)
      */
     public function setUrl(string $slug, ?string $url): void
     {
@@ -174,7 +174,7 @@ class LegalPageService implements LegalPageServiceInterface
     }
 
     /**
-     * 有効プラグインの法務ページ設定を読み込み
+     * Load legal page settings from active plugins
      *
      * @return array<string, array<string, mixed>>
      */
@@ -187,7 +187,7 @@ class LegalPageService implements LegalPageServiceInterface
                 ->whereNotNull('enabled_at')
                 ->get();
         } catch (\Exception $e) {
-            Log::warning('LegalPageService: プラグインテーブルの読み込みに失敗: '.$e->getMessage());
+            Log::warning('LegalPageService: Failed to load plugin table: '.$e->getMessage());
 
             return [];
         }
@@ -203,7 +203,7 @@ class LegalPageService implements LegalPageServiceInterface
                 $pluginConfig = require $configPath;
 
                 if (! is_array($pluginConfig)) {
-                    Log::warning("LegalPageService: 不正な legal-pages.php 形式: {$plugin->slug}");
+                    Log::warning("LegalPageService: Invalid legal-pages.php format: {$plugin->slug}");
 
                     continue;
                 }
@@ -213,13 +213,13 @@ class LegalPageService implements LegalPageServiceInterface
                         continue;
                     }
 
-                    // required_by にプラグイン名を追加
+                    // Add plugin name to required_by
                     if (! empty($pageConfig['required'])) {
                         $pageConfig['required_by'] = [$plugin->name];
                     }
 
                     if (isset($overrides[$slug])) {
-                        // 複数プラグインから同じ slug が要求された場合
+                        // When the same slug is required by multiple plugins
                         if (! empty($pageConfig['required'])) {
                             $overrides[$slug]['required'] = true;
                             $overrides[$slug]['required_by'] = array_merge(
@@ -232,7 +232,7 @@ class LegalPageService implements LegalPageServiceInterface
                     }
                 }
             } catch (\Exception $e) {
-                Log::error("LegalPageService: プラグイン {$plugin->slug} の設定読み込み失敗: {$e->getMessage()}");
+                Log::error("LegalPageService: Failed to load configuration for plugin {$plugin->slug}: {$e->getMessage()}");
             }
         }
 

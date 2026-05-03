@@ -38,7 +38,7 @@ namespace App\Services\Extension;
 use App\Models\ExtensionSource;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
  * Source Verifier
  *

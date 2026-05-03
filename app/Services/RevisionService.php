@@ -45,22 +45,22 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 /**
- * コア・プラグイン・テーマ問わず、`Revisionable` を実装するモデルを受けて以下を提供する:
- *   - 保存時スナップショット記録（差分がなければスキップ）
- *   - 保持件数超過時の自動削除（保護フラグは除外）
- *   - 復元（必要なら復元前バックアップを作成）
- *   - 正規化ハッシュによる差分判定
+ * Accepts models implementing `Revisionable` (Core, plugin, or theme) and provides the following:
+ *   - Snapshot recording on save (skipped if no diff)
+ *   - Auto-deletion when retention count is exceeded (excluding protected flags)
+ *   - Restoration (creates pre-restore backup if needed)
+ *   - Diff detection using normalized hash
  *
- * 使用例:
+ * Usage example:
  * ```php
  * $service = app(RevisionService::class);
  * $service->record($frontPage, type: 'manual', userId: $actor->getActorId());
  * $service->restore($revision, userId: $actor->getActorId());
  * ```
  *
- * 保持件数は全コンテンツタイプ共通の設定キー `content.revision.retention_count` から取得する。
- * プラグイン側で独自のリテンションポリシーを持たせたい場合は、このサービスを継承して
- * `getRetentionCount()` を上書きすること。
+ * The retention count is retrieved from the settings key `content.revision.retention_count` common to all content types
+ * If a plugin wants to have its own retention policy, inherit this service and
+ * override `getRetentionCount()`
  */
 class RevisionService
 {
@@ -70,7 +70,7 @@ class RevisionService
 
     public const TYPE_RESTORE_BACKUP = 'restore_backup';
 
-    /** 設定キー: リビジョン保持件数（0 でリビジョン無効、上限 MAX_RETENTION） */
+    /** Settings key: number of revisions to retain (0 disables revisions, max MAX_RETENTION) */
     public const SETTING_KEY_RETENTION = 'content.revision.retention_count';
 
     public const DEFAULT_RETENTION = 50;
@@ -78,12 +78,12 @@ class RevisionService
     public const MAX_RETENTION = 500;
 
     /**
-     * リビジョンを作成する。
+     * Create a revision
      *
-     * 直前リビジョンと同一内容の場合は作成をスキップする。
-     * 作成後、保持件数を超えた分の非保護リビジョンを古い順に自動削除する。
+     * Skip creation if content is identical to the previous revision
+     * After creation, auto-delete unprotected revisions exceeding retention count in oldest-first order
      *
-     * @return Model|null 作成されたリビジョンモデル（スキップ時は null）
+     * @return Model|null Created revision model (null if skipped)
      */
     public function record(
         Revisionable $target,
@@ -120,10 +120,10 @@ class RevisionService
     }
 
     /**
-     * 指定リビジョンの内容でコンテンツを復元する。
+     * Restore content with the specified revision's content
      *
-     * 復元前の現状が直前リビジョンと差分がある場合に限り、
-     * `TYPE_RESTORE_BACKUP` の自動バックアップを 1 件作成する。
+     * Only if the current state before restoration differs from the previous revision,
+     * create one automatic backup of `TYPE_RESTORE_BACKUP`
      */
     public function restore(Model $revision, ?int $userId = null): Revisionable
     {
@@ -148,10 +148,10 @@ class RevisionService
     }
 
     /**
-     * 現在のコンテンツからスナップショット配列を生成する。
+     * Generate a snapshot array from the current content
      *
-     * 未設定のカラムは null で埋めて、in-memory モデルと DB 再ロード後の
-     * ハッシュが一致するよう正規化する。
+     * Fill unset columns with null so that in-memory models and post-DB-reload
+     * Normalize to match hashes
      *
      * @return array<string, mixed>
      */
@@ -170,7 +170,7 @@ class RevisionService
     }
 
     /**
-     * 保護中のリビジョン件数を返す。
+     * Return the count of protected revisions
      */
     public function countProtected(Revisionable $target): int
     {
@@ -183,7 +183,7 @@ class RevisionService
     }
 
     /**
-     * 保持件数設定を取得する（0〜MAX_RETENTION にクランプ）。
+     * Retrieve retention count settings (clamped to 0–MAX_RETENTION)
      */
     public function getRetentionCount(): int
     {
@@ -193,7 +193,7 @@ class RevisionService
     }
 
     /**
-     * 直前リビジョンのスナップショットと現在のスナップショットが同一かを判定する。
+     * Determine if the previous revision snapshot and the current snapshot are identical
      *
      * @param  array<string, mixed>  $snapshot
      */
@@ -214,14 +214,14 @@ class RevisionService
     }
 
     /**
-     * スナップショット配列の正規化ハッシュを返す。
+     * Return the normalized hash of the snapshot array
      *
      * @param  array<string, mixed>  $snapshot
      */
     private function hash(array $snapshot): string
     {
-        // enum インスタンスや日時など、DB 由来の JSON と型が一致しない値を
-        // プリミティブに正規化するため、一度 JSON を往復させてから比較する。
+        // Values such as enum instances and datetime that do not match the type of JSON from DB
+        // are normalized to primitives by round-tripping through JSON before comparison
         $normalized = json_decode(
             (string) json_encode($snapshot, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             true
@@ -232,10 +232,10 @@ class RevisionService
     }
 
     /**
-     * 保持件数を超えた非保護リビジョンを古い順に削除する。
+     * Delete unprotected revisions exceeding the retention count, oldest first
      *
-     * 保護されたリビジョンは対象外のため、結果的に総件数が保持件数を
-     * 上回ることがあるが、ユーザーの明示的な保護意図を尊重する。
+     * Protected revisions are excluded, so the total count may
+     * exceed the retention count, but we respect the user's explicit protection intent
      */
     private function pruneOldRevisions(Revisionable $target, int $retention): void
     {
@@ -266,17 +266,17 @@ class RevisionService
     }
 
     /**
-     * リビジョンモデルから親 Revisionable を取得する。
+     * Retrieve the parent Revisionable from the revision model
      */
     private function loadTarget(Model $revision): Revisionable
     {
         /** @var Revisionable|null $target */
         $target = null;
 
-        // リビジョンモデルに定義されたリレーションメソッドのうち、
-        // Revisionable を返すものを探す。下記は優先順位付きの候補リスト。
-        // 汎用名（content/target/revisionable）を最優先にし、
-        // その後にコアおよび各プラグインが使う想定のリレーション名を並べる。
+        // Among the relation methods defined in the revision model,
+        // search for those that return Revisionable. The following is a prioritized candidate list
+        // Prioritize generic names (content/target/revisionable) first,
+        // followed by relation names expected to be used by Core and each plugin
         foreach (self::revisionableRelationCandidates() as $relation) {
             if (method_exists($revision, $relation)) {
                 $resolved = $revision->{$relation};
@@ -299,25 +299,25 @@ class RevisionService
     }
 
     /**
-     * 親 Revisionable を逆引きするために探索するリレーション名の候補リスト。
+     * Candidate list of relation names to search for reverse-lookup of parent Revisionable
      *
-     * プラグインが別の命名を使う場合は、そのリレーション名を下記に追加するか、
-     * `RevisionService` を継承して `loadTarget()` を上書きすること。
+     * If a plugin uses a different naming, add that relation name below, or
+     * extend `RevisionService` and override `loadTarget()`
      *
      * @return list<string>
      */
     private static function revisionableRelationCandidates(): array
     {
         return [
-            // 汎用名（優先）
+            // Generic names (priority)
             'content',
             'target',
             'revisionable',
-            // コア
+            // Core
             'frontPage',
-            // プラグイン用の想定名
+            // Expected name for plugin
             'page',     // DixlasePages
-            'post',     // 将来の DixlaseBlog
+            'post',     // Future DixlaseBlog
             'legal',    // DixlaseLegal
             'article',
             'entry',

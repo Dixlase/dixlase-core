@@ -39,7 +39,7 @@ use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Migrations\DatabaseMigrationRepository;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  */
 class ThemeMigrationRepository extends DatabaseMigrationRepository
 {
@@ -52,11 +52,11 @@ class ThemeMigrationRepository extends DatabaseMigrationRepository
     }
 
     /**
-     * テーマ名に基づいて実行済みマイグレーションを取得
+     * Get executed migrations based on theme name
      */
     public function getRan($theme = null)
     {
-        $theme = $theme ?? $this->theme; // null の場合はインスタンス変数を使用
+        $theme = $theme ?? $this->theme; // Use instance variable if null
 
         return $this->table()
             ->where('theme', $theme)
@@ -65,15 +65,15 @@ class ThemeMigrationRepository extends DatabaseMigrationRepository
     }
 
     /**
-     * マイグレーションを記録
+     * Record migration
      */
     public function log($file, $batch, $theme = null)
     {
-        $theme = $theme ?? $this->theme; // テーマが明示的に渡されなかった場合、インスタンス変数を使用
+        $theme = $theme ?? $this->theme; // Use instance variable if theme was not explicitly passed
 
         $this->table()->insert([
             'migration' => $file,
-            'theme' => $theme, // テーマ識別子を追加
+            'theme' => $theme, // Add theme identifier
             'batch' => $batch,
             'created_at' => now(),
             'updated_at' => now(),

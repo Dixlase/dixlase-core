@@ -36,11 +36,11 @@
 namespace App\Services\Plugin\Scanning;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * 設定読み取り関連の検出パターン
+ * Detection patterns for settings reading
  *
- * settings.read_core, settings.write_own を検出します。
+ * Detects settings.read_core and settings.write_own
  */
 class SettingsDetectionPattern extends DetectionPattern
 {
@@ -72,7 +72,7 @@ class SettingsDetectionPattern extends DetectionPattern
     }
 
     /**
-     * use文のインポートのみは除外
+     * Exclude use statements that only import
      */
     public function validateMatch(string $match, string $line, string $fileContent, string $filePath): bool
     {
@@ -82,7 +82,7 @@ class SettingsDetectionPattern extends DetectionPattern
 
         $trimmedLine = ltrim($line);
 
-        // use文のインポートのみは除外
+        // Exclude use statements that only import
         if (str_starts_with($trimmedLine, 'use ')) {
             return false;
         }

@@ -48,22 +48,22 @@ use Illuminate\Support\Facades\Notification;
 class SystemNotificationService
 {
     /**
-     * システムエラー通知を送信
+     * Send system error notification
      *
-     * @param  string  $subject  件名
-     * @param  string  $message  エラーメッセージ
-     * @param  array  $context  追加のコンテキスト情報
-     * @return bool 送信成功の場合true
+     * @param  string  $subject  Subject
+     * @param  string  $message  Error message
+     * @param  array  $context  Additional context information
+     * @return bool True if sent successfully
      */
     public function sendErrorNotification(string $subject, string $message, array $context = []): bool
     {
         try {
-            // 通知機能が有効かチェック
+            // Check if notification feature is enabled
             if (! $this->isNotificationEnabled()) {
                 return false;
             }
 
-            // 通知先メールアドレスを取得
+            // Get notification recipient email address
             $notificationEmail = $this->getNotificationEmail();
             if (empty($notificationEmail)) {
                 Log::warning('System notification email address is not configured');
@@ -71,14 +71,14 @@ class SystemNotificationService
                 return false;
             }
 
-            // メールサーバーが設定済みかチェック
+            // Check if mail server is configured
             if (! MailServerValidatorService::isMailServerTested()) {
                 Log::warning('Mail server is not properly configured for system notifications');
 
                 return false;
             }
 
-            // Notificationを使用してメール送信
+            // Send email using Notification
             Notification::route('mail', $notificationEmail)
                 ->notify(new SystemErrorNotification($subject, $message, $context));
 
@@ -100,22 +100,22 @@ class SystemNotificationService
     }
 
     /**
-     * 管理者に通知を送信（汎用）
+     * Send notification to administrator (generic)
      *
-     * @param  string  $subject  件名
-     * @param  string  $message  メッセージ
-     * @param  array  $context  追加のコンテキスト情報
-     * @return bool 送信成功の場合true
+     * @param  string  $subject  Subject
+     * @param  string  $message  Message
+     * @param  array  $context  Additional context information
+     * @return bool True if sent successfully
      */
     public function sendAdminNotification(string $subject, string $message, array $context = []): bool
     {
         try {
-            // 通知機能が有効かチェック
+            // Check if notification feature is enabled
             if (! $this->isNotificationEnabled()) {
                 return false;
             }
 
-            // 通知先メールアドレスを取得
+            // Get notification recipient email address
             $notificationEmail = $this->getNotificationEmail();
             if (empty($notificationEmail)) {
                 Log::warning('System notification email address is not configured');
@@ -123,17 +123,17 @@ class SystemNotificationService
                 return false;
             }
 
-            // メールサーバーが設定済みかチェック
+            // Check if mail server is configured
             if (! MailServerValidatorService::isMailServerTested()) {
                 Log::warning('Mail server is not properly configured for system notifications');
 
                 return false;
             }
 
-            // メール内容を作成
+            // Create email content
             $mailMessage = $this->buildNotificationMail($subject, $message, $context);
 
-            // メール送信
+            // Send email
             Mail::send([], [], function ($mail) use ($notificationEmail, $mailMessage) {
                 $mail->to($notificationEmail)
                     ->subject($mailMessage->subject)
@@ -158,12 +158,12 @@ class SystemNotificationService
     }
 
     /**
-     * データベースエラー通知を送信
+     * Send database error notification
      */
     public function sendDatabaseErrorNotification(Exception $exception): bool
     {
         return $this->sendErrorNotification(
-            'データベースエラーが発生しました',
+            __('services/system_notification_service.database_error_occurred'),
             $exception->getMessage(),
             [
                 'type' => 'database_error',
@@ -175,12 +175,12 @@ class SystemNotificationService
     }
 
     /**
-     * アプリケーションエラー通知を送信
+     * Send application error notification
      */
     public function sendApplicationErrorNotification(Exception $exception): bool
     {
         return $this->sendErrorNotification(
-            'アプリケーションエラーが発生しました',
+            __('services/system_notification_service.application_error_occurred'),
             $exception->getMessage(),
             [
                 'type' => 'application_error',
@@ -192,7 +192,7 @@ class SystemNotificationService
     }
 
     /**
-     * 通知機能が有効かチェック
+     * Check if notification feature is enabled
      */
     public function isNotificationEnabled(): bool
     {
@@ -206,11 +206,11 @@ class SystemNotificationService
     }
 
     /**
-     * 通知先メールアドレスを取得
+     * Get notification recipient email address
      */
     public function getNotificationEmail(): string
     {
-        // システム管理者メールアドレスを優先、なければnotification_emailを使用
+        // Prioritize system administrator email address, otherwise use notification_email
         $adminEmail = SiteSetting::getValue('system_admin_email', '');
         if (! empty($adminEmail)) {
             return $adminEmail;
@@ -220,7 +220,7 @@ class SystemNotificationService
     }
 
     /**
-     * 管理者通知メールを構築（汎用）
+     * Build administrator notification email (generic)
      */
     private function buildNotificationMail(string $subject, string $message, array $context = []): MailMessage
     {
@@ -228,14 +228,14 @@ class SystemNotificationService
 
         $mailMessage = new MailMessage();
         $mailMessage->subject("[{$appName}] {$subject}");
-        $mailMessage->greeting('システム管理者様');
+        $mailMessage->greeting(__('services/system_notification_service.dear_system_admin'));
 
         $mailMessage->line("**{$subject}**");
         $mailMessage->line($message);
 
-        // 追加情報を表示
+        // Display additional information
         if (! empty($context)) {
-            $mailMessage->line('**詳細情報:**');
+            $mailMessage->line(__('services/system_notification_service.detailed_information'));
 
             foreach ($context as $key => $value) {
                 if (is_string($value) || is_numeric($value)) {
@@ -244,31 +244,31 @@ class SystemNotificationService
             }
         }
 
-        // 発生日時を追加
-        $mailMessage->line('**通知日時:** '.now()->format('Y-m-d H:i:s'));
+        // Add occurrence date and time
+        $mailMessage->line(__('services/system_notification_service.notification_datetime').now()->format('Y-m-d H:i:s'));
 
-        $mailMessage->salutation("よろしくお願いします。\n\n{$appName} システム");
+        $mailMessage->salutation(__('services/system_notification_service.system_signature', ['appName' => $appName]));
 
         return $mailMessage;
     }
 
     /**
-     * エラー通知メールを構築
+     * Build error notification email
      */
     private function buildErrorNotificationMail(string $subject, string $message, array $context = []): MailMessage
     {
         $appName = env('APP_NAME', 'Dixlase');
 
-        // ログレベルに応じた色を取得
+        // Get color based on log level
         $logLevel = $context['log_level'] ?? 'Error';
         $levelColor = $this->getLogLevelColor($logLevel);
         $levelBgColor = $this->getLogLevelBgColor($logLevel);
 
         $mailMessage = new MailMessage();
         $mailMessage->subject("[{$appName}] {$subject}");
-        $mailMessage->greeting('システム管理者様');
+        $mailMessage->greeting(__('services/system_notification_service.dear_system_admin'));
 
-        // レベル表示（色付き）- HTMLとして直接追加
+        // Level display (colored) - add directly as HTML
         $levelHtml = '<div style="padding: 12px; background-color: '.$levelBgColor.'; border-left: 4px solid '.$levelColor.'; margin: 16px 0; border-radius: 4px;">';
         $levelHtml .= '<span style="color: '.$levelColor.'; font-weight: bold; font-size: 18px;">【'.$logLevel.'】</span>';
         $levelHtml .= '<span style="color: #333; font-weight: bold; font-size: 16px; margin-left: 8px;">'.htmlspecialchars($subject).'</span>';
@@ -277,24 +277,24 @@ class SystemNotificationService
         $mailMessage->line(new \Illuminate\Support\HtmlString($levelHtml));
 
         $mailMessage->line('');
-        $mailMessage->line('**エラーメッセージ:**');
+        $mailMessage->line('**Error message:**');
         $mailMessage->line($message);
 
-        // エラー詳細情報を追加
+        // Add error detail information
         if (! empty($context)) {
             $mailMessage->line('');
-            $mailMessage->line('**エラー詳細:**');
+            $mailMessage->line(__('services/system_notification_service.error_details'));
 
             if (isset($context['type'])) {
-                $mailMessage->line("**エラータイプ:** {$context['type']}");
+                $mailMessage->line(__('services/system_notification_service.error_type', ['type' => $context['type']]));
             }
 
             if (isset($context['file'])) {
-                $mailMessage->line("**ファイル:** {$context['file']}");
+                $mailMessage->line(__('services/system_notification_service.error_file', ['file' => $context['file']]));
             }
 
             if (isset($context['line'])) {
-                $mailMessage->line("**行番号:** {$context['line']}");
+                $mailMessage->line(__('services/system_notification_service.error_line', ['line' => $context['line']]));
             }
 
             if (isset($context['url'])) {
@@ -306,14 +306,14 @@ class SystemNotificationService
             }
 
             if (isset($context['ip'])) {
-                $mailMessage->line("**IPアドレス:** {$context['ip']}");
+                $mailMessage->line(__('services/system_notification_service.error_ip', ['ip' => $context['ip']]));
             }
 
-            // スタックトレースを追加（最初の10行のみ）
+            // Add stack trace (first 10 lines only)
             if (isset($context['trace'])) {
                 $traceLines = explode("\n", $context['trace']);
                 $limitedTrace = array_slice($traceLines, 0, 10);
-                $mailMessage->line('**スタックトレース（抜粋）:**');
+                $mailMessage->line(__('services/system_notification_service.stack_trace_excerpt'));
                 $mailMessage->line('```');
                 foreach ($limitedTrace as $traceLine) {
                     $mailMessage->line($traceLine);
@@ -321,28 +321,28 @@ class SystemNotificationService
                 $mailMessage->line('```');
             }
 
-            // その他のコンテキスト情報を追加（適度な長さに制限）
+            // Add other context information (limited to reasonable length)
             $excludeKeys = ['type', 'file', 'line', 'url', 'user_agent', 'ip', 'trace', 'exception', 'log_level', 'log_level_value', 'timestamp', 'channel', 'method'];
-            $maxContextLength = 200; // 最大200文字
+            $maxContextLength = 200; // Maximum 200 characters
             $contextCount = 0;
-            $maxContextItems = 10; // 最大10項目
+            $maxContextItems = 10; // Maximum 10 items
 
             foreach ($context as $key => $value) {
                 if ($contextCount >= $maxContextItems) {
-                    $mailMessage->line('_（その他のコンテキスト情報は省略されました）_');
+                    $mailMessage->line(__('services/system_notification_service.context_info_omitted'));
                     break;
                 }
 
                 if (! in_array($key, $excludeKeys)) {
                     if (is_string($value) || is_numeric($value)) {
-                        // 長い値は切り詰める
+                        // Truncate long values
                         $displayValue = is_string($value) && strlen($value) > $maxContextLength
                             ? substr($value, 0, $maxContextLength).'...'
                             : $value;
                         $mailMessage->line("**{$key}:** {$displayValue}");
                         $contextCount++;
                     } elseif (is_array($value) || is_object($value)) {
-                        // 配列やオブジェクトはJSON形式で表示（制限付き）
+                        // Display arrays or objects in JSON format (with limits)
                         $jsonValue = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                         if (strlen($jsonValue) > $maxContextLength) {
                             $jsonValue = substr($jsonValue, 0, $maxContextLength).'...';
@@ -354,43 +354,43 @@ class SystemNotificationService
             }
         }
 
-        // 発生日時を追加
-        $mailMessage->line('**発生日時:** '.now()->format('Y-m-d H:i:s'));
+        // Add occurrence date and time
+        $mailMessage->line(__('services/system_notification_service.occurrence_datetime').now()->format('Y-m-d H:i:s'));
 
-        $mailMessage->line('このエラーについて調査し、必要に応じて対応をお願いします。');
+        $mailMessage->line(__('services/system_notification_service.please_investigate_and_act'));
 
-        $mailMessage->salutation("よろしくお願いします。\n\n{$appName} システム");
+        $mailMessage->salutation(__('services/system_notification_service.system_signature', ['appName' => $appName]));
 
         return $mailMessage;
     }
 
     /**
-     * ログレベルに応じた色を取得
+     * Get color based on log level
      */
     private function getLogLevelColor(string $logLevel): string
     {
         return match (strtoupper($logLevel)) {
-            'EMERGENCY' => '#DC2626', // 赤（濃い）
-            'ALERT' => '#EF4444',     // 赤
-            'CRITICAL' => '#F97316',  // オレンジ
-            'ERROR' => '#F59E0B',     // 黄色（濃い）
-            'WARNING' => '#EAB308',   // 黄色
-            default => '#3B82F6',     // 青（その他）
+            'EMERGENCY' => '#DC2626', // Red (dark)
+            'ALERT' => '#EF4444',     // Red
+            'CRITICAL' => '#F97316',  // Orange
+            'ERROR' => '#F59E0B',     // Yellow (dark)
+            'WARNING' => '#EAB308',   // Yellow
+            default => '#3B82F6',     // blue (other)
         };
     }
 
     /**
-     * ログレベルに応じた背景色を取得
+     * Get background color based on log level
      */
     private function getLogLevelBgColor(string $logLevel): string
     {
         return match (strtoupper($logLevel)) {
-            'EMERGENCY' => '#FEE2E2', // 赤（薄い）
-            'ALERT' => '#FEE2E2',     // 赤（薄い）
-            'CRITICAL' => '#FFEDD5',  // オレンジ（薄い）
-            'ERROR' => '#FEF3C7',     // 黄色（薄い）
-            'WARNING' => '#FEF9C3',   // 黄色（薄い）
-            default => '#DBEAFE',     // 青（薄い）
+            'EMERGENCY' => '#FEE2E2', // Red (light)
+            'ALERT' => '#FEE2E2',     // Red (light)
+            'CRITICAL' => '#FFEDD5',  // Orange (light)
+            'ERROR' => '#FEF3C7',     // Yellow (light)
+            'WARNING' => '#FEF9C3',   // Yellow (light)
+            default => '#DBEAFE',     // blue (light)
         };
     }
 }

@@ -46,8 +46,8 @@ use RuntimeException;
 /**
  * Extension Source Manager
  *
- * 拡張機能ソースの管理、プロバイダーレジストリ、更新チェック、
- * 複数ソース間のフォールバックダウンロードを管理する中央サービス。
+ * Extension source management, provider registry, update checks,
+ * and central service managing fallback downloads across multiple sources
  */
 class ExtensionSourceManager
 {
@@ -122,7 +122,7 @@ class ExtensionSourceManager
     /**
      * Get all enabled sources ordered by priority
      *
-     * DB にソースが1件もない場合は config プリセットからデフォルトソースを自動作成する。
+     * Auto-create default sources from config presets if no sources exist in DB
      *
      * @return Collection<int, ExtensionSource>
      */
@@ -139,14 +139,14 @@ class ExtensionSourceManager
     }
 
     /**
-     * config プリセットからデフォルトソースを DB に作成
+     * Create default sources in DB from config presets
      */
     protected function seedDefaultSources(): void
     {
         $presets = config('extension-sources.presets', []);
 
         foreach ($presets as $type => $preset) {
-            // 既に同タイプのソースが存在する場合はスキップ
+            // Skip if a source of the same type already exists
             if (ExtensionSource::query()->ofType($type)->exists()) {
                 continue;
             }
@@ -159,7 +159,7 @@ class ExtensionSourceManager
                 'priority' => 0,
             ];
 
-            // タイプ別のデフォルト値を設定
+            // Set default values by type
             if ($type === 'github') {
                 $attributes['base_url'] = config('extension-sources.github.api_base', 'https://api.github.com');
                 $attributes['owner'] = config('extension-sources.github.default_owner', 'Dixlase');
@@ -186,17 +186,17 @@ class ExtensionSourceManager
     }
 
     /**
-     * ソースが公式かどうかを判定する（ハードコード + Ed25519 署名併用）
+     * Determine if source is official (hardcoded check + Ed25519 signature)
      */
     public function isOfficialSource(ExtensionSource $source): bool
     {
-        // 1. コアがプリセットしたソースタイプのハードコードチェック
+        // 1. Hardcoded check for Core preset source types
         $preset = config("extension-sources.presets.{$source->type}");
         if ($preset && ($preset['is_official'] ?? false)) {
             return true;
         }
 
-        // 2. Ed25519 署名による検証
+        // 2. Verification by Ed25519 signature
         if ($source->hasSignature()) {
             return $this->verifier->verify($source)['verified'];
         }
@@ -259,9 +259,9 @@ class ExtensionSourceManager
     }
 
     /**
-     * 指定スラッグの拡張機能の詳細データをソースから取得する
+     * Retrieve extension detail data for the specified slug from sources
      *
-     * @return array<string, mixed>|null source_id/source_name 付きの詳細データ
+     * @return array<string, mixed>|null Detail data with source_id/source_name
      */
     public function getExtensionDetails(string $slug, string $extensionType = 'plugin'): ?array
     {
