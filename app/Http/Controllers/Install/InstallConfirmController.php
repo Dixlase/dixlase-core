@@ -45,12 +45,12 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
 /**
- * インストール - 確認画面
+ * Install - Confirmation screen
  */
 class InstallConfirmController extends BaseInstallController
 {
     /**
-     * 入力内容の確認画面を表示
+     * Display confirmation screen for input content
      */
     public function show()
     {
@@ -59,8 +59,8 @@ class InstallConfirmController extends BaseInstallController
 
         $data = session('install_data', []);
 
-        // デバッグ情報をログに出力
-        Log::channel('install')->info('確認画面表示時のセッションデータ', [
+        // Output debug information to log
+        Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.session_data_at_confirmation_display'), [
             'session_id' => session()->getId(),
             'session_keys' => array_keys($data),
             'has_site_name' => isset($data['site_name']),
@@ -79,22 +79,22 @@ class InstallConfirmController extends BaseInstallController
             'full_data_keys' => $data ? array_keys($data) : 'empty',
         ]);
 
-        // 必須フィールドのチェックと不足フィールドに基づく適切なステップへのリダイレクト
+        // Check required fields and redirect to appropriate step based on missing fields
         $steps = [
             'settings' => ['site_name', 'admin_account_name', 'admin_email', 'admin_password'],
             'environment' => ['app_env', 'app_url', 'admin_url', 'app_timezone'],
             'database' => ['db_connection', 'db_host', 'db_port', 'db_database', 'db_username'],
         ];
 
-        // セッションデータが完全に空の場合は最初からやり直し
+        // Start over if session data is completely empty
         if (empty($data)) {
-            Log::channel('install')->error('セッションデータが完全に空です');
+            Log::channel('install')->error(__('http/controllers/install/install_confirm_controller.session_data_completely_empty'));
 
             return redirect()->route('install.index')
-                ->with('error', 'セッションデータが失われました。インストールを最初からやり直してください。');
+                ->with('error', __('http/controllers/install/install_confirm_controller.session_data_lost_restart_installation'));
         }
 
-        // 各ステップの必須フィールドをチェック
+        // Check required fields for each step
         $missingFields = [];
         foreach ($steps as $step => $fields) {
             foreach ($fields as $field) {
@@ -104,10 +104,10 @@ class InstallConfirmController extends BaseInstallController
             }
         }
 
-        // 不足フィールドがある場合
+        // If there are missing fields
         if (! empty($missingFields)) {
             $firstMissing = $missingFields[0];
-            Log::channel('install')->error('必須フィールドが不足しています', [
+            Log::channel('install')->error(__('http/controllers/install/install_confirm_controller.required_fields_missing'), [
                 'missing_fields' => $missingFields,
                 'session_keys' => array_keys($data),
                 'session_id' => session()->getId(),
@@ -117,10 +117,10 @@ class InstallConfirmController extends BaseInstallController
             $route = 'install.'.($firstMissing['step'] === 'settings' ? 'create' : $firstMissing['step'].'.create');
 
             return redirect()->route($route)
-                ->with('error', __('install/common.missing_required_fields')." (不足フィールド: {$firstMissing['field']})");
+                ->with('error', __('install/common.missing_required_fields').__('http/controllers/install/install_confirm_controller.missing_field', ['field' => $firstMissing['field']]));
         }
 
-        // メールテスト結果をセッションから取得
+        // Retrieve email test results from session
         $mailTestStatus = [
             'connection_tested' => (bool) ($data['mail_connection_tested'] ?? false),
             'connection_test_date' => $data['mail_connection_test_date'] ?? null,
@@ -139,48 +139,48 @@ class InstallConfirmController extends BaseInstallController
     }
 
     /**
-     * インストール実行
+     * Execute installation
      */
     public function store()
     {
         try {
-            Log::channel('install')->info('=== インストール開始 ===');
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.installation_started'));
 
             $data = session('install_data');
-            Log::channel('install')->info('セッションデータ取得完了', [
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.session_data_retrieved'), [
                 'keys' => array_keys($data ?? []),
                 'session_id' => session()->getId(),
                 'full_data' => $data,
             ]);
 
-            // セッションデータが空の場合は確認画面にリダイレクト
+            // Redirect to confirmation screen if session data is empty
             if (empty($data)) {
-                Log::channel('install')->error('セッションデータが空です - 確認画面にリダイレクト');
+                Log::channel('install')->error(__('http/controllers/install/install_confirm_controller.session_empty_redirect_to_confirm'));
 
                 return redirect()->route('install.confirm')
                     ->with('error', '');
             }
 
-            // 管理者パスワードを復号化
+            // Decrypt administrator password
             $adminPassword = Crypt::decryptString($data['admin_password']);
-            Log::channel('install')->info('管理者パスワード復号化完了');
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.admin_password_decrypted'));
 
-            // DBパスワードを復号化（空文字列の場合は復号化しない）
+            // Decrypt DB password (do not decrypt if empty string)
             $dbPassword = (! empty($data['db_password'])) ? Crypt::decryptString($data['db_password']) : '';
-            Log::channel('install')->info('DBパスワード復号化完了');
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.db_password_decrypted'));
 
-            // メールパスワードを復号化（空文字列の場合は復号化しない）
+            // Decrypt email password (do not decrypt if empty string)
             $mailPassword = (! empty($data['mail_password'])) ? Crypt::decryptString($data['mail_password']) : '';
-            Log::channel('install')->info('メールパスワード復号化完了');
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.mail_password_decrypted'));
 
-            // force_sslの値を取得
+            // Get force_ssl value
             $forceSslBool = ! empty($data['force_ssl']);
 
-            // force_sslに基づいてAPP_URLのプロトコルを決定
+            // Determine APP_URL protocol based on force_ssl
             $protocol = $forceSslBool ? 'https://' : 'http://';
             $appUrl = $protocol.$data['app_url'];
 
-            // セッションから言語設定を取得
+            // Get language settings from session
             $locale = session('install_locale', 'en');
 
             $envData = [
@@ -189,7 +189,7 @@ class InstallConfirmController extends BaseInstallController
                 'APP_DEBUG' => $data['app_debug'] ? 'true' : 'false',
                 'APP_URL' => $appUrl,
                 'APP_LOCALE' => $data['app_locale'] ?? 'ja',
-                // APP_TIMEZONE は UTC 固定（保存・計算は UTC。表示用 TZ は site_settings.display_timezone で管理）
+                // APP_TIMEZONE is fixed to UTC (storage and calculation use UTC. Display TZ is managed by site_settings.display_timezone)
                 'APP_TIMEZONE' => 'UTC',
                 'INSTALLED' => 'false',
                 'FORCE_SSL' => $data['force_ssl'] ? 'true' : 'false',
@@ -200,7 +200,7 @@ class InstallConfirmController extends BaseInstallController
                 'SESSION_LIFETIME' => '120',
                 'SESSION_ENCRYPT' => 'false',
 
-                // メール設定
+                // Email settings
                 'MAIL_MAILER' => $data['mail_mailer'] ?? 'smtp',
                 'MAIL_HOST' => $data['mail_host'] ?? 'localhost',
                 'MAIL_PORT' => $data['mail_port'] ?? 1025,
@@ -210,7 +210,7 @@ class InstallConfirmController extends BaseInstallController
                 'MAIL_FROM_ADDRESS' => $data['mail_from_address'] ?? $data['admin_email'],
                 'MAIL_FROM_NAME' => "\"{$data['site_name']}\"",
 
-                // DB設定
+                // DB settings
                 'DB_CONNECTION' => $data['db_connection'],
                 'DB_HOST' => $data['db_host'],
                 'DB_PORT' => $data['db_port'],
@@ -219,106 +219,106 @@ class InstallConfirmController extends BaseInstallController
                 'DB_PASSWORD' => $dbPassword ?? '',
             ];
 
-            // .envファイル更新
-            Log::channel('install')->info('.envファイル更新開始');
+            // Update .env file
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.update_env_file_started'));
             $this->updateEnv($envData);
-            Log::channel('install')->info('.envファイル更新完了');
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.update_env_file_completed'));
 
-            // 設定をクリアし、新しい.envを適用
-            Log::channel('install')->info('設定キャッシュクリア開始');
+            // Clear settings and apply new .env
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.config_cache_clear_started'));
             Artisan::call('config:clear');
-            Log::channel('install')->info('設定キャッシュクリア完了');
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.config_cache_clear_completed'));
 
-            // マイグレーション実行中はセッションドライバーを一時的にfileに変更
+            // Temporarily change session driver to file during migration
             $envPath = base_path('.env');
             $envContent = file_get_contents($envPath);
 
-            // 元のSESSION_DRIVERを保存
+            // Save original SESSION_DRIVER
             preg_match('/SESSION_DRIVER=(.+)/', $envContent, $matches);
             $originalSessionDriver = $matches[1] ?? 'guard-aware-database';
 
-            // SESSION_DRIVERをfileに変更
+            // Change SESSION_DRIVER to file
             $envContent = preg_replace('/SESSION_DRIVER=.+/', 'SESSION_DRIVER=file', $envContent);
             file_put_contents($envPath, $envContent);
 
-            // 設定を再読み込み
+            // Reload settings
             Artisan::call('config:clear');
-            Log::channel('install')->info('セッションドライバーを一時的にfileに変更', ['original' => $originalSessionDriver]);
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.session_driver_changed_to_file'), ['original' => $originalSessionDriver]);
 
-            // データベースをリセットするかどうかを確認
+            // Check whether to reset database
             if (empty($data['preserve_data'])) {
-                Log::channel('install')->info('データベースリセット＆マイグレーション開始');
+                Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.database_reset_migration_started'));
                 Artisan::call('migrate:fresh', ['--force' => true]);
-                Log::channel('install')->info('データベースリセット＆マイグレーション完了');
+                Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.database_reset_migration_completed'));
             } else {
-                Log::channel('install')->info('マイグレーション開始（データ保持）');
+                Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.migration_started_data_preserved'));
                 Artisan::call('migrate', ['--force' => true]);
-                Log::channel('install')->info('マイグレーション完了（データ保持）');
+                Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.migration_completed_data_preserved'));
             }
 
-            // セッションドライバーを元に戻す
+            // Restore session driver
             $envContent = file_get_contents($envPath);
             $envContent = preg_replace('/SESSION_DRIVER=.+/', 'SESSION_DRIVER='.$originalSessionDriver, $envContent);
             file_put_contents($envPath, $envContent);
 
-            // 設定を再読み込み
+            // Reload settings
             Artisan::call('config:clear');
-            Log::channel('install')->info('セッションドライバーを復元', ['driver' => $originalSessionDriver]);
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.session_driver_restored'), ['driver' => $originalSessionDriver]);
 
-            // DB接続を再確立（テーブルプレフィックスを正しく適用するため）
+            // Re-establish DB connection (to correctly apply table prefix)
             DB::purge();
             DB::reconnect();
 
-            // デバッグ: 現在のテーブルプレフィックスと全テーブル一覧を取得
+            // Debug: Get current table prefix and all tables list
             $prefix = DB::connection()->getTablePrefix();
             $tables = DB::select('SHOW TABLES');
             $tableNames = array_map(function ($table) {
                 return array_values((array) $table)[0];
             }, $tables);
-            Log::channel('install')->info('DB接続を再確立しました', [
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.db_connection_reestablished'), [
                 'prefix' => $prefix,
                 'tables_count' => count($tableNames),
                 'sample_tables' => array_slice($tableNames, 0, 5),
             ]);
 
-            // シーダー実行（テーブル存在チェックをスキップして無条件で実行）
-            Log::channel('install')->info('DatabaseSeeder実行開始');
+            // Run seeder (skip table existence check and execute unconditionally)
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.database_seeder_started'));
             Artisan::call('db:seed', [
                 '--class' => 'DatabaseSeeder',
                 '--force' => true,
             ]);
-            Log::channel('install')->info('DatabaseSeeder実行完了');
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.database_seeder_completed'));
 
-            // テーマのマイグレーションを実行
-            Log::channel('install')->info('DixlaseOnePage マイグレーション開始');
+            // Run theme migrations
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.dixlase_onepage_migration_started'));
             Artisan::call('migrate', [
                 '--path' => 'themes/DixlaseOnePage/database/migrations',
                 '--force' => true,
             ]);
-            Log::channel('install')->info('DixlaseOnePage マイグレーション完了');
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.dixlase_onepage_migration_completed'));
 
-            // テーマシーダーを実行
-            // composer.local.json 未反映環境にも対応するため、動的にPSR-4を登録
-            Log::channel('install')->info('DixlaseOnePage DatabaseSeeder実行開始');
+            // Run theme seeders
+            // Dynamically register PSR-4 to support environments without composer.local.json applied
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.dixlase_onepage_seeder_started'));
             $this->registerThemeAutoload('DixlaseOnePage');
             Artisan::call('db:seed', [
                 '--class' => 'Themes\\DixlaseOnePage\\Database\\Seeders\\DatabaseSeeder',
                 '--force' => true,
             ]);
-            Log::channel('install')->info('DixlaseOnePage DatabaseSeeder実行完了（設定 + 権限）');
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.dixlase_onepage_seeder_completed'));
 
-            // 初期データの投入
-            Log::channel('install')->info('初期データ投入開始');
+            // Insert initial data
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initial_data_insertion_started'));
             $this->initializeDatabase($data, $adminPassword);
-            Log::channel('install')->info('初期データ投入完了');
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initial_data_insertion_completed'));
 
-            // ストレージのシンボリックリンクを作成
-            Log::channel('install')->info('ストレージシンボリックリンク作成開始');
+            // Create storage symbolic link
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.storage_symlink_creation_started'));
             Artisan::call('storage:link');
-            Log::channel('install')->info('ストレージシンボリックリンク作成完了');
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.storage_symlink_creation_completed'));
 
-            // アクティブなテーマのシンボリックリンクを作成
-            Log::channel('install')->info('テーマシンボリックリンク作成開始');
+            // Create symbolic link for active theme
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.theme_symlink_creation_started'));
             $themeSetting = DB::table('theme_settings')
                 ->where('key', 'enabled_theme_id')
                 ->first();
@@ -337,20 +337,20 @@ class InstallConfirmController extends BaseInstallController
                         'action' => 'create',
                         'theme' => $activeTheme->directory,
                     ]);
-                    Log::channel('install')->info('テーマシンボリックリンク作成完了', ['theme' => $activeTheme->directory]);
+                    Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.theme_symlink_creation_completed'), ['theme' => $activeTheme->directory]);
 
                     GitExcludeHelper::addThemeExclusion($activeTheme->directory);
                     GitIgnoreHelper::addThemeExclusion($activeTheme->directory);
-                    Log::channel('install')->info('テーマGit除外ルール追加完了', ['theme' => $activeTheme->directory]);
+                    Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.theme_git_exclusion_rule_added'), ['theme' => $activeTheme->directory]);
                 } catch (\Exception $e) {
-                    Log::channel('install')->error("シンボリックリンクの作成に失敗しました: {$e->getMessage()}");
+                    Log::channel('install')->error(__('http/controllers/install/install_confirm_controller.symlink_creation_failed', ['_e__getmessage__' => $e->getMessage()]));
                 }
             } else {
-                Log::channel('install')->warning('アクティブなテーマが見つかりません。シンボリックリンクは作成されませんでした。');
+                Log::channel('install')->warning(__('http/controllers/install/install_confirm_controller.no_active_theme_symlink_not_created'));
             }
 
-            // ファイル整合性ベースラインを生成
-            Log::channel('install')->info('ファイル整合性ベースライン生成開始');
+            // Generate file integrity baseline
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.file_integrity_baseline_started'));
             try {
                 $fileIntegrityService = app(\App\Services\FileIntegrityService::class);
                 $baseline = $fileIntegrityService->generateCoreBaseline();
@@ -370,27 +370,27 @@ class InstallConfirmController extends BaseInstallController
                     'summary' => __('command.integrity.baseline_generated'),
                 ]);
 
-                Log::channel('install')->info('ファイル整合性ベースライン生成完了', [
+                Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.file_integrity_baseline_completed'), [
                     'files_count' => count($baseline['files']),
                     'version' => $baseline['meta']['app_version'] ?? 'unknown',
                 ]);
             } catch (\Exception $e) {
-                Log::channel('install')->warning('ファイル整合性ベースライン生成に失敗しましたが、インストールは続行します', [
+                Log::channel('install')->warning(__('http/controllers/install/install_confirm_controller.file_integrity_baseline_failed_continue'), [
                     'error' => $e->getMessage(),
                 ]);
             }
 
-            // バンドルテーマのセキュリティ監査を実行
+            // Run security audit for bundled themes
             $this->auditBundledThemes();
 
-            // セッションデータを削除
+            // Delete session data
             session()->forget('install_data');
-            Log::channel('install')->info('=== インストール完了 ===');
-            Log::channel('install')->info('install.completeルートにリダイレクト中...');
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.installation_completed'));
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.redirecting_to_install_complete'));
 
             return redirect()->route('install.complete');
         } catch (\Exception $e) {
-            Log::channel('install')->error('=== インストールエラー ===', [
+            Log::channel('install')->error(__('http/controllers/install/install_confirm_controller.installation_error'), [
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -399,16 +399,16 @@ class InstallConfirmController extends BaseInstallController
                 'session_keys' => array_keys($data ?? []),
             ]);
 
-            // セッションデータが失われていないことを確認
+            // Verify session data is not lost
             if (empty(session('install_data'))) {
-                Log::channel('install')->warning('セッションデータが失われています - 復元を試行');
+                Log::channel('install')->warning(__('http/controllers/install/install_confirm_controller.session_data_lost_attempting_recovery'));
                 if (! empty($data)) {
                     session(['install_data' => $data]);
-                    Log::channel('install')->info('セッションデータを復元しました');
+                    Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.session_data_restored'));
                 }
             }
 
-            // ユーザーフレンドリーなエラーメッセージを作成
+            // Create user-friendly error message
             $errorMessage = $this->getInstallationErrorMessage($e);
 
             return redirect()->route('install.mode')
@@ -418,7 +418,7 @@ class InstallConfirmController extends BaseInstallController
     }
 
     /**
-     * インストールエラーのユーザーフレンドリーなエラーメッセージを取得
+     * Get user-friendly error message for installation errors
      */
     private function getInstallationErrorMessage(\Exception $e)
     {
@@ -440,11 +440,11 @@ class InstallConfirmController extends BaseInstallController
     }
 
     /**
-     * テーマの PSR-4 オートロードを動的に登録
+     * Dynamically register PSR-4 autoload for theme
      *
-     * composer.local.json が未反映の環境（Docker ビルド時に --no-scripts で
-     * sync-local-autoload.php が実行されなかった場合等）でも、インストール中に
-     * テーマのシーダー等を読み込めるようにする。
+     * In environments where composer.local.json is not reflected (when Docker build is run with --no-scripts
+     * and sync-local-autoload.php was not executed, etc.), enable theme
+     * seeders etc. to be loaded during installation
      */
     private function registerThemeAutoload(string $themeDirectory): void
     {
@@ -463,13 +463,13 @@ class InstallConfirmController extends BaseInstallController
     }
 
     /**
-     * 初期データをデータベースに追加する
+     * Add initial data to database
      */
     private function initializeDatabase(array $data, string $adminPassword)
     {
-        Log::channel('install')->info('initializeDatabase - 開始: admin_email='.$data['admin_email'].', admin_account_name='.$data['admin_account_name']);
+        Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_started_admin_email').$data['admin_email'].', admin_account_name='.$data['admin_account_name']);
 
-        Log::channel('install')->info('initializeDatabase - site_settings更新開始');
+        Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_site_settings_update'));
 
         $baseSettings = [
             'app_name' => $data['site_name'],
@@ -483,7 +483,7 @@ class InstallConfirmController extends BaseInstallController
             'mail_encryption' => $data['mail_encryption'] ?? '',
             'mail_from_address' => $data['mail_from_address'] ?? $data['admin_email'],
             'maintenance_mode' => '0',
-            'maintenance_message' => '現在メンテナンス中です。しばらくお待ちください。',
+            'maintenance_message' => __('http/controllers/install/install_confirm_controller.currently_under_maintenance'),
             'system_admin_email' => $data['admin_email'],
             'site_name' => $data['site_name'],
             'admin_mode' => (string) ($data['install_mode'] ?? 0),
@@ -502,12 +502,12 @@ class InstallConfirmController extends BaseInstallController
             Log::channel('install')->info("initializeDatabase - {$name}: {$value}");
         }
 
-        // 管理画面URL（admin_url は Global scope なので global_settings へ）
+        // Admin panel URL (admin_url is Global scope so goes to global_settings)
         $resolver->set('admin_url', $data['admin_url']);
         Log::channel('install')->info('initializeDatabase - admin_url: '.$data['admin_url']);
 
-        // メールテスト結果を保存（PerSite scope）
-        Log::channel('install')->info('initializeDatabase - メールテスト結果保存開始');
+        // Save mail test results (PerSite scope)
+        Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_mail_test_save'));
         $mailTestFields = [
             'mail_connection_tested' => $data['mail_connection_tested'] ?? 0,
             'mail_connection_test_date' => $data['mail_connection_test_date'] ?? null,
@@ -523,9 +523,9 @@ class InstallConfirmController extends BaseInstallController
                 Log::channel('install')->info("initializeDatabase - {$fieldName}: {$fieldValue}");
             }
         }
-        Log::channel('install')->info('initializeDatabase - メールテスト結果保存完了');
+        Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_mail_test_completed'));
 
-        // セキュリティ系設定（すべて Global scope、自動的に global_settings へ）
+        // Security-related settings (all Global scope, automatically to global_settings)
         $securitySettings = [
             'enable_allowed_admin_ips' => $data['enable_allowed_admin_ips'] ?? 0,
             'allowed_admin_ips' => ($data['enable_allowed_admin_ips'] ?? 0) ? ($data['allowed_admin_ips'] ?? '') : '',
@@ -544,15 +544,15 @@ class InstallConfirmController extends BaseInstallController
             $resolver->set($name, $value);
         }
 
-        // 管理者アカウント処理
-        Log::channel('install')->info('initializeDatabase - 管理者アカウント処理開始');
+        // Administrator account processing
+        Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_admin_processing'));
         $admin = DB::connection('mysql')->table('members')->where('email', $data['admin_email'])->first();
 
         $installLocale = $data['app_locale'] ?? session('install_locale', 'ja');
-        Log::channel('install')->info('initializeDatabase - インストール言語設定: '.$installLocale);
+        Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_language_setting').$installLocale);
 
         if ($admin) {
-            Log::channel('install')->info('initializeDatabase - 既存管理者更新: ID='.$admin->id);
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_existing_admin_update').$admin->id);
             DB::connection('mysql')->table('members')
                 ->where('id', $admin->id)
                 ->update([
@@ -565,10 +565,10 @@ class InstallConfirmController extends BaseInstallController
                     'email_verified_at' => now(),
                     'updated_at' => now(),
                 ]);
-            Log::channel('install')->info('initializeDatabase - 既存管理者更新完了（言語設定: '.$installLocale.'）');
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.init_db_existing_admin_update_completed').$installLocale.'）');
             $adminMemberId = $admin->id;
         } else {
-            Log::channel('install')->info('initializeDatabase - 新規管理者作成開始');
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_new_admin_started'));
             $memberId = DB::connection('mysql')->table('members')->insertGetId([
                 'account_name' => $data['admin_account_name'],
                 'display_name' => $data['admin_display_name'] ?? null,
@@ -581,16 +581,16 @@ class InstallConfirmController extends BaseInstallController
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            Log::channel('install')->info('initializeDatabase - 新規管理者作成完了: ID='.$memberId.'（言語設定: '.$installLocale.'）');
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.init_db_new_admin_creation_completed').$memberId.__('http/controllers/install/install_confirm_controller.language_setting_prefix').$installLocale.'）');
             $adminMemberId = $memberId;
         }
 
         $memberCount = DB::connection('mysql')->table('members')->count();
-        Log::channel('install')->info('initializeDatabase - membersテーブル総レコード数: '.$memberCount);
+        Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_members_total_count').$memberCount);
 
         $this->seedCoreReleaseState($adminMemberId);
 
-        Log::channel('install')->info('initializeDatabase - 完了');
+        Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_completed'));
     }
 
     /**
@@ -600,7 +600,7 @@ class InstallConfirmController extends BaseInstallController
      */
     private function seedCoreReleaseState(int $adminMemberId): void
     {
-        Log::channel('install')->info('initializeDatabase - core_releases / core_version_history 初期投入開始');
+        Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.init_db_core_releases_insertion_started'));
 
         DB::connection('mysql')->table('core_releases')->updateOrInsert(
             ['id' => \App\Models\CoreRelease::PRIMARY_ID],
@@ -623,32 +623,32 @@ class InstallConfirmController extends BaseInstallController
             'updated_at' => now(),
         ]);
 
-        Log::channel('install')->info('initializeDatabase - core_releases / core_version_history 初期投入完了', [
+        Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.init_db_core_releases_insertion_done'), [
             'version' => $currentVersion,
             'admin_id' => $adminMemberId,
         ]);
     }
 
     /**
-     * バンドルテーマのセキュリティ監査を実行
+     * Run security audit for bundled themes
      *
-     * インストール時に登録されたテーマの権限宣言・署名・CSP準拠状況をスキャンし、
-     * 監査結果をDBに保存する。失敗してもインストールは続行する。
+     * Scan permission declarations, signatures, and CSP compliance status of themes registered during installation,
+     * and save audit results to DB. Installation continues even if this fails
      *
      * @see \App\Http\Controllers\Admin\Settings\AdminThemesSettingsController::runThemeAudit()
      */
     private function auditBundledThemes(): void
     {
-        Log::channel('install')->info('バンドルテーマのセキュリティ監査開始');
+        Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.bundled_theme_security_audit_started'));
 
         $themes = DB::table('themes')->select('slug')->get();
 
         foreach ($themes as $theme) {
             try {
                 $slug = $theme->slug;
-                Log::channel('install')->info("テーマ監査開始: {$slug}");
+                Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.theme_audit_started', ['slug' => $slug]));
 
-                // 権限宣言の整合性チェック（theme.json vs コード実態）
+                // Check permission declaration consistency (theme.json vs actual code)
                 Artisan::call('dls:theme:audit', [
                     'theme' => $slug,
                     '--json' => true,
@@ -658,12 +658,12 @@ class InstallConfirmController extends BaseInstallController
                 $result = json_decode($output, true);
 
                 if (json_last_error() !== JSON_ERROR_NONE || ! is_array($result)) {
-                    Log::channel('install')->warning("テーマ監査のJSON解析に失敗: {$slug}");
+                    Log::channel('install')->warning(__('http/controllers/install/install_confirm_controller.theme_audit_json_parse_failed', ['slug' => $slug]));
 
                     continue;
                 }
 
-                // evidenceを制限（DBサイズ削減）
+                // Limit evidence (reduce DB size)
                 $mismatches = $result['mismatches'] ?? [];
                 foreach ($mismatches as &$mismatch) {
                     if (isset($mismatch['evidence']) && is_array($mismatch['evidence'])) {
@@ -672,12 +672,12 @@ class InstallConfirmController extends BaseInstallController
                 }
                 unset($mismatch);
 
-                // 署名情報を取得
+                // Get signature information
                 $permissionService = app(ThemePermissionService::class);
                 $summary = $permissionService->getSummary($slug);
                 $signature = $summary['signature'] ?? [];
 
-                // CSP準拠状況をコードスキャンで検証
+                // Verify CSP compliance status with code scan
                 $cspScanner = app(CspComplianceScanner::class);
                 $cspCompatibility = $cspScanner->scanTheme($slug);
 
@@ -699,18 +699,18 @@ class InstallConfirmController extends BaseInstallController
 
                 ThemeAudit::saveAuditResult($slug, $auditData);
 
-                Log::channel('install')->info("テーマ監査完了: {$slug}", [
+                Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.theme_audit_completed', ['slug' => $slug]), [
                     'risk_level' => $auditData['risk_level'],
                     'csp_status' => $auditData['csp_status'],
                     'has_mismatches' => $auditData['has_mismatches'],
                 ]);
             } catch (\Exception $e) {
-                Log::channel('install')->warning("テーマ監査に失敗しましたが、インストールは続行します: {$theme->slug}", [
+                Log::channel('install')->warning(__('http/controllers/install/install_confirm_controller.theme_audit_failed_continue_install', ['slug' => $theme->slug]), [
                     'error' => $e->getMessage(),
                 ]);
             }
         }
 
-        Log::channel('install')->info('バンドルテーマのセキュリティ監査完了');
+        Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.bundled_theme_security_audit_completed'));
     }
 }

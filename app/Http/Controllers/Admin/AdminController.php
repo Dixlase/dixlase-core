@@ -42,16 +42,16 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Routing\Controller;
 
 /**
- * 管理画面基底コントローラー
+ * Admin panel base controller
  */
 class AdminController extends Controller
 {
     use AdminInterfaceTrait;
 
-    // トレイト
+    // Traits
     use AuthorizesRequests;
 
-    // 初期設定を行う
+    // Perform initial settings
     public function __construct()
     {
         $this->initialize();

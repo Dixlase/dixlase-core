@@ -60,15 +60,15 @@ class AdminSecurityPasswordController extends AdminLoggedInController
     }
 
     /**
-     * パスワードセキュリティ設定ページ
+     * Password security settings page
      */
     public function index()
     {
         $settings = [
-            // 共通設定
+            // Common settings
             'pwned_password_check_enabled' => filter_var($this->securitySettingRepository->get('pwned_password_check_enabled', false), FILTER_VALIDATE_BOOLEAN),
 
-            // デフォルトパスワードポリシー
+            // Default password policy
             'password_min_length' => (int) $this->securitySettingRepository->get('password_min_length', 8),
             'password_require_uppercase' => filter_var($this->securitySettingRepository->get('password_require_uppercase', true), FILTER_VALIDATE_BOOLEAN),
             'password_require_number' => filter_var($this->securitySettingRepository->get('password_require_number', true), FILTER_VALIDATE_BOOLEAN),
@@ -89,7 +89,7 @@ class AdminSecurityPasswordController extends AdminLoggedInController
     }
 
     /**
-     * パスワードセキュリティ設定の更新
+     * Update password security settings
      */
     public function update(AdminSecurityPasswordUpdateRequest $request)
     {

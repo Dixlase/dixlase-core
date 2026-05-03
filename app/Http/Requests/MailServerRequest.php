@@ -39,8 +39,8 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * 統合メールサーバー設定リクエスト
- * 管理画面とインストーラーの両方で使用
+ * Unified mail server settings request
+ * Used in both admin panel and installer
  */
 class MailServerRequest extends FormRequest
 {
@@ -53,7 +53,7 @@ class MailServerRequest extends FormRequest
     }
 
     /**
-     * メールサーバー設定用のバリデーションルール
+     * Validation rules for mail server settings
      */
     public function rules()
     {
@@ -70,7 +70,7 @@ class MailServerRequest extends FormRequest
     }
 
     /**
-     * エラーメッセージのカスタマイズ
+     * Customize error messages
      */
     public function messages()
     {

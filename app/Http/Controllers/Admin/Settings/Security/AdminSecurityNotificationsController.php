@@ -57,7 +57,7 @@ class AdminSecurityNotificationsController extends AdminLoggedInController
     }
 
     /**
-     * 通知設定ページ
+     * Notification settings page
      */
     public function index()
     {
@@ -66,13 +66,13 @@ class AdminSecurityNotificationsController extends AdminLoggedInController
             'notification_log_levels' => array_map('intval', array_filter(explode(',', $this->securitySettingRepository->get('notification_log_levels', implode(',', LogLevel::getDefaultNotificationLevels()))))),
         ];
 
-        // メールテスト状態を取得
+        // Get email test status
         $sessionTestResults = session('mail_test_results', []);
         $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? SiteSetting::getValue('mail_connection_tested', false));
         $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? SiteSetting::getValue('mail_send_tested', false));
         $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? SiteSetting::getValue('mail_receive_tested', false));
 
-        // システム管理者メールアドレスの設定状態を確認
+        // Check system administrator email address settings status
         $systemAdminEmail = SiteSetting::getValue('system_admin_email', '');
         $hasSystemAdminEmail = ! empty($systemAdminEmail);
 
@@ -97,7 +97,7 @@ class AdminSecurityNotificationsController extends AdminLoggedInController
     }
 
     /**
-     * 通知設定の更新
+     * Update notification settings
      */
     public function update(\App\Http\Requests\Admin\Settings\Security\AdminSecurityNotificationsUpdateRequest $request)
     {

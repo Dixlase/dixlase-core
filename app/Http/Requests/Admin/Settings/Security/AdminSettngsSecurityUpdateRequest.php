@@ -130,25 +130,25 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'extension_permission_mismatch_action' => 'nullable|string|in:warn,block',
         ];
 
-        // CAPTCHAが有効な場合の条件付きバリデーション
+        // Conditional validation when CAPTCHA is enabled
         if ($this->boolean('captcha_enabled')) {
             $captchaDriver = $this->input('captcha_driver', 'google');
 
-            // 共通フィールドを必須にする
+            // Make common fields required
             $rules['captcha_site_key'] = 'required|string';
             $rules['captcha_secret_key'] = 'required|string';
 
-            // Google reCAPTCHA v3またはEnterpriseの場合のみmin_scoreを必須にする
+            // Require min_score only for Google reCAPTCHA v3 or Enterprise
             if (($captchaDriver === 'google' && $this->input('captcha_google_version') === 'v3') || $captchaDriver === 'google_enterprise') {
                 $rules['captcha_google_min_score'] = 'required|numeric|between:0,1';
             }
 
-            // Enterprise使用時はプロジェクトIDも必須
+            // Project ID is also required when using Enterprise
             if ($captchaDriver === 'google_enterprise') {
                 $rules['captcha_google_project_id'] = 'required|string';
             }
 
-            // CAPTCHAが有効な場合でもテストは必須ではない（設定のみ必須）
+            // Test is not required even when CAPTCHA is enabled (only settings are required)
         } else {
             $rules['captcha_google_site_key'] = 'nullable|string|max:255';
             $rules['captcha_google_secret_key'] = 'nullable|string|max:255';
@@ -159,7 +159,7 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
     }
 
     /**
-     * カスタムエラーメッセージ
+     * Custom error messages
      */
     public function messages(): array
     {
@@ -171,7 +171,7 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'captcha_google_version.in' => __('admin/settings/security/validation.captcha_google_version_invalid'),
             'captcha_google_min_score.between' => __('admin/settings/security/validation.captcha_google_min_score_range'),
             'captcha_driver.in' => __('admin/settings/security/validation.captcha_driver_invalid'),
-            // CAPTCHA必須バリデーションメッセージ
+            // CAPTCHA required validation message
             'captcha_site_key.required' => __('admin/settings/security/validation.captcha_site_key_required'),
             'captcha_secret_key.required' => __('admin/settings/security/validation.captcha_secret_key_required'),
             'captcha_google_project_id.required' => __('admin/settings/security/validation.captcha_google_project_id_required'),

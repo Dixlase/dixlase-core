@@ -55,10 +55,10 @@ class AdminSecurityPasswordUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // 共通設定
+            // Common settings
             'pwned_password_check_enabled' => 'boolean',
 
-            // デフォルトパスワードポリシー
+            // Default password policy
             'password_min_length' => 'required|integer|min:4|max:128',
             'password_require_uppercase' => 'boolean',
             'password_require_number' => 'boolean',

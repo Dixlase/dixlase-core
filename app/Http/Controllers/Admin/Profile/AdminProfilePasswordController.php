@@ -53,7 +53,7 @@ class AdminProfilePasswordController extends AdminLoggedInController
      */
     public function index()
     {
-        // パスワード条件の取得（セキュリティ設定から）
+        // Get password requirements (from security settings)
         $this->viewParams['passwordMinLength'] = (int) SecuritySetting::getValue('password_min_length', 8);
         $this->viewParams['passwordRequireUppercase'] = (bool) SecuritySetting::getValue('password_require_uppercase', true);
         $this->viewParams['passwordRequireSymbol'] = (bool) SecuritySetting::getValue('password_require_symbol', false);

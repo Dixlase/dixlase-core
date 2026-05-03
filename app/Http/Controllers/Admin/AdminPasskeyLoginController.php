@@ -43,9 +43,9 @@ use App\Traits\PasskeyLoginTrait;
 use Illuminate\Http\Request;
 
 /**
- * パスキーログインコントローラー
+ * Passkey login controller
  *
- * WebAuthnを使用したパスキー認証によるログイン処理
+ * Login processing using passkey authentication with WebAuthn
  */
 class AdminPasskeyLoginController extends AdminController
 {
@@ -60,15 +60,15 @@ class AdminPasskeyLoginController extends AdminController
     }
 
     /**
-     * パスキー認証のチャレンジを取得（オーバーライド）
+     * Get passkey authentication challenge (override)
      *
-     * メールサーバー設定のチェックを追加
+     * Add mail server settings check
      *
      * @return \Illuminate\Http\JsonResponse
      */
     public function getChallenge(Request $request)
     {
-        // メールサーバー設定チェック
+        // Mail server settings check
         $twoFaHelper = app(TwoFaHelper::class);
         if (! $twoFaHelper->isMailConfigured()) {
             return response()->json([
@@ -77,12 +77,12 @@ class AdminPasskeyLoginController extends AdminController
             ], 422);
         }
 
-        // トレイトのメソッドを呼び出し
+        // Call trait method
         return $this->traitGetChallenge($request);
     }
 
     /**
-     * ユーザーモデルクラス名を取得
+     * Get user model class name
      */
     protected function getUserModelClass(): string
     {
@@ -90,7 +90,7 @@ class AdminPasskeyLoginController extends AdminController
     }
 
     /**
-     * 設定モデルクラス名を取得
+     * Get settings model class name
      */
     protected function getSettingModelClass(): string
     {
@@ -98,7 +98,7 @@ class AdminPasskeyLoginController extends AdminController
     }
 
     /**
-     * 認証ガード名を取得
+     * Get authentication guard name
      */
     protected function getGuardName(): string
     {
@@ -106,7 +106,7 @@ class AdminPasskeyLoginController extends AdminController
     }
 
     /**
-     * ダッシュボードのルート名を取得
+     * Get dashboard route name
      */
     protected function getDashboardRoute(): string
     {
@@ -114,7 +114,7 @@ class AdminPasskeyLoginController extends AdminController
     }
 
     /**
-     * セッションキーのプレフィックスを取得
+     * Get session key prefix
      */
     protected function getSessionPrefix(): string
     {
@@ -122,7 +122,7 @@ class AdminPasskeyLoginController extends AdminController
     }
 
     /**
-     * ログイン通知サービスクラス名を取得
+     * Get login notification service class name
      */
     protected function getLoginNotificationServiceClass(): string
     {
@@ -130,7 +130,7 @@ class AdminPasskeyLoginController extends AdminController
     }
 
     /**
-     * 翻訳プレフィックスを取得
+     * Get translation prefix
      */
     protected function getTranslationPrefix(): string
     {
@@ -138,7 +138,7 @@ class AdminPasskeyLoginController extends AdminController
     }
 
     /**
-     * ログイン識別子モードを取得
+     * Get login identifier mode
      */
     protected function getLoginIdentifierMode(): LoginIdentifierMode
     {
@@ -148,7 +148,7 @@ class AdminPasskeyLoginController extends AdminController
     }
 
     /**
-     * メールアドレスでのログインをサポートするかどうか
+     * Whether login with email address is supported
      */
     protected function supportsEmailLogin(): bool
     {
@@ -156,7 +156,7 @@ class AdminPasskeyLoginController extends AdminController
     }
 
     /**
-     * アカウント名でのログインをサポートするかどうか
+     * Whether login with account name is supported
      */
     protected function supportsAccountNameLogin(): bool
     {

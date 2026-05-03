@@ -53,7 +53,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
     }
 
     /**
-     * モデルのルートパラメータ名を取得
+     * Get model route parameter name
      */
     protected function getModelRouteParameterName(): string
     {
@@ -61,7 +61,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
     }
 
     /**
-     * メンバー強制ログアウト
+     * Force member logout
      */
     public function forceLogout(Member $member)
     {
@@ -73,7 +73,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
     }
 
     /**
-     * Two-FAロックアウト解除
+     * Unlock Two-FA lockout
      */
     public function unlockTwoFa(Member $member)
     {
@@ -88,7 +88,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
     }
 
     /**
-     * 認証メール送信
+     * Send verification email
      */
     public function sendVerificationEmail(Member $member)
     {
@@ -101,7 +101,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
     }
 
     /**
-     * Passkey削除
+     * Delete passkey
      */
     public function revokePasskey(Request $request, Member $member, string $credentialId)
     {
@@ -117,7 +117,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
     }
 
     /**
-     * 全Passkey削除
+     * Delete all passkeys
      */
     public function revokeAllPasskeys(Request $request, Member $member)
     {
@@ -125,7 +125,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
     }
 
     /**
-     * 回復コード削除
+     * Delete recovery code
      */
     public function revokeRecoveryCodes(Request $request, Member $member)
     {
@@ -138,7 +138,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
     }
 
     /**
-     * 全メンバー強制ログアウト
+     * Force logout all members
      */
     public function forceLogoutAll()
     {

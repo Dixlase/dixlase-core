@@ -63,11 +63,11 @@ class AdminBaseMailController extends AdminLoggedInController
     }
 
     /**
-     * メール設定ページ
+     * Mail settings page
      */
     public function index(Request $request)
     {
-        // メール受信テスト状態更新のリクエストを処理
+        // Process request to update mail reception test status
         if ($request->isMethod('post') && $request->input('action') === 'update_receive_test_status') {
             $mailTestResults = session('mail_test_results', []);
             $mailTestResults['mail_receive_tested'] = 1;
@@ -77,7 +77,7 @@ class AdminBaseMailController extends AdminLoggedInController
             return response()->json(['success' => true]);
         }
 
-        // メール設定ページを開くたびにメールテストセッションをクリア
+        // Clear mail test session every time the mail settings page is opened
         session()->forget('mail_test_results');
 
         $settings = [
@@ -91,7 +91,7 @@ class AdminBaseMailController extends AdminLoggedInController
             'system_admin_email' => ConfigHelper::getNotificationEmail(),
         ];
 
-        // メールテスト状態を取得
+        // Get mail test status
         $sessionTestResults = session('mail_test_results', []);
 
         $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? $this->baseSettingRepository->get('mail_connection_tested', false));
@@ -127,7 +127,7 @@ class AdminBaseMailController extends AdminLoggedInController
     }
 
     /**
-     * メール設定の更新
+     * Update mail settings
      */
     public function update(AdminBaseMailUpdateRequest $request)
     {
@@ -138,7 +138,7 @@ class AdminBaseMailController extends AdminLoggedInController
             settingsPage: 'base.mail',
             settingKeys: static::SETTING_KEYS,
             writeCallback: function ($repo, $data) {
-                // .env用データ
+                // Data for .env
                 $envData = [
                     'mail_mailer' => $data['mail_mailer'],
                     'mail_host' => $data['mail_host'] ?? '',
@@ -149,14 +149,14 @@ class AdminBaseMailController extends AdminLoggedInController
                     'mail_from_address' => $data['mail_from_address'] ?? '',
                 ];
 
-                // 空文字列をnullに変換
+                // Convert empty strings to null
                 foreach (['mail_username', 'mail_password', 'mail_encryption'] as $field) {
                     if (isset($envData[$field]) && $envData[$field] === '') {
                         $envData[$field] = null;
                     }
                 }
 
-                // メール設定が変更されたかチェック
+                // Check if mail settings have changed
                 $mailSettingsChanged = false;
                 foreach (array_keys($envData) as $key) {
                     $currentValue = env(strtoupper($key));
@@ -168,7 +168,7 @@ class AdminBaseMailController extends AdminLoggedInController
                     }
                 }
 
-                // DB + .envに保存
+                // Save to DB + .env
                 $repo->setMultiple([
                     'mail_mailer' => $data['mail_mailer'],
                     'mail_host' => $data['mail_host'] ?? '',
@@ -208,7 +208,7 @@ class AdminBaseMailController extends AdminLoggedInController
     }
 
     /**
-     * メールテストセッションをクリア
+     * Clear mail test session
      */
     public function clearTestSession()
     {
@@ -222,7 +222,7 @@ class AdminBaseMailController extends AdminLoggedInController
         $this->baseSettingRepository->set('mail_receive_test_date', null);
         $this->baseSettingRepository->set('mail_verification_token', null);
 
-        Log::info('メールテストセッション・DB両方クリア完了');
+        Log::info('Mail test session and DB both cleared');
 
         return response()->json([
             'success' => true,
@@ -231,7 +231,7 @@ class AdminBaseMailController extends AdminLoggedInController
     }
 
     /**
-     * メールテストセッション状態をチェック
+     * Check mail test session status
      */
     public function checkTestSession()
     {
@@ -259,7 +259,7 @@ class AdminBaseMailController extends AdminLoggedInController
     }
 
     /**
-     * メールサーバー接続テスト
+     * Mail server connection test
      */
     public function testConnection(MailServerRequest $request)
     {
@@ -267,7 +267,7 @@ class AdminBaseMailController extends AdminLoggedInController
     }
 
     /**
-     * メール送信テスト
+     * Mail sending test
      */
     public function testMail(MailServerRequest $request)
     {
@@ -275,7 +275,7 @@ class AdminBaseMailController extends AdminLoggedInController
     }
 
     /**
-     * メール受信確認（認証リンクアクセス時）
+     * Mail reception confirmation (when authentication link is accessed)
      */
     public function verifyMail($token)
     {
@@ -283,7 +283,7 @@ class AdminBaseMailController extends AdminLoggedInController
     }
 
     /**
-     * メール認証成功ページ
+     * Mail authentication success page
      */
     public function mailVerificationSuccess()
     {

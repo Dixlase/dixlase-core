@@ -52,7 +52,7 @@ class AdminSystemApiGenerateKeyRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        // 空文字列をnullに変換
+        // Convert empty strings to null
         $data = [];
 
         if ($this->rate_limit === '') {

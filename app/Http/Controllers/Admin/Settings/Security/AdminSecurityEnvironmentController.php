@@ -45,7 +45,7 @@ use Illuminate\Support\Facades\Log;
 class AdminSecurityEnvironmentController extends AdminLoggedInController
 {
     /**
-     * 環境設定ページ
+     * Environment settings page
      */
     public function index()
     {
@@ -67,13 +67,13 @@ class AdminSecurityEnvironmentController extends AdminLoggedInController
     }
 
     /**
-     * 環境設定の更新
+     * Update environment settings
      */
     public function update(AdminSecurityEnvironmentUpdateRequest $request)
     {
         $validated = $request->validated();
 
-        // 本番環境でデバッグモードが有効の場合は警告
+        // Warning if debug mode is enabled in production environment
         if ($validated['app_env'] === 'production' && $validated['app_debug']) {
             return redirect()->route('admin.settings.security.environment')
                 ->withErrors(['app_debug' => __('admin/settings/security/environment.production_debug_warning')])
@@ -83,7 +83,7 @@ class AdminSecurityEnvironmentController extends AdminLoggedInController
         $before = ['app_env' => config('app.env'), 'app_debug' => config('app.debug')];
 
         try {
-            // .envファイルを更新（EnvHelperを使用）
+            // Update .env file (using EnvHelper)
             EnvHelper::update([
                 'app_env' => $validated['app_env'],
                 'app_debug' => $validated['app_debug'] ? 'true' : 'false',

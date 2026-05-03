@@ -62,8 +62,8 @@ class EnsureEmailIsVerified
      */
     public function handle($request, Closure $next, $redirectToRoute = null)
     {
-        // 管理画面の場合はmemberガードを使用
-        // ※マイページ（user）の場合はプラグイン側のEnsureUserEmailIsVerifiedを使用
+        // Use member guard for admin panel
+        // Note: For my page (user), use EnsureUserEmailIsVerified from the plugin side
         $guard = \App\Helpers\AdminHelper::isAdminRequest($request) ? 'member' : 'web';
         $user = auth($guard)->user();
 
@@ -72,22 +72,22 @@ class EnsureEmailIsVerified
             ($user instanceof MustVerifyEmail &&
                 ! $user->hasVerifiedEmail())
         ) {
-            // 未認証の場合
+            // If not verified
             if ($request->expectsJson()) {
                 return abort(403, 'Your email address is not verified.');
             }
 
-            // 管理画面の場合は専用の未認証ページへ
+            // For admin panel, redirect to dedicated unverified page
             if (\App\Helpers\AdminHelper::isAdminRequest($request)) {
                 return redirect()->route('admin.verification.notice');
             }
 
-            // カスタムルートが指定されている場合
+            // If custom route is specified
             if ($redirectToRoute) {
                 return Redirect::guest(URL::route($redirectToRoute));
             }
 
-            // デフォルトはホームへリダイレクト
+            // Default redirects to home
             return Redirect::guest('/');
         }
 

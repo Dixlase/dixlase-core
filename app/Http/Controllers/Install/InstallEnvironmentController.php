@@ -39,12 +39,12 @@ use App\Enums\AdminMode;
 use App\Http\Requests\Install\InstallEnvironmentRequest;
 
 /**
- * インストール - ステップ2: 環境設定
+ * Install - Step 2: Environment Settings
  */
 class InstallEnvironmentController extends BaseInstallController
 {
     /**
-     * 環境設定画面を表示
+     * Display environment settings screen
      */
     public function create()
     {
@@ -52,43 +52,43 @@ class InstallEnvironmentController extends BaseInstallController
     }
 
     /**
-     * 環境設定を保存
+     * Save environment settings
      */
     public function store(InstallEnvironmentRequest $request)
     {
         $data = $request->validated();
         $isSimpleMode = (int) session('install_data.install_mode', 0) === AdminMode::Simple->value;
 
-        // かんたんモード時はデフォルト値を適用
+        // Apply default values in simple mode
         if ($isSimpleMode) {
             $data['app_env'] = 'production';
             $data['app_debug'] = false;
             $data['admin_url'] = session('install_data.admin_url', 'admin');
-            // アクセス中のプロトコルからSSL強制を自動判定
+            // Auto-detect forced SSL from current access protocol
             $data['force_ssl'] = $request->isSecure()
                 || $request->header('X-Forwarded-Proto') === 'https';
         } else {
-            // 詳細モード: プレフィックスとサフィックスを結合
+            // Advanced mode: Combine prefix and suffix
             $data['admin_url'] = $data['admin_url_prefix'].'-'.$data['admin_url_suffix'];
             unset($data['admin_url_prefix'], $data['admin_url_suffix']);
         }
 
-        // プロトコル除去
+        // Remove protocol
         $data['app_url'] = preg_replace('/^(http:\/\/|https:\/\/)/', '', $data['app_url']);
 
-        // ドメイン形式か簡易チェック
+        // Simple check if domain format
         if (! preg_match('/^[\w.\-]+(:\d+)?$/', $data['app_url'])) {
             return back()->withErrors([
                 'app_url' => __('validation.url', ['attribute' => __('install/step2.app_url')]),
             ])->withInput();
         }
 
-        // 本番環境なら APP_DEBUG は false 固定
+        // Set APP_DEBUG to false if production environment
         if ($data['app_env'] === 'production') {
             $data['app_debug'] = false;
         }
 
-        // 設定をセッションに保存
+        // Save settings to session
         session(['install_data' => array_merge(session('install_data', []), $data)]);
 
         return redirect()->route('install.database');

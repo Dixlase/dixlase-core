@@ -55,14 +55,14 @@ class AdminProfileBasicController extends AdminLoggedInController
     {
         $member = Auth::guard('member')->user();
 
-        // 言語オプションの取得
+        // Get language options
         $this->viewParams['localeOptions'] = Locale::availableOptions();
 
-        // pending_email がある場合の情報を渡す
+        // Pass information if pending_email exists
         $this->viewParams['hasPendingEmail'] = ! empty($member->pending_email);
         $this->viewParams['pendingEmail'] = $member->pending_email;
 
-        // メールサーバー設定状態を渡す
+        // Pass mail server settings status
         $this->viewParams['isMailServerTested'] = MailServerValidatorService::isMailServerTested();
 
         return view('admin.profile.basic', $this->viewParams);
@@ -76,15 +76,15 @@ class AdminProfileBasicController extends AdminLoggedInController
         $member = Auth::guard('member')->user();
         $validated = $request->validated();
 
-        // メールアドレスの変更を検知
+        // Detect email address change
         $emailChanged = $member->email !== $validated['email'];
 
-        // メールサーバー設定状態を確認
+        // Check mail server settings status
         $isMailServerTested = MailServerValidatorService::isMailServerTested();
 
         $before = $member->only(['account_name', 'display_name', 'description', 'locale', 'email']);
 
-        // プロフィール更新
+        // Update profile
         $updateData = [
             'account_name' => $validated['account_name'],
             'display_name' => $validated['display_name'] ?? null,
@@ -92,7 +92,7 @@ class AdminProfileBasicController extends AdminLoggedInController
             'locale' => $validated['locale'] ?? null,
         ];
 
-        // メールアドレス変更の処理
+        // Process email address change
         if ($emailChanged) {
             if ($isMailServerTested) {
                 $updateData['pending_email'] = $validated['email'];
@@ -107,7 +107,7 @@ class AdminProfileBasicController extends AdminLoggedInController
 
         $member->update($updateData);
 
-        // メールアドレス変更時に認証メールを送信
+        // Send verification email when email address is changed
         if ($emailChanged && $isMailServerTested) {
             try {
                 $member->sendEmailVerificationNotification('email_change');
@@ -119,12 +119,12 @@ class AdminProfileBasicController extends AdminLoggedInController
             }
         }
 
-        // 言語設定が変更された場合、即座に適用
+        // Apply immediately if language settings are changed
         if (isset($validated['locale']) && $validated['locale']) {
             \Illuminate\Support\Facades\App::setLocale($validated['locale']);
         }
 
-        // メッセージ
+        // Message
         if ($emailChanged && $isMailServerTested) {
             $message = __('admin/profile/common.updated_with_email_verification');
         } elseif ($emailChanged && ! $isMailServerTested) {

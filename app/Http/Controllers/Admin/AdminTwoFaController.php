@@ -43,7 +43,7 @@ class AdminTwoFaController extends AdminLoginController
     use \App\Traits\TwoFa\TwoFaAuthenticationTrait;
 
     /**
-     * 設定モデルクラス名を取得
+     * Get settings model class name
      */
     protected function getSettingModelClass(): string
     {
@@ -51,7 +51,7 @@ class AdminTwoFaController extends AdminLoginController
     }
 
     /**
-     * 二段階認証サービスのインスタンスを取得
+     * Get two-factor authentication service instance
      */
     protected function getTwoFaService()
     {
@@ -62,7 +62,7 @@ class AdminTwoFaController extends AdminLoginController
     }
 
     /**
-     * CAPTCHAアクション名を取得（二段階認証用）
+     * Get CAPTCHA action name (for two-factor authentication)
      */
     protected function getCaptchaAction(): string
     {

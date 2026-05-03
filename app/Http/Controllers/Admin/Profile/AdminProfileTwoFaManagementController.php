@@ -63,7 +63,7 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
     {
         $member = Auth::guard('member')->user();
 
-        // メールサーバー設定状態を渡す
+        // Pass mail server settings status
         $this->viewParams['isMailServerTested'] = MailServerValidatorService::isMailServerTested();
 
         $this->loadTwoFactorSettings($member);
@@ -72,7 +72,7 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
     }
 
     /**
-     * Passkey登録用のWebAuthnチャレンジを生成
+     * Generate WebAuthn challenge for Passkey registration
      */
     public function passkeyRegisterOptions(Request $request)
     {
@@ -85,7 +85,7 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
     }
 
     /**
-     * Passkeyを登録
+     * Register Passkey
      */
     public function passkeyRegister(Request $request)
     {
@@ -100,7 +100,7 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
     }
 
     /**
-     * Passkeyを削除
+     * Delete Passkey
      */
     public function revokePasskey(Request $request, string $credentialId)
     {
@@ -118,7 +118,7 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
     }
 
     /**
-     * すべてのPasskeyを削除
+     * Delete all Passkeys
      */
     public function revokeAllPasskeys(Request $request)
     {
@@ -126,7 +126,7 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
         $twoFaPasskeyService = new TwoFaPasskeyService();
 
         try {
-            // すべてのPasskeyを取得して削除
+            // Retrieve and delete all Passkeys
             $credentials = $twoFaPasskeyService->getCredentials($member);
             $deletedCount = 0;
 
@@ -148,7 +148,7 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
                 'message' => __('admin/profile/common.all_passkeys_deleted', ['count' => $deletedCount]),
             ]);
         } catch (\Exception $e) {
-            \Log::error('[Passkey] 一括削除エラー', [
+            \Log::error('[Passkey] Bulk deletion error', [
                 'member_id' => $member->id,
                 'error' => $e->getMessage(),
             ]);
@@ -161,14 +161,14 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
     }
 
     /**
-     * 回復コードを生成
+     * Generate recovery codes
      */
     public function generateRecoveryCodes(Request $request)
     {
         $member = Auth::guard('member')->user();
         $recoveryCodeService = app(\App\Services\TwoFa\TwoFaRecoveryCodeService::class);
 
-        // 既に回復コードが存在する場合は再生成として扱う
+        // Treat as regeneration if recovery codes already exist
         if ($recoveryCodeService->hasRecoveryCodes($member)) {
             return $this->regenerateRecoveryCodes($request);
         }
@@ -181,7 +181,7 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
     }
 
     /**
-     * 回復コードを再生成
+     * Regenerate recovery codes
      */
     public function regenerateRecoveryCodes(Request $request)
     {
@@ -196,7 +196,7 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
     }
 
     /**
-     * 回復コードセッションをクリア
+     * Clear recovery code session
      */
     public function clearRecoveryCodesSession(Request $request)
     {
@@ -208,18 +208,18 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
      */
     private function loadTwoFactorSettings($member)
     {
-        // TwoFaStatusServiceを使用して設定を取得
+        // Retrieve settings using TwoFaStatusService
         $twoFaStatusService = new TwoFaStatusService();
         $twoFaForceMode = $twoFaStatusService->getGlobalTwoFaMode();
         $twoFaMode = $member->two_fa_mode;
 
-        // グローバル設定で有効な二段階認証方法を取得
+        // Get two-factor authentication methods enabled in global settings
         $twoFaPasskeyMode = $twoFaStatusService->getGlobalPasskeyMode();
         $twoFaPasskeyEnabled = $twoFaPasskeyMode === 1;
 
         $this->viewParams['currentPasskeyEnabled'] = $twoFaPasskeyEnabled;
 
-        // メール認証は常に有効、Passkeyは設定に応じて
+        // Email authentication is always enabled, Passkey depends on settings
         $twoFaEnabledMethods = [
             TwoFaMethod::EMAIL->value => TwoFaMethod::EMAIL->translationKey(),
         ];
@@ -227,8 +227,8 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
             $twoFaEnabledMethods[TwoFaMethod::PASSKEY->value] = TwoFaMethod::PASSKEY->translationKey();
         }
 
-        // 実際の二段階認証の有効/無効状態を判定
-        // 全体設定で無効、または全体設定がプロフィールに従う場合はプロフィール設定を確認
+        // Determine actual enabled/disabled state of two-factor authentication
+        // Check profile settings if disabled in global settings or if global settings follow profile
         $actualTwoFaMode = $twoFaForceMode === AuthenticationMode::UseProfileSetting->value
             ? (is_int($twoFaMode) ? $twoFaMode : $twoFaMode->value)
             : $twoFaForceMode;
@@ -241,11 +241,11 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
         $this->viewParams['twoFaPasskeyMode'] = $twoFaPasskeyMode;
         $this->viewParams['twoFaPasskeyEnabled'] = $twoFaPasskeyEnabled;
 
-        // Passkeyデバイス一覧を取得
+        // Get Passkey device list
         $twoFaPasskeyService = new TwoFaPasskeyService();
         $this->viewParams['twoFaPasskeyDevices'] = $twoFaPasskeyService->getDevices($member);
 
-        // Passkeyデバイス最大登録数を取得
+        // Get maximum number of Passkey devices that can be registered
         $twoFaPasskeyMaxDevices = (int) SecuritySetting::getValue('two_fa_passkey_max_devices', '5');
         $currentDeviceCount = count($this->viewParams['twoFaPasskeyDevices']);
         $canRegisterMoreDevices = $currentDeviceCount < $twoFaPasskeyMaxDevices;
@@ -254,7 +254,7 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
         $this->viewParams['twoFaPasskeyCurrentCount'] = $currentDeviceCount;
         $this->viewParams['canRegisterMorePasskeys'] = $canRegisterMoreDevices;
 
-        // 回復コード情報を取得
+        // Get recovery code information
         $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
         $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodeService->getRemainingCount($member);
         $this->viewParams['twoFaHasRecoveryCodes'] = $twoFaRecoveryCodeService->hasRecoveryCodes($member);

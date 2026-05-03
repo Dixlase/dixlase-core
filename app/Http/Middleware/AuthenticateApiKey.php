@@ -37,83 +37,159 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Contracts\Site\SiteContextInterface;
+use App\Facades\Audit;
 use App\Models\ApiKey;
+use App\Models\AuditLog;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 /**
- * APIキー認証ミドルウェア
+ * API key authentication middleware.
  *
- * Authorization: Bearer dxl_live_xxx ヘッダーからキーを取得し、
- * APIキーの有効性・スコープ・IP制限を検証します。
+ * Reads the bearer token from the Authorization header, validates it
+ * against ApiKey, enforces IP allow-list and scope requirements, and
+ * audits every use of a network-scope key.
  *
- * 使用例:
- *   - Route::middleware('auth.api') ... 全スコープ許可
- *   - Route::middleware('auth.api:read:content') ... read:content スコープ必須
+ * All error responses follow the unified API envelope documented in
+ * docs/development/api-reference/versioning.md:
+ *
+ *   {"error": {"code": "...", "message": "..."}, "meta": {...}}
+ *
+ * Per the versioning spec error messages are always in English; clients
+ * should map the stable `code` field to their own translation table
+ * when localized text is needed.
+ *
+ * Usage examples:
+ *   - Route::middleware('auth.api') ... all scopes allowed
+ *   - Route::middleware('auth.api:read:content') ... read:content scope required
  */
 class AuthenticateApiKey
 {
     /**
-     * リクエストを処理
+     * Handle the request.
      *
-     * @param  string  ...$scopes  必要なスコープ（ミドルウェアパラメータ）
+     * @param  string  ...$scopes  Required scopes (middleware parameter)
      */
     public function handle(Request $request, Closure $next, string ...$scopes): Response
     {
         $bearerToken = $request->bearerToken();
 
         if (! $bearerToken) {
-            return $this->unauthorizedResponse('APIキーが提供されていません。');
+            return $this->errorResponse(
+                code: 'missing_credentials',
+                status: 401,
+                message: 'API key not provided.',
+            );
         }
 
         $apiKey = ApiKey::validate($bearerToken);
 
         if (! $apiKey) {
-            return $this->unauthorizedResponse('無効または期限切れのAPIキーです。');
+            return $this->errorResponse(
+                code: 'invalid_credentials',
+                status: 401,
+                message: 'Invalid or expired API key.',
+            );
         }
 
-        // IP制限チェック
         if (! $apiKey->allowsIp($request->ip())) {
-            return $this->forbiddenResponse('このIPアドレスからのアクセスは許可されていません。');
+            return $this->errorResponse(
+                code: 'ip_not_allowed',
+                status: 403,
+                message: 'This IP address is not permitted to use this key.',
+            );
         }
 
-        // スコープチェック
         foreach ($scopes as $scope) {
             if (! $apiKey->hasScope($scope)) {
-                return $this->forbiddenResponse("必要なスコープ '{$scope}' がありません。");
+                return $this->errorResponse(
+                    code: 'insufficient_scope',
+                    status: 403,
+                    message: "Required scope '{$scope}' is missing.",
+                    details: ['required_scope' => $scope],
+                );
             }
         }
 
-        // 使用記録を更新
-        $apiKey->recordUsage();
+        // Audit network-scope key usage. Network keys cross site boundaries
+        // so each request that authenticates with one is recorded for
+        // forensic traceability. NOTICE severity keeps the entry visible
+        // without flooding the alert pipeline (creation already logs at
+        // CRITICAL via dls:api:create-network-key).
+        if ($apiKey->isNetworkKey()) {
+            $this->auditNetworkKeyUsage($apiKey, $request);
+        }
 
-        // リクエスト属性にAPIキーをセット
+        $apiKey->recordUsage();
         $request->attributes->set('api_key', $apiKey);
 
         return $next($request);
     }
 
     /**
-     * 401 Unauthorized レスポンスを生成
+     * Build a JSON error response in the unified API envelope.
+     *
+     * @param  array<string, mixed>  $details  Optional structured payload (e.g. ['required_scope' => 'read:content'])
      */
-    protected function unauthorizedResponse(string $message): JsonResponse
+    private function errorResponse(string $code, int $status, string $message, array $details = []): JsonResponse
     {
-        return response()->json([
-            'error' => 'unauthorized',
+        $error = [
+            'code' => $code,
             'message' => $message,
-        ], 401);
+        ];
+
+        if ($details !== []) {
+            $error['details'] = $details;
+        }
+
+        return response()->json([
+            'error' => $error,
+            'meta' => $this->meta(),
+        ], $status);
     }
 
     /**
-     * 403 Forbidden レスポンスを生成
+     * Build the meta block carried by every API response.
+     *
+     * @return array{site_id: int|null, timestamp: string}
      */
-    protected function forbiddenResponse(string $message): JsonResponse
+    private function meta(): array
     {
-        return response()->json([
-            'error' => 'forbidden',
-            'message' => $message,
-        ], 403);
+        $siteId = null;
+        try {
+            $siteId = app(SiteContextInterface::class)->currentSiteId();
+        } catch (Throwable) {
+            // SiteContext may be unresolvable in edge cases (e.g. early
+            // bootstrap, install flow). The meta block tolerates a null
+            // site_id rather than failing the auth response.
+        }
+
+        return [
+            'site_id' => $siteId,
+            'timestamp' => now()->toIso8601String(),
+        ];
+    }
+
+    /**
+     * Record a single use of a network-scope (site_id = null) API key.
+     */
+    private function auditNetworkKeyUsage(ApiKey $apiKey, Request $request): void
+    {
+        Audit::log([
+            'action' => 'network_api_key_used',
+            'category' => AuditLog::CATEGORY_SECURITY,
+            'severity' => AuditLog::SEVERITY_NOTICE,
+            'outcome' => 'success',
+            'context' => [
+                'api_key_id' => $apiKey->id,
+                'method' => $request->method(),
+                'path' => $request->path(),
+                'ip' => $request->ip(),
+            ],
+        ]);
     }
 }

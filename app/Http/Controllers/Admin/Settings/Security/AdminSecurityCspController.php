@@ -56,7 +56,7 @@ class AdminSecurityCspController extends AdminLoggedInController
     }
 
     /**
-     * CSP設定ページ
+     * CSP settings page
      */
     public function index()
     {
@@ -74,7 +74,7 @@ class AdminSecurityCspController extends AdminLoggedInController
             'csp_blocklist_enabled_categories' => $this->securitySettingRepository->get('csp_blocklist_enabled_categories', ''),
         ];
 
-        // カスタムディレクティブのJSONをフォーム用に分解
+        // Parse custom directive JSON for form
         $directiveFields = $this->parseDirectivesForForm($settings['csp_custom_directives']);
 
         $this->viewParams['settings'] = $settings;
@@ -97,7 +97,7 @@ class AdminSecurityCspController extends AdminLoggedInController
     }
 
     /**
-     * CSP設定の更新
+     * Update CSP settings
      */
     public function update(AdminSecurityCspUpdateRequest $request)
     {
@@ -111,11 +111,11 @@ class AdminSecurityCspController extends AdminLoggedInController
     }
 
     /**
-     * CSP設定変更の確認
+     * Confirm CSP settings change
      */
     public function confirm(Request $request)
     {
-        // 確認済みフラグをセッションに保存
+        // Save confirmed flag to session
         session()->forget('csp_pending_confirmation');
         session()->forget('csp_previous_settings');
         session()->forget('csp_confirmation_expires_at');
@@ -127,7 +127,7 @@ class AdminSecurityCspController extends AdminLoggedInController
     }
 
     /**
-     * CSP設定変更のロールバック
+     * Rollback CSP settings change
      */
     public function rollback(Request $request)
     {
@@ -156,7 +156,7 @@ class AdminSecurityCspController extends AdminLoggedInController
     }
 
     /**
-     * カスタムディレクティブのJSON文字列をフォーム用フィールドに分解
+     * Parse custom directive JSON string into form fields
      *
      * @return array<string, string>
      */

@@ -45,7 +45,7 @@ use App\Http\Requests\Admin\Settings\Base\AdminBaseEditorUpdateRequest;
 use App\Services\Editor\EditorManager;
 
 /**
- * コンテンツエディター設定コントローラー
+ * Content editor settings controller
  */
 class AdminBaseEditorController extends AdminLoggedInController
 {
@@ -59,7 +59,7 @@ class AdminBaseEditorController extends AdminLoggedInController
     }
 
     /**
-     * コンテンツエディター設定ページ
+     * Content editor settings page
      */
     public function index()
     {
@@ -83,7 +83,7 @@ class AdminBaseEditorController extends AdminLoggedInController
     }
 
     /**
-     * コンテンツエディター設定の更新
+     * Update content editor settings
      */
     public function update(AdminBaseEditorUpdateRequest $request)
     {

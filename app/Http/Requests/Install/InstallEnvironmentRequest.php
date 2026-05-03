@@ -90,7 +90,7 @@ class InstallEnvironmentRequest extends FormRequest
     }
 
     /**
-     * バリデーションエラーメッセージ
+     * Validation error messages
      *
      * @return array<string, string>
      */

@@ -59,15 +59,15 @@ class ProfileTwoFaUpdateRequest extends FormRequest
     }
 
     /**
-     * カスタムバリデーションルールを追加
+     * Add custom validation rules
      */
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
             $twoFaMode = (int) $this->input('two_fa_mode', 0);
 
-            // 2FAを有効化しようとしている場合（モード1または2）
-            // プロフィール画面ではメールサーバーテスト済みかチェック
+            // If attempting to enable 2FA (mode 1 or 2)
+            // Check if email server has been tested on profile screen
             if ($twoFaMode === 1 || $twoFaMode === 2) {
                 if (! \App\Services\MailServerValidatorService::isMailServerTested()) {
                     $validator->errors()->add(

@@ -42,7 +42,7 @@ class FrontController extends Controller
 {
     //
 
-    // 変数を宣言する
+    // Declare variables
     protected $siteName;
 
     protected $appearance = 'light';
@@ -52,17 +52,17 @@ class FrontController extends Controller
 
     public function __construct()
     {
-        // テーマ設定を取得してビューに渡す
+        // Get theme settings and pass to view
         $this->loadThemeSettings();
     }
 
     /**
-     * テーマ設定を読み込む
+     * Load theme settings
      */
     protected function loadThemeSettings(): void
     {
         try {
-            // アクティブなテーマを取得
+            // Get active theme
             $activeThemeId = DB::table('theme_settings')
                 ->where('key', 'enabled_theme_id')
                 ->value('value');
@@ -73,7 +73,7 @@ class FrontController extends Controller
                 return;
             }
 
-            // テーマ情報を取得
+            // Get theme information
             $theme = DB::table('themes')->find($activeThemeId);
             if (! $theme) {
                 $this->viewParams['themeSettings'] = (object) [];
@@ -81,18 +81,18 @@ class FrontController extends Controller
                 return;
             }
 
-            // テーマ固有の設定テーブル名を生成
+            // Generate theme-specific settings table name
             $settingsTableName = 'thm_'.strtolower(str_replace('-', '_', $theme->slug)).'_settings';
 
-            // テーマ設定を取得（カラム名は'name'と'value'）
+            // Get theme settings (column names are 'name' and 'value')
             $settings = DB::table($settingsTableName)
                 ->get()
                 ->pluck('value', 'name');
 
-            // オブジェクトに変換してビューに渡す
+            // Convert to object and pass to view
             $this->viewParams['themeSettings'] = (object) $settings->toArray();
         } catch (\Exception $e) {
-            // エラーが発生した場合は空のオブジェクトを渡す
+            // Pass empty object if error occurs
             \Log::error('Failed to load theme settings: '.$e->getMessage());
             $this->viewParams['themeSettings'] = (object) [];
         }

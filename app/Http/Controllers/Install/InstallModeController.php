@@ -40,12 +40,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 /**
- * インストール - モード選択
+ * Install - Mode Selection
  */
 class InstallModeController extends BaseInstallController
 {
     /**
-     * モード選択画面を表示
+     * Display mode selection screen
      */
     public function create()
     {
@@ -61,7 +61,7 @@ class InstallModeController extends BaseInstallController
     }
 
     /**
-     * モードを保存
+     * Save mode
      */
     public function store(Request $request)
     {
@@ -71,8 +71,8 @@ class InstallModeController extends BaseInstallController
 
         session(['install_data.install_mode' => (int) $validated['install_mode']]);
 
-        // ランダムな管理画面URLを初回のみ生成（セッションに未設定の場合）
-        // プレフィックスとサフィックスの両方をランダムに生成
+        // Generate random admin panel URL only on first access (if not set in session)
+        // Generate both prefix and suffix randomly
         if (! session()->has('install_data.admin_url')) {
             $prefixes = config('admin.url.admin_url_prefixes', ['admin']);
             $prefix = $prefixes[array_rand($prefixes)];
