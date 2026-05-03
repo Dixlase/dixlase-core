@@ -42,11 +42,11 @@ use Illuminate\View\Component;
 use Illuminate\View\View;
 
 /**
- * 汎用システム警告バナーコンポーネント
+ * Generic system warning banner component
  *
- * SystemWarningService に登録された警告判定結果を元に、
- * レベル別（error/warning/info）の色分け済みバナーを積み重ね表示する。
- * 明示的に $banners 配列をprops指定することも可能。
+ * Based on warning determination results registered in SystemWarningService,
+ * display stacked banners color-coded by level (error/warning/info)
+ * Can also explicitly specify $banners array as props
  */
 class UiSystemBanner extends Component
 {
@@ -83,7 +83,7 @@ class UiSystemBanner extends Component
     }
 
     /**
-     * バナーデータを描画用に正規化する
+     * Normalize banner data for rendering
      *
      * @param  array<string, mixed>  $banner
      * @return array<string, mixed>

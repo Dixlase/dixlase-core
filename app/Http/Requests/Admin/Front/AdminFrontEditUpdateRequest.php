@@ -40,7 +40,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class AdminFrontEditUpdateRequest extends FormRequest
 {
     /**
-     * リクエストの認可判定
+     * Determine if the request is authorized
      */
     public function authorize(): bool
     {
@@ -48,13 +48,13 @@ class AdminFrontEditUpdateRequest extends FormRequest
     }
 
     /**
-     * バリデーションルール
+     * Validation rules
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
-        // 保存形式は初回作成時のみ選択可能。編集時はフィールドを受け付けない。
+        // Save format can only be selected on initial creation. Field is not accepted during editing
         return [
             'content' => ['nullable', 'string', 'max:500000'],
             'custom_js' => ['nullable', 'string', 'max:500000'],
@@ -63,7 +63,7 @@ class AdminFrontEditUpdateRequest extends FormRequest
     }
 
     /**
-     * バリデーションエラーメッセージ
+     * Validation error messages
      *
      * @return array<string, string>
      */

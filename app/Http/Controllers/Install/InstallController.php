@@ -58,11 +58,11 @@ namespace App\Http\Controllers\Install;
 use Illuminate\Routing\Controller;
 
 /**
- * インストールコントローラー
+ * Install Controller
  */
 class InstallController extends Controller
 {
-    // 利用可能な言語のリスト
+    // List of available languages
     protected $availableLocales;
 
     private $total_steps = 5;
@@ -72,15 +72,15 @@ class InstallController extends Controller
         $this->availableLocales = array_keys(config('language.languages', []));
     }
 
-    // 最初の画面
+    // Initial screen
     public function index()
     {
-        // ✅ インストール開始時にセッションデータを削除（言語設定は保持）
+        // ✅ Clear session data at install start (preserve language settings)
         $installData = session('install_data', []);
         session()->forget('install_data');
         session(['install_data' => $installData]);
 
-        // 言語設定をセッション/クッキーから取得、デフォルトはブラウザの言語設定を考慮
+        // Get language settings from session/cookie, default considers browser language settings
 
         $browserLocale = substr(request()->server('HTTP_ACCEPT_LANGUAGE', 'en'), 0, 2);
         $cookieLocale = request()->cookie('install_locale');
@@ -101,13 +101,13 @@ class InstallController extends Controller
     }
 
     /**
-     * サーバーが Laravel 12 の要件を満たしているか確認
+     * Check if server meets Laravel 12 requirements
      *
      * @return array
      */
     protected function checkServerRequirements()
     {
-        // 必須の拡張機能（不足時はインストール不可）
+        // Required extensions (installation cannot proceed if missing)
         $requiredExtensions = [
             'Ctype' => extension_loaded('ctype'),
             'cURL' => extension_loaded('curl'),
@@ -126,18 +126,18 @@ class InstallController extends Controller
             'Zip' => extension_loaded('zip'),
         ];
 
-        // 推奨の拡張機能（不足時も続行可能だが、パフォーマンスや機能に影響）
+        // Recommended extensions (can proceed if missing but affects performance and functionality)
         $recommendedExtensions = [
             'Redis' => extension_loaded('redis'),
             'OPcache' => extension_loaded('Zend OPcache'),
         ];
 
-        // オプションの拡張機能（あれば便利）
+        // Optional extensions (nice to have)
         $optionalExtensions = [
             'BCMath' => extension_loaded('bcmath'),
         ];
 
-        // ストレージサブディレクトリの存在確認と自動作成
+        // Check existence of storage subdirectories and auto-create
         $storageDirs = [
             'framework/views',
             'framework/cache/data',
@@ -151,7 +151,7 @@ class InstallController extends Controller
             }
         }
 
-        // パーミッションチェック
+        // Permission check
         $permissions = [
             'storage' => is_writable(storage_path()),
             'storage/framework/views' => is_writable(storage_path('framework/views')),
@@ -163,13 +163,13 @@ class InstallController extends Controller
             'public' => is_writable(base_path('public')),
         ];
 
-        // PHP設定チェック
+        // PHP settings check
         $phpSettings = [
             'memory_limit' => $this->checkMemoryLimit(128),
             'max_execution_time' => $this->checkMaxExecutionTime(60),
         ];
 
-        // テーマの存在チェック（theme.json を持つディレクトリが1つ以上あるか）
+        // Check theme existence (whether there is at least one directory with theme.json)
         $themesPath = base_path('themes');
         $hasTheme = false;
         if (is_dir($themesPath)) {
@@ -196,7 +196,7 @@ class InstallController extends Controller
     }
 
     /**
-     * memory_limit が最低値を満たしているかチェック
+     * Check if memory_limit meets minimum value
      */
     private function checkMemoryLimit(int $requiredMb): array
     {
@@ -213,12 +213,12 @@ class InstallController extends Controller
     }
 
     /**
-     * max_execution_time が最低値を満たしているかチェック
+     * Check if max_execution_time meets minimum value
      */
     private function checkMaxExecutionTime(int $requiredSeconds): array
     {
         $current = (int) ini_get('max_execution_time');
-        // 0 は無制限
+        // 0 is unlimited
         $ok = ($current === 0) || ($current >= $requiredSeconds);
 
         return [

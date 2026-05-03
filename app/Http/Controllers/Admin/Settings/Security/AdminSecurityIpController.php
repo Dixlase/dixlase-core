@@ -62,7 +62,7 @@ class AdminSecurityIpController extends AdminLoggedInController
     }
 
     /**
-     * IPアクセス制御設定ページ
+     * IP access control settings page
      */
     public function index()
     {
@@ -84,7 +84,7 @@ class AdminSecurityIpController extends AdminLoggedInController
     }
 
     /**
-     * IPアクセス制御設定の更新
+     * Update IP access control settings
      */
     public function update(AdminSecurityIpUpdateRequest $request)
     {

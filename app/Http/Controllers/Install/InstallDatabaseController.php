@@ -41,12 +41,12 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 
 /**
- * インストール - ステップ3: データベース設定
+ * Installation - Step 3: Database settings
  */
 class InstallDatabaseController extends BaseInstallController
 {
     /**
-     * データベース設定画面を表示
+     * Display database settings screen
      */
     public function create()
     {
@@ -54,7 +54,7 @@ class InstallDatabaseController extends BaseInstallController
     }
 
     /**
-     * データベース設定を保存
+     * Save database settings
      */
     public function store(InstallDatabaseRequest $request)
     {
@@ -71,8 +71,8 @@ class InstallDatabaseController extends BaseInstallController
             $data['db_password'] = Crypt::encryptString($request->db_password);
         }
 
-        // preserve_dataを明示的にブール値として保存
-        // トグルコンポーネントはON時に'1'、OFF時に'0'を送信する
+        // Save preserve_data explicitly as a boolean value
+        // Toggle component sends '1' when ON, '0' when OFF
         $data['preserve_data'] = $request->input('preserve_data') === '1';
 
         session(['install_data' => array_merge(session('install_data', []), $data)]);
@@ -81,7 +81,7 @@ class InstallDatabaseController extends BaseInstallController
     }
 
     /**
-     * データベース接続テスト
+     * Test database connection
      */
     public function testConnection(Request $request)
     {

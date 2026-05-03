@@ -45,10 +45,10 @@ use App\Http\Requests\Admin\Settings\Base\AdminBaseContentUpdateRequest;
 use App\Services\FrontPageRevisionService;
 
 /**
- * コンテンツ設定コントローラー
+ * Content settings controller
  *
- * 全コンテンツタイプ（フロントページ、将来の固定ページ等）に共通するコンテンツ設定を扱う。
- * 現在はリビジョン保持件数のみ。詳細モード限定。
+ * Handles content settings common to all content types (front page, future static pages, etc.)
+ * Currently only revision retention count. Advanced mode only
  */
 class AdminBaseContentController extends AdminLoggedInController
 {

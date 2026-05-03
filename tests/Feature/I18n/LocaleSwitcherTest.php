@@ -120,17 +120,20 @@ class LocaleSwitcherTest extends TestCase
         }
     }
 
-    public function test_setfrontlocale_does_not_write_cookie_on_url_visit(): void
+    public function test_setfrontlocale_middleware_does_not_set_cookie(): void
     {
-        // Visiting /ja/ should NOT set the dixlase_locale cookie. Only
-        // the explicit switch endpoint persists the choice. (We can't
-        // assertOk because the front theme isn't registered in the test
-        // environment, but the middleware still runs and the cookie
-        // assertion is what we care about.)
-        $response = $this->get('/ja');
+        // Only the /locale/switch endpoint writes the dixlase_locale cookie.
+        // SetFrontLocale itself, even when run on a request that resolves
+        // a locale, must not persist that choice.
+        $request = \Illuminate\Http\Request::create('/ja/about', 'GET');
+        $middleware = new \App\Http\Middleware\SetFrontLocale();
 
-        foreach ($response->headers->getCookies() as $cookie) {
-            $this->assertNotSame(LocaleHelper::COOKIE_NAME, $cookie->getName(), 'SetFrontLocale must not write the locale cookie.');
-        }
+        $response = $middleware->handle($request, fn () => response('ok'));
+
+        $cookieNames = array_map(
+            fn ($c) => $c->getName(),
+            $response->headers->getCookies(),
+        );
+        $this->assertNotContains(LocaleHelper::COOKIE_NAME, $cookieNames, 'SetFrontLocale must not write the locale cookie.');
     }
 }

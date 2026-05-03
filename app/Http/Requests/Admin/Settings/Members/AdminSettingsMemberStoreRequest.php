@@ -61,28 +61,28 @@ class AdminSettingsMemberStoreRequest extends FormRequest
      */
     public function rules(): array
     {
-        // 管理者IDがリクエストされているかで判断
+        // Determine based on whether an administrator ID is requested
         $isUpdate = $this->route('member') !== null;
         $member = $this->route('member');
 
-        // 初期メンバー（ID=1）かどうか
+        // Whether it's the initial member (ID=1)
         $isInitialAdmin = $member && $member->id === 1;
 
-        // パスワード設定を取得（セキュリティ設定から）
+        // Get password settings (from security settings)
         $passwordMinLength = (int) SecuritySetting::getValue('password_min_length', 8);
         $passwordRequireUppercase = (bool) SecuritySetting::getValue('password_require_uppercase', true);
         $passwordRequireLowercase = (bool) SecuritySetting::getValue('password_require_lowercase', true);
         $passwordRequireNumber = (bool) SecuritySetting::getValue('password_require_number', true);
         $passwordRequireSymbol = (bool) SecuritySetting::getValue('password_require_symbol', false);
 
-        // パスワードバリデーションルールを構築
+        // Build password validation rules
         $passwordRules = PasswordService::buildPasswordRules(
             $passwordMinLength,
             $passwordRequireUppercase,
             $passwordRequireLowercase,
             $passwordRequireNumber,
             $passwordRequireSymbol,
-            ! $isUpdate // 新規作成時は必須、編集時は任意
+            ! $isUpdate // required on create, optional on update
         );
 
         $rules = [
@@ -94,10 +94,10 @@ class AdminSettingsMemberStoreRequest extends FormRequest
                 'email',
                 Rule::unique('members', 'email')
                     ->ignore($this->route('member'))
-                    ->whereNull('deleted_at'), // 削除されていないメンバーのみをチェック
+                    ->whereNull('deleted_at'), // check only non-deleted members
             ],
             'password' => $passwordRules,
-            // 初期メンバーの場合はroleを任意（フィールドが送信されないため）
+            // For initial member, role is optional (because the field is not sent)
             'role' => $isInitialAdmin
                 ? ['nullable', Rule::in(array_column(MemberRole::cases(), 'value'))]
                 : ['required', Rule::in(array_column(MemberRole::cases(), 'value'))],
@@ -112,12 +112,12 @@ class AdminSettingsMemberStoreRequest extends FormRequest
             'default_two_fa_method' => 'nullable|integer|in:0,1',
         ];
 
-        // メールアドレス確認のバリデーション
+        // Email address confirmation validation
         if (! $isUpdate) {
-            // 新規作成時は必須
+            // Required when creating new
             $rules['email_confirmation'] = 'required|email|same:email';
         } elseif ($member && $this->input('email') !== $member->email) {
-            // 編集時にメールアドレスが変更された場合も必須
+            // Also required when email address is changed during editing
             $rules['email_confirmation'] = 'required|email|same:email';
         }
 
@@ -125,15 +125,15 @@ class AdminSettingsMemberStoreRequest extends FormRequest
     }
 
     /**
-     * バリデーション後の処理
+     * Post-validation processing
      */
     protected function passedValidation()
     {
-        // 全体設定で二段階認証が強制されている場合、個別設定を上書き
-        $globalTwoFaMode = (int) SecuritySetting::getValue('two_fa_mode', 3); // 3 = プロフィール設定に従う
+        // If two-factor authentication is enforced in global settings, override individual settings
+        $globalTwoFaMode = (int) SecuritySetting::getValue('two_fa_mode', 3); // 3 = Follow profile settings
 
         if ($globalTwoFaMode !== 3) {
-            // 全体設定が「プロフィール設定に従う」以外の場合、全体設定を強制
+            // If global settings is other than 'Follow profile settings', enforce global settings
             $this->merge([
                 'two_fa_mode' => $globalTwoFaMode,
             ]);
@@ -141,7 +141,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
     }
 
     /**
-     * カスタムバリデーションルールを追加
+     * Add custom validation rules
      */
     public function withValidator($validator)
     {
@@ -149,9 +149,9 @@ class AdminSettingsMemberStoreRequest extends FormRequest
             $member = $this->route('member');
             $twoFaMode = (int) $this->input('two_fa_mode', 0);
 
-            // 2FAを有効化しようとしている場合（モード1または2）
+            // If attempting to enable 2FA (mode 1 or 2)
             if ($twoFaMode === 1 || $twoFaMode === 2) {
-                // 既存メンバーの編集の場合のみチェック
+                // Check only when editing existing member
                 if ($member) {
                     if (! $member->canEnableTwoFa()) {
                         $validator->errors()->add(
@@ -160,8 +160,8 @@ class AdminSettingsMemberStoreRequest extends FormRequest
                         );
                     }
                 }
-                // 新規作成の場合は、メールサーバーが設定されていればOK
-                // （作成後に回復コードやパスキーを登録できるため）
+                // For new creation, OK if mail server is configured
+                // (Because recovery codes and passkeys can be registered after creation)
                 else {
                     $mailConfigured = \App\Services\MailServerValidatorService::isMailServerTested();
                     if (! $mailConfigured) {
@@ -176,7 +176,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
     }
 
     /**
-     * バリデーションメッセージをカスタマイズ（必要に応じて）
+     * Customize validation messages (if necessary)
      */
     public function messages(): array
     {

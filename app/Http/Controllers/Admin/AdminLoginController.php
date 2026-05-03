@@ -40,9 +40,9 @@ use App\Models\Member;
 use App\Repositories\SiteSettingRepository;
 
 /**
- * 管理画面のログインコントローラー
+ * Admin panel login controller
  *
- * ログイン処理と認証関連の設定を提供します。
+ * Provides login processing and authentication-related settings
  */
 class AdminLoginController extends AdminController
 {
@@ -58,7 +58,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * ログインルート名を取得
+     * Get login route name
      */
     protected function getLoginRoute(): string
     {
@@ -66,7 +66,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * ダッシュボードのルート名を取得
+     * Get dashboard route name
      */
     protected function getDashboardRoute(): string
     {
@@ -74,7 +74,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * セッションキーのプレフィックスを取得
+     * Get session key prefix
      */
     protected function getSessionPrefix(): string
     {
@@ -82,7 +82,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * ユーザーモデルクラス名を取得
+     * Get user model class name
      */
     protected function getUserModelClass(): string
     {
@@ -90,7 +90,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * 認証ガード名を取得
+     * Get authentication guard name
      */
     protected function getGuardName(): string
     {
@@ -98,7 +98,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * コンテキストを取得
+     * Get context
      */
     protected function getContext(): string
     {
@@ -106,7 +106,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * 二段階認証ルートのプレフィックスを取得
+     * Get two-factor authentication route prefix
      */
     protected function getTwoFaRoutePrefix(): string
     {
@@ -114,7 +114,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * 管理者メールアドレス設定キーを取得
+     * Get administrator email address settings key
      */
     protected function getAdminEmailSettingKey(): string
     {
@@ -122,7 +122,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * 通知メールアドレス設定キーを取得
+     * Get notification email address settings key
      */
     protected function getNotificationEmailSettingKey(): string
     {
@@ -130,7 +130,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * ログアウト後のリダイレクト先を取得
+     * Get redirect destination after logout
      */
     protected function getLogoutRedirectRoute(): string
     {
@@ -138,7 +138,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * 設定モデルクラス名を取得
+     * Get settings model class name
      */
     protected function getSettingModelClass(): string
     {
@@ -146,7 +146,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * ログイン試行モデルクラス名を取得
+     * Get login attempt model class name
      */
     protected function getLoginAttemptModelClass(): string
     {
@@ -154,7 +154,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * ロックアウトサービスクラス名を取得
+     * Get lockout service class name
      */
     protected function getLockoutServiceClass(): string
     {
@@ -162,7 +162,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * ログイン通知サービスクラス名を取得
+     * Get login notification service class name
      */
     protected function getLoginNotificationServiceClass(): string
     {
@@ -170,7 +170,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * ログインビュー名を取得
+     * Get login view name
      */
     protected function getLoginViewName(): string
     {
@@ -178,7 +178,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * CAPTCHAアクション名を取得
+     * Get CAPTCHA action name
      */
     protected function getCaptchaAction(): string
     {
@@ -186,7 +186,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * パスワードリセット機能が有効かどうかを取得
+     * Get whether password reset feature is enabled
      */
     protected function isPasswordResetEnabled(): bool
     {
@@ -194,7 +194,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * ログイン識別子モードを取得
+     * Get login identifier mode
      */
     protected function getLoginIdentifierMode(): LoginIdentifierMode
     {
@@ -204,7 +204,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * アカウント名でのログインをサポートするかどうか
+     * Whether to support login with account name
      */
     protected function supportsAccountNameLogin(): bool
     {
@@ -212,7 +212,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * メールアドレスでのログインをサポートするかどうか
+     * Whether to support login with email address
      */
     protected function supportsEmailLogin(): bool
     {
@@ -220,7 +220,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * pending_emailでのログインをサポートするかどうか
+     * Whether to support login with pending_email
      */
     protected function supportsPendingEmailLogin(): bool
     {
@@ -228,7 +228,7 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * リカバリーコード画面のルート名を取得
+     * Get the route name for the recovery code screen
      */
     protected function getRecoveryCodeRoute(): string
     {

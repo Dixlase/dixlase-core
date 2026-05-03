@@ -61,7 +61,7 @@ use Illuminate\View\View;
 class AdminFrontController extends AdminLoggedInController
 {
     /**
-     * コンストラクタ
+     * Constructor
      */
     public function __construct(
         protected FrontSettingRepositoryInterface $frontSettingRepository,
@@ -72,7 +72,7 @@ class AdminFrontController extends AdminLoggedInController
     }
 
     /**
-     * フロントページマスター（一覧）
+     * Front page master (list)
      */
     public function index(): View
     {
@@ -81,7 +81,7 @@ class AdminFrontController extends AdminLoggedInController
         $frontPage = FrontPage::findByType('main_content');
         $languages = config('language.languages', []);
 
-        // エディタータイプのラベル
+        // Editor type labels
         $editorTypeLabel = null;
         $storageTypeLabel = null;
         $langName = null;
@@ -97,7 +97,7 @@ class AdminFrontController extends AdminLoggedInController
         $this->viewParams['storageTypeLabel'] = $storageTypeLabel;
         $this->viewParams['langName'] = $langName;
 
-        // フロントページコンテンツをプレビュー用にレンダリング
+        // Render front page content for preview
         $previewContent = null;
         if ($frontPage && $frontPage->isPublished()) {
             $rawContent = $this->contentService->getContent($frontPage, $frontPage->lang);
@@ -112,11 +112,11 @@ class AdminFrontController extends AdminLoggedInController
     }
 
     /**
-     * フロントページ作成フォーム
+     * Front page creation form
      */
     public function create(): View|RedirectResponse
     {
-        // コンテンツ存在時は edit にリダイレクト
+        // Redirect to edit if content exists
         $existing = FrontPage::findByType('main_content');
         if ($existing) {
             return redirect()->route('admin.front.edit');
@@ -129,7 +129,7 @@ class AdminFrontController extends AdminLoggedInController
         )->all();
         $templates = $this->buildTemplateData();
 
-        // ユーザーのプロフィール言語をデフォルト値として使用
+        // Use user's profile language as default value
         $userLocale = auth()->user()?->locale?->value ?? array_key_first($languages);
 
         $editorManager = app(EditorManager::class);
@@ -153,7 +153,7 @@ class AdminFrontController extends AdminLoggedInController
     }
 
     /**
-     * フロントページ作成保存
+     * Save front page creation
      */
     public function store(AdminFrontCreateRequest $request): RedirectResponse
     {
@@ -166,7 +166,7 @@ class AdminFrontController extends AdminLoggedInController
     }
 
     /**
-     * フロントページ編集フォーム
+     * Front page edit form
      */
     public function edit(): View|RedirectResponse
     {
@@ -174,17 +174,17 @@ class AdminFrontController extends AdminLoggedInController
 
         $frontPage = FrontPage::findByType('main_content');
 
-        // コンテンツ未存在時はフロントページマスター（一覧）にリダイレクト
+        // Redirect to front page master (list) if content does not exist
         if (! $frontPage) {
             return redirect()->route('admin.front.index');
         }
 
         $languages = config('language.languages', []);
 
-        // エディタータイプのラベル
+        // Editor type labels
         $editorTypeLabel = __($frontPage->editor_type->translationKey());
 
-        // ファイル保存の場合、ファイルからコンテンツを読み込む
+        // If file-based, load content from file
         $body = $frontPage->content;
         if ($frontPage->storage_type === ContentStorageType::FILE) {
             $fileContents = $this->contentService->loadFromFile(
@@ -197,7 +197,7 @@ class AdminFrontController extends AdminLoggedInController
             }
         }
 
-        // HTML エディタ時は JS/CSS コンテンツも読み込む
+        // Load JS/CSS content as well when using HTML editor
         $isHtmlEditor = $frontPage->editor_type === ContentEditorType::HTML;
         $customJs = null;
         $customCss = null;
@@ -235,21 +235,21 @@ class AdminFrontController extends AdminLoggedInController
     }
 
     /**
-     * iframe用プレビューフレーム（テーマレイアウトでフロントページを表示）
+     * Preview frame for iframe (display front page with theme layout)
      *
-     * 管理画面の編集画面内iframeに読み込まれる。
-     * テーマの layouts.app を使用してフロントページと同じ見た目で表示し、
-     * postMessage でコンテンツをリアルタイム更新する。
+     * Loaded in iframe within admin panel edit screen
+     * Display with the same appearance as front page using theme's layouts.app,
+     * and update content in real-time via postMessage
      */
     public function previewFrame(): View
     {
-        // CSP frame-ancestors を 'self' に上書き（iframe埋め込み許可）
+        // Override CSP frame-ancestors to 'self' (allow iframe embedding)
         request()->attributes->set('csp_frame_ancestors_self', true);
 
-        // テーマ設定を読み込む（FrontController と同じロジック）
+        // Load theme settings (same logic as FrontController)
         $themeSettings = $this->loadThemeSettingsForPreview();
 
-        // フロントページの初期コンテンツを取得・レンダリング
+        // Get and render initial front page content
         $frontPage = FrontPage::findByType('main_content');
         $initialRenderedContent = '';
 
@@ -267,7 +267,7 @@ class AdminFrontController extends AdminLoggedInController
     }
 
     /**
-     * プレビューフレーム用にテーマ設定を読み込む
+     * Load theme settings for preview frame
      */
     protected function loadThemeSettingsForPreview(): object
     {
@@ -298,7 +298,7 @@ class AdminFrontController extends AdminLoggedInController
     }
 
     /**
-     * 編集中コンテンツのプレビュー用HTMLを返す（AJAX）
+     * Return preview HTML for content being edited (AJAX)
      */
     public function preview(Request $request): JsonResponse
     {
@@ -311,7 +311,7 @@ class AdminFrontController extends AdminLoggedInController
     }
 
     /**
-     * フロントページ編集の保存
+     * Save front page edits
      */
     public function update(AdminFrontEditUpdateRequest $request): RedirectResponse
     {
@@ -329,7 +329,7 @@ class AdminFrontController extends AdminLoggedInController
     }
 
     /**
-     * フロントページリセット（レコード削除 + ファイル削除）
+     * Reset front page (delete records + delete files)
      */
     public function destroy(): RedirectResponse
     {
@@ -346,7 +346,7 @@ class AdminFrontController extends AdminLoggedInController
     }
 
     /**
-     * フロントページ設定画面
+     * Front page settings screen
      */
     public function settings(): View
     {
@@ -354,7 +354,7 @@ class AdminFrontController extends AdminLoggedInController
     }
 
     /**
-     * フロントページ設定の保存
+     * Save front page settings
      */
     public function updateSettings(AdminFrontSettingsUpdateRequest $request): RedirectResponse
     {
@@ -363,7 +363,7 @@ class AdminFrontController extends AdminLoggedInController
     }
 
     /**
-     * テンプレートデータを構築（Alpine.js 用）
+     * Build template data (for Alpine.js)
      *
      * @return array<string, array<string, array{content: string}>>
      */

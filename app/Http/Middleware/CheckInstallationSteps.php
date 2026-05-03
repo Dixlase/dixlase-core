@@ -42,7 +42,7 @@ use Symfony\Component\HttpFoundation\Response;
 class CheckInstallationSteps
 {
     /**
-     * ルート名からステップ番号を取得
+     * Get step number from route name
      */
     private function getStepFromRoute($routeName)
     {
@@ -74,7 +74,7 @@ class CheckInstallationSteps
     }
 
     /**
-     * 各ステップで必要なフィールドがセッションに存在するか確認
+     * Check if required fields for each step exist in session
      */
     private function checkStepFields($stepName, $data)
     {
@@ -86,7 +86,7 @@ class CheckInstallationSteps
         ];
 
         if (! isset($requiredKeys[$stepName])) {
-            return true; // チェック対象外のステップは常に成功とみなす
+            return true; // Steps not subject to checking are always considered successful
         }
 
         foreach ($requiredKeys[$stepName] as $field) {
@@ -99,11 +99,11 @@ class CheckInstallationSteps
     }
 
     /**
-     * 指定したステップまでの全ステップが完了しているか確認
+     * Check if all steps up to the specified step are completed
      *
-     * @param  int  $step  確認するステップ番号
-     * @param  array  $installData  セッションデータ
-     * @return array [bool $isCompleted, int|null $firstIncompleteStep] 完了状態と最初の未完了ステップ番号
+     * @param  int  $step  Step number to check
+     * @param  array  $installData  Session data
+     * @return array [bool $isCompleted, int|null $firstIncompleteStep] Completion status and first incomplete step number
      */
     private function isStepCompleted($step, $installData)
     {
@@ -125,7 +125,7 @@ class CheckInstallationSteps
             return [false, 1];
         }
 
-        // 指定されたステップの直前のステップまでをチェック
+        // Check up to the step immediately before the specified step
         for ($i = 0; $i < ($step - 1); $i++) {
             $stepName = $stepOrder[$i];
             if (! $this->checkStepFields($stepName, $data)) {
@@ -137,17 +137,17 @@ class CheckInstallationSteps
     }
 
     /**
-     * ステップ番号に対応するルート名を取得
+     * Get route name corresponding to step number
      */
     private function getRouteForStep($step)
     {
         $routes = [
-            1 => 'install.settings',     // 基本設定
-            2 => 'install.environment', // 環境設定
-            3 => 'install.database',  // データベース設定
-            4 => 'install.mail',  // メール設定
-            5 => 'install.confirm',   // 確認画面
-            6 => 'install.complete',   // 完了画面
+            1 => 'install.settings',     // Basic settings
+            2 => 'install.environment', // Environment settings
+            3 => 'install.database',  // Database settings
+            4 => 'install.mail',  // Mail settings
+            5 => 'install.confirm',   // Confirmation screen
+            6 => 'install.complete',   // completion screen
         ];
 
         return $routes[$step] ?? 'install.index';
@@ -159,7 +159,7 @@ class CheckInstallationSteps
     public function handle(Request $request, Closure $next): Response
     {
         // print_r(session()->all());
-        // 現在のルート名を取得
+        // Get current route name
         $currentRoute = $request->route() ? $request->route()->getName() : null;
 
         if (! $currentRoute) {
@@ -168,39 +168,39 @@ class CheckInstallationSteps
 
         $currentRoute = $request->route()->getName();
 
-        // 完了ページはインストール完了フラグがあれば許可
+        // Allow completion page if installation completed flag exists
         if ($currentRoute === 'install.complete') {
             return $next($request);
         }
 
-        // インデックスページとモード選択ページは常に許可
+        // Always allow index page and mode selection page
         if (in_array($currentRoute, ['install.index', 'install.mode', 'install.mode.store'])) {
             return $next($request);
         }
 
-        // 現在のステップを取得
+        // Get current step
         $currentStep = $this->getStepFromRoute($currentRoute);
 
         if ($currentStep > 0) {
             $installData = session()->all();
 
-            // リクエストがPOSTの場合は、バリデーション前にステップチェックをスキップ
+            // Skip step check before validation if request is POST
             if ($request->isMethod('post')) {
                 return $next($request);
             }
 
-            // 現在のステップが1（基本設定）の場合はチェックをスキップ
+            // Skip check if current step is 1 (basic settings)
             if ($currentStep === 1) {
                 return $next($request);
             }
 
-            // 現在のステップまでの全ステップが完了しているか確認
+            // Check if all steps up to the current step are completed
             [$allStepsCompleted, $firstIncompleteStep] = $this->isStepCompleted($currentStep, $installData);
 
-            // 未完了のステップがある場合は、最初の未完了ステップにリダイレクト
+            // If there are incomplete steps, redirect to the first incomplete step
             if (! $allStepsCompleted) {
                 $targetRoute = $this->getRouteForStep($firstIncompleteStep);
-                // 現在のルートと異なる場合のみリダイレクト
+                // Redirect only if different from the current route
                 if ($currentRoute !== $targetRoute) {
                     return redirect()->route($targetRoute)
                         ->with('error', __('install/common.please_complete_previous_steps'));

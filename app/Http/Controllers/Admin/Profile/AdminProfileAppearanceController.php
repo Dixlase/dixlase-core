@@ -51,13 +51,13 @@ class AdminProfileAppearanceController extends AdminLoggedInController
      */
     public function index()
     {
-        // 外観モードのセッションをクリアして、保存された値に戻す
+        // Clear appearance mode session and revert to saved value
         session()->forget('appearance');
 
-        // プロフィール画面だけアニメーションを有効にする（統一された速度）
+        // Enable animation only for profile screen (unified speed)
         $this->setupTransitionClasses();
 
-        // プロフィール画面だけアニメーションを有効にする
+        // Enable animation only for profile screen
         $this->viewParams['transitionEnabled'] = true;
 
         return view('admin.profile.appearance', $this->viewParams);

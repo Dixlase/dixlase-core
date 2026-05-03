@@ -47,7 +47,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * フロントページ リビジョン一覧・差分表示・復元コントローラー
+ * Front page revision list, diff display, and restore controller
  */
 class AdminFrontRevisionController extends AdminLoggedInController
 {
@@ -59,7 +59,7 @@ class AdminFrontRevisionController extends AdminLoggedInController
     }
 
     /**
-     * リビジョン一覧
+     * Revision list
      */
     public function index(): View|RedirectResponse
     {
@@ -82,7 +82,7 @@ class AdminFrontRevisionController extends AdminLoggedInController
     }
 
     /**
-     * リビジョン詳細（現行との差分表示）
+     * Revision details (diff display with current version)
      */
     public function show(int $id): View|RedirectResponse
     {
@@ -130,7 +130,7 @@ class AdminFrontRevisionController extends AdminLoggedInController
     }
 
     /**
-     * リビジョン復元
+     * Restore revision
      */
     public function restore(int $id): RedirectResponse
     {
@@ -153,7 +153,7 @@ class AdminFrontRevisionController extends AdminLoggedInController
     }
 
     /**
-     * リビジョンの保護フラグを切り替える
+     * Toggle revision protection flag
      */
     public function toggleProtection(int $id): RedirectResponse
     {
@@ -179,7 +179,7 @@ class AdminFrontRevisionController extends AdminLoggedInController
     }
 
     /**
-     * リビジョンのメモを更新する
+     * Update revision memo
      */
     public function updateNote(Request $request, int $id): RedirectResponse
     {

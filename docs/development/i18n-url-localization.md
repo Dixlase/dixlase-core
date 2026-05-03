@@ -1,18 +1,27 @@
 # URL Localization
 
-Dixlase serves the front-end under a path-prefix locale strategy: `/ja/about`, `/en/about`. The admin UI (`/admin/...`) is unaffected — operators get the language they chose in their profile.
+Dixlase ships the **infrastructure** for path-prefix locale URLs (`/ja/about`, `/en/about`) but does **not activate** that routing in v0.1.0. Front URLs serve their content directly without a locale prefix; the admin UI (`/admin/...`) is unaffected.
 
-This document describes the URL strategy, locale resolution order, and the integration points that plugins/themes use to participate.
+The future multilingual plugin (DixlaseI18n) opts into locale URL routing by attaching the provided middleware to a `Route::prefix('{locale}')` group and registering its own `Route::fallback()` redirect. This document describes the locked-in design contract so that plugin can plug in without core changes.
 
 ## TL;DR
 
-- **Front URLs**: `/{locale}/<path>` (e.g. `/ja/about`, `/en/posts`)
+### v0.1.0 (default, no plugin)
+
+- **Front URLs**: served at their declared paths (`/`, `/about`, `/posts/{slug}`) with no `/{locale}/` prefix
 - **Admin URLs**: `/admin/<path>` — no locale prefix
-- **Locale-less front URL** (e.g. `/about`): 302 redirect to `/{Site.primary_locale}/about`
-- **Front locale resolution**: URL > Cookie `dixlase_locale` > Accept-Language > `Site.primary_locale` > `en`
-- **Admin locale resolution**: `member.locale` > `Site.primary_locale` > Accept-Language > `en`
+- **`/` does not auto-redirect** to `/ja/` or `/en/`. Visitors stay where they were.
+- **Locale-less unknown URLs** (e.g. `/about` with no route): standard Laravel 404
+- **Admin locale resolution** (`SetAdminLocale`): `member.locale` > `Site.primary_locale` > Accept-Language > `en`
+- **Supported locales**: `ja`, `en` only
+
+### When the multilingual plugin is enabled (future)
+
+- **Front URLs**: `/{locale}/<path>` (e.g. `/ja/about`, `/en/posts`)
+- **Locale-less front URL** (e.g. `/about`): 302 redirect to `/{resolved_locale}/about`
+- **Front locale resolution** (`SetFrontLocale`): URL > Cookie `dixlase_locale` > Accept-Language > `Site.primary_locale` > `en`
 - **Untranslated content**: 302 redirect to `/{Site.primary_locale}/<path>` via `MissingTranslationHandler` contract (overridable by plugins)
-- **Supported locales (v0.1.0)**: `ja`, `en` only. Dynamic expansion lands in v0.2+
+- The plugin owns the redirect toggle. Operators that don't want auto-redirect can leave the plugin disabled or its setting off.
 
 ## Why path prefix (strategy A)
 
@@ -78,29 +87,33 @@ $this->app->bind(
 
 Note: this only fires when **a route is matched but content is missing** for the current locale. URLs that don't match any route still return a regular 404.
 
-### Static asset and API routes
+### Routes that stay locale-neutral (even with the plugin enabled)
 
-These routes are **outside** the locale group:
+These routes never carry a locale prefix:
 
-- `/assets/{type}/{file}` — theme/admin/plugin static assets
+- `/assets/{type}/{file}` — theme/admin/plugin static assets (cache-key-stable across locales)
 - `/csp-report` — CSP violation report endpoint
+- `/front/custom-script.js`, `/front/custom-style.css` — page custom JS/CSS
+- `/locale/switch` — language switcher control endpoint
 - `/install/...` — installer (uses `Accept-Language` for UI)
 - `/api/v1/...` — JSON APIs (clients send `Accept-Language` if needed)
-- `/locale/switch` — language switcher endpoint
 - `/admin/...` — admin UI
 
 ## Plugin / theme integration
 
-### Front routes are auto-wrapped
+### v0.1.0 (default)
 
-Plugin web routes loaded by `PluginHelper::loadEnabledWebRoutes()` and theme front routes are automatically registered inside the locale group. Plugin/theme authors write ordinary route definitions:
+Plugin web routes loaded by `PluginHelper::loadEnabledWebRoutes()` mount at their declared paths with no locale prefix:
 
 ```php
 // In a plugin's routes/web.php
 Route::get('/posts/{slug}', [PostController::class, 'show'])->name('posts.show');
+// Reachable as /posts/hello — no /{locale}/ prefix
 ```
 
-The route is reachable as both `/ja/posts/hello` and `/en/posts/hello`. `route('posts.show', ['slug' => 'hello'])` returns a URL with the current locale baked in.
+### When the multilingual plugin is enabled
+
+The multilingual plugin is expected to wrap the front routes (and its own routes) inside a `Route::prefix('{locale}')` group with the `SetFrontLocale` middleware attached. Once that wrapping is in place, the same plugin code becomes reachable under both `/ja/posts/hello` and `/en/posts/hello`, and `route('posts.show', ['slug' => 'hello'])` automatically picks up the current locale via `URL::defaults`.
 
 ### Generating locale-aware URLs
 

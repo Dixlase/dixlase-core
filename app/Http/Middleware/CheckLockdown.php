@@ -45,41 +45,41 @@ use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * ロックダウンチェックミドルウェア
+ * Lockdown check middleware
  *
- * ロックダウン中のアクセスを制限する
+ * Restrict access during lockdown
  *
  * Usage:
- *   ->middleware('lockdown')           // 全タイプをチェック
- *   ->middleware('lockdown:admin')     // 管理画面ロックダウンをチェック
- *   ->middleware('lockdown:api')       // APIロックダウンをチェック
- *   ->middleware('lockdown:login')     // ログインロックダウンをチェック
+ *   ->middleware('lockdown')           // Check all types
+ *   ->middleware('lockdown:admin')     // Check admin panel lockdown
+ *   ->middleware('lockdown:api')       // Check API lockdown
+ *   ->middleware('lockdown:login')     // Check login lockdown
  */
 class CheckLockdown
 {
     /**
      * Handle an incoming request.
      *
-     * @param  string|null  $type  ロックダウンタイプ（null=全タイプ）
+     * @param  string|null  $type  Lockdown type (null = all types)
      */
     public function handle(Request $request, Closure $next, ?string $type = null): Response
     {
-        // 自動解除をチェック
+        // Check auto-release
         LockdownService::checkAutoRelease();
 
-        // ロックダウン状態を取得
+        // Get lockdown status
         $lockdown = LockdownService::getStatus();
 
         if (! $lockdown) {
             return $next($request);
         }
 
-        // タイプが指定されていて、そのタイプがロックされていない場合はスキップ
+        // Skip if type is specified and that type is not locked
         if ($type !== null && $lockdown->type !== LockdownStatus::TYPE_FULL && $lockdown->type !== $type) {
             return $next($request);
         }
 
-        // アクセス許可をチェック
+        // Check access permission
         $member = Auth::guard('member')->user();
         $ip = $request->ip();
 
@@ -87,18 +87,18 @@ class CheckLockdown
             return $next($request);
         }
 
-        // ロックダウン中のレスポンス
+        // Response during lockdown
         return $this->lockdownResponse($request, $lockdown);
     }
 
     /**
-     * ロックダウン中のレスポンスを生成
+     * Generate response during lockdown
      */
     protected function lockdownResponse(Request $request, LockdownStatus $lockdown): Response
     {
         $message = $lockdown->reason ?: __('admin/lockdown.default_message');
 
-        // APIリクエストの場合はJSONレスポンス
+        // Return JSON response for API requests
         if ($request->expectsJson() || $request->is('api/*')) {
             return response()->json([
                 'error' => 'lockdown',
@@ -107,7 +107,7 @@ class CheckLockdown
             ], 503);
         }
 
-        // 通常のリクエストの場合はロックダウンページを表示
+        // Display lockdown page for normal requests
         return response()->view('errors.lockdown', [
             'lockdown' => $lockdown,
             'message' => $message,

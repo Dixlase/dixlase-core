@@ -74,7 +74,7 @@ class AdminSecurityLoginController extends AdminLoggedInController
     }
 
     /**
-     * ログイン試行制限設定ページ
+     * Login attempt restriction settings page
      */
     public function index()
     {
@@ -87,16 +87,16 @@ class AdminSecurityLoginController extends AdminLoggedInController
             'login_attempt_lockout_notification_enabled' => filter_var($this->securitySettingRepository->get('login_attempt_lockout_notification_enabled', true), FILTER_VALIDATE_BOOLEAN),
         ];
 
-        // ログイン識別子モード設定
+        // Login identifier mode settings
         $loginIdentifierMode = (int) $this->securitySettingRepository->get('login_identifier_mode', LoginIdentifierMode::EmailOrAccountName->value);
         $this->viewParams['loginIdentifierMode'] = $loginIdentifierMode;
 
-        // ログイン通知設定
+        // Login notification settings
         $loginNotificationMode = (int) $this->securitySettingRepository->get('login_notification_mode', 3);
         $loginNotificationSendToSystem = (bool) $this->securitySettingRepository->get('login_notification_send_to_system', false);
         $loginNotificationSystemEmail = (string) $this->securitySettingRepository->get('login_notification_system_email', '');
 
-        // 二段階認証の詳細設定
+        // Two-factor authentication detailed settings
         $twoFaExpireMinutes = (int) $this->securitySettingRepository->get('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
         $twoFaResendIntervalSeconds = (int) $this->securitySettingRepository->get('two_fa_resend_interval_seconds', config('two-fa.resend_interval', 60));
         $twoFaMaxAttempts = (int) $this->securitySettingRepository->get('two_fa_max_attempts', 5);
@@ -124,13 +124,13 @@ class AdminSecurityLoginController extends AdminLoggedInController
     }
 
     /**
-     * ログイン試行制限設定の更新
+     * Update login attempt restriction settings
      */
     public function update(AdminSecurityLoginUpdateRequest $request)
     {
         $actor = new \App\Actors\MemberActor(\App\Helpers\AdminHelper::getMember());
 
-        // Boolean型とint型のキーを分類
+        // Classify boolean and int type keys
         $booleanKeys = ['login_attempt_limit_enabled', 'login_attempt_lockout_notification_enabled',
             'login_notification_send_to_system', 'two_fa_lockout_notification_enabled'];
         $stringKeys = ['login_notification_system_email'];

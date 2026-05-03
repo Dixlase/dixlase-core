@@ -44,10 +44,10 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * APIリクエストログミドルウェア（Terminable）
+ * API Request Logging Middleware (Terminable)
  *
- * レスポンス送信後にAPIリクエストをログに記録します。
- * terminate() メソッドを使用し、レスポンスの遅延を防ぎます。
+ * Logs API requests after the response is sent
+ * Uses terminate() method to prevent response delay
  */
 class LogApiRequest
 {
@@ -56,7 +56,7 @@ class LogApiRequest
     ) {}
 
     /**
-     * リクエスト開始時刻を記録してリクエストを通過させる
+     * Record request start time and pass the request through
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -66,7 +66,7 @@ class LogApiRequest
     }
 
     /**
-     * レスポンス送信後にログを記録
+     * Log after response is sent
      */
     public function terminate(Request $request, Response $response): void
     {
@@ -82,7 +82,7 @@ class LogApiRequest
         $content = $response->getContent();
         $responseSize = $content !== false ? strlen($content) : null;
 
-        // エラー情報を抽出
+        // Extract error information
         $errorCode = null;
         $errorMessage = null;
         if ($responseCode >= 400) {

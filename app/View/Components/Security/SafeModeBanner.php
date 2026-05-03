@@ -40,11 +40,11 @@ use Illuminate\View\Component;
 use Illuminate\View\View;
 
 /**
- * セーフモードバナーコンポーネント
+ * Safe mode banner component
  *
- * 有効なセーフモードごとにバナーを表示する。
- * SafeModeServiceからアクティブモードを取得し、
- * Bladeテンプレートにプリミティブなデータとして渡す。
+ * Display a banner for each active safe mode
+ * Retrieve active modes from SafeModeService and
+ * pass as primitive data to the Blade template
  */
 class SafeModeBanner extends Component
 {
@@ -70,7 +70,7 @@ class SafeModeBanner extends Component
     }
 
     /**
-     * コンポーネントを表示するかどうか
+     * Whether to display the component
      */
     public function shouldRender(): bool
     {

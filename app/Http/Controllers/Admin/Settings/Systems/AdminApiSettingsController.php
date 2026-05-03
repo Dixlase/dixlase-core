@@ -49,12 +49,12 @@ class AdminApiSettingsController extends AdminLoggedInController
     protected const SETTING_KEYS = ['api_enabled', 'api_rate_limit', 'api_signature_required'];
 
     /**
-     * API設定リポジトリ
+     * API settings repository
      */
     protected ApiSettingRepositoryInterface $apiSettingRepository;
 
     /**
-     * コンストラクタ
+     * Constructor
      */
     public function __construct(ApiSettingRepositoryInterface $apiSettingRepository)
     {
@@ -63,23 +63,23 @@ class AdminApiSettingsController extends AdminLoggedInController
     }
 
     /**
-     * API設定画面を表示
+     * Display API settings screen
      */
     public function index()
     {
-        // APIキー一覧を取得
+        // Get API key list
         $apiKeys = ApiKey::with('creator')
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // API設定を取得
+        // Get API settings
         $settings = [
             'api_enabled' => filter_var($this->apiSettingRepository->get('api_enabled', false), FILTER_VALIDATE_BOOLEAN),
             'api_rate_limit' => (int) $this->apiSettingRepository->get('api_rate_limit', 60),
             'api_signature_required' => filter_var($this->apiSettingRepository->get('api_signature_required', true), FILTER_VALIDATE_BOOLEAN),
         ];
 
-        // 利用可能なスコープ
+        // Available scopes
         $availableScopes = ApiKey::availableScopes();
 
         $this->viewParams['apiKeys'] = $apiKeys;
@@ -90,7 +90,7 @@ class AdminApiSettingsController extends AdminLoggedInController
     }
 
     /**
-     * API設定を更新
+     * Update API settings
      */
     public function update(AdminSystemApiUpdateRequest $request)
     {
@@ -108,7 +108,7 @@ class AdminApiSettingsController extends AdminLoggedInController
             permission: \App\Enums\Permission::SETTINGS_API,
         )->execute($actor, $request->validated());
 
-        Log::channel('admin_activity')->info('API設定を更新しました', [
+        Log::channel('admin_activity')->info(__('http/controllers/admin/settings/systems/admin_api_settings_controller.api_settings_updated'), [
             'member_id' => Auth::guard('member')->id(),
             'settings' => $request->validated(),
         ]);
@@ -118,13 +118,13 @@ class AdminApiSettingsController extends AdminLoggedInController
     }
 
     /**
-     * 新しいAPIキーを生成
+     * Generate new API key
      */
     public function generateKey(AdminSystemApiGenerateKeyRequest $request)
     {
         $validated = $request->validated();
 
-        // 許可IPリストをパース
+        // Parse allowed IP list
         $allowedIps = null;
         if (! empty($validated['allowed_ips'])) {
             $allowedIps = array_filter(
@@ -132,7 +132,7 @@ class AdminApiSettingsController extends AdminLoggedInController
             );
         }
 
-        // APIキー生成
+        // API key generation
         $result = ApiKey::generate(
             name: $validated['name'],
             environment: $validated['environment'],
@@ -146,14 +146,14 @@ class AdminApiSettingsController extends AdminLoggedInController
             ]
         );
 
-        Log::channel('admin_activity')->info('APIキーを生成しました', [
+        Log::channel('admin_activity')->info(__('http/controllers/admin/settings/systems/admin_api_settings_controller.api_key_generated'), [
             'member_id' => Auth::guard('member')->id(),
             'api_key_id' => $result['model']->id,
             'name' => $validated['name'],
             'environment' => $validated['environment'],
         ]);
 
-        // 生成されたキーをセッションに保存（一度だけ表示）
+        // Save generated key to session (display only once)
         session()->flash('generated_key', $result['plain_key']);
         session()->flash('generated_key_id', $result['model']->id);
 
@@ -162,7 +162,7 @@ class AdminApiSettingsController extends AdminLoggedInController
     }
 
     /**
-     * APIキーを無効化（削除）
+     * Disable (delete) API key
      */
     public function revokeKey(int $id)
     {
@@ -171,7 +171,7 @@ class AdminApiSettingsController extends AdminLoggedInController
         $keyName = $apiKey->name;
         $apiKey->delete();
 
-        Log::channel('admin_activity')->info('APIキーを削除しました', [
+        Log::channel('admin_activity')->info(__('http/controllers/admin/settings/systems/admin_api_settings_controller.api_key_deleted'), [
             'member_id' => Auth::guard('member')->id(),
             'api_key_id' => $id,
             'name' => $keyName,
@@ -182,13 +182,13 @@ class AdminApiSettingsController extends AdminLoggedInController
     }
 
     /**
-     * APIキーを再生成
+     * Regenerate API key
      */
     public function regenerateKey(int $id)
     {
         $apiKey = ApiKey::findOrFail($id);
 
-        // 新しいキーを生成
+        // Generate new key
         $result = ApiKey::generate(
             name: $apiKey->name,
             environment: $apiKey->environment,
@@ -202,17 +202,17 @@ class AdminApiSettingsController extends AdminLoggedInController
             ]
         );
 
-        // 古いキーを削除
+        // Delete old key
         $apiKey->delete();
 
-        Log::channel('admin_activity')->info('APIキーを再生成しました', [
+        Log::channel('admin_activity')->info(__('http/controllers/admin/settings/systems/admin_api_settings_controller.api_key_regenerated'), [
             'member_id' => Auth::guard('member')->id(),
             'old_api_key_id' => $id,
             'new_api_key_id' => $result['model']->id,
             'name' => $result['model']->name,
         ]);
 
-        // 生成されたキーをセッションに保存（一度だけ表示）
+        // Save generated key to session (display only once)
         session()->flash('generated_key', $result['plain_key']);
         session()->flash('generated_key_id', $result['model']->id);
 

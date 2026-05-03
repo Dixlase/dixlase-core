@@ -59,26 +59,26 @@ class AdminThemesSettingsController extends AdminLoggedInController
 {
     //
 
-    // テーマ一覧
+    // Theme list
     public function index()
     {
-        // インストール済みテーマを取得（プラグイン管理と同じロジック）
+        // Get installed themes (same logic as plugin management)
         $themes = Theme::all();
 
-        // 現在有効なテーマを取得
+        // Get currently active theme
         $themeSetting = DB::table('theme_settings')
             ->where('key', 'enabled_theme_id')
             ->first();
         $activeThemeId = $themeSetting ? (int) $themeSetting->value : null;
 
-        // 権限サービスと健全性スコアラ（ファイル変更検知用）
+        // Permission service and health scorer (for file change detection)
         $permissionService = app(ThemePermissionService::class);
         $healthScorer = app(\App\Services\Theme\ThemeHealthScorer::class);
 
-        // アンインストール済みテーマを先に検出（バッチクエリで使うスラッグを集めるため）
+        // Detect uninstalled themes first (to collect slugs for batch query)
         $uninstalledThemes = $this->getUninstalledThemes();
 
-        // 全テーマの監査結果を 1 クエリで取得（N+1 回避）
+        // Get audit results for all themes in 1 query (avoid N+1)
         $allSlugs = array_filter(array_merge(
             $themes->pluck('slug')->all(),
             array_column($uninstalledThemes, 'slug'),
@@ -87,27 +87,27 @@ class AdminThemesSettingsController extends AdminLoggedInController
             ? ThemeAudit::whereIn('theme_slug', $allSlugs)->get()->keyBy('theme_slug')
             : collect();
 
-        // テーマ設定機能の有無をチェック
-        // データベースのhas_settingsカラムを優先し、nullの場合のみファイルチェック
+        // Check if theme has settings feature
+        // Prioritize database has_settings column, only check file if null
         foreach ($themes as $theme) {
             if ($theme->has_settings === null) {
                 $theme->has_settings = $this->hasThemeSettings($theme);
             }
 
-            // 権限サマリーを取得（監査結果を含む）
+            // Get permission summary (including audit results)
             $summary = $permissionService->getSummary($theme->slug);
             $summary['audit'] = $this->buildThemeAuditArrayFromMap($auditMap, $theme->slug);
             $theme->permission_summary = $summary;
 
-            // CSP 互換性は監査結果（theme_audits）から復元する
+            // Restore CSP compatibility from audit results (theme_audits)
             $theme->csp_compatibility = $this->buildCspCompatibilityFromAudit($summary['audit']);
             $theme->csp_diagnostic = null;
 
-            // ファイル変更検知（mtime ベース）
+            // File change detection (mtime based)
             $theme->files_changed = $this->detectThemeFilesChanged($theme->slug, $auditMap, $healthScorer);
         }
 
-        // アンインストール済みテーマにも権限サマリーと監査結果を追加
+        // Add permission summary and audit results to uninstalled themes as well
         foreach ($uninstalledThemes as &$theme) {
             $summary = $permissionService->getSummary($theme['slug']);
             $summary['audit'] = $this->buildThemeAuditArrayFromMap($auditMap, $theme['slug']);
@@ -119,7 +119,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
         }
         unset($theme);
 
-        // カードデータを事前計算
+        // Pre-calculate card data
         $themeCards = [];
         foreach ($themes as $theme) {
             $themeCards[] = ExtensionCardPresenter::forTheme($theme, $activeThemeId);
@@ -129,7 +129,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
             $uninstalledThemeCards[] = ExtensionCardPresenter::forTheme($theme, $activeThemeId);
         }
 
-        // 「すべて更新」ボタン用：available_version が立っているテーマのリスト
+        // For 'Update All' button: list of themes with available_version set
         $updatableExtensions = collect($themeCards)
             ->filter(fn (array $c) => ! empty($c['hasUpdateAvailable']))
             ->map(fn (array $c) => [
@@ -152,7 +152,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * テーマの監査結果をDBから取得
+     * Get theme audit results from DB
      */
     protected function getThemeAuditResult(string $themeSlug): array
     {
@@ -162,7 +162,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
             return $audit->toAuditArray();
         }
 
-        // 監査結果がない場合は空の結果を返す
+        // Return empty result if no audit results exist
         return [
             'has_mismatches' => false,
             'mismatches' => [],
@@ -173,7 +173,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * バッチ取得した監査結果コレクションから 1 件の audit array を取り出す。
+     * Extract one audit array from batch-fetched audit results collection
      *
      * @param  \Illuminate\Support\Collection<string, ThemeAudit>  $auditMap
      * @return array<string, mixed>
@@ -195,7 +195,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * 監査結果から CSP 互換性配列を組み立てる。
+     * Build CSP compatibility array from audit results
      *
      * @param  array<string, mixed>  $audit
      * @return array<string, mixed>
@@ -214,7 +214,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * mtime ベースでテーマファイルがスキャン後に変更されたかを判定する。
+     * Determine if theme files were modified after scan based on mtime
      */
     protected function detectThemeFilesChanged(string $slug, \Illuminate\Support\Collection $auditMap, ThemeHealthScorer $healthScorer): bool
     {
@@ -232,7 +232,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * テーマを監査してDBに保存
+     * Audit theme and save to DB
      */
     protected function runThemeAudit(string $themeSlug): array
     {
@@ -263,26 +263,26 @@ class AdminThemesSettingsController extends AdminLoggedInController
             }
 
             if (json_last_error() === JSON_ERROR_NONE && is_array($result)) {
-                // mismatchesのevidenceを制限（DBサイズ削減）
+                // Limit evidence for mismatches (reduce DB size)
                 $mismatches = $result['mismatches'] ?? [];
                 foreach ($mismatches as &$mismatch) {
                     if (isset($mismatch['evidence']) && is_array($mismatch['evidence'])) {
-                        // evidenceは最大3件まで
+                        // Evidence is limited to a maximum of 3 items
                         $mismatch['evidence'] = array_slice($mismatch['evidence'], 0, 3);
                     }
                 }
                 unset($mismatch);
 
-                // 署名情報を取得
+                // Get signature information
                 $permissionService = app(ThemePermissionService::class);
                 $summary = $permissionService->getSummary($themeSlug);
                 $signature = $summary['signature'] ?? [];
 
-                // CSP準拠状況をコードスキャンで検証
+                // Verify CSP compliance with code scan
                 $cspScanner = app(\App\Services\Csp\CspComplianceScanner::class);
                 $cspCompatibility = $cspScanner->scanTheme($themeSlug);
 
-                // ファイルハッシュ + owned_tables（マイグレーションから自動検出）
+                // File hash + owned_tables (auto-detected from migrations)
                 $healthScorer = app(\App\Services\Theme\ThemeHealthScorer::class);
                 $filesHash = $healthScorer->computeFilesHash($themeSlug);
                 $extensionDir = base_path("themes/{$themeSlug}");
@@ -308,10 +308,10 @@ class AdminThemesSettingsController extends AdminLoggedInController
 
                 Log::info('Theme audit data prepared', ['theme' => $themeSlug, 'mismatches_count' => count($mismatches)]);
 
-                // DBに保存（健全性スコア計算前のベースデータ）
+                // Save to DB (base data before health score calculation)
                 $audit = ThemeAudit::saveAuditResult($themeSlug, $auditData);
 
-                // 健全性スコアと指摘一覧を後追いで永続化
+                // Persist health score and issue list afterward
                 try {
                     $healthResult = $healthScorer->calculate($themeSlug);
                     $audit->update([
@@ -349,11 +349,11 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * テーマを手動で監査（Ajax）
+     * Manually audit theme (Ajax)
      */
     public function audit(Request $request)
     {
-        // JSONリクエストの場合はjson()で取得
+        // Get with json() if JSON request
         $slug = $request->json('slug') ?? $request->input('slug');
 
         Log::info('Theme audit request', ['slug' => $slug, 'content_type' => $request->header('Content-Type')]);
@@ -368,13 +368,13 @@ class AdminThemesSettingsController extends AdminLoggedInController
         try {
             $result = $this->runThemeAudit($slug);
 
-            // スキャン結果モーダル用に確認理由を翻訳済みで付与
+            // Attach translated confirmation reasons for scan result modal
             $result['formatted_attention_reasons'] = ExtensionCardPresenter::formatAttentionReasons(
                 $result['risk_reasons'] ?? [],
                 'admin/settings/themes/index'
             );
 
-            // 健全性スコアの計算
+            // Calculate health score
             $healthScore = null;
             $healthStatus = null;
             $healthIssues = [];
@@ -394,7 +394,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 ]);
             }
 
-            // 権限カテゴリ情報を取得
+            // Get permission category information
             $permissionService = app(ThemePermissionService::class);
             $summary = $permissionService->getSummary($slug);
             $categories = $summary['categories'] ?? [];
@@ -422,9 +422,9 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * 全テーマを順次再スキャン
+     * Rescan all themes sequentially
      *
-     * インストール済み + アンインストール済みすべてのテーマに対して runThemeAudit() を実行する。
+     * Execute runThemeAudit() for all installed + uninstalled themes
      */
     public function auditAll(Request $request): \Illuminate\Http\RedirectResponse
     {
@@ -462,7 +462,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
             : $redirect->with('warning', $message);
     }
 
-    // テーマ追加
+    // Add theme
     public function add()
     {
         $uploadMaxBytes = $this->parsePhpSize(ini_get('upload_max_filesize'));
@@ -472,7 +472,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * テーマのアップロード（ZIPファイルの解凍とファイル配置のみ）
+     * Upload theme (only ZIP extraction and file placement)
      */
     public function upload(AdminThemeUploadRequest $request)
     {
@@ -484,17 +484,17 @@ class AdminThemesSettingsController extends AdminLoggedInController
         $uploadedFile->move($tempDir, $fileName);
 
         try {
-            // ソースダウンロードと同じ共通処理で展開・配置・ディレクトリ名解決
+            // Extract, place, and resolve directory name with same common process as source download
             $result = $this->extractAndPlaceTheme($tempPath);
 
             if (! $result['success']) {
                 return redirect()->route('admin.settings.themes.add')
-                    ->with('error', $result['error'] ?? 'ZIPファイルの解凍に失敗しました。');
+                    ->with('error', $result['error'] ?? __('http/controllers/admin/settings/admin_themes_settings_controller.zip_extraction_failed'));
             }
 
             $themeDir = $result['directory'];
 
-            // 新規配置時は過去の監査結果を破棄し未スキャン状態に戻す
+            // Discard past audit results and return to unscanned state on new placement
             $themeJsonPath = base_path("themes/{$themeDir}/theme.json");
             $slugFromManifest = null;
             if (File::exists($themeJsonPath)) {
@@ -510,7 +510,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
             $this->purgeAuditRecordsForSlug($slugFromManifest ?? Str::slug($themeDir), $themeDir);
 
             return redirect()->route('admin.settings.themes.index')
-                ->with('success', 'テーマのアップロードが完了しました。一覧からインストールしてください。')
+                ->with('success', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_upload_completed_install_from_list'))
                 ->with('uploaded_theme_directory', $themeDir);
         } catch (\Throwable $e) {
             if (File::exists($tempPath)) {
@@ -522,12 +522,12 @@ class AdminThemesSettingsController extends AdminLoggedInController
             ]);
 
             return redirect()->route('admin.settings.themes.add')
-                ->with('error', 'テーマのアップロードに失敗しました: '.$e->getMessage());
+                ->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_upload_failed').$e->getMessage());
         }
     }
 
     /**
-     * アンインストール済みテーマをインストール
+     * Install uninstalled theme
      */
     public function install(AdminThemeInstallRequest $request)
     {
@@ -536,7 +536,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
         $themeDir = $validated['directory'];
 
         try {
-            // Artisanコマンドを実行してテーマをインストール（--forceオプション付き）
+            // Execute Artisan command to install theme (with --force option)
             $exitCode = Artisan::call('dls:theme:install', [
                 'themeName' => $themeDir,
                 '--force' => true,
@@ -551,17 +551,17 @@ class AdminThemesSettingsController extends AdminLoggedInController
                     'output' => $output,
                 ]);
 
-                return redirect()->back()->with('error', 'テーマのインストールに失敗しました。');
+                return redirect()->back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_installation_failed'));
             }
 
-            // .git/info/excludeと.gitignoreにテーマの除外ルールを追加
+            // Add theme exclusion rules to .git/info/exclude and .gitignore
             GitExcludeHelper::addThemeExclusion($themeDir);
             GitIgnoreHelper::addThemeExclusion($themeDir);
 
-            // インストールされたテーマを取得して監査・通知
+            // Get installed themes and perform audit and notification
             $theme = Theme::where('directory', $themeDir)->first();
             if ($theme) {
-                // インストール後に監査を実行
+                // Run audit after installation
                 $this->runThemeAudit($theme->slug);
 
                 $permissionService = app(ThemePermissionService::class);
@@ -580,64 +580,64 @@ class AdminThemesSettingsController extends AdminLoggedInController
             }
 
             return redirect()->route('admin.settings.themes.index')
-                ->with('success', 'テーマが正常にインストールされました。');
+                ->with('success', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_successfully_installed'));
         } catch (\Exception $e) {
             Log::error('Theme installation failed', [
                 'directory' => $themeDir,
                 'error' => $e->getMessage(),
             ]);
 
-            return redirect()->back()->with('error', 'テーマのインストールに失敗しました: '.$e->getMessage());
+            return redirect()->back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_installation_failed_with_reason').$e->getMessage());
         }
     }
 
     /**
-     * テーマをアンインストール
+     * Uninstall theme
      */
     public function uninstall($id, Request $request)
     {
         $theme = Theme::findOrFail($id);
 
-        // デフォルトテーマはアンインストールできない
+        // Default theme cannot be uninstalled
         $defaultThemeSlug = config('themes.default_theme_slug', 'dixlase-one-page');
         if ($theme->slug === $defaultThemeSlug) {
-            return back()->with('error', 'デフォルトテーマはアンインストールできません。');
+            return back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.default_theme_cannot_uninstall'));
         }
 
-        // 有効化中のテーマはアンインストールできない
+        // Active theme cannot be uninstalled
         $themeSetting = DB::table('theme_settings')
             ->where('key', 'enabled_theme_id')
             ->first();
         $activeThemeId = $themeSetting ? (int) $themeSetting->value : null;
 
         if ($activeThemeId && $theme->id == $activeThemeId) {
-            return back()->with('error', '有効化中のテーマはアンインストールできません。');
+            return back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.active_theme_cannot_uninstall'));
         }
 
-        // 通知用にテーマ情報を保存
+        // Save theme information for notification
         $themeData = [
             'name' => $theme->name,
             'slug' => $theme->slug,
             'version' => $theme->version ?? null,
-            'health_status' => 'low', // アンインストール時は健全性警告不要
+            'health_status' => 'low', // no health warning needed on uninstall
         ];
 
         try {
-            // コマンドを使用してアンインストール
+            // Uninstall using command
             $options = [
                 'themeName' => $theme->slug,
                 '--force' => true,
                 '--no-interaction' => true,
             ];
 
-            // DBデータも削除する場合
+            // If DB data should also be deleted
             if ($request->has('remove_db_data')) {
                 $options['--rollback'] = true;
             }
 
             Artisan::call('dls:theme:uninstall', $options);
 
-            // 拡張機能操作の通知・ログ記録
+            // Notification and logging of extension operations
             app(ExtensionOperationService::class)->recordOperation(
                 ExtensionOperationService::TYPE_THEME,
                 ExtensionOperationService::OPERATION_UNINSTALLED,
@@ -645,29 +645,29 @@ class AdminThemesSettingsController extends AdminLoggedInController
             );
 
             return redirect()->route('admin.settings.themes.index')
-                ->with('success', 'テーマをアンインストールしました');
+                ->with('success', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_uninstalled'));
         } catch (\Exception $e) {
             Log::error('Theme uninstall failed', [
                 'theme' => $theme->name,
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'テーマのアンインストールに失敗しました: '.$e->getMessage());
+            return back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_uninstallation_failed').$e->getMessage());
         }
     }
 
     /**
-     * テーマを切り替え（有効化）
+     * Switch (activate) theme
      */
     public function switch($id)
     {
         $theme = Theme::findOrFail($id);
 
         try {
-            // 有効化前に監査を実行（最新の状態を確認）
+            // Run audit before activation (verify current state)
             $this->runThemeAudit($theme->slug);
 
-            // Artisanコマンドを使用してテーマを切り替え
+            // Switch theme using Artisan command
             $exitCode = Artisan::call('dls:theme:switch', [
                 'themeName' => $theme->slug,
             ]);
@@ -680,14 +680,14 @@ class AdminThemesSettingsController extends AdminLoggedInController
                     'output' => $output,
                 ]);
 
-                return redirect()->back()->with('error', 'テーマの切り替えに失敗しました。');
+                return redirect()->back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_switch_failed'));
             }
 
-            // .git/info/excludeと.gitignoreにテーマの除外ルールを追加
+            // Add theme exclusion rules to .git/info/exclude and .gitignore
             GitExcludeHelper::addThemeExclusion($theme->directory);
             GitIgnoreHelper::addThemeExclusion($theme->directory);
 
-            // 拡張機能操作の通知・ログ記録
+            // Notification and logging of extension operations
             $permissionService = app(ThemePermissionService::class);
             $summary = $permissionService->getSummary($theme->slug);
 
@@ -703,19 +703,19 @@ class AdminThemesSettingsController extends AdminLoggedInController
             );
 
             return redirect()->route('admin.settings.themes.index')
-                ->with('success', 'テーマが切り替えられました。');
+                ->with('success', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_switched'));
         } catch (\Exception $e) {
             Log::error('Theme switch failed', [
                 'theme' => $theme->name,
                 'error' => $e->getMessage(),
             ]);
 
-            return redirect()->back()->with('error', 'テーマの切り替えに失敗しました: '.$e->getMessage());
+            return redirect()->back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_switch_failed_with_reason').$e->getMessage());
         }
     }
 
     /**
-     * テーマを完全に削除（ファイル + DBレコード）
+     * Completely delete theme (files + DB records)
      */
     public function delete(AdminThemeDeleteRequest $request)
     {
@@ -723,11 +723,11 @@ class AdminThemesSettingsController extends AdminLoggedInController
 
         $themeDir = $validated['directory'];
 
-        // DBレコードが存在するか確認
+        // Check if DB record exists
         $theme = Theme::where('directory', $themeDir)->first();
 
         try {
-            // DBレコードが存在する場合は先にアンインストール
+            // If DB record exists, uninstall first
             if ($theme) {
                 $exitCode = Artisan::call('dls:theme:uninstall', [
                     'themeName' => $theme->slug,
@@ -743,11 +743,11 @@ class AdminThemesSettingsController extends AdminLoggedInController
                         'output' => $output,
                     ]);
 
-                    return redirect()->back()->with('error', 'テーマのアンインストールに失敗しました。');
+                    return redirect()->back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_uninstallation_failed_general'));
                 }
             }
 
-            // テーマディレクトリを削除
+            // Delete theme directory
             $exitCode = Artisan::call('dls:theme:delete', [
                 'themeDirectory' => $themeDir,
                 '--force' => true,
@@ -761,27 +761,27 @@ class AdminThemesSettingsController extends AdminLoggedInController
                     'output' => $output,
                 ]);
 
-                return redirect()->back()->with('error', 'テーマの削除に失敗しました。');
+                return redirect()->back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_deletion_failed'));
             }
 
-            // .git/info/excludeと.gitignoreからテーマの除外ルールを削除
+            // Remove theme exclusion rules from .git/info/exclude and .gitignore
             GitExcludeHelper::removeThemeExclusion($themeDir);
             GitIgnoreHelper::removeThemeExclusion($themeDir);
 
             return redirect()->route('admin.settings.themes.index')
-                ->with('success', 'テーマが正常に削除されました。');
+                ->with('success', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_successfully_deleted'));
         } catch (\Exception $e) {
             Log::error('Theme deletion failed', [
                 'directory' => $themeDir,
                 'error' => $e->getMessage(),
             ]);
 
-            return redirect()->back()->with('error', 'テーマの削除に失敗しました: '.$e->getMessage());
+            return redirect()->back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_deletion_failed_with_reason').$e->getMessage());
         }
     }
 
     /**
-     * PHPのサイズ表記をバイト数に変換
+     * Convert PHP size notation to bytes
      */
     private function parsePhpSize(string $sizeStr): int
     {
@@ -808,31 +808,31 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * テーマに設定機能があるかチェック
+     * Check if theme has settings functionality
      */
     private function hasThemeSettings($theme)
     {
         $themeSlug = $theme->slug;
         $themeDirectory = $theme->directory;
 
-        // ルートファイルの存在確認
+        // Check if route file exists
         $routeFile = base_path("themes/{$themeDirectory}/routes/admin.php");
 
         if (! file_exists($routeFile)) {
             return false;
         }
 
-        // ルートファイルの内容を確認
+        // Check route file contents
         $routeContent = file_get_contents($routeFile);
 
-        // 設定ルートが定義されているかチェック（新しいルート構造に対応）
-        // '/settings/themes/settings' ルートと 'settings' メソッドの両方をチェック
+        // Check if settings route is defined (supports new route structure)
+        // Check both '/settings/themes/settings' route and 'settings' method
         return str_contains($routeContent, '/settings/themes/settings')
             && str_contains($routeContent, 'settings');
     }
 
     /**
-     * アンインストール済みテーマを検出
+     * Detect uninstalled themes
      */
     private function getUninstalledThemes()
     {
@@ -843,16 +843,16 @@ class AdminThemesSettingsController extends AdminLoggedInController
             return $uninstalledThemes;
         }
 
-        // themesディレクトリ内のすべてのディレクトリを取得
+        // Get all directories in themes directory
         $directories = File::directories($themesPath);
 
-        // インストール済みテーマのディレクトリ名を取得（プラグイン管理と同じロジック）
+        // Get directory names of installed themes (same logic as plugin management)
         $installedDirectories = Theme::pluck('directory')->toArray();
 
         foreach ($directories as $directory) {
             $dirName = basename($directory);
 
-            // DBに登録されていないテーマを検出
+            // Detect themes not registered in DB
             if (! in_array($dirName, $installedDirectories)) {
                 $themeInfo = $this->getThemeInfoFromDirectory($dirName);
 
@@ -866,15 +866,15 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * ディレクトリからテーマ情報を取得
-     * theme.json優先、composer.jsonをフォールバック
+     * Get theme information from directory
+     * Prioritize theme.json, fallback to composer.json
      */
     private function getThemeInfoFromDirectory($dirName)
     {
         $themeJsonPath = base_path("themes/{$dirName}/theme.json");
         $composerPath = base_path("themes/{$dirName}/composer.json");
 
-        // theme.jsonが存在する場合は優先的に使用
+        // Use theme.json preferentially if it exists
         if (File::exists($themeJsonPath)) {
             try {
                 $jsonContent = File::get($themeJsonPath);
@@ -904,11 +904,11 @@ class AdminThemesSettingsController extends AdminLoggedInController
                     'directory' => $dirName,
                     'error' => $e->getMessage(),
                 ]);
-                // theme.jsonの読み込みに失敗した場合はcomposer.jsonにフォールバック
+                // Fallback to composer.json if theme.json fails to load
             }
         }
 
-        // theme.jsonが存在しない、または読み込みに失敗した場合はcomposer.jsonを使用
+        // Use composer.json if theme.json does not exist or fails to load
         if (! File::exists($composerPath)) {
             return;
         }
@@ -921,7 +921,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 return;
             }
 
-            // display-nameの取得（extra.dixlase.display-name → extra.display-name → ディレクトリ名）
+            // Get display-name (extra.dixlase.display-name → extra.display-name → directory name)
             $displayName = $composerData['extra']['dixlase']['display-name']
                 ?? $composerData['extra']['display-name']
                 ?? $dirName;
@@ -929,12 +929,12 @@ class AdminThemesSettingsController extends AdminLoggedInController
             $authors = $composerData['authors'] ?? [];
             $firstAuthor = $authors[0] ?? [];
 
-            // versionの取得（extra.dixlase.version → version → デフォルト）
+            // Get version (extra.dixlase.version → version → default)
             $version = $composerData['extra']['dixlase']['version']
                 ?? $composerData['version']
                 ?? '1.0.0';
 
-            // slugの取得（extra.dixlase.slug → extra.slug → ディレクトリ名からケバブケース）
+            // Get slug (extra.dixlase.slug → extra.slug → kebab-case from directory name)
             $slug = $composerData['extra']['dixlase']['slug']
                 ?? $composerData['extra']['slug']
                 ?? Str::slug($dirName);
@@ -962,12 +962,12 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * テーマのシーダーを実行
+     * Run theme seeder
      */
     protected function runThemeSeeder(string $themeDirectory): void
     {
         try {
-            // Artisanコマンドを使用してシーダーを実行
+            // Run seeder using Artisan command
             Artisan::call('dls:theme:seed', [
                 'themeName' => $themeDirectory,
             ]);
@@ -976,7 +976,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 'theme' => $themeDirectory,
             ]);
         } catch (\Exception $e) {
-            // シーダーの実行に失敗してもインストールは続行
+            // Continue installation even if seeder execution fails
             Log::warning('Theme seeder execution failed', [
                 'theme' => $themeDirectory,
                 'error' => $e->getMessage(),
@@ -985,19 +985,19 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * ソースから利用可能なテーマ一覧を返す（JSON API）
+     * Return available theme list from source (JSON API)
      */
     public function availableFromSource(\App\Services\Extension\ExtensionSourceManager $manager): \Illuminate\Http\JsonResponse
     {
         try {
             $available = $manager->listAvailableThemes();
 
-            // インストール済み・ディスク上に存在するテーマを除外
+            // Exclude themes that are already installed or exist on disk
             $installedSlugs = Theme::pluck('slug')->toArray();
             $diskSlugs = collect($this->getUninstalledThemes())->pluck('slug')->toArray();
             $excludeSlugs = array_merge($installedSlugs, $diskSlugs);
 
-            // slug が文字列でないエントリは壊れたマニフェストとして除外する
+            // Exclude entries where slug is not a string as broken manifests
             $filtered = array_values(array_filter(
                 $available,
                 function (array $theme) use ($excludeSlugs) {
@@ -1011,7 +1011,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 }
             ));
 
-            // 文字列フィールドを API レスポンス時点で正規化
+            // Normalize string fields at API response time
             $normalized = array_map(
                 fn (array $theme) => $this->normalizeExtensionEntry($theme),
                 $filtered
@@ -1031,7 +1031,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * API レスポンス用に文字列フィールドを明示的に正規化する
+     * Explicitly normalize string fields for API response
      *
      * @param  array<string, mixed>  $entry
      * @return array<string, mixed>
@@ -1060,7 +1060,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * ソースからテーマをダウンロードして配置
+     * Download and place theme from source
      */
     public function downloadFromSource(Request $request, \App\Services\Extension\ExtensionSourceManager $manager)
     {
@@ -1071,16 +1071,16 @@ class AdminThemesSettingsController extends AdminLoggedInController
         $slug = trim((string) $request->input('slug'));
 
         try {
-            // ソースから ZIP をダウンロード
+            // Download ZIP from source
             $zipPath = $manager->download($slug, 'theme');
 
-            // ZIP を展開して配置
+            // Extract and place ZIP
             $result = $this->extractAndPlaceTheme($zipPath);
 
             if ($result['success']) {
                 $displayName = $result['name'] ?? $slug;
 
-                // 新規ダウンロード時は過去の監査結果を破棄し未スキャン状態に戻す
+                // Discard past audit results and reset to unscanned state on new download
                 $this->purgeAuditRecordsForSlug($slug, $result['directory'] ?? null);
 
                 return redirect()->route('admin.settings.themes.index')
@@ -1102,7 +1102,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * 指定したテーマの過去の監査レコードを削除する（再ダウンロード時に未スキャン状態へ戻すため）
+     * Delete past audit records for the specified theme (to reset to unscanned state on re-download)
      */
     protected function purgeAuditRecordsForSlug(string $slug, ?string $directory = null): void
     {
@@ -1126,7 +1126,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * ZIP ファイルを展開してテーマディレクトリに配置する共通処理
+     * Common process to extract ZIP file and place in theme directory
      *
      * @return array{success: bool, directory?: string, error?: string}
      */
@@ -1142,7 +1142,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
         $themeDirectory = resource_path('views/themes/');
 
         try {
-            // ZIP内の最初のディレクトリ名を取得
+            // Get the first directory name in the ZIP
             $extractedRootDir = null;
             for ($i = 0; $i < $zip->numFiles; $i++) {
                 $stat = $zip->statIndex($i);
@@ -1170,15 +1170,15 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 return ['success' => false, 'error' => __('admin/settings/themes/add.messages.directory_exists', ['directory' => $directoryName])];
             }
 
-            // ZIPを解凍
+            // Extract ZIP
             $zip->extractTo($themeDirectory);
             $zip->close();
             File::delete($zipPath);
 
-            // 解凍されたディレクトリパス
+            // Extracted directory path
             $extractedDirPath = $themeDirectory.$extractedRootDir;
 
-            // theme.json から正しいディレクトリ名を取得
+            // Get correct directory name from theme.json
             $themeJsonPath = $extractedDirPath.'/theme.json';
             if (File::exists($themeJsonPath)) {
                 try {
@@ -1197,31 +1197,31 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 }
             }
 
-            // 既存チェック
+            // Check if exists
             if (File::exists($destinationPath) && $extractedDirPath !== $destinationPath) {
                 File::deleteDirectory($extractedDirPath);
 
                 return ['success' => false, 'error' => __('admin/settings/themes/add.messages.directory_exists', ['directory' => $directoryName])];
             }
 
-            // 解凍されたディレクトリをリネーム（必要な場合）
+            // Rename extracted directory (if necessary)
             if (is_dir($extractedDirPath) && basename($extractedDirPath) !== $directoryName) {
                 File::move($extractedDirPath, $destinationPath);
             }
 
-            // theme.jsonの存在確認
+            // Check theme.json existence
             if (! File::exists($destinationPath.'/theme.json')) {
                 File::deleteDirectory($destinationPath);
 
                 return ['success' => false, 'error' => __('admin/settings/themes/add.messages.theme_json_not_found')];
             }
 
-            // Git除外ルールとcomposer.local.jsonを更新
+            // Update Git exclusion rules and composer.local.json
             GitExcludeHelper::addThemeExclusion($directoryName);
             GitIgnoreHelper::addThemeExclusion($directoryName);
             ComposerLocalHelper::syncAutoload();
 
-            // theme.json から表示用の名前を取得
+            // Get display name from theme.json
             $displayName = null;
             if (isset($themeData) && is_array($themeData)) {
                 $displayName = $themeData['name'] ?? null;
@@ -1239,7 +1239,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * 更新可能な全テーマを順次アップデート
+     * Sequentially update all updatable themes
      */
     public function bulkUpdate(): \Illuminate\Http\RedirectResponse
     {
@@ -1271,7 +1271,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * アップデートチェック（AJAX）
+     * Update check (AJAX)
      */
     public function checkUpdates(\App\Services\Extension\ExtensionSourceManager $manager): \Illuminate\Http\JsonResponse
     {
@@ -1295,7 +1295,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * テーマをアップデート（新バージョンをダウンロード → 置換）
+     * Update theme (download new version → replace)
      */
     public function updateTheme(int $id, \App\Services\Extension\ExtensionSourceManager $manager)
     {
@@ -1312,15 +1312,15 @@ class AdminThemesSettingsController extends AdminLoggedInController
         $backupPath = resource_path("views/themes/{$directory}.backup");
 
         try {
-            // 新バージョンの ZIP をダウンロード
+            // Download new version ZIP
             $zipPath = $manager->download($slug, 'theme', $newVersion);
 
-            // 現在のディレクトリをバックアップ
+            // Backup current directory
             if (File::exists($themePath)) {
                 File::move($themePath, $backupPath);
             }
 
-            // ZIP を展開して配置
+            // Extract and place ZIP
             $result = $this->extractAndPlaceTheme($zipPath);
 
             if (! $result['success']) {
@@ -1329,14 +1329,14 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 return back()->with('error', $result['error']);
             }
 
-            // DB のバージョン情報を更新
+            // Update version info in DB
             $theme->update([
                 'version' => $newVersion,
                 'available_version' => null,
                 'last_version_check' => now(),
             ]);
 
-            // バックアップを削除
+            // Delete backup
             if (File::exists($backupPath)) {
                 File::deleteDirectory($backupPath);
             }
@@ -1357,7 +1357,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * バックアップからディレクトリを復元
+     * Restore directory from backup
      */
     protected function restoreFromBackup(string $backupPath, string $originalPath): void
     {
@@ -1370,13 +1370,13 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * theme.json の内容から正しいディレクトリ名を決定する
+     * Determine correct directory name from theme.json contents
      *
-     * 優先順位:
-     * 1. 明示された package フィールド（マニフェストとインストール先の一意なマッピング）
-     * 2. namespace の最終セグメント（例: Themes\DixlaseOnePage → DixlaseOnePage）
-     * 3. package_name の最後の部分
-     * 4. null（既存のディレクトリ名を維持）
+     * Priority:
+     * 1. Explicit package field (unique mapping between manifest and installation destination)
+     * 2. Final segment of namespace (e.g. Themes\DixlaseOnePage → DixlaseOnePage)
+     * 3. Last part of package_name
+     * 4. null (keep existing directory name)
      */
     protected function resolveThemeDirectoryName(?array $themeData): ?string
     {
@@ -1384,13 +1384,13 @@ class AdminThemesSettingsController extends AdminLoggedInController
             return null;
         }
 
-        // 明示された package フィールドを最優先
+        // Prioritize explicit package field first
         $package = $themeData['package'] ?? null;
         if (is_string($package) && $package !== '') {
             return $package;
         }
 
-        // namespace の最終セグメントを優先
+        // Prioritize final segment of namespace
         $namespace = $themeData['namespace'] ?? null;
         if (is_string($namespace) && $namespace !== '') {
             $parts = explode('\\', trim($namespace, '\\'));
@@ -1400,7 +1400,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
             }
         }
 
-        // フォールバック: package_name の最後の部分
+        // Fallback: last part of package_name
         $packageName = $themeData['package_name'] ?? null;
         if (is_string($packageName) && $packageName !== '') {
             $parts = explode('/', $packageName);

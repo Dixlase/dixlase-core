@@ -61,27 +61,27 @@ class GuestLayout extends Component
     public function render(): View
     {
         try {
-            // インストール前やデータベース接続エラーの場合はデフォルト値を使用
+            // Use default values before installation or in case of database connection error
             if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
                 $this->site_name = env('APP_NAME', 'Dixlase');
                 $this->theme = Config::get('admin.theme', 'light');
             } elseif (! Schema::hasTable('global_settings') || ! Schema::hasTable('site_settings')) {
-                // 設定テーブル未作成（インストール直後など）はデフォルトにフォールバック
+                // Fall back to default if settings table does not exist (e.g. immediately after installation)
                 $this->site_name = env('APP_NAME', 'Dixlase');
                 $this->theme = Config::get('admin.theme', 'light');
             } else {
-                // SettingResolver 経由で取得 (site_name は PerSite, admin_theme は Global)
+                // Retrieve via SettingResolver (site_name is PerSite, admin_theme is Global)
                 $resolver = app(SettingResolver::class);
                 $this->site_name = $resolver->get('site_name') ?: env('APP_NAME', 'Dixlase');
                 $this->theme = $resolver->get('admin_theme') ?: Config::get('admin.theme', 'light');
             }
         } catch (\Throwable $e) {
-            // データベース接続エラー等はデフォルト値を使用
+            // Use default values in case of database connection error, etc.
             $this->site_name = env('APP_NAME', 'Dixlase');
             $this->theme = Config::get('admin.theme', 'light');
         }
 
-        // テーマクラスを設定する
+        // Set the theme class
         if ($this->theme == 'light') {
             $this->theme_class = config('admin.theme_class_light');
         } else {

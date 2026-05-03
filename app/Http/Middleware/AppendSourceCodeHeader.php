@@ -40,11 +40,11 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * AGPL §13 準拠のためにレスポンスへソースコード取得先を通知するミドルウェア
+ * Middleware to notify source code location in response for AGPL §13 compliance
  *
- * 運用中の Dixlase CMS インスタンスのソースコードを取得できる URL を
- * `X-Source-Code` ヘッダーでレスポンスに付与する。改変版を運用する際は
- * `DIXLASE_SOURCE_URL` で取得先を上書きすること。
+ * Adds a URL where the source code of the running Dixlase CMS instance can be obtained
+ * to the response via the `X-Source-Code` header. When running a modified version,
+ * override the source location with `DIXLASE_SOURCE_URL`
  */
 class AppendSourceCodeHeader
 {

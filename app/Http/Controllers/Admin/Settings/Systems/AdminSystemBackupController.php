@@ -35,17 +35,17 @@ use Illuminate\Http\RedirectResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
- * バックアップ管理コントローラー
+ * Backup management controller
  */
 class AdminSystemBackupController extends AdminLoggedInController
 {
     /**
-     * 設定キー: デフォルトのバックアップ対象（JSON配列）
+     * Settings key: default backup targets (JSON array)
      */
     private const SETTING_DEFAULT_TARGETS = 'backup.default_targets';
 
     /**
-     * 設定キー: デフォルトの保持日数
+     * Settings key: default retention days
      */
     private const SETTING_DEFAULT_RETENTION_DAYS = 'backup.default_retention_days';
 
@@ -57,7 +57,7 @@ class AdminSystemBackupController extends AdminLoggedInController
     }
 
     /**
-     * バックアップ一覧/作成画面
+     * Backup list/creation screen
      */
     public function index()
     {
@@ -76,7 +76,7 @@ class AdminSystemBackupController extends AdminLoggedInController
     }
 
     /**
-     * 復元履歴画面
+     * Restore history screen
      */
     public function restores()
     {
@@ -92,7 +92,7 @@ class AdminSystemBackupController extends AdminLoggedInController
     }
 
     /**
-     * バックアップ設定画面
+     * Backup settings screen
      */
     public function settings()
     {
@@ -105,7 +105,7 @@ class AdminSystemBackupController extends AdminLoggedInController
     }
 
     /**
-     * バックアップ設定の保存
+     * Save backup settings
      */
     public function updateSettings(AdminSystemBackupSettingsRequest $request): RedirectResponse
     {
@@ -125,7 +125,7 @@ class AdminSystemBackupController extends AdminLoggedInController
     }
 
     /**
-     * 保存済みデフォルト対象を取得（未設定なら API デフォルト）
+     * Get saved default targets (API default if not set)
      *
      * @return string[]
      */
@@ -141,12 +141,12 @@ class AdminSystemBackupController extends AdminLoggedInController
             return $this->backupService->getDefaultTargets();
         }
 
-        // 利用可能な対象のみに絞る
+        // Filter to only available targets
         return array_values(array_intersect($decoded, $this->backupService->getAvailableTargets()));
     }
 
     /**
-     * 保存済みデフォルト保持日数を取得
+     * Get saved default retention days
      */
     private function resolveDefaultRetentionDays(): ?int
     {
@@ -161,7 +161,7 @@ class AdminSystemBackupController extends AdminLoggedInController
     }
 
     /**
-     * バックアップ実行
+     * Execute backup
      */
     public function create(AdminSystemBackupCreateRequest $request): RedirectResponse
     {
@@ -189,7 +189,7 @@ class AdminSystemBackupController extends AdminLoggedInController
     }
 
     /**
-     * バックアップ削除
+     * Delete backup
      */
     public function destroy(BackupRecord $backup): RedirectResponse
     {
@@ -207,7 +207,7 @@ class AdminSystemBackupController extends AdminLoggedInController
     }
 
     /**
-     * バックアップから復元
+     * Restore from backup
      */
     public function restore(BackupRecord $backup): RedirectResponse
     {
@@ -233,7 +233,7 @@ class AdminSystemBackupController extends AdminLoggedInController
     }
 
     /**
-     * 復元のロールバック
+     * Rollback restore
      */
     public function rollback(RestoreRecord $restore): RedirectResponse
     {
@@ -259,7 +259,7 @@ class AdminSystemBackupController extends AdminLoggedInController
     }
 
     /**
-     * バックアップファイルのダウンロード
+     * Download backup file
      */
     public function download(BackupRecord $backup): BinaryFileResponse|RedirectResponse
     {
@@ -273,7 +273,7 @@ class AdminSystemBackupController extends AdminLoggedInController
     }
 
     /**
-     * バイトサイズを人間可読形式に変換
+     * Convert byte size to human-readable format
      */
     private function formatBytes(int $bytes): string
     {

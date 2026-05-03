@@ -38,7 +38,7 @@ namespace App\Http\Requests\Admin;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * ログイン識別子確認リクエスト
+ * Login identifier verification request
  */
 class AdminLoginIdentifierCheckRequest extends FormRequest
 {

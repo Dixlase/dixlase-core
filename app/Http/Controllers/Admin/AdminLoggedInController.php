@@ -40,7 +40,7 @@ namespace App\Http\Controllers\Admin;
 use App\Traits\AdminLoggedInTrait;
 
 /**
- * 認証必須の管理画面コントローラー
+ * Admin panel controller that requires authentication
  */
 class AdminLoggedInController extends AdminController
 {

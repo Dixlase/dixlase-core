@@ -43,27 +43,27 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 
 /**
- * インストール - ステップ4: メールサーバー設定
+ * Install - Step 4: Mail server settings
  */
 class InstallMailController extends BaseInstallController
 {
     use MailTestTrait;
 
     /**
-     * メールサーバー設定画面を表示
+     * Display mail server settings screen
      */
     public function create()
     {
         $installData = session('install_data', []);
         $adminEmail = $installData['admin_email'] ?? '';
 
-        // mail_from_addressが未設定の場合、admin_emailをデフォルト値として設定
+        // If mail_from_address is not set, set admin_email as default value
         if (empty($installData['mail_from_address']) && ! empty($adminEmail)) {
             $installData['mail_from_address'] = $adminEmail;
             session(['install_data' => $installData]);
         }
 
-        // メールテスト結果をセッションから取得
+        // Get mail test results from session
         $testStatus = [
             'connection_tested' => (bool) ($installData['mail_connection_tested'] ?? false),
             'connection_test_date' => $installData['mail_connection_test_date'] ?? null,
@@ -73,7 +73,7 @@ class InstallMailController extends BaseInstallController
             'receive_test_date' => $installData['mail_receive_test_date'] ?? null,
         ];
 
-        Log::channel('install')->info('メールページ表示時のセッションデータ', [
+        Log::channel('install')->info(__('http/controllers/install/install_mail_controller.session_data_mail_page_display'), [
             'install_data_keys' => array_keys($installData),
             'test_status' => $testStatus,
             'session_id' => session()->getId(),
@@ -91,7 +91,7 @@ class InstallMailController extends BaseInstallController
     }
 
     /**
-     * メールサーバー設定を保存
+     * Save mail server settings
      */
     public function store(InstallMailRequest $request)
     {
@@ -107,7 +107,7 @@ class InstallMailController extends BaseInstallController
     }
 
     /**
-     * メールサーバー接続テスト
+     * Mail server connection test
      */
     public function testConnection(MailServerRequest $request)
     {
@@ -118,7 +118,7 @@ class InstallMailController extends BaseInstallController
     }
 
     /**
-     * メール送信テスト
+     * Mail sending test
      */
     public function testSend(MailServerRequest $request)
     {
@@ -129,7 +129,7 @@ class InstallMailController extends BaseInstallController
     }
 
     /**
-     * メール受信確認
+     * Mail receipt confirmation
      */
     public function verify(Request $request, $token)
     {
@@ -140,13 +140,13 @@ class InstallMailController extends BaseInstallController
     }
 
     /**
-     * メールテスト結果をリセット
+     * Reset mail test results
      */
     public function resetTests()
     {
         $installData = session('install_data', []);
 
-        // メールテスト関連のセッションデータをクリア
+        // Clear mail test related session data
         unset($installData['mail_connection_tested']);
         unset($installData['mail_connection_test_date']);
         unset($installData['mail_send_tested']);
@@ -154,18 +154,18 @@ class InstallMailController extends BaseInstallController
         unset($installData['mail_receive_tested']);
         unset($installData['mail_receive_test_date']);
 
-        // セッションを強制的に保存
+        // Force save session
         session(['install_data' => $installData]);
         session()->save();
 
-        Log::channel('install')->info('メールテスト結果リセット完了', [
+        Log::channel('install')->info(__('http/controllers/install/install_mail_controller.mail_test_results_reset_completed'), [
             'reset_data' => array_keys($installData),
             'session_id' => session()->getId(),
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'メールテスト結果をリセットしました',
+            'message' => __('http/controllers/install/install_mail_controller.reset_mail_test_results'),
             'debug' => [
                 'session_keys' => array_keys($installData),
                 'has_connection_tested' => isset($installData['mail_connection_tested']),

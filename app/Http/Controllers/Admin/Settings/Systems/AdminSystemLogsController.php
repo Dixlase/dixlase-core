@@ -64,11 +64,11 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * ファイルログ
+     * File log
      */
     public function files(Request $request, $type = 'activity')
     {
-        // かんたんモードではファイルログにアクセス不可
+        // File log access is not allowed in simple mode
         if (AdminModeHelper::isSimpleMode()) {
             return redirect()->route('admin.settings.systems.logs.index');
         }
@@ -76,17 +76,17 @@ class AdminSystemLogsController extends AdminLoggedInController
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
         $selectedDate = $request->input('date');
 
-        // 利用可能な日付一覧を取得
+        // Get list of available dates
         $availableDates = $this->getAvailableLogDates($fileName);
         $this->viewParams['availableDates'] = $availableDates;
         $this->viewParams['selectedDate'] = $selectedDate;
 
-        // 日付が指定されている場合はその日付のファイルを使用
+        // Use the file for the specified date if a date is provided
         if ($selectedDate) {
             $filePath = $this->getLogFilePathByDate($fileName, $selectedDate);
         } else {
             $filePath = storage_path("logs/{$fileName}");
-            // dailyドライバーの場合、日付付きファイル名を探す
+            // For daily driver, look for dated file names
             if (! File::exists($filePath)) {
                 $filePath = $this->findDailyLogFile($fileName);
             }
@@ -121,7 +121,7 @@ class AdminSystemLogsController extends AdminLoggedInController
                 'normal' => __('admin/settings/systems/logs/files.level_filter.normal'),
                 'debug' => __('admin/settings/systems/logs/files.level_filter.debug'),
             ];
-            $this->viewParams['tableExists'] = true; // ファイルログの場合は常にtrue
+            $this->viewParams['tableExists'] = true; // Always true for file logs
             $this->addNavigationData($type);
 
             return response()->view('admin::settings.systems.logs.files', $this->viewParams);
@@ -133,7 +133,7 @@ class AdminSystemLogsController extends AdminLoggedInController
             $perPage = 50;
         }
 
-        // ログレベルフィルター（複数選択可能）
+        // Log level filter (multiple selection allowed)
         $levelFilters = $request->input('levels', ['error', 'warning', 'normal', 'debug']);
         if (! is_array($levelFilters)) {
             $levelFilters = [$levelFilters];
@@ -155,7 +155,7 @@ class AdminSystemLogsController extends AdminLoggedInController
         foreach ($lines as $line) {
             $parsedLog = $this->parseLogLine($line);
             if ($parsedLog) {
-                // ログレベルフィルタリング
+                // Log level filtering
                 $logLevel = strtolower($parsedLog['level'] ?? '');
                 $shouldInclude = false;
 
@@ -188,7 +188,7 @@ class AdminSystemLogsController extends AdminLoggedInController
             'next_page' => $currentPage < ceil($totalLogs / $perPage) ? $currentPage + 1 : null,
         ];
 
-        // 各ログエントリにレベル別カラーを事前計算
+        // Pre-calculate level-based colors for each log entry
         foreach ($paginatedLogs as &$log) {
             if ($log['parsed']) {
                 $log['levelColors'] = self::getLevelColors(strtolower($log['level'] ?? ''));
@@ -205,11 +205,11 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * ログファイルダウンロード
+     * Log file download
      */
     public function download(Request $request, $type = 'activity')
     {
-        // かんたんモードではファイルログにアクセス不可
+        // File log access is not allowed in simple mode
         if (AdminModeHelper::isSimpleMode()) {
             return redirect()->route('admin.settings.systems.logs.index');
         }
@@ -217,7 +217,7 @@ class AdminSystemLogsController extends AdminLoggedInController
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
         $selectedDate = $request->input('date');
 
-        // 日付が指定されている場合はその日付のファイルを使用
+        // Use the file for the specified date if a date is provided
         if ($selectedDate) {
             $filePath = $this->getLogFilePathByDate($fileName, $selectedDate);
         } else {
@@ -238,11 +238,11 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * ログ内容消去
+     * Clear log contents
      */
     public function clear(Request $request, $type = 'activity')
     {
-        // かんたんモードではファイルログにアクセス不可
+        // File log access is not allowed in simple mode
         if (AdminModeHelper::isSimpleMode()) {
             return redirect()->route('admin.settings.systems.logs.index');
         }
@@ -252,13 +252,13 @@ class AdminSystemLogsController extends AdminLoggedInController
 
         try {
             if ($days === 0) {
-                // 0日の場合は全ログファイルを削除
+                // Delete all log files if 0 days
                 $clearedCount = $this->clearAllLogFiles($fileName);
 
                 return redirect()->route('admin.settings.systems.logs.files', ['type' => $type])
                     ->with('success', __('admin/settings/systems/logs/files.clear_all_success', ['count' => $clearedCount]));
             } else {
-                // 指定日数以前のログファイルを削除
+                // Delete log files older than specified days
                 $clearedCount = $this->clearOldLogFiles($fileName, $days);
 
                 return redirect()->route('admin.settings.systems.logs.files', ['type' => $type])
@@ -271,7 +271,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * すべてのログファイルをクリア
+     * Clear all log files
      */
     protected function clearAllLogFiles(string $fileName): int
     {
@@ -280,14 +280,14 @@ class AdminSystemLogsController extends AdminLoggedInController
         $extension = pathinfo($fileName, PATHINFO_EXTENSION);
         $clearedCount = 0;
 
-        // 日付なしのファイルをクリア
+        // Clear files without dates
         $baseFilePath = "{$logsPath}/{$fileName}";
         if (File::exists($baseFilePath)) {
             File::put($baseFilePath, '');
             $clearedCount++;
         }
 
-        // 日付付きファイルをクリア（過去90日分）
+        // Clear dated files (past 90 days)
         for ($i = 0; $i < 90; $i++) {
             $date = now()->subDays($i)->format('Y-m-d');
             $dailyFileName = "{$baseName}-{$date}.{$extension}";
@@ -303,7 +303,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * 指定日数以前のログファイルを削除
+     * Delete log files older than specified days
      */
     protected function clearOldLogFiles(string $fileName, int $days): int
     {
@@ -313,7 +313,7 @@ class AdminSystemLogsController extends AdminLoggedInController
         $cutoffDate = now()->subDays($days);
         $clearedCount = 0;
 
-        // 日付付きファイルを検索して削除（過去90日分）
+        // Search and delete dated files (past 90 days)
         for ($i = $days; $i < 90; $i++) {
             $date = now()->subDays($i)->format('Y-m-d');
             $dailyFileName = "{$baseName}-{$date}.{$extension}";
@@ -329,11 +329,11 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * ログ出力テスト
+     * Log output test
      */
     public function test(Request $request)
     {
-        // かんたんモードではファイルログ操作不可
+        // File log operations are not allowed in simple mode
         if (AdminModeHelper::isSimpleMode()) {
             return redirect()->route('admin.settings.systems.logs.index');
         }
@@ -344,13 +344,13 @@ class AdminSystemLogsController extends AdminLoggedInController
         try {
             if ($type === 'all' || $type === 'dixlase') {
                 if ($request->input('test_type') === 'info') {
-                    Log::info('ログ出力テスト - 通常ログ');
+                    Log::info('Log output test - normal log');
                 }
                 $results['dixlase'] = 'success';
             }
 
             if ($type === 'all' || $type === 'activity') {
-                Log::channel('admin_activity')->info('ログ出力テスト - アクティビティログ', [
+                Log::channel('admin_activity')->info(__('http/controllers/admin/settings/systems/admin_system_logs_controller.log_output_test_activity_log'), [
                     'test_type' => 'activity_log',
                     'timestamp' => now()->toDateTimeString(),
                     'user_id' => auth()->id(),
@@ -361,12 +361,12 @@ class AdminSystemLogsController extends AdminLoggedInController
             }
 
             if ($type === 'all' || $type === 'error') {
-                Log::channel('admin_error')->error('ログ出力テスト - エラーログ', [
+                Log::channel('admin_error')->error(__('http/controllers/admin/settings/systems/admin_system_logs_controller.log_output_test_error_log'), [
                     'test_type' => 'error_log',
                     'timestamp' => now()->toDateTimeString(),
                     'user_id' => auth()->id(),
                     'user_name' => auth()->user()->name,
-                    'error_message' => 'これはテスト用のエラーメッセージです',
+                    'error_message' => __('http/controllers/admin/settings/systems/admin_system_logs_controller.test_error_message'),
                 ]);
                 $results['error'] = 'success';
             }
@@ -375,21 +375,21 @@ class AdminSystemLogsController extends AdminLoggedInController
 
             return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
-            Log::error('ログ出力テストでエラーが発生しました', [
+            Log::error('Log output test encountered an error', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return redirect()->back()->with('error', 'ログ出力テストでエラーが発生しました: '.$e->getMessage());
+            return redirect()->back()->with('error', __('http/controllers/admin/settings/systems/admin_system_logs_controller.log_output_test_error_occurred').$e->getMessage());
         }
     }
 
     /**
-     * 意図的にエラーを発生させてadmin_error.logに出力をテスト
+     * Intentionally trigger an error to test output to admin_error.log
      */
     public function testError(Request $request)
     {
-        // かんたんモードではファイルログ操作不可
+        // File log operations are not allowed in simple mode
         if (AdminModeHelper::isSimpleMode()) {
             return redirect()->route('admin.settings.systems.logs.index');
         }
@@ -399,7 +399,7 @@ class AdminSystemLogsController extends AdminLoggedInController
         try {
             switch ($errorType) {
                 case 'exception':
-                    throw new \Exception('テスト用の例外エラーです - admin_error.logに記録されるかテスト中');
+                    throw new \Exception('Test exception error - testing whether it gets logged to admin_error.log');
                 case 'database':
                     DB::table('non_existent_table')->get();
                     break;
@@ -413,22 +413,22 @@ class AdminSystemLogsController extends AdminLoggedInController
                     break;
 
                 case 'manual_log':
-                    Log::channel('admin_error')->error('手動エラーログテスト', [
+                    Log::channel('admin_error')->error(__('http/controllers/admin/settings/systems/admin_system_logs_controller.manual_error_log_test'), [
                         'test_type' => 'manual_error_test',
                         'timestamp' => now()->toDateTimeString(),
                         'user_id' => auth()->id(),
                         'user_name' => auth()->user()->name,
-                        'error_details' => 'これは手動で記録したテスト用エラーです',
+                        'error_details' => __('http/controllers/admin/settings/systems/admin_system_logs_controller.manually_recorded_test_error'),
                         'ip' => request()->ip(),
                     ]);
 
-                    return redirect()->back()->with('success', '手動エラーログをadmin_error.logに記録しました');
+                    return redirect()->back()->with('success', __('http/controllers/admin/settings/systems/admin_system_logs_controller.manual_error_logged_to_admin'));
 
                 default:
-                    throw new \InvalidArgumentException('無効なエラータイプです: '.$errorType);
+                    throw new \InvalidArgumentException('Invalid error type: '.$errorType);
             }
         } catch (\Exception $e) {
-            Log::channel('admin_error')->error('テストエラーが発生しました', [
+            Log::channel('admin_error')->error(__('http/controllers/admin/settings/systems/admin_system_logs_controller.test_error_occurred'), [
                 'error_type' => $errorType,
                 'error_message' => $e->getMessage(),
                 'error_file' => $e->getFile(),
@@ -439,23 +439,23 @@ class AdminSystemLogsController extends AdminLoggedInController
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return redirect()->back()->with('success', 'エラーが発生し、admin_error.logに記録されました: '.$e->getMessage());
+            return redirect()->back()->with('success', __('http/controllers/admin/settings/systems/admin_system_logs_controller.error_recorded_to_admin_log').$e->getMessage());
         }
     }
 
     /**
-     * フロントログをテスト
+     * Test front log
      */
     public function testFront(Request $request)
     {
-        // かんたんモードではファイルログ操作不可
+        // File log operations are not allowed in simple mode
         if (AdminModeHelper::isSimpleMode()) {
             return redirect()->route('admin.settings.systems.logs.index');
         }
 
         try {
-            Log::channel('front_activity')->info('フロント操作テスト', [
-                'action' => 'テスト操作',
+            Log::channel('front_activity')->info(__('http/controllers/admin/settings/systems/admin_system_logs_controller.front_operation_test'), [
+                'action' => __('http/controllers/admin/settings/systems/admin_system_logs_controller.test_operation'),
                 'user_id' => null,
                 'ip_address' => request()->ip(),
                 'user_agent' => request()->userAgent(),
@@ -465,31 +465,31 @@ class AdminSystemLogsController extends AdminLoggedInController
                 'test_type' => 'manual_front_test',
                 'admin_user' => auth()->user()->name,
                 'details' => [
-                    'page' => 'テストページ',
-                    'form_type' => 'お問い合わせ',
-                    'search_query' => 'テスト検索',
+                    'page' => __('http/controllers/admin/settings/systems/admin_system_logs_controller.test_page'),
+                    'form_type' => __('http/controllers/admin/settings/systems/admin_system_logs_controller.contact'),
+                    'search_query' => __('http/controllers/admin/settings/systems/admin_system_logs_controller.test_search'),
                 ],
             ]);
 
-            return redirect()->back()->with('success', 'フロント操作ログをfront_activity.logに記録しました');
+            return redirect()->back()->with('success', __('http/controllers/admin/settings/systems/admin_system_logs_controller.front_operation_logged_to_activity'));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'フロントログテストでエラーが発生しました: '.$e->getMessage());
+            return redirect()->back()->with('error', __('http/controllers/admin/settings/systems/admin_system_logs_controller.front_log_test_error_occurred').$e->getMessage());
         }
     }
 
     /**
-     * フロントエラーログをテスト
+     * Test front error log
      */
     public function testFrontError(Request $request)
     {
-        // かんたんモードではファイルログ操作不可
+        // File log operations are not allowed in simple mode
         if (AdminModeHelper::isSimpleMode()) {
             return redirect()->route('admin.settings.systems.logs.index');
         }
 
         try {
-            Log::channel('front_error')->error('フロントエラーテスト', [
-                'error' => 'テストエラー',
+            Log::channel('front_error')->error(__('http/controllers/admin/settings/systems/admin_system_logs_controller.front_error_test'), [
+                'error' => __('http/controllers/admin/settings/systems/admin_system_logs_controller.test_error'),
                 'user_id' => null,
                 'ip_address' => request()->ip(),
                 'user_agent' => request()->userAgent(),
@@ -506,14 +506,14 @@ class AdminSystemLogsController extends AdminLoggedInController
                 ],
             ]);
 
-            return redirect()->back()->with('success', 'フロントエラーログをfront_error.logに記録しました');
+            return redirect()->back()->with('success', __('http/controllers/admin/settings/systems/admin_system_logs_controller.front_error_logged_to_front'));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'フロントエラーログテストでエラーが発生しました: '.$e->getMessage());
+            return redirect()->back()->with('error', __('http/controllers/admin/settings/systems/admin_system_logs_controller.front_error_log_test_error_occurred').$e->getMessage());
         }
     }
 
     /**
-     * 監査ログ一覧（データベース）
+     * Audit log list (database)
      */
     public function index(Request $request)
     {
@@ -521,7 +521,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * 監査ログDB表示
+     * Display audit log DB
      */
     protected function auditLogsDb(Request $request)
     {
@@ -596,7 +596,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * 監査ログ詳細
+     * Audit log details
      */
     public function show(Request $request, $id)
     {
@@ -626,7 +626,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * 監査ログCSVエクスポート
+     * Audit log CSV export
      */
     public function auditExport(Request $request)
     {
@@ -718,7 +718,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * 監査ログクリーンアップ
+     * Audit log cleanup
      */
     public function auditCleanup(Request $request)
     {
@@ -743,7 +743,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * dailyドライバーの日付付きログファイルを探す
+     * Find dated log files for daily driver
      */
     protected function findDailyLogFile(string $baseFileName): ?string
     {
@@ -765,7 +765,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * 指定されたログファイルの利用可能な日付一覧を取得
+     * Get list of available dates for the specified log file
      */
     protected function getAvailableLogDates(string $baseFileName): array
     {
@@ -775,13 +775,13 @@ class AdminSystemLogsController extends AdminLoggedInController
 
         $dates = [];
 
-        // 日付なしのファイルが存在する場合は「最新」として追加
+        // Add as 'latest' if file without date exists
         $baseFilePath = "{$logsPath}/{$baseFileName}";
         if (File::exists($baseFilePath)) {
             $dates[''] = __('admin/settings/systems/logs/files.date_latest');
         }
 
-        // 日付付きファイルを検索（過去90日分）
+        // Search for dated files (past 90 days)
         for ($i = 0; $i < 90; $i++) {
             $date = now()->subDays($i)->format('Y-m-d');
             $dailyFileName = "{$baseName}-{$date}.{$extension}";
@@ -798,7 +798,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * 指定された日付のログファイルパスを取得
+     * Get log file path for the specified date
      */
     protected function getLogFilePathByDate(string $baseFileName, string $date): ?string
     {
@@ -817,7 +817,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * ファイルサイズを人間が読みやすい形式にフォーマット
+     * Format file size in human-readable format
      */
     protected function formatFileSize(int $bytes): string
     {
@@ -833,7 +833,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * ログファイルから末尾の行を効率的に読み込む
+     * Efficiently read trailing lines from log file
      */
     protected function readLogFileLines(string $filePath, int $maxLines = 5000): array
     {
@@ -893,8 +893,8 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     private function parseLogLine($line)
     {
-        // パターン: [timestamp] level: message {json}
-        // JSONは行末に存在する場合のみキャプチャ
+        // Pattern: [timestamp] level: message {json}
+        // Capture JSON only if it exists at end of line
         $pattern = '/^\[([^\]]+)\]\s+([^:]+):\s+(.+?)(\s+\{.+\})?\s*$/';
 
         if (! preg_match($pattern, $line, $matches)) {
@@ -919,12 +919,12 @@ class AdminSystemLogsController extends AdminLoggedInController
             $level = end($parts);
         }
 
-        // メッセージ内にJSONが含まれている場合の処理
-        // メッセージ部分からJSONを分離
+        // Handle case where JSON is included in message
+        // Separate JSON from message part
         $message = $messageWithContext;
         $context = [];
 
-        // メッセージ内に{で始まるJSONがある場合
+        // If there is JSON starting with { in the message
         if (preg_match('/^(.+?)\s+(\{.+\})$/', $messageWithContext, $jsonMatches)) {
             $message = trim($jsonMatches[1]);
             $contextJson = $jsonMatches[2];
@@ -947,7 +947,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * 監査ログ用のカラーマップをviewParamsに追加
+     * Add color map for audit log to viewParams
      */
     private function addLogColorMaps(): void
     {
@@ -971,7 +971,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * ファイルログ用のレベル別カラーを計算
+     * Calculate level-specific colors for file logs
      *
      * @return array{bg: string, border: string, dot: string, label: string, text: string}
      */
@@ -1010,7 +1010,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * ナビゲーション用のカテゴリデータをviewParamsに追加
+     * Add category data for navigation to viewParams
      */
     private function addNavigationData(string $logType): void
     {

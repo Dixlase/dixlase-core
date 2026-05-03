@@ -45,7 +45,7 @@ class FrontWelcomeController extends FrontController
     protected FrontPageContentService $contentService;
 
     /**
-     * コンストラクタ
+     * Constructor
      */
     public function __construct(FrontPageContentService $contentService)
     {
@@ -54,11 +54,11 @@ class FrontWelcomeController extends FrontController
     }
 
     /**
-     * フロントページを表示
+     * Display front page
      */
     public function index()
     {
-        // フロントページのメインコンテンツを取得
+        // Get main content for front page
         $frontPage = FrontPage::findByType('main_content');
         $frontContent = null;
         $frontEditorType = 'html';

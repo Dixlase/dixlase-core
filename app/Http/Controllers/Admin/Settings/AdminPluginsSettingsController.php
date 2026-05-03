@@ -78,17 +78,17 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
     public function index()
     {
-        // インストール済みプラグイン
+        // Installed plugins
         $plugins = Plugin::all();
 
-        // 権限サービスとファイル変更検知用の健全性スコアラ
+        // Permission service and health scorer for file change detection
         $permissionService = app(PluginPermissionService::class);
         $healthScorer = app(PluginHealthScorer::class);
 
-        // アンインストール済みプラグインを先に検出（バッチクエリで使うスラッグを集めるため）
+        // Detect uninstalled plugins first (to gather slugs for batch query)
         $uninstalledPlugins = $this->getUninstalledPlugins();
 
-        // 全プラグインの監査結果を 1 クエリで取得（N+1 回避）
+        // Fetch audit results for all plugins in 1 query (avoid N+1)
         $allSlugs = array_filter(array_merge(
             $plugins->pluck('slug')->all(),
             array_column($uninstalledPlugins, 'slug'),
@@ -97,26 +97,26 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             ? PluginAudit::whereIn('plugin_slug', $allSlugs)->get()->keyBy('plugin_slug')
             : collect();
 
-        // 各プラグインに設定画面があるかチェック、翻訳された名前と説明を取得
+        // Check if each plugin has settings screen, get translated name and description
         foreach ($plugins as $plugin) {
             $plugin->has_settings = $this->checkPluginHasSettings($plugin);
             $plugin->translated_name = $this->getPluginName($plugin);
             $plugin->translated_description = $this->getPluginDescription($plugin);
 
-            // 権限サマリーを取得（監査結果を含む）
+            // Get permission summary (including audit results)
             $summary = $permissionService->getSummary($plugin->slug);
             $summary['audit'] = $this->buildAuditArrayFromMap($auditMap, $plugin->slug);
             $plugin->permission_summary = $summary;
 
-            // CSP 互換性情報は監査結果（plugin_audits）から復元する
+            // Restore CSP compatibility info from audit results (plugin_audits)
             $plugin->csp_compatibility = $this->buildCspCompatibilityFromAudit($summary['audit']);
             $plugin->csp_diagnostic = null;
 
-            // ファイル変更検知（mtime ベースで軽量判定）
+            // File change detection (lightweight check based on mtime)
             $plugin->files_changed = $this->detectFilesChanged($plugin->slug, $auditMap, $healthScorer);
         }
 
-        // アンインストール済みプラグインにも権限サマリーと監査結果を追加
+        // Add permission summary and audit results to uninstalled plugins too
         foreach ($uninstalledPlugins as &$plugin) {
             $summary = $permissionService->getSummary($plugin['slug']);
             $summary['audit'] = $this->buildAuditArrayFromMap($auditMap, $plugin['slug']);
@@ -128,7 +128,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         }
         unset($plugin);
 
-        // カードデータを事前計算
+        // Pre-calculate card data
         $pluginCards = [];
         foreach ($plugins as $plugin) {
             $pluginCards[] = ExtensionCardPresenter::forPlugin($plugin);
@@ -138,17 +138,17 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $uninstalledPluginCards[] = ExtensionCardPresenter::forPlugin($plugin);
         }
 
-        // インストール直後のプラグインカードを特定（フラッシュメッセージのモーダル用）
+        // Identify just-installed plugin card (for flash message modal)
         $installedPluginId = session('installed_plugin_id');
         $installedPluginCard = null;
         if ($installedPluginId) {
             $installedPluginCard = collect($pluginCards)->firstWhere('id', $installedPluginId);
         }
 
-        // セキュリティモードに基づくスキャン必須判定
+        // Determine scan requirement based on security mode
         $scanRequired = self::isScanRequired();
 
-        // 「すべて更新」ボタン用：available_version が立っているプラグインのリスト（JS から逐次更新）
+        // For "Update All" button: list of plugins with available_version set (updated sequentially from JS)
         $updatableExtensions = collect($pluginCards)
             ->filter(fn (array $c) => ! empty($c['hasUpdateAvailable']))
             ->map(fn (array $c) => [
@@ -175,11 +175,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * セキュリティモードに基づいてスキャン必須かどうかを判定
+     * Determine whether scan is required based on security mode
      *
      * Strict/Balanced → true
      * Development → false
-     * Custom → require_signature or require_permission_definition or permission_mismatch_action=block なら true
+     * Custom → true if require_signature or require_permission_definition or permission_mismatch_action=block
      */
     public static function isScanRequired(): bool
     {
@@ -196,7 +196,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * プラグインの監査結果をDBから取得
+     * Fetch plugin audit results from DB
      */
     protected function getPluginAuditResult(string $pluginSlug): array
     {
@@ -206,7 +206,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             return $audit->toAuditArray();
         }
 
-        // 監査結果がない場合は空の結果を返す
+        // Return empty result if no audit results exist
         return [
             'has_mismatches' => false,
             'mismatches' => [],
@@ -217,9 +217,9 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * バッチ取得した監査結果コレクションから 1 件の audit array を取り出す。
+     * Extract one audit array from batch-fetched audit results collection
      *
-     * 監査未実行のプラグインには空テンプレートを返す。
+     * Return empty template for plugins that haven't been audited
      *
      * @param  \Illuminate\Support\Collection<string, PluginAudit>  $auditMap
      * @return array<string, mixed>
@@ -241,11 +241,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * mtime ベースでプラグインファイルがスキャン後に変更されたかを判定する。
+     * Determine if plugin files were modified after scan based on mtime
      *
-     * 一覧表示用の軽量判定。md5 計算を行わず、PHP/JS/Blade の最終変更時刻のみを比較する。
-     * - 監査未実行（audited_at null）→ false（バッジは「未スキャン」が優先）
-     * - 最終変更時刻が監査時刻より新しい → true
+     * Lightweight check for list display. Does not calculate md5, only compares last modified times of PHP/JS/Blade
+     * - Audit not executed (audited_at null) → false (badge prioritizes "not scanned")
+     * - Last modified time is newer than audit time → true
      */
     protected function detectFilesChanged(string $slug, \Illuminate\Support\Collection $auditMap, PluginHealthScorer $healthScorer): bool
     {
@@ -263,11 +263,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * 監査結果から CSP 互換性配列を組み立てる。
+     * Build CSP compatibility array from audit results
      *
-     * 旧来 CspExtensionLoader::getCspCompatibility() が返していた構造に合わせる。
-     * ライブスキャン（CspDiagnosticService::diagnosePlugin / CspComplianceScanner）は
-     * 再スキャン時のみ実行し、ページ表示時は plugin_audits の結果のみを使う。
+     * Match the structure that legacy CspExtensionLoader::getCspCompatibility() returned
+     * Live scan (CspDiagnosticService::diagnosePlugin / CspComplianceScanner)
+     * is executed only on rescan; on page display, only use plugin_audits results
      *
      * @param  array<string, mixed>  $audit
      * @return array<string, mixed>
@@ -286,7 +286,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * プラグインを監査してDBに保存
+     * Audit plugin and save to DB
      */
     protected function runPluginAudit(string $pluginSlug): array
     {
@@ -317,20 +317,20 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             }
 
             if (json_last_error() === JSON_ERROR_NONE && is_array($result)) {
-                // 署名情報を取得
+                // Get signature information
                 $permissionService = app(PluginPermissionService::class);
                 $summary = $permissionService->getSummary($pluginSlug);
                 $signature = $summary['signature'] ?? [];
 
-                // CSP準拠状況をコードスキャンで検証
+                // Verify CSP compliance status with code scan
                 $cspScanner = app(\App\Services\Csp\CspComplianceScanner::class);
                 $cspCompatibility = $cspScanner->scanPlugin($pluginSlug);
 
-                // ファイルハッシュ（再スキャン判定用）と健全性スコア
+                // File hash (for rescan detection) and health score
                 $healthScorer = app(PluginHealthScorer::class);
                 $filesHash = $healthScorer->computeFilesHash($pluginSlug);
 
-                // owned_tables を抽出（マイグレーションから自動検出）
+                // Extract owned_tables (auto-detected from migrations)
                 $pluginName = \Illuminate\Support\Str::studly(str_replace('-', '_', $pluginSlug));
                 $extensionDir = base_path("plugins/{$pluginName}");
                 $tableInspection = app(PluginTableInspector::class)->inspect($extensionDir);
@@ -355,11 +355,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
                 Log::info('Plugin audit data', ['plugin' => $pluginSlug, 'data' => $auditData]);
 
-                // DBに保存（健全性スコア計算前のベースデータ）
+                // Save to DB (base data before health score calculation)
                 $audit = PluginAudit::saveAuditResult($pluginSlug, $auditData);
 
-                // 健全性スコア計算とその指摘一覧を永続化
-                // calculate() は plugin_audits の行を参照するため、saveAuditResult 後に実行する
+                // Calculate health score and persist its findings list
+                // calculate() references plugin_audits rows, so execute after saveAuditResult
                 try {
                     $healthResult = $healthScorer->calculate($pluginSlug);
                     $audit->update([
@@ -392,7 +392,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * プラグインを手動で監査（Ajax）
+     * Manually audit plugin (Ajax)
      */
     public function audit(Request $request)
     {
@@ -407,13 +407,13 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
         $result = $this->runPluginAudit($slug);
 
-        // スキャン結果モーダル用に確認理由を翻訳済みで付与
+        // Attach translated review reasons for scan result modal
         $result['formatted_attention_reasons'] = ExtensionCardPresenter::formatAttentionReasons(
             $result['risk_reasons'] ?? [],
             'admin/settings/plugins/index'
         );
 
-        // 2段階モーダル用: 有効化アクションとインストール許可を算出
+        // For two-step modal: calculate activation action and installation permission
         $enableAction = PluginEnableAction::Allowed;
         $installAllowed = true;
         $healthScore = null;
@@ -438,7 +438,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             ]);
         }
 
-        // 減点項目を取得（0減点の項目は除外）
+        // Get deduction items (exclude items with 0 deduction)
         $healthIssues = isset($healthResult)
             ? array_values(array_filter(
                 array_map(fn ($i) => $i->jsonSerialize(), $healthResult->issues),
@@ -446,12 +446,12 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             ))
             : [];
 
-        // 権限カテゴリ情報を取得
+        // Get permission category information
         $permissionService = app(PluginPermissionService::class);
         $summary = $permissionService->getSummary($slug);
         $categories = $summary['categories'] ?? [];
 
-        // CSP モード互換性・拡張機能互換性バロメータを計算
+        // Calculate CSP mode compatibility and extension compatibility barometer
         $cspLoader = app(\App\Services\Csp\CspExtensionLoader::class);
         $cspCompatibility = $cspLoader->getCspCompatibility('plugin', $slug);
         if (! empty($result['csp_status'])) {
@@ -487,10 +487,10 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * 全プラグインを順次再スキャン
+     * Sequentially rescan all plugins
      *
-     * インストール済み + アンインストール済みすべてのプラグインに対して runPluginAudit() を実行する。
-     * 同期実行 → 完了後にフラッシュメッセージ付きで一覧へリダイレクト。
+     * Execute runPluginAudit() for all installed + uninstalled plugins
+     * Synchronous execution → redirect to list with flash message after completion
      */
     public function auditAll(Request $request): \Illuminate\Http\RedirectResponse
     {
@@ -538,13 +538,13 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * アクション実行後のリダイレクト先を決定する
+     * Determine redirect destination after action execution
      *
-     * Referer が詳細ページだった場合は詳細ページに戻り、それ以外は一覧ページにリダイレクトする
+     * If referer was detail page, return to detail page; otherwise redirect to list page
      */
     protected function redirectAfterPluginAction(Request $request, ?string $slug = null): \Illuminate\Http\RedirectResponse
     {
-        // 詳細ページから来た場合は詳細ページに戻す
+        // Return to detail page if coming from detail page
         if ($slug) {
             $referer = $request->headers->get('referer', '');
             $showUrl = route('admin.settings.plugins.show', $slug);
@@ -557,13 +557,13 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * インストール済みプラグインの詳細ページ
+     * Detail page for installed plugin
      */
     public function show(string $slug)
     {
         $plugin = Plugin::where('slug', $slug)->first();
 
-        // インストール済みプラグインが見つからない場合は、未インストールのディレクトリから探す
+        // If installed plugin is not found, search from uninstalled directories
         if (! $plugin) {
             $uninstalledPlugin = collect($this->getUninstalledPlugins())->firstWhere('slug', $slug);
 
@@ -571,7 +571,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 abort(404);
             }
 
-            // 未インストールプラグイン用の追加データを準備
+            // Prepare additional data for uninstalled plugin
             $permissionService = app(PluginPermissionService::class);
             $cspDiagnosticService = app(CspDiagnosticService::class);
             $cspLoader = app(CspExtensionLoader::class);
@@ -588,7 +588,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $rawData = $uninstalledPlugin;
             $isInstalled = false;
         } else {
-            // インストール済みプラグイン用のデータを準備
+            // Prepare data for installed plugin
             $permissionService = app(PluginPermissionService::class);
             $cspDiagnosticService = app(CspDiagnosticService::class);
             $cspLoader = app(CspExtensionLoader::class);
@@ -610,7 +610,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $isInstalled = true;
         }
 
-        // CSP ステータスを翻訳キーにマッピング
+        // Map CSP status to translation key
         $cspStatus = $card['cspCompatibility']['status'] ?? 'not_checked';
         $cspStatusLabelKey = match ($cspStatus) {
             'csp_ready' => 'csp_ready',
@@ -632,7 +632,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * オンライン（未ダウンロード）プラグインの詳細ページ
+     * Detail page for online (not downloaded) plugin
      */
     public function showOnline(string $slug, ExtensionSourceManager $manager)
     {
@@ -642,7 +642,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             abort(404);
         }
 
-        // サムネイル URL が無い・空の場合はデフォルト画像にフォールバック
+        // Fallback to default image if thumbnail URL is missing or empty
         if (empty($details['thumbnail_url'])) {
             $details['thumbnail_url'] = asset('assets/images/plugin-default.svg');
         }
@@ -654,7 +654,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * plugin.json から生データを読み込む（詳細ページ用）
+     * Load raw data from plugin.json (for detail page)
      *
      * @return array<string, mixed>|null
      */
@@ -676,11 +676,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * プラグインのアップロード（ZIPファイルの解凍とファイル配置のみ）
+     * Upload plugin (ZIP file extraction and file placement only)
      */
     public function upload(AdminPluginUploadRequest $request)
     {
-        // ZIPファイルを一時保存
+        // Temporarily save ZIP file
         $file = $request->file('plugin_file');
         $fileName = $file->getClientOriginalName();
         $tempDir = storage_path('app/temp/plugins');
@@ -689,7 +689,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $file->move($tempDir, $fileName);
 
         try {
-            // ソースダウンロードと同じ共通処理で展開・配置・ディレクトリ名解決
+            // Extract, place, and resolve directory name using same common process as source download
             $result = $this->extractAndPlacePlugin($tempPath);
 
             if (! $result['success']) {
@@ -699,7 +699,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
             $pluginDir = $result['directory'];
 
-            // 新規配置時は過去の監査結果を破棄し未スキャン状態に戻す（plugin.json の slug を利用）
+            // Discard past audit results and return to unscanned state on new placement (using slug from plugin.json)
             $pluginJsonPath = base_path("plugins/{$pluginDir}/plugin.json");
             $slugFromManifest = null;
             if (File::exists($pluginJsonPath)) {
@@ -732,7 +732,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * アンインストール済みプラグインをインストール
+     * Install uninstalled plugin
      */
     public function install(AdminPluginInstallRequest $request)
     {
@@ -745,7 +745,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             return redirect()->back()->with('error', __('admin/settings/plugins/index.messages.install_directory_not_found'));
         }
 
-        // サーバーサイド防御: スキャン必須モードでの事前チェック
+        // Server-side protection: pre-check in scan-required mode
         if (self::isScanRequired()) {
             $pluginJsonPath = base_path("plugins/{$pluginDir}/plugin.json");
             $slug = null;
@@ -755,7 +755,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                     $pluginData = json_decode(File::get($pluginJsonPath), true);
                     $slug = $pluginData['slug'] ?? null;
                 } catch (\Exception $e) {
-                    // plugin.json読み込み失敗時はslug取得をスキップ
+                    // Skip slug retrieval if plugin.json fails to load
                 }
             }
 
@@ -764,12 +764,12 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                     ->latest('audited_at')
                     ->first();
 
-                // 未スキャンの場合はインストールを拒否
+                // Reject installation if not scanned
                 if (! $latestAudit) {
                     return redirect()->back()->with('error', __('admin/settings/plugins/index.two_stage.install_blocked'));
                 }
 
-                // スキャン済みでもブロック状態の場合はインストールを拒否
+                // Reject installation if blocked even after scanning
                 try {
                     $healthScorer = app(PluginHealthScorer::class);
                     $healthResult = $healthScorer->calculate($slug);
@@ -789,20 +789,20 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         }
 
         try {
-            // コマンドを使用してインストール
+            // Install using command
             Artisan::call('dls:plugin:install', [
                 'pluginName' => $pluginDir,
             ]);
 
-            // インストールされたプラグインを取得
+            // Retrieve installed plugin
             $plugin = Plugin::where('directory', $pluginDir)->first();
 
-            // インストール後に監査を実行
+            // Perform audit after installation
             if ($plugin) {
-                // plugin.json からサプライチェーン防御用メタデータを取得して保存
+                // Retrieve and save supply chain protection metadata from plugin.json
                 $this->persistSupplyChainMetadata($plugin, 'upload');
 
-                // バージョン履歴を記録（初回インストール）
+                // Record version history (initial installation)
                 $this->recordVersionHistory(
                     plugin: $plugin,
                     oldVersion: null,
@@ -813,7 +813,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
                 $this->runPluginAudit($plugin->slug);
 
-                // 拡張機能操作の通知・ログ記録
+                // Notification and logging of extension operations
                 $permissionService = app(PluginPermissionService::class);
                 $summary = $permissionService->getSummary($plugin->slug);
 
@@ -829,7 +829,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 );
             }
 
-            // インストール成功メッセージ
+            // Installation success message
             $successMessage = $plugin
                 ? __('admin/settings/plugins/index.messages.install_success')
                 : __('admin/settings/plugins/index.messages.install_success_no_plugin');
@@ -851,35 +851,35 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     {
         $plugin = Plugin::findOrFail($id);
 
-        // 有効化中のプラグインはアンインストールできない
+        // Cannot uninstall active plugin
         if ($plugin->isEnabled()) {
             return back()->with('error', __('admin/settings/plugins/index.messages.uninstall_must_disable_first'));
         }
 
-        // 通知用にプラグイン情報を保存
+        // Save plugin information for notification
         $pluginData = [
             'name' => $this->getPluginName($plugin),
             'slug' => $plugin->slug,
             'version' => $plugin->version ?? null,
-            'health_status' => 'low', // アンインストール時は健全性警告不要
+            'health_status' => 'low', // no health warning needed on uninstall
         ];
 
         try {
-            // コマンドを使用してアンインストール
+            // Uninstall using command
             $options = [
                 'pluginName' => $plugin->name,
                 '--force' => true,
                 '--no-interaction' => true,
             ];
 
-            // DBデータも削除する場合
+            // When deleting DB data as well
             if ($request->has('remove_db_data')) {
                 $options['--rollback'] = true;
             }
 
             Artisan::call('dls:plugin:uninstall', $options);
 
-            // 拡張機能操作の通知・ログ記録
+            // Notification and logging of extension operations
             app(ExtensionOperationService::class)->recordOperation(
                 ExtensionOperationService::TYPE_PLUGIN,
                 ExtensionOperationService::OPERATION_UNINSTALLED,
@@ -904,31 +904,31 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $translatedName = $this->getPluginName($plugin);
 
         try {
-            // 有効化前に監査を実行（最新の状態を確認）
+            // Perform audit before activation (verify latest state)
             $this->runPluginAudit($plugin->slug);
 
-            // 再スキャンが必要な場合は自動再監査
+            // Automatically re-audit if rescan is required
             $healthScorer = app(PluginHealthScorer::class);
             if ($healthScorer->needsRescan($plugin->slug)) {
                 Log::info('Plugin files changed, re-scanning', ['plugin' => $plugin->slug]);
                 $this->runPluginAudit($plugin->slug);
             }
 
-            // 健全性スコアを算出し、有効化ポリシーを判定
+            // Calculate health score and determine activation policy
             $healthResult = $healthScorer->calculate($plugin->slug);
             $enableAction = $healthScorer->determineEnableAction($healthResult);
 
-            // Blockedの場合は有効化を拒否
+            // Reject activation if blocked
             if ($enableAction === PluginEnableAction::Blocked) {
                 return back()->with('error', __('admin/settings/plugins/index.enable_action.blocked_message'));
             }
 
-            // コマンドを使用して有効化
+            // Activate using command
             Artisan::call('dls:plugin:enable', [
                 'pluginName' => $plugin->name,
             ]);
 
-            // 拡張機能操作の通知・ログ記録
+            // Notification and logging of extension operations
             $permissionService = app(PluginPermissionService::class);
             $summary = $permissionService->getSummary($plugin->slug);
 
@@ -961,12 +961,12 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $translatedName = $this->getPluginName($plugin);
 
         try {
-            // コマンドを使用して無効化
+            // Disable using command
             Artisan::call('dls:plugin:disable', [
                 'pluginName' => $plugin->name,
             ]);
 
-            // 拡張機能操作の通知・ログ記録
+            // Notification and logging of extension operations
             app(ExtensionOperationService::class)->recordOperation(
                 ExtensionOperationService::TYPE_PLUGIN,
                 ExtensionOperationService::OPERATION_DISABLED,
@@ -974,7 +974,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                     'name' => $translatedName,
                     'slug' => $plugin->slug,
                     'version' => $plugin->version ?? null,
-                    'health_status' => 'low', // 無効化時は健全性警告不要
+                    'health_status' => 'low', // no health warning needed on disable
                 ]
             );
 
@@ -991,7 +991,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * プラグインを完全に削除（ファイル + DBレコード）
+     * Completely remove plugin (files + DB records)
      */
     public function delete(AdminPluginDeleteRequest $request)
     {
@@ -999,11 +999,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
         $pluginDir = $validated['directory'];
 
-        // DBレコードが存在するか確認
+        // Check if DB record exists
         $plugin = Plugin::where('directory', $pluginDir)->first();
 
         try {
-            // DBレコードが存在する場合は先にアンインストール
+            // Uninstall first if DB record exists
             if ($plugin) {
                 $exitCode = Artisan::call('dls:plugin:uninstall', [
                     'pluginName' => $plugin->slug,
@@ -1023,7 +1023,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 }
             }
 
-            // プラグインディレクトリを削除
+            // Delete plugin directory
             $exitCode = Artisan::call('dls:plugin:delete', [
                 'pluginDirectory' => $pluginDir,
                 '--force' => true,
@@ -1052,10 +1052,10 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         }
     }
 
-    // ZIPファイルのサイズをバイト数に変換
+    // Convert ZIP file size to bytes
     private function parsePhpSize($sizeStr)
     {
-        // 大文字/小文字両対応
+        // Support both uppercase and lowercase
         $sizeStr = trim($sizeStr);
         $unit = strtoupper(substr($sizeStr, -1));
         $value = (int) substr($sizeStr, 0, -1);
@@ -1071,7 +1071,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 $value *= 1024;
                 break;
             default:
-                // 単位なし
+                // No unit
                 $value = (int) $sizeStr;
                 break;
         }
@@ -1080,8 +1080,8 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * プラグインが設定画面を持っているかチェック
-     * config/admin.php の settings_route が定義されていれば設定画面ありと判定
+     * Check if plugin has a settings page
+     * Determine settings page exists if settings_route is defined in config/admin.php
      */
     private function checkPluginHasSettings($plugin): bool
     {
@@ -1099,7 +1099,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $pluginConfig = require $configPath;
             $settingsRoute = $pluginConfig['settings_route'] ?? null;
 
-            // settings_routeが定義されていれば設定画面あり
+            // Settings page exists if settings_route is defined
             return ! empty($settingsRoute);
         } catch (\Exception $e) {
             return false;
@@ -1107,8 +1107,8 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * プラグインの設定画面URLを取得
-     * config/admin.php の settings_route からルート名を取得してURLを生成
+     * Get plugin settings page URL
+     * Get route name from settings_route in config/admin.php and generate URL
      */
     public function getPluginSettingsUrl($plugin): ?string
     {
@@ -1126,12 +1126,12 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 return null;
             }
 
-            // ルートが存在する場合はURLを生成
+            // Generate URL if route exists
             if (\Route::has($settingsRoute)) {
                 return route($settingsRoute);
             }
 
-            // ルートが存在しない場合はログに警告を出力
+            // Output warning to log if route does not exist
             \Log::warning('Plugin settings route not found', [
                 'plugin' => $plugin->directory,
                 'route' => $settingsRoute,
@@ -1144,11 +1144,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * プラグインの翻訳された名前を取得
+     * Get translated plugin name
      */
     private function getPluginName($plugin)
     {
-        // plugin.json の name フィールド（人間向け名称）を優先
+        // Prioritize name field (human-readable name) from plugin.json
         $directory = $plugin->directory ?? $plugin->name ?? null;
         if ($directory) {
             $pluginJsonPath = base_path("plugins/{$directory}/plugin.json");
@@ -1159,7 +1159,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                         return $data['name'];
                     }
                 } catch (\Exception) {
-                    // フォールバック
+                    // Fallback
                 }
             }
         }
@@ -1168,22 +1168,22 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * プラグインの翻訳された説明を取得
+     * Get translated plugin description
      */
     private function getPluginDescription($plugin)
     {
         try {
-            // プラグインの翻訳ファイルから説明を取得
+            // Get description from plugin translation file
             $pluginSlug = strtolower(str_replace('Dixlase', 'dixlase-', $plugin->directory));
             $translationKey = $pluginSlug.'::admin.plugin.description';
             $description = __($translationKey);
 
-            // 翻訳キーがそのまま返された場合は翻訳が見つからない
+            // If the translation key is returned as-is, no translation was found
             if ($description !== $translationKey) {
                 return $description;
             }
 
-            // plugin.json の多言語 description を参照
+            // Refer to multilingual description in plugin.json
             return $this->getLocalizedDescriptionFromPluginJson($plugin->directory)
                 ?? $plugin->description
                 ?? __('common.no_description');
@@ -1193,7 +1193,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * plugin.json から現在のロケールに合わせた description を取得
+     * Get description from plugin.json for current locale
      */
     private function getLocalizedDescriptionFromPluginJson(string $directory): ?string
     {
@@ -1219,7 +1219,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * アンインストール済みプラグインを検出
+     * Detect uninstalled plugins
      */
     private function getUninstalledPlugins()
     {
@@ -1230,16 +1230,16 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             return $uninstalledPlugins;
         }
 
-        // pluginsディレクトリ内のすべてのディレクトリを取得
+        // Get all directories in plugins directory
         $directories = File::directories($pluginsPath);
 
-        // インストール済みプラグインのディレクトリ名を取得
+        // Get directory names of installed plugins
         $installedDirectories = Plugin::pluck('directory')->toArray();
 
         foreach ($directories as $directory) {
             $dirName = basename($directory);
 
-            // DBに登録されていないプラグインを検出
+            // Detect plugins not registered in DB
             if (! in_array($dirName, $installedDirectories)) {
                 $pluginInfo = $this->getPluginInfoFromDirectory($dirName);
                 if ($pluginInfo) {
@@ -1252,15 +1252,15 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * ディレクトリからプラグイン情報を取得
-     * plugin.json優先、composer.jsonをフォールバック
+     * Get plugin information from directory
+     * Prefer plugin.json, fallback to composer.json
      */
     private function getPluginInfoFromDirectory($dirName)
     {
         $pluginJsonPath = base_path("plugins/{$dirName}/plugin.json");
         $composerPath = base_path("plugins/{$dirName}/composer.json");
 
-        // plugin.jsonが存在する場合は優先的に使用
+        // Use plugin.json preferentially if it exists
         if (File::exists($pluginJsonPath)) {
             try {
                 $jsonContent = File::get($pluginJsonPath);
@@ -1291,11 +1291,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                     'directory' => $dirName,
                     'error' => $e->getMessage(),
                 ]);
-                // plugin.jsonの読み込みに失敗した場合はcomposer.jsonにフォールバック
+                // Fallback to composer.json if plugin.json fails to load
             }
         }
 
-        // plugin.jsonが存在しない、または読み込みに失敗した場合はcomposer.jsonを使用
+        // Use composer.json if plugin.json does not exist or fails to load
         if (! File::exists($composerPath)) {
             return;
         }
@@ -1335,19 +1335,19 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * ソースから利用可能なプラグイン一覧を返す（JSON API）
+     * Return list of available plugins from source (JSON API)
      */
     public function availableFromSource(ExtensionSourceManager $manager): JsonResponse
     {
         try {
             $available = $manager->listAvailablePlugins();
 
-            // インストール済み・ディスク上に存在するプラグインを除外
+            // Exclude installed plugins and plugins existing on disk
             $installedSlugs = Plugin::pluck('slug')->toArray();
             $diskSlugs = collect($this->getUninstalledPlugins())->pluck('slug')->toArray();
             $excludeSlugs = array_merge($installedSlugs, $diskSlugs);
 
-            // slug が文字列でないエントリは壊れたマニフェストとして除外する（フロント側の [object Object] 問題の根本対策）
+            // Exclude entries where slug is not a string as broken manifests (root fix for [object Object] issue on frontend)
             $filtered = array_values(array_filter(
                 $available,
                 function (array $plugin) use ($excludeSlugs) {
@@ -1361,7 +1361,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 }
             ));
 
-            // 各エントリの文字列フィールドを明示的に再正規化（JS 側で [object Object] になる防御の最終砦）
+            // Explicitly renormalize string fields for each entry (final defense against [object Object] on JS side)
             $normalized = array_map(
                 fn (array $plugin) => $this->normalizeExtensionEntry($plugin),
                 $filtered
@@ -1381,7 +1381,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * API レスポンス用に文字列フィールドを明示的に正規化する（多言語オブジェクト等の漏れを防ぐ）
+     * Explicitly normalize string fields for API response (prevent leakage of multilingual objects, etc.)
      *
      * @param  array<string, mixed>  $entry
      * @return array<string, mixed>
@@ -1395,7 +1395,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 $entry[$field] = null;
             }
         }
-        // name と description は多言語オブジェクトを現在ロケールで解決
+        // Resolve multilingual objects for name and description with current locale
         foreach (['name', 'description'] as $field) {
             if (isset($entry[$field]) && is_array($entry[$field])) {
                 $entry[$field] = $entry[$field][$locale] ?? $entry[$field]['en'] ?? $entry[$field]['ja'] ?? null;
@@ -1411,7 +1411,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * ソースからプラグインをダウンロードして配置
+     * Download and place plugin from source
      */
     public function downloadFromSource(Request $request, ExtensionSourceManager $manager)
     {
@@ -1422,16 +1422,16 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $slug = trim((string) $request->input('slug'));
 
         try {
-            // ソースから ZIP をダウンロード
+            // Download ZIP from source
             $zipPath = $manager->download($slug, 'plugin');
 
-            // ZIP を展開して配置
+            // Extract and place ZIP
             $result = $this->extractAndPlacePlugin($zipPath);
 
             if ($result['success']) {
                 $displayName = $result['name'] ?? $slug;
 
-                // 新規ダウンロード時は過去の監査結果を破棄し未スキャン状態に戻す
+                // On new download, discard past audit results and return to unscanned state
                 $this->purgeAuditRecordsForSlug($slug, $result['directory'] ?? null);
 
                 return redirect()->route('admin.settings.plugins.index')
@@ -1453,13 +1453,13 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * 指定したプラグインの過去の監査レコードを削除する（再ダウンロード時に未スキャン状態へ戻すため）
+     * Delete past audit records for the specified plugin (to return to unscanned state on re-download)
      */
     protected function purgeAuditRecordsForSlug(string $slug, ?string $directory = null): void
     {
         $slugsToPurge = [$slug];
 
-        // plugin.json の slug がリクエストの slug と異なる場合に備えて追加
+        // Added in case plugin.json slug differs from request slug
         if ($directory) {
             $pluginJsonPath = base_path("plugins/{$directory}/plugin.json");
             if (File::exists($pluginJsonPath)) {
@@ -1478,7 +1478,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * ZIP ファイルを展開してプラグインディレクトリに配置する共通処理
+     * Common process to extract ZIP file and place in plugin directory
      *
      * @return array{success: bool, directory?: string, error?: string}
      */
@@ -1492,7 +1492,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         }
 
         try {
-            // プラグインフォルダ名取得（ZIP内の最初のディレクトリ）
+            // Get plugin folder name (first directory in ZIP)
             $dirs = [];
             for ($i = 0; $i < $zip->numFiles; $i++) {
                 $entry = $zip->getNameIndex($i);
@@ -1522,12 +1522,12 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 return ['success' => false, 'error' => __('admin/settings/plugins/add.messages.directory_exists', ['directory' => $pluginDir])];
             }
 
-            // ZIPを解凍
+            // Extract ZIP
             $zip->extractTo(base_path('plugins'));
             $zip->close();
             File::delete($zipPath);
 
-            // plugin.json から正しいディレクトリ名を取得してリネーム
+            // Get correct directory name from plugin.json and rename
             $pluginJsonPath = base_path("plugins/{$pluginDir}/plugin.json");
             if (File::exists($pluginJsonPath)) {
                 try {
@@ -1555,23 +1555,23 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 }
             }
 
-            // composer.jsonの存在確認
+            // Check for existence of composer.json
             if (! File::exists(base_path("plugins/{$pluginDir}/composer.json"))) {
                 File::deleteDirectory($destinationPath);
 
                 return ['success' => false, 'error' => __('admin/settings/plugins/add.messages.composer_not_found')];
             }
 
-            // Git除外ルールとcomposer.local.jsonを更新
+            // Update Git exclusion rules and composer.local.json
             GitExcludeHelper::addPluginExclusion($pluginDir);
             GitIgnoreHelper::addPluginExclusion($pluginDir);
             ComposerLocalHelper::syncAutoload();
 
-            // 監査はインストール時に実行する（ダウンロード時はスキップ）
-            // プラグインファイルは plugins/ に配置されただけでは実行されない。
-            // インストール時の2段階モーダル（scan → confirm）で適切なタイミングで監査される。
+            // Audit is executed at install time (skipped at download time)
+            // Plugin files are not executed just by being placed in plugins/
+            // Audited at the appropriate timing in the 2-stage modal (scan → confirm) during installation
 
-            // plugin.json から表示用の名前を取得
+            // Get display name from plugin.json
             $displayName = null;
             if (isset($pluginData) && is_array($pluginData)) {
                 $displayName = $pluginData['name'] ?? null;
@@ -1596,13 +1596,13 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * plugin.json の内容から正しいディレクトリ名を決定する
+     * Determine correct directory name from plugin.json contents
      *
-     * 優先順位:
-     * 1. 明示された package フィールド（マニフェストとインストール先の一意なマッピング）
-     * 2. namespace の最終セグメント（例: Plugins\DixlaseSEO → DixlaseSEO）
-     * 3. package_name の最後の部分（例: plugins/dixlase-seo → dixlase-seo）
-     * 4. null（既存のディレクトリ名を維持）
+     * Priority:
+     * 1. Explicit package field (unique mapping between manifest and install destination)
+     * 2. Last segment of namespace (e.g. Plugins\DixlaseSEO → DixlaseSEO)
+     * 3. Last part of package_name (e.g. plugins/dixlase-seo → dixlase-seo)
+     * 4. null (maintain existing directory name)
      */
     protected function resolvePluginDirectoryName(?array $pluginData): ?string
     {
@@ -1610,13 +1610,13 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             return null;
         }
 
-        // 明示された package フィールドを最優先
+        // Prioritize explicitly declared package field
         $package = $pluginData['package'] ?? null;
         if (is_string($package) && $package !== '') {
             return $package;
         }
 
-        // namespace の最終セグメントを優先
+        // Prefer the final segment of namespace
         $namespace = $pluginData['namespace'] ?? null;
         if (is_string($namespace) && $namespace !== '') {
             $parts = explode('\\', trim($namespace, '\\'));
@@ -1626,7 +1626,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             }
         }
 
-        // フォールバック: package_name の最後の部分
+        // Fallback: last part of package_name
         $packageName = $pluginData['package_name'] ?? null;
         if (is_string($packageName) && $packageName !== '') {
             $parts = explode('/', $packageName);
@@ -1640,7 +1640,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * 更新可能な全プラグインを順次アップデート（dls:source:update --all --type=plugin に委譲）
+     * Sequentially update all updatable plugins (delegated to dls:source:update --all --type=plugin)
      */
     public function bulkUpdate(): \Illuminate\Http\RedirectResponse
     {
@@ -1650,7 +1650,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 ->with('info', __('admin/settings/plugins/index.updates.all_up_to_date'));
         }
 
-        // 個別更新コマンドを順次呼ぶ（pipeline / 履歴 / メタデータ更新は個別側で実施）
+        // Call individual update commands sequentially (pipeline/history/metadata updates are handled on individual side)
         $total = count($updatable);
         $succeeded = 0;
         $failed = 0;
@@ -1673,7 +1673,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * アップデートチェック（AJAX）
+     * Update check (AJAX)
      */
     public function checkUpdates(\App\Services\Extension\ExtensionSourceManager $manager): \Illuminate\Http\JsonResponse
     {
@@ -1697,7 +1697,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * プラグインをアップデート（新バージョンをダウンロード → 置換）
+     * Update plugin (download new version → replace)
      */
     public function updatePlugin(int $id, \App\Services\Extension\ExtensionSourceManager $manager)
     {
@@ -1714,40 +1714,40 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $backupPath = base_path("plugins/{$directory}.backup");
 
         try {
-            // 新バージョンの ZIP をダウンロード
+            // Download new version ZIP
             $zipPath = $manager->download($slug, 'plugin', $newVersion);
 
-            // 更新前のメタデータを保存（履歴記録用）
+            // Save metadata before update (for history recording)
             $oldVersion = $plugin->version;
             $oldSigningKeyId = $plugin->signing_key_id;
             $oldAuthorId = $plugin->author_id;
 
-            // 現在のディレクトリをバックアップ
+            // Backup current directory
             if (File::exists($pluginPath)) {
                 File::move($pluginPath, $backupPath);
             }
 
-            // ZIP を展開して配置
+            // Extract and place ZIP
             $result = $this->extractAndPlacePlugin($zipPath);
 
             if (! $result['success']) {
-                // 失敗時はバックアップから復元
+                // Restore from backup on failure
                 $this->restoreFromBackup($backupPath, $pluginPath);
 
                 return back()->with('error', $result['error']);
             }
 
-            // DB のバージョン情報を更新
+            // Update version info in DB
             $plugin->update([
                 'version' => $newVersion,
                 'available_version' => null,
                 'last_version_check' => now(),
             ]);
 
-            // 新しい plugin.json からサプライチェーン防御用メタデータを更新
+            // Update supply chain defense metadata from new plugin.json
             $this->persistSupplyChainMetadata($plugin, 'update');
 
-            // バージョン履歴を記録（アップデート）
+            // Record version history (update)
             $this->recordVersionHistory(
                 plugin: $plugin,
                 oldVersion: $oldVersion,
@@ -1756,18 +1756,18 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 installationMethod: PluginVersionHistory::METHOD_UPDATE,
             );
 
-            // バックアップを削除
+            // Delete backup
             if (File::exists($backupPath)) {
                 File::deleteDirectory($backupPath);
             }
 
-            // 再監査
+            // Re-audit
             $this->runPluginAudit($slug);
 
             return redirect()->route('admin.settings.plugins.index')
                 ->with('success', __('admin/settings/plugins/index.updates.update_success', ['name' => $plugin->name, 'version' => $newVersion]));
         } catch (\Throwable $e) {
-            // 失敗時はバックアップから復元
+            // Restore from backup on failure
             $this->restoreFromBackup($backupPath, $pluginPath);
 
             Log::error('Plugin update failed', [
@@ -1781,7 +1781,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * バックアップからディレクトリを復元
+     * Restore directory from backup
      */
     protected function restoreFromBackup(string $backupPath, string $originalPath): void
     {
@@ -1794,7 +1794,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * plugin.json からサプライチェーン防御用のメタデータを抽出して Plugin に保存
+     * Extract supply chain defense metadata from plugin.json and save to Plugin
      *
      * @param  string  $installationMethod  "upload" / "marketplace" / "cli" / "github"
      */
@@ -1827,7 +1827,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * プラグインのバージョン履歴を記録し、署名鍵・オーナー変更があれば監査ログも記録
+     * Record plugin version history and log audit if signing key or owner changes
      */
     protected function recordVersionHistory(
         Plugin $plugin,
@@ -1852,7 +1852,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 'new_signing_key_id' => $newSigningKeyId,
                 'old_author_id' => $oldAuthorId,
                 'new_author_id' => $newAuthorId,
-                'files_changed_count' => 0, // 初期リリース: 未計算
+                'files_changed_count' => 0, // Initial release: not calculated
                 'lines_added' => 0,
                 'lines_removed' => 0,
                 'signing_key_changed' => $signingKeyChanged,
@@ -1869,7 +1869,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             ]);
         }
 
-        // 署名鍵変更・オーナー変更は監査ログに記録（承認フロー等は Phase 2 で実装）
+        // Log signing key changes and owner changes to audit log (approval flow etc. to be implemented in Phase 2)
         if ($signingKeyChanged) {
             $this->logSupplyChainEvent($plugin, AuditLog::ACTION_PLUGIN_SIGNING_KEY_CHANGED, [
                 'old_signing_key_id' => $oldSigningKeyId,
@@ -1886,7 +1886,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * サプライチェーン防御のイベントを監査ログに記録
+     * Log supply chain defense events to audit log
      *
      * @param  array<string, mixed>  $context
      */

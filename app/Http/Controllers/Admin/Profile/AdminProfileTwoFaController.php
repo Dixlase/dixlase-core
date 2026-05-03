@@ -60,12 +60,12 @@ class AdminProfileTwoFaController extends AdminLoggedInController
     {
         $member = Auth::guard('member')->user();
 
-        // メールサーバー設定状態を渡す
+        // Pass mail server settings state
         $this->viewParams['isMailServerTested'] = MailServerValidatorService::isMailServerTested();
 
         $this->loadTwoFactorSettings($member);
 
-        // 2FA有効化可能かをチェック（プロフィール画面ではメールサーバーテスト済みかチェック）
+        // Check if 2FA can be enabled (on profile screen, check if mail server has been tested)
         $this->viewParams['canEnableTwoFa'] = $this->viewParams['isMailServerTested'];
         $this->viewParams['twoFaEnableBlockReasons'] = $this->viewParams['canEnableTwoFa'] ? [] : ['no_mail_server'];
 
@@ -80,11 +80,11 @@ class AdminProfileTwoFaController extends AdminLoggedInController
         $member = Auth::guard('member')->user();
         $validated = $request->validated();
 
-        // 二段階認証モードの変更を検出するため、保存前の値を取得（整数値として）
+        // Get value before saving (as integer) to detect changes in two-factor authentication mode
         $twoFaOldMode = is_int($member->two_fa_mode) ? $member->two_fa_mode : $member->two_fa_mode->value;
         $beforeMode = $member->two_fa_mode;
 
-        // two_fa_mode は全体設定が UseProfileSetting のときだけ上書き
+        // two_fa_mode is only overwritten when global settings is UseProfileSetting
         $twoFaForceMode = (int) SecuritySetting::getValue('two_fa_mode', AuthenticationMode::UseProfileSetting->value);
         if ($twoFaForceMode === AuthenticationMode::UseProfileSetting->value && array_key_exists('two_fa_mode', $validated)) {
             $member->two_fa_mode = (int) $validated['two_fa_mode'];
@@ -92,10 +92,10 @@ class AdminProfileTwoFaController extends AdminLoggedInController
 
         $member->save();
 
-        // 保存後の2FA状態を取得（保存後の値を使用）
+        // Get 2FA state after saving (use value after saving)
         $member->refresh();
 
-        // TwoFaStatusServiceを使用して判定
+        // Determine using TwoFaStatusService
         $twoFaStatusService = new TwoFaStatusService();
         $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
         $twoFaPasskeyService = new TwoFaPasskeyService();
@@ -114,7 +114,7 @@ class AdminProfileTwoFaController extends AdminLoggedInController
 
         $redirect = redirect()->route('admin.profile.two-fa')->with('success', __('admin/profile/common.two_fa_updated'));
 
-        // 回復コードが存在しない場合は自動生成
+        // Auto-generate if recovery codes do not exist
         if ($twoFaStatusService->shouldGenerateRecoveryCodes($member, $twoFaRecoveryCodeService)) {
             try {
                 $codes = $twoFaRecoveryCodeService->generate($member);
@@ -127,7 +127,7 @@ class AdminProfileTwoFaController extends AdminLoggedInController
             }
         }
 
-        // パスキーが有効かつデバイス未登録の場合、促進モーダルを表示
+        // Show promotion modal if passkey is enabled and device is not registered
         if ($twoFaStatusService->shouldPromptPasskeyRegistration($member, $twoFaPasskeyService)) {
             $redirect->with('prompt_passkey_registration', true);
         }
@@ -140,21 +140,21 @@ class AdminProfileTwoFaController extends AdminLoggedInController
      */
     private function loadTwoFactorSettings($member)
     {
-        // 二段階認証設定の追加
+        // Add two-factor authentication settings
         $twoFaForceMode = (int) SecuritySetting::getValue(
             'two_fa_mode',
             AuthenticationMode::UseProfileSetting->value
         );
         $twoFaMode = $member->two_fa_mode;
 
-        // グローバル設定で有効な二段階認証方法を取得
-        // 0=無効, 1=有効（デフォルト: 有効）
+        // Get two-factor authentication methods enabled in global settings
+        // 0=disabled, 1=enabled (default: enabled)
         $twoFaPasskeyMode = (int) SecuritySetting::getValue('two_fa_passkey_mode', '1');
         $twoFaPasskeyEnabled = $twoFaPasskeyMode === 1;
 
         $this->viewParams['currentPasskeyEnabled'] = $twoFaPasskeyEnabled;
 
-        // メール認証は常に有効、Passkeyは設定に応じて
+        // Email authentication is always enabled, Passkey depends on settings
         $twoFaEnabledMethods = [
             TwoFaMethod::EMAIL->value => TwoFaMethod::EMAIL->translationKey(),
         ];
@@ -170,11 +170,11 @@ class AdminProfileTwoFaController extends AdminLoggedInController
         $this->viewParams['twoFaPasskeyGloballyEnabled'] = in_array(TwoFaMethod::PASSKEY->value, array_keys($twoFaEnabledMethods));
         $this->viewParams['isTwoFaEditable'] = $twoFaForceMode === AuthenticationMode::UseProfileSetting->value;
 
-        // Passkeyデバイス一覧を取得
+        // Get Passkey device list
         $twoFaPasskeyService = new TwoFaPasskeyService();
         $this->viewParams['twoFaPasskeyDevices'] = $twoFaPasskeyService->getDevices($member);
 
-        // 回復コード情報を取得
+        // Get recovery code information
         $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
         $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodeService->getRemainingCount($member);
         $this->viewParams['twoFaHasRecoveryCodes'] = $twoFaRecoveryCodeService->hasRecoveryCodes($member);

@@ -50,7 +50,7 @@ class AdminProfileController extends AdminLoggedInController
     }
 
     /**
-     * モデルのルートパラメータ名を取得
+     * Get the model's route parameter name
      */
     protected function getModelRouteParameterName(): string
     {
@@ -64,18 +64,18 @@ class AdminProfileController extends AdminLoggedInController
     {
         $member = Auth::guard('member')->user();
 
-        // メールサーバー設定状態を渡す
+        // Pass mail server settings status
         $this->viewParams['isMailServerTested'] = MailServerValidatorService::isMailServerTested();
 
-        // 二段階認証設定の追加
+        // Add two-factor authentication settings
         $twoFaMode = $member->two_fa_mode;
         $this->viewParams['twoFaMode'] = $twoFaMode;
 
-        // Passkeyデバイス一覧を取得
+        // Get passkey device list
         $twoFaPasskeyService = new TwoFaPasskeyService();
         $this->viewParams['twoFaPasskeyDevices'] = $twoFaPasskeyService->getDevices($member);
 
-        // 回復コード情報を取得
+        // Get recovery code information
         $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
         $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodeService->getRemainingCount($member);
 
@@ -83,32 +83,32 @@ class AdminProfileController extends AdminLoggedInController
     }
 
     /**
-     * メール認証処理（セキュリティ強化版：ログイン後に認証）
+     * Email verification process (enhanced security version: verify after login)
      */
     public function verifyEmail(Request $request, $id, $hash)
     {
         $emailVerificationHelper = app(\App\Helpers\EmailVerificationHelper::class);
 
-        // IDからメンバーを取得
+        // Get member from ID
         $member = \App\Models\Member::findOrFail($id);
 
-        // ハッシュの検証
+        // Verify hash
         if (! $emailVerificationHelper->verifyHash($member, $hash)) {
             return redirect()->route('admin.login')
                 ->with('error', __('admin/profile/common.email_verification_invalid'));
         }
 
-        // 認証が必要かチェック
+        // Check if verification is required
         $verificationStatus = $emailVerificationHelper->needsVerification($member);
         if (! $verificationStatus['needs_verification']) {
             return redirect()->route('admin.login')
                 ->with('info', __('admin/profile/common.email_already_verified'));
         }
 
-        // ログイン状態をチェック
+        // Check login status
         $currentUser = \Auth::guard('member')->user();
 
-        // ログイン済みで、認証対象のメンバーと一致する場合は即座に処理
+        // Process immediately if logged in and matches the target member for verification
         if ($currentUser && $currentUser->id === $member->id) {
             $result = $emailVerificationHelper->processVerificationImmediately($member, 'admin');
 
@@ -118,16 +118,16 @@ class AdminProfileController extends AdminLoggedInController
             );
         }
 
-        // 未ログインまたは別のユーザーでログイン中の場合
-        // 認証トークン情報をセッションに保存
+        // If not logged in or logged in as a different user
+        // Save verification token information to session
         $emailVerificationHelper->storeVerificationInSession($member, $hash);
 
-        // コンテキストに応じたメッセージを選択
+        // Select message based on context
         $messageKey = $emailVerificationHelper->getLoginRequiredMessageKey(
             $verificationStatus['is_email_change']
         );
 
-        // ログイン画面にリダイレクト
+        // Redirect to login screen
         return redirect()->route('admin.login')->with('info', __($messageKey));
     }
 }
