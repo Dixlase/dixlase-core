@@ -35,11 +35,20 @@
 
 namespace App\Models;
 
+use App\Contracts\Site\SiteContextInterface;
 use App\Models\Traits\BelongsToSite;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
+use Throwable;
 
+/**
+ * @api Stable API for plugins/themes (Bearer-token authentication backbone).
+ *
+ * Site keys are bound to a single site via site_id. Network keys (site_id = null)
+ * are CLI-issued only and authenticate against any site. See
+ * docs/development/api-reference/versioning.md for the full contract.
+ */
 class ApiKey extends Model
 {
     use BelongsToSite;
@@ -129,14 +138,17 @@ class ApiKey extends Model
     // ========================================
 
     /**
-     * 新しいAPIキーを生成
+     * Generate a site-bound API key for the current site. The
+     * BelongsToSite trait auto-injects site_id from SiteContext on
+     * creation, so the row is always tied to a real site. To create a
+     * network key (cross-site), use generateNetworkKey() instead.
      *
      * @param  string  $name  キー名
      * @param  string  $environment  環境（live/test）
      * @param  array  $scopes  権限スコープ
      * @param  int|null  $createdBy  作成者ID
      * @param  array  $options  その他のオプション
-     * @return array ['model' => ApiKey, 'plain_key' => string]
+     * @return array{model: ApiKey, plain_key: string}
      */
     public static function generate(
         string $name,
@@ -145,14 +157,11 @@ class ApiKey extends Model
         ?int $createdBy = null,
         array $options = []
     ): array {
-        // プレフィックス生成
         $prefix = $environment === self::ENV_TEST ? 'dxl_test_' : 'dxl_live_';
 
-        // ランダムキー生成（32文字）
         $randomKey = Str::random(32);
         $plainKey = $prefix.$randomKey;
 
-        // ハッシュ化
         $keyHash = hash('sha256', $plainKey);
 
         $apiKey = self::create([
@@ -176,21 +185,92 @@ class ApiKey extends Model
     }
 
     /**
-     * APIキーを検証
+     * Generate a network-scope API key (site_id = null).
      *
-     * @param  string  $plainKey  平文のAPIキー
-     * @return self|null 有効なAPIキーモデル、または無効な場合はnull
+     * Network keys authenticate against any site and are intended for
+     * cross-site operations. Production rule: only the
+     * dls:api:create-network-key Artisan command is allowed to call this
+     * method — never expose creation through a web UI.
+     *
+     * @param  array  $options  その他のオプション (environment, rate_limit, allowed_ips, expires_at, description)
+     * @return array{model: ApiKey, plain_key: string}
+     */
+    public static function generateNetworkKey(
+        string $name,
+        array $scopes = [],
+        ?int $createdBy = null,
+        array $options = []
+    ): array {
+        $environment = $options['environment'] ?? self::ENV_LIVE;
+        $prefix = $environment === self::ENV_TEST ? 'dxl_test_' : 'dxl_live_';
+
+        $randomKey = Str::random(32);
+        $plainKey = $prefix.$randomKey;
+
+        $keyHash = hash('sha256', $plainKey);
+
+        $apiKey = self::withoutSiteContext(fn () => self::create([
+            'site_id' => null,
+            'name' => $name,
+            'key_hash' => $keyHash,
+            'key_prefix' => $prefix,
+            'created_by' => $createdBy,
+            'is_active' => true,
+            'environment' => $environment,
+            'scopes' => $scopes,
+            'rate_limit' => $options['rate_limit'] ?? null,
+            'allowed_ips' => $options['allowed_ips'] ?? null,
+            'expires_at' => $options['expires_at'] ?? null,
+            'description' => $options['description'] ?? null,
+        ]));
+
+        return [
+            'model' => $apiKey,
+            'plain_key' => $plainKey,
+        ];
+    }
+
+    /**
+     * Validate a plaintext API key for the current request.
+     *
+     * Resolution rules:
+     *   - The lookup bypasses the BelongsToSite global scope so network
+     *     keys (site_id = null) and site keys for the current site are
+     *     both reachable.
+     *   - A site key is rejected unless its site_id matches the current
+     *     site resolved by SiteContext.
+     *   - A network key is accepted regardless of current site.
+     *   - Expired keys (expires_at in the past) are rejected.
+     *
+     * @param  string  $plainKey  Plaintext bearer token
+     * @return self|null Valid ApiKey model, or null when invalid
      */
     public static function validate(string $plainKey): ?self
     {
         $keyHash = hash('sha256', $plainKey);
 
-        $apiKey = self::where('key_hash', $keyHash)
+        $apiKey = self::query()
+            ->withoutGlobalScope('belongs_to_site')
+            ->where('key_hash', $keyHash)
             ->where('is_active', true)
             ->first();
 
         if (! $apiKey) {
             return null;
+        }
+
+        if ($apiKey->site_id !== null) {
+            // Site key: must match the current request's site.
+            try {
+                $currentSiteId = app(SiteContextInterface::class)->currentSiteId();
+            } catch (Throwable) {
+                // SiteContext unresolvable — reject site keys conservatively.
+                return null;
+            }
+
+            if ((int) $apiKey->site_id !== (int) $currentSiteId) {
+                return null;
+            }
         }
 
         // 有効期限チェック
@@ -236,6 +316,27 @@ class ApiKey extends Model
     public function hasScope(string $scope): bool
     {
         return in_array($scope, $this->scopes ?? []);
+    }
+
+    /**
+     * Whether this key is a network (cross-site) key. Network keys have
+     * site_id = null and are issued via the dls:api:create-network-key
+     * CLI command.
+     */
+    public function isNetworkKey(): bool
+    {
+        return $this->site_id === null;
+    }
+
+    /**
+     * Confirm this key is a network key AND carries the given scope.
+     * Use in middleware / authorization gates that protect cross-site
+     * operations: a request must present a network key with the right
+     * scope to act on data outside the resolved site.
+     */
+    public function hasNetworkScope(string $scope): bool
+    {
+        return $this->isNetworkKey() && $this->hasScope($scope);
     }
 
     /**

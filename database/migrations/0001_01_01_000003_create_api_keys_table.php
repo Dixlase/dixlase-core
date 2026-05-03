@@ -49,7 +49,10 @@ return new class extends Migration
     {
         Schema::create('api_keys', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('site_id')->index();
+            // Bound site for this key. NULL = network key (cross-site,
+            // CLI-issued only). Site keys are scoped via BelongsToSite on
+            // the ApiKey model.
+            $table->unsignedBigInteger('site_id')->nullable()->index();
 
             // キー名（識別用）
             $table->string('name', 100);
