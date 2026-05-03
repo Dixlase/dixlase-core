@@ -37,32 +37,45 @@
 
 namespace App\Helpers;
 
+use App\Contracts\Site\SiteContextInterface;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Request as RequestFacade;
 
 /**
- * 言語設定ヘルパー
+ * Locale helper.
  *
- * 管理画面の言語設定とフォールバックロジックを管理します。
+ * Manages admin locale settings and fallback logic.
  */
 class LocaleHelper
 {
     /**
-     * サポートされている言語一覧
+     * Cookie name used by the language switcher to persist the visitor's
+     * explicit locale choice.
+     */
+    public const COOKIE_NAME = 'dixlase_locale';
+
+    /**
+     * Cookie lifetime in minutes (1 year).
+     */
+    public const COOKIE_LIFETIME_MINUTES = 60 * 24 * 365;
+
+    /**
+     * List of supported locales.
      */
     protected static array $supportedLocales = ['ja', 'en'];
 
     /**
-     * デフォルト言語
+     * Default locale.
      */
-    protected static string $defaultLocale = 'ja';
+    protected static string $defaultLocale = 'en';
 
     /**
-     * 言語のフォールバック優先順位
+     * Locale fallback priority order.
      */
-    protected static array $fallbackPriority = ['ja', 'en'];
+    protected static array $fallbackPriority = ['en', 'ja'];
 
     /**
-     * サポートされている言語一覧を取得
+     * Get the list of supported locales.
      */
     public static function supportedLocales(): array
     {
@@ -70,7 +83,7 @@ class LocaleHelper
     }
 
     /**
-     * サポートされている言語を選択肢として取得
+     * Get supported locales as a select option array.
      *
      * @return array ['ja' => '日本語', 'en' => 'English']
      */
@@ -83,7 +96,7 @@ class LocaleHelper
     }
 
     /**
-     * 言語がサポートされているかチェック
+     * Check whether the given locale is supported.
      */
     public static function isSupported(string $locale): bool
     {
@@ -91,13 +104,13 @@ class LocaleHelper
     }
 
     /**
-     * ログイン中のユーザーの優先言語を取得
+     * Get the preferred locale of the authenticated user.
      */
     public static function getUserPreferredLocale(): string
     {
         if (Auth::check() && Auth::user()->locale) {
             $userLocale = Auth::user()->locale;
-            // Enumの場合は文字列に変換
+            // Convert Enum cases to their string value.
             if ($userLocale instanceof \App\Enums\Locale) {
                 $userLocale = $userLocale->value;
             }
@@ -110,7 +123,7 @@ class LocaleHelper
     }
 
     /**
-     * 現在の言語を取得
+     * Get the current locale.
      */
     public static function getCurrentLocale(): string
     {
@@ -120,7 +133,7 @@ class LocaleHelper
     }
 
     /**
-     * デフォルト言語を取得
+     * Get the default locale.
      */
     public static function getDefaultLocale(): string
     {
@@ -128,33 +141,33 @@ class LocaleHelper
     }
 
     /**
-     * フォールバック言語を取得
+     * Get the fallback locale.
      *
-     * @param  string  $preferredLocale  優先言語
-     * @param  array  $availableLocales  利用可能な言語一覧
+     * @param  string  $preferredLocale  Preferred locale.
+     * @param  array  $availableLocales  List of available locales.
      */
     public static function getFallbackLocale(string $preferredLocale, array $availableLocales): ?string
     {
-        // 優先言語が利用可能ならそれを返す
+        // Return the preferred locale if it is available.
         if (in_array($preferredLocale, $availableLocales)) {
             return $preferredLocale;
         }
 
-        // フォールバック優先順位に従って検索
+        // Search according to the fallback priority order.
         foreach (self::$fallbackPriority as $locale) {
             if (in_array($locale, $availableLocales)) {
                 return $locale;
             }
         }
 
-        // どれもなければ最初の利用可能な言語
+        // If nothing matches, return the first available locale.
         return $availableLocales[0] ?? null;
     }
 
     /**
-     * 言語名を取得
+     * Get the locale display name.
      *
-     * @param  bool  $native  ネイティブ表記で取得するか
+     * @param  bool  $native  Whether to return the native script.
      */
     public static function getLocaleName(string $locale, bool $native = true): string
     {
@@ -170,9 +183,9 @@ class LocaleHelper
     }
 
     /**
-     * すべての言語名を取得
+     * Get all locale display names.
      *
-     * @param  bool  $native  ネイティブ表記で取得するか
+     * @param  bool  $native  Whether to return the native script.
      */
     public static function getAllLocaleNames(bool $native = true): array
     {
@@ -185,7 +198,7 @@ class LocaleHelper
     }
 
     /**
-     * 言語設定を変更
+     * Change the active locale.
      */
     public static function setLocale(string $locale): void
     {
@@ -196,10 +209,74 @@ class LocaleHelper
     }
 
     /**
-     * セッションから言語を取得
+     * Get the locale from the session.
      */
     public static function getSessionLocale(): ?string
     {
         return session('locale');
+    }
+
+    /**
+     * Get the locale stored in the language-switcher cookie.
+     *
+     * Returns null when the cookie is missing or its value is not a
+     * supported locale.
+     */
+    public static function getCookieLocale(): ?string
+    {
+        $value = RequestFacade::cookie(self::COOKIE_NAME);
+        if (! is_string($value) || $value === '') {
+            return null;
+        }
+
+        return self::isSupported($value) ? $value : null;
+    }
+
+    /**
+     * Get the current site's primary locale, falling back to the
+     * application's configured fallback locale.
+     *
+     * Resolves through SiteContext so multisite installs return the
+     * correct value for the request's resolved site.
+     */
+    public static function getSiteDefaultLocale(): string
+    {
+        $site = app(SiteContextInterface::class)->currentSite();
+        $locale = $site->primary_locale ?? null;
+
+        if (is_string($locale) && self::isSupported($locale)) {
+            return $locale;
+        }
+
+        $fallback = config('app.fallback_locale', self::$defaultLocale);
+
+        return self::isSupported((string) $fallback) ? (string) $fallback : self::$defaultLocale;
+    }
+
+    /**
+     * Build the URL for the same request under a different locale.
+     *
+     * Replaces the locale segment in the current URL path while
+     * preserving the query string. Used by language switcher links.
+     */
+    public static function switchLocaleUrl(string $target): string
+    {
+        if (! self::isSupported($target)) {
+            return RequestFacade::fullUrl();
+        }
+
+        $request = RequestFacade::instance();
+        $segments = explode('/', trim($request->path(), '/'));
+
+        if (isset($segments[0]) && self::isSupported($segments[0])) {
+            $segments[0] = $target;
+        } else {
+            array_unshift($segments, $target);
+        }
+
+        $path = '/'.implode('/', array_filter($segments, static fn ($s) => $s !== ''));
+        $query = $request->getQueryString();
+
+        return $request->getSchemeAndHttpHost().$path.($query !== null ? '?'.$query : '');
     }
 }
