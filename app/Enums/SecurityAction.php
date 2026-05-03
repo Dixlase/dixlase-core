@@ -36,32 +36,32 @@
 namespace App\Enums;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * セキュリティ検出時のアクション（汎用）
+ * Action on security detection (general purpose)
  *
- * 権限不一致、ポリシー違反などの検出時に取るアクションを定義
+ * Defines actions to take when permission mismatch, policy violation, etc. are detected
  */
 enum SecurityAction: int
 {
     /**
-     * 警告のみ
-     * - ログに記録
-     * - 管理者に通知（設定による）
-     * - 操作は許可
+     * Warning only
+     * - Log to record
+     * - Notify administrator (depending on settings)
+     * - Operation is allowed
      */
     case Warn = 0;
 
     /**
-     * ブロック
-     * - ログに記録
-     * - 管理者に通知（設定による）
-     * - 操作を拒否
+     * Block
+     * - Log to record
+     * - Notify administrator (depending on settings)
+     * - Deny operation
      */
     case Block = 1;
 
     /**
-     * 翻訳キーのベースを取得
+     * Get translation key base
      */
     public function translationKeyBase(): string
     {
@@ -69,7 +69,7 @@ enum SecurityAction: int
     }
 
     /**
-     * ラベルを取得
+     * Get label
      */
     public function label(): string
     {
@@ -77,7 +77,7 @@ enum SecurityAction: int
     }
 
     /**
-     * 説明を取得
+     * Get description
      */
     public function description(): string
     {
@@ -85,7 +85,7 @@ enum SecurityAction: int
     }
 
     /**
-     * 文字列表現を取得
+     * Get string representation
      */
     public function toString(): string
     {
@@ -96,7 +96,7 @@ enum SecurityAction: int
     }
 
     /**
-     * 文字列からEnumを取得
+     * Get Enum from string
      */
     public static function fromString(string $value): ?self
     {
@@ -108,7 +108,7 @@ enum SecurityAction: int
     }
 
     /**
-     * CSSクラスを取得（色分け用）
+     * Get CSS class (for color coding)
      */
     public function cssClass(): string
     {
@@ -119,7 +119,7 @@ enum SecurityAction: int
     }
 
     /**
-     * 色名を取得（radio-card-group用）
+     * Get color name (for radio-card-group)
      */
     public function colorName(): string
     {
@@ -130,7 +130,7 @@ enum SecurityAction: int
     }
 
     /**
-     * アイコンクラスを取得
+     * Get icon class
      */
     public function iconClass(): string
     {
@@ -141,7 +141,7 @@ enum SecurityAction: int
     }
 
     /**
-     * デフォルト値を取得
+     * Get default value
      */
     public static function default(): self
     {
@@ -149,7 +149,7 @@ enum SecurityAction: int
     }
 
     /**
-     * すべてのアクションを取得
+     * Get all actions
      */
     public static function all(): array
     {
@@ -157,7 +157,7 @@ enum SecurityAction: int
     }
 
     /**
-     * すべての文字列値を取得
+     * Get all string values
      */
     public static function getAllStrings(): array
     {
@@ -165,7 +165,7 @@ enum SecurityAction: int
     }
 
     /**
-     * バリデーションルール用の文字列を取得
+     * Get string for validation rule
      */
     public static function validationRule(): string
     {

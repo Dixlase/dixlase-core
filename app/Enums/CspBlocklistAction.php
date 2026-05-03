@@ -36,30 +36,30 @@
 namespace App\Enums;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core-only. Do not reference from plugins/themes.
  *
- * CSPブロックリスト検出時のアクション
+ * Action when CSP blocklist is detected
  */
 enum CspBlocklistAction: int
 {
     /**
-     * 警告のみ
-     * - ログに記録
-     * - 管理者に通知
-     * - インストール/有効化は許可
+     * Warning only
+     * - Log to record
+     * - Notify administrator
+     * - Allow installation / enabling
      */
     case Warn = 0;
 
     /**
-     * ブロック
-     * - ログに記録
-     * - 管理者に通知
-     * - インストール/有効化を拒否
+     * Block
+     * - Log to record
+     * - Notify administrator
+     * - Deny installation / enabling
      */
     case Block = 1;
 
     /**
-     * 翻訳キーを取得
+     * Get translation key
      */
     public function translationKey(): string
     {
@@ -67,7 +67,7 @@ enum CspBlocklistAction: int
     }
 
     /**
-     * ラベルを取得
+     * Get label
      */
     public function label(): string
     {
@@ -75,7 +75,7 @@ enum CspBlocklistAction: int
     }
 
     /**
-     * 説明を取得
+     * Get description
      */
     public function description(): string
     {
@@ -83,7 +83,7 @@ enum CspBlocklistAction: int
     }
 
     /**
-     * 文字列表現を取得
+     * Get string representation
      */
     public function toString(): string
     {
@@ -94,7 +94,7 @@ enum CspBlocklistAction: int
     }
 
     /**
-     * 文字列からEnumを取得
+     * Get Enum from string
      */
     public static function fromString(string $value): ?self
     {
@@ -106,7 +106,7 @@ enum CspBlocklistAction: int
     }
 
     /**
-     * CSSクラスを取得（色分け用）
+     * Get CSS class (for color coding)
      */
     public function cssClass(): string
     {
@@ -117,7 +117,7 @@ enum CspBlocklistAction: int
     }
 
     /**
-     * 色名を取得（radio-card-group用）
+     * Get color name (for radio-card-group)
      */
     public function colorName(): string
     {
@@ -128,7 +128,7 @@ enum CspBlocklistAction: int
     }
 
     /**
-     * アイコンクラスを取得
+     * Get icon class
      */
     public function iconClass(): string
     {
@@ -139,7 +139,7 @@ enum CspBlocklistAction: int
     }
 
     /**
-     * デフォルト値を取得
+     * Get default value
      */
     public static function default(): self
     {
@@ -147,7 +147,7 @@ enum CspBlocklistAction: int
     }
 
     /**
-     * すべてのアクションを取得
+     * Get all actions
      */
     public static function all(): array
     {
@@ -155,7 +155,7 @@ enum CspBlocklistAction: int
     }
 
     /**
-     * すべての文字列値を取得
+     * Get all string values
      */
     public static function getAllStrings(): array
     {
@@ -163,7 +163,7 @@ enum CspBlocklistAction: int
     }
 
     /**
-     * 数値からEnumを取得
+     * Get Enum from number
      */
     public static function fromValue(int|string $value): ?self
     {
@@ -177,7 +177,7 @@ enum CspBlocklistAction: int
     }
 
     /**
-     * すべての数値を取得
+     * Get all numeric values
      */
     public static function getAllValues(): array
     {
@@ -185,7 +185,7 @@ enum CspBlocklistAction: int
     }
 
     /**
-     * バリデーションルール用の文字列を取得（数値版）
+     * Get string for validation rule (numeric version)
      */
     public static function validationRule(): string
     {

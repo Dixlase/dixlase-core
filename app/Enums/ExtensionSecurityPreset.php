@@ -36,42 +36,42 @@
 namespace App\Enums;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * 拡張機能セキュリティのプリセットモード
+ * Extension security preset mode
  */
 enum ExtensionSecurityPreset: string
 {
     /**
-     * 開発・検証モード
-     * - 未署名や未定義もインストール可（警告表示）
-     * - 本番環境では選択不可にすることも検討
+     * Development/Testing mode
+     * - Allows unsigned or undefined installations (with warning)
+     * - Consider disabling this option in production
      */
     case Development = 'development';
 
     /**
-     * バランスモード
-     * - 署名または信頼済みマーケット由来ならOK
-     * - 健全性「注意」まで許可
+     * Balanced mode
+     * - Accepts signed or trusted marketplace sources
+     * - Allows health status up to "Caution"
      */
     case Balanced = 'balanced';
 
     /**
-     * 厳格モード（推奨）
-     * - 署名必須
-     * - 権限定義必須
-     * - 健全性「良好」のみ許可
+     * Strict mode (recommended)
+     * - Signature required
+     * - Permission definition required
+     * - Only allows "Good" health status
      */
     case Strict = 'strict';
 
     /**
-     * カスタムモード
-     * - ユーザーが個別に設定
+     * Custom mode
+     * - User configures individually
      */
     case Custom = 'custom';
 
     /**
-     * 翻訳キーを取得
+     * Get translation key
      */
     public function translationKey(): string
     {
@@ -79,7 +79,7 @@ enum ExtensionSecurityPreset: string
     }
 
     /**
-     * ラベルを取得
+     * Get label
      */
     public function label(): string
     {
@@ -87,7 +87,7 @@ enum ExtensionSecurityPreset: string
     }
 
     /**
-     * 説明を取得
+     * Get description
      */
     public function description(): string
     {
@@ -95,7 +95,7 @@ enum ExtensionSecurityPreset: string
     }
 
     /**
-     * このプリセットのデフォルト設定を取得
+     * Get default settings for this preset
      */
     public function getDefaultSettings(): array
     {
@@ -128,7 +128,7 @@ enum ExtensionSecurityPreset: string
                 'allow_logic_themes' => true,
             ],
             self::Custom => [
-                // カスタムモードはユーザー設定を使用
+                // Custom mode uses user settings
                 'require_signature' => false,
                 'require_permission_definition' => false,
                 'allow_undefined_permissions' => true,
@@ -141,7 +141,7 @@ enum ExtensionSecurityPreset: string
     }
 
     /**
-     * CSSクラスを取得（色分け用）
+     * Get CSS class (for color coding)
      */
     public function cssClass(): string
     {
@@ -154,7 +154,7 @@ enum ExtensionSecurityPreset: string
     }
 
     /**
-     * アイコンクラスを取得
+     * Get icon class
      */
     public function iconClass(): string
     {
@@ -167,7 +167,7 @@ enum ExtensionSecurityPreset: string
     }
 
     /**
-     * 本番環境で使用可能かどうか
+     * Whether it can be used in production environment
      */
     public function isProductionSafe(): bool
     {
@@ -178,7 +178,7 @@ enum ExtensionSecurityPreset: string
     }
 
     /**
-     * すべてのプリセットを取得
+     * Get all presets
      */
     public static function all(): array
     {
@@ -186,7 +186,7 @@ enum ExtensionSecurityPreset: string
     }
 
     /**
-     * デフォルト値を取得
+     * Get default value
      */
     public static function default(): self
     {
@@ -194,7 +194,7 @@ enum ExtensionSecurityPreset: string
     }
 
     /**
-     * 本番環境で使用可能なプリセットのみ取得
+     * Get only presets available for production environment
      */
     public static function productionSafe(): array
     {
@@ -202,7 +202,7 @@ enum ExtensionSecurityPreset: string
     }
 
     /**
-     * 色名を取得（radio-card-group用）
+     * Get color name (for radio-card-group)
      */
     public function colorName(): string
     {
@@ -215,7 +215,7 @@ enum ExtensionSecurityPreset: string
     }
 
     /**
-     * radio-card-groupコンポーネント用のオプション配列を取得
+     * Get options array for radio-card-group component
      */
     public static function getRadioCardOptions(): array
     {
@@ -229,7 +229,7 @@ enum ExtensionSecurityPreset: string
                 'color' => $preset->colorName(),
             ];
 
-            // 本番環境で使用不可の場合はバッジを追加
+            // Add badge if not available in production environment
             if (! $preset->isProductionSafe()) {
                 $option['badge'] = 'admin/settings/security/extensions.security.dev_only';
                 $option['badgeColor'] = 'yellow';

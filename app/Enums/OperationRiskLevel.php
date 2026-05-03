@@ -38,17 +38,17 @@
 namespace App\Enums;
 
 /**
- * 操作リスクレベル
+ * Operation risk level
  *
- * β版での「強制再認証」機能の基盤として使用
- * 重大操作（Danger Zone）の判定に使用
+ * Used as the foundation for the "forced re-authentication" feature in beta
+ * Used to determine critical operations (Danger Zone)
  */
 enum OperationRiskLevel: int
 {
-    case Low = 0;       // 閲覧・参照のみ
-    case Medium = 1;    // 編集・更新
-    case High = 2;      // 削除・重要設定変更
-    case Critical = 3;  // システム設定・セキュリティ設定・APIキー操作
+    case Low = 0;       // View/reference only
+    case Medium = 1;    // Edit/update
+    case High = 2;      // Delete/critical settings changes
+    case Critical = 3;  // System settings/security settings/API key operations
 
     /**
      * Get the string representation
@@ -96,7 +96,7 @@ enum OperationRiskLevel: int
     }
 
     /**
-     * Check if this level requires step-up authentication (β版で実装予定)
+     * Check if this level requires step-up authentication (planned for beta implementation)
      */
     public function requiresStepUpAuth(): bool
     {

@@ -38,7 +38,7 @@
 namespace App\Enums;
 
 /**
- * 二要素認証方式定義
+ * Two-factor authentication method definition
  */
 enum TwoFaMethod: int
 {
@@ -82,18 +82,18 @@ enum TwoFaMethod: int
     }
 
     /**
-     * セキュリティレベルを取得（5段階評価）
+     * Get security level (rated on a scale of 5)
      */
     public function securityLevel(): int
     {
         return match ($this) {
-            self::PASSKEY => 5,  // 最も安全
-            self::EMAIL => 3,    // 中程度のセキュリティ
+            self::PASSKEY => 5,  // Most secure
+            self::EMAIL => 3,    // Medium security
         };
     }
 
     /**
-     * セキュリティレベルのラベル
+     * Security level label
      */
     public function securityLevelLabel(): string
     {
@@ -104,7 +104,7 @@ enum TwoFaMethod: int
     }
 
     /**
-     * セキュリティの説明
+     * Security description
      */
     public function securityDescription(): string
     {
@@ -115,7 +115,7 @@ enum TwoFaMethod: int
     }
 
     /**
-     * 推奨される認証方法かどうか
+     * Whether this is a recommended authentication method
      */
     public function isRecommended(): bool
     {

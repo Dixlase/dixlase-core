@@ -36,43 +36,43 @@
 namespace App\Enums;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * プラグイン有効化ポリシー
+ * Plugin activation policy
  *
- * 健全性スコアと致命的問題の有無に基づき、
- * プラグイン有効化時のアクションを決定します。
+ * Based on health score and presence of critical issues,
+ * determines the action to take when activating a plugin
  *
- * 判定基準:
- * - score >= 90 & 致命的なし: Allowed
- * - score >= 70 & 致命的なし: WarningRequired
- * - score >= 50 & 致命的なし: AcknowledgementRequired
- * - score < 50 または致命的あり: Blocked
+ * Criteria:
+ * - score >= 90 & no critical issues: Allowed
+ * - score >= 70 & no critical issues: WarningRequired
+ * - score >= 50 & no critical issues: AcknowledgementRequired
+ * - score < 50 or critical issues present: Blocked
  */
 enum PluginEnableAction: string
 {
     /**
-     * 問題なし → そのまま有効化
+     * No issues → activate directly
      */
     case Allowed = 'allowed';
 
     /**
-     * 軽微な問題 → 警告表示して続行可能
+     * Minor issues → show warning and allow continuation
      */
     case WarningRequired = 'warning';
 
     /**
-     * 重要な問題 → 確認チェック必須
+     * Significant issues → acknowledgement required
      */
     case AcknowledgementRequired = 'ack';
 
     /**
-     * 致命的な問題 → 有効化不可
+     * Critical issues → activation blocked
      */
     case Blocked = 'blocked';
 
     /**
-     * 翻訳キーを取得
+     * Get translation key
      */
     public function translationKey(): string
     {
@@ -80,7 +80,7 @@ enum PluginEnableAction: string
     }
 
     /**
-     * ラベルを取得
+     * Get label
      */
     public function label(): string
     {
@@ -88,7 +88,7 @@ enum PluginEnableAction: string
     }
 
     /**
-     * 有効化を許可するかどうか
+     * Whether activation is allowed
      */
     public function isAllowed(): bool
     {
@@ -96,7 +96,7 @@ enum PluginEnableAction: string
     }
 
     /**
-     * 警告表示が必要かどうか
+     * Whether warning display is required
      */
     public function requiresWarning(): bool
     {
@@ -104,7 +104,7 @@ enum PluginEnableAction: string
     }
 
     /**
-     * 確認チェックが必須かどうか
+     * Whether acknowledgement is required
      */
     public function requiresAcknowledgement(): bool
     {

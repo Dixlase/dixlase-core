@@ -36,39 +36,39 @@
 namespace App\Enums;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * メニュー表示設定定義
+ * Menu visibility settings definition
  */
 enum MenuVisibility: int
 {
     /**
-     * すべて表示、使えるようにする
+     * Display all and enable
      */
     case Full = 0;
 
     /**
-     * 一部の機能のみ表示、非表示の部分は自動設定
+     * Display only some features, auto-configure hidden parts
      */
     case Partial = 1;
 
     /**
-     * メニュー丸ごと非表示、自動設定もしくは使えないようにする
+     * Hide entire menu, auto-configure or disable
      */
     case Hidden = 2;
 
     /**
-     * 表示するが「状態表示のみ（読み取り専用）」
+     * Display but "status display only (read-only)"
      */
     case ReadOnly = 3;
 
     /**
-     * 表示するが「導線のみ（設定は別ページ or モード切替へ誘導）」
+     * Display but "navigation only (settings on separate page or guide to mode switch)"
      */
     case GuideOnly = 4;
 
     /**
-     * 翻訳キーを取得
+     * Get translation key
      */
     public function translationKey(): string
     {
@@ -82,7 +82,7 @@ enum MenuVisibility: int
     }
 
     /**
-     * 説明の翻訳キーを取得
+     * Get description translation key
      */
     public function descriptionKey(): string
     {
@@ -96,7 +96,7 @@ enum MenuVisibility: int
     }
 
     /**
-     * アイコンクラスを取得
+     * Get icon class
      */
     public function iconClass(): string
     {
@@ -110,7 +110,7 @@ enum MenuVisibility: int
     }
 
     /**
-     * バッジカラーを取得
+     * Get badge color
      */
     public function badgeColor(): string
     {
@@ -124,7 +124,7 @@ enum MenuVisibility: int
     }
 
     /**
-     * 整数値からMenuVisibilityを取得
+     * Get MenuVisibility from integer value
      */
     public static function fromInt(?int $value): self
     {

@@ -38,34 +38,34 @@
 namespace App\Enums;
 
 /**
- * コンテンツ保存方法の列挙型
+ * Enum for content storage types
  *
- * ページコンテンツやフロントページのデザインなど、
- * 編集可能なコンテンツの保存方法を定義します。
+ * Defines how editable content such as page content and front page designs
+ * are stored
  */
 enum ContentStorageType: int
 {
     /**
-     * データベースに保存
-     * - DBのcontentカラムなどに保存
-     * - 管理画面から直接編集
-     * - バックアップはDB経由
+     * Store in database
+     * - Stored in DB content column, etc.
+     * - Editable directly from admin panel
+     * - Backup via DB
      */
     case DATABASE = 0;
 
     /**
-     * ファイルとして保存
-     * - storage/app/pages/{slug}.blade.php などに保存
-     * - ローカルエディタで直接編集可能
-     * - Gitでバージョン管理可能
+     * Store as file
+     * - Stored in storage/app/pages/{slug}.blade.php, etc.
+     * - Editable directly in local editor
+     * - Version controllable with Git
      */
     case FILE = 1;
 
     /**
-     * 旧文字列識別子（スラッグ）を取得
+     * Get legacy string identifier (slug)
      *
-     * JS/Alpine.jsとの互換性維持に使用。
-     * フォームの値やJSに渡す場合はこのメソッドを使用する。
+     * Used to maintain compatibility with JS/Alpine.js
+     * Use this method when passing values to forms or JS
      */
     public function slug(): string
     {
@@ -76,9 +76,9 @@ enum ContentStorageType: int
     }
 
     /**
-     * スラッグ文字列からEnumインスタンスを取得
+     * Get Enum instance from slug string
      *
-     * @throws \ValueError スラッグが見つからない場合
+     * @throws \ValueError When slug is not found
      */
     public static function fromSlug(string $slug): self
     {
@@ -92,7 +92,7 @@ enum ContentStorageType: int
     }
 
     /**
-     * スラッグ文字列からEnumインスタンスを取得（失敗時はnull）
+     * Get Enum instance from slug string (returns null on failure)
      */
     public static function tryFromSlug(string $slug): ?self
     {
@@ -106,7 +106,7 @@ enum ContentStorageType: int
     }
 
     /**
-     * 翻訳キーを取得
+     * Get translation key
      */
     public function translationKey(): string
     {
@@ -117,7 +117,7 @@ enum ContentStorageType: int
     }
 
     /**
-     * 説明の翻訳キーを取得
+     * Get description translation key
      */
     public function descriptionKey(): string
     {
@@ -128,7 +128,7 @@ enum ContentStorageType: int
     }
 
     /**
-     * すべての選択肢を取得
+     * Get all options
      */
     public static function options(): array
     {
@@ -139,7 +139,7 @@ enum ContentStorageType: int
     }
 
     /**
-     * すべての選択肢を説明付きで取得
+     * Get all options with descriptions
      */
     public static function optionsWithDescription(): array
     {

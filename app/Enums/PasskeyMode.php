@@ -38,16 +38,16 @@
 namespace App\Enums;
 
 /**
- * パスキーモード定義
+ * Passkey mode definition
  */
 enum PasskeyMode: int
 {
-    case Disabled = 0;           // 無効
-    case Enabled = 1;            // 有効
-    case UseProfileSetting = 2;  // プロフィール設定に従う
+    case Disabled = 0;           // Disabled
+    case Enabled = 1;            // Enabled
+    case UseProfileSetting = 2;  // Follow profile settings
 
     /**
-     * ラベルを取得
+     * Get label
      */
     public function label(): string
     {
@@ -59,7 +59,7 @@ enum PasskeyMode: int
     }
 
     /**
-     * 説明を取得
+     * Get description
      */
     public function description(): string
     {
@@ -71,7 +71,7 @@ enum PasskeyMode: int
     }
 
     /**
-     * アイコンを取得
+     * Get icon
      */
     public function icon(): string
     {
@@ -83,7 +83,7 @@ enum PasskeyMode: int
     }
 
     /**
-     * 全体設定画面用のオプション配列を取得（ラジオカード用）
+     * Get options array for global settings screen (for radio cards)
      */
     public static function getGlobalOptions(): array
     {
@@ -110,24 +110,24 @@ enum PasskeyMode: int
     }
 
     /**
-     * パスキーが有効かどうかを判定
+     * Determine if passkey is enabled
      *
-     * @param  int|null  $globalSetting  全体設定の値
-     * @param  int|null  $userSetting  ユーザー設定の値
+     * @param  int|null  $globalSetting  Global settings value
+     * @param  int|null  $userSetting  User settings value
      */
     public static function isEnabled(?int $globalSetting, ?int $userSetting = null): bool
     {
-        // 全体設定が無効の場合は常に無効
+        // Always disabled when global settings are disabled
         if ($globalSetting === self::Disabled->value) {
             return false;
         }
 
-        // 全体設定が有効の場合は常に有効
+        // Always enabled when global settings are enabled
         if ($globalSetting === self::Enabled->value) {
             return true;
         }
 
-        // 全体設定がプロフィール設定に従う場合は、ユーザー設定を確認
+        // Check user settings when global settings follow profile settings
         if ($globalSetting === self::UseProfileSetting->value) {
             return $userSetting === self::Enabled->value;
         }
@@ -136,32 +136,32 @@ enum PasskeyMode: int
     }
 
     /**
-     * プロフィールで設定可能かどうかを判定
+     * Determine if configurable in profile
      *
-     * @param  int|null  $globalSetting  全体設定の値
+     * @param  int|null  $globalSetting  Global settings value
      */
     public static function isProfileEditable(?int $globalSetting): bool
     {
-        // 全体設定が「プロフィール設定に従う」の場合のみ編集可能
+        // Editable only when global settings are set to "Follow profile settings"
         return $globalSetting === self::UseProfileSetting->value;
     }
 
     /**
-     * プロフィールで強制される値を取得（編集不可の場合）
+     * Get forced value in profile (when not editable)
      *
-     * @param  int|null  $globalSetting  全体設定の値
-     * @return bool|null 強制される値（null=編集可能）
+     * @param  int|null  $globalSetting  Global settings value
+     * @return bool|null Forced value (null = editable)
      */
     public static function getForcedProfileValue(?int $globalSetting): ?bool
     {
         if ($globalSetting === self::Disabled->value) {
-            return false; // 無効に強制
+            return false; // Forced to disabled
         }
 
         if ($globalSetting === self::Enabled->value) {
-            return true; // 有効に強制
+            return true; // Forced to enabled
         }
 
-        return null; // 編集可能
+        return null; // Editable
     }
 }

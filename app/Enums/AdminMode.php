@@ -36,9 +36,9 @@
 namespace App\Enums;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * 管理画面モード定義
+ * Admin panel mode definition
  */
 enum AdminMode: int
 {
@@ -46,7 +46,7 @@ enum AdminMode: int
     case Advanced = 1;
 
     /**
-     * 翻訳キーを取得
+     * Get translation key
      */
     public function translationKey(): string
     {
@@ -57,7 +57,7 @@ enum AdminMode: int
     }
 
     /**
-     * 説明の翻訳キーを取得
+     * Get description translation key
      */
     public function descriptionKey(): string
     {
@@ -68,7 +68,7 @@ enum AdminMode: int
     }
 
     /**
-     * アイコンクラスを取得
+     * Get icon class
      */
     public function iconClass(): string
     {
@@ -79,7 +79,7 @@ enum AdminMode: int
     }
 
     /**
-     * かんたんモードかどうか
+     * Whether it is simple mode
      */
     public function isSimple(): bool
     {
@@ -87,7 +87,7 @@ enum AdminMode: int
     }
 
     /**
-     * 詳細モードかどうか
+     * Whether it is advanced mode
      */
     public function isAdvanced(): bool
     {
@@ -95,7 +95,7 @@ enum AdminMode: int
     }
 
     /**
-     * デフォルト値を取得
+     * Get default value
      */
     public static function default(): self
     {
@@ -103,7 +103,7 @@ enum AdminMode: int
     }
 
     /**
-     * 整数値からモードを取得
+     * Get mode from integer value
      */
     public static function fromInt(?int $value): self
     {

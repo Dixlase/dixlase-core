@@ -38,18 +38,18 @@
 namespace App\Enums;
 
 /**
- * ログイン識別子モード
+ * Login identifier mode
  *
- * 管理画面ログインで受け付ける識別子（メールアドレス / アカウント名）を制御する
+ * Controls which identifiers (email address / account name) are accepted for admin panel login
  */
 enum LoginIdentifierMode: int
 {
-    case EmailOnly = 0;            // メールアドレスのみ
-    case EmailOrAccountName = 1;   // メールアドレスまたはアカウント名
-    case AccountNameOnly = 2;      // アカウント名のみ
+    case EmailOnly = 0;            // Email address only
+    case EmailOrAccountName = 1;   // Email address or account name
+    case AccountNameOnly = 2;      // Account name only
 
     /**
-     * メールアドレスでのログインをサポートするか
+     * Whether login with email address is supported
      */
     public function supportsEmail(): bool
     {
@@ -60,7 +60,7 @@ enum LoginIdentifierMode: int
     }
 
     /**
-     * アカウント名でのログインをサポートするか
+     * Whether login with account name is supported
      */
     public function supportsAccountName(): bool
     {
@@ -71,7 +71,7 @@ enum LoginIdentifierMode: int
     }
 
     /**
-     * ラベルを取得
+     * Get label
      */
     public function label(): string
     {
@@ -79,7 +79,7 @@ enum LoginIdentifierMode: int
     }
 
     /**
-     * 翻訳キーを取得
+     * Get translation key
      */
     public function translationKey(): string
     {
@@ -91,7 +91,7 @@ enum LoginIdentifierMode: int
     }
 
     /**
-     * 説明文の翻訳キーを取得
+     * Get description translation key
      */
     public function descriptionKey(): string
     {
@@ -103,7 +103,7 @@ enum LoginIdentifierMode: int
     }
 
     /**
-     * アイコンクラスを取得
+     * Get icon class
      */
     public function iconClass(): string
     {
@@ -115,7 +115,7 @@ enum LoginIdentifierMode: int
     }
 
     /**
-     * ラジオカードグループ用のオプション配列を取得
+     * Get options array for radio card group
      *
      * @return array<int, array{label: string, description: string, icon: string}>
      */

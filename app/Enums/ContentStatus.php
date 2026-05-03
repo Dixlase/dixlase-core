@@ -38,20 +38,20 @@
 namespace App\Enums;
 
 /**
- * コンテンツステータス
- * ページ、ブログ記事などの公開状態を管理
+ * Content status
+ * Manages publication state for pages, blog posts, etc.
  */
 enum ContentStatus: int
 {
-    case DRAFT = 0;       // 下書き
-    case PUBLISHED = 1;   // 公開
-    case SCHEDULED = 2;   // 日付指定
+    case DRAFT = 0;       // draft
+    case PUBLISHED = 1;   // public
+    case SCHEDULED = 2;   // scheduled
 
     /**
-     * 旧文字列識別子（スラッグ）を取得
+     * Get legacy string identifier (slug)
      *
-     * JS/Alpine.jsとの互換性維持に使用。
-     * フォームの値やJSに渡す場合はこのメソッドを使用する。
+     * Used to maintain compatibility with JS/Alpine.js.
+     * Use this method when passing to form values or JS.
      */
     public function slug(): string
     {
@@ -63,9 +63,9 @@ enum ContentStatus: int
     }
 
     /**
-     * スラッグ文字列からEnumインスタンスを取得
+     * Get Enum instance from slug string
      *
-     * @throws \ValueError スラッグが見つからない場合
+     * @throws \ValueError When slug is not found
      */
     public static function fromSlug(string $slug): self
     {
@@ -79,7 +79,7 @@ enum ContentStatus: int
     }
 
     /**
-     * スラッグ文字列からEnumインスタンスを取得（失敗時はnull）
+     * Get Enum instance from slug string (returns null on failure)
      */
     public static function tryFromSlug(string $slug): ?self
     {
@@ -93,7 +93,7 @@ enum ContentStatus: int
     }
 
     /**
-     * ステータスの表示名を取得
+     * Get display name of status
      */
     public function label(): string
     {
@@ -105,7 +105,7 @@ enum ContentStatus: int
     }
 
     /**
-     * ステータスの説明を取得
+     * Get description of status
      */
     public function description(): string
     {
@@ -117,7 +117,7 @@ enum ContentStatus: int
     }
 
     /**
-     * CSSクラスを取得（ステータスバッジ用）
+     * Get CSS class (for status badge)
      */
     public function cssClass(): string
     {
@@ -129,7 +129,7 @@ enum ContentStatus: int
     }
 
     /**
-     * 全てのステータスを配列で取得
+     * Get all statuses as array
      */
     public static function toArray(): array
     {
@@ -141,7 +141,7 @@ enum ContentStatus: int
     }
 
     /**
-     * 公開可能なステータスかどうか
+     * Whether the status is publishable
      */
     public function isPublishable(): bool
     {
@@ -152,7 +152,7 @@ enum ContentStatus: int
     }
 
     /**
-     * ラベル付きオプションを取得（フォーム用）
+     * Get labeled options (for forms)
      */
     public static function optionsWithDescription(): array
     {

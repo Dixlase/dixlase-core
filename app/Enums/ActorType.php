@@ -38,10 +38,10 @@
 namespace App\Enums;
 
 /**
- * アクター種別定義
+ * Actor type definition
  *
- * ロールやメンバーに紐づくアクターの種類を定義する。
- * カスタムロールの actor_type カラムや、将来的に Actor インターフェースで使用。
+ * Defines the types of actors associated with roles and members
+ * Used in the actor_type column of custom roles and potentially in the Actor interface in the future
  */
 enum ActorType: string
 {
@@ -50,7 +50,7 @@ enum ActorType: string
     case Service = 'service';
 
     /**
-     * 翻訳済みラベルを取得
+     * Get translated label
      */
     public function label(): string
     {

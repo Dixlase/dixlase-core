@@ -36,9 +36,9 @@
 namespace App\Enums;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * CAPTCHAプロバイダー定義
+ * CAPTCHA provider definition
  */
 enum CaptchaProvider: string
 {

@@ -36,45 +36,45 @@
 namespace App\Enums;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * プラグイン・テーマの健全性ステータス
+ * Plugin/theme health status
  *
- * 健全性は「中身の整合性・状態」を表します。
- * 宣言された権限と実態の一致、署名の有効性、CSP適合性などを評価します。
+ * Health represents the internal consistency and state
+ * Evaluates the match between declared permissions and actual behavior, signature validity, CSP compliance, etc.
  *
- * 点数化ルール:
- * - 初期スコア: 100
- * - 指摘ごとに減点
- * - 90-100: Healthy（健全）
- * - 70-89: Advisory（注意）
- * - 0-69: NeedsAttention（要確認）
- * - 致命的フラグ: 即座にNeedsAttention
+ * Scoring rules:
+ * - Initial score: 100
+ * - Deduct points for each issue
+ * - 90-100: Healthy
+ * - 70-89: Advisory
+ * - 0-69: NeedsAttention
+ * - Critical flag: immediately NeedsAttention
  */
 enum PluginHealthStatus: string
 {
     /**
-     * 健全 - 宣言と実態が一致、署名OK、CSP適合
+     * Healthy - declarations match reality, signature OK, CSP compliant
      */
     case Healthy = 'healthy';
 
     /**
-     * 注意 - 軽微な指摘あり（未署名、軽い不一致など）
+     * Advisory - minor issues present (unsigned, minor mismatches, etc.)
      */
     case Advisory = 'advisory';
 
     /**
-     * 要確認 - 重要な指摘あり（署名不一致、大きな権限不一致）
+     * NeedsAttention - significant issues present (signature mismatch, major permission discrepancies)
      */
     case NeedsAttention = 'needs_attention';
 
     /**
-     * 未確認 - 情報不足（未スキャン、権限未定義）
+     * Unknown - insufficient information (not scanned, permissions undefined)
      */
     case NotVerified = 'not_verified';
 
     /**
-     * スコアから健全性ステータスを判定
+     * Determine health status from score
      */
     public static function fromScore(int $score, bool $hasCriticalIssue = false): self
     {
@@ -91,7 +91,7 @@ enum PluginHealthStatus: string
     }
 
     /**
-     * 翻訳キーを取得
+     * Get translation key
      */
     public function translationKey(): string
     {
@@ -99,7 +99,7 @@ enum PluginHealthStatus: string
     }
 
     /**
-     * ラベルを取得
+     * Get label
      */
     public function label(): string
     {
@@ -107,7 +107,7 @@ enum PluginHealthStatus: string
     }
 
     /**
-     * 説明を取得
+     * Get description
      */
     public function description(): string
     {
@@ -115,7 +115,7 @@ enum PluginHealthStatus: string
     }
 
     /**
-     * ツールチップを取得
+     * Get tooltip
      */
     public function tooltip(): string
     {
@@ -123,7 +123,7 @@ enum PluginHealthStatus: string
     }
 
     /**
-     * CSSクラスを取得（バッジ用）
+     * Get CSS class (for badge)
      */
     public function badgeClass(): string
     {
@@ -136,7 +136,7 @@ enum PluginHealthStatus: string
     }
 
     /**
-     * アイコンクラスを取得
+     * Get icon class
      */
     public function iconClass(): string
     {
@@ -149,7 +149,7 @@ enum PluginHealthStatus: string
     }
 
     /**
-     * 色名を取得
+     * Get color name
      */
     public function colorName(): string
     {
@@ -162,7 +162,7 @@ enum PluginHealthStatus: string
     }
 
     /**
-     * 有効化可能かどうか（セキュリティ設定に基づく）
+     * Whether it can be enabled (based on security settings)
      */
     public function canActivate(ExtensionSecurityLevel $maxAllowedLevel): bool
     {
@@ -177,7 +177,7 @@ enum PluginHealthStatus: string
     }
 
     /**
-     * インストール可能かどうか
+     * Whether it can be installed
      */
     public function canInstall(ExtensionSecurityLevel $maxAllowedLevel): bool
     {
@@ -185,7 +185,7 @@ enum PluginHealthStatus: string
     }
 
     /**
-     * すべてのステータスを取得
+     * Get all statuses
      */
     public static function all(): array
     {
@@ -193,12 +193,12 @@ enum PluginHealthStatus: string
     }
 
     /**
-     * 減点ルールを取得
+     * Get deduction rules
      */
     public static function getDeductionRules(): array
     {
         return [
-            // 署名関連
+            // Signature related
             'signature_unsigned' => -10,
             'signature_invalid' => -50,
             'signature_mismatch' => -50,
@@ -207,17 +207,17 @@ enum PluginHealthStatus: string
             'signature_expired' => -20,
             'signature_error' => -10,
 
-            // サプライチェーン防御用メタデータ
+            // Metadata for supply chain defense
             'missing_author_id' => -3,
             'missing_authority_key_id' => -3,
 
-            // 権限関連
+            // Permission related
             'permission_undeclared_minor' => -5,
             'permission_undeclared_major' => -15,
             'permission_unused' => -2,
             'permission_undefined' => -10,
 
-            // CSP関連（モード別）
+            // CSP related (by mode)
             'csp_violation_dev' => 0,
             'csp_violation_standard' => -5,
             'csp_violation_strict' => -15,
@@ -225,21 +225,21 @@ enum PluginHealthStatus: string
             'csp_inline_css_required' => -5,
             'csp_external_resources' => -3,
 
-            // スキャン関連
+            // Scan related
             'scan_outdated' => -5,
             'scan_not_performed' => -10,
 
-            // 危険なAPI
+            // Dangerous API
             'dangerous_api_exec' => -30,
             'dangerous_api_env_access' => -20,
 
-            // ファイル配置
+            // File placement
             'file_outside_scope' => -20,
         ];
     }
 
     /**
-     * 致命的な問題かどうかを判定
+     * Determine if it is a critical issue
      */
     public static function isCriticalIssue(string $issueType): bool
     {

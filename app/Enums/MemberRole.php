@@ -38,7 +38,7 @@
 namespace App\Enums;
 
 /**
- * メンバーロール定義
+ * Member role definition
  */
 enum MemberRole: int
 {
@@ -63,7 +63,7 @@ enum MemberRole: int
 
     public function priority(): int
     {
-        return $this->value; // 今回は value と priority を同じにする
+        return $this->value; // For now, value and priority are set to the same
     }
 
     public function canAccess(MemberRole $requiredRole): bool

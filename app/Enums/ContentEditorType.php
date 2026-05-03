@@ -38,50 +38,50 @@
 namespace App\Enums;
 
 /**
- * コンテンツエディタータイプの列挙型
+ * Content editor type enum
  *
- * ページコンテンツやフロントページのデザインなど、
- * 編集可能なコンテンツの編集方法を定義します。
+ * Defines how editable content such as page content and front page design
+ * can be edited
  */
 enum ContentEditorType: int
 {
     /**
-     * GUIエディタ（将来実装）
-     * - ブロックエディタやWYSIWYGエディタ
-     * - ドラッグ&ドロップでレイアウト構築
-     * - 技術知識不要
+     * GUI Editor (future implementation)
+     * - Block editor or WYSIWYG editor
+     * - Build layouts with drag & drop
+     * - No technical knowledge required
      */
     case GUI = 1;
 
     /**
-     * Markdown形式
-     * - Markdown記法で記述
-     * - プレビュー機能付き
-     * - シンプルで学習コスト低
+     * Markdown format
+     * - Written in Markdown syntax
+     * - With preview feature
+     * - Simple with low learning cost
      */
     case MARKDOWN = 2;
 
     /**
-     * HTML直接編集
-     * - HTMLタグを直接記述
-     * - 完全な制御が可能
-     * - 技術知識必要
+     * Direct HTML editing
+     * - Write HTML tags directly
+     * - Full control available
+     * - Technical knowledge required
      */
     case HTML = 3;
 
     /**
-     * Bladeテンプレート（FILE保存時のみ）
-     * - Laravel Blade記法で記述
-     * - 動的コンテンツ対応
-     * - 最も柔軟だが技術知識必須
+     * Blade template (FILE storage only)
+     * - Written in Laravel Blade syntax
+     * - Dynamic content support
+     * - Most flexible but technical knowledge required
      */
     case BLADE = 4;
 
     /**
-     * 旧文字列識別子（スラッグ）を取得
+     * Get legacy string identifier (slug)
      *
-     * JS/Alpine.jsとの互換性維持に使用。
-     * フォームの値やJSに渡す場合はこのメソッドを使用する。
+     * Used to maintain compatibility with JS/Alpine.js
+     * Use this method when passing to form values or JS
      */
     public function slug(): string
     {
@@ -94,11 +94,11 @@ enum ContentEditorType: int
     }
 
     /**
-     * スラッグ文字列からEnumインスタンスを取得
+     * Get Enum instance from slug string
      *
-     * フォーム送信値やJSから送られる文字列をEnumに変換する。
+     * Convert strings sent from form submissions or JS to Enum
      *
-     * @throws \ValueError スラッグが見つからない場合
+     * @throws \ValueError When slug is not found
      */
     public static function fromSlug(string $slug): self
     {
@@ -112,7 +112,7 @@ enum ContentEditorType: int
     }
 
     /**
-     * スラッグ文字列からEnumインスタンスを取得（失敗時はnull）
+     * Get Enum instance from slug string (returns null on failure)
      */
     public static function tryFromSlug(string $slug): ?self
     {
@@ -126,7 +126,7 @@ enum ContentEditorType: int
     }
 
     /**
-     * Font Awesome アイコンクラスを取得
+     * Get Font Awesome icon class
      */
     public function iconClass(): string
     {
@@ -139,7 +139,7 @@ enum ContentEditorType: int
     }
 
     /**
-     * アイコンのカラーを取得
+     * Get icon color
      */
     public function iconColor(): string
     {
@@ -152,7 +152,7 @@ enum ContentEditorType: int
     }
 
     /**
-     * 翻訳キーを取得
+     * Get translation key
      */
     public function translationKey(): string
     {
@@ -165,7 +165,7 @@ enum ContentEditorType: int
     }
 
     /**
-     * 説明の翻訳キーを取得
+     * Get description translation key
      */
     public function descriptionKey(): string
     {
@@ -178,7 +178,7 @@ enum ContentEditorType: int
     }
 
     /**
-     * 指定された保存方法で利用可能なエディタータイプを取得
+     * Get available editor types for the specified storage method
      *
      * DATABASE: GUI, Markdown, HTML
      * FILE: Blade, Markdown, HTML
@@ -187,27 +187,27 @@ enum ContentEditorType: int
     {
         return match ($storageType) {
             ContentStorageType::DATABASE => [
-                self::GUI,      // GUIはDATABASEのみ（JSON形式で保存）
-                self::HTML,     // HTMLはDATABASEまたはFILE
-                self::MARKDOWN, // MarkdownはDATABASEまたはFILE
+                self::GUI,      // GUI is DATABASE only (saved in JSON format)
+                self::HTML,     // HTML is DATABASE or FILE
+                self::MARKDOWN, // Markdown is DATABASE or FILE
             ],
             ContentStorageType::FILE => [
-                self::BLADE,    // BladeはFILEのみ（.blade.phpファイルが必要）
-                self::HTML,     // HTMLはDATABASEまたはFILE
-                self::MARKDOWN, // MarkdownはDATABASEまたはFILE
+                self::BLADE,    // Blade is FILE only (requires .blade.php file)
+                self::HTML,     // HTML is DATABASE or FILE
+                self::MARKDOWN, // Markdown is DATABASE or FILE
             ],
         };
     }
 
     /**
-     * 指定されたエディタータイプで利用可能な保存方法を取得
+     * Get available storage methods for the specified editor type
      */
     public static function availableStorageTypes(self $editorType): array
     {
         return match ($editorType) {
-            self::GUI => [ContentStorageType::DATABASE],           // GUIはDATABASEのみ
-            self::BLADE => [ContentStorageType::FILE],             // BladeはFILEのみ
-            self::MARKDOWN, self::HTML => [                        // Markdown/HTMLは両方OK
+            self::GUI => [ContentStorageType::DATABASE],           // GUI is DATABASE only
+            self::BLADE => [ContentStorageType::FILE],             // Blade is FILE only
+            self::MARKDOWN, self::HTML => [                        // Markdown/HTML supports both
                 ContentStorageType::DATABASE,
                 ContentStorageType::FILE,
             ],
@@ -215,7 +215,7 @@ enum ContentEditorType: int
     }
 
     /**
-     * すべての選択肢を取得
+     * Get all choices
      */
     public static function options(): array
     {
@@ -228,7 +228,7 @@ enum ContentEditorType: int
     }
 
     /**
-     * 指定された保存方法で利用可能な選択肢を取得
+     * Get available choices for the specified storage method
      */
     public static function optionsFor(ContentStorageType $storageType): array
     {
@@ -243,7 +243,7 @@ enum ContentEditorType: int
     }
 
     /**
-     * 指定された保存方法で利用可能な選択肢を説明付きで取得
+     * Get available options with descriptions for the specified save method
      */
     public static function optionsWithDescriptionFor(ContentStorageType $storageType): array
     {
@@ -261,14 +261,14 @@ enum ContentEditorType: int
     }
 
     /**
-     * ラジオカードグループ用のオプション配列を取得
+     * Get option array for radio card group
      *
-     * <x-form-radio-card-group> コンポーネントに直接渡せる形式で返す。
-     * GUIエディタはプラグインが提供しない場合 disabled + Coming Soon バッジ付き。
+     * Returns in a format that can be passed directly to the <x-form-radio-card-group> component
+     * GUI editor is disabled with Coming Soon badge if not provided by plugin
      *
-     * @param  ContentStorageType|null  $storageType  保存方法でフィルタ（nullの場合は全て）
-     * @param  array<string>  $exclude  除外するエディタータイプ値
-     * @param  array<string>  $enabledByPlugin  プラグインにより利用可能になったエディタータイプスラッグ
+     * @param  ContentStorageType|null  $storageType  Filter by save method (all if null)
+     * @param  array<string>  $exclude  Editor type values to exclude
+     * @param  array<string>  $enabledByPlugin  Editor type slug made available by plugin
      * @return array<int, array{value: string, label: string, icon: string, description: string, disabled?: bool, badge?: string, badgeColor?: string}>
      */
     public static function radioCardOptions(?ContentStorageType $storageType = null, array $exclude = [], array $enabledByPlugin = []): array
@@ -288,7 +288,7 @@ enum ContentEditorType: int
                 'description' => __($type->descriptionKey()),
             ];
 
-            // GUIは常に選択可能（プラグイン未提供時はコンテンツ領域でプレースホルダーを表示）
+            // GUI is always selectable (shows placeholder in content area when plugin not provided)
 
             $options[] = $option;
         }
@@ -297,7 +297,7 @@ enum ContentEditorType: int
     }
 
     /**
-     * ファイル拡張子を取得
+     * Get file extension
      */
     public function fileExtension(): string
     {
