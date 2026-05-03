@@ -55,7 +55,7 @@ class AdminBaseMaintenanceController extends AdminLoggedInController
     }
 
     /**
-     * メンテナンス設定ページ
+     * Maintenance settings page
      */
     public function index()
     {
@@ -74,7 +74,7 @@ class AdminBaseMaintenanceController extends AdminLoggedInController
     }
 
     /**
-     * メンテナンス設定の更新
+     * Update maintenance settings
      */
     public function update(AdminBaseMaintenanceUpdateRequest $request)
     {
@@ -107,11 +107,11 @@ class AdminBaseMaintenanceController extends AdminLoggedInController
     }
 
     /**
-     * メンテナンス画面のプレビュー
+     * Preview maintenance screen
      */
     public function preview()
     {
-        $message = request()->input('message', '現在メンテナンス中です。しばらくお待ちください。');
+        $message = request()->input('message', __('http/controllers/admin/settings/base/admin_base_maintenance_controller.currently_under_maintenance_please_wait'));
         $releaseAt = request()->input('release_at');
 
         return view('maintenance', [

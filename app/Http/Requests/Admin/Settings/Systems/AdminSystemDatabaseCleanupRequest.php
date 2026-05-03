@@ -54,17 +54,17 @@ class AdminSystemDatabaseCleanupRequest extends FormRequest
      */
     public function rules(): array
     {
-        // コアのクリーンアップタイプ
+        // Core cleanup types
         $coreTypes = array_keys(config('admin.database-cleanup', []));
 
-        // プラグインのクリーンアップタイプ
+        // Plugin cleanup types
         $pluginTypes = [];
         $pluginCleanupInfo = app(\App\Services\DatabaseCleanupService::class)->getPluginCleanupInfo();
         if (! empty($pluginCleanupInfo)) {
             $pluginTypes = array_keys($pluginCleanupInfo);
         }
 
-        // すべてのタイプを結合
+        // Combine all types
         $allTypes = array_merge($coreTypes, $pluginTypes, ['all']);
 
         return [

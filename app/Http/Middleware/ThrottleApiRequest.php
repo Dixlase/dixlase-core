@@ -45,11 +45,11 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * APIレートリミットミドルウェア
+ * API rate limit middleware
  *
- * APIキー認証済みリクエストにはキー別レートリミット、
- * 未認証リクエストにはIP別レートリミットを適用します。
- * レスポンスに X-RateLimit-* ヘッダーを付与します。
+ * Apply per-key rate limit for API key authenticated requests,
+ * and per-IP rate limit for unauthenticated requests
+ * Add X-RateLimit-* headers to responses
  */
 class ThrottleApiRequest
 {
@@ -58,7 +58,7 @@ class ThrottleApiRequest
     ) {}
 
     /**
-     * リクエストを処理
+     * Handle the request
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -69,7 +69,7 @@ class ThrottleApiRequest
             ? $this->rateLimitService->checkRateLimit($apiKey)
             : $this->rateLimitService->checkIpRateLimit($request->ip());
 
-        // レートリミット超過
+        // Rate limit exceeded
         if ($rateLimitInfo['is_limited']) {
             return $this->tooManyRequestsResponse($rateLimitInfo);
         }
@@ -77,7 +77,7 @@ class ThrottleApiRequest
         /** @var Response $response */
         $response = $next($request);
 
-        // レートリミットヘッダーを付与
+        // Add rate limit headers
         $headers = $this->rateLimitService->getRateLimitHeaders($rateLimitInfo);
         foreach ($headers as $name => $value) {
             $response->headers->set($name, (string) $value);
@@ -87,7 +87,7 @@ class ThrottleApiRequest
     }
 
     /**
-     * 429 Too Many Requests レスポンスを生成
+     * Generate 429 Too Many Requests response
      */
     protected function tooManyRequestsResponse(array $rateLimitInfo): JsonResponse
     {

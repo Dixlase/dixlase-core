@@ -40,12 +40,12 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * FORCE_SSL有効時にHTTPリクエストをHTTPSへリダイレクトするミドルウェア
+ * Middleware to redirect HTTP requests to HTTPS when FORCE_SSL is enabled
  */
 class ForceHttps
 {
     /**
-     * リダイレクト対象外のパス
+     * Paths excluded from redirect
      */
     protected array $excludedPaths = [
         'install',
@@ -60,17 +60,17 @@ class ForceHttps
             return $next($request);
         }
 
-        // インストール中はスキップ
+        // Skip during installation
         if ($this->isExcludedPath($request)) {
             return $next($request);
         }
 
-        // 既にHTTPS or リバースプロキシ経由のHTTPSならスキップ
+        // Skip if already HTTPS or HTTPS via reverse proxy
         if ($request->isSecure() || $request->header('X-Forwarded-Proto') === 'https') {
             return $next($request);
         }
 
-        // HTTPリクエストをHTTPSにリダイレクト（301 Permanent Redirect）
+        // Redirect HTTP request to HTTPS (301 Permanent Redirect)
         return redirect()->secure($request->getRequestUri(), 301);
     }
 

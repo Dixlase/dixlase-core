@@ -38,7 +38,7 @@ namespace App\Http\Requests\Admin\Settings\Base;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * コンテンツエディター設定の更新リクエスト
+ * Content editor settings update request
  */
 class AdminBaseEditorUpdateRequest extends FormRequest
 {

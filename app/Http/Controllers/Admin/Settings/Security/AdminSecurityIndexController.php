@@ -57,44 +57,44 @@ class AdminSecurityIndexController extends AdminLoggedInController
     }
 
     /**
-     * セキュリティ設定概要ページ
+     * Security settings overview page
      */
     public function index()
     {
-        // メールテスト状態を取得
+        // Get email test status
         $sessionTestResults = session('mail_test_results', []);
         $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? SiteSetting::getValue('mail_connection_tested', false));
         $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? SiteSetting::getValue('mail_send_tested', false));
         $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? SiteSetting::getValue('mail_receive_tested', false));
         $mailTestComplete = $mailConnectionTested && $mailSendTested && $mailReceiveTested;
 
-        // CAPTCHAテスト状態を取得
+        // Get CAPTCHA test status
         $captchaTestService = app(CaptchaTestService::class);
         $captchaEnabled = filter_var($this->securitySettingRepository->get('captcha_enabled', false), FILTER_VALIDATE_BOOLEAN);
         $captchaTestResult = $captchaTestService->getTestResult();
 
-        // ファイル整合性情報を取得
+        // Get file integrity information
         $fileIntegrityService = app(FileIntegrityService::class);
         $latestIntegrityAudit = FileIntegrityAudit::getLatestCore();
         $hasBaseline = $fileIntegrityService->hasBaseline();
 
-        // CSP設定状態
+        // CSP settings status
         $cspEnabled = filter_var($this->securitySettingRepository->get('csp_enabled', true), FILTER_VALIDATE_BOOLEAN);
         $cspModeValue = $this->securitySettingRepository->get('csp_mode', (string) CspMode::default()->value);
         $cspModeEnum = CspMode::fromValue($cspModeValue) ?? CspMode::default();
         $cspMode = $cspModeEnum->label();
 
-        // IP制限状態
+        // IP restriction status
         $enableAllowedAdminIps = filter_var($this->securitySettingRepository->get('enable_allowed_admin_ips', false), FILTER_VALIDATE_BOOLEAN);
         $enableBlockedAdminIps = filter_var($this->securitySettingRepository->get('enable_blocked_admin_ips', false), FILTER_VALIDATE_BOOLEAN);
 
-        // 通知設定状態
+        // Notification settings status
         $notificationEnabled = filter_var($this->securitySettingRepository->get('notification_enabled', true), FILTER_VALIDATE_BOOLEAN);
 
-        // セッション設定
+        // Session settings
         $sessionDriver = config('session.driver', 'file');
 
-        // 環境設定
+        // Environment settings
         $appEnv = config('app.env', 'local');
         $appDebug = config('app.debug', false);
 
@@ -123,7 +123,7 @@ class AdminSecurityIndexController extends AdminLoggedInController
             'staging' => 'fa-flask',
             'production' => 'fa-server',
         ];
-        // サブページの表示可否を判定（Hiddenのサブページはサマリーカード表示）
+        // Determine whether to display subpages (hidden subpages show summary card)
         $subPageKeys = ['password', 'login', 'two-fa', 'captcha', 'session', 'notifications', 'csp', 'extensions', 'ip', 'integrity', 'environment'];
         $subPageVisible = [];
         foreach ($subPageKeys as $key) {
@@ -132,7 +132,7 @@ class AdminSecurityIndexController extends AdminLoggedInController
         }
         $this->viewParams['subPageVisible'] = $subPageVisible;
 
-        // 拡張機能プリセットラベル（概要カードで使用）
+        // Extension preset label (used in overview card)
         $extensionPresetValue = $this->securitySettingRepository->get('extension_security_preset', ExtensionSecurityPreset::Balanced->value);
         $extensionPreset = ExtensionSecurityPreset::tryFrom($extensionPresetValue) ?? ExtensionSecurityPreset::Balanced;
         $this->viewParams['extensionPresetLabel'] = $extensionPreset->label();

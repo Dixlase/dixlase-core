@@ -39,17 +39,17 @@ use App\Models\Member;
 use App\Traits\LoginIdentifierCheckTrait;
 
 /**
- * ログイン識別子確認コントローラー
+ * Login identifier check controller
  *
- * メールアドレスまたはアカウント名の存在確認を行う
- * セキュリティ対策：レート制限、タイミング攻撃対策、監査ログ記録
+ * Check existence of email address or account name
+ * Security measures: rate limiting, timing attack protection, audit log recording
  */
 class AdminLoginIdentifierCheckController extends AdminController
 {
     use LoginIdentifierCheckTrait;
 
     /**
-     * CAPTCHAアクション名を取得
+     * Get CAPTCHA action name
      */
     protected function getCaptchaAction(): string
     {
@@ -57,7 +57,7 @@ class AdminLoginIdentifierCheckController extends AdminController
     }
 
     /**
-     * 設定モデルクラス名を取得
+     * Get settings model class name
      */
     protected function getSettingModelClass(): string
     {
@@ -65,7 +65,7 @@ class AdminLoginIdentifierCheckController extends AdminController
     }
 
     /**
-     * ユーザーモデルクラス名を取得
+     * Get user model class name
      */
     protected function getUserModelClass(): string
     {
@@ -73,7 +73,7 @@ class AdminLoginIdentifierCheckController extends AdminController
     }
 
     /**
-     * コンテキストを取得
+     * Get context
      */
     protected function getContext(): string
     {

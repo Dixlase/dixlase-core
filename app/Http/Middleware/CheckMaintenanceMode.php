@@ -49,55 +49,55 @@ class CheckMaintenanceMode
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // インストールが完了していない場合はメンテナンスチェックをスキップ
-        // config キャッシュ時の env() null 化対策として $_SERVER / $_ENV をフォールバック
+        // Skip maintenance check if installation is not complete
+        // Fallback to $_SERVER / $_ENV to handle env() returning null when config is cached
         $installed = $_SERVER['INSTALLED'] ?? $_ENV['INSTALLED'] ?? env('INSTALLED') ?? config('app.installed');
         if ($installed !== 'true' && $installed !== true) {
             return $next($request);
         }
 
-        // 管理画面とインストール画面は常にアクセス可能
+        // Admin panel and installation screen are always accessible
         if (\App\Helpers\AdminHelper::isAdminRequest($request) || $request->is('install') || $request->is('install/*')) {
             return $next($request);
         }
 
-        // プレビューリクエストは通す
+        // Allow preview requests
         if ($request->is('maintenance-preview')) {
             return $next($request);
         }
 
-        // メンテナンスモード設定を取得
+        // Get maintenance mode settings
         $settings = $this->getMaintenanceSettings();
 
-        // メンテナンスモードが無効な場合は通常処理
+        // Proceed normally if maintenance mode is disabled
         if (! $settings['maintenance_mode']) {
             return $next($request);
         }
 
-        // 開始日時が設定されている場合、まだ開始前かチェック
+        // Check if not yet started when start datetime is set
         if ($settings['maintenance_start_at']) {
             $startAt = \Carbon\Carbon::parse($settings['maintenance_start_at']);
             if (now()->lt($startAt)) {
-                // まだメンテナンス開始前
+                // Maintenance has not started yet
                 return $next($request);
             }
         }
 
-        // 終了日時が設定されている場合、すでに終了しているかチェック
+        // Check if already finished when end datetime is set
         if ($settings['maintenance_release_at']) {
             $releaseAt = \Carbon\Carbon::parse($settings['maintenance_release_at']);
             if (now()->gte($releaseAt)) {
-                // メンテナンス終了済み（自動解除処理はコマンドで行う）
+                // Maintenance has finished (automatic release is handled by command)
                 return $next($request);
             }
         }
 
-        // メンテナンス画面を表示
+        // Display maintenance screen
         return $this->showMaintenancePage($settings);
     }
 
     /**
-     * メンテナンス設定を取得
+     * Get maintenance settings
      */
     private function getMaintenanceSettings(): array
     {
@@ -107,7 +107,7 @@ class CheckMaintenanceMode
 
         return [
             'maintenance_mode' => (bool) $resolver->get('maintenance_mode'),
-            'maintenance_message' => $resolver->get('maintenance_message') ?: '現在メンテナンス中です。しばらくお待ちください。',
+            'maintenance_message' => $resolver->get('maintenance_message') ?: __('http/middleware/check_maintenance_mode.currently_under_maintenance_please_wait'),
             'maintenance_auto_release' => (bool) $resolver->get('maintenance_auto_release'),
             'maintenance_start_at' => $resolver->get('maintenance_start_at'),
             'maintenance_release_at' => $resolver->get('maintenance_release_at'),
@@ -115,19 +115,19 @@ class CheckMaintenanceMode
     }
 
     /**
-     * メンテナンス画面を表示
+     * Display maintenance screen
      */
     private function showMaintenancePage(array $settings): Response
     {
         $retryAfter = null;
 
-        // 自動解除が有効で終了日時が設定されている場合、Retry-Afterヘッダーを計算
+        // Calculate Retry-After header when auto-release is enabled and end datetime is set
         if ($settings['maintenance_auto_release'] && $settings['maintenance_release_at']) {
             $releaseAt = \Carbon\Carbon::parse($settings['maintenance_release_at']);
             $retryAfter = max(0, now()->diffInSeconds($releaseAt, false));
         }
 
-        // 管理メンバーでログイン中なら、管理バーとバナーを表示するためのコンテキストを渡す
+        // Pass context to display admin bar and banner if logged in as admin member
         $member = auth()->guard('member')->user();
         $isAdmin = $member !== null;
         $appearance = $isAdmin
@@ -141,7 +141,7 @@ class CheckMaintenanceMode
             'appearance' => (string) $appearance,
         ], 503);
 
-        // Retry-Afterヘッダーを設定
+        // Set Retry-After header
         if ($retryAfter !== null) {
             $response->header('Retry-After', (string) $retryAfter);
         }

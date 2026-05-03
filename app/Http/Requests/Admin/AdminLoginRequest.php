@@ -82,12 +82,12 @@ class AdminLoginRequest extends FormRequest
         $login = $this->input('login');
         $ipAddress = $this->ip();
 
-        // ロックアウトチェック
+        // Lockout check
         $this->ensureIsNotLockedOut($login, $ipAddress);
 
-        // 認証試行
+        // Authentication attempt
         if (! Auth::guard($guard)->attempt($this->only('login', 'password'))) {
-            // 失敗時の処理
+            // Process on failure
             $lockoutInfo = $this->lockoutService->handleFailedLogin($this, $login, \App\Models\MemberLoginAttempt::FAILURE_INVALID_PASSWORD);
 
             if ($lockoutInfo['is_locked_out'] || $lockoutInfo['is_ip_locked_out']) {
@@ -101,7 +101,7 @@ class AdminLoginRequest extends FormRequest
             ]);
         }
 
-        // 成功時の処理
+        // Process on success
         $this->lockoutService->handleSuccessfulLogin($login);
     }
 
@@ -112,7 +112,7 @@ class AdminLoginRequest extends FormRequest
      */
     protected function ensureIsNotLockedOut(string $login, string $ipAddress): void
     {
-        // ユーザーベースのロックアウトチェック
+        // User-based lockout check
         if ($this->lockoutService->isLockedOut($login)) {
             $remainingMinutes = $this->lockoutService->getLockoutRemainingMinutes($login);
             event(new Lockout($this));
@@ -125,7 +125,7 @@ class AdminLoginRequest extends FormRequest
             ]);
         }
 
-        // IPベースのロックアウトチェック
+        // IP-based lockout check
         if ($this->lockoutService->isIpLockedOut($ipAddress)) {
             event(new Lockout($this));
 

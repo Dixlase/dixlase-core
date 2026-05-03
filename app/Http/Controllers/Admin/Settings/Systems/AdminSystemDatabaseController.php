@@ -51,7 +51,7 @@ class AdminSystemDatabaseController extends AdminLoggedInController
     }
 
     /**
-     * データベース管理画面
+     * Database admin panel
      */
     public function index()
     {
@@ -66,7 +66,7 @@ class AdminSystemDatabaseController extends AdminLoggedInController
     }
 
     /**
-     * 個別データベースクリーンアップ
+     * Individual database cleanup
      */
     public function cleanup(AdminSystemDatabaseCleanupRequest $request)
     {

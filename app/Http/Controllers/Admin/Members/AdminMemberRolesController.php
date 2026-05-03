@@ -49,23 +49,23 @@ class AdminMemberRolesController extends AdminLoggedInController
     }
 
     /**
-     * 権限設定画面
+     * Permission settings screen
      */
     public function index()
     {
         $roles = MemberRole::cases();
         $menuList = config('admin.navigation');
 
-        // コア権限（デフォルト＋オーバーライド合成済み）- ネスト構造
+        // Core permissions (default + override merged) - nested structure
         $corePermissions = PermissionRegistry::getAllCorePermissions();
 
-        // コア権限（フラット形式）- フォーム送信用
+        // Core permissions (flat format) - for form submission
         $corePermissionsFlat = PermissionRegistry::getAllCorePermissionsFlat();
 
-        // プラグイン権限グループを収集
+        // Collect plugin permission groups
         $pluginPermissionGroups = $this->collectPluginPermissions();
 
-        // ロールマッピングデータを事前計算（各アコーディオンビューで共有）
+        // Pre-calculate role mapping data (shared across accordion views)
         $currentUserRole = auth()->user()->role;
         $currentUserRoleValue = $currentUserRole->value;
         $isSuperAdmin = $currentUserRoleValue === MemberRole::SUPER_ADMIN->value;
@@ -111,10 +111,10 @@ class AdminMemberRolesController extends AdminLoggedInController
     }
 
     /**
-     * 権限設定更新
+     * Update permission settings
      *
-     * デフォルト値と異なる場合のみオーバーライドとして保存
-     * デフォルト値に戻す場合はオーバーライドを削除
+     * Save as override only if different from default value
+     * Delete override when reverting to default value
      */
     public function update(Request $request)
     {
@@ -123,36 +123,36 @@ class AdminMemberRolesController extends AdminLoggedInController
         $memberId = auth()->id();
         $data = $request->input('permissions', []);
 
-        // バリデーションエラーを収集
+        // Collect validation errors
         $errors = [];
 
-        // コア権限の処理
+        // Process Core permissions
         foreach ($data as $menuKey => $values) {
             $accessRoles = isset($values['access_roles']) ? (int) $values['access_roles'] : MemberRole::GUEST->value;
             $viewRoles = isset($values['view_roles']) ? (int) $values['view_roles'] : MemberRole::GUEST->value;
 
-            // 編集権限が閲覧権限より下でないかチェック
+            // Check that edit permission is not lower than view permission
             if ($accessRoles < $viewRoles) {
                 $errors[] = __('admin/members/settings/roles.validation.access_must_be_greater_than_view', [
                     'menu_key' => $menuKey,
                 ]);
             }
 
-            // デフォルト値を取得（ネスト構造対応）
+            // Get default value (nested structure support)
             $default = PermissionRegistry::getEffective($menuKey);
 
             if ($default) {
-                // デフォルト値と同じ場合はオーバーライドを削除
+                // Delete override if same as default value
                 if ($accessRoles === $default['default_access_roles'] && $viewRoles === $default['default_view_roles']) {
                     RolePermissionOverride::resetCoreOverride($menuKey);
                 } else {
-                    // デフォルト値と異なる場合はオーバーライドを保存
+                    // Save override if different from default value
                     RolePermissionOverride::setCoreOverride($menuKey, $accessRoles, $viewRoles, $memberId);
                 }
             }
         }
 
-        // プラグイン権限の処理
+        // Process plugin permissions
         $pluginData = $request->input('plugin_permissions', []);
 
         foreach ($pluginData as $pluginSlug => $menuItems) {
@@ -160,41 +160,41 @@ class AdminMemberRolesController extends AdminLoggedInController
                 $accessRoles = isset($values['access_roles']) ? (int) $values['access_roles'] : MemberRole::ADMIN->value;
                 $viewRoles = isset($values['view_roles']) ? (int) $values['view_roles'] : MemberRole::ADMIN->value;
 
-                // 編集権限が閲覧権限より下でないかチェック
+                // Check that edit permission is not lower than view permission
                 if ($accessRoles < $viewRoles) {
                     $errors[] = __('admin/members/settings/roles.validation.access_must_be_greater_than_view', [
                         'menu_key' => "{$pluginSlug}.{$menuKey}",
                     ]);
                 }
 
-                // PermissionRegistryを使ってデフォルト値を取得（ネスト構造対応）
+                // Get default value using PermissionRegistry (nested structure support)
                 $effective = PermissionRegistry::getPluginEffective($pluginSlug, $menuKey);
 
                 if ($effective) {
-                    // デフォルト値と同じ場合はオーバーライドを削除
+                    // Delete override if same as default value
                     if ($accessRoles === $effective['default_access_roles'] && $viewRoles === $effective['default_view_roles']) {
                         RolePermissionOverride::resetPluginOverride($pluginSlug, $menuKey);
                     } else {
-                        // デフォルト値と異なる場合はオーバーライドを保存
+                        // Save override if different from default value
                         RolePermissionOverride::setPluginOverride($pluginSlug, $menuKey, $accessRoles, $viewRoles, $memberId);
                     }
                 }
             }
         }
 
-        // バリデーションエラーがある場合はリダイレクト
+        // Redirect if there are validation errors
         if (! empty($errors)) {
             return redirect()->back()->withErrors($errors)->withInput();
         }
 
-        // キャッシュをクリア
+        // Clear cache
         PermissionRegistry::clearCache();
 
         return redirect()->back()->with('success', __('admin/members/index.messages.permissions_saved'));
     }
 
     /**
-     * 権限をデフォルトにリセット
+     * Reset permissions to default
      */
     public function reset(Request $request)
     {
@@ -215,8 +215,8 @@ class AdminMemberRolesController extends AdminLoggedInController
     }
 
     /**
-     * インストール済みプラグインから権限設定用のアイテムを収集
-     * roles.phpが存在するプラグインのみ対象
+     * Collect items for permission settings from installed plugins
+     * Only target plugins that have roles.php
      */
     private function collectPluginPermissions(): array
     {
@@ -244,17 +244,17 @@ class AdminMemberRolesController extends AdminLoggedInController
                 continue;
             }
 
-            // PermissionRegistryはディレクトリ名をスラッグとして使用するため、basename($pluginDir)を使用
+            // Use basename($pluginDir) because PermissionRegistry uses directory name as slug
             $pluginSlug = basename($pluginDir);
             $pluginName = $pluginInfo['name'] ?? $pluginSlug;
 
-            // roles.phpが存在するプラグインのみ対象
+            // Only target plugins that have roles.php
             $rolesConfigPath = $pluginDir.'/config/roles.php';
             if (! file_exists($rolesConfigPath)) {
                 continue;
             }
 
-            // admin.phpからナビゲーション情報を取得（アイコン・テキスト用）
+            // Get navigation info from admin.php (for icon and text)
             $adminConfigPath = $pluginDir.'/config/admin.php';
             $adminNav = [];
             if (file_exists($adminConfigPath)) {
@@ -262,7 +262,7 @@ class AdminMemberRolesController extends AdminLoggedInController
                 $adminNav = $adminConfig['nav'] ?? [];
             }
 
-            // 権限設定を取得（ネスト構造）
+            // Get permission settings (nested structure)
             $permissions = PermissionRegistry::getAllPluginPermissions($pluginSlug);
             $permissionsFlat = PermissionRegistry::getAllPluginPermissionsFlat($pluginSlug);
 
@@ -282,7 +282,7 @@ class AdminMemberRolesController extends AdminLoggedInController
     }
 
     /**
-     * プラグインのナビゲーションから権限設定用のアイテムを収集
+     * Collect items for permission settings from plugin navigation
      */
     private function collectPluginMenuPermissions(array $navConfig, string $pluginSlug, string $parentKey = ''): array
     {
@@ -310,7 +310,7 @@ class AdminMemberRolesController extends AdminLoggedInController
     }
 
     /**
-     * メニューから権限設定用のアイテムを収集
+     * Collect items for permission settings from menu
      */
     private function collectMenuPermissions($menuList, $parentKey = '', &$currentSection = '')
     {

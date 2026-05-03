@@ -53,52 +53,52 @@ class SetMemberLocale
     public function handle(Request $request, Closure $next)
     {
         try {
-            // .envファイルが存在し、インストール済みかつ管理画面の場合のみ処理
+            // Process only if .env file exists, installation is complete, and in admin panel
             if (file_exists(base_path('.env')) && env('INSTALLED', false) && \App\Helpers\AdminHelper::isAdminRequest($request)) {
-                // 認証状態を確認
+                // Check authentication state
                 $isAuthenticated = Auth::guard('member')->check();
                 $member = Auth::guard('member')->user();
 
                 if ($isAuthenticated && $member) {
-                    // メンバーの個別言語設定を優先、nullまたは空の場合はシステムデフォルト
+                    // Prioritize member's individual language settings, use system default if null or empty
                     $memberLocale = $member->locale;
 
-                    // Enumの場合は値を取得、文字列の場合はそのまま使用
+                    // Get value if Enum, use as-is if string
                     if ($memberLocale instanceof \App\Enums\Locale) {
                         $locale = $memberLocale->value;
                     } elseif (is_string($memberLocale) && ! empty($memberLocale)) {
                         $locale = $memberLocale;
                     } else {
-                        // メンバー設定がない場合はシステムデフォルト
+                        // Use system default if member settings are not available
                         $locale = ConfigHelper::getAppLocale();
                     }
 
-                    // 利用可能な言語かチェック
+                    // Check if language is available
                     if (Locale::isValid($locale)) {
                         App::setLocale($locale);
                     } else {
-                        // 無効な言語の場合はシステムデフォルトにフォールバック
+                        // Fallback to system default if language is invalid
                         $fallbackLocale = ConfigHelper::getAppLocale();
                         App::setLocale($fallbackLocale);
                     }
                 }
             } elseif ($request->is('install*')) {
-                // インストール画面の場合はセッションから言語を取得
+                // Get language from session if on installation screen
                 try {
                     $installLocale = session('install_locale', 'ja');
                     if (Locale::isValid($installLocale)) {
                         App::setLocale($installLocale);
                     }
                 } catch (\Exception $sessionError) {
-                    // セッションエラーの場合はデフォルト言語を使用
+                    // Use default language if session error occurs
                     App::setLocale('ja');
                 }
             }
         } catch (\Exception $e) {
-            // データベースエラーやその他のエラーが発生した場合はログに記録してスキップ
+            // Log and skip if database error or other errors occur
             \Log::warning('SetMemberLocale middleware error: '.$e->getMessage());
 
-            // フォールバック: デフォルト言語を設定
+            // Fallback: set default language
             App::setLocale(config('app.locale', 'ja'));
         }
 

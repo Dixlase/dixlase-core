@@ -48,7 +48,7 @@ class AdminMemberController extends AdminLoggedInController
     }
 
     /**
-     * メンバー一覧
+     * member list
      */
     public function index(Request $request)
     {

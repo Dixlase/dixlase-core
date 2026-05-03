@@ -51,7 +51,7 @@ class ProfileUpdateRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // プロフィール更新は認証済みユーザーのみアクセス可能
+        return true; // Profile update is accessible only to authenticated users
     }
 
     /**
@@ -63,7 +63,7 @@ class ProfileUpdateRequest extends FormRequest
     {
         $member = Auth::guard('member')->user();
 
-        // パスワード設定を取得（セキュリティ設定から）
+        // Get password settings (from security settings)
         $passwordMinLength = (int) SecuritySetting::getValue('password_min_length', 8);
         $passwordRequireUppercase = (bool) SecuritySetting::getValue('password_require_uppercase', true);
         $passwordRequireLowercase = (bool) SecuritySetting::getValue('password_require_lowercase', true);
@@ -71,14 +71,14 @@ class ProfileUpdateRequest extends FormRequest
         $passwordRequireSymbol = (bool) SecuritySetting::getValue('password_require_symbol', false);
         $passwordCheckPwned = (bool) SecuritySetting::getValue('password_check_pwned', false);
 
-        // パスワードバリデーションルールを構築（任意入力）
+        // Build password validation rules (optional input)
         $passwordRules = PasswordService::buildPasswordRules(
             $passwordMinLength,
             $passwordRequireUppercase,
             $passwordRequireLowercase,
             $passwordRequireNumber,
             $passwordRequireSymbol,
-            false, // プロフィール更新時は任意
+            false, // Optional when updating profile
             $passwordCheckPwned
         );
 
@@ -96,7 +96,7 @@ class ProfileUpdateRequest extends FormRequest
             'two_fa_default_method' => 'nullable|integer|in:0,1',
         ];
 
-        // メールアドレスが変更された場合は確認フィールドを必須に
+        // Make confirmation field required if email address is changed
         if ($this->input('email') !== $member->email) {
             $rules['email_confirmation'] = 'required|email|same:email';
         }

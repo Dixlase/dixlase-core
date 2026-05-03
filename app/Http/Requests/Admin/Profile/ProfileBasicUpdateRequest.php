@@ -58,7 +58,7 @@ class ProfileBasicUpdateRequest extends FormRequest
             'locale' => 'nullable|string|in:'.implode(',', Locale::values()),
         ];
 
-        // メールアドレスが変更された場合は確認フィールドを必須に
+        // Make confirmation field required when email address is changed
         if ($this->input('email') !== $member->email) {
             $rules['email_confirmation'] = 'required|email|same:email';
         }

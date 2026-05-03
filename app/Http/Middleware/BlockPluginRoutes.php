@@ -42,10 +42,10 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * プラグインルートブロックミドルウェア
+ * Plugin route blocking middleware
  *
- * プラグインセーフモード有効時にプラグインコントローラーへのルートを
- * ブロックし、管理画面ダッシュボードにリダイレクトする。
+ * Blocks routes to plugin controllers when plugin safe mode is enabled
+ * and redirects to the admin panel dashboard
  */
 class BlockPluginRoutes
 {
@@ -62,7 +62,7 @@ class BlockPluginRoutes
             return $next($request);
         }
 
-        // ルートのコントローラーがプラグイン名前空間かチェック
+        // Check if the route's controller is in a plugin namespace
         $route = $request->route();
         if ($route === null) {
             return $next($request);

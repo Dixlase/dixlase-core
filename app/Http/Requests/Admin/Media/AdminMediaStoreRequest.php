@@ -60,7 +60,7 @@ class AdminMediaStoreRequest extends FormRequest
         $maxFileSize = $this->getMaxFileSize();
         $mimes = implode(',', $allowedFileTypes);
 
-        // 複数ファイルアップロード（files[]）と単一ファイル（file）の両方に対応
+        // Supports both multiple file upload (files[]) and single file (file)
         if ($this->hasFile('files')) {
             return [
                 'files' => 'required|array|min:1',
@@ -79,10 +79,10 @@ class AdminMediaStoreRequest extends FormRequest
         $maxFileSizeMB = round($maxFileSize / 1024);
 
         return [
-            'file.required' => 'ファイルは必須です。',
-            'file.file' => '有効なファイルをアップロードしてください。',
-            'file.mimes' => '許可されているファイルタイプは '.implode(', ', $this->allowedTypes()).' です。',
-            'file.max' => "ファイルサイズが上限を超えています。上限: {$maxFileSizeMB}MBです。",
+            'file.required' => __('http/requests/admin/media/admin_media_store_request.file_is_required'),
+            'file.file' => __('http/requests/admin/media/admin_media_store_request.please_upload_valid_file'),
+            'file.mimes' => __('http/requests/admin/media/admin_media_store_request.allowed_file_types_are').implode(', ', $this->allowedTypes()).__('http/requests/admin/media/admin_media_store_request.period'),
+            'file.max' => __('http/requests/admin/media/admin_media_store_request.file_size_exceeds_limit', ['maxFileSizeMB' => $maxFileSizeMB]),
         ];
     }
 
@@ -113,7 +113,7 @@ class AdminMediaStoreRequest extends FormRequest
 
     public function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
     {
-        Log::error('バリデーションエラー: '.json_encode($validator->errors()->all()));
+        Log::error('Validation error: '.json_encode($validator->errors()->all()));
 
         parent::failedValidation($validator);
     }

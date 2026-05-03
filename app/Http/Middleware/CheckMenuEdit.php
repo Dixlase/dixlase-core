@@ -49,14 +49,14 @@ class CheckMenuEdit
      */
     public function handle(Request $request, Closure $next, string $menuKey): \Symfony\Component\HttpFoundation\Response
     {
-        // 権限チェック
+        // Permission check
         if (! AdminHelper::canEditMenu($menuKey)) {
-            abort(403, '編集権限がありません。');
+            abort(403, __('http/middleware/check_menu_edit.no_edit_permission'));
         }
 
-        // かんたんモード時: ReadOnly/GuideOnly/HiddenのPOSTをブロック
+        // In simple mode: block POST for ReadOnly/GuideOnly/Hidden
         if (AdminModeHelper::isSimpleMode() && ! AdminModeHelper::isMenuEditable($menuKey)) {
-            abort(403, 'かんたんモードではこの設定を変更できません。');
+            abort(403, __('http/middleware/check_menu_edit.cannot_change_setting_in_simple_mode'));
         }
 
         return $next($request);

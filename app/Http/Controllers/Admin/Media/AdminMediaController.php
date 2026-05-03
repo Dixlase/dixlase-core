@@ -56,22 +56,22 @@ use Illuminate\Support\Facades\Storage;
 class AdminMediaController extends AdminLoggedInController
 {
     /**
-     * メディア設定リポジトリ
+     * Media settings repository
      */
     protected MediaSettingRepositoryInterface $mediaSettingRepository;
 
     /**
-     * メディアリポジトリ
+     * Media repository
      */
     protected MediaRepositoryInterface $mediaRepository;
 
     /**
-     * メディアセキュリティサービス
+     * Media security service
      */
     protected MediaSecurityService $mediaSecurityService;
 
     /**
-     * コンストラクタ
+     * Constructor
      */
     public function __construct(
         MediaSettingRepositoryInterface $mediaSettingRepository,
@@ -89,38 +89,38 @@ class AdminMediaController extends AdminLoggedInController
      */
     public function index(Request $request)
     {
-        // 1ページあたりの表示件数を取得（デフォルト: 25）
+        // Get items per page (default: 25)
         $perPage = $request->get('per_page', 25);
 
-        // 有効な表示件数のみ許可
+        // Allow only valid per-page values
         $allowedPerPage = [10, 25, 50, 100];
         if (! in_array($perPage, $allowedPerPage)) {
             $perPage = 25;
         }
 
-        // ソート設定を取得
+        // Get sort settings
         $sort = $request->get('sort', 'created_at');
         $order = $request->get('order', 'desc');
 
-        // 有効なソートフィールドのみ許可
+        // Allow only valid sort fields
         $allowedSorts = ['name', 'type', 'created_at', 'updated_at'];
         if (! in_array($sort, $allowedSorts)) {
             $sort = 'created_at';
         }
 
-        // 有効なソート順序のみ許可
+        // Allow only valid sort order
         if (! in_array($order, ['asc', 'desc'])) {
             $order = 'desc';
         }
 
-        // 検索パラメータを取得
+        // Get search parameters
         $search = $request->get('search');
         $fileType = $request->get('file_type');
         $uploadedBy = $request->get('uploaded_by');
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
 
-        // フィルター配列を構築
+        // Build filter array
         $filters = [];
         if ($search) {
             $filters['search'] = $search;
@@ -138,9 +138,9 @@ class AdminMediaController extends AdminLoggedInController
             $filters['date_to'] = $dateTo;
         }
 
-        // リポジトリを使用してページネーション実行
+        // Execute pagination using repository
         $media = $this->mediaRepository->paginate($perPage, $filters, $sort, $order)
-            ->withQueryString(); // URLパラメータを保持
+            ->withQueryString(); // Preserve URL parameters
 
         $this->viewParams['media'] = $media;
         $this->viewParams['currentSort'] = $sort;
@@ -156,11 +156,11 @@ class AdminMediaController extends AdminLoggedInController
 
     public function upload()
     {
-        // 許可されたファイルタイプを読み込み
+        // Load allowed file types
         $allowedFileTypes = $this->mediaSettingRepository->get('allowed_file_types', []);
         $this->viewParams['allowedFileTypes'] = $allowedFileTypes;
 
-        // 現在のメディア設定サマリーを表示
+        // Display current media settings summary
         $this->viewParams['isSimpleMode'] = AdminModeHelper::isSimpleMode();
 
         $securitySettings = $this->mediaSecurityService->getSecuritySettings();
@@ -176,7 +176,7 @@ class AdminMediaController extends AdminLoggedInController
             'zip_security' => (bool) ($securitySettings['zip_security_enabled'] ?? true),
         ];
 
-        // ファイルタイプ表示名
+        // File type display name
         $fileExtensionNames = config('admin.files.fileExtensionNames', []);
         $this->viewParams['fileExtensionNames'] = $fileExtensionNames;
 
@@ -184,14 +184,14 @@ class AdminMediaController extends AdminLoggedInController
     }
 
     /**
-     * ファイルをアップロードして保存する
+     * Upload and save file
      */
     public function store(AdminMediaStoreRequest $request)
     {
         $files = $request->file('files', []);
         $singleFile = $request->file('file');
 
-        // 単一ファイルの場合は配列に変換（後方互換性）
+        // Convert to array if single file (backward compatibility)
         if ($singleFile && empty($files)) {
             $files = [$singleFile];
         }
@@ -231,7 +231,7 @@ class AdminMediaController extends AdminLoggedInController
             }
         }
 
-        // AJAX リクエストの場合はJSONを返す
+        // Return JSON for AJAX requests
         if ($request->expectsJson()) {
             $successCount = count(array_filter($results, fn ($r) => $r['success']));
             $failCount = count(array_filter($results, fn ($r) => ! $r['success']));
@@ -246,7 +246,7 @@ class AdminMediaController extends AdminLoggedInController
             ]);
         }
 
-        // 通常のフォーム送信の場合
+        // For normal form submission
         if (! empty($allWarnings)) {
             session()->flash('warnings', $allWarnings);
         }
@@ -267,12 +267,12 @@ class AdminMediaController extends AdminLoggedInController
         $disk = config('admin.files.storageDisk', 'public');
         $mediaPath = config('admin.files.mediaPath', 'media');
 
-        // pathフィールドがファイル名のみの場合とフルパスの場合を考慮
+        // Consider cases where path field contains only filename or full path
         if (strpos($media->path, $mediaPath) === 0) {
-            // フルパスが保存されている場合
+            // When full path is stored
             $filePath = $media->path;
         } else {
-            // ファイル名のみが保存されている場合
+            // When only filename is stored
             $filePath = $mediaPath.'/'.$media->path;
         }
 
@@ -280,7 +280,7 @@ class AdminMediaController extends AdminLoggedInController
             abort(404, __('admin/media/index.error.file_not_exists'));
         }
 
-        // セキュアなダウンロードレスポンスを生成
+        // Generate secure download response
         $fullPath = Storage::disk($disk)->path($filePath);
 
         return $this->mediaSecurityService->createSecureDownloadResponse(
@@ -292,21 +292,21 @@ class AdminMediaController extends AdminLoggedInController
 
     public function preview(Media $media)
     {
-        // メンバー情報を事前に読み込み
+        // Preload member information
         $media->load('member');
 
-        // pathフィールドがファイル名のみの場合とフルパスの場合を考慮
+        // Consider cases where path field contains only filename or full path
         $mediaPath = config('admin.files.mediaPath', 'media');
         if (strpos($media->path, $mediaPath) === 0) {
-            // フルパスが保存されている場合
+            // When full path is stored
             $filePath = storage_path('app/'.config('admin.files.storageDisk').'/'.$media->path);
         } else {
-            // ファイル名のみが保存されている場合
+            // When only filename is stored
             $filePath = storage_path('app/'.config('admin.files.storageDisk').'/'.$mediaPath.'/'.$media->path);
         }
 
         if (! file_exists($filePath)) {
-            abort(404, 'ファイルが存在しません');
+            abort(404, __('http/controllers/admin/media/admin_media_controller.file_does_not_exist'));
         }
 
         $this->viewParams['media'] = $media;
@@ -316,7 +316,7 @@ class AdminMediaController extends AdminLoggedInController
     }
 
     /**
-     * メディア情報を更新
+     * Update media information
      */
     public function updateMedia(AdminMediaUpdateRequest $request, Media $media)
     {
@@ -324,12 +324,12 @@ class AdminMediaController extends AdminLoggedInController
         (new UpdateMediaMetadataAction($media, $this->mediaRepository))->execute($actor, $request->validated());
 
         return redirect()->route('admin.media.preview', $media->id)
-            ->with('success', 'メディア情報が更新されました。');
+            ->with('success', __('http/controllers/admin/media/admin_media_controller.media_info_updated'));
     }
 
     public function settings()
     {
-        // かんたんモードではメディア設定は自動設定のため非表示
+        // Media settings are hidden in easy mode as they are automatically configured
         if (AdminModeHelper::isSimpleMode()) {
             return redirect()->route('admin.media.index');
         }
@@ -340,7 +340,7 @@ class AdminMediaController extends AdminLoggedInController
         $fileExtensions = config('admin.files.fileExtensions');
         $fileExtensionNames = config('admin.files.fileExtensionNames');
 
-        // セキュリティ設定を取得
+        // Get security settings
         $securitySettings = $this->mediaSecurityService->getSecuritySettings();
 
         $this->viewParams['allowedFileTypes'] = $allowedFileTypes;
@@ -360,7 +360,7 @@ class AdminMediaController extends AdminLoggedInController
     }
 
     /**
-     * API: メディア一覧を取得（モーダル用）
+     * API: Get media list (for modal)
      */
     public function api(Request $request)
     {
@@ -368,7 +368,7 @@ class AdminMediaController extends AdminLoggedInController
         $search = $request->get('search');
         $type = $request->get('type');
 
-        // フィルター配列を構築
+        // Build filter array
         $filters = [];
         if ($search) {
             $filters['search'] = $search;
@@ -377,18 +377,18 @@ class AdminMediaController extends AdminLoggedInController
             $filters['type'] = $type;
         }
 
-        // リポジトリを使用してページネーション実行
+        // Execute pagination using repository
         $media = $this->mediaRepository->paginate($perPage, $filters, 'created_at', 'desc');
 
-        // URLを追加
+        // Add URL
         $mediaPath = config('admin.files.mediaPath', 'media');
         $media->getCollection()->transform(function ($item) use ($mediaPath) {
-            // pathフィールドがファイル名のみの場合とフルパスの場合を考慮
+            // Consider cases where path field contains only filename or full path
             if (strpos($item->path, $mediaPath.'/') === 0) {
-                // フルパスが保存されている場合（media/filename.jpg）
+                // When full path is stored (media/filename.jpg)
                 $item->url = asset('storage/'.$item->path);
             } else {
-                // ファイル名のみが保存されている場合（filename.jpg）
+                // When only filename is stored (filename.jpg)
                 $item->url = asset('storage/'.$mediaPath.'/'.$item->path);
             }
 
@@ -402,11 +402,11 @@ class AdminMediaController extends AdminLoggedInController
     }
 
     /**
-     * メディア設定を更新
+     * Update media settings
      */
     public function update(AdminMediaSettingsUpdateRequest $request)
     {
-        // かんたんモードではメディア設定の変更を禁止
+        // Prohibit changing media settings in easy mode
         if (AdminModeHelper::isSimpleMode()) {
             return redirect()->route('admin.media.index');
         }

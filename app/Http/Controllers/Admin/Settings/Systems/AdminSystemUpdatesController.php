@@ -44,19 +44,19 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
 /**
- * 統合アップデート管理ページ。
+ * Unified update management page
  *
- * コア / プラグイン / テーマの更新可能状況を一画面で確認・適用する。
- * - GET  /admin/.../system/updates           ページ表示（古い場合は自動チェック）
- * - POST /admin/.../system/updates/check     強制再チェック → 同ページへリダイレクト
- * - POST /admin/.../system/updates/apply     選択された対象を順次更新
+ * View and apply available updates for Core / plugins / themes in a single screen
+ * - GET  /admin/.../system/updates           Display page (auto-check if stale)
+ * - POST /admin/.../system/updates/check     Force recheck → redirect to same page
+ * - POST /admin/.../system/updates/apply     Update selected targets sequentially
  */
 class AdminSystemUpdatesController extends AdminLoggedInController
 {
     /**
-     * 自動チェックを発動する閾値（秒）。これより前にチェックされていなければロード時に再チェックする。
+     * Threshold in seconds to trigger auto-check. Rechecks on load if not checked since this threshold
      */
-    protected const STALE_THRESHOLD_SECONDS = 21600; // 6 時間
+    protected const STALE_THRESHOLD_SECONDS = 21600; // 6 hours
 
     public function __construct()
     {
@@ -64,11 +64,11 @@ class AdminSystemUpdatesController extends AdminLoggedInController
     }
 
     /**
-     * アップデート管理ページを表示。
+     * Display update management page
      *
-     * - 最終チェックから STALE_THRESHOLD_SECONDS 以上経過していたら自動再チェック
-     * - クエリ ?check=1 で強制再チェック
-     * - クエリ ?target=plugin:slug or theme:slug で対象を初期選択
+     * - Auto-recheck if STALE_THRESHOLD_SECONDS or more have elapsed since last check
+     * - Force recheck with query ?check=1
+     * - Pre-select target with query ?target=plugin:slug or theme:slug
      */
     public function index(Request $request, ExtensionSourceManager $manager)
     {
@@ -80,7 +80,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             try {
                 $manager->checkUpdates();
             } catch (\Throwable $e) {
-                // チェック失敗は致命的ではない（既存 last_version_check / available_version は残るので画面は表示できる）
+                // Check failure is not fatal (existing last_version_check / available_version remain so screen can still be displayed)
                 report($e);
             }
         }
@@ -117,7 +117,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             ->values()
             ->all();
 
-        // コアセクションのプレースホルダ（Phase 2 別セッションで実装される予定）
+        // Placeholder for Core section (planned for implementation in Phase 2 separate session)
         $core = [
             'available' => false,
             'current_version' => config('app.version', null),
@@ -139,7 +139,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
     }
 
     /**
-     * 強制チェック → 同ページへリダイレクト。
+     * Force check → redirect to same page
      */
     public function check(ExtensionSourceManager $manager)
     {
@@ -157,7 +157,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
     }
 
     /**
-     * 選択された対象を順次更新。
+     * Update selected targets sequentially
      *
      * Form data:
      *   plugins[] = id (selected plugin IDs)
@@ -183,7 +183,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         $succeeded = 0;
         $failed = 0;
 
-        // プラグイン更新（既存 dls:plugin:update CLI に委譲）
+        // Plugin update (delegated to existing dls:plugin:update CLI)
         foreach ($pluginIds as $id) {
             $plugin = Plugin::query()->find($id);
             if (! $plugin || ! $plugin->hasUpdateAvailable()) {
@@ -196,7 +196,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             $code === 0 ? $succeeded++ : $failed++;
         }
 
-        // テーマ更新
+        // Theme update
         foreach ($themeIds as $id) {
             $theme = Theme::query()->find($id);
             if (! $theme || ! $theme->hasUpdateAvailable()) {
@@ -221,7 +221,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
     }
 
     /**
-     * `?target=plugin:slug` 形式のクエリを解析。
+     * Parse query in `?target=plugin:slug` format
      *
      * @return array{type: ?string, slug: ?string}
      */
@@ -242,7 +242,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
     }
 
     /**
-     * 全インストール済み拡張機能の最終チェック時刻のうち最も古いもの。
+     * Oldest last check time among all installed extensions
      */
     protected function getLastCheckedAt(): ?Carbon
     {
@@ -259,7 +259,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
     }
 
     /**
-     * 自動チェック発動の判定（最終チェックが古いまたは未実施）。
+     * Determine whether to trigger auto-check (last check is stale or not performed)
      */
     protected function isStale(): bool
     {

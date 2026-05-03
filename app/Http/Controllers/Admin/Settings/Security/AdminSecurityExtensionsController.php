@@ -77,7 +77,7 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
     }
 
     /**
-     * 拡張機能セキュリティ設定ページ
+     * Extension security settings page
      */
     public function index()
     {
@@ -104,13 +104,13 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
             'extension_update_check_interval' => (int) $this->securitySettingRepository->get('extension_update_check_interval', config('extension-sources.check_interval', 86400)),
         ];
 
-        // メールテスト状態を取得
+        // Get mail test status
         $sessionTestResults = session('mail_test_results', []);
         $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? SiteSetting::getValue('mail_connection_tested', false));
         $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? SiteSetting::getValue('mail_send_tested', false));
         $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? SiteSetting::getValue('mail_receive_tested', false));
 
-        // ソースプリセット情報を構築
+        // Build source preset information
         $sourcePresets = collect(config('extension-sources.presets', []))->map(fn (array $preset, string $type) => [
             'value' => $type,
             'label' => $preset['name'],
@@ -118,7 +118,7 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
             'is_official' => $preset['is_official'] ?? false,
         ])->values()->all();
 
-        // チェック間隔オプション（key => translationKey 形式）
+        // Check interval options (key => translationKey format)
         $checkIntervalOptions = config('extension-sources.check_intervals', []);
 
         $this->viewParams['settings'] = $settings;
@@ -129,7 +129,7 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
         $this->viewParams['securityLevelRangeLabels'] = ExtensionSecurityLevel::getRangeLabels();
         $this->viewParams['securityLevelRangeLabelColors'] = ExtensionSecurityLevel::getRangeLabelColors();
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.extensions');
-        // 現在のソースレコードからトークン設定状態を取得
+        // Get token settings status from current source record
         $currentSource = ExtensionSource::query()
             ->ofType($settings['extension_source_type'])
             ->enabled()
@@ -140,14 +140,14 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
         $this->viewParams['checkIntervalOptions'] = $checkIntervalOptions;
         $this->viewParams['sourceReferenceUrl'] = 'https://github.com/'.config('extension-sources.github.default_owner', 'Dixlase');
         $this->viewParams['hasSourceToken'] = $hasSourceToken;
-        // 署名検証用 Authority の URL を表示用に渡す（透明性のため常時表示）
+        // Pass Authority URL for signature verification to display (always shown for transparency)
         $this->viewParams['authorityUrl'] = config('dixlase-authority.url');
 
         return view('admin.settings.security.extensions', $this->viewParams);
     }
 
     /**
-     * 拡張機能セキュリティ設定の更新
+     * Update extension security settings
      */
     public function update(AdminSecurityExtensionsUpdateRequest $request)
     {
@@ -167,7 +167,7 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
             permission: \App\Enums\Permission::SETTINGS_SECURITY,
         )->execute($actor, $request->validated());
 
-        // ソースのトークンを DB に保存（入力がある場合のみ更新）
+        // Save source token to DB (update only when input exists)
         $sourceToken = $request->input('extension_source_token');
         if ($sourceToken !== null && $sourceToken !== '') {
             $sourceType = $request->validated()['extension_source_type'] ?? 'github';
@@ -182,7 +182,7 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
     }
 
     /**
-     * ソース接続テスト API
+     * Source connection test API
      */
     public function testSource(Request $request, ExtensionSourceManager $manager): JsonResponse
     {
@@ -194,10 +194,10 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
         $type = $request->input('type');
         $inputToken = $request->input('token');
 
-        // DB のソースレコードを取得（あれば DB のトークンを使う）
+        // Get source record from DB (use DB token if exists)
         $dbSource = ExtensionSource::query()->ofType($type)->enabled()->first();
 
-        // トークン優先順位: フォーム入力 → DB → config/.env
+        // Token priority: form input → DB → config/.env
         $token = $inputToken ?: ($dbSource?->auth_token ?? config('extension-sources.github.default_token'));
 
         $baseUrl = match ($type) {
@@ -205,7 +205,7 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
             default => '',
         };
 
-        // 一時的な ExtensionSource インスタンスを作成（DB 保存しない）
+        // Create temporary ExtensionSource instance (do not save to DB)
         $source = new ExtensionSource([
             'name' => 'Connection Test',
             'type' => $type,
@@ -218,7 +218,7 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
             $provider = $manager->makeProvider($source);
             $result = $provider->checkConnection();
 
-            // 公式判定を付与
+            // Add official determination
             $preset = config("extension-sources.presets.{$type}");
             $result['is_official'] = $preset && ($preset['is_official'] ?? false);
 

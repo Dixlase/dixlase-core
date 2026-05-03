@@ -61,11 +61,11 @@ class AdminBaseMaintenanceUpdateRequest extends FormRequest
             'maintenance_start_at' => 'nullable|date',
         ];
 
-        // 自動解除が有効な場合、終了日時は必須
+        // End date/time is required when automatic release is enabled
         if ($this->input('maintenance_auto_release') == '1') {
             $rules['maintenance_release_at'] = 'required|date|after:maintenance_start_at';
         } else {
-            // 手動解除の場合、終了日時は入力されていても無視（nullにする）
+            // For manual release, end date/time is ignored even if entered (set to null)
             $rules['maintenance_release_at'] = 'nullable|date|after:maintenance_start_at';
         }
 
@@ -73,11 +73,11 @@ class AdminBaseMaintenanceUpdateRequest extends FormRequest
     }
 
     /**
-     * バリデーション後のデータ加工
+     * Data processing after validation
      */
     protected function prepareForValidation(): void
     {
-        // 手動解除の場合、終了日時をnullにする
+        // Set end date/time to null for manual release
         if ($this->input('maintenance_auto_release') == '0') {
             $this->merge([
                 'maintenance_release_at' => null,
