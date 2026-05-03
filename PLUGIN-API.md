@@ -1,7 +1,7 @@
 # Dixlase CMS Plugin API Boundary
 
 **Version:** dev
-**Last Updated:** 2026-05-01
+**Last Updated:** 2026-05-03
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -71,6 +71,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\Mail\MailServiceInterface` | メール送信サービスの契約 |
 | `App\Contracts\Revisionable` | 各プラグイン/テーマは自身のリビジョンテーブルと Eloquent モデルを持ちつつ、 |
 | `App\Contracts\RouteSlugProvider` | Route Slug Provider Interface |
+| `App\Contracts\Site\SiteContextInterface` | Provides the current site context for the request. |
 | `App\Contracts\Theme\ThemePermissionServiceInterface` | テーマ権限管理サービスの契約 |
 | `App\Contracts\TranslationResolver` | Translation Resolver Contract |
 | `App\Contracts\TwoFaInterface` | 二段階認証機能を持つユーザーのインターフェース |
@@ -108,13 +109,13 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | Contract | Description |
 |---|---|
 | `App\Contracts\Repositories\ApiSettingRepositoryInterface` | API設定リポジトリインターフェース |
-| `App\Contracts\Repositories\BaseSettingRepositoryInterface` | 基本設定リポジトリインターフェース |
 | `App\Contracts\Repositories\FrontSettingRepositoryInterface` | フロント設定リポジトリインターフェース |
 | `App\Contracts\Repositories\MediaRepositoryInterface` | メディアリポジトリインターフェース |
 | `App\Contracts\Repositories\MediaSettingRepositoryInterface` | メディア設定リポジトリインターフェース |
 | `App\Contracts\Repositories\PluginRepositoryInterface` | プラグインリポジトリインターフェース |
 | `App\Contracts\Repositories\SecuritySettingRepositoryInterface` | セキュリティ設定リポジトリインターフェース |
 | `App\Contracts\Repositories\SettingRepositoryInterface` | 設定リポジトリベースインターフェース |
+| `App\Contracts\Repositories\SiteSettingRepositoryInterface` | 基本設定リポジトリインターフェース |
 | `App\Contracts\Repositories\ThemeRepositoryInterface` | テーマリポジトリインターフェース |
 
 ---
@@ -245,6 +246,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\Enums\LogLevel`
 - `App\Enums\LoginIdentifierMode`
 - `App\Enums\Permission`
+- `App\Enums\SettingScope`
 
 ### 5.2 User/Role Enums
 
@@ -484,6 +486,26 @@ The remaining services are accessed via their respective interfaces (see Section
 | `App\Helpers\PluginHelper` | Plugin enablement status, paths, and route loading |
 | `App\Helpers\TwoFaHelper` | Two-factor authentication code generation, sending, and settings |
 
+### 9.6.1 Multisite Services (`App\Services\Site\*`)
+
+The forward-looking multisite layer. Plugin and theme code that writes
+new per-site behaviour should depend on these services rather than on
+direct Eloquent / DB queries against `site_settings` or `global_settings`.
+
+| Service | Description |
+|---|---|
+| `App\Services\Site\SiteContext` | Resolves the current site for the request (concrete implementation of `SiteContextInterface`) |
+| `App\Services\Site\SettingDefinition` | Value object describing a setting key (`name`, `scope`, `default`, `type`) |
+| `App\Services\Site\SettingDefinitionRegistry` | Central registry of setting definitions; plugins call `register()` in their service provider |
+| `App\Services\Site\SettingResolver` | Reads/writes settings via the 3-mode scope model (`Global` / `PerSite` / `Overridable`) |
+| `App\Services\Site\SiteStorage` | Site-aware filesystem helper (`private()`, `public()`, `global()` rooted at the multisite tree) |
+| `App\Services\Site\Exceptions\UnknownSettingException` | Raised when an unregistered key is read; ensures every key is declared up front |
+
+In addition, `App\Models\Traits\BelongsToSite` is the per-site Eloquent
+trait that adds `site()` belongsTo + a current-site Global Scope +
+auto-assigns `site_id` on creation. Apply it to any plugin model whose
+table has a `site_id` column.
+
 ### 9.7 Actors
 
 - `App\Actors\MemberActor` — Member actor implementation for the Action framework
@@ -525,7 +547,8 @@ Convenience static accessors for the most common core services. Plugins/themes m
 | Facade | Underlying Service | Purpose |
 |---|---|---|
 | `App\Facades\Audit` | `App\Services\AuditService` | Log auditable events (auth, security, content, plugin lifecycle, etc.) |
-| `App\Facades\BaseSettings` | `App\Models\BaseSetting` | Read core base settings (`BaseSettings::get('site_name')`) |
+| `App\Facades\SiteContext` | `App\Services\Site\SiteContext` | Resolve the current site (`SiteContext::currentSiteId()`, `currentSite()`, `isPluginActive($slug)`) |
+| `App\Facades\SiteSettings` | `App\Models\SiteSetting` | Read site / network settings via the multisite-aware resolver (`SiteSettings::get('site_name')`) |
 | `App\Facades\PluginPermission` | `App\Services\Plugin\PluginPermissionService` | Verify plugin declared permissions |
 | `App\Facades\Webhook` | `App\Services\WebhookDispatcher` | Dispatch webhook events from plugin code |
 
@@ -548,12 +571,16 @@ Facades are wired via the standard Laravel facade pattern; see each facade file 
 
 - `App\Models\Plugin`
 - `App\Models\Theme`
+- `App\Models\SitePluginActivation` — per-site plugin activation row (which plugins are active for which site)
+- `App\Models\SiteThemeActivation` — per-site theme activation row
 
 ### 10.4 System Models
 
-- `App\Models\BaseSetting`
-- `App\Models\SecuritySetting`
-- `App\Models\FrontSetting`
+- `App\Models\Site` — the site itself (multisite foundation)
+- `App\Models\SiteSetting` — per-site settings (was `BaseSetting`); accessed via `SettingResolver` for scope-aware routing
+- `App\Models\GlobalSetting` — network-wide settings (was part of `BaseSetting` / `SecuritySetting`)
+- `App\Models\SecuritySetting` — alias for security keys (table now `global_settings`)
+- `App\Models\FrontSetting` — per-site front-end settings
 
 ---
 
