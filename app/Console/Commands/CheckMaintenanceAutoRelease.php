@@ -35,8 +35,10 @@
 
 namespace App\Console\Commands;
 
+use App\Contracts\Site\SiteContextInterface;
+use App\Models\Site;
+use App\Services\Site\SettingResolver;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class CheckMaintenanceAutoRelease extends Command
@@ -60,50 +62,50 @@ class CheckMaintenanceAutoRelease extends Command
      */
     public function handle(): int
     {
-        // メンテナンスモード設定を取得
-        $settings = DB::table('site_settings')
-            ->whereIn('name', [
-                'maintenance_mode',
-                'maintenance_auto_release',
-                'maintenance_release_at',
-            ])
-            ->pluck('value', 'name')
-            ->toArray();
+        $siteContext = app(SiteContextInterface::class);
+        $resolver = app(SettingResolver::class);
 
-        $maintenanceMode = ($settings['maintenance_mode'] ?? '0') === '1';
-        $autoRelease = ($settings['maintenance_auto_release'] ?? '0') === '1';
-        $releaseAt = $settings['maintenance_release_at'] ?? null;
+        // Iterate over every active site. maintenance_* keys are PerSite
+        // scope; SiteContext is switched per site so SettingResolver
+        // reads/writes against the correct site's row.
+        $sites = Site::query()->where('is_active', true)->get(['id', 'slug']);
+        $releasedCount = 0;
 
-        // メンテナンスモードが無効、または自動解除が無効な場合は何もしない
-        if (! $maintenanceMode || ! $autoRelease || ! $releaseAt) {
-            return self::SUCCESS;
-        }
+        foreach ($sites as $site) {
+            $siteContext->setCurrent($site->id);
 
-        // 終了日時を過ぎているかチェック
-        $releaseTime = \Carbon\Carbon::parse($releaseAt);
-        if (now()->gte($releaseTime)) {
-            // メンテナンスモードを解除
-            DB::table('site_settings')
-                ->where('name', 'maintenance_mode')
-                ->update([
-                    'value' => '0',
-                    'updated_at' => now(),
-                ]);
+            $maintenanceMode = (bool) $resolver->get('maintenance_mode');
+            $autoRelease = (bool) $resolver->get('maintenance_auto_release');
+            $releaseAt = $resolver->get('maintenance_release_at');
 
-            // 自動解除設定もリセット
-            DB::table('site_settings')
-                ->whereIn('name', ['maintenance_auto_release', 'maintenance_start_at', 'maintenance_release_at'])
-                ->update([
-                    'value' => null,
-                    'updated_at' => now(),
-                ]);
+            if (! $maintenanceMode || ! $autoRelease || ! $releaseAt) {
+                continue;
+            }
+
+            $releaseTime = \Carbon\Carbon::parse($releaseAt);
+            if (! now()->gte($releaseTime)) {
+                continue;
+            }
+
+            // Release maintenance mode and clear scheduling state.
+            $resolver->set('maintenance_mode', false);
+            $resolver->set('maintenance_auto_release', false);
+            $resolver->set('maintenance_start_at', null);
+            $resolver->set('maintenance_release_at', null);
 
             Log::info('Maintenance mode auto-released', [
+                'site_id' => $site->id,
+                'site_slug' => $site->slug,
                 'release_at' => $releaseAt,
                 'released_at' => now()->toDateTimeString(),
             ]);
 
-            $this->info('Maintenance mode has been automatically released.');
+            $this->info("Site '{$site->slug}' (id={$site->id}): maintenance mode released.");
+            $releasedCount++;
+        }
+
+        if ($releasedCount === 0) {
+            $this->line('No sites required auto-release.');
         }
 
         return self::SUCCESS;
