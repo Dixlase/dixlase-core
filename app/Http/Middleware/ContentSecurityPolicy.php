@@ -45,7 +45,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Content Security Policy Middleware
  *
- * CSPヘッダーをレスポンスに付与するミドルウェア。
+ * Middleware that adds CSP headers to responses
  */
 class ContentSecurityPolicy
 {
@@ -72,35 +72,35 @@ class ContentSecurityPolicy
      */
     public function handle(Request $request, Closure $next, ?string $context = null): Response
     {
-        // CSPが無効な場合はスキップ
+        // Skip if CSP is disabled
         if (! $this->builder->isEnabled()) {
             return $next($request);
         }
 
-        // 除外パスのチェック
+        // Check excluded paths
         if ($this->isExcludedPath($request)) {
             return $next($request);
         }
 
-        // nonceをリクエストに保存（Bladeで使用するため）
+        // Store nonce in request (for use in Blade)
         $request->attributes->set('csp_nonce', $this->nonceGenerator->getNonce());
 
-        // プラグイン・テーマからCSP設定を読み込み（1回のみ）
+        // Load CSP settings from plugins and themes (once only)
         if (! $this->extensionsLoaded) {
             $this->extensionLoader->loadAll();
             $this->extensionsLoaded = true;
         }
 
-        // コンテキストを設定（admin/front）
+        // Set context (admin/front)
         $context = $context ?? $this->detectContext($request);
         $this->builder->setContext($context);
 
-        // レスポンスを取得
+        // Get response
         $response = $next($request);
 
-        // HTMLレスポンスのみにCSPヘッダーを付与
+        // Add CSP header only to HTML responses
         if ($this->shouldAddCspHeader($response)) {
-            // Laravel Boostが挿入するスクリプトにnonceを追加（開発環境のみ）
+            // Add nonce to scripts inserted by Laravel Boost (development environment only)
             if (! app()->environment('production')) {
                 $this->addNonceToBoostScripts($response);
             }
@@ -108,17 +108,17 @@ class ContentSecurityPolicy
             $headerName = $this->builder->getHeaderName();
             $headerValue = $this->builder->build();
 
-            // セーフモード等で空文字が返った場合はヘッダーを送出しない。
-            // 空文字のCSPはブラウザによって「無視」または「全拒否」と解釈されるため、
-            // ヘッダー自体を付与しないことで既定のブラウザ挙動に委ねる。
+            // Do not send header if empty string is returned due to safe mode, etc.
+            // Since empty CSP is interpreted as either "ignore" or "deny all" depending on the browser,
+            // defer to default browser behavior by not adding the header itself
             if ($headerValue !== '') {
                 $response->headers->set($headerName, $headerValue);
             }
 
-            // 追加のセキュリティヘッダー（CSPが無効でも付与する）
+            // Additional security headers (added even when CSP is disabled)
             $this->addSecurityHeaders($response);
 
-            // ルート単位の frame-ancestors 上書き（管理画面内iframeプレビュー用）
+            // Route-level frame-ancestors override (for iframe preview in admin panel)
             if ($headerValue !== '') {
                 $this->overrideFrameAncestorsIfRequested($request, $response, $headerName);
             }
@@ -128,7 +128,7 @@ class ContentSecurityPolicy
     }
 
     /**
-     * 除外パスかどうかをチェック
+     * Check if path is excluded
      */
     protected function isExcludedPath(Request $request): bool
     {
@@ -136,7 +136,7 @@ class ContentSecurityPolicy
         $path = $request->path();
 
         foreach ($excludedPaths as $pattern) {
-            // ワイルドカードパターンを正規表現に変換
+            // Convert wildcard pattern to regex
             $regex = str_replace(['*', '/'], ['.*', '\/'], $pattern);
             if (preg_match("/^{$regex}$/", $path)) {
                 return true;
@@ -147,13 +147,13 @@ class ContentSecurityPolicy
     }
 
     /**
-     * コンテキストを自動検出
+     * Auto-detect context
      */
     protected function detectContext(Request $request): string
     {
         $path = $request->path();
 
-        // 管理画面パスの判定
+        // Determine admin panel path
         $adminPath = config('admin.path', 'admin');
         if (str_starts_with($path, $adminPath) || str_starts_with($path, 'admin')) {
             return 'admin';
@@ -163,16 +163,16 @@ class ContentSecurityPolicy
     }
 
     /**
-     * CSPヘッダーを追加すべきかどうか
+     * Whether CSP header should be added
      */
     protected function shouldAddCspHeader(Response $response): bool
     {
-        // ステータスコードが成功系でない場合はスキップ
+        // Skip if status code is not successful
         if ($response->getStatusCode() >= 400) {
             return false;
         }
 
-        // Content-Typeがtext/htmlの場合のみ
+        // Only when Content-Type is text/html
         $contentType = $response->headers->get('Content-Type', '');
         if (str_contains($contentType, 'text/html') || empty($contentType)) {
             return true;
@@ -182,10 +182,10 @@ class ContentSecurityPolicy
     }
 
     /**
-     * Laravel Boostが挿入するスクリプトにnonceを追加
+     * Add nonce to scripts inserted by Laravel Boost
      *
-     * 開発環境でLaravel Boost（MCP Server）が動的に挿入する
-     * browser-logger-activeスクリプトにCSP nonceを付与する。
+     * Dynamically inserted by Laravel Boost (MCP Server) in development environment
+     * Add CSP nonce to browser-logger-active script
      */
     protected function addNonceToBoostScripts(Response $response): void
     {
@@ -197,7 +197,7 @@ class ContentSecurityPolicy
 
         $nonce = $this->nonceGenerator->getNonce();
 
-        // <script id="browser-logger-active"> にnonceを追加
+        // Add nonce to <script id="browser-logger-active">
         $pattern = '/<script\s+id=["\']browser-logger-active["\']\s*>/i';
         $replacement = '<script id="browser-logger-active" nonce="'.$nonce.'">';
 
@@ -209,11 +209,11 @@ class ContentSecurityPolicy
     }
 
     /**
-     * リクエスト属性に基づいて frame-ancestors ディレクティブを上書き
+     * Override frame-ancestors directive based on request attributes
      *
-     * 管理画面内でiframeプレビューを使用するルートで、
-     * frame-ancestors を 'none' から 'self' に変更する。
-     * コントローラーで request()->attributes->set('csp_frame_ancestors_self', true) を設定する。
+     * For routes that use iframe preview within the admin panel,
+     * change frame-ancestors from 'none' to 'self'
+     * Set request()->attributes->set('csp_frame_ancestors_self', true) in the controller
      */
     protected function overrideFrameAncestorsIfRequested(Request $request, Response $response, string $headerName): void
     {
@@ -238,26 +238,26 @@ class ContentSecurityPolicy
     }
 
     /**
-     * 追加のセキュリティヘッダーを付与
+     * Add additional security headers
      */
     protected function addSecurityHeaders(Response $response): void
     {
-        // X-Content-Type-Options: MIMEタイプスニッフィング防止
+        // X-Content-Type-Options: Prevent MIME type sniffing
         if (! $response->headers->has('X-Content-Type-Options')) {
             $response->headers->set('X-Content-Type-Options', 'nosniff');
         }
 
-        // X-Frame-Options: クリックジャッキング防止（CSPのframe-ancestorsと併用）
+        // X-Frame-Options: Prevent clickjacking (used in conjunction with CSP frame-ancestors)
         if (! $response->headers->has('X-Frame-Options')) {
             $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         }
 
-        // Referrer-Policy: リファラー情報の制御
+        // Referrer-Policy: Control referrer information
         if (! $response->headers->has('Referrer-Policy')) {
             $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         }
 
-        // Permissions-Policy: ブラウザ機能の制限
+        // Permissions-Policy: Restrict browser features
         if (! $response->headers->has('Permissions-Policy')) {
             $response->headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
         }

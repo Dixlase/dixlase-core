@@ -65,32 +65,32 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
     }
 
     /**
-     * CAPTCHA設定ページ
+     * CAPTCHA settings page
      */
     public function index()
     {
         $currentDriver = $this->securitySettingRepository->get('captcha_driver', 'google');
 
-        // プロバイダごとのキーを取得
+        // Get keys for each provider
         $providerKeys = $this->getProviderKeys();
 
         $settings = [
             'captcha_enabled' => filter_var($this->securitySettingRepository->get('captcha_enabled', false), FILTER_VALIDATE_BOOLEAN),
             'captcha_driver' => $currentDriver,
-            // 現在のプロバイダのキーを表示用に設定
+            // Set current provider's keys for display
             'captcha_site_key' => $providerKeys[$currentDriver]['site_key'] ?? '',
             'captcha_secret_key' => $providerKeys[$currentDriver]['secret_key'] ?? '',
             'captcha_google_version' => $this->securitySettingRepository->get('captcha_google_version', 'v3'),
             'captcha_google_min_score' => $this->securitySettingRepository->get('captcha_google_min_score', '0.5'),
             'captcha_google_project_id' => $this->securitySettingRepository->get('captcha_google_project_id', ''),
-            // 全プロバイダのキー（JavaScript用）
+            // All provider keys (for JavaScript)
             'provider_keys' => $providerKeys,
         ];
 
-        // CAPTCHAテスト結果を取得
+        // Get CAPTCHA test results
         $captchaTestService = app(CaptchaTestService::class);
 
-        // バリデーションエラーがない場合はセッションをクリアしてDBから読み込み
+        // Clear session and load from DB if there are no validation errors
         if (! session()->has('errors') || ! session('errors')->any()) {
             session()->forget('captcha_authentication_result');
         }
@@ -98,12 +98,12 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         $captchaTestResult = $captchaTestService->getTestResult();
         $captchaTestDetails = $captchaTestService->getCaptchaTestResult($settings['captcha_driver']);
 
-        // 全フォームを取得してキーを保持
+        // Get all forms and preserve keys
         $allForms = $this->captchaService->getAllForms();
         $enabledForms = [];
         $formsByCategory = [];
 
-        // カテゴリ別にグループ化しつつ、元のキーを保持
+        // Group by category while preserving original keys
         foreach ($allForms as $formKey => $form) {
             $category = $form['category'] ?? 'other';
             if (! isset($formsByCategory[$category])) {
@@ -124,7 +124,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
     }
 
     /**
-     * CAPTCHA設定の更新
+     * Update CAPTCHA settings
      */
     public function update(AdminSecurityCaptchaUpdateRequest $request)
     {
@@ -143,7 +143,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
     }
 
     /**
-     * CAPTCHAウィジェットの検証
+     * Verify CAPTCHA widget
      */
     public function validateWidget(Request $request)
     {
@@ -158,7 +158,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         }
 
         try {
-            // フォームから送信された値を優先的に使用（保存前のテスト用）
+            // Prioritize values submitted from form (for testing before saving)
             $secretKey = $request->input('secret_key') ?: $this->securitySettingRepository->get('captcha_secret_key', '');
             $minScore = (float) ($request->input('min_score') ?: $this->securitySettingRepository->get('captcha_google_min_score', '0.5'));
             $siteKey = $request->input('site_key') ?: $this->securitySettingRepository->get('captcha_site_key', '');
@@ -174,7 +174,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
             $result = $this->verifyCaptchaToken($token, $secretKey, $driver, $minScore, $siteKey, $projectId);
 
             if ($result['success']) {
-                // テスト結果を保存
+                // Save test results
                 $captchaTestService = app(CaptchaTestService::class);
                 $captchaTestService->saveCaptchaTestResult($driver, true);
 
@@ -202,7 +202,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
     }
 
     /**
-     * CAPTCHAテスト結果をクリア
+     * Clear CAPTCHA test results
      */
     public function clearTest()
     {
@@ -213,11 +213,11 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
     }
 
     /**
-     * CAPTCHAトークンを検証
+     * Verify CAPTCHA token
      */
     protected function verifyCaptchaToken(string $token, string $secretKey, string $driver, float $minScore, ?string $siteKey = null, ?string $projectId = null): array
     {
-        // Google reCAPTCHA Enterpriseは別のAPIを使用
+        // Google reCAPTCHA Enterprise uses a different API
         if ($driver === 'google_enterprise') {
             return $this->verifyEnterpriseToken($token, $secretKey, $siteKey, $projectId, $minScore);
         }
@@ -244,7 +244,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
             ];
         }
 
-        // v3の場合はスコアチェック
+        // Check score for v3
         if (isset($data['score']) && $data['score'] < $minScore) {
             return [
                 'success' => false,
@@ -263,7 +263,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
     }
 
     /**
-     * Google reCAPTCHA Enterpriseトークンを検証
+     * Verify Google reCAPTCHA Enterprise token
      */
     protected function verifyEnterpriseToken(string $token, string $apiKey, ?string $siteKey, ?string $projectId, float $minScore): array
     {
@@ -281,7 +281,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
             ];
         }
 
-        // Google reCAPTCHA Enterprise API呼び出し
+        // Google reCAPTCHA Enterprise API call
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
         ])->post("https://recaptchaenterprise.googleapis.com/v1/projects/{$projectId}/assessments?key={$apiKey}", [
@@ -342,7 +342,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
     }
 
     /**
-     * プロバイダごとのキーを取得
+     * Get keys for each provider
      */
     protected function getProviderKeys(): array
     {

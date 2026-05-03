@@ -44,59 +44,59 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * APIキー認証ミドルウェア
+ * API key authentication middleware
  *
- * Authorization: Bearer dxl_live_xxx ヘッダーからキーを取得し、
- * APIキーの有効性・スコープ・IP制限を検証します。
+ * Retrieves key from Authorization: Bearer dxl_live_xxx header and
+ * validates API key validity, scope, and IP restrictions
  *
- * 使用例:
- *   - Route::middleware('auth.api') ... 全スコープ許可
- *   - Route::middleware('auth.api:read:content') ... read:content スコープ必須
+ * Usage examples:
+ *   - Route::middleware('auth.api') ... all scopes allowed
+ *   - Route::middleware('auth.api:read:content') ... read:content scope required
  */
 class AuthenticateApiKey
 {
     /**
-     * リクエストを処理
+     * Handle the request
      *
-     * @param  string  ...$scopes  必要なスコープ（ミドルウェアパラメータ）
+     * @param  string  ...$scopes  Required scopes (middleware parameter)
      */
     public function handle(Request $request, Closure $next, string ...$scopes): Response
     {
         $bearerToken = $request->bearerToken();
 
         if (! $bearerToken) {
-            return $this->unauthorizedResponse('APIキーが提供されていません。');
+            return $this->unauthorizedResponse(__('http/middleware/authenticate_api_key.api_key_not_provided'));
         }
 
         $apiKey = ApiKey::validate($bearerToken);
 
         if (! $apiKey) {
-            return $this->unauthorizedResponse('無効または期限切れのAPIキーです。');
+            return $this->unauthorizedResponse(__('http/middleware/authenticate_api_key.invalid_or_expired_api_key'));
         }
 
-        // IP制限チェック
+        // IP restriction check
         if (! $apiKey->allowsIp($request->ip())) {
-            return $this->forbiddenResponse('このIPアドレスからのアクセスは許可されていません。');
+            return $this->forbiddenResponse(__('http/middleware/authenticate_api_key.ip_address_access_not_allowed'));
         }
 
-        // スコープチェック
+        // Scope check
         foreach ($scopes as $scope) {
             if (! $apiKey->hasScope($scope)) {
-                return $this->forbiddenResponse("必要なスコープ '{$scope}' がありません。");
+                return $this->forbiddenResponse(__('http/middleware/authenticate_api_key.required_scope_missing', ['scope' => $scope]));
             }
         }
 
-        // 使用記録を更新
+        // Update usage record
         $apiKey->recordUsage();
 
-        // リクエスト属性にAPIキーをセット
+        // Set API key to request attribute
         $request->attributes->set('api_key', $apiKey);
 
         return $next($request);
     }
 
     /**
-     * 401 Unauthorized レスポンスを生成
+     * Generate 401 Unauthorized response
      */
     protected function unauthorizedResponse(string $message): JsonResponse
     {
@@ -107,7 +107,7 @@ class AuthenticateApiKey
     }
 
     /**
-     * 403 Forbidden レスポンスを生成
+     * Generate 403 Forbidden response
      */
     protected function forbiddenResponse(string $message): JsonResponse
     {

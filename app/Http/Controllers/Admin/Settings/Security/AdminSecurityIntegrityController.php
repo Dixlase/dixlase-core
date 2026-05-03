@@ -54,7 +54,7 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
     }
 
     /**
-     * ファイル整合性設定ページ
+     * File integrity settings page
      */
     public function index()
     {
@@ -62,15 +62,15 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
         $hasBaseline = $this->fileIntegrityService->hasBaseline();
         $baselineMeta = $hasBaseline ? $this->fileIntegrityService->getBaselineMeta() : null;
 
-        // 直近のスキャン履歴を取得（ページネーション付き）
+        // Get recent scan history (with pagination)
         $recentAudits = FileIntegrityAudit::where('scope', FileIntegrityAudit::SCOPE_CORE)
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        // ロケールに応じた日付フォーマット
-        $dateFormat = app()->getLocale() === 'ja' ? 'Y年n月j日 H:i' : 'Y-m-d H:i';
+        // Date format according to locale
+        $dateFormat = app()->getLocale() === 'ja' ? __('http/controllers/admin/settings/security/admin_security_integrity_controller.date_format_year_month_day_time') : 'Y-m-d H:i';
 
-        // ベースライン日付をフォーマット
+        // Format baseline date
         if (isset($baselineMeta['generated_at'])) {
             $baselineMeta['formatted_generated_at'] = \Carbon\Carbon::parse($baselineMeta['generated_at'])->format($dateFormat);
         }
@@ -87,7 +87,7 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
     }
 
     /**
-     * ファイル整合性スキャンを実行
+     * Execute file integrity scan
      */
     public function scan(Request $request)
     {
@@ -116,7 +116,7 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
     }
 
     /**
-     * ベースラインを再生成
+     * Regenerate baseline
      */
     public function regenerateBaseline(Request $request)
     {
@@ -143,7 +143,7 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
     }
 
     /**
-     * スキャン詳細を表示
+     * Display scan details
      */
     public function show(FileIntegrityAudit $audit)
     {
@@ -155,7 +155,7 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
     }
 
     /**
-     * スキャン履歴を削除
+     * Delete scan history
      */
     public function destroy(FileIntegrityAudit $audit)
     {
@@ -166,7 +166,7 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
     }
 
     /**
-     * 古いスキャン履歴を一括削除
+     * Bulk delete old scan history
      */
     public function bulkDelete(Request $request)
     {

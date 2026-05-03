@@ -55,15 +55,15 @@ class AdminSecurityLoginUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // ログイン識別子モード設定
+            // Login identifier mode settings
             'login_identifier_mode' => 'nullable|integer|in:0,1,2',
 
-            // ログイン通知設定
+            // Login notification settings
             'login_notification_mode' => 'nullable|integer|in:0,1,2,3',
             'login_notification_send_to_system' => 'nullable|boolean',
             'login_notification_system_email' => 'nullable|email|max:255',
 
-            // ログイン試行制限設定
+            // Login attempt limit settings
             'login_attempt_limit_enabled' => 'boolean',
             'login_attempt_max_attempts' => 'required|integer|min:1|max:100',
             'login_attempt_max_attempts_ip' => 'required|integer|min:1|max:200',

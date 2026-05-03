@@ -56,14 +56,14 @@ class AdminBaseAdminController extends AdminLoggedInController
     }
 
     /**
-     * 管理画面設定ページ
+     * Admin settings page
      */
     public function index()
     {
         $adminUrl = $this->baseSettingRepository->get('admin_url', config('admin.admin_url'));
         $prefixes = config('admin.url.admin_url_prefixes', ['admin']);
 
-        // 現在のadmin_urlをプレフィックスとサフィックスに分割
+        // Split the current admin_url into prefix and suffix
         $parts = explode('-', $adminUrl, 2);
         $currentPrefix = in_array($parts[0], $prefixes) ? $parts[0] : $prefixes[0];
         $currentSuffix = $parts[1] ?? '';
@@ -83,7 +83,7 @@ class AdminBaseAdminController extends AdminLoggedInController
     }
 
     /**
-     * 管理画面設定の更新
+     * Update admin settings
      */
     public function update(AdminBaseAdminUpdateRequest $request)
     {
@@ -104,7 +104,7 @@ class AdminBaseAdminController extends AdminLoggedInController
             },
         )->execute($actor, $validated);
 
-        // 管理画面URLが変更された場合の特別な処理
+        // Special handling when admin URL is changed
         if ($newAdminUrl !== $currentAdminUrl) {
             Auth::guard('member')->logout();
             Session::flush();

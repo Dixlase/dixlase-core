@@ -48,7 +48,7 @@ class AdminSecuritySessionController extends AdminLoggedInController
     }
 
     /**
-     * セッション設定ページ
+     * Session settings page
      */
     public function index()
     {
@@ -64,7 +64,7 @@ class AdminSecuritySessionController extends AdminLoggedInController
     }
 
     /**
-     * セッション設定の更新
+     * Update session settings
      */
     public function update(AdminSecuritySessionUpdateRequest $request)
     {
@@ -72,7 +72,7 @@ class AdminSecuritySessionController extends AdminLoggedInController
 
         $before = ['session_encrypt' => ConfigHelper::getSessionEncrypt(), 'session_lifetime' => ConfigHelper::getSessionLifetime()];
 
-        // セッション設定を更新
+        // Update session settings
         ConfigHelper::setSessionEncrypt($validated['session_encrypt'] ?? false);
         ConfigHelper::setSessionLifetime($validated['session_lifetime']);
 

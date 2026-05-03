@@ -40,7 +40,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class AdminFrontSettingsUpdateRequest extends FormRequest
 {
     /**
-     * リクエストの認可判定
+     * Determine if the request is authorized
      */
     public function authorize(): bool
     {
@@ -48,7 +48,7 @@ class AdminFrontSettingsUpdateRequest extends FormRequest
     }
 
     /**
-     * バリデーションルール
+     * Validation rules
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */

@@ -39,12 +39,12 @@ use App\Http\Requests\Install\InstallSettingsRequest;
 use Illuminate\Support\Facades\Crypt;
 
 /**
- * インストール - ステップ1: 基本設定
+ * Installation - Step 1: Basic settings
  */
 class InstallSettingsController extends BaseInstallController
 {
     /**
-     * 基本設定画面を表示
+     * Display basic settings screen
      */
     public function create()
     {
@@ -55,7 +55,7 @@ class InstallSettingsController extends BaseInstallController
     }
 
     /**
-     * 基本設定を保存
+     * Save basic settings
      */
     public function store(InstallSettingsRequest $request)
     {

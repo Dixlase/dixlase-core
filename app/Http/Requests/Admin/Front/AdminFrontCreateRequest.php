@@ -41,7 +41,7 @@ use Illuminate\Validation\Rule;
 class AdminFrontCreateRequest extends FormRequest
 {
     /**
-     * リクエストの認可判定
+     * Determine if the request is authorized
      */
     public function authorize(): bool
     {
@@ -49,7 +49,7 @@ class AdminFrontCreateRequest extends FormRequest
     }
 
     /**
-     * バリデーションルール
+     * Validation rules
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
@@ -68,7 +68,7 @@ class AdminFrontCreateRequest extends FormRequest
     }
 
     /**
-     * バリデーションエラーメッセージ
+     * Validation error messages
      *
      * @return array<string, string>
      */

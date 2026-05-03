@@ -49,7 +49,7 @@ class AdminSystemCacheController extends AdminLoggedInController
     }
 
     /**
-     * キャッシュ管理画面
+     * Cache admin panel
      */
     public function index()
     {
@@ -91,7 +91,7 @@ class AdminSystemCacheController extends AdminLoggedInController
     }
 
     /**
-     * 個別キャッシュクリア
+     * Clear individual cache
      */
     public function clear(AdminSystemCacheClearRequest $request)
     {
@@ -143,9 +143,9 @@ class AdminSystemCacheController extends AdminLoggedInController
     }
 
     /**
-     * 個別キャッシュ再生成
+     * Regenerate individual cache
      *
-     * Note: 'application' (cache:cache) は Laravel に存在しないため対象外。
+     * Note: 'application' (cache:cache) is excluded as it does not exist in Laravel
      */
     public function rebuild(AdminSystemCacheRebuildRequest $request)
     {

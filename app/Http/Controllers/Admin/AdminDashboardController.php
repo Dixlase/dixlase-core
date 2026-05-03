@@ -53,7 +53,7 @@ class AdminDashboardController extends AdminLoggedInController
     }
 
     /**
-     * ダッシュボード表示
+     * Display dashboard
      */
     public function index()
     {
@@ -64,10 +64,10 @@ class AdminDashboardController extends AdminLoggedInController
         $this->viewParams['twoFaCanRegenerateRecoveryCodes'] = $twoFaRecoveryCodeService->canRegenerate($user);
         $this->viewParams['twoFaNextRegenerateTime'] = $twoFaRecoveryCodeService->getNextRegenerateTime($user);
 
-        // TwoFaStatusServiceを使用して判定
+        // Determine using TwoFaStatusService
         $twoFaStatusService = new TwoFaStatusService();
 
-        // 2FAが有効かつ回復コード未生成の場合、自動生成してモーダル表示
+        // If 2FA is enabled and recovery codes are not generated, auto-generate and display modal
         if ($twoFaStatusService->shouldGenerateRecoveryCodes($user, $twoFaRecoveryCodeService)) {
             try {
                 $codes = $twoFaRecoveryCodeService->generate($user);
@@ -80,13 +80,13 @@ class AdminDashboardController extends AdminLoggedInController
             }
         }
 
-        // パスキーが有効かつデバイス未登録の場合、促進モーダルを表示
+        // If passkey is enabled and device is not registered, display promotion modal
         $twoFaPasskeyService = new TwoFaPasskeyService();
         if ($twoFaStatusService->shouldPromptPasskeyRegistration($user, $twoFaPasskeyService)) {
             $this->viewParams['prompt_passkey_registration'] = true;
         }
 
-        // はじめにカードのデータ準備
+        // Prepare data for getting started card
         if (! $user->getting_started_dismissed) {
             $visited = $user->getting_started_visited ?? [];
             $this->viewParams['gettingStarted'] = [
@@ -95,7 +95,7 @@ class AdminDashboardController extends AdminLoggedInController
             ];
         }
 
-        // ダッシュボード表示データ
+        // Dashboard display data
         $isAdvancedMode = AdminModeHelper::isAdvancedMode();
         $mailStatus = DashboardPresenter::mailServerStatus();
         $captchaStatus = DashboardPresenter::captchaStatus();
@@ -117,7 +117,7 @@ class AdminDashboardController extends AdminLoggedInController
     }
 
     /**
-     * はじめにカードを非表示にする（Ajax）
+     * Hide getting started card (Ajax)
      */
     public function dismissGettingStarted(): JsonResponse
     {
@@ -129,7 +129,7 @@ class AdminDashboardController extends AdminLoggedInController
     }
 
     /**
-     * はじめにカードのステップを訪問済みにする（Ajax）
+     * Mark getting started card step as visited (Ajax)
      */
     public function visitGettingStartedStep(Request $request): JsonResponse
     {
@@ -147,7 +147,7 @@ class AdminDashboardController extends AdminLoggedInController
             $visited[] = $step;
             $user->getting_started_visited = $visited;
 
-            // 全ステップ訪問済みなら自動dismiss
+            // Auto-dismiss if all steps are visited
             if (count(array_intersect($validSteps, $visited)) >= count($validSteps)) {
                 $user->getting_started_dismissed = true;
             }

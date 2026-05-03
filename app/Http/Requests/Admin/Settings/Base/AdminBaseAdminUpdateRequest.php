@@ -50,8 +50,8 @@ class AdminBaseAdminUpdateRequest extends FormRequest
     }
 
     /**
-     * バリデーション前にデータを準備
-     * プレフィックスとサフィックスを結合してadmin_urlを生成
+     * Prepare data before validation
+     * Generate admin_url by combining prefix and suffix
      */
     protected function prepareForValidation(): void
     {
@@ -79,7 +79,7 @@ class AdminBaseAdminUpdateRequest extends FormRequest
     }
 
     /**
-     * バリデーションエラーメッセージ
+     * Validation error messages
      *
      * @return array<string, string>
      */

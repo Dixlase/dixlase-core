@@ -44,29 +44,29 @@ use Illuminate\Support\Facades\Log;
 /**
  * CSP Report Controller
  *
- * CSP違反レポートを受信・処理するコントローラー。
- * ブラウザからのCSP違反レポートを受け取り、ログに記録する。
+ * Controller for receiving and processing CSP violation reports
+ * Receives CSP violation reports from browsers and logs them
  */
 class CspReportController extends Controller
 {
     /**
-     * 開発ツール関連の除外パターン
-     * Vite開発サーバー、Windsurf/MCPブラウザプレビュー等
+     * Exclusion patterns for development tools
+     * Vite dev server, Windsurf/MCP browser preview, etc.
      */
     protected array $devToolPatterns = [
         // Windsurf/MCP browser logger
         'browser-logger',
         'browser-logger-active',
         '_boost',
-        // Vite開発サーバー
+        // Vite dev server
         '@vite',
         'vite/client',
         '@react-refresh',
         'hot-update',
-        ':5173',            // Vite開発サーバーのデフォルトポート
+        ':5173',            // Default port for Vite dev server
         'node_modules/.vite',
         'node_modules/vite',
-        // その他の開発ツール
+        // Other development tools
         'webpack-dev-server',
         '__webpack_hmr',
         'livereload',
@@ -74,49 +74,49 @@ class CspReportController extends Controller
     ];
 
     /**
-     * CSP違反レポートを受信
+     * Receive CSP violation report
      */
     public function report(Request $request): JsonResponse
     {
-        // ログ記録が無効な場合は何もしない
+        // Do nothing if logging is disabled
         if (! config('csp.log_violations', true)) {
             return response()->json(['status' => 'ignored']);
         }
 
-        // レポートデータを取得
+        // Get report data
         $report = $this->parseReport($request);
 
         if (empty($report)) {
             return response()->json(['status' => 'empty']);
         }
 
-        // 開発ツール関連の違反を除外
+        // Exclude development tool related violations
         if ($this->isDevToolViolation($report)) {
             return response()->json(['status' => 'excluded_dev_tool']);
         }
 
-        // ログに記録
+        // Log to file
         $this->logViolation($report, $request);
 
         return response()->json(['status' => 'received']);
     }
 
     /**
-     * 開発ツール関連の違反かどうかを判定
+     * Determine if violation is related to development tools
      */
     protected function isDevToolViolation(array $report): bool
     {
-        // 設定で除外が無効な場合はfalse
+        // Return false if exclusion is disabled in settings
         try {
             $excludeDevTools = SecuritySetting::get('csp_exclude_dev_tools', true);
             if (! $excludeDevTools) {
                 return false;
             }
         } catch (\Exception $e) {
-            // データベース未設定時はデフォルトで除外
+            // Exclude by default when database is not configured
         }
 
-        // チェック対象のフィールド
+        // Fields to check
         $fieldsToCheck = [
             $report['blocked-uri'] ?? $report['blockedURL'] ?? '',
             $report['source-file'] ?? $report['sourceFile'] ?? '',
@@ -135,8 +135,8 @@ class CspReportController extends Controller
             }
         }
 
-        // ローカル環境でのインラインスクリプト違反を除外
-        // Windsurf/MCPが注入するスクリプトはblocked_uri=inlineで報告される
+        // Exclude inline script violations in local environment
+        // Scripts injected by Windsurf/MCP are reported as blocked_uri=inline
         if ($this->isLocalDevInlineViolation($report)) {
             return true;
         }
@@ -145,12 +145,12 @@ class CspReportController extends Controller
     }
 
     /**
-     * 開発環境でのインラインスクリプト違反かどうかを判定
-     * Windsurf/MCPが注入するbrowser-loggerスクリプト等を検出
+     * Determine if violation is an inline script violation in development environment
+     * Detect browser-logger scripts injected by Windsurf/MCP, etc.
      */
     protected function isLocalDevInlineViolation(array $report): bool
     {
-        // 本番環境ではfalse（ローカル・ステージングのみ対象）
+        // False in production (local and staging only)
         if (app()->environment('production')) {
             return false;
         }
@@ -159,29 +159,29 @@ class CspReportController extends Controller
         $directive = $report['violated-directive'] ?? $report['effectiveDirective'] ?? '';
         $sourceFile = $report['source-file'] ?? $report['sourceFile'] ?? '';
 
-        // インラインスクリプト違反かどうか
+        // Whether it is an inline script violation
         if ($blockedUri !== 'inline') {
             return false;
         }
 
-        // script-src関連の違反のみ対象
+        // Only target script-src related violations
         if (! str_contains($directive, 'script-src')) {
             return false;
         }
 
-        // source-fileが開発ツール関連のパターンに一致する場合のみ除外
+        // Exclude only if source-file matches development tool related patterns
         foreach ($this->devToolPatterns as $pattern) {
             if (stripos($sourceFile, $pattern) !== false) {
                 return true;
             }
         }
 
-        // 開発ツール関連以外のインライン違反は記録する
+        // Record inline violations other than development tool related ones
         return false;
     }
 
     /**
-     * レポートをパース
+     * Parse report
      */
     protected function parseReport(Request $request): array
     {
@@ -201,12 +201,12 @@ class CspReportController extends Controller
             return [];
         }
 
-        // CSP Report形式（csp-report キー）
+        // CSP Report format (csp-report key)
         if (isset($data['csp-report'])) {
             return $data['csp-report'];
         }
 
-        // Reporting API形式（配列）
+        // Reporting API format (array)
         if (is_array($data) && isset($data[0]['body'])) {
             return $data[0]['body'];
         }
@@ -215,13 +215,13 @@ class CspReportController extends Controller
     }
 
     /**
-     * 違反をログに記録
+     * Log violation
      */
     protected function logViolation(array $report, Request $request): void
     {
         $channel = config('csp.log_channel', 'csp');
 
-        // 重要な情報を抽出
+        // Extract important information
         $logData = [
             'violated_directive' => $report['violated-directive'] ?? $report['effectiveDirective'] ?? 'unknown',
             'blocked_uri' => $report['blocked-uri'] ?? $report['blockedURL'] ?? 'unknown',
@@ -237,24 +237,24 @@ class CspReportController extends Controller
             'user_agent' => $request->userAgent(),
         ];
 
-        // nullの項目を除去
+        // Remove null items
         $logData = array_filter($logData, fn ($v) => $v !== null);
 
-        // ログレベルを決定（eval等の危険な違反は警告レベルを上げる）
+        // Determine log level (raise warning level for dangerous violations such as eval)
         $level = $this->determineLogLevel($logData);
 
         Log::channel($channel)->log($level, 'CSP Violation', $logData);
     }
 
     /**
-     * ログレベルを決定
+     * Determine log level
      */
     protected function determineLogLevel(array $logData): string
     {
         $directive = $logData['violated_directive'] ?? '';
         $blockedUri = $logData['blocked_uri'] ?? '';
 
-        // 危険な違反パターン
+        // Dangerous violation patterns
         $criticalPatterns = [
             'eval',
             'unsafe-inline',
@@ -267,12 +267,12 @@ class CspReportController extends Controller
             }
         }
 
-        // script-src違反は警告レベル
+        // script-src violations are warning level
         if (str_contains($directive, 'script-src')) {
             return 'warning';
         }
 
-        // その他は情報レベル
+        // Others are info level
         return 'info';
     }
 }

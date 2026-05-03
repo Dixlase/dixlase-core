@@ -56,7 +56,7 @@ class AdminBaseModeController extends AdminLoggedInController
     }
 
     /**
-     * モード設定ページ
+     * Mode settings page
      */
     public function index()
     {
@@ -71,7 +71,7 @@ class AdminBaseModeController extends AdminLoggedInController
     }
 
     /**
-     * モード設定の更新
+     * Update mode settings
      */
     public function update(Request $request, AdminModeAutoConfigService $autoConfigService)
     {
@@ -93,13 +93,13 @@ class AdminBaseModeController extends AdminLoggedInController
 
                 if ($newMode->isSimple()) {
                     $results = $autoConfigService->applyAll();
-                    Log::channel('admin_activity')->info('かんたんモード自動設定を適用', [
+                    Log::channel('admin_activity')->info(__('http/controllers/admin/settings/base/admin_base_mode_controller.apply_easy_mode_auto_settings'), [
                         'results' => $results,
                         'member_id' => auth()->id(),
                     ]);
                 }
 
-                Log::channel('admin_activity')->info('管理画面モード設定を更新', [
+                Log::channel('admin_activity')->info(__('http/controllers/admin/settings/base/admin_base_mode_controller.update_admin_screen_mode_settings'), [
                     'mode' => $newMode->name,
                     'member_id' => auth()->id(),
                 ]);

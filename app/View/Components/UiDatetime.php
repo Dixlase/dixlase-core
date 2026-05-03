@@ -42,10 +42,10 @@ use Illuminate\View\Component;
 use Illuminate\View\View;
 
 /**
- * UTC で保存された日時を site_settings.display_timezone に変換して
- * <time> 要素として描画するコンポーネント。
+ * Convert datetime stored in UTC to site_settings.display_timezone and
+ * render it as a <time> element.
  *
- * 使い方:
+ * Usage:
  *   <x-ui-datetime :value="$model->created_at" />
  *   <x-ui-datetime :value="$dt" format="date" />
  *   <x-ui-datetime :value="$dt" format="Y/m/d H:i" empty-label="—" />
@@ -59,9 +59,9 @@ class UiDatetime extends Component
     public ?string $titleText;
 
     /**
-     * @param  \Carbon\Carbon|\DateTimeInterface|string|int|null  $value  入力日時（UTC として解釈）
-     * @param  string  $format  PHP date format か DateTimeHelper::FORMATS のキー
-     * @param  string|null  $emptyLabel  null/空文字時の代替表示
+     * @param  \Carbon\Carbon|\DateTimeInterface|string|int|null  $value  Input datetime (interpreted as UTC)
+     * @param  string  $format  PHP date format or a DateTimeHelper::FORMATS key
+     * @param  string|null  $emptyLabel  Fallback label shown when the value is null or empty
      */
     public function __construct(
         mixed $value = null,

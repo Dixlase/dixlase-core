@@ -48,7 +48,7 @@ class AdminNewPasswordController extends Controller
     use PasswordResetTrait;
 
     /**
-     * 設定取得用のクロージャを取得
+     * Get the closure for retrieving settings
      */
     protected function getSettingsGetter(): callable
     {
@@ -56,7 +56,7 @@ class AdminNewPasswordController extends Controller
     }
 
     /**
-     * Password brokerの名前を取得
+     * Get the name of the password broker
      */
     protected function getPasswordResetBroker(): string
     {
@@ -64,7 +64,7 @@ class AdminNewPasswordController extends Controller
     }
 
     /**
-     * ユーザーモデルのクラス名を取得
+     * Get the class name of the user model
      */
     protected function getUserModelClass(): string
     {
@@ -72,7 +72,7 @@ class AdminNewPasswordController extends Controller
     }
 
     /**
-     * パスワードリセットリンク要求画面のビュー名を取得
+     * Get the view name for the password reset link request screen
      */
     protected function getForgotPasswordViewName(): string
     {
@@ -80,7 +80,7 @@ class AdminNewPasswordController extends Controller
     }
 
     /**
-     * パスワードリセット画面のビュー名を取得
+     * Get the view name for the password reset screen
      */
     protected function getResetPasswordViewName(): string
     {
@@ -88,7 +88,7 @@ class AdminNewPasswordController extends Controller
     }
 
     /**
-     * パスワードリセット処理のルート名を取得
+     * Get the route name for password reset processing
      */
     protected function getPasswordResetRoute(): string
     {
@@ -96,7 +96,7 @@ class AdminNewPasswordController extends Controller
     }
 
     /**
-     * ログイン画面のルート名を取得
+     * Get the route name for the login screen
      */
     protected function getLoginRoute(): string
     {
@@ -104,7 +104,7 @@ class AdminNewPasswordController extends Controller
     }
 
     /**
-     * CAPTCHAアクション名を取得
+     * Get the CAPTCHA action name
      */
     protected function getCaptchaAction(): string
     {
@@ -112,7 +112,7 @@ class AdminNewPasswordController extends Controller
     }
 
     /**
-     * パスワードリセット画面用の追加データを取得
+     * Get additional data for the password reset screen
      */
     protected function getResetPasswordViewData(Request $request): array
     {

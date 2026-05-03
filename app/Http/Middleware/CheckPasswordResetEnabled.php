@@ -49,11 +49,11 @@ class CheckPasswordResetEnabled
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // パスワードリセット機能が有効かどうかをチェック
+        // Check if password reset feature is enabled
         $passwordResetEnabled = (bool) SecuritySetting::get('password_reset_enabled', false);
 
         if (! $passwordResetEnabled) {
-            // パスワードリセット機能が無効の場合、404を返す
+            // Return 404 if password reset feature is disabled
             abort(404);
         }
 

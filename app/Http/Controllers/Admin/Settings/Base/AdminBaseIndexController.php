@@ -59,21 +59,21 @@ class AdminBaseIndexController extends AdminLoggedInController
     }
 
     /**
-     * 基本設定概要ページ
+     * Basic settings overview page
      */
     public function index()
     {
-        // サイト設定
+        // Site settings
         $appName = ConfigHelper::getAppName();
         $siteDescription = $this->baseSettingRepository->get('site_description', '');
         $locale = ConfigHelper::getAppLocale();
         $timezone = ConfigHelper::getDisplayTimezone();
 
-        // 管理画面設定
+        // Admin panel settings
         $adminUrl = $this->baseSettingRepository->get('admin_url', config('admin.admin_url'));
         $forceSsl = (bool) $this->baseSettingRepository->get('force_ssl', false);
 
-        // メール設定
+        // Email settings
         $mailMailer = ConfigHelper::getMailMailer();
         $sessionTestResults = session('mail_test_results', []);
         $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? $this->baseSettingRepository->get('mail_connection_tested', false));
@@ -81,10 +81,10 @@ class AdminBaseIndexController extends AdminLoggedInController
         $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? $this->baseSettingRepository->get('mail_receive_tested', false));
         $mailTestComplete = $mailConnectionTested && $mailSendTested && $mailReceiveTested;
 
-        // メンテナンス設定
+        // Maintenance settings
         $maintenanceMode = ConfigHelper::getMaintenanceMode();
 
-        // モード設定
+        // Mode settings
         $adminMode = AdminMode::fromInt(
             (int) $this->baseSettingRepository->get('admin_mode', AdminMode::Simple->value)
         );
@@ -100,11 +100,11 @@ class AdminBaseIndexController extends AdminLoggedInController
         $this->viewParams['maintenanceMode'] = $maintenanceMode;
         $this->viewParams['adminMode'] = $adminMode;
 
-        // コンテンツエディター設定
+        // Content editor settings
         $preferredEditor = $this->editorManager->getPreferredEditor('gui');
         $this->viewParams['preferredEditorName'] = $preferredEditor?->label ?? '';
 
-        // サブページの表示可否を判定（Hiddenのサブページはカード非表示）
+        // Determine whether to display subpages (hidden subpages do not show cards)
         $subPageKeys = ['site', 'admin', 'mail', 'maintenance', 'mode', 'editor'];
         $subPageVisible = [];
         foreach ($subPageKeys as $key) {

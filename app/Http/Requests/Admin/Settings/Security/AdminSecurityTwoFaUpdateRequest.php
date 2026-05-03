@@ -53,12 +53,12 @@ class AdminSecurityTwoFaUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // 二段階認証基本設定
+            // Two-factor authentication basic settings
             'two_fa_mode' => ['nullable', 'integer', 'in:0,1,2,3'],
             'two_fa_passkey_mode' => ['nullable', 'integer', 'in:0,1'],
             'two_fa_passkey_max_devices' => ['nullable', 'integer', 'min:1', 'max:10'],
 
-            // 二段階認証詳細設定
+            // Two-factor authentication detailed settings
             'two_fa_expire_minutes' => ['nullable', 'integer', 'min:1', 'max:60'],
             'two_fa_resend_interval_seconds' => ['nullable', 'integer', 'min:60', 'max:300'],
             'two_fa_max_attempts' => ['nullable', 'integer', 'min:3', 'max:10'],

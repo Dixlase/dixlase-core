@@ -50,18 +50,18 @@ class CheckMenuAccess
      */
     public function handle(Request $request, Closure $next, string $menuKey): \Symfony\Component\HttpFoundation\Response
     {
-        // 権限チェック
+        // Permission check
         if (! AdminHelper::canAccessMenu($menuKey)) {
-            abort(403, 'アクセス権限がありません。');
+            abort(403, __('http/middleware/check_menu_access.no_access_permission'));
         }
 
-        // かんたんモード時: Hiddenメニューへのアクセスをブロック
+        // In simple mode: Block access to hidden menus
         if (AdminModeHelper::isSimpleMode()) {
             $visibility = AdminModeHelper::getMenuVisibility($menuKey);
 
             if ($visibility === MenuVisibility::Hidden) {
                 return redirect()->route('admin.dashboard')
-                    ->with('warning', 'この機能はかんたんモードでは利用できません。詳細モードに切り替えてご利用ください。');
+                    ->with('warning', __('http/middleware/check_menu_access.feature_unavailable_in_simple_mode'));
             }
         }
 

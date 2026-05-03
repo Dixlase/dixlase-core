@@ -56,10 +56,10 @@ class AdminProfileNotificationsController extends AdminLoggedInController
     {
         $member = Auth::guard('member')->user();
 
-        // メールサーバー設定状態を渡す
+        // Pass mail server settings status
         $this->viewParams['isMailServerTested'] = MailServerValidatorService::isMailServerTested();
 
-        // ログイン通知設定の追加
+        // Add login notification settings
         $loginNoticeGlobal = (int) SecuritySetting::getValue(
             'login_notification_mode',
             AuthenticationMode::UseProfileSetting->value
@@ -85,7 +85,7 @@ class AdminProfileNotificationsController extends AdminLoggedInController
         $member = Auth::guard('member')->user();
         $validated = $request->validated();
 
-        // login_notification_mode は全体設定が UseProfileSetting のときだけ上書き（セキュリティ設定から）
+        // login_notification_mode is overridden only when global settings is UseProfileSetting (from security settings)
         $globalLogin = (int) SecuritySetting::getValue('login_notification_mode', AuthenticationMode::UseProfileSetting->value);
         if ($globalLogin === AuthenticationMode::UseProfileSetting->value && array_key_exists('login_notification_mode', $validated)) {
             $member->login_notification_mode = (int) $validated['login_notification_mode'];

@@ -40,36 +40,36 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 /**
- * インストール - 完了画面
+ * Install - Completion screen
  */
 class InstallCompleteController extends BaseInstallController
 {
     /**
-     * 完了画面を表示
+     * Display completion screen
      */
     public function show()
     {
-        Log::channel('install')->info('=== InstallCompleteController::show() 開始 ===');
+        Log::channel('install')->info('=== InstallCompleteController::show() start ===');
 
-        // リダイレクトループ防止フラグをクリア
+        // Clear redirect loop prevention flag
         session()->forget('_redirect_to_complete');
 
-        // 現在の環境変数をログ出力
+        // Log current environment variables
         $installed = env('INSTALLED');
-        Log::channel('install')->info('INSTALLED環境変数の値: '.var_export($installed, true));
+        Log::channel('install')->info('INSTALLED environment variable value: '.var_export($installed, true));
 
-        // インストール状態の判定
+        // Determine installation status
         $isInstalled = ($installed === 'true' || $installed === true);
 
         if ($isInstalled) {
-            Log::channel('install')->info('INSTALLED=true: フロントページにリダイレクト');
+            Log::channel('install')->info('INSTALLED=true: Redirect to front page');
 
-            return redirect('/')->with('message', 'インストールは既に完了しています。');
+            return redirect('/')->with('message', __('http/controllers/install/install_complete_controller.install_already_completed'));
         }
 
-        Log::channel('install')->info('インストール完了画面を表示（ボタン押下待ち）');
+        Log::channel('install')->info('Display installation completion screen (waiting for button press)');
 
-        // 管理画面URLを取得（admin_url は Global scope なので SettingResolver 経由で global_settings から）
+        // Retrieve admin panel URL (admin_url is Global scope, so get from global_settings via SettingResolver)
         $adminSlug = 'admin';
         try {
             $resolver = app(\App\Services\Site\SettingResolver::class);
@@ -78,32 +78,32 @@ class InstallCompleteController extends BaseInstallController
                 $adminSlug = $dbAdminUrl;
             }
         } catch (\Throwable $e) {
-            Log::channel('install')->warning('admin_url設定の取得に失敗: '.$e->getMessage());
+            Log::channel('install')->warning('Failed to get admin_url setting: '.$e->getMessage());
         }
 
-        // force_ssl設定を確認
+        // Check force_ssl settings
         $forceSsl = false;
 
-        // まず.envのFORCE_SSLを確認
+        // First check FORCE_SSL in .env
         $envForceSsl = env('FORCE_SSL');
         if ($envForceSsl === 'true' || $envForceSsl === true) {
             $forceSsl = true;
         } else {
-            // global_settings からも確認（force_ssl は Global scope）
+            // Also check from global_settings (force_ssl is Global scope)
             try {
                 $resolver = app(\App\Services\Site\SettingResolver::class);
                 $forceSsl = (bool) $resolver->get('force_ssl');
             } catch (\Throwable $e) {
-                Log::channel('install')->warning('force_ssl設定の取得に失敗: '.$e->getMessage());
+                Log::channel('install')->warning('Failed to get force_ssl setting: '.$e->getMessage());
             }
         }
 
-        Log::channel('install')->info('force_ssl設定: '.($forceSsl ? 'true' : 'false'));
+        Log::channel('install')->info('force_ssl setting: '.($forceSsl ? 'true' : 'false'));
 
-        // .envのAPP_URLを確実に取得する
+        // Reliably retrieve APP_URL from .env
         $envAppUrl = env('APP_URL');
         if (! $envAppUrl) {
-            // フォールバック: リクエストから現在のURLを構築
+            // Fallback: construct current URL from request
             $scheme = ($forceSsl || request()->isSecure()) ? 'https' : 'http';
             $host = request()->getHost();
             $port = request()->getPort();
@@ -114,7 +114,7 @@ class InstallCompleteController extends BaseInstallController
                 $envAppUrl = $scheme.'://'.$host;
             }
         } else {
-            // APP_URLが存在する場合、force_sslが有効ならhttpsに変換
+            // If APP_URL exists, convert to https when force_ssl is enabled
             if ($forceSsl) {
                 $envAppUrl = preg_replace('/^http:/', 'https:', $envAppUrl);
             }
@@ -122,66 +122,66 @@ class InstallCompleteController extends BaseInstallController
 
         config()->set('app.url', $envAppUrl);
 
-        // アプリケーションURLの取得
+        // Retrieve application URL
         $appUrl = rtrim(config('app.url'), '/');
-        // 管理画面URLを取得
+        // Retrieve admin panel URL
         $adminUrl = rtrim($appUrl.'/'.$adminSlug, '/');
         $adminLoginUrl = $adminUrl.'/login';
 
-        // admin_mode を取得（Global scope なので SettingResolver 経由で global_settings から）
+        // Retrieve admin_mode (Global scope, so get from global_settings via SettingResolver)
         $isSimpleMode = false;
         try {
             $resolver = app(\App\Services\Site\SettingResolver::class);
             $adminMode = $resolver->get('admin_mode');
             $isSimpleMode = ((string) $adminMode === '0' || $adminMode === null);
         } catch (\Throwable $e) {
-            Log::channel('install')->warning('admin_mode設定の取得に失敗: '.$e->getMessage());
+            Log::channel('install')->warning('Failed to get admin_mode setting: '.$e->getMessage());
         }
 
-        // セッションデータを削除
+        // Delete session data
         session()->forget('install_data');
 
-        Log::channel('install')->info('完了画面を表示: appUrl='.$appUrl.', adminLoginUrl='.$adminLoginUrl.', isSimpleMode='.($isSimpleMode ? 'true' : 'false'));
-        Log::channel('install')->info('APP_URL取得結果: '.$envAppUrl);
-        Log::channel('install')->info('リダイレクトフラグクリア完了');
+        Log::channel('install')->info('Display completion screen: appUrl='.$appUrl.', adminLoginUrl='.$adminLoginUrl.', isSimpleMode='.($isSimpleMode ? 'true' : 'false'));
+        Log::channel('install')->info('APP_URL retrieval result: '.$envAppUrl);
+        Log::channel('install')->info('Redirect flag cleared');
 
-        Log::channel('install')->info('=== InstallCompleteController::show() 終了 ===');
+        Log::channel('install')->info('=== InstallCompleteController::show() end ===');
 
-        // 完了画面を表示（INSTALLED=trueの設定はfinalizeメソッドで行う）
+        // Display completion screen (setting INSTALLED=true is done in finalize method)
         $forceSslEnabled = $forceSsl;
 
         return view('install.complete', compact('appUrl', 'adminUrl', 'adminLoginUrl', 'isSimpleMode', 'adminSlug', 'forceSslEnabled'));
     }
 
     /**
-     * インストール最終化（INSTALLED=trueを設定）
+     * Finalize installation (set INSTALLED=true)
      */
     public function finalize(Request $request)
     {
-        Log::channel('install')->info('=== InstallCompleteController::finalize() 開始 ===');
+        Log::channel('install')->info('=== InstallCompleteController::finalize() start ===');
 
-        // INSTALLED=trueを設定 & セッションドライバーをguard-aware-databaseに戻す
-        Log::channel('install')->info('INSTALLED=trueを設定中...');
+        // Set INSTALLED=true & restore session driver to guard-aware-database
+        Log::channel('install')->info('Setting INSTALLED=true...');
         $this->updateEnv([
             'INSTALLED' => 'true',
             'SESSION_DRIVER' => 'guard-aware-database',
         ]);
 
-        // 環境変数を即座に反映（putenvで現在のプロセスに反映）
+        // Apply environment variables immediately (reflect to current process with putenv)
         putenv('INSTALLED=true');
         $_ENV['INSTALLED'] = 'true';
         $_SERVER['INSTALLED'] = 'true';
 
-        // Artisanコマンドは実行しない（APP_KEY再生成とセッション破壊を防ぐため）
-        Log::channel('install')->info('INSTALLED=true設定完了 & セッションドライバーをguard-aware-databaseに復元', [
+        // Do not run Artisan commands (to prevent APP_KEY regeneration and session destruction)
+        Log::channel('install')->info('INSTALLED=true set & session driver restored to guard-aware-database', [
             'env_INSTALLED' => env('INSTALLED'),
             'putenv_check' => getenv('INSTALLED'),
         ]);
 
-        // リダイレクト先を取得
+        // Get redirect destination
         $redirectTo = $request->input('redirect_to');
 
-        Log::channel('install')->info('finalize: リダイレクト先', [
+        Log::channel('install')->info('finalize: Redirect destination', [
             'redirect_to' => $redirectTo,
             'request_all' => $request->all(),
             'has_session' => $request->hasSession(),
@@ -189,28 +189,28 @@ class InstallCompleteController extends BaseInstallController
         ]);
 
         if ($redirectTo) {
-            // リダイレクト先が指定されている場合
-            Log::channel('install')->info('finalize: リダイレクト実行', ['url' => $redirectTo]);
+            // If redirect destination is specified
+            Log::channel('install')->info('finalize: Executing redirect', ['url' => $redirectTo]);
 
-            return redirect($redirectTo)->with('message', 'インストールが完了しました。');
+            return redirect($redirectTo)->with('message', __('http/controllers/install/install_complete_controller.install_completed'));
         } else {
-            // AJAX呼び出しの場合はJSONレスポンス
-            Log::channel('install')->info('finalize: JSONレスポンス返却');
+            // Return JSON response for AJAX calls
+            Log::channel('install')->info('finalize: Returning JSON response');
 
-            return response()->json(['success' => true, 'message' => 'インストールが完了しました。']);
+            return response()->json(['success' => true, 'message' => __('http/controllers/install/install_complete_controller.install_completed')]);
         }
 
-        Log::channel('install')->info('=== InstallCompleteController::finalize() 終了 ===');
+        Log::channel('install')->info('=== InstallCompleteController::finalize() end ===');
     }
 
     /**
-     * .envファイルを更新する
+     * Update .env file
      */
     protected function updateEnv(array $values): void
     {
         $envPath = base_path('.env');
 
-        // .envがない場合は.env.exampleからコピー
+        // Copy from .env.example if .env does not exist
         if (! File::exists($envPath)) {
             File::copy(base_path('.env.example'), $envPath);
         }
@@ -218,18 +218,18 @@ class InstallCompleteController extends BaseInstallController
         $env = File::get($envPath);
 
         foreach ($values as $key => $value) {
-            // 値にスペース、特殊文字、または空の場合は引用符で囲む
+            // Wrap in quotes if value contains spaces, special characters, or is empty
             $formattedValue = $this->formatEnvValue($value);
 
             if (preg_match("/^{$key}=/m", $env)) {
-                // 既存の値を更新
+                // Update existing value
                 $env = preg_replace(
                     "/^{$key}=.*/m",
                     "{$key}={$formattedValue}",
                     $env
                 );
             } else {
-                // .envに存在しない場合は末尾に追加
+                // Append to end if not present in .env
                 $env .= "\n{$key}={$formattedValue}";
             }
         }
@@ -238,32 +238,32 @@ class InstallCompleteController extends BaseInstallController
     }
 
     /**
-     * .env用に値をフォーマットする
+     * Format value for .env
      */
     protected function formatEnvValue($value): string
     {
-        // nullの場合は空文字列
+        // Empty string if null
         if ($value === null) {
             return '';
         }
 
-        // booleanの場合は文字列に変換
+        // Convert to string if boolean
         if (is_bool($value)) {
             return $value ? 'true' : 'false';
         }
 
         $value = (string) $value;
 
-        // 空文字列、スペース、特殊文字を含む場合は引用符で囲む
+        // Wrap in quotes if empty string, contains spaces or special characters
         if ($value === '' ||
             preg_match('/[\s"\'#$]/', $value) ||
             str_contains($value, '=')) {
-            // 既に引用符で囲まれている場合はそのまま
+            // Leave as-is if already quoted
             if (preg_match('/^".*"$/', $value) || preg_match("/^'.*'$/", $value)) {
                 return $value;
             }
 
-            // ダブルクォートで囲む（内部のダブルクォートはエスケープ）
+            // Wrap in double quotes (escape internal double quotes)
             return '"'.str_replace('"', '\\"', $value).'"';
         }
 

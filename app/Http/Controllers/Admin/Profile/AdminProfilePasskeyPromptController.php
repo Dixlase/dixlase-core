@@ -40,18 +40,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * パスキー登録促進モーダルの制御
+ * Control passkey registration prompt modal
  */
 class AdminProfilePasskeyPromptController extends AdminLoggedInController
 {
     /**
-     * パスキー登録促進モーダルを非表示にする
+     * Hide passkey registration prompt modal
      */
     public function dismiss(Request $request)
     {
         $member = Auth::guard('member')->user();
 
-        // passkey_prompt_dismissedフラグを設定
+        // Set passkey_prompt_dismissed flag
         $member->passkey_prompt_dismissed = true;
         $member->save();
 
@@ -62,13 +62,13 @@ class AdminProfilePasskeyPromptController extends AdminLoggedInController
     }
 
     /**
-     * パスキー登録促進モーダルを再表示する（設定をリセット）
+     * Redisplay passkey registration prompt modal (reset settings)
      */
     public function reset(Request $request)
     {
         $member = Auth::guard('member')->user();
 
-        // passkey_prompt_dismissedフラグをリセット
+        // Reset passkey_prompt_dismissed flag
         $member->passkey_prompt_dismissed = false;
         $member->save();
 

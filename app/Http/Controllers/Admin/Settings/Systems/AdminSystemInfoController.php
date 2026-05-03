@@ -46,7 +46,7 @@ class AdminSystemInfoController extends AdminLoggedInController
     }
 
     /**
-     * システム情報
+     * System Information
      */
     public function index()
     {

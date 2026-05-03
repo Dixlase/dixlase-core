@@ -68,11 +68,11 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
     }
 
     /**
-     * 二段階認証設定画面
+     * Two-factor authentication settings screen
      */
     public function index()
     {
-        // 二段階認証基本設定（セキュリティ設定から取得）
+        // Two-factor authentication basic settings (retrieved from security settings)
         $twoFaMode = (int) $this->securitySettingRepository->get('two_fa_mode', AuthenticationMode::Disabled->value);
         if (old('two_fa_mode') !== null) {
             $twoFaMode = (int) old('two_fa_mode');
@@ -90,20 +90,20 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
             ->values()
             ->toArray();
 
-        // パスキーモード設定（セキュリティ設定から取得）
-        // 0=無効, 1=有効（デフォルト: 有効）
+        // Passkey mode settings (retrieved from security settings)
+        // 0=disabled, 1=enabled (default: enabled)
         $twoFaPasskeyMode = (int) $this->securitySettingRepository->get('two_fa_passkey_mode', '1');
         if (old('two_fa_passkey_mode') !== null) {
             $twoFaPasskeyMode = (int) old('two_fa_passkey_mode');
         }
 
-        // パスキーデバイス最大登録数（セキュリティ設定から取得）
+        // Maximum number of passkey devices that can be registered (retrieved from security settings)
         $twoFaPasskeyMaxDevices = (int) $this->securitySettingRepository->get('two_fa_passkey_max_devices', '5');
         if (old('two_fa_passkey_max_devices') !== null) {
             $twoFaPasskeyMaxDevices = (int) old('two_fa_passkey_max_devices');
         }
 
-        // 二段階認証詳細設定（セキュリティ設定から取得）
+        // Two-factor authentication detailed settings (retrieved from security settings)
         $twoFaExpireMinutes = (int) $this->securitySettingRepository->get('two_fa_expire_minutes', '5');
         $twoFaResendIntervalSeconds = (int) $this->securitySettingRepository->get('two_fa_resend_interval_seconds', '60');
         $twoFaMaxAttempts = (int) $this->securitySettingRepository->get('two_fa_max_attempts', '5');
@@ -113,7 +113,7 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
         $twoFaRecoveryCodesCount = (int) $this->securitySettingRepository->get('two_fa_recovery_codes_count', '10');
         $twoFaRecoveryCodeRegenerateInterval = (int) $this->securitySettingRepository->get('two_fa_recovery_code_regenerate_interval', '90');
 
-        // メールサーバー設定状態
+        // Mail server configuration status
         $isMailServerTested = $this->isMailServerTested();
         $mailConnectionTestDate = SiteSetting::getValue('mail_connection_test_date');
 
@@ -138,7 +138,7 @@ class AdminSecurityTwoFaController extends AdminLoggedInController
     }
 
     /**
-     * 二段階認証設定更新
+     * Update two-factor authentication settings
      */
     public function update(AdminSecurityTwoFaUpdateRequest $request)
     {

@@ -50,18 +50,18 @@ class AdminIpFilter
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // ローカル環境ではIP制限をスキップ
+        // Skip IP restriction in local environment
         if (app()->environment('local')) {
             return $next($request);
         }
 
-        // デフォルト値の設定
+        // Set default values
         $enableAllowedIps = false;
         $allowedIps = [];
         $enableBlockedIps = false;
         $blockedIps = [];
 
-        // multisite consolidation 後はセキュリティ系も global_settings に統合済み
+        // After multisite consolidation, security settings are also integrated into global_settings
         if (Schema::hasTable('global_settings')) {
             $enableAllowedIps = (bool) SecuritySetting::get('enable_allowed_admin_ips', 0);
             $allowedIps = array_filter(explode(',', (string) SecuritySetting::get('allowed_admin_ips', '')));
@@ -70,7 +70,7 @@ class AdminIpFilter
             $blockedIps = array_filter(explode(',', (string) SecuritySetting::get('blocked_admin_ips', '')));
         }
 
-        // 許可リストが有効でない場合はIP制限をスキップ
+        // Skip IP restriction if allow list is not enabled
         if (! $enableAllowedIps && ! $enableBlockedIps) {
             return $next($request);
         }

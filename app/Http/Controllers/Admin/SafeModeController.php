@@ -41,9 +41,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 /**
- * セーフモード管理コントローラー
+ * Safe mode management controller
  *
- * セーフモードの無効化操作を提供する。
+ * Provide safe mode disable operations
  */
 class SafeModeController extends AdminLoggedInController
 {
@@ -54,7 +54,7 @@ class SafeModeController extends AdminLoggedInController
     }
 
     /**
-     * 指定したセーフモードを無効化
+     * Disable the specified safe mode
      */
     public function disable(Request $request): RedirectResponse
     {
@@ -73,7 +73,7 @@ class SafeModeController extends AdminLoggedInController
     }
 
     /**
-     * すべてのセーフモードを無効化
+     * Disable all safe modes
      */
     public function disableAll(Request $request): RedirectResponse
     {

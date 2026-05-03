@@ -50,7 +50,7 @@ class AdminSiteSettingsRequest extends FormRequest
 
     /**
      * Prepare the data for validation.
-     * toggleフィールドをboolean変換
+     * Convert toggle fields to boolean
      */
     public function prepareForValidation()
     {
@@ -61,7 +61,7 @@ class AdminSiteSettingsRequest extends FormRequest
     }
 
     /**
-     * バリデーションルールの設定
+     * Configure validation rules
      */
     public function rules()
     {
@@ -92,7 +92,7 @@ class AdminSiteSettingsRequest extends FormRequest
     }
 
     /**
-     * エラーメッセージのカスタマイズ
+     * Customize error messages
      */
     public function messages()
     {

@@ -44,14 +44,14 @@ class Authenticate extends BaseAuthenticate
     /**
      * Handle an incoming request.
      *
-     * Laravel 10/11 では、$guards パラメータが "[guard1, guard2, ...]" の形で渡ってくる
-     * 何も指定しないとデフォルトガード
+     * In Laravel 10/11, the $guards parameter is passed in the form "[guard1, guard2, ...]"
+     * If nothing is specified, the default guard is used
      */
     public function handle($request, Closure $next, ...$guards)
     {
-        // まず "親クラス" の handle() に任せる
-        // 親クラスでは「$this->authenticate($request, $guards)」をコールし、未認証なら unauthenticated() を呼ぶ
-        // → unauthenticated() は redirectTo($request) を呼びだす
+        // First, delegate to the parent class handle() method
+        // The parent class calls "$this->authenticate($request, $guards)" and invokes unauthenticated() if not authenticated
+        // → unauthenticated() calls redirectTo($request)
 
         $this->authenticate($request, $guards);
 
@@ -59,24 +59,24 @@ class Authenticate extends BaseAuthenticate
     }
 
     /**
-     * 指定ガードで未認証だった場合にどこへリダイレクトするか
+     * Where to redirect when unauthenticated with the specified guard
      *
-     * 親クラスの unauthenticated() が呼ぶ
+     * Called by the parent class's unauthenticated() method
      *  → throw new AuthenticationException(..., $this->redirectTo($request));
      */
     protected function redirectTo(Request $request)
     {
-        // JSONリクエストなら 401 (Unauthorized) レスポンスにする
+        // Return a 401 (Unauthorized) response for JSON requests
         if ($request->expectsJson()) {
             return;
         }
 
-        // 管理画面URL（動的に生成された管理画面URLにも対応）へアクセス時は "admin.login" へ
+        // Redirect to "admin.login" when accessing admin panel URLs (including dynamically generated admin panel URLs)
         if (\App\Helpers\AdminHelper::isAdminRequest($request)) {
             return route('admin.login');
         }
 
-        // それ以外は "/login" へ
+        // Otherwise redirect to "/login"
         return route('admin.login');
     }
 }

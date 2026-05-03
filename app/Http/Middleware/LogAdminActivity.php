@@ -65,7 +65,7 @@ class LogAdminActivity
         $user = Auth::user();
 
         if ($user instanceof Member) {
-            Log::channel('admin_activity')->info('管理画面操作', [
+            Log::channel('admin_activity')->info(__('http/middleware/log_admin_activity.admin_panel_operation'), [
                 'id' => Auth::id(),
                 'name' => Auth::user()->name,
                 'method' => $request->method(),
