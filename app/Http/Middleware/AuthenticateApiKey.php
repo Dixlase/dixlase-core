@@ -37,15 +37,13 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Contracts\Site\SiteContextInterface;
 use App\Facades\Audit;
 use App\Models\ApiKey;
 use App\Models\AuditLog;
+use App\Support\Api\ApiErrorResponse;
 use Closure;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Throwable;
 
 /**
  * API key authentication middleware.
@@ -54,14 +52,9 @@ use Throwable;
  * against ApiKey, enforces IP allow-list and scope requirements, and
  * audits every use of a network-scope key.
  *
- * All error responses follow the unified API envelope documented in
- * docs/development/api-reference/versioning.md:
- *
- *   {"error": {"code": "...", "message": "..."}, "meta": {...}}
- *
- * Per the versioning spec error messages are always in English; clients
- * should map the stable `code` field to their own translation table
- * when localized text is needed.
+ * Error responses are produced by ApiErrorResponse so the JSON envelope
+ * stays in sync with the global exception handler in bootstrap/app.php.
+ * See docs/development/api-reference/versioning.md for the contract.
  *
  * Usage examples:
  *   - Route::middleware('auth.api') ... all scopes allowed
@@ -79,7 +72,7 @@ class AuthenticateApiKey
         $bearerToken = $request->bearerToken();
 
         if (! $bearerToken) {
-            return $this->errorResponse(
+            return ApiErrorResponse::make(
                 code: 'missing_credentials',
                 status: 401,
                 message: 'API key not provided.',
@@ -89,7 +82,7 @@ class AuthenticateApiKey
         $apiKey = ApiKey::validate($bearerToken);
 
         if (! $apiKey) {
-            return $this->errorResponse(
+            return ApiErrorResponse::make(
                 code: 'invalid_credentials',
                 status: 401,
                 message: 'Invalid or expired API key.',
@@ -97,7 +90,7 @@ class AuthenticateApiKey
         }
 
         if (! $apiKey->allowsIp($request->ip())) {
-            return $this->errorResponse(
+            return ApiErrorResponse::make(
                 code: 'ip_not_allowed',
                 status: 403,
                 message: 'This IP address is not permitted to use this key.',
@@ -106,7 +99,7 @@ class AuthenticateApiKey
 
         foreach ($scopes as $scope) {
             if (! $apiKey->hasScope($scope)) {
-                return $this->errorResponse(
+                return ApiErrorResponse::make(
                     code: 'insufficient_scope',
                     status: 403,
                     message: "Required scope '{$scope}' is missing.",
@@ -128,50 +121,6 @@ class AuthenticateApiKey
         $request->attributes->set('api_key', $apiKey);
 
         return $next($request);
-    }
-
-    /**
-     * Build a JSON error response in the unified API envelope.
-     *
-     * @param  array<string, mixed>  $details  Optional structured payload (e.g. ['required_scope' => 'read:content'])
-     */
-    private function errorResponse(string $code, int $status, string $message, array $details = []): JsonResponse
-    {
-        $error = [
-            'code' => $code,
-            'message' => $message,
-        ];
-
-        if ($details !== []) {
-            $error['details'] = $details;
-        }
-
-        return response()->json([
-            'error' => $error,
-            'meta' => $this->meta(),
-        ], $status);
-    }
-
-    /**
-     * Build the meta block carried by every API response.
-     *
-     * @return array{site_id: int|null, timestamp: string}
-     */
-    private function meta(): array
-    {
-        $siteId = null;
-        try {
-            $siteId = app(SiteContextInterface::class)->currentSiteId();
-        } catch (Throwable) {
-            // SiteContext may be unresolvable in edge cases (e.g. early
-            // bootstrap, install flow). The meta block tolerates a null
-            // site_id rather than failing the auth response.
-        }
-
-        return [
-            'site_id' => $siteId,
-            'timestamp' => now()->toIso8601String(),
-        ];
     }
 
     /**
