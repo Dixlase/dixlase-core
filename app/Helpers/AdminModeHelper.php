@@ -42,7 +42,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  */
 class AdminModeHelper
 {
@@ -51,7 +51,7 @@ class AdminModeHelper
     private static ?array $visibilities = null;
 
     /**
-     * 現在の管理画面モードを取得
+     * Get the current admin panel mode
      */
     public static function getCurrentMode(): AdminMode
     {
@@ -73,7 +73,7 @@ class AdminModeHelper
 
             self::$currentMode = AdminMode::fromInt($value !== null ? (int) $value : null);
         } catch (\Throwable $e) {
-            Log::warning('admin_mode取得に失敗: '.$e->getMessage());
+            Log::warning('Failed to retrieve admin_mode: '.$e->getMessage());
             self::$currentMode = AdminMode::default();
         }
 
@@ -81,7 +81,7 @@ class AdminModeHelper
     }
 
     /**
-     * かんたんモードかどうか
+     * Whether it is simple mode
      */
     public static function isSimpleMode(): bool
     {
@@ -89,7 +89,7 @@ class AdminModeHelper
     }
 
     /**
-     * 詳細モードかどうか
+     * Whether it is detailed mode
      */
     public static function isAdvancedMode(): bool
     {
@@ -97,7 +97,7 @@ class AdminModeHelper
     }
 
     /**
-     * メニュー表示設定を取得
+     * Get menu visibility settings
      */
     public static function getVisibilities(): array
     {
@@ -105,35 +105,35 @@ class AdminModeHelper
             return self::$visibilities;
         }
 
-        // 詳細モードではすべてFull
+        // In detailed mode, everything is Full
         if (self::isAdvancedMode()) {
             self::$visibilities = [];
 
             return self::$visibilities;
         }
 
-        // デフォルト設定を取得
+        // Get default settings
         $defaults = config('admin.mode.simple_defaults', []);
         $defaultValues = [];
         foreach ($defaults as $key => $vis) {
             $defaultValues[$key] = $vis instanceof MenuVisibility ? $vis->value : (int) $vis;
         }
 
-        // 保存済み設定を取得 (admin_mode_visibilities は Global scope で
-        // type=array なので Resolver が自動で配列にデコード済み)
+        // Get saved settings (admin_mode_visibilities is
+        // automatically decoded to array by Resolver since type=array in Global scope)
         try {
             if (Schema::hasTable('global_settings')) {
                 $saved = app(SettingResolver::class)->get('admin_mode_visibilities');
 
                 if (is_array($saved)) {
-                    // 保存済み設定でデフォルトを上書き
+                    // Override defaults with saved settings
                     self::$visibilities = array_merge($defaultValues, $saved);
 
                     return self::$visibilities;
                 }
             }
         } catch (\Throwable $e) {
-            Log::warning('admin_mode_visibilities取得に失敗: '.$e->getMessage());
+            Log::warning('Failed to retrieve admin_mode_visibilities: '.$e->getMessage());
         }
 
         self::$visibilities = $defaultValues;
@@ -142,13 +142,13 @@ class AdminModeHelper
     }
 
     /**
-     * 指定メニューキーの表示レベルを取得
+     * Get the visibility level of the specified menu key
      *
-     * @param  string  $menuKey  ドット記法のメニューキー (例: 'settings.security')
+     * @param  string  $menuKey  Menu key in dot notation (e.g., 'settings.security')
      */
     public static function getMenuVisibility(string $menuKey): MenuVisibility
     {
-        // 詳細モードではすべてFull
+        // In detailed mode, everything is Full
         if (self::isAdvancedMode()) {
             return MenuVisibility::Full;
         }
@@ -159,7 +159,7 @@ class AdminModeHelper
             return MenuVisibility::fromInt((int) $visibilities[$menuKey]);
         }
 
-        // 親キーの設定を継承
+        // Inherit parent key settings
         $parts = explode('.', $menuKey);
         while (count($parts) > 1) {
             array_pop($parts);
@@ -169,7 +169,7 @@ class AdminModeHelper
             }
         }
 
-        // トップレベルキー
+        // Top-level key
         if (isset($visibilities[$parts[0]])) {
             return MenuVisibility::fromInt((int) $visibilities[$parts[0]]);
         }
@@ -178,7 +178,7 @@ class AdminModeHelper
     }
 
     /**
-     * メニューが表示可能かどうか（Hidden以外）
+     * Whether the menu is visible (not Hidden)
      */
     public static function isMenuVisible(string $menuKey): bool
     {
@@ -186,7 +186,7 @@ class AdminModeHelper
     }
 
     /**
-     * メニューが編集可能かどうか（Full or Partial）
+     * Whether the menu is editable (Full or Partial)
      */
     public static function isMenuEditable(string $menuKey): bool
     {
@@ -196,7 +196,7 @@ class AdminModeHelper
     }
 
     /**
-     * メニューが読み取り専用かどうか
+     * Whether the menu is read-only
      */
     public static function isMenuReadOnly(string $menuKey): bool
     {
@@ -204,7 +204,7 @@ class AdminModeHelper
     }
 
     /**
-     * メニューが導線のみかどうか
+     * Whether the menu is navigation-only
      */
     public static function isMenuGuideOnly(string $menuKey): bool
     {
@@ -212,18 +212,18 @@ class AdminModeHelper
     }
 
     /**
-     * ビュー用のモード関連データを一括取得
+     * Get all mode-related data for views
      *
-     * コントローラーからビューへ渡すモードデータをまとめて返す。
-     * 返却キー:
-     *   - isSimpleMode: かんたんモードかどうか
-     *   - visibility: MenuVisibility enum値（int）
-     *   - isEditable: 編集可能か（Full/Partial）
-     *   - isReadOnly: 読み取り専用か
-     *   - isGuideOnly: 導線のみか
-     *   - isPartial: Partialモードか（一部フィールド制限あり）
+     * Returns a collection of mode data to pass from controller to view
+     * Return keys:
+     *   - isSimpleMode: whether simple mode is enabled
+     *   - visibility: MenuVisibility enum value (int)
+     *   - isEditable: whether editable (Full/Partial)
+     *   - isReadOnly: whether read-only
+     *   - isGuideOnly: whether guide-only
+     *   - isPartial: whether Partial mode (some fields restricted)
      *
-     * @param  string  $menuKey  ドット記法のメニューキー
+     * @param  string  $menuKey  Menu key in dot notation
      * @return array{isSimpleMode: bool, visibility: int, isEditable: bool, isReadOnly: bool, isGuideOnly: bool, isPartial: bool}
      */
     public static function getViewModeData(string $menuKey): array
@@ -241,7 +241,7 @@ class AdminModeHelper
     }
 
     /**
-     * キャッシュをクリア
+     * Clear cache
      */
     public static function clearCache(): void
     {

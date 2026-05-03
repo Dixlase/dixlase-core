@@ -38,24 +38,24 @@ namespace App\Helpers;
 use App\Models\SecuritySetting;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * セキュリティポリシーヘルパー
+ * Security Policy Helper
  *
- * 全体設定（セキュリティ設定）とプラグインのカスタム設定を統合管理
- * 設定取得の優先順位：プラグインカスタム設定 > 全体設定デフォルト
+ * Centrally manages global settings (security settings) and plugin custom settings.
+ * Setting resolution priority: plugin custom settings > global settings default.
  */
 class SecurityPolicyHelper
 {
     /**
-     * パスワードポリシーを取得
+     * Get password policy
      *
-     * @param  string  $userType  ユーザータイプ（'member', 'user'など）
-     * @param  string|null  $pluginName  プラグイン名（nullの場合はデフォルト設定）
+     * @param  string  $userType  User type ('member', 'user', etc.)
+     * @param  string|null  $pluginName  Plugin name (default settings if null)
      */
     public static function getPasswordPolicy(string $userType = 'member', ?string $pluginName = null): array
     {
-        // デフォルト設定（全体設定 > セキュリティ設定）
+        // Default settings (global settings > security settings)
         $defaults = [
             'min_length' => (int) SecuritySetting::get('password_min_length_default', 8),
             'require_uppercase' => (bool) SecuritySetting::get('password_require_uppercase_default', true),
@@ -65,7 +65,7 @@ class SecurityPolicyHelper
             'reset_enabled' => (bool) SecuritySetting::get('password_reset_enabled_default', true),
         ];
 
-        // プラグインのカスタム設定をチェック
+        // Check plugin custom settings
         if ($pluginName && PluginHelper::isPluginEnabled($pluginName)) {
             $customEnabled = PluginHelper::getPluginSetting($pluginName, 'password_policy_custom_enabled', false);
 
@@ -75,7 +75,7 @@ class SecurityPolicyHelper
                     'require_uppercase' => (bool) PluginHelper::getPluginSetting($pluginName, 'password_require_uppercase', $defaults['require_uppercase']),
                     'require_number' => (bool) PluginHelper::getPluginSetting($pluginName, 'password_require_number', $defaults['require_number']),
                     'require_symbol' => (bool) PluginHelper::getPluginSetting($pluginName, 'password_require_symbol', $defaults['require_symbol']),
-                    'pwned_check_enabled' => $defaults['pwned_check_enabled'], // Pwned Passwordチェックは共通
+                    'pwned_check_enabled' => $defaults['pwned_check_enabled'], // Pwned Password check is common
                     'reset_enabled' => (bool) PluginHelper::getPluginSetting($pluginName, 'password_reset_enabled', $defaults['reset_enabled']),
                     'custom_enabled' => true,
                 ];
@@ -88,14 +88,14 @@ class SecurityPolicyHelper
     }
 
     /**
-     * ログイン試行制限設定を取得
+     * Get login attempt limit settings
      *
-     * @param  string  $userType  ユーザータイプ（'member', 'user'など）
-     * @param  string|null  $pluginName  プラグイン名（nullの場合はデフォルト設定）
+     * @param  string  $userType  User type ('member', 'user', etc.)
+     * @param  string|null  $pluginName  Plugin name (default settings if null)
      */
     public static function getLoginAttemptPolicy(string $userType = 'member', ?string $pluginName = null): array
     {
-        // デフォルト設定（全体設定 > セキュリティ設定）
+        // Default settings (global settings > security settings)
         $defaults = [
             'enabled' => (bool) SecuritySetting::get('login_attempt_limit_enabled_default', false),
             'max_attempts' => (int) SecuritySetting::get('login_attempt_max_attempts_default', 5),
@@ -105,7 +105,7 @@ class SecurityPolicyHelper
             'notification_enabled' => (bool) SecuritySetting::get('login_attempt_lockout_notification_enabled_default', true),
         ];
 
-        // プラグインのカスタム設定をチェック
+        // Check plugin custom settings
         if ($pluginName && PluginHelper::isPluginEnabled($pluginName)) {
             $customEnabled = PluginHelper::getPluginSetting($pluginName, 'login_attempt_policy_custom_enabled', false);
 
@@ -128,20 +128,20 @@ class SecurityPolicyHelper
     }
 
     /**
-     * セッション設定を取得
+     * Get session settings
      *
-     * @param  string  $userType  ユーザータイプ（'member', 'user'など）
-     * @param  string|null  $pluginName  プラグイン名（nullの場合はデフォルト設定）
+     * @param  string  $userType  User type ('member', 'user', etc.)
+     * @param  string|null  $pluginName  Plugin name (default settings if null)
      */
     public static function getSessionPolicy(string $userType = 'member', ?string $pluginName = null): array
     {
-        // デフォルト設定（全体設定 > セキュリティ設定）
+        // Default settings (global settings > security settings)
         $defaults = [
             'encrypt' => (bool) SecuritySetting::get('session_encrypt_default', true),
             'lifetime' => (int) SecuritySetting::get('session_lifetime_default', 120),
         ];
 
-        // プラグインのカスタム設定をチェック
+        // Check plugin custom settings
         if ($pluginName && PluginHelper::isPluginEnabled($pluginName)) {
             $customEnabled = PluginHelper::getPluginSetting($pluginName, 'session_policy_custom_enabled', false);
 
@@ -160,11 +160,11 @@ class SecurityPolicyHelper
     }
 
     /**
-     * パスワードポリシーの検証ルールを取得
+     * Get password policy validation rules
      *
-     * @param  string  $userType  ユーザータイプ
-     * @param  string|null  $pluginName  プラグイン名
-     * @return array Laravelバリデーションルール配列
+     * @param  string  $userType  User type
+     * @param  string|null  $pluginName  Plugin name
+     * @return array Laravel validation rules array
      */
     public static function getPasswordValidationRules(string $userType = 'member', ?string $pluginName = null): array
     {
@@ -188,10 +188,10 @@ class SecurityPolicyHelper
     }
 
     /**
-     * パスワードポリシーの説明テキストを取得
+     * Get password policy description text
      *
-     * @param  string  $userType  ユーザータイプ
-     * @param  string|null  $pluginName  プラグイン名
+     * @param  string  $userType  User type
+     * @param  string|null  $pluginName  Plugin name
      */
     public static function getPasswordPolicyDescription(string $userType = 'member', ?string $pluginName = null): string
     {
@@ -216,10 +216,10 @@ class SecurityPolicyHelper
     }
 
     /**
-     * ログイン試行制限が有効かチェック
+     * Check if login attempt limit is enabled
      *
-     * @param  string  $userType  ユーザータイプ
-     * @param  string|null  $pluginName  プラグイン名
+     * @param  string  $userType  User type
+     * @param  string|null  $pluginName  Plugin name
      */
     public static function isLoginAttemptLimitEnabled(string $userType = 'member', ?string $pluginName = null): bool
     {
@@ -229,7 +229,7 @@ class SecurityPolicyHelper
     }
 
     /**
-     * Pwned Passwordチェックが有効かチェック
+     * Check if Pwned Password check is enabled
      */
     public static function isPwnedPasswordCheckEnabled(): bool
     {
@@ -237,10 +237,10 @@ class SecurityPolicyHelper
     }
 
     /**
-     * 全セキュリティポリシーを取得（管理画面表示用）
+     * Get all security policies (for admin panel display)
      *
-     * @param  string  $userType  ユーザータイプ
-     * @param  string|null  $pluginName  プラグイン名
+     * @param  string  $userType  User type
+     * @param  string|null  $pluginName  Plugin name
      */
     public static function getAllPolicies(string $userType = 'member', ?string $pluginName = null): array
     {

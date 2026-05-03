@@ -46,9 +46,9 @@ use Illuminate\Support\Facades\Log;
 class LoginLockoutHelper
 {
     /**
-     * ログイン試行制限が有効かどうかを確認
+     * Check if login attempt restriction is enabled
      *
-     * @param  mixed  $settingSource  設定ソース（SecuritySetting::class など）
+     * @param  mixed  $settingSource  Settings source (e.g., SecuritySetting::class)
      */
     public static function isLockoutEnabled(string $settingKey = 'login_attempt_limit_enabled', $settingSource = null): bool
     {
@@ -60,9 +60,9 @@ class LoginLockoutHelper
     }
 
     /**
-     * ロックアウト通知が有効かどうかを確認
+     * Check if lockout notification is enabled
      *
-     * @param  mixed  $settingSource  設定ソース（SecuritySetting::class など）
+     * @param  mixed  $settingSource  Settings source (e.g., SecuritySetting::class)
      */
     public static function isNotificationEnabled(string $settingKey = 'lockout_notification_enabled', $settingSource = null): bool
     {
@@ -74,10 +74,10 @@ class LoginLockoutHelper
     }
 
     /**
-     * ログイン試行制限の設定を取得
+     * Get login attempt restriction settings
      *
-     * @param  array  $settingKeys  設定キーの配列
-     * @param  mixed  $settingSource  設定ソース（SecuritySetting::class など）
+     * @param  array  $settingKeys  Array of settings keys
+     * @param  mixed  $settingSource  Settings source (e.g., SecuritySetting::class)
      */
     public static function getLockoutSettings(array $settingKeys = [], $settingSource = null): array
     {
@@ -104,10 +104,10 @@ class LoginLockoutHelper
     }
 
     /**
-     * ログイン試行を記録し、ロックアウト状態を確認
+     * Record login attempt and check lockout status
      *
-     * @param  array  $settings  設定配列
-     * @param  mixed  $settingSource  設定ソース
+     * @param  array  $settings  Settings array
+     * @param  mixed  $settingSource  Settings source
      */
     public static function recordAndCheckLockout(
         Request $request,
@@ -117,7 +117,7 @@ class LoginLockoutHelper
         $settingSource = null,
         ?string $failureReason = null,
     ): array {
-        // ログイン試行を記録（行動分析データ付き）
+        // Record login attempt (with behavioral analysis data)
         $behaviorService = app(\App\Services\LoginBehaviorService::class);
         $additionalData = [];
         if (! $successful && $failureReason) {
@@ -126,21 +126,21 @@ class LoginLockoutHelper
         $behaviorService->recordLoginAttempt($identifier, $request, $successful, $additionalData);
 
         if ($successful) {
-            // 成功時は失敗記録をクリア
+            // Clear failure records on success
             MemberLoginAttempt::clearFailedAttempts($identifier);
 
             return ['success' => true];
         }
 
-        // 失敗時のロックアウト状態をチェック
+        // Check lockout status on failure
         return static::checkLockoutStatus($request, $identifier, $settings, $settingSource);
     }
 
     /**
-     * ロックアウト状態をチェック
+     * Check lockout status
      *
-     * @param  array  $settings  設定配列
-     * @param  mixed  $settingSource  設定ソース
+     * @param  array  $settings  Settings array
+     * @param  mixed  $settingSource  Settings source
      */
     public static function checkLockoutStatus(
         Request $request,
@@ -162,42 +162,42 @@ class LoginLockoutHelper
             return $lockoutInfo;
         }
 
-        // 時間窓内の失敗回数をチェック
+        // Check failure count within time window
         $failedAttempts = MemberLoginAttempt::getFailedAttemptsCount(
             $identifier,
             $lockoutSettings['time_window']
         );
 
         if ($failedAttempts >= $lockoutSettings['max_attempts']) {
-            // 失敗回数が上限に達した場合、ロックアウト期間をチェック
+            // If failure count reaches limit, check lockout period
             $remainingLockoutMinutes = static::getLockoutRemainingMinutes(
                 $identifier,
                 $lockoutSettings['lockout_duration']
             );
 
             if ($remainingLockoutMinutes === null) {
-                // 失敗記録がない場合（通常ここには来ない）
+                // If no failure records exist (normally should not reach here)
                 $lockoutInfo['is_locked_out'] = false;
                 $lockoutInfo['remaining_attempts'] = $lockoutSettings['max_attempts'];
                 $lockoutInfo['lockout_minutes'] = 0;
             } elseif ($remainingLockoutMinutes === 0) {
-                // ロックアウト期間が終了している場合は解除
+                // Release lockout if lockout period has ended
                 $lockoutInfo['is_locked_out'] = false;
                 $lockoutInfo['remaining_attempts'] = $lockoutSettings['max_attempts'];
                 $lockoutInfo['lockout_minutes'] = 0;
             } else {
-                // ロックアウト期間中
+                // During lockout period
                 $lockoutInfo['is_locked_out'] = true;
                 $lockoutInfo['lockout_minutes'] = $remainingLockoutMinutes;
 
-                // ロックアウト通知を送信（重複送信を防ぐ）
+                // Send lockout notification (prevent duplicate sending)
                 if ($lockoutSettings['notification_enabled']) {
                     $notificationKey = 'lockout_notification_sent_'.md5($identifier);
                     $lastNotificationTime = session($notificationKey);
 
-                    // 最後の通知から30分以上経過している場合のみ再送信
+                    // Resend only if more than 30 minutes have passed since last notification
                     if (! $lastNotificationTime || Carbon::parse($lastNotificationTime)->addMinutes(30)->isPast()) {
-                        // 通知送信を試行し、成功した場合のみセッションに記録
+                        // Attempt to send notification and record in session only on success
                         $sent = static::sendLockoutNotification($identifier, $request, $lockoutSettings);
                         if ($sent) {
                             session([$notificationKey => Carbon::now()->toDateTimeString()]);
@@ -212,18 +212,18 @@ class LoginLockoutHelper
                 }
             }
         } else {
-            // 失敗回数が上限未満の場合は正常状態
+            // Normal state if failure count is below limit
             $lockoutInfo['is_locked_out'] = false;
             $lockoutInfo['remaining_attempts'] = $lockoutSettings['max_attempts'] - $failedAttempts;
             $lockoutInfo['lockout_minutes'] = 0;
         }
 
-        // IPアドレスベースのロックアウトもチェック
+        // Also check IP address-based lockout
         $ipFailedAttempts = MemberLoginAttempt::getFailedAttemptsCountByIp(
             $request->ip(),
             $lockoutSettings['time_window']
         );
-        // login_attempt_max_attempts_ip設定を優先的に使用、なければmax_attempts * 2
+        // Use login_attempt_max_attempts_ip settings preferentially, otherwise max_attempts * 2
         $maxAttemptsForIp = $lockoutSettings['max_attempts_ip'] ?? ($lockoutSettings['max_attempts'] * 2);
         $lockoutInfo['is_ip_locked_out'] = $ipFailedAttempts >= $maxAttemptsForIp;
 
@@ -231,7 +231,7 @@ class LoginLockoutHelper
     }
 
     /**
-     * ロックアウト解除までの残り時間（分）を取得
+     * Get remaining time (in minutes) until lockout release
      */
     public static function getLockoutRemainingMinutes(string $identifier, int $lockoutDuration): ?int
     {
@@ -244,35 +244,35 @@ class LoginLockoutHelper
         $now = Carbon::now();
 
         if ($now->greaterThanOrEqualTo($lockoutUntil)) {
-            return 0; // ロックアウト期間終了
+            return 0; // Lockout period has ended
         }
 
-        // 秒単位で計算して分に切り上げ
+        // Calculate in seconds and round up to minutes
         $remainingSeconds = $now->diffInSeconds($lockoutUntil);
 
         return (int) ceil($remainingSeconds / 60);
     }
 
     /**
-     * ロックアウト通知を送信
+     * Send lockout notification
      *
-     * @return bool 送信成功時true、失敗時false
+     * @return bool Returns true on success, false on failure
      */
     public static function sendLockoutNotification(string $identifier, Request $request, array $settings): bool
     {
         try {
-            // 通知先メールアドレスを取得
+            // Get notification email address
             $notificationEmail = \App\Models\SiteSetting::getValue('notification_email');
 
             if (empty($notificationEmail)) {
-                Log::warning('ロックアウト通知: 管理者メールアドレスが設定されていません');
+                Log::warning('Lockout notification: administrator email address is not configured');
 
                 return false;
             }
 
-            // メールサーバーが設定済みかチェック
+            // Check if mail server is configured
             if (! \App\Services\MailServerValidatorService::isMailServerTested()) {
-                Log::warning('ロックアウト通知: メールサーバーが設定されていません');
+                Log::warning('Lockout notification: mail server is not configured');
 
                 return false;
             }
@@ -288,12 +288,12 @@ class LoginLockoutHelper
                 'lockout_duration' => $settings['lockout_duration'],
             ];
 
-            // Mailableクラスを使用してメール送信
+            // Send email using Mailable class
             $lockoutMail = new \App\Mail\LockoutNotificationMail($details);
 
             \Mail::to($notificationEmail)->send($lockoutMail);
 
-            Log::info('ロックアウト通知を送信しました', [
+            Log::info('Lockout notification sent', [
                 'identifier' => $identifier,
                 'ip_address' => $request->ip(),
                 'notification_email' => $notificationEmail,
@@ -301,7 +301,7 @@ class LoginLockoutHelper
 
             return true;
         } catch (\Exception $e) {
-            Log::error('ロックアウト通知の送信に失敗しました', [
+            Log::error('Failed to send lockout notification', [
                 'identifier' => $identifier,
                 'ip_address' => $request->ip(),
                 'error' => $e->getMessage(),
@@ -312,10 +312,10 @@ class LoginLockoutHelper
     }
 
     /**
-     * 期限切れのログイン試行記録をクリーンアップ
+     * Clean up expired login attempt records
      *
-     * @param  int  $days  保持日数（デフォルト: 30日）
-     * @return int 削除された記録数
+     * @param  int  $days  Retention days (default: 30 days)
+     * @return int Number of deleted records
      */
     public static function cleanupExpiredAttempts(int $days = 30): int
     {
@@ -325,7 +325,7 @@ class LoginLockoutHelper
     }
 
     /**
-     * 指定した識別子の失敗記録をクリア
+     * Clear failure records for specified identifier
      */
     public static function clearFailedAttempts(string $identifier): void
     {
@@ -333,9 +333,9 @@ class LoginLockoutHelper
     }
 
     /**
-     * 全ての失敗記録をクリア
+     * Clear all failure records
      *
-     * @return int 削除された記録数
+     * @return int Number of deleted records
      */
     public static function clearAllFailedAttempts(): int
     {
@@ -343,10 +343,10 @@ class LoginLockoutHelper
     }
 
     /**
-     * ロックアウト状態の詳細情報を取得
+     * Get detailed information about lockout status
      *
-     * @param  array  $settings  設定配列
-     * @param  mixed  $settingSource  設定ソース
+     * @param  array  $settings  Settings array
+     * @param  mixed  $settingSource  Settings source
      */
     public static function getLockoutStatusDetails(
         string $identifier,
@@ -379,9 +379,9 @@ class LoginLockoutHelper
     }
 
     /**
-     * ロックアウトエラーメッセージを生成
+     * Generate lockout error message
      *
-     * @param  string  $context  コンテキスト（admin, user など）
+     * @param  string  $context  Context (admin, user, etc.)
      */
     public static function generateLockoutMessage(array $lockoutInfo, string $context = 'admin'): string
     {

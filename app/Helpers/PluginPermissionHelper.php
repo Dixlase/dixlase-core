@@ -37,14 +37,14 @@ use App\Services\Plugin\PluginPermissionService;
 
 if (! function_exists('plugin_permission')) {
     /**
-     * プラグイン権限サービスのインスタンスを取得
+     * Get plugin permission service instance
      *
      *
      * @example
-     * // 権限チェック
+     * // Permission check
      * plugin_permission()->check('dixlase-inquiry', 'mail.send');
      *
-     * // 権限サマリー取得
+     * // Get permission summary
      * plugin_permission()->getSummary('dixlase-inquiry');
      */
     function plugin_permission(): PluginPermissionService
@@ -55,14 +55,14 @@ if (! function_exists('plugin_permission')) {
 
 if (! function_exists('plugin_can')) {
     /**
-     * プラグインが特定の権限を持っているかチェック
+     * Check if plugin has a specific permission
      *
-     * @param  string  $pluginSlug  プラグインのスラッグ
-     * @param  string  $permission  権限キー（ドット記法）
+     * @param  string  $pluginSlug  Plugin slug
+     * @param  string  $permission  Permission key (dot notation)
      *
      * @example
      * if (plugin_can('dixlase-inquiry', 'mail.send')) {
-     *     // メール送信処理
+     *     // Email sending process
      * }
      */
     function plugin_can(string $pluginSlug, string $permission): bool
@@ -73,11 +73,11 @@ if (! function_exists('plugin_can')) {
 
 if (! function_exists('plugin_enforce')) {
     /**
-     * プラグインの権限をチェックし、違反時は例外をスロー
+     * Check plugin permission and throw exception on violation
      *
-     * @param  string  $pluginSlug  プラグインのスラッグ
-     * @param  string  $permission  権限キー（ドット記法）
-     * @param  string  $action  実行しようとしたアクション（ログ用）
+     * @param  string  $pluginSlug  Plugin slug
+     * @param  string  $permission  Permission key (dot notation)
+     * @param  string  $action  Action attempted to execute (for logging)
      *
      * @throws \App\Exceptions\PluginPermissionException
      *

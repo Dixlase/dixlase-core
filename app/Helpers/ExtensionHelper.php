@@ -39,31 +39,31 @@ use App\Services\Csp\CspNonceGenerator;
 use Illuminate\Support\HtmlString;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * 拡張機能開発者向けヘルパークラス
+ * Helper class for extension developers
  *
- * プラグイン・テーマ開発者向けの公開APIを提供します。
+ * Provides public API for plugin and theme developers.
  *
- * CSP機能:
- * - CSPに対応したスクリプト・スタイルの出力
- * - CSPモードの取得と設定
- * - nonce生成とHTML属性の構築
+ * CSP functionality:
+ * - Output scripts and styles compatible with CSP
+ * - Get and set CSP mode
+ * - Generate nonces and build HTML attributes
  *
- * プラグイン・テーマ開発者はこのヘルパーを使用することで、
- * CSPモードに関係なく安全にインラインコードを出力できます。
+ * By using this helper, plugin and theme developers can
+ * safely output inline code regardless of CSP mode.
  *
- * 使用例:
+ * Usage examples:
  * - ExtensionHelper::script('console.log("Hello");')
  * - ExtensionHelper::getCspMode()
  */
 class ExtensionHelper
 {
     /**
-     * CSP対応のインラインスクリプトを出力
+     * Output inline script compatible with CSP
      *
-     * @param  string  $code  JavaScriptコード
-     * @param  array  $options  オプション（defer, async, type等）
+     * @param  string  $code  JavaScript code
+     * @param  array  $options  Options (defer, async, type, etc.)
      */
     public static function script(string $code, array $options = []): HtmlString
     {
@@ -76,10 +76,10 @@ class ExtensionHelper
     }
 
     /**
-     * CSP対応のインラインスタイルを出力
+     * Output inline style compatible with CSP
      *
-     * @param  string  $css  CSSコード
-     * @param  array  $options  オプション
+     * @param  string  $css  CSS code
+     * @param  array  $options  Options
      */
     public static function style(string $css, array $options = []): HtmlString
     {
@@ -92,10 +92,10 @@ class ExtensionHelper
     }
 
     /**
-     * CSP対応の外部スクリプトタグを出力
+     * Output external script tag compatible with CSP
      *
-     * @param  string  $src  スクリプトURL
-     * @param  array  $options  オプション（defer, async, integrity等）
+     * @param  string  $src  Script URL
+     * @param  array  $options  Options (defer, async, integrity, etc.)
      */
     public static function scriptSrc(string $src, array $options = []): HtmlString
     {
@@ -105,10 +105,10 @@ class ExtensionHelper
     }
 
     /**
-     * CSP対応の外部スタイルシートタグを出力
+     * Output external stylesheet tag compatible with CSP
      *
-     * @param  string  $href  スタイルシートURL
-     * @param  array  $options  オプション（integrity, media等）
+     * @param  string  $href  Stylesheet URL
+     * @param  array  $options  Options (integrity, media, etc.)
      */
     public static function styleSrc(string $href, array $options = []): HtmlString
     {
@@ -121,7 +121,7 @@ class ExtensionHelper
     }
 
     /**
-     * 現在のnonceを取得
+     * Get current nonce
      */
     public static function getNonce(): string
     {
@@ -129,7 +129,7 @@ class ExtensionHelper
     }
 
     /**
-     * nonce属性のみを取得（カスタム用途向け）
+     * Get only nonce attribute (for custom use)
      */
     public static function nonceAttribute(): string
     {
@@ -137,7 +137,7 @@ class ExtensionHelper
     }
 
     /**
-     * 現在のCSPモードを取得
+     * Get current CSP mode
      *
      * @return string 'development', 'standard', 'strict'
      */
@@ -154,7 +154,7 @@ class ExtensionHelper
     }
 
     /**
-     * 現在のCSPモードEnumを取得
+     * Get current CSP mode Enum
      */
     public static function getCspModeEnum(): \App\Enums\CspMode
     {
@@ -168,7 +168,7 @@ class ExtensionHelper
     }
 
     /**
-     * 現在のCSPモード設定を取得
+     * Get current CSP mode settings
      */
     public static function getCspModeConfig(): array
     {
@@ -178,7 +178,7 @@ class ExtensionHelper
     }
 
     /**
-     * CSPが有効かどうか
+     * Whether CSP is enabled
      */
     public static function isCspEnabled(): bool
     {
@@ -190,7 +190,7 @@ class ExtensionHelper
     }
 
     /**
-     * 厳格モードかどうか
+     * Whether strict mode
      */
     public static function isStrictMode(): bool
     {
@@ -198,7 +198,7 @@ class ExtensionHelper
     }
 
     /**
-     * 開発モードかどうか
+     * Whether development mode
      */
     public static function isDevelopmentMode(): bool
     {
@@ -206,7 +206,7 @@ class ExtensionHelper
     }
 
     /**
-     * nonceが必要かどうか
+     * Whether nonce is required
      */
     public static function requiresNonce(): bool
     {
@@ -216,7 +216,7 @@ class ExtensionHelper
     }
 
     /**
-     * インラインスクリプトが許可されているか
+     * Whether inline scripts are allowed
      */
     public static function allowsInlineScripts(): bool
     {
@@ -226,7 +226,7 @@ class ExtensionHelper
     }
 
     /**
-     * インラインプラグインがブロックされるか
+     * Whether inline plugins are blocked
      */
     public static function blocksInlinePlugins(): bool
     {
@@ -236,30 +236,30 @@ class ExtensionHelper
     }
 
     /**
-     * 属性文字列を構築
+     * Build attribute string
      */
     protected static function buildAttributes(array $options, string $nonce, string $type): string
     {
         $attrs = [];
 
-        // nonceは常に付与
+        // Always add nonce
         $attrs[] = "nonce=\"{$nonce}\"";
 
         if ($type === 'script') {
-            // defer/asyncオプション
+            // defer/async option
             if (! empty($options['defer'])) {
                 $attrs[] = 'defer';
             }
             if (! empty($options['async'])) {
                 $attrs[] = 'async';
             }
-            // typeオプション（module等）
+            // type option (module, etc.)
             if (! empty($options['type'])) {
                 $attrs[] = 'type="'.e($options['type']).'"';
             }
         }
 
-        // カスタム属性
+        // Custom attributes
         foreach ($options as $key => $value) {
             if (in_array($key, ['defer', 'async', 'type', 'nonce'])) {
                 continue;
@@ -275,7 +275,7 @@ class ExtensionHelper
     }
 
     /**
-     * 外部リソース用の属性文字列を構築
+     * Build attribute string for external resources
      */
     protected static function buildSrcAttributes(array $options, string $url, string $urlAttr = 'src'): string
     {
@@ -284,7 +284,7 @@ class ExtensionHelper
         // URL
         $attrs[] = "{$urlAttr}=\"".e($url).'"';
 
-        // defer/async（scriptのみ）
+        // defer/async (script only)
         if ($urlAttr === 'src') {
             if (! empty($options['defer'])) {
                 $attrs[] = 'defer';
@@ -305,7 +305,7 @@ class ExtensionHelper
             $attrs[] = 'crossorigin="'.e($options['crossorigin']).'"';
         }
 
-        // その他の属性
+        // Other attributes
         foreach ($options as $key => $value) {
             if (in_array($key, ['defer', 'async', 'integrity', 'crossorigin', 'src', 'href'])) {
                 continue;

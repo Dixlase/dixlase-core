@@ -49,11 +49,11 @@ class TwoFaHelper
     use TwoFaUtilityTrait;
 
     /**
-     * 設定値を取得する（SecuritySettingから）
+     * Retrieve settings value (from SecuritySetting)
      *
-     * @param  string  $key  設定キー
-     * @param  mixed  $default  デフォルト値
-     * @return mixed 設定値
+     * @param  string  $key  Settings key
+     * @param  mixed  $default  Default value
+     * @return mixed Settings value
      */
     protected function getSettingValue(string $key, $default = null)
     {
@@ -61,21 +61,21 @@ class TwoFaHelper
     }
 
     /**
-     * メール設定が完了しているかチェック
-     * DB（管理画面）の設定を優先して確認する
+     * Check if email settings are configured
+     * Check DB (admin panel) settings with priority
      *
-     * @return bool メール設定が完了しているか
+     * @return bool Whether email settings are configured
      */
     public function isMailConfigured(): bool
     {
         $mailer = ConfigHelper::getMailMailer();
 
-        // メール設定が存在しない場合
+        // If email settings do not exist
         if (! $mailer) {
             return false;
         }
 
-        // SMTPの場合、必須設定をチェック
+        // For SMTP, check required settings
         if ($mailer === 'smtp') {
             $host = ConfigHelper::getMailHost();
             $port = ConfigHelper::getMailPort();
@@ -85,7 +85,7 @@ class TwoFaHelper
             }
         }
 
-        // 送信元アドレスが設定されているかチェック
+        // Check if sender address is configured
         $fromAddress = ConfigHelper::getMailFromAddress();
         if (empty($fromAddress) || $fromAddress === 'hello@example.com') {
             return false;
@@ -95,15 +95,15 @@ class TwoFaHelper
     }
 
     /**
-     * 二段階認証コードを生成してメール送信
+     * Generate two-factor authentication code and send email
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  string  $mailClass  メールクラス名
-     * @param  int  $expireMinutes  有効期限（分）
-     * @param  string  $context  コンテキスト（admin, user等）
-     * @return string 生成されたコード
+     * @param  mixed  $user  User model
+     * @param  string  $mailClass  Mail class name
+     * @param  int  $expireMinutes  Expiration time (minutes)
+     * @param  string  $context  Context (admin, user, etc.)
+     * @return string Generated code
      *
-     * @throws \Exception メール設定が未完了の場合
+     * @throws \Exception If email settings are not configured
      */
     public function generateAndSendCode($user, string $mailClass, ?int $expireMinutes = null, string $context = 'admin'): string
     {
@@ -113,9 +113,9 @@ class TwoFaHelper
     }
 
     /**
-     * 二段階認証設定を取得（メンバーまたはユーザー）
+     * Retrieve two-factor authentication settings (member or user)
      *
-     * @param  string|null  $settingModelClass  設定モデルクラス名（null=SecuritySetting）
+     * @param  string|null  $settingModelClass  Settings model class name (null=SecuritySetting)
      */
     public function getTwoFaSettings(?string $settingModelClass = null): array
     {
@@ -129,19 +129,19 @@ class TwoFaHelper
     }
 
     /**
-     * 有効な二段階認証方法を取得（グローバル設定ベース）
+     * Retrieve valid two-factor authentication methods (based on global settings)
      *
-     * @param  string|null  $settingModelClass  設定モデルクラス名（null=SecuritySetting）
+     * @param  string|null  $settingModelClass  Settings model class name (null=SecuritySetting)
      */
     public function getEnabledTwoFaMethods(?string $settingModelClass = null): array
     {
         $settingModelClass = $settingModelClass ?? \App\Models\SecuritySetting::class;
         $methods = [];
 
-        // メール認証（常に有効）
+        // Email authentication (always enabled)
         $methods[] = TwoFaMethod::EMAIL->value;
 
-        // Passkey認証（two_fa_passkey_modeが0以外なら有効）
+        // Passkey authentication (enabled if two_fa_passkey_mode is not 0)
         $passkeyMode = (int) $settingModelClass::getValue('two_fa_passkey_mode', '2');
         if ($passkeyMode > 0) {
             $methods[] = TwoFaMethod::PASSKEY->value;
@@ -151,22 +151,22 @@ class TwoFaHelper
     }
 
     /**
-     * 特定のメンバーに対して利用可能な二段階認証方法を取得
-     * Passkeyデバイスが未登録の場合はPasskeyを除外
+     * Get available two-factor authentication methods for a specific member
+     * Exclude Passkey if no Passkey device is registered
      *
-     * @param  mixed  $member  メンバーモデル
-     * @param  string|null  $settingModelClass  設定モデルクラス名（null=SecuritySetting）
+     * @param  mixed  $member  Member model
+     * @param  string|null  $settingModelClass  Settings model class name (null=SecuritySetting)
      */
     public function getAvailableTwoFaMethodsForMember($member, ?string $settingModelClass = null): array
     {
         $methods = $this->getEnabledTwoFaMethods($settingModelClass);
 
-        // Passkeyが有効な場合、デバイスが登録されているかチェック
+        // If Passkey is enabled, check if a device is registered
         if (in_array(TwoFaMethod::PASSKEY->value, $methods)) {
             $passkeyService = app(TwoFaPasskeyService::class);
             $devices = $passkeyService->getDevices($member);
 
-            // デバイスが未登録の場合はPasskeyを除外
+            // Exclude Passkey if no device is registered
             if ($devices->isEmpty()) {
                 $methods = array_values(array_filter($methods, function ($method) {
                     return $method !== TwoFaMethod::PASSKEY->value;
@@ -178,16 +178,16 @@ class TwoFaHelper
     }
 
     /**
-     * 二段階認証が有効かどうかを判定
+     * Determine if two-factor authentication is enabled
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  string|null  $settingModelClass  設定モデルクラス名（null=SecuritySetting）
+     * @param  mixed  $user  User model
+     * @param  string|null  $settingModelClass  Settings model class name (null=SecuritySetting)
      */
     public function isTwoFaEnabled($user, ?string $settingModelClass = null): bool
     {
-        // メール設定が未完了の場合は二段階認証を無効化
+        // Disable two-factor authentication if email settings are incomplete
         if (! $this->isMailConfigured()) {
-            Log::warning('[2FA] メール設定が未完了のため、二段階認証を無効化しています');
+            Log::warning('[2FA] Email settings are incomplete; disabling two-factor authentication');
 
             return false;
         }
@@ -202,23 +202,23 @@ class TwoFaHelper
             'user_two_fa_mode' => $user->two_fa_mode ?? null,
         ]);
 
-        // 全体設定: 0=Disabled（無効）, 1=DifferentDevice（異なるデバイス）, 2=Always（常に有効）, 3=UseProfileSetting（プロフィール設定に従う）
+        // Global settings: 0=Disabled, 1=DifferentDevice, 2=Always, 3=UseProfileSetting
 
-        // 無効の場合
+        // If disabled
         if ($twoFaMode === AuthenticationMode::Disabled->value) {
             Log::info('[2FA] Disabled by global setting');
 
             return false;
         }
 
-        // 全体設定で常に有効の場合
+        // If always enabled in global settings
         if ($twoFaMode === AuthenticationMode::Always->value) {
             Log::info('[2FA] Always enabled by global setting');
 
             return true;
         }
 
-        // 全体設定が「異なるデバイス」の場合
+        // If global settings is "DifferentDevice"
         if ($twoFaMode === AuthenticationMode::DifferentDevice->value) {
             $isDifferent = $this->isDifferentEnvironment($user);
             Log::info('[2FA] DifferentDevice mode', ['is_different' => $isDifferent]);
@@ -226,34 +226,34 @@ class TwoFaHelper
             return $isDifferent;
         }
 
-        // プロフィール設定を使用する場合（two_fa_mode = UseProfileSetting）
+        // If using profile settings (two_fa_mode = UseProfileSetting)
         $userMode = $user->two_fa_mode;
 
-        // AuthenticationMode Enumの場合
+        // If AuthenticationMode Enum
         if ($userMode instanceof \App\Enums\AuthenticationMode) {
             $userModeValue = $userMode->value;
         } else {
-            // 整数値の場合
+            // If integer value
             $userModeValue = (int) $userMode;
         }
 
         Log::info('[2FA] Using user profile setting', ['user_mode_value' => $userModeValue]);
 
-        // ユーザー設定が無効の場合
+        // If user settings is disabled
         if ($userModeValue === AuthenticationMode::Disabled->value) {
             Log::info('[2FA] Disabled by user setting');
 
             return false;
         }
 
-        // ユーザー設定が常に有効の場合
+        // If user settings is always enabled
         if ($userModeValue === AuthenticationMode::Always->value) {
             Log::info('[2FA] Always enabled by user setting');
 
             return true;
         }
 
-        // ユーザー設定が「異なるデバイス」の場合
+        // If user settings is "DifferentDevice"
         if ($userModeValue === AuthenticationMode::DifferentDevice->value) {
             $isDifferent = $this->isDifferentEnvironment($user);
             Log::info('[2FA] DifferentDevice mode by user setting', ['is_different' => $isDifferent]);
@@ -267,11 +267,11 @@ class TwoFaHelper
     }
 
     /**
-     * 使用する認証方法を決定
+     * Determine authentication method to use
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  string|null  $settingModelClass  設定モデルクラス名（null=SecuritySetting）
-     * @return int 認証方法
+     * @param  mixed  $user  User model
+     * @param  string|null  $settingModelClass  Settings model class name (null=SecuritySetting)
+     * @return int Authentication method
      */
     public function getEffectiveAuthMethod($user, ?string $settingModelClass = null): int
     {
@@ -281,7 +281,7 @@ class TwoFaHelper
         $enabledMethods = $this->getEnabledTwoFaMethods($settingModelClass);
         $globalTwoFaMode = (int) $settingModelClass::getValue('force_two_fa', (string) AuthenticationMode::Disabled->value);
 
-        // ユーザーがパスキーを無効にしている場合は、有効な方法からパスキーを除外
+        // Exclude passkey from valid methods if user has disabled passkey
         $userPasskeyEnabled = $user->two_fa_passkey_enabled ?? true;
         $userEnabledMethods = $enabledMethods;
         if (! $userPasskeyEnabled) {
@@ -290,7 +290,7 @@ class TwoFaHelper
             }));
         }
 
-        // Passkeyデバイスが未登録の場合は、有効な方法からPasskeyを除外
+        // Exclude passkey from valid methods if no passkey device is registered
         if (in_array(TwoFaMethod::PASSKEY->value, $userEnabledMethods)) {
             $passkeyService = app(TwoFaPasskeyService::class);
             $devices = $passkeyService->getDevices($user);
@@ -312,21 +312,21 @@ class TwoFaHelper
             'user_enabled_methods' => $userEnabledMethods,
         ]);
 
-        // ユーザーが明示的に認証方法を設定している場合は、それを優先
+        // Prioritize explicitly set authentication method if user has configured one
         if ($userMethod !== null && in_array((int) $userMethod, $userEnabledMethods, true)) {
             Log::info('[2FA] Using user method', ['method' => (int) $userMethod]);
 
             return (int) $userMethod;
         }
 
-        // ユーザー設定がない場合は、グローバルのデフォルト認証方法を使用
+        // Use global default authentication method if user settings are not configured
         if (in_array($defaultMethod, $userEnabledMethods, true)) {
             Log::info('[2FA] Using global default method', ['method' => $defaultMethod]);
 
             return $defaultMethod;
         }
 
-        // デフォルト方法が有効でない場合は、有効な方法の最初のものを使用
+        // Use the first valid method if the default method is not valid
         $fallbackMethod = ! empty($userEnabledMethods) ? $userEnabledMethods[0] : TwoFaMethod::EMAIL->value;
         Log::info('[2FA] Using fallback method', ['method' => $fallbackMethod]);
 
@@ -334,11 +334,11 @@ class TwoFaHelper
     }
 
     /**
-     * 認証方法に応じたメールクラス名を取得
+     * Get mail class name based on authentication method
      *
-     * @param  int  $method  認証方法
-     * @param  string  $context  コンテキスト（admin, user等）
-     * @return string メールクラス名
+     * @param  int  $method  Authentication method
+     * @param  string  $context  Context (admin, user, etc.)
+     * @return string Mail class name
      */
     public function getMailClassForMethod(int $method, string $context = 'admin'): string
     {
@@ -353,13 +353,13 @@ class TwoFaHelper
     }
 
     /**
-     * 二段階認証の統計情報を取得
+     * Get two-factor authentication statistics
      *
-     * @return array 統計情報
+     * @return array Statistics
      */
     public function getTwoFaStats(): array
     {
-        // 実装例：実際の統計取得ロジックを追加
+        // Example implementation: add actual statistics retrieval logic
         return [
             'total_users_with_two_fa' => 0,
             'active_tokens' => 0,
@@ -368,9 +368,9 @@ class TwoFaHelper
     }
 
     /**
-     * 期限切れトークンをクリーンアップ
+     * Clean up expired tokens
      *
-     * @return int 削除されたトークン数
+     * @return int Number of deleted tokens
      */
     public function cleanupExpiredTokens(): int
     {
@@ -380,11 +380,11 @@ class TwoFaHelper
     }
 
     /**
-     * 認証方法に応じたルート名を取得
+     * Get route name based on authentication method
      *
-     * @param  string  $prefix  ルートプレフィックス（例: 'admin', 'dixlase-users::mypage'）
-     * @param  int  $method  認証方法（TwoFaMethod enum値）
-     * @return string ルート名（例: 'admin.two-fa.email.show'）
+     * @param  string  $prefix  Route prefix (e.g., 'admin', 'dixlase-users::mypage')
+     * @param  int  $method  Authentication method (TwoFaMethod enum value)
+     * @return string Route name (e.g., 'admin.two-fa.email.show')
      */
     public static function getTwoFaMethodRoute(string $prefix, int $method): string
     {

@@ -39,7 +39,7 @@ use DateTime;
 use DateTimeZone;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  */
 class TimezoneHelper
 {

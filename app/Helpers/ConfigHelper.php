@@ -82,7 +82,7 @@ class ConfigHelper
      */
     private static function getFromDatabase(string $key, string $model = 'SecuritySetting')
     {
-        // インストール前やデータベース接続エラーの場合はnullを返す
+        // Returns null before installation or on database connection error
         if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
             return;
         }
@@ -96,7 +96,7 @@ class ConfigHelper
                     break;
                 case 'SecuritySetting':
                 default:
-                    // multisite consolidation 後はセキュリティ系も global_settings に統合済み
+                    // After multisite consolidation, security settings are also integrated into global_settings
                     if (Schema::hasTable('global_settings')) {
                         return SecuritySetting::get($key, null);
                     }
@@ -236,10 +236,10 @@ class ConfigHelper
     }
 
     /**
-     * 表示用タイムゾーンを取得する
+     * Get the display timezone
      *
-     * 保存・計算は常に UTC（config('app.timezone')）で行い、本メソッドは
-     * Blade や通知メールで現地時刻に変換する際に使う。値は site_settings.display_timezone。
+     * Storage and calculations always use UTC (config('app.timezone')); this method is
+     * Used when converting to local time in Blade or notification emails. Value is site_settings.display_timezone
      */
     public static function getDisplayTimezone(): string
     {
@@ -259,7 +259,7 @@ class ConfigHelper
      */
     public static function getMaintenanceMessage(): string
     {
-        return self::get('app.maintenance_message', 'maintenance_message', '現在メンテナンス中です。しばらくお待ちください。', 'string', 'SiteSetting');
+        return self::get('app.maintenance_message', 'maintenance_message', 'The site is currently under maintenance. Please try again shortly.', 'string', 'SiteSetting');
     }
 
     /**

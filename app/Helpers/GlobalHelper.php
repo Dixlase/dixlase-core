@@ -36,12 +36,12 @@
  */
 if (! function_exists('shortcode_parse')) {
     /**
-     * @api プラグイン/テーマから使用可能な安定APIです
+     * @api Stable API available for use from plugins/themes
      *
-     * ショートコードをパースして実行
+     * Parse and execute shortcodes
      *
-     * @param  string  $content  パース対象のコンテンツ
-     * @return string パース後のコンテンツ
+     * @param  string  $content  Content to be parsed
+     * @return string Parsed content
      */
     function shortcode_parse($content)
     {
