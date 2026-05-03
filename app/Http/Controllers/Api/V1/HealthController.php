@@ -33,27 +33,38 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use App\Http\Controllers\Api\V1\HealthController;
-use Illuminate\Support\Facades\Route;
+declare(strict_types=1);
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Mounted under /api by Laravel's default API prefix (see bootstrap/app.php
-| Application::configure()->withRouting(api: ...)). All endpoints live
-| inside a versioned group; the contract for the v1 surface is documented
-| in docs/development/api-reference/versioning.md.
-|
-| URL namespace reservations under /api/v1/ are enforced by convention:
-|   /health                   — implemented here
-|   /resources/{type}/{slug}  — reserved for the future DixlaseApi plugin
-|   /privacy/...              — reserved for the future Privacy API
-|   /{plugin-slug}/...        — open to plugins via routes/api/v1.php
-|
-*/
+namespace App\Http\Controllers\Api\V1;
 
-Route::prefix('v1')->name('api.v1.')->group(function () {
-    Route::get('/health', HealthController::class)->name('health');
-});
+use App\Support\Api\ApiErrorResponse;
+use Illuminate\Http\JsonResponse;
+
+/**
+ * GET /api/v1/health — public liveness probe for the REST API.
+ *
+ * No authentication. Returns 200 with the canonical envelope so external
+ * monitors and integration tests can verify the API is reachable, the
+ * site has been resolved, and the version is what they expect. See
+ * docs/development/api-reference/versioning.md Section 11.
+ */
+final class HealthController
+{
+    /**
+     * Hardcoded for v0.1.0. v0.2+ will read this from a centralized
+     * source (composer.json or a generated VERSION file) so the value
+     * does not drift on release.
+     */
+    public const VERSION = '0.1.0';
+
+    public function __invoke(): JsonResponse
+    {
+        return response()->json([
+            'data' => [
+                'status' => 'ok',
+                'version' => self::VERSION,
+            ],
+            'meta' => ApiErrorResponse::meta(),
+        ]);
+    }
+}
