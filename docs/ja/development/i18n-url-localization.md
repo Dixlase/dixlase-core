@@ -1,18 +1,27 @@
 # URL の多言語化
 
-Dixlase はフロントエンドの URL に **path-prefix 方式** を採用しています: `/ja/about`, `/en/about`。管理画面 (`/admin/...`) には locale prefix は付きません — 運用者はプロフィール設定で選んだ言語で操作します。
+Dixlase は path-prefix 方式 (`/ja/about`, `/en/about`) の URL 多言語化のための **インフラ** を v0.1.0 で出荷しますが、その URL ルーティング自体は **アクティブにしません**。フロント URL は locale prefix なしでコンテンツを返します。管理画面 (`/admin/...`) も影響を受けません。
 
-このドキュメントは URL 戦略、locale 解決順、プラグイン/テーマが利用する統合ポイントを説明します。
+将来の多言語プラグイン (DixlaseI18n) が、用意された middleware を `Route::prefix('{locale}')` グループに付け、独自の `Route::fallback()` リダイレクトを登録することで、locale URL ルーティングをオプトインで有効化します。このドキュメントは、その時にプラグインがコア変更なしで差し込めるように、確定済みの設計契約を説明します。
 
 ## TL;DR
 
-- **フロント URL**: `/{locale}/<path>` (例: `/ja/about`, `/en/posts`)
+### v0.1.0 (デフォルト、プラグインなし)
+
+- **フロント URL**: `/`, `/about`, `/posts/{slug}` 等、宣言通りのパスで配信。`/{locale}/` プレフィックスなし
 - **管理画面 URL**: `/admin/<path>` — locale prefix なし
-- **locale なしフロント URL** (例: `/about`): `/{Site.primary_locale}/about` へ 302 リダイレクト
-- **フロント解決順**: URL > Cookie `dixlase_locale` > Accept-Language > `Site.primary_locale` > `en`
-- **管理画面解決順**: `member.locale` > `Site.primary_locale` > Accept-Language > `en`
+- **`/` は `/ja/` や `/en/` に自動リダイレクトしません**。訪問者はそのまま留まります
+- **locale なしの未知 URL** (例: ルート未登録の `/about`): 通常の Laravel 404
+- **管理画面 locale 解決** (`SetAdminLocale`): `member.locale` > `Site.primary_locale` > Accept-Language > `en`
+- **サポート locale**: `ja`, `en` のみ
+
+### 多言語プラグインが有効な場合 (将来)
+
+- **フロント URL**: `/{locale}/<path>` (例: `/ja/about`, `/en/posts`)
+- **locale なしフロント URL** (例: `/about`): `/{resolved_locale}/about` へ 302 リダイレクト
+- **フロント解決順** (`SetFrontLocale`): URL > Cookie `dixlase_locale` > Accept-Language > `Site.primary_locale` > `en`
 - **未翻訳コンテンツ**: `MissingTranslationHandler` Contract 経由で `/{Site.primary_locale}/<path>` へ 302 (プラグインで上書き可能)
-- **サポート locale (v0.1.0)**: `ja`, `en` のみ。動的拡張は v0.2 以降
+- リダイレクトのトグルはプラグインが持ちます。自動リダイレクトを望まない運用者はプラグインを無効のままにするか、その設定をオフにできます
 
 ## なぜ path prefix (案 A) なのか
 
@@ -78,29 +87,33 @@ $this->app->bind(
 
 注意: これが発火するのは **「ルートはマッチしたが現在 locale のコンテンツが無い」** ケースのみ。どのルートにもマッチしない URL は通常通り 404 が返ります。
 
-### 静的アセット・API ルート
+### locale 中立で固定のルート (プラグイン有効化後も)
 
-以下のルートは locale group の **外側** にあります:
+以下のルートは locale prefix が付きません:
 
-- `/assets/{type}/{file}` — テーマ/管理画面/プラグインの静的アセット
+- `/assets/{type}/{file}` — テーマ/管理画面/プラグインの静的アセット (locale を超えてキャッシュキー安定)
 - `/csp-report` — CSP 違反レポート endpoint
+- `/front/custom-script.js`, `/front/custom-style.css` — ページカスタム JS/CSS
+- `/locale/switch` — 言語スイッチャー制御 endpoint
 - `/install/...` — インストーラ (UI 言語は `Accept-Language` で決定)
 - `/api/v1/...` — JSON API (クライアントが必要なら `Accept-Language` を送信)
-- `/locale/switch` — 言語スイッチャー endpoint
 - `/admin/...` — 管理画面
 
 ## プラグイン / テーマ統合
 
-### フロントルートは自動でラップされる
+### v0.1.0 (デフォルト)
 
-`PluginHelper::loadEnabledWebRoutes()` で読み込まれるプラグインの web ルート、およびテーマのフロントルートは、自動的に locale group 内に登録されます。プラグイン/テーマ作者は通常通りルートを書けます:
+`PluginHelper::loadEnabledWebRoutes()` で読み込まれるプラグインの web ルートは、宣言通りのパスに locale prefix なしでマウントされます:
 
 ```php
 // プラグインの routes/web.php
 Route::get('/posts/{slug}', [PostController::class, 'show'])->name('posts.show');
+// /posts/hello でアクセス可能 — /{locale}/ プレフィックスなし
 ```
 
-このルートは `/ja/posts/hello` と `/en/posts/hello` の両方からアクセス可能になり、`route('posts.show', ['slug' => 'hello'])` は現在の locale を含む URL を返します。
+### 多言語プラグインが有効な場合
+
+多言語プラグインは、フロントルート (および自身のルート) を `Route::prefix('{locale}')` グループでラップし、`SetFrontLocale` middleware を付ける想定です。一度そのラップが入れば、同じプラグインコードが `/ja/posts/hello` と `/en/posts/hello` の両方からアクセス可能になり、`route('posts.show', ['slug' => 'hello'])` は `URL::defaults` を介して現在の locale を自動的に取り込みます。
 
 ### locale 対応 URL の生成
 

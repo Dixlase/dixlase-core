@@ -33,19 +33,15 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use App\Contracts\Site\SiteContextInterface;
-use App\Helpers\LocaleHelper;
 use App\Helpers\PluginHelper;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\Front\FrontCustomAssetController;
 use App\Http\Controllers\Front\FrontWelcomeController;
 use App\Http\Controllers\Front\LocaleSwitchController;
-use App\Http\Middleware\SetFrontLocale;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 
 // CSP violation report endpoint (no auth, session/CSP middleware excluded).
-// Stays outside the locale group because a single canonical URL is required.
 Route::post('/csp-report', [CspReportController::class, 'report'])
     ->name('csp.report')
     ->withoutMiddleware([
@@ -57,8 +53,6 @@ Route::post('/csp-report', [CspReportController::class, 'report'])
     ]);
 
 // Theme/admin/plugin static asset delivery.
-// Stays outside the locale group: assets are language-neutral and need a
-// single canonical URL so the browser cache key is shared across locales.
 // Session/CSRF middleware are excluded so concurrent GETs don't fight over
 // the session id and accidentally invalidate the admin's session.
 Route::get('assets/{type}/{file}', function ($type, $file) {
@@ -84,16 +78,14 @@ Route::get('assets/{type}/{file}', function ($type, $file) {
         \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
     ]);
 
-// Language switcher endpoint. Lives outside the locale group because
-// it is a control action, not localized content. The controller writes
-// the dixlase_locale cookie and 302-redirects to the same page under
-// the chosen locale.
+// Language switcher endpoint. Writes the dixlase_locale cookie and
+// 302-redirects the visitor. Kept as Plugin API even when no locale URL
+// routing is active so the multilingual plugin can wire it up later.
 Route::post('/locale/switch', LocaleSwitchController::class)
     ->name('locale.switch')
     ->middleware('web');
 
 // Front page custom JS/CSS external file delivery.
-// Stays outside the locale group so the URL stays cache-key-stable.
 Route::get('/front/custom-script.js', [FrontCustomAssetController::class, 'script'])
     ->name('front.custom-script')
     ->middleware('front.ip')
@@ -104,108 +96,59 @@ Route::get('/front/custom-style.css', [FrontCustomAssetController::class, 'style
     ->middleware('front.ip')
     ->withoutMiddleware([\App\Http\Middleware\ContentSecurityPolicy::class]);
 
-// Locale-prefixed front-end routes.
-// Plugin web routes are loaded inside this group so they inherit the
-// /{locale}/ prefix and the SetFrontLocale resolution.
-Route::prefix('{locale}')
-    ->where(['locale' => 'ja|en'])
-    ->middleware(['web', 'front.ip', SetFrontLocale::class])
-    ->group(function () {
-        Route::get('/', [FrontWelcomeController::class, 'index'])->name('welcome');
-
-        // Front log test route (development only).
-        Route::get('/test-front-log', function () {
-            \Illuminate\Support\Facades\Log::channel('front_activity')->info('Front activity log test', [
-                'action' => 'page_view',
-                'page' => 'test_page',
-                'user_id' => null,
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-                'url' => request()->fullUrl(),
-                'method' => request()->method(),
-                'timestamp' => now()->toDateTimeString(),
-            ]);
-
-            \Illuminate\Support\Facades\Log::channel('front_error')->error('Front error log test', [
-                'error' => 'test_error',
-                'error_type' => 'test_error',
-                'user_id' => null,
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-                'url' => request()->fullUrl(),
-                'method' => request()->method(),
-                'timestamp' => now()->toDateTimeString(),
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Front log test executed.',
-                'logs' => [
-                    'front_activity' => 'storage/logs/front_activity.log or front_activity-'.now()->format('Y-m-d').'.log',
-                    'front_error' => 'storage/logs/front_error.log or front_error-'.now()->format('Y-m-d').'.log',
-                ],
-                'admin_url' => route('admin.settings.systems.logs.files', ['type' => 'front_activity']),
-            ]);
-        })->name('test.front.log');
-
-        // Plugin web routes (auto-wrapped in the locale group so plugin
-        // authors can write ordinary route definitions).
-        PluginHelper::loadEnabledWebRoutes();
-    });
-
-// Fallback for locale-less front URLs: 302 redirect to the same path
-// under a resolved locale. Route::fallback() only fires when no other
-// route matched anywhere in the application (front + admin + install +
-// plugins), so admin URLs like /admin-kassy/login keep working.
+// Front-end routes.
 //
-// Resolution mirrors SetFrontLocale (minus URL):
-//   Cookie 'dixlase_locale' > Accept-Language > Site.primary_locale > config fallback
+// v0.1.0 ships without active locale URL routing: visiting / serves the
+// welcome page directly without a /{locale}/ redirect, and plugin web
+// routes mount at their declared paths without a locale prefix.
 //
-// 302 (not 301) keeps v2 free to change the strategy without poisoning
-// caches.
-Route::fallback(function () {
-    $path = trim(request()->path(), '/');
+// The locale infrastructure (LocaleHelper, SetFrontLocale middleware,
+// LocalizedUrlProvider / MissingTranslationHandler contracts, the
+// /locale/switch endpoint above) is in place so the future multilingual
+// plugin (DixlaseI18n) can opt-in by wrapping these routes in a
+// Route::prefix('{locale}')->where(...)->middleware(SetFrontLocale)
+// group and registering its own Route::fallback() that redirects
+// locale-less URLs.
+Route::middleware(['web', 'front.ip'])->group(function () {
+    Route::get('/', [FrontWelcomeController::class, 'index'])->name('welcome');
 
-    // If the path already begins with a supported locale, this is a
-    // genuine 404 from inside the locale group. Don't loop.
-    $first = $path === '' ? '' : explode('/', $path)[0];
-    if ($first !== '' && LocaleHelper::isSupported($first)) {
-        abort(404);
-    }
+    // Front log test route (development only).
+    Route::get('/test-front-log', function () {
+        \Illuminate\Support\Facades\Log::channel('front_activity')->info('Front activity log test', [
+            'action' => 'page_view',
+            'page' => 'test_page',
+            'user_id' => null,
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'url' => request()->fullUrl(),
+            'method' => request()->method(),
+            'timestamp' => now()->toDateTimeString(),
+        ]);
 
-    $locale = LocaleHelper::getCookieLocale();
+        \Illuminate\Support\Facades\Log::channel('front_error')->error('Front error log test', [
+            'error' => 'test_error',
+            'error_type' => 'test_error',
+            'user_id' => null,
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'url' => request()->fullUrl(),
+            'method' => request()->method(),
+            'timestamp' => now()->toDateTimeString(),
+        ]);
 
-    if ($locale === null) {
-        $header = request()->header('Accept-Language');
-        if (is_string($header) && $header !== '') {
-            foreach (explode(',', $header) as $entry) {
-                $code = strtolower(substr(trim(explode(';', $entry)[0]), 0, 2));
-                if ($code !== '' && LocaleHelper::isSupported($code)) {
-                    $locale = $code;
-                    break;
-                }
-            }
-        }
-    }
+        return response()->json([
+            'success' => true,
+            'message' => 'Front log test executed.',
+            'logs' => [
+                'front_activity' => 'storage/logs/front_activity.log or front_activity-'.now()->format('Y-m-d').'.log',
+                'front_error' => 'storage/logs/front_error.log or front_error-'.now()->format('Y-m-d').'.log',
+            ],
+            'admin_url' => route('admin.settings.systems.logs.files', ['type' => 'front_activity']),
+        ]);
+    })->name('test.front.log');
 
-    if ($locale === null) {
-        try {
-            $siteLocale = app(SiteContextInterface::class)->currentSite()->primary_locale ?? null;
-            if (is_string($siteLocale) && LocaleHelper::isSupported($siteLocale)) {
-                $locale = $siteLocale;
-            }
-        } catch (\Throwable) {
-            // SiteContext may be unavailable during install; fall through.
-        }
-    }
-
-    if ($locale === null) {
-        $fallback = (string) config('app.fallback_locale', LocaleHelper::getDefaultLocale());
-        $locale = LocaleHelper::isSupported($fallback) ? $fallback : LocaleHelper::getDefaultLocale();
-    }
-
-    $query = request()->getQueryString();
-    $target = '/'.$locale.($path === '' ? '' : '/'.$path).($query !== null ? '?'.$query : '');
-
-    return redirect($target, 302);
-})->name('locale.fallback');
+    // Plugin web routes. v0.1.0 mounts them at their declared paths;
+    // the multilingual plugin can opt-in by wrapping its loader inside
+    // a Route::prefix('{locale}') group within its own ServiceProvider.
+    PluginHelper::loadEnabledWebRoutes();
+});

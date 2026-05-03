@@ -23,11 +23,22 @@
 namespace Tests\Feature\I18n;
 
 use App\Helpers\LocaleHelper;
+use App\Http\Middleware\SetFrontLocale;
 use Database\Seeders\SitesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
+/**
+ * Locale resolution behavior in v0.1.0.
+ *
+ * v0.1.0 ships the locale infrastructure (helpers, middleware, contracts)
+ * but does NOT register a /{locale}/ URL group or auto-redirect from
+ * locale-less URLs. The future multilingual plugin (DixlaseI18n) opts
+ * into URL routing by wrapping its routes in Route::prefix('{locale}')
+ * and registering its own Route::fallback() redirect.
+ */
 class LocaleResolutionTest extends TestCase
 {
     use RefreshDatabase;
@@ -41,9 +52,6 @@ class LocaleResolutionTest extends TestCase
         putenv('INSTALLED=true');
 
         $this->seed(SitesSeeder::class);
-
-        // Force the primary site's locale to a known value so tests don't
-        // depend on the operator's local environment.
         DB::table('sites')->where('is_primary', true)->update(['primary_locale' => 'ja']);
     }
 
@@ -55,89 +63,81 @@ class LocaleResolutionTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_locale_less_url_redirects_to_site_primary_locale(): void
+    public function test_root_url_does_not_redirect_to_locale_prefix(): void
     {
-        // Strip Accept-Language so the resolver falls through to Site.primary_locale.
-        $response = $this->withHeader('Accept-Language', '')->get('/about');
+        $response = $this->get('/');
 
-        $response->assertStatus(302);
-        $this->assertStringContainsString('/ja/about', $response->headers->get('location') ?? '');
+        $this->assertNotEquals(302, $response->getStatusCode(), 'v0.1.0 must not auto-redirect / to /{locale}/');
     }
 
-    public function test_root_url_redirects_to_site_primary_locale(): void
+    public function test_locale_less_unknown_url_returns_404_not_redirect(): void
     {
-        $response = $this->withHeader('Accept-Language', '')->get('/');
-
-        $response->assertStatus(302);
-        $this->assertStringContainsString('/ja', $response->headers->get('location') ?? '');
-    }
-
-    public function test_cookie_overrides_site_primary_locale_in_fallback(): void
-    {
-        $response = $this->withCookie(LocaleHelper::COOKIE_NAME, 'en')->get('/about');
-
-        $response->assertStatus(302);
-        $this->assertStringContainsString('/en/about', $response->headers->get('location') ?? '');
-    }
-
-    public function test_accept_language_header_used_when_no_cookie(): void
-    {
-        $response = $this->withHeader('Accept-Language', 'en-US,en;q=0.9')->get('/about');
-
-        $response->assertStatus(302);
-        $this->assertStringContainsString('/en/about', $response->headers->get('location') ?? '');
-    }
-
-    public function test_path_already_locale_prefixed_returns_404_not_redirect(): void
-    {
-        $response = $this->get('/ja/this-route-does-not-exist');
+        $response = $this->get('/about');
 
         $response->assertStatus(404);
     }
 
-    public function test_unsupported_locale_in_path_falls_back_to_redirect(): void
+    public function test_locale_prefixed_urls_are_404_in_v0_1_0(): void
     {
-        // /de/foo: 'de' isn't supported, so the locale group doesn't match
-        // and the fallback redirects to /{site_default}/de/foo.
-        $response = $this->withHeader('Accept-Language', '')->get('/de/foo');
-
-        $response->assertStatus(302);
-        $this->assertStringContainsString('/ja/de/foo', $response->headers->get('location') ?? '');
+        // /{locale}/... URLs are reserved for the future multilingual plugin.
+        // Until then, they 404 (no route registered inside a locale group).
+        $this->get('/ja')->assertStatus(404);
+        $this->get('/en')->assertStatus(404);
     }
 
-    public function test_admin_url_is_not_captured_by_locale_fallback(): void
+    public function test_admin_url_is_unaffected(): void
     {
-        // Admin URLs must reach their own routes, not get caught by the
-        // locale.fallback redirect. Use the named route so the test
-        // works regardless of the configured admin prefix.
-        $adminLogin = route('admin.login', [], false);
-        $adminPath = ltrim(parse_url($adminLogin, PHP_URL_PATH), '/');
+        $response = $this->get(route('admin.login', [], false));
 
-        $response = $this->get($adminLogin);
-
-        $location = (string) $response->headers->get('location', '');
-        $this->assertStringNotContainsString('/ja/'.$adminPath, $location, 'Admin URL must not be hijacked by locale fallback redirect.');
-        $this->assertStringNotContainsString('/en/'.$adminPath, $location, 'Admin URL must not be hijacked by locale fallback redirect.');
+        // Admin must respond without being captured by any locale machinery.
+        $this->assertNotEquals(404, $response->getStatusCode());
     }
 
-    public function test_locale_prefix_loads_with_correct_app_locale(): void
+    public function test_locale_helper_returns_site_default(): void
     {
-        // Front pages depend on the active theme. We can't render here,
-        // but we can confirm app()->getLocale() is set by SetFrontLocale.
-        $this->get('/ja');
+        $this->assertSame('ja', LocaleHelper::getSiteDefaultLocale());
+    }
+
+    public function test_locale_helper_supports_only_ja_and_en_in_v0_1_0(): void
+    {
+        $this->assertTrue(LocaleHelper::isSupported('ja'));
+        $this->assertTrue(LocaleHelper::isSupported('en'));
+        $this->assertFalse(LocaleHelper::isSupported('de'));
+        $this->assertFalse(LocaleHelper::isSupported(''));
+    }
+
+    public function test_setfrontlocale_resolves_url_first_when_locale_segment_present(): void
+    {
+        // SetFrontLocale is a unit-testable middleware. It runs only when
+        // the multilingual plugin attaches it to a /{locale}/ route group;
+        // here we exercise the resolution directly.
+        $request = Request::create('/ja/about', 'GET');
+        $middleware = new SetFrontLocale();
+
+        $middleware->handle($request, fn () => response('ok'));
+
         $this->assertSame('ja', app()->getLocale());
+    }
 
-        $this->get('/en');
+    public function test_setfrontlocale_falls_back_to_cookie_when_no_url_locale(): void
+    {
+        $request = Request::create('/about', 'GET');
+        $request->cookies->set(LocaleHelper::COOKIE_NAME, 'en');
+        $middleware = new SetFrontLocale();
+
+        $middleware->handle($request, fn () => response('ok'));
+
         $this->assertSame('en', app()->getLocale());
     }
 
-    public function test_url_defaults_locale_is_set_after_setfrontlocale(): void
+    public function test_setfrontlocale_falls_back_to_site_default_when_no_signal(): void
     {
-        $this->get('/ja');
+        $request = Request::create('/about', 'GET');
+        $request->headers->set('Accept-Language', '');
+        $middleware = new SetFrontLocale();
 
-        // After SetFrontLocale runs, route() should preserve the resolved
-        // locale automatically.
-        $this->assertStringContainsString('/ja', route('welcome'));
-        $this->assertStringContainsString('/en', route('welcome', ['locale' => 'en']));
+        $middleware->handle($request, fn () => response('ok'));
+
+        $this->assertSame('ja', app()->getLocale());
     }
 }
