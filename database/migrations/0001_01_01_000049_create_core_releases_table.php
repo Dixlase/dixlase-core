@@ -38,30 +38,45 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Adds last_notified_version columns so the scheduled update checker can
- * suppress duplicate notifications for the same available_version.
+ * Tracks the current core release state. Single-row table (id = 1) seeded
+ * during installation. Mirrors the per-row update fields on plugins/themes.
  */
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('plugins', function (Blueprint $table) {
-            $table->string('last_notified_version', 32)->nullable()->after('available_version');
-        });
+        Schema::create('core_releases', function (Blueprint $table) {
+            $table->id();
 
-        Schema::table('themes', function (Blueprint $table) {
-            $table->string('last_notified_version', 32)->nullable()->after('available_version');
+            // Source / discovery
+            $table->unsignedBigInteger('source_id')->nullable()->index();
+            $table->string('source_repo')->nullable();
+
+            // Update detection state
+            $table->string('available_version')->nullable();
+            $table->string('last_notified_version', 32)->nullable();
+            $table->timestamp('available_version_published_at')->nullable();
+            $table->string('release_url')->nullable();
+            $table->timestamp('last_version_check')->nullable();
+
+            // Update failure tracking
+            $table->timestamp('update_failed_at')->nullable();
+            $table->text('update_failure_reason')->nullable();
+
+            // Supply-chain / signing (mirrors plugins table)
+            $table->string('signing_key_id')->nullable()->index();
+            $table->string('author_id')->nullable()->index();
+            $table->string('authority_key_id')->nullable();
+            $table->string('installed_from_url')->nullable();
+            $table->string('installation_method')->nullable();
+            $table->timestamp('installed_at')->nullable();
+
+            $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::table('plugins', function (Blueprint $table) {
-            $table->dropColumn('last_notified_version');
-        });
-
-        Schema::table('themes', function (Blueprint $table) {
-            $table->dropColumn('last_notified_version');
-        });
+        Schema::dropIfExists('core_releases');
     }
 };

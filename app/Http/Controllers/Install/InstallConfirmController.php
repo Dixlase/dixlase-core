@@ -566,6 +566,7 @@ class InstallConfirmController extends BaseInstallController
                     'updated_at' => now(),
                 ]);
             Log::channel('install')->info('initializeDatabase - 既存管理者更新完了（言語設定: '.$installLocale.'）');
+            $adminMemberId = $admin->id;
         } else {
             Log::channel('install')->info('initializeDatabase - 新規管理者作成開始');
             $memberId = DB::connection('mysql')->table('members')->insertGetId([
@@ -581,11 +582,51 @@ class InstallConfirmController extends BaseInstallController
                 'updated_at' => now(),
             ]);
             Log::channel('install')->info('initializeDatabase - 新規管理者作成完了: ID='.$memberId.'（言語設定: '.$installLocale.'）');
+            $adminMemberId = $memberId;
         }
 
         $memberCount = DB::connection('mysql')->table('members')->count();
         Log::channel('install')->info('initializeDatabase - membersテーブル総レコード数: '.$memberCount);
+
+        $this->seedCoreReleaseState($adminMemberId);
+
         Log::channel('install')->info('initializeDatabase - 完了');
+    }
+
+    /**
+     * Seed the singleton core_releases row and the initial core_version_history
+     * entry. The state row tracks remote update detection; the history row marks
+     * the install transition (`null` -> current version).
+     */
+    private function seedCoreReleaseState(int $adminMemberId): void
+    {
+        Log::channel('install')->info('initializeDatabase - core_releases / core_version_history 初期投入開始');
+
+        DB::connection('mysql')->table('core_releases')->updateOrInsert(
+            ['id' => \App\Models\CoreRelease::PRIMARY_ID],
+            [
+                'installation_method' => \App\Models\CoreVersionHistory::METHOD_INSTALL,
+                'installed_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+
+        $currentVersion = (string) config('app.version', '0.1.0');
+        DB::connection('mysql')->table('core_version_history')->insert([
+            'old_version' => null,
+            'new_version' => $currentVersion,
+            'installation_method' => \App\Models\CoreVersionHistory::METHOD_INSTALL,
+            'applied_by_id' => $adminMemberId,
+            'applied_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Log::channel('install')->info('initializeDatabase - core_releases / core_version_history 初期投入完了', [
+            'version' => $currentVersion,
+            'admin_id' => $adminMemberId,
+        ]);
     }
 
     /**
