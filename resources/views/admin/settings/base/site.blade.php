@@ -80,7 +80,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endunless
     </section>
 
-    <!-- 言語・地域設定 -->
+    <!-- Language & region settings -->
     <section>
         <h2>{{ __('admin/settings/base/site.language_region_settings') }}</h2>
 
@@ -92,6 +92,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :value="old('locale', $settings['locale'])"
                 :required="true"
             />
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                {{ __('admin/settings/base/site.locale_help') }}
+            </p>
         </fieldset>
 
         <fieldset>

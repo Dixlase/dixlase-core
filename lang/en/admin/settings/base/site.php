@@ -40,6 +40,7 @@ return [
     'app_name_help' => 'Enter within 60 characters for SEO and to prevent layout issues.',
     'language_region_settings' => 'Language & Region Settings',
     'locale' => 'Default Language',
+    'locale_help' => 'Used as the fallback language for URLs without a locale prefix and as the initial language for new members.',
     'ogp_seo_plugin_notice' => 'SEO-related settings (site description, keywords, OGP, meta tags, etc.) are managed by the DixlaseSEO plugin. Please install and enable DixlaseSEO to use these features.',
     'ogp_seo_plugin_enable_notice' => 'SEO-related settings (site description, keywords, OGP, meta tags, etc.) are managed by the DixlaseSEO plugin. DixlaseSEO is added but not yet enabled. Please install and enable it from the Plugin Master.',
     'ogp_seo_plugin_install_link' => 'Add Plugin',

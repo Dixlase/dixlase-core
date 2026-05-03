@@ -36,27 +36,35 @@
 namespace App\Http\Controllers\Admin\Settings\Base;
 
 use App\Contracts\Repositories\SiteSettingRepositoryInterface;
+use App\Contracts\Site\SiteContextInterface;
 use App\Helpers\AdminModeHelper;
 use App\Helpers\ConfigHelper;
 use App\Helpers\EnvHelper;
+use App\Helpers\PluginHelper;
 use App\Helpers\TimezoneHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Base\AdminBaseSiteUpdateRequest;
+use App\Models\Site;
 
 class AdminBaseSiteController extends AdminLoggedInController
 {
     protected const SETTING_KEYS = ['app_name', 'locale', 'display_timezone'];
 
-    protected SiteSettingRepositoryInterface $baseSettingRepository;
+    protected SiteSettingRepositoryInterface $siteSettingRepository;
 
-    public function __construct(SiteSettingRepositoryInterface $baseSettingRepository)
-    {
+    protected SiteContextInterface $siteContext;
+
+    public function __construct(
+        SiteSettingRepositoryInterface $siteSettingRepository,
+        SiteContextInterface $siteContext,
+    ) {
         parent::__construct();
-        $this->baseSettingRepository = $baseSettingRepository;
+        $this->siteSettingRepository = $siteSettingRepository;
+        $this->siteContext = $siteContext;
     }
 
     /**
-     * サイト設定ページ
+     * Site settings page.
      */
     public function index()
     {
@@ -74,27 +82,28 @@ class AdminBaseSiteController extends AdminLoggedInController
             return [$key => $locale['name']];
         })->toArray();
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.base.site');
-        // capability ベースの検出に変更（サードパーティSEOプラグインにも対応）
-        // プラグインは plugin.json で `"capabilities": ["seo"]` を宣言することで認識される
-        $this->viewParams['seoPluginEnabled'] = \App\Helpers\PluginHelper::hasCapability('seo');
-        $this->viewParams['seoPluginFilesPresent'] = \App\Helpers\PluginHelper::hasCapabilityInAnyInstalled('seo');
+        // Capability-based detection so third-party SEO plugins are also recognised
+        // (plugins declare `"capabilities": ["seo"]` in plugin.json).
+        $this->viewParams['seoPluginEnabled'] = PluginHelper::hasCapability('seo');
+        $this->viewParams['seoPluginFilesPresent'] = PluginHelper::hasCapabilityInAnyInstalled('seo');
 
         return view('admin.settings.base.site', $this->viewParams);
     }
 
     /**
-     * サイト設定の更新
+     * Update site settings.
      */
     public function update(AdminBaseSiteUpdateRequest $request)
     {
         $actor = new \App\Actors\MemberActor(\App\Helpers\AdminHelper::getMember());
+        $siteContext = $this->siteContext;
 
         \App\Actions\Settings\UpdateSettingsAction::make(
-            repository: $this->baseSettingRepository,
+            repository: $this->siteSettingRepository,
             settingsPage: 'base.site',
             settingKeys: static::SETTING_KEYS,
-            writeCallback: function ($repo, $data) {
-                // .env にはデプロイ時に決まる項目のみ保存（APP_TIMEZONE は UTC 固定で触らない）
+            writeCallback: function ($repo, $data) use ($siteContext) {
+                // Persist only deploy-time values to .env. APP_TIMEZONE stays UTC.
                 $availableLocales = config('admin.locale.available', []);
                 EnvHelper::update([
                     'app_name' => $data['app_name'],
@@ -103,12 +112,21 @@ class AdminBaseSiteController extends AdminLoggedInController
                     'fallback_locale' => $data['locale'],
                 ]);
 
-                // DBに保存（display_timezone は表示用 TZ。Carbon/DB の TZ は常に UTC）
+                // Persist to the per-site settings store. display_timezone is
+                // the display-only TZ; Carbon/DB always operate in UTC.
                 $repo->setMultiple([
                     'app_name' => $data['app_name'],
                     'locale' => $data['locale'],
                     'display_timezone' => $data['display_timezone'],
                 ]);
+
+                // Sync the canonical Site.primary_locale column. The
+                // SiteSetting('locale') row above is the legacy shadow kept
+                // for backward compatibility; new code reads primary_locale
+                // directly via SiteContext.
+                Site::query()
+                    ->whereKey($siteContext->currentSiteId())
+                    ->update(['primary_locale' => $data['locale']]);
             },
         )->execute($actor, $request->validated());
 
@@ -117,7 +135,7 @@ class AdminBaseSiteController extends AdminLoggedInController
     }
 
     /**
-     * システムの基本言語設定を取得（個人設定を無視）
+     * Get the system base language setting (ignores personal preferences).
      */
     private function getSystemLocale(): string
     {
@@ -126,7 +144,12 @@ class AdminBaseSiteController extends AdminLoggedInController
             return $envLocale;
         }
 
-        $dbLocale = $this->baseSettingRepository->get('locale');
+        $sitePrimary = $this->siteContext->currentSite()->primary_locale ?? null;
+        if (is_string($sitePrimary) && $sitePrimary !== '') {
+            return $sitePrimary;
+        }
+
+        $dbLocale = $this->siteSettingRepository->get('locale');
         if ($dbLocale !== null) {
             return $dbLocale;
         }

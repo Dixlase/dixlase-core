@@ -41,6 +41,7 @@ return [
     'app_name_help' => 'SEOとレイアウト崩れ防止のため60文字以内で入力してください。',
     'language_region_settings' => '言語・地域設定',
     'locale' => 'デフォルトの言語設定',
+    'locale_help' => 'URL に locale プレフィックスがない場合のフォールバック言語、および新規メンバーの初期言語として使われます。',
     'ogp_seo_plugin_notice' => 'SEO関連の設定（サイト説明・キーワード・OGP・メタタグなど）はプラグインの DixlaseSEO で行います。ご利用には DixlaseSEO をインストール・有効化してください。',
     'ogp_seo_plugin_enable_notice' => 'SEO関連の設定（サイト説明・キーワード・OGP・メタタグなど）はプラグインの DixlaseSEO で行います。DixlaseSEO は追加済みですが有効化されていません。プラグインマスターからインストール・有効化してください。',
     'ogp_seo_plugin_install_link' => 'プラグインを追加',
