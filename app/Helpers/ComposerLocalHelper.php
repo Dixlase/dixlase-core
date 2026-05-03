@@ -44,7 +44,7 @@ use Symfony\Component\Process\Process;
 class ComposerLocalHelper
 {
     /**
-     * composer.local.jsonファイルのパス
+     * Path to composer.local.json file
      */
     protected static function getComposerLocalPath(): string
     {
@@ -52,25 +52,25 @@ class ComposerLocalHelper
     }
 
     /**
-     * plugins/とthemes/ディレクトリから自動的にcomposer.local.jsonを生成
+     * Automatically generate composer.local.json from plugins/ and themes/ directories
      *
-     * @return bool 成功したかどうか
+     * @return bool Whether it succeeded
      */
     public static function syncAutoload(): bool
     {
         try {
             $composerLocalPath = self::getComposerLocalPath();
 
-            // プラグインディレクトリを検出
+            // Detect plugin directories
             $plugins = self::detectPluginDirectories();
 
-            // テーマディレクトリを検出
+            // Detect theme directories
             $themes = self::detectThemeDirectories();
 
-            // autoload設定を生成
+            // Generate autoload settings
             $autoload = [];
 
-            // プラグインのautoload設定
+            // Autoload settings for plugins
             foreach ($plugins as $pluginName) {
                 $autoload["Plugins\\{$pluginName}\\App\\"] = "plugins/{$pluginName}/app";
                 $autoload["Plugins\\{$pluginName}\\Database\\Factories\\"] = "plugins/{$pluginName}/database/factories";
@@ -78,28 +78,28 @@ class ComposerLocalHelper
                 $autoload["Plugins\\{$pluginName}\\Tests\\"] = "plugins/{$pluginName}/tests";
             }
 
-            // テーマのautoload設定
+            // Autoload settings for themes
             foreach ($themes as $themeName) {
                 $autoload["Themes\\{$themeName}\\App\\"] = "themes/{$themeName}/app";
                 $autoload["Themes\\{$themeName}\\Database\\Factories\\"] = "themes/{$themeName}/database/factories";
                 $autoload["Themes\\{$themeName}\\Database\\Seeders\\"] = "themes/{$themeName}/database/seeders";
             }
 
-            // composer.local.jsonの内容を生成
+            // Generate composer.local.json content
             $composerLocal = [
-                '_comment' => 'このファイルは自動生成されます。手動で編集しないでください。',
+                '_comment' => 'This file is auto-generated. Do not edit manually.',
                 '_generated_at' => date('Y-m-d H:i:s'),
                 'autoload' => [
                     'psr-4' => $autoload,
                 ],
             ];
 
-            // JSONファイルとして保存
+            // Save as JSON file
             $json = json_encode($composerLocal, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             file_put_contents($composerLocalPath, json_encode($composerLocal, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
-            // composer.local.json を反映するため autoload を再生成。
-            // 失敗してもプラグイン配置自体は完了しているため warn のみで継続。
+            // Regenerate autoload to reflect composer.local.json
+            // Continue with only a warning even if it fails, since plugin placement itself is already complete
             self::regenerateAutoload();
 
             return true;
@@ -111,11 +111,11 @@ class ComposerLocalHelper
     }
 
     /**
-     * composer dump-autoload を実行して autoload classmap / psr-4 を再生成する。
+     * Execute composer dump-autoload to regenerate autoload classmap / psr-4
      *
-     * プラグイン/テーマの追加・削除直後に呼び出して、新しい PSR-4 マッピングを
-     * Laravel ランタイムに反映する。composer バイナリが利用できない環境では
-     * 警告ログを残して続行する（致命的エラーにはしない）。
+     * Call immediately after adding/removing plugins/themes to reflect new PSR-4 mappings
+     * to the Laravel runtime. In environments where the composer binary is not available,
+     * continue with a warning log (do not treat as a fatal error)
      */
     protected static function regenerateAutoload(): void
     {
@@ -143,9 +143,9 @@ class ComposerLocalHelper
     }
 
     /**
-     * plugins/ディレクトリ内のプラグインディレクトリを検出
+     * Detect plugin directories in the plugins/ directory
      *
-     * @return array プラグインディレクトリ名の配列
+     * @return array Array of plugin directory names
      */
     protected static function detectPluginDirectories(): array
     {
@@ -161,12 +161,12 @@ class ComposerLocalHelper
         foreach ($directories as $directory) {
             $pluginName = basename($directory);
 
-            // .で始まるディレクトリは除外
+            // Exclude directories starting with .
             if (str_starts_with($pluginName, '.')) {
                 continue;
             }
 
-            // app/ディレクトリが存在するか確認
+            // Check if app/ directory exists
             if (File::exists($directory.'/app')) {
                 $pluginNames[] = $pluginName;
             }
@@ -176,9 +176,9 @@ class ComposerLocalHelper
     }
 
     /**
-     * themes/ディレクトリ内のテーマディレクトリを検出
+     * Detect theme directories in the themes/ directory
      *
-     * @return array テーマディレクトリ名の配列
+     * @return array Array of theme directory names
      */
     protected static function detectThemeDirectories(): array
     {
@@ -194,12 +194,12 @@ class ComposerLocalHelper
         foreach ($directories as $directory) {
             $themeName = basename($directory);
 
-            // .で始まるディレクトリは除外
+            // Exclude directories starting with .
             if (str_starts_with($themeName, '.')) {
                 continue;
             }
 
-            // app/ディレクトリが存在するか確認
+            // Check if app/ directory exists
             if (File::exists($directory.'/app')) {
                 $themeNames[] = $themeName;
             }
@@ -209,7 +209,7 @@ class ComposerLocalHelper
     }
 
     /**
-     * composer.local.jsonの内容を取得
+     * Get the contents of composer.local.json
      */
     public static function getComposerLocalContent(): ?array
     {
@@ -225,7 +225,7 @@ class ComposerLocalHelper
     }
 
     /**
-     * composer.local.jsonが存在するか確認
+     * Check if composer.local.json exists
      */
     public static function exists(): bool
     {
@@ -233,9 +233,9 @@ class ComposerLocalHelper
     }
 
     /**
-     * 特定のプラグインがcomposer.local.jsonに含まれているか確認
+     * Check if a specific plugin is included in composer.local.json
      *
-     * @param  string  $pluginName  プラグイン名
+     * @param  string  $pluginName  Plugin name
      */
     public static function hasPlugin(string $pluginName): bool
     {
@@ -251,9 +251,9 @@ class ComposerLocalHelper
     }
 
     /**
-     * 特定のテーマがcomposer.local.jsonに含まれているか確認
+     * Check if a specific theme is included in composer.local.json
      *
-     * @param  string  $themeName  テーマ名
+     * @param  string  $themeName  Theme name
      */
     public static function hasTheme(string $themeName): bool
     {

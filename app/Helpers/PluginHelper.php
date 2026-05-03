@@ -46,7 +46,7 @@ use Illuminate\Support\Facades\Schema;
 class PluginHelper
 {
     /**
-     * 有効化されているプラグイン一覧を取得
+     * Get list of enabled plugins
      */
     public static function getEnabledPlugins(): Collection
     {
@@ -66,9 +66,9 @@ class PluginHelper
     }
 
     /**
-     * プラグインが有効化されているか確認
+     * Check if plugin is enabled
      *
-     * @param  string  $slug  プラグインのスラッグ
+     * @param  string  $slug  Plugin slug
      */
     public static function isEnabled(string $slug): bool
     {
@@ -84,26 +84,26 @@ class PluginHelper
     }
 
     /**
-     * 有効化プラグインの capability 情報のランタイムキャッシュ
+     * Runtime cache of capability information for enabled plugins
      *
      * @var array<string, array<int, string>>|null [slug => [capability, ...]]
      */
     private static ?array $enabledCapabilityCache = null;
 
     /**
-     * ファイル存在プラグイン（有効化問わず）の capability 情報のランタイムキャッシュ
+     * Runtime cache of capability information for plugins with files (regardless of enabled status)
      *
      * @var array<string, array<int, string>>|null [directory => [capability, ...]]
      */
     private static ?array $installedCapabilityCache = null;
 
     /**
-     * 有効化されているプラグインのうち、指定 capability を宣言するものがあるか
+     * Check if any enabled plugin declares the specified capability
      *
-     * plugin.json の `capabilities` 配列（例: ["seo", "backup"]）を走査します。
-     * capabilities 未定義のプラグインは無視されます。
+     * Scans the `capabilities` array in plugin.json (e.g. ["seo", "backup"])
+     * Plugins without defined capabilities are ignored
      *
-     * @param  string  $capability  capability 識別子（例: 'seo'）
+     * @param  string  $capability  Capability identifier (e.g. 'seo')
      */
     public static function hasCapability(string $capability): bool
     {
@@ -119,13 +119,13 @@ class PluginHelper
     }
 
     /**
-     * ファイルが追加されている（ディレクトリ存在）プラグインに、
-     * 指定 capability を宣言するものがあるか
+     * Check if any plugin with files added (directory exists)
+     * declares the specified capability
      *
-     * 有効化されていなくても plugin.json さえあれば検出します。
-     * 「追加済みだが未有効化」のプラグインを案内したい場合などに使用。
+     * Detects as long as plugin.json exists, even if not enabled
+     * Use when you want to guide users to plugins that are added but not yet enabled
      *
-     * @param  string  $capability  capability 識別子
+     * @param  string  $capability  Capability identifier
      */
     public static function hasCapabilityInAnyInstalled(string $capability): bool
     {
@@ -141,13 +141,13 @@ class PluginHelper
     }
 
     /**
-     * 指定スラッグの有効化プラグインが指定 capability を宣言しているか
+     * Check if enabled plugin with specified slug declares the specified capability
      *
-     * 「プラグインごとに機能対応を確認したい」用途で使用します。
-     * 例: SEOプラグインが「dixlase-pages が seo-meta に対応宣言しているか」確認
+     * Use for checking feature support on a per-plugin basis
+     * Example: SEO plugin checks if dixlase-pages declares support for seo-meta
      *
-     * @param  string  $slug  プラグインスラッグ（例: 'dixlase-pages'）
-     * @param  string  $capability  capability 識別子（例: 'seo-meta'）
+     * @param  string  $slug  Plugin slug (e.g. 'dixlase-pages')
+     * @param  string  $capability  Capability identifier (e.g. 'seo-meta')
      */
     public static function pluginHasCapability(string $slug, string $capability): bool
     {
@@ -157,13 +157,13 @@ class PluginHelper
     }
 
     /**
-     * 指定 capability を宣言している有効化プラグインのスラッグ一覧を取得
+     * Get list of slugs for enabled plugins that declare the specified capability
      *
-     * SEOプラグインが「SEOメタに対応しているプラグイン一覧」を取得して
-     * 連携設定 UI を自動生成する、といった用途で使用します。
+     * For use cases like an SEO plugin retrieving a "list of plugins that support SEO meta"
+     * to auto-generate integration settings UI
      *
-     * @param  string  $capability  capability 識別子（例: 'seo-meta'）
-     * @return array<int, string> プラグインスラッグの配列
+     * @param  string  $capability  Capability identifier (e.g. 'seo-meta')
+     * @return array<int, string> Array of plugin slugs
      */
     public static function getEnabledPluginSlugsByCapability(string $capability): array
     {
@@ -179,11 +179,11 @@ class PluginHelper
     }
 
     /**
-     * 指定ディレクトリのプラグイン/テーマが宣言する capabilities を取得
+     * Get capabilities declared by the plugin/theme in the specified directory
      *
-     * plugins/{directory}/plugin.json または themes/{directory}/plugin.json の
-     * `capabilities` 配列を読み取って返します。
-     * 未宣言や plugin.json 自体がない場合は空配列。
+     * Read and return the `capabilities` array from
+     * plugins/{directory}/plugin.json or themes/{directory}/plugin.json
+     * Returns empty array if undeclared or plugin.json does not exist
      *
      * @return array<int, string>
      */
@@ -194,7 +194,7 @@ class PluginHelper
             return $map[$directory];
         }
 
-        // プラグインマップになければテーマディレクトリも確認
+        // Check theme directory if not found in plugin map
         $themePath = base_path("themes/{$directory}");
         $json = self::readPluginJson($themePath);
 
@@ -202,7 +202,7 @@ class PluginHelper
     }
 
     /**
-     * ランタイムキャッシュを破棄（主にテスト用）
+     * Clear runtime cache (mainly for testing)
      */
     public static function clearCapabilityCache(): void
     {
@@ -211,7 +211,7 @@ class PluginHelper
     }
 
     /**
-     * 有効化プラグインの capability マップを取得
+     * Get capability map of active plugins
      *
      * @return array<string, array<int, string>>
      */
@@ -231,7 +231,7 @@ class PluginHelper
     }
 
     /**
-     * ファイル存在プラグインの capability マップを取得
+     * Get capability map of file-existing plugins
      *
      * @return array<string, array<int, string>>
      */
@@ -259,7 +259,7 @@ class PluginHelper
     }
 
     /**
-     * plugin.json を読み取る
+     * Read plugin.json
      *
      * @return array<string, mixed>|null
      */
@@ -285,7 +285,7 @@ class PluginHelper
     }
 
     /**
-     * plugin.json から capabilities を抽出
+     * Extract capabilities from plugin.json
      *
      * @param  array<string, mixed>|null  $json
      * @return array<int, string>
@@ -305,9 +305,9 @@ class PluginHelper
     }
 
     /**
-     * プラグインのパスを取得
+     * Get plugin path
      *
-     * @param  string  $directory  プラグインのディレクトリ名
+     * @param  string  $directory  Plugin directory name
      */
     public static function getPluginPath(string $directory): string
     {
@@ -315,15 +315,15 @@ class PluginHelper
     }
 
     /**
-     * 有効化されているプラグインの管理画面ルートを読み込む
+     * Load admin panel routes for active plugins
      *
-     * このメソッドはroutes/admin.php内の認証済みルートグループ内で呼び出される
-     * ことを想定しています。これにより、プラグインのルートにも認証ミドルウェアが
-     * 自動的に適用されます。
+     * This method is intended to be called within an authenticated route group
+     * in routes/admin.php. This ensures that authentication middleware is
+     * automatically applied to plugin routes as well
      */
     public static function loadEnabledAdminRoutes(): void
     {
-        // インストール前やテーブルが存在しない場合はスキップ
+        // Skip if not yet installed or table does not exist
         if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
             return;
         }
@@ -347,13 +347,13 @@ class PluginHelper
     }
 
     /**
-     * 有効化されているプラグインのWebルートを読み込む
+     * Load web routes for enabled plugins
      *
-     * このメソッドはroutes/web.php内で呼び出されることを想定しています。
+     * This method is intended to be called within routes/web.php
      */
     public static function loadEnabledWebRoutes(): void
     {
-        // インストール前やテーブルが存在しない場合はスキップ
+        // Skip if not yet installed or table does not exist
         if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
             return;
         }
@@ -377,13 +377,13 @@ class PluginHelper
     }
 
     /**
-     * 有効化されているプラグインのAPIルートを読み込む
+     * Load API routes for enabled plugins
      *
-     * このメソッドはroutes/api.php内またはServiceProviderで呼び出されることを想定しています。
+     * This method is intended to be called within routes/api.php or in a ServiceProvider
      */
     public static function loadEnabledApiRoutes(): void
     {
-        // インストール前やテーブルが存在しない場合はスキップ
+        // Skip if not yet installed or table does not exist
         if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
             return;
         }
@@ -407,16 +407,16 @@ class PluginHelper
     }
 
     /**
-     * ショートコードを登録
+     * Register a shortcode
      *
-     * プラグインのServiceProviderから呼び出して使用します。
+     * Call from the plugin's ServiceProvider to use
      *
-     * 使用例:
+     * Usage example:
      *   PluginHelper::registerShortcode('menu', MenuShortcode::class);
      *
-     * @param  string  $name  ショートコード名
-     * @param  string  $class  ショートコードクラス名
-     * @return bool 登録成功したかどうか
+     * @param  string  $name  Shortcode name
+     * @param  string  $class  Shortcode class name
+     * @return bool Whether registration was successful
      */
     public static function registerShortcode(string $name, string $class): bool
     {
@@ -441,16 +441,16 @@ class PluginHelper
     }
 
     /**
-     * 複数のショートコードを一括登録
+     * Register multiple shortcodes in bulk
      *
-     * 使用例:
+     * Usage example:
      *   PluginHelper::registerShortcodes([
      *       'menu' => MenuShortcode::class,
      *       'submenu' => SubMenuShortcode::class,
      *   ]);
      *
-     * @param  array  $shortcodes  ['name' => 'ClassName'] の配列
-     * @return int 登録成功した数
+     * @param  array  $shortcodes  Array of ['name' => 'ClassName']
+     * @return int Number of successful registrations
      */
     public static function registerShortcodes(array $shortcodes): int
     {
@@ -465,15 +465,15 @@ class PluginHelper
     }
 
     /**
-     * リンクソースを登録（メニュープラグイン用）
+     * Register a link source (for menu plugin)
      *
-     * メニュープラグインのMenuLinkSourceManagerにリンクソースを登録します。
+     * Register a link source to the menu plugin's MenuLinkSourceManager
      *
-     * 使用例:
+     * Usage example:
      *   PluginHelper::registerLinkSource(new PageLinkSource());
      *
-     * @param  object  $source  リンクソースインスタンス
-     * @return bool 登録成功したかどうか
+     * @param  object  $source  Link source instance
+     * @return bool Whether registration was successful
      */
     public static function registerLinkSource(object $source): bool
     {
@@ -499,16 +499,16 @@ class PluginHelper
     }
 
     /**
-     * 複数のリンクソースを一括登録
+     * Register multiple link sources in bulk
      *
-     * 使用例:
+     * Usage example:
      *   PluginHelper::registerLinkSources([
      *       new PageLinkSource(),
      *       new PostLinkSource(),
      *   ]);
      *
-     * @param  array  $sources  リンクソースインスタンスの配列
-     * @return int 登録成功した数
+     * @param  array  $sources  Array of link source instances
+     * @return int Number of successful registrations
      */
     public static function registerLinkSources(array $sources): int
     {

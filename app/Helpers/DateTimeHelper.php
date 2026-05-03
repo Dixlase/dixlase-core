@@ -43,17 +43,17 @@ use DateTimeZone;
 use Throwable;
 
 /**
- * 日時を表示用タイムゾーンに変換してフォーマットするヘルパー。
+ * Helper that converts datetimes into the display timezone and formats them.
  *
- * Dixlase は保存・計算を常に UTC（config('app.timezone')）で行い、
- * 表示時にのみ site_settings.display_timezone へ変換する。本ヘルパーは
- * その表示変換とフォーマットを集約する。Blade では <x-ui-datetime> の
- * 内部実装として使われるため、テンプレートから直接呼ばないこと。
+ * Dixlase always stores and calculates in UTC (config('app.timezone')),
+ * and converts to site_settings.display_timezone only for display. This helper
+ * centralizes that display conversion and formatting. In Blade it is used as
+ * the internal implementation of <x-ui-datetime>, so do not call directly from templates
  */
 class DateTimeHelper
 {
     /**
-     * 名前付きフォーマット
+     * Named formats
      *
      * @var array<string, string>
      */
@@ -65,10 +65,10 @@ class DateTimeHelper
     ];
 
     /**
-     * 入力日時を表示用タイムゾーンに変換してフォーマットする
+     * Convert the given datetime into the display timezone and format it
      *
-     * @param  Carbon|DateTimeInterface|string|int|null  $value  入力値（null/空文字なら null を返す）
-     * @param  string  $format  PHP date format 文字列、または FORMATS のキー
+     * @param  Carbon|DateTimeInterface|string|int|null  $value  Input value (null/empty string returns null)
+     * @param  string  $format  PHP date format string or a FORMATS key
      */
     public static function display(mixed $value, string $format = 'datetime'): ?string
     {
@@ -84,7 +84,7 @@ class DateTimeHelper
     }
 
     /**
-     * 入力日時を UTC の ISO8601 文字列に変換する（HTML <time datetime> 用）
+     * Convert the given datetime into a UTC ISO8601 string (for the HTML <time datetime> attribute)
      *
      * @param  Carbon|DateTimeInterface|string|int|null  $value
      */
@@ -100,7 +100,7 @@ class DateTimeHelper
     }
 
     /**
-     * 表示用タイムゾーン ID を返す
+     * Return the display timezone ID
      */
     public static function displayTimezone(): string
     {
@@ -108,7 +108,7 @@ class DateTimeHelper
     }
 
     /**
-     * 表示用 DateTimeZone オブジェクトを返す
+     * Return a DateTimeZone object for the display timezone
      */
     public static function displayTimezoneObject(): DateTimeZone
     {
@@ -116,7 +116,7 @@ class DateTimeHelper
     }
 
     /**
-     * 入力を CarbonImmutable に正規化する
+     * Normalize the input into a CarbonImmutable instance
      *
      * @param  Carbon|DateTimeInterface|string|int|null  $value
      */

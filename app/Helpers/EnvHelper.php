@@ -38,7 +38,7 @@ namespace App\Helpers;
 use Illuminate\Support\Facades\Artisan;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  */
 class EnvHelper
 {
@@ -89,10 +89,10 @@ class EnvHelper
             $escapedKey = preg_quote($envKey, '/');
             $value = str_replace(["\r", "\n"], '', $value);
 
-            // 値を適切にエスケープ・クォート
+            // Properly escape and quote the value
             $formattedValue = static::formatEnvValue($value);
 
-            // 既存のキーを置換、なければ追記
+            // Replace existing key or append if not found
             $pattern = "/^{$escapedKey}=.*/m";
             $replacement = "{$envKey}={$formattedValue}";
 
@@ -111,39 +111,39 @@ class EnvHelper
     }
 
     /**
-     * .env用に値を適切にフォーマット
+     * Format value appropriately for .env
      *
      * @param  mixed  $value
      */
     protected static function formatEnvValue($value): string
     {
-        // null値の処理
+        // Handle null values
         if ($value === null || $value === '') {
             return '';
         }
 
-        // 文字列に変換
+        // Convert to string
         $value = (string) $value;
 
-        // true/falseの処理
+        // Handle true/false
         if (in_array(strtolower($value), ['true', 'false'], true)) {
             return strtolower($value);
         }
 
-        // 数値のみの場合はクォート不要
+        // No quotes needed for numeric-only values
         if (is_numeric($value)) {
             return $value;
         }
 
-        // スペース、特殊文字、#を含む場合はダブルクォートで囲む
+        // Wrap in double quotes if contains spaces, special characters, or #
         if (preg_match('/[\s#\$\(\)\[\]\{\}\|\&\;\<\>\?\*\'\"]/', $value)) {
-            // 既存のダブルクォートとバックスラッシュをエスケープ
+            // Escape existing double quotes and backslashes
             $escaped = str_replace(['\\', '"'], ['\\\\', '\\"'], $value);
 
             return "\"{$escaped}\"";
         }
 
-        // それ以外はそのまま
+        // Otherwise leave as-is
         return $value;
     }
 }

@@ -52,13 +52,13 @@ use Illuminate\Support\Facades\Schema;
 class AdminHelper
 {
     /**
-     * ナビゲーション設定のキャッシュ
-     * Laravelのconfig()は信頼できないため、静的変数で管理
+     * Navigation settings cache
+     * Managed with static variable because Laravel's config() is not reliable
      */
     private static $navigationCache = null;
 
     /**
-     * 現在ログイン中のメンバーを取得
+     * Get currently logged-in member
      */
     public static function getMember(): ?Member
     {
@@ -66,8 +66,8 @@ class AdminHelper
     }
 
     /**
-     * リクエストが管理画面URLに一致するかチェック
-     * 動的に生成されたadmin URLにも対応
+     * Check if request matches admin panel URL
+     * Support dynamically generated admin URLs
      */
     public static function isAdminRequest(Request $request): bool
     {
@@ -78,14 +78,14 @@ class AdminHelper
 
     public static function getAdminUrl()
     {
-        // admin_url 設定は config/admin/url.php に定義 → 'admin.url.admin_url'
+        // admin_url setting is defined in config/admin/url.php → 'admin.url.admin_url'
         $configDefault = config('admin.url.admin_url', 'admin');
 
-        // config キャッシュ時の env() null 化対策として $_SERVER / $_ENV をフォールバック
+        // Fallback to $_SERVER / $_ENV to prevent env() returning null when config is cached
         $installed = $_SERVER['INSTALLED'] ?? $_ENV['INSTALLED'] ?? env('INSTALLED') ?? config('app.installed');
         $isInstalled = ($installed === 'true' || $installed === true);
 
-        // インストール前やデータベース接続エラーの場合はコンフィグ値を返す
+        // Return config value if before installation or on database connection error
         if (! file_exists(base_path('.env')) || ! $isInstalled) {
             return $configDefault;
         }
@@ -109,12 +109,12 @@ class AdminHelper
             return false;
         }
 
-        // プロフィールは全員アクセス可能（自分自身の設定）
+        // Profile is accessible to everyone (own settings)
         if (str_starts_with($menuKey, 'profile')) {
             return true;
         }
 
-        // ダッシュボードは全員アクセス可能（閲覧のみ）
+        // Dashboard is accessible to everyone (view only)
         if ($menuKey === 'dashboard') {
             return true;
         }
@@ -123,12 +123,12 @@ class AdminHelper
             return true;
         }
 
-        // PermissionRegistryを使用して実効権限をチェック
+        // Check effective permission using PermissionRegistry
         $effective = PermissionRegistry::getEffective($menuKey);
 
-        // 権限定義がない場合、子項目の権限をチェック
+        // If no permission definition exists, check child item permissions
         if ($effective === null) {
-            // 子項目の権限を検索（例: media -> media.index, media.upload）
+            // Search child item permissions (e.g., media -> media.index, media.upload)
             $allPermissions = PermissionRegistry::getAllCorePermissionsFlat();
             $hasChildAccess = false;
 
@@ -145,14 +145,14 @@ class AdminHelper
             return $hasChildAccess;
         }
 
-        // ユーザーの権限値が設定された最低権限値以上であればアクセス可能
+        // Access granted if user's permission value is at or above the configured minimum permission value
         return $user->role->value >= $effective['access_roles'] ||
                $user->role->value >= $effective['view_roles'];
     }
 
     /**
-     * メニューの閲覧権限をチェック（編集はできないが表示はできる）
-     * ユーザーの権限値がview_roles以上であれば閲覧可能
+     * Check menu view permission (can display but cannot edit)
+     * Viewable if user's permission value is at or above view_roles
      */
     public static function canViewMenu(string $menuKey): bool
     {
@@ -161,12 +161,12 @@ class AdminHelper
             return false;
         }
 
-        // プロフィールは全員閲覧可能（自分自身の設定）
+        // Profile is viewable by everyone (own settings)
         if (str_starts_with($menuKey, 'profile')) {
             return true;
         }
 
-        // ダッシュボードは全員閲覧可能
+        // Dashboard is viewable by everyone
         if ($menuKey === 'dashboard') {
             return true;
         }
@@ -179,8 +179,8 @@ class AdminHelper
     }
 
     /**
-     * メニューの編集権限をチェック
-     * ユーザーの権限値がaccess_roles以上であれば編集可能
+     * Check menu edit permission
+     * Editable if user's permission value is at or above access_roles
      */
     public static function canEditMenu(string $menuKey): bool
     {
@@ -189,12 +189,12 @@ class AdminHelper
             return false;
         }
 
-        // プロフィールは全員編集可能（自分自身の設定）
+        // Profile is editable by everyone (own settings)
         if (str_starts_with($menuKey, 'profile')) {
             return true;
         }
 
-        // ダッシュボードは閲覧のみで編集不可
+        // Dashboard is view-only and not editable
         if ($menuKey === 'dashboard') {
             return false;
         }
@@ -207,7 +207,7 @@ class AdminHelper
     }
 
     /**
-     * プラグインメニューのアクセス権限をチェック
+     * Check access permission for plugin menu
      */
     public static function canAccessPluginMenu(string $pluginSlug, string $menuKey): bool
     {
@@ -220,11 +220,11 @@ class AdminHelper
             return true;
         }
 
-        // PermissionRegistryを使用
+        // Use PermissionRegistry
         $effective = PermissionRegistry::getPluginEffective($pluginSlug, $menuKey);
 
         if ($effective === null) {
-            // 権限設定がない場合はADMIN以上でアクセス可能
+            // If no permission settings exist, accessible by ADMIN or higher
             return $user->role->value >= MemberRole::ADMIN->value;
         }
 
@@ -233,7 +233,7 @@ class AdminHelper
     }
 
     /**
-     * プラグインメニューの閲覧権限をチェック
+     * Check view permission for plugin menu
      */
     public static function canViewPluginMenu(string $pluginSlug, string $menuKey): bool
     {
@@ -250,7 +250,7 @@ class AdminHelper
     }
 
     /**
-     * プラグインメニューの編集権限をチェック
+     * Check edit permission for plugin menu
      */
     public static function canEditPluginMenu(string $pluginSlug, string $menuKey): bool
     {
@@ -267,11 +267,11 @@ class AdminHelper
     }
 
     /**
-     * メニューの編集権限をチェック（コア/プラグイン統合）
+     * Check edit permission for menu (Core/plugin integration)
      *
-     * @param  string|null  $pluginSlug  プラグインスラッグ（nullの場合はコアメニュー）
-     * @param  string  $menuKey  メニューキー
-     * @return bool 編集権限があればtrue
+     * @param  string|null  $pluginSlug  Plugin slug (null for Core menu)
+     * @param  string  $menuKey  Menu key
+     * @return bool True if edit permission exists
      */
     public static function canEditMenuOrPlugin(?string $pluginSlug, string $menuKey): bool
     {
@@ -283,11 +283,11 @@ class AdminHelper
     }
 
     /**
-     * メニューの閲覧権限をチェック（コア/プラグイン統合）
+     * Check view permission for menu (Core/plugin integration)
      *
-     * @param  string|null  $pluginSlug  プラグインスラッグ（nullの場合はコアメニュー）
-     * @param  string  $menuKey  メニューキー
-     * @return bool 閲覧権限があればtrue
+     * @param  string|null  $pluginSlug  Plugin slug (null for Core menu)
+     * @param  string  $menuKey  Menu key
+     * @return bool True if view permission exists
      */
     public static function canViewMenuOrPlugin(?string $pluginSlug, string $menuKey): bool
     {
@@ -299,10 +299,10 @@ class AdminHelper
     }
 
     /**
-     * 管理画面のナビゲーション設定をマージ
+     * Merge admin panel navigation settings
      *
-     * @param  string  $name  プラグイン/テーマ名（デバッグ用）
-     * @param  string  $configPath  設定ファイルのパス
+     * @param  string  $name  Plugin/theme name (for debugging)
+     * @param  string  $configPath  Path to settings file
      */
     public static function mergeAdminNavigation(string $name = 'Unknown', ?string $configPath = null): void
     {
@@ -318,17 +318,17 @@ class AdminHelper
             return;
         }
 
-        // 既存のナビゲーション設定を取得
-        // IMPORTANT: 静的変数でキャッシュして、Laravelのconfig()の問題を回避
-        // キャッシュがある場合は必ず使用（プラグインのマージを保持）
+        // Get existing navigation settings
+        // IMPORTANT: Cache with static variable to avoid Laravel's config() issues
+        // Always use cache if available (preserve plugin merges)
         if (self::$navigationCache !== null) {
             $existingNav = self::$navigationCache;
         } else {
-            // 初回のみconfig()から取得
-            // IMPORTANT: app()->config['admin.navigation']を必ず使用（プラグインのマージを保持）
+            // Get from config() on first access only
+            // IMPORTANT: Always use app()->config['admin.navigation'] (to preserve plugin merges)
             $fromAppConfig = app()->config['admin.navigation'] ?? null;
 
-            // app()->configがnullの場合のみconfig()から読み込む
+            // Load from config() only when app()->config is null
             if ($fromAppConfig === null) {
                 $fromAppConfig = config('admin.navigation', []);
             }
@@ -336,20 +336,20 @@ class AdminHelper
             $existingNav = $fromAppConfig;
         }
 
-        // コアの設定が正しく読み込まれているかチェック
-        // ただし、既に設定が存在する場合は再読み込みしない（テーマやプラグインの変更を保持）
+        // Check if Core settings are loaded correctly
+        // However, do not reload if settings already exist (to preserve theme and plugin changes)
         if (empty($existingNav) ||
             (! isset($existingNav['settings']['children']) ||
              ! isset($existingNav['settings']['children']['base']) ||
              ! isset($existingNav['settings']['children']['security']))) {
-            // 完全に空の場合のみ再読み込み
+            // Reload only if completely empty
             if (empty($existingNav)) {
-                // コアの設定ファイルを直接読み込み
+                // Load Core settings file directly
                 $coreConfigPath = config_path('admin.php');
                 if (file_exists($coreConfigPath)) {
                     $coreConfig = require $coreConfigPath;
                     if (isset($coreConfig['nav'])) {
-                        // コアの設定で初期化
+                        // Initialize with Core settings
                         $existingNav = $coreConfig['nav'];
                         config(['admin.nav' => $existingNav]);
                     }
@@ -357,29 +357,29 @@ class AdminHelper
             }
         }
 
-        // ナビゲーション設定をマージ
+        // Merge navigation settings
         foreach ($config['nav'] as $key => $value) {
-            // 挿入位置の情報を保存
+            // Save insertion position information
             $insertAfter = $value['_insert_after'] ?? null;
             $insertBefore = $value['_insert_before'] ?? null;
 
-            // _insert_after や _insert_before を削除
+            // Remove _insert_after / _insert_before
             unset($value['_insert_after'], $value['_insert_before']);
 
-            // プラグインメニューの場合、plugin_slug情報を追加
+            // Add plugin_slug information for plugin menus
             if ($name !== 'Unknown' && $name !== 'Theme') {
                 $value['plugin_slug'] = $name;
-                // 子項目にもplugin_slugを追加
+                // Add plugin_slug to child items as well
                 if (isset($value['children'])) {
                     $value['children'] = self::addPluginSlugToChildren($value['children'], $name);
                 }
             }
 
-            // 既存の設定がある場合は子項目をマージ
+            // Merge child items if existing settings are present
             if (isset($existingNav[$key])) {
-                // 既存の設定を保持しつつ、子項目をマージ
+                // Merge child items while preserving existing settings
                 if (isset($value['children']) && isset($existingNav[$key]['children'])) {
-                    // 再帰的にマージ（3階層目以降も対応）
+                    // Merge recursively (handles 3rd level and deeper)
                     $existingNav[$key]['children'] = self::deepMergeNavigation(
                         $existingNav[$key]['children'],
                         $value['children'],
@@ -388,38 +388,38 @@ class AdminHelper
                 } elseif (isset($value['children'])) {
                     $existingNav[$key]['children'] = $value['children'];
                 }
-                // plugin_slug情報を更新
+                // Update plugin_slug information
                 if (isset($value['plugin_slug'])) {
                     $existingNav[$key]['plugin_slug'] = $value['plugin_slug'];
                 }
             } else {
-                // 新しいキーの場合は挿入位置を考慮して追加
+                // For new keys, add considering insertion position
 
                 if ($insertAfter || $insertBefore) {
-                    // 挿入位置が指定されている場合
+                    // When insertion position is specified
                     $existingNav = self::insertNavItem($existingNav, $key, $value, $insertAfter, $insertBefore, $name);
                 } else {
-                    // 挿入位置が指定されていない場合は最後に追加
+                    // Add at the end if insertion position is not specified
                     $existingNav[$key] = $value;
                 }
             }
         }
 
-        // マージした設定を反映
-        // IMPORTANT: 静的変数にキャッシュして、次回以降のマージで使用
+        // Apply merged settings
+        // IMPORTANT: Cache in static variable for use in subsequent merges
         self::$navigationCache = $existingNav;
 
-        // Laravelの設定にも反映（ビューなどで使用される）
+        // Also reflect in Laravel settings (used in views, etc.)
         app()->config['admin.nav'] = $existingNav;
         config(['admin.nav' => $existingNav]);
     }
 
     /**
-     * 子項目にplugin_slug情報を再帰的に追加
+     * Recursively add plugin_slug information to child items
      *
-     * @param  array  $children  子項目の配列
-     * @param  string  $pluginSlug  プラグインスラッグ
-     * @return array plugin_slug情報が追加された子項目の配列
+     * @param  array  $children  Array of child items
+     * @param  string  $pluginSlug  Plugin slug
+     * @return array Array of child items with plugin_slug information added
      */
     protected static function addPluginSlugToChildren(array $children, string $pluginSlug): array
     {
@@ -434,15 +434,15 @@ class AdminHelper
     }
 
     /**
-     * ナビゲーション項目を指定位置に挿入
+     * Insert navigation item at specified position
      *
-     * @param  array  $nav  既存のナビゲーション配列
-     * @param  string  $key  挿入する項目のキー
-     * @param  array  $value  挿入する項目の値
-     * @param  string|null  $insertAfter  この項目の後に挿入
-     * @param  string|null  $insertBefore  この項目の前に挿入
-     * @param  string  $name  デバッグ用の名前
-     * @return array 挿入後のナビゲーション配列
+     * @param  array  $nav  Existing navigation array
+     * @param  string  $key  Key of item to insert
+     * @param  array  $value  Value of item to insert
+     * @param  string|null  $insertAfter  Insert after this item
+     * @param  string|null  $insertBefore  Insert before this item
+     * @param  string  $name  Name for debugging
+     * @return array Navigation array after insertion
      */
     protected static function insertNavItem(array $nav, string $key, array $value, ?string $insertAfter, ?string $insertBefore, string $name): array
     {
@@ -450,23 +450,23 @@ class AdminHelper
         $inserted = false;
 
         foreach ($nav as $navKey => $navValue) {
-            // _insert_before の処理
+            // Handle _insert_before
             if ($insertBefore && $navKey === $insertBefore && ! $inserted) {
                 $newNav[$key] = $value;
                 $inserted = true;
             }
 
-            // 既存の項目を追加
+            // Add existing items
             $newNav[$navKey] = $navValue;
 
-            // _insert_after の処理
+            // Handle _insert_after
             if ($insertAfter && $navKey === $insertAfter && ! $inserted) {
                 $newNav[$key] = $value;
                 $inserted = true;
             }
         }
 
-        // 挿入位置が見つからなかった場合は最後に追加
+        // Add at the end if insertion position is not found
         if (! $inserted) {
             $newNav[$key] = $value;
         }
@@ -475,39 +475,39 @@ class AdminHelper
     }
 
     /**
-     * ナビゲーションの子項目を再帰的にマージ
+     * Recursively merge navigation child items
      *
-     * @param  array  $existing  既存のナビゲーション配列
-     * @param  array  $new  新しいナビゲーション配列
-     * @param  string  $name  デバッグ用の名前
-     * @return array マージされたナビゲーション配列
+     * @param  array  $existing  Existing navigation array
+     * @param  array  $new  New navigation array
+     * @param  string  $name  Name for debugging
+     * @return array Merged navigation array
      */
     protected static function deepMergeNavigation(array $existing, array $new, string $name = 'Unknown'): array
     {
         foreach ($new as $key => $value) {
             if (isset($existing[$key])) {
-                // 既存の項目がある場合
+                // If existing item exists
                 if (is_array($value) && is_array($existing[$key])) {
-                    // 両方が配列の場合
+                    // If both are arrays
                     if (isset($value['children']) && isset($existing[$key]['children'])) {
-                        // 子項目がある場合は再帰的にマージ
+                        // Recursively merge if there are child items
                         $existing[$key]['children'] = self::deepMergeNavigation(
                             $existing[$key]['children'],
                             $value['children'],
                             $name
                         );
-                        // children以外のプロパティは既存を保持
+                        // Preserve existing properties other than children
                     } elseif (isset($value['children'])) {
-                        // 新しい項目にchildrenがある場合は追加
+                        // Add children if the new item has them
                         $existing[$key]['children'] = $value['children'];
                     }
-                    // それ以外のプロパティは既存を保持（上書きしない）
+                    // Preserve existing properties for others (do not overwrite)
                 } else {
-                    // 配列でない場合は上書き
+                    // Overwrite if not an array
                     $existing[$key] = $value;
                 }
             } else {
-                // 新しい項目の場合はそのまま追加
+                // Add as-is if it's a new item
                 $existing[$key] = $value;
             }
         }

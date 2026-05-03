@@ -41,20 +41,20 @@ use App\Console\Commands\SyncGitExclude;
 use Illuminate\Support\Facades\Artisan;
 
 /**
- * .git/info/exclude ファイル管理ヘルパー
+ * .git/info/exclude file management helper
  *
- * このヘルパーは SyncGitExclude コマンドのラッパーです。
- * 管理画面からの呼び出しや、プログラム内での簡易利用に使用します。
+ * This helper is a wrapper for the SyncGitExclude command.
+ * Used for calls from the admin panel or for simple use within programs.
  *
  * @see \App\Console\Commands\SyncGitExclude
  */
 class GitExcludeHelper
 {
     /**
-     * プラグインの除外ルールを追加
+     * Add exclusion rule for plugin
      *
-     * @param  string  $pluginName  プラグイン名（例: DixlaseMenus）
-     * @return bool 成功したかどうか
+     * @param  string  $pluginName  Plugin name (e.g., DixlaseMenus)
+     * @return bool Whether it succeeded
      */
     public static function addPluginExclusion(string $pluginName): bool
     {
@@ -73,10 +73,10 @@ class GitExcludeHelper
     }
 
     /**
-     * プラグインの除外ルールを削除
+     * Remove exclusion rule for plugin
      *
-     * @param  string  $pluginName  プラグイン名
-     * @return bool 成功したかどうか
+     * @param  string  $pluginName  Plugin name
+     * @return bool Whether it succeeded
      */
     public static function removePluginExclusion(string $pluginName): bool
     {
@@ -95,10 +95,10 @@ class GitExcludeHelper
     }
 
     /**
-     * テーマの除外ルールを追加
+     * Add exclusion rule for theme
      *
-     * @param  string  $themeName  テーマ名
-     * @return bool 成功したかどうか
+     * @param  string  $themeName  Theme name
+     * @return bool Whether it succeeded
      */
     public static function addThemeExclusion(string $themeName): bool
     {
@@ -117,10 +117,10 @@ class GitExcludeHelper
     }
 
     /**
-     * テーマの除外ルールを削除
+     * Remove exclusion rule for theme
      *
-     * @param  string  $themeName  テーマ名
-     * @return bool 成功したかどうか
+     * @param  string  $themeName  Theme name
+     * @return bool Whether it succeeded
      */
     public static function removeThemeExclusion(string $themeName): bool
     {
@@ -139,9 +139,9 @@ class GitExcludeHelper
     }
 
     /**
-     * すべてのプラグイン・テーマの除外ルールを同期
+     * Sync exclusion rules for all plugins and themes
      *
-     * @return bool 成功したかどうか
+     * @return bool Whether it succeeded
      */
     public static function syncAll(): bool
     {
@@ -159,9 +159,9 @@ class GitExcludeHelper
     }
 
     /**
-     * プラグインの除外ルールが存在するか確認
+     * Check if exclusion rule for plugin exists
      *
-     * @param  string  $pluginName  プラグイン名
+     * @param  string  $pluginName  Plugin name
      */
     public static function hasPluginExclusion(string $pluginName): bool
     {
@@ -169,9 +169,9 @@ class GitExcludeHelper
     }
 
     /**
-     * テーマの除外ルールが存在するか確認
+     * Check if exclusion rule for theme exists
      *
-     * @param  string  $themeName  テーマ名
+     * @param  string  $themeName  Theme name
      */
     public static function hasThemeExclusion(string $themeName): bool
     {

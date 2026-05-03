@@ -41,12 +41,12 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  */
 class ThemeHelper
 {
     /**
-     * 有効化されているテーマを取得
+     * Get the active theme
      */
     public static function getActiveTheme(): ?Theme
     {
@@ -55,7 +55,7 @@ class ThemeHelper
                 return null;
             }
 
-            // theme_settingsテーブルから有効化されているテーマIDを取得
+            // Get the active theme ID from the theme_settings table
             $themeSetting = \DB::table('theme_settings')
                 ->where('key', 'enabled_theme_id')
                 ->first();
@@ -75,7 +75,7 @@ class ThemeHelper
     }
 
     /**
-     * 有効化されているテーマのディレクトリパスを取得
+     * Get the directory path of the active theme
      */
     public static function getActiveThemePath(): ?string
     {
@@ -89,10 +89,9 @@ class ThemeHelper
     }
 
     /**
-     * 有効化されているテーマの管理画面ルートを読み込む
+     * Load the admin panel routes for the active theme
      *
-     * このメソッドはroutes/admin.php内の認証済みルートグループ内で呼び出される
-     * ことを想定しています。
+     * This method is expected to be called within the authenticated route group in routes/admin.php.
      */
     public static function loadEnabledThemeAdminRoutes(): void
     {
@@ -117,7 +116,7 @@ class ThemeHelper
     }
 
     /**
-     * 有効化されているテーマのWebルートを読み込む
+     * Load the web routes for the active theme
      */
     public static function loadEnabledThemeWebRoutes(): void
     {
@@ -142,7 +141,7 @@ class ThemeHelper
     }
 
     /**
-     * テーマのアセットパスを取得
+     * Get the asset path for the theme
      */
     public static function asset(string $path = ''): ?string
     {
@@ -158,7 +157,7 @@ class ThemeHelper
     }
 
     /**
-     * テーマのビューパスを取得
+     * Get the view path for the theme
      */
     public static function view(string $view): ?string
     {

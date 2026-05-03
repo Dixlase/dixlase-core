@@ -40,23 +40,23 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  *
- * ログイン識別子確認ヘルパー
+ * Login identifier verification helper
  *
- * メールアドレスまたはアカウント名の存在確認を行う共通機能
- * 管理者ログインとユーザーログインの両方で使用可能
+ * Common functionality for verifying existence of email address or account name
+ * Can be used for both administrator login and user login
  */
 class IdentifierCheckHelper
 {
     /**
-     * 識別子確認を実行（レート制限付き）
+     * Execute identifier verification (with rate limiting)
      *
-     * @param  string  $login  ログイン識別子（メールアドレスまたはアカウント名）
-     * @param  string  $ipAddress  IPアドレス
-     * @param  string  $userModelClass  ユーザーモデルクラス名
-     * @param  array  $settings  ロックアウト設定
-     * @param  string  $context  コンテキスト（'admin' または 'user'）
+     * @param  string  $login  Login identifier (email address or account name)
+     * @param  string  $ipAddress  IP address
+     * @param  string  $userModelClass  User model class name
+     * @param  array  $settings  Lockout settings
+     * @param  string  $context  Context ('admin' or 'user')
      * @return array ['exists' => bool, 'has_passkey' => bool, 'user' => Model|null]
      *
      * @throws ValidationException
@@ -68,7 +68,7 @@ class IdentifierCheckHelper
         array $settings,
         string $context = 'admin'
     ): array {
-        // レート制限が無効の場合はスキップ
+        // Skip if rate limiting is disabled
         if (! ($settings['enabled'] ?? false)) {
             return self::performCheck($login, $ipAddress, $userModelClass, $context);
         }
@@ -77,12 +77,12 @@ class IdentifierCheckHelper
     }
 
     /**
-     * 識別子確認の実行
+     * Execute identifier verification
      *
-     * @param  string  $login  ログイン識別子
-     * @param  string  $ipAddress  IPアドレス
-     * @param  string  $userModelClass  ユーザーモデルクラス名
-     * @param  string  $context  コンテキスト
+     * @param  string  $login  Login identifier
+     * @param  string  $ipAddress  IP address
+     * @param  string  $userModelClass  User model class name
+     * @param  string  $context  Context
      *
      * @throws ValidationException
      */
@@ -92,15 +92,15 @@ class IdentifierCheckHelper
         string $userModelClass,
         string $context
     ): array {
-        // タイミング攻撃対策：常に一定時間待機（100-300ms）
+        // Timing attack countermeasure: always wait a constant time (100-300ms)
         $delayMs = random_int(100, 300);
         usleep($delayMs * 1000);
 
-        // ログイン識別子モードに基づくユーザー検索
+        // User search based on login identifier mode
         $isEmail = filter_var($login, FILTER_VALIDATE_EMAIL) !== false;
 
         if ($context === 'admin') {
-            // 管理者コンテキスト: LoginIdentifierModeに基づいて検索フィールドを制限
+            // Administrator context: restrict search field based on LoginIdentifierMode
             $mode = \App\Enums\LoginIdentifierMode::tryFrom(
                 (int) \App\Models\SecuritySetting::getValue('login_identifier_mode', \App\Enums\LoginIdentifierMode::EmailOrAccountName->value)
             ) ?? \App\Enums\LoginIdentifierMode::EmailOrAccountName;
@@ -113,14 +113,14 @@ class IdentifierCheckHelper
                 $user = null;
             }
         } else {
-            // ユーザーコンテキスト: メールアドレスまたはアカウント名で検索
+            // User context: search by email address or account name
             $user = $userModelClass::where('email', $login)
                 ->orWhere('account_name', $login)
                 ->first();
         }
 
         if ($user) {
-            // ユーザー存在確認成功
+            // User existence verification successful
             AuditLog::logAuth(AuditLog::ACTION_LOGIN_IDENTIFIER_CHECK, [
                 'severity' => AuditLog::SEVERITY_INFO,
                 'outcome' => AuditLog::OUTCOME_SUCCESS,
@@ -139,7 +139,7 @@ class IdentifierCheckHelper
                 'context' => $context,
             ]);
 
-            // パスキー登録状況を確認
+            // Check passkey registration status
             $hasPasskey = self::hasPasskey($user);
 
             return [
@@ -148,7 +148,7 @@ class IdentifierCheckHelper
                 'user' => $user,
             ];
         } else {
-            // ユーザー存在確認失敗（セキュリティログ）
+            // User existence check failed (security log)
             AuditLog::logSecurity(AuditLog::ACTION_LOGIN_IDENTIFIER_NOT_FOUND, [
                 'severity' => AuditLog::SEVERITY_WARNING,
                 'outcome' => AuditLog::OUTCOME_FAILURE,
@@ -165,7 +165,7 @@ class IdentifierCheckHelper
                 'context' => $context,
             ]);
 
-            // ログイン試行を記録（ロックアウト対策）
+            // Record login attempt (for lockout protection)
             \App\Models\MemberLoginAttempt::recordAttempt(
                 $login,
                 $ipAddress,
@@ -173,7 +173,7 @@ class IdentifierCheckHelper
                 false
             );
 
-            // ロックアウト状態をチェック
+            // Check lockout status
             $lockoutInfo = \App\Helpers\LoginLockoutHelper::checkLockoutStatus(
                 request(),
                 $login,
@@ -181,7 +181,7 @@ class IdentifierCheckHelper
                 \App\Models\SecuritySetting::class
             );
 
-            // ロックアウト中の場合のみ例外を投げる（アクセス制限は維持）
+            // Throw exception only when locked out (access restriction is maintained)
             if ($lockoutInfo['is_ip_locked_out']) {
                 $lockoutDuration = $lockoutInfo['settings']['lockout_duration'] ?? 30;
                 throw ValidationException::withMessages([
@@ -193,7 +193,7 @@ class IdentifierCheckHelper
                 ]);
             }
 
-            // 存在しない場合も存在する場合と同じレスポンス形式で返す（ユーザー列挙防止）
+            // Return the same response format whether user exists or not (prevent user enumeration)
             return [
                 'exists' => false,
                 'has_passkey' => false,
@@ -203,23 +203,23 @@ class IdentifierCheckHelper
     }
 
     /**
-     * パスキーが登録されているか確認
+     * Check if passkey is registered
      *
-     * @param  mixed  $user  ユーザーモデル
+     * @param  mixed  $user  User model
      */
     protected static function hasPasskey($user): bool
     {
-        // webauthnCredentials リレーションが存在するか確認
+        // Check if webauthnCredentials relation exists
         if (method_exists($user, 'webauthnCredentials')) {
             return $user->webauthnCredentials()->count() > 0;
         }
 
-        // twoFaPasskeys リレーションが存在するか確認（管理者用）
+        // Check if twoFaPasskeys relation exists (for administrator)
         if (method_exists($user, 'twoFaPasskeys')) {
             return $user->twoFaPasskeys()->count() > 0;
         }
 
-        // passkeys リレーションが存在するか確認（汎用）
+        // Check if passkeys relation exists (general purpose)
         if (method_exists($user, 'passkeys')) {
             return $user->passkeys()->count() > 0;
         }
@@ -228,9 +228,9 @@ class IdentifierCheckHelper
     }
 
     /**
-     * ロックアウト設定を取得
+     * Get lockout settings
      *
-     * @param  string  $settingModelClass  設定モデルクラス名
+     * @param  string  $settingModelClass  Settings model class name
      */
     public static function getLockoutSettings(string $settingModelClass): array
     {

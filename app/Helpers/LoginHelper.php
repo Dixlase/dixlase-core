@@ -45,16 +45,16 @@ use Illuminate\Support\Facades\Log;
 class LoginHelper
 {
     /**
-     * ユーザーを認証（メールアドレスとパスワード）
+     * Authenticate user (email address and password)
      *
-     * @param  string  $email  メールアドレス
-     * @param  string  $password  パスワード
-     * @param  string  $userModel  ユーザーモデルクラス名
+     * @param  string  $email  Email address
+     * @param  string  $password  Password
+     * @param  string  $userModel  User model class name
      * @return array ['success' => bool, 'user' => mixed|null, 'error' => string|null]
      */
     public function authenticateUser(string $email, string $password, string $userModel): array
     {
-        // emailまたはpending_emailでユーザーを検索
+        // Search for user by email or pending_email
         $user = $userModel::where('email', $email)
             ->orWhere('pending_email', $email)
             ->first();
@@ -85,17 +85,17 @@ class LoginHelper
     }
 
     /**
-     * Two-FAが必要かチェック
+     * Check if Two-FA is required
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  string  $twoFactorServiceClass  Two-FAサービスクラス名
+     * @param  mixed  $user  User model
+     * @param  string  $twoFactorServiceClass  Two-FA service class name
      * @return array ['needs_two_fa' => bool, 'lockout_status' => array|null]
      */
     public function check2FARequired($user, string $twoFactorServiceClass): array
     {
         $twoFactorService = app($twoFactorServiceClass);
 
-        // メールサーバーのテストが完了していない場合はTwo-FAをスキップ
+        // Skip Two-FA if mail server testing is not completed
         $mailServerTested = \App\Services\MailServerValidatorService::isMailServerTested();
 
         Log::info('[Login] Two-FA check', [
@@ -111,7 +111,7 @@ class LoginHelper
             ];
         }
 
-        // Two-FAロックアウトチェック
+        // Two-FA lockout check
         $lockoutStatus = $twoFactorService->checkLockout($user);
 
         if ($lockoutStatus['locked_out']) {
@@ -128,9 +128,9 @@ class LoginHelper
     }
 
     /**
-     * Two-FAセッションを準備
+     * Prepare Two-FA session
      *
-     * @param  mixed  $user  ユーザーモデル
+     * @param  mixed  $user  User model
      * @param  bool  $remember  Remember me
      */
     public function prepare2FASession($user, bool $remember): void
@@ -147,14 +147,14 @@ class LoginHelper
     }
 
     /**
-     * ログインを完了（Two-FAなし）
+     * Complete login (without Two-FA)
      *
-     * @param  mixed  $user  ユーザーモデル
+     * @param  mixed  $user  User model
      * @param  bool  $remember  Remember me
-     * @param  string  $guard  ガード名
-     * @param  Request  $request  リクエスト
-     * @param  string  $lockoutServiceClass  ロックアウトサービスクラス名
-     * @param  string|null  $notificationServiceClass  通知サービスクラス名
+     * @param  string  $guard  Guard name
+     * @param  Request  $request  Request
+     * @param  string  $lockoutServiceClass  Lockout service class name
+     * @param  string|null  $notificationServiceClass  Notification service class name
      */
     public function completeLogin(
         $user,
@@ -164,15 +164,15 @@ class LoginHelper
         string $lockoutServiceClass,
         ?string $notificationServiceClass = null
     ): void {
-        // 成功したログインを記録（失敗記録をクリア）
+        // Record successful login (clear failure records)
         app($lockoutServiceClass)->handleSuccessfulLogin($user->email);
 
-        // ログイン環境を記録、通知
+        // Record and notify login environment
         if ($notificationServiceClass) {
             app($notificationServiceClass)->handle($user, $request);
         }
 
-        // ログイン
+        // Login
         Auth::guard($guard)->login($user, $remember);
         $request->session()->regenerate();
 
@@ -184,11 +184,11 @@ class LoginHelper
     }
 
     /**
-     * ログイン失敗時のエラーメッセージを生成
+     * Generate error message on login failure
      *
-     * @param  array  $lockoutInfo  ロックアウト情報
-     * @param  string  $translationPrefix  翻訳キープレフィックス
-     * @return string エラーメッセージ
+     * @param  array  $lockoutInfo  Lockout information
+     * @param  string  $translationPrefix  Translation key prefix
+     * @return string Error message
      */
     public function getLoginFailedMessage(array $lockoutInfo, string $translationPrefix = 'auth'): string
     {
@@ -204,11 +204,11 @@ class LoginHelper
     }
 
     /**
-     * 2FAロックアウトエラーメッセージを生成
+     * Generate 2FA lockout error message
      *
-     * @param  array  $lockoutStatus  ロックアウトステータス
-     * @param  string  $translationPrefix  翻訳キープレフィックス
-     * @return string エラーメッセージ
+     * @param  array  $lockoutStatus  Lockout status
+     * @param  string  $translationPrefix  Translation key prefix
+     * @return string Error message
      */
     public function get2FALockoutMessage(array $lockoutStatus, string $translationPrefix = 'auth'): string
     {
@@ -218,10 +218,10 @@ class LoginHelper
     }
 
     /**
-     * パスワードリセットが有効かチェック
+     * Check if password reset is enabled
      *
-     * @param  string  $settingKey  設定キー
-     * @return bool パスワードリセットが有効かどうか
+     * @param  string  $settingKey  Settings key
+     * @return bool Whether password reset is enabled
      */
     public function isPasswordResetEnabled(string $settingKey = 'password_reset_enabled'): bool
     {
@@ -232,10 +232,10 @@ class LoginHelper
     }
 
     /**
-     * CAPTCHAが必要かチェック
+     * Check if CAPTCHA is required
      *
-     * @param  string  $formKey  フォームキー
-     * @return bool CAPTCHAが必要かどうか
+     * @param  string  $formKey  Form key
+     * @return bool Whether CAPTCHA is required
      */
     public function isCaptchaRequired(string $formKey): bool
     {
@@ -243,10 +243,10 @@ class LoginHelper
     }
 
     /**
-     * CAPTCHAウィジェットを生成
+     * Generate CAPTCHA widget
      *
-     * @param  string  $action  アクション名
-     * @return string CAPTCHAウィジェットHTML
+     * @param  string  $action  Action name
+     * @return string CAPTCHA widget HTML
      */
     public function generateCaptchaWidget(string $action): string
     {
@@ -256,9 +256,9 @@ class LoginHelper
     }
 
     /**
-     * CAPTCHAを検証
+     * Verify CAPTCHA
      *
-     * @param  Request  $request  リクエスト
+     * @param  Request  $request  Request
      * @return array ['valid' => bool, 'error_message' => string|null]
      */
     public function verifyCaptcha(Request $request): array
@@ -279,9 +279,9 @@ class LoginHelper
     }
 
     /**
-     * セッションをクリーンアップ
+     * Clean up session
      *
-     * @param  array  $keys  クリアするセッションキー
+     * @param  array  $keys  Session keys to clear
      */
     public function cleanupSession(array $keys = ['login.id', 'login.remember']): void
     {

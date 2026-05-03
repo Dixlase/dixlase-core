@@ -40,15 +40,15 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  */
 class EmailVerificationHelper
 {
     /**
-     * メール認証ハッシュを生成
+     * Generate email verification hash
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @return string ハッシュ値
+     * @param  mixed  $user  User model
+     * @return string Hash value
      */
     public function generateVerificationHash($user): string
     {
@@ -56,11 +56,11 @@ class EmailVerificationHelper
     }
 
     /**
-     * メール認証ハッシュを検証
+     * Verify email verification hash
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  string  $hash  検証するハッシュ
-     * @return bool 検証結果
+     * @param  mixed  $user  User model
+     * @param  string  $hash  Hash to verify
+     * @return bool Verification result
      */
     public function verifyHash($user, string $hash): bool
     {
@@ -68,9 +68,9 @@ class EmailVerificationHelper
     }
 
     /**
-     * メール認証が必要かチェック
+     * Check if email verification is required
      *
-     * @param  mixed  $user  ユーザーモデル
+     * @param  mixed  $user  User model
      * @return array ['needs_verification' => bool, 'is_email_change' => bool]
      */
     public function needsVerification($user): array
@@ -85,17 +85,17 @@ class EmailVerificationHelper
     }
 
     /**
-     * メール認証を即座に処理（ログイン済みの場合）
+     * Process email verification immediately (if logged in)
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  string  $context  コンテキスト（admin, user等）
+     * @param  mixed  $user  User model
+     * @param  string  $context  Context (admin, user, etc.)
      * @return array ['success' => bool, 'message' => string, 'redirect' => string]
      */
     public function processVerificationImmediately($user, string $context = 'admin'): array
     {
         try {
             if ($user->pending_email) {
-                // メールアドレス変更の認証
+                // Email address change verification
                 $oldEmail = $user->email;
                 $user->email = $user->pending_email;
                 $user->pending_email = null;
@@ -115,7 +115,7 @@ class EmailVerificationHelper
                     'redirect' => route("{$context}.profile"),
                 ];
             } else {
-                // 新規アカウントの認証
+                // New account verification
                 $user->markEmailAsVerified();
 
                 Log::info('[Email Verification] Account verified immediately', [
@@ -124,7 +124,7 @@ class EmailVerificationHelper
                     'context' => $context,
                 ]);
 
-                // 認証完了通知を送信
+                // Send verification completion notification
                 $this->sendVerificationNotifications($user, $context);
 
                 return [
@@ -149,12 +149,12 @@ class EmailVerificationHelper
     }
 
     /**
-     * メール認証情報をセッションに保存（未ログイン時）
+     * Save email verification info to session (when not logged in)
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  string  $hash  認証ハッシュ
-     * @param  int  $expiresMinutes  有効期限（分）
-     * @return array セッションに保存されたデータ
+     * @param  mixed  $user  User model
+     * @param  string  $hash  Verification hash
+     * @param  int  $expiresMinutes  Expiration time (minutes)
+     * @return array Data saved in session
      */
     public function storeVerificationInSession($user, string $hash, int $expiresMinutes = 30): array
     {
@@ -179,9 +179,9 @@ class EmailVerificationHelper
     }
 
     /**
-     * セッションからメール認証情報を取得
+     * Retrieve email verification info from session
      *
-     * @return array|null 認証情報または null
+     * @return array|null Verification info or null
      */
     public function getVerificationFromSession(): ?array
     {
@@ -191,7 +191,7 @@ class EmailVerificationHelper
             return null;
         }
 
-        // 有効期限チェック
+        // Expiration check
         if (isset($data['expires_at']) && now()->timestamp > $data['expires_at']) {
             session()->forget('email_verification_pending');
             Log::warning('[Email Verification] Session data expired', [
@@ -205,7 +205,7 @@ class EmailVerificationHelper
     }
 
     /**
-     * セッションからメール認証情報を削除
+     * Remove email verification information from session
      */
     public function clearVerificationFromSession(): void
     {
@@ -213,32 +213,32 @@ class EmailVerificationHelper
     }
 
     /**
-     * 認証完了通知を送信
+     * Send verification completion notification
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  string  $context  コンテキスト（admin, user等）
+     * @param  mixed  $user  User model
+     * @param  string  $context  Context (admin, user, etc.)
      */
     protected function sendVerificationNotifications($user, string $context = 'admin'): void
     {
-        // メールサーバー設定済みの場合のみ通知を送信
+        // Send notification only if email server is configured
         if (! MailServerValidatorService::isMailServerTested()) {
             Log::info('[Email Verification] Mail server not configured, skipping notifications');
 
             return;
         }
 
-        // ユーザー本人に認証完了メールを送信
+        // Send verification completion email to the user
         $this->sendUserNotification($user, $context);
 
-        // 管理者に通知
+        // Notify administrator
         $this->sendAdminNotification($user, $context);
     }
 
     /**
-     * ユーザー本人に認証完了通知を送信
+     * Send verification completion notification to the user
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  string  $context  コンテキスト
+     * @param  mixed  $user  User model
+     * @param  string  $context  Context
      */
     protected function sendUserNotification($user, string $context): void
     {
@@ -264,10 +264,10 @@ class EmailVerificationHelper
     }
 
     /**
-     * 管理者に認証完了通知を送信
+     * Send verification completion notification to administrator
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  string  $context  コンテキスト
+     * @param  mixed  $user  User model
+     * @param  string  $context  Context
      */
     protected function sendAdminNotification($user, string $context): void
     {
@@ -303,10 +303,10 @@ class EmailVerificationHelper
     }
 
     /**
-     * コンテキストに応じた認証完了通知クラスを取得
+     * Get verification completion notification class based on context
      *
-     * @param  string  $context  コンテキスト
-     * @return string 通知クラス名
+     * @param  string  $context  Context
+     * @return string Notification class name
      */
     protected function getVerificationCompletedNotificationClass(string $context): string
     {
@@ -318,10 +318,10 @@ class EmailVerificationHelper
     }
 
     /**
-     * コンテキストに応じた管理者通知クラスを取得
+     * Get administrator notification class based on context
      *
-     * @param  string  $context  コンテキスト
-     * @return string 通知クラス名
+     * @param  string  $context  Context
+     * @return string Notification class name
      */
     protected function getAdminVerifiedNotificationClass(string $context): string
     {
@@ -333,10 +333,10 @@ class EmailVerificationHelper
     }
 
     /**
-     * メール認証リンクのメッセージキーを取得
+     * Get message key for email verification link
      *
-     * @param  bool  $isEmailChange  メールアドレス変更かどうか
-     * @return string メッセージキー
+     * @param  bool  $isEmailChange  Whether this is an email address change
+     * @return string Message key
      */
     public function getLoginRequiredMessageKey(bool $isEmailChange): string
     {

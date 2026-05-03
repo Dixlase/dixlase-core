@@ -39,38 +39,38 @@ use App\Services\Csp\CspPolicyRegistry;
 
 if (! function_exists('csp_nonce')) {
     /**
-     * 現在のリクエストのCSP nonce値を取得
+     * Get the CSP nonce value for the current request
      *
-     * @return string nonce値
+     * @return string nonce value
      *
      * @example
      * <script nonce="{{ csp_nonce() }}">
-     *     // インラインスクリプト
+     *     // Inline script
      * </script>
      */
     function csp_nonce(): string
     {
-        // リクエスト属性に保存されたnonce値を優先的に使用
-        // （CSPミドルウェアが設定した値と一致させるため）
+        // Prioritize using the nonce value stored in request attributes
+        // (to match the value set by CSP middleware)
         $request = request();
         if ($request && $request->attributes->has('csp_nonce')) {
             return $request->attributes->get('csp_nonce');
         }
 
-        // フォールバック: CspNonceGeneratorから取得
+        // Fallback: get from CspNonceGenerator
         return app(CspNonceGenerator::class)->getNonce();
     }
 }
 
 if (! function_exists('csp_nonce_attr')) {
     /**
-     * CSP nonce属性を取得（属性名込み）
+     * Get CSP nonce attribute (including attribute name)
      *
-     * @return string nonce="xxx" 形式の文字列
+     * @return string String in nonce="xxx" format
      *
      * @example
      * <script {!! csp_nonce_attr() !!}>
-     *     // インラインスクリプト
+     *     // Inline script
      * </script>
      */
     function csp_nonce_attr(): string
@@ -81,12 +81,12 @@ if (! function_exists('csp_nonce_attr')) {
 
 if (! function_exists('csp_meta')) {
     /**
-     * CSPをmetaタグとして出力
+     * Output CSP as meta tag
      *
-     * HTTPヘッダーが使えない場合の代替手段。
-     * ただし、report-uriなど一部のディレクティブはmetaタグでは動作しない。
+     * Alternative when HTTP headers cannot be used.
+     * However, some directives such as report-uri do not work in meta tags.
      *
-     * @return string metaタグHTML
+     * @return string meta tag HTML
      */
     function csp_meta(): string
     {
@@ -98,7 +98,7 @@ if (! function_exists('csp_meta')) {
 
         $policy = $builder->build();
 
-        // metaタグではreport-uriは使えないので除去
+        // Remove report-uri as it cannot be used in meta tags
         $policy = preg_replace('/;\s*report-uri\s+[^;]+/', '', $policy);
 
         return '<meta http-equiv="Content-Security-Policy" content="'.e($policy).'">';
@@ -107,19 +107,19 @@ if (! function_exists('csp_meta')) {
 
 if (! function_exists('csp_add_directive')) {
     /**
-     * CSPディレクティブを動的に追加
+     * Dynamically add CSP directive
      *
-     * Bladeテンプレートやコントローラーから追加のディレクティブを登録する。
+     * Register additional directives from Blade templates or controllers.
      *
-     * @param  string  $directive  ディレクティブ名
-     * @param  array|string  $values  値（配列または文字列）
-     * @param  string|null  $source  ソース名（デバッグ用）
+     * @param  string  $directive  Directive name
+     * @param  array|string  $values  Value (array or string)
+     * @param  string|null  $source  Source name (for debugging)
      *
      * @example
-     * // コントローラーで
+     * // In controller
      * csp_add_directive('script-src', 'https://cdn.example.com');
      *
-     * // Bladeで
+     * // In Blade
      *
      * @php csp_add_directive('connect-src', ['https://api.example.com']) @endphp
      */
@@ -132,7 +132,7 @@ if (! function_exists('csp_add_directive')) {
 
 if (! function_exists('csp_add_script_src')) {
     /**
-     * script-srcディレクティブに値を追加
+     * Add a value to the script-src directive
      */
     function csp_add_script_src(array|string $values): void
     {
@@ -142,7 +142,7 @@ if (! function_exists('csp_add_script_src')) {
 
 if (! function_exists('csp_add_style_src')) {
     /**
-     * style-srcディレクティブに値を追加
+     * Add a value to the style-src directive
      */
     function csp_add_style_src(array|string $values): void
     {
@@ -152,7 +152,7 @@ if (! function_exists('csp_add_style_src')) {
 
 if (! function_exists('csp_add_connect_src')) {
     /**
-     * connect-srcディレクティブに値を追加
+     * Add a value to the connect-src directive
      */
     function csp_add_connect_src(array|string $values): void
     {
@@ -162,7 +162,7 @@ if (! function_exists('csp_add_connect_src')) {
 
 if (! function_exists('csp_add_img_src')) {
     /**
-     * img-srcディレクティブに値を追加
+     * Add a value to the img-src directive
      */
     function csp_add_img_src(array|string $values): void
     {
@@ -172,7 +172,7 @@ if (! function_exists('csp_add_img_src')) {
 
 if (! function_exists('csp_add_frame_src')) {
     /**
-     * frame-srcディレクティブに値を追加
+     * Add a value to the frame-src directive
      */
     function csp_add_frame_src(array|string $values): void
     {
@@ -182,7 +182,7 @@ if (! function_exists('csp_add_frame_src')) {
 
 if (! function_exists('csp_is_enabled')) {
     /**
-     * CSPが有効かどうかを確認
+     * Check if CSP is enabled
      */
     function csp_is_enabled(): bool
     {
@@ -192,9 +192,9 @@ if (! function_exists('csp_is_enabled')) {
 
 if (! function_exists('csp_get_mode')) {
     /**
-     * CSPモードを取得
+     * Get CSP mode
      *
-     * @return string 'enforce' または 'report-only'
+     * @return string 'enforce' or 'report-only'
      */
     function csp_get_mode(): string
     {

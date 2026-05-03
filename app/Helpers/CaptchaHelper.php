@@ -46,13 +46,13 @@ use Illuminate\Support\Facades\Log;
 class CaptchaHelper
 {
     /**
-     * CAPTCHA設定を一括取得
+     * Bulk retrieve CAPTCHA settings
      */
     public static function getSettings(): array
     {
         $driver = SecuritySetting::get('captcha_driver', 'google');
 
-        // プロバイダー別のキーを取得
+        // Get keys by provider
         $siteKey = '';
         $secretKey = '';
 
@@ -84,24 +84,24 @@ class CaptchaHelper
     }
 
     /**
-     * 指定されたフォームでCAPTCHAを表示すべきかチェック
+     * Check if CAPTCHA should be displayed on the specified form
      */
     public static function shouldShowCaptcha(?string $formName = null): bool
     {
-        // 緊急バイパスがアクティブな場合はCAPTCHAを表示しない
+        // Do not display CAPTCHA if emergency bypass is active
         $scope = self::getBypassScopeForForm($formName);
         $bypassActive = CaptchaBypassService::shouldSkipCaptcha($scope);
 
         $settings = self::getSettings();
 
-        // フォーム固有の設定チェック
+        // Form-specific settings check
         $formCaptchaEnabled = $formName ? self::isEnabledForForm($formName) : true;
 
         if ($bypassActive) {
             return false;
         }
 
-        // 基本的なCAPTCHA有効性チェック
+        // Basic CAPTCHA validity check
         if (! $settings['enabled']) {
             return false;
         }
@@ -110,7 +110,7 @@ class CaptchaHelper
             return false;
         }
 
-        // 認証テスト結果チェック
+        // Check authentication test results
         if (! $settings['authentication_result']) {
             return false;
         }
@@ -119,7 +119,7 @@ class CaptchaHelper
     }
 
     /**
-     * フォーム名からバイパススコープを取得
+     * Get bypass scope from form name
      */
     protected static function getBypassScopeForForm(?string $formName): string
     {
@@ -130,7 +130,7 @@ class CaptchaHelper
     }
 
     /**
-     * 緊急バイパスがアクティブかチェック
+     * Check if emergency bypass is active
      */
     public static function isBypassActive(?string $scope = null): bool
     {
@@ -138,7 +138,7 @@ class CaptchaHelper
     }
 
     /**
-     * CAPTCHAが有効かどうかチェック（基本設定のみ）
+     * Check if CAPTCHA is enabled (basic settings only)
      */
     public static function isEnabled(): bool
     {
@@ -151,8 +151,8 @@ class CaptchaHelper
     }
 
     /**
-     * 現在のCAPTCHAドライバーを取得
-     * フェイルオーバー中の場合は一時的なアクティブプロバイダーを返す
+     * Get current CAPTCHA driver
+     * Return temporary active provider if in failover
      */
     public static function getDriver(): string
     {
@@ -160,43 +160,43 @@ class CaptchaHelper
     }
 
     /**
-     * サイトキーを取得
-     * フェイルオーバー中の場合はアクティブプロバイダーのキーを返す
+     * Get site key
+     * Return active provider's key if in failover
      */
     public static function getSiteKey(): string
     {
         $activeProvider = CaptchaFailoverService::getActiveProvider();
         $config = CaptchaFailoverService::getProviderConfig($activeProvider);
 
-        // プロバイダー固有のキーがあればそれを使用
+        // Use provider-specific key if available
         if (! empty($config['site_key'])) {
             return $config['site_key'];
         }
 
-        // フォールバック: 統一キー
+        // Fallback: unified key
         return SecuritySetting::get('captcha_site_key', '');
     }
 
     /**
-     * シークレットキーを取得
-     * フェイルオーバー中の場合はアクティブプロバイダーのキーを返す
+     * Get secret key
+     * Return active provider's key if in failover
      */
     public static function getSecretKey(): string
     {
         $activeProvider = CaptchaFailoverService::getActiveProvider();
         $config = CaptchaFailoverService::getProviderConfig($activeProvider);
 
-        // プロバイダー固有のキーがあればそれを使用
+        // Use provider-specific key if available
         if (! empty($config['secret_key'])) {
             return $config['secret_key'];
         }
 
-        // フォールバック: 統一キー
+        // Fallback: unified key
         return SecuritySetting::get('captcha_secret_key', '');
     }
 
     /**
-     * Google reCAPTCHAのバージョンを取得
+     * Get Google reCAPTCHA version
      */
     public static function getGoogleVersion(): string
     {
@@ -204,7 +204,7 @@ class CaptchaHelper
     }
 
     /**
-     * Google reCAPTCHAの最小スコアを取得
+     * Get Google reCAPTCHA minimum score
      */
     public static function getGoogleMinScore(): float
     {
@@ -212,7 +212,7 @@ class CaptchaHelper
     }
 
     /**
-     * Google reCAPTCHA EnterpriseのプロジェクトIDを取得
+     * Get Google reCAPTCHA Enterprise project ID
      */
     public static function getGoogleProjectId(): string
     {
@@ -220,7 +220,7 @@ class CaptchaHelper
     }
 
     /**
-     * CAPTCHA認証テスト結果を取得
+     * Get CAPTCHA verification test result
      */
     public static function getTestResult(): bool
     {
@@ -230,28 +230,28 @@ class CaptchaHelper
     }
 
     /**
-     * 指定されたフォームでCAPTCHAが有効かチェック
+     * Check if CAPTCHA is enabled for the specified form
      *
-     * admin_login, admin_password_resetの場合はSecuritySettingから読み込む
-     * user_login, user_register, user_password_resetの場合はDixlaseUsersUserSettingから読み込む
-     * その他のフォームはプラグイン側で独自に管理する
+     * For admin_login and admin_password_reset, load from SecuritySetting
+     * For user_login, user_register, and user_password_reset, load from DixlaseUsersUserSetting
+     * Other forms are managed independently by the plugin side
      */
     public static function isEnabledForForm(string $formName): bool
     {
-        // CaptchaServiceを使用してフォームの有効状態をチェック
+        // Check the form's enabled state using CaptchaService
         $captchaService = app(\App\Services\CaptchaService::class);
 
         return $captchaService->isEnabled($formName);
     }
 
     /**
-     * 旧バージョンとの互換性のため残す（非推奨）
+     * Kept for backward compatibility with older versions (deprecated)
      *
      * @deprecated Use isEnabledForForm() instead
      */
     protected static function isEnabledForFormLegacy(string $formName): bool
     {
-        // 管理画面のフォーム
+        // Admin panel form
         if (in_array($formName, ['admin_login', 'admin_password_reset'])) {
             $settingKey = match ($formName) {
                 'admin_login' => 'captcha_admin_login_enabled',
@@ -264,9 +264,9 @@ class CaptchaHelper
             );
         }
 
-        // ユーザープラグインのフォーム
+        // User plugin form
         if (in_array($formName, ['user_login', 'user_register', 'user_password_reset'])) {
-            // DixlaseUsersUserSettingモデルが存在するか確認
+            // Check if DixlaseUsersUserSetting model exists
             if (class_exists('\Plugins\DixlaseUsers\App\Models\DixlaseUsersUserSetting')) {
                 $settingKey = match ($formName) {
                     'user_login' => 'captcha_login_enabled',
@@ -281,18 +281,18 @@ class CaptchaHelper
             }
         }
 
-        // その他のフォームはプラグイン側で独自に管理するため、ここではfalseを返す
-        // プラグインは独自の設定テーブルからCAPTCHA有効/無効を判定すること
+        // Other forms are managed independently by the plugin side, so return false here
+        // Plugins should determine CAPTCHA enabled/disabled from their own settings table
         return false;
     }
 
     /**
-     * 汎用的なCAPTCHA有効チェック（設定モデルクラスとキーを指定）
+     * Generic CAPTCHA enabled check (specify settings model class and key)
      *
-     * @param  string  $formName  フォーム名（バイパススコープ判定用）
-     * @param  string  $settingModelClass  設定モデルのクラス名
-     * @param  string  $settingKey  設定キー名
-     * @param  mixed  $defaultValue  デフォルト値
+     * @param  string  $formName  Form name (for bypass scope determination)
+     * @param  string  $settingModelClass  Settings model class name
+     * @param  string  $settingKey  Settings key name
+     * @param  mixed  $defaultValue  Default value
      */
     public static function isEnabledForFormWithModel(
         string $formName,
@@ -300,24 +300,24 @@ class CaptchaHelper
         string $settingKey,
         $defaultValue = false
     ): bool {
-        // 基本的なCAPTCHA設定をチェック
+        // Check basic CAPTCHA settings
         if (! self::isEnabled()) {
             return false;
         }
 
-        // 緊急バイパスがアクティブな場合はCAPTCHAを無効化
+        // Disable CAPTCHA if emergency bypass is active
         $scope = self::getBypassScopeForForm($formName);
         if (CaptchaBypassService::shouldSkipCaptcha($scope)) {
             return false;
         }
 
-        // 認証テスト結果チェック
+        // Check authentication test results
         $settings = self::getSettings();
         if (! $settings['authentication_result']) {
             return false;
         }
 
-        // 設定モデルから値を取得
+        // Get value from settings model
         if (class_exists($settingModelClass)) {
             if (method_exists($settingModelClass, 'getValue')) {
                 $value = $settingModelClass::getValue($settingKey, $defaultValue);
@@ -334,10 +334,10 @@ class CaptchaHelper
     }
 
     /**
-     * CAPTCHAウィジェットを生成
+     * Generate CAPTCHA widget
      *
-     * @param  string  $action  CAPTCHAアクション名
-     * @return string|null ウィジェットHTML（CAPTCHAが無効な場合はnull）
+     * @param  string  $action  CAPTCHA action name
+     * @return string|null Widget HTML (null if CAPTCHA is disabled)
      */
     public static function renderWidget(string $action): ?string
     {
@@ -356,15 +356,15 @@ class CaptchaHelper
     }
 
     /**
-     * CAPTCHAを検証
+     * Verify CAPTCHA
      *
-     * @param  \Illuminate\Http\Request  $request  リクエスト
-     * @param  string  $action  CAPTCHAアクション名
-     * @return \App\Captcha\CaptchaResult|null 検証結果（CAPTCHAが無効な場合はnull）
+     * @param  \Illuminate\Http\Request  $request  Request
+     * @param  string  $action  CAPTCHA action name
+     * @return \App\Captcha\CaptchaResult|null Verification result (null if CAPTCHA is disabled)
      */
     public static function verify(\Illuminate\Http\Request $request, string $action): ?\App\Captcha\CaptchaResult
     {
-        // CAPTCHAが無効な場合はnullを返す（検証スキップ）
+        // Return null if CAPTCHA is disabled (skip verification)
         if (! self::shouldShowCaptcha($action)) {
             return null;
         }
@@ -379,7 +379,7 @@ class CaptchaHelper
                 'error' => $e->getMessage(),
             ]);
 
-            // エラー時は失敗として扱う
+            // Treat errors as failures
             return new \App\Captcha\CaptchaResult(
                 false,
                 __('auth.captcha_verification_failed')
@@ -388,32 +388,32 @@ class CaptchaHelper
     }
 
     /**
-     * 指定されたフォームでCAPTCHAが有効かチェック（設定取得関数を指定）
+     * Check if CAPTCHA is enabled for the specified form (specify settings retrieval function)
      *
-     * @param  string  $formName  フォーム名
-     * @param  callable  $settingGetter  設定取得関数
+     * @param  string  $formName  Form name
+     * @param  callable  $settingGetter  Settings retrieval function
      */
     public static function isEnabledForFormWithSettings(string $formName, callable $settingGetter): bool
     {
-        // 基本的なCAPTCHA設定をチェック
+        // Check basic CAPTCHA settings
         if (! self::isEnabled()) {
             return false;
         }
 
-        // 緊急バイパスがアクティブな場合はCAPTCHAを無効化
+        // Disable CAPTCHA if emergency bypass is active
         $scope = self::getBypassScopeForForm($formName);
         if (CaptchaBypassService::shouldSkipCaptcha($scope)) {
             return false;
         }
 
-        // フォーム固有の設定をチェック
+        // Check form-specific settings
         $formEnabled = $settingGetter($formName);
 
         return filter_var($formEnabled, FILTER_VALIDATE_BOOLEAN);
     }
 
     /**
-     * CAPTCHA設定の妥当性をチェック
+     * Check CAPTCHA settings validity
      */
     public static function validateSettings(): array
     {
@@ -442,7 +442,7 @@ class CaptchaHelper
     }
 
     /**
-     * CAPTCHA設定をログ出力用に安全な形式で取得
+     * Get CAPTCHA settings in a safe format for logging
      */
     public static function getSettingsForLogging(): array
     {
