@@ -38,26 +38,26 @@
 namespace App\Contracts\PluginIntegration;
 
 /**
- * プライバシーポリシープロバイダーの契約
+ * Privacy policy provider contract
  *
- * 法務プラグインなどがこのインターフェースを実装して
- * ServiceContainerに登録することで、他のプラグインが
- * プライバシーポリシー情報を取得できるようになります。
+ * Legal plugins and others implement this interface and
+ * register it in the ServiceContainer, allowing other plugins to
+ * retrieve privacy policy information
  */
 interface PrivacyPolicyProviderInterface
 {
     /**
-     * プライバシーポリシーのURLを取得
+     * Get the privacy policy URL
      */
     public function getPrivacyPolicyUrl(): ?string;
 
     /**
-     * プライバシーポリシーが有効かどうか
+     * Whether the privacy policy is enabled
      */
     public function isPrivacyPolicyEnabled(): bool;
 
     /**
-     * プライバシーポリシーのラベルテキストを取得
+     * Get the privacy policy label text
      */
     public function getPrivacyPolicyLabel(): string;
 }

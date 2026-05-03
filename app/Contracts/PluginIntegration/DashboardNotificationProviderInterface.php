@@ -41,16 +41,16 @@ use App\Contracts\Plugin\PluginCapabilityInterface;
 use App\DTO\PluginIntegration\DashboardNotificationDTO;
 
 /**
- * ダッシュボード通知を提供するプラグインの契約
+ * Contract for plugins that provide dashboard notifications
  *
- * プラグインがダッシュボードに警告・推奨・情報通知を
- * 表示するためのインターフェースです。
- * PluginCapabilityInterface を継承し、PluginServiceResolver 経由で自動発見されます。
+ * Interface for plugins to display warnings, recommendations, and informational notifications
+ * on the dashboard
+ * Inherits PluginCapabilityInterface and is auto-discovered via PluginServiceResolver
  */
 interface DashboardNotificationProviderInterface extends PluginCapabilityInterface
 {
     /**
-     * ダッシュボード通知の一覧を取得
+     * Get the list of dashboard notifications
      *
      * @return DashboardNotificationDTO[]
      */

@@ -42,31 +42,31 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
- * メディアリポジトリインターフェース
+ * Media repository interface
  */
 interface MediaRepositoryInterface
 {
     /**
-     * IDでメディアを取得
+     * Get media by ID
      */
     public function find(int $id): ?Media;
 
     /**
-     * IDでメディアを取得（リレーション付き）
+     * Get media by ID with relations
      *
      * @param  array<string>  $relations
      */
     public function findWithRelations(int $id, array $relations = ['member']): ?Media;
 
     /**
-     * すべてのメディアを取得
+     * Get all media
      *
      * @param  array<string>  $relations
      */
     public function all(array $relations = []): Collection;
 
     /**
-     * ページネーション付きでメディアを取得
+     * Get media with pagination
      *
      * @param  array<string, mixed>  $filters
      */
@@ -78,69 +78,69 @@ interface MediaRepositoryInterface
     ): LengthAwarePaginator;
 
     /**
-     * メディアを作成
+     * Create media
      *
      * @param  array<string, mixed>  $data
      */
     public function create(array $data): Media;
 
     /**
-     * メディアを更新
+     * Update media
      *
      * @param  array<string, mixed>  $data
      */
     public function update(int $id, array $data): bool;
 
     /**
-     * メディアを削除（ソフトデリート）
+     * Delete media (soft delete)
      */
     public function delete(int $id): bool;
 
     /**
-     * メディアを完全削除
+     * Permanently delete media
      */
     public function forceDelete(int $id): bool;
 
     /**
-     * 削除されたメディアを復元
+     * Restore deleted media
      */
     public function restore(int $id): bool;
 
     /**
-     * 検索条件に一致するメディアを取得
+     * Get media matching search criteria
      *
      * @param  array<string>  $relations
      */
     public function search(string $search, array $relations = ['member']): Collection;
 
     /**
-     * タイプでフィルタリング
+     * Filter by type
      *
      * @param  array<string>  $relations
      */
     public function filterByType(string $type, array $relations = ['member']): Collection;
 
     /**
-     * アップロード者でフィルタリング
+     * Filter by uploader
      *
      * @param  array<string>  $relations
      */
     public function filterByUploader(int $memberId, array $relations = ['member']): Collection;
 
     /**
-     * 日付範囲でフィルタリング
+     * Filter by date range
      *
      * @param  array<string>  $relations
      */
     public function filterByDateRange(?string $dateFrom, ?string $dateTo, array $relations = ['member']): Collection;
 
     /**
-     * メディアが存在するか確認
+     * Check if media exists
      */
     public function exists(int $id): bool;
 
     /**
-     * メディア数を取得
+     * Get media count
      *
      * @param  array<string, mixed>  $filters
      */

@@ -38,13 +38,13 @@
 namespace App\Contracts\Repositories;
 
 /**
- * API設定リポジトリインターフェース
+ * API settings repository interface
  *
- * API関連の設定を管理します。
- * boolean値は自動的に'1'/'0'に変換されます。
+ * Manages API-related settings
+ * Boolean values are automatically converted to '1'/'0'
  */
 interface ApiSettingRepositoryInterface extends SettingRepositoryInterface
 {
-    // 共通メソッドはSettingRepositoryInterfaceから継承
-    // 必要に応じてAPI設定固有のメソッドをここに追加
+    // Common methods inherited from SettingRepositoryInterface
+    // Add API settings-specific methods here as needed
 }

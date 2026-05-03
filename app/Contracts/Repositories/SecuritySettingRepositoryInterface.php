@@ -38,13 +38,13 @@
 namespace App\Contracts\Repositories;
 
 /**
- * セキュリティ設定リポジトリインターフェース
+ * Security settings repository interface
  *
- * セキュリティ関連の設定を管理します。
- * boolean値は自動的に'1'/'0'に変換されます。
+ * Manages security-related settings
+ * Boolean values are automatically converted to '1'/'0'
  */
 interface SecuritySettingRepositoryInterface extends SettingRepositoryInterface
 {
-    // 共通メソッドはSettingRepositoryInterfaceから継承
-    // 必要に応じてセキュリティ設定固有のメソッドをここに追加
+    // Common methods are inherited from SettingRepositoryInterface
+    // Add security settings-specific methods here as needed
 }

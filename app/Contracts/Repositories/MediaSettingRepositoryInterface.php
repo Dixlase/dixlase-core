@@ -38,13 +38,13 @@
 namespace App\Contracts\Repositories;
 
 /**
- * メディア設定リポジトリインターフェース
+ * Media settings repository interface
  *
- * メディア関連の設定（許可ファイルタイプ、最大サイズなど）を管理します。
- * 配列値は自動的にJSON形式で保存されます。
+ * Manages media-related settings (allowed file types, maximum size, etc.)
+ * Array values are automatically saved in JSON format
  */
 interface MediaSettingRepositoryInterface extends SettingRepositoryInterface
 {
-    // 共通メソッドはSettingRepositoryInterfaceから継承
-    // 必要に応じてメディア設定固有のメソッドをここに追加
+    // Common methods inherited from SettingRepositoryInterface
+    // Add media settings specific methods here as needed
 }

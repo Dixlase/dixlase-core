@@ -42,41 +42,41 @@ use App\DTO\FileIntegrity\ScanResultDTO;
 use App\DTO\FileIntegrity\ScanTargetDTO;
 
 /**
- * ファイル整合性チェックサービスの契約
+ * File integrity check service contract
  *
- * コアおよびプラグインのファイル改ざん検知機能を提供します。
+ * Provides file tampering detection for Core and plugins
  */
 interface FileIntegrityServiceInterface
 {
     /**
-     * ベースラインを生成
+     * Generate baseline
      *
-     * @param  ScanTargetDTO  $target  スキャン対象
+     * @param  ScanTargetDTO  $target  Scan target
      */
     public function generateBaseline(ScanTargetDTO $target): BaselineDTO;
 
     /**
-     * ベースラインを保存
+     * Save baseline
      *
-     * @param  BaselineDTO  $baseline  ベースライン
-     * @param  string  $filename  ファイル名
+     * @param  BaselineDTO  $baseline  Baseline
+     * @param  string  $filename  Filename
      */
     public function saveBaseline(BaselineDTO $baseline, string $filename = 'core_hashes.json'): bool;
 
     /**
-     * ベースラインを読み込み
+     * Load baseline
      *
-     * @param  string  $filename  ファイル名
+     * @param  string  $filename  Filename
      */
     public function loadBaseline(string $filename = 'core_hashes.json'): ?BaselineDTO;
 
     /**
-     * ファイル整合性スキャンを実行
+     * Execute file integrity scan
      *
-     * @param  ScanTargetDTO  $target  スキャン対象
-     * @param  string  $trigger  トリガー（manual, schedule, install, update）
-     * @param  string  $initiatedByType  実行者タイプ（system, user）
-     * @param  int|null  $initiatedById  実行者ID
+     * @param  ScanTargetDTO  $target  Scan target
+     * @param  string  $trigger  Trigger (manual, schedule, install, update)
+     * @param  string  $initiatedByType  Executor type (system, user)
+     * @param  int|null  $initiatedById  Executor ID
      */
     public function scan(
         ScanTargetDTO $target,
@@ -86,19 +86,19 @@ interface FileIntegrityServiceInterface
     ): ScanResultDTO;
 
     /**
-     * ベースラインが存在するか
+     * Whether baseline exists
      *
-     * @param  string  $filename  ファイル名
+     * @param  string  $filename  Filename
      */
     public function hasBaseline(string $filename = 'core_hashes.json'): bool;
 
     /**
-     * ベースラインを再生成
+     * Regenerate baseline
      *
-     * @param  ScanTargetDTO  $target  スキャン対象
-     * @param  string  $trigger  トリガー
-     * @param  string  $initiatedByType  実行者タイプ
-     * @param  int|null  $initiatedById  実行者ID
+     * @param  ScanTargetDTO  $target  Scan target
+     * @param  string  $trigger  Trigger
+     * @param  string  $initiatedByType  Executor type
+     * @param  int|null  $initiatedById  Executor ID
      */
     public function regenerateBaseline(
         ScanTargetDTO $target,

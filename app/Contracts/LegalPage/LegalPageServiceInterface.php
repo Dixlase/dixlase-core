@@ -38,44 +38,44 @@
 namespace App\Contracts\LegalPage;
 
 /**
- * 法務ページレジストリサービスの契約
+ * Contract for legal page registry service
  *
- * コアとプラグインの法務ページ種別を統合管理し、
- * URL の取得・設定・必須チェック等を提供します。
+ * Manages Core and plugin legal page types in a unified manner,
+ * and provides URL retrieval, settings, required checks, etc.
  */
 interface LegalPageServiceInterface
 {
     /**
-     * コア + プラグインの統合ページ種別一覧を取得
+     * Get unified list of Core + plugin page types
      *
      * @return array<string, array{name: string, description: string, required: bool, icon: string, required_by?: list<string>}>
      */
     public function getPageTypes(): array;
 
     /**
-     * 指定ページ種別が必須かどうかを判定
+     * Determine if the specified page type is required
      */
     public function isRequired(string $slug): bool;
 
     /**
-     * 指定ページ種別の URL が設定済みかどうかを判定
+     * Determine if the URL for the specified page type is configured
      */
     public function exists(string $slug): bool;
 
     /**
-     * 指定ページ種別の URL を取得
+     * Get the URL for the specified page type
      */
     public function url(string $slug): ?string;
 
     /**
-     * 必須だが URL 未設定のページ種別一覧を取得
+     * Get list of required page types with unconfigured URLs
      *
      * @return array<string, array{name: string, description: string, required: bool, icon: string}>
      */
     public function missingRequired(): array;
 
     /**
-     * 指定ページ種別の URL を設定（null で削除）
+     * Set the URL for the specified page type (null to delete)
      */
     public function setUrl(string $slug, ?string $url): void;
 }

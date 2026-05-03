@@ -38,28 +38,28 @@
 namespace App\Contracts\Plugin;
 
 /**
- * プラグイン機能宣言の基底インターフェース
+ * Base interface for plugin capability declaration
  *
- * プラグインが特定の機能を提供する場合に実装する基底インターフェースです。
- * 各機能固有のインターフェース（MailCapableInterface 等）はこれを継承します。
+ * Base interface to implement when a plugin provides specific capabilities
+ * Each capability-specific interface (e.g. MailCapableInterface) inherits this
  *
- * プラグインの ServiceProvider でサービスコンテナにタグ付き登録することで、
- * PluginServiceResolver が自動的に発見・解決します。
+ * By registering with tags in the service container via the plugin's ServiceProvider,
+ * PluginServiceResolver automatically discovers and resolves them
  */
 interface PluginCapabilityInterface
 {
     /**
-     * プラグインのスラッグを取得
+     * Get the plugin slug
      *
-     * @return string 例: 'dixlase-inquiry'
+     * @return string e.g. 'dixlase-inquiry'
      */
     public function getPluginSlug(): string;
 
     /**
-     * この機能が現在利用可能かどうか
+     * Whether this capability is currently available
      *
-     * プラグインの設定状態や依存関係により、
-     * 機能が一時的に無効になる場合があります。
+     * Depending on the plugin settings state and dependencies,
+     * the capability may be temporarily disabled
      */
     public function isCapabilityAvailable(): bool;
 }

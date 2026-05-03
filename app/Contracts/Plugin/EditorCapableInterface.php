@@ -40,12 +40,12 @@ namespace App\Contracts\Plugin;
 use App\Enums\ContentStorageType;
 
 /**
- * エディター提供機能を宣言するインターフェース
+ * Interface declaring editor provision functionality
  *
- * GUIエディターなどのコンテンツエディターを提供するプラグインが実装します。
- * PluginServiceResolver 経由で発見・解決されます。
+ * Implemented by plugins that provide content editors such as GUI editors
+ * Discovered and resolved via PluginServiceResolver
  *
- * エディタープラグインは特別な権限を必要としません（UIを提供するのみ）。
+ * Editor plugins do not require special permissions (only provide UI)
  */
 interface EditorCapableInterface extends PluginCapabilityInterface
 {

@@ -41,101 +41,101 @@ use App\Contracts\TwoFaInterface;
 use App\Models\Member;
 
 /**
- * Passkey（WebAuthn）認証サービスの契約
+ * Contract for Passkey (WebAuthn) authentication service
  *
- * パスキーの登録・認証・信頼済みデバイス管理等を提供します。
+ * Provides passkey registration, authentication, trusted device management, etc.
  */
 interface TwoFaPasskeyServiceInterface
 {
     /**
-     * Passkeyが利用可能かどうか
+     * Whether Passkey is available
      */
     public function isAvailable(): bool;
 
     /**
-     * ユーザーがPasskey認証情報を持っているか
+     * Whether the user has Passkey credentials
      */
     public function hasCredentials(TwoFaInterface $user): bool;
 
     /**
-     * Passkeyチャレンジを生成（2FA用）
+     * Generate Passkey challenge (for 2FA)
      */
     public function generatePasskeyChallenge($user): array;
 
     /**
-     * ログイン用のパスキーチャレンジを生成
+     * Generate passkey challenge for login
      */
     public function generateLoginChallenge(TwoFaInterface $user): array;
 
     /**
-     * ログイン用のパスキー認証を検証
+     * Verify passkey authentication for login
      */
     public function verifyLoginChallenge(TwoFaInterface $user, array $data, ?string $challengeId = null): bool;
 
     /**
-     * Passkey認証を検証
+     * Verify Passkey authentication
      */
     public function validatePasskeyAuth($user, $input): bool;
 
     /**
-     * ユーザーの全Passkeyデバイスを取得
+     * Get all Passkey devices for the user
      *
-     * @deprecated getCredentials()を使用してください
+     * @deprecated Use getCredentials() instead.
      */
     public function getDevices(TwoFaInterface $user);
 
     /**
-     * WebAuthn認証情報を登録
+     * Register WebAuthn credentials
      */
     public function registerCredential(TwoFaInterface $user, array $credentialData, ?string $deviceName = null);
 
     /**
-     * WebAuthn認証を検証
+     * Verify WebAuthn authentication
      */
     public function verifyAssertion(TwoFaInterface $user, array $assertionData): bool;
 
     /**
-     * WebAuthn認証情報一覧を取得
+     * Get WebAuthn credentials list
      */
     public function getCredentials(TwoFaInterface $user);
 
     /**
-     * WebAuthn認証情報を削除
+     * Delete WebAuthn credentials
      */
     public function revokeCredential(TwoFaInterface $user, string $credentialId): bool;
 
     /**
-     * すべてのWebAuthn認証情報を削除
+     * Delete all WebAuthn credentials
      */
     public function revokeAllCredentials(TwoFaInterface $user): int;
 
     /**
-     * WebAuthn登録チャレンジを生成
+     * Generate WebAuthn registration challenge
      */
     public function generateRegistrationChallenge(TwoFaInterface $user): array;
 
     /**
-     * WebAuthn認証チャレンジを生成
+     * Generate WebAuthn authentication challenge
      */
     public function generateAuthenticationChallenge(TwoFaInterface $user): array;
 
     /**
-     * 現在のデバイスが信頼済みかチェック
+     * Check if the current device is trusted
      */
     public function isTrustedDevice(Member $member): bool;
 
     /**
-     * 信頼済みデバイスを削除
+     * Delete trusted device
      */
     public function revokeDevice(Member $member, int $deviceId): bool;
 
     /**
-     * 信頼済みデバイス一覧を取得
+     * Get trusted device list
      */
     public function getTrustedDevices(Member $member);
 
     /**
-     * すべての信頼済みデバイスを削除
+     * Delete all trusted devices
      */
     public function revokeAllTrustedDevices(Member $member): int;
 }

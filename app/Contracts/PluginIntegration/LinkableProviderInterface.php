@@ -40,60 +40,60 @@ namespace App\Contracts\PluginIntegration;
 use App\DTO\PluginIntegration\LinkableDTO;
 
 /**
- * リンク可能なコンテンツを提供するプラグインの契約
+ * Contract for plugins that provide linkable content
  *
- * メニュープラグインなどが他のプラグインからコンテンツを
- * 取得するための共通インターフェースです。
+ * Common interface for menu plugins and others to
+ * retrieve content from other plugins
  */
 interface LinkableProviderInterface
 {
     /**
-     * プロバイダーの識別子を取得
+     * Retrieve the provider identifier
      *
-     * @return string 例: 'dixlase-pages', 'dixlase-blog'
+     * @return string e.g. 'dixlase-pages', 'dixlase-blog'
      */
     public function getProviderKey(): string;
 
     /**
-     * プロバイダーの表示名を取得
+     * Retrieve the provider display name
      *
-     * @return string 例: 'ページ', 'ブログ記事'
+     * @return string e.g. 'Pages', 'Blog Posts'
      */
     public function getProviderLabel(): string;
 
     /**
-     * プロバイダーのアイコンクラスを取得（オプション）
+     * Retrieve the provider icon class (optional)
      *
-     * @return string|null 例: 'fas fa-file-alt'
+     * @return string|null e.g. 'fas fa-file-alt'
      */
     public function getProviderIcon(): ?string;
 
     /**
-     * このプロバイダーが現在利用可能かどうか
+     * Whether this provider is currently available
      */
     public function isAvailable(): bool;
 
     /**
-     * 利用可能なコンテンツのリストを取得
+     * Retrieve a list of available content
      *
-     * @param  int  $limit  取得件数の上限（デフォルト: 100）
+     * @param  int  $limit  Maximum number of items to retrieve (default: 100)
      * @return LinkableDTO[]
      */
     public function getAvailableItems(int $limit = 100): array;
 
     /**
-     * 検索クエリに基づいてコンテンツを検索
+     * Search content based on a search query
      *
-     * @param  string  $query  検索クエリ
-     * @param  int  $limit  取得件数の上限（デフォルト: 20）
+     * @param  string  $query  Search query
+     * @param  int  $limit  Maximum number of items to retrieve (default: 20)
      * @return LinkableDTO[]
      */
     public function searchItems(string $query, int $limit = 20): array;
 
     /**
-     * 特定のIDからコンテンツを取得
+     * Retrieve content by specific ID
      *
-     * @param  string  $id  コンテンツID
+     * @param  string  $id  Content ID
      */
     public function getItemById(string $id): ?LinkableDTO;
 }

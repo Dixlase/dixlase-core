@@ -43,55 +43,55 @@ use App\DTO\Api\ApiResourceCollection;
 use App\DTO\Api\ApiResourceDTO;
 
 /**
- * APIリソースプロバイダーインターフェース
+ * API resource provider interface
  *
- * プラグインがREST API経由でコンテンツリソースを公開する際に実装します。
- * DixlaseApi プラグインがこのインターフェースの実装を自動発見し、
- * 統一的なAPI エンドポイントとして提供します。
+ * Implemented when a plugin exposes content resources via REST API
+ * The DixlaseApi plugin auto-discovers implementations of this interface
+ * and provides them as unified API endpoints
  */
 interface ApiResourceProviderInterface extends PluginCapabilityInterface
 {
     /**
-     * リソースタイプ識別子を取得
+     * Get resource type identifier
      *
-     * @return string 例: 'pages', 'posts'
+     * @return string e.g. 'pages', 'posts'
      */
     public function getResourceType(): string;
 
     /**
-     * リソースの表示名を取得
+     * Get resource display name
      *
-     * @return string 例: 'ページ', 'ブログ記事'
+     * @return string e.g. 'Pages', 'Blog Posts'
      */
     public function getResourceLabel(): string;
 
     /**
-     * リソース一覧を取得（ページネーション対応）
+     * Get resource list (with pagination support)
      *
-     * @param  int  $page  ページ番号
-     * @param  int  $perPage  ページあたりの件数
-     * @param  array<string, mixed>  $filters  フィルター条件
+     * @param  int  $page  Page number
+     * @param  int  $perPage  Items per page
+     * @param  array<string, mixed>  $filters  Filter conditions
      */
     public function listResources(int $page = 1, int $perPage = 20, array $filters = []): ApiResourceCollection;
 
     /**
-     * スラッグでリソースを取得
+     * Get resource by slug
      *
-     * @param  string  $slug  リソースのスラッグ
+     * @param  string  $slug  Resource slug
      */
     public function findBySlug(string $slug): ?ApiResourceDTO;
 
     /**
-     * IDでリソースを取得
+     * Get resource by ID
      *
-     * @param  string  $id  リソースID
+     * @param  string  $id  Resource ID
      */
     public function findById(string $id): ?ApiResourceDTO;
 
     /**
-     * 利用可能なフィルターキーを返す
+     * Return available filter keys
      *
-     * @return array<string, string> キー => 説明 の連想配列
+     * @return array<string, string> Associative array of key => description
      */
     public function getAvailableFilters(): array;
 }
