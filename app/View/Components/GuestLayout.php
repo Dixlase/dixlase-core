@@ -35,8 +35,9 @@
 
 namespace App\View\Components;
 
+use App\Services\Site\SettingResolver;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\Component;
 use Illuminate\View\View;
 
@@ -64,17 +65,18 @@ class GuestLayout extends Component
             if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
                 $this->site_name = env('APP_NAME', 'Dixlase');
                 $this->theme = Config::get('admin.theme', 'light');
+            } elseif (! Schema::hasTable('global_settings') || ! Schema::hasTable('site_settings')) {
+                // 設定テーブル未作成（インストール直後など）はデフォルトにフォールバック
+                $this->site_name = env('APP_NAME', 'Dixlase');
+                $this->theme = Config::get('admin.theme', 'light');
             } else {
-                // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
-                $this->site_name = DB::table('site_settings')->where('name', 'site_name')->value('value')
-                    ?? env('APP_NAME', 'Dixlase');
-
-                // データベースからテーマ情報を取得。取得できなかった場合はコンフィグからデフォルト値を使用
-                $this->theme = DB::table('site_settings')->where('name', 'admin_theme')->value('value')
-                    ?? Config::get('admin.theme', 'light'); // デフォルト値を 'light' に設定
+                // SettingResolver 経由で取得 (site_name は PerSite, admin_theme は Global)
+                $resolver = app(SettingResolver::class);
+                $this->site_name = $resolver->get('site_name') ?: env('APP_NAME', 'Dixlase');
+                $this->theme = $resolver->get('admin_theme') ?: Config::get('admin.theme', 'light');
             }
-        } catch (\Exception $e) {
-            // データベース接続エラーの場合はデフォルト値を使用
+        } catch (\Throwable $e) {
+            // データベース接続エラー等はデフォルト値を使用
             $this->site_name = env('APP_NAME', 'Dixlase');
             $this->theme = Config::get('admin.theme', 'light');
         }

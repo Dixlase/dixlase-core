@@ -112,6 +112,23 @@ class CoreSettingDefinitions
             type: 'string',
         ));
 
+        // Per-menu visibility map for the simple admin mode. Stored as
+        // a JSON object keyed by dot-notation menu key.
+        $registry->register(new SettingDefinition(
+            name: 'admin_mode_visibilities',
+            scope: SettingScope::Global,
+            default: null,
+            type: 'array',
+        ));
+
+        // Admin UI theme (light / dark). Network-wide preference.
+        $registry->register(new SettingDefinition(
+            name: 'admin_theme',
+            scope: SettingScope::Global,
+            default: 'light',
+            type: 'string',
+        ));
+
         // ------------------------------------------------------------------
         // Per-site
         // ------------------------------------------------------------------

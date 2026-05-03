@@ -37,7 +37,7 @@ namespace App\Helpers;
 
 use App\Enums\AdminMode;
 use App\Enums\MenuVisibility;
-use Illuminate\Support\Facades\DB;
+use App\Services\Site\SettingResolver;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
@@ -60,18 +60,19 @@ class AdminModeHelper
         }
 
         try {
-            if (! Schema::hasTable('site_settings')) {
+            // admin_mode is Global scope; SettingResolver routes through
+            // global_settings. Keep the schema guard so installation flows
+            // (sites table absent) fall through to the default.
+            if (! Schema::hasTable('global_settings')) {
                 self::$currentMode = AdminMode::default();
 
                 return self::$currentMode;
             }
 
-            $value = DB::table('site_settings')
-                ->where('name', 'admin_mode')
-                ->value('value');
+            $value = app(SettingResolver::class)->get('admin_mode');
 
             self::$currentMode = AdminMode::fromInt($value !== null ? (int) $value : null);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::warning('admin_mode取得に失敗: '.$e->getMessage());
             self::$currentMode = AdminMode::default();
         }
@@ -118,24 +119,20 @@ class AdminModeHelper
             $defaultValues[$key] = $vis instanceof MenuVisibility ? $vis->value : (int) $vis;
         }
 
-        // 保存済み設定を取得
+        // 保存済み設定を取得 (admin_mode_visibilities は Global scope で
+        // type=array なので Resolver が自動で配列にデコード済み)
         try {
-            if (Schema::hasTable('site_settings')) {
-                $json = DB::table('site_settings')
-                    ->where('name', 'admin_mode_visibilities')
-                    ->value('value');
+            if (Schema::hasTable('global_settings')) {
+                $saved = app(SettingResolver::class)->get('admin_mode_visibilities');
 
-                if (! empty($json)) {
-                    $saved = json_decode($json, true);
-                    if (is_array($saved)) {
-                        // 保存済み設定でデフォルトを上書き
-                        self::$visibilities = array_merge($defaultValues, $saved);
+                if (is_array($saved)) {
+                    // 保存済み設定でデフォルトを上書き
+                    self::$visibilities = array_merge($defaultValues, $saved);
 
-                        return self::$visibilities;
-                    }
+                    return self::$visibilities;
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::warning('admin_mode_visibilities取得に失敗: '.$e->getMessage());
         }
 

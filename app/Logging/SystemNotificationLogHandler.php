@@ -35,8 +35,8 @@
 
 namespace App\Logging;
 
+use App\Services\Site\SettingResolver;
 use App\Services\SystemNotificationService;
-use Illuminate\Support\Facades\DB;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\LogRecord;
 
@@ -110,17 +110,16 @@ class SystemNotificationLogHandler extends AbstractProcessingHandler
     private function getNotificationLevels(): array
     {
         try {
-            // SecuritySettingモデルの代わりに直接DBクエリを使用
-            $levels = DB::table('security_settings')
-                ->where('name', 'notification_log_levels')
-                ->value('value');
+            // notification_log_levels is Global scope; SettingResolver
+            // routes through global_settings.
+            $levels = app(SettingResolver::class)->get('notification_log_levels');
 
             if (empty($levels)) {
                 return [];
             }
 
-            return array_map('intval', explode(',', $levels));
-        } catch (\Exception $e) {
+            return array_map('intval', explode(',', (string) $levels));
+        } catch (\Throwable $e) {
             return [];
         }
     }
