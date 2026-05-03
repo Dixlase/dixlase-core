@@ -74,8 +74,12 @@ class Theme extends Model
         'source_id',
         'source_repo',
         'available_version',
-        'last_version_check',
         'last_notified_version',
+        'available_version_published_at',
+        'release_url',
+        'last_version_check',
+        'update_failed_at',
+        'update_failure_reason',
     ];
 
     /**
@@ -86,6 +90,8 @@ class Theme extends Model
         'has_settings' => 'boolean',
         'installed_at' => 'datetime',
         'last_version_check' => 'datetime',
+        'available_version_published_at' => 'datetime',
+        'update_failed_at' => 'datetime',
     ];
 
     /**

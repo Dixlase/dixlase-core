@@ -59,8 +59,15 @@ return new class extends Migration
             $table->string('version'); // バージョン
             $table->unsignedBigInteger('source_id')->nullable()->index(); // Extension source reference
             $table->string('source_repo')->nullable(); // Repository name at source
+            // Update detection state
             $table->string('available_version')->nullable(); // Latest available version from source
+            $table->string('last_notified_version', 32)->nullable(); // Suppress duplicate update notifications
+            $table->timestamp('available_version_published_at')->nullable(); // Release published date (for "released N days ago")
+            $table->string('release_url')->nullable(); // GitHub release page URL (notes fetched on demand)
             $table->timestamp('last_version_check')->nullable(); // Last update check timestamp
+            // Update failure tracking
+            $table->timestamp('update_failed_at')->nullable(); // Last update attempt failure timestamp
+            $table->text('update_failure_reason')->nullable(); // Last update failure reason
             // サプライチェーン攻撃防御用カラム
             $table->string('signing_key_id')->nullable()->index(); // 初回インストール時の署名鍵ID
             $table->string('author_id')->nullable()->index(); // plugin.json の author_id

@@ -61,8 +61,15 @@ return new class extends Migration
             $table->json('config')->nullable();
             $table->unsignedBigInteger('source_id')->nullable()->index(); // Extension source reference
             $table->string('source_repo')->nullable(); // Repository name at source
+            // Update detection state
             $table->string('available_version')->nullable(); // Latest available version from source
+            $table->string('last_notified_version', 32)->nullable(); // Suppress duplicate update notifications
+            $table->timestamp('available_version_published_at')->nullable(); // Release published date
+            $table->string('release_url')->nullable(); // GitHub release page URL
             $table->timestamp('last_version_check')->nullable(); // Last update check timestamp
+            // Update failure tracking
+            $table->timestamp('update_failed_at')->nullable();
+            $table->text('update_failure_reason')->nullable();
             $table->timestamp('installed_at')->nullable();
             $table->timestamps();
         });
