@@ -67,6 +67,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'csp-report',
         ]);
 
+        // The language switcher cookie is a non-sensitive preference and
+        // is read in plaintext (e.g. by curl tests, reverse proxies, JS).
+        $middleware->encryptCookies(except: [
+            \App\Helpers\LocaleHelper::COOKIE_NAME,
+        ]);
+
         // セッション開始後に実行するミドルウェア
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\CheckMaintenanceMode::class, // メンテナンスモードチェック（認証状態を参照するためセッション後に実行）
