@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -40,7 +40,7 @@ use App\Traits\LoginIdentifierCheckTrait;
 
 /**
  * ログイン識別子確認コントローラー
- * 
+ *
  * メールアドレスまたはアカウント名の存在確認を行う
  * セキュリティ対策：レート制限、タイミング攻撃対策、監査ログ記録
  */

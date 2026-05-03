@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -56,19 +56,19 @@ class AdminSystemDatabaseCleanupRequest extends FormRequest
     {
         // コアのクリーンアップタイプ
         $coreTypes = array_keys(config('admin.database-cleanup', []));
-        
+
         // プラグインのクリーンアップタイプ
         $pluginTypes = [];
         $pluginCleanupInfo = app(\App\Services\DatabaseCleanupService::class)->getPluginCleanupInfo();
-        if (!empty($pluginCleanupInfo)) {
+        if (! empty($pluginCleanupInfo)) {
             $pluginTypes = array_keys($pluginCleanupInfo);
         }
-        
+
         // すべてのタイプを結合
         $allTypes = array_merge($coreTypes, $pluginTypes, ['all']);
-        
+
         return [
-            'type' => 'required|in:' . implode(',', $allTypes),
+            'type' => 'required|in:'.implode(',', $allTypes),
             'days' => 'required|integer|min:0|max:365',
         ];
     }

@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -43,7 +43,7 @@ use Illuminate\Console\Command;
 
 /**
  * RBAC権限緊急復旧コマンド（ブレークグラス）
- * 
+ *
  * 権限設定ミスで管理画面にアクセスできなくなった場合の緊急復旧機能
  * - 全ロールから管理権限を剥奪してしまった
  * - SUPER_ADMINも管理画面に入れない
@@ -91,12 +91,12 @@ class RbacRecoveryCommand extends Command
     protected function grantSuperAdmin(): int
     {
         $member = $this->findMember();
-        if (!$member) {
+        if (! $member) {
             return self::FAILURE;
         }
 
         $reason = $this->getRequiredReason();
-        if (!$reason) {
+        if (! $reason) {
             return self::FAILURE;
         }
 
@@ -107,15 +107,16 @@ class RbacRecoveryCommand extends Command
         $this->warn(__('admin/command.rbac_recovery.warning_grant'));
         $this->newLine();
 
-        if (!$this->option('force') && !$this->confirm(__('admin/command.rbac_recovery.confirm_grant', ['name' => ($member->display_name ?? $member->account_name)]))) {
+        if (! $this->option('force') && ! $this->confirm(__('admin/command.rbac_recovery.confirm_grant', ['name' => ($member->display_name ?? $member->account_name)]))) {
             $this->info(__('admin/command.rbac_recovery.cancelled'));
+
             return self::SUCCESS;
         }
 
         // Find or create super admin role
         $superAdminRole = Role::where('name', 'super_admin')->first();
-        
-        if (!$superAdminRole) {
+
+        if (! $superAdminRole) {
             // Create super admin role with all permissions
             $superAdminRole = Role::create([
                 'name' => 'super_admin',
@@ -129,8 +130,8 @@ class RbacRecoveryCommand extends Command
 
         // Assign role to member
         $previousRoles = $member->roles->pluck('name')->toArray();
-        
-        if (!$member->roles->contains($superAdminRole->id)) {
+
+        if (! $member->roles->contains($superAdminRole->id)) {
             $member->roles()->attach($superAdminRole->id);
         }
 
@@ -164,12 +165,12 @@ class RbacRecoveryCommand extends Command
     protected function resetRole(): int
     {
         $role = $this->findRole();
-        if (!$role) {
+        if (! $role) {
             return self::FAILURE;
         }
 
         $reason = $this->getRequiredReason();
-        if (!$reason) {
+        if (! $reason) {
             return self::FAILURE;
         }
 
@@ -182,8 +183,9 @@ class RbacRecoveryCommand extends Command
         $this->warn(__('admin/command.rbac_recovery.warning_reset'));
         $this->newLine();
 
-        if (!$this->option('force') && !$this->confirm(__('admin/command.rbac_recovery.confirm_reset', ['name' => $role->display_name]))) {
+        if (! $this->option('force') && ! $this->confirm(__('admin/command.rbac_recovery.confirm_reset', ['name' => $role->display_name]))) {
             $this->info(__('admin/command.rbac_recovery.cancelled'));
+
             return self::SUCCESS;
         }
 
@@ -191,7 +193,7 @@ class RbacRecoveryCommand extends Command
 
         // Reset to default based on role name
         $defaultPermissions = $this->getDefaultPermissionsForRole($role->name);
-        
+
         $role->update([
             'permissions' => $defaultPermissions,
         ]);
@@ -267,7 +269,7 @@ class RbacRecoveryCommand extends Command
         $this->newLine();
 
         $roles = Role::withCount('members')->get();
-        
+
         if ($roles->isEmpty()) {
             $this->warn(__('admin/command.rbac_recovery.no_roles'));
         } else {
@@ -300,7 +302,7 @@ class RbacRecoveryCommand extends Command
         $this->newLine();
 
         $members = Member::with('roles')->get();
-        
+
         if ($members->isEmpty()) {
             $this->warn(__('admin/command.rbac_recovery.no_members'));
         } else {
@@ -336,12 +338,13 @@ class RbacRecoveryCommand extends Command
     {
         $identifier = $this->option('member');
 
-        if (!$identifier) {
+        if (! $identifier) {
             $identifier = $this->ask(__('admin/command.rbac_recovery.member_prompt'));
         }
 
-        if (!$identifier) {
+        if (! $identifier) {
             $this->error(__('admin/command.rbac_recovery.member_required'));
+
             return null;
         }
 
@@ -349,8 +352,9 @@ class RbacRecoveryCommand extends Command
             ? Member::find($identifier)
             : Member::where('email', $identifier)->first();
 
-        if (!$member) {
+        if (! $member) {
             $this->error(__('admin/command.rbac_recovery.member_not_found', ['identifier' => $identifier]));
+
             return null;
         }
 
@@ -364,12 +368,13 @@ class RbacRecoveryCommand extends Command
     {
         $identifier = $this->option('role');
 
-        if (!$identifier) {
+        if (! $identifier) {
             $identifier = $this->ask(__('admin/command.rbac_recovery.role_prompt'));
         }
 
-        if (!$identifier) {
+        if (! $identifier) {
             $this->error(__('admin/command.rbac_recovery.role_required'));
+
             return null;
         }
 
@@ -377,8 +382,9 @@ class RbacRecoveryCommand extends Command
             ? Role::find($identifier)
             : Role::where('name', $identifier)->first();
 
-        if (!$role) {
+        if (! $role) {
             $this->error(__('admin/command.rbac_recovery.role_not_found', ['identifier' => $identifier]));
+
             return null;
         }
 
@@ -392,12 +398,13 @@ class RbacRecoveryCommand extends Command
     {
         $reason = $this->option('reason');
 
-        if (!$reason) {
+        if (! $reason) {
             $reason = $this->ask(__('admin/command.rbac_recovery.reason_prompt'));
         }
 
-        if (!$reason) {
+        if (! $reason) {
             $this->error(__('admin/command.rbac_recovery.reason_required'));
+
             return null;
         }
 
@@ -453,10 +460,10 @@ class RbacRecoveryCommand extends Command
     {
         $this->error(__('admin/command.rbac_recovery.invalid_action', ['action' => $action]));
         $this->line(__('admin/command.rbac_recovery.valid_actions'));
-        $this->line('  - grant-super-admin : ' . __('admin/command.rbac_recovery.action_grant'));
-        $this->line('  - reset-role        : ' . __('admin/command.rbac_recovery.action_reset'));
-        $this->line('  - status            : ' . __('admin/command.rbac_recovery.action_status'));
-        $this->line('  - list              : ' . __('admin/command.rbac_recovery.action_list'));
+        $this->line('  - grant-super-admin : '.__('admin/command.rbac_recovery.action_grant'));
+        $this->line('  - reset-role        : '.__('admin/command.rbac_recovery.action_reset'));
+        $this->line('  - status            : '.__('admin/command.rbac_recovery.action_status'));
+        $this->line('  - list              : '.__('admin/command.rbac_recovery.action_list'));
 
         return self::FAILURE;
     }

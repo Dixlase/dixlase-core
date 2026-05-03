@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -41,7 +41,7 @@ use Illuminate\Console\Command;
 
 /**
  * メール送信緊急バイパスコマンド（ブレークグラス）
- * 
+ *
  * SMTPサーバー障害時に、メール依存機能（Two-FA、パスワードリセット等）を
  * 一時的にバイパスする緊急復旧機能
  */
@@ -90,8 +90,9 @@ class MailBypassCommand extends Command
         $reason = $this->option('reason');
 
         // Validate scope
-        if (!in_array($scope, ['two_fa', 'password_reset', 'all'])) {
+        if (! in_array($scope, ['two_fa', 'password_reset', 'all'])) {
             $this->error(__('admin/command.mail_bypass.invalid_scope', ['scope' => $scope]));
+
             return self::FAILURE;
         }
 
@@ -100,6 +101,7 @@ class MailBypassCommand extends Command
             $reason = $this->ask(__('admin/command.mail_bypass.reason_prompt'));
             if (empty($reason)) {
                 $this->error(__('admin/command.mail_bypass.reason_required'));
+
                 return self::FAILURE;
             }
         }
@@ -114,8 +116,9 @@ class MailBypassCommand extends Command
         ]));
         $this->newLine();
 
-        if (!$this->confirm(__('admin/command.mail_bypass.confirm_enable'))) {
+        if (! $this->confirm(__('admin/command.mail_bypass.confirm_enable'))) {
             $this->info(__('admin/command.mail_bypass.cancelled'));
+
             return self::SUCCESS;
         }
 
@@ -124,7 +127,7 @@ class MailBypassCommand extends Command
 
         if ($result) {
             $expiresAt = now()->addMinutes($minutes);
-            
+
             $this->info(__('admin/command.mail_bypass.enabled', [
                 'minutes' => $minutes,
                 'expires_at' => $expiresAt->format('Y-m-d H:i:s'),
@@ -151,6 +154,7 @@ class MailBypassCommand extends Command
         }
 
         $this->error(__('admin/command.mail_bypass.enable_failed'));
+
         return self::FAILURE;
     }
 
@@ -159,8 +163,9 @@ class MailBypassCommand extends Command
      */
     protected function disableBypass(): int
     {
-        if (!MailBypassService::isActive()) {
+        if (! MailBypassService::isActive()) {
             $this->info(__('admin/command.mail_bypass.not_active'));
+
             return self::SUCCESS;
         }
 
@@ -201,19 +206,19 @@ class MailBypassCommand extends Command
                     [__('admin/command.mail_bypass.scope'), $status['scope']],
                     [__('admin/command.mail_bypass.reason'), $status['reason']],
                     [__('admin/command.mail_bypass.expires_at'), $status['expires_at']],
-                    [__('admin/command.mail_bypass.remaining'), $status['remaining_minutes'] . ' ' . __('admin/command.mail_bypass.minutes')],
+                    [__('admin/command.mail_bypass.remaining'), $status['remaining_minutes'].' '.__('admin/command.mail_bypass.minutes')],
                     [__('admin/command.mail_bypass.enabled_at'), $status['enabled_at']],
                 ]
             );
 
             $this->newLine();
             $this->warn(__('admin/command.mail_bypass.affected_features'));
-            
+
             if ($status['scope'] === 'all' || $status['scope'] === 'two_fa') {
-                $this->line('  - ' . __('admin/command.mail_bypass.feature_two_fa'));
+                $this->line('  - '.__('admin/command.mail_bypass.feature_two_fa'));
             }
             if ($status['scope'] === 'all' || $status['scope'] === 'password_reset') {
-                $this->line('  - ' . __('admin/command.mail_bypass.feature_password_reset'));
+                $this->line('  - '.__('admin/command.mail_bypass.feature_password_reset'));
             }
         } else {
             $this->info(__('admin/command.mail_bypass.status_inactive'));
@@ -229,9 +234,9 @@ class MailBypassCommand extends Command
     {
         $this->error(__('admin/command.mail_bypass.invalid_action', ['action' => $action]));
         $this->line(__('admin/command.mail_bypass.valid_actions'));
-        $this->line('  - enable   : ' . __('admin/command.mail_bypass.action_enable'));
-        $this->line('  - disable  : ' . __('admin/command.mail_bypass.action_disable'));
-        $this->line('  - status   : ' . __('admin/command.mail_bypass.action_status'));
+        $this->line('  - enable   : '.__('admin/command.mail_bypass.action_enable'));
+        $this->line('  - disable  : '.__('admin/command.mail_bypass.action_disable'));
+        $this->line('  - status   : '.__('admin/command.mail_bypass.action_status'));
 
         return self::FAILURE;
     }

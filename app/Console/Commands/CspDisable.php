@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -63,23 +63,24 @@ class CspDisable extends Command
         try {
             // CSPを無効化
             SecuritySetting::set('csp_enabled', 0);
-            
+
             // キャッシュをクリア
             Cache::flush();
-            
+
             $this->info('✅ CSPを無効化しました');
-            $this->info('📝 ログ: CSPが無効化されました - ' . now());
-            
+            $this->info('📝 ログ: CSPが無効化されました - '.now());
+
             // ログに記録
             \Log::channel('stack')->warning('CSP無効化コマンド実行', [
                 'command' => 'dixlase:csp:disable',
                 'user' => 'CLI',
                 'timestamp' => now(),
             ]);
-            
+
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error('❌ CSPの無効化に失敗しました: ' . $e->getMessage());
+            $this->error('❌ CSPの無効化に失敗しました: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

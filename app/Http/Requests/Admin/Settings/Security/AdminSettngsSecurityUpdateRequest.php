@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,9 +35,8 @@
 
 namespace App\Http\Requests\Admin\Settings\Security;
 
-use Illuminate\Foundation\Http\FormRequest;
 use App\Enums\ExtensionSecurityPreset;
-use App\Enums\ExtensionSecurityLevel;
+use Illuminate\Foundation\Http\FormRequest;
 
 class AdminSettngsSecurityUpdateRequest extends FormRequest
 {
@@ -82,7 +81,6 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
         ]);
     }
 
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -122,7 +120,7 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             // Password security validation rules
             'pwned_password_check_enabled' => 'required|boolean',
             // Extension security validation rules
-            'extension_security_preset' => 'required|string|in:' . implode(',', array_map(fn($p) => $p->value, ExtensionSecurityPreset::cases())),
+            'extension_security_preset' => 'required|string|in:'.implode(',', array_map(fn ($p) => $p->value, ExtensionSecurityPreset::cases())),
             'extension_require_signature' => 'nullable|boolean',
             'extension_require_permission_definition' => 'nullable|boolean',
             'extension_allow_undefined_permissions' => 'nullable|boolean',
@@ -135,21 +133,21 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
         // CAPTCHAが有効な場合の条件付きバリデーション
         if ($this->boolean('captcha_enabled')) {
             $captchaDriver = $this->input('captcha_driver', 'google');
-            
+
             // 共通フィールドを必須にする
             $rules['captcha_site_key'] = 'required|string';
             $rules['captcha_secret_key'] = 'required|string';
-            
+
             // Google reCAPTCHA v3またはEnterpriseの場合のみmin_scoreを必須にする
             if (($captchaDriver === 'google' && $this->input('captcha_google_version') === 'v3') || $captchaDriver === 'google_enterprise') {
                 $rules['captcha_google_min_score'] = 'required|numeric|between:0,1';
             }
-            
+
             // Enterprise使用時はプロジェクトIDも必須
             if ($captchaDriver === 'google_enterprise') {
                 $rules['captcha_google_project_id'] = 'required|string';
             }
-            
+
             // CAPTCHAが有効な場合でもテストは必須ではない（設定のみ必須）
         } else {
             $rules['captcha_google_site_key'] = 'nullable|string|max:255';

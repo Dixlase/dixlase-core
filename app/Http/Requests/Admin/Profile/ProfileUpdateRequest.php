@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -36,9 +36,8 @@
 namespace App\Http\Requests\Admin\Profile;
 
 use App\Enums\AppearanceMode;
-use App\Enums\Locale;
 use App\Enums\AuthenticationMode;
-use App\Enums\TwoFaMethod;
+use App\Enums\Locale;
 use App\Models\SecuritySetting;
 use App\Services\PasswordService;
 use Illuminate\Foundation\Http\FormRequest;
@@ -63,7 +62,7 @@ class ProfileUpdateRequest extends FormRequest
     public function rules(): array
     {
         $member = Auth::guard('member')->user();
-        
+
         // パスワード設定を取得（セキュリティ設定から）
         $passwordMinLength = (int) SecuritySetting::getValue('password_min_length', 8);
         $passwordRequireUppercase = (bool) SecuritySetting::getValue('password_require_uppercase', true);
@@ -87,8 +86,8 @@ class ProfileUpdateRequest extends FormRequest
             'account_name' => 'required|string|alpha_num|min:3|max:20',
             'display_name' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'email' => 'required|string|email|max:255|unique:members,email,' . $member->id,
-            'locale' => 'nullable|string|in:' . implode(',', Locale::values()),
+            'email' => 'required|string|email|max:255|unique:members,email,'.$member->id,
+            'locale' => 'nullable|string|in:'.implode(',', Locale::values()),
             'password' => $passwordRules,
             'appearance' => ['nullable', new Enum(AppearanceMode::class)],
             'login_notification_mode' => ['nullable', new Enum(AuthenticationMode::class)],

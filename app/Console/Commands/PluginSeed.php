@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,10 +35,10 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\PluginManagementTrait;
 use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
-use App\Console\Traits\PluginManagementTrait;
 
 class PluginSeed extends Command
 {
@@ -53,6 +53,7 @@ class PluginSeed extends Command
                             {plugin : The name of the plugin (e.g. EventsPlugin)}
                             {--class=DatabaseSeeder : The seeder class name to run}
                             {--force : Force the operation to run in production}';
+
     /**
      * The console command description.
      *
@@ -68,19 +69,21 @@ class PluginSeed extends Command
     public function handle()
     {
         $plugin = $this->argument('plugin');
-        $force  = $this->option('force');
+        $force = $this->option('force');
         $seederClassName = $this->option('class'); // 既定は 'DatabaseSeeder'
 
         // 1. プラグインディレクトリが存在するか確認
-        if (!$this->pluginExists($plugin)) {
+        if (! $this->pluginExists($plugin)) {
             $this->error("Plugin [{$plugin}] does not exist.");
+
             return Command::FAILURE;
         }
 
         // 2. シーダークラスの確認
         $fullSeederClass = "Plugins\\{$plugin}\\Database\\Seeders\\{$seederClassName}";
-        if (!class_exists($fullSeederClass)) {
+        if (! class_exists($fullSeederClass)) {
             $this->error("Seeder class [{$fullSeederClass}] not found.");
+
             return Command::FAILURE;
         }
 
@@ -95,13 +98,16 @@ class PluginSeed extends Command
 
             $this->info(Artisan::output()); // シーダーの実行結果を表示
             $this->info("Seeding for plugin [{$plugin}] completed successfully.");
+
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error("Error executing seeder: " . $e->getMessage());
+            $this->error('Error executing seeder: '.$e->getMessage());
+
             return Command::FAILURE;
         }
 
         $this->info('Seeding cancelled.');
+
         return Command::FAILURE;
     }
 }

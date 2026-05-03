@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -82,24 +82,34 @@ class FileIntegrityAudit extends Model
 
     // スコープ定数
     public const SCOPE_CORE = 'core';
+
     public const SCOPE_PLUGIN = 'plugin';
+
     public const SCOPE_THEME = 'theme';
+
     public const SCOPE_ALL = 'all';
 
     // トリガー定数
     public const TRIGGER_MANUAL = 'manual';
+
     public const TRIGGER_SCHEDULE = 'schedule';
+
     public const TRIGGER_INSTALL = 'install';
+
     public const TRIGGER_UPDATE = 'update';
 
     // 実行者タイプ定数
     public const INITIATED_BY_USER = 'user';
+
     public const INITIATED_BY_CLI = 'cli';
+
     public const INITIATED_BY_SYSTEM = 'system';
 
     // ステータス定数
     public const STATUS_OK = 'ok';
+
     public const STATUS_WARNING = 'warning';
+
     public const STATUS_CRITICAL = 'critical';
 
     /**

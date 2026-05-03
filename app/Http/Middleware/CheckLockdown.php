@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -60,10 +60,7 @@ class CheckLockdown
     /**
      * Handle an incoming request.
      *
-     * @param Request $request
-     * @param Closure $next
-     * @param string|null $type ロックダウンタイプ（null=全タイプ）
-     * @return Response
+     * @param  string|null  $type  ロックダウンタイプ（null=全タイプ）
      */
     public function handle(Request $request, Closure $next, ?string $type = null): Response
     {
@@ -73,7 +70,7 @@ class CheckLockdown
         // ロックダウン状態を取得
         $lockdown = LockdownService::getStatus();
 
-        if (!$lockdown) {
+        if (! $lockdown) {
             return $next($request);
         }
 

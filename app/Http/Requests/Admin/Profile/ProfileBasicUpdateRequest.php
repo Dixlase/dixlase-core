@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -49,13 +49,13 @@ class ProfileBasicUpdateRequest extends FormRequest
     public function rules(): array
     {
         $member = Auth::guard('member')->user();
-        
+
         $rules = [
             'account_name' => 'required|string|alpha_num|min:3|max:20',
             'display_name' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'email' => 'required|string|email|max:255|unique:members,email,' . $member->id,
-            'locale' => 'nullable|string|in:' . implode(',', Locale::values()),
+            'email' => 'required|string|email|max:255|unique:members,email,'.$member->id,
+            'locale' => 'nullable|string|in:'.implode(',', Locale::values()),
         ];
 
         // メールアドレスが変更された場合は確認フィールドを必須に

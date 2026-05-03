@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,7 +35,7 @@
 
 return [
     'UTC' => 'UTC (Coordinated Universal Time)',
-    
+
     // Asia
     'Asia/Tokyo' => 'Japan (Tokyo)',
     'Asia/Seoul' => 'South Korea (Seoul)',
@@ -53,7 +53,7 @@ return [
     'Asia/Riyadh' => 'Saudi Arabia (Riyadh)',
     'Asia/Tehran' => 'Iran (Tehran)',
     'Asia/Jerusalem' => 'Israel (Jerusalem)',
-    
+
     // Americas
     'America/New_York' => 'Eastern Time (New York)',
     'America/Chicago' => 'Central Time (Chicago)',
@@ -72,7 +72,7 @@ return [
     'America/Lima' => 'Peru (Lima)',
     'America/Bogota' => 'Colombia (Bogota)',
     'America/Caracas' => 'Venezuela (Caracas)',
-    
+
     // Europe
     'Europe/London' => 'United Kingdom (London)',
     'Europe/Paris' => 'France (Paris)',
@@ -93,14 +93,14 @@ return [
     'Europe/Athens' => 'Greece (Athens)',
     'Europe/Istanbul' => 'Turkey (Istanbul)',
     'Europe/Moscow' => 'Russia (Moscow)',
-    
+
     // Africa
     'Africa/Cairo' => 'Egypt (Cairo)',
     'Africa/Johannesburg' => 'South Africa (Johannesburg)',
     'Africa/Nairobi' => 'Kenya (Nairobi)',
     'Africa/Lagos' => 'Nigeria (Lagos)',
     'Africa/Casablanca' => 'Morocco (Casablanca)',
-    
+
     // Oceania
     'Australia/Sydney' => 'Australia (Sydney)',
     'Australia/Melbourne' => 'Australia (Melbourne)',

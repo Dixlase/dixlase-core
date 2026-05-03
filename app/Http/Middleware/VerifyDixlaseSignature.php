@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -44,10 +44,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Middleware to verify Dixlase API signatures
- * 
+ *
  * Validates HMAC-SHA256 signatures on incoming API requests.
  * Follows Dixlase API Signature Specification v1.
- * 
+ *
  * @see docs/api-signature-spec.md
  */
 class VerifyDixlaseSignature
@@ -56,23 +56,23 @@ class VerifyDixlaseSignature
      * Header names
      */
     protected const HEADER_KEY = 'X-Dixlase-Key';
+
     protected const HEADER_TIMESTAMP = 'X-Dixlase-Timestamp';
+
     protected const HEADER_SIGNATURE = 'X-Dixlase-Signature';
 
     /**
      * Handle an incoming request.
      *
-     * @param Request $request
-     * @param Closure $next
-     * @param string|null $clientResolver Custom client resolver class (optional)
-     * @return Response
+     * @param  string|null  $clientResolver  Custom client resolver class (optional)
      */
     public function handle(Request $request, Closure $next, ?string $clientResolver = null): Response
     {
         $result = $this->verifySignature($request, $clientResolver);
 
-        if (!$result->isValid()) {
+        if (! $result->isValid()) {
             $this->logFailure($request, $result);
+
             return $this->errorResponse($result);
         }
 
@@ -81,10 +81,6 @@ class VerifyDixlaseSignature
 
     /**
      * Verify the request signature
-     *
-     * @param Request $request
-     * @param string|null $clientResolver
-     * @return SignatureResult
      */
     protected function verifySignature(Request $request, ?string $clientResolver = null): SignatureResult
     {
@@ -94,17 +90,17 @@ class VerifyDixlaseSignature
         $signature = $request->header(self::HEADER_SIGNATURE);
 
         // Check required headers
-        if (!$apiKey || !$timestamp || !$signature) {
+        if (! $apiKey || ! $timestamp || ! $signature) {
             return SignatureResult::missingHeaders();
         }
 
         // Validate timestamp format and freshness
-        if (!is_numeric($timestamp)) {
+        if (! is_numeric($timestamp)) {
             return SignatureResult::timestampExpired();
         }
 
         $timestampInt = (int) $timestamp;
-        if (!DixlaseSigner::isTimestampValid($timestampInt)) {
+        if (! DixlaseSigner::isTimestampValid($timestampInt)) {
             return SignatureResult::timestampExpired();
         }
 
@@ -114,7 +110,7 @@ class VerifyDixlaseSignature
             return SignatureResult::invalidApiKey();
         }
 
-        if (!$clientData['active']) {
+        if (! $clientData['active']) {
             return SignatureResult::revokedKey();
         }
 
@@ -144,7 +140,7 @@ class VerifyDixlaseSignature
             $timestampInt
         );
 
-        if (!hash_equals($expectedSignature, $signatureValue)) {
+        if (! hash_equals($expectedSignature, $signatureValue)) {
             return SignatureResult::invalidSignature();
         }
 
@@ -157,8 +153,6 @@ class VerifyDixlaseSignature
     /**
      * Resolve client data from API key
      *
-     * @param string $apiKey
-     * @param string|null $resolverClass
      * @return array|null ['id' => int, 'secret' => string, 'active' => bool, ...]
      */
     protected function resolveClient(string $apiKey, ?string $resolverClass = null): ?array
@@ -174,7 +168,7 @@ class VerifyDixlaseSignature
         // Default: Use ApiClient model if exists
         // This will be implemented when ApiClient model is created
         // For now, return null (no client found)
-        
+
         // Example implementation when ApiClient model exists:
         // $client = \App\Models\ApiClient::where('api_key', $apiKey)->first();
         // if (!$client) {
@@ -192,9 +186,6 @@ class VerifyDixlaseSignature
 
     /**
      * Log signature verification failure
-     *
-     * @param Request $request
-     * @param SignatureResult $result
      */
     protected function logFailure(Request $request, SignatureResult $result): void
     {
@@ -210,13 +201,10 @@ class VerifyDixlaseSignature
 
     /**
      * Mask API key for logging
-     *
-     * @param string|null $apiKey
-     * @return string
      */
     protected function maskApiKey(?string $apiKey): string
     {
-        if (!$apiKey) {
+        if (! $apiKey) {
             return '(none)';
         }
 
@@ -224,14 +212,11 @@ class VerifyDixlaseSignature
             return str_repeat('*', strlen($apiKey));
         }
 
-        return substr($apiKey, 0, 8) . '...' . substr($apiKey, -4);
+        return substr($apiKey, 0, 8).'...'.substr($apiKey, -4);
     }
 
     /**
      * Create error response
-     *
-     * @param SignatureResult $result
-     * @return Response
      */
     protected function errorResponse(SignatureResult $result): Response
     {

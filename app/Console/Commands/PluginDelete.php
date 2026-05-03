@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,12 +35,12 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 use App\Helpers\ComposerLocalHelper;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\GitIgnoreHelper;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 
 class PluginDelete extends Command
 {
@@ -65,27 +65,30 @@ class PluginDelete extends Command
     public function handle()
     {
         $pluginDirectory = $this->argument('pluginDirectory');
-        $pluginPath = base_path('plugins/' . $pluginDirectory);
+        $pluginPath = base_path('plugins/'.$pluginDirectory);
 
         // プラグインディレクトリの存在チェック
-        if (!File::exists($pluginPath)) {
+        if (! File::exists($pluginPath)) {
             $this->error(__('admin/command.plugin_delete.not_found', ['directory' => $pluginDirectory]));
+
             return 1;
         }
 
         // データベースに登録されているかチェック（アンインストール済みかどうか）
         $plugin = DB::table('plugins')->where('directory', $pluginDirectory)->first();
-        
+
         if ($plugin) {
             $this->error(__('admin/command.plugin_delete.still_installed', ['pluginName' => $plugin->name]));
             $this->warn(__('admin/command.plugin_delete.uninstall_first'));
+
             return 1;
         }
 
         // 確認プロンプト
-        if (!$this->option('force')) {
-            if (!$this->confirm(__('admin/command.plugin_delete.confirm', ['directory' => $pluginDirectory]), false)) {
+        if (! $this->option('force')) {
+            if (! $this->confirm(__('admin/command.plugin_delete.confirm', ['directory' => $pluginDirectory]), false)) {
                 $this->info(__('admin/command.plugin_delete.cancelled'));
+
                 return 0;
             }
         }
@@ -96,6 +99,7 @@ class PluginDelete extends Command
             $this->info(__('admin/command.plugin_delete.deleted', ['path' => $pluginPath]));
         } catch (\Exception $e) {
             $this->error(__('admin/command.plugin_delete.failed', ['error' => $e->getMessage()]));
+
             return 1;
         }
 
@@ -113,13 +117,13 @@ class PluginDelete extends Command
 
         // composer.local.jsonを更新
         ComposerLocalHelper::syncAutoload();
-        $this->info("✓ composer.local.jsonを更新しました");
+        $this->info('✓ composer.local.jsonを更新しました');
 
         // 注意: composer.local.jsonのみ更新し、composer.jsonは素の状態を保持
         // オートロードの反映は `composer dump-autoload` で手動実行
 
         $this->info(__('admin/command.plugin_delete.completed', ['directory' => $pluginDirectory]));
-        
+
         return 0;
     }
 }

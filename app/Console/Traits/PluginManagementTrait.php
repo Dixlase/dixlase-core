@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -37,7 +37,6 @@ namespace App\Console\Traits;
 
 use Exception;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 
 /**
  * カスタムバリデーター（または独自バリデーションルール）を作るための追加ロジック。
@@ -45,11 +44,8 @@ use Illuminate\Support\Facades\File;
  */
 trait PluginManagementTrait
 {
-
     /**
      * 現在の環境が本番環境かどうかを判定
-     *
-     * @return bool
      */
     protected function isProduction(): bool
     {
@@ -59,8 +55,7 @@ trait PluginManagementTrait
     /**
      * 本番環境での実行を確認する
      *
-     * @param string $action 説明文（例: "migrate"）
-     * @return bool
+     * @param  string  $action  説明文（例: "migrate"）
      */
     protected function confirmProduction(string $action): bool
     {
@@ -74,8 +69,7 @@ trait PluginManagementTrait
     /**
      * プラグインディレクトリの存在確認
      *
-     * @param string $plugin プラグイン名
-     * @return bool
+     * @param  string  $plugin  プラグイン名
      */
     protected function pluginExists(string $plugin): bool
     {
@@ -85,7 +79,6 @@ trait PluginManagementTrait
     /**
      * プラグインデータを取得
      *
-     * @param string $pluginName
      * @return object|null
      */
     protected function getPluginData(string $pluginName)
@@ -95,9 +88,6 @@ trait PluginManagementTrait
 
     /**
      * プラグインを有効化
-     *
-     * @param string $pluginName
-     * @return void
      */
     protected function enablePlugin(string $pluginName): void
     {
@@ -107,9 +97,6 @@ trait PluginManagementTrait
 
     /**
      * プラグインを無効化
-     *
-     * @param string $pluginName
-     * @return void
      */
     protected function disablePlugin(string $pluginName): void
     {
@@ -120,8 +107,7 @@ trait PluginManagementTrait
     /**
      * マイグレーションディレクトリの存在確認
      *
-     * @param string $plugin プラグイン名
-     * @return bool
+     * @param  string  $plugin  プラグイン名
      */
     protected function migrationPathExists(string $plugin): bool
     {
@@ -131,7 +117,7 @@ trait PluginManagementTrait
     /**
      * オプションのバリデーションや処理を行う
      *
-     * @param array $options 処理するオプション
+     * @param  array  $options  処理するオプション
      * @return array 処理済みのオプション
      */
     protected function processOptions(array $options): array
@@ -148,27 +134,27 @@ trait PluginManagementTrait
     /**
      * マイグレーション操作を安全に実行するラッパーメソッド
      *
-     * @param callable $operation 実行するマイグレーション操作
-     * @return bool
+     * @param  callable  $operation  実行するマイグレーション操作
      */
     protected function executeOperation(callable $operation): bool
     {
         try {
             $operation();
+
             return true;
         } catch (Exception $e) {
             $this->error($e->getMessage());
+
             return false;
         }
     }
 
     /**
      * オートロードを更新
-     * 
+     *
      * 注意: このメソッドは非推奨です。
      * composer.local.jsonの更新にはComposerLocalHelper::syncAutoload()を使用してください。
      *
-     * @return void
      * @deprecated
      */
     protected function updateAutoload(): void

@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -65,7 +65,9 @@ class AuditLogDailySeal extends Model
     protected $table = 'audit_log_daily_seals';
 
     public const STATUS_VALID = 'valid';
+
     public const STATUS_INVALID = 'invalid';
+
     public const STATUS_PENDING = 'pending';
 
     protected $fillable = [
@@ -126,9 +128,6 @@ class AuditLogDailySeal extends Model
 
     /**
      * Generate signature for this seal
-     *
-     * @param string $secretKey
-     * @return string
      */
     public function generateSignature(string $secretKey): string
     {
@@ -145,13 +144,11 @@ class AuditLogDailySeal extends Model
 
     /**
      * Verify this seal's signature
-     *
-     * @param string $secretKey
-     * @return bool
      */
     public function verifySignature(string $secretKey): bool
     {
         $expectedSignature = $this->generateSignature($secretKey);
+
         return hash_equals($expectedSignature, $this->daily_signature);
     }
 

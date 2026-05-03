@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,10 +35,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Plugin;
-use Illuminate\Support\Facades\File;
 use App\Providers\PluginServiceProvider;
+use Illuminate\Console\Command;
 
 class PluginDisable extends Command
 {
@@ -68,8 +67,9 @@ class PluginDisable extends Command
         // Find the plugin by name
         $plugin = Plugin::where('name', $pluginName)->first();
 
-        if (!$plugin) {
+        if (! $plugin) {
             $this->error(__('admin/command.make_plugin.not_found', ['pluginName' => $pluginName]));
+
             return 1;
         }
 
@@ -83,20 +83,20 @@ class PluginDisable extends Command
         PluginServiceProvider::clearEnabledPluginsCache();
 
         $this->info(__('admin/command.make_plugin.disabled', ['pluginName' => $pluginName]));
+
         return 0;
     }
 
     /**
      * Remove symlink for plugin assets
      *
-     * @param string $pluginDirName
      * @return void
      */
     protected function removePluginSymlink(string $pluginDirName)
     {
         $this->call('dls:plugin:symlink', [
             'action' => 'remove',
-            'plugin' => $pluginDirName
+            'plugin' => $pluginDirName,
         ]);
     }
 }

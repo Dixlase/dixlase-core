@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,10 +35,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Theme;
-use Illuminate\Support\Facades\File;
 use App\Services\ThemeMigrator;
+use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Filesystem\Filesystem;
 
@@ -50,7 +49,7 @@ class ThemeUninstall extends Command
      * @var string
      */
     protected $signature = 'dls:theme:uninstall 
-                            {themeName : ' . 'command.theme_uninstall.theme_name_prompt' . '}
+                            {themeName : '.'command.theme_uninstall.theme_name_prompt'.'}
                             {--rollback : Rollback database migrations}
                             {--force : Force uninstall even if theme is enabled}';
 
@@ -69,28 +68,31 @@ class ThemeUninstall extends Command
     public function handle()
     {
         $themeName = $this->argument('themeName');
-        
+
         // Find the theme
         $theme = Theme::where('name', $themeName)
-                     ->orWhere('slug', $themeName)
-                     ->first();
+            ->orWhere('slug', $themeName)
+            ->first();
 
-        if (!$theme) {
+        if (! $theme) {
             $this->error(__('admin/command.theme_uninstall.theme_not_found', ['themeName' => $themeName]));
+
             return Command::FAILURE;
         }
 
         // Check if theme is enabled (unless --force is specified)
-        if ($theme->isEnabled() && !$this->option('force')) {
+        if ($theme->isEnabled() && ! $this->option('force')) {
             $this->error(__('admin/command.theme_uninstall.cannot_uninstall_enabled', ['themeName' => $theme->name]));
             $this->warn(__('admin/command.theme_uninstall.disable_first'));
+
             return Command::FAILURE;
         }
 
         // Ask for confirmation (unless --no-interaction is specified)
-        if (!$this->option('no-interaction')) {
-            if (!$this->confirm(__('admin/command.theme_uninstall.confirmation', ['themeName' => $theme->name]))) {
+        if (! $this->option('no-interaction')) {
+            if (! $this->confirm(__('admin/command.theme_uninstall.confirmation', ['themeName' => $theme->name]))) {
                 $this->info(__('admin/command.theme_uninstall.cancelled'));
+
                 return Command::SUCCESS;
             }
         }
@@ -109,9 +111,9 @@ class ThemeUninstall extends Command
                 $migrator->rollback($theme->directory, ['step' => 999]);
                 $this->info('Theme migrations rolled back successfully');
             } catch (\Exception $e) {
-                $this->warn("Failed to rollback migrations: " . $e->getMessage());
+                $this->warn('Failed to rollback migrations: '.$e->getMessage());
             }
-        } else if (!$this->option('no-interaction') && $this->confirm('Do you want to rollback database migrations?', false)) {
+        } elseif (! $this->option('no-interaction') && $this->confirm('Do you want to rollback database migrations?', false)) {
             $this->info('Rolling back theme migrations...');
             try {
                 $migrator = new ThemeMigrator(
@@ -124,7 +126,7 @@ class ThemeUninstall extends Command
                 $migrator->rollback($theme->directory, ['step' => 999]);
                 $this->info('Theme migrations rolled back successfully');
             } catch (\Exception $e) {
-                $this->warn("Failed to rollback migrations: " . $e->getMessage());
+                $this->warn('Failed to rollback migrations: '.$e->getMessage());
             }
         } else {
             $this->info('Skipping migration rollback');
@@ -138,7 +140,7 @@ class ThemeUninstall extends Command
         $this->info(__('admin/command.theme_uninstall.uninstalled', ['themeName' => $theme->name]));
         $this->info(__('admin/command.theme_uninstall.files_preserved'));
         $this->info(__('admin/command.theme_uninstall.delete_hint'));
-        
+
         return Command::SUCCESS;
     }
 }

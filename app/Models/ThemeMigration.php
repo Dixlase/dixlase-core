@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -59,8 +59,6 @@ class ThemeMigration extends Model
 
     /**
      * Get the next batch number.
-     *
-     * @return int
      */
     public static function getNextBatchNumber(): int
     {
@@ -70,7 +68,6 @@ class ThemeMigration extends Model
     /**
      * Get migrations for a specific theme.
      *
-     * @param string $themeName
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public static function getThemeMigrations(string $themeName)
@@ -83,10 +80,6 @@ class ThemeMigration extends Model
 
     /**
      * Check if a migration has been run for a theme.
-     *
-     * @param string $themeName
-     * @param string $migration
-     * @return bool
      */
     public static function hasRun(string $themeName, string $migration): bool
     {
@@ -97,9 +90,6 @@ class ThemeMigration extends Model
 
     /**
      * Delete all migrations for a specific theme.
-     *
-     * @param string $themeName
-     * @return int
      */
     public static function deleteThemeMigrations(string $themeName): int
     {

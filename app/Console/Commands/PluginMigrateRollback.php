@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -58,7 +58,6 @@ class PluginMigrateRollback extends Command
      *
      * @var string
      */
-
     protected $description = 'Rollback the last migration batch for a specific plugin';
 
     protected PluginMigrator $pluginMigrator;
@@ -85,13 +84,15 @@ class PluginMigrateRollback extends Command
         $options = $this->processOptions($options);
 
         // プラグインディレクトリの存在確認
-        if (!$this->pluginExists($plugin)) {
+        if (! $this->pluginExists($plugin)) {
             $this->error("Plugin [{$plugin}] does not exist.");
+
             return Command::FAILURE;
         }
 
-        if (!$this->migrationPathExists($plugin)) {
+        if (! $this->migrationPathExists($plugin)) {
             $this->error("Migration directory does not exist for plugin [{$plugin}].");
+
             return Command::FAILURE;
         }
 
@@ -105,14 +106,15 @@ class PluginMigrateRollback extends Command
                 $this->info("No migrations to rollback for plugin [{$plugin}].");
             } else {
                 foreach ($rolledBack as $file) {
-                    $this->info("Rolled back: " . $file);
+                    $this->info('Rolled back: '.$file);
                 }
                 $this->info("Rollback for plugin [{$plugin}] completed successfully.");
             }
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error("Error during rollback: " . $e->getMessage());
+            $this->error('Error during rollback: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

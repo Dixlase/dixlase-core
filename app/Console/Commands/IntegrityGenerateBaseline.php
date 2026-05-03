@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -64,15 +64,16 @@ class IntegrityGenerateBaseline extends Command
         $this->info(__('admin/command.integrity.generating_baseline'));
 
         // 既存のベースラインをチェック
-        if ($service->hasBaseline() && !$this->option('force')) {
+        if ($service->hasBaseline() && ! $this->option('force')) {
             $meta = $service->getBaselineMeta();
             $this->warn(__('admin/command.integrity.baseline_exists', [
                 'date' => $meta['generated_at'] ?? 'unknown',
                 'version' => $meta['app_version'] ?? 'unknown',
             ]));
 
-            if (!$this->confirm(__('admin/command.integrity.overwrite_confirm'))) {
+            if (! $this->confirm(__('admin/command.integrity.overwrite_confirm'))) {
                 $this->info(__('admin/command.integrity.cancelled'));
+
                 return Command::SUCCESS;
             }
         }
@@ -82,13 +83,13 @@ class IntegrityGenerateBaseline extends Command
         // ベースラインを生成
         $baseline = $service->generateCoreBaseline();
 
-        $this->info(' ' . __('common.done'));
+        $this->info(' '.__('common.done'));
 
         // 保存
         $this->output->write(__('admin/command.integrity.saving_baseline'));
 
         if ($service->saveBaselineArray($baseline)) {
-            $this->info(' ' . __('common.done'));
+            $this->info(' '.__('common.done'));
 
             // 監査ログを記録
             FileIntegrityAudit::create([
@@ -121,6 +122,7 @@ class IntegrityGenerateBaseline extends Command
         }
 
         $this->error(__('admin/command.integrity.baseline_failed'));
+
         return Command::FAILURE;
     }
 }

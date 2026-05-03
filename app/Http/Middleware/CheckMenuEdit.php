@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,10 +35,10 @@
 
 namespace App\Http\Middleware;
 
-use Closure;
-use Illuminate\Http\Request;
 use App\Helpers\AdminHelper;
 use App\Helpers\AdminModeHelper;
+use Closure;
+use Illuminate\Http\Request;
 
 class CheckMenuEdit
 {
@@ -50,12 +50,12 @@ class CheckMenuEdit
     public function handle(Request $request, Closure $next, string $menuKey): \Symfony\Component\HttpFoundation\Response
     {
         // 権限チェック
-        if (!AdminHelper::canEditMenu($menuKey)) {
+        if (! AdminHelper::canEditMenu($menuKey)) {
             abort(403, '編集権限がありません。');
         }
 
         // かんたんモード時: ReadOnly/GuideOnly/HiddenのPOSTをブロック
-        if (AdminModeHelper::isSimpleMode() && !AdminModeHelper::isMenuEditable($menuKey)) {
+        if (AdminModeHelper::isSimpleMode() && ! AdminModeHelper::isMenuEditable($menuKey)) {
             abort(403, 'かんたんモードではこの設定を変更できません。');
         }
 

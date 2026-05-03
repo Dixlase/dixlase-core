@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,22 +35,22 @@
 
 return [
 
-        'git_not_found' => 'Git repository not found. .git directory does not exist.',
-        'gitignore_not_found' => '.gitignore file not found.',
-        'scanning' => 'Scanning directories...',
-        'plugins_found' => 'Plugin directories found:',
-        'themes_found' => 'Theme directories found:',
-        'to_add' => 'to add:',
-        'to_remove' => 'to remove:',
-        'exclude_in_sync' => '✓ .git/info/exclude is already in sync. No changes needed.',
-        'gitignore_in_sync' => '✓ .gitignore is already in sync. No changes needed.',
-        'dry_run' => 'Dry run mode. No changes were made.',
-        'confirm_apply' => 'Do you want to apply these changes?',
-        'cancelled' => 'Operation cancelled.',
-        'exclude_synced' => '✓ Successfully synced .git/info/exclude',
-        'gitignore_synced' => '✓ Successfully synced .gitignore',
-        'already_exists' => 'Exclusion already exists: :path',
-        'added' => 'Added exclusion: :path',
-        'removed' => 'Removed exclusion: :path',
-        'failed' => 'Operation failed: :error',
+    'git_not_found' => 'Git repository not found. .git directory does not exist.',
+    'gitignore_not_found' => '.gitignore file not found.',
+    'scanning' => 'Scanning directories...',
+    'plugins_found' => 'Plugin directories found:',
+    'themes_found' => 'Theme directories found:',
+    'to_add' => 'to add:',
+    'to_remove' => 'to remove:',
+    'exclude_in_sync' => '✓ .git/info/exclude is already in sync. No changes needed.',
+    'gitignore_in_sync' => '✓ .gitignore is already in sync. No changes needed.',
+    'dry_run' => 'Dry run mode. No changes were made.',
+    'confirm_apply' => 'Do you want to apply these changes?',
+    'cancelled' => 'Operation cancelled.',
+    'exclude_synced' => '✓ Successfully synced .git/info/exclude',
+    'gitignore_synced' => '✓ Successfully synced .gitignore',
+    'already_exists' => 'Exclusion already exists: :path',
+    'added' => 'Added exclusion: :path',
+    'removed' => 'Removed exclusion: :path',
+    'failed' => 'Operation failed: :error',
 ];

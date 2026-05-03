@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,8 +35,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Theme;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class ThemeSwitch extends Command
@@ -46,7 +46,7 @@ class ThemeSwitch extends Command
      *
      * @var string
      */
-    protected $signature = 'dls:theme:switch {themeName? : ' . 'command.theme_switch.theme_name_prompt' . '}';
+    protected $signature = 'dls:theme:switch {themeName? : '.'command.theme_switch.theme_name_prompt'.'}';
 
     /**
      * The console command description.
@@ -68,26 +68,28 @@ class ThemeSwitch extends Command
     public function handle()
     {
         $themeName = $this->argument('themeName');
-        
+
         // If no theme name provided, show interactive choice
-        if (!$themeName) {
+        if (! $themeName) {
             return $this->interactiveSwitch();
         }
 
         // Find the theme
         $theme = Theme::where('name', $themeName)
-                     ->orWhere('slug', $themeName)
-                     ->first();
+            ->orWhere('slug', $themeName)
+            ->first();
 
-        if (!$theme) {
+        if (! $theme) {
             $this->error(__('admin/command.theme_switch.theme_not_found', ['themeName' => $themeName]));
+
             return Command::FAILURE;
         }
 
         // Check if theme is installed
-        if (!$theme->isInstalled()) {
+        if (! $theme->isInstalled()) {
             $this->error(__('admin/command.theme_switch.not_installed', ['themeName' => $theme->name]));
             $this->info(__('admin/command.theme_switch.install_first', ['themeName' => $theme->name]));
+
             return Command::FAILURE;
         }
 
@@ -97,7 +99,6 @@ class ThemeSwitch extends Command
     /**
      * Switch to the specified theme
      *
-     * @param Theme $theme
      * @return int
      */
     protected function switchTheme(Theme $theme)
@@ -106,15 +107,16 @@ class ThemeSwitch extends Command
         $currentSetting = DB::table('theme_settings')
             ->where('key', 'enabled_theme_id')
             ->first();
-        
+
         $currentThemeId = $currentSetting ? $currentSetting->value : null;
-        
+
         // Check if already enabled
         if ($currentThemeId && $currentThemeId == $theme->id) {
             $this->info(__('admin/command.theme_switch.already_enabled', ['themeName' => $theme->name]));
+
             return Command::SUCCESS;
         }
-        
+
         // Get current theme for display message
         if ($currentThemeId) {
             $currentTheme = Theme::find($currentThemeId);
@@ -122,26 +124,26 @@ class ThemeSwitch extends Command
                 $this->info(__('admin/command.theme_switch.disabled', ['themeName' => $currentTheme->name]));
             }
         }
-        
+
         // Update or create the enabled_theme_id setting
         DB::table('theme_settings')
             ->updateOrInsert(
                 ['key' => 'enabled_theme_id'],
                 ['value' => $theme->id, 'updated_at' => now()]
             );
-        
+
         $this->info(__('admin/command.theme_switch.switched', ['themeName' => $theme->name]));
-        
+
         // Update symlink
         try {
             \Artisan::call('dls:theme:symlink', [
                 'action' => 'create',
-                'theme' => $theme->directory
+                'theme' => $theme->directory,
             ]);
         } catch (\Exception $e) {
             $this->warn(__('admin/command.theme_switch.symlink_warning'));
         }
-        
+
         return Command::SUCCESS;
     }
 
@@ -153,9 +155,10 @@ class ThemeSwitch extends Command
     protected function interactiveSwitch()
     {
         $themes = Theme::whereNotNull('installed_at')->get();
-        
+
         if ($themes->isEmpty()) {
             $this->error(__('admin/command.theme_switch.no_installed_themes'));
+
             return Command::FAILURE;
         }
 
@@ -163,16 +166,17 @@ class ThemeSwitch extends Command
         $currentSetting = DB::table('theme_settings')
             ->where('key', 'enabled_theme_id')
             ->first();
-        
+
         $currentThemeId = $currentSetting ? $currentSetting->value : null;
         $currentTheme = $currentThemeId ? Theme::find($currentThemeId) : null;
-        
+
         // Create choices array
         $choices = $themes->mapWithKeys(function ($theme) use ($currentThemeId) {
             $label = $theme->name;
             if ($currentThemeId && $currentThemeId == $theme->id) {
-                $label .= ' ' . __('admin/command.theme_switch.current_marker');
+                $label .= ' '.__('admin/command.theme_switch.current_marker');
             }
+
             return [$theme->slug => $label];
         })->toArray();
 
@@ -186,12 +190,12 @@ class ThemeSwitch extends Command
         $selectedSlug = array_search($selected, $choices);
         $theme = $themes->firstWhere('slug', $selectedSlug);
 
-        if (!$theme) {
+        if (! $theme) {
             $this->error(__('admin/command.theme_switch.selection_error'));
+
             return Command::FAILURE;
         }
 
         return $this->switchTheme($theme);
     }
-
 }

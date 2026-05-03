@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,12 +35,12 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\Theme;
-use Illuminate\Support\Facades\File;
-use App\Helpers\GitExcludeHelper;
 use App\Helpers\ComposerLocalHelper;
+use App\Helpers\GitExcludeHelper;
 use App\Helpers\GitIgnoreHelper;
+use App\Models\Theme;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
 
 class ThemeDelete extends Command
 {
@@ -49,8 +49,8 @@ class ThemeDelete extends Command
      *
      * @var string
      */
-    protected $signature = 'dls:theme:delete {themeDirectory : ' . 'command.theme_delete.theme_directory_prompt' . '}
-                            {--force : ' . 'command.theme_delete.force_option' . '}';
+    protected $signature = 'dls:theme:delete {themeDirectory : '.'command.theme_delete.theme_directory_prompt'.'}
+                            {--force : '.'command.theme_delete.force_option'.'}';
 
     /**
      * The console command description.
@@ -67,37 +67,41 @@ class ThemeDelete extends Command
     public function handle()
     {
         $themeDirectory = $this->argument('themeDirectory');
-        $themePath = base_path('themes/' . $themeDirectory);
+        $themePath = base_path('themes/'.$themeDirectory);
 
         // テーマディレクトリの存在チェック
-        if (!File::exists($themePath)) {
+        if (! File::exists($themePath)) {
             $this->error(__('admin/command.theme_delete.not_found', ['directory' => $themeDirectory]));
+
             return Command::FAILURE;
         }
 
         // データベースに登録されているかチェック（アンインストール済みかどうか）
         $theme = Theme::where('directory', $themeDirectory)->first();
-        
+
         if ($theme) {
             // テーマがまだインストールされている場合
             if ($theme->isInstalled()) {
                 $this->error(__('admin/command.theme_delete.still_installed', ['themeName' => $theme->name]));
                 $this->warn(__('admin/command.theme_delete.uninstall_first'));
+
                 return Command::FAILURE;
             }
-            
+
             // テーマが有効な場合（念のため）
             if ($theme->isEnabled()) {
                 $this->error(__('admin/command.theme_delete.still_enabled', ['themeName' => $theme->name]));
                 $this->warn(__('admin/command.theme_delete.disable_first'));
+
                 return Command::FAILURE;
             }
         }
 
         // 確認プロンプト
-        if (!$this->option('force')) {
-            if (!$this->confirm(__('admin/command.theme_delete.confirm', ['directory' => $themeDirectory]), false)) {
+        if (! $this->option('force')) {
+            if (! $this->confirm(__('admin/command.theme_delete.confirm', ['directory' => $themeDirectory]), false)) {
                 $this->info(__('admin/command.theme_delete.cancelled'));
+
                 return Command::SUCCESS;
             }
         }
@@ -108,6 +112,7 @@ class ThemeDelete extends Command
             $this->info(__('admin/command.theme_delete.deleted', ['path' => $themePath]));
         } catch (\Exception $e) {
             $this->error(__('admin/command.theme_delete.failed', ['error' => $e->getMessage()]));
+
             return Command::FAILURE;
         }
 
@@ -129,10 +134,10 @@ class ThemeDelete extends Command
 
         // composer.local.jsonを更新
         ComposerLocalHelper::syncAutoload();
-        $this->info("✓ composer.local.jsonを更新しました");
+        $this->info('✓ composer.local.jsonを更新しました');
 
         $this->info(__('admin/command.theme_delete.completed', ['directory' => $themeDirectory]));
-        
+
         return Command::SUCCESS;
     }
 }

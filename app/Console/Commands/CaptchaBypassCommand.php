@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -41,7 +41,7 @@ use Illuminate\Console\Command;
 
 /**
  * CAPTCHA緊急バイパスコマンド（ブレークグラス）
- * 
+ *
  * CAPTCHAプロバイダ障害時に、管理者がログインできるよう
  * 一時的にCAPTCHA検証をバイパスする緊急復旧機能
  */
@@ -90,8 +90,9 @@ class CaptchaBypassCommand extends Command
         $reason = $this->option('reason');
 
         // Validate scope
-        if (!in_array($scope, ['admin_login', 'all'])) {
+        if (! in_array($scope, ['admin_login', 'all'])) {
             $this->error(__('admin/command.captcha_bypass.invalid_scope', ['scope' => $scope]));
+
             return self::FAILURE;
         }
 
@@ -100,6 +101,7 @@ class CaptchaBypassCommand extends Command
             $reason = $this->ask(__('admin/command.captcha_bypass.reason_prompt'));
             if (empty($reason)) {
                 $this->error(__('admin/command.captcha_bypass.reason_required'));
+
                 return self::FAILURE;
             }
         }
@@ -114,8 +116,9 @@ class CaptchaBypassCommand extends Command
         ]));
         $this->newLine();
 
-        if (!$this->confirm(__('admin/command.captcha_bypass.confirm_enable'))) {
+        if (! $this->confirm(__('admin/command.captcha_bypass.confirm_enable'))) {
             $this->info(__('admin/command.captcha_bypass.cancelled'));
+
             return self::SUCCESS;
         }
 
@@ -124,7 +127,7 @@ class CaptchaBypassCommand extends Command
 
         if ($result) {
             $expiresAt = now()->addMinutes($minutes);
-            
+
             $this->info(__('admin/command.captcha_bypass.enabled', [
                 'minutes' => $minutes,
                 'expires_at' => $expiresAt->format('Y-m-d H:i:s'),
@@ -149,6 +152,7 @@ class CaptchaBypassCommand extends Command
         }
 
         $this->error(__('admin/command.captcha_bypass.enable_failed'));
+
         return self::FAILURE;
     }
 
@@ -157,8 +161,9 @@ class CaptchaBypassCommand extends Command
      */
     protected function disableBypass(): int
     {
-        if (!CaptchaBypassService::isActive()) {
+        if (! CaptchaBypassService::isActive()) {
             $this->info(__('admin/command.captcha_bypass.not_active'));
+
             return self::SUCCESS;
         }
 
@@ -199,7 +204,7 @@ class CaptchaBypassCommand extends Command
                     [__('admin/command.captcha_bypass.scope'), $status['scope']],
                     [__('admin/command.captcha_bypass.reason'), $status['reason']],
                     [__('admin/command.captcha_bypass.expires_at'), $status['expires_at']],
-                    [__('admin/command.captcha_bypass.remaining'), $status['remaining_minutes'] . ' ' . __('admin/command.captcha_bypass.minutes')],
+                    [__('admin/command.captcha_bypass.remaining'), $status['remaining_minutes'].' '.__('admin/command.captcha_bypass.minutes')],
                     [__('admin/command.captcha_bypass.enabled_at'), $status['enabled_at']],
                 ]
             );
@@ -212,7 +217,7 @@ class CaptchaBypassCommand extends Command
         if ($history->isNotEmpty()) {
             $this->newLine();
             $this->info(__('admin/command.captcha_bypass.recent_history'));
-            
+
             $rows = [];
             foreach ($history as $log) {
                 $rows[] = [
@@ -222,7 +227,7 @@ class CaptchaBypassCommand extends Command
                     $log->context['reason'] ?? '-',
                 ];
             }
-            
+
             $this->table(
                 [
                     __('admin/command.captcha_bypass.time'),
@@ -244,9 +249,9 @@ class CaptchaBypassCommand extends Command
     {
         $this->error(__('admin/command.captcha_bypass.invalid_action', ['action' => $action]));
         $this->line(__('admin/command.captcha_bypass.valid_actions'));
-        $this->line('  - enable   : ' . __('admin/command.captcha_bypass.action_enable'));
-        $this->line('  - disable  : ' . __('admin/command.captcha_bypass.action_disable'));
-        $this->line('  - status   : ' . __('admin/command.captcha_bypass.action_status'));
+        $this->line('  - enable   : '.__('admin/command.captcha_bypass.action_enable'));
+        $this->line('  - disable  : '.__('admin/command.captcha_bypass.action_disable'));
+        $this->line('  - status   : '.__('admin/command.captcha_bypass.action_status'));
 
         return self::FAILURE;
     }

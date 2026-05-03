@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -50,31 +50,31 @@ class AdminProfilePasskeyPromptController extends AdminLoggedInController
     public function dismiss(Request $request)
     {
         $member = Auth::guard('member')->user();
-        
+
         // passkey_prompt_dismissedフラグを設定
         $member->passkey_prompt_dismissed = true;
         $member->save();
-        
+
         return response()->json([
             'success' => true,
-            'message' => __('two_fa.passkey_prompt.dismissed')
+            'message' => __('two_fa.passkey_prompt.dismissed'),
         ]);
     }
-    
+
     /**
      * パスキー登録促進モーダルを再表示する（設定をリセット）
      */
     public function reset(Request $request)
     {
         $member = Auth::guard('member')->user();
-        
+
         // passkey_prompt_dismissedフラグをリセット
         $member->passkey_prompt_dismissed = false;
         $member->save();
-        
+
         return response()->json([
             'success' => true,
-            'message' => __('two_fa.passkey_prompt.reset')
+            'message' => __('two_fa.passkey_prompt.reset'),
         ]);
     }
 }

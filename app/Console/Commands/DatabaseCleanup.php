@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -80,9 +80,10 @@ class DatabaseCleanup extends Command
         }
 
         $type = $this->option('type');
-        
-        if (!$type) {
+
+        if (! $type) {
             $this->error(__('admin/command/database-cleanup.type_required'));
+
             return 1;
         }
 
@@ -92,15 +93,17 @@ class DatabaseCleanup extends Command
 
         if ($deleteAll || $days === 0) {
             $days = 0;
-            
-            if (!$force) {
+
+            if (! $force) {
                 if (app()->runningInConsole() && php_sapi_name() === 'cli') {
-                    if (!$this->confirm(__('admin/command/database-cleanup.confirm_delete_all', ['type' => $type]))) {
+                    if (! $this->confirm(__('admin/command/database-cleanup.confirm_delete_all', ['type' => $type]))) {
                         $this->info(__('admin/command/database-cleanup.operation_cancelled'));
+
                         return 0;
                     }
                 } else {
                     $this->error(__('admin/command/database-cleanup.force_required'));
+
                     return 1;
                 }
             }
@@ -108,6 +111,7 @@ class DatabaseCleanup extends Command
 
         if ($days < 0) {
             $this->error(__('admin/command/database-cleanup.invalid_days'));
+
             return 1;
         }
 
@@ -124,9 +128,10 @@ class DatabaseCleanup extends Command
     protected function cleanupType(string $type, int $days, bool $force): int
     {
         $config = $this->cleanupService->getCleanupConfig($type);
-        
-        if (!$config) {
+
+        if (! $config) {
             $this->error(__('admin/command/database-cleanup.type_not_found', ['type' => $type]));
+
             return 1;
         }
 
@@ -141,9 +146,11 @@ class DatabaseCleanup extends Command
         if ($result['success']) {
             $this->info(__('admin/command/database-cleanup.deleted_success', ['count' => $result['count']]));
             $this->line("DELETED_COUNT: {$result['count']}");
+
             return 0;
         } else {
             $this->error(__('admin/command/database-cleanup.cleanup_failed', ['error' => $result['message']]));
+
             return 1;
         }
     }
@@ -160,17 +167,18 @@ class DatabaseCleanup extends Command
         if ($result['success']) {
             $this->info(__('admin/command/database-cleanup.deleted_all_success', ['count' => $result['count']]));
             $this->line("DELETED_COUNT: {$result['count']}");
-            
+
             if ($this->option('verbose')) {
                 $this->table(
                     [__('admin/command/database-cleanup.table_type'), __('admin/command/database-cleanup.table_count')],
-                    collect($result['details'])->map(fn($detail, $type) => [$type, $detail['count']])->toArray()
+                    collect($result['details'])->map(fn ($detail, $type) => [$type, $detail['count']])->toArray()
                 );
             }
-            
+
             return 0;
         } else {
             $this->error(__('admin/command/database-cleanup.cleanup_failed', ['error' => $result['message']]));
+
             return 1;
         }
     }
@@ -185,10 +193,10 @@ class DatabaseCleanup extends Command
 
         $this->line(__('admin/command/database-cleanup.core_tables'));
         $coreConfig = $this->cleanupService->getCoreCleanupConfig();
-        
+
         foreach ($coreConfig as $type => $config) {
-            $description = is_string($config['description']) && str_contains($config['description'], '.') 
-                ? __($config['description']) 
+            $description = is_string($config['description']) && str_contains($config['description'], '.')
+                ? __($config['description'])
                 : $config['description'];
             $this->line("  - {$type} (table: {$config['table']}, default: {$config['default_days']} days)");
             $this->line("    {$description}");
@@ -197,13 +205,13 @@ class DatabaseCleanup extends Command
         $this->newLine();
         $this->line(__('admin/command/database-cleanup.plugin_tables'));
         $pluginConfig = $this->cleanupService->getPluginCleanupConfig();
-        
+
         if (empty($pluginConfig)) {
-            $this->line("  " . __('admin/command/database-cleanup.no_plugin_tables'));
+            $this->line('  '.__('admin/command/database-cleanup.no_plugin_tables'));
         } else {
             foreach ($pluginConfig as $type => $config) {
-                $description = is_string($config['description']) && str_contains($config['description'], '.') 
-                    ? __($config['description']) 
+                $description = is_string($config['description']) && str_contains($config['description'], '.')
+                    ? __($config['description'])
                     : $config['description'];
                 $this->line("  - {$type} (table: {$config['table']}, default: {$config['default_days']} days)");
                 $this->line("    [{$config['plugin_name']}] {$description}");
@@ -212,10 +220,10 @@ class DatabaseCleanup extends Command
 
         $this->newLine();
         $this->line(__('admin/command/database-cleanup.usage_examples'));
-        $this->line("  php artisan dls:cleanup --type=login_attempts --days=30");
-        $this->line("  php artisan dls:cleanup --type=all --days=30");
-        $this->line("  php artisan dls:cleanup --type=plugin:inquiry:submissions --days=60");
-        $this->line("  php artisan dls:cleanup --type=login_attempts --all --force");
+        $this->line('  php artisan dls:cleanup --type=login_attempts --days=30');
+        $this->line('  php artisan dls:cleanup --type=all --days=30');
+        $this->line('  php artisan dls:cleanup --type=plugin:inquiry:submissions --days=60');
+        $this->line('  php artisan dls:cleanup --type=login_attempts --all --force');
 
         return 0;
     }

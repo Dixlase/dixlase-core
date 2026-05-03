@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -65,53 +65,53 @@ class CspStatus extends Command
             $modeValue = SecuritySetting::get('csp_mode', 0);
             $adminModeValue = SecuritySetting::get('csp_admin_mode');
             $excludeDevTools = SecuritySetting::get('csp_exclude_dev_tools', 1);
-            
+
             // モードを文字列に変換
-            $mode = match((int)$modeValue) {
+            $mode = match ((int) $modeValue) {
                 0 => 'development (開発モード)',
                 1 => 'standard (標準モード)',
                 2 => 'strict (厳格モード)',
                 default => 'unknown',
             };
-            
+
             // 管理画面モードを文字列に変換
             $adminMode = 'フロントと同じ';
             if ($adminModeValue !== null && $adminModeValue !== '') {
-                $adminMode = match((int)$adminModeValue) {
+                $adminMode = match ((int) $adminModeValue) {
                     0 => 'development (開発モード)',
                     1 => 'standard (標準モード)',
                     2 => 'strict (厳格モード)',
                     default => 'unknown',
                 };
             }
-            
+
             // 状態を表示
             $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             $this->info('📊 CSP現在の状態');
             $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             $this->line('');
-            
+
             // CSP有効/無効
             if ($enabled) {
                 $this->info('✅ CSP: 有効');
             } else {
                 $this->warn('⚠️  CSP: 無効');
             }
-            
+
             // モード
             $this->info("📋 フロントエンド: {$mode}");
             $this->info("🔐 管理画面: {$adminMode}");
-            
+
             // 開発ツール除外
             if ($excludeDevTools) {
                 $this->info('🔧 開発ツール除外: 有効');
             } else {
                 $this->line('🔧 開発ツール除外: 無効');
             }
-            
+
             $this->line('');
             $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            
+
             // コマンドヘルプ
             $this->line('');
             $this->comment('💡 利用可能なコマンド:');
@@ -120,10 +120,11 @@ class CspStatus extends Command
             $this->line('  dixlase:csp:set MODE               - フロントモードを変更');
             $this->line('  dixlase:csp:set-admin MODE         - 管理画面モードを変更');
             $this->line('  dixlase:csp:status                 - 現在の状態を表示');
-            
+
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error('❌ CSP状態の取得に失敗しました: ' . $e->getMessage());
+            $this->error('❌ CSP状態の取得に失敗しました: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

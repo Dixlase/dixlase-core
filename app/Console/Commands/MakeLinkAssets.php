@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,16 +35,17 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Artisan;
-use App\Models\Theme;
 use App\Models\Plugin;
+use App\Models\Theme;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 
 class MakeLinkAssets extends Command
 {
     protected $signature = 'make:link-assets';
+
     protected $description = 'Create symbolic links for admin, plugin, and theme assets';
 
     public function handle()
@@ -58,7 +59,7 @@ class MakeLinkAssets extends Command
             try {
                 Artisan::call('dls:plugin:symlink', [
                     'action' => 'create',
-                    'plugin' => $plugin->directory
+                    'plugin' => $plugin->directory,
                 ]);
                 $this->info("Link created for plugin: {$plugin->name}");
             } catch (\Exception $e) {
@@ -70,21 +71,21 @@ class MakeLinkAssets extends Command
         $themeSetting = DB::table('theme_settings')
             ->where('key', 'enabled_theme_id')
             ->first();
-        $activeThemeId = $themeSetting ? (int)$themeSetting->value : null;
+        $activeThemeId = $themeSetting ? (int) $themeSetting->value : null;
         $theme = $activeThemeId ? Theme::find($activeThemeId) : null;
 
         if ($theme) {
             try {
                 Artisan::call('dls:theme:symlink', [
                     'action' => 'create',
-                    'theme' => $theme->directory
+                    'theme' => $theme->directory,
                 ]);
                 $this->info("Link created for theme: {$theme->name}");
             } catch (\Exception $e) {
                 $this->error("Failed to create link for theme {$theme->name}: {$e->getMessage()}");
             }
         } else {
-            $this->error("Enabled theme not found.");
+            $this->error('Enabled theme not found.');
         }
 
         $this->info('All asset symbolic links have been created.');
@@ -92,14 +93,15 @@ class MakeLinkAssets extends Command
 
     protected function createLink($target, $link)
     {
-        if (!File::exists($target)) {
+        if (! File::exists($target)) {
             $this->error("Target does not exist: {$target}");
+
             return;
         }
 
         // リンク先ディレクトリが存在しない場合は作成
         $linkDir = dirname($link);
-        if (!File::exists($linkDir)) {
+        if (! File::exists($linkDir)) {
             File::makeDirectory($linkDir, 0755, true);
             $this->info("Link directory created: {$linkDir}");
         }

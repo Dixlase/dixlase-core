@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,12 +35,11 @@
 
 namespace App\Http\Controllers\Admin\Auth;
 
-use Illuminate\Routing\Controller;
-use App\Helpers\LoginHelper;
 use App\Models\SecuritySetting;
 use App\Traits\PasswordResetTrait;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Password;
 use Illuminate\View\View;
 
@@ -53,7 +52,7 @@ class AdminPasswordResetLinkController extends Controller
      */
     protected function getSettingsGetter(): callable
     {
-        return fn($key, $default = null) => SecuritySetting::get($key, $default);
+        return fn ($key, $default = null) => SecuritySetting::get($key, $default);
     }
 
     /**

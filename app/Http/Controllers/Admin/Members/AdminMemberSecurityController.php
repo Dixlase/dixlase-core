@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -144,13 +144,13 @@ class AdminMemberSecurityController extends AdminLoggedInController
     {
         $currentUserId = Auth::guard('member')->id();
         $sessionTable = config('session.table', 'sessions');
-        
+
         if ($sessionTable && DB::getSchemaBuilder()->hasTable($sessionTable)) {
             $deletedCount = DB::table($sessionTable)
                 ->where('user_id', '!=', $currentUserId)
                 ->whereNotNull('user_id')
                 ->delete();
-            
+
             return redirect()->route('admin.members.index')
                 ->with('success', __('admin/members/force_logout_all_success', ['count' => $deletedCount]));
         }

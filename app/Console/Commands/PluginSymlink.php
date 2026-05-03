@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -49,7 +49,6 @@ class PluginSymlink extends Command
                             {action : The action to perform (create|remove)}
                             {plugin : The directory name of the plugin}';
 
-    
     /**
      * Create a new command instance.
      *
@@ -71,8 +70,9 @@ class PluginSymlink extends Command
         $action = $this->argument('action');
         $pluginDirName = $this->argument('plugin');
 
-        if (!in_array($action, ['create', 'remove'])) {
+        if (! in_array($action, ['create', 'remove'])) {
             $this->error(__('admin/command.plugin_symlink.invalid_action'));
+
             return 1;
         }
 
@@ -90,7 +90,6 @@ class PluginSymlink extends Command
     /**
      * Create symlink for plugin assets
      *
-     * @param string $pluginDirName
      * @return void
      */
     protected function createPluginSymlink(string $pluginDirName)
@@ -98,7 +97,7 @@ class PluginSymlink extends Command
         $target = base_path("plugins/{$pluginDirName}/resources/assets");
         $link = public_path("assets/plugins/{$pluginDirName}");
 
-        if (File::exists($target) && !File::exists($link)) {
+        if (File::exists($target) && ! File::exists($link)) {
             File::ensureDirectoryExists(dirname($link));
             File::link($target, $link);
         }
@@ -107,13 +106,12 @@ class PluginSymlink extends Command
     /**
      * Remove symlink for plugin assets
      *
-     * @param string $pluginDirName
      * @return void
      */
     protected function removePluginSymlink(string $pluginDirName)
     {
         $link = public_path("assets/plugins/{$pluginDirName}");
-        
+
         if (File::exists($link) || is_link($link)) {
             File::delete($link);
         }

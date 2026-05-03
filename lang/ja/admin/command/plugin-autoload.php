@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,7 +35,7 @@
 
 return [
 
-        'description' => 'composer.jsonのautoloadに新しいプラグインディレクトリを追加します（クリーンアップは行いません）。',
-        'added' => 'composer.jsonのautoloadに新しいプラグインディレクトリを追加しました。',
-        'no_changes' => '新しいプラグインディレクトリは見つかりませんでした。変更はありません。'
+    'description' => 'composer.jsonのautoloadに新しいプラグインディレクトリを追加します（クリーンアップは行いません）。',
+    'added' => 'composer.jsonのautoloadに新しいプラグインディレクトリを追加しました。',
+    'no_changes' => '新しいプラグインディレクトリは見つかりませんでした。変更はありません。',
 ];

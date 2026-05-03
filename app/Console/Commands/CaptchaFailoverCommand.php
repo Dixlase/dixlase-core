@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,9 +35,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Services\CaptchaFailoverService;
 use App\Enums\CaptchaProvider;
+use App\Services\CaptchaFailoverService;
+use Illuminate\Console\Command;
 
 /**
  * CAPTCHAフェイルオーバー管理コマンド
@@ -78,8 +78,8 @@ class CaptchaFailoverCommand extends Command
             [
                 [__('admin/command.captcha.primary_provider'), $this->getProviderLabel($status['primary_provider'])],
                 [__('admin/command.captcha.active_provider'), $this->getProviderLabel($status['active_provider'])],
-                [__('admin/command.captcha.is_failed_over'), $status['is_failed_over'] ? '⚠️ ' . __('common.yes') : __('common.no')],
-                [__('admin/command.captcha.auto_failover'), $status['auto_failover_enabled'] ? '✅ ' . __('common.enabled') : '❌ ' . __('common.disabled')],
+                [__('admin/command.captcha.is_failed_over'), $status['is_failed_over'] ? '⚠️ '.__('common.yes') : __('common.no')],
+                [__('admin/command.captcha.auto_failover'), $status['auto_failover_enabled'] ? '✅ '.__('common.enabled') : '❌ '.__('common.disabled')],
             ]
         );
 
@@ -100,7 +100,7 @@ class CaptchaFailoverCommand extends Command
             }
 
             $rows[] = [
-                $statusIcon . $info['label'],
+                $statusIcon.$info['label'],
                 $info['configured'] ? __('common.yes') : __('common.no'),
                 $info['enabled'] ? __('common.yes') : __('common.no'),
                 $info['verified'] ? __('common.yes') : __('common.no'),
@@ -126,24 +126,27 @@ class CaptchaFailoverCommand extends Command
     {
         $provider = $this->option('provider');
 
-        if (!$provider) {
+        if (! $provider) {
             $this->error(__('admin/command.captcha.provider_required'));
+
             return Command::FAILURE;
         }
 
         // プロバイダーの検証
         $validProviders = CaptchaProvider::getAllProviders();
-        if (!in_array($provider, $validProviders)) {
+        if (! in_array($provider, $validProviders)) {
             $this->error(__('admin/command.captcha.invalid_provider', ['provider' => $provider]));
-            $this->line(__('admin/command.captcha.valid_providers') . ': ' . implode(', ', $validProviders));
+            $this->line(__('admin/command.captcha.valid_providers').': '.implode(', ', $validProviders));
+
             return Command::FAILURE;
         }
 
         $permanent = $this->option('permanent');
 
         if ($permanent) {
-            if (!$this->confirm(__('admin/command.captcha.confirm_permanent_switch', ['provider' => $this->getProviderLabel($provider)]))) {
+            if (! $this->confirm(__('admin/command.captcha.confirm_permanent_switch', ['provider' => $this->getProviderLabel($provider)]))) {
                 $this->info(__('admin/command.captcha.cancelled'));
+
                 return Command::SUCCESS;
             }
         }
@@ -166,6 +169,7 @@ class CaptchaFailoverCommand extends Command
     {
         CaptchaFailoverService::resetToDefault();
         $this->info(__('admin/command.captcha.reset_success'));
+
         return Command::SUCCESS;
     }
 
@@ -190,18 +194,19 @@ class CaptchaFailoverCommand extends Command
             $this->info(__('admin/command.captcha.auto_failover_set', [
                 'status' => $enabled ? __('common.enabled') : __('common.disabled'),
             ]));
+
             return Command::SUCCESS;
         }
 
         $this->info(__('admin/command.captcha.usage'));
         $this->newLine();
-        $this->line('  captcha status              ' . __('admin/command.captcha.action_status'));
-        $this->line('  captcha switch --provider=X ' . __('admin/command.captcha.action_switch'));
-        $this->line('  captcha switch --provider=X --permanent ' . __('admin/command.captcha.action_switch_permanent'));
-        $this->line('  captcha reset               ' . __('admin/command.captcha.action_reset'));
-        $this->line('  captcha providers           ' . __('admin/command.captcha.action_providers'));
-        $this->line('  captcha --auto-failover=on  ' . __('admin/command.captcha.action_auto_on'));
-        $this->line('  captcha --auto-failover=off ' . __('admin/command.captcha.action_auto_off'));
+        $this->line('  captcha status              '.__('admin/command.captcha.action_status'));
+        $this->line('  captcha switch --provider=X '.__('admin/command.captcha.action_switch'));
+        $this->line('  captcha switch --provider=X --permanent '.__('admin/command.captcha.action_switch_permanent'));
+        $this->line('  captcha reset               '.__('admin/command.captcha.action_reset'));
+        $this->line('  captcha providers           '.__('admin/command.captcha.action_providers'));
+        $this->line('  captcha --auto-failover=on  '.__('admin/command.captcha.action_auto_on'));
+        $this->line('  captcha --auto-failover=off '.__('admin/command.captcha.action_auto_off'));
 
         return Command::SUCCESS;
     }
@@ -209,6 +214,7 @@ class CaptchaFailoverCommand extends Command
     protected function getProviderLabel(string $provider): string
     {
         $enum = CaptchaProvider::tryFrom($provider);
+
         return $enum ? $enum->label() : $provider;
     }
 }

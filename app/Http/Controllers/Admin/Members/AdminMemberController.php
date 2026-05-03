@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,8 +35,8 @@
 
 namespace App\Http\Controllers\Admin\Members;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Enums\MemberRole;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\Member;
 use Illuminate\Http\Request;
 
@@ -56,24 +56,24 @@ class AdminMemberController extends AdminLoggedInController
 
         $search = $request->input('search');
         $roleFilter = $request->input('role', '');
-        
+
         $statusFilter = $request->input('status');
-        if ($statusFilter === null && !$request->hasAny(['search', 'role', 'page', 'per_page'])) {
+        if ($statusFilter === null && ! $request->hasAny(['search', 'role', 'page', 'per_page'])) {
             $statusFilter = '1';
         }
-        
+
         $perPage = $request->input('per_page', 25);
         $allowedPerPage = [10, 25, 50, 100];
-        if (!in_array($perPage, $allowedPerPage)) {
+        if (! in_array($perPage, $allowedPerPage)) {
             $perPage = 25;
         }
 
         $members = Member::query()
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('id', 'like', '%' . $search . '%')
-                      ->orWhere('name', 'like', '%' . $search . '%')
-                      ->orWhere('email', 'like', '%' . $search . '%');
+                    $q->where('id', 'like', '%'.$search.'%')
+                        ->orWhere('name', 'like', '%'.$search.'%')
+                        ->orWhere('email', 'like', '%'.$search.'%');
                 });
             })
             ->when($roleFilter, function ($query, $roleFilter) {
@@ -85,7 +85,7 @@ class AdminMemberController extends AdminLoggedInController
             ->paginate($perPage);
 
         $members->appends($request->only(['search', 'role', 'status', 'per_page']));
-        
+
         $pagination = [
             'current_page' => $members->currentPage(),
             'last_page' => $members->lastPage(),
@@ -96,7 +96,7 @@ class AdminMemberController extends AdminLoggedInController
             'from' => $members->firstItem(),
             'to' => $members->lastItem(),
         ];
-        
+
         $this->viewParams['members'] = $members;
         $this->viewParams['search'] = $search;
         $this->viewParams['roleFilter'] = $roleFilter;

@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -57,10 +57,7 @@ class CheckPermission
     /**
      * Handle an incoming request.
      *
-     * @param Request $request
-     * @param Closure $next
-     * @param string ...$permissions Permission values (comma-separated for "any")
-     * @return Response
+     * @param  string  ...$permissions  Permission values (comma-separated for "any")
      */
     public function handle(Request $request, Closure $next, string ...$permissions): Response
     {
@@ -83,7 +80,7 @@ class CheckPermission
         }
 
         // Check if user has any of the required permissions
-        if (!PermissionService::canAny($permissionEnums)) {
+        if (! PermissionService::canAny($permissionEnums)) {
             abort(403, __('common.errors.unauthorized'));
         }
 

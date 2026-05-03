@@ -10,8 +10,8 @@
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
  *       published by the Free Software Foundation, together with the
- *       Dixlase Plugin and Theme Exception (see LICENSE
- *       for full exception terms); or
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
  *
  *   (b) a commercial license agreement obtained from exc-D inc.
  *       (see LICENSE.commercial, or contact office@exc-d.com).
@@ -35,34 +35,34 @@
 
 return [
 
-        'warning' => '⚠️  警告: ロックダウンを発動すると、許可されたユーザー以外はシステムにアクセスできなくなります。',
-        'type' => 'タイプ',
-        'reason' => '理由',
-        'duration' => '期間',
-        'minutes' => '分',
-        'confirm_activate' => 'ロックダウンを発動しますか？',
-        'confirm_deactivate' => 'ロックダウンを解除しますか？',
-        'cancelled' => '操作がキャンセルされました。',
-        'activated' => '🔒 ロックダウンが発動されました！',
-        'deactivated' => '🔓 ロックダウンが解除されました。',
-        'not_active' => 'ロックダウンは現在アクティブではありません。',
-        'is_active' => '🔒 ロックダウンがアクティブです！',
-        'current_status' => '現在のロックダウン状態:',
-        'field' => '項目',
-        'value' => '値',
-        'triggered_at' => '発動日時',
-        'auto_release' => '自動解除',
-        'allowed_ips' => '許可されたIP',
-        'allowed_members' => '許可されたメンバー',
-        'no_history' => '過去30日間のロックダウン履歴はありません。',
-        'history_title' => 'ロックダウン履歴（過去30日間）',
-        'datetime' => '日時',
-        'action' => 'アクション',
-        'ip' => 'IPアドレス',
-        'unknown_action' => '不明なアクション: :action',
-        'available_actions' => '利用可能なアクション:',
-        'action_activate' => 'ロックダウンを発動',
-        'action_deactivate' => 'ロックダウンを解除',
-        'action_status' => '現在の状態を表示',
-        'action_history' => '履歴を表示',
+    'warning' => '⚠️  警告: ロックダウンを発動すると、許可されたユーザー以外はシステムにアクセスできなくなります。',
+    'type' => 'タイプ',
+    'reason' => '理由',
+    'duration' => '期間',
+    'minutes' => '分',
+    'confirm_activate' => 'ロックダウンを発動しますか？',
+    'confirm_deactivate' => 'ロックダウンを解除しますか？',
+    'cancelled' => '操作がキャンセルされました。',
+    'activated' => '🔒 ロックダウンが発動されました！',
+    'deactivated' => '🔓 ロックダウンが解除されました。',
+    'not_active' => 'ロックダウンは現在アクティブではありません。',
+    'is_active' => '🔒 ロックダウンがアクティブです！',
+    'current_status' => '現在のロックダウン状態:',
+    'field' => '項目',
+    'value' => '値',
+    'triggered_at' => '発動日時',
+    'auto_release' => '自動解除',
+    'allowed_ips' => '許可されたIP',
+    'allowed_members' => '許可されたメンバー',
+    'no_history' => '過去30日間のロックダウン履歴はありません。',
+    'history_title' => 'ロックダウン履歴（過去30日間）',
+    'datetime' => '日時',
+    'action' => 'アクション',
+    'ip' => 'IPアドレス',
+    'unknown_action' => '不明なアクション: :action',
+    'available_actions' => '利用可能なアクション:',
+    'action_activate' => 'ロックダウンを発動',
+    'action_deactivate' => 'ロックダウンを解除',
+    'action_status' => '現在の状態を表示',
+    'action_history' => '履歴を表示',
 ];
