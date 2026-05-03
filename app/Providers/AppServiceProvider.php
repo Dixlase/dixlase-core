@@ -143,6 +143,14 @@ class AppServiceProvider extends ServiceProvider
         // persists across the request lifecycle.
         $this->app->singleton(SiteContextInterface::class, SiteContext::class);
 
+        // Default I18n missing-translation policy: 302 redirect to the
+        // site's primary locale. Plugins (DixlaseI18n, DixlaseRedirects)
+        // can rebind this contract to change the behaviour.
+        $this->app->bind(
+            \App\Contracts\I18n\MissingTranslationHandler::class,
+            \App\Services\I18n\DefaultMissingTranslationHandler::class,
+        );
+
         // SettingDefinitionRegistry holds the catalog of known setting keys
         // and their scopes. Bound as singleton so registrations from
         // service providers are visible across the whole request.
