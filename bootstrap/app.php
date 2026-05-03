@@ -44,6 +44,12 @@ return Application::configure(basePath: dirname(__DIR__))
             __DIR__.'/../routes/install.php',
             __DIR__.'/../routes/admin.php',
         ],
+        // REST API routes. Mounted under /api by Laravel's default API
+        // prefix. Lives outside the front locale infrastructure so when
+        // the future multilingual plugin re-introduces a path-prefix
+        // locale group + Route::fallback(), /api/* must stay opaque to
+        // it (no locale segment, no 302 to /{locale}/api/...).
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
