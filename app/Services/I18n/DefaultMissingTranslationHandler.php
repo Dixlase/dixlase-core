@@ -46,9 +46,10 @@ use Symfony\Component\HttpFoundation\Response;
  * Core default behaviour for unmatched translations: 302 redirect to the
  * same path under the site's primary locale.
  *
- * Plugins (DixlaseI18n, DixlaseRedirects, ...) can rebind
- * MissingTranslationHandler to replace this with a 404, a fallback
- * render, or custom redirect rules.
+ * Any multilingual plugin (first-party, third-party, or a custom
+ * in-house implementation) — or another extension such as a redirects
+ * plugin — can rebind MissingTranslationHandler to replace this with a
+ * 404, a fallback render, or custom redirect rules.
  */
 class DefaultMissingTranslationHandler implements MissingTranslationHandler
 {
