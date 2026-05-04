@@ -133,10 +133,10 @@ class AdminResetPasswordNotification extends Notification
             return call_user_func(static::$createUrlCallback, $notifiable, $this->token);
         }
 
-        // 管理画面用のパスワードリセットURLを生成
+        // Generate password reset URL for admin panel
         $adminUrl = config('admin.url.admin_url', 'admin');
 
-        // url()ヘルパーを使用してリクエストのスキーム（http/https）を自動検出
+        // Auto-detect request scheme (http/https) using url() helper
         return url($adminUrl.'/reset-password/'.$this->token.'?email='.urlencode($notifiable->getEmailForPasswordReset()));
     }
 

@@ -52,7 +52,7 @@ use Illuminate\Support\Facades\Log;
 class ExtensionCardPresenter
 {
     /**
-     * テーマカードの表示データを生成
+     * Generate display data for theme card
      *
      * @param  \App\Models\Theme|array  $theme
      * @return array<string, mixed>
@@ -92,7 +92,7 @@ class ExtensionCardPresenter
         $auditResult = $permissionSummary['audit'] ?? [];
         $auditedAt = $auditResult['audited_at'] ?? null;
 
-        // 監査結果にCSP情報がある場合はそちらを優先
+        // Prioritize CSP info from audit results if available
         if (! empty($auditResult['csp_status'])) {
             $cspCompatibility = [
                 'status' => $auditResult['csp_status'],
@@ -108,7 +108,7 @@ class ExtensionCardPresenter
 
         $permissionModalId = 'permissionModal-theme-'.($isModel ? $theme->id : $directory);
 
-        // 健全性スコアの計算
+        // Calculate health score
         $enableAction = PluginEnableAction::Allowed;
         $healthScore = null;
         $healthStatus = null;
@@ -132,7 +132,7 @@ class ExtensionCardPresenter
 
         $badge = self::computeBadge($permissionSummary, 'admin/settings/themes/index', $healthStatus);
 
-        // バッジクリック用のスキャンデータ
+        // Scan data for badge click
         $scanData = self::buildScanDataForBadge(
             $auditResult,
             $badge,
@@ -219,7 +219,7 @@ class ExtensionCardPresenter
     }
 
     /**
-     * プラグインカードの表示データを生成
+     * Generate display data for plugin card
      *
      * @param  \App\Models\Plugin|array  $plugin
      * @return array<string, mixed>
@@ -259,7 +259,7 @@ class ExtensionCardPresenter
         $auditResult = $permissionSummary['audit'] ?? [];
         $auditedAt = $auditResult['audited_at'] ?? null;
 
-        // 監査結果にCSP情報がある場合はそちらを優先（plugin.jsonの静的情報より実際のスキャン結果を反映）
+        // Prioritize CSP info from audit results if available (reflect actual scan results over static info from plugin.json)
         if (! empty($auditResult['csp_status'])) {
             $cspCompatibility = [
                 'status' => $auditResult['csp_status'],
@@ -278,8 +278,8 @@ class ExtensionCardPresenter
         $enableWarnings = $isModel ? self::computePluginEnableWarnings($plugin, $permissionSummary) : [];
         $installWarnings = ! $isModel ? self::computeInstallWarnings($permissionSummary, 'admin/settings/plugins/index') : [];
 
-        // 有効化ポリシーと健全性スコアを算出（DB の plugin_audits 結果のみを参照する。
-        // ライブ再計算は dls:plugin:audit / 再スキャンボタン経由でしか行わない）
+        // Calculate activation policy and health score (refer only to plugin_audits results in DB.
+        // Live recalculation is only done via dls:plugin:audit / rescan button)
         $enableAction = PluginEnableAction::Allowed;
         $trustLevel = null;
         $healthScore = $auditResult['health_score'] ?? null;
@@ -307,7 +307,7 @@ class ExtensionCardPresenter
         $badge = self::computeBadge($permissionSummary, 'admin/settings/plugins/index', $healthStatus);
 
         if ($isModel) {
-            // 署名情報からTrustLevelを算出
+            // Calculate TrustLevel from signature info
             $signatureType = $badge['signature']['type'] ?? null;
             $signatureStatus = $badge['signatureStatus'];
             $trustLevel = PluginTrustLevel::fromSignatureVerification($signatureType, $signatureStatus);
@@ -318,7 +318,7 @@ class ExtensionCardPresenter
             $settingsUrl = app(\App\Http\Controllers\Admin\Settings\AdminPluginsSettingsController::class)->getPluginSettingsUrl($plugin);
         }
 
-        // バッジクリック用のスキャンデータ（JS buildUnifiedScanResultHtml互換）
+        // Scan data for badge click (compatible with JS buildUnifiedScanResultHtml)
         $scanData = self::buildScanDataForBadge(
             $auditResult,
             $badge,
@@ -411,7 +411,7 @@ class ExtensionCardPresenter
     }
 
     /**
-     * 健全性ステータスに基づくバッジカラーを返す
+     * Return badge color based on health status
      *
      * @return array<string, string>
      */
@@ -426,7 +426,7 @@ class ExtensionCardPresenter
     }
 
     /**
-     * 健全性ステータスに基づくバッジアイコンを返す
+     * Return badge icon based on health status
      *
      * @return array<string, string>
      */
@@ -441,7 +441,7 @@ class ExtensionCardPresenter
     }
 
     /**
-     * 健全性ステータスに基づくバッジラベルキーを返す
+     * Return badge label key based on health status
      *
      * @return array<string, string>
      */
@@ -456,7 +456,7 @@ class ExtensionCardPresenter
     }
 
     /**
-     * バッジ情報を計算
+     * Calculate badge info
      *
      * @param  array<string, mixed>|null  $permissionSummary
      * @return array{hasPermissions: bool, riskLevel: string, signature: array<string, mixed>, signatureStatus: string, hasMismatches: bool, badgeColor: string, badgeIcon: string, badgeLabel: string}
@@ -476,7 +476,7 @@ class ExtensionCardPresenter
             $badgeIcon = 'fas fa-times-circle';
             $badgeLabel = __($translationPrefix.'.permissions.signature_invalid');
         } elseif ($hasPermissions) {
-            // 健全性ステータスに基づくバッジ表示（新システム）
+            // Badge display based on health status (new system)
             $statusColors = self::getHealthStatusColors();
             $statusIcons = self::getHealthStatusIcons();
             $statusLabelKeys = self::getHealthStatusLabelKeys();
@@ -503,7 +503,7 @@ class ExtensionCardPresenter
     }
 
     /**
-     * 作者情報をパース
+     * Parse author info
      *
      * @param  mixed  $authorRaw
      * @return array{name: string|null}
@@ -518,7 +518,7 @@ class ExtensionCardPresenter
     }
 
     /**
-     * テーマ有効化時の警告を計算
+     * Calculate warnings for theme activation
      *
      * @param  array<string, mixed>|null  $permissionSummary
      * @return array<int, string>
@@ -558,7 +558,7 @@ class ExtensionCardPresenter
     }
 
     /**
-     * プラグイン有効化時の警告を計算
+     * Calculate warnings for plugin activation
      *
      * @param  \App\Models\Plugin  $plugin
      * @param  array<string, mixed>|null  $permissionSummary
@@ -597,7 +597,7 @@ class ExtensionCardPresenter
     }
 
     /**
-     * インストール時の警告フラグを計算
+     * Calculate warning flags for installation
      *
      * @param  array<string, mixed>|null  $permissionSummary
      * @return array{hasMismatches: bool, isNotScanned: bool, isUnsigned: bool, isUndefined: bool, riskLevel: string, hasWarnings: bool}
@@ -624,7 +624,7 @@ class ExtensionCardPresenter
     }
 
     /**
-     * CSP モード別互換性バッジデータを生成
+     * Generate compatibility badge data by CSP mode
      *
      * @param  array<string, mixed>  $cspCompatibility
      * @return array<string, array{compatible: bool, label: string, icon: string, color: string}>
@@ -662,7 +662,7 @@ class ExtensionCardPresenter
     }
 
     /**
-     * セキュリティプリセット別互換性バッジデータを生成
+     * Generate compatibility badge data by security preset
      *
      * @return array<string, array{compatible: bool}>
      */
@@ -942,7 +942,7 @@ class ExtensionCardPresenter
     }
 
     /**
-     * attentionReason表示データを整形
+     * Format attentionReason display data
      *
      * @param  array<int, mixed>  $reasons
      * @param  string  $translationPrefix  e.g. 'admin/settings/themes/index'
@@ -988,7 +988,7 @@ class ExtensionCardPresenter
     }
 
     /**
-     * バッジクリック用のスキャンデータを構築（JS buildUnifiedScanResultHtml互換）
+     * Build scan data for badge clicks (compatible with JS buildUnifiedScanResultHtml)
      *
      * @param  array<string, mixed>  $auditResult
      * @param  array<string, mixed>  $badge
@@ -1009,12 +1009,12 @@ class ExtensionCardPresenter
         array $attentionReasons,
         string $translationPrefix = 'admin/settings/plugins/index',
     ): array {
-        // 署名情報をaudit互換形式に変換
+        // Convert signature information to audit-compatible format
         $signatureStatus = $badge['signatureStatus'] ?? 'unsigned';
         $signatureSigner = $badge['signature']['signed_by'] ?? '';
         $signatureType = $badge['signature']['type'] ?? null;
 
-        // 署名ステータスのマッピング（presenter → scan-result-builder互換）
+        // Signature status mapping (presenter → scan-result-builder compatible)
         $sigStatusMap = [
             'valid' => $signatureType ?? 'signed',
             'pending_verification' => $signatureType ?? 'signed',
@@ -1022,10 +1022,10 @@ class ExtensionCardPresenter
             'unsigned' => 'unsigned',
         ];
 
-        // attention reasonsをフォーマット（JS互換）
+        // Format attention reasons (JS compatible)
         $formattedReasons = self::formatAttentionReasons($attentionReasons, $translationPrefix);
 
-        // CSPステータスのマッピング
+        // CSP status mapping
         $cspStatus = $cspCompatibility['status'] ?? 'unknown';
         $cspStatusMap = [
             'csp_ready' => 'compliant',
@@ -1055,7 +1055,7 @@ class ExtensionCardPresenter
     }
 
     /**
-     * プラグインがスキャン（再スキャン含む）を必要とするかどうか
+     * Whether the plugin requires scanning (including re-scan)
      */
     private static function computeNeedsScan(string $slug, ?string $auditedAt): bool
     {

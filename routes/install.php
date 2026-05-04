@@ -45,47 +45,47 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('install')->name('install.')->middleware('install.steps')->group(
     function () {
-        // 言語切り替え（AJAX専用）
+        // Language switching (AJAX only)
         Route::post('/language/{locale}', [InstallSettingsController::class, 'setLanguage'])->name('language');
 
         Route::get('/', [InstallController::class, 'index'])->name('index');
 
-        // モード選択
+        // Mode selection
         Route::get('/mode', [InstallModeController::class, 'create'])->name('mode');
         Route::post('/mode', [InstallModeController::class, 'store'])->name('mode.store');
 
-        // 基本設定
+        // Basic settings
         Route::get('/settings', [InstallSettingsController::class, 'create'])->name('settings');
         Route::post('/settings', [InstallSettingsController::class, 'store'])->name('settings.store');
 
-        // 環境設定
+        // Environment settings
         Route::get('/environment', [InstallEnvironmentController::class, 'create'])->name('environment');
         Route::post('/environment', [InstallEnvironmentController::class, 'store'])->name('environment.store');
 
-        // データベース設定
+        // Database settings
         Route::get('/database', [InstallDatabaseController::class, 'create'])->name('database');
         Route::post('/database', [InstallDatabaseController::class, 'store'])->name('database.store');
 
-        // メールサーバー設定
+        // Mail server settings
         Route::get('/mail', [InstallMailController::class, 'create'])->name('mail');
         Route::post('/mail', [InstallMailController::class, 'store'])->name('mail.store');
 
-        // メールテスト関連のルート
+        // Mail test related routes
         Route::post('/test-mail-connection', [InstallMailController::class, 'testConnection'])->name('mail.test-connection');
         Route::post('/test-mail-send', [InstallMailController::class, 'testSend'])->name('mail.test-send');
         Route::get('/verify-mail/{token}', [InstallMailController::class, 'verify'])->name('mail.verify-mail');
         Route::post('/reset-mail-tests', [InstallMailController::class, 'resetTests'])->name('mail.reset-tests');
 
-        // 確認画面
+        // Confirmation screen
         Route::get('/confirm', [InstallConfirmController::class, 'show'])->name('confirm');
         Route::post('/confirm', [InstallConfirmController::class, 'store'])->name('confirm.store');
-        // インストール完了画面
+        // Installation complete screen
         Route::get('/complete', [InstallCompleteController::class, 'show'])->name('complete');
 
-        // インストール最終化
+        // Installation finalization
         Route::post('/finalize', [InstallCompleteController::class, 'finalize'])->name('finalize');
 
-        // データベース接続テスト
+        // Database connection test
         Route::post('/test-db', [InstallDatabaseController::class, 'testConnection'])->name('install.test-db');
     }
 );

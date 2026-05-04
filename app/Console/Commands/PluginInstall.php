@@ -79,7 +79,7 @@ class PluginInstall extends Command
             return;
         }
 
-        // プラグイン情報を読み取る（plugin.json → composer.json → デフォルト値の順）
+        // Read plugin information (priority: plugin.json → composer.json → default values)
         $version = '1.0.0';
         $description = null;
         $license = null;
@@ -89,7 +89,7 @@ class PluginInstall extends Command
         $packageName = null;
         $slug = Str::slug(Str::headline($pluginName), '-');
 
-        // 1. plugin.jsonから読み取り（最優先）
+        // 1. Read from plugin.json (highest priority)
         if (File::exists($pluginJsonPath)) {
             $pluginData = json_decode(File::get($pluginJsonPath), true);
             if (json_last_error() === JSON_ERROR_NONE) {
@@ -107,7 +107,7 @@ class PluginInstall extends Command
             }
         }
 
-        // 2. composer.jsonからフォールバック
+        // 2. Fallback to composer.json
         if (File::exists($composerPath)) {
             $composerData = json_decode(File::get($composerPath), true);
 
@@ -127,7 +127,7 @@ class PluginInstall extends Command
                 $version = $composerData['version'] ?? '1.0.0';
             }
 
-            // 作者情報の取得
+            // Get author information
             if (! $author) {
                 $authors = $composerData['authors'] ?? [];
                 $firstAuthor = $authors[0] ?? [];
@@ -139,7 +139,7 @@ class PluginInstall extends Command
             $slug = $slug ?? $composerData['extra']['slug'] ?? Str::slug(Str::headline($pluginName), '-');
         }
 
-        // データベースに登録
+        // Register in database
         DB::table('plugins')->updateOrInsert(
             ['name' => $pluginName],
             [
@@ -152,7 +152,7 @@ class PluginInstall extends Command
                 'author' => $author,
                 'email' => $email,
                 'url' => $web,
-                'version' => $version, // composer.json から取得
+                'version' => $version, // Get from composer.json
                 'installed_at' => now(),
             ]
         );
@@ -161,12 +161,12 @@ class PluginInstall extends Command
             'pluginName' => $pluginName,
         ]));
 
-        // マイグレーションを実行
+        // Run migrations
         $this->info(__('admin/command.make_plugin.installation.migrating'));
         $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $slug);
         $migrator->migrate($pluginName);
 
-        // シーダーを実行（DatabaseSeederが存在する場合のみ）
+        // Run seeder (only if DatabaseSeeder exists)
         $seederClass = "Plugins\\{$pluginName}\\Database\\Seeders\\DatabaseSeeder";
         if (class_exists($seederClass)) {
             $this->info(__('admin/command.make_plugin.installation.seeding'));
@@ -176,17 +176,17 @@ class PluginInstall extends Command
             ]);
         }
 
-        // 注意: composer.local.jsonと.git/info/excludeの更新は、
-        // プラグイン作成時（make:plugin）に既に行われているため、ここでは不要
+        // Note: Updating composer.local.json and .git/info/exclude
+        // is already done during plugin creation (make:plugin), so not needed here
 
-        // プラグインの有効化を確認（--enable オプションが指定されていない場合のみ確認）
-        // Web経由での実行時は対話的入力ができないため、--enableオプションの有無のみで判断
+        // Confirm plugin activation (only if --enable option is not specified)
+        // When running via web, interactive input is not possible, so judge only by presence of --enable option
         if ($this->option('enable')) {
             $this->call('dls:plugin:enable', [
                 'pluginName' => $pluginName,
             ]);
         } elseif (app()->runningInConsole() && ! app()->runningUnitTests()) {
-            // CLIからの実行時のみ確認プロンプトを表示
+            // Show confirmation prompt only when running from CLI
             if ($this->confirm(__('admin/command.make_plugin.installation.enable_confirm', [
                 'pluginName' => $pluginName,
             ]), false)) {

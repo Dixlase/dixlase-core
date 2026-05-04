@@ -80,7 +80,7 @@ class FileIntegrityAudit extends Model
         'duration_ms' => 'integer',
     ];
 
-    // スコープ定数
+    // Scope constants
     public const SCOPE_CORE = 'core';
 
     public const SCOPE_PLUGIN = 'plugin';
@@ -89,7 +89,7 @@ class FileIntegrityAudit extends Model
 
     public const SCOPE_ALL = 'all';
 
-    // トリガー定数
+    // Trigger constants
     public const TRIGGER_MANUAL = 'manual';
 
     public const TRIGGER_SCHEDULE = 'schedule';
@@ -98,14 +98,14 @@ class FileIntegrityAudit extends Model
 
     public const TRIGGER_UPDATE = 'update';
 
-    // 実行者タイプ定数
+    // Executor type constants
     public const INITIATED_BY_USER = 'user';
 
     public const INITIATED_BY_CLI = 'cli';
 
     public const INITIATED_BY_SYSTEM = 'system';
 
-    // ステータス定数
+    // Status constants
     public const STATUS_OK = 'ok';
 
     public const STATUS_WARNING = 'warning';
@@ -127,7 +127,7 @@ class FileIntegrityAudit extends Model
     }
 
     /**
-     * 実行者（メンバー）とのリレーション
+     * Relation to executor (member)
      */
     public function initiatedBy(): BelongsTo
     {
@@ -135,7 +135,7 @@ class FileIntegrityAudit extends Model
     }
 
     /**
-     * 問題があるかどうか
+     * Whether there is an issue
      */
     public function hasIssues(): bool
     {
@@ -143,7 +143,7 @@ class FileIntegrityAudit extends Model
     }
 
     /**
-     * 重大な問題があるかどうか
+     * Whether there is a critical issue
      */
     public function isCritical(): bool
     {
@@ -151,7 +151,7 @@ class FileIntegrityAudit extends Model
     }
 
     /**
-     * 変更されたファイル一覧を取得
+     * Get list of modified files
      */
     public function getChangedFiles(): array
     {
@@ -159,7 +159,7 @@ class FileIntegrityAudit extends Model
     }
 
     /**
-     * 追加されたファイル一覧を取得
+     * Get list of added files
      */
     public function getAddedFiles(): array
     {
@@ -167,7 +167,7 @@ class FileIntegrityAudit extends Model
     }
 
     /**
-     * 削除されたファイル一覧を取得
+     * Get list of deleted files
      */
     public function getRemovedFiles(): array
     {
@@ -175,7 +175,7 @@ class FileIntegrityAudit extends Model
     }
 
     /**
-     * 疑わしいファイル一覧を取得
+     * Get list of suspicious files
      */
     public function getSuspiciousFiles(): array
     {
@@ -183,7 +183,7 @@ class FileIntegrityAudit extends Model
     }
 
     /**
-     * 最新のスキャン結果を取得
+     * Get latest scan result
      */
     public static function getLatest(?string $scope = null): ?self
     {
@@ -197,7 +197,7 @@ class FileIntegrityAudit extends Model
     }
 
     /**
-     * 最新のコアスキャン結果を取得
+     * Get latest Core scan result
      */
     public static function getLatestCore(): ?self
     {
@@ -205,7 +205,7 @@ class FileIntegrityAudit extends Model
     }
 
     /**
-     * ステータスに応じたCSSクラスを取得
+     * Get CSS class based on status
      */
     public function getStatusColorClass(): string
     {
@@ -218,7 +218,7 @@ class FileIntegrityAudit extends Model
     }
 
     /**
-     * ステータスに応じたアイコンを取得
+     * Get icon based on status
      */
     public function getStatusIcon(): string
     {
@@ -231,7 +231,7 @@ class FileIntegrityAudit extends Model
     }
 
     /**
-     * スコープ別の最新スキャン結果一覧を取得
+     * Get list of latest scan results by scope
      */
     public static function getLatestByScopes(): array
     {

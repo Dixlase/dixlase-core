@@ -40,10 +40,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Authority 公開鍵のローカルキャッシュ
+ * Local cache of Authority public keys
  *
- * keys.dixlase.com から取得した公開鍵を保存し、プラグインインストール時の
- * 署名検証で使用する。fetched_at が古いものは Resolver が再フェッチを判断する。
+ * Stores public keys retrieved from keys.dixlase.com for use in
+ * signature verification during plugin installation. The Resolver determines whether to re-fetch keys with old fetched_at values
  */
 class AuthorityPublicKey extends Model
 {
@@ -70,7 +70,7 @@ class AuthorityPublicKey extends Model
     }
 
     /**
-     * fetched_at から指定された時間が経過していれば true（再フェッチ推奨）
+     * Returns true if the specified time has elapsed since fetched_at (re-fetch recommended)
      */
     public function isStale(int $ttlHours): bool
     {

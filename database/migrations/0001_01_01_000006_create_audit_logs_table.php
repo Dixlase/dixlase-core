@@ -42,14 +42,14 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * 監査ログ（Audit Log）テーブル
+     * Audit Log table
      *
-     * 目的：
-     * - 誰が / いつ / どこから / 何に対して / 何をしたか を記録
-     * - セキュリティ・設定変更は必ず記録（改ざん防止寄りの設計）
-     * - プラグインも同じ形式でログを追加可能
-     * - ハッシュチェーンによる改ざん検知
-     * - 日次署名による固定化
+     * Purpose:
+     * - Record who / when / from where / on what / did what
+     * - Always record security and settings changes (design oriented toward tamper prevention)
+     * - Plugins can also add logs in the same format
+     * - Tamper detection via hash chain
+     * - Immutability via daily signature
      */
     public function up(): void
     {
@@ -57,13 +57,13 @@ return new class extends Migration
             $table->id();
 
             // ========================================
-            // 発生時刻
+            // Occurrence time
             // ========================================
-            // created_atとは別に持つ（バッチ書き込みでもズレにくい）
+            // Kept separately from created_at (less prone to discrepancy even with batch writes)
             $table->timestamp('occurred_at')->useCurrent()->index();
 
             // ========================================
-            // レベル / 結果
+            // Level / Result
             // ========================================
             // severity: info, notice, warning, error, critical, alert, emergency
             $table->string('severity', 20)->default('info')->index();
@@ -76,7 +76,7 @@ return new class extends Migration
             $table->unsignedBigInteger('site_id')->nullable()->index();
 
             // ========================================
-            // 種別・アクション
+            // Type / Action
             // ========================================
             // category: auth, account, device, security, session, extension, content, system, plugin
             $table->string('category', 50)->index();
@@ -84,31 +84,31 @@ return new class extends Migration
             $table->string('action', 100)->index();
 
             // ========================================
-            // 行為者（actor）- Polymorphic
+            // Actor - Polymorphic
             // ========================================
             // actor_type: App\Models\Member, App\Models\User, etc.
-            // actor_id: 行為者のID
+            // actor_id: ID of the actor
             $table->nullableMorphs('actor');
-            // 表示名のスナップショット（後から参照できるように）
+            // Snapshot of display name (for later reference)
             $table->string('actor_name', 191)->nullable();
-            // なりすまし・代理操作時の実際の操作者ID
+            // Actual operator ID during impersonation or proxy operation
             $table->unsignedBigInteger('impersonated_by_id')->nullable();
 
             // ========================================
-            // 対象（target）- Polymorphic
+            // Target - Polymorphic
             // ========================================
             // target_type: App\Models\Member, App\Models\Plugin, etc.
-            // target_id: 対象のID
+            // target_id: ID of the target
             $table->nullableMorphs('target');
-            // 対象の名前や識別子（メールアドレス、タイトルなど）
+            // Name or identifier of the target (email address, title, etc.)
             $table->string('target_label', 191)->nullable();
 
             // ========================================
-            // リクエストコンテキスト
+            // Request context
             // ========================================
-            $table->string('ip_address', 45)->nullable()->index(); // IPv6対応
+            $table->string('ip_address', 45)->nullable()->index(); // IPv6 compatible
             $table->string('user_agent', 500)->nullable();
-            // 1リクエスト内の関連ログを紐付け
+            // Link related logs within a single request
             $table->string('request_id', 100)->nullable()->index();
             $table->string('session_id', 255)->nullable()->index();
 
@@ -119,7 +119,7 @@ return new class extends Migration
             $table->string('plugin_version', 50)->nullable();
 
             // ========================================
-            // 操作元チャネル / AI操作フラグ
+            // Operation source channel / AI operation flag
             // ========================================
             // actor_source: web, api, cli, scheduler, ai_plugin, webhook, queue
             $table->string('actor_source', 20)->nullable()->index();
@@ -129,9 +129,9 @@ return new class extends Migration
             // ========================================
             // 任意の追加情報（JSON）
             // ========================================
-            // 構造例:
+            // Structure example:
             // {
-            //   "message": "説明テキスト",
+            //   "message": "description text",
             //   "before": { "email": "old@example.com" },
             //   "after": { "email": "new@example.com" },
             //   "diff": { "email": { "from": "old", "to": "new" } },
@@ -140,7 +140,7 @@ return new class extends Migration
             $table->json('context')->nullable();
 
             // ========================================
-            // フォーマットバージョン
+            // Format version
             // ========================================
             $table->unsignedSmallInteger('schema_version')->default(1);
 
@@ -149,11 +149,11 @@ return new class extends Migration
             // ========================================
 
             // このレコードのハッシュ（SHA-256、64文字）
-            // 計算対象: occurred_at + severity + outcome + category + action + actor_type + actor_id + target_type + target_id + ip_address + context + previous_hash
+            // Calculation target: occurred_at + severity + outcome + category + action + actor_type + actor_id + target_type + target_id + ip_address + context + previous_hash
             $table->string('record_hash', 64)->nullable();
 
             // 前レコードのハッシュ（チェーン形成用）
-            // 最初のレコードは 'genesis' または null
+            // First record is 'genesis' or null
             $table->string('previous_hash', 64)->nullable();
 
             // チェーンシーケンス番号（連番、検証時に使用）
@@ -162,18 +162,18 @@ return new class extends Migration
             // ハッシュアルゴリズム（将来の変更に備えて記録）
             $table->string('hash_algorithm', 20)->default('sha256');
 
-            // 検証ステータス（最後の検証結果）
-            // null: 未検証, valid: 検証OK, invalid: 改ざん検知, skipped: スキップ
+            // Verification status（最後の検証結果）
+            // null: unverified, valid: verified OK, invalid: tampering detected, skipped: skipped
             $table->string('verification_status', 20)->nullable();
 
-            // 最終検証日時
+            // Last verification timestamp
             $table->timestamp('last_verified_at')->nullable();
 
-            // 標準タイムスタンプ
+            // Standard timestamps
             $table->timestamps();
 
             // ========================================
-            // 複合インデックス（よく使うクエリパターン用）
+            // Composite index for common query patterns
             // ========================================
             $table->index(['actor_type', 'actor_id', 'occurred_at']);
             $table->index(['target_type', 'target_id', 'occurred_at']);
@@ -182,11 +182,11 @@ return new class extends Migration
             $table->index(['ip_address', 'action', 'occurred_at']);
             $table->index(['plugin_name', 'action', 'occurred_at']);
 
-            // AI操作・操作元クエリ用インデックス
+            // Index for AI operation and source queries
             $table->index(['is_ai_generated', 'category', 'occurred_at']);
             $table->index(['actor_source', 'occurred_at']);
 
-            // ハッシュチェーン用インデックス
+            // Index for hash chain
             $table->index('record_hash');
             $table->index('previous_hash');
             $table->index('chain_sequence');
@@ -194,41 +194,41 @@ return new class extends Migration
         });
 
         // ========================================
-        // 日次署名テーブル（監査ログの日次固定化）
+        // Daily signature table (daily immutability for audit logs)
         // ========================================
         Schema::create('audit_log_daily_seals', function (Blueprint $table) {
             $table->id();
 
-            // 対象日（YYYY-MM-DD）
+            // Target date (YYYY-MM-DD)
             $table->date('seal_date')->unique();
 
-            // その日の最初と最後のログID
+            // First and last log IDs of the day
             $table->unsignedBigInteger('first_log_id');
             $table->unsignedBigInteger('last_log_id');
 
-            // その日のログ件数
+            // Log count for the day
             $table->unsignedInteger('log_count');
 
-            // その日の最終ハッシュ（チェーンの終端）
+            // Final hash of the day (end of chain)
             $table->string('final_hash', 64);
 
-            // 日次署名（HMAC-SHA256）
-            // 計算対象: seal_date + first_log_id + last_log_id + log_count + final_hash
+            // Daily signature (HMAC-SHA256)
+            // Calculation input: seal_date + first_log_id + last_log_id + log_count + final_hash
             $table->string('daily_signature', 64);
 
-            // 署名に使用したキーのバージョン（キーローテーション対応）
+            // Version of key used for signature (for key rotation)
             $table->unsignedSmallInteger('key_version')->default(1);
 
-            // 署名アルゴリズム
+            // Signature algorithm
             $table->string('signature_algorithm', 30)->default('hmac-sha256');
 
-            // 検証ステータス
+            // Verification status
             $table->string('verification_status', 20)->default('valid');
 
-            // 最終検証日時
+            // Last verification timestamp
             $table->timestamp('last_verified_at')->nullable();
 
-            // メタ情報（検証履歴など）
+            // Metadata (verification history, etc.)
             $table->json('metadata')->nullable();
 
             $table->timestamps();

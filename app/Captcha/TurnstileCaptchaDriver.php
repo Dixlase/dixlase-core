@@ -76,7 +76,7 @@ class TurnstileCaptchaDriver implements CaptchaDriver
     public function verify(Request $request): CaptchaResult
     {
         try {
-            // Turnstileトークンを複数のキー名で試行
+            // Try Turnstile token with multiple key names
             $token = $request->input('cf-turnstile-response')
                   ?? $request->input('turnstile-response')
                   ?? $request->input('g-recaptcha-response');
@@ -114,7 +114,7 @@ class TurnstileCaptchaDriver implements CaptchaDriver
             }
 
             if ($data['success']) {
-                // 成功を記録
+                // Record success
                 CaptchaFailoverService::recordSuccess('turnstile');
 
                 return new CaptchaResult(true);
@@ -135,10 +135,10 @@ class TurnstileCaptchaDriver implements CaptchaDriver
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            // 失敗を記録（自動フェイルオーバーのトリガー）
+            // Record failure (triggers automatic failover)
             CaptchaFailoverService::recordFailure('turnstile', $e->getMessage());
 
-            // 障害時の挙動を設定から取得
+            // Get failure behavior from settings
             $onFailure = config('security.external_services.captcha_on_failure', 'fail_closed');
 
             if ($onFailure === 'fail_open') {

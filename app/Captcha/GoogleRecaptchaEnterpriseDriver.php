@@ -127,7 +127,7 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
     protected function verifyWithEnterpriseAPI(Request $request, string $token): CaptchaResult
     {
         try {
-            // Enterprise REST APIを使用（APIキーベース認証）
+            // Uses Enterprise REST API (API key-based authentication)
             $apiUrl = "https://recaptchaenterprise.googleapis.com/v1/projects/{$this->config['project_id']}/assessments?key={$this->config['api_key']}";
 
             $payload = [
@@ -194,7 +194,7 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
                 );
             }
 
-            // 成功を記録
+            // Log success
             CaptchaFailoverService::recordSuccess('google_enterprise');
 
             return new CaptchaResult(true, $score, $action, [], ['score' => $score]);
@@ -209,10 +209,10 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
                 'token_length' => strlen($token),
             ]);
 
-            // 失敗を記録（自動フェイルオーバーのトリガー）
+            // Log failure (trigger automatic failover)
             CaptchaFailoverService::recordFailure('google_enterprise', $e->getMessage());
 
-            // 障害時の挙動を設定から取得
+            // Get failure behavior from settings
             $onFailure = config('security.external_services.captcha_on_failure', 'fail_closed');
 
             if ($onFailure === 'fail_open') {

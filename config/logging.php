@@ -168,7 +168,7 @@ return [
             'path' => storage_path('logs/dixlase.log'),
         ],
 
-        // 管理画面のアクティビティ
+        // Admin panel activity
         'admin_activity' => [
             'driver' => 'daily',
             'formatter' => env('LOG_STDERR_FORMATTER'),
@@ -177,7 +177,7 @@ return [
             'days' => env('LOG_DAILY_DAYS', 14),
         ],
 
-        // 管理画面のエラー
+        // Admin panel errors
         'admin_error' => [
             'driver' => 'daily',
             'formatter' => env('LOG_STDERR_FORMATTER'),
@@ -186,7 +186,7 @@ return [
             'days' => env('LOG_DAILY_DAYS', 14),
         ],
 
-        // フロントページの操作
+        // Front page operations
         'front_activity' => [
             'driver' => 'daily',
             'formatter' => env('LOG_STDERR_FORMATTER'),
@@ -195,7 +195,7 @@ return [
             'days' => env('LOG_DAILY_DAYS', 14),
         ],
 
-        // フロントページのエラー
+        // Front page errors
         'front_error' => [
             'driver' => 'daily',
             'formatter' => env('LOG_STDERR_FORMATTER'),
@@ -204,14 +204,14 @@ return [
             'days' => env('LOG_DAILY_DAYS', 14),
         ],
 
-        // システム通知付きログチャンネル
+        // Log channel with system notifications
         'notification' => [
             'driver' => 'custom',
             'via' => App\Logging\SystemNotificationLogger::class,
             'level' => env('LOG_LEVEL', 'debug'),
         ],
 
-        // インストール専用ログ
+        // Installation-specific log
         'install' => [
             'driver' => 'single',
             'path' => storage_path('logs/install.log'),
@@ -219,7 +219,7 @@ return [
             'replace_placeholders' => true,
         ],
 
-        // CSP違反レポートログ
+        // CSP violation report log
         'csp' => [
             'driver' => 'daily',
             'path' => storage_path('logs/csp_violations.log'),
@@ -227,7 +227,7 @@ return [
             'days' => env('LOG_DAILY_DAYS', 14),
         ],
 
-        // 監査ログ（Audit Log）
+        // Audit log
         'audit' => [
             'driver' => 'daily',
             'path' => storage_path('logs/audit.log'),

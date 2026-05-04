@@ -176,7 +176,7 @@ return [
     | This value determines whether the application should force SSL connections.
     | This is used to ensure that all connections are secure.
     */
-    'force_ssl' => env('FORCE_SSL', false), // `.env` から取得
+    'force_ssl' => env('FORCE_SSL', false), // Retrieved from `.env`
 
     /*
     |--------------------------------------------------------------------------
@@ -196,7 +196,7 @@ return [
     | Custom File Types (from custom.php)
     |--------------------------------------------------------------------------
     |
-    | カスタムファイルのタイプ別設定
+    Custom file type-specific settings
     |
     */
     'file_types' => [

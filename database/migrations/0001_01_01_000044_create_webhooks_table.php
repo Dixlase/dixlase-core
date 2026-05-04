@@ -42,12 +42,12 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * Webhook登録テーブル
+     * Webhook registration table
      *
-     * 目的：
-     * - 外部サービスへのイベント通知設定
-     * - 署名付きHTTPリクエストの送信
-     * - リトライ・タイムアウト設定
+     * Purpose:
+     * - Event notification settings to external services
+     * - Sending signed HTTP requests
+     * - Retry and timeout settings
      */
     public function up(): void
     {
@@ -57,12 +57,12 @@ return new class extends Migration
             $table->string('name', 100);
             $table->string('url', 2048);
             $table->string('secret', 128);
-            $table->json('events')->nullable(); // 購読するイベント一覧
+            $table->json('events')->nullable(); // List of subscribed events
             $table->boolean('is_active')->default(true);
             $table->string('environment', 16)->default('live'); // live / test
-            $table->unsignedInteger('timeout')->default(30); // タイムアウト秒数
-            $table->unsignedInteger('retry_count')->default(3); // リトライ回数
-            $table->json('headers')->nullable(); // カスタムヘッダー
+            $table->unsignedInteger('timeout')->default(30); // Timeout seconds
+            $table->unsignedInteger('retry_count')->default(3); // Retry count
+            $table->json('headers')->nullable(); // Custom headers
             $table->text('description')->nullable();
             $table->timestamp('last_triggered_at')->nullable();
             $table->unsignedBigInteger('success_count')->default(0);

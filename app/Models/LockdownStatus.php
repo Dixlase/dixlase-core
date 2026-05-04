@@ -42,7 +42,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * ロックダウン状態モデル
+ * Lockdown status model
  *
  * @property int $id
  * @property string $type
@@ -65,14 +65,14 @@ class LockdownStatus extends Model
 
     protected $table = 'lockdown_status';
 
-    // ロックダウンタイプ
-    public const TYPE_FULL = 'full';           // 全アクセス遮断
+    // Lockdown type
+    public const TYPE_FULL = 'full';           // Block all access
 
-    public const TYPE_ADMIN = 'admin';         // 管理画面のみ
+    public const TYPE_ADMIN = 'admin';         // Admin panel only
 
-    public const TYPE_API = 'api';             // APIのみ
+    public const TYPE_API = 'api';             // API only
 
-    public const TYPE_LOGIN = 'login';         // ログインのみ
+    public const TYPE_LOGIN = 'login';         // Login only
 
     protected $fillable = [
         'site_id',
@@ -132,7 +132,7 @@ class LockdownStatus extends Model
     // =========================================================================
 
     /**
-     * 現在アクティブなロックダウンを取得
+     * Get currently active lockdown
      */
     public static function getActive(?string $type = null): ?self
     {
@@ -145,7 +145,7 @@ class LockdownStatus extends Model
     }
 
     /**
-     * ロックダウンがアクティブかどうか
+     * Whether lockdown is active
      */
     public static function isLocked(?string $type = null): bool
     {
@@ -153,11 +153,11 @@ class LockdownStatus extends Model
     }
 
     /**
-     * 特定のタイプがロックされているか
+     * Whether a specific type is locked
      */
     public static function isTypeLocked(string $type): bool
     {
-        // fullロックダウンは全てに影響
+        // Full lockdown affects everything
         if (self::isLocked(self::TYPE_FULL)) {
             return true;
         }
@@ -166,7 +166,7 @@ class LockdownStatus extends Model
     }
 
     /**
-     * IPアドレスが許可されているか
+     * Whether IP address is allowed
      */
     public function isIpAllowed(string $ip): bool
     {
@@ -178,7 +178,7 @@ class LockdownStatus extends Model
     }
 
     /**
-     * メンバーが許可されているか
+     * Whether member is allowed
      */
     public function isMemberAllowed(int $memberId): bool
     {
@@ -190,7 +190,7 @@ class LockdownStatus extends Model
     }
 
     /**
-     * 自動解除の時間が過ぎているか
+     * Whether auto-release time has passed
      */
     public function shouldAutoRelease(): bool
     {
@@ -202,7 +202,7 @@ class LockdownStatus extends Model
     }
 
     /**
-     * ロックダウンタイプのラベルを取得
+     * Get lockdown type label
      */
     public function getTypeLabel(): string
     {
@@ -216,7 +216,7 @@ class LockdownStatus extends Model
     }
 
     /**
-     * 全タイプのオプションを取得
+     * Get all type options
      */
     public static function getTypeOptions(): array
     {

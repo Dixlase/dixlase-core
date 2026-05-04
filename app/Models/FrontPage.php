@@ -47,7 +47,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * フロントページモデル
+ * Front page model
  */
 class FrontPage extends Model implements Revisionable
 {
@@ -56,12 +56,12 @@ class FrontPage extends Model implements Revisionable
     use HasRevisions;
 
     /**
-     * テーブル名
+     * Table name
      */
     protected $table = 'front_pages';
 
     /**
-     * 一括代入可能な属性
+     * Mass assignable attributes
      *
      * @var array<int, string>
      */
@@ -79,7 +79,7 @@ class FrontPage extends Model implements Revisionable
     ];
 
     /**
-     * キャストする属性
+     * Attributes to cast
      *
      * @return array<string, string>
      */
@@ -93,7 +93,7 @@ class FrontPage extends Model implements Revisionable
     }
 
     /**
-     * ページタイプと言語で取得
+     * Get by page type and language
      */
     public static function findByTypeAndLang(string $pageType, string $lang): ?self
     {
@@ -104,7 +104,7 @@ class FrontPage extends Model implements Revisionable
     }
 
     /**
-     * ページタイプで取得（後方互換）
+     * Get by page type (backward compatibility)
      */
     public static function findByType(string $pageType): ?self
     {
@@ -112,7 +112,7 @@ class FrontPage extends Model implements Revisionable
     }
 
     /**
-     * 公開されているかチェック
+     * Check if public
      */
     public function isPublished(): bool
     {
@@ -120,7 +120,7 @@ class FrontPage extends Model implements Revisionable
     }
 
     /**
-     * 公開ページのスコープ
+     * Scope for public pages
      *
      * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      * @return \Illuminate\Database\Eloquent\Builder<self>

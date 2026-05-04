@@ -41,9 +41,9 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * メディアリポジトリ実装
+ * Media repository implementation
  */
 class MediaRepository implements MediaRepositoryInterface
 {
@@ -88,7 +88,7 @@ class MediaRepository implements MediaRepositoryInterface
     ): LengthAwarePaginator {
         $query = Media::with('member');
 
-        // 検索フィルター
+        // Search filter
         if (! empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
@@ -98,17 +98,17 @@ class MediaRepository implements MediaRepositoryInterface
             });
         }
 
-        // タイプフィルター
+        // Type filter
         if (! empty($filters['type'])) {
             $query->where('type', 'like', $filters['type'].'%');
         }
 
-        // アップロード者フィルター
+        // Uploader filter
         if (! empty($filters['uploaded_by'])) {
             $query->where('uploaded_by', $filters['uploaded_by']);
         }
 
-        // 日付範囲フィルター
+        // Date range filter
         if (! empty($filters['date_from'])) {
             $query->whereDate('created_at', '>=', $filters['date_from']);
         }
@@ -116,7 +116,7 @@ class MediaRepository implements MediaRepositoryInterface
             $query->whereDate('created_at', '<=', $filters['date_to']);
         }
 
-        // ソート
+        // Sort
         $query->orderBy($sortBy, $sortOrder);
 
         return $query->paginate($perPage);
@@ -253,7 +253,7 @@ class MediaRepository implements MediaRepositoryInterface
     {
         $query = Media::query();
 
-        // フィルター適用
+        // Apply filters
         if (! empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {

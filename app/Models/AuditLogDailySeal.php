@@ -40,10 +40,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 監査ログ日次署名モデル
+ * Audit log daily seal model
  *
- * 監査ログの日次固定化（シール）を管理
- * 各日のログチェーンを署名して改ざんを検知可能にする
+ * Manages daily sealing of audit logs
+ * Signs each day's log chain to enable tamper detection
  *
  * @property int $id
  * @property \Carbon\Carbon $seal_date

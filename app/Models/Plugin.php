@@ -42,7 +42,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * プラグインメタデータモデル
+ * Plugin metadata model
  */
 class Plugin extends Model
 {
@@ -87,7 +87,7 @@ class Plugin extends Model
     }
 
     /**
-     * 複数代入の許可フィールド
+     * Mass assignable fields
      */
     protected $fillable = [
         'name',
@@ -120,7 +120,7 @@ class Plugin extends Model
     ];
 
     /**
-     * キャスト設定
+     * Cast settings
      */
     protected $casts = [
         'installed_at' => 'datetime',
@@ -148,7 +148,7 @@ class Plugin extends Model
     }
 
     /**
-     * 有効化されたプラグインを取得するスコープ
+     * Scope to retrieve enabled plugins
      */
     public function scopeEnabled($query)
     {
@@ -156,7 +156,7 @@ class Plugin extends Model
     }
 
     /**
-     * インストール済みプラグインのスコープ
+     * Scope for installed plugins
      */
     public function scopeInstalled($query)
     {
@@ -164,7 +164,7 @@ class Plugin extends Model
     }
 
     /**
-     * プラグインがインストール済みかチェック
+     * Check if plugin is installed
      */
     public function isInstalled(): bool
     {
@@ -172,7 +172,7 @@ class Plugin extends Model
     }
 
     /**
-     * プラグインが有効化されているかチェック
+     * Check if plugin is enabled
      */
     public function isEnabled(): bool
     {
@@ -180,7 +180,7 @@ class Plugin extends Model
     }
 
     /**
-     * 後方互換性のため残す（非推奨）
+     * Kept for backward compatibility (deprecated)
      *
      * @deprecated Use isEnabled() instead
      */

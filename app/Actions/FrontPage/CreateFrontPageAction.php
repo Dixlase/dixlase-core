@@ -85,13 +85,13 @@ class CreateFrontPageAction extends AbstractAction
         $customJs = $data['custom_js'] ?? null;
         $customCss = $data['custom_css'] ?? null;
 
-        // HTML エディタ以外は JS/CSS を無視
+        // Ignore JS/CSS for non-HTML editors
         if ($editorTypeEnum !== ContentEditorType::HTML) {
             $customJs = null;
             $customCss = null;
         }
 
-        // ファイル保存の場合はファイルにも保存
+        // When saving to file, also save to the file
         if ($storageTypeEnum === ContentStorageType::FILE) {
             $this->contentService->saveToFile('main_content', $data['lang'], $editorTypeSlug, $content);
 
@@ -105,7 +105,7 @@ class CreateFrontPageAction extends AbstractAction
             }
         }
 
-        // 常にDBにもコンテンツを保存（バックアップ）
+        // Always save content to DB as well (backup)
         $frontPage = FrontPage::create([
             'page_type' => 'main_content',
             'lang' => $data['lang'],
@@ -117,7 +117,7 @@ class CreateFrontPageAction extends AbstractAction
             'status' => ContentStatus::PUBLISHED,
         ]);
 
-        // 初回作成時のリビジョンを記録（ユーザーの明示保存なので manual として扱う）
+        // Record revision on initial creation (treated as manual since it's an explicit user save)
         $this->revisionService->record(
             $frontPage,
             type: \App\Models\FrontPageRevision::TYPE_MANUAL,

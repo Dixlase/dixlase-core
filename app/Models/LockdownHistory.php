@@ -42,7 +42,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * ロックダウン履歴モデル
+ * Lockdown history model
  *
  * @property int $id
  * @property string $action
@@ -61,7 +61,7 @@ class LockdownHistory extends Model
 
     public $timestamps = false;
 
-    // アクションタイプ
+    // Action type
     public const ACTION_ACTIVATED = 'activated';
 
     public const ACTION_DEACTIVATED = 'deactivated';
@@ -116,7 +116,7 @@ class LockdownHistory extends Model
     // =========================================================================
 
     /**
-     * 履歴を記録
+     * Record history
      */
     public static function record(
         string $action,
@@ -138,7 +138,7 @@ class LockdownHistory extends Model
     }
 
     /**
-     * アクションのラベルを取得
+     * Get action label
      */
     public function getActionLabel(): string
     {

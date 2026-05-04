@@ -41,28 +41,28 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote')->hourly();
 
-// ファイル整合性スキャン（毎日午前3時に実行）
+// File integrity scan (runs daily at 3:00 AM)
 Schedule::command('dls:integrity:scan --scheduled')
     ->dailyAt('03:00')
     ->withoutOverlapping()
     ->runInBackground()
     ->appendOutputTo(storage_path('logs/integrity-scan.log'));
 
-// メンテナンスモード自動解除チェック（1分ごとに実行）
+// Maintenance mode auto-release check (runs every minute)
 Schedule::command('maintenance:check-auto-release')
     ->everyMinute()
     ->withoutOverlapping()
     ->runInBackground();
 
-// 拡張機能アップデートチェック（毎時 cron が tick、設定された間隔が経過していたら実際に走らせる）
+// Extension update check (cron ticks hourly, actually runs if the configured interval has elapsed)
 //
-// `extension_update_check_interval` 設定（86400 / 43200 / 21600 / 0=manual）で間隔を制御。
-// `when()` 内で「前回チェックから設定間隔以上経過したか」を判定して実行可否を決める。
-// 設定変更時に cron を組み直す必要がない設計（hourly ティックで再評価される）。
+// Interval controlled by `extension_update_check_interval` setting (86400 / 43200 / 21600 / 0=manual)
+// Inside `when()`, determines whether to run by checking if the configured interval has elapsed since the last check
+// Designed so that cron does not need to be reconfigured when settings change (re-evaluated on hourly tick)
 Schedule::command('dls:source:check')
     ->hourly()
     ->when(function () {
-        // インストール完了前は走らせない
+        // Do not run before installation is complete
         $installed = $_SERVER['INSTALLED'] ?? $_ENV['INSTALLED'] ?? env('INSTALLED') ?? config('app.installed');
         if ($installed !== 'true' && $installed !== true) {
             return false;
@@ -75,12 +75,12 @@ Schedule::command('dls:source:check')
             return false;
         }
 
-        // 0 は手動チェックのみ（自動実行しない）
+        // 0 means manual check only (no automatic execution)
         if ($interval <= 0) {
             return false;
         }
 
-        // 前回チェック時刻の最大値（プラグイン・テーマ横断）。一度も走っていなければ即実行。
+        // Maximum last check time (across plugins and themes). If never run, execute immediately
         try {
             $lastPlugin = \App\Models\Plugin::query()->max('last_version_check');
             $lastTheme = \App\Models\Theme::query()->max('last_version_check');

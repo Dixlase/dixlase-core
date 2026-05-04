@@ -77,7 +77,7 @@ class ThemeAudit extends Model
     ];
 
     /**
-     * テーマスラッグで監査結果を取得
+     * Get audit results by theme slug
      */
     public static function getBySlug(string $slug): ?self
     {
@@ -85,7 +85,7 @@ class ThemeAudit extends Model
     }
 
     /**
-     * 監査結果を保存または更新
+     * Save or update audit results
      */
     public static function saveAuditResult(string $slug, array $result): self
     {
@@ -116,7 +116,7 @@ class ThemeAudit extends Model
     }
 
     /**
-     * 監査結果を配列で取得
+     * Get audit results as array
      */
     public function toAuditArray(): array
     {

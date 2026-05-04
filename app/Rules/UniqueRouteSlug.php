@@ -42,22 +42,22 @@ use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 /**
- * ルートスラッグ一意性バリデーションルール
+ * Route slug uniqueness validation rule
  *
- * システム全体でトップレベルURLスラッグが重複しないことを検証する。
- * 予約パスとの競合、他機能との競合を検出し、適切なエラーメッセージを返す。
+ * Validates that top-level URL slugs do not duplicate across the entire system
+ * Detects conflicts with reserved paths and other features, and returns appropriate error messages
  */
 class UniqueRouteSlug implements ValidationRule
 {
     /**
-     * @param  string  $owner  自身のオーナーID（自分自身を除外するため）
+     * @param  string  $owner  Own owner ID (to exclude self)
      */
     public function __construct(
         private string $owner,
     ) {}
 
     /**
-     * バリデーション実行
+     * Execute validation
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
@@ -85,9 +85,9 @@ class UniqueRouteSlug implements ValidationRule
     }
 
     /**
-     * 静的ファクトリーメソッド
+     * Static factory method
      *
-     * @param  string  $owner  オーナーID（例: 'core:admin_url'）
+     * @param  string  $owner  Owner ID (e.g., 'core:admin_url')
      */
     public static function for(string $owner): static
     {

@@ -87,11 +87,11 @@ class ThemeInstall extends Command
             return Command::FAILURE;
         }
 
-        // --forceオプションが指定されている場合は、マイグレーションとシーダーのみ実行
+        // If --force option is specified, only run migrations and seeders
         if ($exists && $this->option('force')) {
             $this->info('Theme already registered. Running migrations and seeders only...');
 
-            // マイグレーションを実行
+            // Run migrations
             $migrationPath = base_path("themes/{$themeDirName}/database/migrations");
 
             if (file_exists($migrationPath) && is_dir($migrationPath)) {
@@ -109,7 +109,7 @@ class ThemeInstall extends Command
                 }
             }
 
-            // シーダーを実行
+            // Run seeders
             try {
                 $seederClass = "Themes\\{$themeDirName}\\Database\\Seeders\\DatabaseSeeder";
 
@@ -128,7 +128,7 @@ class ThemeInstall extends Command
             return Command::SUCCESS;
         }
 
-        // テーマ情報を読み取る（theme.json → composer.json → デフォルト値の順）
+        // Read theme information (in order: theme.json → composer.json → default values)
         $themeJsonPath = "{$themeDir}/theme.json";
         $composerPath = "{$themeDir}/composer.json";
 
@@ -142,7 +142,7 @@ class ThemeInstall extends Command
         $web = null;
         $version = '1.0.0';
 
-        // 1. theme.jsonから読み取り（最優先）
+        // 1. Read from theme.json (highest priority)
         if (file_exists($themeJsonPath)) {
             $themeData = json_decode(file_get_contents($themeJsonPath), true);
             if (json_last_error() === JSON_ERROR_NONE) {
@@ -161,15 +161,15 @@ class ThemeInstall extends Command
             }
         }
 
-        // 2. composer.jsonからフォールバック
+        // 2. Fallback to composer.json
         if (file_exists($composerPath)) {
             $composerData = json_decode(file_get_contents($composerPath), true);
             if (json_last_error() === JSON_ERROR_NONE) {
-                // display-nameをextra.dixlaseから取得
+                // Get display-name from extra.dixlase
                 $displayName = $displayName ?? $composerData['extra']['dixlase']['display-name'] ?? null;
                 $packageName = $packageName ?? $composerData['name'] ?? null;
 
-                // namespaceはcomposer.jsonのautoloadから取得
+                // Get namespace from autoload in composer.json
                 if (! $namespace && isset($composerData['autoload']['psr-4'])) {
                     $namespace = array_key_first($composerData['autoload']['psr-4']);
                     $namespace = rtrim($namespace, '\\');
@@ -178,25 +178,25 @@ class ThemeInstall extends Command
                 $description = $description ?? $composerData['description'] ?? null;
                 $license = $license ?? $composerData['license'] ?? null;
 
-                // authors配列から情報を取得
+                // Get information from authors array
                 if (! $author && isset($composerData['authors']) && is_array($composerData['authors']) && count($composerData['authors']) > 0) {
                     $author = $composerData['authors'][0]['name'] ?? null;
                     $email = $email ?? $composerData['authors'][0]['email'] ?? null;
                     $web = $web ?? $composerData['authors'][0]['homepage'] ?? null;
                 }
 
-                // versionはextra.dixlase.versionから取得、なければルートのもの
+                // Get version from extra.dixlase.version, or use root version if not present
                 if ($version === '1.0.0') {
                     $version = $composerData['extra']['dixlase']['version'] ?? $composerData['version'] ?? '1.0.0';
                 }
             }
         }
 
-        // デフォルト値の設定
+        // Set default values
         $displayName = $displayName ?? $themeDirName;
         $namespace = $namespace ?? "Themes\\{$themeDirName}";
 
-        // テーマ設定ページの有無をチェック
+        // Check for theme settings page
         $hasSettings = file_exists("{$themeDir}/app/Http/Controllers/Admin/Settings/Themes/ThemeSettingsController.php");
 
         // Register the theme
@@ -216,11 +216,11 @@ class ThemeInstall extends Command
             'installed_at' => now(),
         ]);
 
-        // composer.local.jsonを更新
+        // Update composer.local.json
         ComposerLocalHelper::syncAutoload();
         $this->info('Updated composer.local.json');
 
-        // マイグレーションを実行（ThemeMigratorを使用）
+        // Run migrations (using ThemeMigrator)
         $migrationPath = base_path("themes/{$themeDirName}/database/migrations");
 
         if (file_exists($migrationPath) && is_dir($migrationPath)) {
@@ -242,13 +242,13 @@ class ThemeInstall extends Command
             }
         }
 
-        // シーダーを実行
+        // Run seeders
         try {
             $seederClass = "Themes\\{$themeDirName}\\Database\\Seeders\\DatabaseSeeder";
 
             if (class_exists($seederClass)) {
                 $seeder = new $seederClass();
-                // コマンドインスタンスをセット
+                // Set command instance
                 $seeder->setCommand($this);
                 $seeder->run();
                 $this->info('Theme seeder executed successfully');

@@ -39,14 +39,14 @@ use App\Contracts\Repositories\MediaSettingRepositoryInterface;
 use App\Models\MediaSetting;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  *
- * メディア設定リポジトリ実装
+ * Media settings repository implementation
  */
 class MediaSettingRepository extends AbstractSettingRepository implements MediaSettingRepositoryInterface
 {
     /**
-     * コンストラクタ
+     * Constructor
      */
     public function __construct()
     {
@@ -64,7 +64,7 @@ class MediaSettingRepository extends AbstractSettingRepository implements MediaS
     }
 
     /**
-     * 配列をJSON文字列に変換
+     * Convert array to JSON string
      *
      * {@inheritDoc}
      */
@@ -74,7 +74,7 @@ class MediaSettingRepository extends AbstractSettingRepository implements MediaS
     }
 
     /**
-     * JSON文字列を配列に変換
+     * Convert JSON string to array
      *
      * {@inheritDoc}
      */

@@ -80,14 +80,14 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
-        // 404エラーの場合は、カスタムビューを読み込む
+        // Load custom view for 404 errors
         /*
         if ($this->isHttpException($exception)) {
             return response()->view('errors.minimal', ['exception' => $exception], $exception->getStatusCode());
         }
         */
 
-        // 特定のHTTPステータスコードのカスタムビューを読み込む
+        // Load custom view for specific HTTP status codes
         $status = $this->isHttpException($exception) ? $exception->getStatusCode() : 500;
 
         if (view()->exists("errors::{$status}")) {

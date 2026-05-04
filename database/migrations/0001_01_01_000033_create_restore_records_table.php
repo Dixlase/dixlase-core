@@ -54,36 +54,36 @@ return new class extends Migration
             // network-wide restores leave it null.
             $table->unsignedBigInteger('site_id')->nullable()->index();
 
-            // どのバックアップから復元したか（バックアップ削除後も履歴を保持）
+            // Which backup was restored from (retains history even after backup deletion)
             $table->unsignedBigInteger('backup_record_id')->nullable()->index();
 
-            // 復元実行者（メンバー削除後も履歴を保持）
+            // Restore executor (retains history even after member deletion)
             $table->unsignedBigInteger('restored_by')->nullable()->index();
-            $table->string('restored_by_name', 255)->nullable();   // 表示用スナップショット
+            $table->string('restored_by_name', 255)->nullable();   // Snapshot for display
 
-            // 復元実行時刻
+            // Restore execution time
             $table->timestamp('restored_at')->index();
 
-            // 実際に復元した対象（バックアップ全体の一部のみ復元する場合がある）
-            // 例: ["database"] / ["media", "custom"] / ["database", "media", "private", "custom"]
+            // Actually restored targets (may restore only a portion of the entire backup)
+            // e.g.: ["database"] / ["media", "custom"] / ["database", "media", "private", "custom"]
             $table->json('targets');
 
-            // ステータス: pending, in_progress, completed, failed, rolled_back
+            // Status: pending, in_progress, completed, failed, rolled_back
             $table->string('status', 20)->default('pending')->index();
 
-            // 復元前の安全スナップショット（復元の取り消しに使用）
+            // Safety snapshot before restore (used to undo restore)
             $table->unsignedBigInteger('pre_restore_backup_id')->nullable()->index();
 
-            // 実行情報
+            // Execution information
             $table->unsignedInteger('duration_seconds')->nullable();
             $table->text('error')->nullable();
 
-            // メタデータ: 復元したテーブル数、ファイル数、警告等
+            // Metadata: number of restored tables, files, warnings, etc.
             $table->json('metadata')->nullable();
 
             $table->timestamps();
 
-            // 複合インデックス
+            // Composite index
             $table->index(['status', 'restored_at']);
         });
     }

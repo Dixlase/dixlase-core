@@ -44,9 +44,9 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * カスタムロールの権限オーバーライドテーブル
-     * 継承元プリセットロール（base_role）の権限に対して、
-     * 個別の権限付与（grant）または拒否（deny）を定義する。
+     * Custom role permission overrides table
+     * For permissions from the inherited preset role (base_role),
+     * defines individual permission grants or denials
      */
     public function up(): void
     {
@@ -54,24 +54,24 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('site_id')->index();
 
-            // 対象カスタムロール（外部キー制約は add_foreign_key_constraints で追加）
+            // Target custom role (foreign key constraint added in add_foreign_key_constraints)
             $table->unsignedBigInteger('custom_role_id');
 
-            // Permission enum 値（例: members.view, media.upload）
+            // Permission enum value (e.g. members.view, media.upload)
             $table->string('permission', 100);
 
-            // 付与種別: grant=明示的に許可 / deny=明示的に拒否
+            // Grant type: grant=explicitly allow / deny=explicitly deny
             $table->string('grant_type', 10)->default('grant');
 
-            // 更新者（外部キー制約は add_foreign_key_constraints で追加）
+            // Updater (foreign key constraint added in add_foreign_key_constraints)
             $table->unsignedBigInteger('updated_by')->nullable();
 
             $table->timestamps();
 
-            // ロールごとに同一権限は1つだけ（site スコープ込み）
+            // Only one entry per permission per role (including site scope)
             $table->unique(['site_id', 'custom_role_id', 'permission'], 'custom_role_perm_unique');
 
-            // インデックス
+            // Index
             $table->index('custom_role_id', 'custom_role_perm_role_idx');
             $table->index('permission', 'custom_role_perm_permission_idx');
         });

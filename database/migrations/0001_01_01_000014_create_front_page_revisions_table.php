@@ -44,16 +44,16 @@ return new class extends Migration
         Schema::create('front_page_revisions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('site_id')->index();
-            // FK は add_foreign_key_constraints (999999) でまとめて追加（front_pages.id への cascade）
+            // FK added together in add_foreign_key_constraints (999999) (cascade to front_pages.id)
             $table->unsignedBigInteger('front_page_id');
-            // 全フィールド（title, content, custom_js, custom_css, storage_type, editor_type, status など）の完全スナップショット
+            // Complete snapshot of all fields (title, content, custom_js, custom_css, storage_type, editor_type, status, etc.)
             $table->json('snapshot');
-            // auto: 自動保存 / manual: 手動作成 / restore_backup: 復元前バックアップ
+            // auto: automatic save / manual: manual creation / restore_backup: backup before restore
             $table->string('type', 20)->default('auto');
             $table->string('note')->nullable();
-            // 保護フラグ。true の場合は自動保持件数超過時の自動削除対象外となる
+            // Protection flag. If true, exempt from automatic deletion when auto-retention count is exceeded
             $table->boolean('is_protected')->default(false);
-            // FK は add_foreign_key_constraints (999999) でまとめて追加（members.id への nullOnDelete）
+            // FK added together in add_foreign_key_constraints (999999) (nullOnDelete to members.id)
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('created_at')->nullable();
 

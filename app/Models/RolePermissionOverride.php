@@ -62,14 +62,14 @@ class RolePermissionOverride extends Model
     ];
 
     /**
-     * ソース種別定数
+     * Source type constants
      */
     public const SOURCE_CORE = 'core';
 
     public const SOURCE_PLUGIN = 'plugin';
 
     /**
-     * 更新者リレーション
+     * Updater relation
      */
     public function updatedByMember(): BelongsTo
     {
@@ -77,7 +77,7 @@ class RolePermissionOverride extends Model
     }
 
     /**
-     * 指定されたユーザー権限がアクセス可能かチェック
+     * Check if the specified user permission is accessible
      */
     public function canAccess(MemberRole $userRole): bool
     {
@@ -89,7 +89,7 @@ class RolePermissionOverride extends Model
     }
 
     /**
-     * 指定されたユーザー権限が閲覧可能かチェック
+     * Check if the specified user permission is viewable
      */
     public function canView(MemberRole $userRole): bool
     {
@@ -101,7 +101,7 @@ class RolePermissionOverride extends Model
     }
 
     /**
-     * コア機能のオーバーライドを取得
+     * Get Core feature override
      */
     public static function getCoreOverride(string $menuKey): ?self
     {
@@ -112,7 +112,7 @@ class RolePermissionOverride extends Model
     }
 
     /**
-     * プラグイン機能のオーバーライドを取得
+     * Get plugin feature override
      */
     public static function getPluginOverride(string $pluginSlug, string $menuKey): ?self
     {
@@ -123,7 +123,7 @@ class RolePermissionOverride extends Model
     }
 
     /**
-     * コア機能のオーバーライドを全て取得
+     * Get all Core feature overrides
      */
     public static function getAllCoreOverrides(): \Illuminate\Database\Eloquent\Collection
     {
@@ -133,7 +133,7 @@ class RolePermissionOverride extends Model
     }
 
     /**
-     * プラグイン機能のオーバーライドを全て取得
+     * Get all plugin feature overrides
      */
     public static function getAllPluginOverrides(?string $pluginSlug = null): \Illuminate\Database\Eloquent\Collection
     {
@@ -147,7 +147,7 @@ class RolePermissionOverride extends Model
     }
 
     /**
-     * コア機能のオーバーライドを保存または更新
+     * Save or update Core feature override
      */
     public static function setCoreOverride(string $menuKey, int $accessRoles, int $viewRoles, ?int $updatedBy = null): self
     {
@@ -164,14 +164,14 @@ class RolePermissionOverride extends Model
             ]
         );
 
-        // キャッシュをクリア
+        // Clear cache
         \App\Services\PermissionRegistry::clearMenuCache($menuKey);
 
         return $result;
     }
 
     /**
-     * プラグイン機能のオーバーライドを保存または更新
+     * Save or update plugin feature override
      */
     public static function setPluginOverride(string $pluginSlug, string $menuKey, int $accessRoles, int $viewRoles, ?int $updatedBy = null): self
     {
@@ -188,14 +188,14 @@ class RolePermissionOverride extends Model
             ]
         );
 
-        // キャッシュをクリア
+        // Clear cache
         \App\Services\PermissionRegistry::clearMenuCache($menuKey, $pluginSlug);
 
         return $result;
     }
 
     /**
-     * コア機能のオーバーライドを削除（デフォルトに戻す）
+     * Delete Core feature override (revert to default)
      */
     public static function resetCoreOverride(string $menuKey): bool
     {
@@ -204,14 +204,14 @@ class RolePermissionOverride extends Model
             ->where('menu_key', $menuKey)
             ->delete() > 0;
 
-        // キャッシュをクリア
+        // Clear cache
         \App\Services\PermissionRegistry::clearMenuCache($menuKey);
 
         return $result;
     }
 
     /**
-     * プラグイン機能のオーバーライドを削除（デフォルトに戻す）
+     * Delete plugin feature override (revert to default)
      */
     public static function resetPluginOverride(string $pluginSlug, string $menuKey): bool
     {
@@ -220,14 +220,14 @@ class RolePermissionOverride extends Model
             ->where('menu_key', $menuKey)
             ->delete() > 0;
 
-        // キャッシュをクリア
+        // Clear cache
         \App\Services\PermissionRegistry::clearMenuCache($menuKey, $pluginSlug);
 
         return $result;
     }
 
     /**
-     * プラグインの全オーバーライドを削除（アンインストール時）
+     * Delete all plugin overrides (on uninstall)
      */
     public static function deletePluginOverrides(string $pluginSlug): int
     {
@@ -237,7 +237,7 @@ class RolePermissionOverride extends Model
     }
 
     /**
-     * 孤児オーバーライド（存在しないプラグインのオーバーライド）を検出
+     * Detect orphaned overrides (overrides for non-existent plugins)
      */
     public static function findOrphanOverrides(array $activePluginSlugs): \Illuminate\Database\Eloquent\Collection
     {
@@ -247,7 +247,7 @@ class RolePermissionOverride extends Model
     }
 
     /**
-     * 孤児オーバーライドを削除
+     * Delete orphaned overrides
      */
     public static function deleteOrphanOverrides(array $activePluginSlugs): int
     {

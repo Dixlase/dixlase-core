@@ -39,12 +39,12 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
 /**
- * マイグレーションの不可侵性をチェックするコマンド。
+ * Command for verifying migration immutability.
  *
- * v0.1.0 リリース直前に `--lock` オプションで database/migration-lock.json を生成し、
- * 以降はそのロックファイルと現在のマイグレーションファイル群を SHA-256 で比較する。
- * 既存マイグレーションの改変・削除・リネーム、およびリリース後の `0001_01_01_*` 形式での
- * 新規追加（リリース後は Laravel 標準の `YYYY_MM_DD_HHMMSS_*` が必須）を検出する。
+ * Generate database/migration-lock.json with the `--lock` option just before v0.1.0 release,
+ * then compare that lock file with current migration files using SHA-256
+ * Detects modification, deletion, or renaming of existing migrations, and
+ * new additions in `0001_01_01_*` format (after release, Laravel standard `YYYY_MM_DD_HHMMSS_*` is required)
  */
 class MigrationLint extends Command
 {
@@ -63,10 +63,10 @@ class MigrationLint extends Command
      *
      * @var string
      */
-    protected $description = 'マイグレーションファイルの不可侵性をチェック（リリース前に --lock でロックファイル生成）';
+    protected $description = 'Check migration file integrity (generate lock file with --lock before release)';
 
     /**
-     * ロックファイルの絶対パス
+     * Absolute path to the lockfile
      */
     protected string $lockFilePath;
 
@@ -82,7 +82,7 @@ class MigrationLint extends Command
     }
 
     /**
-     * スキャン基準パス。テスト時は --base-path で差し替え可能。
+     * Scan base path. Tests can override this via --base-path.
      */
     protected function basePath(): string
     {
@@ -90,7 +90,7 @@ class MigrationLint extends Command
     }
 
     /**
-     * 現在のマイグレーションファイル群から SHA-256 ハッシュを生成しロックファイルに書き出す。
+     * Hash every current migration file with SHA-256 and write the result to the lockfile.
      */
     protected function generateLockfile(): int
     {
@@ -133,7 +133,7 @@ class MigrationLint extends Command
     }
 
     /**
-     * ロックファイルと現在のマイグレーション状態を照合する。
+     * Compare the lockfile against the current migration state.
      */
     protected function verifyLockfile(): int
     {
@@ -174,7 +174,7 @@ class MigrationLint extends Command
         $added = [];
         $namingViolations = [];
 
-        // 改変・削除の検出
+        // Detect modifications and deletions
         foreach ($locked as $path => $hash) {
             if (! isset($currentHashes[$path])) {
                 $deleted[] = $path;
@@ -183,9 +183,9 @@ class MigrationLint extends Command
             }
         }
 
-        // 新規追加と命名規則違反の検出
-        // リリース後（ロックファイル存在時）に追加する新規マイグレーションは
-        // Laravel 標準の YYYY_MM_DD_HHMMSS_* 形式のみ許可し、0001_01_01_* は違反とする。
+        // Detection of new additions and naming convention violations
+        // New migrations added after release (when lock file exists)
+        // must use Laravel standard YYYY_MM_DD_HHMMSS_* format; 0001_01_01_* is a violation
         foreach ($currentHashes as $path => $hash) {
             if (! isset($locked[$path])) {
                 $added[] = $path;
@@ -223,7 +223,7 @@ class MigrationLint extends Command
     }
 
     /**
-     * 人間向けレポートを表示する。
+     * Display a human-readable report.
      *
      * @param  array<int, string>  $modified
      * @param  array<int, string>  $deleted
@@ -278,9 +278,9 @@ class MigrationLint extends Command
     }
 
     /**
-     * コア・プラグイン・テーマの全マイグレーションファイルを収集する。
+     * Collect every migration file across core, plugins, and themes.
      *
-     * @return array<string, string> 相対パス => 絶対パス（ソート済み）
+     * @return array<string, string> relative path => absolute path (sorted)
      */
     protected function collectMigrationFiles(): array
     {
@@ -303,7 +303,7 @@ class MigrationLint extends Command
             }
             foreach (glob($absDir.'/*.php') ?: [] as $file) {
                 $basename = basename($file);
-                // アンダースコア始まりのバックアップファイル（Laravel のスキャン対象外）は除外する
+                // Skip underscore-prefixed backup files (which Laravel itself ignores)
                 if (str_starts_with($basename, '_')) {
                     continue;
                 }

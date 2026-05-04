@@ -45,19 +45,19 @@ class ApiSettingsTableSeeder extends Seeder
      */
     public function run(): void
     {
-        // API機能の有効/無効
+        // Enable/disable API functionality
         GlobalSetting::updateOrCreate(
             ['name' => 'api_enabled'],
             ['value' => '0']
         );
 
-        // デフォルトレート制限（1分あたりのリクエスト数）
+        // Default rate limit (requests per minute)
         GlobalSetting::updateOrCreate(
             ['name' => 'api_rate_limit'],
             ['value' => '60']
         );
 
-        // 署名検証を必須にするか
+        // Whether to require signature verification
         GlobalSetting::updateOrCreate(
             ['name' => 'api_signature_required'],
             ['value' => '1']

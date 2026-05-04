@@ -35,113 +35,113 @@
 
 return [
 
-    // 管理画面へのアクセスを許可するIPアドレス
+    // IP addresses allowed to access the admin panel
     'allowed_admin_ips' => [
-        // '127.0.0.1', // 例: ローカルIP
+        // '127.0.0.1', // Example: Local IP
         // '192.168.1.10',
         '10.5.1.148',
         '0.0.0.0',
     ],
-    // 管理画面へのアクセスを拒否するIPアドレス
+    // IP addresses denied access to the admin panel
     'blocked_admin_ips' => [
         // '123.456.789.0', // 例: 拒否するIP
     ],
 
-    // フロントエンドへのアクセスを許可するIPアドレス
+    // IP addresses allowed to access the frontend
     'allowed_frontend_ips' => [
         // 例: 許可するIP
     ],
-    // フロントエンドへのアクセスを拒否するIPアドレス
+    // IP addresses denied access to the frontend
     'blocked_frontend_ips' => [
         // 例: 拒否するIP
     ],
 
-    // SSLを強制するかどうか
+    // Whether to force SSL
     'force_ssl' => env('FORCE_SSL', false),
 
     /*
     |--------------------------------------------------------------------------
-    | パスワード漏洩チェック設定
+    | Password Breach Check Settings
     |--------------------------------------------------------------------------
     |
-    | Have I Been Pwned APIを使用したパスワード漏洩チェックの設定
-    | パスワード自体は送信されず、SHA-1ハッシュの先頭5文字のみが送信されます
+    | Settings for password breach checking using the Have I Been Pwned API
+    | The password itself is not sent, only the first 5 characters of the SHA-1 hash are transmitted
     |
     */
     'pwned_passwords' => [
-        // Have I Been Pwned API エンドポイント
+        // Have I Been Pwned API endpoint
         'api_endpoint' => env('PWNED_PASSWORDS_API_ENDPOINT', 'https://api.pwnedpasswords.com'),
 
-        // APIリクエストのタイムアウト（秒）
+        // API request timeout (seconds)
         'timeout' => env('PWNED_PASSWORDS_TIMEOUT', 5),
 
-        // 障害時の挙動: 'fail_open'（許可）または 'fail_closed'（拒否）
+        // Behavior on failure: 'fail_open' (allow) or 'fail_closed' (deny)
         'on_failure' => env('PWNED_PASSWORDS_ON_FAILURE', 'fail_open'),
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | 監査ログ保持設定
+    | Audit Log Retention Settings
     |--------------------------------------------------------------------------
     |
-    | 監査ログの保持期間、アーカイブ、クリーンアップに関する設定
+    | Settings for audit log retention period, archiving, and cleanup
     |
     */
     'audit_log' => [
-        // ログ保持期間（日数）- 0は無期限
+        // Log retention period (days) - 0 is unlimited
         'retention_days' => env('AUDIT_LOG_RETENTION_DAYS', 365),
 
-        // アーカイブを有効にするか
+        // Whether to enable archiving
         'archive_enabled' => env('AUDIT_LOG_ARCHIVE_ENABLED', true),
 
-        // アーカイブ保存先（storage/app配下のパス）
+        // Archive destination (path under storage/app)
         'archive_path' => env('AUDIT_LOG_ARCHIVE_PATH', 'audit-archives'),
 
-        // アーカイブ形式: 'json' または 'csv'
+        // Archive format: 'json' or 'csv'
         'archive_format' => env('AUDIT_LOG_ARCHIVE_FORMAT', 'json'),
 
-        // アーカイブ前の最小経過日数
+        // Minimum days elapsed before archiving
         'archive_after_days' => env('AUDIT_LOG_ARCHIVE_AFTER_DAYS', 90),
 
-        // 自動クリーンアップを有効にするか
+        // Whether to enable automatic cleanup
         'auto_cleanup_enabled' => env('AUDIT_LOG_AUTO_CLEANUP', false),
 
-        // クリーンアップ時にアーカイブを保持するか
+        // Whether to retain archives during cleanup
         'keep_archives' => env('AUDIT_LOG_KEEP_ARCHIVES', true),
 
-        // 重要度別の保持期間（日数）- nullはデフォルトを使用
+        // Retention period by severity (days) - null uses default
         'retention_by_severity' => [
-            'critical' => env('AUDIT_LOG_RETENTION_CRITICAL', null), // 無期限推奨
+            'critical' => env('AUDIT_LOG_RETENTION_CRITICAL', null), // Indefinite retention recommended
             'error' => env('AUDIT_LOG_RETENTION_ERROR', null),
             'warning' => env('AUDIT_LOG_RETENTION_WARNING', null),
             'info' => env('AUDIT_LOG_RETENTION_INFO', null),
         ],
 
-        // 日次署名（Daily Seal）の保持期間（日数）
+        // Retention period for Daily Seal (days)
         'daily_seal_retention_days' => env('AUDIT_LOG_SEAL_RETENTION_DAYS', 730), // 2年
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | 外部依存サービス障害時の挙動
+    | Behavior when external dependent services fail
     |--------------------------------------------------------------------------
     |
-    | 外部APIが利用不可の場合の挙動設定
-    | 'fail_open': 操作を許可（セキュリティ低下、可用性優先）
-    | 'fail_closed': 操作を拒否（セキュリティ優先、可用性低下）
+    | Behavior settings when external API is unavailable
+    | 'fail_open': Allow operation (reduced security, availability priority)
+    | 'fail_closed': Deny operation (security priority, reduced availability)
     |
     */
     'external_services' => [
-        // CAPTCHA障害時
+        // When CAPTCHA fails
         'captcha_on_failure' => env('CAPTCHA_ON_FAILURE', 'fail_closed'),
 
-        // CAPTCHAタイムアウト（秒）
+        // CAPTCHA timeout (seconds)
         'captcha_timeout' => env('CAPTCHA_TIMEOUT', 10),
 
-        // GeoIP障害時（将来用）
+        // When GeoIP fails (for future use)
         'geoip_on_failure' => env('GEOIP_ON_FAILURE', 'fail_open'),
 
-        // GeoIPタイムアウト（秒）（将来用）
+        // GeoIP timeout (seconds) (for future use)
         'geoip_timeout' => env('GEOIP_TIMEOUT', 5),
     ],
 

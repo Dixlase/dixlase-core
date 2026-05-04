@@ -37,18 +37,18 @@ use App\Enums\MenuVisibility;
 
 /*
 |--------------------------------------------------------------------------
-| 管理画面モード設定
+| Admin Panel Mode Settings
 |--------------------------------------------------------------------------
 |
-| かんたんモード（Simple）と詳細モード（Advanced）で
-| 各メニューの表示・操作レベルを定義します。
+| Define display and operation level for each menu in
+| Simple mode and Advanced mode.
 |
 | MenuVisibility:
-|   Full (0)      = すべて表示、使えるようにする
-|   Partial (1)   = 一部の機能のみ表示、非表示の部分は自動設定
-|   Hidden (2)    = メニュー丸ごと非表示、自動設定もしくは使えない
-|   ReadOnly (3)  = 表示するが「状態表示のみ（読み取り専用）」
-|   GuideOnly (4) = 表示するが「導線のみ（設定は別ページ or モード切替へ誘導）」
+|   Full (0)      = Display all, enable all features
+|   Partial (1)   = Display partial features only, hidden parts are auto-configured
+|   Hidden (2)    = Hide entire menu, auto-configured or disabled
+|   ReadOnly (3)  = Display but status display only (read-only)
+|   GuideOnly (4) = Display but navigation only (guide to separate page or mode switch for settings)
 |
 */
 
@@ -56,43 +56,43 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | かんたんモードのデフォルトメニュー表示設定
+    | Default menu display settings for Simple mode
     |--------------------------------------------------------------------------
     |
-    | キーはナビゲーション設定のキーに対応します。
-    | ネストされた子項目は「親キー.子キー」のドット記法で指定します。
+    | Keys correspond to navigation configuration keys.
+    | Nested child items are specified using dot notation: 'parent_key.child_key'
     |
-    | 詳細モードではすべてのメニューが Full (0) で表示されます。
+    | In Advanced mode, all menus are displayed as Full (0)
     |
     */
 
     'simple_defaults' => [
 
-        // ダッシュボード - 常に表示
+        // Dashboard - Always display
         'dashboard' => MenuVisibility::Full,
 
-        // フロントページ管理
+        // Front page management
         'front' => MenuVisibility::Full,
 
-        // メディア管理
+        // Media management
         'media' => MenuVisibility::Partial,
         'media.index' => MenuVisibility::Full,
         'media.upload' => MenuVisibility::Full,
         'media.settings' => MenuVisibility::Hidden,
 
-        // プロフィール設定
+        // Profile settings
         'profile' => MenuVisibility::Full,
 
-        // メンバー管理
+        // Member management
         'members' => MenuVisibility::Partial,
         'members.index' => MenuVisibility::Full,
         'members.create_edit' => MenuVisibility::Full,
         'members.roles' => MenuVisibility::Hidden,
 
-        // 全体設定
+        // General settings
         'settings' => MenuVisibility::Partial,
 
-        // 全体設定 > 基本設定
+        // Global settings > Basic settings
         'settings.base' => MenuVisibility::Partial,
         'settings.base.index' => MenuVisibility::Full,
         'settings.base.site' => MenuVisibility::Full,
@@ -100,10 +100,10 @@ return [
         'settings.base.mail' => MenuVisibility::Full,
         'settings.base.maintenance' => MenuVisibility::Full,
         'settings.base.mode' => MenuVisibility::Full,
-        // コンテンツ設定は詳細設定のみ表示（簡単モードでは非表示、デフォルト値で動作）
+        // Content settings show advanced settings only (hidden in simple mode, runs with default values)
         'settings.base.content' => MenuVisibility::Hidden,
 
-        // 全体設定 > セキュリティ設定
+        // Global settings > Security settings
         'settings.security' => MenuVisibility::Partial,
         'settings.security.index' => MenuVisibility::Full,
         'settings.security.password' => MenuVisibility::Hidden,
@@ -118,13 +118,13 @@ return [
         'settings.security.integrity' => MenuVisibility::Hidden,
         'settings.security.environment' => MenuVisibility::Hidden,
 
-        // 全体設定 > テーマ管理
+        // Global settings > Theme management
         'settings.themes' => MenuVisibility::Full,
 
-        // 全体設定 > プラグイン管理
+        // Global settings > Plugin management
         'settings.plugins' => MenuVisibility::Full,
 
-        // 全体設定 > システム
+        // Global settings > System
         'settings.systems' => MenuVisibility::Partial,
         'settings.systems.updates' => MenuVisibility::Full,
         'settings.systems.cache' => MenuVisibility::Full,
@@ -137,11 +137,11 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | メニュー項目のメタ情報
+    | Menu item metadata
     |--------------------------------------------------------------------------
     |
-    | 各メニュー項目の表示名（翻訳キー）、アイコン、
-    | 変更可能な表示レベルの選択肢を定義します。
+    | Defines display name (translation key), icon,
+    | and available display level options for each menu item
     |
     */
 

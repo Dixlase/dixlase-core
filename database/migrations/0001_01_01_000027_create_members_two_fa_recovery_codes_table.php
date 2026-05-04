@@ -49,12 +49,12 @@ return new class extends Migration
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('member_id')->index();
-            $table->string('code'); // ハッシュ化された回復コード
-            $table->timestamp('used_at')->nullable(); // 使用日時
-            $table->boolean('disabled')->default(false); // 無効化フラグ
+            $table->string('code'); // Hashed recovery code
+            $table->timestamp('used_at')->nullable(); // Used at
+            $table->boolean('disabled')->default(false); // Invalidation flag
             $table->timestamps();
 
-            // インデックス
+            // Index
             $table->index(['member_id', 'disabled', 'used_at'], 'idx_member_active');
         });
     }

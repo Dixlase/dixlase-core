@@ -73,14 +73,14 @@ return [
             'iOS' => '/iOS/i',
         ],
 
-        // デフォルト名称
+        // Default name
         'defaults' => [
             'browser' => 'Unknown Browser',
             'os' => 'Unknown OS',
             'device' => 'Unknown Device',
         ],
 
-        // 除外パターン（Safariの検出でChromeを除外するなど）
+        // Exclusion pattern (e.g., exclude Chrome when detecting Safari)
         'exclusions' => [
             'Safari' => ['/Chrome/i'], // SafariとしてマッチしてもChromeが含まれていたら除外
         ],

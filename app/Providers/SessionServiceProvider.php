@@ -57,19 +57,19 @@ class SessionServiceProvider extends ServiceProvider
                 $app
             );
 
-            // メンバーガードのテーブルを設定
+            // Set table for member guard
             $handler->setGuardTable('member', 'members_sessions');
 
-            // ユーザーガードのテーブルを設定（プラグインから追加可能）
-            // プラグインのServiceProviderから追加される
+            // Set table for user guard (can be added from plugins)
+            // Added from plugin ServiceProvider
 
             return $handler;
         });
 
-        // セッションドライバーを register() で拡張
-        // boot 順序に依存せず、他の ServiceProvider の boot() からセッションを
-        // 利用できるようにする（AppServiceProvider 等でのセッションアクセス時に
-        // "Driver [guard-aware-database] not supported" エラーを防止）
+        // Extend session driver in register()
+        // Allow session access from other ServiceProviders' boot() methods without depending on boot order
+        // (prevents "Driver [guard-aware-database] not supported" error
+        // when accessing session in AppServiceProvider, etc.)
         $this->app->resolving('session', function ($manager) {
             $manager->extend('guard-aware-database', function ($app) {
                 return $app['session.guard-aware'];
@@ -82,6 +82,6 @@ class SessionServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // 何もしない（register() で拡張済み）
+        // Do nothing (already extended in register())
     }
 }

@@ -34,11 +34,11 @@
  */
 
 return [
-    // ログイン時のメール通知設定
-    'global_login_notification_mail_mode' => [0, 1, 2, 3], // 0: 無効, 1: 異なる端末/IP時のみ有効, 2: 常に有効, 3: メンバーのプロフィール設定を反映
-    'members_login_notification_mail_mode' => [0, 1, 2], // 0: 無効, 1: 異なる端末/IP時のみ有効, 2: 常に有効
+    // Email notification settings on login
+    'global_login_notification_mail_mode' => [0, 1, 2, 3], // 0: disabled, 1: enabled only for different device/IP, 2: always enabled, 3: reflect member's profile settings
+    'members_login_notification_mail_mode' => [0, 1, 2], // 0: disabled, 1: enabled only for different device/IP, 2: always enabled
 
-    // 二段階認証の設定
-    'global_two_fa_mode' => [0, 1, 2, 3], // 0: 無効, 1: 異なるデバイス・IP時のみ, 2: 常に有効, 3: メンバーのプロフィール設定に従う
+    // Two-factor authentication settings
+    'global_two_fa_mode' => [0, 1, 2, 3], // 0: disabled, 1: only for different device/IP, 2: always enabled, 3: follow member's profile settings
     'members_two_factor_mode' => [0, 1, 2], // 0: 無効, 1: 異なるデバイス・IP時のみ, 2: 常に有効
 ];

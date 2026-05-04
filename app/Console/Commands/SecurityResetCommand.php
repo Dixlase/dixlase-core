@@ -41,12 +41,12 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * セキュリティ設定緊急リセットコマンド（ブレークグラス）
+ * Security settings emergency reset command (break glass)
  *
- * セキュリティ設定の破損・暴走時に、安全なデフォルト値にリセットする
- * - 不正な設定値でログイン不能
- * - 存在しないCAPTCHAドライバ指定
- * - 設定の循環参照
+ * Reset to safe default values when security settings are corrupted or malfunctioning
+ * - Unable to login due to invalid settings values
+ * - Non-existent CAPTCHA driver specified
+ * - Circular reference in settings
  */
 class SecurityResetCommand extends Command
 {

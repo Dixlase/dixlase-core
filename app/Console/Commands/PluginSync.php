@@ -40,7 +40,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
 /**
- * plugin.json の permissions / declares をコード実装に追従して自動更新する。
+ * Automatically update permissions / declares in plugin.json to follow code implementation
  *
  *   php artisan dls:plugin:sync DixlasePages --dry-run
  *   php artisan dls:plugin:sync DixlasePages --write

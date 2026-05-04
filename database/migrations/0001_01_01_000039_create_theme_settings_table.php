@@ -47,8 +47,8 @@ return new class extends Migration
         Schema::create('theme_settings', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('site_id')->index();
-            $table->string('key'); // 設定キー
-            $table->text('value')->nullable(); // 設定値
+            $table->string('key'); // Settings key
+            $table->text('value')->nullable(); // Settings value
             $table->timestamps();
 
             $table->unique(['site_id', 'key']);

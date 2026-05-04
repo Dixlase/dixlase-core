@@ -54,19 +54,19 @@ class WebAuthnCredential extends BaseWebAuthnCredential
     protected $table = 'webauthn_credentials';
 
     /**
-     * モデルの初期化
+     * Initialize the model
      */
     protected static function boot()
     {
         parent::boot();
 
-        // 保存前にmember_idとnameを自動設定（Laragear\WebAuthnがauthenticatable_idとaliasを設定する）
+        // Auto-set member_id and name before saving (Laragear\WebAuthn sets authenticatable_id and alias)
         static::creating(function ($model) {
-            // authenticatable_idからmember_idを設定
+            // Set member_id from authenticatable_id
             if (empty($model->member_id) && ! empty($model->authenticatable_id)) {
                 $model->member_id = $model->authenticatable_id;
             }
-            // aliasからnameを設定
+            // Set name from alias
             if (empty($model->name) && ! empty($model->alias)) {
                 $model->name = $model->alias;
             }
@@ -74,18 +74,18 @@ class WebAuthnCredential extends BaseWebAuthnCredential
     }
 
     /**
-     * user_idミューテーター: member_idから自動生成
+     * user_id mutator: auto-generate from member_id
      */
     public function setUserIdAttribute($value)
     {
-        // 値が設定されている場合はそのまま使用
+        // Use the value as-is if already set
         if (! empty($value)) {
             $this->attributes['user_id'] = $value;
 
             return;
         }
 
-        // member_idからUUIDを生成
+        // Generate UUID from member_id
         if (! empty($this->member_id)) {
             $member = \App\Models\Member::find($this->member_id);
             if ($member) {
@@ -131,7 +131,7 @@ class WebAuthnCredential extends BaseWebAuthnCredential
      * @var array
      */
     protected $casts = [
-        'public_key' => 'string', // 親クラスのencryptedキャストを上書き
+        'public_key' => 'string', // Override parent class encrypted cast
         'transports' => 'json',
         'certificates' => 'json',
         'disabled_at' => 'datetime',
@@ -139,34 +139,34 @@ class WebAuthnCredential extends BaseWebAuthnCredential
 
     /**
      * Get the casts array.
-     * 親クラスのencryptedキャストを完全に無効化
+     * Completely disable parent class encrypted cast
      */
     public function getCasts(): array
     {
         $casts = parent::getCasts();
-        // public_keyの暗号化キャストを削除
+        // Remove encrypted cast for public_key
         unset($casts['public_key']);
-        // 通常の文字列として扱う
+        // Treat as a regular string
         $casts['public_key'] = 'string';
 
         return $casts;
     }
 
     /**
-     * public_keyアクセサ: 暗号化を完全にバイパス
+     * public_key accessor: completely bypass encryption
      */
     public function getPublicKeyAttribute($value)
     {
-        // 親クラスのencryptedキャストをバイパスして、生の値を返す
+        // Bypass parent class encrypted cast and return raw value
         return $this->attributes['public_key'] ?? $value;
     }
 
     /**
-     * public_keyミューテーター: 暗号化せずに保存
+     * public_key mutator: save without encryption
      */
     public function setPublicKeyAttribute($value)
     {
-        // 暗号化せずにそのまま保存
+        // Save as-is without encryption
         $this->attributes['public_key'] = $value;
     }
 
@@ -187,7 +187,7 @@ class WebAuthnCredential extends BaseWebAuthnCredential
     }
 
     /**
-     * 最終使用日時を更新
+     * Update last used timestamp
      */
     public function updateLastUsed(): void
     {
@@ -196,7 +196,7 @@ class WebAuthnCredential extends BaseWebAuthnCredential
     }
 
     /**
-     * デバイス名を更新
+     * Update device name
      */
     public function updateName(string $name): void
     {
