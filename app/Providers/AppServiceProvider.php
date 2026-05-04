@@ -69,6 +69,7 @@ use App\Settings\SecuritySettingDefinitions;
 use App\Traits\CustomFilesLoaderTrait;
 use App\Traits\PluginLoaderTrait;
 use App\Traits\ThemeLoaderTrait;
+use App\View\Composers\AdminFooterComposer;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -306,6 +307,10 @@ class AppServiceProvider extends ServiceProvider
             base_path("{$themeDirectory}/{$enabledThemeDirectory}/resources/views"),
             base_path("{$themeDirectory}/{$defaultTheme}/resources/views"),
         ]));
+
+        // Bind core version (and any future shared admin-footer data) once
+        // per render of the admin layout footer.
+        View::composer('admin.partials.footer', AdminFooterComposer::class);
 
         // Add custom files directory
         $customFilesPath = base_path(config('custom.custom_files_dir', 'custom'));

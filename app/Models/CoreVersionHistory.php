@@ -39,6 +39,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Append-only audit trail of core version transitions.
@@ -53,6 +54,8 @@ class CoreVersionHistory extends Model
     public const METHOD_UPDATE = 'update';
 
     public const METHOD_ROLLBACK = 'rollback';
+
+    public const CURRENT_VERSION_CACHE_KEY = 'core.current_version';
 
     protected $fillable = [
         'old_version',
@@ -87,5 +90,35 @@ class CoreVersionHistory extends Model
     public function appliedBy(): BelongsTo
     {
         return $this->belongsTo(Member::class, 'applied_by_id');
+    }
+
+    /**
+     * Resolve the current installed core version from the latest history row.
+     * Result is cached forever; callers must call forgetCurrentVersionCache()
+     * (or save through Eloquent) when a new transition is recorded.
+     */
+    public static function currentVersion(): ?string
+    {
+        return Cache::rememberForever(self::CURRENT_VERSION_CACHE_KEY, function () {
+            try {
+                return self::query()->latest('id')->value('new_version');
+            } catch (\Throwable $e) {
+                return;
+            }
+        });
+    }
+
+    /**
+     * Invalidate the cached current-version value.
+     */
+    public static function forgetCurrentVersionCache(): void
+    {
+        Cache::forget(self::CURRENT_VERSION_CACHE_KEY);
+    }
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => self::forgetCurrentVersionCache());
+        static::deleted(fn () => self::forgetCurrentVersionCache());
     }
 }
