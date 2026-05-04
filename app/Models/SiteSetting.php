@@ -43,7 +43,7 @@ use App\Models\Traits\UsesSettingRepositoryTrait;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 基本設定モデル
+ * Basic settings model
  *
  * @deprecated 静的メソッドは非推奨です。SiteSettingRepositoryを使用してください。
  */
@@ -53,21 +53,21 @@ class SiteSetting extends Model
     use UsesSettingRepositoryTrait;
 
     /**
-     * テーブル名
+     * Table name
      *
      * @var string
      */
     protected $table = 'site_settings';
 
     /**
-     * ホワイトリスト
+     * Whitelist
      *
      * @var array
      */
     protected $fillable = ['name', 'value', 'site_id'];
 
     /**
-     * デフォルトOGP画像とのリレーション
+     * Relationship with default OGP image
      */
     public function defaultOgpImage()
     {

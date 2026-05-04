@@ -34,9 +34,9 @@
  */
 
 return [
-    // 管理画面のURL
+    // Admin panel URL
     'admin_url' => env('ADMIN_URL', 'admin'),
 
-    // 管理画面URLプレフィックス候補
+    // Admin panel URL prefix candidates
     'admin_url_prefixes' => ['admin', 'manage', 'cp', 'panel', 'dash', 'ctrl'],
 ];

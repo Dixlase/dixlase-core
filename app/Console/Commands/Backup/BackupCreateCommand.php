@@ -26,9 +26,9 @@ use App\Contracts\Backup\BackupServiceInterface;
 use Illuminate\Console\Command;
 
 /**
- * バックアップ作成コマンド
+ * Backup creation command
  *
- * 例:
+ * Example:
  *   php artisan dls:backup:create
  *   php artisan dls:backup:create --targets=database
  *   php artisan dls:backup:create --targets=database,media,private --retention=30

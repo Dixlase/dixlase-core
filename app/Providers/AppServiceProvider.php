@@ -87,53 +87,53 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // プラグイン権限サービスをシングルトンとして登録
+        // Register plugin permission service as singleton
         $this->app->singleton(PluginPermissionService::class, function ($app) {
             return new PluginPermissionService();
         });
 
-        // パターン検出レジストリ（デフォルトパターンを全登録した状態で配布）
+        // Pattern detection registry (distributed with all default patterns registered)
         $this->app->singleton(\App\Services\Plugin\Scanning\PatternRegistry::class, function () {
             return \App\Services\Plugin\Scanning\PatternRegistry::createDefault();
         });
 
-        // バックアップサービスをバインド（バックアッププラグインが上書き可能）
+        // Bind backup service (can be overridden by backup plugin)
         $this->app->bind(BackupServiceInterface::class, CoreBackupService::class);
 
-        // 復元サービスをバインド（バックアッププラグインが上書き可能）
+        // Bind restore service (can be overridden by backup plugin)
         $this->app->bind(RestoreServiceInterface::class, CoreRestoreService::class);
 
-        // ファイル暗号化サービスをバインド
+        // Bind file encryption service
         $this->app->bind(FileEncryptionServiceInterface::class, CoreFileEncryptionService::class);
 
-        // ファイル整合性サービスをバインド
+        // Bind file integrity service
         $this->app->bind(FileIntegrityServiceInterface::class, FileIntegrityService::class);
 
-        // ファイルハッシュ検証サービスをバインド
+        // Bind file hash verification service
         $this->app->bind(FileVerificationServiceInterface::class, CoreFileVerificationService::class);
 
-        // メール送信サービスをバインド
+        // Bind mail sending service
         $this->app->bind(MailServiceInterface::class, MailService::class);
 
-        // ログ出力サービスをバインド
+        // Bind log output service
         $this->app->bind(LogServiceInterface::class, LogService::class);
 
-        // 署名検証サービスをバインド（DixlaseDevKit プラグインが上書き可能）
+        // Bind signature verification service (can be overridden by DixlaseDevKit plugin)
         $this->app->bind(SignatureVerifierInterface::class, CoreSignatureVerifier::class);
 
-        // ルートスラッグレジストリをシングルトンとして登録
+        // Register route slug registry as singleton
         $this->app->singleton(RouteSlugRegistry::class);
 
-        // CSP Nonce Generatorをシングルトンとして登録（リクエストごとに同じnonce値を使用）
+        // Register CSP Nonce Generator as singleton (use same nonce value per request)
         $this->app->singleton(\App\Services\Csp\CspNonceGenerator::class);
 
-        // 法務ページレジストリサービスをシングルトンとして登録
+        // Register legal page registry service as singleton
         $this->app->singleton(LegalPageService::class);
 
-        // システム警告バナーレジストリをシングルトンとして登録
+        // Register system warning banner registry as singleton
         $this->app->singleton(\App\Services\SystemWarningService::class);
 
-        // Contract インターフェース → 具象クラスのバインド
+        // Bind Contract interfaces to concrete classes
         $this->app->bind(LegalPageServiceInterface::class, LegalPageService::class);
         $this->app->bind(TwoFaPasskeyServiceInterface::class, TwoFaPasskeyService::class);
         $this->app->bind(PluginPermissionServiceInterface::class, PluginPermissionService::class);
@@ -156,7 +156,7 @@ class AppServiceProvider extends ServiceProvider
         // service providers are visible across the whole request.
         $this->app->singleton(SettingDefinitionRegistry::class);
 
-        // Laragear WebAuthnのWebAuthnCredentialモデルをカスタムモデルにバインド
+        // Bind Laragear WebAuthn's WebAuthnCredential model to custom model
         $this->app->bind(
             \Laragear\WebAuthn\Models\WebAuthnCredential::class,
             \App\Models\WebAuthnCredential::class
@@ -185,36 +185,36 @@ class AppServiceProvider extends ServiceProvider
         SecuritySettingDefinitions::register($registry);
         ApiSettingDefinitions::register($registry);
 
-        // .envファイルが存在しない場合はスキップ
+        // Skip if .env file does not exist
         if (! file_exists(base_path('.env'))) {
             return;
         }
 
-        // ViteのCSP nonce機能を無効化（カスタム実装を使用）
-        // これによりViteは独自のnonceを生成しなくなる
+        // Disable Vite's CSP nonce feature (use custom implementation)
+        // This prevents Vite from generating its own nonce
         config(['vite.csp_nonce' => false]);
 
-        // Livewireのnavigate機能を無効化（data-navigate-once属性を削除）
-        // これにより初回ページロードでLivewireコンポーネントが正常に初期化される
+        // Disable Livewire's navigate feature (remove data-navigate-once attribute)
+        // This ensures Livewire components initialize properly on initial page load
         config(['livewire.navigate' => false]);
 
-        // カスタムBladeディレクティブ: @livewireScriptsWithoutNavigate
-        // @livewireScriptsの出力からdata-navigate-once属性を削除
+        // Custom Blade directive: @livewireScriptsWithoutNavigate
+        // Remove data-navigate-once attribute from @livewireScripts output
         \Blade::directive('livewireScriptsWithoutNavigate', function () {
             return "<?php echo view('components.livewire-scripts-without-navigate')->render(); ?>";
         });
 
-        // インストール済みかどうかをチェック（config経由で取得することでキャッシュに対応）
-        // env()は本番環境でキャッシュされると更新されないため、config()を使用
+        // Check if installed (retrieve via config to support caching)
+        // Use config() because env() is not updated when cached in production
         $isInstalled = config('app.installed', false) ?: env('INSTALLED', false);
         if (! $isInstalled) {
             return;
         }
 
         try {
-            // force_ssl は Global scope。multisite consolidation 後は
-            // global_settings に格納される。テーブル存在ガードを残し、
-            // 未作成（インストール中など）は config フォールバック。
+            // force_ssl is Global scope. After multisite consolidation
+            // it will be stored in global_settings. Keep table existence guard,
+            // fallback to config if not created (e.g., during installation)
             if (Schema::hasTable('global_settings')) {
                 $forceSsl = app(\App\Services\Site\SettingResolver::class)->get('force_ssl')
                     ?? config('security.force_ssl');
@@ -224,30 +224,30 @@ class AppServiceProvider extends ServiceProvider
 
             if ($forceSsl) {
                 $this->app['request']->server->set('HTTPS', true);
-                URL::forceRootUrl(Config::get('app.url')); // ルートURLを設定
+                URL::forceRootUrl(Config::get('app.url')); // Set root URL
                 URL::forceScheme('https');
             }
         } catch (\Exception $e) {
-            // データベース接続エラーなどの場合はログに記録してスキップ
+            // Log and skip on database connection errors, etc.
             \Log::warning('AppServiceProvider boot error (likely during installation): '.$e->getMessage());
 
             return;
         }
 
-        // 言語の設定
-        // インストール中はセッション/クッキーの言語を優先
+        // Language settings
+        // Prioritize session/cookie language during installation
         $request = $this->app['request'];
         $language = null;
 
-        // 有効なロケールのリスト
+        // List of valid locales
         $availableLocales = array_keys(config('language.languages', ['en' => 'English']));
 
         if ($request && $request->is('install*')) {
-            // セッションの値（StartSessionより前でも取得できる場合がある）、なければクッキー
+            // Session value (may be available before StartSession), otherwise cookie
             $sessionLocale = session()->get('install_locale');
             $cookieLocale = $request->cookie('install_locale');
 
-            // 有効なロケールのみを許可
+            // Allow only valid locales
             if ($sessionLocale && in_array($sessionLocale, $availableLocales)) {
                 $language = $sessionLocale;
             } elseif ($cookieLocale && in_array($cookieLocale, $availableLocales)) {
@@ -255,89 +255,89 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
-        // それでも未設定なら環境変数→DB→configの順で決定
+        // If still not set, determine in order: environment variable → DB → config
         if (! $language) {
-            // 環境変数を直接優先（.envの設定を最優先）
+            // Prioritize environment variable directly (.env settings take highest priority)
             $language = env('APP_LOCALE') ?? config('app.locale', 'en');
 
-            // 有効なロケールかチェック
+            // Check if valid locale
             if (! in_array($language, $availableLocales)) {
-                $language = 'en'; // デフォルトにフォールバック
+                $language = 'en'; // Fallback to default
             }
         }
         app()->setLocale($language);
 
-        // テーマの設定を読み込む
-        $adminTheme = config('themes.admin_theme', 'admin'); // 管理画面テーマ
-        $themeDirectory = config('themes.theme_directory', 'themes'); // テーマディレクトリ
-        $activeThemeDirectory = config('themes.active_theme', 'default-theme'); // アクティブなテーマ
-        $defaultTheme = config('themes.default_theme', 'default-theme'); // デフォルトテーマ
+        // Load theme settings
+        $adminTheme = config('themes.admin_theme', 'admin'); // Admin panel theme
+        $themeDirectory = config('themes.theme_directory', 'themes'); // Theme directory
+        $activeThemeDirectory = config('themes.active_theme', 'default-theme'); // Active theme
+        $defaultTheme = config('themes.default_theme', 'default-theme'); // Default theme
 
-        // カスタムファイルのディレクトリ（base_path 相対のパス）
+        // Custom files directory (path relative to base_path)
         $customFilesDir = config('custom.custom_files_dir', 'custom');
 
-        // 存在するディレクトリのみを返すヘルパー（view:cache が存在しないディレクトリで失敗するのを防ぐ）
+        // Helper to return only existing directories (prevents view:cache from failing on non-existent directories)
         $existingDirs = fn (array $paths) => array_values(array_filter($paths, 'is_dir'));
 
-        // 管理画面のテンプレートの読み込みがviews_customのほうを優先されるように設定
+        // Configure admin panel templates to prioritize views_custom for loading
         View::addNamespace('admin', $existingDirs([
             base_path("{$customFilesDir}/resources/views/{$adminTheme}"),
             resource_path("views/{$adminTheme}"),
         ]));
 
-        // 共用コンポーネントの読み込みがviews_customのほうを優先されるように設定
+        // Configure shared components to prioritize views_custom for loading
         View::addNamespace('components', $existingDirs([
-            base_path("{$customFilesDir}/resources/views/components"), // カスタムコンポーネントを優先
+            base_path("{$customFilesDir}/resources/views/components"), // Prioritize custom components
             resource_path('views/components'),       // デフォルトコンポーネント
         ]));
 
-        // 共通レイアウトの名前空間
+        // Common layout namespace
         View::addNamespace('layouts', $existingDirs([
-            base_path("{$customFilesDir}/resources/views/layouts"), // カスタムレイアウトを優先
+            base_path("{$customFilesDir}/resources/views/layouts"), // Prioritize custom layouts
             resource_path('views/layouts'),       // デフォルトレイアウト
         ]));
 
-        // 現在有効化されているテーマを取得
+        // Get currently active theme
         $enabledThemeDirectory = $this->getEnabledThemeDirectory();
 
-        // テーマファイルの読み込み、カスタムテーマの読み込みがcustom/resources/viewsのほうを優先されるように設定
+        // Configure theme file loading to prioritize custom/resources/views for custom theme loading
         View::addNamespace('themes', $existingDirs([
             base_path("{$customFilesDir}/{$themeDirectory}/{$enabledThemeDirectory}/resources/views"),
             base_path("{$themeDirectory}/{$enabledThemeDirectory}/resources/views"),
             base_path("{$themeDirectory}/{$defaultTheme}/resources/views"),
         ]));
 
-        // カスタムファイルのディレクトリを追加
+        // Add custom files directory
         $customFilesPath = base_path(config('custom.custom_files_dir', 'custom'));
         $fileTypes = config('app.file_types');
 
-        // プラグインロード後にカスタムファイルをロード
+        // Load custom files after plugin loading
         $this->app->booted(function () use ($customFilesPath, $fileTypes) {
-            // コマンドライン引数をチェックしてプラグイン管理コマンド実行中かを判定
+            // Check command line arguments to determine if plugin management command is running
             $isPluginManagementCommand = $this->isPluginManagementCommand();
 
             if (! $isPluginManagementCommand) {
-                // プラグインのロード
+                // Load plugins
                 $this->loadEnabledPlugins();
             }
-            // カスタムファイルのロード
+            // Load custom files
             foreach ($fileTypes as $type => $typeConfig) {
                 $this->loadCustomFilesForType($customFilesPath, $typeConfig);
             }
-            // プラグインのナビゲーション設定を適用するため、設定の再配置を実行
+            // Reorganize settings to apply plugin navigation configuration
             $this->reorderAllConfig();
         });
     }
 
     /**
-     * プラグイン管理コマンドが実行中かをチェック
+     * Check if plugin management command is running
      */
     private function isPluginManagementCommand(): bool
     {
-        // コマンドライン引数をチェック
+        // Check command line arguments
         $argv = $_SERVER['argv'] ?? [];
 
-        // プラグイン管理コマンドかをチェック
+        // Check if it's a plugin management command
         if (count($argv) >= 2) {
             $pluginCommands = [
                 'plugin:install',
@@ -353,13 +353,13 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * アンインストール対象のプラグイン名を取得
+     * Get the plugin name to uninstall
      */
     private function getUninstallingPluginName(): ?string
     {
         $argv = $_SERVER['argv'] ?? [];
 
-        // artisan plugin:uninstall PluginName の形式
+        // Format: artisan plugin:uninstall PluginName
         if (count($argv) >= 3 && $argv[1] === 'plugin:uninstall') {
             return $argv[2];
         }

@@ -161,7 +161,7 @@ return [
     */
 
     'migrations' => [
-        // プレフィックスはDB接続設定で自動的に付与されるため、ここでは付けない
+        // Prefix is automatically applied in DB connection settings, so do not add it here
         'table' => 'migrations',
         'update_date_on_publish' => true,
     ],

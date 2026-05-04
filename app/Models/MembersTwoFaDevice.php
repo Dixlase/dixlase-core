@@ -62,7 +62,7 @@ class MembersTwoFaDevice extends Model
     ];
 
     /**
-     * チャレンジが有効かどうか
+     * Whether the challenge is valid
      */
     public function isValid(): bool
     {
@@ -70,7 +70,7 @@ class MembersTwoFaDevice extends Model
     }
 
     /**
-     * チャレンジが期限切れかどうか
+     * Whether the challenge has expired
      */
     public function isExpired(): bool
     {
@@ -78,7 +78,7 @@ class MembersTwoFaDevice extends Model
     }
 
     /**
-     * メンバーとのリレーション
+     * Relation with member
      */
     public function member(): BelongsTo
     {

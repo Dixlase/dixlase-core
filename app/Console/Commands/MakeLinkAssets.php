@@ -50,10 +50,10 @@ class MakeLinkAssets extends Command
 
     public function handle()
     {
-        // 管理画面アセット
+        // Admin panel assets
         $this->createLink(base_path('resources/views/admin'), public_path('assets/admin'));
 
-        // 有効化されたプラグインのアセット
+        // Assets of enabled plugins
         $enabledPlugins = Plugin::whereNotNull('enabled_at')->get();
         foreach ($enabledPlugins as $plugin) {
             try {
@@ -67,7 +67,7 @@ class MakeLinkAssets extends Command
             }
         }
 
-        // 有効化されたテーマのアセット
+        // Assets of enabled themes
         $themeSetting = DB::table('theme_settings')
             ->where('key', 'enabled_theme_id')
             ->first();
@@ -99,7 +99,7 @@ class MakeLinkAssets extends Command
             return;
         }
 
-        // リンク先ディレクトリが存在しない場合は作成
+        // Create link destination directory if it does not exist
         $linkDir = dirname($link);
         if (! File::exists($linkDir)) {
             File::makeDirectory($linkDir, 0755, true);

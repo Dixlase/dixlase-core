@@ -42,35 +42,35 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * テーマメタデータモデル
+ * Theme metadata model
  */
 class Theme extends Model
 {
     use HasFactory;
 
     /**
-     * テーブル名の定義
+     * Table name definition
      */
     protected $table = 'themes';
 
     /**
-     * 複数代入の許可フィールド
+     * Mass assignable fields
      */
     protected $fillable = [
-        'name',         // テーマ名
-        'package_name', // パッケージ名
-        'directory',    // テーマディレクトリ名
-        'slug',         // テーマのスラッグ名 (一意)
-        'namespace',    // テーマの名前空間
-        'description',  // テーマ説明
-        'license',      // ライセンス
-        'author',       // 作者
-        'email',        // 作者のメール
-        'url',          // 作者のウェブサイト
-        'version',      // テーマバージョン
-        'has_settings', // テーマ設定ページの有無
-        'config',       // テーマ設定
-        'installed_at', // インストール日時
+        'name',         // Theme name
+        'package_name', // Package name
+        'directory',    // Theme directory name
+        'slug',         // Theme slug (unique)
+        'namespace',    // Theme namespace
+        'description',  // Theme description
+        'license',      // License
+        'author',       // Author
+        'email',        // Author email
+        'url',          // Author website
+        'version',      // Theme version
+        'has_settings', // Whether theme has settings page
+        'config',       // Theme settings
+        'installed_at', // Installation datetime
         'source_id',
         'source_repo',
         'available_version',
@@ -83,7 +83,7 @@ class Theme extends Model
     ];
 
     /**
-     * キャスト設定
+     * Cast settings
      */
     protected $casts = [
         'config' => 'array',
@@ -112,7 +112,7 @@ class Theme extends Model
     }
 
     /**
-     * インストール済みテーマのスコープ
+     * Scope for installed themes
      */
     public function scopeInstalled($query)
     {
@@ -120,7 +120,7 @@ class Theme extends Model
     }
 
     /**
-     * テーマがインストール済みかチェック
+     * Check if theme is installed
      */
     public function isInstalled(): bool
     {
@@ -128,7 +128,7 @@ class Theme extends Model
     }
 
     /**
-     * テーマが有効化されているかチェック
+     * Check if the theme is activated
      */
     public function isEnabled(): bool
     {
@@ -141,7 +141,7 @@ class Theme extends Model
     }
 
     /**
-     * デフォルトテーマの取得
+     * Get the default theme
      */
     public static function getDefaultTheme()
     {
@@ -149,12 +149,12 @@ class Theme extends Model
     }
 
     /**
-     * テーマの削除を防ぐ（デフォルトテーマは削除不可）
+     * Prevent theme deletion (default theme cannot be deleted)
      */
     public function deleteTheme()
     {
         if ($this->is_default) {
-            throw new \Exception('デフォルトテーマは削除できません。');
+            throw new \Exception('Cannot delete default theme');
         }
 
         $this->delete();

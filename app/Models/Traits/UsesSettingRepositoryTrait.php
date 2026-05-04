@@ -36,23 +36,23 @@
 namespace App\Models\Traits;
 
 /**
- * 設定モデル用Trait
+ * Trait for settings models
  *
- * 設定系モデルで共通の静的メソッドを提供します。
- * これらのメソッドは後方互換性のために残されていますが、
- * 新しいコードではRepositoryを直接使用することを推奨します。
+ * Provides common static methods for settings models
+ * These methods are kept for backward compatibility, but
+ * it is recommended to use the Repository directly in new code
  *
  * @deprecated 静的メソッドは非推奨です。対応するRepositoryを使用してください。
  */
 trait UsesSettingRepositoryTrait
 {
     /**
-     * リポジトリインターフェースのクラス名を取得
+     * Get the repository interface class name
      */
     abstract protected static function getRepositoryInterface(): string;
 
     /**
-     * すべての設定を取得
+     * Get all settings
      *
      * @deprecated Repository::all() を使用してください
      *
@@ -64,12 +64,12 @@ trait UsesSettingRepositoryTrait
     }
 
     /**
-     * 設定値を取得
+     * Get settings value
      *
      * @deprecated Repository::get() を使用してください
      *
-     * @param  string  $name  設定名
-     * @param  mixed  $default  デフォルト値
+     * @param  string  $name  Setting name
+     * @param  mixed  $default  Default value
      */
     public static function getValue(string $name, mixed $default = null): mixed
     {
@@ -77,12 +77,12 @@ trait UsesSettingRepositoryTrait
     }
 
     /**
-     * 設定値を保存
+     * Save settings value
      *
      * @deprecated Repository::set() を使用してください
      *
-     * @param  string  $name  設定名
-     * @param  mixed  $value  設定値
+     * @param  string  $name  Setting name
+     * @param  mixed  $value  Setting value
      */
     public static function setValue(string $name, mixed $value): \Illuminate\Database\Eloquent\Model
     {
@@ -90,7 +90,7 @@ trait UsesSettingRepositoryTrait
     }
 
     /**
-     * 複数の設定を一括保存
+     * Bulk save multiple settings
      *
      * @deprecated Repository::setMultiple() を使用してください
      *
@@ -102,12 +102,12 @@ trait UsesSettingRepositoryTrait
     }
 
     /**
-     * SecuritySetting互換: get()メソッド
+     * SecuritySetting compatible: get() method
      *
      * @deprecated Repository::get() を使用してください
      *
-     * @param  string  $key  設定キー
-     * @param  mixed  $default  デフォルト値
+     * @param  string  $key  Setting key
+     * @param  mixed  $default  Default value
      */
     public static function get(string $key, mixed $default = null): mixed
     {
@@ -115,12 +115,12 @@ trait UsesSettingRepositoryTrait
     }
 
     /**
-     * SecuritySetting互換: set()メソッド
+     * SecuritySetting compatible: set() method
      *
      * @deprecated Repository::set() を使用してください
      *
-     * @param  string  $key  設定キー
-     * @param  mixed  $value  設定値
+     * @param  string  $key  Setting key
+     * @param  mixed  $value  Setting value
      */
     public static function set(string $key, mixed $value): \Illuminate\Database\Eloquent\Model
     {

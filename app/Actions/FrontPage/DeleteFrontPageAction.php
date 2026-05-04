@@ -77,7 +77,7 @@ class DeleteFrontPageAction extends AbstractAction
     {
         $label = $this->frontPage->lang ?? 'default';
 
-        // ファイル保存の場合、関連ファイルも削除
+        // If file storage is used, delete associated files as well
         if ($this->frontPage->storage_type === ContentStorageType::FILE) {
             $this->contentService->deleteFile(
                 'main_content',

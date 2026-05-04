@@ -33,8 +33,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-{{ license }}
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 
 class Front extends Model

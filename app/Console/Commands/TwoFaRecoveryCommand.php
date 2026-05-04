@@ -42,12 +42,12 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * 二段階認証緊急復旧コマンド（ブレークグラス）
+ * Two-factor authentication emergency recovery command (break glass)
  *
- * 二段階認証で完全に詰んだ管理者を救済するための緊急復旧機能
- * - メール認証できない（メールサーバー障害等）
- * - デバイス認証できない（デバイス紛失等）
- * - 回復コードを使い切った
+ * Emergency recovery feature to rescue administrators who are completely locked out by two-factor authentication
+ * - Cannot authenticate via email (mail server failure, etc.)
+ * - Cannot authenticate via device (device loss, etc.)
+ * - Used up all recovery codes
  */
 class TwoFaRecoveryCommand extends Command
 {

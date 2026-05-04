@@ -97,7 +97,7 @@ class ThemeUninstall extends Command
             }
         }
 
-        // マイグレーションのロールバック
+        // Roll back migrations
         if ($this->option('rollback')) {
             $this->info('Rolling back theme migrations...');
             try {
@@ -107,7 +107,7 @@ class ThemeUninstall extends Command
                     'theme_migrations',
                     $theme->slug
                 );
-                // 全てのマイグレーションをロールバックするため、stepを大きな値に設定
+                // Set step to a large value to roll back all migrations
                 $migrator->rollback($theme->directory, ['step' => 999]);
                 $this->info('Theme migrations rolled back successfully');
             } catch (\Exception $e) {
@@ -122,7 +122,7 @@ class ThemeUninstall extends Command
                     'theme_migrations',
                     $theme->slug
                 );
-                // 全てのマイグレーションをロールバックするため、stepを大きな値に設定
+                // Set step to a large value to roll back all migrations
                 $migrator->rollback($theme->directory, ['step' => 999]);
                 $this->info('Theme migrations rolled back successfully');
             } catch (\Exception $e) {

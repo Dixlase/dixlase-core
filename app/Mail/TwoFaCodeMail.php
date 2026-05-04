@@ -54,9 +54,9 @@ class TwoFaCodeMail extends Mailable
     /**
      * Create a new message instance.
      *
-     * @param  string  $code  二段階認証コード
-     * @param  string  $context  コンテキスト（admin, user等）
-     * @param  string  $appName  アプリケーション名
+     * @param  string  $code  Two-factor authentication code
+     * @param  string  $context  Context (admin, user, etc.)
+     * @param  string  $appName  Application name
      */
     public function __construct(string $code, string $context = 'admin', ?string $appName = null)
     {

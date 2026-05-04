@@ -49,7 +49,7 @@ class PluginServiceProvider extends ServiceProvider
     use PluginLoaderTrait;
 
     /**
-     * 登録されたプラグインコマンドを保持
+     * Holds registered plugin commands
      */
     protected array $pluginCommands = [];
 
@@ -58,17 +58,17 @@ class PluginServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // プラグインのServiceProviderを登録（設定読み込みのため）
+        // Register plugin ServiceProviders (for loading settings)
         $this->registerPluginServiceProviders();
     }
 
     /**
-     * プラグインのServiceProviderを登録
-     * インストール済み・有効化済みのプラグインのみ登録
+     * Register plugin ServiceProviders
+     * Register only installed and enabled plugins
      */
     protected function registerPluginServiceProviders(): void
     {
-        // .envファイルが存在しない場合やインストールされていない場合はスキップ
+        // Skip if .env file does not exist or not installed
         if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
             return;
         }
@@ -79,7 +79,7 @@ class PluginServiceProvider extends ServiceProvider
             return;
         }
 
-        // 有効化されたプラグインのリストを取得（キャッシュファイルから）
+        // Get list of enabled plugins (from cache file)
         $enabledPlugins = $this->getEnabledPluginsFromCache();
 
         if (empty($enabledPlugins)) {
@@ -93,7 +93,7 @@ class PluginServiceProvider extends ServiceProvider
                 continue;
             }
 
-            // dixlase.json または plugin.json からプロバイダーを読み込む
+            // Load provider from dixlase.json or plugin.json
             $manifestPath = $pluginDir.'/dixlase.json';
             if (! File::exists($manifestPath)) {
                 $manifestPath = $pluginDir.'/plugin.json';
@@ -124,10 +124,10 @@ class PluginServiceProvider extends ServiceProvider
     }
 
     /**
-     * キャッシュファイルから有効化されたプラグインのリストを取得
-     * register()フェーズではDBにアクセスできないため、キャッシュがない場合は空配列を返す
+     * Get list of enabled plugins from cache file
+     * Cannot access DB during register() phase, so return empty array if no cache
      *
-     * @return array プラグインディレクトリ名の配列
+     * @return array Array of plugin directory names
      */
     protected function getEnabledPluginsFromCache(): array
     {
@@ -140,27 +140,27 @@ class PluginServiceProvider extends ServiceProvider
                     return $cached;
                 }
             } catch (\Exception $e) {
-                // キャッシュ読み込みエラーは無視
+                // Ignore cache loading errors
             }
         }
 
-        // キャッシュがない場合は空配列を返す
-        // register()フェーズではDBにアクセスできないため
-        // boot()フェーズでキャッシュが作成される
+        // Return empty array if no cache
+        // Cannot access DB during register() phase
+        // Cache is created during boot() phase
         return [];
     }
 
     /**
-     * 有効化されたプラグインのキャッシュを更新（コレクションから）
+     * Update cache of enabled plugins (from collection)
      *
-     * @param  \Illuminate\Support\Collection  $enabledPlugins  有効化されたプラグインのコレクション
+     * @param  \Illuminate\Support\Collection  $enabledPlugins  Collection of enabled plugins
      */
     protected function updateEnabledPluginsCache($enabledPlugins): void
     {
         try {
             $directories = $enabledPlugins->pluck('directory')->toArray();
 
-            // キャッシュファイルに保存
+            // Save to cache file
             $cachePath = storage_path('framework/cache/enabled_plugins.php');
             $cacheDir = dirname($cachePath);
 
@@ -176,21 +176,21 @@ class PluginServiceProvider extends ServiceProvider
     }
 
     /**
-     * 有効化されたプラグインのキャッシュを更新（DBから取得）
+     * Update cache of enabled plugins (fetch from DB)
      *
-     * @return array プラグインディレクトリ名の配列
+     * @return array Array of plugin directory names
      */
     public function refreshEnabledPluginsCache(): array
     {
         try {
-            // DBにアクセスできるか確認
+            // Check if DB is accessible
             if (! \Illuminate\Support\Facades\Schema::hasTable('plugins')) {
                 return [];
             }
 
             $enabledPlugins = Plugin::enabled()->pluck('directory')->toArray();
 
-            // キャッシュファイルに保存
+            // Save to cache file
             $cachePath = storage_path('framework/cache/enabled_plugins.php');
             $cacheDir = dirname($cachePath);
 
@@ -210,7 +210,7 @@ class PluginServiceProvider extends ServiceProvider
     }
 
     /**
-     * 有効化されたプラグインのキャッシュをクリア
+     * Clear cache of enabled plugins
      */
     public static function clearEnabledPluginsCache(): void
     {
@@ -226,7 +226,7 @@ class PluginServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // .envファイルが存在しない場合やデータベース接続ができない場合はスキップ
+        // Skip if .env file does not exist or database connection is not available
         if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
             return;
         }
@@ -242,7 +242,7 @@ class PluginServiceProvider extends ServiceProvider
             // Get all enabled plugins
             $enabledPlugins = Plugin::enabled()->get();
 
-            // キャッシュファイルを更新（次回のregister()フェーズで使用）
+            // Update cache file (used in next register() phase)
             $this->updateEnabledPluginsCache($enabledPlugins);
 
             foreach ($enabledPlugins as $plugin) {
@@ -279,13 +279,13 @@ class PluginServiceProvider extends ServiceProvider
             ]);
         }
 
-        // プラグインのAPIルートを読み込む
+        // Load plugin API routes
         PluginHelper::loadEnabledApiRoutes();
 
-        // プラグインのルートを読み込む
+        // Load plugin routes
         $this->loadPluginRoutes();
 
-        // プラグインのコマンドを登録（CLIモードのみ、有効化されたプラグインのみ）
+        // Register plugin commands (CLI mode only, enabled plugins only)
         if ($this->app->runningInConsole()) {
             $this->registerPluginCommands($enabledPlugins);
         }
@@ -346,10 +346,10 @@ class PluginServiceProvider extends ServiceProvider
         // Get all enabled plugins
         $enabledPlugins = Plugin::enabled()->get();
 
-        // Get admin URL from helper (一度だけ取得)
+        // Get admin URL from helper (only once)
         $adminUrl = \App\Helpers\AdminHelper::getAdminUrl();
 
-        // ルーターとリフレクションを準備（一度だけ）
+        // Prepare router and reflection (only once)
         $router = app('router');
         $reflection = new \ReflectionClass($router);
         $groupStackProperty = $reflection->getProperty('groupStack');
@@ -364,16 +364,16 @@ class PluginServiceProvider extends ServiceProvider
                 \Route::middleware('web')->group($webRoutePath);
             }
 
-            // Load admin routes - プラグイン側でルート名を完全に制御
+            // Load admin routes - plugin side has full control over route names
             $adminRoutePath = "{$pluginPath}/routes/admin.php";
             if (File::exists($adminRoutePath)) {
-                // 現在のグループスタックを保存
+                // Save current group stack
                 $originalGroupStack = $router->getGroupStack();
 
-                // グループスタックをリセット（コアのroutes/admin.phpの影響を回避）
+                // Reset group stack (avoid influence from Core's routes/admin.php)
                 $groupStackProperty->setValue($router, []);
 
-                // ルートを登録
+                // Register routes
                 $router->group([
                     'prefix' => $adminUrl,
                     'middleware' => ['web', 'admin.ip', 'auth:member', 'verified', 'log.admin.activity'],
@@ -381,17 +381,17 @@ class PluginServiceProvider extends ServiceProvider
                     include $adminRoutePath;
                 });
 
-                // グループスタックを復元
+                // Restore group stack
                 $groupStackProperty->setValue($router, $originalGroupStack);
             }
         }
     }
 
     /**
-     * プラグインのコマンドを登録
-     * インストール済み・有効化済みのプラグインのみコマンドを登録
+     * Register plugin commands
+     * Register commands only for installed and enabled plugins
      *
-     * @param  \Illuminate\Support\Collection|null  $enabledPlugins  有効化されたプラグインのコレクション
+     * @param  \Illuminate\Support\Collection|null  $enabledPlugins  Collection of enabled plugins
      */
     protected function registerPluginCommands($enabledPlugins = null): void
     {
@@ -408,7 +408,7 @@ class PluginServiceProvider extends ServiceProvider
                     continue;
                 }
 
-                // コマンドファイルをスキャン
+                // Scan command files
                 $commandFiles = File::files($commandsPath);
 
                 foreach ($commandFiles as $file) {
@@ -419,14 +419,14 @@ class PluginServiceProvider extends ServiceProvider
                     $className = $file->getBasename('.php');
                     $fullClassName = "Plugins\\{$plugin->directory}\\App\\Console\\Commands\\{$className}";
 
-                    // クラスが存在し、Commandクラスを継承しているか確認
+                    // Check if class exists and extends Command class
                     if (class_exists($fullClassName) && is_subclass_of($fullClassName, \Illuminate\Console\Command::class)) {
                         $this->pluginCommands[] = $fullClassName;
                     }
                 }
             }
 
-            // コマンドを登録
+            // Register command
             if (! empty($this->pluginCommands)) {
                 $this->commands($this->pluginCommands);
             }
@@ -436,7 +436,7 @@ class PluginServiceProvider extends ServiceProvider
     }
 
     /**
-     * 登録されたプラグインコマンドを取得
+     * Get registered plugin commands
      */
     public function getPluginCommands(): array
     {

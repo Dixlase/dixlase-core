@@ -34,10 +34,10 @@
  */
 
 return [
-    // 例: スタブのデフォルト格納先
+    // Example: Default stub storage location
     'default_stub_directory' => base_path('vendor/laravel/framework/src/Illuminate/Routing/Console/stubs'),
 
-    // Dixlaseコア用スタブファイルの格納先（デプロイスタブなど）
+    // Storage location for Dixlase Core stub files (deploy stubs, etc.)
     'dixlase_stub_directory' => base_path('stubs/dixlase'),
 
 ];

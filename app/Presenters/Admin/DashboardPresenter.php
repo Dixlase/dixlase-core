@@ -62,15 +62,15 @@ use App\Services\TwoFa\TwoFaStatusService;
 use Illuminate\Support\Carbon;
 
 /**
- * ダッシュボード表示データのPresenter
+ * Presenter for dashboard display data
  *
- * サイトヘルス・メール状態・CAPTCHA状態・システム情報・
- * プラグインウィジェットをビュー向けの配列として生成します。
+ * Site health, mail status, CAPTCHA status, system information,
+ * Generate plugin widgets as an array for the view
  */
 class DashboardPresenter
 {
     /**
-     * ステータスに応じた表示クラスセットを取得
+     * Get display class set according to status
      *
      * @return array{border_bg: string, icon_color: string, badge: string, badge_label: string}
      */
@@ -105,7 +105,7 @@ class DashboardPresenter
     }
 
     /**
-     * サイトヘルス項目に表示用クラスを付与する
+     * Assign display classes to site health items
      *
      * @param  array<int, array<string, mixed>>  $items
      * @return array<int, array<string, mixed>>
@@ -128,7 +128,7 @@ class DashboardPresenter
     }
 
     /**
-     * サイトヘルス（運用状態の各種チェック）を取得
+     * Get site health (various operational status checks)
      *
      * @return array<int, array{key: string, status: string, icon: string, label: string, description: string, url: string|null, requires_advanced_mode: bool}>
      */
@@ -137,7 +137,7 @@ class DashboardPresenter
         $items = [];
         $isProduction = app()->environment('production');
 
-        // メンテナンスモード
+        // Maintenance mode
         $maintenanceActive = ConfigHelper::getMaintenanceMode();
         $items[] = [
             'key' => 'maintenance_mode',
@@ -151,7 +151,7 @@ class DashboardPresenter
             'requires_advanced_mode' => false,
         ];
 
-        // セーフモード
+        // Safe mode
         $safeModeService = app(SafeModeService::class);
         $safeModeActive = $safeModeService->hasAnyActive();
         $items[] = [
@@ -166,7 +166,7 @@ class DashboardPresenter
             'requires_advanced_mode' => false,
         ];
 
-        // 環境設定（local / staging / production）
+        // Environment settings (local / staging / production)
         $siteEnv = app()->environment();
         $envStatus = match ($siteEnv) {
             'local' => 'warning',
@@ -185,7 +185,7 @@ class DashboardPresenter
             'requires_advanced_mode' => true,
         ];
 
-        // HTTPS（force_ssl は site_settings に保存される）
+        // HTTPS (force_ssl is saved in site_settings)
         $forceSsl = (bool) (int) SiteSetting::get('force_ssl', 0);
         $isCurrentSecure = request()->isSecure();
         if ($forceSsl) {
@@ -215,7 +215,7 @@ class DashboardPresenter
             'requires_advanced_mode' => false,
         ];
 
-        // CSPモード（無効=critical, development=warning, standard以上=ok）
+        // CSP mode (disabled=critical, development=warning, standard or higher=ok)
         $cspEnabled = (bool) (int) SecuritySetting::get('csp_enabled', 1);
         $cspModeValue = (int) SecuritySetting::get('csp_mode', CspMode::default()->value);
         $cspMode = CspMode::fromValue($cspModeValue) ?? CspMode::default();
@@ -242,7 +242,7 @@ class DashboardPresenter
             'requires_advanced_mode' => true,
         ];
 
-        // デバッグモード（本番環境で有効=warning、非本番で有効=ok、無効=ok）
+        // Debug mode (enabled in production=warning, enabled in non-production=ok, disabled=ok)
         $debugEnabled = (bool) config('app.debug');
         if ($debugEnabled && $isProduction) {
             $debugStatus = 'warning';
@@ -264,7 +264,7 @@ class DashboardPresenter
             'requires_advanced_mode' => true,
         ];
 
-        // 拡張機能セキュリティプリセット（Development=warning, それ以外=ok）
+        // Extension security preset (Development=warning, others=ok)
         $presetValue = (string) SecuritySetting::get('extension_security_preset', ExtensionSecurityPreset::default()->value);
         $preset = ExtensionSecurityPreset::tryFrom($presetValue) ?? ExtensionSecurityPreset::default();
         $presetStatus = $preset === ExtensionSecurityPreset::Development ? 'warning' : 'ok';
@@ -278,7 +278,7 @@ class DashboardPresenter
             'requires_advanced_mode' => true,
         ];
 
-        // 公開鍵（鍵管理サイトから取得できているか）
+        // Public key (whether it can be retrieved from key management site)
         $signatureVerifier = app(SignatureVerifierInterface::class);
         $signatureAvailable = $signatureVerifier->isAvailable();
         $items[] = [
@@ -293,7 +293,7 @@ class DashboardPresenter
             'requires_advanced_mode' => true,
         ];
 
-        // エラー通知
+        // Error notification
         $notificationEnabled = (bool) SecuritySetting::get('notification_enabled', false);
         $items[] = [
             'key' => 'error_notification',
@@ -307,7 +307,7 @@ class DashboardPresenter
             'requires_advanced_mode' => true,
         ];
 
-        // ファイル整合性
+        // File integrity
         $latestAudit = FileIntegrityAudit::getLatestCore();
         if ($latestAudit === null) {
             $integrityStatus = 'recommendation';
@@ -336,7 +336,7 @@ class DashboardPresenter
             'requires_advanced_mode' => true,
         ];
 
-        // 2FA状態（全体設定 + プロフィール設定を考慮した実際の状態）
+        // 2FA status (actual status considering global settings + profile settings)
         $twoFaStatusService = app(TwoFaStatusService::class);
         $twoFaEnabled = $twoFaStatusService->isTwoFaEnabled($user);
         $actualMode = $twoFaEnabled
@@ -359,7 +359,7 @@ class DashboardPresenter
     }
 
     /**
-     * メールサーバー状態を取得
+     * Get mail server status
      *
      * @return array{status: string, icon: string, label: string, description: string, mailer: string, url: string|null, requires_advanced_mode: bool}
      */
@@ -371,7 +371,7 @@ class DashboardPresenter
         $fromAddress = ConfigHelper::getMailFromAddress();
         $url = route('admin.settings.base.mail');
 
-        // log / array / mailpit ドライバーは警告（開発用）
+        // log / array / mailpit drivers are warnings (for development)
         if (in_array($mailer, ['log', 'array', 'mailpit'], true)) {
             return [
                 'status' => 'warning',
@@ -384,7 +384,7 @@ class DashboardPresenter
             ];
         }
 
-        // SMTP設定が不完全（ホスト・ポート・送信元アドレスが最低限必要）
+        // Incomplete SMTP settings (host, port, and sender address are minimum requirements)
         $isValid = ! empty($host) && $port > 0 && ! empty($fromAddress);
         if (! $isValid) {
             return [
@@ -398,7 +398,7 @@ class DashboardPresenter
             ];
         }
 
-        // メール接続テスト・送信テスト・受信テストの結果を確認
+        // Check the results of mail connection test, send test, and receive test
         $connectionTested = (bool) SiteSetting::get('mail_connection_tested', false);
         $sendTested = (bool) SiteSetting::get('mail_send_tested', false);
         $receiveTested = (bool) SiteSetting::get('mail_receive_tested', false);
@@ -427,7 +427,7 @@ class DashboardPresenter
     }
 
     /**
-     * CAPTCHA状態を取得
+     * Get CAPTCHA status
      *
      * @return array{status: string, icon: string, label: string, description: string, url: string|null, requires_advanced_mode: bool}
      */
@@ -467,7 +467,7 @@ class DashboardPresenter
     }
 
     /**
-     * システム情報を取得
+     * Get system information
      *
      * @return array<int, array{label: string, value: string}>
      */
@@ -490,7 +490,7 @@ class DashboardPresenter
     }
 
     /**
-     * プラグインウィジェットを取得
+     * Get plugin widgets
      *
      * @return DashboardWidgetDTO[]
      */
@@ -512,7 +512,7 @@ class DashboardPresenter
     }
 
     /**
-     * プラグイン通知を取得
+     * Get plugin notifications
      *
      * @return DashboardNotificationDTO[]
      */
@@ -534,7 +534,7 @@ class DashboardPresenter
     }
 
     /**
-     * 拡張機能（プラグイン/テーマ）の概要を取得
+     * Get overview of extensions (plugin/theme)
      *
      * @return array{
      *   plugins: array{installed: int, enabled: int},
@@ -544,19 +544,19 @@ class DashboardPresenter
      */
     public static function extensionOverview(): array
     {
-        // プラグイン数
+        // Number of plugins
         $pluginsInstalled = Plugin::query()->installed()->count();
         $pluginsEnabled = Plugin::query()->enabled()->count();
 
-        // テーマ数
+        // Number of themes
         $themesInstalled = Theme::query()->installed()->count();
         $themesEnabled = Theme::query()->installed()->get()->filter(fn (Theme $t) => $t->isEnabled())->count();
 
-        // アップデート可能件数（available_version が設定されているレコード）
+        // Number of available updates (records with available_version set)
         $pluginUpdatesAvailable = Plugin::query()->whereNotNull('available_version')->count();
         $themeUpdatesAvailable = Theme::query()->whereNotNull('available_version')->count();
 
-        // 健全性ステータス別カウント（監査済みプラグインのみ）
+        // Count by health status (audited plugins only)
         $healthCounts = [];
         foreach (PluginHealthStatus::cases() as $status) {
             $count = PluginAudit::query()
@@ -593,7 +593,7 @@ class DashboardPresenter
     }
 
     /**
-     * 最近の管理者アクティビティを取得
+     * Get recent administrator activity
      *
      * @return array{
      *   entries: array<int, array{action: string, category: string, actor_name: string, outcome: string, outcome_color: string, severity: string, severity_color: string, target_label: string|null, occurred_at: string}>,
@@ -602,7 +602,7 @@ class DashboardPresenter
      */
     public static function recentActivity(): array
     {
-        // 直近24時間のアクティビティ（最新10件）
+        // Activity in the last 24 hours (latest 10 items)
         $entries = AuditLog::query()
             ->recent(24)
             ->latest('occurred_at')
@@ -625,7 +625,7 @@ class DashboardPresenter
             })
             ->toArray();
 
-        // 24時間のセキュリティサマリー
+        // 24-hour security summary
         $failedCount = AuditLog::query()->recent(24)->failed()->count();
         $warningCount = AuditLog::query()->recent(24)->warningOrAbove()->count();
 
@@ -639,7 +639,7 @@ class DashboardPresenter
     }
 
     /**
-     * メンバー概要を取得
+     * Get member overview
      *
      * @return array{
      *   total: int,
@@ -657,7 +657,7 @@ class DashboardPresenter
         $active = Member::query()->where('status', MemberStatus::Active->value)->count();
         $inactive = Member::query()->where('status', MemberStatus::Inactive->value)->count();
 
-        // ロール分布
+        // Role distribution
         $roleRows = Member::query()
             ->selectRaw('role, count(*) as count')
             ->groupBy('role')
@@ -674,11 +674,11 @@ class DashboardPresenter
             }
         }
 
-        // 2FA有効者数（two_fa_mode > 0 = 何らかの2FAが有効）
+        // Number of 2FA enabled users (two_fa_mode > 0 = some 2FA is enabled)
         $twoFaEnabled = Member::query()->where('two_fa_mode', '>', 0)->count();
         $twoFaRate = $total > 0 ? round(($twoFaEnabled / $total) * 100, 1) : 0.0;
 
-        // 最近ログインした5名
+        // 5 most recent logins
         $recentLogins = Member::query()
             ->whereNotNull('last_login_at')
             ->latest('last_login_at')

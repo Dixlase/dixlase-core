@@ -41,9 +41,9 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * IP制御設定リセットコマンド
+ * IP control settings reset command
  *
- * IP制限で管理者が締め出された場合の復旧用コマンド
+ * Recovery command for when administrator is locked out by IP restrictions
  */
 class SecurityResetIpCommand extends Command
 {
@@ -53,10 +53,10 @@ class SecurityResetIpCommand extends Command
      * @var string
      */
     protected $signature = 'security:reset-ip 
-                            {--disable-all : 全てのIP制限を無効化}
-                            {--add-ip= : 許可リストにIPを追加}
-                            {--remove-blocked= : ブロックリストからIPを削除}
-                            {--show : 現在のIP制限設定を表示}
+                            {--disable-all : Disable all IP restrictions}
+                            {--add-ip= : Add IP to allow list}
+                            {--remove-blocked= : Remove IP from block list}
+                            {--show : Display current IP restriction settings}
                             {--force : 確認なしで実行}';
 
     /**
@@ -64,7 +64,7 @@ class SecurityResetIpCommand extends Command
      *
      * @var string
      */
-    protected $description = 'IP制限設定をリセットまたは変更（管理者締め出し時の復旧用）';
+    protected $description = 'Reset or change IP restriction settings (for recovery when administrator is locked out)';
 
     /**
      * Execute the console command.
@@ -77,27 +77,27 @@ class SecurityResetIpCommand extends Command
             return Command::FAILURE;
         }
 
-        // 現在の設定を表示
+        // Display current settings
         if ($this->option('show')) {
             return $this->showCurrentSettings();
         }
 
-        // 全てのIP制限を無効化
+        // Disable all IP restrictions
         if ($this->option('disable-all')) {
             return $this->disableAllIpRestrictions();
         }
 
-        // 許可リストにIPを追加
+        // Add IP to allow list
         if ($ip = $this->option('add-ip')) {
             return $this->addToAllowedList($ip);
         }
 
-        // ブロックリストからIPを削除
+        // Remove IP from block list
         if ($ip = $this->option('remove-blocked')) {
             return $this->removeFromBlockedList($ip);
         }
 
-        // オプションが指定されていない場合はヘルプを表示
+        // Display help if no options are specified
         $this->info(__('admin/command.security_reset_ip.usage'));
         $this->newLine();
         $this->line('  --show              '.__('admin/command.security_reset_ip.option_show'));
@@ -110,14 +110,14 @@ class SecurityResetIpCommand extends Command
     }
 
     /**
-     * 現在のIP制限設定を表示
+     * Display current IP restriction settings
      */
     protected function showCurrentSettings(): int
     {
         $this->info(__('admin/command.security_reset_ip.current_settings'));
         $this->newLine();
 
-        // 管理画面IP制限
+        // Admin panel IP restriction
         $enableAllowed = SecuritySetting::get('enable_allowed_admin_ips', false);
         $allowedIps = SecuritySetting::get('allowed_admin_ips', '');
         $enableBlocked = SecuritySetting::get('enable_blocked_admin_ips', false);
@@ -133,7 +133,7 @@ class SecurityResetIpCommand extends Command
             ]
         );
 
-        // フロントIP制限
+        // Front IP restriction
         $enableFrontAllowed = SecuritySetting::get('enable_allowed_front_ips', false);
         $frontAllowedIps = SecuritySetting::get('allowed_front_ips', '');
         $enableFrontBlocked = SecuritySetting::get('enable_blocked_front_ips', false);
@@ -155,7 +155,7 @@ class SecurityResetIpCommand extends Command
     }
 
     /**
-     * 全てのIP制限を無効化
+     * Disable all IP restrictions
      */
     protected function disableAllIpRestrictions(): int
     {
@@ -167,15 +167,15 @@ class SecurityResetIpCommand extends Command
             }
         }
 
-        // 管理画面IP制限を無効化
+        // Disable admin panel IP restriction
         SecuritySetting::set('enable_allowed_admin_ips', 0);
         SecuritySetting::set('enable_blocked_admin_ips', 0);
 
-        // フロントIP制限を無効化
+        // Disable front IP restriction
         SecuritySetting::set('enable_allowed_front_ips', 0);
         SecuritySetting::set('enable_blocked_front_ips', 0);
 
-        // 監査ログに記録
+        // Record to audit log
         $this->logAudit('ip_restrictions_disabled', [
             'action' => 'disable_all',
             'executed_via' => 'cli',
@@ -188,7 +188,7 @@ class SecurityResetIpCommand extends Command
     }
 
     /**
-     * 許可リストにIPを追加
+     * Add IP to allow list
      */
     protected function addToAllowedList(string $ip): int
     {
@@ -218,7 +218,7 @@ class SecurityResetIpCommand extends Command
         $ipList[] = $ip;
         SecuritySetting::set('allowed_admin_ips', implode(',', $ipList));
 
-        // 監査ログに記録
+        // Record to audit log
         $this->logAudit('ip_added_to_allowlist', [
             'ip' => $ip,
             'executed_via' => 'cli',
@@ -230,7 +230,7 @@ class SecurityResetIpCommand extends Command
     }
 
     /**
-     * ブロックリストからIPを削除
+     * Remove IP from block list
      */
     protected function removeFromBlockedList(string $ip): int
     {
@@ -260,7 +260,7 @@ class SecurityResetIpCommand extends Command
         $ipList = array_diff($ipList, [$ip]);
         SecuritySetting::set('blocked_admin_ips', implode(',', $ipList));
 
-        // 監査ログに記録
+        // Record to audit log
         $this->logAudit('ip_removed_from_blocklist', [
             'ip' => $ip,
             'executed_via' => 'cli',
@@ -272,7 +272,7 @@ class SecurityResetIpCommand extends Command
     }
 
     /**
-     * 監査ログに記録
+     * Record to audit log
      */
     protected function logAudit(string $action, array $context = []): void
     {

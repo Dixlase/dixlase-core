@@ -37,18 +37,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | 外観モード設定
+    | Appearance Mode Settings
     |--------------------------------------------------------------------------
     |
-    | 管理画面の外観モード（ライト/ダーク）に関する設定です。
-    | トランジション効果やテーマ別のCSSクラスを定義します。
+    | Settings for admin panel appearance mode (light/dark).
+    | Defines transition effects and theme-specific CSS classes.
     |
     */
 
-    // トランジション効果のクラス
+    // Transition effect class
     'transition_class' => 'transition-colors duration-1000',
 
-    // 外観モード別のCSSクラス定義
+    // CSS class definitions by appearance mode
     'appearance_class' => [
         'layout' => [
             'body' => 'bg-white text-gray-900 dark:bg-gray-950 dark:text-white transition-colors duration-300',

@@ -58,7 +58,7 @@ class MemberTwoFaRecoveryCode extends Model
     ];
 
     /**
-     * メンバーとのリレーション
+     * Relationship with member
      */
     public function member(): BelongsTo
     {
@@ -66,7 +66,7 @@ class MemberTwoFaRecoveryCode extends Model
     }
 
     /**
-     * 有効な回復コードかどうか
+     * Whether the recovery code is valid
      */
     public function isValid(): bool
     {
@@ -74,7 +74,7 @@ class MemberTwoFaRecoveryCode extends Model
     }
 
     /**
-     * 使用済みとしてマーク
+     * Mark as used
      */
     public function markAsUsed(): void
     {
@@ -83,7 +83,7 @@ class MemberTwoFaRecoveryCode extends Model
     }
 
     /**
-     * 無効化
+     * Invalidate
      */
     public function disable(): void
     {

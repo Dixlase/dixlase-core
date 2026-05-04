@@ -42,8 +42,8 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * セキュリティイベントの構造化保存テーブル
-     * ゼロトラスト基盤の一部として、重要なセキュリティイベントをDBに保存
+     * Structured storage table for security events
+     * Stores critical security events in DB as part of zero trust infrastructure
      */
     public function up(): void
     {
@@ -54,38 +54,38 @@ return new class extends Migration
             // network-wide / system events leave it null.
             $table->unsignedBigInteger('site_id')->nullable()->index();
 
-            // イベント発生者（nullable: システムイベントの場合はnull）
+            // Event originator (nullable: null for system events)
             $table->unsignedBigInteger('member_id')->nullable()->index();
 
-            // イベント種別
+            // Event type
             $table->string('event_type', 50)->index();
 
-            // イベントカテゴリ（フィルタリング用）
+            // Event category (for filtering)
             $table->string('category', 20)->index();
 
-            // リスクレベル
+            // Risk level
             $table->string('risk_level', 10)->default('low')->index();
 
-            // アクセス元情報
+            // Access source information
             $table->string('ip_address', 45)->nullable()->index();
             $table->text('user_agent')->nullable();
 
-            // デバイス情報
+            // Device information
             $table->unsignedBigInteger('device_id')->nullable()->index();
 
-            // セッション情報
+            // Session information
             $table->string('session_id', 255)->nullable()->index();
 
-            // イベント詳細（JSON）
+            // Event details (JSON)
             $table->json('meta')->nullable();
 
-            // イベント発生日時
+            // Event occurrence timestamp
             $table->timestamp('occurred_at')->useCurrent()->index();
 
-            // 標準タイムスタンプ
+            // Standard timestamps
             $table->timestamps();
 
-            // 複合インデックス
+            // Composite index
             $table->index(['member_id', 'event_type', 'occurred_at']);
             $table->index(['ip_address', 'event_type', 'occurred_at']);
             $table->index(['category', 'risk_level', 'occurred_at']);

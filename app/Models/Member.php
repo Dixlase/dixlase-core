@@ -56,14 +56,14 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Ramsey\Uuid\Uuid;
 
 /**
- * メンバーモデル
+ * Member model
  */
 class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface, WebAuthnAuthenticatable
 {
     use HasFactory, HasPermissions, Notifiable, SoftDeletes, TwoFactorAuthenticatable, TwoFactorEnableCheck;
 
     /**
-     * テーブル名の定義
+     * Table name definition
      */
     protected $table = 'members';
 
@@ -129,19 +129,19 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
      */
     public function sendPasswordResetNotification($token)
     {
-        // カスタムパスワードリセット通知を作成
+        // Create custom password reset notification
         $this->notify(new \App\Notifications\AdminResetPasswordNotification($token));
     }
 
     /**
      * Send the email verification notification.
      *
-     * @param  string|null  $context  'create', 'email_change', または 'resend'。null の場合は pending_email の有無で自動判定
+     * @param  string|null  $context  'create', 'email_change', or 'resend'. If null, automatically determined by presence of pending_email
      * @return void
      */
     public function sendEmailVerificationNotification(?string $context = null)
     {
-        // コンテキストが指定されていない場合は pending_email の有無で判定
+        // If context is not specified, determined by presence of pending_email
         if ($context === null) {
             $context = $this->pending_email ? 'email_change' : 'create';
         }
@@ -156,7 +156,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
      */
     public function getEmailForVerification()
     {
-        // pending_email がある場合はそちらを使用、なければ通常のemail
+        // Use pending_email if present, otherwise use regular email
         return $this->pending_email ?? $this->email;
     }
 
@@ -167,7 +167,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
      */
     public function routeNotificationForMail()
     {
-        // メール通知の送信先をpending_emailに変更（メールアドレス変更時）
+        // Change email notification destination to pending_email (when changing email address)
         return $this->pending_email ?? $this->email;
     }
 
@@ -176,7 +176,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     // ========================================
 
     /**
-     * ユーザーIDを取得
+     * Get user ID
      */
     public function getId(): int
     {
@@ -184,7 +184,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     }
 
     /**
-     * メールアドレスを取得
+     * Get email address
      */
     public function getEmail(): string
     {
@@ -192,7 +192,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     }
 
     /**
-     * 表示名を取得
+     * Get display name
      */
     public function getDisplayName(): string
     {
@@ -200,7 +200,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     }
 
     /**
-     * アカウント名を取得
+     * Get account name
      */
     public function getAccountName(): ?string
     {
@@ -208,7 +208,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     }
 
     /**
-     * 二段階認証モードを取得
+     * Get two-factor authentication mode
      */
     public function getTwoFaMode(): int
     {
@@ -218,7 +218,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     }
 
     /**
-     * パスキーが有効かどうか
+     * Whether passkey is enabled
      */
     public function isTwoFaPasskeyEnabled(): bool
     {
@@ -226,7 +226,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     }
 
     /**
-     * デフォルトの二段階認証方法を取得
+     * Get default two-factor authentication method
      */
     public function getTwoFaDefaultMethod(): int
     {
@@ -234,7 +234,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     }
 
     /**
-     * パスキー認証情報とのリレーション
+     * Relation to passkey credentials
      */
     public function twoFaPasskeys(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
@@ -242,7 +242,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     }
 
     /**
-     * 回復コードのリレーション
+     * Relation to recovery codes
      */
     public function twoFaRecoveryCodes(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
@@ -250,7 +250,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     }
 
     /**
-     * 二段階認証試行のリレーション
+     * Relation to two-factor authentication attempts
      */
     public function twoFaAttempts(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
@@ -258,7 +258,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     }
 
     /**
-     * 二段階認証トークンのリレーション
+     * Relation to two-factor authentication tokens
      */
     public function twoFaTokens(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
@@ -266,11 +266,11 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     }
 
     // ========================================
-    // WebAuthn (Laragear) インターフェース実装
+    // WebAuthn (Laragear) interface implementation
     // ========================================
 
     /**
-     * WebAuthn用のユーザーデータを返す
+     * Return user data for WebAuthn
      */
     public function webAuthnData(): WebAuthnData
     {
@@ -281,21 +281,21 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     }
 
     /**
-     * WebAuthn用の匿名化されたユーザーID（UUID）を返す
+     * Return anonymized user ID (UUID) for WebAuthn
      *
-     * ユーザーIDから一貫したUUIDを生成（UUID v5を使用）
+     * Generate consistent UUID from user ID (using UUID v5)
      */
     public function webAuthnId(): \Ramsey\Uuid\UuidInterface
     {
-        // ユーザーIDから一貫したUUIDを生成
-        // 名前空間にDNS名前空間を使用し、ユーザーIDを名前として使用
+        // Generate consistent UUID from user ID
+        // Use DNS namespace as namespace and user ID as name
         return Uuid::uuid5(Uuid::NAMESPACE_DNS, 'dixlase.member.'.$this->id);
     }
 
     /**
-     * WebAuthn認証情報のリレーション
+     * WebAuthn credentials relation
      *
-     * webauthn_credentialsテーブルを使用
+     * Use webauthn_credentials table
      */
     public function webAuthnCredentials(): \Illuminate\Database\Eloquent\Relations\MorphMany
     {
@@ -303,7 +303,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     }
 
     /**
-     * すべてのWebAuthn認証情報を削除
+     * Delete all WebAuthn credentials
      */
     public function flushCredentials(string ...$except): void
     {
@@ -313,7 +313,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     }
 
     /**
-     * すべてのWebAuthn認証情報を無効化
+     * Disable all WebAuthn credentials
      */
     public function disableAllCredentials(string ...$except): void
     {
@@ -323,7 +323,7 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     }
 
     /**
-     * WebAuthn認証情報のインスタンスを作成
+     * Create WebAuthn credential instance
      */
     public function makeWebAuthnCredential(array $properties): WebAuthnCredential
     {

@@ -49,7 +49,7 @@ class PluginMigrationServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        // PluginMigratorのシングルトンインスタンスをバインド
+        // Bind singleton instance of PluginMigrator
 
         $this->app->singleton(PluginMigrator::class, function ($app) {
             return new PluginMigrator(

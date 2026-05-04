@@ -64,7 +64,7 @@ class SyncGitExclude extends Command
     protected $description = 'Sync .git/info/exclude with plugin and theme directories';
 
     /**
-     * .git/info/excludeファイルのパス
+     * Path to .git/info/exclude file
      */
     protected function getExcludeFilePath(): string
     {
@@ -76,14 +76,14 @@ class SyncGitExclude extends Command
      */
     public function handle(): int
     {
-        // .gitディレクトリが存在しない場合はエラー
+        // Error if .git directory does not exist
         if (! File::exists(base_path('.git'))) {
             $this->error(__('admin/command.git_sync.git_not_found'));
 
             return self::FAILURE;
         }
 
-        // 単一操作モード
+        // Single operation mode
         if ($this->option('add-plugin')) {
             return $this->addPluginExclusion($this->option('add-plugin')) ? self::SUCCESS : self::FAILURE;
         }
@@ -97,12 +97,12 @@ class SyncGitExclude extends Command
             return $this->removeThemeExclusion($this->option('remove-theme')) ? self::SUCCESS : self::FAILURE;
         }
 
-        // 同期モード
+        // Sync mode
         return $this->syncAll();
     }
 
     /**
-     * すべてのプラグイン・テーマを同期
+     * Sync all plugins and themes
      */
     protected function syncAll(): int
     {
@@ -115,10 +115,10 @@ class SyncGitExclude extends Command
         $this->info(__('admin/command.git_sync.scanning'));
         $this->newLine();
 
-        // 現在の.git/info/excludeの内容を取得
+        // Get current contents of .git/info/exclude
         $currentContent = File::exists($excludePath) ? File::get($excludePath) : '';
 
-        // 現在登録されているプラグインとテーマを抽出
+        // Extract currently registered plugins and themes
         $currentPlugins = [];
         $currentThemes = [];
 
@@ -130,20 +130,20 @@ class SyncGitExclude extends Command
             $currentThemes = $matches[1] ?? [];
         }
 
-        // 実際のディレクトリを検出
+        // Detect actual directories
         $actualPlugins = $this->detectDirectories(base_path('plugins'));
         $actualThemes = $this->detectDirectories(base_path('themes'), ['DixlaseOnePage']);
 
-        // 差分を計算
+        // Calculate differences
         $pluginsToAdd = array_diff($actualPlugins, $currentPlugins);
         $pluginsToRemove = array_diff($currentPlugins, $actualPlugins);
         $themesToAdd = array_diff($actualThemes, $currentThemes);
         $themesToRemove = array_diff($currentThemes, $actualThemes);
 
-        // 現在の状態を表示
+        // Display current state
         $this->displayCurrentState($currentPlugins, $currentThemes, $actualPlugins, $actualThemes);
 
-        // 変更内容を表示
+        // Display changes
         $hasPluginChanges = ! empty($pluginsToAdd) || ! empty($pluginsToRemove);
         $hasThemeChanges = ! empty($themesToAdd) || ! empty($themesToRemove);
 
@@ -155,14 +155,14 @@ class SyncGitExclude extends Command
             $this->displayChanges('Themes', $themesToAdd, $themesToRemove);
         }
 
-        // 変更がない場合
+        // If there are no changes
         if ((! $hasPluginChanges || $themesOnly) && (! $hasThemeChanges || $pluginsOnly)) {
             $this->info(__('admin/command.git_sync.exclude_in_sync'));
 
             return self::SUCCESS;
         }
 
-        // ドライランの場合は終了
+        // Exit if dry run
         if ($dryRun) {
             $this->newLine();
             $this->warn(__('admin/command.git_sync.dry_run'));
@@ -170,14 +170,14 @@ class SyncGitExclude extends Command
             return self::SUCCESS;
         }
 
-        // 確認
+        // Confirmation
         if (! $force && ! $this->confirm(__('admin/command.git_sync.confirm_apply'), true)) {
             $this->info(__('admin/command.git_sync.cancelled'));
 
             return self::SUCCESS;
         }
 
-        // 変更を適用
+        // Apply changes
         $this->applyChanges(
             $excludePath,
             $currentContent,
@@ -194,14 +194,14 @@ class SyncGitExclude extends Command
     }
 
     /**
-     * プラグインの除外ルールを追加
+     * Add plugin exclusion rule
      */
     public function addPluginExclusion(string $pluginName): bool
     {
         try {
             $excludePath = $this->getExcludeFilePath();
 
-            // .git/info/excludeファイルが存在しない場合は作成
+            // Create .git/info/exclude file if it does not exist
             if (! File::exists($excludePath)) {
                 $directory = dirname($excludePath);
                 if (! File::exists($directory)) {
@@ -213,14 +213,14 @@ class SyncGitExclude extends Command
             $content = File::get($excludePath);
             $pluginPath = "!plugins/{$pluginName}";
 
-            // 既に追加されている場合はスキップ
+            // Skip if already added
             if (str_contains($content, $pluginPath)) {
                 $this->info(__('admin/command.git_sync.already_exists', ['path' => $pluginPath]));
 
                 return true;
             }
 
-            // プラグインセクションを探す
+            // Find plugin section
             $lines = explode("\n", $content);
             $this->addToSection($lines, 'Plugin', 'plugins', [$pluginName]);
 
@@ -237,7 +237,7 @@ class SyncGitExclude extends Command
     }
 
     /**
-     * プラグインの除外ルールを削除
+     * Remove plugin exclusion rule
      */
     public function removePluginExclusion(string $pluginName): bool
     {
@@ -267,7 +267,7 @@ class SyncGitExclude extends Command
     }
 
     /**
-     * テーマの除外ルールを追加
+     * Add theme exclusion rules
      */
     public function addThemeExclusion(string $themeName): bool
     {
@@ -307,7 +307,7 @@ class SyncGitExclude extends Command
     }
 
     /**
-     * テーマの除外ルールを削除
+     * Remove theme exclusion rules
      */
     public function removeThemeExclusion(string $themeName): bool
     {
@@ -337,7 +337,7 @@ class SyncGitExclude extends Command
     }
 
     /**
-     * ディレクトリを検出
+     * Detect directories
      */
     protected function detectDirectories(string $path, array $exclude = []): array
     {
@@ -362,7 +362,7 @@ class SyncGitExclude extends Command
     }
 
     /**
-     * 現在の状態を表示
+     * Display current state
      */
     protected function displayCurrentState(array $currentPlugins, array $currentThemes, array $actualPlugins, array $actualThemes): void
     {
@@ -395,7 +395,7 @@ class SyncGitExclude extends Command
     }
 
     /**
-     * 変更内容を表示
+     * Display changes
      */
     protected function displayChanges(string $type, array $toAdd, array $toRemove): void
     {
@@ -421,7 +421,7 @@ class SyncGitExclude extends Command
     }
 
     /**
-     * 変更を適用
+     * Apply changes
      */
     protected function applyChanges(
         string $excludePath,
@@ -433,7 +433,7 @@ class SyncGitExclude extends Command
     ): void {
         $lines = explode("\n", $currentContent);
 
-        // 削除処理
+        // Deletion process
         foreach ($pluginsToRemove as $plugin) {
             $lines = array_filter($lines, fn ($line) => trim($line) !== "!plugins/{$plugin}");
         }
@@ -443,20 +443,20 @@ class SyncGitExclude extends Command
 
         $lines = array_values($lines);
 
-        // プラグインセクションを探して追加
+        // Find and add to plugin section
         if (! empty($pluginsToAdd)) {
             $this->addToSection($lines, 'Plugin', 'plugins', $pluginsToAdd);
         }
 
-        // テーマセクションを探して追加
+        // Find and add to theme section
         if (! empty($themesToAdd)) {
             $this->addToSection($lines, 'Theme', 'themes', $themesToAdd);
         }
 
-        // ファイルに書き込み
+        // Write to file
         $content = implode("\n", $lines);
 
-        // ディレクトリが存在しない場合は作成
+        // Create directory if it doesn't exist
         $directory = dirname($excludePath);
         if (! File::exists($directory)) {
             File::makeDirectory($directory, 0755, true);
@@ -466,7 +466,7 @@ class SyncGitExclude extends Command
     }
 
     /**
-     * セクションに追加
+     * Add to section
      */
     protected function addToSection(array &$lines, string $sectionName, string $type, array $toAdd): void
     {
@@ -485,7 +485,7 @@ class SyncGitExclude extends Command
             }
         }
 
-        // セクションが存在しない場合は作成
+        // Create section if it doesn't exist
         if ($startIndex === -1) {
             $lines[] = '';
             $lines[] = $sectionStart;
@@ -495,7 +495,7 @@ class SyncGitExclude extends Command
             }
             $lines[] = $sectionEnd;
         } else {
-            // セクション内に追加
+            // Add within section
             $insertIndex = ($endIndex !== -1) ? $endIndex : count($lines);
             foreach (array_reverse($toAdd) as $name) {
                 array_splice($lines, $insertIndex, 0, ["!{$type}/{$name}"]);
@@ -504,7 +504,7 @@ class SyncGitExclude extends Command
     }
 
     /**
-     * プラグインの除外ルールが存在するか確認
+     * Check if plugin exclusion rules exist
      */
     public static function hasPluginExclusion(string $pluginName): bool
     {
@@ -520,7 +520,7 @@ class SyncGitExclude extends Command
     }
 
     /**
-     * テーマの除外ルールが存在するか確認
+     * Check if theme exclusion rules exist
      */
     public static function hasThemeExclusion(string $themeName): bool
     {

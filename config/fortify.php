@@ -178,7 +178,7 @@ return [
 
     'features' => [
         Features::registration(),
-        // Features::resetPasswords(), // カスタムコントローラーを使用するため無効化
+        // Features::resetPasswords(), // Disabled to use custom controller
         // Features::emailVerification(),
         Features::updateProfileInformation(),
         Features::updatePasswords(),

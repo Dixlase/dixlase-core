@@ -44,9 +44,9 @@ use Illuminate\Console\Command;
 /**
  * RBAC権限緊急復旧コマンド（ブレークグラス）
  *
- * 権限設定ミスで管理画面にアクセスできなくなった場合の緊急復旧機能
- * - 全ロールから管理権限を剥奪してしまった
- * - SUPER_ADMINも管理画面に入れない
+ * Emergency recovery function for when the admin panel becomes inaccessible due to permission settings misconfiguration
+ * - Admin permission was removed from all roles
+ * - Even SUPER_ADMIN cannot access the admin panel
  */
 class RbacRecoveryCommand extends Command
 {

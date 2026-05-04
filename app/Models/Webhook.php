@@ -125,7 +125,7 @@ class Webhook extends Model
     public function scopeSubscribedTo($query, string $event)
     {
         return $query->where(function ($q) use ($event) {
-            // events が null の場合は全イベントを購読
+            // Subscribe to all events if events is null
             $q->whereNull('events')
                 ->orWhereJsonContains('events', $event)
                 ->orWhereJsonContains('events', '*');

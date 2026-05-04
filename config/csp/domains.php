@@ -39,7 +39,7 @@ return [
         'https://fonts.googleapis.com',
         'https://fonts.gstatic.com',
 
-        // Bunny Fonts (Dixlaseデフォルト)
+        // Bunny Fonts (Dixlase default)
         'https://fonts.bunny.net',
 
         // Font Awesome
@@ -49,7 +49,7 @@ return [
         'https://www.google.com',
         'https://www.gstatic.com',
 
-        // YouTube 埋め込み
+        // YouTube embed
         'https://www.youtube.com',
         'https://www.youtube-nocookie.com',
 
@@ -77,8 +77,8 @@ return [
     | Admin-specific Directives
     |--------------------------------------------------------------------------
     |
-    | 管理画面専用の追加ディレクティブ。
-    | 管理画面ルートでのみこれらが追加されます。
+    | Additional directives for admin panel only.
+    | These are added only on admin panel routes.
     |
     */
     'admin_directives' => [
@@ -90,8 +90,8 @@ return [
     | Front-specific Directives
     |--------------------------------------------------------------------------
     |
-    | フロントエンド専用の追加ディレクティブ。
-    | フロントエンドルートでのみこれらが追加されます。
+    | Additional directives for frontend only.
+    | These are added only on frontend routes.
     |
     */
     'front_directives' => [
@@ -103,18 +103,18 @@ return [
     | Domain Detection Keywords
     |--------------------------------------------------------------------------
     |
-    | 信頼済みドメインを適切なCSPディレクティブに自動振り分けするための
-    | キーワード定義。ドメイン名にこれらのキーワードが含まれている場合、
-    | 対応するディレクティブに追加されます。
+    | Keyword definitions for automatically categorizing trusted domains
+    | into appropriate CSP directives. When domain names contain these keywords,
+    | they are added to the corresponding directives.
     |
     */
     'domain_detection_keywords' => [
-        // フォント関連 → font-src, style-src
+        // Font-related → font-src, style-src
         'font-src' => [
             'font', 'fonts', 'typekit', 'typography',
         ],
 
-        // スクリプト関連 → script-src
+        // Script-related → script-src
         'script-src' => [
             'cdn', 'cdnjs', 'jsdelivr', 'unpkg', 'cloudflare',
             'ajax', 'api', 'sdk', 'js', 'script',
@@ -123,20 +123,20 @@ return [
             'jquery', 'bootstrap', 'vue', 'react', 'angular',
         ],
 
-        // スタイル関連 → style-src
+        // Style-related → style-src
         'style-src' => [
             'css', 'style', 'styles', 'theme',
             'bootstrap', 'tailwind', 'bulma', 'materialize',
         ],
 
-        // 画像関連 → img-src
+        // Image-related → img-src
         'img-src' => [
             'img', 'image', 'images', 'photo', 'photos',
             'static', 'assets', 'media', 'upload', 'uploads',
             'gravatar', 'avatar', 'icon', 'icons',
         ],
 
-        // iframe/フレーム関連 → frame-src
+        // iframe/frame-related → frame-src
         'frame-src' => [
             'embed', 'widget', 'iframe', 'frame',
             'recaptcha', 'captcha', 'turnstile', 'challenges',
@@ -144,7 +144,7 @@ return [
             'maps', 'map',
         ],
 
-        // 接続関連（API、WebSocket等） → connect-src
+        // Connection-related (API, WebSocket, etc.) → connect-src
         'connect-src' => [
             'api', 'ws', 'wss', 'socket', 'realtime',
             'graphql', 'rest', 'endpoint',
@@ -156,24 +156,24 @@ return [
     | Multi-Purpose Domain Keywords
     |--------------------------------------------------------------------------
     |
-    | 複数の用途に使われるドメインのキーワード。
-    | これらのキーワードを含むドメインは、指定された複数のディレクティブに追加されます。
+    | Keywords for domains used for multiple purposes.
+    | Domains containing these keywords are added to multiple specified directives.
     |
     */
     'multi_purpose_keywords' => [
-        // CDN系ドメインは複数用途
+        // CDN domains are multi-purpose
         'cdn' => ['script-src', 'style-src', 'font-src', 'img-src'],
         'cdnjs' => ['script-src', 'style-src', 'font-src', 'img-src'],
         'jsdelivr' => ['script-src', 'style-src', 'font-src', 'img-src'],
 
-        // 汎用的なstaticドメインは複数用途
+        // Generic static domains serve multiple purposes
         'static' => ['script-src', 'style-src', 'img-src', 'font-src'],
         'assets' => ['script-src', 'style-src', 'img-src', 'font-src'],
 
-        // gstatic.comは特殊（Google系の静的リソース）
+        // gstatic.com is special (Google static resources)
         'gstatic' => ['script-src', 'style-src', 'img-src', 'font-src', 'frame-src'],
 
-        // フォントサービスはスタイルシートとフォントファイルの両方を提供
+        // Font services provide both stylesheets and font files
         'fonts' => ['style-src', 'font-src'],
     ],
 ];

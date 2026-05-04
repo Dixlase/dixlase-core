@@ -48,19 +48,19 @@ class CspServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // CspNonceGenerator をシングルトンとして登録
-        // リクエストごとに同じnonceを使用するため
+        // Register CspNonceGenerator as a singleton
+        // To use the same nonce for each request
         $this->app->singleton(CspNonceGenerator::class, function ($app) {
             return new CspNonceGenerator();
         });
 
-        // CspPolicyRegistry をシングルトンとして登録
-        // プラグイン/テーマからのポリシーを蓄積するため
+        // Register CspPolicyRegistry as a singleton
+        // To accumulate policies from plugins/themes
         $this->app->singleton(CspPolicyRegistry::class, function ($app) {
             return new CspPolicyRegistry();
         });
 
-        // CspBuilder をシングルトンとして登録
+        // Register CspBuilder as a singleton
         $this->app->singleton(CspBuilder::class, function ($app) {
             return new CspBuilder(
                 $app->make(CspNonceGenerator::class),
@@ -74,37 +74,37 @@ class CspServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Bladeディレクティブを登録
+        // Register Blade directives
         $this->registerBladeDirectives();
 
-        // ヘルパー関数を登録
+        // Register helper functions
         $this->registerHelpers();
     }
 
     /**
-     * Bladeディレクティブを登録
+     * Register Blade directives
      */
     protected function registerBladeDirectives(): void
     {
-        // @cspNonce - nonce属性を出力
-        // 使用例: <script @cspNonce>...</script>
+        // @cspNonce - Output nonce attribute
+        // Example: <script @cspNonce>...</script>
         Blade::directive('cspNonce', function () {
             return '<?php echo csp_nonce_attr(); ?>';
         });
 
-        // @cspNonceValue - nonce値のみを出力
-        // 使用例: <script nonce="@cspNonceValue">...</script>
+        // @cspNonceValue - Output nonce value only
+        // Example: <script nonce="@cspNonceValue">...</script>
         Blade::directive('cspNonceValue', function () {
             return '<?php echo csp_nonce(); ?>';
         });
 
-        // @cspMeta - CSPをmetaタグで出力（ヘッダーが使えない場合用）
+        // @cspMeta - Output CSP as meta tag (for when headers are unavailable)
         Blade::directive('cspMeta', function () {
             return '<?php echo csp_meta(); ?>';
         });
 
-        // @dixScript / @enddixScript - CSP対応インラインスクリプト
-        // 使用例: @dixScript console.log('hello'); @enddixScript
+        // @dixScript / @enddixScript - CSP-compliant inline script
+        // Example: @dixScript console.log('hello'); @enddixScript
         Blade::directive('dixScript', function ($expression) {
             $options = $expression ? ", {$expression}" : '';
 
@@ -114,8 +114,8 @@ class CspServiceProvider extends ServiceProvider
             return "<?php echo \App\Helpers\ExtensionHelper::script(ob_get_clean()); ?>";
         });
 
-        // @dixStyle / @enddixStyle - CSP対応インラインスタイル
-        // 使用例: @dixStyle body { color: red; } @enddixStyle
+        // @dixStyle / @enddixStyle - CSP-compliant inline style
+        // Example: @dixStyle body { color: red; } @enddixStyle
         Blade::directive('dixStyle', function ($expression) {
             return '<?php ob_start(); ?>';
         });
@@ -123,21 +123,21 @@ class CspServiceProvider extends ServiceProvider
             return "<?php echo \App\Helpers\ExtensionHelper::style(ob_get_clean()); ?>";
         });
 
-        // @dixScriptSrc - CSP対応外部スクリプト
-        // 使用例: @dixScriptSrc('https://example.com/script.js', ['defer' => true])
+        // @dixScriptSrc - CSP-compliant external script
+        // Example: @dixScriptSrc('https://example.com/script.js', ['defer' => true])
         Blade::directive('dixScriptSrc', function ($expression) {
             return "<?php echo \App\Helpers\ExtensionHelper::scriptSrc({$expression}); ?>";
         });
 
-        // @dixStyleSrc - CSP対応外部スタイルシート
-        // 使用例: @dixStyleSrc('https://example.com/style.css')
+        // @dixStyleSrc - CSP-compliant external stylesheet
+        // Example: @dixStyleSrc('https://example.com/style.css')
         Blade::directive('dixStyleSrc', function ($expression) {
             return "<?php echo \App\Helpers\ExtensionHelper::styleSrc({$expression}); ?>";
         });
     }
 
     /**
-     * ヘルパー関数を登録
+     * Register helper functions
      */
     protected function registerHelpers(): void
     {

@@ -53,7 +53,7 @@ return new class extends Migration
             $table->boolean('successful')->default(false);
             $table->timestamp('created_at');
 
-            // インデックス
+            // Index
             $table->index(['member_id', 'created_at'], 'idx_member_created');
             $table->index(['ip_address', 'created_at'], 'idx_ip_created');
         });

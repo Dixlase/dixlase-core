@@ -48,9 +48,9 @@ return new class extends Migration
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
-            $table->string('migration', 255); // マイグレーションファイル名
-            $table->string('plugin', 255)->nullable(); // どのプラグインのマイグレーションか識別
-            $table->integer('batch'); // バッチ番号
+            $table->string('migration', 255); // Migration file name
+            $table->string('plugin', 255)->nullable(); // Identify which plugin the migration belongs to
+            $table->integer('batch'); // Batch number
             $table->timestamps(); // created_at, updated_at
         });
     }

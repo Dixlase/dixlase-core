@@ -42,15 +42,15 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * プラグインのバージョン履歴テーブル
-     * サプライチェーン攻撃防御のため、インストール・アップデート・ロールバックを記録する
+     * Plugin version history table
+     * Records installs, updates, and rollbacks to defend against supply chain attacks
      */
     public function up(): void
     {
         Schema::create('plugin_version_history', function (Blueprint $table) {
             $table->id();
             $table->string('plugin_slug')->index();
-            $table->string('old_version')->nullable(); // 初回インストール時は null
+            $table->string('old_version')->nullable(); // null on initial install
             $table->string('new_version');
             $table->string('old_signing_key_id')->nullable();
             $table->string('new_signing_key_id')->nullable();

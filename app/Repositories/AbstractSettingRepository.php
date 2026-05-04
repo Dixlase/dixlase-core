@@ -40,41 +40,41 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * 設定リポジトリ抽象ベースクラス
+ * Abstract base class for settings repositories
  *
- * すべての設定系リポジトリの共通実装を提供します。
+ * Provides common implementation for all settings repositories.
  */
 abstract class AbstractSettingRepository
 {
     /**
-     * キャッシュキーのプレフィックス
+     * Cache key prefix
      */
     protected string $cachePrefix;
 
     /**
-     * 全設定のキャッシュキー
+     * Cache key for all settings
      */
     protected string $cacheAllKey;
 
     /**
-     * キャッシュの有効期限（分）
+     * Cache expiration time (minutes)
      */
     protected int $cacheTtl = 10;
 
     /**
-     * 設定のキーカラム名（'key' または 'name'）
+     * Settings key column name ('key' or 'name')
      */
     protected string $keyColumn = 'name';
 
     /**
-     * Eloquentモデルクラス名を取得
+     * Get the Eloquent model class name
      */
     abstract protected function getModelClass(): string;
 
     /**
-     * 値を保存前に変換（オーバーライド可能）
+     * Transform value before saving (can be overridden)
      */
     protected function transformValueForStorage(mixed $value): mixed
     {
@@ -82,7 +82,7 @@ abstract class AbstractSettingRepository
     }
 
     /**
-     * 値を取得後に変換（オーバーライド可能）
+     * Transform value after retrieval (can be overridden)
      */
     protected function transformValueFromStorage(mixed $value): mixed
     {
@@ -90,7 +90,7 @@ abstract class AbstractSettingRepository
     }
 
     /**
-     * すべての設定を取得
+     * Get all settings
      *
      * @return array<string, mixed>
      */
@@ -103,7 +103,7 @@ abstract class AbstractSettingRepository
                 $modelClass = $this->getModelClass();
                 $settings = $modelClass::pluck('value', $this->keyColumn)->toArray();
 
-                // 値を変換
+                // Transform value
                 return array_map(
                     fn ($value) => $this->transformValueFromStorage($value),
                     $settings
@@ -113,10 +113,10 @@ abstract class AbstractSettingRepository
     }
 
     /**
-     * 特定のキーの値を取得
+     * Get value for a specific key
      *
-     * @param  string  $name  設定名
-     * @param  mixed  $default  デフォルト値
+     * @param  string  $name  Setting name
+     * @param  mixed  $default  Default value
      */
     public function get(string $name, mixed $default = null): mixed
     {
@@ -137,10 +137,10 @@ abstract class AbstractSettingRepository
     }
 
     /**
-     * 複数のキーの値を一括取得
+     * Get multiple key values in bulk
      *
-     * @param  array<string>  $names  設定名の配列
-     * @param  mixed  $default  デフォルト値
+     * @param  array<string>  $names  Array of setting names
+     * @param  mixed  $default  Default value
      * @return array<string, mixed>
      */
     public function getMultiple(array $names, mixed $default = null): array
@@ -155,10 +155,10 @@ abstract class AbstractSettingRepository
     }
 
     /**
-     * 設定値を保存
+     * Save setting value
      *
-     * @param  string  $name  設定名
-     * @param  mixed  $value  設定値
+     * @param  string  $name  Setting name
+     * @param  mixed  $value  Setting value
      */
     public function set(string $name, mixed $value): Model
     {
@@ -177,7 +177,7 @@ abstract class AbstractSettingRepository
     }
 
     /**
-     * 複数の設定値を一括保存
+     * Save multiple setting values in bulk
      *
      * @param  array<string, mixed>  $settings  設定の配列
      */
@@ -203,9 +203,9 @@ abstract class AbstractSettingRepository
     }
 
     /**
-     * 設定が存在するか確認
+     * Check if settings exist
      *
-     * @param  string  $name  設定名
+     * @param  string  $name  Setting name
      */
     public function has(string $name): bool
     {
@@ -215,9 +215,9 @@ abstract class AbstractSettingRepository
     }
 
     /**
-     * 設定を削除
+     * Delete settings
      *
-     * @param  string  $name  設定名
+     * @param  string  $name  Setting name
      */
     public function delete(string $name): bool
     {
@@ -232,9 +232,9 @@ abstract class AbstractSettingRepository
     }
 
     /**
-     * キャッシュをクリア
+     * Clear cache
      *
-     * @param  string|null  $name  特定のキーのみクリアする場合は指定
+     * @param  string|null  $name  Specify if clearing only specific keys
      */
     public function clearCache(?string $name = null): void
     {
@@ -246,7 +246,7 @@ abstract class AbstractSettingRepository
     }
 
     /**
-     * すべてのキャッシュをクリア
+     * Clear all cache
      */
     public function clearAllCache(): void
     {

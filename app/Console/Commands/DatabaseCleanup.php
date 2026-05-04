@@ -123,7 +123,7 @@ class DatabaseCleanup extends Command
     }
 
     /**
-     * 特定のタイプをクリーンアップ
+     * Clean up a specific type
      */
     protected function cleanupType(string $type, int $days, bool $force): int
     {
@@ -156,7 +156,7 @@ class DatabaseCleanup extends Command
     }
 
     /**
-     * すべてのテーブルをクリーンアップ
+     * Clean up all tables
      */
     protected function cleanupAll(int $days, bool $force): int
     {
@@ -184,7 +184,7 @@ class DatabaseCleanup extends Command
     }
 
     /**
-     * 利用可能なクリーンアップタイプを一覧表示
+     * Display available cleanup types as a list
      */
     protected function listCleanupTypes(): int
     {

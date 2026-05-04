@@ -41,9 +41,9 @@ use App\Services\LockdownService;
 use Illuminate\Console\Command;
 
 /**
- * 緊急ロックダウンコマンド
+ * Emergency lockdown command
  *
- * セキュリティインシデント時の即座のシステム保護
+ * Immediate system protection during security incidents
  */
 class LockdownCommand extends Command
 {
@@ -85,7 +85,7 @@ class LockdownCommand extends Command
     }
 
     /**
-     * ロックダウンを発動
+     * Activate lockdown
      */
     protected function handleActivate(): int
     {
@@ -95,7 +95,7 @@ class LockdownCommand extends Command
         $allowedIps = $this->option('allow-ip') ?: null;
         $allowedMembers = $this->option('allow-member') ? array_map('intval', $this->option('allow-member')) : null;
 
-        // 確認
+        // Confirmation
         if (! $this->option('force')) {
             $this->warn(__('admin/command.lockdown.warning'));
             $this->newLine();
@@ -113,11 +113,11 @@ class LockdownCommand extends Command
             }
         }
 
-        // ロックダウン発動
+        // Lockdown activation
         $lockdown = LockdownService::activate(
             $type,
             $reason,
-            null, // CLI実行なのでtriggered_byはnull
+            null, // triggered_by is null because this is CLI execution
             $duration,
             $allowedIps,
             $allowedMembers
@@ -139,7 +139,7 @@ class LockdownCommand extends Command
     }
 
     /**
-     * ロックダウンを解除
+     * Release lockdown
      */
     protected function handleDeactivate(): int
     {
@@ -151,7 +151,7 @@ class LockdownCommand extends Command
             return self::SUCCESS;
         }
 
-        // 確認
+        // Confirmation
         if (! $this->option('force')) {
             $this->info(__('admin/command.lockdown.current_status'));
             $this->line(__('admin/command.lockdown.type').": {$lockdown->type}");
@@ -174,7 +174,7 @@ class LockdownCommand extends Command
     }
 
     /**
-     * ロックダウン状態を表示
+     * Display lockdown status
      */
     protected function handleStatus(): int
     {
@@ -206,7 +206,7 @@ class LockdownCommand extends Command
     }
 
     /**
-     * ロックダウン履歴を表示
+     * Display lockdown history
      */
     protected function handleHistory(): int
     {
@@ -249,7 +249,7 @@ class LockdownCommand extends Command
     }
 
     /**
-     * 不明なアクション
+     * Unknown action
      */
     protected function handleUnknownAction(string $action): int
     {

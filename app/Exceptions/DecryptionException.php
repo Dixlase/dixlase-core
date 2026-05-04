@@ -40,8 +40,8 @@ namespace App\Exceptions;
 use RuntimeException;
 
 /**
- * 復号失敗例外
+ * Decryption failure exception
  *
- * ファイルの復号に失敗した場合にスローされます。
+ * Thrown when file decryption fails
  */
 class DecryptionException extends RuntimeException {}

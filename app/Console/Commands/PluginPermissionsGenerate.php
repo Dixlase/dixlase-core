@@ -41,10 +41,10 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 /**
- * プラグイン権限自動生成コマンド
+ * Plugin permission auto-generation command
  *
- * プラグインのコードをスキャンし、permissions と declares セクションを
- * 自動生成または更新します。
+ * Scans plugin code and auto-generates or updates the permissions and declares sections
+ * Auto-generate or update
  */
 class PluginPermissionsGenerate extends Command
 {
@@ -88,10 +88,10 @@ class PluginPermissionsGenerate extends Command
             return Command::FAILURE;
         }
 
-        // declares の生成
+        // Generate declares
         $declares = $this->generateDeclares($pluginDir);
 
-        // permissions の生成（--scan 指定時）
+        // Generate permissions (when --scan is specified)
         $permissions = null;
         if ($this->option('scan')) {
             $scanResult = $this->patternRegistry->scan($pluginDir, 'plugin');
@@ -108,7 +108,7 @@ class PluginPermissionsGenerate extends Command
             return Command::SUCCESS;
         }
 
-        // レポート表示
+        // Display report
         $this->info('Plugin: '.basename($pluginDir));
         $this->newLine();
 
@@ -119,7 +119,7 @@ class PluginPermissionsGenerate extends Command
             $this->outputPermissions($permissions, $data['permissions'] ?? []);
         }
 
-        // --update 指定時は plugin.json を更新
+        // Update plugin.json when --update is specified
         if ($this->option('update')) {
             $data['declares'] = $declares;
             if ($permissions !== null) {
@@ -139,7 +139,7 @@ class PluginPermissionsGenerate extends Command
     }
 
     /**
-     * declares セクションを自動生成
+     * Auto-generate declares section
      */
     protected function generateDeclares(string $pluginDir): array
     {
@@ -160,7 +160,7 @@ class PluginPermissionsGenerate extends Command
     }
 
     /**
-     * 実装しているコントラクトを検出
+     * Detect implemented contracts
      *
      * @return array<string>
      */
@@ -172,10 +172,10 @@ class PluginPermissionsGenerate extends Command
         foreach ($phpFiles as $file) {
             $content = File::get($file);
 
-            // implements App\Contracts\... パターンを検出
+            // Detect implements App\Contracts\... patterns
             if (preg_match_all('/implements\s+.*?\\\\Contracts\\\\([A-Za-z\\\\]+Interface)/m', $content, $matches)) {
                 foreach ($matches[0] as $match) {
-                    // use文からFQCNを解決
+                    // Resolve FQCN from use statements
                     if (preg_match_all('/use\s+(App\\\\Contracts\\\\[A-Za-z\\\\]+Interface)\s*;/', $content, $useMatches)) {
                         foreach ($useMatches[1] as $contract) {
                             if (! in_array($contract, $contracts, true)) {
@@ -193,7 +193,7 @@ class PluginPermissionsGenerate extends Command
     }
 
     /**
-     * スキャン結果から permissions を構築
+     * Build permissions from scan results
      */
     protected function buildPermissionsFromScan(array $scanResult, array $existingPermissions): array
     {
@@ -214,13 +214,13 @@ class PluginPermissionsGenerate extends Command
             ],
         ];
 
-        // 既存の permissions をベースにする
+        // Base on existing permissions
         $permissions = array_replace_recursive($defaultStructure, array_diff_key(
             $existingPermissions,
             ['_optional' => true, '_notes' => true]
         ));
 
-        // スキャン結果を適用
+        // Apply scan results
         foreach ($detectedPerms as $key => $detected) {
             $parts = explode('.', $key);
             if (count($parts) === 2 && isset($permissions[$parts[0]])) {
@@ -247,7 +247,7 @@ class PluginPermissionsGenerate extends Command
     }
 
     /**
-     * declares のレポート出力
+     * Output declares report
      */
     protected function outputDeclares(array $generated, ?array $existing): void
     {
@@ -262,7 +262,7 @@ class PluginPermissionsGenerate extends Command
             $rows[] = ["configs.{$key}", $value ? 'true' : 'false', $status];
         }
 
-        // その他
+        // Others
         foreach (['migrations', 'commands', 'middleware'] as $key) {
             $existingValue = $existing[$key] ?? null;
             $status = $this->getDiffStatus($generated[$key], $existingValue);
@@ -282,7 +282,7 @@ class PluginPermissionsGenerate extends Command
     }
 
     /**
-     * permissions のレポート出力
+     * Output permissions report
      */
     protected function outputPermissions(array $generated, array $existing): void
     {
@@ -310,7 +310,7 @@ class PluginPermissionsGenerate extends Command
     }
 
     /**
-     * 差分ステータスを取得
+     * Get diff status
      */
     protected function getDiffStatus(mixed $generated, mixed $existing): string
     {
@@ -325,7 +325,7 @@ class PluginPermissionsGenerate extends Command
     }
 
     /**
-     * プラグインディレクトリを解決
+     * Resolve plugin directory
      */
     protected function resolvePluginDirectory(string $input): ?string
     {
@@ -353,7 +353,7 @@ class PluginPermissionsGenerate extends Command
     }
 
     /**
-     * PHPファイル一覧を取得
+     * Get list of PHP files
      *
      * @return array<string>
      */

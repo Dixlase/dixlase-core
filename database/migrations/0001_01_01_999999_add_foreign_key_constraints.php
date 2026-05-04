@@ -42,13 +42,13 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * 外部キー制約を一括追加
-     * すべてのテーブル作成後に実行される
+     * Add foreign key constraints in batch
+     * Executed after all table creation
      */
     public function up(): void
     {
         // ========================================
-        // members テーブルへの外部キー
+        // Foreign key to members table
         // ========================================
 
         // api_keys.created_by -> members.id
@@ -124,7 +124,7 @@ return new class extends Migration
         });
 
         // ========================================
-        // front_pages テーブルへの外部キー
+        // Foreign key to front_pages table
         // ========================================
 
         // front_page_revisions.front_page_id -> front_pages.id
@@ -136,7 +136,7 @@ return new class extends Migration
         });
 
         // ========================================
-        // api_keys テーブルへの外部キー
+        // Foreign key to api_keys table
         // ========================================
 
         // api_request_logs.api_key_id -> api_keys.id
@@ -148,7 +148,7 @@ return new class extends Migration
         });
 
         // ========================================
-        // webhooks テーブルへの外部キー
+        // Foreign key to webhooks table
         // ========================================
 
         // webhook_deliveries.webhook_id -> webhooks.id
@@ -176,7 +176,7 @@ return new class extends Migration
         });
 
         // ========================================
-        // role_permission_overrides テーブルへの外部キー
+        // Foreign key to role_permission_overrides table
         // ========================================
 
         // role_permission_overrides.updated_by -> members.id
@@ -188,7 +188,7 @@ return new class extends Migration
         });
 
         // ========================================
-        // custom_roles テーブルへの外部キー
+        // Foreign key to custom_roles table
         // ========================================
 
         // custom_roles.created_by -> members.id
@@ -200,7 +200,7 @@ return new class extends Migration
         });
 
         // ========================================
-        // custom_role_permission_overrides テーブルへの外部キー
+        // Foreign key to custom_role_permission_overrides table
         // ========================================
 
         // custom_role_permission_overrides.custom_role_id -> custom_roles.id
@@ -220,7 +220,7 @@ return new class extends Migration
         });
 
         // ========================================
-        // members.custom_role_id への外部キー
+        // Foreign key to members.custom_role_id
         // ========================================
 
         // members.custom_role_id -> custom_roles.id
@@ -232,7 +232,7 @@ return new class extends Migration
         });
 
         // ========================================
-        // extension_sources テーブルへの外部キー
+        // Foreign key to extension_sources table
         // ========================================
 
         // plugins.source_id -> extension_sources.id
@@ -252,11 +252,11 @@ return new class extends Migration
         });
 
         // ========================================
-        // restore_records テーブルへの外部キー
+        // Foreign key to restore_records table
         // ========================================
 
         // restore_records.backup_record_id -> backup_records.id
-        // バックアップ削除後も履歴を保持するため nullOnDelete
+        // nullOnDelete to preserve history after backup deletion
         Schema::table('restore_records', function (Blueprint $table) {
             $table->foreign('backup_record_id')
                 ->references('id')
@@ -265,7 +265,7 @@ return new class extends Migration
         });
 
         // restore_records.pre_restore_backup_id -> backup_records.id
-        // セーフティスナップショット削除後も履歴を保持するため nullOnDelete
+        // nullOnDelete to preserve history after safety snapshot deletion
         Schema::table('restore_records', function (Blueprint $table) {
             $table->foreign('pre_restore_backup_id')
                 ->references('id')
@@ -274,7 +274,7 @@ return new class extends Migration
         });
 
         // restore_records.restored_by -> members.id
-        // メンバー削除後も履歴を保持するため nullOnDelete
+        // nullOnDelete to preserve history after member deletion
         Schema::table('restore_records', function (Blueprint $table) {
             $table->foreign('restored_by')
                 ->references('id')
@@ -283,7 +283,7 @@ return new class extends Migration
         });
 
         // ========================================
-        // sites テーブルへの外部キー (multisite foundation)
+        // Foreign key to sites table (multisite foundation)
         // ========================================
 
         // site_settings.site_id -> sites.id
@@ -296,7 +296,7 @@ return new class extends Migration
         });
 
         // audit_logs.site_id -> sites.id
-        // 監査ログは履歴として保持。サイト削除時は site_id を NULL にする
+        // Preserve audit logs as history. Set site_id to NULL when site is deleted
         Schema::table('audit_logs', function (Blueprint $table) {
             $table->foreign('site_id')
                 ->references('id')

@@ -42,8 +42,8 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * APIリクエストログテーブル
-     * β版でのAPIレートリミット機能の基盤として使用
+     * API request logs table
+     * Used as foundation for API rate limiting feature in beta version
      */
     public function up(): void
     {
@@ -52,101 +52,101 @@ return new class extends Migration
             $table->unsignedBigInteger('site_id')->index();
 
             // ========================================
-            // APIキー情報
+            // API key information
             // ========================================
 
-            // APIキーID（外部キー）
+            // API key ID (foreign key)
             $table->unsignedBigInteger('api_key_id')->nullable()->index();
 
-            // APIキープレフィックス（キー削除後も識別用に保持）
+            // API key prefix (retained for identification even after key deletion)
             $table->string('api_key_prefix', 20)->nullable()->index();
 
             // ========================================
-            // リクエスト情報
+            // Request information
             // ========================================
 
-            // HTTPメソッド（GET, POST, PUT, DELETE, etc.）
+            // HTTP method (GET, POST, PUT, DELETE, etc.)
             $table->string('method', 10)->index();
 
-            // エンドポイント（/api/v1/events など）
+            // Endpoint (e.g. /api/v1/events)
             $table->string('endpoint', 255)->index();
 
-            // リクエストパス（クエリパラメータ除く）
+            // Request path (excluding query parameters)
             $table->string('path', 500)->nullable();
 
-            // クエリパラメータ（JSON）
+            // Query parameters (JSON)
             $table->json('query_params')->nullable();
 
-            // リクエストボディサイズ（バイト）
+            // Request body size (bytes)
             $table->unsignedInteger('request_size')->nullable();
 
             // ========================================
-            // レスポンス情報
+            // Response information
             // ========================================
 
-            // HTTPステータスコード
+            // HTTP status code
             $table->unsignedSmallInteger('response_code')->index();
 
-            // レスポンスサイズ（バイト）
+            // Response size (bytes)
             $table->unsignedInteger('response_size')->nullable();
 
-            // 処理時間（ミリ秒）
+            // Processing time (milliseconds)
             $table->unsignedInteger('response_time_ms')->nullable();
 
             // ========================================
-            // クライアント情報
+            // Client information
             // ========================================
 
-            // IPアドレス
+            // IP address
             $table->string('ip_address', 45)->index();
 
             // User-Agent
             $table->string('user_agent', 500)->nullable();
 
             // ========================================
-            // レートリミット情報
+            // Rate limit information
             // ========================================
 
-            // レートリミット超過フラグ
+            // Rate limit exceeded flag
             $table->boolean('rate_limited')->default(false)->index();
 
-            // 現在のレート（1分あたりのリクエスト数）
+            // Current rate (requests per minute)
             $table->unsignedInteger('current_rate')->nullable();
 
             // ========================================
-            // エラー情報
+            // Error information
             // ========================================
 
             // エラーコード（アプリケーション固有）
             $table->string('error_code', 50)->nullable()->index();
 
-            // エラーメッセージ
+            // Error message
             $table->text('error_message')->nullable();
 
             // ========================================
-            // タイムスタンプ
+            // Timestamp
             // ========================================
 
-            // リクエスト日時（インデックス付き）
+            // リクエスト日時（Index付き）
             $table->timestamp('requested_at')->useCurrent()->index();
 
-            // 標準タイムスタンプ
+            // Standard timestamp
             $table->timestamps();
 
             // ========================================
-            // インデックス
+            // Index
             // ========================================
 
             // レートリミット計算用（APIキー + 時間範囲）
             $table->index(['api_key_id', 'requested_at'], 'idx_api_rate_limit');
 
-            // IP別レートリミット用
+            // For rate limit by IP
             $table->index(['ip_address', 'requested_at'], 'idx_api_ip_rate');
 
-            // エンドポイント別分析用
+            // For endpoint analysis
             $table->index(['endpoint', 'method', 'requested_at'], 'idx_api_endpoint_analysis');
 
-            // エラー分析用
+            // For error analysis
             $table->index(['response_code', 'requested_at'], 'idx_api_error_analysis');
         });
     }

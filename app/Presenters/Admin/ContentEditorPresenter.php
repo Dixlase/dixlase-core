@@ -41,11 +41,11 @@ use App\Enums\ContentStorageType;
 use App\Services\Editor\EditorManager;
 
 /**
- * コンテンツエディターコンポーネントの表示データPresenter
+ * Presenter for content editor component display data
  *
- * form-content-editor Blade コンポーネントに渡すデータを準備します。
+ * Prepares data to pass to the form-content-editor Blade component
  *
- * @php ブロックのロジックをここに集約します。
+ * Consolidates logic from @php blocks here
  */
 class ContentEditorPresenter
 {

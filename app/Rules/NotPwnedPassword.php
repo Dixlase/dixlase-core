@@ -40,9 +40,9 @@ use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 /**
- * パスワード漏洩チェックバリデーションルール
+ * Password breach check validation rule
  *
- * Have I Been Pwned APIを使用してパスワードが漏洩データベースに含まれていないかチェック
+ * Check if password is in breach database using Have I Been Pwned API
  */
 class NotPwnedPassword implements ValidationRule
 {
@@ -53,10 +53,10 @@ class NotPwnedPassword implements ValidationRule
     private bool $skipOnApiError;
 
     /**
-     * コンストラクタ
+     * Constructor
      *
-     * @param  string  $settingKey  設定キー（デフォルト: 'pwned_password_check_enabled'）
-     * @param  bool  $skipOnApiError  APIエラー時にバリデーションをスキップするか（デフォルト: true）
+     * @param  string  $settingKey  Settings key (default: 'pwned_password_check_enabled')
+     * @param  bool  $skipOnApiError  Whether to skip validation on API error (default: true)
      */
     public function __construct(string $settingKey = 'pwned_password_check_enabled', bool $skipOnApiError = true)
     {
@@ -65,23 +65,23 @@ class NotPwnedPassword implements ValidationRule
     }
 
     /**
-     * バリデーション実行
+     * Execute validation
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        // 辞書攻撃対策が無効の場合はスキップ
+        // Skip if dictionary attack protection is disabled
         if (! $this->isPwnedPasswordCheckEnabled($this->settingKey)) {
             return;
         }
 
-        // パスワードが文字列でない場合はスキップ
+        // Skip if password is not a string
         if (! is_string($value)) {
             return;
         }
 
         $safetyCheck = $this->validatePasswordSafety($value, $this->settingKey);
 
-        // APIエラーの場合
+        // On API error
         if ($safetyCheck['pwned_info']['error']) {
             if (! $this->skipOnApiError) {
                 $fail(__('validation.pwned_password_api_error'));
@@ -90,17 +90,17 @@ class NotPwnedPassword implements ValidationRule
             return;
         }
 
-        // パスワードが漏洩している場合
+        // If password is breached
         if (! $safetyCheck['is_safe']) {
             $fail($safetyCheck['message']);
         }
     }
 
     /**
-     * 静的ファクトリーメソッド
+     * Static factory method
      *
-     * @param  string  $settingKey  設定キー
-     * @param  bool  $skipOnApiError  APIエラー時にスキップするか
+     * @param  string  $settingKey  Settings key
+     * @param  bool  $skipOnApiError  Whether to skip on API error
      */
     public static function using(string $settingKey = 'pwned_password_check_enabled', bool $skipOnApiError = true): static
     {

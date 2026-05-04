@@ -54,44 +54,44 @@ return new class extends Migration
             // network-wide backups leave it null.
             $table->unsignedBigInteger('site_id')->nullable()->index();
 
-            // どのプラグインが作成したか
+            // Which plugin created this
             $table->string('plugin_slug', 100)->index();
 
-            // バックアップ種別: files, database, full
+            // Backup type: files, database, full
             $table->string('type', 20)->index();
 
-            // 対象: ["core", "plugins", "database", "themes"] etc.
+            // Target: ["core", "plugins", "database", "themes"] etc.
             $table->json('targets');
 
-            // ファイル情報
+            // File information
             $table->string('file_path', 500);
             $table->string('file_name', 255);
             $table->unsignedBigInteger('file_size');
 
-            // 暗号化情報
+            // Encryption information
             $table->boolean('is_encrypted')->default(false)->index();
             $table->string('encryption_algorithm', 30)->nullable();
 
-            // ハッシュ検証情報
+            // Hash verification information
             $table->string('hash', 128)->nullable();
             $table->string('hash_algorithm', 20)->nullable();
 
-            // 検証ステータス: unchecked, valid, invalid
+            // Verification status: unchecked, valid, invalid
             $table->string('verification_status', 20)->default('unchecked')->index();
             $table->timestamp('last_verified_at')->nullable();
 
-            // リテンション
+            // Retention
             $table->timestamp('retention_until')->nullable()->index();
 
-            // メタデータ: duration, table_count, file_count, db_size etc.
+            // Metadata: duration, table_count, file_count, db_size etc.
             $table->json('metadata')->nullable();
 
-            // ステータス: completed, failed, expired, deleted
+            // Status: completed, failed, expired, deleted
             $table->string('status', 20)->default('completed')->index();
 
             $table->timestamps();
 
-            // 複合インデックス
+            // Composite index
             $table->index(['plugin_slug', 'type', 'created_at']);
             $table->index(['status', 'created_at']);
         });

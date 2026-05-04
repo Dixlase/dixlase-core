@@ -154,10 +154,10 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
-    'lifetime' => env('SESSION_LIFETIME', 120), // 単位: 分
+    'lifetime' => env('SESSION_LIFETIME', 120), // Unit: minutes
 
     'aliases' => [
-        // 他のエイリアス
+        // Other aliases
         'Auth' => Illuminate\Support\Facades\Auth::class,
     ],
 

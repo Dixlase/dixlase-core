@@ -40,7 +40,7 @@ use App\Services\CaptchaFailoverService;
 use Illuminate\Console\Command;
 
 /**
- * CAPTCHAフェイルオーバー管理コマンド
+ * CAPTCHA failover management command
  */
 class CaptchaFailoverCommand extends Command
 {
@@ -50,7 +50,7 @@ class CaptchaFailoverCommand extends Command
                             {--permanent : 永続的な切り替え}
                             {--auto-failover= : 自動フェイルオーバーの有効/無効 (on/off)}';
 
-    protected $description = 'CAPTCHAフェイルオーバー管理';
+    protected $description = 'CAPTCHA Failover Management';
 
     public function handle(): int
     {
@@ -72,7 +72,7 @@ class CaptchaFailoverCommand extends Command
         $this->info(__('admin/command.captcha.status_title'));
         $this->newLine();
 
-        // 基本情報
+        // Basic information
         $this->table(
             [__('admin/command.captcha.setting'), __('admin/command.captcha.value')],
             [
@@ -132,7 +132,7 @@ class CaptchaFailoverCommand extends Command
             return Command::FAILURE;
         }
 
-        // プロバイダーの検証
+        // Provider validation
         $validProviders = CaptchaProvider::getAllProviders();
         if (! in_array($provider, $validProviders)) {
             $this->error(__('admin/command.captcha.invalid_provider', ['provider' => $provider]));
@@ -187,7 +187,7 @@ class CaptchaFailoverCommand extends Command
 
     protected function showHelp(): int
     {
-        // 自動フェイルオーバー設定
+        // Automatic failover settings
         if ($this->option('auto-failover') !== null) {
             $enabled = strtolower($this->option('auto-failover')) === 'on';
             CaptchaFailoverService::setAutoFailoverEnabled($enabled);

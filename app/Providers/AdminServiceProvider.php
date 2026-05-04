@@ -65,20 +65,20 @@ class AdminServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Super Admin権限
+        // Super Admin permission
 
         Gate::define('super_admin', [AdminPolicy::class, 'superAdmin']);
 
-        //  Admin権限
+        //  Admin permission
         Gate::define('admin', [AdminPolicy::class, 'admin']);
 
-        // Editor権限
+        // Editor permission
         Gate::define('editor', [AdminPolicy::class, 'editor']);
 
-        // Author権限
+        // Author permission
         Gate::define('author', [AdminPolicy::class, 'author']);
 
-        // Contributor権限
+        // Contributor permission
         Gate::define('contributor', [AdminPolicy::class, 'contributor']);
     }
 }

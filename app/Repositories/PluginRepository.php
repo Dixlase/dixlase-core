@@ -42,12 +42,12 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * プラグインリポジトリ実装
+ * Plugin repository implementation
  *
- * Plugin Eloquent モデルを使用して有効化されたプラグイン情報を取得する。
- * テーブル存在チェックを内包し、マイグレーション未実行時にも安全に動作する。
+ * Retrieve enabled plugin information using the Plugin Eloquent model
+ * Includes table existence check and operates safely even when migrations have not been run
  */
 class PluginRepository implements PluginRepositoryInterface
 {

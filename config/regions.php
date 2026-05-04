@@ -60,8 +60,8 @@ return [
     | Countries
     |--------------------------------------------------------------------------
     |
-    | 国のリスト（ISO 3166-1 alpha-2コード）
-    | 翻訳キー: common.countries.{code}
+    | List of countries (ISO 3166-1 alpha-2 codes)
+    | Translation key: common.countries.{code}
     |
     */
 
@@ -128,8 +128,8 @@ return [
     | Country Calling Codes
     |--------------------------------------------------------------------------
     |
-    | 国際電話番号（国番号）
-    | 翻訳キー: common.country_codes.{code}
+    | International dialing codes (country codes)
+    | Translation key: common.country_codes.{code}
     |
     */
 
@@ -196,8 +196,8 @@ return [
     | Japanese Prefectures
     |--------------------------------------------------------------------------
     |
-    | 日本の都道府県リスト
-    | 翻訳キー: common.prefectures.{code}
+    | List of Japanese prefectures
+    | Translation key: common.prefectures.{code}
     |
     */
 
