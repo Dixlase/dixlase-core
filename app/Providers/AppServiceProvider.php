@@ -291,13 +291,13 @@ class AppServiceProvider extends ServiceProvider
         // Configure shared components to prioritize views_custom for loading
         View::addNamespace('components', $existingDirs([
             base_path("{$customFilesDir}/resources/views/components"), // Prioritize custom components
-            resource_path('views/components'),       // デフォルトコンポーネント
+            resource_path('views/components'),       // Default components
         ]));
 
         // Common layout namespace
         View::addNamespace('layouts', $existingDirs([
             base_path("{$customFilesDir}/resources/views/layouts"), // Prioritize custom layouts
-            resource_path('views/layouts'),       // デフォルトレイアウト
+            resource_path('views/layouts'),       // Default layouts
         ]));
 
         // Get currently active theme

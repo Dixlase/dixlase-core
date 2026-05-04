@@ -65,7 +65,7 @@ class MediaSettingsSeeder extends Seeder
 
             // ZIP advanced settings
             ['name' => 'zip_max_compression_ratio', 'value' => '100'],  // Maximum compression ratio (ZIP bomb protection)
-            ['name' => 'zip_max_file_count', 'value' => '1000'],        // ZIP内最大ファイル数
+            ['name' => 'zip_max_file_count', 'value' => '1000'],        // Maximum file count inside ZIP
         ];
 
         $primarySiteId = 1;

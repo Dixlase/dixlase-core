@@ -230,7 +230,7 @@ class PluginPermissionsGenerate extends Command
             }
         }
 
-        // _optional と _notes を保持
+        // Preserve _optional and _notes
         if (isset($existingPermissions['_optional'])) {
             $permissions['_optional'] = $existingPermissions['_optional'];
         } else {

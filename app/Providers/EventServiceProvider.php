@@ -59,7 +59,7 @@ class EventServiceProvider extends ServiceProvider
      * @var array<int, class-string>
      */
     protected $subscribe = [
-        // AuditAuthEventSubscriber は自動検出で登録される
+        // AuditAuthEventSubscriber is registered via auto-discovery
     ];
 
     /**

@@ -66,18 +66,18 @@ class MemberVerifiedNotification extends Notification
             ->subject(__('mail.verify-email.member_verification_completed.subject'))
             ->greeting(__('mail.verify-email.member_verification_completed.greeting', ['name' => $notifiable->name]))
             ->line(__('mail.verify-email.member_verification_completed.message'))
-            ->line('') // 空白行
+            ->line('') // blank line
             ->line(__('mail.verify-email.member_verification_completed.member_info'))
             ->line(__('mail.verify-email.member_verification_completed.name').': '.$notifiable->name)
             ->line(__('mail.verify-email.member_verification_completed.email').': '.$notifiable->email)
-            ->line('') // 空白行
+            ->line('') // blank line
             ->line(__('mail.verify-email.member_verification_completed.login_info'))
-            ->line('') // 空白行
+            ->line('') // blank line
             ->line(__('mail.verify-email.member_verification_completed.url_info'))
             ->line(__('mail.verify-email.member_verification_completed.front_url').': '.$frontUrl)
             ->line(__('mail.verify-email.member_verification_completed.admin_url').': '.$adminUrl)
             ->action(__('common.login'), $adminUrl)
-            ->line('') // 空白行
+            ->line('') // blank line
             ->line(__('mail.verify-email.member_verification_completed.thanks'))
             ->salutation(__('mail.verify-email.member_verification_completed.regards')."\n\n{$appName}");
     }

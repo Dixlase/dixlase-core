@@ -40,35 +40,35 @@ use Illuminate\Session\DatabaseSessionHandler;
 class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
 {
     /**
-     * ガード別のセッションテーブル設定
+     * Session table configuration per guard
      *
      * @var array
      */
     protected $guardTables = [];
 
     /**
-     * 現在のガード名
+     * Current guard name
      *
      * @var string|null
      */
     protected $currentGuard = null;
 
     /**
-     * ガード判定ロジック（カスタムリゾルバー）
+     * Guard determination logic (custom resolver)
      *
      * @var array
      */
     protected $guardResolvers = [];
 
     /**
-     * 解決済みの管理 URL セグメント（プロセス内キャッシュ）
+     * Resolved admin URL segment (in-process cache)
      *
      * @var string|null
      */
     protected static $resolvedAdminUrl = null;
 
     /**
-     * ガード別のテーブル設定を登録
+     * Register table configuration per guard
      */
     public function setGuardTable(string $guard, string $table): void
     {
@@ -76,7 +76,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     }
 
     /**
-     * ガード判定ロジックを登録
+     * Register guard determination logic
      */
     public function addGuardResolver(callable $resolver): void
     {
@@ -84,28 +84,28 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     }
 
     /**
-     * 現在のガードに基づいてテーブル名を取得
+     * Get table name based on current guard
      */
     protected function getTable(): string
     {
-        // 現在の認証ガードを取得
+        // Get current authentication guard
         $guard = $this->getCurrentGuard();
 
-        // ガード別のテーブルが設定されている場合はそれを使用
+        // Use guard-specific table if configured
         if ($guard && isset($this->guardTables[$guard])) {
             return $this->guardTables[$guard];
         }
 
-        // デフォルトのテーブル名を返す
+        // Return default table name
         return $this->table;
     }
 
     /**
-     * 現在のガード名を取得
+     * Get current guard name
      */
     protected function getCurrentGuard(): ?string
     {
-        // すでに設定されている場合はそれを返す
+        // Return it if already set
         if ($this->currentGuard !== null) {
             return $this->currentGuard;
         }
@@ -113,7 +113,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
         $path = request()->path();
         $guard = null;
 
-        // カスタムリゾルバーを優先的に実行
+        // Execute custom resolver with priority
         foreach ($this->guardResolvers as $resolver) {
             $guard = $resolver(request());
             if ($guard !== null) {
@@ -123,14 +123,14 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
             }
         }
 
-        // パスベースのガード判定（優先順位が高い）
+        // Path-based guard determination (higher priority)
 
-        // 管理画面の場合は member ガード。
-        // 管理 URL はユーザーが任意にカスタマイズ可能なため、DB から動的に解決した値で照合する。
-        // config('admin.url.admin_url') はデフォルト値 'admin' しか返さないため、
-        // DB の site_settings.admin_url を静的キャッシュ付きで参照する。
-        // これを怠ると admin_url が "admin" 以外のとき session が既定の sessions テーブルに書かれ、
-        // 管理画面リクエスト間で _token が不整合となり 419（CSRF mismatch）が発生する。
+        // Use member guard for admin panel
+        // Since the admin URL can be customized by the user, match against the value dynamically resolved from the database
+        // Since config('admin.url.admin_url') only returns the default value 'admin',
+        // reference site_settings.admin_url from the database with static cache
+        // Without this, when admin_url is not "admin", sessions are written to the default sessions table,
+        // causing _token inconsistency between admin panel requests and resulting in 419 (CSRF mismatch)
         $adminUrl = $this->resolveAdminUrl();
         if (str_starts_with($path, 'admin') || ($adminUrl !== '' && str_starts_with($path, $adminUrl))) {
             $this->currentGuard = 'member';
@@ -138,26 +138,26 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
             return 'member';
         }
 
-        // Mypage の場合は user ガード
+        // For Mypage, use user guard
         if (str_starts_with($path, 'mypage')) {
             $this->currentGuard = 'user';
 
             return 'user';
         }
 
-        // その他のパスはデフォルトテーブル（sessions）を使用
-        // 認証状態チェックは循環参照を引き起こすため削除
+        // Other paths use the default table (sessions)
+        // Removed auth state check as it causes circular reference
         $this->currentGuard = null;
 
         return null;
     }
 
     /**
-     * 管理画面 URL を DB から解決する（プロセス内キャッシュ付き）
+     * Resolve admin panel URL from DB (with in-process cache)
      *
-     * SiteSetting::getValue を使うのが本筋だが、handler は早期ブート段階でも
-     * 呼ばれ得るため Schema::hasTable で守る。DB 未接続時は config デフォルトに
-     * フォールバック。空文字は「管理 URL 判定を無効化」ではなく「config 値を使用」とする。
+     * Using SiteSetting::getValue would be ideal, but the handler can be
+     * called during early boot, so guard with Schema::hasTable. Fall back to config default when DB is not connected
+     * Empty string means 'use config value', not 'disable admin URL detection'
      */
     protected function resolveAdminUrl(): string
     {
@@ -175,14 +175,14 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
                 }
             }
         } catch (\Throwable $e) {
-            // DB 未接続 / インストール前等は config デフォルトへ
+            // Fall back to config default when DB is not connected / before installation
         }
 
         return self::$resolvedAdminUrl = $configDefault;
     }
 
     /**
-     * セッションデータを読み込む
+     * Read session data
      *
      * @param  string  $sessionId
      * @return string|null
@@ -209,7 +209,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     }
 
     /**
-     * クエリビルダーを取得（動的にテーブル名を設定）
+     * Get query builder (dynamically set table name)
      *
      * @return \Illuminate\Database\Query\Builder
      */
@@ -219,7 +219,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     }
 
     /**
-     * セッションデータを書き込む
+     * Write session data
      *
      * @param  string  $sessionId
      * @param  string  $data
@@ -242,7 +242,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     }
 
     /**
-     * デフォルトのペイロードを取得（テーブルに応じてカラム名を調整）
+     * Get default payload (adjust column names based on table)
      *
      * @param  string  $data
      * @return array
@@ -261,7 +261,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
         $table = $this->getTable();
         $guard = $this->getCurrentGuard();
 
-        // ゲスト用テーブルの場合（guardがnull）はuser_id/member_idを含めない
+        // For guest table (guard is null), do not include user_id/member_id
         if ($guard === null) {
             return array_merge($payload, [
                 'ip_address' => $this->ipAddress(),
@@ -269,7 +269,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
             ]);
         }
 
-        // メンバー用テーブルの場合はmember_idを使用
+        // For member table, use member_id
         if ($guard === 'member') {
             return array_merge($payload, [
                 'member_id' => $this->userId(),
@@ -278,7 +278,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
             ]);
         }
 
-        // その他（ユーザープラグインなど）はuser_idを使用
+        // For others (user plugins, etc.), use user_id
         return array_merge($payload, [
             'user_id' => $this->userId(),
             'ip_address' => $this->ipAddress(),
@@ -287,7 +287,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     }
 
     /**
-     * セッションデータを更新
+     * Update session data
      *
      * @param  string  $sessionId
      * @param  array  $payload
@@ -301,7 +301,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     }
 
     /**
-     * セッションデータを挿入
+     * Insert session data
      *
      * @param  string  $sessionId
      * @param  array  $payload
@@ -320,17 +320,17 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     }
 
     /**
-     * テーブルに応じてペイロードをフィルタリング
+     * Filter payload based on table
      */
     protected function filterPayloadForTable(array $payload): array
     {
         $table = $this->getTable();
 
-        // ゲスト用テーブル（sessions）の場合はuser_idを除外
+        // For guest table (sessions), exclude user_id
         if ($table === 'sessions') {
             unset($payload['user_id']);
         }
-        // メンバー用テーブル（members_sessions）の場合はuser_idをmember_idにリネーム
+        // For member table (members_sessions), rename user_id to member_id
         elseif ($table === 'members_sessions' && isset($payload['user_id'])) {
             $payload['member_id'] = $payload['user_id'];
             unset($payload['user_id']);
@@ -340,7 +340,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     }
 
     /**
-     * セッションを削除
+     * Delete the session
      *
      * @param  string  $sessionId
      */
@@ -352,13 +352,13 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     }
 
     /**
-     * 期限切れセッションをガベージコレクション
+     * Garbage collect expired sessions
      *
      * @param  int  $lifetime
      */
     public function gc($lifetime): int
     {
-        // 各ガードのテーブルをクリーンアップ
+        // Clean up each guard's table
         $deleted = 0;
 
         foreach ($this->guardTables as $guard => $table) {
@@ -367,7 +367,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
                 ->delete();
         }
 
-        // デフォルトテーブルもクリーンアップ
+        // Also clean up the default table
         $deleted += $this->connection->table($this->table)
             ->where('last_activity', '<=', $this->currentTime() - $lifetime)
             ->delete();

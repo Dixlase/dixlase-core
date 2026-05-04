@@ -179,7 +179,7 @@ abstract class AbstractSettingRepository
     /**
      * Save multiple setting values in bulk
      *
-     * @param  array<string, mixed>  $settings  設定の配列
+     * @param  array<string, mixed>  $settings  Settings array
      */
     public function setMultiple(array $settings): bool
     {

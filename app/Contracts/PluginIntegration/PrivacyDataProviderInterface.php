@@ -97,7 +97,7 @@ interface PrivacyDataProviderInterface extends PluginCapabilityInterface
      *
      * Example:
      *   ['en' => 'Stores user inquiries and replies.',
-     *    'ja' => 'ユーザーの問い合わせと返信を保管します。']
+     *    'ja' => 'Stores user inquiries and replies.']
      *
      * @return array<string, string>
      */

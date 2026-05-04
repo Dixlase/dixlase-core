@@ -55,7 +55,7 @@ class PluginMigrationServiceProvider extends ServiceProvider
             return new PluginMigrator(
                 new Filesystem(),
                 $app['db'], // ConnectionResolverInterface
-                'plugin_migrations' // マイグレーションテーブル名
+                'plugin_migrations' // Migration table name
             );
         });
     }

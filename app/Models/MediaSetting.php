@@ -43,7 +43,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Media settings model
  *
- * @deprecated 静的メソッドは非推奨です。MediaSettingRepositoryを使用してください。
+ * @deprecated Static methods are deprecated. Use MediaSettingRepository instead.
  */
 class MediaSetting extends Model
 {

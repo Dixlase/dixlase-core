@@ -230,7 +230,7 @@ trait LoginTrait
         // CAPTCHA verification (skip if already verified in identifier check)
         $captchaVerifiedKey = 'captcha_verified_'.$login;
         $captchaVerifiedTime = session()->get($captchaVerifiedKey);
-        $captchaVerified = $captchaVerifiedTime && (time() - $captchaVerifiedTime) < 300; // 5分以内
+        $captchaVerified = $captchaVerifiedTime && (time() - $captchaVerifiedTime) < 300; // Within 5 minutes
 
         if (! $captchaVerified) {
             $captchaAction = $this->getCaptchaAction();
@@ -316,7 +316,7 @@ trait LoginTrait
             session([
                 $this->getSessionPrefix().'.id' => $user->getAuthIdentifier(),
                 $this->getSessionPrefix().'.remember' => $request->boolean('remember'),
-                $this->getSessionPrefix().'.auth_method' => 'password', // パスワード認証を記録
+                $this->getSessionPrefix().'.auth_method' => 'password', // Record password authentication
             ]);
 
             // Get valid authentication method

@@ -39,7 +39,7 @@ use App\Enums\MemberRole;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @deprecated このモデルは廃止されました。
+ * @deprecated This model has been retired.
  *             For the new approach, use the RolePermissionOverride model and PermissionRegistry service
  *             See docs/role-permission-system.md for details
  */
