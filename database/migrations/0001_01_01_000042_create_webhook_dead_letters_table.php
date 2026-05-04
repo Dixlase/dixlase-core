@@ -42,12 +42,12 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * Webhookデッドレターキューテーブル
+     * Webhook dead letter queue table
      *
-     * 目的：
-     * - 最大リトライ回数を超えて失敗したWebhookの詳細記録
-     * - 手動リトライや調査のための情報保持
-     * - 障害分析・通知
+     * Purpose:
+     * - Detailed records of webhooks that failed after exceeding max retry count
+     * - Retain information for manual retry and investigation
+     * - Failure analysis and notification
      */
     public function up(): void
     {
@@ -62,7 +62,7 @@ return new class extends Migration
             $table->json('request_headers')->nullable();
             $table->text('last_error');
             $table->unsignedTinyInteger('total_attempts');
-            $table->json('attempt_log')->nullable(); // 各試行の詳細ログ
+            $table->json('attempt_log')->nullable(); // Detailed log of each attempt
             $table->timestamp('first_attempt_at');
             $table->timestamp('last_attempt_at');
             $table->boolean('notified')->default(false);

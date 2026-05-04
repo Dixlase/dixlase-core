@@ -46,17 +46,17 @@ return new class extends Migration
     {
         Schema::create('plugins', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // 人間が認識する名前
-            $table->string('package_name')->nullable(); // パッケージ名
-            $table->string('directory'); // プラグインディレクトリ名
+            $table->string('name'); // Human-readable name
+            $table->string('package_name')->nullable(); // Package name
+            $table->string('directory'); // Plugin directory name
             $table->string('slug')->unique(); // スラッグ名（一意）
-            $table->string('namespace'); // プラグインの名前空間
-            $table->text('description')->nullable(); // プラグインの説明
-            $table->string('license')->nullable(); // ライセンス
-            $table->string('author')->nullable(); // 作者
-            $table->string('email')->nullable(); // 作者のメール
-            $table->string('url')->nullable(); // 作者のウェブサイト
-            $table->string('version'); // バージョン
+            $table->string('namespace'); // Plugin namespace
+            $table->text('description')->nullable(); // Plugin description
+            $table->string('license')->nullable(); // License
+            $table->string('author')->nullable(); // Author
+            $table->string('email')->nullable(); // Author email
+            $table->string('url')->nullable(); // Author website
+            $table->string('version'); // Version
             $table->unsignedBigInteger('source_id')->nullable()->index(); // Extension source reference
             $table->string('source_repo')->nullable(); // Repository name at source
             // Update detection state
@@ -68,15 +68,15 @@ return new class extends Migration
             // Update failure tracking
             $table->timestamp('update_failed_at')->nullable(); // Last update attempt failure timestamp
             $table->text('update_failure_reason')->nullable(); // Last update failure reason
-            // サプライチェーン攻撃防御用カラム
-            $table->string('signing_key_id')->nullable()->index(); // 初回インストール時の署名鍵ID
-            $table->string('author_id')->nullable()->index(); // plugin.json の author_id
+            // Columns for supply chain attack protection
+            $table->string('signing_key_id')->nullable()->index(); // Signing key ID at initial installation
+            $table->string('author_id')->nullable()->index(); // author_id from plugin.json
             $table->string('authority_key_id')->nullable(); // Authority 公開鍵 ID（配信元の Ed25519 鍵を識別）
-            $table->string('installed_from_url')->nullable(); // インストール元URL
+            $table->string('installed_from_url')->nullable(); // Installation source URL
             $table->string('installation_method')->nullable(); // upload/marketplace/cli/github
-            $table->timestamp('installed_at')->nullable(); // インストール日時
-            $table->timestamp('enabled_at')->nullable(); // 有効化日時
-            $table->timestamps(); // Laravelの `created_at` & `updated_at`
+            $table->timestamp('installed_at')->nullable(); // Installation datetime
+            $table->timestamp('enabled_at')->nullable(); // Activation datetime
+            $table->timestamps(); // Laravel's `created_at` & `updated_at`
         });
     }
 

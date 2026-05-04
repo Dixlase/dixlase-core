@@ -43,19 +43,19 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
- * アカウント管理の共通処理
- * メンバーとユーザーの両方で使用可能
+ * Common account management logic
+ * Available for both members and users
  */
 trait ManagesAccountTrait
 {
     /**
-     * 認証メール送信処理（共通）
+     * Verification email sending process (common)
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model  メンバーまたはユーザーモデル
-     * @param  string  $successMessageKey  成功メッセージの翻訳キー
-     * @param  string  $failedMessageKey  失敗メッセージの翻訳キー
-     * @param  string  $redirectRouteName  リダイレクト先のルート名
-     * @param  string  $mailServerNotTestedKey  メールサーバー未テストメッセージの翻訳キー
+     * @param  \Illuminate\Database\Eloquent\Model  $model  Member or user model
+     * @param  string  $successMessageKey  Translation key for success message
+     * @param  string  $failedMessageKey  Translation key for failure message
+     * @param  string  $redirectRouteName  Redirect destination route name
+     * @param  string  $mailServerNotTestedKey  Translation key for mail server untested message
      * @return \Illuminate\Http\JsonResponse
      */
     protected function sendVerificationEmailToModel(
@@ -76,7 +76,7 @@ trait ManagesAccountTrait
             $model->email_verified_at = null;
             $model->save();
 
-            // モデルの種類に応じて適切なセッションテーブルとカラムを使用
+            // Use appropriate session table and column based on model type
             $isMember = $model instanceof \App\Models\Member;
             $sessionTable = $isMember ? 'members_sessions' : 'users_sessions';
             $idColumn = $isMember ? 'member_id' : 'user_id';
@@ -109,11 +109,11 @@ trait ManagesAccountTrait
     }
 
     /**
-     * 強制ログアウト処理（共通）
+     * Force logout process (common)
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model  メンバーまたはユーザーモデル
-     * @param  string  $successMessageKey  成功メッセージの翻訳キー
-     * @param  string  $redirectRouteName  リダイレクト先のルート名
+     * @param  \Illuminate\Database\Eloquent\Model  $model  Member or user model
+     * @param  string  $successMessageKey  Translation key for success message
+     * @param  string  $redirectRouteName  Redirect destination route name
      * @return \Illuminate\Http\RedirectResponse
      */
     protected function forceLogoutModel(
@@ -121,7 +121,7 @@ trait ManagesAccountTrait
         string $successMessageKey,
         string $redirectRouteName
     ) {
-        // モデルの種類に応じて適切なセッションテーブルとカラムを使用
+        // Use appropriate session table and column based on model type
         $isMember = $model instanceof \App\Models\Member;
         $sessionTable = $isMember ? 'members_sessions' : 'users_sessions';
         $idColumn = $isMember ? 'member_id' : 'user_id';
@@ -137,14 +137,14 @@ trait ManagesAccountTrait
     }
 
     /**
-     * Two-FAロックアウト解除処理（共通）
+     * Two-FA lockout release process (common)
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model  メンバーまたはユーザーモデル
-     * @param  string  $twoFaAttemptModelClass  2FA試行モデルのクラス名
-     * @param  string  $loginAttemptModelClass  ログイン試行モデルのクラス名
-     * @param  string  $modelIdColumn  モデルIDカラム名（'member_id' または 'user_id'）
-     * @param  string  $successMessageKey  成功メッセージの翻訳キー
-     * @param  string  $redirectRouteName  リダイレクト先のルート名
+     * @param  \Illuminate\Database\Eloquent\Model  $model  Member or user model
+     * @param  string  $twoFaAttemptModelClass  2FA attempt model class name
+     * @param  string  $loginAttemptModelClass  Login attempt model class name
+     * @param  string  $modelIdColumn  Model ID column name ('member_id' or 'user_id')
+     * @param  string  $successMessageKey  Translation key for success message
+     * @param  string  $redirectRouteName  Redirect destination route name
      * @return \Illuminate\Http\RedirectResponse
      */
     protected function unlockTwoFaForModel(
@@ -156,7 +156,7 @@ trait ManagesAccountTrait
         string $redirectRouteName
     ) {
         $twoFaAttemptModelClass::where($modelIdColumn, $model->id)->delete();
-        // 失敗した試行記録のみを削除（成功した記録は統計用に保持）
+        // Delete only failed attempt records (keep successful records for statistics)
         $loginAttemptModelClass::where('identifier', $model->email)
             ->where('successful', false)
             ->delete();
@@ -166,11 +166,11 @@ trait ManagesAccountTrait
     }
 
     /**
-     * メール認証状態を処理（共通）
+     * Process email verification status (common)
      *
-     * @param  array  &$validated  バリデーション済みデータ（参照渡し）
-     * @param  Request  $request  リクエスト
-     * @param  \Illuminate\Database\Eloquent\Model  $model  モデル
+     * @param  array  &$validated  Validated data (passed by reference)
+     * @param  Request  $request  Request
+     * @param  \Illuminate\Database\Eloquent\Model  $model  Model
      */
     protected function processEmailVerificationStatus(array &$validated, Request $request, $model): void
     {
@@ -193,16 +193,16 @@ trait ManagesAccountTrait
     }
 
     /**
-     * メールアドレス変更時の認証メール送信判定と送信（共通）
+     * Determine and send verification email on email address change (common)
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model  モデル
-     * @param  Request  $request  リクエスト
-     * @param  bool  $wasVerified  変更前の認証状態
-     * @param  string  $successMessageKey  成功メッセージの翻訳キー
-     * @param  string  $failedMessageKey  失敗メッセージの翻訳キー
-     * @param  string  $defaultMessageKey  デフォルトメッセージの翻訳キー
-     * @param  string  $context  通知コンテキスト（'email_change'など）
-     * @return string メッセージの翻訳キー
+     * @param  \Illuminate\Database\Eloquent\Model  $model  Model
+     * @param  Request  $request  Request
+     * @param  bool  $wasVerified  Verification status before change
+     * @param  string  $successMessageKey  Translation key for success message
+     * @param  string  $failedMessageKey  Translation key for failure message
+     * @param  string  $defaultMessageKey  Translation key for default message
+     * @param  string  $context  Notification context (e.g. 'email_change')
+     * @return string Translation key for message
      */
     protected function sendEmailVerificationIfNeeded(
         $model,
@@ -236,8 +236,8 @@ trait ManagesAccountTrait
     }
 
     /**
-     * モデルのルートパラメータ名を取得
-     * 継承先で実装する
+     * Get the route parameter name for the model
+     * Implement in subclass
      */
     abstract protected function getModelRouteParameterName(): string;
 }

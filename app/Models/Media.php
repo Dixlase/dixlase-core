@@ -44,7 +44,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * メディアモデル
+ * Media model
  */
 class Media extends Model
 {
@@ -67,7 +67,7 @@ class Media extends Model
     ];
 
     /**
-     * フォーマット済みファイルサイズを返すアクセサ
+     * Accessor that returns formatted file size
      */
     protected function formattedFileSize(): Attribute
     {
@@ -91,7 +91,7 @@ class Media extends Model
     }
 
     /**
-     * フォーマット済み画像寸法を返すアクセサ
+     * Accessor that returns formatted image dimensions
      */
     protected function formattedDimensions(): Attribute
     {

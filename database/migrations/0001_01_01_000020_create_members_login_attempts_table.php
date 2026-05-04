@@ -44,8 +44,8 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * ログイン試行テーブル
-     * β版での行動分析機能の基盤として使用
+     * Login attempts table
+     * Used as foundation for behavioral analysis feature in beta version
      */
     public function up(): void
     {
@@ -59,59 +59,59 @@ return new class extends Migration
             $table->timestamps();
 
             // ========================================
-            // 行動分析用カラム（β版 行動分析の基盤）
+            // Columns for behavioral analysis (foundation for beta behavioral analysis)
             // ========================================
 
-            // ログイン時刻の時間帯（0-23）- 通常のログイン時間帯を学習
+            // Login hour of day (0-23) - learn typical login hours
             $table->unsignedTinyInteger('login_hour')->nullable();
 
-            // ログイン曜日（0=日曜, 6=土曜）- 通常のログイン曜日を学習
+            // Login day of week (0=Sunday, 6=Saturday) - learn typical login days
             $table->unsignedTinyInteger('login_day_of_week')->nullable();
 
-            // デバイスフィンガープリント（ブラウザ情報のハッシュ）
+            // Device fingerprint (hash of browser information)
             $table->string('device_fingerprint', 64)->nullable()->index();
 
-            // 国コード（GeoIP）- 通常のログイン地域を学習
+            // Country code (GeoIP) - learn typical login regions
             $table->string('country_code', 2)->nullable()->index();
 
-            // 前回ログインからの経過時間（秒）- 異常な間隔を検知
+            // Time elapsed since last login (seconds) - detect abnormal intervals
             $table->unsignedInteger('seconds_since_last_login')->nullable();
 
-            // ログイン失敗理由（詳細分析用）
+            // Login failure reason (for detailed analysis)
             // invalid_password, account_locked, two_fa_failed, etc.
             $table->string('failure_reason', 50)->nullable();
 
-            // 2FA使用フラグ
+            // 2FA usage flag
             $table->boolean('used_two_fa')->default(false);
 
-            // 2FA方式（email, passkey, recovery_code）
+            // 2FA method (email, passkey, recovery_code)
             $table->string('two_fa_method', 20)->nullable();
 
-            // 信頼済みデバイスからのログインか
+            // Is login from trusted device
             $table->boolean('from_trusted_device')->default(false);
 
-            // リスクスコア（0-100）- β版で算出予定
+            // Risk score (0-100) - to be calculated in beta version
             $table->unsignedTinyInteger('risk_score')->nullable();
 
-            // 追加コンテキスト（JSON）- 将来の拡張用
+            // Additional context (JSON) - for future extension
             $table->json('context')->nullable();
 
-            // メンバーID（識別子から解決、不明な場合はnull）
+            // Member ID (resolved from identifier, null if unknown)
             $table->unsignedBigInteger('member_id')->nullable()->index();
 
-            // Bot/AIスクレイパー疑いフラグ
+            // Suspected bot/AI scraper flag
             $table->boolean('is_bot_suspected')->default(false)->index();
 
-            // インデックスを追加してクエリ性能を向上（カスタム名で短縮）
+            // Add indexes to improve query performance (shortened with custom names)
             $table->index(['identifier', 'attempted_at'], 'idx_login_identifier_time');
             $table->index(['ip_address', 'attempted_at'], 'idx_login_ip_time');
             $table->index(['identifier', 'ip_address', 'attempted_at'], 'idx_login_composite');
 
-            // 行動分析用インデックス
+            // Index for behavioral analysis
             $table->index(['identifier', 'successful', 'attempted_at'], 'idx_login_behavior');
             $table->index(['identifier', 'login_hour'], 'idx_login_hour_pattern');
 
-            // メンバー・Bot検知用インデックス
+            // Index for member/bot detection
             $table->index(['member_id', 'attempted_at'], 'idx_login_member_time');
             $table->index(['is_bot_suspected', 'attempted_at'], 'idx_login_bot_time');
         });

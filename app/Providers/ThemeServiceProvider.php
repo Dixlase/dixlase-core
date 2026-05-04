@@ -57,7 +57,7 @@ class ThemeServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // .envファイルが存在しない場合やデータベース接続ができない場合はスキップ
+        // Skip if .env file does not exist or database connection fails
         if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
             return;
         }
@@ -118,7 +118,7 @@ class ThemeServiceProvider extends ServiceProvider
                     ]);
                 }
 
-                // テーマのServiceProviderを登録
+                // Register theme ServiceProvider
                 try {
                     $this->registerThemeServiceProviders($activeTheme, $themePath);
                 } catch (\Exception $e) {
@@ -143,8 +143,8 @@ class ThemeServiceProvider extends ServiceProvider
     }
 
     /**
-     * テーマのServiceProviderを登録
-     * theme.jsonにprovidersが定義されていれば登録する
+     * Register theme ServiceProvider
+     * Register if providers are defined in theme.json
      */
     protected function registerThemeServiceProviders(Theme $theme, string $themePath): void
     {
@@ -168,7 +168,7 @@ class ThemeServiceProvider extends ServiceProvider
     }
 
     /**
-     * テーマの設定ファイルを読み込む
+     * Load theme settings file
      */
     protected function loadThemeConfigs(Theme $theme, string $themePath): void
     {
@@ -188,7 +188,7 @@ class ThemeServiceProvider extends ServiceProvider
             }
         }
 
-        // config/admin/navigation.php が存在すればナビゲーションにマージ
+        // Merge into navigation if config/admin/navigation.php exists
         $navConfigFile = "{$configPath}/admin/navigation.php";
         if (File::exists($navConfigFile)) {
             app(AdminNavigationManagerInterface::class)->mergeNavigationFile($navConfigFile);

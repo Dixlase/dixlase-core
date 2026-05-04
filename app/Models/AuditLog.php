@@ -42,9 +42,9 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Str;
 
 /**
- * 監査ログモデル
+ * Audit log model
  *
- * 誰が / いつ / どこから / 何に対して / 何をしたか を記録
+ * Records who / when / from where / on what / did what
  */
 class AuditLog extends Model
 {
@@ -92,7 +92,7 @@ class AuditLog extends Model
     ];
 
     // ========================================
-    // ハッシュチェーン検証ステータス定数
+    // Hash chain verification status constants
     // ========================================
     public const VERIFICATION_VALID = 'valid';
 
@@ -100,14 +100,14 @@ class AuditLog extends Model
 
     public const VERIFICATION_SKIPPED = 'skipped';
 
-    // ハッシュアルゴリズム
+    // Hash algorithm
     public const HASH_ALGORITHM = 'sha256';
 
-    // 最初のレコードの previous_hash
+    // previous_hash for the first record
     public const GENESIS_HASH = 'genesis';
 
     // ========================================
-    // Severity（重要度）定数
+    // Severity constants
     // ========================================
     public const SEVERITY_DEBUG = 'debug';
 
@@ -126,7 +126,7 @@ class AuditLog extends Model
     public const SEVERITY_EMERGENCY = 'emergency';
 
     // ========================================
-    // Outcome（結果）定数
+    // Outcome constants
     // ========================================
     public const OUTCOME_SUCCESS = 'success';
 
@@ -139,7 +139,7 @@ class AuditLog extends Model
     public const OUTCOME_UNKNOWN = 'unknown';
 
     // ========================================
-    // Category（カテゴリ）定数
+    // Category constants
     // ========================================
     public const CATEGORY_AUTH = 'auth';
 
@@ -162,7 +162,7 @@ class AuditLog extends Model
     public const CATEGORY_AI = 'ai';
 
     // ========================================
-    // Action（アクション）定数 - 認証関連
+    // Action constants - Authentication related
     // ========================================
     public const ACTION_LOGIN = 'login';
 
@@ -187,7 +187,7 @@ class AuditLog extends Model
     public const ACTION_EMAIL_CHANGED = 'email_changed';
 
     // ========================================
-    // Action（アクション）定数 - Two-FA関連
+    // Action constants - Two-FA related
     // ========================================
     public const ACTION_TWO_FA_ENABLED = 'two_fa_enabled';
 
@@ -206,7 +206,7 @@ class AuditLog extends Model
     public const ACTION_PASSKEY_REVOKED = 'passkey_revoked';
 
     // ========================================
-    // Action（アクション）定数 - デバイス関連
+    // Action constants - Device related
     // ========================================
     public const ACTION_DEVICE_TRUSTED = 'device_trusted';
 
@@ -215,7 +215,7 @@ class AuditLog extends Model
     public const ACTION_DEVICE_REMOVED = 'device_removed';
 
     // ========================================
-    // Action（アクション）定数 - セキュリティ関連
+    // Action constants - Security related
     // ========================================
     public const ACTION_IP_BLOCKED = 'ip_blocked';
 
@@ -230,7 +230,7 @@ class AuditLog extends Model
     public const ACTION_STEP_UP_AUTH_COMPLETED = 'step_up_auth_completed';
 
     // ========================================
-    // Action（アクション）定数 - セッション関連
+    // Action constants - Session related
     // ========================================
     public const ACTION_SESSION_CREATED = 'session_created';
 
@@ -239,7 +239,7 @@ class AuditLog extends Model
     public const ACTION_FORCED_LOGOUT = 'forced_logout';
 
     // ========================================
-    // Action（アクション）定数 - 拡張機能関連
+    // Action constants - Extension related
     // ========================================
     public const ACTION_PLUGIN_INSTALLED = 'plugin_installed';
 
@@ -251,7 +251,7 @@ class AuditLog extends Model
 
     public const ACTION_PLUGIN_UPDATED = 'plugin_updated';
 
-    // サプライチェーン攻撃防御用のアクション
+    // Actions for supply chain attack defense
     public const ACTION_PLUGIN_SIGNING_KEY_CHANGED = 'plugin_signing_key_changed';
 
     public const ACTION_PLUGIN_AUTHOR_ID_CHANGED = 'plugin_author_id_changed';
@@ -271,7 +271,7 @@ class AuditLog extends Model
     public const ACTION_THEME_UPDATED = 'theme_updated';
 
     // ========================================
-    // Action（アクション）定数 - バックアップ関連
+    // Action constants - Backup related
     // ========================================
     public const ACTION_BACKUP_CREATED = 'backup_created';
 
@@ -286,7 +286,7 @@ class AuditLog extends Model
     public const ACTION_BACKUP_ROLLED_BACK = 'backup_rolled_back';
 
     // ========================================
-    // Action（アクション）定数 - 設定関連
+    // Action constants - settings related
     // ========================================
     public const ACTION_SETTINGS_UPDATED = 'settings_updated';
 
@@ -299,7 +299,7 @@ class AuditLog extends Model
     public const ACTION_ROLE_CHANGED = 'role_changed';
 
     // ========================================
-    // Action（アクション）定数 - AI操作関連
+    // Action constants - AI operation related
     // ========================================
     public const ACTION_AI_CONTENT_GENERATED = 'ai_content_generated';
 
@@ -310,7 +310,7 @@ class AuditLog extends Model
     public const ACTION_AI_BULK_OPERATION = 'ai_bulk_operation';
 
     // ========================================
-    // Action（アクション）定数 - AI/Bot攻撃検知
+    // Action constants - AI/Bot attack detection
     // ========================================
     public const ACTION_BOT_LOGIN_DETECTED = 'bot_login_detected';
 
@@ -319,7 +319,7 @@ class AuditLog extends Model
     public const ACTION_AI_RATE_LIMIT_HIT = 'ai_rate_limit_hit';
 
     // ========================================
-    // Actor Source（操作元チャネル）定数
+    // Actor Source constants
     // ========================================
     public const ACTOR_SOURCE_WEB = 'web';
 
@@ -336,11 +336,11 @@ class AuditLog extends Model
     public const ACTOR_SOURCE_QUEUE = 'queue';
 
     // ========================================
-    // リレーション
+    // Relations
     // ========================================
 
     /**
-     * 行為者（Polymorphic）
+     * Actor (Polymorphic)
      */
     public function actor(): MorphTo
     {
@@ -348,7 +348,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 対象（Polymorphic）
+     * Target (Polymorphic)
      */
     public function target(): MorphTo
     {
@@ -368,23 +368,23 @@ class AuditLog extends Model
     }
 
     // ========================================
-    // 統一ログAPI
+    // Unified Log API
     // ========================================
 
     /**
-     * 監査ログを記録（メインAPI）
+     * Record audit log (Main API)
      *
-     * @param  array  $data  ログデータ
+     * @param  array  $data  Log data
      */
     public static function log(array $data): self
     {
-        // リクエストコンテキストを自動取得
+        // Auto-retrieve request context
         $request = request();
 
-        // request_idがなければ生成
+        // Generate request_id if not present
         $requestId = $data['request_id'] ?? $request->header('X-Request-ID') ?? (string) Str::uuid();
 
-        // actorの処理
+        // Process actor
         $actorType = null;
         $actorId = null;
         $actorName = $data['actor_name'] ?? null;
@@ -395,7 +395,7 @@ class AuditLog extends Model
             $actorName = $actorName ?? $data['actor']->display_name ?? $data['actor']->account_name ?? $data['actor']->name ?? $data['actor']->email ?? null;
         }
 
-        // targetの処理
+        // Process target
         $targetType = null;
         $targetId = null;
         $targetLabel = $data['target_label'] ?? null;
@@ -433,7 +433,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 認証ログを記録
+     * Record authentication log
      */
     public static function logAuth(string $action, array $data = []): self
     {
@@ -444,7 +444,7 @@ class AuditLog extends Model
     }
 
     /**
-     * セキュリティログを記録
+     * Record security log
      */
     public static function logSecurity(string $action, array $data = []): self
     {
@@ -456,7 +456,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 拡張機能ログを記録
+     * Record extension log
      */
     public static function logExtension(string $action, array $data = []): self
     {
@@ -468,7 +468,7 @@ class AuditLog extends Model
     }
 
     /**
-     * アカウントログを記録
+     * Record account log
      */
     public static function logAccount(string $action, array $data = []): self
     {
@@ -479,7 +479,7 @@ class AuditLog extends Model
     }
 
     /**
-     * システムログを記録
+     * Record system log
      */
     public static function logSystem(string $action, array $data = []): self
     {
@@ -490,11 +490,11 @@ class AuditLog extends Model
     }
 
     // ========================================
-    // スコープ
+    // Scopes
     // ========================================
 
     /**
-     * 行為者でフィルタ
+     * Filter by actor
      */
     public function scopeForActor($query, Model $actor)
     {
@@ -503,7 +503,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 対象でフィルタ
+     * Filter by target
      */
     public function scopeForTarget($query, Model $target)
     {
@@ -512,7 +512,7 @@ class AuditLog extends Model
     }
 
     /**
-     * カテゴリでフィルタ
+     * Filter by category
      */
     public function scopeInCategory($query, string $category)
     {
@@ -520,7 +520,7 @@ class AuditLog extends Model
     }
 
     /**
-     * アクションでフィルタ
+     * Filter by action
      */
     public function scopeWithAction($query, string $action)
     {
@@ -528,7 +528,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 重要度でフィルタ
+     * Filter by severity
      */
     public function scopeWithSeverity($query, string $severity)
     {
@@ -536,7 +536,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 結果でフィルタ
+     * Filter by result
      */
     public function scopeWithOutcome($query, string $outcome)
     {
@@ -544,7 +544,7 @@ class AuditLog extends Model
     }
 
     /**
-     * プラグインでフィルタ
+     * Filter by plugin
      */
     public function scopeForPlugin($query, string $pluginName)
     {
@@ -552,7 +552,7 @@ class AuditLog extends Model
     }
 
     /**
-     * リクエストIDでフィルタ（1リクエスト内の関連ログ取得）
+     * Filter by request ID (get related logs within a single request)
      */
     public function scopeForRequest($query, string $requestId)
     {
@@ -560,7 +560,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 期間でフィルタ
+     * Filter by period
      */
     public function scopeOccurredBetween($query, $start, $end)
     {
@@ -568,7 +568,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 最近のログを取得
+     * Get recent logs
      */
     public function scopeRecent($query, int $hours = 24)
     {
@@ -576,7 +576,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 警告以上の重要度
+     * Severity of warning or higher
      */
     public function scopeWarningOrAbove($query)
     {
@@ -590,7 +590,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 失敗したイベント
+     * Failed events
      */
     public function scopeFailed($query)
     {
@@ -629,11 +629,11 @@ class AuditLog extends Model
     }
 
     // ========================================
-    // ヘルパーメソッド
+    // Helper methods
     // ========================================
 
     /**
-     * アクションからデフォルトのカテゴリを推測
+     * Infer default category from action
      */
     public static function getCategoryForAction(string $action): string
     {
@@ -713,7 +713,7 @@ class AuditLog extends Model
     }
 
     /**
-     * アクションからデフォルトの重要度を取得
+     * Get default severity from action
      */
     public static function getDefaultSeverity(string $action): string
     {
@@ -759,7 +759,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 重要度のCSSクラスを取得
+     * Get CSS class for severity
      */
     public function getSeverityColorClass(): string
     {
@@ -774,7 +774,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 結果のCSSクラスを取得
+     * Get CSS class for result
      */
     public function getOutcomeColorClass(): string
     {
@@ -788,52 +788,52 @@ class AuditLog extends Model
     }
 
     // ========================================
-    // 操作リスクレベル判定（β版 強制再認証の基盤）
+    // Operation risk level determination (beta version, foundation for forced re-authentication)
     // ========================================
 
     /**
-     * アクションからリスクレベルを取得
+     * Get risk level from action
      */
     public static function getRiskLevelForAction(string $action): OperationRiskLevel
     {
-        // Critical: システム設定・セキュリティ設定・APIキー操作
+        // Critical: system settings, security settings, API key operations
         $criticalActions = [
-            self::ACTION_SETTINGS_UPDATED,      // 設定変更（セキュリティ設定含む）
-            self::ACTION_IP_BLOCKED,            // IPブロック
-            self::ACTION_IP_ALLOWED,            // IP許可
-            self::ACTION_LOCKOUT_RELEASED,      // ロックアウト解除
-            self::ACTION_PLUGIN_INSTALLED,      // プラグインインストール
-            self::ACTION_PLUGIN_UNINSTALLED,    // プラグインアンインストール
-            self::ACTION_THEME_INSTALLED,       // テーマインストール
+            self::ACTION_SETTINGS_UPDATED,      // Settings changes (including security settings)
+            self::ACTION_IP_BLOCKED,            // IP block
+            self::ACTION_IP_ALLOWED,            // IP allow
+            self::ACTION_LOCKOUT_RELEASED,      // Unlock lockout
+            self::ACTION_PLUGIN_INSTALLED,      // Plugin installation
+            self::ACTION_PLUGIN_UNINSTALLED,    // Plugin uninstallation
+            self::ACTION_THEME_INSTALLED,       // Theme installation
             self::ACTION_THEME_UNINSTALLED,     // テーマアンインストール
         ];
 
-        // High: 削除・重要設定変更・AI一括操作
+        // High: Deletion, critical settings changes, AI batch operations
         $highActions = [
-            self::ACTION_MEMBER_DELETED,        // メンバー削除
-            self::ACTION_FORCED_LOGOUT,         // 強制ログアウト
-            self::ACTION_TWO_FA_DISABLED,          // 2FA無効化
-            self::ACTION_DEVICE_BLOCKED,        // デバイスブロック
-            self::ACTION_DEVICE_REMOVED,        // デバイス削除
-            self::ACTION_PASSKEY_REVOKED,       // Passkey無効化
-            self::ACTION_PLUGIN_DISABLED,       // プラグイン無効化
-            self::ACTION_THEME_DISABLED,        // テーマ無効化
-            self::ACTION_ROLE_CHANGED,          // 権限変更
+            self::ACTION_MEMBER_DELETED,        // Member deletion
+            self::ACTION_FORCED_LOGOUT,         // Force logout
+            self::ACTION_TWO_FA_DISABLED,          // 2FA disabled
+            self::ACTION_DEVICE_BLOCKED,        // Device blocked
+            self::ACTION_DEVICE_REMOVED,        // Device deleted
+            self::ACTION_PASSKEY_REVOKED,       // Passkey disabled
+            self::ACTION_PLUGIN_DISABLED,       // Plugin disabled
+            self::ACTION_THEME_DISABLED,        // Theme disabled
+            self::ACTION_ROLE_CHANGED,          // Permission changed
             self::ACTION_AI_BULK_OPERATION,     // AI一括操作
         ];
 
-        // Medium: 編集・更新
+        // Medium: Edit, update
         $mediumActions = [
-            self::ACTION_PASSWORD_CHANGED,      // パスワード変更
-            self::ACTION_EMAIL_CHANGED,         // メールアドレス変更
-            self::ACTION_TWO_FA_ENABLED,           // 2FA有効化
-            self::ACTION_DEVICE_TRUSTED,        // デバイス信頼
-            self::ACTION_PASSKEY_REGISTERED,    // Passkey登録
-            self::ACTION_MEMBER_CREATED,        // メンバー作成
-            self::ACTION_MEMBER_UPDATED,        // メンバー更新
-            self::ACTION_PLUGIN_ENABLED,        // プラグイン有効化
-            self::ACTION_PLUGIN_UPDATED,        // プラグイン更新
-            self::ACTION_THEME_ENABLED,         // テーマ有効化
+            self::ACTION_PASSWORD_CHANGED,      // Password changed
+            self::ACTION_EMAIL_CHANGED,         // Email address changed
+            self::ACTION_TWO_FA_ENABLED,           // 2FA enabled
+            self::ACTION_DEVICE_TRUSTED,        // Device trusted
+            self::ACTION_PASSKEY_REGISTERED,    // Passkey registered
+            self::ACTION_MEMBER_CREATED,        // Member created
+            self::ACTION_MEMBER_UPDATED,        // Member update
+            self::ACTION_PLUGIN_ENABLED,        // Plugin activation
+            self::ACTION_PLUGIN_UPDATED,        // Plugin update
+            self::ACTION_THEME_ENABLED,         // Theme activation
             self::ACTION_THEME_UPDATED,         // テーマ更新
         ];
 
@@ -851,7 +851,7 @@ class AuditLog extends Model
     }
 
     /**
-     * このログのリスクレベルを取得
+     * Get the risk level of this log
      */
     public function getRiskLevel(): OperationRiskLevel
     {
@@ -859,7 +859,7 @@ class AuditLog extends Model
     }
 
     /**
-     * このログが危険な操作かどうか
+     * Whether this log is a dangerous operation
      */
     public function isDangerousOperation(): bool
     {
@@ -867,7 +867,7 @@ class AuditLog extends Model
     }
 
     /**
-     * このログがクリティカルな操作かどうか
+     * Whether this log is a critical operation
      */
     public function isCriticalOperation(): bool
     {
@@ -875,7 +875,7 @@ class AuditLog extends Model
     }
 
     /**
-     * このログが再認証を必要とする操作かどうか（β版で実装予定）
+     * Whether this log requires re-authentication (planned for beta)
      */
     public function requiresStepUpAuth(): bool
     {
@@ -883,7 +883,7 @@ class AuditLog extends Model
     }
 
     /**
-     * リスクレベルのCSSクラスを取得
+     * Get CSS class for risk level
      */
     public function getRiskLevelColorClass(): string
     {
@@ -891,7 +891,7 @@ class AuditLog extends Model
     }
 
     /**
-     * リスクレベルのバッジクラスを取得
+     * Get badge class for risk level
      */
     public function getRiskLevelBadgeClass(): string
     {
@@ -899,11 +899,11 @@ class AuditLog extends Model
     }
 
     // ========================================
-    // スコープ（リスクレベル用）
+    // Scope (for risk level)
     // ========================================
 
     /**
-     * 危険な操作のみ取得
+     * Get only dangerous operations
      */
     public function scopeDangerousOperations($query)
     {
@@ -914,7 +914,7 @@ class AuditLog extends Model
             }
         }
 
-        // 定義済みアクションから危険なものを抽出
+        // Extract dangerous operations from defined actions
         $allActions = [
             self::ACTION_LOGIN, self::ACTION_LOGOUT, self::ACTION_LOGIN_FAILED,
             self::ACTION_NEW_DEVICE_LOGIN, self::ACTION_PASSWORD_CHANGED,
@@ -947,7 +947,7 @@ class AuditLog extends Model
     }
 
     /**
-     * クリティカルな操作のみ取得
+     * Get only critical operations
      */
     public function scopeCriticalOperations($query)
     {
@@ -962,7 +962,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 指定リスクレベル以上の操作を取得
+     * Get operations above specified risk level
      */
     public function scopeWithMinRiskLevel($query, OperationRiskLevel $minLevel)
     {
@@ -998,20 +998,20 @@ class AuditLog extends Model
     }
 
     // ========================================
-    // ハッシュチェーン機能
+    // Hash chain functionality
     // ========================================
 
     /**
-     * このレコードのハッシュを計算
+     * Calculate hash of this record
      *
-     * @param  string|null  $previousHash  前レコードのハッシュ
-     * @return string SHA-256ハッシュ（64文字）
+     * @param  string|null  $previousHash  Hash of previous record
+     * @return string SHA-256 hash (64 characters)
      */
     public function calculateHash(?string $previousHash = null): string
     {
         $previousHash = $previousHash ?? $this->previous_hash ?? self::GENESIS_HASH;
 
-        // ハッシュ計算対象のデータを構築
+        // Build data for hash calculation
         $data = implode('|', [
             $this->id,
             $this->occurred_at?->toIso8601String() ?? '',
@@ -1032,33 +1032,33 @@ class AuditLog extends Model
     }
 
     /**
-     * ハッシュチェーンを設定してレコードを保存
+     * Set up hash chain and save record
      */
     public function saveWithHashChain(): bool
     {
-        // 前のレコードを取得
+        // Get previous record
         $previousLog = self::where('id', '<', $this->id)
             ->whereNotNull('record_hash')
             ->orderBy('id', 'desc')
             ->first();
 
-        // previous_hashを設定
+        // Set previous_hash
         $this->previous_hash = $previousLog?->record_hash ?? self::GENESIS_HASH;
 
-        // chain_sequenceを設定
+        // Set chain_sequence
         $this->chain_sequence = $previousLog ? ($previousLog->chain_sequence + 1) : 1;
 
-        // record_hashを計算
+        // Calculate record_hash
         $this->record_hash = $this->calculateHash($this->previous_hash);
 
-        // hash_algorithmを設定
+        // Set hash_algorithm
         $this->hash_algorithm = self::HASH_ALGORITHM;
 
         return $this->save();
     }
 
     /**
-     * このレコードのハッシュを検証
+     * Verify hash of this record
      */
     public function verifyHash(): bool
     {
@@ -1072,28 +1072,28 @@ class AuditLog extends Model
     }
 
     /**
-     * このレコードのチェーンリンクを検証（前レコードとの整合性）
+     * Verify chain link of this record (consistency with previous record)
      */
     public function verifyChainLink(): bool
     {
-        // 最初のレコードの場合
+        // If this is the first record
         if ($this->previous_hash === self::GENESIS_HASH) {
             return $this->chain_sequence === 1;
         }
 
-        // 前のレコードを取得
+        // Get previous record
         $previousLog = self::where('record_hash', $this->previous_hash)->first();
 
         if (! $previousLog) {
             return false;
         }
 
-        // シーケンスの連続性を確認
+        // Check sequence continuity
         return $previousLog->chain_sequence === ($this->chain_sequence - 1);
     }
 
     /**
-     * 検証ステータスを更新
+     * Update verification status
      */
     public function markAsVerified(bool $isValid): void
     {
@@ -1104,7 +1104,7 @@ class AuditLog extends Model
     }
 
     /**
-     * ハッシュチェーンが有効かどうか
+     * Whether hash chain is valid
      */
     public function hasValidHashChain(): bool
     {
@@ -1112,7 +1112,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 検証済みかどうか
+     * Whether verified
      */
     public function isVerified(): bool
     {
@@ -1120,7 +1120,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 改ざんが検知されたかどうか
+     * Whether tampering was detected
      */
     public function isTampered(): bool
     {
@@ -1128,11 +1128,11 @@ class AuditLog extends Model
     }
 
     // ========================================
-    // スコープ（ハッシュチェーン用）
+    // Scope (for hash chain)
     // ========================================
 
     /**
-     * ハッシュチェーンが設定されているレコード
+     * Records with hash chain set
      */
     public function scopeWithHashChain($query)
     {
@@ -1140,7 +1140,7 @@ class AuditLog extends Model
     }
 
     /**
-     * ハッシュチェーンが未設定のレコード
+     * Records without hash chain set
      */
     public function scopeWithoutHashChain($query)
     {
@@ -1148,7 +1148,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 検証済みレコード
+     * Verified records
      */
     public function scopeVerified($query)
     {
@@ -1156,7 +1156,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 改ざん検知されたレコード
+     * Records with tampering detected
      */
     public function scopeTampered($query)
     {
@@ -1164,7 +1164,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 未検証レコード
+     * Unverified records
      */
     public function scopeUnverified($query)
     {
@@ -1172,11 +1172,11 @@ class AuditLog extends Model
     }
 
     // ========================================
-    // 静的ヘルパー（ハッシュチェーン用）
+    // Static helper (for hash chain)
     // ========================================
 
     /**
-     * 最新のハッシュを取得
+     * Get the latest hash
      */
     public static function getLatestHash(): ?string
     {
@@ -1186,7 +1186,7 @@ class AuditLog extends Model
     }
 
     /**
-     * 最新のシーケンス番号を取得
+     * Get the latest sequence number
      */
     public static function getLatestSequence(): int
     {
@@ -1196,7 +1196,7 @@ class AuditLog extends Model
     }
 
     /**
-     * ハッシュチェーン付きでログを記録
+     * Record log with hash chain
      */
     public static function logWithHashChain(array $data): self
     {

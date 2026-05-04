@@ -34,65 +34,65 @@
  */
 
 return [
-    // デフォルトのフォールバック
+    // Default fallback
     'default-src' => ["'self'"],
 
-    // スクリプト
-    // 'nonce' は自動的にリクエストごとのnonce値に置換される
-    // 'strict-dynamic' でnonce付きスクリプトから読み込まれるスクリプトも許可
-    // 'unsafe-eval' はAlpine.jsが必要とするため追加
-    // CAPTCHA用: Cloudflare Turnstile, Google reCAPTCHA
-    // Vite開発サーバーは CspBuilder が local 環境でのみ自動追加
+    // Scripts
+    // 'nonce' is automatically replaced with a per-request nonce value
+    // 'strict-dynamic' allows scripts loaded from nonce'd scripts
+    // 'unsafe-eval' is added because Alpine.js requires it
+    // For CAPTCHA: Cloudflare Turnstile, Google reCAPTCHA
+    // Vite dev server is automatically added by CspBuilder in local environment only
     'script-src' => ["'self'", "'nonce'", "'strict-dynamic'", "'unsafe-eval'", 'https://challenges.cloudflare.com', 'https://www.google.com', 'https://www.gstatic.com'],
 
-    // スクリプト属性（onclick等のイベントハンドラ属性）
-    // ベース値は'none'（ブロック）。開発モードではCspBuilderが'unsafe-inline'に上書き
-    // Alpine.jsの@click等はscript-src-attrではなくscript-srcで制御される
+    // Script attributes (event handler attributes like onclick)
+    // Base value is 'none' (blocked). In dev mode, CspBuilder overwrites to 'unsafe-inline'
+    // Alpine.js @click etc. are controlled by script-src, not script-src-attr
     'script-src-attr' => ["'none'"],
 
-    // スタイル
-    // 'unsafe-inline'はnonceと併用すると無視されるため、インラインスタイル（element.style）を許可するには
-    // nonceを使用しないか、unsafe-inlineのみを使用する必要がある
-    // Alpine.jsやJavaScriptでのスタイル操作を許可するためunsafe-inlineを使用
+    // Styles
+    // Since 'unsafe-inline' is ignored when used with nonce, to allow inline styles (element.style)
+    // you must either not use nonce or use only unsafe-inline
+    // Using unsafe-inline to allow style manipulation in Alpine.js and JavaScript
     // Bunny Fonts、Font Awesome CDN
     'style-src' => ["'self'", "'unsafe-inline'", 'https://fonts.bunny.net', 'https://cdnjs.cloudflare.com', 'https://use.fontawesome.com'],
 
-    // 画像
-    // raw.githubusercontent.com: オンライン拡張機能追加画面のサムネイル（GitHub Source Provider）
+    // Images
+    // raw.githubusercontent.com: thumbnails on online extension add screen (GitHub Source Provider)
     'img-src' => ["'self'", 'data:', 'blob:', 'https://raw.githubusercontent.com'],
 
-    // フォント
+    // Fonts
     // Bunny Fonts、Font Awesome CDN
-    // ローカルフォント（Vite build assets）
+    // Local fonts (Vite build assets)
     'font-src' => ["'self'", 'data:', 'blob:', 'https://fonts.bunny.net', 'https://cdnjs.cloudflare.com', 'https://use.fontawesome.com'],
 
-    // 接続先（XHR, fetch, WebSocket等）
-    // CAPTCHA用: Cloudflare Turnstile, Google reCAPTCHA
+    // Connection targets (XHR, fetch, WebSocket, etc.)
+    // For CAPTCHA: Cloudflare Turnstile, Google reCAPTCHA
     'connect-src' => ["'self'", 'https://challenges.cloudflare.com', 'https://www.google.com'],
 
-    // メディア（audio, video）
+    // Media (audio, video)
     'media-src' => ["'self'"],
 
-    // オブジェクト（plugin, embed, object）
+    // Objects (plugin, embed, object)
     'object-src' => ["'none'"],
 
-    // フレーム
-    // CAPTCHA用: Cloudflare Turnstile, Google reCAPTCHA
+    // Frames
+    // For CAPTCHA: Cloudflare Turnstile, Google reCAPTCHA
     'frame-src' => ["'self'", 'https://challenges.cloudflare.com', 'https://www.google.com', 'https://www.gstatic.com'],
 
-    // フレーム祖先（このページを埋め込める親）
-    // 注意: 管理画面では'none'に上書きされる（クリックジャッキング対策）
+    // Frame ancestors (parents that can embed this page)
+    // Note: Overridden to 'none' in admin panel (clickjacking protection)
     'frame-ancestors' => ["'self'"],
 
-    // フォームの送信先
+    // Form submission destinations
     'form-action' => ["'self'"],
 
-    // ベースURI
+    // Base URI
     'base-uri' => ["'self'"],
 
-    // マニフェスト
+    // Manifest
     'manifest-src' => ["'self'"],
 
-    // ワーカー
+    // Workers
     'worker-src' => ["'self'", 'blob:'],
 ];

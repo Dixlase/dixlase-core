@@ -41,43 +41,43 @@ use App\Helpers\IdentifierCheckHelper;
 use Illuminate\Http\Request;
 
 /**
- * ログイン識別子確認の共通トレイト
+ * Common trait for login identifier verification
  *
- * メールアドレスまたはアカウント名の存在確認を行う
- * セキュリティ対策：レート制限、タイミング攻撃対策、監査ログ記録
+ * Check existence of email address or account name
+ * Security measures: rate limiting, timing attack protection, audit logging
  */
 trait LoginIdentifierCheckTrait
 {
     /**
-     * CAPTCHAアクション名を取得（継承先で実装）
+     * Get CAPTCHA action name (implemented by subclass)
      *
-     * @return string CAPTCHAアクション名（例: 'admin_login', 'user_login'）
+     * @return string CAPTCHA action name (e.g., 'admin_login', 'user_login')
      */
     abstract protected function getCaptchaAction(): string;
 
     /**
-     * 設定モデルクラス名を取得（継承先で実装）
+     * Get settings model class name (implemented by subclass)
      *
-     * @return string 設定モデルクラス名
+     * @return string Settings model class name
      */
     abstract protected function getSettingModelClass(): string;
 
     /**
-     * ユーザーモデルクラス名を取得（継承先で実装）
+     * Get user model class name (implemented by subclass)
      *
-     * @return string ユーザーモデルクラス名
+     * @return string User model class name
      */
     abstract protected function getUserModelClass(): string;
 
     /**
-     * コンテキストを取得（継承先で実装）
+     * Get context (implemented by subclass)
      *
-     * @return string コンテキスト（'admin' または 'user'）
+     * @return string Context ('admin' or 'user')
      */
     abstract protected function getContext(): string;
 
     /**
-     * 識別子確認処理
+     * Identifier verification process
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -90,7 +90,7 @@ trait LoginIdentifierCheckTrait
         $login = $request->input('login');
         $ipAddress = $request->ip();
 
-        // CAPTCHA検証
+        // CAPTCHA verification
         $captchaAction = $this->getCaptchaAction();
         $captchaResult = \App\Helpers\CaptchaHelper::verify($request, $captchaAction);
 
@@ -102,15 +102,15 @@ trait LoginIdentifierCheckTrait
             ], 422);
         }
 
-        // CAPTCHA検証済みフラグをセッションに保存（5分間有効）
+        // Store CAPTCHA verified flag in session (valid for 5 minutes)
         session()->put('captcha_verified_'.$login, time());
 
-        // ロックアウト設定を取得
+        // Get lockout settings
         $settingModelClass = $this->getSettingModelClass();
         $settings = IdentifierCheckHelper::getLockoutSettings($settingModelClass);
 
         try {
-            // 識別子確認を実行（レート制限付き）
+            // Execute identifier verification (with rate limiting)
             $userModelClass = $this->getUserModelClass();
             $context = $this->getContext();
 
@@ -127,11 +127,11 @@ trait LoginIdentifierCheckTrait
                 'has_passkey' => $result['has_passkey'],
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // エラーメッセージを取得
+            // Get error message
             $errors = $e->errors();
             $errorMessage = $errors['login'][0] ?? $e->getMessage();
 
-            // セッションにエラーメッセージを保存してリダイレクト指示を返す
+            // Store error message in session and return redirect instruction
             session()->flash('error', $errorMessage);
 
             return response()->json([

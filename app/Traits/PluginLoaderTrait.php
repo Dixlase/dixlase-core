@@ -44,14 +44,14 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 
 /**
- * プラグインリソースローディング機構
+ * Plugin resource loading mechanism
  */
 trait PluginLoaderTrait
 {
     use ConfigLoaderTrait;
 
     /**
-     * PluginRepositoryInterface の遅延解決
+     * Lazy resolution of PluginRepositoryInterface
      */
     protected function resolvePluginRepository(): PluginRepositoryInterface
     {
@@ -59,7 +59,7 @@ trait PluginLoaderTrait
     }
 
     /**
-     * AdminNavigationManagerInterface の遅延解決
+     * Lazy resolution of AdminNavigationManagerInterface
      */
     protected function resolveAdminNavigationManager(): AdminNavigationManagerInterface
     {
@@ -67,24 +67,24 @@ trait PluginLoaderTrait
     }
 
     /**
-     * 有効化されたプラグインをロードする
+     * Load enabled plugins
      */
     public function loadEnabledPlugins()
     {
-        // コマンドライン引数から直接チェック
+        // Check directly from command line arguments
         $pluginManagementFlag = $this->getUninstallingPluginFromArgs();
 
-        // プラグイン管理コマンド実行中はプラグインローダーをスキップ
+        // Skip plugin loader during plugin management command execution
         if ($pluginManagementFlag === 'PLUGIN_MANAGEMENT_COMMAND') {
             return;
         }
 
-        // app:uninstall コマンド実行中もスキップ
+        // Also skip during app:uninstall command execution
         if (isset($_SERVER['argv']) && in_array('app:uninstall', $_SERVER['argv'])) {
             return;
         }
 
-        // リポジトリ経由で有効化されたプラグインを取得（テーブル存在チェック含む）
+        // Get enabled plugins via repository (including table existence check)
         $plugins = $this->resolvePluginRepository()->getEnabled();
 
         foreach ($plugins as $plugin) {
@@ -94,10 +94,10 @@ trait PluginLoaderTrait
             $pluginPath = base_path('plugins/'.$pluginDirectory);
             $customPluginPath = base_path('custom/plugins/'.$pluginDirectory);
 
-            // プラグインのファイルをロード
+            // Load plugin files
             $this->loadPluginFiles($pluginName, $pluginPath, $customPluginPath, $pluginSlug);
 
-            // サービスプロバイダの登録 (プラグインのファイルをロードした後)
+            // Register service providers (after loading plugin files)
             $providerClass = $this->resolvePluginServiceProvider($pluginName, $pluginDirectory);
 
             if ($providerClass) {
@@ -107,13 +107,13 @@ trait PluginLoaderTrait
     }
 
     /**
-     * コマンドライン引数からプラグイン管理対象を取得
+     * Get plugin management target from command line arguments
      */
     private function getUninstallingPluginFromArgs(): ?string
     {
         $argv = $_SERVER['argv'] ?? [];
 
-        // プラグイン管理コマンドの場合はプラグインローダーをスキップ
+        // Skip plugin loader for plugin management commands
         if (count($argv) >= 2) {
             $pluginCommands = [
                 'plugin:install',
@@ -130,7 +130,7 @@ trait PluginLoaderTrait
     }
 
     /**
-     * プラグインのリソースをロードする
+     * Load plugin resources
      */
     protected function loadPluginFiles($pluginName, $pluginPath, $customPluginPath, $pluginSlug = null)
     {
@@ -145,9 +145,9 @@ trait PluginLoaderTrait
     }
 
     /**
-     * ファイルタイプごとのロード処理
+     * Load processing by file type
      *
-     * 注: routesはPluginServiceProvider::loadPluginRoutes()で読み込むため除外
+     * Note: routes are excluded as they are loaded by PluginServiceProvider::loadPluginRoutes()
      */
     protected function loadFilesByType($type, $defaultPath, $customPath, $pluginSlug)
     {
@@ -156,7 +156,7 @@ trait PluginLoaderTrait
                 $this->loadPluginConfigs($defaultPath, $customPath, $pluginSlug);
                 break;
             case 'routes':
-                // routesはPluginServiceProvider::loadPluginRoutes()で読み込むため除外
+                // Exclude routes as they are loaded by PluginServiceProvider::loadPluginRoutes()
                 // $this->loadPluginRoutes($customPath, $defaultPath);
                 break;
             case 'lang':
@@ -174,11 +174,11 @@ trait PluginLoaderTrait
     }
 
     /**
-     * コンフィグの読み込み
+     * Load config
      */
     protected function loadPluginConfigs($corePath, $customPath, $pluginSlug)
     {
-        // プラグインの設定を個別の名前空間に格納
+        // Store plugin settings in individual namespace
         $pluginConfigs = $this->loadConfigFiles($corePath);
         $customConfigs = $this->loadConfigFiles($customPath);
 
@@ -190,29 +190,29 @@ trait PluginLoaderTrait
             }
         }
 
-        // `users-plugin.auth` のようにプレフィックス付きで登録
+        // Register with prefix like `users-plugin.auth`
         foreach ($pluginConfigs as $key => $value) {
             config(["{$pluginSlug}.{$key}" => $value]);
         }
 
-        // 新しい構造: config/admin/navigation.php を優先的に読み込む
+        // New structure: load config/admin/navigation.php with priority
         $adminNavConfigFile = $corePath.'/admin/navigation.php';
         if (file_exists($adminNavConfigFile)) {
             $this->mergeAdminNavigationFile($adminNavConfigFile);
         } else {
-            // 旧構造: admin.php ファイルが存在する場合、ナビゲーションをマージ
+            // Legacy structure: merge navigation if admin.php file exists
             $adminConfigFile = $corePath.'/admin.php';
             if (file_exists($adminConfigFile)) {
                 $this->mergeAdminNavConfig($adminConfigFile);
             }
         }
 
-        // カスタムのadmin/navigation.phpファイルも確認
+        // Also check for custom admin/navigation.php file
         $customAdminNavConfigFile = $customPath.'/admin/navigation.php';
         if (file_exists($customAdminNavConfigFile)) {
             $this->mergeAdminNavigationFile($customAdminNavConfigFile);
         } else {
-            // カスタムのadmin.phpファイルも確認
+            // Also check for custom admin.php file
             $customAdminConfigFile = $customPath.'/admin.php';
             if (file_exists($customAdminConfigFile)) {
                 $this->mergeAdminNavConfig($customAdminConfigFile);
@@ -221,9 +221,9 @@ trait PluginLoaderTrait
     }
 
     /**
-     * ルートの読み込み
+     * Load routes
      *
-     * 注: admin.phpはPluginServiceProvider::loadPluginRoutes()で読み込むため除外
+     * Note: admin.php is excluded because it's loaded in PluginServiceProvider::loadPluginRoutes()
      */
     protected function loadPluginRoutes($customPath, $defaultPath)
     {
@@ -231,7 +231,7 @@ trait PluginLoaderTrait
         foreach ($paths as $path) {
             if (is_dir($path)) {
                 foreach (glob("{$path}/*.php") as $routeFile) {
-                    // admin.phpはPluginServiceProviderで読み込むため除外
+                    // Exclude admin.php as it's loaded in PluginServiceProvider
                     if (basename($routeFile) === 'admin.php') {
                         continue;
                     }
@@ -242,7 +242,7 @@ trait PluginLoaderTrait
     }
 
     /**
-     * ビューの読み込み
+     * Load views
      */
     protected function loadPluginViews($customPath, $defaultPath, $namespace)
     {
@@ -256,7 +256,7 @@ trait PluginLoaderTrait
     }
 
     /**
-     * 言語ファイルの読み込み
+     * Load language files
      */
     protected function loadPluginTranslations($customPath, $corePath, $namespace)
     {
@@ -271,7 +271,7 @@ trait PluginLoaderTrait
     }
 
     /**
-     * マイグレーションファイルの読み込み
+     * Load migration files
      */
     protected function loadPluginMigrations($customPath, $corePath)
     {
@@ -285,7 +285,7 @@ trait PluginLoaderTrait
     }
 
     /**
-     * プラグインのサービスプロバイダを解決する
+     * Resolve the plugin's service provider
      */
     protected function resolvePluginServiceProvider(string $pluginName, string $pluginDirectory): ?string
     {
@@ -302,7 +302,7 @@ trait PluginLoaderTrait
     }
 
     /**
-     * プラグインのメタ情報を取得
+     * Get plugin meta information
      */
     protected function getPluginMetadata($pluginDirectory)
     {
@@ -314,7 +314,7 @@ trait PluginLoaderTrait
     }
 
     /**
-     * すべてのプラグインのメタ情報を取得
+     * Get all plugin meta information
      */
     public function getAllPluginsMetadata()
     {
@@ -332,10 +332,10 @@ trait PluginLoaderTrait
     }
 
     /**
-     * 任意のプラグイン設定をマージする
+     * Merge arbitrary plugin settings
      *
-     * @param  string  $configFile  プラグインの config ファイルのパス
-     * @param  string  $configKey  config() に格納するキー (例: 'auth', 'admin.nav')
+     * @param  string  $configFile  Path to the plugin's config file
+     * @param  string  $configKey  Key to store in config() (e.g., 'auth', 'admin.nav')
      */
     public function mergePluginConfig($configFile, $configKey)
     {
@@ -349,20 +349,20 @@ trait PluginLoaderTrait
             return; // 無効な設定ファイルの場合はスキップ
         }
 
-        // 既存の設定を取得
+        // Get existing settings
         $existingConfig = config($configKey, []);
 
-        // カスタムの再帰マージ関数を使って統合
+        // Merge using custom recursive merge function
         $mergedConfig = $this->recursiveArrayMergeOverwrite($existingConfig, $pluginConfig);
 
-        // マージした設定を適用
+        // Apply merged settings
         config([$configKey => $mergedConfig]);
     }
 
     /**
-     * 新しい構造のナビゲーションファイル (config/admin/navigation.php) をマージする
+     * Merge new structure navigation file (config/admin/navigation.php)
      *
-     * @param  string  $configFile  プラグインのナビゲーション設定ファイル
+     * @param  string  $configFile  Plugin navigation settings file
      */
     public function mergeAdminNavigationFile($configFile)
     {
@@ -370,9 +370,9 @@ trait PluginLoaderTrait
     }
 
     /**
-     * 管理画面のナビゲーション (`admin.nav`) をマージする（旧構造用）
+     * Merge admin panel navigation (`admin.nav`) (for old structure)
      *
-     * @param  string  $configFile  プラグインのナビゲーション設定ファイル
+     * @param  string  $configFile  Plugin navigation settings file
      */
     public function mergeAdminNavConfig($configFile)
     {
@@ -380,20 +380,20 @@ trait PluginLoaderTrait
     }
 
     /**
-     * 配列を再帰的にマージする（同じキーがある場合は上書き）
+     * Recursively merge arrays (overwrite if same key exists)
      *
-     * @param  array  $base  元の設定
-     * @param  array  $override  追加の設定
-     * @return array マージ後の配列
+     * @param  array  $base  Original settings
+     * @param  array  $override  Additional settings
+     * @return array Merged array
      */
     protected function recursiveArrayMergeOverwrite(array $base, array $override): array
     {
         foreach ($override as $key => $value) {
             if (is_array($value) && isset($base[$key]) && is_array($base[$key])) {
-                // 配列同士なら再帰的にマージ
+                // Recursively merge if both are arrays
                 $base[$key] = $this->recursiveArrayMergeOverwrite($base[$key], $value);
             } else {
-                // 配列でない場合は上書き
+                // Overwrite if not an array
                 $base[$key] = $value;
             }
         }

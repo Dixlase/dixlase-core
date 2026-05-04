@@ -43,7 +43,7 @@ use Illuminate\Console\Command;
  * メール送信緊急バイパスコマンド（ブレークグラス）
  *
  * SMTPサーバー障害時に、メール依存機能（Two-FA、パスワードリセット等）を
- * 一時的にバイパスする緊急復旧機能
+ * Emergency recovery feature to temporarily bypass
  */
 class MailBypassCommand extends Command
 {

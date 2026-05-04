@@ -41,12 +41,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * テーマリポジトリ実装
+ * Theme repository implementation
  *
- * Theme Eloquent モデルと theme_settings テーブルを使用して有効テーマ情報を取得する。
- * テーブル存在チェックを内包し、マイグレーション未実行時にも安全に動作する。
+ * Retrieve active theme information using Theme Eloquent model and theme_settings table
+ * Includes table existence check and operates safely even when migrations have not been run
  */
 class ThemeRepository implements ThemeRepositoryInterface
 {
@@ -84,7 +84,7 @@ class ThemeRepository implements ThemeRepositoryInterface
     }
 
     /**
-     * デフォルトテーマのディレクトリ名を取得
+     * Retrieve default theme directory name
      */
     private function getDefaultThemeDirectory(): string
     {

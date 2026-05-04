@@ -42,43 +42,43 @@ return [
     | Authority API URL
     |--------------------------------------------------------------------------
     |
-    | Dixlase 公式の鍵管理サイトの URL。プラグイン署名の公開鍵を取得するために
-    | 使用する。本番では https://keys.dixlase.com を指定（既定）。
-    | 開発環境で別の Authority を使う場合のみ env で上書きする。
+    | URL of the official Dixlase key management site. Used to retrieve the public
+    | key for plugin signatures. In production, specify https://keys.dixlase.com (default).
+    | Override via env only when using a different Authority in development environments.
     |
     */
     'url' => env('DIXLASE_AUTHORITY_URL', 'https://keys.dixlase.com'),
 
     /*
     |--------------------------------------------------------------------------
-    | キャッシュ有効期間（時間）
+    | Cache validity period (hours)
     |--------------------------------------------------------------------------
     |
-    | ローカル DB にキャッシュした公開鍵をどれくらい信頼するか。
-    | この時間を超えた鍵は次回検証時に再フェッチを試みる（失敗しても古い
-    | キャッシュで続行する）。
+    | How long to trust public keys cached in the local DB.
+    | Keys older than this period will attempt a re-fetch on the next verification (will
+    | continue with old cache if the fetch fails).
     |
     */
     'cache_ttl_hours' => (int) env('DIXLASE_AUTHORITY_CACHE_TTL_HOURS', 24),
 
     /*
     |--------------------------------------------------------------------------
-    | フェッチタイムアウト（秒）
+    | Fetch timeout (seconds)
     |--------------------------------------------------------------------------
     |
-    | 公開鍵取得の HTTP タイムアウト。短すぎるとネットワーク遅延で失敗、
-    | 長すぎるとプラグインインストールが遅延する。
+    | HTTP timeout for retrieving public keys. Too short will fail on network delays,
+    | too long will delay plugin installation.
     |
     */
     'fetch_timeout_seconds' => (int) env('DIXLASE_AUTHORITY_TIMEOUT', 5),
 
     /*
     |--------------------------------------------------------------------------
-    | SSL 証明書検証
+    | SSL certificate verification
     |--------------------------------------------------------------------------
     |
-    | サンドボックス・社内検証で self-signed cert の Authority を使う場合のみ
-    | false にする。本番では必ず true（CA 検証あり）。
+    | Set to false only when using an Authority with self-signed cert in sandbox or
+    | internal verification. In production, must always be true (with CA verification).
     |
     */
     'verify_ssl' => filter_var(env('DIXLASE_AUTHORITY_VERIFY_SSL', true), FILTER_VALIDATE_BOOLEAN),

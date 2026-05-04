@@ -42,8 +42,8 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * APIキー管理テーブル
-     * 外部システム連携用のAPIキーを管理
+     * API key management table
+     * Manages API keys for external system integration
      */
     public function up(): void
     {
@@ -54,51 +54,51 @@ return new class extends Migration
             // the ApiKey model.
             $table->unsignedBigInteger('site_id')->nullable()->index();
 
-            // キー名（識別用）
+            // Key name (for identification)
             $table->string('name', 100);
 
-            // APIキー（ハッシュ化して保存）
-            // 生成時のみ平文を表示、以降はハッシュのみ保存
+            // API key (stored hashed)
+            // Plain text shown only at generation, thereafter only hash is stored
             $table->string('key_hash', 255)->unique();
 
-            // キープレフィックス（識別用、例: dxl_live_, dxl_test_）
+            // Key prefix (for identification, e.g. dxl_live_, dxl_test_)
             $table->string('key_prefix', 20);
 
-            // 作成者
+            // Creator
             $table->unsignedBigInteger('created_by')->nullable()->index();
 
-            // 有効/無効
+            // Enabled/Disabled
             $table->boolean('is_active')->default(true);
 
-            // 環境（live/test）
+            // Environment (live/test)
             $table->string('environment', 10)->default('live');
 
-            // 権限スコープ（JSON配列）
-            // 例: ["read:events", "write:events", "read:translations"]
+            // Permission scope (JSON array)
+            // Example: ["read:events", "write:events", "read:translations"]
             $table->json('scopes')->nullable();
 
-            // レート制限（1分あたりのリクエスト数、nullは無制限）
+            // Rate limit (requests per minute, null for unlimited)
             $table->unsignedInteger('rate_limit')->nullable();
 
-            // 許可IPリスト（JSON配列、nullは全IP許可）
+            // Allowed IP list (JSON array, null allows all IPs)
             $table->json('allowed_ips')->nullable();
 
-            // 有効期限（nullは無期限）
+            // Expiration date (null for no expiration)
             $table->timestamp('expires_at')->nullable();
 
-            // 最終使用日時
+            // Last used at
             $table->timestamp('last_used_at')->nullable();
 
-            // 使用回数
+            // Usage count
             $table->unsignedBigInteger('usage_count')->default(0);
 
-            // メモ
+            // Notes
             $table->text('description')->nullable();
 
-            // 標準タイムスタンプ
+            // Standard timestamps
             $table->timestamps();
 
-            // インデックス
+            // Indexes
             $table->index(['is_active', 'environment']);
             $table->index('expires_at');
         });

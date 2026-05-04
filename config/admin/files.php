@@ -47,7 +47,7 @@ return [
         'txt',
     ],
 
-    // ファイル拡張子の表示名
+    // Display name for file extension
     'fileExtensionNames' => [
         'jpg' => 'JPEG',
         'png' => 'PNG',

@@ -53,7 +53,7 @@ class IntegrityScan extends Command
     protected $signature = 'dls:integrity:scan
                             {--scope=core : スキャン対象 (core, plugin, theme, all)}
                             {--identifier= : プラグイン名またはテーマ名}
-                            {--json : 結果をJSON形式で出力}
+                            {--json : 結果をOutput in JSON format}
                             {--scheduled : スケジュール実行フラグ}';
 
     /**
@@ -61,7 +61,7 @@ class IntegrityScan extends Command
      *
      * @var string
      */
-    protected $description = 'ファイル整合性をスキャンして改ざんを検知します';
+    protected $description = 'Scan file integrity and detect tampering';
 
     /**
      * Execute the console command.
@@ -76,7 +76,7 @@ class IntegrityScan extends Command
             $this->newLine();
         }
 
-        // 現在はコアのみサポート
+        // Currently only Core is supported
         if ($scope !== 'core') {
             if (! $outputJson) {
                 $this->warn(__('admin/command.integrity.scope_not_supported', ['scope' => $scope]));
@@ -89,7 +89,7 @@ class IntegrityScan extends Command
             $this->output->write(__('admin/command.integrity.scanning'));
         }
 
-        // スキャン実行（スケジュール実行の場合はTRIGGER_SCHEDULE）
+        // Execute scan (TRIGGER_SCHEDULE for scheduled execution)
         $trigger = $this->option('scheduled')
             ? FileIntegrityAudit::TRIGGER_SCHEDULE
             : FileIntegrityAudit::TRIGGER_MANUAL;
@@ -99,7 +99,7 @@ class IntegrityScan extends Command
             FileIntegrityAudit::INITIATED_BY_CLI
         );
 
-        // 問題が検出された場合はメール通知
+        // Send email notification if issues are detected
         if ($audit->hasIssues()) {
             $this->sendAlertNotification($audit, $outputJson);
         }
@@ -113,18 +113,18 @@ class IntegrityScan extends Command
         $this->info(' '.__('common.done'));
         $this->newLine();
 
-        // 結果を表示
+        // Display results
         $this->displayResult($audit);
 
         return $audit->hasIssues() ? Command::FAILURE : Command::SUCCESS;
     }
 
     /**
-     * アラート通知を送信
+     * Send alert notification
      */
     protected function sendAlertNotification(FileIntegrityAudit $audit, bool $outputJson): void
     {
-        // 通知が有効かチェック
+        // Check if notification is enabled
         $notificationEnabled = filter_var(
             SecuritySetting::get('notification_enabled', true),
             FILTER_VALIDATE_BOOLEAN
@@ -138,7 +138,7 @@ class IntegrityScan extends Command
             return;
         }
 
-        // 通知先メールアドレスを取得
+        // Get notification email address
         $notificationEmail = SiteSetting::getValue('notification_email');
         if (empty($notificationEmail)) {
             if (! $outputJson) {
@@ -161,11 +161,11 @@ class IntegrityScan extends Command
     }
 
     /**
-     * 結果を表示
+     * Display results
      */
     protected function displayResult(FileIntegrityAudit $audit): void
     {
-        // ステータス表示
+        // Display status
         $statusLabel = match ($audit->status) {
             FileIntegrityAudit::STATUS_OK => '<fg=green>'.__('admin/command.integrity.status_ok').'</>',
             FileIntegrityAudit::STATUS_WARNING => '<fg=yellow>'.__('admin/command.integrity.status_warning').'</>',
@@ -178,24 +178,24 @@ class IntegrityScan extends Command
         $this->line(__('admin/command.integrity.duration').': '.$audit->duration_ms.'ms');
         $this->newLine();
 
-        // サマリー
+        // Summary
         if ($audit->summary) {
             $this->line(__('admin/command.integrity.summary').': '.$audit->summary);
             $this->newLine();
         }
 
-        // 詳細表示
+        // Display details
         if ($audit->hasIssues()) {
             $this->displayIssues($audit);
         }
     }
 
     /**
-     * 問題の詳細を表示
+     * Display issue details
      */
     protected function displayIssues(FileIntegrityAudit $audit): void
     {
-        // 変更されたファイル
+        // Modified files
         $changed = $audit->getChangedFiles();
         if (! empty($changed)) {
             $this->warn(__('admin/command.integrity.changed_files', ['count' => count($changed)]));
@@ -205,7 +205,7 @@ class IntegrityScan extends Command
             $this->newLine();
         }
 
-        // 追加されたファイル
+        // Added files
         $added = $audit->getAddedFiles();
         if (! empty($added)) {
             $this->warn(__('admin/command.integrity.added_files', ['count' => count($added)]));
@@ -215,7 +215,7 @@ class IntegrityScan extends Command
             $this->newLine();
         }
 
-        // 削除されたファイル
+        // Deleted files
         $removed = $audit->getRemovedFiles();
         if (! empty($removed)) {
             $this->error(__('admin/command.integrity.removed_files', ['count' => count($removed)]));
@@ -225,7 +225,7 @@ class IntegrityScan extends Command
             $this->newLine();
         }
 
-        // 疑わしいファイル
+        // Suspicious files
         $suspicious = $audit->getSuspiciousFiles();
         if (! empty($suspicious)) {
             $this->error(__('admin/command.integrity.suspicious_files', ['count' => count($suspicious)]));
@@ -240,7 +240,7 @@ class IntegrityScan extends Command
             $this->newLine();
         }
 
-        // 推奨アクション
+        // Recommended actions
         if ($audit->isCritical()) {
             $this->newLine();
             $this->error(__('admin/command.integrity.critical_warning'));
@@ -251,7 +251,7 @@ class IntegrityScan extends Command
     }
 
     /**
-     * JSON形式で出力
+     * Output in JSON format
      */
     protected function outputJson(FileIntegrityAudit $audit): void
     {

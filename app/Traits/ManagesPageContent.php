@@ -40,17 +40,18 @@ use App\Enums\ContentStorageType;
 use App\Services\PageContentService;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  *
- * ページコンテンツ管理トレイト
+ * Page content management trait
  *
- * コントローラーで使用し、ページコンテンツの保存・読み込み・レンダリングを簡単に行えます。
- * DixlasePagesプラグインやフロントページ編集機能で共通使用します。
+ * Used in controllers to easily save, load, and render page content.
+ * Typically consumed by a page-tree plugin and by the front-page editing
+ * functionality.
  */
 trait ManagesPageContent
 {
     /**
-     * PageContentServiceのインスタンスを取得
+     * Get an instance of PageContentService
      */
     protected function getContentService(?string $baseDirectory = null): PageContentService
     {
@@ -64,13 +65,13 @@ trait ManagesPageContent
     }
 
     /**
-     * コンテンツを保存
+     * Save content
      *
-     * @param  string  $identifier  ページのスラッグやID
-     * @param  string  $content  コンテンツ
-     * @param  string|ContentStorageType  $storageType  保存方法
-     * @param  string|ContentEditorType  $editorType  エディタータイプ
-     * @param  string|null  $baseDirectory  ベースディレクトリ（FILE保存時）
+     * @param  string  $identifier  Page slug or ID
+     * @param  string  $content  Content
+     * @param  string|ContentStorageType  $storageType  Save method
+     * @param  string|ContentEditorType  $editorType  Editor type
+     * @param  string|null  $baseDirectory  Base directory (when saving to FILE)
      */
     protected function savePageContent(
         string $identifier,
@@ -93,13 +94,13 @@ trait ManagesPageContent
     }
 
     /**
-     * コンテンツを読み込み
+     * Load content
      *
-     * @param  string  $identifier  ページのスラッグやID
-     * @param  string|ContentStorageType  $storageType  保存方法
-     * @param  string|ContentEditorType  $editorType  エディタータイプ
-     * @param  string|null  $dbContent  DB保存の場合のコンテンツ
-     * @param  string|null  $baseDirectory  ベースディレクトリ（FILE保存時）
+     * @param  string  $identifier  Page slug or ID
+     * @param  string|ContentStorageType  $storageType  Save method
+     * @param  string|ContentEditorType  $editorType  Editor type
+     * @param  string|null  $dbContent  Content when saved in DB
+     * @param  string|null  $baseDirectory  Base directory (when saving to FILE)
      */
     protected function loadPageContent(
         string $identifier,
@@ -122,11 +123,11 @@ trait ManagesPageContent
     }
 
     /**
-     * コンテンツをレンダリング
+     * Render content
      *
-     * @param  string  $content  コンテンツ
-     * @param  string|ContentEditorType  $editorType  エディタータイプ
-     * @param  string|ContentStorageType  $storageType  保存方法
+     * @param  string  $content  Content
+     * @param  string|ContentEditorType  $editorType  Editor type
+     * @param  string|ContentStorageType  $storageType  Save method
      */
     protected function renderPageContent(
         string $content,
@@ -147,11 +148,11 @@ trait ManagesPageContent
     }
 
     /**
-     * Bladeビューとしてレンダリング
+     * Render as Blade view
      *
-     * @param  string  $identifier  ページのスラッグやID
-     * @param  array  $data  ビューに渡すデータ
-     * @param  string|null  $baseDirectory  ベースディレクトリ
+     * @param  string  $identifier  Page slug or ID
+     * @param  array  $data  Data to pass to view
+     * @param  string|null  $baseDirectory  Base directory
      */
     protected function renderBladeView(
         string $identifier,
@@ -164,11 +165,11 @@ trait ManagesPageContent
     }
 
     /**
-     * ファイルが存在するか確認
+     * Check if file exists
      *
-     * @param  string  $identifier  ページのスラッグやID
-     * @param  string|ContentEditorType  $editorType  エディタータイプ
-     * @param  string|null  $baseDirectory  ベースディレクトリ
+     * @param  string  $identifier  Page slug or ID
+     * @param  string|ContentEditorType  $editorType  Editor type
+     * @param  string|null  $baseDirectory  Base directory
      */
     protected function contentFileExists(
         string $identifier,
@@ -185,11 +186,11 @@ trait ManagesPageContent
     }
 
     /**
-     * ファイルパスを取得
+     * Get file path
      *
-     * @param  string  $identifier  ページのスラッグやID
-     * @param  string|ContentEditorType  $editorType  エディタータイプ
-     * @param  string|null  $baseDirectory  ベースディレクトリ
+     * @param  string  $identifier  Page slug or ID
+     * @param  string|ContentEditorType  $editorType  Editor type
+     * @param  string|null  $baseDirectory  Base directory
      */
     protected function getContentFilePath(
         string $identifier,
@@ -206,11 +207,11 @@ trait ManagesPageContent
     }
 
     /**
-     * ファイルを削除
+     * Delete file
      *
-     * @param  string  $identifier  ページのスラッグやID
-     * @param  string|ContentEditorType  $editorType  エディタータイプ
-     * @param  string|null  $baseDirectory  ベースディレクトリ
+     * @param  string  $identifier  Page slug or ID
+     * @param  string|ContentEditorType  $editorType  Editor type
+     * @param  string|null  $baseDirectory  Base directory
      */
     protected function deleteContentFile(
         string $identifier,
@@ -227,14 +228,14 @@ trait ManagesPageContent
     }
 
     /**
-     * 保存方法を変更（マイグレーション）
+     * Change storage method (migration)
      *
-     * @param  string  $identifier  ページのスラッグやID
-     * @param  string|ContentStorageType  $fromStorage  元の保存方法
-     * @param  string|ContentStorageType  $toStorage  新しい保存方法
-     * @param  string|ContentEditorType  $editorType  エディタータイプ
-     * @param  string|null  $dbContent  DB保存の場合のコンテンツ
-     * @param  string|null  $baseDirectory  ベースディレクトリ
+     * @param  string  $identifier  Page slug or ID
+     * @param  string|ContentStorageType  $fromStorage  Original storage method
+     * @param  string|ContentStorageType  $toStorage  New storage method
+     * @param  string|ContentEditorType  $editorType  Editor type
+     * @param  string|null  $dbContent  Content when saved in DB
+     * @param  string|null  $baseDirectory  Base directory
      */
     protected function migrateContentStorage(
         string $identifier,
@@ -268,9 +269,9 @@ trait ManagesPageContent
     }
 
     /**
-     * 利用可能なエディタータイプを取得
+     * Get available editor types
      *
-     * @param  string|ContentStorageType  $storageType  保存方法
+     * @param  string|ContentStorageType  $storageType  Save method
      */
     protected function getAvailableEditorTypes(string|ContentStorageType $storageType): array
     {
@@ -282,9 +283,9 @@ trait ManagesPageContent
     }
 
     /**
-     * 利用可能なエディタータイプを説明付きで取得
+     * Get available editor types with descriptions
      *
-     * @param  string|ContentStorageType  $storageType  保存方法
+     * @param  string|ContentStorageType  $storageType  Save method
      */
     protected function getAvailableEditorTypesWithDescription(string|ContentStorageType $storageType): array
     {

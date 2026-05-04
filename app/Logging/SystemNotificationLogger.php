@@ -40,19 +40,19 @@ use Monolog\Logger;
 class SystemNotificationLogger
 {
     /**
-     * カスタムログチャンネルを作成
+     * Create custom log channel
      */
     public function __invoke(array $config)
     {
         $logger = new Logger('system-notification');
 
-        // 既存のハンドラーを追加
+        // Add existing handlers
         $logger->pushHandler(new \Monolog\Handler\StreamHandler(
             storage_path('logs/laravel.log'),
             Logger::DEBUG
         ));
 
-        // システム通知ハンドラーを追加
+        // Add system notification handler
         $logger->pushHandler(new SystemNotificationLogHandler());
 
         return $logger;

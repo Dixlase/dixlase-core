@@ -53,13 +53,13 @@ class ShortcodeServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        // ショートコードを登録
+        // Register shortcodes
         $shortcode = $this->app['shortcode'];
         foreach ($this->shortcodes as $tag => $class) {
             $shortcode->add($tag, $class);
         }
 
-        // Bladeディレクティブの登録
+        // Register Blade directives
         Blade::directive('shortcode', function ($expression) {
             return "<?php echo shortcode_parse($expression); ?>";
         });

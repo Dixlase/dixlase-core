@@ -120,7 +120,7 @@ class ThemeUpdate extends Command
             throw new \RuntimeException('Failed to open downloaded ZIP file.');
         }
 
-        // テーマは resource_path("views/themes/{directory}") に配置される
+        // Themes are placed in resource_path("views/themes/{directory}")
         $themeDir = resource_path("views/themes/{$theme->directory}");
         File::ensureDirectoryExists($themeDir);
 

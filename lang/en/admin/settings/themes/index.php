@@ -103,7 +103,7 @@ return [
 
     // Scan freshness badges
     'scan_status' => [
-        'unscanned' => 'Not scanned — please run a scan',
+        'unscanned' => 'Not scanned',
         'expired' => 'Scan expired (last scanned :age days ago / max :max)',
         'files_changed' => 'Files changed — re-scan recommended',
     ],

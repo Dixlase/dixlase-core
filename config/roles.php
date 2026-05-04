@@ -36,37 +36,37 @@
 use App\Enums\MemberRole;
 
 /**
- * コア機能のデフォルト権限設定
+ * Default permission settings for Core features
  *
- * 各メニュー/機能に対するデフォルトの権限を定義します。
- * 管理画面で変更された場合のみ、role_permission_overrides テーブルに差分が保存されます。
+ * Defines default permissions for each menu/feature.
+ * Only when changed in the admin panel, differences are saved to the role_permission_overrides table.
  *
- * access_roles: 編集権限（write）- この値以上の権限を持つユーザーが編集可能
- * view_roles: 閲覧権限（read）- この値以上の権限を持つユーザーが閲覧可能
+ * access_roles: Edit permission (write) - users with this permission level or higher can edit
+ * view_roles: View permission (read) - users with this permission level or higher can view
  *
- * 権限値（MemberRole enum）:
- * - SUPER_ADMIN = 10 (特権管理者専用)
- * - ADMIN = 9 (管理者以上)
- * - EDITOR = 8 (編集者以上)
- * - CONTRIBUTOR = 6 (寄稿者以上)
- * - GUEST = 1 (全員)
+ * Permission values (MemberRole enum):
+ * - SUPER_ADMIN = 10 (super administrator only)
+ * - ADMIN = 9 (administrator or higher)
+ * - EDITOR = 8 (editor or higher)
+ * - CONTRIBUTOR = 6 (contributor or higher)
+ * - GUEST = 1 (everyone)
  */
 
 return [
     /*
     |--------------------------------------------------------------------------
-    | コア機能のデフォルト権限
+    | Default Permissions for Core Features
     |--------------------------------------------------------------------------
     |
-    | config/admin.php の nav 構造と同じ階層構造で定義
-    | 権限設定画面でアコーディオン形式で表示するため
+    | Defined with the same hierarchical structure as the nav structure in config/admin.php
+    | To display in accordion format on the permission settings screen
     |
     */
     'permissions' => [
-        // ダッシュボード（dashboard）は権限設定から除外
-        // 閲覧のみのページで、ゲストでも閲覧可能（AdminHelperで固定）
+        // Dashboard (dashboard) is excluded from permission settings
+        // View-only page, viewable even by guests (fixed in AdminHelper)
 
-        // フロントページ管理
+        // Front page management
         'front' => [
             'children' => [
                 'index' => [
@@ -84,7 +84,7 @@ return [
             ],
         ],
 
-        // メディア管理
+        // Media management
         'media' => [
             'children' => [
                 'index' => [
@@ -102,10 +102,10 @@ return [
             ],
         ],
 
-        // プロフィール（profile）は権限設定から除外
-        // 自分自身の設定なので全員が読み書き可能（AdminHelperで固定）
+        // Profile is excluded from permission settings
+        // Everyone can read and write their own settings (fixed in AdminHelper)
 
-        // メンバー管理
+        // Member management
         'members' => [
             'children' => [
                 'index' => [
@@ -123,10 +123,10 @@ return [
             ],
         ],
 
-        // 全体設定
+        // Global settings
         'settings' => [
             'children' => [
-                // 基本設定
+                // Basic settings
                 'base' => [
                     'children' => [
                         'index' => [
@@ -152,7 +152,7 @@ return [
                     ],
                 ],
 
-                // セキュリティ設定
+                // Security settings
                 'security' => [
                     'children' => [
                         'index' => [
@@ -206,7 +206,7 @@ return [
                     ],
                 ],
 
-                // テーマ管理
+                // Theme management
                 'themes' => [
                     'children' => [
                         'index' => [
@@ -220,7 +220,7 @@ return [
                     ],
                 ],
 
-                // プラグイン管理
+                // Plugin management
                 'plugins' => [
                     'children' => [
                         'index' => [
@@ -234,7 +234,7 @@ return [
                     ],
                 ],
 
-                // システム管理
+                // System management
                 'systems' => [
                     'children' => [
                         'cache' => [

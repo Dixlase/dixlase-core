@@ -42,10 +42,10 @@ namespace App\Traits;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * `App\Contracts\Revisionable` を実装するモデルに `use` することで、
- * リビジョンへの `HasMany` リレーションを自動提供する。
+ * By using this trait in models that implement `App\Contracts\Revisionable`,
+ * automatically provides a `HasMany` relation to revisions
  *
- * 使用例:
+ * Usage example:
  * ```php
  * class FrontPage extends Model implements Revisionable
  * {
@@ -60,7 +60,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 trait HasRevisions
 {
     /**
-     * リビジョン（編集履歴）を新しい順で取得する。
+     * Retrieve revisions (edit history) in descending order
      *
      * @return HasMany<\Illuminate\Database\Eloquent\Model>
      */

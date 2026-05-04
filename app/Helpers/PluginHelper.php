@@ -37,10 +37,12 @@
 
 namespace App\Helpers;
 
+use App\Http\Middleware\EnsurePluginActiveOnSite;
 use App\Models\Plugin;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
 class PluginHelper
@@ -377,9 +379,30 @@ class PluginHelper
     }
 
     /**
-     * Load API routes for enabled plugins
+     * Load API routes for enabled plugins.
      *
-     * This method is intended to be called within routes/api.php or in a ServiceProvider
+     * Two layouts are supported:
+     *
+     *   1. PREFERRED — plugins/{Name}/routes/api/v1.php
+     *      Auto-wrapped by core in:
+     *        Route::prefix('api/v1')
+     *            ->middleware(EnsurePluginActiveOnSite::class.':'.$slug)
+     *            ->group(...)
+     *      Plugin authors only write the slug-relative path inside.
+     *      The middleware returns a 404 JSON envelope if the plugin is
+     *      not active on the resolved site.
+     *
+     *   2. LEGACY (deprecated) — plugins/{Name}/routes/api.php
+     *      Loaded as-is at the application root with no auto prefix
+     *      and no per-site activation gate. A deprecation warning is
+     *      written to the application log on every boot until the
+     *      plugin migrates to layout (1).
+     *
+     * If both files exist for the same plugin, only the v1 layout is
+     * loaded and the legacy file is ignored (with a warning) so plugin
+     * authors get a clear push toward the canonical layout.
+     *
+     * Called from PluginServiceProvider::boot().
      */
     public static function loadEnabledApiRoutes(): void
     {
@@ -392,10 +415,34 @@ class PluginHelper
             $enabledPlugins = self::getEnabledPlugins();
 
             foreach ($enabledPlugins as $plugin) {
-                $apiRoutePath = self::getPluginPath($plugin->directory).'/routes/api.php';
+                $pluginPath = self::getPluginPath($plugin->directory);
+                $v1Path = $pluginPath.'/routes/api/v1.php';
+                $legacyPath = $pluginPath.'/routes/api.php';
 
-                if (File::exists($apiRoutePath)) {
-                    include $apiRoutePath;
+                $hasV1 = File::exists($v1Path);
+                $hasLegacy = File::exists($legacyPath);
+
+                if ($hasV1) {
+                    Route::prefix('api/v1')
+                        ->middleware(EnsurePluginActiveOnSite::class.':'.$plugin->slug)
+                        ->group(function () use ($v1Path) {
+                            require $v1Path;
+                        });
+
+                    if ($hasLegacy) {
+                        Log::warning('PluginHelper: routes/api.php ignored because routes/api/v1.php is also present', [
+                            'plugin' => $plugin->directory,
+                        ]);
+                    }
+
+                    continue;
+                }
+
+                if ($hasLegacy) {
+                    Log::warning('PluginHelper: plugin uses deprecated routes/api.php; migrate to routes/api/v1.php for auto-prefix and per-site activation gating', [
+                        'plugin' => $plugin->directory,
+                    ]);
+                    include $legacyPath;
                 }
             }
         } catch (\Exception $e) {

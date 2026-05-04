@@ -42,8 +42,8 @@ use Illuminate\Console\Command;
 /**
  * CAPTCHA緊急バイパスコマンド（ブレークグラス）
  *
- * CAPTCHAプロバイダ障害時に、管理者がログインできるよう
- * 一時的にCAPTCHA検証をバイパスする緊急復旧機能
+ * Allows administrator to log in when CAPTCHA provider fails
+ * Emergency recovery feature to temporarily bypass CAPTCHA verification
  */
 class CaptchaBypassCommand extends Command
 {

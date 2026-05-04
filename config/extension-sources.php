@@ -61,7 +61,7 @@ return [
     // Key ID used for official source signature verification
     'official_key_id' => env('EXTENSION_SOURCE_KEY_ID', 'dixlase-authority-2026'),
 
-    // 新規プラグイン・テーマ作成時のデフォルト値（dls:make:plugin / dls:make:theme）
+    // Default values when creating new plugins/themes (dls:make:plugin / dls:make:theme)
     'default_author_id' => env('DIXLASE_DEFAULT_AUTHOR_ID', ''),
     'default_authority_key_id' => env('DIXLASE_DEFAULT_AUTHORITY_KEY_ID', 'dixlase-authority-2026'),
 

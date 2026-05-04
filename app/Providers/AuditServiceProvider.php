@@ -45,12 +45,12 @@ class AuditServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // AuditServiceをシングルトンとして登録
+        // Register AuditService as a singleton
         $this->app->singleton('audit', function ($app) {
             return new AuditService();
         });
 
-        // クラス名でも解決できるようにエイリアス
+        // Alias to allow resolution by class name
         $this->app->alias('audit', AuditService::class);
     }
 

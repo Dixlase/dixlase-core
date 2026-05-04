@@ -78,7 +78,7 @@ class UpdateFrontPageAction extends AbstractAction
 
     protected function handle(Actor $actor, array $data): ActionResult
     {
-        // 保存形式は初回作成時のみ選択可能。編集時は既存の値をそのまま使用する。
+        // Storage format can only be selected on initial creation. Existing value is used as-is when editing.
         $storageTypeEnum = $this->frontPage->storage_type;
         $editorTypeSlug = $this->frontPage->editor_type->slug();
         $locale = $this->frontPage->lang;
@@ -87,7 +87,7 @@ class UpdateFrontPageAction extends AbstractAction
         $customJs = $isHtmlEditor ? ($data['custom_js'] ?? null) : null;
         $customCss = $isHtmlEditor ? ($data['custom_css'] ?? null) : null;
 
-        // ファイル保存の場合はファイルにも保存
+        // If file storage, also save to file
         if ($storageTypeEnum === ContentStorageType::FILE) {
             $this->contentService->saveToFile('main_content', $locale, $editorTypeSlug, $content);
 
@@ -105,7 +105,7 @@ class UpdateFrontPageAction extends AbstractAction
             }
         }
 
-        // DBにもコンテンツを保存（バックアップ兼リビジョンのソース）
+        // Also save content to DB (serves as backup and revision source)
         $updateData = ['content' => $content];
         if ($isHtmlEditor) {
             $updateData['custom_js'] = $customJs;
@@ -113,8 +113,8 @@ class UpdateFrontPageAction extends AbstractAction
         }
         $this->frontPage->update($updateData);
 
-        // 保存後の状態をリビジョンに記録（ユーザーの明示保存なので manual として扱う）
-        // 直前リビジョンと差分がない場合はスキップ
+        // Record post-save state to revision (treated as manual since it's an explicit user save)
+        // Skip if no difference from previous revision
         $this->revisionService->record(
             $this->frontPage->fresh() ?? $this->frontPage,
             type: \App\Models\FrontPageRevision::TYPE_MANUAL,

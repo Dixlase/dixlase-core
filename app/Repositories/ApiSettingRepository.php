@@ -46,7 +46,7 @@ use App\Services\Site\SettingResolver;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
  * API settings repository. Delegates to SettingResolver so API policy
  * keys live in the multisite-aware global_settings store.

@@ -42,15 +42,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * 復元履歴モデル
+ * Restore record model
  *
- * バックアップからの復元操作の監査証跡を管理します。
- * 「誰が・いつ・何を・どのバックアップから復元したか」を記録します。
+ * Manages audit trails for restore operations from backups.
+ * Records who restored what, when, and from which backup.
  */
 class RestoreRecord extends Model
 {
     // ========================================
-    // ステータス定数
+    // Status constants
     // ========================================
 
     public const STATUS_PENDING = 'pending';
@@ -87,11 +87,11 @@ class RestoreRecord extends Model
     ];
 
     // ========================================
-    // リレーション
+    // Relations
     // ========================================
 
     /**
-     * 復元元のバックアップ記録
+     * Source backup record
      */
     public function backupRecord(): BelongsTo
     {
@@ -99,7 +99,7 @@ class RestoreRecord extends Model
     }
 
     /**
-     * 復元前の安全スナップショット
+     * Safety snapshot before restore
      */
     public function preRestoreBackup(): BelongsTo
     {
@@ -107,7 +107,7 @@ class RestoreRecord extends Model
     }
 
     /**
-     * 復元実行者
+     * User who executed the restore
      */
     public function restoredBy(): BelongsTo
     {
@@ -115,11 +115,11 @@ class RestoreRecord extends Model
     }
 
     // ========================================
-    // スコープ
+    // Scopes
     // ========================================
 
     /**
-     * 完了した復元のみに絞り込み
+     * Filter to completed restores only
      */
     public function scopeCompleted(Builder $query): Builder
     {
@@ -127,7 +127,7 @@ class RestoreRecord extends Model
     }
 
     /**
-     * 失敗した復元のみに絞り込み
+     * Filter to failed restores only
      */
     public function scopeFailed(Builder $query): Builder
     {
@@ -135,7 +135,7 @@ class RestoreRecord extends Model
     }
 
     /**
-     * 指定ユーザーが実行した復元に絞り込み
+     * Filter to restores executed by specified user
      */
     public function scopeForMember(Builder $query, int $memberId): Builder
     {
@@ -143,7 +143,7 @@ class RestoreRecord extends Model
     }
 
     /**
-     * 指定バックアップから復元したものに絞り込み
+     * Filter to restores from specified backup
      */
     public function scopeFromBackup(Builder $query, int $backupRecordId): Builder
     {
@@ -151,11 +151,11 @@ class RestoreRecord extends Model
     }
 
     // ========================================
-    // ステータス変更メソッド
+    // Status change methods
     // ========================================
 
     /**
-     * 進行中としてマーク
+     * Mark as in progress
      */
     public function markAsInProgress(): bool
     {
@@ -163,7 +163,7 @@ class RestoreRecord extends Model
     }
 
     /**
-     * 完了としてマーク
+     * Mark as completed
      */
     public function markAsCompleted(?int $durationSeconds = null): bool
     {
@@ -174,7 +174,7 @@ class RestoreRecord extends Model
     }
 
     /**
-     * 失敗としてマーク
+     * Mark as failed
      */
     public function markAsFailed(string $error): bool
     {
@@ -185,7 +185,7 @@ class RestoreRecord extends Model
     }
 
     /**
-     * ロールバック済みとしてマーク
+     * Mark as rolled back
      */
     public function markAsRolledBack(): bool
     {
@@ -193,11 +193,11 @@ class RestoreRecord extends Model
     }
 
     // ========================================
-    // ヘルパーメソッド
+    // Helper methods
     // ========================================
 
     /**
-     * メタデータから指定キーの値を取得
+     * Get value for specified key from metadata
      */
     public function getMetadataValue(string $key, mixed $default = null): mixed
     {
@@ -207,7 +207,7 @@ class RestoreRecord extends Model
     }
 
     /**
-     * 復元の取り消しが可能か判定
+     * Determine if the restore can be cancelled
      */
     public function canRollback(): bool
     {

@@ -62,62 +62,62 @@ class CheckInstallStatus extends Command
 {
     protected $signature = 'dls:install:check';
 
-    protected $description = 'インストール状態とマイグレーション状況をチェック';
+    protected $description = 'Check installation status and migration state';
 
     public function handle()
     {
         $this->info('========================================');
-        $this->info('  インストール状態チェック');
+        $this->info(__('console/commands/check_install_status.installation_status_check'));
         $this->info('========================================');
         $this->newLine();
 
-        // 1. INSTALLED状態
+        // 1. INSTALLED status
         $installed = env('INSTALLED');
         $this->info('1. INSTALLED: '.var_export($installed, true));
-        $this->line('   型: '.gettype($installed));
-        $this->line('   判定: '.(($installed === 'true' || $installed === true) ? '✅ インストール済み' : '❌ 未インストール'));
+        $this->line(__('console/commands/check_install_status.type_label').gettype($installed));
+        $this->line(__('console/commands/check_install_status.result_label').(($installed === 'true' || $installed === true) ? __('console/commands/check_install_status.installed') : __('console/commands/check_install_status.not_installed')));
         $this->newLine();
 
-        // 2. データベース接続
+        // 2. Database connection
         try {
             $dbName = DB::connection()->getDatabaseName();
-            $this->info('2. データベース接続: ✅ OK');
-            $this->line("   データベース名: {$dbName}");
+            $this->info('2. Database connection: ✅ OK');
+            $this->line(__('console/commands/check_install_status.database_name_display', ['dbName' => $dbName]));
         } catch (\Exception $e) {
-            $this->error('2. データベース接続: ❌ NG');
-            $this->line('   エラー: '.$e->getMessage());
+            $this->error('2. Database connection: ❌ NG');
+            $this->line(__('console/commands/check_install_status.error_label').$e->getMessage());
 
             return 1;
         }
         $this->newLine();
 
-        // 3. migrationsテーブル
+        // 3. migrations table
         try {
             $hasMigrationsTable = DB::getSchemaBuilder()->hasTable('migrations');
-            $this->info('3. migrationsテーブル: '.($hasMigrationsTable ? '✅ 存在' : '❌ 不在'));
+            $this->info('3. migrations table: '.($hasMigrationsTable ? __('console/commands/check_install_status.exists') : __('console/commands/check_install_status.not_found')));
 
             if ($hasMigrationsTable) {
                 $migrationCount = DB::table('migrations')->count();
-                $this->line("   実行済みマイグレーション: {$migrationCount}件");
+                $this->line(__('console/commands/check_install_status.executed_migrations_count', ['migrationCount' => $migrationCount]));
 
-                // 最近のマイグレーション5件を表示
+                // Display the 5 most recent migrations
                 $recentMigrations = DB::table('migrations')
                     ->orderBy('id', 'desc')
                     ->limit(5)
                     ->pluck('migration');
 
-                $this->line('   最近のマイグレーション:');
+                $this->line(__('console/commands/check_install_status.recent_migrations'));
                 foreach ($recentMigrations as $migration) {
                     $this->line("   - {$migration}");
                 }
             }
         } catch (\Exception $e) {
-            $this->error('3. migrationsテーブルチェックエラー: '.$e->getMessage());
+            $this->error(__('console/commands/check_install_status.migrations_table_check_error').$e->getMessage());
         }
         $this->newLine();
 
-        // 4. 主要テーブル
-        $this->info('4. 主要テーブル:');
+        // 4. Main tables
+        $this->info('4. Main tables:');
         $requiredTables = ['members', 'site_settings', 'themes', 'theme_settings', 'members_roles'];
 
         foreach ($requiredTables as $table) {
@@ -125,22 +125,22 @@ class CheckInstallStatus extends Command
                 $exists = DB::getSchemaBuilder()->hasTable($table);
                 if ($exists) {
                     $count = DB::table($table)->count();
-                    $this->line("   {$table}: ✅ 存在 ({$count}レコード)");
+                    $this->line(__('console/commands/check_install_status.table_exists_with_records', ['table' => $table, 'count' => $count]));
                 } else {
-                    $this->line("   {$table}: ❌ 不在");
+                    $this->line(__('console/commands/check_install_status.table_not_found', ['table' => $table]));
                 }
             } catch (\Exception $e) {
-                $this->error("   {$table}: エラー - ".$e->getMessage());
+                $this->error(__('console/commands/check_install_status.table_error', ['table' => $table]).$e->getMessage());
             }
         }
         $this->newLine();
 
-        // 5. 管理者ユーザー
+        // 5. Administrator user
         try {
             if (DB::getSchemaBuilder()->hasTable('members')) {
                 // role=10: SUPER_ADMIN, role=9: ADMIN, role=1: GUEST
                 $adminCount = DB::table('members')->whereIn('role', [9, 10])->count();
-                $this->info("5. 管理者ユーザー (role 9,10): {$adminCount}人");
+                $this->info(__('console/commands/check_install_status.administrator_user_count', ['adminCount' => $adminCount]));
 
                 if ($adminCount > 0) {
                     $admins = DB::table('members')
@@ -153,11 +153,11 @@ class CheckInstallStatus extends Command
                         $this->line("   - [{$admin->id}] {$admin->name} ({$admin->email}) [role={$admin->role}:{$roleLabel}]");
                     }
                 } else {
-                    $this->warn('   ⚠️ 管理者ユーザーが存在しません');
+                    $this->warn(__('console/commands/check_install_status.admin_user_not_exist'));
                 }
             }
         } catch (\Exception $e) {
-            $this->error('5. 管理者ユーザーチェックエラー: '.$e->getMessage());
+            $this->error(__('console/commands/check_install_status.admin_user_check_error').$e->getMessage());
         }
         $this->newLine();
 
@@ -169,49 +169,49 @@ class CheckInstallStatus extends Command
                     ->where('name', 'site_name')
                     ->exists();
 
-                $this->info('6. site_settings (site_name @ primary site): '.($hasSiteName ? '✅ 存在' : '❌ 不在'));
+                $this->info('6. site_settings (site_name @ primary site): '.($hasSiteName ? __('console/commands/check_install_status.exists') : __('console/commands/check_install_status.not_found')));
 
                 if ($hasSiteName) {
                     $siteName = DB::table('site_settings')
                         ->where('site_id', 1)
                         ->where('name', 'site_name')
                         ->value('value');
-                    $this->line("   サイト名: {$siteName}");
+                    $this->line(__('console/commands/check_install_status.site_name_display', ['siteName' => $siteName]));
                 }
             }
         } catch (\Throwable $e) {
-            $this->error('6. site_settings チェックエラー: '.$e->getMessage());
+            $this->error(__('console/commands/check_install_status.site_settings_check_error').$e->getMessage());
         }
         $this->newLine();
 
-        // 7. 総合判定
+        // 7. Overall determination
         $this->info('========================================');
-        $this->info('  総合判定');
+        $this->info(__('console/commands/check_install_status.overall_result'));
         $this->info('========================================');
 
         try {
             $isMigrationComplete = $this->checkMigrationCompleted();
 
             if ($isMigrationComplete) {
-                $this->info('✅ マイグレーション: 完了');
+                $this->info(__('console/commands/check_install_status.migration_completed'));
 
                 if ($installed === 'true' || $installed === true) {
-                    $this->info('✅ インストール: 完了');
+                    $this->info(__('console/commands/check_install_status.installation_completed'));
                     $this->line('');
-                    $this->info('🎉 システムは正常にインストールされています！');
+                    $this->info(__('console/commands/check_install_status.system_successfully_installed'));
                 } else {
-                    $this->warn('⚠️ INSTALLED=false になっています');
+                    $this->warn(__('console/commands/check_install_status.installed_is_false'));
                     $this->line('');
-                    $this->info('💡 フロントページにアクセスすると完了画面が表示されます。');
-                    $this->info('   ボタンを押すことでINSTALLED=trueになります。');
+                    $this->info(__('console/commands/check_install_status.access_front_page_for_completion'));
+                    $this->info(__('console/commands/check_install_status.press_button_to_set_installed_true'));
                 }
             } else {
-                $this->error('❌ マイグレーション: 未完了');
+                $this->error(__('console/commands/check_install_status.migration_not_completed'));
                 $this->line('');
-                $this->warn('インストールプロセスを実行してください。');
+                $this->warn(__('console/commands/check_install_status.run_installation_process'));
             }
         } catch (\Exception $e) {
-            $this->error('判定エラー: '.$e->getMessage());
+            $this->error(__('console/commands/check_install_status.determination_error').$e->getMessage());
         }
 
         return 0;
@@ -220,12 +220,12 @@ class CheckInstallStatus extends Command
     private function checkMigrationCompleted(): bool
     {
         try {
-            // 基本チェック
+            // Basic check
             if (! DB::connection()->getDatabaseName()) {
                 return false;
             }
 
-            // migrationsテーブルが存在しない場合はスキップ（直接SQL実行の場合）
+            // Skip if migrations table does not exist (when SQL is executed directly)
             if (DB::getSchemaBuilder()->hasTable('migrations')) {
                 $migrationCount = DB::table('migrations')->count();
                 if ($migrationCount < 15) {

@@ -46,25 +46,25 @@ class MediaSettingsSeeder extends Seeder
     public function run(): void
     {
         $defaultSettings = [
-            // 基本設定
-            ['name' => 'allowed_file_types', 'value' => '["jpg","png","gif","webp","mp4"]'], // 注：PDF/DOCX/SVG/ZIPはセキュリティリスクのため初期値には含めない
-            ['name' => 'max_file_size', 'value' => '2048'], // 単位: KB（レガシー互換用）
+            // Basic settings
+            ['name' => 'allowed_file_types', 'value' => '["jpg","png","gif","webp","mp4"]'], // Note: PDF/DOCX/SVG/ZIP are not included in default values due to security risks
+            ['name' => 'max_file_size', 'value' => '2048'], // Unit: KB (for legacy compatibility)
             ['name' => 'storage_disk', 'value' => 'public'],
-            ['name' => 'generate_thumbnails', 'value' => '1'], // 1: 有効, 0: 無効
+            ['name' => 'generate_thumbnails', 'value' => '1'], // 1: enabled, 0: disabled
 
-            // ファイルタイプ別サイズ上限（KB）
+            // Size limit per file type (KB)
             ['name' => 'max_file_size_image', 'value' => '10240'],      // 10MB
             ['name' => 'max_file_size_video', 'value' => '307200'],     // 300MB
             ['name' => 'max_file_size_document', 'value' => '30720'],   // 30MB
             ['name' => 'max_file_size_archive', 'value' => '102400'],   // 100MB
 
-            // セキュリティ設定
-            ['name' => 'svg_sanitization_enabled', 'value' => '1'],     // SVGサニタイズ有効
-            ['name' => 'zip_security_enabled', 'value' => '1'],         // ZIPセキュリティチェック有効
-            ['name' => 'mime_validation_enabled', 'value' => '1'],      // MIME実体検証有効
+            // Security settings
+            ['name' => 'svg_sanitization_enabled', 'value' => '1'],     // SVG sanitization enabled
+            ['name' => 'zip_security_enabled', 'value' => '1'],         // ZIP security check enabled
+            ['name' => 'mime_validation_enabled', 'value' => '1'],      // MIME content verification enabled
 
-            // ZIP詳細設定
-            ['name' => 'zip_max_compression_ratio', 'value' => '100'],  // 最大圧縮率（ZIP爆弾対策）
+            // ZIP advanced settings
+            ['name' => 'zip_max_compression_ratio', 'value' => '100'],  // Maximum compression ratio (ZIP bomb protection)
             ['name' => 'zip_max_file_count', 'value' => '1000'],        // ZIP内最大ファイル数
         ];
 

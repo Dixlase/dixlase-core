@@ -51,7 +51,7 @@ class MemberLoginAttempt extends Model
         'user_agent',
         'successful',
         'attempted_at',
-        // 行動分析用カラム
+        // Columns for behavior analysis
         'login_hour',
         'login_day_of_week',
         'device_fingerprint',
@@ -82,7 +82,7 @@ class MemberLoginAttempt extends Model
     ];
 
     // ========================================
-    // 失敗理由の定数
+    // Constants for failure reasons
     // ========================================
     public const FAILURE_INVALID_PASSWORD = 'invalid_password';
 
@@ -105,7 +105,7 @@ class MemberLoginAttempt extends Model
     public const FAILURE_RATE_LIMITED = 'rate_limited';
 
     /**
-     * 指定した識別子（メールアドレス等）の失敗した試行回数を取得
+     * Get the number of failed attempts for the specified identifier (email address, etc.)
      */
     public static function getFailedAttemptsCount(string $identifier, int $timeWindowMinutes): int
     {
@@ -118,7 +118,7 @@ class MemberLoginAttempt extends Model
     }
 
     /**
-     * 指定したIPアドレスの失敗した試行回数を取得
+     * Get the number of failed attempts for the specified IP address
      */
     public static function getFailedAttemptsCountByIp(string $ipAddress, int $timeWindowMinutes): int
     {
@@ -131,7 +131,7 @@ class MemberLoginAttempt extends Model
     }
 
     /**
-     * 最後の失敗した試行時刻を取得
+     * Get the last failed attempt time
      */
     public static function getLastFailedAttempt(string $identifier): ?Carbon
     {
@@ -144,7 +144,7 @@ class MemberLoginAttempt extends Model
     }
 
     /**
-     * ログイン試行を記録
+     * Record login attempt
      */
     public static function recordAttempt(
         string $identifier,
@@ -164,7 +164,7 @@ class MemberLoginAttempt extends Model
     }
 
     /**
-     * 成功したログイン後、過去の失敗記録をクリア
+     * Clear past failure records after successful login
      */
     public static function clearFailedAttempts(string $identifier): void
     {
@@ -174,7 +174,7 @@ class MemberLoginAttempt extends Model
     }
 
     /**
-     * 古いログイン試行記録を削除（クリーンアップ用）
+     * Delete old login attempt records (for cleanup)
      */
     public static function cleanupOldAttempts(int $daysOld = 30): int
     {
@@ -184,11 +184,11 @@ class MemberLoginAttempt extends Model
     }
 
     // ========================================
-    // 行動分析用メソッド（β版 行動分析の基盤）
+    // Methods for behavior analysis (beta version behavior analysis foundation)
     // ========================================
 
     /**
-     * 行動分析データ付きでログイン試行を記録
+     * Record login attempt with behavior analysis data
      */
     public static function recordAttemptWithBehavior(
         string $identifier,
@@ -199,12 +199,12 @@ class MemberLoginAttempt extends Model
     ): static {
         $now = Carbon::now();
 
-        // 前回のログイン試行を取得
+        // Get the previous login attempt
         $lastAttempt = static::where('identifier', $identifier)
             ->orderBy('attempted_at', 'desc')
             ->first();
 
-        // 前回からの経過時間を計算
+        // Calculate elapsed time since the previous attempt
         $secondsSinceLast = null;
         if ($lastAttempt) {
             $secondsSinceLast = (int) $now->diffInSeconds($lastAttempt->attempted_at, absolute: true);
@@ -216,7 +216,7 @@ class MemberLoginAttempt extends Model
             'user_agent' => $userAgent,
             'successful' => $successful,
             'attempted_at' => $now,
-            // 行動分析データ
+            // Behavior analysis data
             'login_hour' => $behaviorData['login_hour'] ?? $now->hour,
             'login_day_of_week' => $behaviorData['login_day_of_week'] ?? $now->dayOfWeek,
             'device_fingerprint' => $behaviorData['device_fingerprint'] ?? null,
@@ -234,10 +234,10 @@ class MemberLoginAttempt extends Model
     }
 
     /**
-     * ユーザーの通常ログイン時間帯を取得（β版で行動分析に使用）
+     * Get user's typical login time periods (used for behavior analysis in beta version)
      *
-     * @param  int  $days  分析対象日数
-     * @return array ['hours' => [時間帯 => 回数], 'peak_hour' => 最頻時間帯]
+     * @param  int  $days  Number of days to analyze
+     * @return array ['hours' => [hour => count], 'peak_hour' => most frequent hour]
      */
     public static function getLoginHourPattern(string $identifier, int $days = 30): array
     {
@@ -268,7 +268,7 @@ class MemberLoginAttempt extends Model
     }
 
     /**
-     * ユーザーの通常ログイン曜日を取得
+     * Get user's typical login days of the week
      */
     public static function getLoginDayPattern(string $identifier, int $days = 30): array
     {
@@ -296,7 +296,7 @@ class MemberLoginAttempt extends Model
     }
 
     /**
-     * ユーザーの既知デバイスフィンガープリントを取得
+     * Get user's known device fingerprints
      */
     public static function getKnownDeviceFingerprints(string $identifier, int $days = 90): array
     {
@@ -312,7 +312,7 @@ class MemberLoginAttempt extends Model
     }
 
     /**
-     * ユーザーの既知国コードを取得
+     * Get user's known country codes
      */
     public static function getKnownCountryCodes(string $identifier, int $days = 90): array
     {
@@ -328,7 +328,7 @@ class MemberLoginAttempt extends Model
     }
 
     /**
-     * 現在のログインが異常かどうかを判定（β版で実装予定）
+     * Determine whether the current login is anomalous (planned for implementation in beta version)
      *
      * @return array ['is_anomaly' => bool, 'reasons' => array, 'risk_score' => int]
      */
@@ -341,22 +341,22 @@ class MemberLoginAttempt extends Model
         $reasons = [];
         $riskScore = 0;
 
-        // 時間帯の異常検知
+        // Detect time zone anomaly
         $hourPattern = static::getLoginHourPattern($identifier);
         if ($hourPattern['total_logins'] >= 5) {
-            // 過去のログインが5回以上ある場合のみ判定
+            // Only evaluate if there are 5 or more past logins
             $hourCount = $hourPattern['hours'][$currentHour] ?? 0;
             $totalLogins = $hourPattern['total_logins'];
             $hourRatio = $hourCount / $totalLogins;
 
             if ($hourRatio < 0.05) {
-                // この時間帯のログインが5%未満
+                // Logins in this time zone are less than 5%
                 $reasons[] = 'unusual_login_hour';
                 $riskScore += 20;
             }
         }
 
-        // デバイスフィンガープリントの異常検知
+        // Detect device fingerprint anomaly
         if ($deviceFingerprint) {
             $knownFingerprints = static::getKnownDeviceFingerprints($identifier);
             if (! empty($knownFingerprints) && ! in_array($deviceFingerprint, $knownFingerprints)) {
@@ -365,7 +365,7 @@ class MemberLoginAttempt extends Model
             }
         }
 
-        // 国コードの異常検知
+        // Detect country code anomaly
         if ($countryCode) {
             $knownCountries = static::getKnownCountryCodes($identifier);
             if (! empty($knownCountries) && ! in_array($countryCode, $knownCountries)) {
@@ -382,7 +382,7 @@ class MemberLoginAttempt extends Model
     }
 
     /**
-     * ユーザーの行動統計を取得
+     * Get user behavior statistics
      */
     public static function getBehaviorStats(string $identifier, int $days = 30): array
     {
@@ -413,11 +413,11 @@ class MemberLoginAttempt extends Model
     }
 
     // ========================================
-    // スコープ（行動分析用）
+    // Scopes (for behavior analysis)
     // ========================================
 
     /**
-     * 高リスクのログイン試行を取得
+     * Get high-risk login attempts
      */
     public function scopeHighRisk($query, int $minScore = 50)
     {
@@ -425,7 +425,7 @@ class MemberLoginAttempt extends Model
     }
 
     /**
-     * 特定の時間帯のログイン試行を取得
+     * Get login attempts for a specific time zone
      */
     public function scopeInHour($query, int $hour)
     {
@@ -433,7 +433,7 @@ class MemberLoginAttempt extends Model
     }
 
     /**
-     * 特定の曜日のログイン試行を取得
+     * Get login attempts for a specific day of week
      */
     public function scopeOnDayOfWeek($query, int $dayOfWeek)
     {
@@ -441,7 +441,7 @@ class MemberLoginAttempt extends Model
     }
 
     /**
-     * 特定の国からのログイン試行を取得
+     * Get login attempts from a specific country
      */
     public function scopeFromCountry($query, string $countryCode)
     {
@@ -449,7 +449,7 @@ class MemberLoginAttempt extends Model
     }
 
     /**
-     * 2FAを使用したログイン試行を取得
+     * Get login attempts using 2FA
      */
     public function scopeUsedTwoFa($query)
     {
@@ -457,7 +457,7 @@ class MemberLoginAttempt extends Model
     }
 
     /**
-     * 信頼済みデバイスからのログイン試行を取得
+     * Get login attempts from trusted devices
      */
     public function scopeFromTrustedDevice($query)
     {

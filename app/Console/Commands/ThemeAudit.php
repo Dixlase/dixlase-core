@@ -42,10 +42,10 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 /**
- * テーマ権限監査コマンド
+ * Theme permission audit command
  *
- * テーマのコードを解析し、theme.json で宣言された権限と
- * 実際に使用されている機能を照合します。
+ * Analyze theme code and compare permissions declared in theme.json
+ * with features actually used
  */
 class ThemeAudit extends Command
 {
@@ -83,7 +83,7 @@ class ThemeAudit extends Command
         $themeSlug = Str::kebab(basename($themeDir));
         $themeJsonPath = "{$themeDir}/theme.json";
 
-        // JSONモードでない場合のみヘッダーを表示
+        // Display header only when not in JSON mode
         if (! $isJson) {
             $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             $this->info('🔍 Auditing theme: '.basename($themeDir));
@@ -91,13 +91,13 @@ class ThemeAudit extends Command
             $this->newLine();
         }
 
-        // theme.json から宣言された権限を取得
+        // Get declared permissions from theme.json
         $declaredPermissions = $this->getDeclaredPermissions($themeJsonPath);
 
-        // コードを解析して実際に使用されている権限を検出
+        // Analyze code to detect actually used permissions
         $detectedPermissions = $this->analyzeThemeCode($themeDir);
 
-        // 比較結果を生成
+        // Generate comparison results
         $auditResult = $this->comparePermissions($declaredPermissions, $detectedPermissions, $themeSlug);
 
         if ($isJson) {
@@ -114,33 +114,33 @@ class ThemeAudit extends Command
     }
 
     /**
-     * テーマディレクトリを解決
+     * Resolve theme directory
      */
     protected function resolveThemeDirectory(string $input): ?string
     {
-        // 1. Str::studly で変換して探す（case-sensitive な厳密マッチ）
+        // 1. Convert with Str::studly and search (case-sensitive strict match)
         $studlyName = Str::studly(str_replace('-', '_', $input));
         $path = $this->findDirectoryCaseSensitive(base_path('themes'), $studlyName);
         if ($path !== null) {
             return $path;
         }
 
-        // 2. 入力そのままで探す（case-sensitive）
+        // 2. Search with input as-is (case-sensitive)
         $path = $this->findDirectoryCaseSensitive(base_path('themes'), $input);
         if ($path !== null) {
             return $path;
         }
 
-        // 3. テーマディレクトリを走査してマッチ
+        // 3. Scan theme directory for match
         $themesDir = base_path('themes');
         if (File::isDirectory($themesDir)) {
             foreach (File::directories($themesDir) as $dir) {
-                // kebab-case でのマッチ
+                // Match with kebab-case
                 if (Str::kebab(basename($dir)) === $input) {
                     return $dir;
                 }
 
-                // theme.json の slug でのマッチ
+                // Match with slug from theme.json
                 $themeJson = $dir.'/theme.json';
                 if (File::exists($themeJson)) {
                     $data = json_decode(File::get($themeJson), true);
@@ -155,9 +155,9 @@ class ThemeAudit extends Command
     }
 
     /**
-     * ケースセンシティブにディレクトリを検索する。
+     * Search directory case-sensitively
      *
-     * macOS のケース非依存ファイルシステムでも正確なディレクトリ名を返す。
+     * Returns accurate directory name even on macOS case-insensitive filesystem
      */
     protected function findDirectoryCaseSensitive(string $parentDir, string $name): ?string
     {
@@ -175,7 +175,7 @@ class ThemeAudit extends Command
     }
 
     /**
-     * theme.json から宣言された権限を取得
+     * Get declared permissions from theme.json
      */
     protected function getDeclaredPermissions(string $themeJsonPath): array
     {
@@ -207,7 +207,7 @@ class ThemeAudit extends Command
     }
 
     /**
-     * テーマコードを解析（PatternRegistryベース）
+     * Analyze theme code (PatternRegistry-based)
      */
     protected function analyzeThemeCode(string $themeDir): array
     {
@@ -215,7 +215,7 @@ class ThemeAudit extends Command
     }
 
     /**
-     * 宣言された権限と検出された権限を比較
+     * Compare declared permissions with detected permissions
      */
     protected function comparePermissions(array $declared, array $detected, ?string $themeSlug = null): array
     {
@@ -225,14 +225,14 @@ class ThemeAudit extends Command
         $evidence = $detected['evidence'] ?? [];
 
         foreach ($detectedPerms as $permission => $isDetected) {
-            // ドット記法を配列アクセスに変換
+            // Convert dot notation to array access
             $parts = explode('.', $permission);
             $declaredValue = $declared;
             foreach ($parts as $part) {
                 $declaredValue = $declaredValue[$part] ?? false;
             }
 
-            // 配列の場合は空でないかチェック
+            // Check if not empty when array
             if (is_array($declaredValue)) {
                 $declaredValue = ! empty($declaredValue);
             }
@@ -262,7 +262,7 @@ class ThemeAudit extends Command
             }
         }
 
-        // リスクレベルと理由を統一計算（サービスに委譲）
+        // Unified calculation of risk level and reason (delegated to service)
         $riskResult = $this->permissionService->calculateUnifiedRiskLevel($declared, $mismatches, $themeSlug);
 
         return [
@@ -276,7 +276,7 @@ class ThemeAudit extends Command
     }
 
     /**
-     * レポートを出力
+     * Output report
      */
     protected function outputReport(array $result): void
     {
@@ -323,7 +323,7 @@ class ThemeAudit extends Command
     }
 
     /**
-     * JSON形式で出力
+     * Output in JSON format
      */
     protected function outputJson(array $result): void
     {
@@ -331,7 +331,7 @@ class ThemeAudit extends Command
     }
 
     /**
-     * 修正提案を表示
+     * Show fix suggestions
      */
     protected function suggestFixes(string $themeJsonPath, array $result): void
     {

@@ -47,9 +47,11 @@ use Symfony\Component\HttpFoundation\Response;
  * for the requested locale.
  *
  * The core default implementation issues a 302 redirect to the same path
- * under the site's primary locale. Plugins (e.g. DixlaseI18n,
- * DixlaseRedirects) can rebind this contract to return 404, render a
- * fallback locale, or apply a custom redirect rule.
+ * under the site's primary locale. Any multilingual plugin (first-party,
+ * third-party, or a custom in-house implementation) — or an unrelated
+ * plugin such as one that handles redirects — can rebind this contract
+ * to return 404, render a fallback locale, or apply a custom redirect
+ * rule.
  *
  * This contract only fires when a route is matched but content is missing
  * for the current locale. Unmatched URLs continue to return a normal 404.

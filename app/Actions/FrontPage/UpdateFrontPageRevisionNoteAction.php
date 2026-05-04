@@ -44,7 +44,7 @@ use App\Enums\Permission;
 use App\Models\FrontPageRevision;
 
 /**
- * フロントページリビジョンのメモを更新する Action
+ * Action to update front page revision note
  */
 class UpdateFrontPageRevisionNoteAction extends AbstractAction
 {

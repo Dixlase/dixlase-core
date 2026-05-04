@@ -41,9 +41,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * APIリクエストログモデル
+ * API Request Log Model
  *
- * β版でのAPIレートリミット機能の基盤として使用
+ * Used as foundation for API rate limiting feature in beta version
  */
 class ApiRequestLog extends Model
 {
@@ -84,11 +84,11 @@ class ApiRequestLog extends Model
     ];
 
     // ========================================
-    // リレーション
+    // Relations
     // ========================================
 
     /**
-     * APIキーとのリレーション
+     * Relation with API key
      */
     public function apiKey(): BelongsTo
     {
@@ -96,11 +96,11 @@ class ApiRequestLog extends Model
     }
 
     // ========================================
-    // レートリミット用メソッド（β版で実装予定）
+    // Rate limiting methods (planned for beta version)
     // ========================================
 
     /**
-     * 指定APIキーの直近のリクエスト数を取得
+     * Get recent request count for specified API key
      */
     public static function getRequestCount(int $apiKeyId, int $windowSeconds = 60): int
     {
@@ -112,7 +112,7 @@ class ApiRequestLog extends Model
     }
 
     /**
-     * 指定IPアドレスの直近のリクエスト数を取得
+     * Get recent request count for specified IP address
      */
     public static function getRequestCountByIp(string $ipAddress, int $windowSeconds = 60): int
     {
@@ -124,7 +124,7 @@ class ApiRequestLog extends Model
     }
 
     /**
-     * 指定エンドポイントの直近のリクエスト数を取得
+     * Get recent request count for specified endpoint
      */
     public static function getRequestCountByEndpoint(
         string $endpoint,
@@ -144,7 +144,7 @@ class ApiRequestLog extends Model
     }
 
     /**
-     * レートリミット超過かどうかを判定
+     * Check if rate limit is exceeded
      */
     public static function isRateLimited(int $apiKeyId, int $limit, int $windowSeconds = 60): bool
     {
@@ -152,7 +152,7 @@ class ApiRequestLog extends Model
     }
 
     /**
-     * IP別レートリミット超過かどうかを判定
+     * Check if rate limit is exceeded by IP
      */
     public static function isIpRateLimited(string $ipAddress, int $limit, int $windowSeconds = 60): bool
     {
@@ -160,7 +160,7 @@ class ApiRequestLog extends Model
     }
 
     /**
-     * APIリクエストを記録
+     * Record API request
      */
     public static function logRequest(array $data): static
     {
@@ -170,7 +170,7 @@ class ApiRequestLog extends Model
     }
 
     /**
-     * 古いログを削除（クリーンアップ用）
+     * Delete old logs (for cleanup)
      */
     public static function cleanupOldLogs(int $daysOld = 30): int
     {
@@ -180,11 +180,11 @@ class ApiRequestLog extends Model
     }
 
     // ========================================
-    // 統計・分析用メソッド
+    // Statistics and analysis methods
     // ========================================
 
     /**
-     * APIキー別の使用統計を取得
+     * Get usage statistics by API key
      */
     public static function getUsageStats(int $apiKeyId, int $days = 7): array
     {
@@ -210,7 +210,7 @@ class ApiRequestLog extends Model
     }
 
     /**
-     * エンドポイント別の使用統計を取得
+     * Get usage statistics by endpoint
      */
     public static function getEndpointStats(int $days = 7): array
     {
@@ -233,7 +233,7 @@ class ApiRequestLog extends Model
     }
 
     /**
-     * 時間別のリクエスト分布を取得
+     * Get request distribution by time
      */
     public static function getHourlyDistribution(int $days = 1): array
     {
@@ -255,7 +255,7 @@ class ApiRequestLog extends Model
     }
 
     /**
-     * エラー分析を取得
+     * Get error analysis
      */
     public static function getErrorAnalysis(int $days = 7): array
     {
@@ -275,11 +275,11 @@ class ApiRequestLog extends Model
     }
 
     // ========================================
-    // スコープ
+    // Scopes
     // ========================================
 
     /**
-     * 成功したリクエストのみ
+     * Successful requests only
      */
     public function scopeSuccessful($query)
     {
@@ -287,7 +287,7 @@ class ApiRequestLog extends Model
     }
 
     /**
-     * エラーリクエストのみ
+     * Error requests only
      */
     public function scopeErrors($query)
     {
@@ -295,7 +295,7 @@ class ApiRequestLog extends Model
     }
 
     /**
-     * レートリミット超過のみ
+     * Rate limit exceeded only
      */
     public function scopeRateLimited($query)
     {
@@ -303,7 +303,7 @@ class ApiRequestLog extends Model
     }
 
     /**
-     * 特定期間のリクエスト
+     * Requests within a specific period
      */
     public function scopeInPeriod($query, Carbon $start, Carbon $end)
     {
@@ -311,7 +311,7 @@ class ApiRequestLog extends Model
     }
 
     /**
-     * 直近のリクエスト
+     * Recent requests
      */
     public function scopeRecent($query, int $hours = 24)
     {
@@ -319,7 +319,7 @@ class ApiRequestLog extends Model
     }
 
     /**
-     * 特定エンドポイントのリクエスト
+     * Requests for a specific endpoint
      */
     public function scopeForEndpoint($query, string $endpoint)
     {
@@ -327,7 +327,7 @@ class ApiRequestLog extends Model
     }
 
     /**
-     * 特定メソッドのリクエスト
+     * Requests with a specific method
      */
     public function scopeWithMethod($query, string $method)
     {
@@ -335,7 +335,7 @@ class ApiRequestLog extends Model
     }
 
     /**
-     * 遅いリクエスト
+     * Slow requests
      */
     public function scopeSlow($query, int $minMs = 1000)
     {

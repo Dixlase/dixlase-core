@@ -44,52 +44,52 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * カスタムロールテーブル
-     * プリセットロール（MemberRole enum）を継承して、
-     * 権限の追加・制限を行うカスタムロールを定義する。
-     * AI専用ロールやサービス用ロールもここで管理する。
+     * Custom roles table
+     * Inherits preset roles (MemberRole enum) and
+     * defines custom roles with additional or restricted permissions
+     * AI-specific roles and service roles are also managed here
      */
     public function up(): void
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
 
-            // スラッグ（一意識別子）例: ai_content_writer, store_manager
+            // Slug (unique identifier) e.g. ai_content_writer, store_manager
             $table->string('slug', 100)->unique();
 
-            // 多言語名 {"en": "AI Content Writer", "ja": "AIコンテンツライター"}
+            // Multilingual name {"en": "AI Content Writer", "ja": "AI Content Writer"}
             $table->json('name');
 
-            // 多言語説明文
+            // Multilingual description
             $table->json('description')->nullable();
 
-            // 継承元プリセットロールの MemberRole enum 値
-            // 例: MemberRole::EDITOR->value (8)
-            // カスタムロールはこのプリセットの権限をベースに差分を定義する
+            // MemberRole enum value of the inherited preset role
+            // e.g. MemberRole::EDITOR->value (8)
+            // Custom role defines differences based on this preset's permissions
             $table->unsignedTinyInteger('base_role');
 
-            // アクター種別: human / ai / service
+            // Actor type: human / ai / service
             $table->string('actor_type', 20)->default('human');
 
-            // UI表示順
+            // UI display order
             $table->unsignedSmallInteger('sort_order')->default(0);
 
-            // バッジ色（例: #3B82F6）
+            // Badge color (e.g. #3B82F6)
             $table->string('color', 7)->nullable();
 
-            // このロールに割り当て可能な最大メンバー数（null=無制限）
+            // Maximum number of members assignable to this role (null=unlimited)
             $table->unsignedInteger('max_members')->nullable();
 
-            // 有効/無効フラグ
+            // Active/inactive flag
             $table->boolean('is_active')->default(true);
 
-            // 作成者（外部キー制約は add_foreign_key_constraints で追加）
+            // Creator (foreign key constraint added in add_foreign_key_constraints)
             $table->unsignedBigInteger('created_by')->nullable();
 
             $table->timestamps();
             $table->softDeletes();
 
-            // インデックス
+            // Indexes
             $table->index('actor_type');
             $table->index('base_role');
             $table->index('is_active');

@@ -59,8 +59,8 @@ class MembersTrustedDevice extends Model
     ];
 
     /**
-     * モデルの「起動」メソッド
-     * user_agent設定時に自動的にハッシュを生成
+     * Model "boot" method
+     * Automatically generate hash when user_agent is set
      */
     protected static function booted(): void
     {
@@ -76,7 +76,7 @@ class MembersTrustedDevice extends Model
     ];
 
     /**
-     * 信頼レベル定数
+     * Trust level constants
      */
     public const TRUST_LEVEL_TRUSTED = 'trusted';
 
@@ -85,7 +85,7 @@ class MembersTrustedDevice extends Model
     public const TRUST_LEVEL_BLOCKED = 'blocked';
 
     /**
-     * メンバーとのリレーション
+     * Relation with member
      */
     public function member(): BelongsTo
     {
@@ -93,7 +93,7 @@ class MembersTrustedDevice extends Model
     }
 
     /**
-     * 信頼済みデバイスかどうか
+     * Whether the device is trusted
      */
     public function isTrusted(): bool
     {
@@ -101,7 +101,7 @@ class MembersTrustedDevice extends Model
     }
 
     /**
-     * ブロック済みデバイスかどうか
+     * Whether the device is blocked
      */
     public function isBlocked(): bool
     {
@@ -109,7 +109,7 @@ class MembersTrustedDevice extends Model
     }
 
     /**
-     * 最終使用日時を更新
+     * Update last used datetime
      */
     public function updateLastUsed(?string $ip = null): void
     {
@@ -121,7 +121,7 @@ class MembersTrustedDevice extends Model
     }
 
     /**
-     * デバイスをブロック
+     * Block device
      */
     public function block(): void
     {
@@ -130,7 +130,7 @@ class MembersTrustedDevice extends Model
     }
 
     /**
-     * デバイスを信頼済みに設定
+     * Set device as trusted
      */
     public function trust(): void
     {

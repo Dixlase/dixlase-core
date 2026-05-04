@@ -44,10 +44,10 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 /**
- * プラグイン権限監査コマンド
+ * Plugin permission audit command
  *
- * プラグインのコードを解析し、plugin.json で宣言された権限と
- * 実際に使用されている機能を照合します。
+ * Analyzes plugin code and compares permissions declared in plugin.json with
+ * features actually being used
  */
 class PluginAudit extends Command
 {
@@ -60,7 +60,7 @@ class PluginAudit extends Command
     protected $description = 'Audit plugin code and compare with declared permissions in plugin.json';
 
     /**
-     * コアテーブル一覧
+     * Core table list
      */
     protected array $coreTables = [
         'users', 'members', 'plugins', 'media', 'settings',
@@ -97,7 +97,7 @@ class PluginAudit extends Command
         $pluginSlug = Str::kebab(basename($pluginDir));
         $pluginJsonPath = "{$pluginDir}/plugin.json";
 
-        // JSONモードでない場合のみヘッダーを表示
+        // Display header only when not in JSON mode
         if (! $isJson) {
             $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             $this->info('🔍 Auditing plugin: '.basename($pluginDir));
@@ -105,20 +105,20 @@ class PluginAudit extends Command
             $this->newLine();
         }
 
-        // plugin.json から宣言された権限を取得
+        // Get declared permissions from plugin.json
         $declaredPermissions = $this->getDeclaredPermissions($pluginJsonPath);
 
-        // plugin.json から宣言された capabilities を取得（情報表示用）
+        // Get declared capabilities from plugin.json (for display purposes)
         $declaredCapabilities = $this->getDeclaredCapabilities($pluginJsonPath);
 
-        // コードを解析して実際に使用されている権限を検出
+        // Analyze code to detect actually used permissions
         $detectedPermissions = $this->analyzePluginCode($pluginDir);
 
-        // 比較結果を生成
+        // Generate comparison results
         $auditResult = $this->comparePermissions($declaredPermissions, $detectedPermissions);
         $auditResult['capabilities'] = $declaredCapabilities;
 
-        // 結果をDBに永続化（JSONモード時はコントローラーが保存するためスキップ）
+        // Persist results to DB (skip in JSON mode as controller will save)
         if (! $isJson) {
             $saveData = [
                 'has_mismatches' => ! empty($auditResult['mismatches']),
@@ -132,7 +132,7 @@ class PluginAudit extends Command
             PluginAuditModel::saveAuditResult($pluginSlug, $saveData);
         }
 
-        // 健全性スコアの計算（オプション）
+        // Calculate health score (optional)
         if ($this->option('calculate-health')) {
             $healthResult = $this->healthScorer->calculate($pluginSlug);
 
@@ -164,24 +164,24 @@ class PluginAudit extends Command
     }
 
     /**
-     * プラグインディレクトリを解決
+     * Resolve plugin directory
      */
     protected function resolvePluginDirectory(string $input): ?string
     {
-        // 1. Str::studly で変換して探す（case-sensitive な厳密マッチ）
+        // 1. Convert with Str::studly and search (case-sensitive exact match)
         $studlyName = Str::studly(str_replace('-', '_', $input));
         $path = $this->findDirectoryCaseSensitive(base_path('plugins'), $studlyName);
         if ($path !== null) {
             return $path;
         }
 
-        // 2. 入力そのままで探す（case-sensitive）
+        // 2. Search with input as-is (case-sensitive)
         $path = $this->findDirectoryCaseSensitive(base_path('plugins'), $input);
         if ($path !== null) {
             return $path;
         }
 
-        // 3. DB の directory カラムから探す（インストール済みプラグイン）
+        // 3. Search from directory column in DB (installed plugins)
         $plugin = \App\Models\Plugin::where('slug', $input)->first();
         if ($plugin && $plugin->directory) {
             $path = $this->findDirectoryCaseSensitive(base_path('plugins'), $plugin->directory);
@@ -190,16 +190,16 @@ class PluginAudit extends Command
             }
         }
 
-        // 4. プラグインディレクトリを走査して plugin.json の slug でマッチ
+        // 4. Scan plugin directory and match by slug in plugin.json
         $pluginsDir = base_path('plugins');
         if (File::isDirectory($pluginsDir)) {
             foreach (File::directories($pluginsDir) as $dir) {
-                // kebab-case でのマッチ
+                // Match with kebab-case
                 if (Str::kebab(basename($dir)) === $input) {
                     return $dir;
                 }
 
-                // plugin.json の slug でのマッチ
+                // Match with slug from plugin.json
                 $pluginJson = $dir.'/plugin.json';
                 if (File::exists($pluginJson)) {
                     $data = json_decode(File::get($pluginJson), true);
@@ -214,9 +214,9 @@ class PluginAudit extends Command
     }
 
     /**
-     * ケースセンシティブにディレクトリを検索する。
+     * Search directory case-sensitively
      *
-     * macOS のケース非依存ファイルシステムでも正確なディレクトリ名を返す。
+     * Returns exact directory name even on macOS case-insensitive filesystem
      */
     protected function findDirectoryCaseSensitive(string $parentDir, string $name): ?string
     {
@@ -234,7 +234,7 @@ class PluginAudit extends Command
     }
 
     /**
-     * plugin.json から宣言された権限を取得
+     * Get declared permissions from plugin.json
      */
     protected function getDeclaredPermissions(string $pluginJsonPath): array
     {
@@ -266,11 +266,11 @@ class PluginAudit extends Command
     }
 
     /**
-     * plugin.json から宣言された capabilities を取得
+     * Get declared capabilities from plugin.json
      *
-     * capabilities はプラグインが提供する機能の宣言（例: ["seo", "backup"]）。
-     * コアや他プラグインからの機能検出に使われる情報メタデータで、
-     * 未宣言でも監査上のエラーにはならない。
+     * capabilities are declarations of features the plugin provides (e.g., ["seo", "backup"])
+     * Information metadata used for feature detection from Core or other plugins
+     * Not declaring them does not result in an audit error
      *
      * @return array<int, string>
      */
@@ -291,7 +291,7 @@ class PluginAudit extends Command
     }
 
     /**
-     * プラグインコードを解析（PatternRegistryベース）
+     * Analyze plugin code (PatternRegistry-based)
      */
     protected function analyzePluginCode(string $pluginDir): array
     {
@@ -299,7 +299,7 @@ class PluginAudit extends Command
     }
 
     /**
-     * 宣言された権限と検出された権限を比較
+     * Compare declared permissions with detected permissions
      */
     protected function comparePermissions(array $declared, array $detected): array
     {
@@ -309,14 +309,14 @@ class PluginAudit extends Command
         $evidence = $detected['evidence'] ?? [];
 
         foreach ($detectedPerms as $permission => $isDetected) {
-            // ドット記法を配列アクセスに変換
+            // Convert dot notation to array access
             $parts = explode('.', $permission);
             $declaredValue = $declared;
             foreach ($parts as $part) {
                 $declaredValue = $declaredValue[$part] ?? false;
             }
 
-            // 配列の場合は空でないかチェック
+            // Check if array is not empty
             if (is_array($declaredValue)) {
                 $declaredValue = ! empty($declaredValue);
             }
@@ -346,7 +346,7 @@ class PluginAudit extends Command
             }
         }
 
-        // リスクレベルと理由を統一計算（サービスに委譲）
+        // Calculate risk level and reason uniformly (delegated to service)
         $riskResult = $this->permissionService->calculateUnifiedRiskLevel($declared, $mismatches);
 
         return [
@@ -360,7 +360,7 @@ class PluginAudit extends Command
     }
 
     /**
-     * レポートを出力
+     * Output report
      */
     protected function outputReport(array $result): void
     {
@@ -407,7 +407,7 @@ class PluginAudit extends Command
     }
 
     /**
-     * JSON形式で出力
+     * Output in JSON format
      */
     protected function outputJson(array $result): void
     {
@@ -415,7 +415,7 @@ class PluginAudit extends Command
     }
 
     /**
-     * 修正提案を表示
+     * Display fix suggestions
      */
     protected function suggestFixes(string $pluginJsonPath, array $result): void
     {

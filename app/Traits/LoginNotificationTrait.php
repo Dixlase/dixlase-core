@@ -41,46 +41,46 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 /**
- * ログイン通知の共通トレイト
+ * Common trait for login notifications
  *
- * メンバーとユーザーのログイン通知処理で共通して使用される機能を提供します。
- * このトレイトを使用するサービスクラスは、以下の抽象メソッドを実装する必要があります。
+ * Provides functionality commonly used in login notification processing for members and users.
+ * Service classes using this trait must implement the following abstract methods.
  */
 trait LoginNotificationTrait
 {
     /**
-     * グローバル設定のキー名を取得（継承先で実装）
+     * Retrieve global settings key name (implement in child class)
      *
-     * @return string 設定キー名（例: 'login_notification_mode'）
+     * @return string Settings key name (e.g. 'login_notification_mode')
      */
     abstract protected function getGlobalSettingKey(): string;
 
     /**
-     * 設定値を取得する関数を取得（継承先で実装）
+     * Retrieve function to retrieve settings value (implement in child class)
      *
-     * @return callable 設定取得関数
+     * @return callable Settings retrieval function
      */
     abstract protected function getSettingGetter(): callable;
 
     /**
-     * 通知クラス名を取得（継承先で実装）
+     * Retrieve notification class name (implement in child class)
      *
-     * @return string 通知クラス名
+     * @return string Notification class name
      */
     abstract protected function getNotificationClass(): string;
 
     /**
-     * ログコンテキスト名を取得（継承先で実装）
+     * Retrieve log context name (implement in child class)
      *
-     * @return string コンテキスト名（例: 'Admin login notification', 'User login notification'）
+     * @return string Context name (e.g. 'Admin login notification', 'User login notification')
      */
     abstract protected function getLogContext(): string;
 
     /**
-     * ログイン通知を処理
+     * Process login notification
      *
-     * @param  Model  $user  ユーザーモデル（Member または User）
-     * @param  Request  $request  リクエスト
+     * @param  Model  $user  User model (Member or User)
+     * @param  Request  $request  Request
      */
     public function handle(Model $user, Request $request): void
     {

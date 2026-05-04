@@ -54,9 +54,9 @@ class ExtensionOperationNotificationMail extends Mailable
     /**
      * Create a new message instance.
      *
-     * @param  array  $details  拡張機能操作の詳細情報
-     * @param  string  $operation  操作種別 (installed, uninstalled, enabled, disabled)
-     * @param  bool  $isUnhealthyWarning  健全性警告メールかどうか
+     * @param  array  $details  Detailed information about the extension operation
+     * @param  string  $operation  Operation type (installed, uninstalled, enabled, disabled)
+     * @param  bool  $isUnhealthyWarning  Whether this is a health warning email
      */
     public function __construct(array $details, string $operation, bool $isUnhealthyWarning = false)
     {

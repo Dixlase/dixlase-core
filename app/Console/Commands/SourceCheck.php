@@ -81,7 +81,7 @@ class SourceCheck extends Command
             );
         }
 
-        // 同一バージョンの再通知抑制：last_notified_version != available_version のものだけ通知
+        // Suppress re-notification of the same version: only notify when last_notified_version != available_version
         if (! $this->option('no-notify')) {
             $this->notifyAdmin($pluginUpdates, $themeUpdates);
         }
@@ -90,7 +90,7 @@ class SourceCheck extends Command
     }
 
     /**
-     * 新たに見つかった更新を管理者にメール通知し、last_notified_version を進める。
+     * Send email notification to administrator about newly found updates and advance last_notified_version
      *
      * @param  array<int, array{slug: string, current: string, available: string, source_id: int|null}>  $pluginUpdates
      * @param  array<int, array{slug: string, current: string, available: string, source_id: int|null}>  $themeUpdates
@@ -122,7 +122,7 @@ class SourceCheck extends Command
             return;
         }
 
-        // 通知に成功したものだけ last_notified_version を更新
+        // Update last_notified_version only for those successfully notified
         foreach ($newPluginUpdates as $update) {
             Plugin::query()->where('slug', $update['slug'])->update(['last_notified_version' => $update['available']]);
         }
@@ -134,7 +134,7 @@ class SourceCheck extends Command
     }
 
     /**
-     * available_version が last_notified_version と異なるものだけ抽出する。
+     * Extract only those where available_version differs from last_notified_version
      *
      * @param  array<int, array{slug: string, current: string, available: string, source_id: int|null}>  $updates
      * @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass

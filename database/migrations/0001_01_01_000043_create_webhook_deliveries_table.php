@@ -42,13 +42,13 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * Webhook配信ログテーブル
+     * Webhook delivery log table
      *
-     * 目的：
-     * - Webhook配信の履歴・状態管理
-     * - リトライ制御
-     * - 冪等性保証（event_id）
-     * - リプレイ防止（nonce）
+     * Purpose:
+     * - Webhook delivery history and status management
+     * - Retry control
+     * - Idempotency guarantee (event_id)
+     * - Replay prevention (nonce)
      */
     public function up(): void
     {
@@ -56,10 +56,10 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('site_id')->index();
 
-            // 冪等性のためのイベントID（UUID）
+            // Event ID for idempotency (UUID)
             $table->uuid('event_id')->nullable();
 
-            // リプレイ防止のためのnonce
+            // Nonce for replay prevention
             $table->string('nonce', 64)->nullable();
 
             $table->unsignedBigInteger('webhook_id');
@@ -73,7 +73,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('max_attempts')->default(3);
             $table->text('error_message')->nullable();
 
-            // デッドレター関連
+            // Dead letter related
             $table->boolean('is_dead_letter')->default(false);
             $table->timestamp('dead_letter_at')->nullable();
             $table->boolean('dead_letter_notified')->default(false);

@@ -41,12 +41,12 @@ use App\Contracts\Repositories\ThemeRepositoryInterface;
 use Illuminate\Support\Str;
 
 /**
- * テーマリソースローディング機構
+ * Theme resource loading mechanism
  */
 trait ThemeLoaderTrait
 {
     /**
-     * ThemeRepositoryInterface の遅延解決
+     * Lazy resolution of ThemeRepositoryInterface
      */
     protected function resolveThemeRepository(): ThemeRepositoryInterface
     {
@@ -54,15 +54,15 @@ trait ThemeLoaderTrait
     }
 
     /**
-     * テーマの言語ファイルを読み込む
+     * Load theme language files
      *
-     * @param  string  $themePath  テーマのベースパス
-     * @param  string  $customThemePath  カスタムテーマのベースパス
-     * @param  string  $namespace  言語ファイルの名前空間
+     * @param  string  $themePath  Theme base path
+     * @param  string  $customThemePath  Custom theme base path
+     * @param  string  $namespace  Language file namespace
      */
     protected function loadThemeTranslations(string $themePath, string $customThemePath, string $namespace): void
     {
-        // カスタムパスを優先
+        // Prioritize custom path
         $paths = array_filter([$customThemePath.'/lang', $themePath.'/lang']);
 
         foreach ($paths as $path) {
@@ -73,11 +73,11 @@ trait ThemeLoaderTrait
     }
 
     /**
-     * テーマのビューを読み込む
+     * Load theme views
      *
-     * @param  string  $themePath  テーマのベースパス
-     * @param  string  $customThemePath  カスタムテーマのベースパス
-     * @param  string  $namespace  ビューの名前空間
+     * @param  string  $themePath  Theme base path
+     * @param  string  $customThemePath  Custom theme base path
+     * @param  string  $namespace  View namespace
      */
     protected function loadThemeViews(string $themePath, string $customThemePath, string $namespace): void
     {
@@ -91,15 +91,15 @@ trait ThemeLoaderTrait
     }
 
     /**
-     * テーマの設定ファイルを読み込む
+     * Load theme settings file
      *
-     * @param  string  $themePath  テーマのベースパス
-     * @param  string  $customThemePath  カスタムテーマのベースパス
-     * @param  string  $themeSlug  テーマのスラッグ
+     * @param  string  $themePath  Theme base path
+     * @param  string  $customThemePath  Custom theme base path
+     * @param  string  $themeSlug  Theme slug
      */
     protected function loadThemeConfig(string $themePath, string $customThemePath, string $themeSlug): void
     {
-        // カスタムパスを優先
+        // Prioritize custom path
         $customConfigPath = $customThemePath.'/config';
         $coreConfigPath = $themePath.'/config';
 
@@ -116,7 +116,7 @@ trait ThemeLoaderTrait
                 $configName = basename($configFile, '.php');
                 $key = "theme.{$themeSlug}.{$configName}";
 
-                // 既に設定されていなければマージ
+                // Merge if not already set
                 if (! config()->has($key)) {
                     config([$key => require $configFile]);
                 }
@@ -125,9 +125,9 @@ trait ThemeLoaderTrait
     }
 
     /**
-     * テーマの名前空間を生成
+     * Generate theme namespace
      *
-     * @param  string  $themeDirectory  テーマのディレクトリ名
+     * @param  string  $themeDirectory  Theme directory name
      */
     protected function getThemeNamespace(string $themeDirectory): string
     {
@@ -135,7 +135,7 @@ trait ThemeLoaderTrait
     }
 
     /**
-     * 有効なテーマIDを取得
+     * Get active theme ID
      */
     public function getEnabledTheme(): int
     {
@@ -143,7 +143,7 @@ trait ThemeLoaderTrait
     }
 
     /**
-     * 現在有効なテーマのディレクトリ名を取得
+     * Get currently active theme directory name
      */
     public function getEnabledThemeDirectory(): string
     {
@@ -151,7 +151,7 @@ trait ThemeLoaderTrait
     }
 
     /**
-     * テーマアセットの完全URLを生成
+     * Generate full URL for theme asset
      */
     public function themeAsset(string $path): string
     {

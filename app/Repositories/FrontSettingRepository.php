@@ -39,14 +39,14 @@ use App\Contracts\Repositories\FrontSettingRepositoryInterface;
 use App\Models\FrontSetting;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * フロント設定リポジトリ実装
+ * Front settings repository implementation
  */
 class FrontSettingRepository extends AbstractSettingRepository implements FrontSettingRepositoryInterface
 {
     /**
-     * コンストラクタ
+     * Constructor
      */
     public function __construct()
     {

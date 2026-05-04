@@ -80,10 +80,10 @@ class PluginMigrateRefresh extends Command
             'force' => $force,
         ];
 
-        // プロセスオプションの共通処理
+        // Common processing for process options
         $options = $this->processOptions($options);
 
-        // プラグインディレクトリの存在確認
+        // Check plugin directory existence
         if (! $this->pluginExists($plugin)) {
             $this->error("Plugin [{$plugin}] does not exist.");
 
@@ -96,7 +96,7 @@ class PluginMigrateRefresh extends Command
             return Command::FAILURE;
         }
 
-        // マイグレーションのリフレッシュ処理
+        // Migration refresh processing
         $this->info("Rolling back all migrations for plugin [{$plugin}]...");
 
         try {

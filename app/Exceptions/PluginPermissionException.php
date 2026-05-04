@@ -38,24 +38,24 @@ namespace App\Exceptions;
 use Exception;
 
 /**
- * プラグイン権限違反例外
+ * Plugin permission violation exception
  *
- * プラグインが宣言していない権限を使用しようとした場合にスローされます。
+ * Thrown when a plugin attempts to use a permission it has not declared
  */
 class PluginPermissionException extends Exception
 {
     /**
-     * プラグインスラッグ
+     * Plugin slug
      */
     protected string $pluginSlug = '';
 
     /**
-     * 違反した権限
+     * Violated permission
      */
     protected string $permission = '';
 
     /**
-     * コンストラクタ
+     * Constructor
      */
     public function __construct(
         string $message = '',
@@ -70,7 +70,7 @@ class PluginPermissionException extends Exception
     }
 
     /**
-     * プラグインスラッグを取得
+     * Get plugin slug
      */
     public function getPluginSlug(): string
     {
@@ -78,7 +78,7 @@ class PluginPermissionException extends Exception
     }
 
     /**
-     * 違反した権限を取得
+     * Get violated permission
      */
     public function getPermission(): string
     {

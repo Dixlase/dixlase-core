@@ -59,7 +59,7 @@ class MemberTwoFaAttempt extends Model
     ];
 
     /**
-     * メンバーとのリレーション
+     * Relation to member
      */
     public function member(): BelongsTo
     {
@@ -67,7 +67,7 @@ class MemberTwoFaAttempt extends Model
     }
 
     /**
-     * 指定期間内の失敗試行回数を取得
+     * Get the number of failed attempts within the specified period
      */
     public static function getFailedAttemptsCount(int $memberId, int $minutes): int
     {
@@ -78,7 +78,7 @@ class MemberTwoFaAttempt extends Model
     }
 
     /**
-     * 指定期間内のIPアドレスの失敗試行回数を取得
+     * Get the number of failed attempts for the IP address within the specified period
      */
     public static function getFailedAttemptsByIpCount(string $ipAddress, int $minutes): int
     {
@@ -89,7 +89,7 @@ class MemberTwoFaAttempt extends Model
     }
 
     /**
-     * 試行記録を作成
+     * Create attempt record
      */
     public static function record(int $memberId, string $attemptType, bool $success): void
     {

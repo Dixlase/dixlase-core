@@ -623,6 +623,8 @@ class InstallConfirmController extends BaseInstallController
             'updated_at' => now(),
         ]);
 
+        \App\Models\CoreVersionHistory::forgetCurrentVersionCache();
+
         Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.init_db_core_releases_insertion_done'), [
             'version' => $currentVersion,
             'admin_id' => $adminMemberId,

@@ -41,16 +41,16 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
 /**
- * プラグインの健全性を人間向けに表示し、可能な不一致を自動修正する。
+ * Display plugin health in human-readable format and auto-fix possible inconsistencies
  *
- *   php artisan dls:plugin:lint DixlasePages
- *   php artisan dls:plugin:lint DixlasePages --fix
+ *   php artisan dls:plugin:lint MyPlugin
+ *   php artisan dls:plugin:lint MyPlugin --fix
  *   php artisan dls:plugin:lint --all
  */
 class PluginLint extends Command
 {
     protected $signature = 'dls:plugin:lint
-                            {plugin? : Plugin directory name (e.g. DixlasePages). Omit with --all.}
+                            {plugin? : Plugin directory name (e.g. MyPlugin). Omit with --all.}
                             {--all : Lint all plugins under plugins/}
                             {--fix : Auto-fix solvable issues (calls dls:plugin:sync --write and fills missing author_id / authority_key_id)}';
 
@@ -98,20 +98,20 @@ class PluginLint extends Command
         }
 
         $this->line('');
-        $this->line("<fg=cyan>🔍 {$plugin} の健全性チェック</>");
+        $this->line(__('console/commands/plugin_lint.plugin_health_check', ['plugin' => $plugin]));
         $this->line('');
 
-        // 1. 自動修正（先に走らせる：score 計算をクリーンな状態で行う）
+        // 1. Auto-fix (run first: calculate score in clean state)
         $autoFixApplied = false;
         if ($fix) {
             $autoFixApplied = $this->autoFix($pluginDir, $plugin);
         }
 
-        // 2. 健全性スコア計算
+        // 2. Calculate health score
         $slug = $this->resolveSlug($pluginDir);
         $result = $this->scorer->calculate($slug);
 
-        // 3. 結果表示
+        // 3. Display results
         $this->renderIssues($result->issues, $autoFixApplied);
         $this->renderScore($result->score);
 
@@ -119,7 +119,7 @@ class PluginLint extends Command
     }
 
     /**
-     * 自動修正できる項目を直す。
+     * Fix items that can be auto-corrected
      */
     protected function autoFix(string $pluginDir, string $plugin): bool
     {
@@ -131,23 +131,23 @@ class PluginLint extends Command
 
         $changed = false;
 
-        // author_id 補完
+        // Complement author_id
         if (empty($manifest['author_id'])) {
             $default = config('extension-sources.default_author_id');
             if (! empty($default)) {
                 $manifest['author_id'] = $default;
                 $changed = true;
-                $this->line("  <fg=green>✓ auto-fix:</> author_id を '{$default}' に設定しました");
+                $this->line(__('console/commands/plugin_lint.auto_fix_author_id_set', ['default' => $default]));
             }
         }
 
-        // authority_key_id 補完
+        // Complement authority_key_id
         if (empty($manifest['authority_key_id'])) {
             $default = config('extension-sources.default_authority_key_id');
             if (! empty($default)) {
                 $manifest['authority_key_id'] = $default;
                 $changed = true;
-                $this->line("  <fg=green>✓ auto-fix:</> authority_key_id を '{$default}' に設定しました");
+                $this->line(__('console/commands/plugin_lint.auto_fix_authority_key_id_set', ['default' => $default]));
             }
         }
 
@@ -155,10 +155,10 @@ class PluginLint extends Command
             File::put($manifestPath, json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)."\n");
         }
 
-        // permissions / declares 同期
+        // Sync permissions / declares
         $syncResult = $this->syncService->diff($pluginDir, 'plugin');
         if ($syncResult['changed']) {
-            $this->line("  <fg=green>✓ auto-fix:</> permissions / declares を同期します（{$plugin}）");
+            $this->line(__('console/commands/plugin_lint.auto_fix_sync_permissions_declares', ['plugin' => $plugin]));
             $this->syncService->sync($pluginDir, 'plugin');
             $changed = true;
         }
@@ -176,12 +176,12 @@ class PluginLint extends Command
     protected function renderIssues(array $issues, bool $autoFixApplied): void
     {
         if (empty($issues)) {
-            $this->line('  <fg=green>✓ 検出された問題はありません</>');
+            $this->line(__('console/commands/plugin_lint.no_issues_detected'));
 
             return;
         }
 
-        // 重要度別にグループ化
+        // Group by severity
         $critical = [];
         $warning = [];
         $info = [];
@@ -208,7 +208,7 @@ class PluginLint extends Command
 
         if ($autoFixApplied) {
             $this->line('');
-            $this->line('  <fg=cyan>※ auto-fix 適用後の結果です。残った項目は手動修正が必要です。</>');
+            $this->line(__('console/commands/plugin_lint.auto_fix_results_note'));
         }
     }
 
@@ -228,14 +228,14 @@ class PluginLint extends Command
     protected function getHintFor(string $type): ?string
     {
         return match ($type) {
-            'missing_author_id' => 'dls:plugin:lint --fix で config の default を自動挿入します',
-            'missing_authority_key_id' => 'dls:plugin:lint --fix で config の default を自動挿入します',
-            'permission_undeclared_minor', 'permission_undeclared_major' => 'dls:plugin:sync --write で permissions を自動更新できます',
-            'permission_unused' => 'dls:plugin:sync --write で permissions を実態に合わせます',
-            'signature_unsigned' => '開発中であれば security_preset を development にすると減点を回避できます',
-            'signature_pending_verification' => 'DixlaseSigner で署名すると本番で 100 点を達成できます',
-            'csp_inline_js_required' => '<script @cspNonce> を付与するか外部 JS ファイルに分離してください',
-            'csp_inline_css_required' => 'インラインスタイルを CSS ファイルに移動してください',
+            'missing_author_id' => __('console/commands/plugin_lint.auto_insert_config_defaults'),
+            'missing_authority_key_id' => __('console/commands/plugin_lint.auto_insert_config_defaults'),
+            'permission_undeclared_minor', 'permission_undeclared_major' => __('console/commands/plugin_lint.auto_update_permissions'),
+            'permission_unused' => __('console/commands/plugin_lint.align_permissions_with_state'),
+            'signature_unsigned' => __('console/commands/plugin_lint.set_security_preset_development'),
+            'signature_pending_verification' => __('console/commands/plugin_lint.sign_with_dixlase_signer'),
+            'csp_inline_js_required' => __('console/commands/plugin_lint.add_csp_nonce_or_separate_js'),
+            'csp_inline_css_required' => __('console/commands/plugin_lint.move_inline_styles_to_css'),
             default => null,
         };
     }
@@ -244,7 +244,7 @@ class PluginLint extends Command
     {
         $this->line('');
         $color = $score >= 90 ? 'green' : ($score >= 70 ? 'yellow' : 'red');
-        $this->line("  <fg={$color}>ヘルススコア: {$score} / 100</>");
+        $this->line(__('console/commands/plugin_lint.health_score_display', ['color' => $color, 'score' => $score]));
         $this->line('');
     }
 
@@ -255,7 +255,7 @@ class PluginLint extends Command
             return $manifest['slug'];
         }
 
-        // フォールバック：ディレクトリ名から推定
+        // Fallback: infer from directory name
         return \Illuminate\Support\Str::kebab(basename($pluginDir));
     }
 

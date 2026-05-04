@@ -41,9 +41,9 @@ use App\Services\AuditLogIntegrityService;
 use Illuminate\Console\Command;
 
 /**
- * 監査ログ整合性管理コマンド
+ * Audit log integrity management command
  *
- * ハッシュチェーンの構築、検証、日次署名の作成を行う
+ * Build and verify hash chains, create daily signatures
  */
 class AuditLogIntegrityCommand extends Command
 {
@@ -92,7 +92,7 @@ class AuditLogIntegrityCommand extends Command
     }
 
     /**
-     * ハッシュチェーンを構築
+     * Build hash chain
      */
     protected function handleBuild(): int
     {
@@ -120,7 +120,7 @@ class AuditLogIntegrityCommand extends Command
     }
 
     /**
-     * ハッシュチェーンを検証
+     * Verify hash chain
      */
     protected function handleVerify(): int
     {
@@ -171,7 +171,7 @@ class AuditLogIntegrityCommand extends Command
     }
 
     /**
-     * 日次署名を検証
+     * Verify daily signatures
      */
     protected function verifyDailySeal(string $dateString): int
     {
@@ -218,7 +218,7 @@ class AuditLogIntegrityCommand extends Command
     }
 
     /**
-     * 日次署名を作成
+     * Create daily signatures
      */
     protected function handleSeal(): int
     {
@@ -247,7 +247,7 @@ class AuditLogIntegrityCommand extends Command
     }
 
     /**
-     * 単一日の署名を作成
+     * Create signature for a single day
      */
     protected function createSingleSeal(string $dateString): int
     {
@@ -263,10 +263,10 @@ class AuditLogIntegrityCommand extends Command
             'date' => $date->format('Y-m-d'),
         ]));
 
-        // まずハッシュチェーンを構築
+        // First build the hash chain
         $this->service->buildChainForDate($date);
 
-        // シールを作成
+        // Create seal
         $seal = $this->service->createDailySeal($date);
 
         if ($seal) {
@@ -282,7 +282,7 @@ class AuditLogIntegrityCommand extends Command
     }
 
     /**
-     * 統計を表示
+     * Display statistics
      */
     protected function handleStats(): int
     {
@@ -320,7 +320,7 @@ class AuditLogIntegrityCommand extends Command
     }
 
     /**
-     * 不明なアクション
+     * Unknown action
      */
     protected function handleUnknownAction(string $action): int
     {

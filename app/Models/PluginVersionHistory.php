@@ -41,10 +41,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * プラグインバージョン履歴モデル
+ * Plugin version history model
  *
- * サプライチェーン攻撃防御のため、プラグインのインストール・アップデート・ロールバックを記録する。
- * β以降の異常検出（変更量異常・オーナー変更検出）の基礎データになる。
+ * Records plugin installs, updates, and rollbacks to defend against supply chain attacks.
+ * Serves as foundational data for anomaly detection (abnormal change volume, owner change detection) in beta and beyond.
  */
 class PluginVersionHistory extends Model
 {
@@ -94,7 +94,7 @@ class PluginVersionHistory extends Model
     ];
 
     /**
-     * 適用した管理者（Member）との関連
+     * Relationship to the administrator (Member) who applied the change
      */
     public function appliedBy(): BelongsTo
     {

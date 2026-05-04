@@ -45,9 +45,11 @@ use App\DTO\Api\ApiResourceDTO;
 /**
  * API resource provider interface
  *
- * Implemented when a plugin exposes content resources via REST API
- * The DixlaseApi plugin auto-discovers implementations of this interface
- * and provides them as unified API endpoints
+ * Implemented when a plugin exposes content resources via REST API.
+ * An API gateway plugin (any plugin that aggregates third-party
+ * resources into unified API endpoints) auto-discovers implementations
+ * of this interface and serves them at the unified `/api/v1/resources/*`
+ * paths.
  */
 interface ApiResourceProviderInterface extends PluginCapabilityInterface
 {

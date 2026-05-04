@@ -44,8 +44,8 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * 権限設定のオーバーライドテーブル
-     * デフォルト権限（config/roles.php）と異なる設定のみを保存
+     * Permission settings override table
+     * Only stores settings that differ from default permissions (config/roles.php)
      */
     public function up(): void
     {
@@ -53,30 +53,30 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('site_id')->index();
 
-            // ソース種別: core / plugin
+            // Source type: core / plugin
             $table->string('source_type', 20)->default('core');
 
-            // ソースID: coreはnull、pluginはslug
+            // Source ID: null for core, slug for plugin
             $table->string('source_id', 100)->nullable();
 
-            // メニューキー（例：settings.base, pages.index）
+            // Menu key (e.g., settings.base, pages.index)
             $table->string('menu_key', 255);
 
-            // 編集権限（この値以上の権限を持つユーザーがアクセス可能）
+            // Edit permission (users with this permission level or higher can access)
             $table->unsignedTinyInteger('access_roles')->nullable();
 
-            // 閲覧権限（この値以上の権限を持つユーザーが閲覧可能）
+            // View permission (users with this permission level or higher can view)
             $table->unsignedTinyInteger('view_roles')->nullable();
 
-            // 更新者（外部キー制約は add_foreign_key_constraints で追加）
+            // Updater (foreign key constraint added in add_foreign_key_constraints)
             $table->unsignedBigInteger('updated_by')->nullable();
 
             $table->timestamps();
 
-            // site + source_type + source_id + menu_key でユニーク
+            // Unique on site + source_type + source_id + menu_key
             $table->unique(['site_id', 'source_type', 'source_id', 'menu_key'], 'role_override_unique');
 
-            // インデックス
+            // Index
             $table->index(['source_type', 'source_id'], 'role_override_source_idx');
             $table->index('menu_key', 'role_override_menu_key_idx');
         });

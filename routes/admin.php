@@ -65,7 +65,7 @@ use App\Http\Controllers\Admin\Settings\Systems;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-// 管理画面のURLを取得
+// Get admin panel URL
 $adminUrl = AdminHelper::getAdminUrl();
 
 Route::prefix($adminUrl)->name('admin.')
@@ -80,62 +80,62 @@ Route::prefix($adminUrl)->name('admin.')
             }
         });
 
-        // ログイン
+        // Login
         Route::middleware([\App\Http\Middleware\CheckLockdown::class.':login'])->group(function () {
             Route::get('/login', [AdminLoginController::class, 'create'])->name('login');
             Route::post('/login', [AdminLoginController::class, 'store'])->name('login.store');
         });
 
-        // ログイン識別子確認（メールアドレス/アカウント名の存在確認）
+        // Login identifier verification (check existence of email address/account name)
         Route::post('/login/check-identifier', [AdminLoginIdentifierCheckController::class, 'check'])->name('login.check-identifier');
 
-        // パスキーログイン
+        // Passkey login
         Route::post('/login/passkey/challenge', [AdminPasskeyLoginController::class, 'getChallenge'])->name('login.passkey.challenge');
         Route::post('/login/passkey/verify', [AdminPasskeyLoginController::class, 'verify'])->name('login.passkey.verify');
 
-        // 二段階認証（メール）
+        // Two-factor authentication (email)
         Route::get('/two-fa-email', [AdminTwoFaController::class, 'showEmailChallenge'])->name('two-fa.email.show');
         Route::post('/two-fa-email/verify', [AdminTwoFaController::class, 'verifyEmail'])->name('two-fa.email.verify');
         Route::post('/two-fa-email/resend', [AdminTwoFaController::class, 'resendEmail'])->name('two-fa.email.resend');
 
-        // 回復コード
+        // Recovery code
         Route::get('/two-fa-recovery', [AdminTwoFaController::class, 'showRecoveryCodeChallenge'])->name('two-fa.recovery-code.show');
         Route::post('/two-fa-recovery', [AdminTwoFaController::class, 'verifyRecoveryCode'])->name('two-fa.recovery-code.confirm');
 
-        // パスワードリセット
+        // Password reset
         Route::get('/forgot-password', [AdminPasswordResetLinkController::class, 'create'])->name('password.request');
         Route::post('/forgot-password', [AdminPasswordResetLinkController::class, 'store'])->name('password.email');
         Route::get('/reset-password/{token}', [AdminNewPasswordController::class, 'create'])->name('password.reset');
         Route::post('/reset-password', [AdminNewPasswordController::class, 'store'])->name('password.store');
 
-        // メール認証（認証不要・署名付きURL）
+        // Email verification (no authentication required, signed URL)
         Route::get('/verify-mail/{id}/{hash}', [AdminProfileController::class, 'verifyEmail'])
             ->name('verification.verify')
             ->middleware('signed');
 
-        // メール認証通知（ログイン済み・未認証ユーザー向け）
+        // Email verification notification (for logged-in, unverified users)
         Route::middleware('auth:member')->group(function () {
             Route::get('/email/verify', [AdminEmailVerificationPromptController::class, '__invoke'])->name('verification.notice');
             Route::post('/email/verification-notification', [AdminEmailVerificationNotificationController::class, 'store'])->name('verification.send');
         });
 
-        // 認証済みルート
+        // Authenticated routes
         Route::middleware([
             'auth:member',
             'verified',
             'log.admin.activity',
             \App\Http\Middleware\CheckLockdown::class.':admin',
         ])->group(function () {
-            // ダッシュボード（全員アクセス可能）
+            // Dashboard (accessible to all)
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
             Route::post('/dashboard/dismiss-getting-started', [AdminDashboardController::class, 'dismissGettingStarted'])->name('dashboard.dismiss-getting-started');
             Route::post('/dashboard/visit-getting-started', [AdminDashboardController::class, 'visitGettingStartedStep'])->name('dashboard.visit-getting-started');
 
-            // セーフモード管理（全員アクセス可能）
+            // Safe mode management (accessible to all)
             Route::post('/safe-mode/disable', [SafeModeController::class, 'disable'])->name('safe-mode.disable');
             Route::post('/safe-mode/disable-all', [SafeModeController::class, 'disableAll'])->name('safe-mode.disable-all');
 
-            // フロントページ管理（権限チェック付き）
+            // Front page management (with permission check)
             Route::middleware('check.menu.access:front')->group(function () {
                 Route::get('/front', [AdminFrontController::class, 'index'])->name('front.index');
                 Route::get('/front/create', [AdminFrontController::class, 'create'])->name('front.create');
@@ -153,7 +153,7 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/front/settings', [AdminFrontController::class, 'updateSettings'])
                     ->middleware('check.menu.edit:front')->name('front.settings.store');
 
-                // リビジョン（閲覧・差分表示・復元）
+                // Revisions (view, diff display, restore)
                 Route::get('/front/revisions', [AdminFrontRevisionController::class, 'index'])->name('front.revisions.index');
                 Route::get('/front/revisions/{id}', [AdminFrontRevisionController::class, 'show'])->whereNumber('id')->name('front.revisions.show');
                 Route::post('/front/revisions/{id}/restore', [AdminFrontRevisionController::class, 'restore'])
@@ -170,86 +170,86 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('front.revisions.protect');
             });
 
-            // メディア管理（権限チェック付き）
+            // Media management (with permission check)
             Route::middleware('check.menu.access:media')->group(function () {
                 Route::get('/media', [AdminMediaController::class, 'index'])->name('media.index');
-                // メディアAPI（モーダル用）
+                // Media API (for modal)
                 Route::get('/media/api', [AdminMediaController::class, 'api'])->name('media.api');
-                // メディアアップロード
+                // Media upload
                 Route::get('/media/upload', [AdminMediaController::class, 'upload'])->name('media.upload');
                 Route::post('/media/upload/', [AdminMediaController::class, 'store'])
                     ->middleware('check.menu.edit:media')
                     ->name('media.store');
-                // メディア削除
+                // Media deletion
                 Route::delete('/media/delete/{media}', [AdminMediaController::class, 'delete'])
                     ->middleware('check.menu.edit:media')
                     ->name('media.delete');
-                // メディアダウンロード
+                // Media download
                 Route::get('/media/download/{media}', [AdminMediaController::class, 'download'])->name('media.download');
-                // メディアプレビュー
+                // Media preview
                 Route::get('/media/preview/{media}', [AdminMediaController::class, 'preview'])->name('media.preview');
-                // メディア情報更新
+                // Update media information
                 Route::put('/media/{media}', [AdminMediaController::class, 'updateMedia'])
                     ->middleware('check.menu.edit:media')
                     ->name('media.update');
-                // メディア設定（かんたんモード: Partial — セキュリティ項目は自動設定）
+                // Media settings (simple mode: Partial — security items are auto-configured)
                 Route::get('/media/settings', [AdminMediaController::class, 'settings'])->name('media.settings');
                 Route::post('/media/settings', [AdminMediaController::class, 'update'])
                     ->middleware('check.menu.edit:media.settings')
                     ->name('media.settings.update');
             });
 
-            // プロフィール設定（全員アクセス可能）
+            // Profile settings (accessible to all)
             Route::get('/profile', [AdminProfileController::class, 'index'])->name('profile');
 
-            // 基本情報
+            // Basic information
             Route::get('/profile/basic', [AdminProfileBasicController::class, 'index'])->name('profile.basic');
             Route::post('/profile/basic', [AdminProfileBasicController::class, 'update'])->name('profile.basic.update');
 
-            // パスワード設定
+            // Password settings
             Route::get('/profile/password', [AdminProfilePasswordController::class, 'index'])->name('profile.password');
             Route::post('/profile/password', [AdminProfilePasswordController::class, 'update'])->name('profile.password.update');
 
-            // 外観設定
+            // Appearance settings
             Route::get('/profile/appearance', [AdminProfileAppearanceController::class, 'index'])->name('profile.appearance');
             Route::post('/profile/appearance', [AdminProfileAppearanceController::class, 'update'])->name('profile.appearance.update');
 
-            // 通知設定
+            // Notification settings
             Route::get('/profile/notifications', [AdminProfileNotificationsController::class, 'index'])->name('profile.notifications');
             Route::post('/profile/notifications', [AdminProfileNotificationsController::class, 'update'])->name('profile.notifications.update');
 
-            // 二段階認証設定
+            // Two-factor authentication settings
             Route::get('/profile/two-fa', [AdminProfileTwoFaController::class, 'index'])->name('profile.two-fa');
             Route::post('/profile/two-fa', [AdminProfileTwoFaController::class, 'update'])->name('profile.two-fa.update');
 
-            // 二段階認証管理（パスキー・コード）
+            // Two-factor authentication management (passkey/code)
             Route::get('/profile/two-fa-management', [AdminProfileTwoFaManagementController::class, 'index'])->name('profile.two-fa-management');
 
-            // Passkey管理
+            // Passkey management
             Route::post('/profile/passkey/register-options', [AdminProfileTwoFaManagementController::class, 'passkeyRegisterOptions'])->name('profile.passkey.register-options');
             Route::post('/profile/passkey/register', [AdminProfileTwoFaManagementController::class, 'passkeyRegister'])->name('profile.passkey.register');
             Route::delete('/profile/passkey/{credentialId}', [AdminProfileTwoFaManagementController::class, 'revokePasskey'])->name('profile.passkey.revoke');
             Route::delete('/profile/passkey/all', [AdminProfileTwoFaManagementController::class, 'revokeAllPasskeys'])->name('profile.passkey.revoke-all');
 
-            // 回復コード管理
+            // Recovery code management
             Route::post('/profile/recovery-codes/generate', [AdminProfileTwoFaManagementController::class, 'generateRecoveryCodes'])->name('profile.recovery-codes.generate');
             Route::post('/profile/recovery-codes/regenerate', [AdminProfileTwoFaManagementController::class, 'regenerateRecoveryCodes'])->name('profile.recovery-codes.regenerate');
             Route::post('/profile/recovery-codes/clear-session', [AdminProfileTwoFaManagementController::class, 'clearRecoveryCodesSession'])->name('profile.recovery-codes.clear-session');
 
-            // パスキー登録促進モーダル設定
+            // Passkey registration prompt modal settings
             Route::post('/profile/passkey-prompt/dismiss', [AdminProfilePasskeyPromptController::class, 'dismiss'])->name('profile.passkey-prompt.dismiss');
             Route::post('/profile/passkey-prompt/reset', [AdminProfilePasskeyPromptController::class, 'reset'])->name('profile.passkey-prompt.reset');
 
-            // サイドバーメニュー表示設定
+            // Sidebar menu display settings
             Route::post('/profile/sidebar/update', [AdminProfileSidebarController::class, 'update'])->name('profile.sidebar.update');
             Route::post('/profile/sidebar/reset', [AdminProfileSidebarController::class, 'reset'])->name('profile.sidebar.reset');
 
-            // メンバー管理（権限チェック付き）
+            // Member management (with permission check)
             Route::middleware('check.menu.access:members')->prefix('members')->name('members.')->group(function () {
-                // メンバー一覧
+                // Member list
                 Route::get('/', [Members\AdminMemberController::class, 'index'])->name('index');
 
-                // メンバーCRUD
+                // Member CRUD
                 Route::get('/create', [Members\AdminMemberFormController::class, 'create'])
                     ->middleware('check.menu.access:members.create_edit')
                     ->name('create');
@@ -266,7 +266,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:members.index')
                     ->name('destroy');
 
-                // セキュリティ操作
+                // Security operations
                 Route::delete('/passkey/{member}/{credentialId}', [Members\AdminMemberSecurityController::class, 'revokePasskey'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('passkey.revoke');
@@ -289,14 +289,14 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:members.index')
                     ->name('send-verification-email');
 
-                // 権限設定
+                // Permission settings
                 Route::get('/roles', [Members\AdminMemberRolesController::class, 'index'])->name('roles');
                 Route::post('/roles', [Members\AdminMemberRolesController::class, 'update'])
                     ->middleware('check.menu.edit:members.roles')
                     ->name('roles.update');
             });
 
-            // プライバシー (subject access export / erasure) — super-admin スタブ
+            // Privacy (subject access export/erasure) — super-admin stub
             Route::prefix('privacy/users')->name('privacy.users.')->group(function () {
                 Route::get('/', [\App\Http\Controllers\Admin\Privacy\UserDataController::class, 'index'])
                     ->name('index');
@@ -308,25 +308,25 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('delete');
             });
 
-            // 全体設定
-            // 基本設定（権限チェック付き）
+            // Global settings
+            // Basic settings (with permission check)
             Route::middleware('check.menu.access:settings.base')->prefix('settings/base')->name('settings.base.')->group(function () {
-                // 概要
+                // Overview
                 Route::get('/', [Base\AdminBaseIndexController::class, 'index'])->name('index');
 
-                // サイト設定
+                // Site settings
                 Route::get('/site', [Base\AdminBaseSiteController::class, 'index'])->name('site');
                 Route::post('/site', [Base\AdminBaseSiteController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.site')
                     ->name('site.update');
 
-                // 管理画面設定
+                // Admin panel settings
                 Route::get('/admin', [Base\AdminBaseAdminController::class, 'index'])->name('admin');
                 Route::post('/admin', [Base\AdminBaseAdminController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.admin')
                     ->name('admin.update');
 
-                // メール設定
+                // Email settings
                 Route::get('/mail', [Base\AdminBaseMailController::class, 'index'])->name('mail');
                 Route::post('/mail', [Base\AdminBaseMailController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.mail')
@@ -338,38 +338,38 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::get('/mail/verify-mail/{token}', [Base\AdminBaseMailController::class, 'verifyMail'])->name('mail.verify-mail');
                 Route::get('/mail/mail-verification-success', [Base\AdminBaseMailController::class, 'mailVerificationSuccess'])->name('mail.mail-verification-success');
 
-                // メンテナンス設定
+                // Maintenance settings
                 Route::get('/maintenance', [Base\AdminBaseMaintenanceController::class, 'index'])->name('maintenance');
                 Route::get('/maintenance/preview', [Base\AdminBaseMaintenanceController::class, 'preview'])->name('maintenance.preview');
                 Route::post('/maintenance', [Base\AdminBaseMaintenanceController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.maintenance')
                     ->name('maintenance.update');
 
-                // モード設定
+                // Mode settings
                 Route::get('/mode', [Base\AdminBaseModeController::class, 'index'])->name('mode');
                 Route::post('/mode', [Base\AdminBaseModeController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.mode')
                     ->name('mode.update');
 
-                // コンテンツ設定（リビジョン保持件数など、全コンテンツタイプ共通）
+                // Content settings (revision retention count, etc., common to all content types)
                 Route::get('/content', [Base\AdminBaseContentController::class, 'index'])->name('content');
                 Route::post('/content', [Base\AdminBaseContentController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.content')
                     ->name('content.update');
 
-                // コンテンツエディター設定
+                // Content editor settings
                 Route::get('/editor', [Base\AdminBaseEditorController::class, 'index'])->name('editor');
                 Route::post('/editor', [Base\AdminBaseEditorController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.editor')
                     ->name('editor.update');
             });
 
-            // セキュリティ設定（権限チェック付き）
+            // Security settings (with permission check)
             Route::middleware('check.menu.access:settings.security')->prefix('settings/security')->name('settings.security.')->group(function () {
-                // 概要
+                // Overview
                 Route::get('/', [Security\AdminSecurityIndexController::class, 'index'])->name('index');
 
-                // パスワードセキュリティ
+                // Password security
                 Route::get('/password', [Security\AdminSecurityPasswordController::class, 'index'])
                     ->middleware('check.menu.access:settings.security.password')
                     ->name('password');
@@ -377,7 +377,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.security.password')
                     ->name('password.update');
 
-                // ログイン試行制限
+                // Login attempt restriction
                 Route::get('/login', [Security\AdminSecurityLoginController::class, 'index'])
                     ->middleware('check.menu.access:settings.security.login')
                     ->name('login');
@@ -385,7 +385,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.security.login')
                     ->name('login.update');
 
-                // セッション管理
+                // Session management
                 Route::get('/session', [Security\AdminSecuritySessionController::class, 'index'])
                     ->middleware('check.menu.access:settings.security.session')
                     ->name('session');
@@ -393,7 +393,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.security.session')
                     ->name('session.update');
 
-                // 二段階認証設定
+                // Two-factor authentication settings
                 Route::get('/two-fa', [Security\AdminSecurityTwoFaController::class, 'index'])
                     ->middleware('check.menu.access:settings.security.two-fa')
                     ->name('two-fa');
@@ -415,7 +415,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.access:settings.security.captcha')
                     ->name('captcha.clear-test');
 
-                // IPアクセス制御
+                // IP access control
                 Route::get('/ip', [Security\AdminSecurityIpController::class, 'index'])
                     ->middleware('check.menu.access:settings.security.ip')
                     ->name('ip');
@@ -423,7 +423,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.security.ip')
                     ->name('ip.update');
 
-                // 拡張機能セキュリティ
+                // Extension security
                 Route::get('/extensions', [Security\AdminSecurityExtensionsController::class, 'index'])
                     ->middleware('check.menu.access:settings.security.extensions')
                     ->name('extensions');
@@ -448,7 +448,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.security.csp')
                     ->name('csp.rollback');
 
-                // 通知
+                // Notifications
                 Route::get('/notifications', [Security\AdminSecurityNotificationsController::class, 'index'])
                     ->middleware('check.menu.access:settings.security.notifications')
                     ->name('notifications');
@@ -456,7 +456,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.security.notifications')
                     ->name('notifications.update');
 
-                // 環境設定
+                // Environment settings
                 Route::get('/environment', [Security\AdminSecurityEnvironmentController::class, 'index'])
                     ->middleware('check.menu.access:settings.security.environment')
                     ->name('environment');
@@ -464,7 +464,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.security.environment')
                     ->name('environment.update');
 
-                // ファイル整合性
+                // File integrity
                 Route::get('/integrity', [Security\AdminSecurityIntegrityController::class, 'index'])
                     ->middleware('check.menu.access:settings.security.integrity')
                     ->name('integrity');
@@ -485,7 +485,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('integrity.show');
             });
 
-            // テーマ設定（権限チェック付き）
+            // Theme settings (with permission check)
             Route::middleware('check.menu.access:settings.themes')->group(function () {
                 Route::get('/settings/themes', [AdminThemesSettingsController::class, 'index'])->name('settings.themes.index');
                 Route::get('/settings/themes/add', [AdminThemesSettingsController::class, 'add'])->name('settings.themes.add');
@@ -526,7 +526,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('settings.themes.update-all');
             });
 
-            // プラグイン設定（権限チェック付き）
+            // Plugin settings (with permission check)
             Route::middleware('check.menu.access:settings.plugins')->group(function () {
                 Route::get('/settings/plugins', [AdminPluginsSettingsController::class, 'index'])->name('settings.plugins.index');
                 Route::get('/settings/plugins/add', [AdminPluginsSettingsController::class, 'add'])->name('settings.plugins.add');
@@ -572,9 +572,9 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('settings.plugins.update-all');
             });
 
-            // システム設定（権限チェック付き）
+            // System settings (with permission check)
             Route::middleware('check.menu.access:settings.systems')->prefix('settings/systems')->name('settings.systems.')->group(function () {
-                // API管理（かんたんモード: Hidden）
+                // API management (Easy mode: Hidden)
                 Route::get('/api', [Systems\AdminSystemApiController::class, 'index'])
                     ->middleware('check.menu.access:settings.systems.api')
                     ->name('api');
@@ -591,7 +591,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.systems.api')
                     ->name('api.regenerate-key');
 
-                // 統合アップデート管理（コア / プラグイン / テーマ）
+                // Integrated update management (Core / plugin / theme)
                 Route::prefix('updates')->name('updates.')->group(function () {
                     Route::get('/', [Systems\AdminSystemUpdatesController::class, 'index'])
                         ->middleware('check.menu.access:settings.systems.updates')
@@ -604,7 +604,7 @@ Route::prefix($adminUrl)->name('admin.')
                         ->name('apply');
                 });
 
-                // キャッシュ管理（かんたんモード: Full）
+                // Cache management (Easy mode: Full)
                 Route::get('/cache', [Systems\AdminSystemCacheController::class, 'index'])->name('cache');
                 Route::post('/cache/clear', [Systems\AdminSystemCacheController::class, 'clear'])
                     ->middleware('check.menu.edit:settings.systems.cache')
@@ -613,7 +613,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.systems.cache')
                     ->name('cache.rebuild');
 
-                // データベース管理（かんたんモード: Hidden）
+                // Database management (Easy mode: Hidden)
                 Route::get('/database', [Systems\AdminSystemDatabaseController::class, 'index'])
                     ->middleware('check.menu.access:settings.systems.database')
                     ->name('database');
@@ -621,7 +621,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.systems.database')
                     ->name('database.cleanup');
 
-                // バックアップ管理
+                // Backup management
                 Route::prefix('backup')->name('backup.')->group(function () {
                     Route::get('/', [Systems\AdminSystemBackupController::class, 'index'])
                         ->middleware('check.menu.access:settings.systems.backup.index')
@@ -652,12 +652,12 @@ Route::prefix($adminUrl)->name('admin.')
                         ->name('settings.update');
                 });
 
-                // 監査ログ（かんたんモード: Full）
+                // Audit log (Easy mode: Full)
                 Route::get('/logs', [Systems\AdminSystemLogsController::class, 'index'])
                     ->middleware('check.menu.access:settings.systems.logs')
                     ->name('logs.index');
 
-                // ファイルログ
+                // File log
                 Route::get('/logs/files/{type?}', [Systems\AdminSystemLogsController::class, 'files'])
                     ->middleware('check.menu.access:settings.systems.logs')
                     ->name('logs.files');
@@ -689,20 +689,20 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.systems.logs')
                     ->name('logs.audit.cleanup');
 
-                // システム情報（かんたんモード: ReadOnly）
+                // System information (Easy mode: ReadOnly)
                 Route::get('/info', [Systems\AdminSystemInfoController::class, 'index'])
                     ->middleware('check.menu.access:settings.systems.info')
                     ->name('info');
             });
 
-            // ログアウト
+            // Logout
             Route::match(['get', 'post'], '/logout', [AdminLoginController::class, 'destroy'])->name('logout');
 
-            // 注: プラグインの管理画面ルートはPluginServiceProvider::loadPluginRoutes()で読み込む
-            // プラグイン側でルート名を完全に制御するため、ここでは読み込まない
+            // Note: plugin admin panel routes are loaded in PluginServiceProvider::loadPluginRoutes()
+            // Not loaded here to allow plugins full control over route names
             // \App\Helpers\PluginHelper::loadEnabledAdminRoutes();
 
-            // 有効化されているテーマの管理画面ルートを自動読み込み
+            // Auto-load admin panel routes for activated themes
             \App\Helpers\ThemeHelper::loadEnabledThemeAdminRoutes();
         });
     });

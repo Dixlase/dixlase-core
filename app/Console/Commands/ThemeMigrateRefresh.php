@@ -67,14 +67,14 @@ class ThemeMigrateRefresh extends Command
         $themePath = base_path("themes/{$themeName}");
         $migrationsPath = "{$themePath}/database/migrations";
 
-        // テーマディレクトリの存在確認
+        // Check theme directory existence
         if (! File::isDirectory($themePath)) {
             $this->error("Theme directory not found: {$themePath}");
 
             return 1;
         }
 
-        // マイグレーションディレクトリの存在確認
+        // Check migration directory existence
         if (! File::isDirectory($migrationsPath)) {
             $this->warn("No migrations directory found for theme: {$themeName}");
 
@@ -83,19 +83,19 @@ class ThemeMigrateRefresh extends Command
 
         $this->info("Refreshing migrations for theme: {$themeName}");
 
-        // ロールバック実行
+        // Execute rollback
         $this->call('dls:theme:migrate:rollback', [
             'theme' => $themeName,
             '--force' => $this->option('force'),
         ]);
 
-        // マイグレーション実行
+        // Execute migration
         $this->call('dls:theme:migrate', [
             'theme' => $themeName,
             '--force' => $this->option('force'),
         ]);
 
-        // シード実行（オプション）
+        // Execute seed (optional)
         if ($this->option('seed')) {
             $this->call('dls:theme:seed', [
                 'theme' => $themeName,

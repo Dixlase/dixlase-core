@@ -38,14 +38,14 @@ namespace App\Console\Traits;
 use Illuminate\Support\Facades\File;
 
 /**
- * テーマ管理の共通機能を提供するトレイト
+ * Trait that provides common functionality for theme management
  */
 trait ThemeManagementTrait
 {
     /**
-     * テーマディレクトリのパスを取得
+     * Get the path of the theme directory
      *
-     * @param  string  $themeName  テーマ名
+     * @param  string  $themeName  Theme name
      */
     protected function getThemePath(string $themeName): string
     {
@@ -53,9 +53,9 @@ trait ThemeManagementTrait
     }
 
     /**
-     * テーマが存在するか確認
+     * Check if the theme exists
      *
-     * @param  string  $themeName  テーマ名
+     * @param  string  $themeName  Theme name
      */
     protected function themeExists(string $themeName): bool
     {
@@ -65,9 +65,9 @@ trait ThemeManagementTrait
     }
 
     /**
-     * テーマ情報を取得
+     * Get theme information
      *
-     * @param  string  $themeName  テーマ名
+     * @param  string  $themeName  Theme name
      */
     protected function getThemeInfo(string $themeName): ?array
     {
@@ -84,9 +84,9 @@ trait ThemeManagementTrait
     }
 
     /**
-     * テーマの名前空間を取得
+     * Get the namespace of the theme
      *
-     * @param  string  $themeName  テーマ名
+     * @param  string  $themeName  Theme name
      */
     protected function getThemeNamespace(string $themeName): string
     {
@@ -96,14 +96,14 @@ trait ThemeManagementTrait
             return $themeInfo['namespace'];
         }
 
-        // デフォルトの名前空間を生成
+        // Generate the default namespace
         return "Themes\\{$themeName}\\App";
     }
 
     /**
-     * テーマのテーブルプレフィックスを取得
+     * Get the table prefix of the theme
      *
-     * @param  string  $themeName  テーマ名
+     * @param  string  $themeName  Theme name
      */
     protected function getThemeTablePrefix(string $themeName): string
     {
@@ -113,14 +113,14 @@ trait ThemeManagementTrait
             return $themeInfo['table_prefix'];
         }
 
-        // デフォルトのプレフィックスを生成（例: thm_my_theme_）
+        // Generate the default prefix (e.g., thm_my_theme_)
         $slug = $themeInfo['slug'] ?? strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $themeName));
 
         return 'thm_'.str_replace('-', '_', $slug).'_';
     }
 
     /**
-     * 利用可能なテーマのリストを取得
+     * Get a list of available themes
      */
     protected function getAvailableThemes(): array
     {
@@ -144,10 +144,10 @@ trait ThemeManagementTrait
     }
 
     /**
-     * テーマのディレクトリ構造を作成
+     * Create the directory structure of the theme
      *
-     * @param  string  $themeName  テーマ名
-     * @param  array  $directories  作成するディレクトリのリスト
+     * @param  string  $themeName  Theme name
+     * @param  array  $directories  List of directories to create
      */
     protected function createThemeDirectories(string $themeName, array $directories): void
     {
@@ -162,10 +162,10 @@ trait ThemeManagementTrait
     }
 
     /**
-     * テーマファイルを削除
+     * Delete theme file
      *
-     * @param  string  $themeName  テーマ名
-     * @param  string  $relativePath  テーマディレクトリからの相対パス
+     * @param  string  $themeName  Theme name
+     * @param  string  $relativePath  Relative path from the theme directory
      */
     protected function deleteThemeFile(string $themeName, string $relativePath): bool
     {
@@ -180,10 +180,10 @@ trait ThemeManagementTrait
     }
 
     /**
-     * テーマディレクトリを削除
+     * Delete theme directory
      *
-     * @param  string  $themeName  テーマ名
-     * @param  string  $relativePath  テーマディレクトリからの相対パス
+     * @param  string  $themeName  Theme name
+     * @param  string  $relativePath  Relative path from the theme directory
      */
     protected function deleteThemeDirectory(string $themeName, string $relativePath): bool
     {

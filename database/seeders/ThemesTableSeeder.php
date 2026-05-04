@@ -45,13 +45,13 @@ class ThemesTableSeeder extends Seeder
      */
     public function run(): void
     {
-        // theme.jsonから情報を読み込む
+        // Load information from theme.json
         $themeJsonPath = base_path('themes/DixlaseOnePage/theme.json');
 
         if (file_exists($themeJsonPath)) {
             $themeJson = json_decode(file_get_contents($themeJsonPath), true);
 
-            // 日本語の説明を取得（フォールバック: 英語）
+            // Get Japanese description (fallback: English)
             $description = $themeJson['description']['ja'] ?? $themeJson['description']['en'] ?? null;
 
             Theme::create([
@@ -78,7 +78,7 @@ class ThemesTableSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         } else {
-            // theme.jsonが存在しない場合は最小限の情報で作成
+            // Create with minimal information if theme.json does not exist
             Theme::create([
                 'name' => 'DixlaseOnePage',
                 'slug' => 'dixlase-one-page',

@@ -45,7 +45,7 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 
 /**
- * カスタムファイルオーバーライドローディング
+ * Custom file override loading
  */
 trait CustomFilesLoaderTrait
 {
@@ -119,14 +119,14 @@ trait CustomFilesLoaderTrait
                 $filename = pathinfo($file->getFilename(), PATHINFO_FILENAME);
                 $config = Config::get($filename, []);
 
-                // カスタム設定ファイルを読み込み
+                // Load custom settings file
                 $customConfig = require $file->getPathname();
 
                 if (!is_array($customConfig)) {
                     throw new \UnexpectedValueException("Config file {$file->getPathname()} must return an array.");
                 }
 
-                // ファイル内のモードを優先し、デフォルトモードをフォールバック
+                // Prioritize mode in file, fallback to default mode
                 $mergeMode = $customConfig['_merge_mode'] ?? config('app.default_merge_mode', 'merge');
 
                 if ($mergeMode === 'replace') {
@@ -138,19 +138,19 @@ trait CustomFilesLoaderTrait
         }
     }
 
-    // カスタムルートを読み込む
+    // Load custom routes
     public function loadCustomRoutes($path)
     {
         if (File::isDirectory($path)) {
             foreach (File::allFiles($path) as $file) {
-                // ミドルウェアの指定（必要に応じて変更可能）
+                // Specify middleware (can be changed as needed)
                 Route::middleware('web')
                     ->group($file->getPathname());
             }
         }
     }
 
-    // カスタム言語ファイルを読み込む
+    // Load custom language files
     public function loadCustomLang($path)
     {
         if (File::isDirectory($path)) {
@@ -159,17 +159,17 @@ trait CustomFilesLoaderTrait
                 foreach (File::allFiles($localePath) as $file) {
                     $group = pathinfo($file->getFilename(), PATHINFO_FILENAME);
 
-                    // デフォルト翻訳を取得
+                    // Get default translations
                     $defaultLang = Lang::getLoader()->load($locale, $group) ?? [];
 
-                    // カスタム翻訳を取得
+                    // Get custom translations
                     $customLang = require $file->getPathname();
 
                     if (!is_array($customLang)) {
                         throw new \UnexpectedValueException("Language file {$file->getPathname()} must return an array.");
                     }
 
-                    // ファイル内のモードを優先し、デフォルトモードをフォールバック
+                    // Prioritize mode in file, fallback to default mode
                     $mergeMode = $customLang['_merge_mode'] ?? config('app.default_merge_mode', 'merge');
 
                     if ($mergeMode === 'replace') {
@@ -178,23 +178,23 @@ trait CustomFilesLoaderTrait
                         $mergedLang = array_merge_recursive($defaultLang, $customLang);
                     }
 
-                    // 言語ラインを登録
+                    // Register language lines
                     Lang::addLines([$group => $mergedLang], $locale);
                 }
             }
         }
     }
 
-    // カスタムビューファイルを読み込む
+    // Load custom view files
     public function loadCustomViews($path)
     {
         if (File::exists($path)) {
-            // カスタムビューを読み込み
+            // Load custom views
             View::addLocation($path);
         }
     }
 
-    // カスタムコンフィグの配列を再帰的にマージする関数
+    // Function to recursively merge custom config arrays
     function array_merge_recursive_custom(array $array1, array $array2): array
     {
         foreach ($array2 as $key => $value) {
@@ -207,7 +207,7 @@ trait CustomFilesLoaderTrait
         return $array1;
     }
 
-    // カスタムコントローラを読み込む
+    // Load custom controllers
     public function loadCustomControllers($customPath, $defaultNamespace = 'App\\Http\\Controllers\\')
     {
         if (!File::exists($customPath)) {
@@ -218,13 +218,13 @@ trait CustomFilesLoaderTrait
             $relativePath = Str::replaceFirst($customPath, '', $file->getPath());
             $className = $this->getClassNameFromPath($relativePath);
 
-            // カスタムクラスとコアクラスを特定
+            // Identify custom class and Core class
             $customClass = $defaultNamespace . 'Custom\\' . $className;
             $coreClass = $defaultNamespace . $className;
 
             if (class_exists($customClass)) {
                 if (class_exists($coreClass)) {
-                    // マージまたは置換を選択
+                    // Choose merge or replace
                     $mergeMode = config('custom.default_merge_mode', 'merge');
 
                     if ($mergeMode === 'replace') {
@@ -234,20 +234,20 @@ trait CustomFilesLoaderTrait
                         App::bind($coreClass, $mergedClass);
                     }
                 } else {
-                    // コアクラスが存在しない場合はそのままバインド
+                    // Bind as-is if Core class does not exist
                     App::bind($customClass, $customClass);
                 }
             }
         }
     }
 
-    // カスタムコントローラのクラス名を取得
+    // Get custom controller class name
     private function getClassNameFromPath($relativePath)
     {
         return str_replace(['/', '.php'], ['\\', ''], $relativePath);
     }
 
-    // コアクラスとカスタムクラスをマージ
+    // Merge Core class and custom class
     private function mergeControllers($coreClass, $customClass)
     {
         return new class($coreClass, $customClass) extends $coreClass {

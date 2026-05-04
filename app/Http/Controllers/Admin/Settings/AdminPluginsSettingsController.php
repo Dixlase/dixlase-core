@@ -1600,8 +1600,8 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      *
      * Priority:
      * 1. Explicit package field (unique mapping between manifest and install destination)
-     * 2. Last segment of namespace (e.g. Plugins\DixlaseSEO → DixlaseSEO)
-     * 3. Last part of package_name (e.g. plugins/dixlase-seo → dixlase-seo)
+     * 2. Last segment of namespace (e.g. Plugins\MyPlugin → MyPlugin)
+     * 3. Last part of package_name (e.g. plugins/my-plugin → my-plugin)
      * 4. null (maintain existing directory name)
      */
     protected function resolvePluginDirectoryName(?array $pluginData): ?string

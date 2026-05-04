@@ -42,47 +42,47 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * 信頼済みデバイス管理テーブル
-     * ゼロトラスト基盤の一部として、デバイスを識別し既知/未知を判定
+     * Trusted devices management table
+     * As part of zero trust infrastructure, identifies devices and determines known/unknown status
      */
     public function up(): void
     {
         Schema::create('members_trusted_devices', function (Blueprint $table) {
             $table->id();
 
-            // 所有者
+            // Owner
             $table->unsignedBigInteger('member_id')->index();
 
-            // デバイス識別トークン（ハッシュ化して保存）
+            // Device identification token (stored as hash)
             $table->string('token', 255)->nullable()->index();
 
-            // デバイス名（ユーザーが識別しやすい名前）
+            // Device name (user-friendly identifier)
             $table->string('device_name', 100)->nullable();
 
-            // アクセス元情報
-            $table->string('ip_address', 45)->nullable(); // IPv6対応
+            // Access source information
+            $table->string('ip_address', 45)->nullable(); // IPv6 compatible
             $table->text('user_agent')->nullable();
-            $table->string('user_agent_hash', 64)->nullable(); // インデックス用ハッシュ
+            $table->string('user_agent_hash', 64)->nullable(); // Hash for indexing
 
-            // 信頼レベル
-            // trusted: 信頼済み（2FA完了後に登録）
-            // unknown: 未知（初回アクセス）
-            // blocked: ブロック済み（ユーザーが明示的にブロック）
+            // Trust level
+            // trusted: trusted (registered after 2FA completion)
+            // unknown: unknown (first access)
+            // blocked: blocked (explicitly blocked by user)
             $table->string('trust_level', 20)->default('trusted');
 
-            // 初回アクセス時のIP（変更検知用）
+            // IP at first access (for change detection)
             $table->string('first_ip', 45)->nullable();
 
-            // 最終アクセス時のIP
+            // IP at last access
             $table->string('last_ip', 45)->nullable();
 
-            // 最終使用日時
+            // Last used at
             $table->timestamp('last_used_at')->nullable();
 
-            // 標準タイムスタンプ
+            // Standard timestamps
             $table->timestamps();
 
-            // インデックス
+            // Indexes
             $table->index(['member_id', 'trust_level'], 'mtd_member_trust_idx');
             $table->index(['member_id', 'ip_address', 'user_agent_hash'], 'mtd_member_ip_ua_idx');
         });
