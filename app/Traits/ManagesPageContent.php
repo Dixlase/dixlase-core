@@ -44,8 +44,9 @@ use App\Services\PageContentService;
  *
  * Page content management trait
  *
- * Used in controllers to easily save, load, and render page content
- * Commonly used by the DixlasePages plugin and front page editing functionality
+ * Used in controllers to easily save, load, and render page content.
+ * Typically consumed by a page-tree plugin and by the front-page editing
+ * functionality.
  */
 trait ManagesPageContent
 {

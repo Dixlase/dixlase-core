@@ -1374,7 +1374,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
      *
      * Priority:
      * 1. Explicit package field (unique mapping between manifest and installation destination)
-     * 2. Final segment of namespace (e.g. Themes\DixlaseOnePage → DixlaseOnePage)
+     * 2. Final segment of namespace (e.g. Themes\MyTheme → MyTheme)
      * 3. Last part of package_name
      * 4. null (keep existing directory name)
      */
