@@ -39,138 +39,138 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * ログイン・認証処理の共通トレイト
+ * Common trait for login and authentication processing
  *
- * ログイン処理と二段階認証処理で共通して使用される設定メソッドと機能を提供します。
- * このトレイトを使用するコントローラーは、以下の抽象メソッドを実装する必要があります。
+ * Provides configuration methods and functionality commonly used in login and two-factor authentication processing
+ * Controllers using this trait must implement the following abstract methods:
  */
 trait LoginTrait
 {
     /**
-     * ログイン画面のルート名を取得（継承先で実装）
+     * Get login screen route name (implement in subclass)
      *
-     * @return string ルート名（例: 'admin.login', 'dixlase-users::mypage.login'）
+     * @return string Route name (e.g., 'admin.login', 'dixlase-users::mypage.login')
      */
     abstract protected function getLoginRoute(): string;
 
     /**
-     * ダッシュボードのルート名を取得（継承先で実装）
+     * Get dashboard route name (implement in subclass)
      *
-     * @return string ルート名（例: 'admin.dashboard', 'dixlase-users::mypage.dashboard'）
+     * @return string Route name (e.g., 'admin.dashboard', 'dixlase-users::mypage.dashboard')
      */
     abstract protected function getDashboardRoute(): string;
 
     /**
-     * セッションキーのプレフィックスを取得（継承先で実装）
+     * Get session key prefix (implement in subclass)
      *
-     * @return string プレフィックス（例: 'login', 'two_fa'）
+     * @return string Prefix (e.g., 'login', 'two_fa')
      */
     abstract protected function getSessionPrefix(): string;
 
     /**
-     * ユーザーモデルクラス名を取得（継承先で実装）
+     * Get user model class name (implement in subclass)
      *
-     * @return string モデルクラス名（例: 'App\Models\Member', 'Plugins\DixlaseUsers\App\Models\DixlaseUsersUser'）
+     * @return string Model class name (e.g., 'App\Models\Member', 'Plugins\DixlaseUsers\App\Models\DixlaseUsersUser')
      */
     abstract protected function getUserModelClass(): string;
 
     /**
-     * 認証ガード名を取得（継承先で実装）
+     * Get authentication guard name (implement in subclass)
      *
-     * @return string ガード名（例: 'member', 'user'）
+     * @return string Guard name (e.g., 'member', 'user')
      */
     abstract protected function getGuardName(): string;
 
     /**
-     * コンテキストを取得（継承先で実装）
+     * Get context (implement in subclass)
      *
-     * @return string コンテキスト（'admin' または 'user'）
+     * @return string Context ('admin' or 'user')
      */
     abstract protected function getContext(): string;
 
     /**
-     * 二段階認証ルートのプレフィックスを取得
+     * Get two-factor authentication route prefix
      *
-     * @return string ルートプレフィックス（例: 'admin', 'dixlase-users::mypage'）
+     * @return string Route prefix (e.g., 'admin', 'dixlase-users::mypage')
      */
     abstract protected function getTwoFaRoutePrefix(): string;
 
     /**
-     * ログアウト後のリダイレクト先を取得（継承先で実装）
+     * Get redirect destination after logout (implement in subclass)
      *
-     * @return string リダイレクト先のルート名またはURL
+     * @return string Route name or URL for redirect destination
      */
     abstract protected function getLogoutRedirectRoute(): string;
 
     /**
-     * 設定モデルクラス名を取得（継承先で実装）
+     * Get settings model class name (implement in child class)
      *
-     * @return string 設定モデルクラス名
+     * @return string Settings model class name
      */
     abstract protected function getSettingModelClass(): string;
 
     /**
-     * ロックアウトサービスクラス名を取得（継承先で実装）
+     * Get lockout service class name (implement in child class)
      *
-     * @return string ロックアウトサービスクラス名
+     * @return string Lockout service class name
      */
     abstract protected function getLockoutServiceClass(): string;
 
     /**
-     * ログイン通知サービスクラス名を取得（継承先で実装）
+     * Get login notification service class name (implement in child class)
      *
-     * @return string ログイン通知サービスクラス名
+     * @return string Login notification service class name
      */
     abstract protected function getLoginNotificationServiceClass(): string;
 
     /**
-     * ログインビュー名を取得（継承先で実装）
+     * Get login view name (implement in child class)
      *
-     * @return string ログインビュー名
+     * @return string Login view name
      */
     abstract protected function getLoginViewName(): string;
 
     /**
-     * CAPTCHAアクション名を取得（継承先で実装）
+     * Get CAPTCHA action name (implement in child class)
      *
-     * @return string CAPTCHAアクション名
+     * @return string CAPTCHA action name
      */
     abstract protected function getCaptchaAction(): string;
 
     /**
-     * パスワードリセット機能が有効かどうかを取得（継承先で実装）
+     * Get whether password reset feature is enabled (implement in child class)
      *
-     * @return bool パスワードリセット機能の有効/無効
+     * @return bool Password reset feature enabled/disabled
      */
     abstract protected function isPasswordResetEnabled(): bool;
 
     /**
-     * アカウント名でのログインをサポートするかどうか（継承先で実装）
+     * Whether to support login with account name (implement in child class)
      *
-     * @return bool アカウント名ログインのサポート
+     * @return bool Account name login support
      */
     abstract protected function supportsAccountNameLogin(): bool;
 
     /**
-     * メールアドレスでのログインをサポートするかどうか（継承先で実装）
+     * Whether to support login with email address (implement in child class)
      *
-     * @return bool メールアドレスログインのサポート
+     * @return bool Email address login support
      */
     abstract protected function supportsEmailLogin(): bool;
 
     /**
-     * pending_emailでのログインをサポートするかどうか（継承先で実装）
+     * Whether to support login with pending_email (implement in child class)
      *
-     * @return bool pending_emailログインのサポート
+     * @return bool pending_email login support
      */
     abstract protected function supportsPendingEmailLogin(): bool;
 
     /**
-     * リカバリーコード画面のルート名を取得（継承先で実装）
+     * Get recovery code screen route name (implement in child class)
      *
-     * @return string ルート名（例: 'admin.two-fa.recovery-code.show', 'dixlase-users::mypage.two-fa.recovery-code.show'）
+     * @return string Route name (e.g. 'admin.two-fa.recovery-code.show', 'dixlase-users::mypage.two-fa.recovery-code.show')
      */
     abstract protected function getRecoveryCodeRoute(): string;
 
@@ -188,27 +188,27 @@ trait LoginTrait
 
         $viewParams = [];
 
-        // パスワードリセット機能の有効/無効設定を取得
+        // Get password reset feature enabled/disabled settings
         $passwordResetEnabled = $this->isPasswordResetEnabled();
         $canSendMail = \App\Services\MailServerValidatorService::canSendMail();
 
-        // メールサーバーが設定・テスト済みの場合のみパスワードリセットを有効にする
+        // Enable password reset only if mail server is configured and tested
         $viewParams['canResetPassword'] = $passwordResetEnabled && $canSendMail;
 
-        // CAPTCHA設定を取得
+        // Get CAPTCHA settings
         $captchaAction = $this->getCaptchaAction();
         $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
         $viewParams['captchaEnabled'] = $captchaEnabled;
         $viewParams['captchaDriver'] = \App\Helpers\CaptchaHelper::getDriver();
         $viewParams['captchaWidget'] = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
 
-        // パスキー認証ボタンの表示判定
-        // ステップ1では常に表示（識別子チェック後にhasPasskeyで制御）
-        // ステップ2では二段階認証とパスキーの設定に基づいて表示
+        // Determine passkey authentication button display
+        // Always display in step 1 (controlled by hasPasskey after identifier check)
+        // Display in step 2 based on two-factor authentication and passkey settings
         $settingModelClass = $this->getSettingModelClass();
         $viewParams['passkeyEnabled'] = $this->shouldShowPasskeyButton($settingModelClass);
 
-        // 戻るリンクの URL（welcome ルート未定義時は / にフォールバック）
+        // Back link URL (fallback to / if welcome route is undefined)
         $viewParams['backUrl'] = \Illuminate\Support\Facades\Route::has('welcome') ? route('welcome') : url('/');
 
         return view($this->getLoginViewName(), $viewParams);
@@ -224,10 +224,10 @@ trait LoginTrait
         $lockoutService = app($this->getLockoutServiceClass());
         $login = $request->login;
 
-        // 入力値がメールアドレスかアカウント名かを判定
+        // Determine if input value is email address or account name
         $isEmail = str_contains($login, '@');
 
-        // CAPTCHA検証（識別子チェックで検証済みの場合はスキップ）
+        // CAPTCHA verification (skip if already verified in identifier check)
         $captchaVerifiedKey = 'captcha_verified_'.$login;
         $captchaVerifiedTime = session()->get($captchaVerifiedKey);
         $captchaVerified = $captchaVerifiedTime && (time() - $captchaVerifiedTime) < 300; // 5分以内
@@ -243,10 +243,10 @@ trait LoginTrait
             }
         }
 
-        // CAPTCHA検証済みフラグをクリア
+        // Clear CAPTCHA verified flag
         session()->forget($captchaVerifiedKey);
 
-        // ロックアウト状態をチェック
+        // Check lockout status
         if ($lockoutService->isLockedOut($login)) {
             $remainingMinutes = $lockoutService->getLockoutRemainingMinutes($login);
 
@@ -255,25 +255,25 @@ trait LoginTrait
             ]);
         }
 
-        // IPアドレスベースのロックアウトもチェック
+        // Also check IP address-based lockout
         if ($lockoutService->isIpLockedOut($request->ip())) {
             return back()->withErrors([
                 'login' => __('auth.ip_lockout'),
             ]);
         }
 
-        // ユーザーを検索
+        // Search for user
         $user = $this->findUserByLogin($login, $isEmail);
 
-        // ユーザーが見つからない、またはパスワードが間違っている場合
+        // If user is not found or password is incorrect
         if (! $user || ! \Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
-            // 失敗したログインを記録
+            // Record failed login
             $failureReason = \App\Models\MemberLoginAttempt::FAILURE_INVALID_PASSWORD;
             $lockoutInfo = $lockoutService->handleFailedLogin($request, $login, $failureReason);
 
             $errorMessage = __('auth.failed');
 
-            // IPベースのロックアウトをチェック
+            // Check IP-based lockout
             if ($lockoutInfo['is_ip_locked_out']) {
                 $lockoutDuration = $lockoutInfo['settings']['lockout_duration'] ?? 30;
                 $errorMessage = __('auth.lockout', ['minutes' => $lockoutDuration]);
@@ -283,26 +283,26 @@ trait LoginTrait
                 $errorMessage = __('auth.failed_with_attempts', ['attempts' => $lockoutInfo['remaining_attempts']]);
             }
 
-            // エラーメッセージをセッションフラッシュメッセージとして保存
+            // Save error message as session flash message
             return back()
                 ->with('error', $errorMessage)
                 ->withInput($request->except('password'));
         }
 
-        // ロックアウト用にメールアドレスを取得
+        // Get email address for lockout
         $email = $user->email;
 
-        // 2FA 判定
+        // 2FA determination
         $twoFactor = app(\App\Services\TwoFa\TwoFaService::class, [
             'settingModelClass' => $this->getSettingModelClass(),
             'context' => $this->getContext(),
         ]);
 
-        // メールサーバーのテストが完了していない場合は2FAをスキップ
+        // Skip 2FA if mail server testing is not completed
         $mailServerTested = \App\Services\MailServerValidatorService::isMailServerTested();
 
         if ($twoFactor->has($user) && $mailServerTested) {
-            // 2FAロックアウトチェック
+            // 2FA lockout check
             $lockoutStatus = $twoFactor->checkLockout($user);
 
             if ($lockoutStatus['locked_out']) {
@@ -319,35 +319,35 @@ trait LoginTrait
                 $this->getSessionPrefix().'.auth_method' => 'password', // パスワード認証を記録
             ]);
 
-            // 有効な認証方法を取得
+            // Get valid authentication method
             $effectiveMethod = $twoFactor->getEffectiveAuthMethod($user);
 
-            // メール認証の場合のみコード生成
+            // Generate code only for email authentication
             if ($effectiveMethod === \App\Enums\TwoFaMethod::EMAIL->value) {
                 $twoFactor->generate($user);
-                // セッションにメール送信済みフラグを設定（重複送信を防ぐ）
+                // Set email sent flag in session (prevent duplicate sending)
                 $request->session()->put($this->getSessionPrefix().'.email_sent', true);
             }
 
-            // デフォルト認証方法に応じて適切なルートにリダイレクト
+            // Redirect to appropriate route based on default authentication method
             $redirectRoute = \App\Helpers\TwoFaHelper::getTwoFaMethodRoute($this->getTwoFaRoutePrefix(), $effectiveMethod);
 
             return redirect()->route($redirectRoute);
         } else {
-            // 成功したログインを記録（失敗記録をクリア）
+            // Record successful login (clear failure records)
             $lockoutService->handleSuccessfulLogin($email, $request);
 
-            // ログイン環境を記録、通知
+            // Record and notify login environment
             app($this->getLoginNotificationServiceClass())->handle($user, $request);
 
-            // 2FA不要なら即ログイン
+            // Login immediately if 2FA is not required
             $guardName = $this->getGuardName();
             $remember = $request->boolean('remember');
 
             Auth::guard($guardName)->login($user, $remember);
             $request->session()->regenerate();
 
-            // ログイン後にメール認証トークンをチェック
+            // Check email verification token after login
             $this->processEmailVerificationIfPending($user, $request);
 
             return redirect()->route($this->getDashboardRoute());
@@ -355,38 +355,38 @@ trait LoginTrait
     }
 
     /**
-     * ログイン入力値からユーザーを検索
+     * Find user from login input
      *
-     * @param  string  $login  ログイン入力値
-     * @param  bool  $isEmail  メールアドレスかどうか
-     * @return mixed ユーザーモデルまたはnull
+     * @param  string  $login  Login input value
+     * @param  bool  $isEmail  Whether it is an email address
+     * @return mixed User model or null
      */
     protected function findUserByLogin(string $login, bool $isEmail)
     {
         $userModelClass = $this->getUserModelClass();
 
         if ($isEmail) {
-            // メールアドレスログインが無効な場合はnull
+            // Null if email address login is disabled
             if (! $this->supportsEmailLogin()) {
                 return;
             }
 
-            // メールアドレスで検索
+            // Search by email address
             $query = $userModelClass::where('email', $login);
 
-            // pending_emailもサポートする場合
+            // If pending_email is also supported
             if ($this->supportsPendingEmailLogin()) {
                 $query->orWhere('pending_email', $login);
             }
 
             return $query->first();
         } else {
-            // アカウント名でのログインをサポートする場合
+            // If login by account name is supported
             if ($this->supportsAccountNameLogin()) {
                 return $userModelClass::where('account_name', $login)->first();
             }
 
-            // アカウント名ログインをサポートしない場合はnull
+            // Null if account name login is not supported
             return;
         }
     }
@@ -402,7 +402,7 @@ trait LoginTrait
 
         $redirectRoute = $this->getLogoutRedirectRoute();
 
-        // ルート名かURLかを判定
+        // Determine if route name or URL
         if (str_starts_with($redirectRoute, '/') || str_starts_with($redirectRoute, 'http')) {
             return redirect($redirectRoute);
         }
@@ -411,39 +411,39 @@ trait LoginTrait
     }
 
     /**
-     * パスキーボタンを表示するかチェック
+     * Check whether to display the passkey button
      *
-     * 優先順位:
-     * 1. メールサーバー未設定の場合は非表示
-     * 2. 全体設定で二段階認証またはパスキーが無効の場合は非表示
-     * 3. それ以外はステップ1で表示（識別子チェック後にhasPasskeyで制御）
+     * Priority:
+     * 1. Do not display if mail server is not configured
+     * 2. Do not display if two-factor authentication or passkey is disabled in global settings
+     * 3. Otherwise display in step 1 (controlled by hasPasskey after identifier check)
      */
     protected function shouldShowPasskeyButton(string $settingModelClass): bool
     {
-        // メールサーバー設定チェック（最優先）
+        // Check mail server settings (highest priority)
         $twoFaHelper = app(\App\Helpers\TwoFaHelper::class);
         if (! $twoFaHelper->isMailConfigured()) {
             return false;
         }
 
-        // パスキーモードを取得（0=無効、1=有効、2=プロフィールに従う）
+        // Get passkey mode (0=disabled, 1=enabled, 2=follow profile)
         $twoFaPasskeyMode = (int) $settingModelClass::getValue('two_fa_passkey_mode', '2');
 
-        // パスキーが無効の場合は非表示
+        // Do not display if passkey is disabled
         if ($twoFaPasskeyMode === 0) {
             return false;
         }
 
-        // 二段階認証モードを取得（0=無効、1=異なるデバイス・IP、2=常に有効、3=プロフィール設定に従う）
+        // Get two-factor authentication mode (0=disabled, 1=different device/IP, 2=always enabled, 3=follow profile settings)
         $twoFaMode = (int) $settingModelClass::getValue('two_fa_mode', '0');
 
-        // 二段階認証が無効の場合は非表示
+        // Do not display if two-factor authentication is disabled
         if ($twoFaMode === 0) {
             return false;
         }
 
-        // 二段階認証とパスキーが有効な場合は表示
-        // ステップ1で表示し、識別子チェック後にhasPasskeyで制御
+        // Display if two-factor authentication and passkey are enabled
+        // Display in step 1 and control by hasPasskey after identifier check
         return true;
     }
 }

@@ -44,11 +44,11 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * 管理画面の共通インターフェース初期化トレイト
+ * Trait for initializing common admin panel interface
  */
 trait AdminInterfaceTrait
 {
-    // 変数宣言
+    // Variable declarations
     protected $siteName;
 
     protected $heading = '';
@@ -60,16 +60,16 @@ trait AdminInterfaceTrait
     protected $settings = [];
 
     /**
-     * 初期化処理
+     * Initialization process
      */
     public function initialize()
     {
-        // インストール前の場合はスキップ
+        // Skip if not yet installed
         if (! file_exists(base_path('.env'))) {
             return;
         }
 
-        // インストール済みかどうかをチェック（config経由で取得することでキャッシュに対応）
+        // Check if installed (retrieve via config to support caching)
         $isInstalled = config('app.installed', false) ?: env('INSTALLED', false);
         if (! $isInstalled) {
             return;
@@ -124,7 +124,7 @@ trait AdminInterfaceTrait
             return;
         }
 
-        // プラグインのルートかどうかを判別（::が含まれている場合はプラグイン）
+        // Determine if it's a plugin route (it's a plugin if :: is included)
         if (strpos($routeName, '::') !== false) {
             $this->heading = $this->resolvePluginHeadingKey($routeName);
         } else {
@@ -135,11 +135,11 @@ trait AdminInterfaceTrait
     }
 
     /**
-     * コアの翻訳キーを解決する
-     * ルート名から適切な翻訳ファイルパスとキーを自動判定
+     * Resolve Core translation key
+     * Auto-detect appropriate translation file path and key from route name
      *
-     * @param  string  $routeName  ルート名（例: admin.settings.security.captcha）
-     * @return string 翻訳キー（例: admin/settings/security/captcha.heading）
+     * @param  string  $routeName  Route name (e.g., admin.settings.security.captcha)
+     * @return string Translation key (e.g., admin/settings/security/captcha.heading)
      */
     protected function resolveCoreHeadingKey(string $routeName): string
     {
@@ -151,20 +151,20 @@ trait AdminInterfaceTrait
             return 'admin/dashboard.heading';
         }
 
-        // パターン1: 完全パス（例: admin/settings/security/captcha.heading）
+        // Pattern 1: Full path (e.g., admin/settings/security/captcha.heading)
         $fullPath = 'admin/'.implode('/', $keys).'.heading';
         if (Lang::has($fullPath)) {
             return $fullPath;
         }
 
-        // パターン2: ディレクトリ構造の場合、index.phpを参照（例: admin/settings/systems/logs/index.heading）
+        // Pattern 2: For directory structure, reference index.php (e.g., admin/settings/systems/logs/index.heading)
         // admin.settings.systems.logs → admin/settings/systems/logs/index.heading
         $indexPath = 'admin/'.implode('/', $keys).'/index.heading';
         if (Lang::has($indexPath)) {
             return $indexPath;
         }
 
-        // パターン3: 親ディレクトリのindex.phpを参照（例: admin.settings.systems.logs.files → admin/settings/systems/logs/index.heading）
+        // Pattern 3: Reference parent directory's index.php (e.g., admin.settings.systems.logs.files → admin/settings/systems/logs/index.heading)
         if (count($keys) >= 2) {
             $parentKeys = array_slice($keys, 0, -1);
             $parentIndexPath = 'admin/'.implode('/', $parentKeys).'/index.heading';
@@ -173,7 +173,7 @@ trait AdminInterfaceTrait
             }
         }
 
-        // パターン4: 最後の要素がファイル内のキー（例: admin/media.index.heading）
+        // Pattern 4: Last element is a key within the file (e.g., admin/media.index.heading)
         if (count($keys) >= 2) {
             $keysCopy = $keys;
             $lastKey = array_pop($keysCopy);
@@ -183,7 +183,7 @@ trait AdminInterfaceTrait
             }
         }
 
-        // パターン5: 単一ファイルで直接heading（例: admin/dashboard.heading）
+        // Pattern 5: Direct heading in a single file (e.g., admin/dashboard.heading)
         if (count($keys) === 1) {
             $singlePath = 'admin/'.$keys[0].'.heading';
             if (Lang::has($singlePath)) {
@@ -191,33 +191,33 @@ trait AdminInterfaceTrait
             }
         }
 
-        // フォールバック: 最初に試したパスを返す
+        // Fallback: Return the first attempted path
         return $fullPath;
     }
 
     /**
-     * プラグインの翻訳キーを解決する
+     * Resolve plugin translation key
      *
-     * @param  string  $routeName  ルート名（例: admin.dixlase-inquiry::admin.settings.index）
-     * @return string 翻訳キー
+     * @param  string  $routeName  Route name (e.g., admin.dixlase-inquiry::admin.settings.index)
+     * @return string Translation key
      */
     protected function resolvePluginHeadingKey(string $routeName): string
     {
-        // 新しい形式: admin.plugin-name::admin.controller.action
+        // New format: admin.plugin-name::admin.controller.action
         if (strpos($routeName, 'admin.') === 0) {
             $withoutAdminPrefix = substr($routeName, 6); // 'admin.'を除去
             [$pluginNamespace, $route] = explode('::', $withoutAdminPrefix, 2);
 
-            // プラグイン内でも同様のロジックを適用
+            // Apply the same logic within plugins
             $keys = explode('.', $route);
 
-            // パターン1: 完全パス
+            // Pattern 1: Full path
             $fullPath = implode('/', $keys).'.heading';
             if (Lang::has($pluginNamespace.'::'.$fullPath)) {
                 return $pluginNamespace.'::'.$fullPath;
             }
 
-            // パターン2: 最後の要素がファイル内のキー
+            // Pattern 2: Last element is a key within the file
             if (count($keys) >= 2) {
                 $lastKey = array_pop($keys);
                 $filePath = implode('/', $keys).'.'.$lastKey.'.heading';
@@ -226,21 +226,21 @@ trait AdminInterfaceTrait
                 }
             }
 
-            // フォールバック
+            // Fallback
             return $pluginNamespace.'::'.$fullPath;
         }
 
-        // 旧形式: plugin-name::admin.controller.action
+        // Old format: plugin-name::admin.controller.action
         [$pluginNamespace, $route] = explode('::', $routeName, 2);
         $keys = explode('.', $route);
 
-        // パターン1: 完全パス（directory-based）
+        // Pattern 1: Full path (directory-based)
         $fullPath = implode('/', $keys).'.heading';
         if (Lang::has($pluginNamespace.'::'.$fullPath)) {
             return $pluginNamespace.'::'.$fullPath;
         }
 
-        // パターン2: 最後の要素がファイル内のキー
+        // Pattern 2: Last element is a key within the file
         if (count($keys) >= 2) {
             $keysCopy = $keys;
             $lastKey = array_pop($keysCopy);
@@ -250,7 +250,7 @@ trait AdminInterfaceTrait
             }
         }
 
-        // フォールバック: 旧形式dot notation
+        // Fallback: Old format dot notation
         array_shift($keys); // 'admin'を除去
         $headingKey = implode('.', $keys).'.heading';
 

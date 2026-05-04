@@ -41,26 +41,26 @@ use App\Facades\Audit;
 use App\Models\AuditLog;
 
 /**
- * モデルの監査ログ自動記録トレイト
+ * Trait for automatic audit logging of models
  *
- * モデルの作成・更新・削除時に自動的に監査ログを記録
+ * Automatically records audit logs when models are created, updated, or deleted
  *
- * 使用例:
+ * Usage example:
  * ```php
  * class Post extends Model
  * {
  *     use AuditableTrait;
  *
- *     // オプション: 監査対象外のカラム
+ *     // Optional: columns excluded from audit
  *     protected array $auditExclude = ['updated_at', 'remember_token'];
  *
- *     // オプション: 監査対象のカラム（指定した場合、これらのみ記録）
+ *     // Optional: columns to audit (if specified, only these are recorded)
  *     protected array $auditInclude = ['title', 'status'];
  *
- *     // オプション: カテゴリを指定
+ *     // Optional: specify category
  *     protected string $auditCategory = 'content';
  *
- *     // オプション: プラグイン名を指定
+ *     // Optional: specify plugin name
  *     protected ?string $auditPluginName = 'my-plugin';
  * }
  * ```
@@ -68,32 +68,32 @@ use App\Models\AuditLog;
 trait AuditableTrait
 {
     /**
-     * モデルのブート時にイベントリスナーを登録
+     * Register event listeners when booting the model
      */
     public static function bootAuditableTrait(): void
     {
-        // 作成時
+        // On create
         static::created(function ($model) {
             $model->logAuditEvent('created');
         });
 
-        // 更新時
+        // On update
         static::updated(function ($model) {
             $model->logAuditEvent('updated');
         });
 
-        // 削除時
+        // On delete
         static::deleted(function ($model) {
             $model->logAuditEvent('deleted');
         });
     }
 
     /**
-     * 監査イベントをログに記録
+     * Record audit event to log
      */
     protected function logAuditEvent(string $event): void
     {
-        // 監査が無効化されている場合はスキップ
+        // Skip if audit is disabled
         if (property_exists($this, 'auditDisabled') && $this->auditDisabled) {
             return;
         }
@@ -102,7 +102,7 @@ trait AuditableTrait
         $category = $this->getAuditCategory();
         $context = $this->buildAuditContext($event);
 
-        // 変更がない場合はスキップ（更新時のみ）
+        // Skip if no changes (update only)
         if ($event === 'updated' && empty($context['diff'])) {
             return;
         }
@@ -120,23 +120,23 @@ trait AuditableTrait
     }
 
     /**
-     * 監査アクション名を取得
+     * Get audit action name
      */
     protected function getAuditAction(string $event): string
     {
-        // カスタムアクション名が定義されている場合
+        // If custom action name is defined
         if (property_exists($this, 'auditActions') && isset($this->auditActions[$event])) {
             return $this->auditActions[$event];
         }
 
-        // デフォルト: モデル名_イベント（例: post_created）
+        // Default: model_name_event (e.g., post_created)
         $modelName = strtolower(class_basename($this));
 
         return "{$modelName}_{$event}";
     }
 
     /**
-     * 監査カテゴリを取得
+     * Get audit category
      */
     protected function getAuditCategory(): string
     {
@@ -148,7 +148,7 @@ trait AuditableTrait
     }
 
     /**
-     * 監査コンテキストを構築
+     * Build audit context
      */
     protected function buildAuditContext(string $event): array
     {
@@ -178,7 +178,7 @@ trait AuditableTrait
                 break;
         }
 
-        // 追加のメタ情報
+        // Additional meta information
         $context['meta'] = [
             'model' => get_class($this),
             'id' => $this->getKey(),
@@ -188,26 +188,26 @@ trait AuditableTrait
     }
 
     /**
-     * 監査対象の属性をフィルタ
+     * Filter auditable attributes
      */
     protected function filterAuditAttributes(array $attributes): array
     {
-        // 除外リスト
+        // Exclusion list
         $exclude = property_exists($this, 'auditExclude')
             ? $this->auditExclude
             : ['password', 'remember_token', 'two_fa_secret', 'two_fa_recovery_codes'];
 
-        // 含めるリスト（指定がある場合はこれらのみ）
+        // Inclusion list (only these if specified)
         if (property_exists($this, 'auditInclude') && ! empty($this->auditInclude)) {
             $attributes = array_intersect_key($attributes, array_flip($this->auditInclude));
         }
 
-        // 除外
+        // Exclude
         return array_diff_key($attributes, array_flip($exclude));
     }
 
     /**
-     * 差分を構築
+     * Build diff
      */
     protected function buildDiff(array $before, array $after): array
     {
@@ -226,7 +226,7 @@ trait AuditableTrait
     }
 
     /**
-     * 監査メッセージを取得
+     * Get audit message
      */
     protected function getAuditMessage(string $event): string
     {
@@ -245,35 +245,35 @@ trait AuditableTrait
     }
 
     /**
-     * 監査対象ラベルを取得
+     * Get auditable label
      */
     protected function getAuditTargetLabel(): ?string
     {
-        // カスタムラベル属性が定義されている場合
+        // If custom label attribute is defined
         if (property_exists($this, 'auditLabelAttribute')) {
             return $this->{$this->auditLabelAttribute} ?? null;
         }
 
-        // デフォルト: name, title, email の順で探す
+        // Default: search in order of name, title, email
         return $this->name ?? $this->title ?? $this->email ?? null;
     }
 
     /**
-     * 監査の行為者を取得
+     * Get audit actor
      */
     protected function getAuditActor()
     {
-        // カスタム行為者が設定されている場合
+        // If custom actor is set
         if (property_exists($this, 'auditActor') && $this->auditActor) {
             return $this->auditActor;
         }
 
-        // 認証済みユーザーを返す
+        // Return authenticated user
         return auth()->user();
     }
 
     /**
-     * 監査の重要度を取得
+     * Get audit severity
      */
     protected function getAuditSeverity(string $event): string
     {
@@ -288,7 +288,7 @@ trait AuditableTrait
     }
 
     /**
-     * 監査のプラグイン名を取得
+     * Get audit plugin name
      */
     protected function getAuditPluginName(): ?string
     {
@@ -296,7 +296,7 @@ trait AuditableTrait
     }
 
     /**
-     * 監査を一時的に無効化
+     * Temporarily disable audit
      */
     public function withoutAudit(callable $callback)
     {
@@ -309,7 +309,7 @@ trait AuditableTrait
     }
 
     /**
-     * 行為者を設定
+     * Set actor
      */
     public function setAuditActor($actor): self
     {

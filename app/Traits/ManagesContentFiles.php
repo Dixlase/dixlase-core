@@ -40,24 +40,24 @@ namespace App\Traits;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * コンテンツファイル管理トレイト
- * ファイルベースのコンテンツ保存に関する共通機能を提供
- * コアとプラグインの両方で使用可能
+ * Content file management trait
+ * Provides common functionality for file-based content storage
+ * Available for use in both Core and plugins
  */
 trait ManagesContentFiles
 {
     /**
-     * ファイル保存用のディスク
+     * Disk for file storage
      */
     protected string $disk = 'local';
 
     /**
-     * ファイル保存用のベースパス
+     * Base path for file storage
      */
     protected string $basePath;
 
     /**
-     * エディタータイプに対応するファイル拡張子
+     * File extension corresponding to editor type
      */
     protected array $extensions = [
         'markdown' => 'md',
@@ -66,12 +66,12 @@ trait ManagesContentFiles
     ];
 
     /**
-     * デフォルト言語（ファイル名に言語コードを付けない言語）
+     * Default language (language that does not append language code to filename)
      */
     protected string $defaultLocale = 'en';
 
     /**
-     * ベースパスを設定
+     * Set base path
      */
     public function setBasePath(string $basePath): self
     {
@@ -81,7 +81,7 @@ trait ManagesContentFiles
     }
 
     /**
-     * ディスクを設定
+     * Set disk
      */
     public function setDisk(string $disk): self
     {
@@ -91,7 +91,7 @@ trait ManagesContentFiles
     }
 
     /**
-     * デフォルト言語を設定
+     * Set default language
      */
     public function setDefaultLocale(string $locale): self
     {
@@ -101,12 +101,12 @@ trait ManagesContentFiles
     }
 
     /**
-     * ファイルからコンテンツを読み込む
+     * Load content from file
      *
-     * @param  string  $slug  スラッグ
-     * @param  string  $locale  言語コード
-     * @param  string  $editorType  エディタータイプ
-     * @return string|null ファイルの内容、存在しない場合はnull
+     * @param  string  $slug  Slug
+     * @param  string  $locale  Language code
+     * @param  string  $editorType  Editor type
+     * @return string|null File contents, or null if not exists
      */
     public function loadFromFile(string $slug, string $locale, string $editorType): ?string
     {
@@ -120,19 +120,19 @@ trait ManagesContentFiles
     }
 
     /**
-     * コンテンツをファイルに保存する
+     * Save content to file
      *
-     * @param  string  $slug  スラッグ
-     * @param  string  $locale  言語コード
-     * @param  string  $editorType  エディタータイプ
-     * @param  string  $content  コンテンツ
-     * @return bool 保存成功時はtrue
+     * @param  string  $slug  Slug
+     * @param  string  $locale  Language code
+     * @param  string  $editorType  Editor type
+     * @param  string  $content  Content
+     * @return bool True on successful save
      */
     public function saveToFile(string $slug, string $locale, string $editorType, string $content): bool
     {
         $filePath = $this->getFilePath($slug, $locale, $editorType);
 
-        // ディレクトリが存在しない場合は作成
+        // Create directory if it does not exist
         $directory = dirname($filePath);
         if (! Storage::disk($this->disk)->exists($directory)) {
             Storage::disk($this->disk)->makeDirectory($directory);
@@ -142,12 +142,12 @@ trait ManagesContentFiles
     }
 
     /**
-     * ファイルを削除する
+     * Delete file
      *
-     * @param  string  $slug  スラッグ
-     * @param  string  $locale  言語コード
-     * @param  string  $editorType  エディタータイプ
-     * @return bool 削除成功時はtrue
+     * @param  string  $slug  Slug
+     * @param  string  $locale  Language code
+     * @param  string  $editorType  Editor type
+     * @return bool true on successful deletion
      */
     public function deleteFile(string $slug, string $locale, string $editorType): bool
     {
@@ -161,12 +161,12 @@ trait ManagesContentFiles
     }
 
     /**
-     * 全言語のファイルを削除する
+     * Delete files for all languages
      *
-     * @param  string  $slug  スラッグ
-     * @param  string  $editorType  エディタータイプ
-     * @param  array  $locales  言語コードの配列
-     * @return bool すべて削除成功時はtrue
+     * @param  string  $slug  Slug
+     * @param  string  $editorType  Editor type
+     * @param  array  $locales  Array of language codes
+     * @return bool true when all deletions succeed
      */
     public function deleteAllFiles(string $slug, string $editorType, array $locales): bool
     {
@@ -181,20 +181,20 @@ trait ManagesContentFiles
     }
 
     /**
-     * スラッグ変更時にディレクトリをリネームする
+     * Rename directory when slug changes
      *
-     * @param  string  $oldSlug  旧スラッグ
-     * @param  string  $newSlug  新スラッグ
-     * @param  string  $editorType  エディタータイプ（未使用、互換性のため残す）
-     * @param  array  $locales  言語コードの配列（未使用、互換性のため残す）
-     * @return bool リネーム成功時はtrue
+     * @param  string  $oldSlug  Old slug
+     * @param  string  $newSlug  New slug
+     * @param  string  $editorType  Editor type (unused, kept for compatibility)
+     * @param  array  $locales  Array of language codes (unused, kept for compatibility)
+     * @return bool true on successful rename
      */
     public function renameFiles(string $oldSlug, string $newSlug, string $editorType, array $locales): bool
     {
         $oldDir = "{$this->basePath}/{$oldSlug}";
         $newDir = "{$this->basePath}/{$newSlug}";
 
-        // ディレクトリが存在する場合はリネーム
+        // Rename if directory exists
         if (Storage::disk($this->disk)->exists($oldDir)) {
             return Storage::disk($this->disk)->move($oldDir, $newDir);
         }
@@ -203,10 +203,10 @@ trait ManagesContentFiles
     }
 
     /**
-     * スラッグのディレクトリを削除する
+     * Delete the slug's directory
      *
-     * @param  string  $slug  スラッグ
-     * @return bool 削除成功時はtrue
+     * @param  string  $slug  Slug
+     * @return bool true on successful deletion
      */
     public function deleteDirectory(string $slug): bool
     {
@@ -220,20 +220,20 @@ trait ManagesContentFiles
     }
 
     /**
-     * ファイルパスを取得する
-     * 構造: {basePath}/{slug}/content.{locale}.{extension}
-     * デフォルト言語はファイル名に言語コードを付けない
+     * Retrieve file path
+     * Structure: {basePath}/{slug}/content.{locale}.{extension}
+     * Default language does not include language code in filename
      *
-     * @param  string  $slug  スラッグ
-     * @param  string  $locale  言語コード
-     * @param  string  $editorType  エディタータイプ
-     * @return string ファイルパス
+     * @param  string  $slug  Slug
+     * @param  string  $locale  Language code
+     * @param  string  $editorType  Editor type
+     * @return string File path
      */
     public function getFilePath(string $slug, string $locale, string $editorType): string
     {
         $extension = $this->extensions[$editorType] ?? 'txt';
 
-        // デフォルト言語はファイル名に言語コードを付けない
+        // Default language does not include language code in filename
         if ($locale === $this->defaultLocale) {
             return "{$this->basePath}/{$slug}/content.{$extension}";
         }
@@ -242,12 +242,12 @@ trait ManagesContentFiles
     }
 
     /**
-     * ファイルの絶対パスを取得する
+     * Retrieve absolute file path
      *
-     * @param  string  $slug  スラッグ
-     * @param  string  $locale  言語コード
-     * @param  string  $editorType  エディタータイプ
-     * @return string 絶対ファイルパス
+     * @param  string  $slug  Slug
+     * @param  string  $locale  Language code
+     * @param  string  $editorType  Editor type
+     * @return string Absolute file path
      */
     public function getAbsoluteFilePath(string $slug, string $locale, string $editorType): string
     {
@@ -257,12 +257,12 @@ trait ManagesContentFiles
     }
 
     /**
-     * ファイルが存在するか確認する
+     * Check if file exists
      *
-     * @param  string  $slug  スラッグ
-     * @param  string  $locale  言語コード
-     * @param  string  $editorType  エディタータイプ
-     * @return bool ファイルが存在する場合はtrue
+     * @param  string  $slug  Slug
+     * @param  string  $locale  Language code
+     * @param  string  $editorType  Editor type
+     * @return bool true if file exists
      */
     public function fileExists(string $slug, string $locale, string $editorType): bool
     {
@@ -272,10 +272,10 @@ trait ManagesContentFiles
     }
 
     /**
-     * 拡張子を追加または上書き
+     * Add or overwrite extension
      *
-     * @param  string  $editorType  エディタータイプ
-     * @param  string  $extension  拡張子
+     * @param  string  $editorType  Editor type
+     * @param  string  $extension  Extension
      */
     public function addExtension(string $editorType, string $extension): self
     {
@@ -285,7 +285,7 @@ trait ManagesContentFiles
     }
 
     /**
-     * ベースパスを取得
+     * Get base path
      */
     public function getBasePath(): string
     {
@@ -293,7 +293,7 @@ trait ManagesContentFiles
     }
 
     /**
-     * ディスク名を取得
+     * Get disk name
      */
     public function getDisk(): string
     {
@@ -301,7 +301,7 @@ trait ManagesContentFiles
     }
 
     /**
-     * デフォルト言語を取得
+     * Get default language
      */
     public function getDefaultLocale(): string
     {
