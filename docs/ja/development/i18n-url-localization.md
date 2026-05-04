@@ -2,7 +2,7 @@
 
 Dixlase は path-prefix 方式 (`/ja/about`, `/en/about`) の URL 多言語化のための **インフラ** を v0.1.0 で出荷しますが、その URL ルーティング自体は **アクティブにしません**。フロント URL は locale prefix なしでコンテンツを返します。管理画面 (`/admin/...`) も影響を受けません。
 
-将来の多言語プラグイン (DixlaseI18n) が、用意された middleware を `Route::prefix('{locale}')` グループに付け、独自の `Route::fallback()` リダイレクトを登録することで、locale URL ルーティングをオプトインで有効化します。このドキュメントは、その時にプラグインがコア変更なしで差し込めるように、確定済みの設計契約を説明します。
+任意の多言語プラグイン (コア提供のもの、サードパーティ製、独自実装のいずれでも構いません) が、用意された middleware を `Route::prefix('{locale}')` グループに付け、独自の `Route::fallback()` リダイレクトを登録することで、locale URL ルーティングをオプトインで有効化します。このドキュメントは、そのようなプラグインがコア変更なしで差し込めるように、確定済みの設計契約を説明します。
 
 ## TL;DR
 
@@ -75,13 +75,13 @@ Dixlase は path-prefix 方式 (`/ja/about`, `/en/about`) の URL 多言語化�
 
 ルートは存在するが現在 locale で翻訳が無い場合、`MissingTranslationHandler` Contract が挙動を決定します。コア既定実装は `/{Site.primary_locale}/<path>` へ 302 リダイレクトします。
 
-プラグイン (DixlaseI18n、DixlaseRedirects 等) は binding を差し替えて挙動を変更できます:
+任意のプラグイン — 多言語プラグイン (コア提供 / サードパーティ製 / 独自実装) や redirects プラグイン、その他の拡張機能 — は binding を差し替えて挙動を変更できます:
 
 ```php
 // プラグインの ServiceProvider 内
 $this->app->bind(
     \App\Contracts\I18n\MissingTranslationHandler::class,
-    \Plugins\DixlaseI18n\Services\CustomMissingTranslationHandler::class,
+    \Plugins\YourMultilingualPlugin\Services\CustomMissingTranslationHandler::class,
 );
 ```
 
@@ -175,7 +175,7 @@ Locale 解決はサイト解決の前に行われます: `SetFrontLocale` が lo
 - 翻訳済み CMS コンテンツ (`Pages`, `Menus`, `Inquiry` の翻訳)
 - 翻訳エディタ UI / translation memory / 用語集
 - `<link rel="alternate" hreflang>` タグ生成 (DixlaseSEO 側)
-- 言語スイッチャー Blade コンポーネント (テーマ または DixlaseI18n)
+- 言語スイッチャー Blade コンポーネント (テーマ または多言語プラグイン側)
 - Carbon locale 自動切替 (既定以上のもの)
 - 数値・通貨フォーマットの地域化
 - RTL CSS / 論理プロパティ

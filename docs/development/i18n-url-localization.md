@@ -2,7 +2,7 @@
 
 Dixlase ships the **infrastructure** for path-prefix locale URLs (`/ja/about`, `/en/about`) but does **not activate** that routing in v0.1.0. Front URLs serve their content directly without a locale prefix; the admin UI (`/admin/...`) is unaffected.
 
-The future multilingual plugin (DixlaseI18n) opts into locale URL routing by attaching the provided middleware to a `Route::prefix('{locale}')` group and registering its own `Route::fallback()` redirect. This document describes the locked-in design contract so that plugin can plug in without core changes.
+Any multilingual plugin — first-party, third-party, or a custom in-house implementation — opts into locale URL routing by attaching the provided middleware to a `Route::prefix('{locale}')` group and registering its own `Route::fallback()` redirect. This document describes the locked-in design contract so any such plugin can plug in without core changes.
 
 ## TL;DR
 
@@ -75,13 +75,13 @@ Visiting `/about` directly (no locale prefix) is treated as ambiguous. The catch
 
 When a route exists but no translation is available for the requested locale, the `MissingTranslationHandler` contract decides what to do. The default core implementation redirects 302 to `/{Site.primary_locale}/<path>`.
 
-Plugins (e.g., DixlaseI18n, DixlaseRedirects) can swap the binding to change behaviour:
+Any plugin — a multilingual plugin (first-party, third-party, or in-house), a redirects plugin, or any other extension — can swap the binding to change behaviour:
 
 ```php
 // In a plugin's service provider
 $this->app->bind(
     \App\Contracts\I18n\MissingTranslationHandler::class,
-    \Plugins\DixlaseI18n\Services\CustomMissingTranslationHandler::class,
+    \Plugins\YourMultilingualPlugin\Services\CustomMissingTranslationHandler::class,
 );
 ```
 
@@ -175,7 +175,7 @@ These are explicit non-goals for v0.1.0 and land in v2 or in a multilingual plug
 - Translated CMS content (`Pages`, `Menus`, `Inquiry` translations)
 - Translation editor UI / translation memory / glossary
 - `<link rel="alternate" hreflang>` tag generation (lives in DixlaseSEO)
-- Language switcher Blade component (lives in themes or DixlaseI18n)
+- Language switcher Blade component (lives in themes or in a multilingual plugin)
 - Carbon locale auto-switching beyond defaults
 - Number/currency formatting localization
 - RTL CSS / logical properties

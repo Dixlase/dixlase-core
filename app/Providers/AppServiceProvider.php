@@ -145,8 +145,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SiteContextInterface::class, SiteContext::class);
 
         // Default I18n missing-translation policy: 302 redirect to the
-        // site's primary locale. Plugins (DixlaseI18n, DixlaseRedirects)
-        // can rebind this contract to change the behaviour.
+        // site's primary locale. Any multilingual plugin (first-party,
+        // third-party, or a custom in-house implementation), or another
+        // extension such as a redirects plugin, can rebind this contract
+        // to change the behaviour.
         $this->app->bind(
             \App\Contracts\I18n\MissingTranslationHandler::class,
             \App\Services\I18n\DefaultMissingTranslationHandler::class,
