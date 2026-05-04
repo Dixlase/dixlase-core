@@ -48,23 +48,23 @@ class SiteSettingsTableSeeder extends Seeder
     public function run(): void
     {
         $settings = [
-            // App settings (フォールバック用)
+            // App settings (for fallback)
             ['name' => 'app_name', 'value' => config('app.name', 'MySoftware')],
             ['name' => 'locale', 'value' => config('app.locale', 'ja')],
             ['name' => 'timezone', 'value' => config('app.timezone', 'Asia/Tokyo')],
 
-            // 管理画面URL設定
+            // Admin panel URL settings
             ['name' => 'admin_url', 'value' => 'admin'],
             ['name' => 'force_ssl', 'value' => '0'],
 
-            // メンテナンスモード
+            // Maintenance mode
             ['name' => 'maintenance_mode', 'value' => config('app.maintenance_mode', false) ? '1' : '0'],
-            ['name' => 'maintenance_message', 'value' => '現在メンテナンス中です。しばらくお待ちください。'],
-            ['name' => 'maintenance_auto_release', 'value' => '0'], // 0: 手動解除, 1: 自動解除
-            ['name' => 'maintenance_start_at', 'value' => null], // 開始日時（nullなら即時開始）
-            ['name' => 'maintenance_release_at', 'value' => null], // 終了日時（手動解除ならnull）
+            ['name' => 'maintenance_message', 'value' => 'Currently under maintenance. Please wait a moment.'],
+            ['name' => 'maintenance_auto_release', 'value' => '0'], // 0: manual release, 1: automatic release
+            ['name' => 'maintenance_start_at', 'value' => null], // Start datetime (immediate start if null)
+            ['name' => 'maintenance_release_at', 'value' => null], // End datetime (null for manual release)
 
-            // Mail settings (フォールバック用)
+            // Mail settings (for fallback)
             ['name' => 'mail_mailer', 'value' => config('mail.default', 'smtp')],
             ['name' => 'mail_host', 'value' => config('mail.mailers.smtp.host', 'smtp.example.com')],
             ['name' => 'mail_port', 'value' => (string) config('mail.mailers.smtp.port', 587)],
@@ -73,7 +73,7 @@ class SiteSettingsTableSeeder extends Seeder
             ['name' => 'mail_encryption', 'value' => config('mail.mailers.smtp.encryption', 'tls')],
             ['name' => 'mail_from_address', 'value' => config('mail.from.address', 'no-reply@example.com')],
 
-            // メール接続テスト関連
+            // Mail connection test related
             ['name' => 'mail_connection_tested', 'value' => 0],
             ['name' => 'mail_connection_test_date', 'value' => null],
             ['name' => 'mail_send_tested', 'value' => 0],
@@ -82,10 +82,10 @@ class SiteSettingsTableSeeder extends Seeder
             ['name' => 'mail_receive_test_date', 'value' => null],
             ['name' => 'mail_verification_token', 'value' => null],
 
-            // システム管理者メールアドレス
+            // System administrator email address
             ['name' => 'system_admin_email', 'value' => ''],
 
-            // OGP・SEO設定
+            // OGP/SEO settings
             ['name' => 'default_ogp_image_id', 'value' => null],
             ['name' => 'site_description', 'value' => ''],
             ['name' => 'site_keywords', 'value' => ''],

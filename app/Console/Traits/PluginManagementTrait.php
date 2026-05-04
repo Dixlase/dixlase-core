@@ -39,13 +39,13 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 
 /**
- * カスタムバリデーター（または独自バリデーションルール）を作るための追加ロジック。
- * -> MakeFileTrait を use してファイル生成を共通化。
+ * Additional logic for creating custom validators (or custom validation rules)
+ * -> Use MakeFileTrait to share file generation logic
  */
 trait PluginManagementTrait
 {
     /**
-     * 現在の環境が本番環境かどうかを判定
+     * Determine if the current environment is production
      */
     protected function isProduction(): bool
     {
@@ -53,9 +53,9 @@ trait PluginManagementTrait
     }
 
     /**
-     * 本番環境での実行を確認する
+     * Confirm execution in production environment
      *
-     * @param  string  $action  説明文（例: "migrate"）
+     * @param  string  $action  Description text (e.g., "migrate")
      */
     protected function confirmProduction(string $action): bool
     {
@@ -67,9 +67,9 @@ trait PluginManagementTrait
     }
 
     /**
-     * プラグインディレクトリの存在確認
+     * Check if plugin directory exists
      *
-     * @param  string  $plugin  プラグイン名
+     * @param  string  $plugin  Plugin name
      */
     protected function pluginExists(string $plugin): bool
     {
@@ -77,7 +77,7 @@ trait PluginManagementTrait
     }
 
     /**
-     * プラグインデータを取得
+     * Get plugin data
      *
      * @return object|null
      */
@@ -87,27 +87,27 @@ trait PluginManagementTrait
     }
 
     /**
-     * プラグインを有効化
+     * Activate plugin
      */
     protected function enablePlugin(string $pluginName): void
     {
         DB::table('plugins')->where('name', $pluginName)->update(['status' => 1]);
-        $this->info("プラグイン '{$pluginName}' を有効化しました。");
+        $this->info(__('console/traits/plugin_management_trait.plugin_enabled', ['pluginName' => $pluginName]));
     }
 
     /**
-     * プラグインを無効化
+     * Deactivate plugin
      */
     protected function disablePlugin(string $pluginName): void
     {
         DB::table('plugins')->where('name', $pluginName)->update(['status' => 0]);
-        $this->info("プラグイン '{$pluginName}' を無効化しました。");
+        $this->info(__('console/traits/plugin_management_trait.plugin_disabled', ['pluginName' => $pluginName]));
     }
 
     /**
-     * マイグレーションディレクトリの存在確認
+     * Check if migration directory exists
      *
-     * @param  string  $plugin  プラグイン名
+     * @param  string  $plugin  Plugin name
      */
     protected function migrationPathExists(string $plugin): bool
     {
@@ -115,26 +115,26 @@ trait PluginManagementTrait
     }
 
     /**
-     * オプションのバリデーションや処理を行う
+     * Validate and process options
      *
-     * @param  array  $options  処理するオプション
-     * @return array 処理済みのオプション
+     * @param  array  $options  Options to process
+     * @return array Processed options
      */
     protected function processOptions(array $options): array
     {
-        // 'step' オプションのデフォルト値設定
+        // Set default value for 'step' option
         $options['step'] = $options['step'] ?? null;
 
-        // 必要に応じて他のオプションも処理
+        // Process other options as needed
         $options['pretend'] = filter_var($options['pretend'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
         return $options;
     }
 
     /**
-     * マイグレーション操作を安全に実行するラッパーメソッド
+     * Wrapper method to safely execute migration operations
      *
-     * @param  callable  $operation  実行するマイグレーション操作
+     * @param  callable  $operation  Migration operation to execute
      */
     protected function executeOperation(callable $operation): bool
     {
@@ -150,15 +150,15 @@ trait PluginManagementTrait
     }
 
     /**
-     * オートロードを更新
+     * Update autoload
      *
-     * 注意: このメソッドは非推奨です。
-     * composer.local.jsonの更新にはComposerLocalHelper::syncAutoload()を使用してください。
+     * Note: This method is deprecated
+     * Use ComposerLocalHelper::syncAutoload() to update composer.local.json
      *
      * @deprecated
      */
     protected function updateAutoload(): void
     {
-        $this->warn('updateAutoload()は非推奨です。ComposerLocalHelper::syncAutoload()を使用してください。');
+        $this->warn(__('console/traits/plugin_management_trait.update_autoload_deprecated_use_composer_local'));
     }
 }

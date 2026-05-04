@@ -46,14 +46,14 @@ class CspSetMode extends Command
      *
      * @var string
      */
-    protected $signature = 'dixlase:csp:set {mode : CSPモード (development/standard/strict)}';
+    protected $signature = 'dixlase:csp:set {mode : CSP mode (development/standard/strict)}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'CSPモードを変更します';
+    protected $description = 'Change CSP mode';
 
     /**
      * Execute the console command.
@@ -63,33 +63,33 @@ class CspSetMode extends Command
         try {
             $mode = $this->argument('mode');
 
-            // モードの検証
+            // Validate mode
             $validModes = ['development', 'standard', 'strict'];
             if (! in_array($mode, $validModes)) {
-                $this->error("❌ 無効なモード: {$mode}");
-                $this->info('有効なモード: '.implode(', ', $validModes));
+                $this->error(__('console/commands/csp_set_mode.invalid_mode', ['mode' => $mode]));
+                $this->info(__('console/commands/csp_set_mode.csp_valid_modes').implode(', ', $validModes));
 
                 return Command::FAILURE;
             }
 
-            // モードを数値に変換
+            // Convert mode to numeric value
             $modeValue = match ($mode) {
                 'development' => 0,
                 'standard' => 1,
                 'strict' => 2,
             };
 
-            // CSPモードを変更
+            // Change CSP mode
             SecuritySetting::set('csp_mode', $modeValue);
 
-            // キャッシュをクリア
+            // Clear cache
             Cache::flush();
 
-            $this->info("✅ CSPモードを {$mode} に変更しました");
-            $this->info('📝 ログ: CSPモードが変更されました - '.now());
+            $this->info(__('console/commands/csp_set_mode.csp_mode_changed', ['mode' => $mode]));
+            $this->info(__('console/commands/csp_set_mode.csp_mode_changed_log').now());
 
-            // ログに記録
-            \Log::channel('stack')->warning('CSPモード変更コマンド実行', [
+            // Log to record
+            \Log::channel('stack')->warning('Executing CSP mode change command', [
                 'command' => 'dixlase:csp:set',
                 'mode' => $mode,
                 'user' => 'CLI',
@@ -98,7 +98,7 @@ class CspSetMode extends Command
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error('❌ CSPモードの変更に失敗しました: '.$e->getMessage());
+            $this->error(__('console/commands/csp_set_mode.csp_mode_change_failed').$e->getMessage());
 
             return Command::FAILURE;
         }

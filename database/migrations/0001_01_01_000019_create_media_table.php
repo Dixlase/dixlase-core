@@ -57,9 +57,9 @@ return new class extends Migration
             $table->string('alt_text')->nullable();
             $table->string('path');
             $table->string('type');
-            $table->unsignedBigInteger('file_size')->nullable()->comment('ファイルサイズ（バイト）');
-            $table->unsignedInteger('width')->nullable()->comment('画像の幅（px）');
-            $table->unsignedInteger('height')->nullable()->comment('画像の高さ（px）');
+            $table->unsignedBigInteger('file_size')->nullable()->comment('File size (bytes)');
+            $table->unsignedInteger('width')->nullable()->comment('Image width (px)');
+            $table->unsignedInteger('height')->nullable()->comment('Image height (px)');
             $table->unsignedBigInteger('uploaded_by')->nullable()->index();
             $table->timestamps();
             $table->softDeletes();

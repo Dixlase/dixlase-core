@@ -55,132 +55,133 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
-use Exception;
 
 class AppUninstall extends Command
 {
     /**
-     * コマンドの名前とシグネチャ
+     * Command name and signature
      *
      * @var string
      */
-    protected $signature = 'dls:app:uninstall {--force : 対話なしで即座にアンインストールを実行}';
+    protected $signature = 'dls:app:uninstall {--force : Execute uninstallation immediately without interaction}';
 
     /**
-     * コマンドの説明
+     * Command description
      *
      * @var string
      */
-    protected $description = 'アプリケーションをアンインストールし、環境設定とデータベースを削除します。';
+    protected $description = 'Uninstall the application and delete environment configuration and database.';
 
     /**
-     * コマンドの実行処理
+     * Command execution process
      */
     public function handle()
     {
         $force = $this->option('force');
-        
-        if (!$force) {
-            $this->warn('⚠️  注意: この操作はアプリケーションを完全に削除します！');
-            if (!$this->confirm('本当にアンインストールしますか？', false)) {
-                $this->info('アンインストールをキャンセルしました。');
+
+        if (! $force) {
+            $this->warn(__('console/commands/app_uninstall.uninstall_warning_message'));
+            if (! $this->confirm(__('console/commands/app_uninstall.confirm_uninstall'), false)) {
+                $this->info(__('console/commands/app_uninstall.uninstall_cancelled'));
+
                 return;
             }
         } else {
-            $this->warn('⚠️  --forceオプションが指定されました。対話なしでアンインストールを実行します。');
+            $this->warn(__('console/commands/app_uninstall.force_option_specified'));
         }
 
-        // ✅ 1. データベースの処理（優先）
-        if (!$force && $this->confirm('データベースをバックアップしますか？', true)) {
+        // ✅ 1. Database processing (priority)
+        if (! $force && $this->confirm(__('console/commands/app_uninstall.confirm_database_backup'), true)) {
             $dbName = env('DB_DATABASE');
-            $dumpFile = base_path("database/backups/{$dbName}_" . now()->format('Ymd_His') . ".sql");
+            $dumpFile = base_path("database/backups/{$dbName}_".now()->format('Ymd_His').'.sql');
             $this->dumpDatabase($dumpFile);
-            $this->info("データベースをバックアップしました: {$dumpFile}");
+            $this->info(__('console/commands/app_uninstall.database_backed_up', ['dumpFile' => $dumpFile]));
         } elseif ($force) {
-            $this->info('--forceオプション: データベースバックアップをスキップします。');
+            $this->info(__('console/commands/app_uninstall.force_skip_database_backup'));
         }
 
-        if (!$force && $this->confirm('データベースの全テーブルを削除しますか？')) {
+        if (! $force && $this->confirm(__('console/commands/app_uninstall.confirm_delete_all_tables'))) {
             $this->dropAllTables();
-            $this->info('データベースの全テーブルを削除しました。');
+            $this->info(__('console/commands/app_uninstall.all_tables_deleted'));
         } elseif ($force) {
             $this->dropAllTables();
-            $this->info('データベースの全テーブルを削除しました。');
+            $this->info(__('console/commands/app_uninstall.all_tables_deleted'));
         }
 
-        // ✅ 2. シンボリックリンクの削除
+        // ✅ 2. Delete symbolic links
         $this->removeSymlinks();
 
-        // ✅ 3. キャッシュのクリア
+        // ✅ 3. Clear cache
         $this->clearCache();
 
-        // ✅ 4. `.env` ファイルの処理（最後）
+        // ✅ 4. Process `.env` file (last)
         $envPath = base_path('.env');
-        
+
         if (File::exists($envPath)) {
-            $backupPath = base_path('.env.backup_' . now()->format('Ymd_His'));
-            
-            if (!$force && $this->confirm('.env を削除せずにバックアップしますか？', true)) {
+            $backupPath = base_path('.env.backup_'.now()->format('Ymd_His'));
+
+            if (! $force && $this->confirm(__('console/commands/app_uninstall.confirm_env_backup'), true)) {
                 try {
                     File::copy($envPath, $backupPath);
-                    $this->info("✅ .env をバックアップしました: {$backupPath}");
+                    $this->info(__('console/commands/app_uninstall.env_backed_up', ['backupPath' => $backupPath]));
                 } catch (\Exception $e) {
-                    $this->error("❌ バックアップエラー: " . $e->getMessage());
+                    $this->error(__('console/commands/app_uninstall.backup_error').$e->getMessage());
                 }
             } elseif ($force) {
-                $this->info('--forceオプション: .envバックアップをスキップします。');
+                $this->info(__('console/commands/app_uninstall.force_skip_env_backup'));
             }
-            
-            // アンインストール後は.envファイルを削除（完全なアンインストール）
+
+            // Delete .env file after uninstall (complete uninstall)
             $deleted = false;
-            
-            // 方法1: Laravel File::delete()
+
+            // Method 1: Laravel File::delete()
             try {
                 $deleteResult = File::delete($envPath);
-                if ($deleteResult && !File::exists($envPath)) {
+                if ($deleteResult && ! File::exists($envPath)) {
                     $deleted = true;
                 }
             } catch (\Exception $e) {
-                // File::delete()が失敗した場合はログに記録
+                // Log if File::delete() fails
             }
-            
-            // 方法2: PHP unlink()（File::delete()が失敗した場合）
-            if (!$deleted && File::exists($envPath)) {
+
+            // Method 2: PHP unlink() (if File::delete() fails)
+            if (! $deleted && File::exists($envPath)) {
                 try {
                     $unlinkResult = unlink($envPath);
-                    if ($unlinkResult && !File::exists($envPath)) {
+                    if ($unlinkResult && ! File::exists($envPath)) {
                         $deleted = true;
                     }
                 } catch (\Exception $e) {
-                    // unlink()も失敗した場合
+                    // If unlink() also fails
                 }
             }
-            
-            if (!$deleted) {
-                $this->error("❌ .env の削除に失敗しました。手動で削除してください: {$envPath}");
+
+            if (! $deleted) {
+                $this->error(__('console/commands/app_uninstall.env_deletion_failed', ['envPath' => $envPath]));
             } else {
-                $this->info("✅ .env ファイルを完全に削除しました。");
-                $this->info("ℹ️ インストール時に .env.example から新しい .env が作成されます。");
+                $this->info(__('console/commands/app_uninstall.env_file_deleted'));
+                $this->info(__('console/commands/app_uninstall.env_creation_info'));
             }
         } else {
-            $this->warn("⚠️ .env ファイルが存在しません。");
+            $this->warn(__('console/commands/app_uninstall.env_file_not_found'));
         }
 
-        // ✅ アンインストール完了
-        $this->info('✅ アンインストールが完了しました！');
+        // ✅ Uninstall complete
+        $this->info(__('console/commands/app_uninstall.uninstall_completed'));
         $this->line('');
-        $this->info('📝 再インストール時の注意:');
-        $this->info('   すべてのキャッシュがクリアされているため、');
-        $this->info('   追加のコマンド実行なしで再インストールが可能です。');
+        $this->info(__('console/commands/app_uninstall.reinstall_notes'));
+        $this->info(__('console/commands/app_uninstall.reinstall_cache_cleared'));
+        $this->info(__('console/commands/app_uninstall.reinstall_no_additional_commands'));
     }
 
     /**
-     * データベースのダンプを作成
+     * Create database dump
      */
     private function dumpDatabase(string $dumpFile)
     {
@@ -192,7 +193,7 @@ class AppUninstall extends Command
             $dbUsername = env('DB_USERNAME');
             $dbPassword = env('DB_PASSWORD');
 
-            if (!File::exists(dirname($dumpFile))) {
+            if (! File::exists(dirname($dumpFile))) {
                 File::makeDirectory(dirname($dumpFile), 0755, true);
             }
 
@@ -206,19 +207,19 @@ class AppUninstall extends Command
             if ($command) {
                 exec($command, $output, $returnVar);
                 if ($returnVar !== 0) {
-                    throw new Exception("データベースのダンプに失敗しました。");
+                    throw new Exception('Failed to dump database');
                 }
             } else {
-                throw new Exception("対応していないデータベースドライバ: {$dbConnection}");
+                throw new Exception("Unsupported database driver: {$dbConnection}");
             }
         } catch (Exception $e) {
             $this->error($e->getMessage());
-            Log::channel('install')->error('データベースダンプ中のエラー: ' . $e->getMessage());
+            Log::channel('install')->error('Error during database dump: '.$e->getMessage());
         }
     }
 
     /**
-     * データベースの全テーブルを削除
+     * Delete all database tables
      */
     private function dropAllTables()
     {
@@ -231,52 +232,52 @@ class AppUninstall extends Command
                 $tables = DB::select('SHOW TABLES');
                 foreach ($tables as $table) {
                     $tableName = reset($table);
-                    // テーブル名をバッククォートで囲んで、ハイフンなどの特殊文字を含むテーブル名に対応
+                    // Wrap table names in backticks to handle table names with special characters like hyphens
                     DB::statement("DROP TABLE `{$tableName}`");
                 }
                 DB::statement('SET FOREIGN_KEY_CHECKS=1;');
             } elseif ($dbType === 'pgsql') {
                 $tables = DB::select("SELECT tablename FROM pg_tables WHERE schemaname = 'public'");
                 foreach ($tables as $table) {
-                    // PostgreSQLではダブルクォートで囲む
+                    // Wrap in double quotes for PostgreSQL
                     DB::statement("DROP TABLE IF EXISTS \"{$table->tablename}\" CASCADE");
                 }
             } elseif ($dbType === 'sqlite') {
-                // SQLiteの場合はデータベースファイル自体を削除
+                // For SQLite, delete the database file itself
                 $dbPath = database_path('database.sqlite');
                 if (File::exists($dbPath)) {
                     File::delete($dbPath);
-                    $this->info("SQLiteデータベースファイルを削除しました: {$dbPath}");
+                    $this->info(__('console/commands/app_uninstall.sqlite_database_deleted', ['dbPath' => $dbPath]));
                 }
             } else {
-                throw new Exception("対応していないデータベースドライバ: {$dbType}");
+                throw new Exception("Unsupported database driver: {$dbType}");
             }
         } catch (Exception $e) {
             $this->error($e->getMessage());
-            Log::channel('install')->error('アンインストール中のデータベースエラー: ' . $e->getMessage());
+            Log::channel('install')->error('Database error during uninstall: '.$e->getMessage());
         }
     }
 
     /**
-     * storage・テーマ・プラグインのシンボリックリンクを削除
+     * Delete symbolic links for storage, theme, and plugin
      */
     private function removeSymlinks()
     {
-        // ✅ storage のシンボリックリンク削除
+        // ✅ Delete storage symbolic link
         $storageLink = public_path('storage');
         if (file_exists($storageLink) || is_link($storageLink)) {
             unlink($storageLink);
-            $this->info("✔️ storage のシンボリックリンクを削除しました。");
+            $this->info(__('console/commands/app_uninstall.storage_symlink_removed'));
         }
 
-        // ✅ テーマアセットのシンボリックリンク削除
+        // ✅ Remove theme asset symbolic links
         $themeLink = public_path('assets/theme');
         if (file_exists($themeLink) || is_link($themeLink)) {
             unlink($themeLink);
-            $this->info("✔️ テーマアセットのシンボリックリンクを削除しました。");
+            $this->info(__('console/commands/app_uninstall.theme_asset_symlinks_removed'));
         }
 
-        // ✅ プラグインアセットのシンボリックリンク削除
+        // ✅ Remove plugin asset symbolic links
         $pluginsDir = public_path('assets/plugins');
         if (file_exists($pluginsDir) && is_dir($pluginsDir)) {
             $pluginLinks = scandir($pluginsDir);
@@ -285,7 +286,7 @@ class AppUninstall extends Command
                     $pluginPath = "{$pluginsDir}/{$pluginLink}";
                     if (file_exists($pluginPath) || is_link($pluginPath)) {
                         unlink($pluginPath);
-                        $this->info("✔️ プラグインアセットのシンボリックリンクを削除しました: {$pluginLink}");
+                        $this->info(__('console/commands/app_uninstall.plugin_symlink_removed', ['pluginLink' => $pluginLink]));
                     }
                 }
             }
@@ -293,138 +294,136 @@ class AppUninstall extends Command
     }
 
     /**
-     * キャッシュのクリア
-     * 
-     * 注意: アンインストール時はキャッシュを再生成しない（config:cacheを実行しない）
-     * これにより、次回アクセス時にインストール画面が正しく表示される
+     * Clear cache
+     *
+     * Note: Do not regenerate cache during uninstall (do not run config:cache)
+     * This ensures the installation screen displays correctly on next access
      */
     private function clearCache()
     {
-        // ✅ キャッシュドライバが database の場合、一時的に file に変更
+        // ✅ If cache driver is database, temporarily change to file
         $originalCacheDriver = config('cache.default');
         if ($originalCacheDriver === 'database') {
             config(['cache.default' => 'file']);
         }
 
         try {
-            // 基本的なキャッシュクリア（config:clearを最初に実行）
+            // Basic cache clearing (run config:clear first)
             Artisan::call('config:clear');
-            $this->info('✔️ 設定キャッシュをクリアしました。');
-            
-            // cache:clearはDBテーブルが削除されている可能性があるためtry-catch
+            $this->info(__('console/commands/app_uninstall.config_cache_cleared'));
+
+            // cache:clear wrapped in try-catch since DB tables may have been deleted
             try {
                 Artisan::call('cache:clear');
-                $this->info('✔️ アプリケーションキャッシュをクリアしました。');
+                $this->info(__('console/commands/app_uninstall.application_cache_cleared'));
             } catch (\Exception $e) {
-                $this->warn('⚠️ アプリケーションキャッシュのクリアをスキップしました（テーブルが存在しない可能性）。');
+                $this->warn(__('console/commands/app_uninstall.app_cache_skipped_no_tables'));
             }
-            
+
             Artisan::call('view:clear');
             Artisan::call('route:clear');
-            
-            // 追加のクリアコマンド（再インストール問題対策）
+
+            // Additional clear commands (for reinstallation issue prevention)
             Artisan::call('clear-compiled');
-            
-            // optimize:clearもDBキャッシュを使用する可能性があるためtry-catch
+
+            // optimize:clear wrapped in try-catch since it may use DB cache
             try {
                 Artisan::call('optimize:clear');
             } catch (\Exception $e) {
-                $this->warn('⚠️ optimize:clearの一部をスキップしました。');
+                $this->warn(__('console/commands/app_uninstall.optimize_clear_partially_skipped'));
             }
-            
-            $this->info('✔️ 基本キャッシュをクリアしました。');
-            
-            // Composer autoload の再生成
-            $this->info('🔄 Composer autoload を再生成中...');
+
+            $this->info(__('console/commands/app_uninstall.basic_cache_cleared'));
+
+            // Regenerate Composer autoload
+            $this->info(__('console/commands/app_uninstall.regenerating_composer_autoload'));
             $composerResult = shell_exec('composer dump-autoload 2>&1');
             if ($composerResult !== null) {
-                $this->info('✔️ Composer autoload を再生成しました。');
+                $this->info(__('console/commands/app_uninstall.composer_autoload_regenerated'));
             } else {
-                $this->warn('⚠️ Composer autoload の再生成をスキップしました（composerコマンドが見つからない）。');
+                $this->warn(__('console/commands/app_uninstall.composer_autoload_skipped_not_found'));
             }
-            
-            // ⚠️ アンインストール時はconfig:cacheを実行しない
-            // キャッシュを再生成すると、次回アクセス時にインストール画面が表示されなくなる
-            $this->info('ℹ️ アンインストール完了のため、設定キャッシュの再生成はスキップしました。');
-            
+
+            // ⚠️ Do not run config:cache during uninstall
+            // Regenerating cache will prevent the installation screen from displaying on next access
+            $this->info(__('console/commands/app_uninstall.config_cache_regen_skipped_uninstall'));
         } catch (\Exception $e) {
-            $this->error('キャッシュのクリア中にエラーが発生しました: ' . $e->getMessage());
+            $this->error(__('console/commands/app_uninstall.clear_cache_error').$e->getMessage());
         }
 
-        // ✅ 元のキャッシュドライバに戻す
+        // ✅ Restore original cache driver
         config(['cache.default' => $originalCacheDriver]);
     }
 
     /**
-     * .envファイルのセッションドライバをfileに変更
+     * Change session driver to file in .env file
      */
     private function updateEnvSessionDriver()
     {
         $envPath = base_path('.env');
-        
-        if (!file_exists($envPath)) {
+
+        if (! file_exists($envPath)) {
             return;
         }
 
         try {
             $envContent = file_get_contents($envPath);
-            
-            // SESSION_DRIVERをfileに変更
+
+            // Change SESSION_DRIVER to file
             $envContent = preg_replace(
                 '/^SESSION_DRIVER=.*$/m',
                 'SESSION_DRIVER=file',
                 $envContent
             );
-            
-            // SESSION_DRIVERが存在しない場合は追加
-            if (!preg_match('/^SESSION_DRIVER=/m', $envContent)) {
+
+            // Add SESSION_DRIVER if it does not exist
+            if (! preg_match('/^SESSION_DRIVER=/m', $envContent)) {
                 $envContent .= "\nSESSION_DRIVER=file\n";
             }
-            
+
             file_put_contents($envPath, $envContent);
-            $this->info('✔️ セッションドライバをfileに変更しました。');
-            
+            $this->info(__('console/commands/app_uninstall.session_driver_changed_to_file'));
         } catch (\Exception $e) {
-            $this->warn('⚠️ セッションドライバの変更に失敗しました: ' . $e->getMessage());
+            $this->warn(__('console/commands/app_uninstall.session_driver_change_failed').$e->getMessage());
         }
     }
 
     /**
-     * .envファイルが完全かどうかをチェック
+     * Check if .env file is complete
      */
     private function isEnvComplete(): bool
     {
         $requiredKeys = ['APP_KEY', 'DB_CONNECTION', 'DB_HOST', 'DB_DATABASE'];
-        
+
         foreach ($requiredKeys as $key) {
             if (empty(env($key))) {
                 return false;
             }
         }
-        
+
         return true;
     }
 
     /**
-     * .envファイルの値を更新
+     * Update .env file values
      */
     private function updateEnvValue(string $key, string $value): void
     {
         $envPath = base_path('.env');
-        
-        if (!File::exists($envPath)) {
+
+        if (! File::exists($envPath)) {
             return;
         }
-        
+
         $envContent = File::get($envPath);
-        
-        // 既存のキーがある場合は更新、ない場合は追加
+
+        // Update existing key or add if it does not exist
         if (preg_match("/^{$key}=.*$/m", $envContent)) {
             $envContent = preg_replace("/^{$key}=.*$/m", "{$key}={$value}", $envContent);
         } else {
             $envContent .= "\n{$key}={$value}";
         }
-        
+
         File::put($envPath, $envContent);
     }
 }

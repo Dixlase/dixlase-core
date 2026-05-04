@@ -70,16 +70,16 @@ class PluginUninstall extends Command
     }
 
     /**
-     * コマンド実行前の初期化
+     * Initialize before command execution
      */
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
         parent::initialize($input, $output);
 
-        // アンインストール対象のプラグイン名を取得
+        // Get the plugin name to uninstall
         $pluginName = $input->getArgument('pluginName');
         if ($pluginName) {
-            // 環境変数とconfigの両方でフラグを設定
+            // Set flag in both environment variable and config
             putenv("PLUGIN_UNINSTALLING={$pluginName}");
             config(['app.plugin_uninstalling' => $pluginName]);
             $this->info("DEBUG: Early flag set for plugin: {$pluginName}");
@@ -101,7 +101,7 @@ class PluginUninstall extends Command
             return 1;
         }
 
-        // 有効化状態チェック
+        // Check enabled state
         if (! is_null($plugin->enabled_at) && ! $this->option('force')) {
             $this->error(__('admin/command.plugin_uninstall.still_enabled', ['pluginName' => $pluginName]));
             $this->warn(__('admin/command.plugin_uninstall.disable_first'));
@@ -111,10 +111,10 @@ class PluginUninstall extends Command
 
         $pluginPath = base_path('plugins/'.$plugin->directory);
 
-        // アンインストール確認（--no-interactionオプションがない場合のみ）
+        // Confirm uninstallation (only when --no-interaction option is not present)
         if (! $this->option('no-interaction')) {
             $this->warn(__('admin/command.plugin_uninstall.confirm', ['pluginName' => $pluginName]));
-            $answer = $this->ask('yes/no を入力してください');
+            $answer = $this->ask(__('console/commands/plugin_uninstall.please_enter_yes_no'));
 
             if (! in_array(strtolower($answer), ['yes', 'y'])) {
                 $this->info(__('admin/command.plugin_uninstall.cancelled'));
@@ -123,41 +123,41 @@ class PluginUninstall extends Command
             }
         }
 
-        // アンインストール処理中フラグを設定（ServiceProvider読み込みを防ぐ）
+        // Set uninstalling flag (prevents ServiceProvider from loading)
         config(['app.plugin_uninstalling' => $pluginName]);
 
-        // --forceオプションが指定されている場合のみ無効化を実行
+        // Execute disable only when --force option is specified
         if (! is_null($plugin->enabled_at) && $this->option('force')) {
             $this->warn(__('admin/command.plugin_uninstall.force_disabling', ['pluginName' => $pluginName]));
             $this->disablePlugin($pluginName);
             $plugin = DB::table('plugins')->where('name', $pluginName)->first();
         }
-        // マイグレーションのロールバック
+        // Rollback migrations
         if ($this->option('rollback')) {
             $this->info(__('admin/command.plugin_uninstall.rollback_running'));
             $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $plugin->slug);
-            // 全てのマイグレーションをロールバックするため、stepを大きな値に設定
+            // Set step to a large value to rollback all migrations
             $migrator->rollback($plugin->directory, ['step' => 999]);
         } elseif (! $this->option('no-interaction') && $this->confirm(__('admin/command.plugin_uninstall.rollback_confirm', ['pluginName' => $pluginName]), false)) {
             $this->info(__('admin/command.plugin_uninstall.rollback_running'));
             $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $plugin->slug);
-            // 全てのマイグレーションをロールバックするため、stepを大きな値に設定
+            // Set step to a large value to rollback all migrations
             $migrator->rollback($plugin->directory, ['step' => 999]);
         } else {
             $this->info(__('admin/command.plugin_uninstall.rollback_skipped'));
         }
 
-        // ディレクトリは削除しない（plugin:deleteコマンドを使用）
+        // Do not delete directory (use plugin:delete command)
         $this->info(__('admin/command.plugin_uninstall.files_preserved'));
 
-        // データベースからプラグインを削除
+        // Delete plugin from database
         DB::table('plugins')->where('name', $pluginName)->delete();
         $this->info(__('admin/command.plugin_uninstall.database_removed', ['pluginName' => $pluginName]));
 
-        // 注意: composer.local.jsonと.git/info/excludeの更新は、
-        // プラグイン削除時（plugin:delete）に行うため、ここでは不要
+        // Note: Updating composer.local.json and .git/info/exclude
+        // is done during plugin deletion (plugin:delete), so not needed here
 
-        // アンインストール処理中フラグをクリア
+        // Clear uninstalling flag
         putenv('PLUGIN_UNINSTALLING');
         config(['app.plugin_uninstalling' => null]);
 
