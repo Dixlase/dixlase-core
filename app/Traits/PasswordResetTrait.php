@@ -43,72 +43,71 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * パスワードリセットの共通ロジックを提供するTrait
+ * Trait that provides common logic for password reset
  *
- * このTraitは、メンバーとユーザーのパスワードリセット処理で共通する
- * ロジックを提供します。
+ * This Trait provides common logic for member and user password reset processing.
  *
- * 使用するコントローラーは以下の抽象メソッドを実装する必要があります：
- * - getSettingsGetter(): 設定取得用のクロージャを返す
- * - getPasswordResetBroker(): Password brokerの名前を返す
- * - getUserModelClass(): ユーザーモデルのクラス名を返す
- * - getForgotPasswordViewName(): パスワードリセットリンク要求画面のビュー名を返す
- * - getResetPasswordViewName(): パスワードリセット画面のビュー名を返す
- * - getPasswordResetRoute(): パスワードリセット処理のルート名を返す
- * - getLoginRoute(): ログイン画面のルート名を返す
- * - getCaptchaAction(): CAPTCHAアクション名を返す
+ * Controllers using this must implement the following abstract methods:
+ * - getSettingsGetter(): Returns a closure for retrieving settings
+ * - getPasswordResetBroker(): Returns the name of the password broker
+ * - getUserModelClass(): Returns the class name of the user model
+ * - getForgotPasswordViewName(): Returns the view name for the password reset link request screen
+ * - getResetPasswordViewName(): Returns the view name for the password reset screen
+ * - getPasswordResetRoute(): Returns the route name for password reset processing
+ * - getLoginRoute(): Returns the route name for the login screen
+ * - getCaptchaAction(): Returns the CAPTCHA action name
  */
 trait PasswordResetTrait
 {
     /**
-     * 設定取得用のクロージャを取得
+     * Get the closure for retrieving settings
      *
      * @return callable function($key, $default)
      */
     abstract protected function getSettingsGetter(): callable;
 
     /**
-     * Password brokerの名前を取得
+     * Get the name of the password broker
      *
-     * @return string 'members' または 'users'
+     * @return string 'members' or 'users'
      */
     abstract protected function getPasswordResetBroker(): string;
 
     /**
-     * ユーザーモデルのクラス名を取得
+     * Get the class name of the user model
      */
     abstract protected function getUserModelClass(): string;
 
     /**
-     * パスワードリセットリンク要求画面のビュー名を取得
+     * Get the view name for the password reset link request screen
      */
     abstract protected function getForgotPasswordViewName(): string;
 
     /**
-     * パスワードリセット画面のビュー名を取得
+     * Get the view name for the password reset screen
      */
     abstract protected function getResetPasswordViewName(): string;
 
     /**
-     * パスワードリセット処理のルート名を取得
+     * Get the route name for password reset processing
      */
     abstract protected function getPasswordResetRoute(): string;
 
     /**
-     * ログイン画面のルート名を取得
+     * Get the route name for the login screen
      */
     abstract protected function getLoginRoute(): string;
 
     /**
-     * CAPTCHAアクション名を取得
+     * Get CAPTCHA action name
      */
     abstract protected function getCaptchaAction(): string;
 
     /**
-     * パスワード設定を取得
+     * Get password settings
      *
-     * @param  callable  $settingsGetter  設定取得用のクロージャ function($key, $default)
-     * @return array パスワード設定の配列
+     * @param  callable  $settingsGetter  Closure for retrieving settings function($key, $default)
+     * @return array Array of password settings
      */
     protected function getPasswordSettings(callable $settingsGetter): array
     {
@@ -122,9 +121,9 @@ trait PasswordResetTrait
     }
 
     /**
-     * パスワードリセット機能の有効性をチェック
+     * Check if password reset feature is enabled
      *
-     * @param  callable  $settingsGetter  設定取得用のクロージャ
+     * @param  callable  $settingsGetter  Closure for retrieving settings
      *
      * @throws \Symfony\Component\HttpKernel\Exception\HttpException
      */
@@ -134,10 +133,10 @@ trait PasswordResetTrait
     }
 
     /**
-     * パスワードリセット用のバリデーションルールを取得
+     * Get validation rules for password reset
      *
-     * @param  array  $passwordSettings  getPasswordSettings()で取得した設定
-     * @return array バリデーションルール
+     * @param  array  $passwordSettings  Settings retrieved by getPasswordSettings()
+     * @return array Validation rules
      */
     protected function getPasswordResetValidationRules(array $passwordSettings): array
     {
@@ -151,9 +150,9 @@ trait PasswordResetTrait
     }
 
     /**
-     * パスワードリセットリンク送信用のバリデーションルールを取得
+     * Get validation rules for sending password reset link
      *
-     * @return array バリデーションルール
+     * @return array Validation rules
      */
     protected function getPasswordResetLinkValidationRules(): array
     {
@@ -161,10 +160,10 @@ trait PasswordResetTrait
     }
 
     /**
-     * パスワードリセット処理を実行
+     * Execute password reset process
      *
-     * @param  object  $user  ユーザーまたはメンバーモデル
-     * @param  string  $newPassword  新しいパスワード
+     * @param  object  $user  User or member model
+     * @param  string  $newPassword  New password
      */
     protected function performPasswordReset(object $user, string $newPassword): void
     {
@@ -177,10 +176,10 @@ trait PasswordResetTrait
     }
 
     /**
-     * メール認証済みかチェック（必要に応じて）
+     * Check if email is verified (if necessary)
      *
-     * @param  object|null  $user  ユーザーまたはメンバーモデル
-     * @return bool メール認証が必要かつ未認証の場合true
+     * @param  object|null  $user  User or member model
+     * @return bool True if email verification is required and not verified
      */
     protected function requiresEmailVerification(?object $user): bool
     {
@@ -188,7 +187,7 @@ trait PasswordResetTrait
             return false;
         }
 
-        // hasVerifiedEmailメソッドが存在し、かつ未認証の場合
+        // If hasVerifiedEmail method exists and email is not verified
         if (method_exists($user, 'hasVerifiedEmail') && ! $user->hasVerifiedEmail()) {
             return true;
         }
@@ -197,14 +196,14 @@ trait PasswordResetTrait
     }
 
     /**
-     * パスワードリセットリンク要求画面を表示（共通処理）
+     * Display password reset link request screen (common process)
      */
     protected function showForgotPasswordForm(): \Illuminate\View\View
     {
         $settingsGetter = $this->getSettingsGetter();
         $this->validatePasswordResetAvailability($settingsGetter);
 
-        // CAPTCHA設定を取得
+        // Get CAPTCHA settings
         $captchaAction = $this->getCaptchaAction();
         $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
         $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
@@ -220,23 +219,23 @@ trait PasswordResetTrait
     }
 
     /**
-     * パスワードリセットリンク要求画面用の追加データを取得
+     * Get additional data for password reset link request screen
      */
     protected function getForgotPasswordViewData(): array
     {
-        // デフォルトは空配列、各コントローラーでオーバーライド可能
+        // Defaults to empty array, can be overridden in each controller
         return [];
     }
 
     /**
-     * パスワードリセットリンク送信処理（共通処理）
+     * Send password reset link (common process)
      */
     protected function sendPasswordResetLink(\Illuminate\Http\Request $request): \Illuminate\Http\RedirectResponse
     {
         $settingsGetter = $this->getSettingsGetter();
         $this->validatePasswordResetAvailability($settingsGetter);
 
-        // CAPTCHA検証
+        // CAPTCHA verification
         $captchaAction = $this->getCaptchaAction();
         $captchaResult = \App\Helpers\CaptchaHelper::verify($request, $captchaAction);
 
@@ -246,21 +245,21 @@ trait PasswordResetTrait
             ])->withInput($request->only('email'));
         }
 
-        // バリデーションルールを取得
+        // Get validation rules
         $request->validate($this->getPasswordResetLinkValidationRules());
 
-        // メールアドレスに対応するユーザーを確認
+        // Check user corresponding to email address
         $userModelClass = $this->getUserModelClass();
         $user = $userModelClass::where('email', $request->email)->first();
 
-        // ユーザーが存在し、メール認証が未完了の場合はエラー
+        // Error if user exists and email verification is not completed
         if ($this->requiresEmailVerification($user)) {
             return back()
                 ->withInput($request->only('email'))
                 ->withErrors(['email' => __('auth.email_not_verified')]);
         }
 
-        // パスワードリセットリンクを送信
+        // Send password reset link
         $status = \Illuminate\Support\Facades\Password::broker($this->getPasswordResetBroker())->sendResetLink(
             $request->only('email')
         );
@@ -272,14 +271,14 @@ trait PasswordResetTrait
     }
 
     /**
-     * パスワードリセット画面を表示（共通処理）
+     * Display password reset screen (common process)
      */
     protected function showResetPasswordForm(\Illuminate\Http\Request $request): \Illuminate\View\View
     {
         $settingsGetter = $this->getSettingsGetter();
         $this->validatePasswordResetAvailability($settingsGetter);
 
-        // パスワード設定を取得
+        // Get password settings
         $passwordSettings = $this->getPasswordSettings($settingsGetter);
 
         return view($this->getResetPasswordViewName(), array_merge(
@@ -294,26 +293,26 @@ trait PasswordResetTrait
     }
 
     /**
-     * パスワードリセット画面用の追加データを取得
+     * Get additional data for password reset screen
      */
     protected function getResetPasswordViewData(\Illuminate\Http\Request $request): array
     {
-        // デフォルトは空配列、各コントローラーでオーバーライド可能
+        // Defaults to empty array, can be overridden in each controller
         return [];
     }
 
     /**
-     * パスワードリセット処理（共通処理）
+     * Password reset process (common process)
      */
     protected function resetPassword(\Illuminate\Http\Request $request): \Illuminate\Http\RedirectResponse
     {
         $settingsGetter = $this->getSettingsGetter();
 
-        // パスワード設定を取得してバリデーション
+        // Get password settings and validate
         $passwordSettings = $this->getPasswordSettings($settingsGetter);
         $request->validate($this->getPasswordResetValidationRules($passwordSettings));
 
-        // パスワードリセットを実行
+        // Execute password reset
         $status = \Illuminate\Support\Facades\Password::broker($this->getPasswordResetBroker())->reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user) use ($request) {
@@ -321,7 +320,7 @@ trait PasswordResetTrait
             }
         );
 
-        // パスワードリセット成功時はログイン画面へリダイレクト
+        // Redirect to login screen on successful password reset
         return $status == \Illuminate\Support\Facades\Password::PASSWORD_RESET
             ? redirect()->route($this->getLoginRoute())->with('success', __($status))
             : back()->withInput($request->only('email'))

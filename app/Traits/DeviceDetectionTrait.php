@@ -39,18 +39,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  *
- * デバイス・環境検出の共通トレイト
+ * Common trait for device and environment detection
  */
 trait DeviceDetectionTrait
 {
     /**
-     * 異なる環境（IP/User-Agent）からのアクセスかどうかを判定
+     * Determine whether the access is from a different environment (IP/User-Agent)
      *
-     * @param  Model  $user  ユーザーモデル
-     * @param  Request|null  $request  リクエストオブジェクト（nullの場合は現在のリクエストを使用）
-     * @return bool 異なる環境かどうか
+     * @param  Model  $user  User model
+     * @param  Request|null  $request  Request object (if null, use current request)
+     * @return bool Whether it is a different environment
      */
     public function isDifferentEnvironment(Model $user, ?Request $request = null): bool
     {
@@ -59,36 +59,36 @@ trait DeviceDetectionTrait
         $currentIp = $request->ip();
         $currentUserAgent = $request->userAgent();
 
-        // IPが取得できない場合は異なる環境とみなす（安全側に倒す）
+        // If IP cannot be obtained, consider it a different environment (fail-safe)
         if (! $currentIp) {
             \Illuminate\Support\Facades\Log::info('DeviceDetectionTrait: Different environment (no IP)', ['user_email' => $user->email]);
 
             return true;
         }
 
-        // User-Agentがnullの場合はデフォルト値を使用（テスト環境対応）
+        // If User-Agent is null, use default value (for test environment)
         if (! $currentUserAgent) {
             $currentUserAgent = 'Unknown User Agent';
         }
 
-        // 最近のログイン履歴を取得（24時間以内）
+        // Get recent login history (within 24 hours)
         $recentLogin = \App\Models\MemberLoginAttempt::where('identifier', $user->email)
             ->where('successful', true)
             ->where('attempted_at', '>=', now()->subDay())
             ->orderBy('attempted_at', 'desc')
             ->first();
 
-        // 初回ログインまたは最近のログイン履歴がない場合は異なる環境とみなす
+        // If first login or no recent login history, consider it a different environment
         if (! $recentLogin) {
             return true;
         }
 
-        // IPアドレスまたはUser-Agentが異なる場合は異なる環境
+        // Different environment if IP address or User-Agent differs
         if ($recentLogin->ip_address !== $currentIp || $recentLogin->user_agent !== $currentUserAgent) {
             return true;
         }
 
-        // 信頼済みデバイスのチェック（2FA用）
+        // Check trusted devices (for 2FA)
         if (method_exists($user, 'trustedDevices')) {
             $trustedDeviceToken = $request->cookie('trusted_device');
             if ($trustedDeviceToken && $user->trustedDevices()
@@ -102,18 +102,18 @@ trait DeviceDetectionTrait
     }
 
     /**
-     * 新しいデバイス/IPからのアクセスかどうかを判定（ログイン通知用）
-     * 現在のログインを除外して過去のログイン履歴と比較
+     * Determine whether the access is from a new device/IP (for login notifications)
+     * Exclude current login and compare with past login history
      *
-     * @param  Model  $user  ユーザーモデル
-     * @param  string  $ip  IPアドレス
+     * @param  Model  $user  User model
+     * @param  string  $ip  IP address
      * @param  string  $userAgent  User-Agent
-     * @return bool 新しいデバイスかどうか
+     * @return bool Whether it is a new device
      */
     public function isNewDevice(Model $user, string $ip, string $userAgent): bool
     {
-        // 過去に同じIP/User-Agentの組み合わせでログインしたことがあるかチェック
-        // 現在のログインを除外するため、5分前より古いログインを対象とする
+        // Check if logged in with the same IP/User-Agent combination in the past
+        // To exclude current login, target logins older than 5 minutes ago
         $previousSameLogin = \App\Models\MemberLoginAttempt::where('identifier', $user->email)
             ->where('successful', true)
             ->where('attempted_at', '>=', now()->subDay())
@@ -122,7 +122,7 @@ trait DeviceDetectionTrait
             ->where('user_agent', $userAgent)
             ->first();
 
-        // 過去に同じ環境からのログインがある場合は既存デバイス
+        // If there is a past login from the same environment, it is an existing device
         return ! $previousSameLogin;
     }
 }

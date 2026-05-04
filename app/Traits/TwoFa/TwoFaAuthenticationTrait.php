@@ -50,22 +50,22 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 /**
- * 二段階認証のフロー制御機能を提供するトレイト
+ * Trait that provides two-factor authentication flow control functionality
  *
- * 認証画面の表示、認証検証、リダイレクト処理など、
- * コントローラーで使用する高レベルの認証フロー機能を提供します。
+ * Provides high-level authentication flow features for use in controllers,
+ * including displaying authentication screens, verifying authentication, and redirect processing.
  *
- * 使用するコントローラーは以下の抽象メソッドを実装する必要があります：
- * - getTwoFaService(): 二段階認証サービスのインスタンスを返す
+ * Controllers using this trait must implement the following abstract methods:
+ * - getTwoFaService(): Returns an instance of the two-factor authentication service
  *
- * その他の設定メソッドはLoginTraitで定義されています。
+ * Other settings methods are defined in LoginTrait.
  */
 trait TwoFaAuthenticationTrait
 {
     use LoginTrait;
 
     /**
-     * メール認証フォームを表示
+     * Display email authentication form
      */
     protected function showEmailForm(Request $request)
     {
@@ -82,12 +82,12 @@ trait TwoFaAuthenticationTrait
             return redirect()->route($this->getLoginRoute());
         }
 
-        // 既存の有効なコードがあるかチェック
+        // Check if there is an existing valid code
         $hasValidToken = MemberTwoFaToken::where('member_id', $member->id)
             ->where('expires_at', '>', now())
             ->exists();
 
-        // 有効なコードがない場合のみ新規生成・送信
+        // Generate and send a new code only if there is no valid code
         if (! $hasValidToken) {
             Log::info('[Email Challenge] メール認証画面表示 - コード生成開始', [
                 'member_id' => $member->id,
@@ -104,7 +104,7 @@ trait TwoFaAuthenticationTrait
             ]);
         }
 
-        // 利用可能な認証方法を取得（Passkeyデバイス未登録時はPasskeyを除外）
+        // Get available authentication methods (exclude Passkey when Passkey device is not registered)
         $twoFactorHelper = app(TwoFaHelper::class);
         $enabledMethods = $twoFactorHelper->getAvailableTwoFaMethodsForMember($member);
         $availableMethods = [];
@@ -121,14 +121,14 @@ trait TwoFaAuthenticationTrait
             }
         }
 
-        // Passkeyが有効だがデバイスが未登録かチェック
+        // Check if Passkey is enabled but device is not registered
         $settingModelClass = $this->getSettingModelClass();
         $globalEnabledMethods = $twoFactorHelper->getEnabledTwoFaMethods($settingModelClass);
         $passkeyGloballyEnabled = in_array(TwoFaMethod::PASSKEY->value, $globalEnabledMethods);
         $passkeyAvailableForMember = in_array(TwoFaMethod::PASSKEY->value, $enabledMethods);
         $showPasskeyDeviceWarning = $passkeyGloballyEnabled && ! $passkeyAvailableForMember;
 
-        // 二段階認証の設定値を取得（セキュリティ設定 > コンフィグ）
+        // Get two-factor authentication settings values (Security settings > Config)
         $twoFaExpireMinutes = (int) \App\Models\SecuritySetting::getValue('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
         $twoFaResendIntervalSeconds = (int) \App\Models\SecuritySetting::getValue('two_fa_resend_interval_seconds', config('two-fa.resend_interval', 60));
 
@@ -145,7 +145,7 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * Passkey認証フォームを表示
+     * Display Passkey authentication form
      */
     protected function showPasskeyForm(Request $request)
     {
@@ -162,7 +162,7 @@ trait TwoFaAuthenticationTrait
             return redirect()->route($this->getLoginRoute());
         }
 
-        // 利用可能な認証方法を取得（Passkeyデバイス未登録時はPasskeyを除外）
+        // Get available authentication methods (exclude Passkey when Passkey device is not registered)
         $twoFactorHelper = app(TwoFaHelper::class);
         $enabledMethods = $twoFactorHelper->getAvailableTwoFaMethodsForMember($member);
         $availableMethods = [];
@@ -179,7 +179,7 @@ trait TwoFaAuthenticationTrait
             }
         }
 
-        // Passkeyデバイスが未登録かチェック
+        // Check if Passkey device is not registered
         $passkeyService = app(TwoFaPasskeyService::class);
         $passkeyDevices = $passkeyService->getDevices($member);
         $hasPasskeyDevices = ! $passkeyDevices->isEmpty();
@@ -195,7 +195,7 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * 回復コード入力画面を表示
+     * Display recovery code input screen
      */
     public function showRecoveryCodeForm(Request $request)
     {
@@ -212,7 +212,7 @@ trait TwoFaAuthenticationTrait
             return redirect()->route($this->getLoginRoute());
         }
 
-        // ロックアウトチェック
+        // Lockout check
         $attemptService = app(TwoFaAttemptService::class);
         if ($attemptService->isLockedOut($member)) {
             $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
@@ -221,7 +221,7 @@ trait TwoFaAuthenticationTrait
                 ->withErrors(['email' => __('two_fa.lockout.message', ['minutes' => $remainingMinutes])]);
         }
 
-        // 利用可能な認証方法を取得（Passkeyデバイス未登録時はPasskeyを除外）
+        // Get available authentication methods (exclude Passkey when Passkey device is not registered)
         $twoFactorHelper = app(TwoFaHelper::class);
         $enabledMethods = $twoFactorHelper->getAvailableTwoFaMethodsForMember($member);
         $availableMethods = [];
@@ -235,7 +235,7 @@ trait TwoFaAuthenticationTrait
             ];
         }
 
-        // Passkeyが有効だがデバイスが未登録かチェック
+        // Check if Passkey is enabled but device is not registered
         $settingModelClass = $this->getSettingModelClass();
         $globalEnabledMethods = $twoFactorHelper->getEnabledTwoFaMethods($settingModelClass);
         $passkeyGloballyEnabled = in_array(TwoFaMethod::PASSKEY->value, $globalEnabledMethods);
@@ -251,7 +251,7 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * 検証ルートを取得
+     * Get verification route
      */
     protected function getTwoFaVerifyRoute(string $method): string
     {
@@ -261,7 +261,7 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * 再送信ルートを取得
+     * Get resend route
      */
     protected function getTwoFaResendRoute(string $method): string
     {
@@ -271,7 +271,7 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * チャレンジルートを取得
+     * Get challenge route
      */
     protected function getTwoFaChallengeRoute(string $method): string
     {
@@ -281,20 +281,20 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * 設定モデルクラス名を取得（継承先で実装）
+     * Get settings model class name (implement in child class)
      */
     abstract protected function getSettingModelClass(): string;
 
     /**
-     * 二段階認証サービスのインスタンスを取得（継承先で実装）
+     * Get two-factor authentication service instance (implement in child class)
      */
     abstract protected function getTwoFaService();
 
     /**
-     * 認証方法に応じたルート名を取得
+     * Get route name based on authentication method
      *
-     * @param  int  $method  認証方法（TwoFaMethod enum値）
-     * @return string ルート名（例: 'admin.two-fa.email.show'）
+     * @param  int  $method  Authentication method (TwoFaMethod enum value)
+     * @return string Route name (e.g., 'admin.two-fa.email.show')
      */
     protected function getTwoFaMethodRoute(int $method): string
     {
@@ -307,7 +307,7 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * セッションからユーザーを取得
+     * Get user from session
      */
     protected function getUserFromSession()
     {
@@ -324,7 +324,7 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * セッションチェックとユーザー取得（リダイレクト付き）
+     * Check session and get user (with redirect)
      */
     protected function checkSessionAndGetUser()
     {
@@ -334,7 +334,7 @@ trait TwoFaAuthenticationTrait
             $context = $this->getContext();
             $loginRoute = AuthContextRegistryService::getRoute($context, 'login');
 
-            // フォールバック: コンテキストが登録されていない場合
+            // Fallback: when context is not registered
             if (! $loginRoute) {
                 $loginRoute = $context === 'admin' ? 'admin.login' : 'login';
             }
@@ -346,7 +346,7 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * 認証成功後のログイン処理
+     * Login process after successful authentication
      */
     protected function completeAuthentication($user, Request $request)
     {
@@ -355,14 +355,14 @@ trait TwoFaAuthenticationTrait
         $guardName = $this->getGuardName();
         $dashboardRoute = $this->getDashboardRoute();
 
-        // セッションクリーンアップ
+        // Session cleanup
         session()->forget([
             $sessionPrefix.'.id',
             $sessionPrefix.'.remember',
             $sessionPrefix.'.email_sent',
         ]);
 
-        // ログイン通知を送信（ログイン前に送信）
+        // Send login notification (before login)
         if (method_exists($this, 'getLoginNotificationServiceClass')) {
             try {
                 app($this->getLoginNotificationServiceClass())->handle($user, $request);
@@ -374,39 +374,39 @@ trait TwoFaAuthenticationTrait
             }
         }
 
-        // 先にログイン（AdminLoginControllerと同じ順序）
+        // Login first (same order as AdminLoginController)
         Auth::guard($guardName)->login($user, $remember);
 
-        // ログイン後にセッションを再生成（AdminLoginControllerと同じ）
+        // Regenerate session after login (same as AdminLoginController)
         $request->session()->regenerate(true);
 
         return redirect()->route($dashboardRoute);
     }
 
     /**
-     * Passkeyチャレンジ生成の共通処理
+     * Common process for generating passkey challenge
      */
     protected function generatePasskeyChallenge($user): array
     {
         $twoFaPasskeyService = app(\App\Services\TwoFa\TwoFaPasskeyService::class);
 
-        // Passkey認証が利用可能かチェック
+        // Check if passkey authentication is available
         if (! $twoFaPasskeyService->isAvailable()) {
             throw new \Exception(__('auth.passkey_https_required'));
         }
 
-        // ユーザーがPasskeyを登録しているかチェック
+        // Check if user has registered a passkey
         $credentials = $twoFaPasskeyService->getCredentials($user);
         if ($credentials->isEmpty()) {
             throw new \Exception(__('auth.passkey_not_registered'));
         }
 
-        // 認証チャレンジを生成
+        // Generate authentication challenge
         return $twoFaPasskeyService->generateAuthenticationChallenge($user);
     }
 
     /**
-     * Passkey検証の共通処理
+     * Common process for passkey verification
      */
     protected function verifyPasskeyCredential($user, array $credential): bool
     {
@@ -416,7 +416,7 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * 回復コード検証の共通処理
+     * Common process for recovery code verification
      */
     protected function verifyRecoveryCodeValue($user, string $code): bool
     {
@@ -426,7 +426,7 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * 二段階認証設定値を取得
+     * Get two-factor authentication settings value
      */
     protected function getTwoFaSettings(): array
     {
@@ -439,7 +439,7 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * メール認証コード検証の共通処理
+     * Common process for email verification code validation
      */
     protected function verifyEmailCode($user, string $code): bool
     {
@@ -449,20 +449,20 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * メール認証コード再送信の共通処理
+     * Common process for email verification code resend
      */
     protected function resendEmailCode($user): void
     {
         $twoFa = $this->getTwoFaService();
         $twoFa->generate($user, \App\Enums\TwoFaMethod::EMAIL->value);
 
-        // セッションのメール送信済みフラグをクリア（次回showEmailChallengeで再送信可能にする）
+        // Clear the email sent flag in session (allow resend on next showEmailChallenge)
         $sessionKey = $this->getSessionPrefix().'.email_sent';
         session()->forget($sessionKey);
     }
 
     /**
-     * 利用可能な認証方法を取得
+     * Get available authentication methods
      */
     protected function getAvailableMethods(?int $currentMethod = null): array
     {
@@ -477,7 +477,7 @@ trait TwoFaAuthenticationTrait
             if ($method !== $currentMethod) {
                 $methodEnum = \App\Enums\TwoFaMethod::from($method);
 
-                // ルート名を生成
+                // Generate route name
                 $routeName = match ($method) {
                     \App\Enums\TwoFaMethod::EMAIL->value => "{$prefix}.two-fa.email.show",
                     default => "{$prefix}.two-fa.email.show",
@@ -495,7 +495,7 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * メール認証チャレンジ画面を表示
+     * Display email authentication challenge screen
      */
     public function showEmailChallenge(Request $request)
     {
@@ -504,7 +504,7 @@ trait TwoFaAuthenticationTrait
             return $user;
         }
 
-        // セッションにメール送信済みフラグがない場合のみメール送信
+        // Send email only if email sent flag is not in session
         $sessionKey = $this->getSessionPrefix().'.email_sent';
         if (! session()->has($sessionKey)) {
             $twoFa = $this->getTwoFaService();
@@ -524,11 +524,11 @@ trait TwoFaAuthenticationTrait
         $availableMethods = $this->getAvailableMethods($currentMethod);
         $settings = $this->getTwoFaSettings();
 
-        // リカバリーコードルートを取得
+        // Get recovery code route
         $context = $this->getContext();
         $recoveryCodeRoute = $this->getRecoveryCodeRoute();
 
-        // CAPTCHA設定を取得
+        // Get CAPTCHA settings
         $captchaAction = $this->getCaptchaAction();
         $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
         $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
@@ -550,7 +550,7 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * メール認証コードを検証
+     * Verify email authentication code
      */
     public function verifyEmail(Request $request)
     {
@@ -563,7 +563,7 @@ trait TwoFaAuthenticationTrait
             return $user;
         }
 
-        // ロックアウト状態をチェック
+        // Check lockout status
         $twoFa = $this->getTwoFaService();
         $lockoutStatus = $twoFa->checkLockout($user);
 
@@ -585,7 +585,7 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * メール認証コードを再送信
+     * Resend email authentication code
      */
     public function resendEmail(Request $request)
     {
@@ -620,7 +620,7 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * 回復コード認証チャレンジ画面を表示
+     * Display recovery code authentication challenge screen
      */
     public function showRecoveryCodeChallenge(Request $request)
     {
@@ -632,7 +632,7 @@ trait TwoFaAuthenticationTrait
         $availableMethods = $this->getAvailableMethods();
         $context = $this->getContext();
 
-        // CAPTCHA設定を取得
+        // Get CAPTCHA settings
         $captchaAction = $this->getCaptchaAction();
         $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
         $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
@@ -649,7 +649,7 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * 回復コードを検証
+     * Verify recovery code
      */
     public function verifyRecoveryCode(Request $request)
     {

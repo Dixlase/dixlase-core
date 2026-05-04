@@ -40,10 +40,10 @@ namespace App\Traits;
 use App\Services\Csp\CspExtensionLoader;
 
 /**
- * CSPポリシー登録トレイト
+ * CSP policy registration trait
  *
- * プラグイン・テーマのServiceProviderでこのトレイトを使用することで、
- * plugin.json/theme.jsonに定義されたCSP設定を自動的にCspPolicyRegistryに登録できます。
+ * By using this trait in a plugin or theme ServiceProvider,
+ * CSP settings defined in plugin.json/theme.json can be automatically registered to CspPolicyRegistry.
  *
  * @example
  * class MyPluginServiceProvider extends ServiceProvider
@@ -59,11 +59,11 @@ use App\Services\Csp\CspExtensionLoader;
 trait RegistersCspPolicy
 {
     /**
-     * plugin.json/theme.jsonからCSP設定を読み込み、レジストリに登録
+     * Load CSP settings from plugin.json/theme.json and register to registry
      *
-     * @param  string  $type  'plugin' または 'theme'
-     * @param  string  $slug  プラグイン/テーマのスラッグ
-     * @return array 登録されたディレクティブ
+     * @param  string  $type  'plugin' or 'theme'
+     * @param  string  $slug  Plugin/theme slug
+     * @return array Registered directives
      */
     protected function registerCspFromJson(string $type, string $slug): array
     {
@@ -83,12 +83,12 @@ trait RegistersCspPolicy
     }
 
     /**
-     * CSPディレクティブを直接登録
+     * Register CSP directives directly
      *
-     * plugin.json/theme.jsonを使用せず、コードから直接CSPディレクティブを登録する場合に使用
+     * Use when registering CSP directives directly from code without using plugin.json/theme.json
      *
-     * @param  array  $directives  ディレクティブ配列
-     * @param  string|null  $source  ソース名（デバッグ用）
+     * @param  array  $directives  Directives array
+     * @param  string|null  $source  Source name (for debugging)
      */
     protected function registerCspDirectives(array $directives, ?string $source = null): void
     {

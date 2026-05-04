@@ -36,45 +36,45 @@
 namespace App\Traits\TwoFa;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * 二段階認証有効化条件チェック機能
+ * Two-factor authentication enable condition check functionality
  *
- * このTraitは、二段階認証を安全に有効化できるかをチェックする機能を提供します。
- * コアのMemberモデルとユーザープラグインのUserモデルで共有されます。
+ * This Trait provides functionality to check whether two-factor authentication can be safely enabled.
+ * Shared between the Core Member model and the user plugin User model.
  *
- * 使用方法:
- * - モデルで使用: canEnableTwoFa(), getTwoFaEnableBlockReasons()
- * - リクエストクラスで使用: isMailServerConfigured()
+ * Usage:
+ * - Use in models: canEnableTwoFa(), getTwoFaEnableBlockReasons()
+ * - Use in request classes: isMailServerConfigured()
  */
 trait TwoFactorEnableCheck
 {
     /**
-     * 二段階認証を有効化できるかチェック
+     * Check if two-factor authentication can be enabled
      *
-     * 安全ルール: 以下のいずれかの条件を満たす必要がある
-     * - メールサーバーが設定されている
-     * - 少なくとも1つのパスキーが登録されている
-     * - 回復コードが生成されている
+     * Safety rule: Must meet at least one of the following conditions
+     * - Mail server is configured
+     * - At least one passkey is registered
+     * - Recovery codes are generated
      */
     public function canEnableTwoFa(): bool
     {
-        // メールサーバーが設定されているかチェック
+        // Check if mail server is configured
         $mailConfigured = \App\Services\MailServerValidatorService::isMailServerTested();
 
-        // パスキーが登録されているかチェック
+        // Check if passkey is registered
         $hasPasskey = $this->twoFaPasskeys()->exists();
 
-        // 回復コードが生成されているかチェック
+        // Check if recovery codes are generated
         $hasRecoveryCode = $this->twoFaRecoveryCodes()->where('used_at', null)->exists();
 
         return $mailConfigured || $hasPasskey || $hasRecoveryCode;
     }
 
     /**
-     * 二段階認証を有効化できない理由を取得
+     * Get reasons why two-factor authentication cannot be enabled
      *
-     * @return array 理由のリスト
+     * @return array List of reasons
      */
     public function getTwoFaEnableBlockReasons(): array
     {

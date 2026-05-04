@@ -42,23 +42,23 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 
 /**
- * メール認証の共通ロジックを提供するTrait
+ * Trait that provides common logic for email verification
  *
- * このTraitは、メンバーとユーザーのメール認証通知で共通する
- * 最小限のロジックのみを提供します。
+ * This Trait provides only the minimal logic common to
+ * member and user email verification notifications
  */
 trait EmailVerificationTrait
 {
     /**
-     * @var string コンテキスト（'create', 'email_change', または 'resend'）
+     * @var string Context ('create', 'email_change', or 'resend')
      */
     protected $context;
 
     /**
-     * コンテキストに応じた件名キーを取得
+     * Get subject key according to context
      *
-     * @param  string  $prefix  翻訳キーのプレフィックス（例: 'mail.member_verify_email', 'dixlase-users::mail.verify_email'）
-     * @return string 件名の翻訳キー
+     * @param  string  $prefix  Translation key prefix (e.g. 'mail.member_verify_email', 'dixlase-users::mail.verify_email')
+     * @return string Translation key for subject
      */
     protected function getSubjectKey(string $prefix): string
     {
@@ -68,10 +68,10 @@ trait EmailVerificationTrait
     }
 
     /**
-     * コンテキストに応じたメッセージキーを取得
+     * Get message key according to context
      *
-     * @param  string  $prefix  翻訳キーのプレフィックス
-     * @return string メッセージの翻訳キー
+     * @param  string  $prefix  Translation key prefix
+     * @return string Translation key for message
      */
     protected function getMessageKey(string $prefix): string
     {
@@ -83,10 +83,10 @@ trait EmailVerificationTrait
     }
 
     /**
-     * コンテキストに応じたアクションキーを取得
+     * Get action key according to context
      *
-     * @param  string  $prefix  翻訳キーのプレフィックス
-     * @return string アクションボタンの翻訳キー
+     * @param  string  $prefix  Translation key prefix
+     * @return string Translation key for action button
      */
     protected function getActionKey(string $prefix): string
     {
@@ -96,12 +96,12 @@ trait EmailVerificationTrait
     }
 
     /**
-     * メール認証用の署名付き一時URLを生成
+     * Generate signed temporary URL for email verification
      *
-     * @param  object  $notifiable  通知対象のモデル
-     * @param  string  $routeName  ルート名
-     * @param  string  $logContext  ログ用のコンテキスト名（例: 'member', 'user'）
-     * @return string 署名付きURL
+     * @param  object  $notifiable  Model to be notified
+     * @param  string  $routeName  Route name
+     * @param  string  $logContext  Context name for logging (e.g. 'member', 'user')
+     * @return string Signed URL
      */
     protected function generateVerificationUrl(object $notifiable, string $routeName, string $logContext = 'entity'): string
     {
@@ -125,9 +125,9 @@ trait EmailVerificationTrait
     }
 
     /**
-     * 認証メールの有効期限（分）を取得
+     * Get expiration time (minutes) for verification email
      *
-     * @return int 有効期限（分）
+     * @return int Expiration time (minutes)
      */
     protected function getExpirationMinutes(): int
     {

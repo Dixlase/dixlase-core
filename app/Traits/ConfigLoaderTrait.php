@@ -38,12 +38,12 @@
 namespace App\Traits;
 
 /**
- * 設定ファイルローディングユーティリティ
+ * Settings file loading utility
  */
 trait ConfigLoaderTrait
 {
     /**
-     * コンフィグファイルを読み込む
+     * Load config file
      */
     private function loadConfigFiles($path)
     {
@@ -60,24 +60,24 @@ trait ConfigLoaderTrait
     }
 
     /**
-     * 全体のコンフィグ配列を再帰的に走査し、各配列内で _insert_before / _insert_after を反映する
+     * Recursively traverse the entire config array and apply _insert_before / _insert_after within each array
      */
     public function reorderAllConfig(): void
     {
-        // 現在の全コンフィグを取得
+        // Get current full config
         $allConfig = config()->all();
 
-        // 再配置処理を実行（すでに再帰的に処理される）
+        // Execute rearrangement process (already processed recursively)
         $reorderedConfig = $this->reorderConfigArray($allConfig);
 
-        // 各トップレベルのキーごとに更新
+        // Update for each top-level key
         foreach ($reorderedConfig as $key => $value) {
             config([$key => $value]);
         }
     }
 
     /**
-     * 指定キーの前に新しい要素を挿入する
+     * Insert new element before the specified key
      */
     public function arrayInsertBeforeKey(array $array, string $targetKey, string $newKey, $newValue): array
     {
@@ -98,7 +98,7 @@ trait ConfigLoaderTrait
     }
 
     /**
-     * 指定キーの後に新しい要素を挿入する
+     * Insert new element after the specified key
      */
     public function arrayInsertAfterKey(array $array, string $targetKey, string $newKey, $newValue): array
     {
@@ -119,21 +119,21 @@ trait ConfigLoaderTrait
     }
 
     /**
-     * 配列を再帰的に走査し、各配列内で _insert_before / _insert_after の指定に従って並び替える
+     * Recursively traverse the array and reorder according to _insert_before / _insert_after specifications within each array
      *
-     * @param  array  $config  再配置対象の配列
-     * @return array 再配置後の配列
+     * @param  array  $config  Array to be rearranged
+     * @return array Rearranged array
      */
     public function reorderConfigArray(array $config): array
     {
-        // まず、配下の配列に対して再帰処理
+        // First, recursively process child arrays
         foreach ($config as $key => $value) {
             if (is_array($value)) {
                 $config[$key] = $this->reorderConfigArray($value);
             }
         }
 
-        // 現在のレベルの配列で、_insert_before/_insert_after があれば再配置
+        // Rearrange at the current level if _insert_before/_insert_after exists
         $reordered = $config;
         foreach ($reordered as $key => $value) {
             if (is_array($value) && (isset($value['_insert_before']) || isset($value['_insert_after']))) {
