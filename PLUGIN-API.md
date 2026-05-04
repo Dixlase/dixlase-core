@@ -1,7 +1,7 @@
 # Dixlase CMS Plugin API Boundary
 
 **Version:** dev
-**Last Updated:** 2026-05-03
+**Last Updated:** 2026-05-04
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -127,27 +127,27 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 | Trait | Description |
 |---|---|
-| `App\Traits\AdminInterfaceTrait` | 管理画面の共通インターフェース初期化トレイト |
-| `App\Traits\AdminLoggedInTrait` | 管理画面ログイン後の共通初期化トレイト |
-| `App\Traits\AuditableTrait` | モデルの監査ログ自動記録トレイト |
-| `App\Traits\ConfigLoaderTrait` | 設定ファイルローディングユーティリティ |
-| `App\Traits\CustomFilesLoaderTrait` | カスタムファイルオーバーライドローディング |
-| `App\Traits\EmailVerificationTrait` | メール認証の共通ロジックを提供するTrait |
+| `App\Traits\AdminInterfaceTrait` | Trait for initializing common admin panel interface |
+| `App\Traits\AdminLoggedInTrait` | Trait for common initialization after admin panel login |
+| `App\Traits\AuditableTrait` | Trait for automatic audit logging of models |
+| `App\Traits\ConfigLoaderTrait` | Settings file loading utility |
+| `App\Traits\CustomFilesLoaderTrait` | Custom file override loading |
+| `App\Traits\EmailVerificationTrait` | Trait that provides common logic for email verification |
 | `App\Traits\HasPermissions` | HasPermissions Trait |
-| `App\Traits\HasRevisions` | `App\Contracts\Revisionable` を実装するモデルに `use` することで、 |
-| `App\Traits\LoginIdentifierCheckTrait` | ログイン識別子確認の共通トレイト |
-| `App\Traits\LoginNotificationTrait` | ログイン通知の共通トレイト |
+| `App\Traits\HasRevisions` | By using this trait in models that implement `App\Contracts\Revisionable`, |
+| `App\Traits\LoginIdentifierCheckTrait` | Common trait for login identifier verification |
+| `App\Traits\LoginNotificationTrait` | Common trait for login notifications |
 | `App\Traits\MailTestTrait` |  |
-| `App\Traits\ManagesAccountTrait` | アカウント管理の共通処理 |
-| `App\Traits\ManagesContentFiles` | コンテンツファイル管理トレイト |
-| `App\Traits\ManagesTwoFaTrait` | 二段階認証管理の共通処理 |
-| `App\Traits\PasskeyLoginTrait` | パスキーログインの共通トレイト |
-| `App\Traits\PasswordResetTrait` | パスワードリセットの共通ロジックを提供するTrait |
-| `App\Traits\PluginLoaderTrait` | プラグインリソースローディング機構 |
-| `App\Traits\RegistersCspPolicy` | CSPポリシー登録トレイト |
-| `App\Traits\ThemeLoaderTrait` | テーマリソースローディング機構 |
+| `App\Traits\ManagesAccountTrait` | Common account management logic |
+| `App\Traits\ManagesContentFiles` | Content file management trait |
+| `App\Traits\ManagesTwoFaTrait` | Common processing for two-factor authentication management |
+| `App\Traits\PasskeyLoginTrait` | Common trait for passkey login |
+| `App\Traits\PasswordResetTrait` | Trait that provides common logic for password reset |
+| `App\Traits\PluginLoaderTrait` | Plugin resource loading mechanism |
+| `App\Traits\RegistersCspPolicy` | CSP policy registration trait |
+| `App\Traits\ThemeLoaderTrait` | Theme resource loading mechanism |
 | `App\Traits\TranslatableTrait` | Translatable Trait |
-| `App\Traits\TwoFa\TwoFaAuthenticationTrait` | 二段階認証のフロー制御機能を提供するトレイト |
+| `App\Traits\TwoFa\TwoFaAuthenticationTrait` | Trait that provides two-factor authentication flow control functionality |
 | `App\Traits\VerifiesCaptcha` |  |
 
 ---
@@ -156,8 +156,8 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 | Controller | Description |
 |---|---|
-| `App\Http\Controllers\Admin\AdminController` | 管理画面基底コントローラー |
-| `App\Http\Controllers\Admin\AdminLoggedInController` | 認証必須の管理画面コントローラー |
+| `App\Http\Controllers\Admin\AdminController` | Admin panel base controller |
+| `App\Http\Controllers\Admin\AdminLoggedInController` | Admin panel controller that requires authentication |
 
 ---
 
@@ -343,7 +343,7 @@ Plugins/themes may extend the following Blade layouts via `@extends('layouts.{na
 
 ---
 
-## 7. Middleware Groups for Plugins
+## 7. Middleware & API Surface for Plugins
 
 ### 7.1 API Middleware
 
@@ -359,6 +359,40 @@ Plugins/themes may extend the following Blade layouts via `@extends('layouts.{na
 | `plugin` | Basic plugin routes (session, cookies, view sharing, bindings) |
 | `plugin.web` | Plugin front-end routes (with IP filtering) |
 | `plugin.admin` | Plugin admin routes (auth required + IP filtering) |
+
+### 7.3 API URL Versioning & Plugin Route Layout
+
+REST API endpoints live under `/api/v1/...`. Plugins place their API routes in:
+
+```
+plugins/{Name}/routes/api/v1.php
+```
+
+The core auto-loader wraps the file in `Route::prefix('api/v1')->middleware(EnsurePluginActiveOnSite::class.':'.$pluginSlug)->group(...)`, so plugin authors only write the slug-relative path inside (e.g. `Route::prefix('my-plugin')->group(...)`) and the resulting URL is `/api/v1/my-plugin/...`. When the plugin is disabled on the resolved site, `App\Http\Middleware\EnsurePluginActiveOnSite` short-circuits the request with a 404 JSON envelope before the controller runs.
+
+Reserved namespaces under `/api/v1/` — plugin routes **must not** collide with any of these:
+
+| Path | Owner |
+|---|---|
+| `/api/v1/health` | Core (public liveness probe) |
+| `/api/v1/resources/{type}/{slug}` | Future DixlaseApi plugin (auto-discovers `ApiResourceProviderInterface`) |
+| `/api/v1/privacy/...` | Future Privacy API (built on `PrivacyDataProviderInterface`) |
+
+The legacy `routes/api.php` (no `v1.php` filename) still loads as-is for backwards compatibility but is **deprecated**; the loader emits a `Log::warning` on every boot until plugins migrate. New plugins should use `routes/api/v1.php` from day one. Full contract: [REST API Versioning](docs/development/api-reference/versioning.md).
+
+### 7.4 API Response Envelope
+
+The unified `{data, meta, links}` / `{error: {code, message, details?}, meta}` envelope documented in [REST API Versioning](docs/development/api-reference/versioning.md) is implemented by the following classes. Plugin endpoints that emit JSON should extend or call these so the response shape stays in sync with core's exception handler:
+
+| Class | Purpose |
+|---|---|
+| `App\Http\Resources\BaseApiResource` | Abstract base for single-resource endpoints. Subclass and implement `toArray($request)`; the base adds `meta.site_id`, `meta.timestamp`, and `links.self` automatically. |
+| `App\Http\Resources\BaseApiCollection` | Abstract base for list endpoints. Same envelope plus auto-generated `meta.pagination` and `links.next` / `links.prev` when wrapping a Laravel paginator. |
+| `App\Support\Api\ApiErrorResponse` | Static factory `make(code, status, message, details)` returning the unified error envelope. Also exposes `meta()` so plugin code building responses by hand can stay shape-consistent. |
+
+Error messages in the envelope are always English (clients should map the stable `code` field to their own translation table). API error responses must never 3xx-redirect; if a plugin endpoint can be reached without authentication, document the public scope in its own README rather than emitting a redirect.
+
+API-key authentication is handled by `App\Http\Middleware\AuthenticateApiKey` (route alias `auth.api`), which uses `ApiErrorResponse::make()` for `missing_credentials` / `invalid_credentials` / `ip_not_allowed` / `insufficient_scope` failures. Use of network-scope keys (site_id = NULL, CLI-issued via `dls:api:create-network-key`) is automatically audited at `severity = notice` under action `network_api_key_used`.
 
 ---
 
