@@ -123,7 +123,7 @@ return [
 
     // スキャン鮮度バッジ
     'scan_status' => [
-        'unscanned' => '未スキャン — 再スキャンを実行してください',
+        'unscanned' => '未スキャン',
         'expired' => 'スキャン期限切れ（前回 :age 日前 / 期限 :max 日）',
         'files_changed' => 'ファイル変更検知 — 再スキャン推奨',
     ],
