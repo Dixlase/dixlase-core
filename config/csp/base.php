@@ -41,43 +41,43 @@ return [
     | CSP Mode
     |--------------------------------------------------------------------------
     |
-    | CSPの動作モードを指定します。
+    | Specifies the CSP operation mode.
     |
-    | - 'development': 開発モード
-    |   - Report-Only（ブロックせず記録のみ）
-    |   - インラインJS/CSS許可（unsafe-inline）
-    |   - eval許可（unsafe-eval）
-    |   - 拒否ドメインのみブロック可能
-    |   - プラグイン互換性：最大
+    | - 'development': Development mode
+    |   - Report-Only (logs only, does not block)
+    |   - Inline JS/CSS allowed (unsafe-inline)
+    |   - eval allowed (unsafe-eval)
+    |   - Only denied domains can be blocked
+    |   - Plugin compatibility: Maximum
     |
-    | - 'standard': 標準モード（本番推奨）
-    |   - CSP強制（ブロック）
-    |   - インライン実行コード：ヘルパー経由（nonce付き）のみ許可
-    |   - onclick等属性イベント：警告（移行期は動作許可）
-    |   - unsafe-eval禁止
-    |   - strict-dynamic推奨（任意）
-    |   - プラグイン互換性：高
+    | - 'standard': Standard mode (recommended for production)
+    |   - CSP enforced (blocking)
+    |   - Inline executable code: Only allowed via helper (with nonce)
+    |   - onclick and other attribute events: Warning (allowed during transition period)
+    |   - unsafe-eval prohibited
+    |   - strict-dynamic recommended (optional)
+    |   - Plugin compatibility: High
     |
-    | ※ 'strict'（厳格モード）は初期バージョンでは未実装
+    | ※ 'strict' (strict mode) is not implemented in the initial version
     |
-    | 実際の設定はデータベース（SecuritySetting）から読み込まれます。
+    | Actual settings are loaded from the database (SecuritySetting).
     |
     */
     'mode' => env('CSP_MODE', 'development'),
 
     /*
     |--------------------------------------------------------------------------
-    | Admin CSP Mode (管理画面専用CSPモード)
+    | Admin CSP Mode (dedicated CSP mode for admin panel)
     |--------------------------------------------------------------------------
     |
-    | 管理画面とフロントエンドで異なるCSPモードを使用できます。
+    | Different CSP modes can be used for admin panel and frontend.
     |
-    | - null: フロントエンドと同じモードを使用（デフォルト）
-    | - 'development' / 'standard': 管理画面専用のモード
+    | - null: Use same mode as frontend (default)
+    | - 'development' / 'standard': Admin panel specific mode
     |
-    | 推奨設定：
-    | - フロント: standard（本番推奨）
-    | - 管理画面: standard（実用性とセキュリティのバランス）
+    | Recommended settings:
+    | - Frontend: standard (recommended for production)
+    | - Admin panel: standard (balance of usability and security)
     |
     */
     'admin_mode' => env('CSP_ADMIN_MODE', null),
@@ -87,41 +87,41 @@ return [
     | CSP Mode Definitions
     |--------------------------------------------------------------------------
     |
-    | 各モードの詳細設定。
+    | Detailed settings for each mode
     |
     */
     'modes' => [
-        // 開発モード: 最大互換性、Report-Onlyで違反を記録
+        // Development mode: Maximum compatibility, log violations with Report-Only
         'development' => [
             'header' => 'Content-Security-Policy-Report-Only',
-            'allow_inline_scripts' => false, // 違反を記録するためfalse（Report-Onlyなので動作する）
+            'allow_inline_scripts' => false, // false to log violations (works because Report-Only)
             'allow_inline_styles' => true,
             'allow_eval' => true,
-            'allow_unsafe_inline' => false,  // 違反を記録するためfalse（Report-Onlyなので動作する）
-            'require_nonce' => true,         // nonce付きスクリプトを推奨
+            'allow_unsafe_inline' => false,  // false to log violations (works because Report-Only)
+            'require_nonce' => true,         // Recommend scripts with nonce
             'block_inline_plugins' => false,
-            'enforce_deny_domains' => false, // 拒否ドメインも警告のみ
-            'strict_dynamic' => false,       // Vite互換性のためfalse
-            'block_script_attr' => false,    // Report-Onlyなので動作する
-            'description' => 'テーマ/プラグイン開発用。すべて動作するが違反を記録。',
+            'enforce_deny_domains' => false, // Denied domains are warning only
+            'strict_dynamic' => false,       // false for Vite compatibility
+            'block_script_attr' => false,    // Works because Report-Only
+            'description' => 'For theme/plugin development. Everything works but violations are logged.',
             'description_en' => 'For theme/plugin development. Everything works but violations are logged.',
         ],
 
-        // 標準モード: 本番推奨、nonce付きインラインのみ許可
+        // Standard mode: Recommended for production, only allow inline with nonce
         'standard' => [
             'header' => 'Content-Security-Policy',
-            'allow_inline_scripts' => false, // unsafe-inline禁止
-            'allow_inline_styles' => true,   // Alpine.jsのインラインスタイル用に許可
-            'allow_eval' => true,            // Alpine.jsが必要とするため許可
+            'allow_inline_scripts' => false, // Prohibit unsafe-inline
+            'allow_inline_styles' => true,   // Allow for Alpine.js inline styles
+            'allow_eval' => true,            // Allow because Alpine.js requires it
             'allow_unsafe_inline' => false,
-            'require_nonce' => true,         // ヘルパー経由でnonceを要求
-            'allow_nonce_inline_execution' => true, // nonce付き実行コードは許可
+            'require_nonce' => true,         // Require nonce via helper
+            'allow_nonce_inline_execution' => true, // Allow executed code with nonce
             'block_inline_plugins' => true,
-            'enforce_deny_domains' => true,  // 拒否ドメインを強制ブロック
-            'strict_dynamic' => false,       // テスト用に無効化（動的スクリプトをブロック）
-            'warn_onclick' => true,          // onclick等を警告（ブロックはしない）
-            'block_script_attr' => true,     // script-src-attrでunsafe-inline禁止
-            'description' => '本番運用推奨。ヘルパー経由のインラインは許可。',
+            'enforce_deny_domains' => true,  // Force block denied domains
+            'strict_dynamic' => false,       // Disable for testing (blocks dynamic scripts)
+            'warn_onclick' => true,          // Warn (but don't block) onclick etc.
+            'block_script_attr' => true,     // Prohibit unsafe-inline in script-src-attr
+            'description' => 'Recommended for production. Inline via helper is allowed.',
             'description_en' => 'Recommended for production. Inline via helpers allowed.',
         ],
 
@@ -142,7 +142,7 @@ return [
             'strict_dynamic' => true,        // 推奨ON
             'block_onclick' => true,         // onclick等を完全ブロック
             'require_bootloader' => true,    // dixlase-boot.js必須
-            'description' => '最大セキュリティ。CSP Readyプラグインのみ動作。',
+            'description' => 'Maximum security. Only CSP Ready plugins work.',
             'description_en' => 'Maximum security. Only CSP Ready plugins work.',
         ],
         */
@@ -153,8 +153,8 @@ return [
     | Report URI
     |--------------------------------------------------------------------------
     |
-    | CSP違反レポートを送信するエンドポイントのパス。
-    | このパスはCSPミドルウェアから除外されます。
+    | Path to the endpoint for sending CSP violation reports.
+    | This path is excluded from CSP middleware.
     |
     */
     'report_uri' => '/csp-report',
@@ -164,8 +164,8 @@ return [
     | Nonce Length
     |--------------------------------------------------------------------------
     |
-    | 生成するnonceの長さ（バイト数）。
-    | 推奨: 16バイト以上（Base64エンコード後は約22文字）
+    | Length of generated nonce (in bytes).
+    | Recommended: 16 bytes or more (approximately 22 characters after Base64 encoding)
     |
     */
     'nonce_length' => 16, ];

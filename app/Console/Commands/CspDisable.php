@@ -53,7 +53,7 @@ class CspDisable extends Command
      *
      * @var string
      */
-    protected $description = 'CSPを無効化します（緊急復旧用）';
+    protected $description = 'Disable CSP (for emergency recovery)';
 
     /**
      * Execute the console command.
@@ -61,17 +61,17 @@ class CspDisable extends Command
     public function handle(): int
     {
         try {
-            // CSPを無効化
+            // Disable CSP
             SecuritySetting::set('csp_enabled', 0);
 
-            // キャッシュをクリア
+            // Clear cache
             Cache::flush();
 
-            $this->info('✅ CSPを無効化しました');
-            $this->info('📝 ログ: CSPが無効化されました - '.now());
+            $this->info(__('console/commands/csp_disable.csp_disabled_success'));
+            $this->info(__('console/commands/csp_disable.csp_disabled_log').now());
 
-            // ログに記録
-            \Log::channel('stack')->warning('CSP無効化コマンド実行', [
+            // Log to record
+            \Log::channel('stack')->warning('Executing CSP disable command', [
                 'command' => 'dixlase:csp:disable',
                 'user' => 'CLI',
                 'timestamp' => now(),
@@ -79,7 +79,7 @@ class CspDisable extends Command
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error('❌ CSPの無効化に失敗しました: '.$e->getMessage());
+            $this->error(__('console/commands/csp_disable.csp_disable_failed').$e->getMessage());
 
             return Command::FAILURE;
         }

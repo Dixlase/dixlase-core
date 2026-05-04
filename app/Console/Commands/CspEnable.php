@@ -46,14 +46,14 @@ class CspEnable extends Command
      *
      * @var string
      */
-    protected $signature = 'dixlase:csp:enable {--mode=development : CSPモード (development/standard/strict)}';
+    protected $signature = 'dixlase:csp:enable {--mode=development : CSP mode (development/standard/strict)}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'CSPを有効化します';
+    protected $description = 'Enable CSP';
 
     /**
      * Execute the console command.
@@ -63,34 +63,34 @@ class CspEnable extends Command
         try {
             $mode = $this->option('mode');
 
-            // モードの検証
+            // Validate mode
             $validModes = ['development', 'standard', 'strict'];
             if (! in_array($mode, $validModes)) {
-                $this->error("❌ 無効なモード: {$mode}");
-                $this->info('有効なモード: '.implode(', ', $validModes));
+                $this->error(__('console/commands/csp_enable.invalid_mode', ['mode' => $mode]));
+                $this->info(__('console/commands/csp_enable.valid_modes').implode(', ', $validModes));
 
                 return Command::FAILURE;
             }
 
-            // モードを数値に変換
+            // Convert mode to numeric value
             $modeValue = match ($mode) {
                 'development' => 0,
                 'standard' => 1,
                 'strict' => 2,
             };
 
-            // CSPを有効化
+            // Enable CSP
             SecuritySetting::set('csp_enabled', 1);
             SecuritySetting::set('csp_mode', $modeValue);
 
-            // キャッシュをクリア
+            // Clear cache
             Cache::flush();
 
-            $this->info("✅ CSPを有効化しました (モード: {$mode})");
-            $this->info('📝 ログ: CSPが有効化されました - '.now());
+            $this->info(__('console/commands/csp_enable.csp_enabled_with_mode', ['mode' => $mode]));
+            $this->info(__('console/commands/csp_enable.csp_enabled_log').now());
 
-            // ログに記録
-            \Log::channel('stack')->warning('CSP有効化コマンド実行', [
+            // Log to record
+            \Log::channel('stack')->warning('Executing CSP enable command', [
                 'command' => 'dixlase:csp:enable',
                 'mode' => $mode,
                 'user' => 'CLI',
@@ -99,7 +99,7 @@ class CspEnable extends Command
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error('❌ CSPの有効化に失敗しました: '.$e->getMessage());
+            $this->error(__('console/commands/csp_enable.csp_enable_failed').$e->getMessage());
 
             return Command::FAILURE;
         }

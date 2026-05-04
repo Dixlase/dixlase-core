@@ -52,7 +52,7 @@ class CspStatus extends Command
      *
      * @var string
      */
-    protected $description = 'CSPの現在の状態を表示します';
+    protected $description = 'Display the current CSP status';
 
     /**
      * Execute the console command.
@@ -60,70 +60,70 @@ class CspStatus extends Command
     public function handle(): int
     {
         try {
-            // CSP設定を取得
+            // Get CSP settings
             $enabled = SecuritySetting::get('csp_enabled', 0);
             $modeValue = SecuritySetting::get('csp_mode', 0);
             $adminModeValue = SecuritySetting::get('csp_admin_mode');
             $excludeDevTools = SecuritySetting::get('csp_exclude_dev_tools', 1);
 
-            // モードを文字列に変換
+            // Convert mode to string
             $mode = match ((int) $modeValue) {
-                0 => 'development (開発モード)',
-                1 => 'standard (標準モード)',
-                2 => 'strict (厳格モード)',
+                0 => __('console/commands/csp_status.development_mode'),
+                1 => __('console/commands/csp_status.standard_mode'),
+                2 => __('console/commands/csp_status.strict_mode'),
                 default => 'unknown',
             };
 
-            // 管理画面モードを文字列に変換
-            $adminMode = 'フロントと同じ';
+            // Convert admin panel mode to string
+            $adminMode = __('console/commands/csp_status.same_as_front');
             if ($adminModeValue !== null && $adminModeValue !== '') {
                 $adminMode = match ((int) $adminModeValue) {
-                    0 => 'development (開発モード)',
-                    1 => 'standard (標準モード)',
-                    2 => 'strict (厳格モード)',
+                    0 => __('console/commands/csp_status.development_mode'),
+                    1 => __('console/commands/csp_status.standard_mode'),
+                    2 => __('console/commands/csp_status.strict_mode'),
                     default => 'unknown',
                 };
             }
 
-            // 状態を表示
+            // Display status
             $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            $this->info('📊 CSP現在の状態');
+            $this->info(__('console/commands/csp_status.current_csp_status'));
             $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             $this->line('');
 
-            // CSP有効/無効
+            // CSP enabled/disabled
             if ($enabled) {
-                $this->info('✅ CSP: 有効');
+                $this->info(__('console/commands/csp_status.csp_enabled'));
             } else {
-                $this->warn('⚠️  CSP: 無効');
+                $this->warn(__('console/commands/csp_status.csp_disabled'));
             }
 
-            // モード
-            $this->info("📋 フロントエンド: {$mode}");
-            $this->info("🔐 管理画面: {$adminMode}");
+            // Mode
+            $this->info(__('console/commands/csp_status.frontend_mode', ['mode' => $mode]));
+            $this->info(__('console/commands/csp_status.admin_panel_mode', ['adminMode' => $adminMode]));
 
-            // 開発ツール除外
+            // Exclude development tools
             if ($excludeDevTools) {
-                $this->info('🔧 開発ツール除外: 有効');
+                $this->info(__('console/commands/csp_status.exclude_dev_tools_enabled'));
             } else {
-                $this->line('🔧 開発ツール除外: 無効');
+                $this->line(__('console/commands/csp_status.exclude_dev_tools_disabled'));
             }
 
             $this->line('');
             $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-            // コマンドヘルプ
+            // Command help
             $this->line('');
-            $this->comment('💡 利用可能なコマンド:');
-            $this->line('  dixlase:csp:disable                - CSPを無効化');
-            $this->line('  dixlase:csp:enable --mode=MODE     - CSPを有効化');
-            $this->line('  dixlase:csp:set MODE               - フロントモードを変更');
-            $this->line('  dixlase:csp:set-admin MODE         - 管理画面モードを変更');
-            $this->line('  dixlase:csp:status                 - 現在の状態を表示');
+            $this->comment(__('console/commands/csp_status.available_commands'));
+            $this->line(__('console/commands/csp_status.cmd_disable_csp'));
+            $this->line(__('console/commands/csp_status.cmd_enable_csp'));
+            $this->line(__('console/commands/csp_status.cmd_set_front_mode'));
+            $this->line(__('console/commands/csp_status.cmd_set_admin_mode'));
+            $this->line(__('console/commands/csp_status.cmd_display_status'));
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error('❌ CSP状態の取得に失敗しました: '.$e->getMessage());
+            $this->error(__('console/commands/csp_status.failed_retrieve_csp_status').$e->getMessage());
 
             return Command::FAILURE;
         }

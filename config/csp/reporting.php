@@ -35,9 +35,9 @@
 
 return [
     'excluded_paths' => [
-        'install',          // インストール画面（DB未設定のため）
-        'install/*',        // インストール画面のサブパス
-        '/csp-report',      // CSPレポートエンドポイント自体
+        'install',          // Installation screen (DB not configured)
+        'install/*',        // Installation screen subpath
+        '/csp-report',      // CSP report endpoint itself
         '/api/*',           // API（必要に応じて）
     ],
 
@@ -46,7 +46,7 @@ return [
     | Log Violations
     |--------------------------------------------------------------------------
     |
-    | CSP違反をログに記録するかどうか。
+    | Whether to log CSP violations
     |
     */
     'log_violations' => true,
@@ -56,7 +56,7 @@ return [
     | Log Channel
     |--------------------------------------------------------------------------
     |
-    | CSP違反ログを出力するチャンネル。
+    | Channel to output CSP violation logs
     |
     */
     'log_channel' => 'csp',
@@ -66,16 +66,16 @@ return [
     | Blocklist Sources
     |--------------------------------------------------------------------------
     |
-    | 拒否ドメインリストの取得元。
-    | 外部のブロックリストから既知の悪意あるドメインを取得します。
+    | Source for deny domain list
+    | Fetch known malicious domains from external blocklists
     |
     */
     'blocklist_sources' => [
-        // トラッキング・広告ブロック
+        // Tracking & ad blocking
         'tracking' => [
-            'name' => 'トラッキング・広告',
+            'name' => 'Tracking & Advertising',
             'name_en' => 'Tracking & Ads',
-            'description' => '広告ネットワーク、トラッキングサービス、アナリティクス等',
+            'description' => 'Ad networks, tracking services, analytics, etc.',
             'description_en' => 'Ad networks, tracking services, analytics, etc.',
             'lists' => [
                 // Peter Lowe's Ad and tracking server list
@@ -84,33 +84,33 @@ return [
                 'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers.txt',
             ],
         ],
-        // マルウェア
+        // Malware
         'malware' => [
-            'name' => 'マルウェア',
+            'name' => 'Malware',
             'name_en' => 'Malware',
-            'description' => '既知のマルウェア配布サイト',
+            'description' => 'Known malware distribution sites',
             'description_en' => 'Known malware distribution sites',
             'lists' => [
                 // URLhaus Malware URLs (domains only)
                 'https://urlhaus.abuse.ch/downloads/hostfile/',
             ],
         ],
-        // フィッシング
+        // Phishing
         'phishing' => [
-            'name' => 'フィッシング',
+            'name' => 'Phishing',
             'name_en' => 'Phishing',
-            'description' => 'フィッシング詐欺サイト',
+            'description' => 'Phishing fraud sites',
             'description_en' => 'Phishing scam sites',
             'lists' => [
                 // OpenPhish feed
                 'https://openphish.com/feed.txt',
             ],
         ],
-        // 暗号通貨マイニング
+        // Cryptocurrency mining
         'cryptominer' => [
-            'name' => '暗号通貨マイニング',
+            'name' => 'Cryptocurrency mining',
             'name_en' => 'Cryptominers',
-            'description' => 'ブラウザベースの暗号通貨マイニングスクリプト',
+            'description' => 'Browser-based cryptocurrency mining scripts',
             'description_en' => 'Browser-based cryptocurrency mining scripts',
             'lists' => [
                 // NoCoin list (hoshsadiq/adblock-nocoin-list)
@@ -124,8 +124,8 @@ return [
     | Blocklist Cache TTL
     |--------------------------------------------------------------------------
     |
-    | ブロックリストのキャッシュ時間（秒）。
-    | デフォルト: 86400秒（24時間）
+    | Blocklist cache time (seconds)
+    | Default: 86400 seconds (24 hours)
     |
     */
     'blocklist_cache_ttl' => env('CSP_BLOCKLIST_CACHE_TTL', 86400),

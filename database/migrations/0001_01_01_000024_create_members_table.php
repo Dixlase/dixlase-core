@@ -52,8 +52,8 @@ return new class extends Migration
             $table->string('display_name')->nullable(); // 表示名（管理バー等に表示）
             $table->string('description')->nullable();
             $table->string('email');
-            $table->timestamp('email_verified_at')->nullable(); // メール認証日時
-            $table->string('pending_email')->nullable(); // 認証待ちの新メールアドレス
+            $table->timestamp('email_verified_at')->nullable(); // Email verification timestamp
+            $table->string('pending_email')->nullable(); // New email address pending verification
             $table->string('locale')->nullable(); // 個別言語設定（nullの場合はシステムデフォルト）
             $table->integer('role')->default(1);   // 1=admin, 2=super_admin, 3=editor, 4=author, 5=contributor
             $table->unsignedBigInteger('custom_role_id')->nullable(); // カスタムロール（外部キー制約は add_foreign_key_constraints で追加）
@@ -61,9 +61,9 @@ return new class extends Migration
             $table->string('password'); // Hashed
             $table->integer('login_notification_mode')->default(2); // 0= Disabled, 1= DifferentDevice, 2= Always
             $table->integer('two_fa_mode')->default(0); // 0= Disabled, 1= DifferentDevice, 2= Always
-            $table->boolean('passkey_prompt_dismissed')->default(false)->comment('パスキー登録促進モーダルを非表示にするかどうか');
-            $table->boolean('getting_started_dismissed')->default(false)->comment('はじめにカードを非表示にするかどうか');
-            $table->json('getting_started_visited')->nullable()->comment('はじめにカードの訪問済みステップ');
+            $table->boolean('passkey_prompt_dismissed')->default(false)->comment('Whether to hide the passkey registration promotion modal');
+            $table->boolean('getting_started_dismissed')->default(false)->comment('Whether to hide the getting started card');
+            $table->json('getting_started_visited')->nullable()->comment('Visited steps of the getting started card');
             $table->json('sidebar_preferences')->nullable()->comment('Per-member sidebar menu visibility preferences');
             $table->string('last_login_ip')->nullable();
             $table->text('last_login_ua')->nullable();

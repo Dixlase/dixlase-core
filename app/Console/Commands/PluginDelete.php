@@ -67,14 +67,14 @@ class PluginDelete extends Command
         $pluginDirectory = $this->argument('pluginDirectory');
         $pluginPath = base_path('plugins/'.$pluginDirectory);
 
-        // プラグインディレクトリの存在チェック
+        // Check if plugin directory exists
         if (! File::exists($pluginPath)) {
             $this->error(__('admin/command.plugin_delete.not_found', ['directory' => $pluginDirectory]));
 
             return 1;
         }
 
-        // データベースに登録されているかチェック（アンインストール済みかどうか）
+        // Check if registered in database (whether uninstalled or not)
         $plugin = DB::table('plugins')->where('directory', $pluginDirectory)->first();
 
         if ($plugin) {
@@ -84,7 +84,7 @@ class PluginDelete extends Command
             return 1;
         }
 
-        // 確認プロンプト
+        // Confirmation prompt
         if (! $this->option('force')) {
             if (! $this->confirm(__('admin/command.plugin_delete.confirm', ['directory' => $pluginDirectory]), false)) {
                 $this->info(__('admin/command.plugin_delete.cancelled'));
@@ -93,7 +93,7 @@ class PluginDelete extends Command
             }
         }
 
-        // ディレクトリを削除
+        // Delete directory
         try {
             File::deleteDirectory($pluginPath);
             $this->info(__('admin/command.plugin_delete.deleted', ['path' => $pluginPath]));
@@ -103,24 +103,24 @@ class PluginDelete extends Command
             return 1;
         }
 
-        // .git/info/excludeからプラグインの除外ルールを削除
+        // Remove plugin exclusion rule from .git/info/exclude
         if (GitExcludeHelper::removePluginExclusion($pluginDirectory)) {
-            $this->info("✓ プラグイン '{$pluginDirectory}' を .git/info/exclude から削除しました");
+            $this->info(__('console/commands/plugin_delete.plugin_removed_from_git_exclude', ['pluginDirectory' => $pluginDirectory]));
         } else {
-            $this->warn("⚠ プラグイン '{$pluginDirectory}' の .git/info/exclude からの削除に失敗しました（既に削除されている可能性があります）");
+            $this->warn(__('console/commands/plugin_delete.plugin_remove_from_git_exclude_failed', ['pluginDirectory' => $pluginDirectory]));
         }
 
-        // .gitignoreからプラグインの除外ルールを削除
+        // Remove plugin exclusion rule from .gitignore
         if (GitIgnoreHelper::removePluginExclusion($pluginDirectory)) {
-            $this->info("✓ プラグイン '{$pluginDirectory}' を .gitignore から削除しました");
+            $this->info(__('console/commands/plugin_delete.plugin_removed_from_gitignore', ['pluginDirectory' => $pluginDirectory]));
         }
 
-        // composer.local.jsonを更新
+        // Update composer.local.json
         ComposerLocalHelper::syncAutoload();
-        $this->info('✓ composer.local.jsonを更新しました');
+        $this->info(__('console/commands/plugin_delete.updated_composer_local_json'));
 
-        // 注意: composer.local.jsonのみ更新し、composer.jsonは素の状態を保持
-        // オートロードの反映は `composer dump-autoload` で手動実行
+        // Note: Only update composer.local.json, keep composer.json in pristine state
+        // Reflect autoload changes by manually running `composer dump-autoload`
 
         $this->info(__('admin/command.plugin_delete.completed', ['directory' => $pluginDirectory]));
 
