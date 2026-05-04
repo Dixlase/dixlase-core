@@ -38,6 +38,7 @@ composer.local.json
 /.zed
 DS_Store
 CLAUDE.md
+CLAUDE.local.md
 AGENTS.md
 PLUGIN-API.md
 
