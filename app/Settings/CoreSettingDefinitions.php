@@ -337,5 +337,16 @@ class CoreSettingDefinitions
             default: '',
             type: 'string',
         ));
+
+        // Number of revisions kept per content item (FrontPage, Pages, Legal,
+        // etc.) before older non-protected entries are pruned. Read by
+        // RevisionService::getRetentionCount(); plugins may override the
+        // effective value through their own service (e.g. LegalRevisionService).
+        $registry->register(new SettingDefinition(
+            name: 'content.revision.retention_count',
+            scope: SettingScope::Global,
+            default: 50,
+            type: 'int',
+        ));
     }
 }
