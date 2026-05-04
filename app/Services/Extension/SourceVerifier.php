@@ -43,10 +43,11 @@ use App\Models\ExtensionSource;
  * Source Verifier
  *
  * Verifies the authenticity of extension sources using Ed25519 signatures.
- * Official sources are signed with the DixlaseAuthority key, and this class
- * provides the verification logic as a core stub. When DixlaseDevKit is
- * installed, the actual Ed25519 verification is performed; otherwise,
- * the signature status is returned as pending.
+ * Official sources are signed with the configured authority key (managed
+ * by an authority/key-management plugin); this class provides the
+ * verification logic as a core stub. When DixlaseDevKit is installed,
+ * the actual Ed25519 verification is performed; otherwise, the signature
+ * status is returned as pending.
  */
 class SourceVerifier
 {
@@ -158,8 +159,8 @@ class SourceVerifier
      * Resolve the public key for source verification
      *
      * Looks up the public key by the configured key ID. Currently uses
-     * an environment variable; future versions will integrate with
-     * DixlaseKeyVault for key management.
+     * an environment variable; future versions will integrate with a
+     * key-vault plugin for centralised key management.
      */
     protected function resolvePublicKey(): ?string
     {

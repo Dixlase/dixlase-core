@@ -43,14 +43,14 @@ use Illuminate\Support\Facades\File;
 /**
  * Display plugin health in human-readable format and auto-fix possible inconsistencies
  *
- *   php artisan dls:plugin:lint DixlasePages
- *   php artisan dls:plugin:lint DixlasePages --fix
+ *   php artisan dls:plugin:lint MyPlugin
+ *   php artisan dls:plugin:lint MyPlugin --fix
  *   php artisan dls:plugin:lint --all
  */
 class PluginLint extends Command
 {
     protected $signature = 'dls:plugin:lint
-                            {plugin? : Plugin directory name (e.g. DixlasePages). Omit with --all.}
+                            {plugin? : Plugin directory name (e.g. MyPlugin). Omit with --all.}
                             {--all : Lint all plugins under plugins/}
                             {--fix : Auto-fix solvable issues (calls dls:plugin:sync --write and fills missing author_id / authority_key_id)}';
 
