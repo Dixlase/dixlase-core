@@ -45,7 +45,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Front settings model
  *
- * @deprecated 静的メソッドは非推奨です。FrontSettingRepositoryを使用してください。
+ * @deprecated Static methods are deprecated. Use FrontSettingRepository instead.
  */
 class FrontSetting extends Model
 {

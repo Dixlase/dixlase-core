@@ -34,5 +34,5 @@
  */
 
 return [
-    'plugins_directory' => 'plugins', // プラグインのディレクトリ
+    'plugins_directory' => 'plugins', // Plugins directory
 ];

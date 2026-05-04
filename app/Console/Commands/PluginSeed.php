@@ -93,7 +93,7 @@ class PluginSeed extends Command
         try {
             Artisan::call('db:seed', [
                 '--class' => $fullSeederClass,
-                '--force' => true, // 本番環境でも確認なしで実行
+                '--force' => true, // Run without confirmation even in production
             ]);
 
             $this->info(Artisan::output()); // Display seeder execution result

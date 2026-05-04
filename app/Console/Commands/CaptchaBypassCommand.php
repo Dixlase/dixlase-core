@@ -40,7 +40,7 @@ use App\Services\CaptchaBypassService;
 use Illuminate\Console\Command;
 
 /**
- * CAPTCHA緊急バイパスコマンド（ブレークグラス）
+ * CAPTCHA emergency bypass command (break glass)
  *
  * Allows administrator to log in when CAPTCHA provider fails
  * Emergency recovery feature to temporarily bypass CAPTCHA verification

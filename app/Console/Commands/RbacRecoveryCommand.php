@@ -42,7 +42,7 @@ use App\Services\AuditService;
 use Illuminate\Console\Command;
 
 /**
- * RBAC権限緊急復旧コマンド（ブレークグラス）
+ * RBAC permission emergency recovery command (break glass)
  *
  * Emergency recovery function for when the admin panel becomes inaccessible due to permission settings misconfiguration
  * - Admin permission was removed from all roles

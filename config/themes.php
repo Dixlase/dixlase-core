@@ -38,5 +38,5 @@ return [
     'active_theme' => env('APP_THEME', 'DixlaseOnePage'), // Active theme
     'default_theme' => env('APP_THEME', 'DixlaseOnePage'), // Default theme
     'default_theme_slug' => env('DEFAULT_THEME_SLUG', 'dixlase-one-page'), // Default theme slug name
-    'admin_theme' => 'admin', // 管理画面のテーマ
+    'admin_theme' => 'admin', // Admin panel theme
 ];

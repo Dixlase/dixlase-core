@@ -6,7 +6,7 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core use only. Do not reference from plugins/themes
  *
  * Dixlase is dual-licensed. You may use this file under either:
  *

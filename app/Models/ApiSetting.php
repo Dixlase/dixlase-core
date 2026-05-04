@@ -47,7 +47,7 @@ use Illuminate\Database\Eloquent\Model;
  * ApiSetting::getValue() / setValue() callsites and direct queries; its
  * table is now global_settings.
  *
- * @deprecated 静的メソッドは非推奨です。ApiSettingRepositoryを使用してください。
+ * @deprecated Static methods are deprecated. Use ApiSettingRepository instead.
  */
 class ApiSetting extends Model
 {

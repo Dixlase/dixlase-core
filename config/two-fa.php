@@ -82,7 +82,7 @@ return [
 
         // Exclusion pattern (e.g., exclude Chrome when detecting Safari)
         'exclusions' => [
-            'Safari' => ['/Chrome/i'], // SafariとしてマッチしてもChromeが含まれていたら除外
+            'Safari' => ['/Chrome/i'], // Even if matched as Safari, exclude when Chrome is present
         ],
     ],
 

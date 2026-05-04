@@ -42,7 +42,7 @@ namespace App\Models\Traits;
  * These methods are kept for backward compatibility, but
  * it is recommended to use the Repository directly in new code
  *
- * @deprecated 静的メソッドは非推奨です。対応するRepositoryを使用してください。
+ * @deprecated Static methods are deprecated. Use the corresponding Repository instead.
  */
 trait UsesSettingRepositoryTrait
 {
@@ -54,7 +54,7 @@ trait UsesSettingRepositoryTrait
     /**
      * Get all settings
      *
-     * @deprecated Repository::all() を使用してください
+     * @deprecated Use Repository::all() instead
      *
      * @return array<string, mixed>
      */
@@ -66,7 +66,7 @@ trait UsesSettingRepositoryTrait
     /**
      * Get settings value
      *
-     * @deprecated Repository::get() を使用してください
+     * @deprecated Use Repository::get() instead
      *
      * @param  string  $name  Setting name
      * @param  mixed  $default  Default value
@@ -79,7 +79,7 @@ trait UsesSettingRepositoryTrait
     /**
      * Save settings value
      *
-     * @deprecated Repository::set() を使用してください
+     * @deprecated Use Repository::set() instead
      *
      * @param  string  $name  Setting name
      * @param  mixed  $value  Setting value
@@ -92,9 +92,9 @@ trait UsesSettingRepositoryTrait
     /**
      * Bulk save multiple settings
      *
-     * @deprecated Repository::setMultiple() を使用してください
+     * @deprecated Use Repository::setMultiple() instead
      *
-     * @param  array<string, mixed>  $settings  設定の配列
+     * @param  array<string, mixed>  $settings  Settings array
      */
     public static function setMany(array $settings): void
     {
@@ -104,7 +104,7 @@ trait UsesSettingRepositoryTrait
     /**
      * SecuritySetting compatible: get() method
      *
-     * @deprecated Repository::get() を使用してください
+     * @deprecated Use Repository::get() instead
      *
      * @param  string  $key  Setting key
      * @param  mixed  $default  Default value
@@ -117,7 +117,7 @@ trait UsesSettingRepositoryTrait
     /**
      * SecuritySetting compatible: set() method
      *
-     * @deprecated Repository::set() を使用してください
+     * @deprecated Use Repository::set() instead
      *
      * @param  string  $key  Setting key
      * @param  mixed  $value  Setting value
