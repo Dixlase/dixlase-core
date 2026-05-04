@@ -48,12 +48,12 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Events\Dispatcher;
 
 /**
- * 認証イベントの監査ログ記録
+ * Audit logging for authentication events
  */
 class AuditAuthEventSubscriber
 {
     /**
-     * ログイン成功
+     * Login successful
      */
     public function handleLogin(Login $event): void
     {
@@ -61,7 +61,7 @@ class AuditAuthEventSubscriber
             'actor' => $event->user,
             'outcome' => AuditLog::OUTCOME_SUCCESS,
             'context' => [
-                'message' => 'ログインしました',
+                'message' => __('listeners/audit_auth_event_subscriber.logged_in'),
                 'guard' => $event->guard,
                 'remember' => $event->remember,
             ],
@@ -69,7 +69,7 @@ class AuditAuthEventSubscriber
     }
 
     /**
-     * ログイン失敗
+     * Login failed
      */
     public function handleFailed(Failed $event): void
     {
@@ -78,7 +78,7 @@ class AuditAuthEventSubscriber
             'outcome' => AuditLog::OUTCOME_FAILURE,
             'severity' => AuditLog::SEVERITY_WARNING,
             'context' => [
-                'message' => 'ログインに失敗しました',
+                'message' => __('listeners/audit_auth_event_subscriber.login_failed'),
                 'guard' => $event->guard,
                 'credentials' => array_keys($event->credentials),
             ],
@@ -86,7 +86,7 @@ class AuditAuthEventSubscriber
     }
 
     /**
-     * ログアウト
+     * Logout
      */
     public function handleLogout(Logout $event): void
     {
@@ -94,14 +94,14 @@ class AuditAuthEventSubscriber
             'actor' => $event->user,
             'outcome' => AuditLog::OUTCOME_SUCCESS,
             'context' => [
-                'message' => 'ログアウトしました',
+                'message' => __('listeners/audit_auth_event_subscriber.logged_out'),
                 'guard' => $event->guard,
             ],
         ]);
     }
 
     /**
-     * ロックアウト
+     * Lockout
      */
     public function handleLockout(Lockout $event): void
     {
@@ -109,7 +109,7 @@ class AuditAuthEventSubscriber
             'outcome' => AuditLog::OUTCOME_DENIED,
             'severity' => AuditLog::SEVERITY_CRITICAL,
             'context' => [
-                'message' => 'ログイン試行回数超過によりロックアウトされました',
+                'message' => __('listeners/audit_auth_event_subscriber.locked_out_excessive_attempts'),
                 'ip' => $event->request->ip(),
             ],
         ]);
@@ -121,7 +121,7 @@ class AuditAuthEventSubscriber
     }
 
     /**
-     * パスワードリセット
+     * Password reset
      */
     public function handlePasswordReset(PasswordReset $event): void
     {
@@ -131,13 +131,13 @@ class AuditAuthEventSubscriber
             'outcome' => AuditLog::OUTCOME_SUCCESS,
             'severity' => AuditLog::SEVERITY_NOTICE,
             'context' => [
-                'message' => 'パスワードがリセットされました',
+                'message' => __('listeners/audit_auth_event_subscriber.password_reset'),
             ],
         ]);
     }
 
     /**
-     * ユーザー登録
+     * User registration
      */
     public function handleRegistered(Registered $event): void
     {
@@ -145,13 +145,13 @@ class AuditAuthEventSubscriber
             'target' => $event->user,
             'outcome' => AuditLog::OUTCOME_SUCCESS,
             'context' => [
-                'message' => '新規ユーザーが登録されました',
+                'message' => __('listeners/audit_auth_event_subscriber.new_user_registered'),
             ],
         ]);
     }
 
     /**
-     * 他デバイスからのログアウト
+     * Logout from other devices
      */
     public function handleOtherDeviceLogout(OtherDeviceLogout $event): void
     {
@@ -160,14 +160,14 @@ class AuditAuthEventSubscriber
             'outcome' => AuditLog::OUTCOME_SUCCESS,
             'severity' => AuditLog::SEVERITY_NOTICE,
             'context' => [
-                'message' => '他のデバイスからログアウトしました',
+                'message' => __('listeners/audit_auth_event_subscriber.logged_out_other_devices'),
                 'guard' => $event->guard,
             ],
         ]);
     }
 
     /**
-     * メール認証完了
+     * Email verification completed
      */
     public function handleVerified(Verified $event): void
     {
@@ -176,13 +176,13 @@ class AuditAuthEventSubscriber
             'target' => $event->user,
             'outcome' => AuditLog::OUTCOME_SUCCESS,
             'context' => [
-                'message' => 'メールアドレスが認証されました',
+                'message' => __('listeners/audit_auth_event_subscriber.email_verified'),
             ],
         ]);
     }
 
     /**
-     * イベント購読の登録
+     * Register event subscriptions
      */
     public function subscribe(Dispatcher $events): array
     {

@@ -27,12 +27,12 @@ use App\Models\BackupRecord;
 use Illuminate\Console\Command;
 
 /**
- * 期限切れバックアップ削除コマンド
+ * Expired backup cleanup command
  *
- * retention_until が現在時刻を過ぎているバックアップを削除する。
- * cron 等で定期実行することを想定。
+ * Deletes backups whose retention_until has passed the current time
+ * Intended to be run periodically via cron or similar
  *
- * 例:
+ * Example:
  *   php artisan dls:backup:cleanup
  *   php artisan dls:backup:cleanup --dry-run
  */

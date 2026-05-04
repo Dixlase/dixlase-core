@@ -50,7 +50,7 @@ class LockoutNotificationMail extends Mailable
     /**
      * Create a new message instance.
      *
-     * @param  array  $details  ロックアウト詳細情報
+     * @param  array  $details  Lockout details
      */
     public function __construct(array $details)
     {

@@ -69,21 +69,21 @@ class ThemeMigrate extends Command
         $themePath = base_path("themes/{$themeName}");
         $migrationsPath = "{$themePath}/database/migrations";
 
-        // テーマディレクトリの存在確認
+        // Check theme directory exists
         if (! File::isDirectory($themePath)) {
             $this->error("Theme directory not found: {$themePath}");
 
             return 1;
         }
 
-        // マイグレーションディレクトリの存在確認
+        // Check migration directory exists
         if (! File::isDirectory($migrationsPath)) {
             $this->warn("No migrations directory found for theme: {$themeName}");
 
             return 0;
         }
 
-        // マイグレーションファイルの確認
+        // Check migration files
         $migrationFiles = File::files($migrationsPath);
         if (empty($migrationFiles)) {
             $this->info("No migration files found for theme: {$themeName}");
@@ -93,7 +93,7 @@ class ThemeMigrate extends Command
 
         $this->info("Running migrations for theme: {$themeName}");
 
-        // マイグレーション実行
+        // Execute migration
         $options = [
             '--path' => "themes/{$themeName}/database/migrations",
             '--force' => $this->option('force'),

@@ -104,12 +104,12 @@ class CspComplianceScanner
     /**
      * Resolve actual directory path from slug
      *
-     * Slug is kebab-case (e.g. dixlase-legal), but
-     * Directory name is PascalCase (e.g. DixlaseLegal) so conversion is needed
+     * Slug is kebab-case (e.g. my-plugin), but
+     * Directory name is PascalCase (e.g. MyPlugin) so conversion is needed
      */
     protected function resolveDirectory(string $baseDir, string $slug): string
     {
-        // Try StudlyCase conversion (dixlase-legal → DixlaseLegal)
+        // Try StudlyCase conversion (my-plugin → MyPlugin)
         $studlyName = Str::studly(str_replace('-', '_', $slug));
         $path = base_path("{$baseDir}/{$studlyName}");
         if (File::isDirectory($path)) {

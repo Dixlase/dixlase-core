@@ -76,14 +76,14 @@ class PluginMigrateRollback extends Command
         $plugin = $this->argument('plugin');
         $force = $this->option('force');
         $options = [
-            'step' => $this->option('step') ? (int) $this->option('step') : 1, // デフォルト値を設定
+            'step' => $this->option('step') ? (int) $this->option('step') : 1, // Set default values
             'force' => $force,
         ];
 
-        // プロセスオプションの共通処理
+        // Common processing for process options
         $options = $this->processOptions($options);
 
-        // プラグインディレクトリの存在確認
+        // Check plugin directory existence
         if (! $this->pluginExists($plugin)) {
             $this->error("Plugin [{$plugin}] does not exist.");
 
@@ -96,7 +96,7 @@ class PluginMigrateRollback extends Command
             return Command::FAILURE;
         }
 
-        // マイグレーションのロールバック処理
+        // Migration rollback process
         $this->info("Rolling back migrations for plugin [{$plugin}]...");
 
         try {

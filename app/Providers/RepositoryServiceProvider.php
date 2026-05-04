@@ -56,9 +56,9 @@ use App\Services\Admin\AdminNavigationManager;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * リポジトリサービスプロバイダー
+ * Repository Service Provider
  *
- * リポジトリパターンの依存性注入を管理
+ * Manages dependency injection for repository pattern
  */
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -67,55 +67,55 @@ class RepositoryServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // SiteSetting リポジトリのバインディング
+        // Binding for SiteSetting repository
         $this->app->bind(
             SiteSettingRepositoryInterface::class,
             SiteSettingRepository::class
         );
 
-        // SecuritySetting リポジトリのバインディング
+        // Binding for SecuritySetting repository
         $this->app->bind(
             SecuritySettingRepositoryInterface::class,
             SecuritySettingRepository::class
         );
 
-        // MediaSetting リポジトリのバインディング
+        // Binding for MediaSetting repository
         $this->app->bind(
             MediaSettingRepositoryInterface::class,
             MediaSettingRepository::class
         );
 
-        // FrontSetting リポジトリのバインディング
+        // Binding for FrontSetting repository
         $this->app->bind(
             FrontSettingRepositoryInterface::class,
             FrontSettingRepository::class
         );
 
-        // Media リポジトリのバインディング
+        // Binding for Media repository
         $this->app->bind(
             MediaRepositoryInterface::class,
             MediaRepository::class
         );
 
-        // ApiSetting リポジトリのバインディング
+        // Binding for ApiSetting repository
         $this->app->bind(
             ApiSettingRepositoryInterface::class,
             ApiSettingRepository::class
         );
 
-        // Plugin リポジトリのバインディング
+        // Binding for Plugin repository
         $this->app->bind(
             PluginRepositoryInterface::class,
             PluginRepository::class
         );
 
-        // Theme リポジトリのバインディング
+        // Binding for Theme repository
         $this->app->bind(
             ThemeRepositoryInterface::class,
             ThemeRepository::class
         );
 
-        // AdminNavigationManager のバインディング
+        // Binding for AdminNavigationManager
         $this->app->bind(
             AdminNavigationManagerInterface::class,
             AdminNavigationManager::class

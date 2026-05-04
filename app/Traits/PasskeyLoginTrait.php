@@ -42,75 +42,75 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 /**
- * パスキーログインの共通トレイト
+ * Common trait for passkey login
  *
- * WebAuthnを使用したパスキー認証によるログイン処理
+ * Login process using passkey authentication with WebAuthn
  */
 trait PasskeyLoginTrait
 {
     protected $passkeyService;
 
     /**
-     * ユーザーモデルクラス名を取得（継承先で実装）
+     * Get user model class name (implemented in child class)
      *
-     * @return string ユーザーモデルクラス名
+     * @return string User model class name
      */
     abstract protected function getUserModelClass(): string;
 
     /**
-     * 設定モデルクラス名を取得（継承先で実装）
+     * Get settings model class name (implemented in child class)
      *
-     * @return string 設定モデルクラス名
+     * @return string Settings model class name
      */
     abstract protected function getSettingModelClass(): string;
 
     /**
-     * 認証ガード名を取得（継承先で実装）
+     * Get authentication guard name (implemented in child class)
      *
-     * @return string ガード名（例: 'member', 'user'）
+     * @return string Guard name (e.g., 'member', 'user')
      */
     abstract protected function getGuardName(): string;
 
     /**
-     * ダッシュボードのルート名を取得（継承先で実装）
+     * Get dashboard route name (implemented in child class)
      *
-     * @return string ルート名
+     * @return string Route name
      */
     abstract protected function getDashboardRoute(): string;
 
     /**
-     * セッションキーのプレフィックスを取得（継承先で実装）
+     * Get session key prefix (implemented in child class)
      *
-     * @return string プレフィックス（例: 'login', 'user_login'）
+     * @return string Prefix (e.g., 'login', 'user_login')
      */
     abstract protected function getSessionPrefix(): string;
 
     /**
-     * ログイン通知サービスクラス名を取得（継承先で実装）
+     * Get login notification service class name (implemented in child class)
      *
-     * @return string ログイン通知サービスクラス名
+     * @return string Login notification service class name
      */
     abstract protected function getLoginNotificationServiceClass(): string;
 
     /**
-     * 翻訳プレフィックスを取得（継承先で実装）
+     * Get translation prefix (implemented in child class)
      *
-     * @return string 翻訳プレフィックス（例: 'auth', 'dixlase-users::auth'）
+     * @return string Translation prefix (e.g., 'auth', 'dixlase-users::auth')
      */
     abstract protected function getTranslationPrefix(): string;
 
     /**
-     * メールアドレスでのログインをサポートするかどうか（継承先で実装）
+     * Whether login with email address is supported (implemented in child class)
      */
     abstract protected function supportsEmailLogin(): bool;
 
     /**
-     * アカウント名でのログインをサポートするかどうか（継承先で実装）
+     * Whether login with account name is supported (implemented in child class)
      */
     abstract protected function supportsAccountNameLogin(): bool;
 
     /**
-     * パスキー認証のチャレンジを取得
+     * Get passkey authentication challenge
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -123,7 +123,7 @@ trait PasskeyLoginTrait
         $login = $request->input('login');
         $userModelClass = $this->getUserModelClass();
 
-        // ユーザー検索
+        // Search user
         $user = $this->findUserByLogin($login, $userModelClass);
 
         if (! $user) {
@@ -135,7 +135,7 @@ trait PasskeyLoginTrait
             ], 422);
         }
 
-        // パスキーが登録されているか確認
+        // Check if passkey is registered
         if (! $user->webauthnCredentials()->exists()) {
             $errorMessage = __($this->getTranslationPrefix().'.no_passkey_registered');
 
@@ -145,11 +145,11 @@ trait PasskeyLoginTrait
             ], 422);
         }
 
-        // 二段階認証が有効かチェック
+        // Check if two-factor authentication is enabled
         $settingModelClass = $this->getSettingModelClass();
         $globalTwoFaMode = $settingModelClass::getValue('two_fa_mode', 0);
 
-        // グローバル設定が無効（0）の場合のみ、個別設定をチェック
+        // Check individual settings only when global settings are disabled (0)
         if ($globalTwoFaMode == 0) {
             if ($user->getTwoFaMode() === 0) {
                 $errorMessage = __($this->getTranslationPrefix().'.two_fa_disabled');
@@ -162,10 +162,10 @@ trait PasskeyLoginTrait
         }
 
         try {
-            // WebAuthnチャレンジを生成
+            // Generate WebAuthn challenge
             $challengeData = $this->passkeyService->generateLoginChallenge($user);
 
-            // セッションにユーザーIDとチャレンジIDを保存
+            // Save user ID and challenge ID to session
             session([
                 'passkey_login_'.$this->getSessionPrefix().'_id' => $user->id,
                 'passkey_challenge_id' => $challengeData['id'] ?? null,
@@ -188,7 +188,7 @@ trait PasskeyLoginTrait
     }
 
     /**
-     * パスキー認証を検証してログイン
+     * Verify passkey authentication and login
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -215,7 +215,7 @@ trait PasskeyLoginTrait
         }
 
         try {
-            // WebAuthn認証を検証
+            // Verify WebAuthn authentication
             $challengeId = session('passkey_challenge_id');
             $verified = $this->passkeyService->verifyLoginChallenge($user, $request->all(), $challengeId);
 
@@ -225,22 +225,22 @@ trait PasskeyLoginTrait
                 ], 422);
             }
 
-            // ログイン成功
+            // Login successful
             $guardName = $this->getGuardName();
             Auth::guard($guardName)->login($user, true);
             session()->forget([$sessionKey, 'passkey_challenge_id']);
 
-            // パスキー認証を記録
+            // Record passkey authentication
             session([$this->getSessionPrefix().'.auth_method' => 'passkey']);
 
-            // ファイルログに記録
+            // Record to file log
             Log::info('Passkey login successful', [
                 'user_id' => $user->id,
                 'guard' => $guardName,
                 'ip' => $request->ip(),
             ]);
 
-            // ログイン通知
+            // Login notification
             if ($user->login_notification_mode !== 0) {
                 try {
                     $notificationServiceClass = $this->getLoginNotificationServiceClass();
@@ -271,13 +271,13 @@ trait PasskeyLoginTrait
     }
 
     /**
-     * ログイン入力値からユーザーを検索
+     * Find user from login input value
      *
-     * 委譲パターン: supportsEmailLogin() / supportsAccountNameLogin() の結果に基づいて検索
+     * Delegation pattern: search based on supportsEmailLogin() / supportsAccountNameLogin() results
      *
-     * @param  string  $login  ログイン入力値
-     * @param  string  $userModelClass  ユーザーモデルクラス名
-     * @return mixed ユーザーモデルまたはnull
+     * @param  string  $login  Login input value
+     * @param  string  $userModelClass  User model class name
+     * @return mixed User model or null
      */
     protected function findUserByLogin(string $login, string $userModelClass)
     {

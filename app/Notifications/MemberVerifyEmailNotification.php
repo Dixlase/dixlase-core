@@ -47,7 +47,7 @@ class MemberVerifyEmailNotification extends Notification
     /**
      * Create a new notification instance.
      *
-     * @param  string  $context  'create', 'email_change', または 'resend'
+     * @param  string  $context  'create', 'email_change', or 'resend'
      */
     public function __construct(string $context = 'create')
     {

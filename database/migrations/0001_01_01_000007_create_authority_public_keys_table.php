@@ -42,12 +42,12 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * Authority 公開鍵キャッシュテーブル
+     * Authority public key cache table
      *
-     * 目的：
-     * - keys.dixlase.com から取得した公開鍵をローカルにキャッシュ
-     * - プラグインインストール時の署名検証で使用
-     * - オフライン時もキャッシュがあれば検証可能
+     * Purpose:
+     * - Cache public keys retrieved from keys.dixlase.com locally
+     * - Used for signature verification during plugin installation
+     * - Verification possible offline if cache exists
      */
     public function up(): void
     {
@@ -58,8 +58,8 @@ return new class extends Migration
             $table->string('algorithm', 32)->default('ed25519');
             $table->boolean('is_active')->default(true);
             $table->timestamp('expires_at')->nullable();
-            $table->timestamp('authority_created_at')->nullable(); // Authority 側の created_at
-            $table->timestamp('fetched_at'); // ローカルキャッシュ取得時刻
+            $table->timestamp('authority_created_at')->nullable(); // created_at from Authority side
+            $table->timestamp('fetched_at'); // Local cache retrieval time
             $table->timestamps();
 
             $table->index('is_active');

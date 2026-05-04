@@ -39,19 +39,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * フロントページのアクティビティログ記録トレイト
+ * Front page activity log recording trait
  */
 trait FrontActivityLogTrait
 {
     /**
-     * フロントページの操作をログに記録
+     * Log front page operations
      *
-     * @param  string  $action  操作内容
-     * @param  array  $details  詳細情報
-     * @param  string|null  $userId  ユーザーID（ログイン済みの場合）
-     * @param  Request|null  $request  リクエスト情報
+     * @param  string  $action  Operation details
+     * @param  array  $details  Detailed information
+     * @param  string|null  $userId  User ID (if logged in)
+     * @param  Request|null  $request  Request information
      */
     protected function logFrontActivity(string $action, array $details = [], ?string $userId = null, ?Request $request = null): void
     {
@@ -75,12 +75,12 @@ trait FrontActivityLogTrait
     }
 
     /**
-     * フロントページのエラーをログに記録
+     * Log front page errors
      *
-     * @param  string  $error  エラー内容
-     * @param  array  $context  エラーコンテキスト
-     * @param  string|null  $userId  ユーザーID（ログイン済みの場合）
-     * @param  Request|null  $request  リクエスト情報
+     * @param  string  $error  Error details
+     * @param  array  $context  Error context
+     * @param  string|null  $userId  User ID (if logged in)
+     * @param  Request|null  $request  Request information
      */
     protected function logFrontError(string $error, array $context = [], ?string $userId = null, ?Request $request = null): void
     {
@@ -104,11 +104,11 @@ trait FrontActivityLogTrait
     }
 
     /**
-     * ページビューをログに記録
+     * Log page views
      *
-     * @param  string  $page  ページ名
-     * @param  string|null  $userId  ユーザーID（ログイン済みの場合）
-     * @param  Request|null  $request  リクエスト情報
+     * @param  string  $page  Page name
+     * @param  string|null  $userId  User ID (if logged in)
+     * @param  Request|null  $request  Request information
      */
     protected function logPageView(string $page, ?string $userId = null, ?Request $request = null): void
     {
@@ -118,16 +118,16 @@ trait FrontActivityLogTrait
     }
 
     /**
-     * フォーム送信をログに記録
+     * Log form submissions
      *
-     * @param  string  $formType  フォームタイプ
-     * @param  array  $formData  フォームデータ（機密情報は除く）
-     * @param  string|null  $userId  ユーザーID（ログイン済みの場合）
-     * @param  Request|null  $request  リクエスト情報
+     * @param  string  $formType  Form type
+     * @param  array  $formData  Form data (excluding sensitive information)
+     * @param  string|null  $userId  User ID (if logged in)
+     * @param  Request|null  $request  Request information
      */
     protected function logFormSubmission(string $formType, array $formData = [], ?string $userId = null, ?Request $request = null): void
     {
-        // パスワードなどの機密情報を除去
+        // Remove sensitive information such as passwords
         $sanitizedData = $this->sanitizeFormData($formData);
 
         $this->logFrontActivity('フォーム送信', [
@@ -137,11 +137,11 @@ trait FrontActivityLogTrait
     }
 
     /**
-     * ダウンロードをログに記録
+     * Log downloads
      *
-     * @param  string  $fileName  ファイル名
-     * @param  string|null  $userId  ユーザーID（ログイン済みの場合）
-     * @param  Request|null  $request  リクエスト情報
+     * @param  string  $fileName  File name
+     * @param  string|null  $userId  User ID (if logged in)
+     * @param  Request|null  $request  Request information
      */
     protected function logDownload(string $fileName, ?string $userId = null, ?Request $request = null): void
     {
@@ -151,12 +151,12 @@ trait FrontActivityLogTrait
     }
 
     /**
-     * 検索をログに記録
+     * Log searches
      *
-     * @param  string  $query  検索クエリ
-     * @param  int  $resultCount  検索結果数
-     * @param  string|null  $userId  ユーザーID（ログイン済みの場合）
-     * @param  Request|null  $request  リクエスト情報
+     * @param  string  $query  Search query
+     * @param  int  $resultCount  Number of search results
+     * @param  string|null  $userId  User ID (if logged in)
+     * @param  Request|null  $request  Request information
      */
     protected function logSearch(string $query, int $resultCount = 0, ?string $userId = null, ?Request $request = null): void
     {
@@ -167,10 +167,10 @@ trait FrontActivityLogTrait
     }
 
     /**
-     * フォームデータから機密情報を除去
+     * Remove sensitive information from form data
      *
-     * @param  array  $data  フォームデータ
-     * @return array サニタイズされたデータ
+     * @param  array  $data  Form data
+     * @return array Sanitized data
      */
     private function sanitizeFormData(array $data): array
     {

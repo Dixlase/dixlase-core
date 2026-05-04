@@ -33,9 +33,19 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use App\Support\Api\ApiErrorResponse;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\ThrottleRequestsException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -44,25 +54,31 @@ return Application::configure(basePath: dirname(__DIR__))
             __DIR__.'/../routes/install.php',
             __DIR__.'/../routes/admin.php',
         ],
+        // REST API routes. Mounted under /api by Laravel's default API
+        // prefix. Lives outside the front locale infrastructure so when
+        // the future multilingual plugin re-introduces a path-prefix
+        // locale group + Route::fallback(), /api/* must stay opaque to
+        // it (no locale segment, no 302 to /{locale}/api/...).
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Traefik等のリバースプロキシ背後で正しくHTTPS/IPを認識する
+        // Recognize HTTPS/IP correctly behind reverse proxies like Traefik
         $middleware->trustProxies(at: '*');
 
         // Register global middlewares
         $middleware->use([
-            \Illuminate\Http\Middleware\TrustProxies::class, // リバースプロキシ背後でHTTPS/IPを認識
-            \App\Http\Middleware\CheckInstallationReady::class, // インストール準備状況チェック + インストール状態チェック
-            \App\Http\Middleware\ResolveSiteContext::class, // マルチサイト対応のための現在のサイト解決（v0.1.0 では primary site 固定）
-            \App\Http\Middleware\ForceHttps::class, // FORCE_SSL有効時にHTTPS強制リダイレクト
-            \App\Http\Middleware\ApplySessionConfig::class, // セッション設定の動的適用
-            \App\Http\Middleware\ContentSecurityPolicy::class, // CSPヘッダー付与
+            \Illuminate\Http\Middleware\TrustProxies::class, // Recognize HTTPS/IP behind reverse proxy
+            \App\Http\Middleware\CheckInstallationReady::class, // Check installation readiness + installation status
+            \App\Http\Middleware\ResolveSiteContext::class, // Resolve current site for multi-site support (fixed to primary site in v0.1.0)
+            \App\Http\Middleware\ForceHttps::class, // Force HTTPS redirect when FORCE_SSL is enabled
+            \App\Http\Middleware\ApplySessionConfig::class, // Apply session settings dynamically
+            \App\Http\Middleware\ContentSecurityPolicy::class, // Add CSP headers
             \App\Http\Middleware\AppendSourceCodeHeader::class, // AGPL §13: X-Source-Code ヘッダー付与
         ]);
 
-        // CSPレポートエンドポイントをCSRF検証から除外
+        // Exclude CSP report endpoint from CSRF verification
         $middleware->validateCsrfTokens(except: [
             'csp-report',
         ]);
@@ -73,33 +89,33 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Helpers\LocaleHelper::COOKIE_NAME,
         ]);
 
-        // セッション開始後に実行するミドルウェア
+        // Middleware to execute after session starts
         $middleware->appendToGroup('web', [
-            \App\Http\Middleware\CheckMaintenanceMode::class, // メンテナンスモードチェック（認証状態を参照するためセッション後に実行）
-            \App\Http\Middleware\SafeMode::class, // セーフモード検出（認証後に実行、CSP/プラグイン/テーマ対応）
-            \App\Http\Middleware\BlockPluginRoutes::class, // プラグインセーフモード時のルートブロック
+            \App\Http\Middleware\CheckMaintenanceMode::class, // Maintenance mode check (executed after session to reference authentication state)
+            \App\Http\Middleware\SafeMode::class, // Safe mode detection (executed after authentication, supports CSP/plugin/theme)
+            \App\Http\Middleware\BlockPluginRoutes::class, // Route blocking when plugin safe mode is active
             \App\Http\Middleware\SetAdminLocale::class, // Admin locale resolver: member.locale -> Site.primary_locale -> Accept-Language -> fallback
             \App\Http\Middleware\SetMemberLocale::class, // Install-screen locale + member-specific overrides (admin only). Front locale is handled by SetFrontLocale on the locale-prefixed route group.
         ]);
 
         // Register route middleware aliases
         $middleware->alias([
-            'auth' => \App\Http\Middleware\Authenticate::class, // 認証
-            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class, // メール認証
-            'admin.ip' => \App\Http\Middleware\AdminIpFilter::class, // IPアドレスフィルタ
-            'front.ip' => \App\Http\Middleware\FrontIpFilter::class, // フロントIPフィルタ
-            'log.admin.activity' => \App\Http\Middleware\LogAdminActivity::class, // 管理画面操作ログ
-            'check.menu.access' => \App\Http\Middleware\CheckMenuAccess::class, // 管理画面メニューアクセス権限
-            'check.menu.edit' => \App\Http\Middleware\CheckMenuEdit::class, // 管理画面メニュー編集権限
-            'install.steps' => \App\Http\Middleware\CheckInstallationSteps::class, // インストールステップチェック
-            'auth.api' => \App\Http\Middleware\AuthenticateApiKey::class, // APIキー認証
-            'throttle.api' => \App\Http\Middleware\ThrottleApiRequest::class, // APIレートリミット
-            'log.api' => \App\Http\Middleware\LogApiRequest::class, // APIリクエストログ
-            'role' => \App\Http\Middleware\CheckRole::class, // ロールチェック
+            'auth' => \App\Http\Middleware\Authenticate::class, // Authentication
+            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class, // Email verification
+            'admin.ip' => \App\Http\Middleware\AdminIpFilter::class, // IP address filter
+            'front.ip' => \App\Http\Middleware\FrontIpFilter::class, // Front IP filter
+            'log.admin.activity' => \App\Http\Middleware\LogAdminActivity::class, // Admin panel operation log
+            'check.menu.access' => \App\Http\Middleware\CheckMenuAccess::class, // Admin panel menu access permission
+            'check.menu.edit' => \App\Http\Middleware\CheckMenuEdit::class, // Admin panel menu edit permission
+            'install.steps' => \App\Http\Middleware\CheckInstallationSteps::class, // Installation step check
+            'auth.api' => \App\Http\Middleware\AuthenticateApiKey::class, // API key authentication
+            'throttle.api' => \App\Http\Middleware\ThrottleApiRequest::class, // API rate limit
+            'log.api' => \App\Http\Middleware\LogApiRequest::class, // API request log
+            'role' => \App\Http\Middleware\CheckRole::class, // Role check
             'permission' => \App\Http\Middleware\CheckPermission::class, // 権限チェック
         ]);
 
-        // プラグインAPI用（APIキー認証 + レートリミット + ログ）
+        // For plugin API (API key authentication + rate limit + log)
         $middleware->group('plugin.api', [
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\CheckLockdown::class,
@@ -108,7 +124,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\LogApiRequest::class,
         ]);
 
-        // プラグインAPI公開用（認証不要、レートリミット + ログのみ）
+        // For public plugin API (no authentication required, rate limit + log only)
         $middleware->group('plugin.api.public', [
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\CheckLockdown::class,
@@ -116,7 +132,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\LogApiRequest::class,
         ]);
 
-        // プラグイン用ミドルウェアグループ（基本）
+        // Middleware group for plugin (basic)
         $middleware->group('plugin', [
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
@@ -124,7 +140,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ]);
 
-        // プラグインフロントエンド用（IP制限強制）
+        // For plugin frontend (IP restriction enforced)
         $middleware->group('plugin.web', [
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
@@ -133,28 +149,148 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\FrontIpFilter::class, // IP制限を強制
         ]);
 
-        // プラグイン管理画面用（認証 + IP制限強制）
+        // For plugin admin panel (authentication + IP restriction enforced)
         $middleware->group('plugin.admin', [
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\Authenticate::class.':member', // 認証を強制
+            \App\Http\Middleware\Authenticate::class.':member', // Enforce authentication
             \App\Http\Middleware\AdminIpFilter::class, // IP制限を強制
         ]);
     })
 
     ->withExceptions(function (Exceptions $exceptions) {
-        // エラー処理を追加する場合
-        /*
-        $exceptions->renderable(fn (\Exception $e) => response()->json(['error' => $e->getMessage()], 500));
+        // Render API exceptions in the unified envelope documented in
+        // docs/development/api-reference/versioning.md. Each typed render
+        // returns null for non-API requests so Laravel's default behavior
+        // (HTML error pages, login redirects) keeps working for the web.
 
-        $exceptions->renderable(function (\Illuminate\Database\Eloquent\ModelNotFoundException $e, $request) {
-            return response()->json(['error' => 'Resource not found'], 404);
+        $isApi = static fn (Request $request): bool => $request->is('api/*') || $request->wantsJson();
+
+        $exceptions->render(function (ValidationException $e, Request $request) use ($isApi) {
+            if (! $isApi($request)) {
+                return;
+            }
+
+            return ApiErrorResponse::make(
+                code: 'validation_failed',
+                status: 422,
+                message: 'The given data was invalid.',
+                details: $e->errors(),
+            );
         });
 
-        $exceptions->renderable(function (\Illuminate\Auth\AuthenticationException $e, $request) {
-            return redirect('/login');
+        $exceptions->render(function (AuthenticationException $e, Request $request) use ($isApi) {
+            if (! $isApi($request)) {
+                return;
+            }
+
+            return ApiErrorResponse::make(
+                code: 'unauthenticated',
+                status: 401,
+                message: 'Authentication required.',
+            );
         });
-        */
+
+        $exceptions->render(function (AuthorizationException $e, Request $request) use ($isApi) {
+            if (! $isApi($request)) {
+                return;
+            }
+
+            return ApiErrorResponse::make(
+                code: 'forbidden',
+                status: 403,
+                message: 'You do not have permission to perform this action.',
+            );
+        });
+
+        $exceptions->render(function (ModelNotFoundException $e, Request $request) use ($isApi) {
+            if (! $isApi($request)) {
+                return;
+            }
+
+            return ApiErrorResponse::make(
+                code: 'not_found',
+                status: 404,
+                message: 'The requested resource was not found.',
+            );
+        });
+
+        $exceptions->render(function (NotFoundHttpException $e, Request $request) use ($isApi) {
+            if (! $isApi($request)) {
+                return;
+            }
+
+            return ApiErrorResponse::make(
+                code: 'not_found',
+                status: 404,
+                message: 'The requested resource was not found.',
+            );
+        });
+
+        $exceptions->render(function (MethodNotAllowedHttpException $e, Request $request) use ($isApi) {
+            if (! $isApi($request)) {
+                return;
+            }
+
+            return ApiErrorResponse::make(
+                code: 'method_not_allowed',
+                status: 405,
+                message: 'The HTTP method is not supported for this endpoint.',
+            );
+        });
+
+        $exceptions->render(function (ThrottleRequestsException $e, Request $request) use ($isApi) {
+            if (! $isApi($request)) {
+                return;
+            }
+
+            $response = ApiErrorResponse::make(
+                code: 'too_many_requests',
+                status: 429,
+                message: 'Rate limit exceeded.',
+            );
+
+            // Forward Retry-After when the throttler provided one so
+            // well-behaved clients can back off correctly.
+            $retryAfter = $e->getHeaders()['Retry-After'] ?? null;
+            if ($retryAfter !== null) {
+                $response->headers->set('Retry-After', (string) $retryAfter);
+            }
+
+            return $response;
+        });
+
+        // Generic catch-all for any other HttpException-shaped failure
+        // (400, 503, …) on /api/* routes. Specific renderers above have
+        // already returned for the common cases; this preserves the
+        // status code while still using the unified envelope.
+        $exceptions->render(function (HttpExceptionInterface $e, Request $request) use ($isApi) {
+            if (! $isApi($request)) {
+                return;
+            }
+
+            $status = $e->getStatusCode();
+
+            return ApiErrorResponse::make(
+                code: 'http_error',
+                status: $status,
+                message: $e->getMessage() !== '' ? $e->getMessage() : 'An HTTP error occurred.',
+            );
+        });
+
+        // Final fallback for genuinely unhandled exceptions on /api/*.
+        // Web requests fall through to Laravel's default 500 page.
+        $exceptions->render(function (\Throwable $e, Request $request) use ($isApi) {
+            if (! $isApi($request)) {
+                return;
+            }
+
+            return ApiErrorResponse::make(
+                code: 'server_error',
+                status: 500,
+                message: 'An internal server error occurred.',
+            );
+        });
     })->create();

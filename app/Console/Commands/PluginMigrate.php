@@ -77,31 +77,31 @@ class PluginMigrate extends Command
         $plugin = $this->argument('plugin');
         $force = $this->option('force');
 
-        // オプションの処理
+        // Process options
         $options = [
             'pretend' => $this->option('pretend'),
-            'step' => $this->option('step') ? (int) $this->option('step') : 1, // デフォルト値を 1 に設定
+            'step' => $this->option('step') ? (int) $this->option('step') : 1, // Set default value to 1
             'force' => $force,
         ];
 
-        // プロセスオプションの共通処理
+        // Common processing for process options
         $options = $this->processOptions($options);
 
-        // プラグインディレクトリの存在確認
+        // Check if plugin directory exists
         if (! $this->pluginExists($plugin)) {
             $this->error("Plugin [{$plugin}] does not exist.");
 
             return Command::FAILURE;
         }
 
-        // マイグレーションディレクトリの存在確認
+        // Check if migration directory exists
         if (! $this->migrationPathExists($plugin)) {
             $this->error("Migration directory does not exist for plugin [{$plugin}].");
 
             return Command::FAILURE;
         }
 
-        // マイグレーション実行
+        // Execute migration
         $this->info("Running migrations for plugin [{$plugin}]...");
 
         try {

@@ -68,14 +68,14 @@ class ThemeSeed extends Command
         $themePath = base_path("themes/{$themeName}");
         $seederClassName = $this->option('class');
 
-        // テーマディレクトリの存在確認
+        // Check theme directory existence
         if (! File::isDirectory($themePath)) {
             $this->error("Theme directory not found: {$themePath}");
 
             return 1;
         }
 
-        // シーダークラスの確認
+        // Check seeder class
         $fullSeederClass = "Themes\\{$themeName}\\Database\\Seeders\\{$seederClassName}";
         if (! class_exists($fullSeederClass)) {
             $this->error("Seeder class not found: {$fullSeederClass}");

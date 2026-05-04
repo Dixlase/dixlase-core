@@ -41,8 +41,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @deprecated このモデルは廃止されました。
- *             新方式では RolePermissionOverride モデルと PermissionRegistry サービスを使用してください。
- *             詳細は docs/role-permission-system.md を参照してください。
+ *             Please use the RolePermissionOverride model and PermissionRegistry service in the new approach.
+ *             See docs/role-permission-system.md for details.
  */
 class PluginMemberRolePermission extends Model
 {
@@ -58,7 +58,7 @@ class PluginMemberRolePermission extends Model
     ];
 
     /**
-     * access_rolesを整数として取得
+     * Get access_roles as integer
      */
     public function getAccessRolesAttribute($value): int
     {
@@ -66,7 +66,7 @@ class PluginMemberRolePermission extends Model
     }
 
     /**
-     * view_rolesを整数として取得
+     * Get view_roles as integer
      */
     public function getViewRolesAttribute($value): int
     {
@@ -74,11 +74,11 @@ class PluginMemberRolePermission extends Model
     }
 
     /**
-     * 指定されたユーザーの権限がアクセス可能かチェック
+     * Check if the specified user has access permission
      */
     public function canAccess(MemberRole $userRole): bool
     {
-        // SUPER_ADMINは常にアクセス可能
+        // SUPER_ADMIN always has access
         if ($userRole === MemberRole::SUPER_ADMIN) {
             return true;
         }
@@ -87,11 +87,11 @@ class PluginMemberRolePermission extends Model
     }
 
     /**
-     * 指定されたユーザーの権限が閲覧可能かチェック
+     * Check if the specified user has view permission
      */
     public function canView(MemberRole $userRole): bool
     {
-        // SUPER_ADMINは常に閲覧可能
+        // SUPER_ADMIN can always view
         if ($userRole === MemberRole::SUPER_ADMIN) {
             return true;
         }
@@ -100,11 +100,11 @@ class PluginMemberRolePermission extends Model
     }
 
     /**
-     * 指定されたユーザーの権限が編集可能かチェック
+     * Check if the specified user has edit permission
      */
     public function canEdit(MemberRole $userRole): bool
     {
-        // SUPER_ADMINは常に編集可能
+        // SUPER_ADMIN can always edit
         if ($userRole === MemberRole::SUPER_ADMIN) {
             return true;
         }
@@ -113,7 +113,7 @@ class PluginMemberRolePermission extends Model
     }
 
     /**
-     * SUPER_ADMIN専用のアクセス権限かどうか
+     * Whether access permission is SUPER_ADMIN only
      */
     public function isSuperAdminOnlyAccess(): bool
     {
@@ -121,7 +121,7 @@ class PluginMemberRolePermission extends Model
     }
 
     /**
-     * SUPER_ADMIN専用の閲覧権限かどうか
+     * Whether view permission is SUPER_ADMIN only
      */
     public function isSuperAdminOnlyView(): bool
     {
@@ -129,7 +129,7 @@ class PluginMemberRolePermission extends Model
     }
 
     /**
-     * プラグインスラッグとメニューキーで権限を取得
+     * Get permission by plugin slug and menu key
      */
     public static function getPermission(string $pluginSlug, string $menuKey): ?self
     {
@@ -139,7 +139,7 @@ class PluginMemberRolePermission extends Model
     }
 
     /**
-     * プラグインの全権限を取得
+     * Get all permissions for a plugin
      */
     public static function getPluginPermissions(string $pluginSlug): \Illuminate\Database\Eloquent\Collection
     {
@@ -147,7 +147,7 @@ class PluginMemberRolePermission extends Model
     }
 
     /**
-     * 全プラグインの権限をプラグインスラッグでグループ化して取得
+     * Get all plugin permissions grouped by plugin slug
      */
     public static function getAllGroupedByPlugin(): \Illuminate\Support\Collection
     {

@@ -35,9 +35,11 @@ use Tests\TestCase;
  *
  * v0.1.0 ships the locale infrastructure (helpers, middleware, contracts)
  * but does NOT register a /{locale}/ URL group or auto-redirect from
- * locale-less URLs. The future multilingual plugin (DixlaseI18n) opts
- * into URL routing by wrapping its routes in Route::prefix('{locale}')
- * and registering its own Route::fallback() redirect.
+ * locale-less URLs. Any multilingual plugin (first-party, third-party,
+ * or a custom in-house implementation) that wires itself to the same
+ * contracts opts into URL routing by wrapping its routes in
+ * Route::prefix('{locale}') and registering its own Route::fallback()
+ * redirect.
  */
 class LocaleResolutionTest extends TestCase
 {

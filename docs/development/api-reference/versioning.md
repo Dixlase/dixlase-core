@@ -29,9 +29,9 @@ This mirrors WordPress REST API (`/wp-json/wp/v2/`), GitHub API (`/v3/`, then he
 
 ### 1.2 i18n boundary
 
-`/api/*` is **not** subject to the path-prefix locale routing (`/{locale}/...`) used by the front site. The API is a language-neutral control surface.
+`/api/*` is **not** subject to any path-prefix locale routing (`/{locale}/...`) the front site may adopt. The API is a language-neutral control surface.
 
-- `routes/front.php`'s `Route::fallback()` explicitly bypasses `/api/*` paths so unmatched API URLs do **not** get 302-redirected to `/{locale}/api/...`.
+- v0.1.0 ships without active locale URL routing (the path-prefix group and its `Route::fallback()` were deferred to a future multilingual plugin). When that plugin re-introduces a `Route::prefix('{locale}')` group with its own `Route::fallback()`, that fallback **must** bypass `/api/*` so unmatched API URLs return 404 JSON instead of being 302-redirected to `/{locale}/api/...`.
 - `SetFrontLocale` and `SetAdminLocale` middleware do not run on API requests.
 - API error messages are always in English (see Section 5).
 
@@ -136,7 +136,7 @@ All API responses use a uniform JSON envelope built on top of Laravel API Resour
 | 429 | Too Many Requests | Rate limit exceeded |
 | 500 | Internal Server Error | Unhandled server-side failure |
 
-3xx redirects must not be returned to API clients. The locale fallback in `routes/front.php` explicitly bypasses `/api/*`.
+3xx redirects must not be returned to API clients. Any locale fallback the front layer registers must bypass `/api/*` (see Section 1.2).
 
 ## 5. Localization Policy
 

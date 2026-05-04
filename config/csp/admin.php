@@ -34,6 +34,6 @@
  */
 
 return [
-    // 管理画面はiframe埋め込みを完全禁止（クリックジャッキング対策）
+    // Admin panel completely prohibits iframe embedding (clickjacking protection)
     'frame-ancestors' => ["'none'"],
 ];

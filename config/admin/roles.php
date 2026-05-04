@@ -35,24 +35,24 @@
 
 return [
     'roles' => [
-        // 特権管理者
+        // Super Administrator
         'super_admin' => 'admin.roles.super_admin',
-        // 管理者
+        // Administrator
         'admin' => 'admin.roles.admin',
-        // 編集者
+        // Editor
         'editor' => 'admin.roles.editor',
-        // 投稿者
+        // Author
         'author' => 'admin.roles.author',
-        // 寄稿者
+        // Contributor
         'contributor' => 'admin.roles.contributor',
-        // 受付
+        // Receptionist
         'receptionist' => 'admin.roles.receptionist',
-        // ゲスト
+        // Guest
         'guest' => 'admin.roles.guest',
 
     ],
 
-    // 権限の階層
+    // Permission hierarchy
     'roles_hierarchy' => [
         '1' => ['1'],                   // super_admin
         '2' => ['1', '2'],               // admin

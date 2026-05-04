@@ -40,7 +40,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * テーブル名
+     * Table name
      */
     protected $table = 'webauthn_credentials';
 
@@ -50,20 +50,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create($this->table, function (Blueprint $table) {
-            // WebAuthn標準フィールド
+            // WebAuthn standard fields
             $table->string('id', 510)->primary(); // credential_id
 
-            // Laragear\WebAuthn用ポリモーフィックリレーション
+            // Polymorphic relation for Laragear\WebAuthn
             $table->string('authenticatable_type')->default('App\\Models\\Member');
             $table->unsignedBigInteger('authenticatable_id');
 
-            // Dixlase用メンバーID（既存互換性のため）
+            // Member ID for Dixlase (for existing compatibility)
             $table->unsignedBigInteger('member_id');
 
-            // Laragear\WebAuthn用ユーザーID（UUID）
+            // User ID for Laragear\WebAuthn (UUID)
             $table->uuid('user_id');
 
-            // WebAuthn標準フィールド
+            // WebAuthn standard fields
             $table->string('alias')->nullable();
             $table->unsignedBigInteger('counter')->nullable();
             $table->string('rp_id');
@@ -76,13 +76,13 @@ return new class extends Migration
             $table->timestamp('disabled_at')->nullable();
             $table->timestamps();
 
-            // Dixlaseカスタムフィールド
-            $table->string('name'); // デバイス名（必須）
+            // Dixlase custom fields
+            $table->string('name'); // Device name (required)
 
-            // 外部キー制約
+            // Foreign key constraints
             $table->foreign('member_id')->references('id')->on('members')->onDelete('cascade');
 
-            // インデックス（名前を短く指定）
+            // Indexes (short names specified)
             $table->index(['authenticatable_type', 'authenticatable_id'], 'passkeys_authenticatable_index');
             $table->index('member_id');
         });

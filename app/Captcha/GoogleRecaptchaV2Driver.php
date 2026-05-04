@@ -83,7 +83,7 @@ class GoogleRecaptchaV2Driver implements CaptchaDriver
         $scriptTag = $this->renderScript();
 
         if ($version === 'v2_invisible') {
-            // v2 Invisible: チェックボックスなし、フォーム送信時に自動実行
+            // v2 Invisible: no checkbox, automatically executed on form submission
             return $scriptTag."
                 <div id=\"recaptcha-container\" style=\"display:none;\"></div>
                 <script>
@@ -154,7 +154,7 @@ class GoogleRecaptchaV2Driver implements CaptchaDriver
                 </script>
             ";
         } else {
-            // v2 Checkbox: チェックボックス表示
+            // v2 Checkbox: displays checkbox
             return $scriptTag."<div class=\"g-recaptcha\" data-sitekey=\"$siteKey\" data-callback=\"$callback\"></div>";
         }
     }

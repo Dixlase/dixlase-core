@@ -232,9 +232,10 @@ class CaptchaHelper
     /**
      * Check if CAPTCHA is enabled for the specified form
      *
-     * For admin_login and admin_password_reset, load from SecuritySetting
-     * For user_login, user_register, and user_password_reset, load from DixlaseUsersUserSetting
-     * Other forms are managed independently by the plugin side
+     * For admin_login and admin_password_reset, load from SecuritySetting.
+     * For user_login, user_register, and user_password_reset, load from
+     * the active users plugin's user-setting model. Other forms are
+     * managed independently by the plugin side.
      */
     public static function isEnabledForForm(string $formName): bool
     {
@@ -266,7 +267,7 @@ class CaptchaHelper
 
         // User plugin form
         if (in_array($formName, ['user_login', 'user_register', 'user_password_reset'])) {
-            // Check if DixlaseUsersUserSetting model exists
+            // Check if the legacy users-plugin setting model is present
             if (class_exists('\Plugins\DixlaseUsers\App\Models\DixlaseUsersUserSetting')) {
                 $settingKey = match ($formName) {
                     'user_login' => 'captcha_login_enabled',

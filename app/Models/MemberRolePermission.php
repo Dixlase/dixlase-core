@@ -40,8 +40,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @deprecated このモデルは廃止されました。
- *             新方式では RolePermissionOverride モデルと PermissionRegistry サービスを使用してください。
- *             詳細は docs/role-permission-system.md を参照してください。
+ *             For the new approach, use the RolePermissionOverride model and PermissionRegistry service
+ *             See docs/role-permission-system.md for details
  */
 class MemberRolePermission extends Model
 {
@@ -54,15 +54,15 @@ class MemberRolePermission extends Model
     ];
 
     /**
-     * access_rolesを整数として取得
-     * 保存された値は「この権限値以上のユーザーがアクセス可能」を意味する
-     * SUPER_ADMIN(10)が設定されている場合は特権管理者専用
+     * Get access_roles as integer
+     * The stored value means "users with this permission level or higher can access"
+     * If SUPER_ADMIN(10) is set, it is for privileged administrators only
      *
      * @param  mixed  $value
      */
     public function getAccessRolesAttribute($value): int
     {
-        // 空またはnullの場合はGUEST（最低権限）を返す
+        // Return GUEST (lowest permission) if empty or null
         if ($value === null || $value === '') {
             return MemberRole::GUEST->value;
         }
@@ -71,15 +71,15 @@ class MemberRolePermission extends Model
     }
 
     /**
-     * view_rolesを整数として取得
-     * 保存された値は「この権限値以上のユーザーが閲覧可能」を意味する
-     * SUPER_ADMIN(10)が設定されている場合は特権管理者専用
+     * Get view_roles as integer
+     * The stored value means "users with this permission level or higher can view"
+     * If SUPER_ADMIN(10) is set, it is for privileged administrators only
      *
      * @param  mixed  $value
      */
     public function getViewRolesAttribute($value): int
     {
-        // 空またはnullの場合はGUEST（最低権限）を返す
+        // Return GUEST (lowest permission) if empty or null
         if ($value === null || $value === '') {
             return MemberRole::GUEST->value;
         }
@@ -88,7 +88,7 @@ class MemberRolePermission extends Model
     }
 
     /**
-     * 指定されたユーザー権限がアクセス可能かチェック
+     * Check if the specified user permission can access
      */
     public function canAccess(MemberRole $userRole): bool
     {
@@ -96,7 +96,7 @@ class MemberRolePermission extends Model
     }
 
     /**
-     * 指定されたユーザー権限が閲覧可能かチェック
+     * Check if the specified user permission can view
      */
     public function canView(MemberRole $userRole): bool
     {
@@ -104,7 +104,7 @@ class MemberRolePermission extends Model
     }
 
     /**
-     * 特権管理者専用かどうかをチェック（編集権限）
+     * Check if it is for privileged administrators only (edit permission)
      */
     public function isSuperAdminOnlyAccess(): bool
     {
@@ -112,7 +112,7 @@ class MemberRolePermission extends Model
     }
 
     /**
-     * 特権管理者専用かどうかをチェック（閲覧権限）
+     * Check if it is for privileged administrators only (view permission)
      */
     public function isSuperAdminOnlyView(): bool
     {

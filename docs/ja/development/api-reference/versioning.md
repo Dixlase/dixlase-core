@@ -29,9 +29,9 @@ API は機能ではなくアーキテクチャ層です。AI-operable ワーク�
 
 ### 1.2 i18n の境界
 
-`/api/*` はフロントサイトで使用している path-prefix 多言語ルーティング (`/{locale}/...`) の対象外です。API は言語非依存の制御面です。
+`/api/*` はフロントサイトが採用する path-prefix 多言語ルーティング (`/{locale}/...`) の対象外です。API は言語非依存の制御面です。
 
-- `routes/front.php` の `Route::fallback()` は `/api/*` を明示的にバイパスするため、未定義 API URL が `/{locale}/api/...` に 302 リダイレクトされることはありません。
+- v0.1.0 では path-prefix の locale ルートグループとその `Route::fallback()` は将来の多言語プラグインに延期されており、現時点では active な locale URL ルーティングはありません。当該プラグインが `Route::prefix('{locale}')` グループと `Route::fallback()` を再導入する際は、`/api/*` を**必ず**バイパスする実装にしてください — そうしないと未定義 API URL が 404 JSON ではなく `/{locale}/api/...` への 302 リダイレクトになってしまいます。
 - `SetFrontLocale` および `SetAdminLocale` ミドルウェアは API リクエストには走りません。
 - API のエラーメッセージは常に英語です（第 5 章を参照）。
 
@@ -136,7 +136,7 @@ API は機能ではなくアーキテクチャ層です。AI-operable ワーク�
 | 429 | Too Many Requests | レートリミット超過 |
 | 500 | Internal Server Error | サーバ側の未処理失敗 |
 
-API クライアントへ 3xx リダイレクトを返してはいけません。`routes/front.php` の locale fallback は `/api/*` を明示的にバイパスします。
+API クライアントへ 3xx リダイレクトを返してはいけません。フロント層が登録する locale fallback は `/api/*` をバイパスする必要があります（第 1.2 章を参照）。
 
 ## 5. 多言語化ポリシー
 

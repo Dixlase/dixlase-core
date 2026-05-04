@@ -50,7 +50,7 @@ class MemberFactory extends Factory
     protected $model = Member::class;
 
     /**
-     * モデルのデフォルト状態を定義
+     * Define the model's default state
      *
      * @return array<string, mixed>
      */
@@ -69,7 +69,7 @@ class MemberFactory extends Factory
     }
 
     /**
-     * メール未認証状態
+     * Email unverified state
      */
     public function unverified(): static
     {
@@ -79,7 +79,7 @@ class MemberFactory extends Factory
     }
 
     /**
-     * スーパー管理者
+     * Super administrator
      */
     public function superAdmin(): static
     {
@@ -89,7 +89,7 @@ class MemberFactory extends Factory
     }
 
     /**
-     * 無効状態
+     * Disabled state
      */
     public function inactive(): static
     {

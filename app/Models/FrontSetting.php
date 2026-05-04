@@ -43,7 +43,7 @@ use App\Models\Traits\UsesSettingRepositoryTrait;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * フロント設定モデル
+ * Front settings model
  *
  * @deprecated 静的メソッドは非推奨です。FrontSettingRepositoryを使用してください。
  */
@@ -62,7 +62,7 @@ class FrontSetting extends Model
     ];
 
     /**
-     * フロントOGP画像とのリレーション
+     * Relation to front OGP image
      */
     public function frontOgpImage()
     {

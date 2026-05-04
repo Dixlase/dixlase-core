@@ -48,12 +48,12 @@ class MembersSettingsSeeder extends Seeder
     public function run(): void
     {
         $settings = [
-            // ログイン通知設定（SecuritySettingsTableSeederに移動）
+            // Login notification settings (moved to SecuritySettingsTableSeeder)
             // login_notification_mode, login_notification_send_to_system, login_notification_system_email
 
-            // CAPTCHA設定（管理画面ログイン用）
-            ['key' => 'captcha_admin_login_enabled', 'value' => '0'], // デフォルト: 無効
-            ['key' => 'captcha_password_reset_enabled', 'value' => '0'], // デフォルト: 無効
+            // CAPTCHA settings (for admin panel login)
+            ['key' => 'captcha_admin_login_enabled', 'value' => '0'], // Default: disabled
+            ['key' => 'captcha_password_reset_enabled', 'value' => '0'], // Default: disabled
 
         ];
 

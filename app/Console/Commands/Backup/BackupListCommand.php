@@ -26,9 +26,9 @@ use App\Models\BackupRecord;
 use Illuminate\Console\Command;
 
 /**
- * バックアップ一覧表示コマンド
+ * Backup list display command
  *
- * 例:
+ * Example:
  *   php artisan dls:backup:list
  *   php artisan dls:backup:list --limit=50
  *   php artisan dls:backup:list --all

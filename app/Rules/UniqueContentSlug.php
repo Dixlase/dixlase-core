@@ -42,28 +42,28 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Facades\DB;
 
 /**
- * コンテンツスラッグ一意性バリデーションルール
+ * Content slug uniqueness validation rule
  *
- * プラグインテーブル内でスラッグが重複しないことを検証する。
- * デフォルトでソフトデリート済みレコードを除外する。
+ * Validates that the slug is not duplicated within the plugin table.
+ * Excludes soft-deleted records by default.
  */
 class UniqueContentSlug implements ValidationRule
 {
-    /** @var int|string|null 更新時に除外するレコードのID */
+    /** @var int|string|null Record ID to exclude during update */
     private int|string|null $ignoreId = null;
 
-    /** @var string 除外するレコードのIDカラム名 */
+    /** @var string ID column name of the record to exclude */
     private string $ignoreIdColumn = 'id';
 
-    /** @var array<int, array{column: string, value: mixed}> 追加WHERE条件 */
+    /** @var array<int, array{column: string, value: mixed}> Additional WHERE conditions */
     private array $wheres = [];
 
-    /** @var bool ソフトデリート済みレコードを除外するか */
+    /** @var bool Whether to exclude soft-deleted records */
     private bool $excludeSoftDeleted = true;
 
     /**
-     * @param  string  $table  テーブル名
-     * @param  string  $column  スラッグカラム名
+     * @param  string  $table  Table name
+     * @param  string  $column  Slug column name
      */
     public function __construct(
         private string $table,
@@ -71,10 +71,10 @@ class UniqueContentSlug implements ValidationRule
     ) {}
 
     /**
-     * 静的ファクトリーメソッド
+     * Static factory method
      *
-     * @param  string  $table  テーブル名
-     * @param  string  $column  スラッグカラム名
+     * @param  string  $table  Table name
+     * @param  string  $column  Slug column name
      */
     public static function for(string $table, string $column = 'slug'): static
     {
@@ -82,10 +82,10 @@ class UniqueContentSlug implements ValidationRule
     }
 
     /**
-     * 更新時に自身のレコードを除外する
+     * Exclude own record during update
      *
-     * @param  int|string  $id  除外するレコードのID
-     * @param  string  $idColumn  IDカラム名
+     * @param  int|string  $id  Record ID to exclude
+     * @param  string  $idColumn  ID column name
      */
     public function ignore(int|string $id, string $idColumn = 'id'): static
     {
@@ -96,10 +96,10 @@ class UniqueContentSlug implements ValidationRule
     }
 
     /**
-     * 追加WHERE条件を指定する
+     * Specify additional WHERE conditions
      *
-     * @param  string  $column  カラム名
-     * @param  mixed  $value  値
+     * @param  string  $column  Column name
+     * @param  mixed  $value  Value
      */
     public function where(string $column, mixed $value): static
     {
@@ -109,7 +109,7 @@ class UniqueContentSlug implements ValidationRule
     }
 
     /**
-     * ソフトデリート除外を無効化する
+     * Disable soft-delete exclusion
      */
     public function withoutSoftDeletes(): static
     {
@@ -119,7 +119,7 @@ class UniqueContentSlug implements ValidationRule
     }
 
     /**
-     * バリデーション実行
+     * Execute validation
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {

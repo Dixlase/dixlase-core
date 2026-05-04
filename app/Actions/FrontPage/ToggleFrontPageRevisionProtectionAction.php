@@ -44,9 +44,9 @@ use App\Enums\Permission;
 use App\Models\FrontPageRevision;
 
 /**
- * フロントページリビジョンの保護フラグをトグルする Action
+ * Action to toggle the protection flag of a front page revision
  *
- * 保護が有効なリビジョンは保持件数超過時の自動削除対象から除外される。
+ * Revisions with protection enabled are excluded from automatic deletion when the retention limit is exceeded.
  */
 class ToggleFrontPageRevisionProtectionAction extends AbstractAction
 {

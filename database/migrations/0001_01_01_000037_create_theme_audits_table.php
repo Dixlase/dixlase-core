@@ -54,34 +54,34 @@ return new class extends Migration
             $table->string('risk_level')->nullable();
             $table->json('risk_reasons')->nullable();
 
-            // 署名情報
+            // Signature information
             $table->string('signature_status')->nullable()
-                ->comment('署名ステータス: official/verified/partner/signed/invalid/unsigned');
+                ->comment('Signature status: official/verified/partner/signed/invalid/unsigned');
             $table->string('signature_signer')->nullable()
-                ->comment('署名者名');
+                ->comment('Signer name');
 
-            // CSP互換性
+            // CSP compatibility
             $table->string('csp_status')->nullable()
-                ->comment('CSPステータス: csp_ready/compatible/inline_required/not_checked');
+                ->comment('CSP status: csp_ready/compatible/inline_required/not_checked');
             $table->boolean('csp_requires_inline_js')->default(false)
-                ->comment('インラインJSが必要か');
+                ->comment('Requires inline JS');
             $table->boolean('csp_requires_inline_css')->default(false)
-                ->comment('インラインCSSが必要か');
+                ->comment('Requires inline CSS');
             $table->json('csp_violations')->nullable()
-                ->comment('CSP違反の詳細');
+                ->comment('CSP violation details');
             $table->json('csp_summary')->nullable()
-                ->comment('CSP違反のサマリー');
+                ->comment('CSP violation summary');
 
-            // 健全性スコア
-            $table->integer('health_score')->nullable()->comment('健全性スコア（0-100）');
-            $table->string('health_status')->nullable()->comment('健全性ステータス: healthy/advisory/needs_attention/not_verified');
-            $table->json('health_issues')->nullable()->comment('健全性指摘（減点理由）一覧');
+            // Health score
+            $table->integer('health_score')->nullable()->comment('Health score（0-100）');
+            $table->string('health_status')->nullable()->comment('Health status: healthy/advisory/needs_attention/not_verified');
+            $table->json('health_issues')->nullable()->comment('Health issues (deduction reasons) list');
 
-            // データベース所有テーブル（PluginTableInspector 結果のキャッシュ）
-            $table->json('owned_tables')->nullable()->comment('テーマが作成・所有するテーブル名');
+            // Database owned tables (PluginTableInspector result cache)
+            $table->json('owned_tables')->nullable()->comment('Table names created/owned by theme');
 
-            // 再スキャン判定用ファイルハッシュ
-            $table->string('files_hash')->nullable()->comment('コードファイルハッシュ（再スキャン判定用）');
+            // File hash for rescan determination
+            $table->string('files_hash')->nullable()->comment('Code file hash (for rescan determination)');
 
             $table->timestamp('audited_at')->nullable();
             $table->timestamps();

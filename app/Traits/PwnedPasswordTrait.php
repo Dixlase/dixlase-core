@@ -39,30 +39,30 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * Have I Been Pwned API連携トレイト
+ * Have I Been Pwned API integration trait
  *
- * パスワードが漏洩データベースに含まれているかチェックする機能を提供
- * ユーザー管理プラグインでも再利用可能
+ * Provides functionality to check if a password is included in the breach database
+ * Reusable in user management plugins
  */
 trait PwnedPasswordTrait
 {
     /**
-     * パスワードが漏洩しているかチェック
+     * Check if password has been breached
      *
-     * @param  string  $password  チェックするパスワード
+     * @param  string  $password  Password to check
      * @return array ['is_pwned' => bool, 'count' => int, 'error' => string|null]
      */
     public function checkPwnedPassword(string $password): array
     {
         try {
-            // パスワードをSHA-1ハッシュ化
+            // Hash password with SHA-1
             $hash = strtoupper(sha1($password));
             $prefix = substr($hash, 0, 5);
             $suffix = substr($hash, 5);
 
-            // Have I Been Pwned API v3にリクエスト
+            // Request to Have I Been Pwned API v3
             $apiEndpoint = config('security.pwned_passwords.api_endpoint', 'https://api.pwnedpasswords.com');
             $timeout = config('security.pwned_passwords.timeout', 5);
 
@@ -86,7 +86,7 @@ trait PwnedPasswordTrait
                 ];
             }
 
-            // レスポンスを解析
+            // Parse response
             $hashes = $response->body();
             $lines = explode("\n", $hashes);
 
@@ -128,13 +128,13 @@ trait PwnedPasswordTrait
     }
 
     /**
-     * パスワード辞書攻撃対策が有効かチェック
+     * Check if password dictionary attack protection is enabled
      *
-     * @param  string  $settingKey  設定キー（デフォルト: 'pwned_password_check_enabled'）
+     * @param  string  $settingKey  Settings key (default: 'pwned_password_check_enabled')
      */
     public function isPwnedPasswordCheckEnabled(string $settingKey = 'pwned_password_check_enabled'): bool
     {
-        // SecuritySettingクラスが存在する場合はそれを使用
+        // Use SecuritySetting class if it exists
         if (class_exists('\App\Models\SecuritySetting')) {
             return filter_var(
                 \App\Models\SecuritySetting::get($settingKey, false),
@@ -142,20 +142,20 @@ trait PwnedPasswordTrait
             );
         }
 
-        // フォールバック: config値を使用
+        // Fallback: use config value
         return config('security.pwned_password_check_enabled', false);
     }
 
     /**
-     * パスワードの安全性をチェック（辞書攻撃対策込み）
+     * Check password safety (with dictionary attack protection)
      *
-     * @param  string  $password  チェックするパスワード
-     * @param  string  $settingKey  設定キー
+     * @param  string  $password  Password to check
+     * @param  string  $settingKey  Settings key
      * @return array ['is_safe' => bool, 'message' => string, 'pwned_info' => array]
      */
     public function validatePasswordSafety(string $password, string $settingKey = 'pwned_password_check_enabled'): array
     {
-        // 辞書攻撃対策が無効の場合は常に安全
+        // Always safe when dictionary attack protection is disabled
         if (! $this->isPwnedPasswordCheckEnabled($settingKey)) {
             return [
                 'is_safe' => true,
@@ -166,7 +166,7 @@ trait PwnedPasswordTrait
 
         $pwnedInfo = $this->checkPwnedPassword($password);
 
-        // API エラーの場合は警告ログを出すが、パスワードは許可
+        // Log warning on API error, but allow password
         if ($pwnedInfo['error']) {
             Log::warning('Pwned password check failed, allowing password', [
                 'error' => $pwnedInfo['error'],
@@ -179,7 +179,7 @@ trait PwnedPasswordTrait
             ];
         }
 
-        // パスワードが漏洩している場合
+        // If password has been breached
         if ($pwnedInfo['is_pwned']) {
             return [
                 'is_safe' => false,
@@ -188,7 +188,7 @@ trait PwnedPasswordTrait
             ];
         }
 
-        // パスワードは安全
+        // Password is safe
         return [
             'is_safe' => true,
             'message' => '',

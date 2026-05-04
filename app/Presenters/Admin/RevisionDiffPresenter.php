@@ -43,13 +43,13 @@ use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 
 /**
- * 任意の 2 つのテキストを行単位で比較し、Git 風に左右に並べた表示行の配列を返す。
- * 各行は ['status' => 'same|removed|added|changed', 'left' => ?string, 'right' => ?string]
+ * Compare any two texts line by line and return an array of display lines arranged side-by-side in Git style
+ * Each line is ['status' => 'same|removed|added|changed', 'left' => ?string, 'right' => ?string]
  */
 class RevisionDiffPresenter
 {
     /**
-     * 2 つのテキストを比較し、サイドバイサイド表示用の行配列を返す。
+     * Compare two texts and return an array of lines for side-by-side display
      *
      * @return list<array{status: string, left: ?string, right: ?string}>
      */
@@ -95,7 +95,7 @@ class RevisionDiffPresenter
     }
 
     /**
-     * 差分があるかどうかを判定する。
+     * Determine whether there are differences
      */
     public function hasChanges(string $from, string $to): bool
     {

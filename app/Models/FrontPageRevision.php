@@ -40,9 +40,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * フロントページ リビジョンモデル
+ * Front page revision model
  *
- * 保存時・手動・復元前バックアップでスナップショットを保持する。
+ * Retains snapshots on save, manual backup, and pre-restore backup
  */
 class FrontPageRevision extends Model
 {

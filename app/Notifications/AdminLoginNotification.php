@@ -40,7 +40,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * 管理画面ログイン通知
+ * Admin panel login notification
  */
 class AdminLoginNotification extends Notification
 {

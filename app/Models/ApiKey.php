@@ -83,7 +83,7 @@ class ApiKey extends Model
     ];
 
     // ========================================
-    // 環境定数
+    // Environment constants
     // ========================================
 
     public const ENV_LIVE = 'live';
@@ -91,7 +91,7 @@ class ApiKey extends Model
     public const ENV_TEST = 'test';
 
     // ========================================
-    // スコープ定数
+    // Scope constants
     // ========================================
 
     public const SCOPE_READ_EVENTS = 'read:events';
@@ -107,26 +107,26 @@ class ApiKey extends Model
     public const SCOPE_WRITE_CONTENT = 'write:content';
 
     /**
-     * 利用可能なスコープ一覧
+     * Available scope list
      */
     public static function availableScopes(): array
     {
         return [
-            self::SCOPE_READ_EVENTS => 'イベント読み取り',
-            self::SCOPE_WRITE_EVENTS => 'イベント書き込み',
-            self::SCOPE_READ_TRANSLATIONS => '翻訳読み取り',
-            self::SCOPE_WRITE_TRANSLATIONS => '翻訳書き込み',
-            self::SCOPE_READ_CONTENT => 'コンテンツ読み取り',
-            self::SCOPE_WRITE_CONTENT => 'コンテンツ書き込み',
+            self::SCOPE_READ_EVENTS => __('models/api_key.event_read'),
+            self::SCOPE_WRITE_EVENTS => __('models/api_key.event_write'),
+            self::SCOPE_READ_TRANSLATIONS => __('models/api_key.translation_read'),
+            self::SCOPE_WRITE_TRANSLATIONS => __('models/api_key.translation_write'),
+            self::SCOPE_READ_CONTENT => __('models/api_key.content_read'),
+            self::SCOPE_WRITE_CONTENT => __('models/api_key.content_write'),
         ];
     }
 
     // ========================================
-    // リレーション
+    // Relations
     // ========================================
 
     /**
-     * 作成者とのリレーション
+     * Relation with creator
      */
     public function creator(): BelongsTo
     {
@@ -134,7 +134,7 @@ class ApiKey extends Model
     }
 
     // ========================================
-    // ファクトリメソッド
+    // Factory method
     // ========================================
 
     /**
@@ -143,11 +143,11 @@ class ApiKey extends Model
      * creation, so the row is always tied to a real site. To create a
      * network key (cross-site), use generateNetworkKey() instead.
      *
-     * @param  string  $name  キー名
-     * @param  string  $environment  環境（live/test）
-     * @param  array  $scopes  権限スコープ
-     * @param  int|null  $createdBy  作成者ID
-     * @param  array  $options  その他のオプション
+     * @param  string  $name  Key name
+     * @param  string  $environment  Environment (live/test)
+     * @param  array  $scopes  Permission scope
+     * @param  int|null  $createdBy  Creator ID
+     * @param  array  $options  Other options
      * @return array{model: ApiKey, plain_key: string}
      */
     public static function generate(
@@ -192,7 +192,7 @@ class ApiKey extends Model
      * dls:api:create-network-key Artisan command is allowed to call this
      * method — never expose creation through a web UI.
      *
-     * @param  array  $options  その他のオプション (environment, rate_limit, allowed_ips, expires_at, description)
+     * @param  array  $options  Other options (environment, rate_limit, allowed_ips, expires_at, description)
      * @return array{model: ApiKey, plain_key: string}
      */
     public static function generateNetworkKey(
@@ -273,7 +273,7 @@ class ApiKey extends Model
             }
         }
 
-        // 有効期限チェック
+        // Expiration check
         if ($apiKey->expires_at && now()->greaterThan($apiKey->expires_at)) {
             return null;
         }
@@ -282,11 +282,11 @@ class ApiKey extends Model
     }
 
     // ========================================
-    // インスタンスメソッド
+    // Instance methods
     // ========================================
 
     /**
-     * 使用記録を更新
+     * Update usage record
      */
     public function recordUsage(): void
     {
@@ -295,7 +295,7 @@ class ApiKey extends Model
     }
 
     /**
-     * キーを無効化
+     * Disable key
      */
     public function revoke(): void
     {
@@ -303,7 +303,7 @@ class ApiKey extends Model
     }
 
     /**
-     * キーを有効化
+     * Enable key
      */
     public function activate(): void
     {
@@ -311,7 +311,7 @@ class ApiKey extends Model
     }
 
     /**
-     * 指定されたスコープを持っているか
+     * Check if has specified scope
      */
     public function hasScope(string $scope): bool
     {
@@ -340,11 +340,11 @@ class ApiKey extends Model
     }
 
     /**
-     * 指定されたIPからのアクセスを許可するか
+     * Check if access from specified IP is allowed
      */
     public function allowsIp(string $ip): bool
     {
-        // 許可IPリストが空の場合は全IP許可
+        // Allow all IPs if allowed IP list is empty
         if (empty($this->allowed_ips)) {
             return true;
         }
@@ -353,7 +353,7 @@ class ApiKey extends Model
     }
 
     /**
-     * 有効期限切れかどうか
+     * Check if expired
      */
     public function isExpired(): bool
     {
@@ -365,7 +365,7 @@ class ApiKey extends Model
     }
 
     /**
-     * マスクされたキーを取得（表示用）
+     * Get masked key (for display)
      */
     public function getMaskedKey(): string
     {
@@ -373,11 +373,11 @@ class ApiKey extends Model
     }
 
     // ========================================
-    // スコープ
+    // Scope
     // ========================================
 
     /**
-     * 有効なキーのみ取得
+     * Get only active keys
      */
     public function scopeActive($query)
     {
@@ -385,7 +385,7 @@ class ApiKey extends Model
     }
 
     /**
-     * 環境でフィルタ
+     * Filter by environment
      */
     public function scopeForEnvironment($query, string $environment)
     {
@@ -393,7 +393,7 @@ class ApiKey extends Model
     }
 
     /**
-     * 期限切れでないキーのみ取得
+     * Get only non-expired keys
      */
     public function scopeNotExpired($query)
     {

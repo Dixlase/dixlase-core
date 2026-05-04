@@ -46,9 +46,9 @@ return new class extends Migration
     {
         Schema::create('theme_migrations', function (Blueprint $table) {
             $table->id();
-            $table->string('migration', 255); // マイグレーションファイル名
-            $table->string('theme', 255)->nullable(); // どのテーマのマイグレーションか識別
-            $table->integer('batch'); // バッチ番号
+            $table->string('migration', 255); // Migration file name
+            $table->string('theme', 255)->nullable(); // Identifies which theme the migration belongs to
+            $table->integer('batch'); // Batch number
             $table->timestamps(); // created_at, updated_at
         });
     }

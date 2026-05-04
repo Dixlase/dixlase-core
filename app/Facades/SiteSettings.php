@@ -61,9 +61,9 @@ class SiteSettings extends Facade
 
     public static function set(string $key, $value): void
     {
-        // .env 設定の場合は例外を投げる
+        // Throw exception if settings are in .env
         if (EnvHelper::isEnvKey($key)) {
-            throw new Exception("{$key} は .env 設定のため、SiteSettings では変更できません");
+            throw new Exception("{$key} cannot be changed in SiteSettings because it is configured in .env");
         }
 
         SiteSetting::setValue($key, $value);

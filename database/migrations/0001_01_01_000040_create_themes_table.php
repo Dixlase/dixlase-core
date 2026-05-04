@@ -57,7 +57,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('url')->nullable();
             $table->string('version')->default('1.0.0');
-            $table->boolean('has_settings')->default(false)->comment('テーマ設定ページの有無');
+            $table->boolean('has_settings')->default(false)->comment('Theme settings page availability');
             $table->json('config')->nullable();
             $table->unsignedBigInteger('source_id')->nullable()->index(); // Extension source reference
             $table->string('source_repo')->nullable(); // Repository name at source

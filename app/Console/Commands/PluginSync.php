@@ -40,16 +40,16 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
 /**
- * plugin.json の permissions / declares をコード実装に追従して自動更新する。
+ * Automatically update permissions / declares in plugin.json to follow code implementation
  *
- *   php artisan dls:plugin:sync DixlasePages --dry-run
- *   php artisan dls:plugin:sync DixlasePages --write
+ *   php artisan dls:plugin:sync MyPlugin --dry-run
+ *   php artisan dls:plugin:sync MyPlugin --write
  *   php artisan dls:plugin:sync --all --write
  */
 class PluginSync extends Command
 {
     protected $signature = 'dls:plugin:sync
-                            {plugin? : Plugin directory name (e.g. DixlasePages). Omit with --all.}
+                            {plugin? : Plugin directory name (e.g. MyPlugin). Omit with --all.}
                             {--all : Sync all plugins under plugins/}
                             {--dry-run : Show diff only (default)}
                             {--write : Write changes to plugin.json}';

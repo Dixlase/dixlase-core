@@ -40,7 +40,7 @@ return [
     | Pages Directory
     |--------------------------------------------------------------------------
     |
-    | ページのマークダウンファイルを保存するディレクトリ
+    Directory to store page markdown files
     |
     */
     'pages_directory' => 'pages',

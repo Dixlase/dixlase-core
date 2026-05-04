@@ -41,7 +41,7 @@ use App\Enums\AppearanceMode;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * 管理画面ログイン後の共通初期化トレイト
+ * Trait for common initialization after admin panel login
  */
 trait AdminLoggedInTrait
 {
@@ -54,14 +54,14 @@ trait AdminLoggedInTrait
     protected $description = null;
 
     /**
-     * ログイン後に共通で必要な初期化を行う
+     * Perform common initialization required after login
      */
     protected function initializeAfterLogin()
     {
         $this->middleware(function ($request, $next) {
             $this->setMember();
 
-            // メンバーの言語設定を適用（SetMemberLocaleミドルウェアと同じロジック）
+            // Apply member's language settings (same logic as SetMemberLocale middleware)
             if ($this->member && $this->member->locale) {
                 $locale = $this->member->locale instanceof \App\Enums\Locale
                     ? $this->member->locale->value
@@ -75,12 +75,12 @@ trait AdminLoggedInTrait
             $transition = config('admin.transition_class');
             $this->viewParams['transition'] = $transition;
 
-            // パンくずリストを自動生成（ロケール設定後に実行）
+            // Auto-generate breadcrumbs (executed after locale settings)
             if (empty($this->breadcrumbs)) {
                 $this->generateBreadcrumbsFromRoute();
             }
 
-            // ページ説明を自動設定
+            // Auto-set page description
             if ($this->description === null) {
                 $this->setDescription();
             }
@@ -90,7 +90,7 @@ trait AdminLoggedInTrait
     }
 
     /**
-     * パンくずリストに項目を追加
+     * Add item to breadcrumbs
      */
     protected function addBreadcrumb(?string $route, string $label): void
     {
@@ -101,7 +101,7 @@ trait AdminLoggedInTrait
     }
 
     /**
-     * パンくずリストをビューパラメータに設定
+     * Set breadcrumbs to view parameters
      */
     protected function setBreadcrumbs(): void
     {
@@ -109,8 +109,8 @@ trait AdminLoggedInTrait
     }
 
     /**
-     * ルート名から自動的にパンくずリストを生成
-     * 例: admin.members.settings.index → ダッシュボード > メンバー管理 > メンバー全体設定
+     * Auto-generate breadcrumbs from route name
+     * Example: admin.members.settings.index → Dashboard > Member Management > Member Global Settings
      */
     protected function generateBreadcrumbsFromRoute(): void
     {
@@ -120,7 +120,7 @@ trait AdminLoggedInTrait
             return;
         }
 
-        // プラグインのルート名の場合
+        // For plugin route names
         if (str_contains($routeName, '::')) {
             $this->generatePluginBreadcrumbs($routeName);
         } else {
@@ -131,11 +131,11 @@ trait AdminLoggedInTrait
     }
 
     /**
-     * コアのパンくずリストを生成
+     * Generate Core breadcrumbs
      */
     protected function generateCoreBreadcrumbs(string $routeName): void
     {
-        // admin. を除去
+        // Remove admin.
         $parts = explode('.', $routeName);
         array_shift($parts); // 'admin' を除去
 
@@ -143,7 +143,7 @@ trait AdminLoggedInTrait
             return;
         }
 
-        // 最後が 'index' の場合は除去（重複を避けるため）
+        // Remove if last part is 'index' (to avoid duplication)
         if (end($parts) === 'index') {
             array_pop($parts);
         }
@@ -152,10 +152,10 @@ trait AdminLoggedInTrait
             return;
         }
 
-        // 先頭に「管理画面」を追加（ダッシュボードへのリンク）
+        // Add "Admin Panel" at the beginning (link to dashboard)
         $this->addBreadcrumb('admin.dashboard', __('common.admin_panel'));
 
-        // 各階層のパンくずを生成
+        // Generate breadcrumbs for each level
         $currentPath = 'admin';
         $translationPath = 'admin';
 
@@ -163,10 +163,10 @@ trait AdminLoggedInTrait
             $currentPath .= '.'.$part;
             $translationPath .= '/'.$part;
 
-            // 最後の要素（現在のページ）はリンクなし
+            // Last element (current page) has no link
             $route = null;
             if ($index < count($parts) - 1) {
-                // 中間ルートが存在するかチェック（.index を付けて試行）
+                // Check if intermediate route exists (try with .index appended)
                 $indexRouteName = $currentPath.'.index';
                 if (\Route::has($indexRouteName)) {
                     $route = $indexRouteName;
@@ -175,7 +175,7 @@ trait AdminLoggedInTrait
                 }
             }
 
-            // 翻訳キーを試行: index.heading または nav.{part}
+            // Try translation keys: index.heading or nav.{part}
             $label = $this->resolveBreadcrumbLabel($translationPath, $part);
 
             if ($label) {
@@ -185,14 +185,14 @@ trait AdminLoggedInTrait
     }
 
     /**
-     * プラグインのパンくずリストを生成
+     * Generate plugin breadcrumbs
      */
     protected function generatePluginBreadcrumbs(string $routeName): void
     {
-        // プラグイン名とルート部分を分離
+        // Separate plugin name and route part
         [$pluginPrefix, $route] = explode('::', $routeName, 2);
 
-        // admin. を除去
+        // Remove admin.
         $parts = explode('.', $route);
         if ($parts[0] === 'admin') {
             array_shift($parts);
@@ -202,7 +202,7 @@ trait AdminLoggedInTrait
             return;
         }
 
-        // 最後が 'index' の場合は除去（重複を避けるため）
+        // Remove if last part is 'index' (to avoid duplication)
         if (end($parts) === 'index') {
             array_pop($parts);
         }
@@ -211,10 +211,10 @@ trait AdminLoggedInTrait
             return;
         }
 
-        // 先頭に「管理画面」を追加（ダッシュボードへのリンク）
+        // Add "Admin Panel" at the beginning (link to dashboard)
         $this->addBreadcrumb('admin.dashboard', __('common.admin_panel'));
 
-        // 各階層のパンくずを生成
+        // Generate breadcrumbs for each level
         $currentPath = 'admin';
         $translationPath = 'admin';
 
@@ -222,10 +222,10 @@ trait AdminLoggedInTrait
             $currentPath .= '.'.$part;
             $translationPath .= '/'.$part;
 
-            // 最後の要素（現在のページ）はリンクなし
+            // Last element (current page) has no link
             $route = null;
             if ($index < count($parts) - 1) {
-                // 中間ルートが存在するかチェック（.index を付けて試行）
+                // Check if intermediate route exists (try with .index appended)
                 $indexRouteName = $pluginPrefix.'::'.$currentPath.'.index';
                 if (\Route::has($indexRouteName)) {
                     $route = $indexRouteName;
@@ -237,7 +237,7 @@ trait AdminLoggedInTrait
                 }
             }
 
-            // 翻訳キーを試行
+            // Try translation key
             $label = $this->resolvePluginBreadcrumbLabel($pluginPrefix, $translationPath, $part);
 
             if ($label) {
@@ -247,11 +247,11 @@ trait AdminLoggedInTrait
     }
 
     /**
-     * コアの翻訳ラベルを解決
+     * Resolve Core translation label
      */
     protected function resolveBreadcrumbLabel(string $translationPath, string $part): ?string
     {
-        // パターン1: {path}/index.heading
+        // Pattern 1: {path}/index.heading
         $indexKey = $translationPath.'/index.heading';
         if (\Lang::has($indexKey)) {
             $label = __($indexKey);
@@ -259,7 +259,7 @@ trait AdminLoggedInTrait
             return $label;
         }
 
-        // パターン2: {path}.heading
+        // Pattern 2: {path}.heading
         $headingKey = $translationPath.'.heading';
         if (\Lang::has($headingKey)) {
             $label = __($headingKey);
@@ -267,7 +267,7 @@ trait AdminLoggedInTrait
             return $label;
         }
 
-        // パターン3: 親のnav.{part}
+        // Pattern 3: parent nav.{part}
         $pathParts = explode('/', $translationPath);
         if (count($pathParts) >= 2) {
             $lastPart = array_pop($pathParts);
@@ -280,7 +280,7 @@ trait AdminLoggedInTrait
             }
         }
 
-        // パターン4: admin/navigation.{part}.text（配列の場合）
+        // Pattern 4: admin/navigation.{part}.text (if array)
         $navTextKey = 'admin/navigation.'.$part.'.text';
         if (\Lang::has($navTextKey)) {
             $label = __($navTextKey);
@@ -288,15 +288,15 @@ trait AdminLoggedInTrait
             return $label;
         }
 
-        // パターン5: admin/navigation.{part}（文字列の場合）
+        // Pattern 5: admin/navigation.{part} (if string)
         $navKey = 'admin/navigation.'.$part;
         if (\Lang::has($navKey)) {
             $value = __($navKey);
-            // 配列が返ってきた場合は .text を試す
+            // If array is returned, try .text
             if (is_array($value) && isset($value['text'])) {
                 return $value['text'];
             }
-            // 文字列の場合はそのまま返す
+            // If string, return as-is
             if (is_string($value)) {
                 return $value;
             }
@@ -306,23 +306,23 @@ trait AdminLoggedInTrait
     }
 
     /**
-     * プラグインの翻訳ラベルを解決
+     * Resolve plugin translation label
      */
     protected function resolvePluginBreadcrumbLabel(string $pluginPrefix, string $translationPath, string $part): ?string
     {
-        // パターン1: plugin::{path}/index.heading
+        // Pattern 1: plugin::{path}/index.heading
         $indexKey = $pluginPrefix.'::'.$translationPath.'/index.heading';
         if (\Lang::has($indexKey)) {
             return __($indexKey);
         }
 
-        // パターン2: plugin::{path}.heading
+        // Pattern 2: plugin::{path}.heading
         $headingKey = $pluginPrefix.'::'.$translationPath.'.heading';
         if (\Lang::has($headingKey)) {
             return __($headingKey);
         }
 
-        // パターン3: 親のnav.{part}
+        // Pattern 3: parent nav.{part}
         $pathParts = explode('/', $translationPath);
         if (count($pathParts) >= 2) {
             $lastPart = array_pop($pathParts);
@@ -333,21 +333,21 @@ trait AdminLoggedInTrait
             }
         }
 
-        // パターン4: plugin::admin/navigation.{part}.text（配列の場合）
+        // Pattern 4: plugin::admin/navigation.{part}.text (if array)
         $navTextKey = $pluginPrefix.'::admin/navigation.'.$part.'.text';
         if (\Lang::has($navTextKey)) {
             return __($navTextKey);
         }
 
-        // パターン5: plugin::admin/navigation.{part}（文字列の場合）
+        // Pattern 5: plugin::admin/navigation.{part} (if string)
         $navKey = $pluginPrefix.'::admin/navigation.'.$part;
         if (\Lang::has($navKey)) {
             $value = __($navKey);
-            // 配列が返ってきた場合は .text を試す
+            // If array is returned, try .text
             if (is_array($value) && isset($value['text'])) {
                 return $value['text'];
             }
-            // 文字列の場合はそのまま返す
+            // If string, return as-is
             if (is_string($value)) {
                 return $value;
             }
@@ -357,8 +357,8 @@ trait AdminLoggedInTrait
     }
 
     /**
-     * ページ説明を設定
-     * 引数なしで呼び出すと、現在のルート名から自動的に翻訳キーを生成して説明を取得
+     * Set page description
+     * When called without arguments, automatically generates translation key from current route name and retrieves description
      */
     protected function setDescription(?string $description = null): void
     {
@@ -371,7 +371,7 @@ trait AdminLoggedInTrait
     }
 
     /**
-     * 現在のルート名から翻訳キーを生成して説明を取得
+     * Generate translation key from current route name and retrieve description
      */
     protected function getDescriptionFromRoute(): ?string
     {
@@ -381,27 +381,27 @@ trait AdminLoggedInTrait
             return null;
         }
 
-        // プラグインのルート名の場合、プレフィックスを処理
-        // 例: dixlase-users::admin.users.index -> dixlase-users::admin/users/index.description
+        // For plugin route names, process prefix
+        // Example: dixlase-users::admin.users.index -> dixlase-users::admin/users/index.description
         if (str_contains($routeName, '::')) {
             [$pluginPrefix, $route] = explode('::', $routeName, 2);
 
-            // ルート部分をパスに変換
+            // Convert route part to path
             $routePath = str_replace('.', '/', $route);
 
-            // プラグインの翻訳キー形式: プラグイン名::パス.description
+            // Plugin translation key format: plugin-name::path.description
             $translationKey = $pluginPrefix.'::'.$routePath.'.description';
         } else {
-            // 通常のルート名を翻訳キーに変換
-            // 例: admin.members.settings -> admin/members/settings.description
+            // Convert regular route name to translation key
+            // Example: admin.members.settings -> admin/members/settings.description
             //     admin.settings.base.site -> admin/settings/base/site.description
             $translationKey = str_replace('.', '/', $routeName).'.description';
         }
 
-        // 翻訳が存在するかチェック
+        // Check if translation exists
         $translation = __($translationKey);
 
-        // 翻訳キーがそのまま返ってきた場合は翻訳が存在しない
+        // If the translation key is returned as-is, the translation does not exist
         if ($translation === $translationKey) {
             return null;
         }
@@ -410,7 +410,7 @@ trait AdminLoggedInTrait
     }
 
     /**
-     * 管理者情報を取得して設定
+     * Get and set administrator information
      */
     protected function setMember()
     {

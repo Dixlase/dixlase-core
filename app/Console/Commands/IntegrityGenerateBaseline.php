@@ -54,7 +54,7 @@ class IntegrityGenerateBaseline extends Command
      *
      * @var string
      */
-    protected $description = 'コアファイルの整合性チェック用ベースラインを生成します';
+    protected $description = 'Generate baseline for core file integrity check';
 
     /**
      * Execute the console command.
@@ -63,7 +63,7 @@ class IntegrityGenerateBaseline extends Command
     {
         $this->info(__('admin/command.integrity.generating_baseline'));
 
-        // 既存のベースラインをチェック
+        // Check existing baseline
         if ($service->hasBaseline() && ! $this->option('force')) {
             $meta = $service->getBaselineMeta();
             $this->warn(__('admin/command.integrity.baseline_exists', [
@@ -80,18 +80,18 @@ class IntegrityGenerateBaseline extends Command
 
         $this->output->write(__('admin/command.integrity.scanning_files'));
 
-        // ベースラインを生成
+        // Generate baseline
         $baseline = $service->generateCoreBaseline();
 
         $this->info(' '.__('common.done'));
 
-        // 保存
+        // Save
         $this->output->write(__('admin/command.integrity.saving_baseline'));
 
         if ($service->saveBaselineArray($baseline)) {
             $this->info(' '.__('common.done'));
 
-            // 監査ログを記録
+            // Record audit log
             FileIntegrityAudit::create([
                 'scope' => FileIntegrityAudit::SCOPE_CORE,
                 'trigger' => FileIntegrityAudit::TRIGGER_MANUAL,

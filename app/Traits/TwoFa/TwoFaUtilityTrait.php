@@ -41,23 +41,23 @@ use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Traits\DeviceDetectionTrait;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal For Core use only. Do not reference from plugins/themes
  *
- * 二段階認証の低レベルユーティリティ機能を提供するトレイト
+ * Trait that provides low-level utility functions for two-factor authentication
  *
- * コード生成・検証、設定取得、判定ロジックなど、
- * 二段階認証の基本的な機能を提供します。
+ * Provides basic two-factor authentication functionality such as
+ * code generation/verification, settings retrieval, and validation logic
  */
 trait TwoFaUtilityTrait
 {
     use DeviceDetectionTrait;
 
     /**
-     * 二段階認証コードを生成してデータベースに保存
+     * Generate two-factor authentication code and save to database
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  int  $expireMinutes  有効期限（分）
-     * @return string 生成されたコード
+     * @param  mixed  $user  User model
+     * @param  int  $expireMinutes  Expiration time (minutes)
+     * @return string Generated code
      */
     public function generateTwoFaCode($user, ?int $expireMinutes = null): string
     {
@@ -67,11 +67,11 @@ trait TwoFaUtilityTrait
     }
 
     /**
-     * 二段階認証コードを検証
+     * Verify two-factor authentication code
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  string  $inputCode  入力されたコード
-     * @return bool 検証結果
+     * @param  mixed  $user  User model
+     * @param  string  $inputCode  Entered code
+     * @return bool Verification result
      */
     public function validateTwoFaCode($user, string $inputCode): bool
     {
@@ -81,11 +81,11 @@ trait TwoFaUtilityTrait
     }
 
     /**
-     * 有効な認証方法を取得
+     * Get valid authentication methods
      *
-     * @param  string  $settingsKey  設定キー
-     * @param  array  $defaultMethods  デフォルトの認証方法
-     * @return array 有効な認証方法の配列
+     * @param  string  $settingsKey  Settings key
+     * @param  array  $defaultMethods  Default authentication method
+     * @return array Array of valid authentication methods
      */
     public function getEnabledTwoFaMethods(string $settingsKey = 'enabled_two_fa_methods', ?array $defaultMethods = null): array
     {
@@ -95,14 +95,14 @@ trait TwoFaUtilityTrait
 
         $settingsValue = $this->getSettingValue($settingsKey, json_encode($defaultMethods));
 
-        // 設定値が文字列でない場合（整数など）の処理
+        // Handle cases where settings value is not a string (e.g., integer)
         if (! is_string($settingsValue)) {
             return $defaultMethods;
         }
 
         $decoded = json_decode($settingsValue, true);
 
-        // JSON デコードが失敗した場合、または配列でない場合はデフォルトを返す
+        // Return default if JSON decode fails or result is not an array
         if (! is_array($decoded)) {
             return $defaultMethods;
         }
@@ -111,25 +111,25 @@ trait TwoFaUtilityTrait
     }
 
     /**
-     * 二段階認証が必要かどうかを判定
+     * Determine whether two-factor authentication is required
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  int  $forceSetting  システム設定の強制2FA設定
-     * @param  array  $enabledMethods  有効な認証方法
-     * @return bool 2FAが必要かどうか
+     * @param  mixed  $user  User model
+     * @param  int  $forceSetting  System settings for enforced 2FA
+     * @param  array  $enabledMethods  Valid authentication methods
+     * @return bool Whether 2FA is required
      */
     public function requiresTwoFa($user, int $forceSetting, array $enabledMethods): bool
     {
-        // 有効な認証方法がない場合は2FAを無効化
+        // Disable 2FA if there are no valid authentication methods
         if (empty($enabledMethods)) {
             return false;
         }
 
-        // 現在の設定に基づいて2FAが必要かチェック
+        // Check if 2FA is required based on current settings
         $modeValue = $this->getEffectiveTwoFaMode($user, $forceSetting);
         $mode = AuthenticationMode::tryFrom($modeValue);
 
-        // Passkeyが有効な場合は常に2FAを要求
+        // Always require 2FA when Passkey is enabled
         if (in_array(TwoFaMethod::PASSKEY->value, $enabledMethods)) {
             return true;
         }
@@ -141,25 +141,25 @@ trait TwoFaUtilityTrait
     }
 
     /**
-     * 有効な2要素認証モードを取得する
+     * Retrieve the active two-factor authentication mode
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @param  int  $forceSetting  システム設定の強制2FA設定
-     * @return int 有効な2FAモード
+     * @param  mixed  $user  User model
+     * @param  int  $forceSetting  System settings for enforced 2FA
+     * @return int Active 2FA mode
      */
     protected function getEffectiveTwoFaMode($user, int $forceSetting): int
     {
-        // システム設定で2FAが無効化されている場合
+        // When 2FA is disabled in system settings
         if ($forceSetting === AuthenticationMode::Disabled->value) {
             return AuthenticationMode::Disabled->value;
         }
 
-        // システム設定で強制されている場合
+        // When forced by system settings
         if ($forceSetting === AuthenticationMode::Always->value) {
             return AuthenticationMode::Always->value;
         }
 
-        // プロフィール設定を使用する場合
+        // When using profile settings
         if ($forceSetting === AuthenticationMode::UseProfileSetting->value) {
             return $this->checkUserTwoFaSetting($user);
         }
@@ -168,16 +168,16 @@ trait TwoFaUtilityTrait
     }
 
     /**
-     * ユーザーの2FA個人設定をチェック
+     * Check user's personal 2FA settings
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @return int 2FAモード
+     * @param  mixed  $user  User model
+     * @return int 2FA mode
      */
     protected function checkUserTwoFaSetting($user): int
     {
         $mode = $user->two_fa_mode;
 
-        // null の場合はデフォルトで無効
+        // Disabled by default if null
         if ($mode === null) {
             return AuthenticationMode::Disabled->value;
         }
@@ -189,10 +189,10 @@ trait TwoFaUtilityTrait
     }
 
     /**
-     * 信頼済みデバイスからのアクセスかチェック
+     * Check if accessed from a trusted device
      *
-     * @param  mixed  $user  ユーザーモデル
-     * @return bool 信頼済みデバイスの場合true
+     * @param  mixed  $user  User model
+     * @return bool True if trusted device
      */
     protected function isFromTrustedDevice($user): bool
     {
@@ -202,11 +202,11 @@ trait TwoFaUtilityTrait
     }
 
     /**
-     * 設定値を取得する（継承先で実装）
+     * Retrieve settings value (implemented in child class)
      *
-     * @param  string  $key  設定キー
-     * @param  mixed  $default  デフォルト値
-     * @return mixed 設定値
+     * @param  string  $key  Settings key
+     * @param  mixed  $default  Default value
+     * @return mixed Settings value
      */
     abstract protected function getSettingValue(string $key, $default = null);
 }

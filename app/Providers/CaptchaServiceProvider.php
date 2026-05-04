@@ -55,7 +55,7 @@ class CaptchaServiceProvider extends ServiceProvider
 
             switch ($driver) {
                 case 'google':
-                    // バージョンに応じてv2/v3を選択
+                    // Select v2/v3 according to version
                     $version = CaptchaHelper::getGoogleVersion();
                     if ($version === 'v3') {
                         return new GoogleRecaptchaV3Driver();

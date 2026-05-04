@@ -32,3 +32,28 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+
+use App\Http\Controllers\Api\V1\HealthController;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Mounted under /api by Laravel's default API prefix (see bootstrap/app.php
+| Application::configure()->withRouting(api: ...)). All endpoints live
+| inside a versioned group; the contract for the v1 surface is documented
+| in docs/development/api-reference/versioning.md.
+|
+| URL namespace reservations under /api/v1/ are enforced by convention:
+|   /health                   — implemented here
+|   /resources/{type}/{slug}  — reserved for the future DixlaseApi plugin
+|   /privacy/...              — reserved for the future Privacy API
+|   /{plugin-slug}/...        — open to plugins via routes/api/v1.php
+|
+*/
+
+Route::prefix('v1')->name('api.v1.')->group(function () {
+    Route::get('/health', HealthController::class)->name('health');
+});

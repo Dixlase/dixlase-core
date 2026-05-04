@@ -45,9 +45,9 @@ class PluginSeed extends Command
     use PluginManagementTrait;
 
     /**
-     * artisan コマンドのシグネチャ
-     *  - {plugin} : プラグイン名
-     *  - --class : 実行する Seeder クラス名 (デフォルト: DatabaseSeeder)
+     * Artisan command signature
+     *  - {plugin} : plugin name
+     *  - --class : Seeder class name to execute (default: DatabaseSeeder)
      */
     protected $signature = 'dls:plugin:seed
                             {plugin : The name of the plugin (e.g. EventsPlugin)}
@@ -70,16 +70,16 @@ class PluginSeed extends Command
     {
         $plugin = $this->argument('plugin');
         $force = $this->option('force');
-        $seederClassName = $this->option('class'); // 既定は 'DatabaseSeeder'
+        $seederClassName = $this->option('class'); // Default is 'DatabaseSeeder'
 
-        // 1. プラグインディレクトリが存在するか確認
+        // 1. Check if plugin directory exists
         if (! $this->pluginExists($plugin)) {
             $this->error("Plugin [{$plugin}] does not exist.");
 
             return Command::FAILURE;
         }
 
-        // 2. シーダークラスの確認
+        // 2. Verify seeder class
         $fullSeederClass = "Plugins\\{$plugin}\\Database\\Seeders\\{$seederClassName}";
         if (! class_exists($fullSeederClass)) {
             $this->error("Seeder class [{$fullSeederClass}] not found.");
@@ -87,7 +87,7 @@ class PluginSeed extends Command
             return Command::FAILURE;
         }
 
-        // 3. シーダー実行
+        // 3. Execute seeder
         $this->info("Seeding [{$fullSeederClass}]...");
 
         try {
@@ -96,7 +96,7 @@ class PluginSeed extends Command
                 '--force' => true, // 本番環境でも確認なしで実行
             ]);
 
-            $this->info(Artisan::output()); // シーダーの実行結果を表示
+            $this->info(Artisan::output()); // Display seeder execution result
             $this->info("Seeding for plugin [{$plugin}] completed successfully.");
 
             return Command::SUCCESS;

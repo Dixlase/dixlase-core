@@ -41,14 +41,14 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * バックアップ記録モデル
+ * Backup record model
  *
- * バックアッププラグインが作成したバックアップのメタデータを管理します。
+ * Manages metadata for backups created by backup plugins
  */
 class BackupRecord extends Model
 {
     // ========================================
-    // ステータス定数
+    // Status constants
     // ========================================
 
     public const STATUS_COMPLETED = 'completed';
@@ -60,7 +60,7 @@ class BackupRecord extends Model
     public const STATUS_DELETED = 'deleted';
 
     // ========================================
-    // 検証ステータス定数
+    // Verification status constants
     // ========================================
 
     public const VERIFICATION_UNCHECKED = 'unchecked';
@@ -70,7 +70,7 @@ class BackupRecord extends Model
     public const VERIFICATION_INVALID = 'invalid';
 
     // ========================================
-    // タイプ定数
+    // Type constants
     // ========================================
 
     public const TYPE_FILES = 'files';
@@ -110,11 +110,11 @@ class BackupRecord extends Model
     ];
 
     // ========================================
-    // スコープ
+    // Scopes
     // ========================================
 
     /**
-     * 指定プラグインのバックアップに絞り込み
+     * Filter backups by specified plugin
      */
     public function scopeForPlugin(Builder $query, string $pluginSlug): Builder
     {
@@ -122,7 +122,7 @@ class BackupRecord extends Model
     }
 
     /**
-     * 暗号化されたバックアップに絞り込み
+     * Filter encrypted backups
      */
     public function scopeEncrypted(Builder $query): Builder
     {
@@ -130,7 +130,7 @@ class BackupRecord extends Model
     }
 
     /**
-     * 検証済み（valid）のバックアップに絞り込み
+     * Filter verified (valid) backups
      */
     public function scopeValid(Builder $query): Builder
     {
@@ -138,7 +138,7 @@ class BackupRecord extends Model
     }
 
     /**
-     * リテンション期限切れのバックアップに絞り込み
+     * Filter backups past retention period
      */
     public function scopeExpired(Builder $query): Builder
     {
@@ -146,7 +146,7 @@ class BackupRecord extends Model
     }
 
     /**
-     * バックアップ種別で絞り込み
+     * Filter by backup type
      */
     public function scopeByType(Builder $query, string $type): Builder
     {
@@ -154,11 +154,11 @@ class BackupRecord extends Model
     }
 
     // ========================================
-    // ステータス変更メソッド
+    // Status change methods
     // ========================================
 
     /**
-     * 検証済みとしてマーク
+     * Mark as verified
      */
     public function markAsVerified(): bool
     {
@@ -169,7 +169,7 @@ class BackupRecord extends Model
     }
 
     /**
-     * 検証失敗としてマーク
+     * Mark as verification failed
      */
     public function markAsInvalid(): bool
     {
@@ -180,7 +180,7 @@ class BackupRecord extends Model
     }
 
     /**
-     * 期限切れとしてマーク
+     * Mark as expired
      */
     public function markAsExpired(): bool
     {
@@ -190,7 +190,7 @@ class BackupRecord extends Model
     }
 
     /**
-     * 削除済みとしてマーク
+     * Mark as deleted
      */
     public function markAsDeleted(): bool
     {
@@ -200,11 +200,11 @@ class BackupRecord extends Model
     }
 
     // ========================================
-    // ヘルパーメソッド
+    // Helper methods
     // ========================================
 
     /**
-     * リテンション期限切れかどうかを判定
+     * Determine if past retention period
      */
     public function isExpired(): bool
     {
@@ -216,7 +216,7 @@ class BackupRecord extends Model
     }
 
     /**
-     * メタデータから指定キーの値を取得
+     * Get value for specified key from metadata
      */
     public function getMetadataValue(string $key, mixed $default = null): mixed
     {

@@ -41,28 +41,28 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Support\HtmlString;
 
 /**
- * システムエラー通知
+ * System error notification
  */
 class SystemErrorNotification extends Notification
 {
     use Queueable;
 
     /**
-     * エラー件名
+     * Error subject
      *
      * @var string
      */
     protected $subject;
 
     /**
-     * エラーメッセージ
+     * Error message
      *
      * @var string
      */
     protected $message;
 
     /**
-     * コンテキスト情報
+     * Context information
      *
      * @var array
      */
@@ -95,16 +95,16 @@ class SystemErrorNotification extends Notification
     {
         $appName = env('APP_NAME', 'Dixlase');
 
-        // ログレベルに応じた色を取得
+        // Get color based on log level
         $logLevel = $this->context['log_level'] ?? 'Error';
         $levelColor = $this->getLogLevelColor($logLevel);
         $levelBgColor = $this->getLogLevelBgColor($logLevel);
 
         $mailMessage = (new MailMessage())
             ->subject("[{$appName}] {$this->subject}")
-            ->greeting('システム管理者様');
+            ->greeting(__('notifications/system_error_notification.system_administrator'));
 
-        // レベル表示（色付き）
+        // Level display (colored)
         $levelHtml = '<div style="padding: 12px; background-color: '.$levelBgColor.'; border-left: 4px solid '.$levelColor.'; margin: 16px 0; border-radius: 4px;">';
         $levelHtml .= '<span style="color: '.$levelColor.'; font-weight: bold; font-size: 18px;">【'.$logLevel.'】</span>';
         $levelHtml .= '<span style="color: #333; font-weight: bold; font-size: 16px; margin-left: 8px;">'.htmlspecialchars($this->subject).'</span>';
@@ -113,24 +113,24 @@ class SystemErrorNotification extends Notification
         $mailMessage->line(new HtmlString($levelHtml));
 
         $mailMessage->line('');
-        $mailMessage->line('**エラーメッセージ:**');
+        $mailMessage->line('**Error message:**');
         $mailMessage->line($this->message);
 
-        // エラー詳細情報を追加
+        // Add error details
         if (! empty($this->context)) {
             $mailMessage->line('');
-            $mailMessage->line('**エラー詳細:**');
+            $mailMessage->line(__('notifications/system_error_notification.error_details'));
 
             if (isset($this->context['type'])) {
-                $mailMessage->line("**エラータイプ:** {$this->context['type']}");
+                $mailMessage->line(__('notifications/system_error_notification.error_type_label', ['type' => $this->context['type']]));
             }
 
             if (isset($this->context['file'])) {
-                $mailMessage->line("**ファイル:** {$this->context['file']}");
+                $mailMessage->line(__('notifications/system_error_notification.file_label', ['file' => $this->context['file']]));
             }
 
             if (isset($this->context['line'])) {
-                $mailMessage->line("**行番号:** {$this->context['line']}");
+                $mailMessage->line(__('notifications/system_error_notification.line_number_label', ['line' => $this->context['line']]));
             }
 
             if (isset($this->context['url'])) {
@@ -142,14 +142,14 @@ class SystemErrorNotification extends Notification
             }
 
             if (isset($this->context['ip'])) {
-                $mailMessage->line("**IPアドレス:** {$this->context['ip']}");
+                $mailMessage->line(__('notifications/system_error_notification.ip_address_label', ['ip' => $this->context['ip']]));
             }
 
-            // スタックトレースを追加（最初の10行のみ）
+            // Add stack trace (first 10 lines only)
             if (isset($this->context['trace'])) {
                 $traceLines = explode("\n", $this->context['trace']);
                 $limitedTrace = array_slice($traceLines, 0, 10);
-                $mailMessage->line('**スタックトレース（抜粋）:**');
+                $mailMessage->line(__('notifications/system_error_notification.stack_trace_excerpt'));
                 $mailMessage->line('```');
                 foreach ($limitedTrace as $traceLine) {
                     $mailMessage->line($traceLine);
@@ -157,7 +157,7 @@ class SystemErrorNotification extends Notification
                 $mailMessage->line('```');
             }
 
-            // その他のコンテキスト情報を追加（適度な長さに制限）
+            // Add other context information (limited to reasonable length)
             $excludeKeys = ['type', 'file', 'line', 'url', 'user_agent', 'ip', 'trace', 'exception', 'log_level', 'log_level_value', 'timestamp', 'channel', 'method'];
             $maxContextLength = 200;
             $contextCount = 0;
@@ -165,7 +165,7 @@ class SystemErrorNotification extends Notification
 
             foreach ($this->context as $key => $value) {
                 if ($contextCount >= $maxContextItems) {
-                    $mailMessage->line('_（その他のコンテキスト情報は省略されました）_');
+                    $mailMessage->line(__('notifications/system_error_notification.other_context_info_omitted'));
                     break;
                 }
 
@@ -188,18 +188,18 @@ class SystemErrorNotification extends Notification
             }
         }
 
-        // 発生日時を追加
-        $mailMessage->line('**発生日時:** '.now()->format('Y-m-d H:i:s'));
+        // Add occurrence date and time
+        $mailMessage->line(__('notifications/system_error_notification.occurrence_date_time').now()->format('Y-m-d H:i:s'));
 
-        $mailMessage->line('このエラーについて調査し、必要に応じて対応をお願いします。');
+        $mailMessage->line(__('notifications/system_error_notification.please_investigate_and_take_action'));
 
-        $mailMessage->salutation("よろしくお願いします。\n\n{$appName} システム");
+        $mailMessage->salutation(__('notifications/system_error_notification.system_signature', ['appName' => $appName]));
 
         return $mailMessage;
     }
 
     /**
-     * ログレベルに応じた色を取得
+     * Get color based on log level
      */
     private function getLogLevelColor(string $logLevel): string
     {
@@ -214,7 +214,7 @@ class SystemErrorNotification extends Notification
     }
 
     /**
-     * ログレベルに応じた背景色を取得
+     * Get background color based on log level
      */
     private function getLogLevelBgColor(string $logLevel): string
     {

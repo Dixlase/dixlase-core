@@ -27,9 +27,9 @@ use App\Models\BackupRecord;
 use Illuminate\Console\Command;
 
 /**
- * バックアップ復元コマンド
+ * Backup restore command
  *
- * 例:
+ * Example:
  *   php artisan dls:backup:restore 1
  *   php artisan dls:backup:restore 1 --targets=database
  *   php artisan dls:backup:restore 1 --no-snapshot --force

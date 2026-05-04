@@ -40,7 +40,7 @@ return [
     | Custom Files Directory
     |--------------------------------------------------------------------------
     |
-    | カスタムファイルを保存するディレクトリ
+    Directory to store custom files
     |
     */
     'custom_files_dir' => env('CUSTOM_FILES_DIR', 'custom'),
@@ -50,7 +50,7 @@ return [
     | Default Merge Mode
     |--------------------------------------------------------------------------
     |
-    | カスタムファイルのデフォルトマージモード
+    Default merge mode for custom files
     |
     */
     'default_merge_mode' => env('DEFAULT_MERGE_MODE', 'merge'),
@@ -60,7 +60,7 @@ return [
     | Default License
     |--------------------------------------------------------------------------
     |
-    | デフォルトのライセンス
+    Default license
     |
     */
     'default_license' => 'agpl',

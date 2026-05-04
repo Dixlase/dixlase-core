@@ -51,61 +51,61 @@ class SystemNotificationLogHandler extends AbstractProcessingHandler
     }
 
     /**
-     * ログレコードを処理
+     * Process log record
      */
     protected function write(LogRecord $record): void
     {
         try {
-            // 通知機能が有効かチェック
+            // Check if notification feature is enabled
             if (! $this->shouldSendNotification($record)) {
                 return;
             }
 
-            // 件名を生成
+            // Generate subject
             $subject = $this->generateSubject($record);
 
-            // メッセージを生成
+            // Generate message
             $message = $this->generateMessage($record);
 
-            // コンテキスト情報を準備
+            // Prepare context information
             $context = $this->prepareContext($record);
 
-            // 通知送信
+            // Send notification
             $this->notificationService->sendErrorNotification($subject, $message, $context);
         } catch (\Exception $e) {
-            // 通知送信エラーは別のログに記録（無限ループを避けるため）
+            // Log notification send errors separately (to avoid infinite loop)
             error_log('SystemNotificationLogHandler error: '.$e->getMessage());
         }
     }
 
     /**
-     * 通知を送信すべきかチェック
+     * Check if notification should be sent
      */
     private function shouldSendNotification(LogRecord $record): bool
     {
-        // 通知機能が有効かチェック
+        // Check if notification feature is enabled
         if (! $this->notificationService->isNotificationEnabled()) {
             return false;
         }
 
-        // 通知対象ログレベルを取得
+        // Get target log levels for notification
         $notificationLevels = $this->getNotificationLevels();
         if (empty($notificationLevels)) {
             return false;
         }
 
-        // MonologレベルをDixlaseのLogLevelに変換
+        // Convert Monolog level to Dixlase LogLevel
         $dixlaseLevel = $this->convertMonologLevelToDixlaseLevel($record->level->value);
         if ($dixlaseLevel === null) {
             return false;
         }
 
-        // 通知対象レベルに含まれているかチェック
+        // Check if included in target notification levels
         return in_array($dixlaseLevel, $notificationLevels);
     }
 
     /**
-     * 通知対象ログレベルを取得
+     * Get target log levels for notification
      */
     private function getNotificationLevels(): array
     {
@@ -125,11 +125,11 @@ class SystemNotificationLogHandler extends AbstractProcessingHandler
     }
 
     /**
-     * MonologレベルをDixlaseのLogLevelに変換
+     * Convert Monolog level to Dixlase LogLevel
      */
     private function convertMonologLevelToDixlaseLevel(int $monologLevel): ?int
     {
-        // Monolog レベル値 → Dixlase LogLevel値のマッピング
+        // Mapping from Monolog level value to Dixlase LogLevel value
         $mapping = [
             600 => 8, // EMERGENCY
             550 => 7, // ALERT
@@ -145,18 +145,18 @@ class SystemNotificationLogHandler extends AbstractProcessingHandler
     }
 
     /**
-     * 件名を生成
+     * Generate subject
      */
     private function generateSubject(LogRecord $record): string
     {
         $levelName = $record->level->name;
         $appName = env('APP_NAME', 'Dixlase');
 
-        return "【{$levelName}】システムエラーが発生しました - {$appName}";
+        return __('logging/system_notification_log_handler.system_error_occurred_app_name', ['levelName' => $levelName, 'appName' => $appName]);
     }
 
     /**
-     * メッセージを生成
+     * Generate message
      */
     private function generateMessage(LogRecord $record): string
     {
@@ -164,7 +164,7 @@ class SystemNotificationLogHandler extends AbstractProcessingHandler
     }
 
     /**
-     * コンテキスト情報を準備
+     * Prepare context information
      */
     private function prepareContext(LogRecord $record): array
     {
@@ -175,12 +175,12 @@ class SystemNotificationLogHandler extends AbstractProcessingHandler
             'channel' => $record->channel,
         ];
 
-        // 既存のコンテキスト情報をマージ
+        // Merge existing context information
         if (! empty($record->context)) {
             $context = array_merge($context, $record->context);
         }
 
-        // 追加情報を抽出
+        // Extract additional information
         if (isset($record->context['exception'])) {
             $exception = $record->context['exception'];
             if ($exception instanceof \Exception) {
@@ -190,7 +190,7 @@ class SystemNotificationLogHandler extends AbstractProcessingHandler
             }
         }
 
-        // リクエスト情報を追加（可能な場合）
+        // Add request information (if available)
         try {
             if (app()->bound('request')) {
                 $request = request();
@@ -200,7 +200,7 @@ class SystemNotificationLogHandler extends AbstractProcessingHandler
                 $context['user_agent'] = $request->userAgent();
             }
         } catch (\Exception $e) {
-            // リクエスト情報の取得に失敗した場合は無視
+            // Ignore if request information retrieval fails
         }
 
         return $context;

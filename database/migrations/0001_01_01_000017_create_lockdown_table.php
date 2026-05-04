@@ -42,52 +42,52 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * 緊急ロックダウン機能用テーブル
+     * Emergency lockdown feature table
      *
-     * 目的：
-     * - セキュリティインシデント時の即座のシステム保護
-     * - 不正アクセス検知時の自動ロックダウン
-     * - ロックダウン履歴の記録
+     * Purpose:
+     * - Immediate system protection during security incidents
+     * - Automatic lockdown upon unauthorized access detection
+     * - Lockdown history recording
      */
     public function up(): void
     {
-        // ロックダウン状態テーブル
+        // Lockdown status table
         Schema::create('lockdown_status', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('site_id')->index();
 
-            // ロックダウンの種類
-            // full: 全アクセス遮断（SUPER_ADMIN以外）
-            // admin: 管理画面のみロック
-            // api: APIのみロック
-            // login: ログインのみロック
+            // Lockdown type
+            // full: Block all access (except SUPER_ADMIN)
+            // admin: Lock admin panel only
+            // api: Lock API only
+            // login: Lock login only
             $table->string('type', 20)->default('full');
 
-            // 有効/無効
+            // Enabled/Disabled
             $table->boolean('is_active')->default(false);
 
-            // ロックダウン理由
+            // Lockdown reason
             $table->string('reason', 500)->nullable();
 
-            // 発動者（null=自動発動）
+            // Triggered by (null=auto-triggered)
             $table->unsignedBigInteger('triggered_by')->nullable();
 
-            // 発動日時
+            // Triggered at
             $table->timestamp('triggered_at')->nullable();
 
-            // 解除者
+            // Released by
             $table->unsignedBigInteger('released_by')->nullable();
 
-            // 解除日時
+            // Released at
             $table->timestamp('released_at')->nullable();
 
-            // 自動解除日時（設定時）
+            // Auto-release time (when set)
             $table->timestamp('auto_release_at')->nullable();
 
-            // 許可されたIPアドレス（JSON配列）
+            // Allowed IP addresses (JSON array)
             $table->json('allowed_ips')->nullable();
 
-            // 許可されたメンバーID（JSON配列）
+            // Allowed member IDs (JSON array)
             $table->json('allowed_members')->nullable();
 
             // メタ情報（発動トリガーの詳細など）
@@ -100,27 +100,27 @@ return new class extends Migration
             $table->index('triggered_at');
         });
 
-        // ロックダウン履歴テーブル
+        // Lockdown history table
         Schema::create('lockdown_history', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('site_id')->index();
 
-            // アクション: activated, deactivated, extended, modified
+            // Action: activated, deactivated, extended, modified
             $table->string('action', 20);
 
-            // ロックダウンの種類
+            // Lockdown type
             $table->string('type', 20);
 
-            // 理由
+            // Reason
             $table->string('reason', 500)->nullable();
 
             // 実行者（null=自動/システム）
             $table->unsignedBigInteger('performed_by')->nullable();
 
-            // IPアドレス
+            // IP address
             $table->string('ip_address', 45)->nullable();
 
-            // 詳細情報
+            // Details
             $table->json('details')->nullable();
 
             $table->timestamp('performed_at')->useCurrent();
@@ -130,36 +130,36 @@ return new class extends Migration
             $table->index('performed_at');
         });
 
-        // ロックダウントリガー設定テーブル
+        // Lockdown trigger settings table
         Schema::create('lockdown_triggers', function (Blueprint $table) {
             $table->id();
 
-            // トリガー名
+            // Trigger name
             $table->string('name', 100);
 
-            // トリガータイプ
-            // failed_logins: ログイン失敗回数
-            // suspicious_activity: 不審なアクティビティ
-            // file_integrity: ファイル整合性違反
-            // manual: 手動のみ
+            // Trigger type
+            // failed_logins: failed login attempts
+            // suspicious_activity: suspicious activity
+            // file_integrity: file integrity violation
+            // manual: manual only
             $table->string('trigger_type', 50);
 
-            // 有効/無効
+            // Enabled/Disabled
             $table->boolean('is_enabled')->default(false);
 
-            // 閾値（トリガータイプによって意味が異なる）
+            // 閾値（Trigger typeによって意味が異なる）
             $table->unsignedInteger('threshold')->default(0);
 
             // 時間枠（分）
             $table->unsignedInteger('time_window_minutes')->default(60);
 
-            // 発動するロックダウンタイプ
+            // Lockdown type to trigger
             $table->string('lockdown_type', 20)->default('login');
 
             // 自動解除までの時間（分、0=手動解除のみ）
             $table->unsignedInteger('auto_release_minutes')->default(0);
 
-            // 通知を送信するか
+            // Whether to send notification
             $table->boolean('notify')->default(true);
 
             $table->timestamps();

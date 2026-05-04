@@ -77,7 +77,7 @@ class FortifyServiceProvider extends ServiceProvider
         });
 
         Fortify::authenticateUsing(function (Request $request) {
-            // ログイン識別子モードを取得
+            // Get login identifier mode
             $mode = \App\Enums\LoginIdentifierMode::tryFrom(
                 (int) \App\Models\SecuritySetting::getValue('login_identifier_mode', \App\Enums\LoginIdentifierMode::EmailOrAccountName->value)
             ) ?? \App\Enums\LoginIdentifierMode::EmailOrAccountName;
@@ -85,7 +85,7 @@ class FortifyServiceProvider extends ServiceProvider
             $login = $request->email;
             $isEmail = filter_var($login, FILTER_VALIDATE_EMAIL) !== false;
 
-            // LoginIdentifierModeに基づいてメンバーを検索
+            // Find member based on LoginIdentifierMode
             $member = null;
             if ($isEmail && $mode->supportsEmail()) {
                 $member = Member::where('email', $login)->first();
@@ -94,9 +94,9 @@ class FortifyServiceProvider extends ServiceProvider
             }
 
             if ($member && Hash::check($request->password, $member->password)) {
-                // メール認証済みかチェック
+                // Check if email is verified
                 if (! $member->hasVerifiedEmail()) {
-                    // 未認証の場合はログインを拒否
+                    // Reject login if not verified
                     throw \Illuminate\Validation\ValidationException::withMessages([
                         Fortify::username() => [__('auth.email_not_verified')],
                     ]);

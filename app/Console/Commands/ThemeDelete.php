@@ -69,18 +69,18 @@ class ThemeDelete extends Command
         $themeDirectory = $this->argument('themeDirectory');
         $themePath = base_path('themes/'.$themeDirectory);
 
-        // テーマディレクトリの存在チェック
+        // Check if theme directory exists
         if (! File::exists($themePath)) {
             $this->error(__('admin/command.theme_delete.not_found', ['directory' => $themeDirectory]));
 
             return Command::FAILURE;
         }
 
-        // データベースに登録されているかチェック（アンインストール済みかどうか）
+        // Check if registered in database (whether uninstalled or not)
         $theme = Theme::where('directory', $themeDirectory)->first();
 
         if ($theme) {
-            // テーマがまだインストールされている場合
+            // If theme is still installed
             if ($theme->isInstalled()) {
                 $this->error(__('admin/command.theme_delete.still_installed', ['themeName' => $theme->name]));
                 $this->warn(__('admin/command.theme_delete.uninstall_first'));
@@ -88,7 +88,7 @@ class ThemeDelete extends Command
                 return Command::FAILURE;
             }
 
-            // テーマが有効な場合（念のため）
+            // If theme is active (just in case)
             if ($theme->isEnabled()) {
                 $this->error(__('admin/command.theme_delete.still_enabled', ['themeName' => $theme->name]));
                 $this->warn(__('admin/command.theme_delete.disable_first'));
@@ -97,7 +97,7 @@ class ThemeDelete extends Command
             }
         }
 
-        // 確認プロンプト
+        // Confirmation prompt
         if (! $this->option('force')) {
             if (! $this->confirm(__('admin/command.theme_delete.confirm', ['directory' => $themeDirectory]), false)) {
                 $this->info(__('admin/command.theme_delete.cancelled'));
@@ -106,7 +106,7 @@ class ThemeDelete extends Command
             }
         }
 
-        // ディレクトリを削除
+        // Delete directory
         try {
             File::deleteDirectory($themePath);
             $this->info(__('admin/command.theme_delete.deleted', ['path' => $themePath]));
@@ -116,25 +116,25 @@ class ThemeDelete extends Command
             return Command::FAILURE;
         }
 
-        // データベースからもテーマレコードを削除（存在する場合）
+        // Delete theme record from database as well (if exists)
         if ($theme) {
             $theme->delete();
             $this->info(__('admin/command.theme_delete.database_removed', ['themeName' => $theme->name]));
         }
 
-        // .git/info/excludeからテーマの除外ルールを削除
+        // Remove theme exclusion rule from .git/info/exclude
         if (GitExcludeHelper::removeThemeExclusion($themeDirectory)) {
-            $this->info("✓ テーマ '{$themeDirectory}' を .git/info/exclude から削除しました");
+            $this->info(__('console/commands/theme_delete.theme_removed_from_git_info_exclude', ['themeDirectory' => $themeDirectory]));
         }
 
-        // .gitignoreからテーマの除外ルールを削除
+        // Remove theme exclusion rule from .gitignore
         if (GitIgnoreHelper::removeThemeExclusion($themeDirectory)) {
-            $this->info("✓ テーマ '{$themeDirectory}' を .gitignore から削除しました");
+            $this->info(__('console/commands/theme_delete.theme_removed_from_gitignore', ['themeDirectory' => $themeDirectory]));
         }
 
-        // composer.local.jsonを更新
+        // Update composer.local.json
         ComposerLocalHelper::syncAutoload();
-        $this->info('✓ composer.local.jsonを更新しました');
+        $this->info(__('console/commands/theme_delete.updated_composer_local_json'));
 
         $this->info(__('admin/command.theme_delete.completed', ['directory' => $themeDirectory]));
 

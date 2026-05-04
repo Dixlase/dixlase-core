@@ -104,9 +104,10 @@ Route::get('/front/custom-style.css', [FrontCustomAssetController::class, 'style
 //
 // The locale infrastructure (LocaleHelper, SetFrontLocale middleware,
 // LocalizedUrlProvider / MissingTranslationHandler contracts, the
-// /locale/switch endpoint above) is in place so the future multilingual
-// plugin (DixlaseI18n) can opt-in by wrapping these routes in a
-// Route::prefix('{locale}')->where(...)->middleware(SetFrontLocale)
+// /locale/switch endpoint above) is in place so any multilingual plugin
+// (first-party, third-party, or a custom in-house implementation) that
+// wires itself to the same contracts can opt-in by wrapping these
+// routes in a Route::prefix('{locale}')->where(...)->middleware(SetFrontLocale)
 // group and registering its own Route::fallback() that redirects
 // locale-less URLs.
 Route::middleware(['web', 'front.ip'])->group(function () {

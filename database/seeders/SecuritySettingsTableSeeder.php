@@ -208,13 +208,13 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '']
         );
 
-        // CAPTCHA authentication result (boolean型、常にレコード保持)
+        // CAPTCHA authentication result (boolean type, always persisted)
         GlobalSetting::updateOrCreate(
             ['name' => 'captcha_authentication_result'],
             ['value' => '0']
         );
 
-        // Google reCAPTCHA プロバイダー固有設定
+        // Google reCAPTCHA provider-specific settings
         GlobalSetting::updateOrCreate(
             ['name' => 'captcha_google_site_key'],
             ['value' => '']
@@ -232,7 +232,7 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '0']
         );
 
-        // Google reCAPTCHA Enterprise プロバイダー固有設定
+        // Google reCAPTCHA Enterprise provider-specific settings
         GlobalSetting::updateOrCreate(
             ['name' => 'captcha_google_enterprise_site_key'],
             ['value' => '']
@@ -258,7 +258,7 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '0']
         );
 
-        // Cloudflare Turnstile プロバイダー固有設定
+        // Cloudflare Turnstile provider-specific settings
         GlobalSetting::updateOrCreate(
             ['name' => 'captcha_turnstile_site_key'],
             ['value' => '']
@@ -276,7 +276,7 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '0']
         );
 
-        // フェイルオーバー設定
+        // Failover settings
         GlobalSetting::updateOrCreate(
             ['name' => 'captcha_auto_failover_enabled'],
             ['value' => '1']
@@ -337,148 +337,148 @@ class SecuritySettingsTableSeeder extends Seeder
         );
 
         // Extension security settings (plugins and themes)
-        // プリセットモード（デフォルト: balanced）
+        // Preset mode (default: balanced)
         GlobalSetting::updateOrCreate(
             ['name' => 'extension_security_preset'],
             ['value' => ExtensionSecurityPreset::Balanced->value]
         );
 
-        // 署名を必須にするか
+        // Whether to require signature
         GlobalSetting::updateOrCreate(
             ['name' => 'extension_require_signature'],
             ['value' => '0']
         );
 
-        // 権限定義を必須にするか
+        // Whether to require permission definition
         GlobalSetting::updateOrCreate(
             ['name' => 'extension_require_permission_definition'],
             ['value' => '0']
         );
 
-        // 未定義の権限を許可するか
+        // Whether to allow undefined permissions
         GlobalSetting::updateOrCreate(
             ['name' => 'extension_allow_undefined_permissions'],
             ['value' => '1']
         );
 
-        // プラグインの最大許可健全性レベル
+        // Maximum allowed health level for plugins
         GlobalSetting::updateOrCreate(
             ['name' => 'extension_plugin_max_health_level'],
             ['value' => (string) ExtensionSecurityLevel::Warning->value]
         );
 
-        // テーマの最大許可健全性レベル
+        // Maximum allowed health level for themes
         GlobalSetting::updateOrCreate(
             ['name' => 'extension_theme_max_health_level'],
             ['value' => (string) ExtensionSecurityLevel::NeedsAttention->value]
         );
 
-        // ロジックを含むテーマを許可するか
+        // Whether to allow themes containing logic
         GlobalSetting::updateOrCreate(
             ['name' => 'extension_allow_logic_themes'],
             ['value' => '1']
         );
 
-        // 権限不一致時の動作（warn: 警告のみ, block: ブロック）
+        // Behavior on permission mismatch (warn: warning only, block: block)
         GlobalSetting::updateOrCreate(
             ['name' => 'extension_permission_mismatch_action'],
             ['value' => SecurityAction::default()->toString()]
         );
 
-        // Extension notification settings (拡張機能操作通知)
-        // プラグイン・テーマのインストール時にメール通知
+        // Extension notification settings
+        // Email notification on plugin/theme installation
         GlobalSetting::updateOrCreate(
             ['name' => 'extension_notify_on_install'],
             ['value' => '1']
         );
 
-        // プラグイン・テーマのアンインストール時にメール通知
+        // Email notification on plugin/theme uninstallation
         GlobalSetting::updateOrCreate(
             ['name' => 'extension_notify_on_uninstall'],
             ['value' => '1']
         );
 
-        // プラグイン・テーマの有効化時にメール通知
+        // Email notification on plugin/theme activation
         GlobalSetting::updateOrCreate(
             ['name' => 'extension_notify_on_enable'],
             ['value' => '1']
         );
 
-        // プラグイン・テーマの無効化時にメール通知
+        // Email notification on plugin/theme deactivation
         GlobalSetting::updateOrCreate(
             ['name' => 'extension_notify_on_disable'],
             ['value' => '0']
         );
 
-        // 健全性が「良好」以外の拡張機能操作時に警告メール
+        // Warning email on extension operations with health other than 'good'
         GlobalSetting::updateOrCreate(
             ['name' => 'extension_notify_on_unhealthy'],
             ['value' => '1']
         );
 
-        // 拡張機能操作をログに記録
+        // Log extension operations
         GlobalSetting::updateOrCreate(
             ['name' => 'extension_log_operations'],
             ['value' => '1']
         );
 
         // CSP (Content Security Policy) settings
-        // CSP有効/無効
+        // CSP enabled/disabled
         GlobalSetting::updateOrCreate(
             ['name' => 'csp_enabled'],
             ['value' => '1']
         );
 
-        // CSPモード（0: 開発, 1: 標準, 2: 厳格）
+        // CSP mode (0: development, 1: standard, 2: strict)
         GlobalSetting::updateOrCreate(
             ['name' => 'csp_mode'],
             ['value' => (string) CspMode::default()->value]
         );
 
-        // CSP違反をログに記録
+        // Log CSP violations
         GlobalSetting::updateOrCreate(
             ['name' => 'csp_log_violations'],
             ['value' => '1']
         );
 
-        // 信頼済みドメイン（改行区切り）
+        // Trusted domains (newline-separated)
         GlobalSetting::updateOrCreate(
             ['name' => 'csp_trusted_domains'],
             ['value' => '']
         );
 
-        // 拒否ドメイン（改行区切り）
-        // プラグイン/テーマがこれらのドメインを使用しようとしても、CSPによりブロックされる
+        // Denied domains (newline-separated)
+        // Even if plugins/themes attempt to use these domains, they will be blocked by CSP
         GlobalSetting::updateOrCreate(
             ['name' => 'csp_denied_domains'],
             ['value' => '']
         );
 
-        // カスタムディレクティブ（JSON形式）
+        // Custom directives (JSON format)
         GlobalSetting::updateOrCreate(
             ['name' => 'csp_custom_directives'],
             ['value' => '']
         );
 
-        // CSPブロックリスト検出有効/無効
+        // CSP blocklist detection enabled/disabled
         GlobalSetting::updateOrCreate(
             ['name' => 'csp_blocklist_check_enabled'],
             ['value' => '0']
         );
 
-        // CSPブロックリスト検出時のアクション（0: 警告, 1: ブロック）
+        // Action on CSP blocklist detection (0: warning, 1: block)
         GlobalSetting::updateOrCreate(
             ['name' => 'csp_blocklist_action'],
             ['value' => (string) CspBlocklistAction::default()->value]
         );
 
-        // CSPブロックリスト有効カテゴリ（カンマ区切り）
+        // CSP blocklist enabled categories (comma-separated)
         GlobalSetting::updateOrCreate(
             ['name' => 'csp_blocklist_enabled_categories'],
             ['value' => '']
         );
 
-        // 開発ツール関連のCSP違反を除外（Vite開発サーバー、Windsurf/MCPブラウザプレビュー等）
+        // Exclude development tool-related CSP violations (Vite dev server, Windsurf/MCP browser preview, etc.)
         GlobalSetting::updateOrCreate(
             ['name' => 'csp_exclude_dev_tools'],
             ['value' => '1']

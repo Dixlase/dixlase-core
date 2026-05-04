@@ -69,14 +69,14 @@ class ThemeMigrateRollback extends Command
         $themePath = base_path("themes/{$themeName}");
         $migrationsPath = "{$themePath}/database/migrations";
 
-        // テーマディレクトリの存在確認
+        // Check theme directory existence
         if (! File::isDirectory($themePath)) {
             $this->error("Theme directory not found: {$themePath}");
 
             return 1;
         }
 
-        // マイグレーションディレクトリの存在確認
+        // Check migration directory existence
         if (! File::isDirectory($migrationsPath)) {
             $this->warn("No migrations directory found for theme: {$themeName}");
 
@@ -85,7 +85,7 @@ class ThemeMigrateRollback extends Command
 
         $this->info("Rolling back migrations for theme: {$themeName}");
 
-        // ロールバック実行
+        // Execute rollback
         $options = [
             '--path' => "themes/{$themeName}/database/migrations",
             '--force' => $this->option('force'),

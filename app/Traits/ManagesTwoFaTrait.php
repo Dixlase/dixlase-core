@@ -43,21 +43,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 /**
- * 二段階認証管理の共通処理
- * 個別編集とプロフィール編集の両方で使用可能
+ * Common processing for two-factor authentication management
+ * Can be used for both individual edit and profile edit
  */
 trait ManagesTwoFaTrait
 {
     /**
-     * Passkeyを削除（共通）
+     * Delete Passkey (common)
      *
-     * @param  Request  $request  リクエスト
-     * @param  \Illuminate\Database\Eloquent\Model  $model  モデル
-     * @param  string  $credentialId  認証情報ID
-     * @param  string  $allDeletedMessageKey  一括削除成功メッセージの翻訳キー
-     * @param  string  $notFoundMessageKey  見つからないメッセージの翻訳キー
-     * @param  string  $deletedMessageKey  削除成功メッセージの翻訳キー
-     * @param  string  $errorMessageKey  エラーメッセージの翻訳キー
+     * @param  Request  $request  Request
+     * @param  \Illuminate\Database\Eloquent\Model  $model  Model
+     * @param  string  $credentialId  Credential ID
+     * @param  string  $allDeletedMessageKey  Translation key for bulk deletion success message
+     * @param  string  $notFoundMessageKey  Translation key for not found message
+     * @param  string  $deletedMessageKey  Translation key for deletion success message
+     * @param  string  $errorMessageKey  Translation key for error message
      * @return \Illuminate\Http\JsonResponse
      */
     protected function revokePasskeyForModel(
@@ -72,7 +72,7 @@ trait ManagesTwoFaTrait
         $passkeyService = new TwoFaPasskeyService();
 
         try {
-            // 一括削除の場合
+            // For bulk deletion
             if ($credentialId === 'all') {
                 $deletedCount = $passkeyService->revokeAllCredentials($model);
 
@@ -82,7 +82,7 @@ trait ManagesTwoFaTrait
                 ]);
             }
 
-            // 個別削除の場合
+            // For individual deletion
             $deleted = $passkeyService->revokeCredential($model, $credentialId);
 
             if (! $deleted) {
@@ -111,12 +111,12 @@ trait ManagesTwoFaTrait
     }
 
     /**
-     * 回復コードを削除（共通）
+     * Delete recovery codes (common)
      *
-     * @param  Request  $request  リクエスト
-     * @param  \Illuminate\Database\Eloquent\Model  $model  モデル
-     * @param  string  $successMessageKey  成功メッセージの翻訳キー
-     * @param  string  $errorMessageKey  エラーメッセージの翻訳キー
+     * @param  Request  $request  Request
+     * @param  \Illuminate\Database\Eloquent\Model  $model  Model
+     * @param  string  $successMessageKey  Translation key for success message
+     * @param  string  $errorMessageKey  Translation key for error message
      * @return \Illuminate\Http\JsonResponse
      */
     protected function revokeRecoveryCodesForModel(
@@ -148,10 +148,10 @@ trait ManagesTwoFaTrait
     }
 
     /**
-     * Passkey登録用のWebAuthnチャレンジを生成（共通）
+     * Generate WebAuthn challenge for Passkey registration (common)
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model  モデル
-     * @param  string  $errorMessageKey  エラーメッセージの翻訳キー
+     * @param  \Illuminate\Database\Eloquent\Model  $model  Model
+     * @param  string  $errorMessageKey  Translation key for error message
      * @return \Illuminate\Http\JsonResponse
      */
     protected function generatePasskeyRegistrationOptions(
@@ -181,12 +181,12 @@ trait ManagesTwoFaTrait
     }
 
     /**
-     * Passkeyを登録（共通）
+     * Register Passkey (common)
      *
-     * @param  Request  $request  リクエスト
-     * @param  \Illuminate\Database\Eloquent\Model  $model  モデル
-     * @param  string  $successMessageKey  成功メッセージの翻訳キー
-     * @param  string  $errorMessageKey  エラーメッセージの翻訳キー
+     * @param  Request  $request  Request
+     * @param  \Illuminate\Database\Eloquent\Model  $model  Model
+     * @param  string  $successMessageKey  Translation key for success message
+     * @param  string  $errorMessageKey  Translation key for error message
      * @return \Illuminate\Http\JsonResponse
      */
     protected function registerPasskeyForModel(
@@ -236,11 +236,11 @@ trait ManagesTwoFaTrait
     }
 
     /**
-     * 回復コードを生成（共通）
+     * Generate recovery codes (common)
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model  モデル
-     * @param  string  $successMessageKey  成功メッセージの翻訳キー
-     * @param  string  $errorMessageKey  エラーメッセージの翻訳キー
+     * @param  \Illuminate\Database\Eloquent\Model  $model  Model
+     * @param  string  $successMessageKey  Translation key for success message
+     * @param  string  $errorMessageKey  Translation key for error message
      * @return \Illuminate\Http\JsonResponse
      */
     protected function generateRecoveryCodesForModel(
@@ -250,7 +250,7 @@ trait ManagesTwoFaTrait
     ) {
         $recoveryCodeService = app(TwoFaRecoveryCodeService::class);
 
-        // 既に回復コードが存在する場合はエラー
+        // Error if recovery codes already exist
         if ($recoveryCodeService->hasRecoveryCodes($model)) {
             return response()->json([
                 'success' => false,
@@ -280,12 +280,12 @@ trait ManagesTwoFaTrait
     }
 
     /**
-     * 回復コードを再生成（共通）
+     * Regenerate recovery codes (common)
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model  モデル
-     * @param  string  $successMessageKey  成功メッセージの翻訳キー
-     * @param  string  $tooSoonMessageKey  再生成が早すぎる場合のメッセージ翻訳キー
-     * @param  string  $errorMessageKey  エラーメッセージの翻訳キー
+     * @param  \Illuminate\Database\Eloquent\Model  $model  Model
+     * @param  string  $successMessageKey  Translation key for success message
+     * @param  string  $tooSoonMessageKey  Translation key for message when regeneration is too soon
+     * @param  string  $errorMessageKey  Translation key for error message
      * @return \Illuminate\Http\JsonResponse
      */
     protected function regenerateRecoveryCodesForModel(
@@ -296,7 +296,7 @@ trait ManagesTwoFaTrait
     ) {
         $recoveryCodeService = app(TwoFaRecoveryCodeService::class);
 
-        // 再生成可能かチェック
+        // Check if regeneration is possible
         if (! $recoveryCodeService->canRegenerate($model)) {
             $nextTime = $recoveryCodeService->getNextRegenerateTime($model);
 
@@ -331,7 +331,7 @@ trait ManagesTwoFaTrait
     }
 
     /**
-     * 回復コードセッションをクリア（共通）
+     * Clear recovery code session (common)
      *
      * @return \Illuminate\Http\JsonResponse
      */

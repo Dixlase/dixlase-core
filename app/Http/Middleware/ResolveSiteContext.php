@@ -70,12 +70,23 @@ class ResolveSiteContext
     {
         $primaryLocale = null;
 
-        if (Schema::hasTable('sites')) {
-            $site = $this->resolveSite($request);
-            if ($site !== null) {
-                $this->siteContext->setCurrent($site->id);
-                $primaryLocale = $site->primary_locale;
+        // The middleware is registered globally and therefore runs during
+        // /install before the database is provisioned. Wrap all DB probes
+        // so that connection / permission / missing-table errors do not
+        // prevent CheckInstallationReady from routing the user to the
+        // installer. Once installed, normal resolution resumes.
+        try {
+            if (Schema::hasTable('sites')) {
+                $site = $this->resolveSite($request);
+                if ($site !== null) {
+                    $this->siteContext->setCurrent($site->id);
+                    $primaryLocale = $site->primary_locale;
+                }
             }
+        } catch (\Throwable $e) {
+            // DB unreachable, missing privileges, or tables not yet
+            // migrated. Leave context unset; downstream middleware
+            // (CheckInstallationReady) handles the install redirect.
         }
 
         // Seed URL::defaults('locale') with the site's primary locale so

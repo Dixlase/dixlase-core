@@ -40,47 +40,47 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 /**
- * @internal コア専用。プラグイン/テーマから参照しないこと
+ * @internal Core only. Do not reference from plugins/themes
  *
- * アカウント認証の共通トレイト
+ * Common trait for account verification
  *
- * メンバーとユーザーのアカウント認証処理で共通して使用される機能を提供します。
- * このトレイトを使用するコントローラーは、以下の抽象メソッドを実装する必要があります。
+ * Provides functionality commonly used in account verification processes for members and users.
+ * Controllers using this trait must implement the following abstract methods:
  */
 trait AccountVerificationTrait
 {
     /**
-     * コンテキストを取得（継承先で実装）
+     * Get context (implement in subclass)
      *
-     * @return string コンテキスト名（'admin', 'user' など）
+     * @return string Context name (e.g., 'admin', 'user')
      */
     abstract protected function getContext(): string;
 
     /**
-     * 管理者メールアドレス設定キーを取得（継承先で実装）
+     * Get administrator email address settings key (implement in subclass)
      *
-     * @return string 設定キー名
+     * @return string Settings key name
      */
     abstract protected function getAdminEmailSettingKey(): string;
 
     /**
-     * 通知メールアドレス設定キーを取得（継承先で実装）
+     * Get notification email address settings key (implement in subclass)
      *
-     * @return string 設定キー名
+     * @return string Settings key name
      */
     abstract protected function getNotificationEmailSettingKey(): string;
 
     /**
-     * 設定モデルクラスを取得（継承先で実装）
+     * Get settings model class (implement in subclass)
      *
-     * @return string 設定モデルクラス名
+     * @return string Settings model class name
      */
     abstract protected function getSettingModelClass(): string;
 
     /**
-     * コンテキストに応じた認証完了通知クラスを取得
+     * Get verification completion notification class according to context
      *
-     * @return string 通知クラス名
+     * @return string Notification class name
      */
     protected function getVerificationCompletedNotificationClass(): string
     {
@@ -92,9 +92,9 @@ trait AccountVerificationTrait
     }
 
     /**
-     * コンテキストに応じた管理者通知クラスを取得
+     * Get administrator notification class according to context
      *
-     * @return string 通知クラス名
+     * @return string Notification class name
      */
     protected function getAdminVerifiedNotificationClass(): string
     {
@@ -106,10 +106,10 @@ trait AccountVerificationTrait
     }
 
     /**
-     * ログイン後にメール認証が待機中の場合、認証処理を実行
+     * Execute verification process if email verification is pending after login
      *
-     * @param  mixed  $user  ユーザーモデル（Member または User）
-     * @param  \Illuminate\Http\Request  $request  リクエストオブジェクト
+     * @param  mixed  $user  User model (Member or User)
+     * @param  \Illuminate\Http\Request  $request  Request object
      */
     protected function processEmailVerificationIfPending($user, $request): void
     {
@@ -119,7 +119,7 @@ trait AccountVerificationTrait
             return;
         }
 
-        // トークンの有効期限チェック
+        // Check token expiration
         if ($verificationData['expires_at'] < now()->timestamp) {
             session()->forget('email_verification_pending');
             session()->flash('error', __('auth.verification_token_expired'));
@@ -127,7 +127,7 @@ trait AccountVerificationTrait
             return;
         }
 
-        // ログインしたユーザーと認証待ちのユーザーが一致するかチェック
+        // Check if logged-in user matches user awaiting verification
         if ($user->id !== $verificationData['member_id']) {
             session()->forget('email_verification_pending');
             session()->flash('error', __('auth.verification_member_mismatch'));
@@ -135,7 +135,7 @@ trait AccountVerificationTrait
             return;
         }
 
-        // ハッシュを再検証
+        // Re-verify hash
         $expectedHash = sha1($verificationData['email']);
         if (! hash_equals((string) $verificationData['hash'], $expectedHash)) {
             session()->forget('email_verification_pending');
@@ -146,14 +146,14 @@ trait AccountVerificationTrait
 
         try {
             if ($verificationData['is_email_change']) {
-                // メールアドレス変更の認証
+                // Email address change verification
                 $this->processEmailChange($user);
             } else {
-                // 新規アカウントの認証
+                // New account verification
                 $this->processAccountVerification($user);
             }
 
-            // 認証完了後、セッションから削除
+            // Remove from session after verification is complete
             session()->forget('email_verification_pending');
         } catch (\Exception $e) {
             Log::error('[Account Verification] Failed', [
@@ -166,7 +166,7 @@ trait AccountVerificationTrait
     }
 
     /**
-     * メールアドレス変更の認証処理
+     * Process email address change verification
      *
      * @param  mixed  $user
      */
@@ -186,7 +186,7 @@ trait AccountVerificationTrait
     }
 
     /**
-     * 新規アカウントの認証処理
+     * Process new account verification
      *
      * @param  mixed  $user
      */
@@ -201,20 +201,20 @@ trait AccountVerificationTrait
 
         session()->flash('success', __('account.account_verification_success'));
 
-        // メールサーバー設定済みの場合のみ通知を送信
+        // Send notification only if mail server is configured
         if (MailServerValidatorService::isMailServerTested()) {
             $this->sendVerificationNotifications($user);
         }
     }
 
     /**
-     * 認証完了通知を送信
+     * Send verification completion notification
      *
      * @param  mixed  $user
      */
     protected function sendVerificationNotifications($user): void
     {
-        // ユーザー本人に認証完了メールを送信
+        // Send verification completion email to the user
         $notificationClass = $this->getVerificationCompletedNotificationClass();
         if ($notificationClass && class_exists($notificationClass)) {
             try {
@@ -232,7 +232,7 @@ trait AccountVerificationTrait
             }
         }
 
-        // 管理者に通知
+        // Notify administrator
         $adminNotificationClass = $this->getAdminVerifiedNotificationClass();
         if ($adminNotificationClass && class_exists($adminNotificationClass)) {
             try {

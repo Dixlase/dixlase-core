@@ -77,7 +77,7 @@ class PluginAudit extends Model
     ];
 
     /**
-     * プラグインスラッグで監査結果を取得
+     * Get audit result by plugin slug
      */
     public static function getBySlug(string $slug): ?self
     {
@@ -85,7 +85,7 @@ class PluginAudit extends Model
     }
 
     /**
-     * 監査結果を保存または更新
+     * Save or update audit result
      */
     public static function saveAuditResult(string $slug, array $result): self
     {
@@ -116,10 +116,10 @@ class PluginAudit extends Model
     }
 
     /**
-     * スキャナーのCSPステータスをJS互換の正規化値に変換
+     * Convert scanner CSP status to JS-compatible normalized value
      *
-     * スキャナー: compatible, csp_ready, inline_required, inline_css_only, unknown
-     * 正規化後: compliant, inline_required, inline_css_only, unknown
+     * Scanner: compatible, csp_ready, inline_required, inline_css_only, unknown
+     * Normalized: compliant, inline_required, inline_css_only, unknown
      */
     protected function normalizedCspStatus(): string
     {
@@ -130,7 +130,7 @@ class PluginAudit extends Model
     }
 
     /**
-     * 監査結果を配列で取得
+     * Get audit result as array
      */
     public function toAuditArray(): array
     {
