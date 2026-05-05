@@ -30,6 +30,8 @@ The Dixlase core is distributed under two parallel licenses, and recipients choo
 
 Both licenses cover the same software; they differ only in obligations.
 
+> **Note on commercial-license availability.** The commercial-license framework documented in [`LICENSE.commercial`](./LICENSE.commercial) is in place, but commercial terms (pricing and contract format) are still being finalized. Inquiries can be directed to office@exc-d.com.
+
 ## 3. Plugin and Theme Exception
 
 The Plugin and Theme Exception is defined in [`LICENSE`](./LICENSE) and bounded by [`PLUGIN-API.md`](./PLUGIN-API.md). Authors of plugins and themes that satisfy the four-condition test in the Exception retain full copyright in their plugin/theme code and may distribute it under any license of their choice, including proprietary licenses. The Exception is one-way: it does not allow modified core code to be re-characterized as a plugin to escape the AGPL.
@@ -51,6 +53,8 @@ Under the CLA model:
 - Contributors confirm authority to grant the license (employer permission, original creation, third-party material disclosure)
 
 This Policy applies to contributions to the **core repository**. Plugins and themes distributed separately are outside its scope (see Section 3).
+
+> **Current operating policy.** Dixlase is **not currently accepting external pull requests**. The CLA framework above will be activated when the formal legal review is complete and external code contributions are reopened. See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the contributions currently being welcomed (Issue-based bug reports, Discussions, etc.).
 
 ## 5. Operative Legal Instruments
 
