@@ -145,7 +145,7 @@ trait AdminInterfaceTrait
     {
         // admin.controller.action → ['controller', 'action']
         $keys = explode('.', $routeName);
-        array_shift($keys); // 'admin'を除去
+        array_shift($keys); // Remove 'admin'
 
         if (empty($keys)) {
             return 'admin/dashboard.heading';
@@ -205,7 +205,7 @@ trait AdminInterfaceTrait
     {
         // New format: admin.plugin-name::admin.controller.action
         if (strpos($routeName, 'admin.') === 0) {
-            $withoutAdminPrefix = substr($routeName, 6); // 'admin.'を除去
+            $withoutAdminPrefix = substr($routeName, 6); // Remove 'admin.'
             [$pluginNamespace, $route] = explode('::', $withoutAdminPrefix, 2);
 
             // Apply the same logic within plugins
@@ -251,7 +251,7 @@ trait AdminInterfaceTrait
         }
 
         // Fallback: Old format dot notation
-        array_shift($keys); // 'admin'を除去
+        array_shift($keys); // Remove 'admin'
         $headingKey = implode('.', $keys).'.heading';
 
         return $pluginNamespace.'::admin.'.$headingKey;

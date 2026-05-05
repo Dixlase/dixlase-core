@@ -67,7 +67,7 @@ trait MailTestTrait
             $host.':'.$port,
             $errno,
             $errstr,
-            10, // 10秒タイムアウト
+            10, // 10 second timeout
             STREAM_CLIENT_CONNECT,
             $context
         );
@@ -250,12 +250,12 @@ trait MailTestTrait
                 $installData['mail_connection_tested'] = 1;
                 $installData['mail_connection_test_date'] = now()->toDateTimeString();
                 session(['install_data' => $installData]);
-                session()->save(); // セッションを強制保存
+                session()->save(); // Force save session
             } else {
                 // Save to mail_test_results in admin panel (reflected to DB when form is saved)
                 session(['mail_test_results.mail_connection_tested' => 1]);
                 session(['mail_test_results.mail_connection_test_date' => now()->toDateTimeString()]);
-                session()->save(); // セッションを強制保存
+                session()->save(); // Force save session
             }
 
             return response()->json([
@@ -393,7 +393,7 @@ trait MailTestTrait
                 // Save to mail_test_results in admin panel (reflected to DB when form is saved)
                 session(['mail_test_results.mail_send_tested' => 1]);
                 session(['mail_test_results.mail_send_test_date' => now()->toDateTimeString()]);
-                session()->save(); // セッションを強制保存
+                session()->save(); // Force save session
             }
 
             return response()->json([
@@ -464,7 +464,7 @@ trait MailTestTrait
                 // Save to mail_test_results in admin panel (reflected to DB when form is saved)
                 session(['mail_test_results.mail_receive_tested' => 1]);
                 session(['mail_test_results.mail_receive_test_date' => now()->toDateTimeString()]);
-                session()->save(); // セッションを強制保存
+                session()->save(); // Force save session
             }
 
             // Clear token

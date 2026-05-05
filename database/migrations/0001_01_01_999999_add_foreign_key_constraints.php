@@ -287,7 +287,7 @@ return new class extends Migration
         // ========================================
 
         // site_settings.site_id -> sites.id
-        // サイトが削除されたら設定も削除（cascade）
+        // Delete settings when site is deleted (cascade)
         Schema::table('site_settings', function (Blueprint $table) {
             $table->foreign('site_id')
                 ->references('id')

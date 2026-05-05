@@ -113,7 +113,7 @@ return new class extends Migration
             $table->string('session_id', 255)->nullable()->index();
 
             // ========================================
-            // プラグイン情報（コア操作ならnull）
+            // Plugin information (null for Core operations)
             // ========================================
             $table->string('plugin_name', 100)->nullable()->index();
             $table->string('plugin_version', 50)->nullable();
@@ -127,7 +127,7 @@ return new class extends Migration
             $table->boolean('is_ai_generated')->default(false)->index();
 
             // ========================================
-            // 任意の追加情報（JSON）
+            // Optional additional information (JSON)
             // ========================================
             // Structure example:
             // {
@@ -145,24 +145,24 @@ return new class extends Migration
             $table->unsignedSmallInteger('schema_version')->default(1);
 
             // ========================================
-            // ハッシュチェーン用カラム（改ざん検知）
+            // Hash chain columns (for tamper detection)
             // ========================================
 
-            // このレコードのハッシュ（SHA-256、64文字）
+            // Hash of this record (SHA-256, 64 characters)
             // Calculation target: occurred_at + severity + outcome + category + action + actor_type + actor_id + target_type + target_id + ip_address + context + previous_hash
             $table->string('record_hash', 64)->nullable();
 
-            // 前レコードのハッシュ（チェーン形成用）
+            // Hash of previous record (for chain formation)
             // First record is 'genesis' or null
             $table->string('previous_hash', 64)->nullable();
 
-            // チェーンシーケンス番号（連番、検証時に使用）
+            // Chain sequence number (serial, used for verification)
             $table->unsignedBigInteger('chain_sequence')->nullable();
 
-            // ハッシュアルゴリズム（将来の変更に備えて記録）
+            // Hash algorithm (recorded for future changes)
             $table->string('hash_algorithm', 20)->default('sha256');
 
-            // Verification status（最後の検証結果）
+            // Verification status (last verification result)
             // null: unverified, valid: verified OK, invalid: tampering detected, skipped: skipped
             $table->string('verification_status', 20)->nullable();
 

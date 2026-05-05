@@ -117,7 +117,7 @@ return new class extends Migration
             // Error information
             // ========================================
 
-            // エラーコード（アプリケーション固有）
+            // Error code (application-specific)
             $table->string('error_code', 50)->nullable()->index();
 
             // Error message
@@ -127,7 +127,7 @@ return new class extends Migration
             // Timestamp
             // ========================================
 
-            // リクエスト日時（Index付き）
+            // Request datetime (indexed)
             $table->timestamp('requested_at')->useCurrent()->index();
 
             // Standard timestamp
@@ -137,7 +137,7 @@ return new class extends Migration
             // Index
             // ========================================
 
-            // レートリミット計算用（APIキー + 時間範囲）
+            // For rate limit calculation (API key + time range)
             $table->index(['api_key_id', 'requested_at'], 'idx_api_rate_limit');
 
             // For rate limit by IP
