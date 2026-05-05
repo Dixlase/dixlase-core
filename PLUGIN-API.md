@@ -1,7 +1,7 @@
 # Dixlase CMS Plugin API Boundary
 
 **Version:** dev
-**Last Updated:** 2026-05-04
+**Last Updated:** 2026-05-05
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -84,6 +84,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 | Contract | Description |
 |---|---|
+| `App\Contracts\PluginIntegration\BlockProviderInterface` | Contract for plugins/themes that provide reusable Block components |
 | `App\Contracts\PluginIntegration\CaptchaFormProviderInterface` | Contract for plugins that provide CAPTCHA forms |
 | `App\Contracts\PluginIntegration\DashboardNotificationProviderInterface` | Contract for plugins that provide dashboard notifications |
 | `App\Contracts\PluginIntegration\DashboardWidgetProviderInterface` | Contract for plugins that provide dashboard widgets |
@@ -210,6 +211,8 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 ### 4.10 Plugin Integration DTOs
 
+- `App\DTO\PluginIntegration\BlockContext`
+- `App\DTO\PluginIntegration\BlockDescriptor`
 - `App\DTO\PluginIntegration\CaptchaFormDTO`
 - `App\DTO\PluginIntegration\DashboardNotificationDTO`
 - `App\DTO\PluginIntegration\DashboardWidgetDTO`
@@ -394,6 +397,28 @@ Error messages in the envelope are always English (clients should map the stable
 
 API-key authentication is handled by `App\Http\Middleware\AuthenticateApiKey` (route alias `auth.api`), which uses `ApiErrorResponse::make()` for `missing_credentials` / `invalid_credentials` / `ip_not_allowed` / `insufficient_scope` failures. Use of network-scope keys (site_id = NULL, CLI-issued via `dls:api:create-network-key`) is automatically audited at `severity = notice` under action `network_api_key_used`.
 
+### 7.5 Direct Middleware-Group Registration
+
+A plugin's ServiceProvider may register a middleware class directly into the global `web` middleware group instead of attaching it per route. Two methods are available:
+
+| Method | Position | Recommended use |
+|---|---|---|
+| `Router::pushMiddlewareToGroup('web', $class)` | Appended to the end of the `web` group | Cross-cutting response decorators that need the full request to be resolved before they run (e.g. SEO meta-tag injection, late header rewriting). |
+| `Router::prependMiddlewareToGroup('web', $class)` | Inserted at the front of the `web` group | Early-exit handlers that must run before any other `web` middleware (e.g. URL redirect lookups that short-circuit the response with a 3xx). |
+
+Plugins that perform either of these registrations **must** declare `permissions.system.register_middleware: true` in `plugin.json`. The permission scanner detects both `pushMiddlewareToGroup(...)` and `prependMiddlewareToGroup(...)` call sites.
+
+#### Reserved use of `prependMiddlewareToGroup('web', ...)`
+
+`prependMiddlewareToGroup('web', ...)` is **reserved for redirect-class plugins** (i.e. plugins whose primary responsibility is to short-circuit the request with a 301/302/307/308 before any application logic runs). Other plugin categories should use `pushMiddlewareToGroup` instead.
+
+Why this matters:
+
+- Multiple plugins prepending to the same group results in a "last-prepend-wins" ordering that depends on plugin boot order, which itself depends on activation order in the database. There is no API to enforce a deterministic order across redirect-style plugins, so the reservation keeps the front of the chain owned by a single category of behavior.
+- A non-redirect plugin that prepends will be silently re-ordered if a redirect plugin is later activated, which can lead to subtle correctness bugs (the non-redirect plugin no longer sees the request first).
+
+If a future use case genuinely needs a deterministic priority across multiple non-redirect prependers, the path forward is to introduce a core `MiddlewareRegistry` with explicit priorities; until then this reservation is the contract.
+
 ---
 
 ## 8. Configuration Structures
@@ -551,6 +576,21 @@ In addition, `App\Models\Traits\BelongsToSite` is the per-site Eloquent
 trait that adds `site()` belongsTo + a current-site Global Scope +
 auto-assigns `site_id` on creation. Apply it to any plugin model whose
 table has a `site_id` column.
+
+### 9.6.2 Cache Helpers (`App\Support\Cache\*`)
+
+Builder helpers that produce cache keys following the Dixlase naming
+convention `dixlase:{scope}:{owner}:{domain}:{key}`. Use these instead of
+constructing keys by hand so plugin/theme cache entries do not collide
+and can be partitioned per site once multisite is visible.
+
+| Helper | Description |
+|---|---|
+| `App\Support\Cache\CacheKey` | Static Builder for core / plugin / theme / tag keys, plus `site($id)` entry into the site-scoped Builder |
+| `App\Support\Cache\SiteScopedCacheKey` | Fluent Builder returned by `CacheKey::site($id)`; produces composite keys partitioned by site id |
+
+See [Cache Key Convention](docs/development/cache-key-convention.md) for
+the full format reference, tag rules, and worked examples.
 
 ### 9.7 Actors
 
@@ -778,6 +818,7 @@ class PluginNameServiceProvider extends ServiceProvider
       "register_middleware": false,
       "register_commands": false,
       "register_blade_directives": false,
+      "register_blocks": false,
       "modify_routes": false
     }
   },
@@ -791,6 +832,40 @@ class PluginNameServiceProvider extends ServiceProvider
   }
 }
 ```
+
+`permissions.system.register_blocks` is **reserved** for plugins that register implementations of `App\Contracts\PluginIntegration\BlockProviderInterface` — Block components that may be placed in the GUI editor or in theme widget areas. The block registry, `x-block` renderer component, and admin UI are not yet implemented in v0.1.0; the contract and permission slot are reserved up-front so plugin authors can target a stable surface.
+
+---
+
+## 12.5 theme.json Schema (Widget Area Reservation)
+
+Themes that support pluggable Block widgets in fixed regions of the layout (sidebar, footer, etc.) declare those regions in `theme.json` under the **`widget_areas`** key. The field is **reserved** at v0.1.0 — themes may declare it now so that future Dixlase releases can render plugin-provided Blocks into those areas without theme rework.
+
+```json
+{
+  "name": "My Theme",
+  "slug": "my-theme",
+  "widget_areas": [
+    {
+      "name": "sidebar",
+      "label": {"en": "Sidebar", "ja": "サイドバー"},
+      "description": {"en": "Right column on standard pages.", "ja": "標準ページの右カラム。"}
+    },
+    {
+      "name": "footer_columns",
+      "label": {"en": "Footer Columns", "ja": "フッターカラム"}
+    }
+  ]
+}
+```
+
+| Key | Type | Description |
+|---|---|---|
+| `widget_areas[].name` | `string` | Stable identifier referenced by the `x-widget-area` component's `name` prop (snake_case recommended). |
+| `widget_areas[].label` | `object` | Localized display name (`{en, ja}`). |
+| `widget_areas[].description` | `object` | Optional localized description shown in admin UI. |
+
+A theme with no widget areas (e.g. a one-page landing-page theme) may omit the field entirely or declare an empty array.
 
 ---
 
