@@ -48,15 +48,15 @@ return new class extends Migration
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
-            $table->string('account_name'); // ログイン用アカウント名（半角英数字）
-            $table->string('display_name')->nullable(); // 表示名（管理バー等に表示）
+            $table->string('account_name'); // Account name for login (alphanumeric)
+            $table->string('display_name')->nullable(); // Display name (shown in admin bar, etc.)
             $table->string('description')->nullable();
             $table->string('email');
             $table->timestamp('email_verified_at')->nullable(); // Email verification timestamp
             $table->string('pending_email')->nullable(); // New email address pending verification
-            $table->string('locale')->nullable(); // 個別言語設定（nullの場合はシステムデフォルト）
+            $table->string('locale')->nullable(); // Individual language settings (system default if null)
             $table->integer('role')->default(1);   // 1=admin, 2=super_admin, 3=editor, 4=author, 5=contributor
-            $table->unsignedBigInteger('custom_role_id')->nullable(); // カスタムロール（外部キー制約は add_foreign_key_constraints で追加）
+            $table->unsignedBigInteger('custom_role_id')->nullable(); // Custom role (foreign key constraint added in add_foreign_key_constraints)
             $table->integer('appearance')->default(0); // 0= auto, 1 = light, 2 = dark
             $table->string('password'); // Hashed
             $table->integer('login_notification_mode')->default(2); // 0= Disabled, 1= DifferentDevice, 2= Always
@@ -74,7 +74,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            // 検索パフォーマンス向上のためのインデックス（ユニーク制約なし）
+            // Index for improved search performance (no unique constraint)
             $table->index('email');
         });
     }

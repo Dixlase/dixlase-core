@@ -805,7 +805,7 @@ class AuditLog extends Model
             self::ACTION_PLUGIN_INSTALLED,      // Plugin installation
             self::ACTION_PLUGIN_UNINSTALLED,    // Plugin uninstallation
             self::ACTION_THEME_INSTALLED,       // Theme installation
-            self::ACTION_THEME_UNINSTALLED,     // テーマアンインストール
+            self::ACTION_THEME_UNINSTALLED,     // Theme uninstallation
         ];
 
         // High: Deletion, critical settings changes, AI batch operations
@@ -819,7 +819,7 @@ class AuditLog extends Model
             self::ACTION_PLUGIN_DISABLED,       // Plugin disabled
             self::ACTION_THEME_DISABLED,        // Theme disabled
             self::ACTION_ROLE_CHANGED,          // Permission changed
-            self::ACTION_AI_BULK_OPERATION,     // AI一括操作
+            self::ACTION_AI_BULK_OPERATION,     // AI bulk operation
         ];
 
         // Medium: Edit, update
@@ -834,7 +834,7 @@ class AuditLog extends Model
             self::ACTION_PLUGIN_ENABLED,        // Plugin activation
             self::ACTION_PLUGIN_UPDATED,        // Plugin update
             self::ACTION_THEME_ENABLED,         // Theme activation
-            self::ACTION_THEME_UPDATED,         // テーマ更新
+            self::ACTION_THEME_UPDATED,         // Theme update
         ];
 
         if (in_array($action, $criticalActions)) {

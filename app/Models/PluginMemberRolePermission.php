@@ -40,7 +40,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @deprecated このモデルは廃止されました。
+ * @deprecated This model has been retired.
  *             Please use the RolePermissionOverride model and PermissionRegistry service in the new approach.
  *             See docs/role-permission-system.md for details.
  */

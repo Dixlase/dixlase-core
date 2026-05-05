@@ -340,13 +340,13 @@ trait PluginLoaderTrait
     public function mergePluginConfig($configFile, $configKey)
     {
         if (! file_exists($configFile)) {
-            return; // 設定ファイルが存在しない場合はスキップ
+            return; // Skip if settings file does not exist
         }
 
         $pluginConfig = require $configFile;
 
         if (! is_array($pluginConfig)) {
-            return; // 無効な設定ファイルの場合はスキップ
+            return; // Skip if settings file is invalid
         }
 
         // Get existing settings

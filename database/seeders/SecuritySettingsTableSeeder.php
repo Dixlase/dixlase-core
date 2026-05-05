@@ -133,15 +133,15 @@ class SecuritySettingsTableSeeder extends Seeder
         // Two-factor authentication basic settings (moved from MembersSettingsSeeder)
         GlobalSetting::updateOrCreate(
             ['name' => 'two_fa_mode'],
-            ['value' => '3'] // 0=無効, 1=異なるデバイス, 2=常に有効, 3=プロフィール設定に従う
+            ['value' => '3'] // 0=disabled, 1=different device, 2=always enabled, 3=follow profile setting
         );
         GlobalSetting::updateOrCreate(
             ['name' => 'two_fa_passkey_mode'],
-            ['value' => '1'] // 0=無効, 1=有効（デフォルト: 有効）
+            ['value' => '1'] // 0=disabled, 1=enabled (default: enabled)
         );
         GlobalSetting::updateOrCreate(
             ['name' => 'two_fa_passkey_max_devices'],
-            ['value' => '3'] // Passkey最大登録数（1-5）
+            ['value' => '3'] // Maximum passkey registrations (1-5)
         );
 
         // Two-factor authentication detailed settings (moved from MembersSettingsSeeder)

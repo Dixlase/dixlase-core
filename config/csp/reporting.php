@@ -38,7 +38,7 @@ return [
         'install',          // Installation screen (DB not configured)
         'install/*',        // Installation screen subpath
         '/csp-report',      // CSP report endpoint itself
-        '/api/*',           // API（必要に応じて）
+        '/api/*',           // API (as needed)
     ],
 
     /*

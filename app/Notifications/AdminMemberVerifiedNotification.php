@@ -78,16 +78,16 @@ class AdminMemberVerifiedNotification extends Notification
             ->subject("[{$appName}] ".__('mail.member-notification.admin_notification.member_verified.subject'))
             ->greeting(__('mail.member-notification.admin_notification.member_verified.greeting'))
             ->line(__('mail.member-notification.admin_notification.member_verified.title'))
-            ->line('') // 空白行
+            ->line('') // blank line
             ->line(__('mail.member-notification.admin_notification.member_verified.message'))
-            ->line('') // 空白行
+            ->line('') // blank line
             ->line(__('mail.member-notification.admin_notification.member_verified.member_info'))
             ->line(__('mail.member-notification.admin_notification.member_verified.name').': '.$this->member->name)
             ->line(__('mail.member-notification.admin_notification.member_verified.email').': '.$this->member->email)
             ->line(__('mail.member-notification.admin_notification.member_verified.verified_at').': '.$this->verifiedAt)
-            ->line('') // 空白行
+            ->line('') // blank line
             ->line(__('mail.member-notification.admin_notification.member_verified.login_available'))
-            ->line('') // 空白行
+            ->line('') // blank line
             ->line(__('mail.member-notification.admin_notification.member_verified.notification_time').': '.now()->format('Y-m-d H:i:s'))
             ->salutation(__('mail.member-notification.admin_notification.member_verified.regards')."\n\n{$appName}");
     }

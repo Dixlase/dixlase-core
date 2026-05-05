@@ -40,9 +40,9 @@ use App\Services\MailBypassService;
 use Illuminate\Console\Command;
 
 /**
- * メール送信緊急バイパスコマンド（ブレークグラス）
+ * Emergency mail sending bypass command (break glass)
  *
- * SMTPサーバー障害時に、メール依存機能（Two-FA、パスワードリセット等）を
+ * When SMTP server fails, bypass mail-dependent features (Two-FA, password reset, etc.)
  * Emergency recovery feature to temporarily bypass
  */
 class MailBypassCommand extends Command

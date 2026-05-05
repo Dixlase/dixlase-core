@@ -34,7 +34,7 @@
  */
 
 return [
-    // システム予約パス（トップレベルURLスラッグとして使用不可）
+    // System reserved paths (cannot be used as top-level URL slugs)
     'reserved' => [
         'api',
         'assets',

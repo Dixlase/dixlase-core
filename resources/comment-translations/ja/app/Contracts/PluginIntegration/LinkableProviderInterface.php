@@ -1,0 +1,42 @@
+<?php
+
+return [
+    'Contract for plugins that provide linkable content' => 'リンク可能なコンテンツを提供するプラグインの契約',
+    'Common interface for menu plugins and others to' => 'メニュープラグインなどが他のプラグインからコンテンツを',
+    'retrieve content from other plugins' => '取得するための共通インターフェースです。',
+    'Retrieve the provider identifier' => 'プロバイダーの識別子を取得',
+    'e.g. \'dixlase-pages\', \'dixlase-blog\'' => '例: \'dixlase-pages\', \'dixlase-blog\'',
+    'Retrieve the provider display name' => 'プロバイダーの表示名を取得',
+    'e.g. \'Pages\', \'Blog Posts\'' => '例: \'ページ\', \'ブログ記事\'',
+    'Retrieve the provider icon class (optional)' => 'プロバイダーのアイコンクラスを取得（オプション）',
+    'e.g. \'fas fa-file-alt\'' => '例: \'fas fa-file-alt\'',
+    'Whether this provider is currently available' => 'このプロバイダーが現在利用可能かどうか',
+    'Retrieve a list of available content' => '利用可能なコンテンツのリストを取得',
+    'Maximum number of items to retrieve (default: 100)' => '取得件数の上限（デフォルト: 100）',
+    'Search content based on a search query' => '検索クエリに基づいてコンテンツを検索',
+    'Search query' => '検索クエリ',
+    'Maximum number of items to retrieve (default: 20)' => '取得件数の上限（デフォルト: 20）',
+    'Retrieve content by specific ID' => '特定のIDからコンテンツを取得',
+    'Content ID' => 'コンテンツID',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Contract for plugins that provide linkable content' => 'machine',
+        'Common interface for menu plugins and others to' => 'machine',
+        'retrieve content from other plugins' => 'machine',
+        'Retrieve the provider identifier' => 'machine',
+        'e.g. \'dixlase-pages\', \'dixlase-blog\'' => 'machine',
+        'Retrieve the provider display name' => 'machine',
+        'e.g. \'Pages\', \'Blog Posts\'' => 'machine',
+        'Retrieve the provider icon class (optional)' => 'machine',
+        'e.g. \'fas fa-file-alt\'' => 'machine',
+        'Whether this provider is currently available' => 'machine',
+        'Retrieve a list of available content' => 'machine',
+        'Maximum number of items to retrieve (default: 100)' => 'machine',
+        'Search content based on a search query' => 'machine',
+        'Search query' => 'machine',
+        'Maximum number of items to retrieve (default: 20)' => 'machine',
+        'Retrieve content by specific ID' => 'machine',
+        'Content ID' => 'machine',
+    ],
+];

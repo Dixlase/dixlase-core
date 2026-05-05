@@ -1,3 +1,19 @@
+> **Pull Requests are not currently accepted / 現在 Pull Request は受け付けていません**
+>
+> Dixlase is in early development and **does not currently accept external pull requests**. External code contributions will reopen once the formal legal review of the Contributor License Agreement (CLA) is complete. See [`CONTRIBUTING.md`](https://github.com/Dixlase/dixlase-core/blob/main/CONTRIBUTING.md) for the current contribution policy.
+>
+> Dixlase は初期開発期にあり、**外部からの Pull Request は現在受け付けていません**。CLA の正式法務レビュー完了後に再開予定です。現在のコントリビューション方針は [`CONTRIBUTING.md`](https://github.com/Dixlase/dixlase-core/blob/main/CONTRIBUTING.md) をご覧ください。
+>
+> If you've found a bug or have a suggestion, please use:
+>
+> - [Issues](https://github.com/Dixlase/dixlase-core/issues) — bug reports / バグ報告
+> - [Discussions](https://github.com/Dixlase/dixlase-core/discussions) — questions, ideas / 質問・提案
+>
+> ---
+>
+> The fields below describe the planned PR template that will be activated once external pull requests reopen.
+> 以下のフィールドは、外部 Pull Request 受付が再開された際に運用される予定のテンプレートです。
+
 ## Description / 概要
 
 <!-- Describe what this PR does / この PR が何をするか説明してください -->

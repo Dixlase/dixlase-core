@@ -1,0 +1,42 @@
+<?php
+
+return [
+    'Initialize the model' => 'モデルの初期化',
+    'Auto-set member_id and name before saving (Laragear\\WebAuthn sets authenticatable_id and alias)' => '保存前にmember_idとnameを自動設定（Laragear\\WebAuthnがauthenticatable_idとaliasを設定する）',
+    'Set member_id from authenticatable_id' => 'authenticatable_idからmember_idを設定',
+    'Set name from alias' => 'aliasからnameを設定',
+    'user_id mutator: auto-generate from member_id' => 'user_idミューテーター: member_idから自動生成',
+    'Use the value as-is if already set' => '値が設定されている場合はそのまま使用',
+    'Generate UUID from member_id' => 'member_idからUUIDを生成',
+    'Override parent class encrypted cast' => '親クラスのencryptedキャストを上書き',
+    'Completely disable parent class encrypted cast' => '親クラスのencryptedキャストを完全に無効化',
+    'Remove encrypted cast for public_key' => 'public_keyの暗号化キャストを削除',
+    'Treat as a regular string' => '通常の文字列として扱う',
+    'public_key accessor: completely bypass encryption' => 'public_keyアクセサ: 暗号化を完全にバイパス',
+    'Bypass parent class encrypted cast and return raw value' => '親クラスのencryptedキャストをバイパスして、生の値を返す',
+    'public_key mutator: save without encryption' => 'public_keyミューテーター: 暗号化せずに保存',
+    'Save as-is without encryption' => '暗号化せずにそのまま保存',
+    'Update last used timestamp' => '最終使用日時を更新',
+    'Update device name' => 'デバイス名を更新',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Initialize the model' => 'machine',
+        'Auto-set member_id and name before saving (Laragear\\WebAuthn sets authenticatable_id and alias)' => 'machine',
+        'Set member_id from authenticatable_id' => 'machine',
+        'Set name from alias' => 'machine',
+        'user_id mutator: auto-generate from member_id' => 'machine',
+        'Use the value as-is if already set' => 'machine',
+        'Generate UUID from member_id' => 'machine',
+        'Override parent class encrypted cast' => 'machine',
+        'Completely disable parent class encrypted cast' => 'machine',
+        'Remove encrypted cast for public_key' => 'machine',
+        'Treat as a regular string' => 'machine',
+        'public_key accessor: completely bypass encryption' => 'machine',
+        'Bypass parent class encrypted cast and return raw value' => 'machine',
+        'public_key mutator: save without encryption' => 'machine',
+        'Save as-is without encryption' => 'machine',
+        'Update last used timestamp' => 'machine',
+        'Update device name' => 'machine',
+    ],
+];

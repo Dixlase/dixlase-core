@@ -1,0 +1,10 @@
+<?php
+
+return [
+    '@internal Core use only. Do not reference from plugin/theme' => '@internal コア専用。プラグイン/テーマから参照しないこと',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        '@internal Core use only. Do not reference from plugin/theme' => 'machine',
+    ],
+];

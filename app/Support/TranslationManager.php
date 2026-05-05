@@ -190,7 +190,7 @@ class TranslationManager
     /**
      * Register available locales
      *
-     * @param  array  $locales  ['en' => 'English', 'ja' => '日本語', ...]
+     * @param  array  $locales  ['en' => 'English', 'ja' => 'Japanese', ...]
      */
     public static function registerLocales(array $locales): void
     {
@@ -229,7 +229,7 @@ class TranslationManager
     /**
      * Get all locale names
      *
-     * @return array ['en' => 'English', 'ja' => '日本語', ...]
+     * @return array ['en' => 'English', 'ja' => 'Japanese', ...]
      */
     public static function getLocaleNames(): array
     {

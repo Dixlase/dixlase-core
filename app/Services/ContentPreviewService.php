@@ -90,7 +90,7 @@ class ContentPreviewService
      * Markdown lenient preprocessing
      *
      * Auto-correct when there's no space after heading markers (#)
-     * Example: `#見出し` → `# 見出し`, `##見出し` → `## 見出し`
+     * Example: `#Heading` → `# Heading`, `##Heading` → `## Heading`
      */
     protected function normalizeMarkdown(string $content): string
     {

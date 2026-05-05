@@ -1,0 +1,40 @@
+<?php
+
+return [
+    '@internal For Core use only. Do not reference from plugins/themes' => '@internal コア専用。プラグイン/テーマから参照しないこと',
+    'Safe mode level' => 'セーフモードレベル',
+    'Defines safe mode levels for system recovery.' => 'システムリカバリーのためのセーフモードレベルを定義する。',
+    'Supports three levels: CSP disabled, plugin disabled, theme disabled.' => 'CSP無効化、プラグイン無効化、テーマ無効化の3段階をサポート。',
+    '/** CSP header disabled */' => '/** CSPヘッダー無効化 */',
+    '/** Plugin assets/routes disabled */' => '/** プラグインアセット/ルート無効化 */',
+    '/** Theme disabled (front-end only) */' => '/** テーマ無効化（フロント側のみ） */',
+    'Get session key' => 'セッションキーを取得',
+    'Get Tailwind class for banner background color' => 'バナー背景色のTailwindクラスを取得',
+    'Get Tailwind class for banner button background color' => 'バナーボタン背景色のTailwindクラスを取得',
+    'Get Tailwind class for banner link text color' => 'バナーリンクテキスト色のTailwindクラスを取得',
+    'Get Font Awesome icon class' => 'Font Awesomeアイコンクラスを取得',
+    'Get related settings page route name' => '関連する設定ページルート名を取得',
+    'Get translation key prefix' => '翻訳キーのプレフィックスを取得',
+    'Get Enum from URL parameter value (supports comma-separated)' => 'URLパラメータ値からEnumを取得（カンマ区切り対応）',
+    'Backward compatibility for ?safe=1' => '?safe=1 の後方互換性',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        '@internal For Core use only. Do not reference from plugins/themes' => 'machine',
+        'Safe mode level' => 'machine',
+        'Defines safe mode levels for system recovery.' => 'machine',
+        'Supports three levels: CSP disabled, plugin disabled, theme disabled.' => 'machine',
+        '/** CSP header disabled */' => 'machine',
+        '/** Plugin assets/routes disabled */' => 'machine',
+        '/** Theme disabled (front-end only) */' => 'machine',
+        'Get session key' => 'machine',
+        'Get Tailwind class for banner background color' => 'machine',
+        'Get Tailwind class for banner button background color' => 'machine',
+        'Get Tailwind class for banner link text color' => 'machine',
+        'Get Font Awesome icon class' => 'machine',
+        'Get related settings page route name' => 'machine',
+        'Get translation key prefix' => 'machine',
+        'Get Enum from URL parameter value (supports comma-separated)' => 'machine',
+        'Backward compatibility for ?safe=1' => 'machine',
+    ],
+];

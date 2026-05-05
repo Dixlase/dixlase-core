@@ -1,0 +1,40 @@
+<?php
+
+return [
+    'Process log record' => 'ログレコードを処理',
+    'Check if notification feature is enabled' => '通知機能が有効かチェック',
+    'Generate subject' => '件名を生成',
+    'Generate message' => 'メッセージを生成',
+    'Prepare context information' => 'コンテキスト情報を準備',
+    'Send notification' => '通知送信',
+    'Log notification send errors separately (to avoid infinite loop)' => '通知送信エラーは別のログに記録（無限ループを避けるため）',
+    'Check if notification should be sent' => '通知を送信すべきかチェック',
+    'Get target log levels for notification' => '通知対象ログレベルを取得',
+    'Convert Monolog level to Dixlase LogLevel' => 'MonologレベルをDixlaseのLogLevelに変換',
+    'Check if included in target notification levels' => '通知対象レベルに含まれているかチェック',
+    'Mapping from Monolog level value to Dixlase LogLevel value' => 'Monolog レベル値 → Dixlase LogLevel値のマッピング',
+    'Merge existing context information' => '既存のコンテキスト情報をマージ',
+    'Extract additional information' => '追加情報を抽出',
+    'Add request information (if available)' => 'リクエスト情報を追加（可能な場合）',
+    'Ignore if request information retrieval fails' => 'リクエスト情報の取得に失敗した場合は無視',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Process log record' => 'machine',
+        'Check if notification feature is enabled' => 'machine',
+        'Generate subject' => 'machine',
+        'Generate message' => 'machine',
+        'Prepare context information' => 'machine',
+        'Send notification' => 'machine',
+        'Log notification send errors separately (to avoid infinite loop)' => 'machine',
+        'Check if notification should be sent' => 'machine',
+        'Get target log levels for notification' => 'machine',
+        'Convert Monolog level to Dixlase LogLevel' => 'machine',
+        'Check if included in target notification levels' => 'machine',
+        'Mapping from Monolog level value to Dixlase LogLevel value' => 'machine',
+        'Merge existing context information' => 'machine',
+        'Extract additional information' => 'machine',
+        'Add request information (if available)' => 'machine',
+        'Ignore if request information retrieval fails' => 'machine',
+    ],
+];

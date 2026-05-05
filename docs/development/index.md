@@ -58,4 +58,5 @@ API signatures, backup, and deployment systems.
 
 ## Other
 
+- [Cache Key Convention](cache-key-convention.md) - Naming convention and Builder helper for cache keys
 - [SDK Trait Dependencies](sdk-trait-dependencies.md) - SDK trait dependency analysis

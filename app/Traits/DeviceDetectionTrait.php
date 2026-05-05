@@ -98,7 +98,7 @@ trait DeviceDetectionTrait
             }
         }
 
-        return false; // 同じ環境からのアクセス
+        return false; // Access from the same environment
     }
 
     /**
@@ -117,7 +117,7 @@ trait DeviceDetectionTrait
         $previousSameLogin = \App\Models\MemberLoginAttempt::where('identifier', $user->email)
             ->where('successful', true)
             ->where('attempted_at', '>=', now()->subDay())
-            ->where('attempted_at', '<', now()->subMinutes(5)) // 5分前より古いログインを対象
+            ->where('attempted_at', '<', now()->subMinutes(5)) // Target logins older than 5 minutes
             ->where('ip_address', $ip)
             ->where('user_agent', $userAgent)
             ->first();

@@ -120,7 +120,9 @@ If you run Dixlase CMS on a server and make it accessible to users over a networ
 
 ### Contribution Licensing
 
-Contributions to the Dixlase core repository are governed by a Contributor License Agreement. Sign [CLA-INDIVIDUAL.md](./CLA-INDIVIDUAL.md) (and [CLA-CORPORATE.md](./CLA-CORPORATE.md) if you are contributing on behalf of an organization), and submit it to **office@exc-d.com** before opening your first pull request. See the [Copyright Policy](./COPYRIGHT-POLICY.md) for the broader licensing structure and the [Contributing Guide](./CONTRIBUTING.md) for the full CLA submission process.
+> **Currently:** Dixlase is in early development and **does not accept external pull requests**. Bug reports via Issues and questions via Discussions are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md). Code-bearing contributions will reopen once the Contributor License Agreement (CLA)'s formal legal review is complete.
+
+Contributions to the Dixlase core repository are governed by a Contributor License Agreement. The agreement texts ([CLA-INDIVIDUAL.md](./CLA-INDIVIDUAL.md) for individuals, [CLA-CORPORATE.md](./CLA-CORPORATE.md) for organizations) are included in the repository for transparency and review, but are **not currently in active use**. They will become operative once external code contributions reopen. See [COPYRIGHT-POLICY.md](./COPYRIGHT-POLICY.md) for the broader licensing structure and [CONTRIBUTING-FUTURE.md](./CONTRIBUTING-FUTURE.md) for the planned PR-based contribution flow.
 
 ---
 

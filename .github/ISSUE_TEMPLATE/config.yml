@@ -1,5 +1,16 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Read first — current contribution policy / 最初にお読みください — 現在のコントリビューション方針
+    url: https://github.com/Dixlase/dixlase-core/blob/main/CONTRIBUTING.md
+    about: >-
+      Dixlase is in early development. External pull requests are NOT
+      currently accepted; bug reports and discussions are welcome. Code
+      snippets posted in Issues are treated as reference only — a maintainer
+      will rewrite any fix independently. This is required for the dual-license
+      model until the CLA's formal legal review is complete.
+      / Dixlase は初期開発期にあり、外部からの Pull Request は現在受け付けていません。
+      バグ報告と Discussions は歓迎します。Issue 内のコードスニペットは参考情報として扱い、
+      メンテナーが独立して書き直します。これは CLA 法務レビュー完了までの暫定運用です。
   - name: Security Vulnerability / セキュリティ脆弱性の報告
     url: https://github.com/Dixlase/dixlase-core/security/advisories/new
     about: >-

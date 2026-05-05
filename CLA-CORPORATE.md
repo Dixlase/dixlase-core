@@ -9,6 +9,8 @@ The Japanese version of this Agreement is published as [CLA-CORPORATE.ja.md](./C
 
 > **Notice — Interim Version.** This Agreement is an interim version pending formal legal review under Japanese and other applicable laws, planned for a future Dixlase release. Until that review is complete, exc-D inc. may revise this Agreement to correct legal-technical issues. Substantive changes affecting Your obligations will be announced publicly before they take effect (see Section 14).
 
+> **Notice — Not Currently In Active Use.** Dixlase is **not currently accepting external pull requests**. This Agreement will become operative when the formal legal review is complete and external code contributions are reopened. Until then, please use [GitHub Issues](https://github.com/Dixlase/dixlase-core/issues) and Discussions for bug reports and feature suggestions — see [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the current contribution policy.
+
 ---
 
 Thank you for your interest in the Dixlase project, operated by exc-D inc. ("exc-D"). To clarify the intellectual property license granted with Contributions from any legal entity, exc-D must have on file a Corporate Contributor License Agreement ("CLA") signed by the Corporation, indicating agreement with the license terms below. This license is for Your protection as a Contributor as well as the protection of exc-D and its users; it does not change Your rights to use Your own Contributions for any other purpose.

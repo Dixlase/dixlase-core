@@ -63,11 +63,11 @@ return [
         // Cloudflare Turnstile
         'https://challenges.cloudflare.com',
 
-        // CDN (必要に応じて追加)
+        // CDN (add as needed)
         // 'https://cdn.jsdelivr.net',
         // 'https://cdnjs.cloudflare.com',
 
-        // Tailwind CSS Play CDN (開発用)
+        // Tailwind CSS Play CDN (for development)
         // 'https://cdn.tailwindcss.com',
 
     ],
@@ -82,7 +82,7 @@ return [
     |
     */
     'admin_directives' => [
-        // 管理画面で必要な追加設定があればここに
+        // Add any extra directives needed for the admin panel here
     ],
 
     /*
@@ -95,7 +95,7 @@ return [
     |
     */
     'front_directives' => [
-        // フロントエンドで必要な追加設定があればここに
+        // Add any extra directives needed for the frontend here
     ],
 
     /*

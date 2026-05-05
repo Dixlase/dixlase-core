@@ -36,11 +36,13 @@
 namespace App\Http\Controllers\Admin\Settings\Base;
 
 use App\Contracts\Repositories\SiteSettingRepositoryInterface;
+use App\Events\DixlaseEvents;
 use App\Helpers\AdminHelper;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Base\AdminBaseAdminUpdateRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Session;
 
 class AdminBaseAdminController extends AdminLoggedInController
@@ -106,6 +108,12 @@ class AdminBaseAdminController extends AdminLoggedInController
 
         // Special handling when admin URL is changed
         if ($newAdminUrl !== $currentAdminUrl) {
+            Event::dispatch(DixlaseEvents::ADMIN_URL_CHANGED, [[
+                'old_path' => $currentAdminUrl,
+                'new_path' => $newAdminUrl,
+                'actor_id' => $actor->getActorId(),
+            ]]);
+
             Auth::guard('member')->logout();
             Session::flush();
 

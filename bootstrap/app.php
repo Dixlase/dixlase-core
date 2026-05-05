@@ -75,7 +75,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\ForceHttps::class, // Force HTTPS redirect when FORCE_SSL is enabled
             \App\Http\Middleware\ApplySessionConfig::class, // Apply session settings dynamically
             \App\Http\Middleware\ContentSecurityPolicy::class, // Add CSP headers
-            \App\Http\Middleware\AppendSourceCodeHeader::class, // AGPL §13: X-Source-Code ヘッダー付与
+            \App\Http\Middleware\AppendSourceCodeHeader::class, // AGPL §13: attach X-Source-Code header
         ]);
 
         // Exclude CSP report endpoint from CSRF verification
@@ -112,7 +112,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'throttle.api' => \App\Http\Middleware\ThrottleApiRequest::class, // API rate limit
             'log.api' => \App\Http\Middleware\LogApiRequest::class, // API request log
             'role' => \App\Http\Middleware\CheckRole::class, // Role check
-            'permission' => \App\Http\Middleware\CheckPermission::class, // 権限チェック
+            'permission' => \App\Http\Middleware\CheckPermission::class, // Permission check
         ]);
 
         // For plugin API (API key authentication + rate limit + log)
@@ -146,7 +146,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\FrontIpFilter::class, // IP制限を強制
+            \App\Http\Middleware\FrontIpFilter::class, // Enforce IP restriction
         ]);
 
         // For plugin admin panel (authentication + IP restriction enforced)
@@ -156,7 +156,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\Authenticate::class.':member', // Enforce authentication
-            \App\Http\Middleware\AdminIpFilter::class, // IP制限を強制
+            \App\Http\Middleware\AdminIpFilter::class, // Enforce IP restriction
         ]);
     })
 
