@@ -126,22 +126,22 @@ return [
         ],
 
         /*
-        // 厳格モード: 最大セキュリティ、外部JSのみ（初期バージョンでは未実装）
+        // Strict mode: maximum security, external JS only (not implemented in initial version)
         'strict' => [
             'header' => 'Content-Security-Policy',
             'allow_inline_scripts' => false,
             'allow_inline_styles' => false,
             'allow_eval' => false,
             'allow_unsafe_inline' => false,
-            'require_nonce' => false,        // nonceも使用しない（外部JSのみ）
-            'allow_nonce_inline_execution' => false, // nonce付きでも実行コード禁止
-            'allow_json_script' => true,     // type="application/json"は許可
-            'allow_data_attributes' => true, // data-*属性は許可
-            'block_inline_plugins' => true,  // requires_inline_js: trueを拒否
+            'require_nonce' => false,        // no nonce either (external JS only)
+            'allow_nonce_inline_execution' => false, // no executable code even with nonce
+            'allow_json_script' => true,     // type="application/json" allowed
+            'allow_data_attributes' => true, // data-* attributes allowed
+            'block_inline_plugins' => true,  // reject requires_inline_js: true
             'enforce_deny_domains' => true,
-            'strict_dynamic' => true,        // 推奨ON
-            'block_onclick' => true,         // onclick等を完全ブロック
-            'require_bootloader' => true,    // dixlase-boot.js必須
+            'strict_dynamic' => true,        // recommended ON
+            'block_onclick' => true,         // fully block onclick and other handlers
+            'require_bootloader' => true,    // dixlase-boot.js required
             'description' => 'Maximum security. Only CSP Ready plugins work.',
             'description_en' => 'Maximum security. Only CSP Ready plugins work.',
         ],

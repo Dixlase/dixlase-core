@@ -45,7 +45,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Basic settings model
  *
- * @deprecated 静的メソッドは非推奨です。SiteSettingRepositoryを使用してください。
+ * @deprecated Static methods are deprecated. Use SiteSettingRepository instead.
  */
 class SiteSetting extends Model
 {

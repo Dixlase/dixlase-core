@@ -408,6 +408,44 @@ final class DixlaseEvents
     public const AUDIT_LOG_CREATED = 'dixlase.audit.log.created';
 
     // =========================================================================
+    // URL / Slug Events
+    // =========================================================================
+
+    /**
+     * Fired when a content URL (slug or path) changes.
+     *
+     * Plugins (e.g. redirect managers) can listen to this to automatically
+     * record old → new mappings for SEO preservation.
+     *
+     * Sources should fire this event whenever an existing publicly reachable
+     * URL is replaced by a new one. Both `old_path` and `new_path` are
+     * site-relative paths that begin with `/`.
+     *
+     * Payload:
+     *   - old_path (string)   Site-relative previous path (e.g. "/blog/old-post")
+     *   - new_path (string)   Site-relative new path (e.g. "/blog/new-post")
+     *   - source (string)     Plugin slug or "core" identifying the emitter
+     *   - subject_type (string|null)  Linkable type if applicable (e.g. "post")
+     *   - subject_id (string|int|null) Identifier of the content if applicable
+     *   - actor_id (string|int|null)   Member ID that performed the change, if any
+     */
+    public const URL_SLUG_CHANGED = 'dixlase.url.slug_changed';
+
+    /**
+     * Fired when the admin panel URL slug is changed.
+     *
+     * Distinct from URL_SLUG_CHANGED because the admin URL is a system-level
+     * top-level slug rather than content. Listeners must not auto-create
+     * public redirects for this event (the admin URL is not a public SEO asset).
+     *
+     * Payload:
+     *   - old_path (string) Previous admin URL prefix (e.g. "admin")
+     *   - new_path (string) New admin URL prefix (e.g. "admin-x9k2")
+     *   - actor_id (string|int|null) Member ID that performed the change, if any
+     */
+    public const ADMIN_URL_CHANGED = 'dixlase.url.admin_url_changed';
+
+    // =========================================================================
     // AI Events (reserved for future use)
     // =========================================================================
 
@@ -434,7 +472,7 @@ final class DixlaseEvents
     /**
      * Get events by category
      *
-     * @param  string  $category  (backup, deploy, translation, plugin, theme, cache, maintenance, security)
+     * @param  string  $category  (backup, deploy, translation, plugin, theme, cache, maintenance, security, url, audit, ai)
      */
     public static function byCategory(string $category): array
     {
@@ -450,6 +488,7 @@ final class DixlaseEvents
             'security' => 'dixlase.security.',
             'integrity' => 'dixlase.integrity.',
             'audit' => 'dixlase.audit.',
+            'url' => 'dixlase.url.',
             'ai' => 'dixlase.ai.',
             default => $category,
         };

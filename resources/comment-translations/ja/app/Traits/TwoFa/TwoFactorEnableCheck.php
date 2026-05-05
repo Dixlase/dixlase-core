@@ -1,0 +1,42 @@
+<?php
+
+return [
+    '@internal For Core use only. Do not reference from plugins/themes' => '@internal コア専用。プラグイン/テーマから参照しないこと',
+    'Two-factor authentication enable condition check functionality' => '二段階認証有効化条件チェック機能',
+    'This Trait provides functionality to check whether two-factor authentication can be safely enabled.' => 'このTraitは、二段階認証を安全に有効化できるかをチェックする機能を提供します。',
+    'Shared between the Core Member model and the user plugin User model.' => 'コアのMemberモデルとユーザープラグインのUserモデルで共有されます。',
+    'Usage:' => '使用方法:',
+    '- Use in models: canEnableTwoFa(), getTwoFaEnableBlockReasons()' => '- モデルで使用: canEnableTwoFa(), getTwoFaEnableBlockReasons()',
+    '- Use in request classes: isMailServerConfigured()' => '- リクエストクラスで使用: isMailServerConfigured()',
+    'Check if two-factor authentication can be enabled' => '二段階認証を有効化できるかチェック',
+    'Safety rule: Must meet at least one of the following conditions' => '安全ルール: 以下のいずれかの条件を満たす必要がある',
+    '- Mail server is configured' => '- メールサーバーが設定されている',
+    '- At least one passkey is registered' => '- 少なくとも1つのパスキーが登録されている',
+    '- Recovery codes are generated' => '- 回復コードが生成されている',
+    'Check if mail server is configured' => 'メールサーバーが設定されているかチェック',
+    'Check if passkey is registered' => 'パスキーが登録されているかチェック',
+    'Check if recovery codes are generated' => '回復コードが生成されているかチェック',
+    'Get reasons why two-factor authentication cannot be enabled' => '二段階認証を有効化できない理由を取得',
+    'List of reasons' => '理由のリスト',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        '@internal For Core use only. Do not reference from plugins/themes' => 'machine',
+        'Two-factor authentication enable condition check functionality' => 'machine',
+        'This Trait provides functionality to check whether two-factor authentication can be safely enabled.' => 'machine',
+        'Shared between the Core Member model and the user plugin User model.' => 'machine',
+        'Usage:' => 'machine',
+        '- Use in models: canEnableTwoFa(), getTwoFaEnableBlockReasons()' => 'machine',
+        '- Use in request classes: isMailServerConfigured()' => 'machine',
+        'Check if two-factor authentication can be enabled' => 'machine',
+        'Safety rule: Must meet at least one of the following conditions' => 'machine',
+        '- Mail server is configured' => 'machine',
+        '- At least one passkey is registered' => 'machine',
+        '- Recovery codes are generated' => 'machine',
+        'Check if mail server is configured' => 'machine',
+        'Check if passkey is registered' => 'machine',
+        'Check if recovery codes are generated' => 'machine',
+        'Get reasons why two-factor authentication cannot be enabled' => 'machine',
+        'List of reasons' => 'machine',
+    ],
+];

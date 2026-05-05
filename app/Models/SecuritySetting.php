@@ -49,7 +49,7 @@ use Illuminate\Database\Eloquent\Model;
  * SecuritySetting::getValue() / setValue() callsites and direct queries;
  * its table is now global_settings.
  *
- * @deprecated 静的メソッドは非推奨です。SecuritySettingRepositoryを使用してください。
+ * @deprecated Static methods are deprecated. Use SecuritySettingRepository instead.
  */
 class SecuritySetting extends Model
 {

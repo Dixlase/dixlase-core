@@ -41,6 +41,7 @@ namespace App\Services;
 
 use App\Enums\MemberRole;
 use App\Models\RolePermissionOverride;
+use App\Support\Cache\CacheKey;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -57,9 +58,9 @@ class PermissionRegistry
     protected const CACHE_TTL = 300;
 
     /**
-     * Cache key prefix
+     * Cache key domain under the core / plugin scope.
      */
-    protected const CACHE_PREFIX = 'permission_registry:';
+    protected const CACHE_DOMAIN = 'permissions';
 
     /**
      * Registered plugin permission definitions
@@ -95,7 +96,7 @@ class PermissionRegistry
      */
     public static function getEffective(string $menuKey): ?array
     {
-        $cacheKey = self::CACHE_PREFIX.'core:'.$menuKey;
+        $cacheKey = CacheKey::core(self::CACHE_DOMAIN, $menuKey);
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($menuKey) {
             // Get default value (from nested structure)
@@ -183,7 +184,7 @@ class PermissionRegistry
      */
     public static function getPluginEffective(string $pluginSlug, string $menuKey): ?array
     {
-        $cacheKey = self::CACHE_PREFIX."plugin:{$pluginSlug}:{$menuKey}";
+        $cacheKey = CacheKey::plugin($pluginSlug, self::CACHE_DOMAIN, $menuKey);
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($pluginSlug, $menuKey) {
             // Get plugin default value
@@ -291,7 +292,7 @@ class PermissionRegistry
      */
     public static function getAllCorePermissions(): array
     {
-        $cacheKey = self::CACHE_PREFIX.'all_core';
+        $cacheKey = CacheKey::core(self::CACHE_DOMAIN, 'all');
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () {
             $defaults = config('roles.permissions', []);
@@ -307,7 +308,7 @@ class PermissionRegistry
      */
     public static function getAllCorePermissionsFlat(): array
     {
-        $cacheKey = self::CACHE_PREFIX.'all_core_flat';
+        $cacheKey = CacheKey::core(self::CACHE_DOMAIN, 'all-flat');
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () {
             $defaults = config('roles.permissions', []);
@@ -403,7 +404,7 @@ class PermissionRegistry
      */
     public static function getAllPluginPermissions(string $pluginSlug): array
     {
-        $cacheKey = self::CACHE_PREFIX."all_plugin:{$pluginSlug}";
+        $cacheKey = CacheKey::plugin($pluginSlug, self::CACHE_DOMAIN, 'all');
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($pluginSlug) {
             // Get default permissions for plugin
@@ -428,7 +429,7 @@ class PermissionRegistry
      */
     public static function getAllPluginPermissionsFlat(string $pluginSlug): array
     {
-        $cacheKey = self::CACHE_PREFIX."all_plugin_flat:{$pluginSlug}";
+        $cacheKey = CacheKey::plugin($pluginSlug, self::CACHE_DOMAIN, 'all-flat');
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($pluginSlug) {
             // Get default permissions for plugin
@@ -595,15 +596,15 @@ class PermissionRegistry
         self::flattenPermissions($corePermissions, '', $flat);
 
         foreach (array_keys($flat) as $menuKey) {
-            Cache::forget(self::CACHE_PREFIX.'core:'.$menuKey);
+            Cache::forget(CacheKey::core(self::CACHE_DOMAIN, $menuKey));
         }
-        Cache::forget(self::CACHE_PREFIX.'all_core');
-        Cache::forget(self::CACHE_PREFIX.'all_core_flat');
+        Cache::forget(CacheKey::core(self::CACHE_DOMAIN, 'all'));
+        Cache::forget(CacheKey::core(self::CACHE_DOMAIN, 'all-flat'));
 
         // Clear plugin permission cache
         foreach (array_keys(self::$pluginPermissions) as $pluginSlug) {
             // Clear entire plugin cache
-            Cache::forget(self::CACHE_PREFIX."all_plugin:{$pluginSlug}");
+            Cache::forget(CacheKey::plugin($pluginSlug, self::CACHE_DOMAIN, 'all'));
 
             // Clear cache for individual plugin menu keys
             $pluginPerms = self::$pluginPermissions[$pluginSlug] ?? [];
@@ -611,7 +612,7 @@ class PermissionRegistry
             self::flattenPermissions($pluginPerms, '', $pluginFlat);
 
             foreach (array_keys($pluginFlat) as $menuKey) {
-                Cache::forget(self::CACHE_PREFIX."plugin:{$pluginSlug}:{$menuKey}");
+                Cache::forget(CacheKey::plugin($pluginSlug, self::CACHE_DOMAIN, $menuKey));
             }
         }
     }
@@ -622,13 +623,13 @@ class PermissionRegistry
     public static function clearMenuCache(string $menuKey, ?string $pluginSlug = null): void
     {
         if ($pluginSlug) {
-            Cache::forget(self::CACHE_PREFIX."plugin:{$pluginSlug}:{$menuKey}");
-            Cache::forget(self::CACHE_PREFIX."all_plugin:{$pluginSlug}");
-            Cache::forget(self::CACHE_PREFIX."all_plugin_flat:{$pluginSlug}");
+            Cache::forget(CacheKey::plugin($pluginSlug, self::CACHE_DOMAIN, $menuKey));
+            Cache::forget(CacheKey::plugin($pluginSlug, self::CACHE_DOMAIN, 'all'));
+            Cache::forget(CacheKey::plugin($pluginSlug, self::CACHE_DOMAIN, 'all-flat'));
         } else {
-            Cache::forget(self::CACHE_PREFIX.'core:'.$menuKey);
-            Cache::forget(self::CACHE_PREFIX.'all_core');
-            Cache::forget(self::CACHE_PREFIX.'all_core_flat');
+            Cache::forget(CacheKey::core(self::CACHE_DOMAIN, $menuKey));
+            Cache::forget(CacheKey::core(self::CACHE_DOMAIN, 'all'));
+            Cache::forget(CacheKey::core(self::CACHE_DOMAIN, 'all-flat'));
         }
     }
 

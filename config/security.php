@@ -44,16 +44,16 @@ return [
     ],
     // IP addresses denied access to the admin panel
     'blocked_admin_ips' => [
-        // '123.456.789.0', // 例: 拒否するIP
+        // '123.456.789.0', // Example: IP to deny
     ],
 
     // IP addresses allowed to access the frontend
     'allowed_frontend_ips' => [
-        // 例: 許可するIP
+        // Example: IP to allow
     ],
     // IP addresses denied access to the frontend
     'blocked_frontend_ips' => [
-        // 例: 拒否するIP
+        // Example: IP to deny
     ],
 
     // Whether to force SSL
@@ -118,7 +118,7 @@ return [
         ],
 
         // Retention period for Daily Seal (days)
-        'daily_seal_retention_days' => env('AUDIT_LOG_SEAL_RETENTION_DAYS', 730), // 2年
+        'daily_seal_retention_days' => env('AUDIT_LOG_SEAL_RETENTION_DAYS', 730), // 2 years
     ],
 
     /*

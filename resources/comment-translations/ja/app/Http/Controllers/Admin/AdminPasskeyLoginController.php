@@ -1,0 +1,40 @@
+<?php
+
+return [
+    'Passkey login controller' => 'パスキーログインコントローラー',
+    'Login processing using passkey authentication with WebAuthn' => 'WebAuthnを使用したパスキー認証によるログイン処理',
+    'Get passkey authentication challenge (override)' => 'パスキー認証のチャレンジを取得（オーバーライド）',
+    'Add mail server settings check' => 'メールサーバー設定のチェックを追加',
+    'Mail server settings check' => 'メールサーバー設定チェック',
+    'Call trait method' => 'トレイトのメソッドを呼び出し',
+    'Get user model class name' => 'ユーザーモデルクラス名を取得',
+    'Get settings model class name' => '設定モデルクラス名を取得',
+    'Get authentication guard name' => '認証ガード名を取得',
+    'Get dashboard route name' => 'ダッシュボードのルート名を取得',
+    'Get session key prefix' => 'セッションキーのプレフィックスを取得',
+    'Get login notification service class name' => 'ログイン通知サービスクラス名を取得',
+    'Get translation prefix' => '翻訳プレフィックスを取得',
+    'Get login identifier mode' => 'ログイン識別子モードを取得',
+    'Whether login with email address is supported' => 'メールアドレスでのログインをサポートするかどうか',
+    'Whether login with account name is supported' => 'アカウント名でのログインをサポートするかどうか',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Passkey login controller' => 'machine',
+        'Login processing using passkey authentication with WebAuthn' => 'machine',
+        'Get passkey authentication challenge (override)' => 'machine',
+        'Add mail server settings check' => 'machine',
+        'Mail server settings check' => 'machine',
+        'Call trait method' => 'machine',
+        'Get user model class name' => 'machine',
+        'Get settings model class name' => 'machine',
+        'Get authentication guard name' => 'machine',
+        'Get dashboard route name' => 'machine',
+        'Get session key prefix' => 'machine',
+        'Get login notification service class name' => 'machine',
+        'Get translation prefix' => 'machine',
+        'Get login identifier mode' => 'machine',
+        'Whether login with email address is supported' => 'machine',
+        'Whether login with account name is supported' => 'machine',
+    ],
+];

@@ -72,7 +72,7 @@ class LegalPageService implements LegalPageServiceInterface
             return $this->mergedPageTypes;
         }
 
-        $coreTypes = config('admin.legal-pages', []);
+        $coreTypes = config('admin.legal', []);
 
         // Load plugin overrides
         $pluginOverrides = $this->loadPluginOverrides();
@@ -193,7 +193,7 @@ class LegalPageService implements LegalPageServiceInterface
         }
 
         foreach ($plugins as $plugin) {
-            $configPath = base_path("plugins/{$plugin->directory}/config/admin/legal-pages.php");
+            $configPath = base_path("plugins/{$plugin->directory}/config/admin/legal.php");
 
             if (! File::exists($configPath)) {
                 continue;
@@ -203,7 +203,7 @@ class LegalPageService implements LegalPageServiceInterface
                 $pluginConfig = require $configPath;
 
                 if (! is_array($pluginConfig)) {
-                    Log::warning("LegalPageService: Invalid legal-pages.php format: {$plugin->slug}");
+                    Log::warning("LegalPageService: Invalid legal.php format: {$plugin->slug}");
 
                     continue;
                 }

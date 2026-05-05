@@ -238,12 +238,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div>
                 <x-form-label for="app_timezone" :text="is_array(__('install/step2.timezone')) ? __('install/step2.timezone.label') : __('install/step2.timezone')" :required="true" />
             @php
-                // 現在のタイムゾーンを取得（セッションがあればそれを使い、なければクッキーから取得）
-                $currentTz = old('app_timezone', session('install_data.app_timezone', ''));
-                if (empty($currentTz)) {
-                    // PHPでクッキーから取得を試みる
-                    $currentTz = $_COOKIE['user_timezone'] ?? 'Asia/Tokyo'; // デフォルトは東京
-                }
+                // 現在のタイムゾーンを取得（ユーザー選択 > セッション > フォールバック）
+                $userSelectedTz = old('app_timezone', session('install_data.app_timezone', ''));
+                $isUserSelected = ! empty($userSelectedTz);
+                $currentTz = $isUserSelected ? $userSelectedTz : 'Asia/Tokyo'; // フォールバック
             @endphp
             @php
                 // Get all available timezone identifiers
@@ -271,7 +269,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         $timezoneOptions[$timezone] = $translatedName;
                     }
                 @endphp
-                <select name="app_timezone" id="app_timezone" 
+                <select name="app_timezone" id="app_timezone"
+                    data-user-selected="{{ $isUserSelected ? '1' : '0' }}"
                     class="input-common input-full">
                     @foreach($timezoneOptions as $timezone => $translatedName)
                         <option value="{{ $timezone }}" {{ $currentTz === $timezone ? 'selected' : '' }}>

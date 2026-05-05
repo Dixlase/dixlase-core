@@ -69,7 +69,7 @@ use Illuminate\Support\Facades\Route;
 $adminUrl = AdminHelper::getAdminUrl();
 
 Route::prefix($adminUrl)->name('admin.')
-    ->middleware(['admin.ip']) // IPアドレスフィルタのみを先に適用
+    ->middleware(['admin.ip']) // Apply only the IP address filter first
     ->group(function () {
         Route::get('/', function () {
             $member = Auth::guard('member')->user();

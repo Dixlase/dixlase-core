@@ -90,7 +90,7 @@ return new class extends Migration
             // Allowed member IDs (JSON array)
             $table->json('allowed_members')->nullable();
 
-            // メタ情報（発動トリガーの詳細など）
+            // Meta information (trigger details, etc.)
             $table->json('metadata')->nullable();
 
             $table->timestamps();
@@ -114,7 +114,7 @@ return new class extends Migration
             // Reason
             $table->string('reason', 500)->nullable();
 
-            // 実行者（null=自動/システム）
+            // Executor (null=automatic/system)
             $table->unsignedBigInteger('performed_by')->nullable();
 
             // IP address
@@ -147,16 +147,16 @@ return new class extends Migration
             // Enabled/Disabled
             $table->boolean('is_enabled')->default(false);
 
-            // 閾値（Trigger typeによって意味が異なる）
+            // Threshold (meaning varies by trigger type)
             $table->unsignedInteger('threshold')->default(0);
 
-            // 時間枠（分）
+            // Time window (minutes)
             $table->unsignedInteger('time_window_minutes')->default(60);
 
             // Lockdown type to trigger
             $table->string('lockdown_type', 20)->default('login');
 
-            // 自動解除までの時間（分、0=手動解除のみ）
+            // Time until auto-release (minutes, 0=manual release only)
             $table->unsignedInteger('auto_release_minutes')->default(0);
 
             // Whether to send notification

@@ -69,7 +69,7 @@ trait PwnedPasswordTrait
             $response = Http::timeout($timeout)
                 ->withHeaders([
                     'User-Agent' => 'Dixlase-Password-Checker/1.0',
-                    'Add-Padding' => 'true', // レスポンスサイズを一定にしてプライバシー保護
+                    'Add-Padding' => 'true', // Keep response size constant to protect privacy
                 ])
                 ->get("{$apiEndpoint}/range/{$prefix}");
 

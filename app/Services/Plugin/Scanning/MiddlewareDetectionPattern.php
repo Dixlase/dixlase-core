@@ -61,6 +61,7 @@ class MiddlewareDetectionPattern extends DetectionPattern
             '/\$this->app\[.*Router.*\]->pushMiddleware/i',
             '/->aliasMiddleware\s*\(/i',
             '/->pushMiddlewareToGroup\s*\(/i',
+            '/->prependMiddlewareToGroup\s*\(/i',
         ];
     }
 

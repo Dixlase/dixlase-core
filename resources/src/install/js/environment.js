@@ -83,12 +83,32 @@ function initEnvironmentUrlSettings() {
 }
 
 /**
- * ブラウザのタイムゾーンを検出してクッキーに保存
+ * ブラウザのタイムゾーンを検出してセレクトに設定
+ * - ユーザーが既に選択している（data-user-selected="1"）場合はスキップ
+ * - 検出したタイムゾーンが選択肢に存在しない場合もスキップ
  */
-function detectAndSaveTimezone() {
+function detectAndApplyTimezone() {
+    const select = document.getElementById('app_timezone');
+    if (!select) {
+        return;
+    }
+
+    // ユーザーが既に選択済みなら上書きしない
+    if (select.dataset.userSelected === '1') {
+        return;
+    }
+
     try {
         const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        document.cookie = `user_timezone=${userTimeZone};path=/;samesite=lax`;
+        if (!userTimeZone) {
+            return;
+        }
+
+        // 検出したタイムゾーンが選択肢に存在するか確認
+        const option = Array.from(select.options).find(opt => opt.value === userTimeZone);
+        if (option) {
+            select.value = userTimeZone;
+        }
     } catch (e) {
         console.error('タイムゾーンの検出に失敗しました:', e);
     }
@@ -110,7 +130,7 @@ function initEnvironmentEventListeners() {
  */
 document.addEventListener('DOMContentLoaded', function () {
     // タイムゾーン検出
-    detectAndSaveTimezone();
+    detectAndApplyTimezone();
 
     // デバッグモードの初期化
     window.toggleDebugMode();

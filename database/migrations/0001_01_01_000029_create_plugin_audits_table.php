@@ -77,13 +77,13 @@ return new class extends Migration
             $table->string('health_status')->nullable()->comment('Health status: healthy/advisory/needs_attention/not_verified');
             $table->json('health_issues')->nullable()->comment('Health issues (deduction reasons) list. Persistence of HealthScoreResult::$issues');
 
-            // データベース所有テーブル（PluginTableInspector 結果のキャッシュ）
+            // Database-owned tables (PluginTableInspector result cache)
             $table->json('owned_tables')->nullable()->comment('Table names created/owned by plugin. Auto-extracted during scan');
 
             // File hash for rescan detection
             $table->string('files_hash')->nullable()->comment('Code file hash (for rescan determination)');
 
-            // ファイル整合性検出（サプライチェーン攻撃防御）
+            // File integrity detection (supply chain attack defense)
             $table->unsignedInteger('detected_file_additions')->default(0)->comment('Number of new files not present at signing');
             $table->unsignedInteger('detected_file_modifications')->default(0)->comment('Number of files with hash mismatch');
             $table->unsignedInteger('detected_file_deletions')->default(0)->comment('Number of files present at signing but now missing');

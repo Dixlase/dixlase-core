@@ -1,0 +1,40 @@
+<?php
+
+return [
+    'Scope constants' => 'スコープ定数',
+    'Trigger constants' => 'トリガー定数',
+    'Executor type constants' => '実行者タイプ定数',
+    'Status constants' => 'ステータス定数',
+    'Relation to executor (member)' => '実行者（メンバー）とのリレーション',
+    'Whether there is an issue' => '問題があるかどうか',
+    'Whether there is a critical issue' => '重大な問題があるかどうか',
+    'Get list of modified files' => '変更されたファイル一覧を取得',
+    'Get list of added files' => '追加されたファイル一覧を取得',
+    'Get list of deleted files' => '削除されたファイル一覧を取得',
+    'Get list of suspicious files' => '疑わしいファイル一覧を取得',
+    'Get latest scan result' => '最新のスキャン結果を取得',
+    'Get latest Core scan result' => '最新のコアスキャン結果を取得',
+    'Get CSS class based on status' => 'ステータスに応じたCSSクラスを取得',
+    'Get icon based on status' => 'ステータスに応じたアイコンを取得',
+    'Get list of latest scan results by scope' => 'スコープ別の最新スキャン結果一覧を取得',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Scope constants' => 'machine',
+        'Trigger constants' => 'machine',
+        'Executor type constants' => 'machine',
+        'Status constants' => 'machine',
+        'Relation to executor (member)' => 'machine',
+        'Whether there is an issue' => 'machine',
+        'Whether there is a critical issue' => 'machine',
+        'Get list of modified files' => 'machine',
+        'Get list of added files' => 'machine',
+        'Get list of deleted files' => 'machine',
+        'Get list of suspicious files' => 'machine',
+        'Get latest scan result' => 'machine',
+        'Get latest Core scan result' => 'machine',
+        'Get CSS class based on status' => 'machine',
+        'Get icon based on status' => 'machine',
+        'Get list of latest scan results by scope' => 'machine',
+    ],
+];
