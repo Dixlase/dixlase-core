@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\CommentTranslation\ExtensionDictionaryLocator;
 use Illuminate\Console\Command;
 use Plugins\DixlaseCoreDevKit\App\Services\CommentTranslation\CommentBuilderService;
 use Plugins\DixlaseCoreDevKit\App\Services\CommentTranslation\TranslationFileService;
@@ -72,7 +73,9 @@ class CommentBuildCommand extends Command
         {--in-place : Rewrite source files directly instead of copying to --output}
         {--reverse : Apply locale → EN direction (revert a previous in-place conversion)}
         {--output= : Output destination when not --in-place (default: dist/{locale})}
-        {--path=app : Source path to scan (relative to project root)}
+        {--path=app : Source path to scan within each extension (relative to extension root)}
+        {--include-plugins : Also walk plugins/*/resources/comment-translations/{locale}/}
+        {--include-themes : Also walk themes/*/resources/comment-translations/{locale}/}
         {--dry-run : Compute substitutions but do not write any file}';
 
     /** @var string */
@@ -81,38 +84,103 @@ class CommentBuildCommand extends Command
     public function handle(
         CommentBuilderService $builder,
         TranslationFileService $fileService,
+        ExtensionDictionaryLocator $locator,
     ): int {
         $locale = $this->resolveLocale($fileService);
         $fileService->setLocale($locale);
 
-        $sourcePath = base_path($this->option('path'));
+        $scanPath = (string) $this->option('path');
         $inPlace = (bool) $this->option('in-place');
         $reverse = (bool) $this->option('reverse');
         $dryRun = (bool) $this->option('dry-run');
+        $includePlugins = (bool) $this->option('include-plugins');
+        $includeThemes = (bool) $this->option('include-themes');
 
         $direction = $reverse ? "{$locale} → EN" : "EN → {$locale}";
+        $modeLabel = $inPlace ? 'in-place' : 'copy';
+        if ($dryRun) {
+            $modeLabel .= ' [DRY RUN]';
+        }
 
-        $this->components->info("Source path: {$sourcePath}");
+        $entries = $locator->locate($locale, $includePlugins, $includeThemes);
+        if (empty($entries)) {
+            $this->components->error(
+                "No dictionary directories found for locale '{$locale}'. ".
+                'Did you mean a different --locale?'
+            );
+
+            return self::FAILURE;
+        }
+
         $this->components->info("Locale:      {$locale} ({$direction})");
+        $this->components->info("Scan path:   {$scanPath} (within each extension)");
+        $this->components->info('Mode:        '.$modeLabel);
+        $this->components->info('Extensions:  '.count($entries).' ('
+            .implode(', ', array_map(fn ($e) => $e['kind'].'/'.$e['name'], $entries)).')');
 
-        if ($inPlace) {
-            $this->components->info('Mode:        in-place'.($dryRun ? ' [DRY RUN]' : ''));
-            $stats = $builder->applyDirectoryInPlace($sourcePath, $reverse, $dryRun);
-        } else {
-            $outputPath = $this->resolveOutputPath($locale);
-            $this->components->info("Output path: {$outputPath}".($dryRun ? ' [DRY RUN]' : ''));
+        $totals = ['files' => 0, 'translated' => 0, 'untranslated' => 0];
 
-            if ($dryRun) {
-                // For copy mode, dry-run just walks without writing. We
-                // reuse the in-place walker semantics (no file I/O for
-                // unchanged files) but report against the would-be output.
-                $stats = $builder->applyDirectoryInPlace($sourcePath, $reverse, dryRun: true);
-            } else {
-                $stats = $builder->buildDirectory($sourcePath, $outputPath);
+        foreach ($entries as $entry) {
+            $sourceRoot = $entry['root'];
+            $dictRoot = $entry['dictRoot'];
+            $outputRoot = $inPlace
+                ? null
+                : $this->resolveExtensionOutputRoot($entry, $locale);
+
+            $stats = $builder->applyExtension(
+                $sourceRoot,
+                $dictRoot,
+                $scanPath,
+                $outputRoot,
+                $reverse,
+                $dryRun,
+            );
+
+            $totals['files'] += $stats['files'];
+            $totals['translated'] += $stats['translated'];
+            $totals['untranslated'] += $stats['untranslated'];
+
+            if ($stats['files'] > 0) {
+                $this->line(sprintf(
+                    '  %-25s files=%-4d subs=%-5d pending=%d',
+                    $entry['kind'].'/'.$entry['name'],
+                    $stats['files'],
+                    $stats['translated'],
+                    $stats['untranslated'],
+                ));
             }
         }
 
-        return $this->renderResult($stats);
+        return $this->renderResult($totals);
+    }
+
+    /**
+     * Resolve the per-extension output root for copy mode.
+     *
+     * @param  array{root: string, dictRoot: string, kind: string, name: string}  $entry
+     */
+    protected function resolveExtensionOutputRoot(array $entry, string $locale): string
+    {
+        $option = $this->option('output');
+
+        if (is_string($option) && $option !== '') {
+            // Single user-supplied root; only valid for a single-extension
+            // build (e.g. core only). For multi-extension we still nest by
+            // kind/name to keep outputs distinct.
+            $root = base_path($option);
+            if ($entry['kind'] === 'core') {
+                return $root;
+            }
+
+            return $root.'/'.$entry['kind'].'s/'.$entry['name'];
+        }
+
+        $base = base_path('dist/'.$locale);
+        if ($entry['kind'] === 'core') {
+            return $base;
+        }
+
+        return $base.'/'.$entry['kind'].'s/'.$entry['name'];
     }
 
     /**
