@@ -181,7 +181,7 @@ trait LoginLockoutTrait
         $now = Carbon::now();
 
         if ($now->greaterThanOrEqualTo($lockoutUntil)) {
-            return 0; // ロックアウト期間終了
+            return 0; // Lockout period ended
         }
 
         return $now->diffInMinutes($lockoutUntil, false);

@@ -111,7 +111,7 @@ trait TwoFaAuthenticationTrait
         $currentMethod = TwoFaMethod::EMAIL->value;
 
         foreach ($enabledMethods as $method) {
-            if ($method !== $currentMethod) { // EMAIL以外
+            if ($method !== $currentMethod) { // Other than EMAIL
                 $methodEnum = TwoFaMethod::from($method);
                 $availableMethods[] = [
                     'value' => $method,
@@ -169,7 +169,7 @@ trait TwoFaAuthenticationTrait
         $currentMethod = TwoFaMethod::PASSKEY->value;
 
         foreach ($enabledMethods as $method) {
-            if ($method !== $currentMethod) { // PASSKEY以外
+            if ($method !== $currentMethod) { // Other than PASSKEY
                 $methodEnum = TwoFaMethod::from($method);
                 $availableMethods[] = [
                     'value' => $method,

@@ -49,7 +49,7 @@ return new class extends Migration
             $table->string('name'); // Human-readable name
             $table->string('package_name')->nullable(); // Package name
             $table->string('directory'); // Plugin directory name
-            $table->string('slug')->unique(); // スラッグ名（一意）
+            $table->string('slug')->unique(); // Slug name (unique)
             $table->string('namespace'); // Plugin namespace
             $table->text('description')->nullable(); // Plugin description
             $table->string('license')->nullable(); // License
@@ -71,7 +71,7 @@ return new class extends Migration
             // Columns for supply chain attack protection
             $table->string('signing_key_id')->nullable()->index(); // Signing key ID at initial installation
             $table->string('author_id')->nullable()->index(); // author_id from plugin.json
-            $table->string('authority_key_id')->nullable(); // Authority 公開鍵 ID（配信元の Ed25519 鍵を識別）
+            $table->string('authority_key_id')->nullable(); // Authority public key ID (identifies the distributor's Ed25519 key)
             $table->string('installed_from_url')->nullable(); // Installation source URL
             $table->string('installation_method')->nullable(); // upload/marketplace/cli/github
             $table->timestamp('installed_at')->nullable(); // Installation datetime

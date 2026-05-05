@@ -137,7 +137,7 @@ trait AdminLoggedInTrait
     {
         // Remove admin.
         $parts = explode('.', $routeName);
-        array_shift($parts); // 'admin' を除去
+        array_shift($parts); // Remove 'admin'
 
         if (empty($parts)) {
             return;
