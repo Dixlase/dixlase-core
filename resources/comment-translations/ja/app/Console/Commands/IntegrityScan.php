@@ -1,0 +1,42 @@
+<?php
+
+return [
+    'Currently only Core is supported' => '現在はコアのみサポート',
+    'Execute scan (TRIGGER_SCHEDULE for scheduled execution)' => 'スキャン実行（スケジュール実行の場合はTRIGGER_SCHEDULE）',
+    'Send email notification if issues are detected' => '問題が検出された場合はメール通知',
+    'Display results' => '結果を表示',
+    'Send alert notification' => 'アラート通知を送信',
+    'Check if notification is enabled' => '通知が有効かチェック',
+    'Get notification email address' => '通知先メールアドレスを取得',
+    'Display status' => 'ステータス表示',
+    'Summary' => 'サマリー',
+    'Display details' => '詳細表示',
+    'Display issue details' => '問題の詳細を表示',
+    'Modified files' => '変更されたファイル',
+    'Added files' => '追加されたファイル',
+    'Deleted files' => '削除されたファイル',
+    'Suspicious files' => '疑わしいファイル',
+    'Recommended actions' => '推奨アクション',
+    'Output in JSON format' => 'JSON形式で出力',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Currently only Core is supported' => 'machine',
+        'Execute scan (TRIGGER_SCHEDULE for scheduled execution)' => 'machine',
+        'Send email notification if issues are detected' => 'machine',
+        'Display results' => 'machine',
+        'Send alert notification' => 'machine',
+        'Check if notification is enabled' => 'machine',
+        'Get notification email address' => 'machine',
+        'Display status' => 'machine',
+        'Summary' => 'machine',
+        'Display details' => 'machine',
+        'Display issue details' => 'machine',
+        'Modified files' => 'machine',
+        'Added files' => 'machine',
+        'Deleted files' => 'machine',
+        'Suspicious files' => 'machine',
+        'Recommended actions' => 'machine',
+        'Output in JSON format' => 'machine',
+    ],
+];

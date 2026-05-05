@@ -1,0 +1,40 @@
+<?php
+
+return [
+    'Scan target DTO' => 'スキャン対象DTO',
+    'Immutable data object that defines the target for file integrity scanning' => 'ファイル整合性スキャンの対象を定義する不変データオブジェクトです。',
+    'Scope (core, plugin, theme, all)' => 'スコープ（core, plugin, theme, all）',
+    'Plugin/theme slug (when scope=plugin/theme)' => 'プラグイン/テーマのスラッグ（scope=plugin/themeの場合）',
+    'Scan target path' => 'スキャン対象パス',
+    'Exclusion patterns' => '除外パターン',
+    'Hash algorithm' => 'ハッシュアルゴリズム',
+    'Generate target for Core scan' => 'コアスキャン用のターゲットを生成',
+    'Generate target for plugin scan' => 'プラグインスキャン用のターゲットを生成',
+    'Plugin slug' => 'プラグインスラッグ',
+    'Generate target for theme scan' => 'テーマスキャン用のターゲットを生成',
+    'Theme slug' => 'テーマスラッグ',
+    'Serialize to JSON format' => 'JSON形式にシリアライズ',
+    'Convert to array format' => '配列形式に変換',
+    'Generate DTO from array' => '配列からDTOを生成',
+    'Get baseline file name' => 'ベースラインファイル名を取得',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Scan target DTO' => 'machine',
+        'Immutable data object that defines the target for file integrity scanning' => 'machine',
+        'Scope (core, plugin, theme, all)' => 'machine',
+        'Plugin/theme slug (when scope=plugin/theme)' => 'machine',
+        'Scan target path' => 'machine',
+        'Exclusion patterns' => 'machine',
+        'Hash algorithm' => 'machine',
+        'Generate target for Core scan' => 'machine',
+        'Generate target for plugin scan' => 'machine',
+        'Plugin slug' => 'machine',
+        'Generate target for theme scan' => 'machine',
+        'Theme slug' => 'machine',
+        'Serialize to JSON format' => 'machine',
+        'Convert to array format' => 'machine',
+        'Generate DTO from array' => 'machine',
+        'Get baseline file name' => 'machine',
+    ],
+];

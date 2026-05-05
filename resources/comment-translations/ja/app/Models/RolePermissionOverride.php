@@ -1,0 +1,40 @@
+<?php
+
+return [
+    'Source type constants' => 'ソース種別定数',
+    'Updater relation' => '更新者リレーション',
+    'Check if the specified user permission is accessible' => '指定されたユーザー権限がアクセス可能かチェック',
+    'Check if the specified user permission is viewable' => '指定されたユーザー権限が閲覧可能かチェック',
+    'Get Core feature override' => 'コア機能のオーバーライドを取得',
+    'Get plugin feature override' => 'プラグイン機能のオーバーライドを取得',
+    'Get all Core feature overrides' => 'コア機能のオーバーライドを全て取得',
+    'Get all plugin feature overrides' => 'プラグイン機能のオーバーライドを全て取得',
+    'Save or update Core feature override' => 'コア機能のオーバーライドを保存または更新',
+    'Clear cache' => 'キャッシュをクリア',
+    'Save or update plugin feature override' => 'プラグイン機能のオーバーライドを保存または更新',
+    'Delete Core feature override (revert to default)' => 'コア機能のオーバーライドを削除（デフォルトに戻す）',
+    'Delete plugin feature override (revert to default)' => 'プラグイン機能のオーバーライドを削除（デフォルトに戻す）',
+    'Delete all plugin overrides (on uninstall)' => 'プラグインの全オーバーライドを削除（アンインストール時）',
+    'Detect orphaned overrides (overrides for non-existent plugins)' => '孤児オーバーライド（存在しないプラグインのオーバーライド）を検出',
+    'Delete orphaned overrides' => '孤児オーバーライドを削除',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Source type constants' => 'machine',
+        'Updater relation' => 'machine',
+        'Check if the specified user permission is accessible' => 'machine',
+        'Check if the specified user permission is viewable' => 'machine',
+        'Get Core feature override' => 'machine',
+        'Get plugin feature override' => 'machine',
+        'Get all Core feature overrides' => 'machine',
+        'Get all plugin feature overrides' => 'machine',
+        'Save or update Core feature override' => 'machine',
+        'Clear cache' => 'machine',
+        'Save or update plugin feature override' => 'machine',
+        'Delete Core feature override (revert to default)' => 'machine',
+        'Delete plugin feature override (revert to default)' => 'machine',
+        'Delete all plugin overrides (on uninstall)' => 'machine',
+        'Detect orphaned overrides (overrides for non-existent plugins)' => 'machine',
+        'Delete orphaned overrides' => 'machine',
+    ],
+];

@@ -1,0 +1,42 @@
+<?php
+
+return [
+    'Backup service interface' => 'バックアップサービスインターフェース',
+    'Provides backup creation, deletion, and target enumeration' => 'バックアップの作成・削除・対象列挙を提供します。',
+    'Default implementation (CoreBackupService) supports manual backups only' => 'デフォルト実装（CoreBackupService）は手動バックアップのみをサポートします。',
+    'Advanced features such as scheduled execution, encryption, remote storage, etc.' => 'スケジュール実行・暗号化・リモートストレージ等の高度な機能は',
+    'are overridden by backup plugins' => 'バックアッププラグインで上書きします。',
+    'Backup target: entire database' => 'バックアップ対象: データベース全体',
+    'Backup target: media (uploaded files)' => 'バックアップ対象: メディア（アップロードファイル）',
+    'Backup target: storage/app/private (file-stored content such as pages)' => 'バックアップ対象: storage/app/private（ページ等のファイル保存コンテンツ）',
+    'Backup target: custom/ (site-specific customizations)' => 'バックアップ対象: custom/（サイト固有カスタマイズ）',
+    'Backup target: storage/logs (optional, default OFF)' => 'バックアップ対象: storage/logs（オプション、デフォルト OFF）',
+    'Execute backup' => 'バックアップを実行',
+    'Backup targets (array of TARGET_* constants)' => 'バックアップ対象（TARGET_* 定数の配列）',
+    'Additional options (e.g., [\'retention_days\' => 30])' => '追加オプション（例: [\'retention_days\' => 30]）',
+    'Get list of available backup targets' => '利用可能なバックアップ対象の一覧を取得',
+    'Array of TARGET_* constants' => 'TARGET_* 定数の配列',
+    'Get default backup targets (excluding optional items)' => 'デフォルトのバックアップ対象を取得（オプション項目を除く）',
+    'Delete backup (file + BackupRecord status update)' => 'バックアップを削除（ファイル + BackupRecord のステータス更新）',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Backup service interface' => 'machine',
+        'Provides backup creation, deletion, and target enumeration' => 'machine',
+        'Default implementation (CoreBackupService) supports manual backups only' => 'machine',
+        'Advanced features such as scheduled execution, encryption, remote storage, etc.' => 'machine',
+        'are overridden by backup plugins' => 'machine',
+        'Backup target: entire database' => 'machine',
+        'Backup target: media (uploaded files)' => 'machine',
+        'Backup target: storage/app/private (file-stored content such as pages)' => 'machine',
+        'Backup target: custom/ (site-specific customizations)' => 'machine',
+        'Backup target: storage/logs (optional, default OFF)' => 'machine',
+        'Execute backup' => 'machine',
+        'Backup targets (array of TARGET_* constants)' => 'machine',
+        'Additional options (e.g., [\'retention_days\' => 30])' => 'machine',
+        'Get list of available backup targets' => 'machine',
+        'Array of TARGET_* constants' => 'machine',
+        'Get default backup targets (excluding optional items)' => 'machine',
+        'Delete backup (file + BackupRecord status update)' => 'machine',
+    ],
+];

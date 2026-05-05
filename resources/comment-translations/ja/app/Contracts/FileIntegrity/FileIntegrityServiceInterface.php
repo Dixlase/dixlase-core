@@ -1,0 +1,40 @@
+<?php
+
+return [
+    'File integrity check service contract' => 'ファイル整合性チェックサービスの契約',
+    'Provides file tampering detection for Core and plugins' => 'コアおよびプラグインのファイル改ざん検知機能を提供します。',
+    'Generate baseline' => 'ベースラインを生成',
+    'Scan target' => 'スキャン対象',
+    'Save baseline' => 'ベースラインを保存',
+    'Baseline' => 'ベースライン',
+    'Filename' => 'ファイル名',
+    'Load baseline' => 'ベースラインを読み込み',
+    'Execute file integrity scan' => 'ファイル整合性スキャンを実行',
+    'Trigger (manual, schedule, install, update)' => 'トリガー（manual, schedule, install, update）',
+    'Executor type (system, user)' => '実行者タイプ（system, user）',
+    'Executor ID' => '実行者ID',
+    'Whether baseline exists' => 'ベースラインが存在するか',
+    'Regenerate baseline' => 'ベースラインを再生成',
+    'Trigger' => 'トリガー',
+    'Executor type' => '実行者タイプ',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'File integrity check service contract' => 'machine',
+        'Provides file tampering detection for Core and plugins' => 'machine',
+        'Generate baseline' => 'machine',
+        'Scan target' => 'machine',
+        'Save baseline' => 'machine',
+        'Baseline' => 'machine',
+        'Filename' => 'machine',
+        'Load baseline' => 'machine',
+        'Execute file integrity scan' => 'machine',
+        'Trigger (manual, schedule, install, update)' => 'machine',
+        'Executor type (system, user)' => 'machine',
+        'Executor ID' => 'machine',
+        'Whether baseline exists' => 'machine',
+        'Regenerate baseline' => 'machine',
+        'Trigger' => 'machine',
+        'Executor type' => 'machine',
+    ],
+];

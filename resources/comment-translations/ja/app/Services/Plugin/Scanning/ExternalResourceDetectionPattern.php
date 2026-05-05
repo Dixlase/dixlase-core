@@ -1,0 +1,42 @@
+<?php
+
+return [
+    '@internal For Core use only. Do not reference from plugins/themes' => '@internal コア専用。プラグイン/テーマから参照しないこと',
+    'External resource detection patterns (common to plugins and themes)' => '外部リソース読み込みの検出パターン（プラグイン・テーマ共通）',
+    'Detects <img src="http(s)://...">, fetch(), XMLHttpRequest' => '<img src="http(s)://...">、fetch()、XMLHttpRequest の',
+    'external URL calls' => '外部URL呼び出しを検出します。',
+    'External sources in script tags' => 'script タグの外部ソース',
+    'External resources in link tags' => 'link タグの外部リソース',
+    'External images in img tags' => 'img タグの外部画像',
+    'External URL calls with fetch()' => 'fetch() での外部URL呼び出し',
+    'External URL calls with XMLHttpRequest open()' => 'XMLHttpRequest の open() での外部URL呼び出し',
+    'External modules with ES import' => 'ES import での外部モジュール',
+    'Context validation: exclude comment lines, test URLs, and CSP trusted domains' => 'コンテキスト検証: コメント行・テスト用URL・CSP信頼済みドメインを除外',
+    'Exclude comment lines from parent class' => '親クラスのコメント行除外',
+    'Exclude content within HTML comments' => 'HTMLコメント内は除外',
+    'Exclude content within Blade comments' => 'Bladeコメント内は除外',
+    'Exclude CSP trusted domains' => 'CSP信頼済みドメインは除外',
+    'Determine if matched string references a CSP trusted domain' => 'マッチした文字列がCSP信頼済みドメインを参照しているか判定',
+    'Also collect domains defined directly in CSP directives' => 'CSPディレクティブに直接定義されたドメインも収集',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        '@internal For Core use only. Do not reference from plugins/themes' => 'machine',
+        'External resource detection patterns (common to plugins and themes)' => 'machine',
+        'Detects <img src="http(s)://...">, fetch(), XMLHttpRequest' => 'machine',
+        'external URL calls' => 'machine',
+        'External sources in script tags' => 'machine',
+        'External resources in link tags' => 'machine',
+        'External images in img tags' => 'machine',
+        'External URL calls with fetch()' => 'machine',
+        'External URL calls with XMLHttpRequest open()' => 'machine',
+        'External modules with ES import' => 'machine',
+        'Context validation: exclude comment lines, test URLs, and CSP trusted domains' => 'machine',
+        'Exclude comment lines from parent class' => 'machine',
+        'Exclude content within HTML comments' => 'machine',
+        'Exclude content within Blade comments' => 'machine',
+        'Exclude CSP trusted domains' => 'machine',
+        'Determine if matched string references a CSP trusted domain' => 'machine',
+        'Also collect domains defined directly in CSP directives' => 'machine',
+    ],
+];

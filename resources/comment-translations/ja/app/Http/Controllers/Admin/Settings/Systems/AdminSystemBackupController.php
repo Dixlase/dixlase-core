@@ -1,0 +1,40 @@
+<?php
+
+return [
+    'Backup management controller' => 'バックアップ管理コントローラー',
+    'Settings key: default backup targets (JSON array)' => '設定キー: デフォルトのバックアップ対象（JSON配列）',
+    'Settings key: default retention days' => '設定キー: デフォルトの保持日数',
+    'Backup list/creation screen' => 'バックアップ一覧/作成画面',
+    'Restore history screen' => '復元履歴画面',
+    'Backup settings screen' => 'バックアップ設定画面',
+    'Save backup settings' => 'バックアップ設定の保存',
+    'Get saved default targets (API default if not set)' => '保存済みデフォルト対象を取得（未設定なら API デフォルト）',
+    'Filter to only available targets' => '利用可能な対象のみに絞る',
+    'Get saved default retention days' => '保存済みデフォルト保持日数を取得',
+    'Execute backup' => 'バックアップ実行',
+    'Delete backup' => 'バックアップ削除',
+    'Restore from backup' => 'バックアップから復元',
+    'Rollback restore' => '復元のロールバック',
+    'Download backup file' => 'バックアップファイルのダウンロード',
+    'Convert byte size to human-readable format' => 'バイトサイズを人間可読形式に変換',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Backup management controller' => 'machine',
+        'Settings key: default backup targets (JSON array)' => 'machine',
+        'Settings key: default retention days' => 'machine',
+        'Backup list/creation screen' => 'machine',
+        'Restore history screen' => 'machine',
+        'Backup settings screen' => 'machine',
+        'Save backup settings' => 'machine',
+        'Get saved default targets (API default if not set)' => 'machine',
+        'Filter to only available targets' => 'machine',
+        'Get saved default retention days' => 'machine',
+        'Execute backup' => 'machine',
+        'Delete backup' => 'machine',
+        'Restore from backup' => 'machine',
+        'Rollback restore' => 'machine',
+        'Download backup file' => 'machine',
+        'Convert byte size to human-readable format' => 'machine',
+    ],
+];
