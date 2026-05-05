@@ -147,6 +147,18 @@ class DetectionPatternTest extends TestCase
     }
 
     /**
+     * MiddlewareDetectionPattern: prependMiddlewareToGroupは検出
+     */
+    public function test_middleware_detects_prepend_middleware_to_group(): void
+    {
+        $pattern = new MiddlewareDetectionPattern();
+        $content = "<?php\n\$router->prependMiddlewareToGroup('web', HandleRedirects::class);\n";
+
+        $results = $pattern->scan($content, 'app/Providers/ServiceProvider.php');
+        $this->assertNotEmpty($results);
+    }
+
+    /**
      * DangerousApiPattern: コメント内は除外
      */
     public function test_dangerous_api_excludes_comments(): void
