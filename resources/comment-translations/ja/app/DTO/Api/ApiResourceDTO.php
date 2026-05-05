@@ -1,0 +1,42 @@
+<?php
+
+return [
+    'API Resource DTO' => 'APIリソースDTO',
+    'Unified data structure for making content resources provided by plugins public via API' => 'プラグインが提供するコンテンツリソースをAPI経由で公開する際の',
+    'Resource ID (ULID/UUID)' => 'リソースID（ULID/UUID）',
+    'Resource type (\'page\', \'post\', etc.)' => 'リソースタイプ（\'page\', \'post\' 等）',
+    'Slug' => 'スラッグ',
+    'Title' => 'タイトル',
+    'HTML body' => 'HTML本文',
+    'Excerpt' => '抜粋',
+    'Meta description' => 'メタディスクリプション',
+    'Status (\'published\', \'draft\', \'scheduled\')' => 'ステータス（\'published\', \'draft\', \'scheduled\'）',
+    'Published date and time (ISO 8601)' => '公開日時（ISO 8601）',
+    'Updated date and time (ISO 8601)' => '更新日時（ISO 8601）',
+    'Front URL' => 'フロントURL',
+    'Plugin slug' => 'プラグインスラッグ',
+    'Serialize to JSON format' => 'JSON形式にシリアライズ',
+    'Unified data structure' => '統一データ構造です。',
+    'Extended metadata' => '拡張メタデータ',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'API Resource DTO' => 'machine',
+        'Unified data structure for making content resources provided by plugins public via API' => 'machine',
+        'Resource ID (ULID/UUID)' => 'machine',
+        'Resource type (\'page\', \'post\', etc.)' => 'machine',
+        'Slug' => 'machine',
+        'Title' => 'machine',
+        'HTML body' => 'machine',
+        'Excerpt' => 'machine',
+        'Meta description' => 'machine',
+        'Status (\'published\', \'draft\', \'scheduled\')' => 'machine',
+        'Published date and time (ISO 8601)' => 'machine',
+        'Updated date and time (ISO 8601)' => 'machine',
+        'Front URL' => 'machine',
+        'Plugin slug' => 'machine',
+        'Serialize to JSON format' => 'machine',
+        'Unified data structure' => 'machine',
+        'Extended metadata' => 'human',
+    ],
+];

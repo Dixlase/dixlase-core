@@ -1,0 +1,40 @@
+<?php
+
+return [
+    'Install Controller' => 'インストールコントローラー',
+    'List of available languages' => '利用可能な言語のリスト',
+    'Initial screen' => '最初の画面',
+    '✅ Clear session data at install start (preserve language settings)' => '✅ インストール開始時にセッションデータを削除（言語設定は保持）',
+    'Get language settings from session/cookie, default considers browser language settings' => '言語設定をセッション/クッキーから取得、デフォルトはブラウザの言語設定を考慮',
+    'Check if server meets Laravel 12 requirements' => 'サーバーが Laravel 12 の要件を満たしているか確認',
+    'Required extensions (installation cannot proceed if missing)' => '必須の拡張機能（不足時はインストール不可）',
+    'Recommended extensions (can proceed if missing but affects performance and functionality)' => '推奨の拡張機能（不足時も続行可能だが、パフォーマンスや機能に影響）',
+    'Optional extensions (nice to have)' => 'オプションの拡張機能（あれば便利）',
+    'Check existence of storage subdirectories and auto-create' => 'ストレージサブディレクトリの存在確認と自動作成',
+    'Permission check' => 'パーミッションチェック',
+    'PHP settings check' => 'PHP設定チェック',
+    'Check theme existence (whether there is at least one directory with theme.json)' => 'テーマの存在チェック（theme.json を持つディレクトリが1つ以上あるか）',
+    'Check if memory_limit meets minimum value' => 'memory_limit が最低値を満たしているかチェック',
+    'Check if max_execution_time meets minimum value' => 'max_execution_time が最低値を満たしているかチェック',
+    '0 is unlimited' => '0 は無制限',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Install Controller' => 'machine',
+        'List of available languages' => 'machine',
+        'Initial screen' => 'machine',
+        '✅ Clear session data at install start (preserve language settings)' => 'machine',
+        'Get language settings from session/cookie, default considers browser language settings' => 'machine',
+        'Check if server meets Laravel 12 requirements' => 'machine',
+        'Required extensions (installation cannot proceed if missing)' => 'machine',
+        'Recommended extensions (can proceed if missing but affects performance and functionality)' => 'machine',
+        'Optional extensions (nice to have)' => 'machine',
+        'Check existence of storage subdirectories and auto-create' => 'machine',
+        'Permission check' => 'machine',
+        'PHP settings check' => 'machine',
+        'Check theme existence (whether there is at least one directory with theme.json)' => 'machine',
+        'Check if memory_limit meets minimum value' => 'machine',
+        'Check if max_execution_time meets minimum value' => 'machine',
+        '0 is unlimited' => 'machine',
+    ],
+];

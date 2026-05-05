@@ -1,0 +1,42 @@
+<?php
+
+return [
+    'Each plugin/theme has its own revision table and Eloquent model, and by' => '各プラグイン/テーマは自身のリビジョンテーブルと Eloquent モデルを持ちつつ、',
+    'implementing this interface, the common `RevisionService` can' => 'このインターフェースを実装することで共通の `RevisionService` によって',
+    'handle history recording, restoration, auto-deletion, and protection in a unified manner' => '履歴記録・復元・自動削除・保護を統一的に扱える。',
+    'Table naming convention:' => 'テーブル命名規則:',
+    '- Core: `{entity}_revisions` (e.g. `front_page_revisions`)' => '- コア: `{entity}_revisions`（例: `front_page_revisions`）',
+    '- plugin: `dls_plg_{slug}_{entity}_revisions`' => '- プラグイン: `dls_plg_{slug}_{entity}_revisions`',
+    '- theme: `dls_thm_{slug}_{entity}_revisions`' => '- テーマ: `dls_thm_{slug}_{entity}_revisions`',
+    'Each revision table must have the following columns:' => '各リビジョンテーブルは以下のカラムを持つこと:',
+    '- {foreignKey} (bigint, FK to parent content, CASCADE DELETE)' => '- {foreignKey} (bigint, 親コンテンツへの FK、CASCADE DELETE)',
+    '- snapshot (json, snapshot of `revisionableFields()`)' => '- snapshot (json, `revisionableFields()` のスナップショット)',
+    'Returns the fully qualified class name of the Eloquent model that stores revisions' => 'リビジョンを格納する Eloquent モデルの完全修飾クラス名を返す。',
+    'e.g. `\\App\\Models\\FrontPageRevision::class`' => '例: `\\App\\Models\\FrontPageRevision::class`',
+    'Returns the foreign key column name in the revision table that references the parent content' => 'リビジョンテーブルに存在する、親コンテンツを指す外部キーカラム名を返す。',
+    'e.g. \'front_page_id\'' => '例: \'front_page_id\'',
+    'List of content attribute names to include in the snapshot' => 'スナップショットに含めるコンテンツ側の属性名リスト。',
+    'Only the columns listed here will be saved in the `snapshot` JSON, and' => 'ここで列挙したカラムのみが `snapshot` JSON に保存され、',
+    'only the same columns will be written back during restoration' => '復元時にも同じカラムのみが書き戻される。',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Each plugin/theme has its own revision table and Eloquent model, and by' => 'machine',
+        'implementing this interface, the common `RevisionService` can' => 'machine',
+        'handle history recording, restoration, auto-deletion, and protection in a unified manner' => 'machine',
+        'Table naming convention:' => 'machine',
+        '- Core: `{entity}_revisions` (e.g. `front_page_revisions`)' => 'machine',
+        '- plugin: `dls_plg_{slug}_{entity}_revisions`' => 'machine',
+        '- theme: `dls_thm_{slug}_{entity}_revisions`' => 'machine',
+        'Each revision table must have the following columns:' => 'machine',
+        '- {foreignKey} (bigint, FK to parent content, CASCADE DELETE)' => 'machine',
+        '- snapshot (json, snapshot of `revisionableFields()`)' => 'machine',
+        'Returns the fully qualified class name of the Eloquent model that stores revisions' => 'machine',
+        'e.g. `\\App\\Models\\FrontPageRevision::class`' => 'machine',
+        'Returns the foreign key column name in the revision table that references the parent content' => 'machine',
+        'e.g. \'front_page_id\'' => 'machine',
+        'List of content attribute names to include in the snapshot' => 'machine',
+        'Only the columns listed here will be saved in the `snapshot` JSON, and' => 'machine',
+        'only the same columns will be written back during restoration' => 'machine',
+    ],
+];

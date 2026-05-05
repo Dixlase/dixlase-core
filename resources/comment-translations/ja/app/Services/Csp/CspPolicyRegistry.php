@@ -1,0 +1,40 @@
+<?php
+
+return [
+    'Registry for collecting and managing CSP policies from plugins and themes' => 'プラグイン・テーマからのCSPポリシーを収集・管理するレジストリ。',
+    'Registered policy providers' => '登録されたポリシープロバイダー',
+    'Directly registered directives' => '直接登録されたディレクティブ',
+    'Register a policy provider' => 'ポリシープロバイダーを登録',
+    'Provider name (plugin/theme name)' => 'プロバイダー名（プラグイン/テーマ名）',
+    'Provider instance' => 'プロバイダーインスタンス',
+    'Unregister a policy provider' => 'ポリシープロバイダーを登録解除',
+    'Add a directive directly' => 'ディレクティブを直接追加',
+    'Directive name' => 'ディレクティブ名',
+    'Array of values' => '値の配列',
+    'Source name (for debugging)' => 'ソース名（デバッグ用）',
+    'Add multiple directives in bulk' => '複数のディレクティブを一括追加',
+    'Collect all registered directives' => '登録されたすべてのディレクティブを収集',
+    'Collect directives from providers' => 'プロバイダーからディレクティブを収集',
+    'Get list of registered providers' => '登録されたプロバイダー一覧を取得',
+    'Clear the registry' => 'レジストリをクリア',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Registry for collecting and managing CSP policies from plugins and themes' => 'machine',
+        'Registered policy providers' => 'machine',
+        'Directly registered directives' => 'machine',
+        'Register a policy provider' => 'machine',
+        'Provider name (plugin/theme name)' => 'machine',
+        'Provider instance' => 'machine',
+        'Unregister a policy provider' => 'machine',
+        'Add a directive directly' => 'machine',
+        'Directive name' => 'machine',
+        'Array of values' => 'machine',
+        'Source name (for debugging)' => 'machine',
+        'Add multiple directives in bulk' => 'machine',
+        'Collect all registered directives' => 'machine',
+        'Collect directives from providers' => 'machine',
+        'Get list of registered providers' => 'machine',
+        'Clear the registry' => 'machine',
+    ],
+];

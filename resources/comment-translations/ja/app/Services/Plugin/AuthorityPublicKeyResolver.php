@@ -1,0 +1,42 @@
+<?php
+
+return [
+    'Authority public key resolver' => 'Authority 公開鍵リゾルバ',
+    'Resolve the corresponding public key from key ID. Priority order:' => '鍵 ID から対応する公開鍵を解決する。優先順位は以下:',
+    '1. Local DB cache (fresh)' => '1. ローカル DB キャッシュ（fresh）',
+    '2. HTTPS fetch from keys.dixlase.com → update DB cache → return' => '2. keys.dixlase.com から HTTPS フェッチ → DB キャッシュ更新 → 返却',
+    '3. Local DB cache (even if stale, used as fallback when network is unavailable)' => '3. ローカル DB キャッシュ（stale でも、ネット不通時のフォールバックとして使用）',
+    '4. null (unable to retrieve)' => '4. null（取得不能）',
+    'Handling of revoked keys: also returns keys with is_active=false. This is to allow' => '失効鍵の扱い: is_active=false の鍵も返す。過去に署名された',
+    'verification of plugins signed in the past to continue. The verifier should' => 'プラグインの検証を継続できるようにするため。検証側で',
+    'distinguish between "can still be used for new signatures" and "past signatures are mathematically valid".' => '「現在も新規署名に使えるか」と「過去署名が数学的に有効か」を区別する。',
+    'Resolve public key record from key ID' => '鍵 ID から公開鍵レコードを解決する',
+    'DB record if key can be resolved, null otherwise' => '鍵が解決できれば DB レコード、できなければ null',
+    'If cache exists and within TTL → return as-is' => 'キャッシュが有り、TTL 内 → そのまま返す',
+    'Attempt to fetch (upsert to DB if successful)' => 'フェッチを試みる（成功したら DB に upsert）',
+    'Fetch failed → return stale cache if available (offline fallback)' => 'フェッチ失敗 → stale キャッシュでもあれば返す（オフラインフォールバック）',
+    'Fetch key from Authority API and upsert to DB' => 'Authority API から鍵を取得して DB に upsert する',
+    'Cache TTL (hours)' => 'キャッシュ TTL（時間）',
+    'Core-only. Do not reference from plugins/themes.' => 'コア専用。プラグイン/テーマから参照しないこと',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Authority public key resolver' => 'machine',
+        'Resolve the corresponding public key from key ID. Priority order:' => 'machine',
+        '1. Local DB cache (fresh)' => 'machine',
+        '2. HTTPS fetch from keys.dixlase.com → update DB cache → return' => 'machine',
+        '3. Local DB cache (even if stale, used as fallback when network is unavailable)' => 'machine',
+        '4. null (unable to retrieve)' => 'machine',
+        'Handling of revoked keys: also returns keys with is_active=false. This is to allow' => 'machine',
+        'verification of plugins signed in the past to continue. The verifier should' => 'machine',
+        'distinguish between "can still be used for new signatures" and "past signatures are mathematically valid".' => 'machine',
+        'Resolve public key record from key ID' => 'machine',
+        'DB record if key can be resolved, null otherwise' => 'machine',
+        'If cache exists and within TTL → return as-is' => 'machine',
+        'Attempt to fetch (upsert to DB if successful)' => 'machine',
+        'Fetch failed → return stale cache if available (offline fallback)' => 'machine',
+        'Fetch key from Authority API and upsert to DB' => 'machine',
+        'Cache TTL (hours)' => 'machine',
+        'Core-only. Do not reference from plugins/themes.' => 'human',
+    ],
+];

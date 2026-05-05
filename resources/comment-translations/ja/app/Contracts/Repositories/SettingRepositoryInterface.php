@@ -1,0 +1,42 @@
+<?php
+
+return [
+    'Settings repository base interface' => '設定リポジトリベースインターフェース',
+    'Defines common methods that all settings repositories should implement.' => 'すべての設定系リポジトリが実装すべき共通メソッドを定義します。',
+    'Get all settings' => 'すべての設定を取得',
+    'Get value for a specific key' => '特定のキーの値を取得',
+    'Setting name' => '設定名',
+    'Default value' => 'デフォルト値',
+    'Get values for multiple keys at once' => '複数のキーの値を一括取得',
+    'Array of setting names' => '設定名の配列',
+    'Save setting value' => '設定値を保存',
+    'Setting value' => '設定値',
+    'Save multiple setting values at once' => '複数の設定値を一括保存',
+    'Check if setting exists' => '設定が存在するか確認',
+    'Delete setting' => '設定を削除',
+    'Clear cache' => 'キャッシュをクリア',
+    'Specify if clearing only a specific key' => '特定のキーのみクリアする場合は指定',
+    'Clear all cache' => 'すべてのキャッシュをクリア',
+    'Settings array' => '設定の配列',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Settings repository base interface' => 'machine',
+        'Defines common methods that all settings repositories should implement.' => 'machine',
+        'Get all settings' => 'machine',
+        'Get value for a specific key' => 'machine',
+        'Setting name' => 'machine',
+        'Default value' => 'machine',
+        'Get values for multiple keys at once' => 'machine',
+        'Array of setting names' => 'machine',
+        'Save setting value' => 'machine',
+        'Setting value' => 'machine',
+        'Save multiple setting values at once' => 'machine',
+        'Check if setting exists' => 'machine',
+        'Delete setting' => 'machine',
+        'Clear cache' => 'machine',
+        'Specify if clearing only a specific key' => 'machine',
+        'Clear all cache' => 'machine',
+        'Settings array' => 'human',
+    ],
+];

@@ -1,0 +1,42 @@
+<?php
+
+return [
+    'Content status' => 'コンテンツステータス',
+    'Manages publication state for pages, blog posts, etc.' => 'ページ、ブログ記事などの公開状態を管理',
+    'draft' => '下書き',
+    'public' => '公開',
+    'scheduled' => '日付指定',
+    'Get legacy string identifier (slug)' => '旧文字列識別子（スラッグ）を取得',
+    'Used to maintain compatibility with JS/Alpine.js.' => 'JS/Alpine.jsとの互換性維持に使用。',
+    'Use this method when passing to form values or JS.' => 'フォームの値やJSに渡す場合はこのメソッドを使用する。',
+    'Get Enum instance from slug string' => 'スラッグ文字列からEnumインスタンスを取得',
+    'When slug is not found' => 'スラッグが見つからない場合',
+    'Get Enum instance from slug string (returns null on failure)' => 'スラッグ文字列からEnumインスタンスを取得（失敗時はnull）',
+    'Get display name of status' => 'ステータスの表示名を取得',
+    'Get description of status' => 'ステータスの説明を取得',
+    'Get CSS class (for status badge)' => 'CSSクラスを取得（ステータスバッジ用）',
+    'Get all statuses as array' => '全てのステータスを配列で取得',
+    'Whether the status is publishable' => '公開可能なステータスかどうか',
+    'Get labeled options (for forms)' => 'ラベル付きオプションを取得（フォーム用）',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Content status' => 'machine',
+        'Manages publication state for pages, blog posts, etc.' => 'machine',
+        'draft' => 'machine',
+        'public' => 'machine',
+        'scheduled' => 'machine',
+        'Get legacy string identifier (slug)' => 'machine',
+        'Used to maintain compatibility with JS/Alpine.js.' => 'machine',
+        'Use this method when passing to form values or JS.' => 'machine',
+        'Get Enum instance from slug string' => 'machine',
+        'When slug is not found' => 'machine',
+        'Get Enum instance from slug string (returns null on failure)' => 'machine',
+        'Get display name of status' => 'machine',
+        'Get description of status' => 'machine',
+        'Get CSS class (for status badge)' => 'machine',
+        'Get all statuses as array' => 'machine',
+        'Whether the status is publishable' => 'machine',
+        'Get labeled options (for forms)' => 'machine',
+    ],
+];

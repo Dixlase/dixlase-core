@@ -1,0 +1,42 @@
+<?php
+
+return [
+    'Theme resource loading mechanism' => 'テーマリソースローディング機構',
+    'Lazy resolution of ThemeRepositoryInterface' => 'ThemeRepositoryInterface の遅延解決',
+    'Load theme language files' => 'テーマの言語ファイルを読み込む',
+    'Theme base path' => 'テーマのベースパス',
+    'Custom theme base path' => 'カスタムテーマのベースパス',
+    'Language file namespace' => '言語ファイルの名前空間',
+    'Prioritize custom path' => 'カスタムパスを優先',
+    'Load theme views' => 'テーマのビューを読み込む',
+    'View namespace' => 'ビューの名前空間',
+    'Load theme settings file' => 'テーマの設定ファイルを読み込む',
+    'Theme slug' => 'テーマのスラッグ',
+    'Merge if not already set' => '既に設定されていなければマージ',
+    'Generate theme namespace' => 'テーマの名前空間を生成',
+    'Theme directory name' => 'テーマのディレクトリ名',
+    'Get active theme ID' => '有効なテーマIDを取得',
+    'Get currently active theme directory name' => '現在有効なテーマのディレクトリ名を取得',
+    'Generate full URL for theme asset' => 'テーマアセットの完全URLを生成',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Theme resource loading mechanism' => 'machine',
+        'Lazy resolution of ThemeRepositoryInterface' => 'machine',
+        'Load theme language files' => 'machine',
+        'Theme base path' => 'machine',
+        'Custom theme base path' => 'machine',
+        'Language file namespace' => 'machine',
+        'Prioritize custom path' => 'machine',
+        'Load theme views' => 'machine',
+        'View namespace' => 'machine',
+        'Load theme settings file' => 'machine',
+        'Theme slug' => 'machine',
+        'Merge if not already set' => 'machine',
+        'Generate theme namespace' => 'machine',
+        'Theme directory name' => 'machine',
+        'Get active theme ID' => 'machine',
+        'Get currently active theme directory name' => 'machine',
+        'Generate full URL for theme asset' => 'machine',
+    ],
+];

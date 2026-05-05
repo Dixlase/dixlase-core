@@ -1,0 +1,40 @@
+<?php
+
+return [
+    'Media repository interface' => 'メディアリポジトリインターフェース',
+    'Get media by ID' => 'IDでメディアを取得',
+    'Get media by ID with relations' => 'IDでメディアを取得（リレーション付き）',
+    'Get all media' => 'すべてのメディアを取得',
+    'Get media with pagination' => 'ページネーション付きでメディアを取得',
+    'Create media' => 'メディアを作成',
+    'Update media' => 'メディアを更新',
+    'Delete media (soft delete)' => 'メディアを削除（ソフトデリート）',
+    'Permanently delete media' => 'メディアを完全削除',
+    'Restore deleted media' => '削除されたメディアを復元',
+    'Get media matching search criteria' => '検索条件に一致するメディアを取得',
+    'Filter by type' => 'タイプでフィルタリング',
+    'Filter by uploader' => 'アップロード者でフィルタリング',
+    'Filter by date range' => '日付範囲でフィルタリング',
+    'Check if media exists' => 'メディアが存在するか確認',
+    'Get media count' => 'メディア数を取得',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Media repository interface' => 'machine',
+        'Get media by ID' => 'machine',
+        'Get media by ID with relations' => 'machine',
+        'Get all media' => 'machine',
+        'Get media with pagination' => 'machine',
+        'Create media' => 'machine',
+        'Update media' => 'machine',
+        'Delete media (soft delete)' => 'machine',
+        'Permanently delete media' => 'machine',
+        'Restore deleted media' => 'machine',
+        'Get media matching search criteria' => 'machine',
+        'Filter by type' => 'machine',
+        'Filter by uploader' => 'machine',
+        'Filter by date range' => 'machine',
+        'Check if media exists' => 'machine',
+        'Get media count' => 'machine',
+    ],
+];

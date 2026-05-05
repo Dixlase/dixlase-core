@@ -1,0 +1,42 @@
+<?php
+
+return [
+    'Trusted devices management table' => '信頼済みデバイス管理テーブル',
+    'As part of zero trust infrastructure, identifies devices and determines known/unknown status' => 'ゼロトラスト基盤の一部として、デバイスを識別し既知/未知を判定',
+    'Owner' => '所有者',
+    'Device identification token (stored as hash)' => 'デバイス識別トークン（ハッシュ化して保存）',
+    'Device name (user-friendly identifier)' => 'デバイス名（ユーザーが識別しやすい名前）',
+    'Access source information' => 'アクセス元情報',
+    'IPv6 compatible' => 'IPv6対応',
+    'Hash for indexing' => 'インデックス用ハッシュ',
+    'Trust level' => '信頼レベル',
+    'trusted: trusted (registered after 2FA completion)' => 'trusted: 信頼済み（2FA完了後に登録）',
+    'unknown: unknown (first access)' => 'unknown: 未知（初回アクセス）',
+    'blocked: blocked (explicitly blocked by user)' => 'blocked: ブロック済み（ユーザーが明示的にブロック）',
+    'IP at first access (for change detection)' => '初回アクセス時のIP（変更検知用）',
+    'IP at last access' => '最終アクセス時のIP',
+    'Last used at' => '最終使用日時',
+    'Standard timestamps' => '標準タイムスタンプ',
+    'Indexes' => 'インデックス',
+
+    // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    '_review_status' => [
+        'Trusted devices management table' => 'machine',
+        'As part of zero trust infrastructure, identifies devices and determines known/unknown status' => 'machine',
+        'Owner' => 'machine',
+        'Device identification token (stored as hash)' => 'machine',
+        'Device name (user-friendly identifier)' => 'machine',
+        'Access source information' => 'machine',
+        'IPv6 compatible' => 'machine',
+        'Hash for indexing' => 'machine',
+        'Trust level' => 'machine',
+        'trusted: trusted (registered after 2FA completion)' => 'machine',
+        'unknown: unknown (first access)' => 'machine',
+        'blocked: blocked (explicitly blocked by user)' => 'machine',
+        'IP at first access (for change detection)' => 'machine',
+        'IP at last access' => 'machine',
+        'Last used at' => 'machine',
+        'Standard timestamps' => 'machine',
+        'Indexes' => 'machine',
+    ],
+];
