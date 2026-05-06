@@ -35,69 +35,51 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-6" x-data="dashboardModeToggle()">
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-6">
 
-        {{-- モード切替ヘッダー --}}
-        <div class="flex items-center justify-between">
-            <h1 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                <i class="fas fa-tachometer-alt mr-2"></i>{{ __('admin/dashboard.heading') }}
-            </h1>
-            <x-form-button
-                type="button"
-                variant="secondary"
-                size="sm"
-                @click="toggle()"
-            >
-                <span x-show="!isDetailed">
-                    <i class="fas fa-expand-alt mr-1"></i>{{ __('admin/dashboard.detailed_mode') }}
-                </span>
-                <span x-show="isDetailed" x-cloak>
-                    <i class="fas fa-compress-alt mr-1"></i>{{ __('admin/dashboard.simple_mode') }}
-                </span>
-            </x-form-button>
-        </div>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            <i class="fas fa-tachometer-alt mr-2"></i>{{ __('admin/dashboard.heading') }}
+        </h1>
 
-        {{-- はじめにカード --}}
+        {{-- Getting started card --}}
         @if(isset($gettingStarted))
             @include('admin.dashboard._getting-started')
         @endif
 
-        {{-- サイトヘルス（両モード） --}}
+        {{-- Site health --}}
         @include('admin.dashboard._site-health')
 
-        {{-- 拡張機能概要 & メンバー概要（両モード） --}}
+        {{-- Extension and member overview --}}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             @include('admin.dashboard._extension-overview', ['extensionOverview' => $extensionOverview])
             @include('admin.dashboard._member-overview', ['memberOverview' => $memberOverview])
         </div>
 
-        {{-- 最近のアクティビティ（詳細モードのみ） --}}
-        <div x-show="isDetailed" x-cloak>
-            @include('admin.dashboard._recent-activity', ['recentActivity' => $recentActivity])
-        </div>
+        {{-- Recent activity --}}
+        @include('admin.dashboard._recent-activity', ['recentActivity' => $recentActivity])
 
-        {{-- プラグイン通知（両モード） --}}
+        {{-- Plugin notifications --}}
         @if(count($pluginNotifications) > 0)
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
                 @include('admin.dashboard._plugin-notifications')
             </div>
         @endif
 
-        {{-- プラグインウィジェット（両モード） --}}
+        {{-- Plugin widgets --}}
         @if(count($pluginWidgets) > 0)
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
                 @include('admin.dashboard._content-widgets')
             </div>
         @endif
 
-        {{-- システム情報（詳細モードのみ） --}}
-        <div x-show="isDetailed" x-cloak class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+        {{-- System information --}}
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
             @include('admin.dashboard._system-info')
         </div>
 
     </div>
 
-    {{-- 自動生成された回復コード表示モーダル --}}
+    {{-- Auto-generated recovery codes modal --}}
     @if(isset($auto_generated_recovery_codes))
         @include('two-fa.partials.recovery-codes-modal', [
             'modalId' => 'dashboardRecoveryCodesModal',
@@ -109,7 +91,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         ])
     @endif
 
-    {{-- パスキー登録促進モーダル --}}
+    {{-- Passkey registration prompt modal --}}
     @if(isset($prompt_passkey_registration) && $prompt_passkey_registration)
         @include('two-fa.partials.passkey-prompt-modal', [
             'modalId' => 'dashboardPasskeyPromptModal',

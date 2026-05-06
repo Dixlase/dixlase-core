@@ -37,10 +37,6 @@ return [
     'heading' => 'Dashboard',
     'description' => 'You can check the site overview.',
 
-    // Mode toggle
-    'simple_mode' => 'Simple',
-    'detailed_mode' => 'Detailed',
-
     // Site health
     'site_health' => 'Site Health',
     'maintenance_mode' => 'Maintenance Mode',

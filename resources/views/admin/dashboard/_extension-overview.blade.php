@@ -75,6 +75,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </span>
                 <span class="text-blue-700 dark:text-blue-300 text-xs">
                     {{ __('admin/dashboard.updates_available_summary', [
+                        'core' => $extensionOverview['updates']['core'] ?? 0,
                         'plugins' => $extensionOverview['updates']['plugins'],
                         'themes' => $extensionOverview['updates']['themes'],
                     ]) }}
@@ -84,8 +85,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    {{-- 健全性サマリー（詳細モードのみ） --}}
-    <div x-show="isDetailed" x-cloak>
+    {{-- 健全性サマリー --}}
+    <div>
         <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <i class="fas fa-heartbeat mr-1"></i>{{ __('admin/dashboard.health_overview') }}
         </h3>

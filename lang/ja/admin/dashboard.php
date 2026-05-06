@@ -37,10 +37,6 @@ return [
     'heading' => 'ダッシュボード',
     'description' => 'サイトの概要を確認できます。',
 
-    // モード切替
-    'simple_mode' => 'シンプル',
-    'detailed_mode' => '詳細',
-
     // サイトヘルス
     'site_health' => 'サイトヘルス',
     'maintenance_mode' => 'メンテナンスモード',
