@@ -227,7 +227,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if(! empty($card['scanFreshness']) && in_array($card['scanFreshness']['state'], ['unscanned', 'expired', 'files_changed'], true))
                     @php($freshness = $card['scanFreshness'])
                     <div class="flex justify-center mt-2">
-                        <div class="inline-flex items-center justify-center gap-2 px-2 py-1 rounded text-xs
+                        <div class="inline-flex items-center justify-center gap-2 px-2 py-1 rounded text-xs whitespace-nowrap
                             @if($freshness['state'] === 'unscanned') bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300
                             @elseif($freshness['state'] === 'files_changed') bg-orange-50 text-orange-800 border border-orange-200 dark:bg-orange-900/20 dark:text-orange-200 dark:border-orange-800
                             @else bg-yellow-50 text-yellow-800 border border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-200 dark:border-yellow-800
