@@ -88,6 +88,20 @@ jobs:
           test -d "${{ env.BUILD_DIR }}" || (echo "Build output not found: $BUILD_DIR" && exit 1)
           ls -la "${{ env.BUILD_DIR }}" || true
 
+      # Block the release if any per-locale comment dictionary still has
+      # pending (`'JP' => ''`) entries. The non-strict variant runs on
+      # PRs (test.yml -> "Comment Translation Coverage") as a warning;
+      # this strict variant fails the v* tag build.
+      - name: Comment translation coverage (strict)
+        env:
+          # An app key is needed to bootstrap Laravel for the Artisan call.
+          APP_KEY: base64:GhA1lTtQVUWqW4fY/4Nr4xJ7gPLmfLrG7g5TLXxIFM4=
+        run: |
+          if [ ! -f .env ]; then
+            cp .env.example .env || echo "APP_KEY=$APP_KEY" > .env
+          fi
+          php artisan dls:comment:status --strict --include-plugins --include-themes
+
       # ZIP 生成：本番で必要なものだけを同梱（vendor + public/assets/build + 主要ファイル）
       # node_modules や .git などは除外
       - name: Create release ZIP

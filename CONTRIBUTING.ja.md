@@ -51,6 +51,12 @@ Dixlase は初期開発期にあります。**外部からの Pull Request は�
 
 Dixlase の Plugin API([PLUGIN-API.md](./PLUGIN-API.md) 参照)を介して連携するプラグイン・テーマは、コアリポジトリのスコープ外です。これらの作者は完全な著作権を保持し、独自ライセンス(プロプライエタリを含みます)で配布できます。現在の PR 受付保留はあくまで Dixlase コアリポジトリにのみ適用されます。
 
+## 翻訳について
+
+Dixlase は **英語のソースコメントを正本** として配布されます。各言語のコメントは `resources/comment-translations/{locale}/`(プラグイン・テーマも同パス)に格納され、`./convert-comments.sh ja` で開発環境のソースを in-place で日本語に切り替えられます。アーキテクチャ全体は [`docs/development/comment-translation.md`](./docs/development/comment-translation.md) を参照してください。
+
+翻訳に問題を見つけた場合は、PR ではなく Issue として報告してください。翻訳の Pull Request はコードの PR と同じく、CLA の法務レビュー完了後に受付を再開します。それまでの間、辞書ファイル(`resources/comment-translations/{locale}/...`)はソースと一緒にバージョン管理されているので、Issue で指摘いただいた修正はメンテナーが容易に再現・反映できます。
+
 ## ご質問
 
 コントリビューションに関するご質問は、以下までお気軽にどうぞ:
