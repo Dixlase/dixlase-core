@@ -67,6 +67,32 @@ This allows VSCode or Cursor to directly run Laravel commands and generate compo
 
 ---
 
+## 🌐 Comment Languages
+
+The canonical Dixlase source ships with English comments. A per-locale comment archive lives at `resources/comment-translations/{locale}/` (and inside each plugin/theme) and can be applied to a development checkout in-place.
+
+```bash
+# Convert all source comments (core + plugins + themes) to Japanese
+./convert-comments.sh ja
+
+# Revert back to English
+./convert-comments.sh ja --reverse
+
+# Preview without writing
+./convert-comments.sh ja --dry-run
+
+# List available locales
+./convert-comments.sh --list
+```
+
+Substitution is AST-aware — only PHP comment tokens are rewritten, never string literals — and the operation is idempotent (running it again on already-converted source is a safe no-op).
+
+The dictionary is versioned alongside the source, so translation improvements are accepted as pull requests. New locales (e.g. `zh`, `ko`) can be added by creating `resources/comment-translations/{locale}/_glossary.php` plus per-file dictionaries that share the same English keys.
+
+GitHub releases ship the canonical English source only; users (and the [Dixlase Docker Installer](https://github.com/Dixlase/dixlase-installer-docker) during setup) flip to a locale via this script after install.
+
+---
+
 ## 📚 Documentation
 
 ### Official Resources
