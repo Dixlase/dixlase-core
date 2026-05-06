@@ -117,13 +117,8 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             ->values()
             ->all();
 
-        // Placeholder for Core section (planned for implementation in Phase 2 separate session)
-        $core = [
-            'available' => false,
-            'current_version' => config('app.version', null),
-            'available_version' => null,
-            'message_key' => 'admin/settings/systems/updates.core.not_implemented',
-        ];
+        // Core update state from the singleton core_releases row.
+        $core = $this->buildCoreSection($target);
 
         $lastCheckedAt = $this->getLastCheckedAt();
 
@@ -133,7 +128,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         $this->viewParams['core'] = $core;
         $this->viewParams['lastCheckedAt'] = $lastCheckedAt;
         $this->viewParams['lastCheckedAtFormatted'] = $lastCheckedAt?->format('Y/m/d H:i');
-        $this->viewParams['totalCount'] = count($plugins) + count($themes);
+        $this->viewParams['totalCount'] = count($plugins) + count($themes) + ($core['available'] ? 1 : 0);
 
         return view('admin::settings.systems.updates.index', $this->viewParams);
     }
@@ -162,6 +157,8 @@ class AdminSystemUpdatesController extends AdminLoggedInController
      * Form data:
      *   plugins[] = id (selected plugin IDs)
      *   themes[]  = id (selected theme IDs)
+     *   core      = "1" (when the core checkbox is selected; execution
+     *               not yet implemented — surfaces an info flash instead)
      */
     public function apply(Request $request)
     {
@@ -170,14 +167,23 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             'plugins.*' => 'integer',
             'themes' => 'array',
             'themes.*' => 'integer',
+            'core' => 'nullable',
         ]);
 
         $pluginIds = $request->input('plugins', []);
         $themeIds = $request->input('themes', []);
+        $coreSelected = $request->boolean('core');
 
-        if (empty($pluginIds) && empty($themeIds)) {
+        if (empty($pluginIds) && empty($themeIds) && ! $coreSelected) {
             return redirect()->route('admin.settings.systems.updates.index')
                 ->with('info', __('admin/settings/systems/updates.messages.no_selection'));
+        }
+
+        if ($coreSelected) {
+            // Core update execution is being designed in a follow-up phase
+            // (see .backlog/core-update-execution.md). For now, only flash a
+            // notice and proceed to apply plugin / theme selections.
+            session()->flash('info', __('admin/settings/systems/updates.core.execute_not_implemented'));
         }
 
         $succeeded = 0;
@@ -221,7 +227,8 @@ class AdminSystemUpdatesController extends AdminLoggedInController
     }
 
     /**
-     * Parse query in `?target=plugin:slug` format
+     * Parse query in `?target=plugin:slug` format. The literal value `core`
+     * (no slug) selects the core row.
      *
      * @return array{type: ?string, slug: ?string}
      */
@@ -230,6 +237,11 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         if ($target === '') {
             return ['type' => null, 'slug' => null];
         }
+
+        if ($target === 'core') {
+            return ['type' => 'core', 'slug' => null];
+        }
+
         if (! str_contains($target, ':')) {
             return ['type' => null, 'slug' => null];
         }
@@ -242,13 +254,38 @@ class AdminSystemUpdatesController extends AdminLoggedInController
     }
 
     /**
-     * Oldest last check time among all installed extensions
+     * Build the view payload for the Core section, sourced from the singleton
+     * `core_releases` row.
+     *
+     * @param  array{type: ?string, slug: ?string}  $target
+     * @return array{available: bool, current_version: ?string, available_version: ?string, available_version_published_at: ?\Illuminate\Support\Carbon, release_url: ?string, preselected: bool}
+     */
+    protected function buildCoreSection(array $target): array
+    {
+        $state = \App\Models\CoreRelease::singleton();
+        $current = (string) (\App\Models\CoreVersionHistory::currentVersion() ?? config('app.version', '0.0.0'));
+        $available = $state->available_version !== null
+            && version_compare($state->available_version, $current, '>');
+
+        return [
+            'available' => $available,
+            'current_version' => $current,
+            'available_version' => $available ? $state->available_version : null,
+            'available_version_published_at' => $available ? $state->available_version_published_at : null,
+            'release_url' => $available ? $state->release_url : null,
+            'preselected' => $available && $target['type'] === 'core',
+        ];
+    }
+
+    /**
+     * Oldest last check time among all installed extensions and the core
      */
     protected function getLastCheckedAt(): ?Carbon
     {
         $candidates = array_filter([
             Plugin::query()->min('last_version_check'),
             Theme::query()->min('last_version_check'),
+            \App\Models\CoreRelease::singleton()->last_version_check,
         ]);
 
         if (empty($candidates)) {

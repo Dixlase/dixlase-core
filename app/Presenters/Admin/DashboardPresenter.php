@@ -556,6 +556,15 @@ class DashboardPresenter
         $pluginUpdatesAvailable = Plugin::query()->whereNotNull('available_version')->count();
         $themeUpdatesAvailable = Theme::query()->whereNotNull('available_version')->count();
 
+        // Core update — singleton row, only count when available_version is
+        // actually newer than the installed core.
+        $coreState = \App\Models\CoreRelease::singleton();
+        $coreCurrent = (string) (\App\Models\CoreVersionHistory::currentVersion() ?? config('app.version', '0.0.0'));
+        $coreUpdateAvailable = $coreState->available_version !== null
+            && version_compare($coreState->available_version, $coreCurrent, '>')
+            ? 1
+            : 0;
+
         // Count by health status (audited plugins only)
         $healthCounts = [];
         foreach (PluginHealthStatus::cases() as $status) {
@@ -583,9 +592,10 @@ class DashboardPresenter
                 'enabled' => $themesEnabled,
             ],
             'updates' => [
+                'core' => $coreUpdateAvailable,
                 'plugins' => $pluginUpdatesAvailable,
                 'themes' => $themeUpdatesAvailable,
-                'total' => $pluginUpdatesAvailable + $themeUpdatesAvailable,
+                'total' => $coreUpdateAvailable + $pluginUpdatesAvailable + $themeUpdatesAvailable,
             ],
             'health' => $healthCounts,
             'has_audits' => $hasAudits,

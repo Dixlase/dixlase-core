@@ -37,10 +37,6 @@ return [
     'heading' => 'ダッシュボード',
     'description' => 'サイトの概要を確認できます。',
 
-    // モード切替
-    'simple_mode' => 'シンプル',
-    'detailed_mode' => '詳細',
-
     // サイトヘルス
     'site_health' => 'サイトヘルス',
     'maintenance_mode' => 'メンテナンスモード',
@@ -124,7 +120,7 @@ return [
     'manage_plugins' => 'プラグイン管理',
     'no_audits' => 'プラグインの監査はまだ実行されていません。',
     'updates_available_label' => 'アップデート可能',
-    'updates_available_summary' => 'プラグイン :plugins 件 / テーマ :themes 件',
+    'updates_available_summary' => 'コア :core 件 / プラグイン :plugins 件 / テーマ :themes 件',
     'updates_all_up_to_date' => 'すべて最新です',
 
     // メンバー概要

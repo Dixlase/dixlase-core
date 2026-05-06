@@ -22,7 +22,8 @@
 
 return [
     'update_available_subject' => '拡張機能のアップデートが :count 件利用可能です',
+    'core_update_heading' => '【コア】',
     'plugin_updates_heading' => '【プラグイン】',
     'theme_updates_heading' => '【テーマ】',
-    'review_in_admin' => '管理画面のプラグインマスター / テーママスターで詳細を確認し、必要に応じて適用してください。',
+    'review_in_admin' => '管理画面のアップデート管理ページで詳細を確認し、必要に応じて適用してください。',
 ];

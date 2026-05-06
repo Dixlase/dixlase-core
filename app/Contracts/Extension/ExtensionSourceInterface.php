@@ -92,6 +92,15 @@ interface ExtensionSourceInterface
     public function getLatestRelease(string $slug, string $extensionType = 'plugin'): ?ReleaseInfo;
 
     /**
+     * Get the latest release info for the Dixlase Core itself.
+     *
+     * Returns null when the source either does not host a core release feed or
+     * the request fails. Implementations should target a single, well-known
+     * repository (the core repo) rather than the per-extension prefix scheme.
+     */
+    public function getLatestCoreRelease(): ?ReleaseInfo;
+
+    /**
      * Download a specific release and return the local ZIP file path
      *
      * @param  string  $slug  Extension slug (kebab-case)

@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\CommentTranslation\ExtensionDictionaryLocator;
 use Illuminate\Console\Command;
 use Plugins\DixlaseCoreDevKit\App\Services\CommentTranslation\TranslationFileService;
 
@@ -55,25 +56,42 @@ class CommentStatusCommand extends Command
     protected $signature = 'dls:comment:status
         {--locale= : Locale to inspect (default: from config core-dev.comment_translation.default_locale)}
         {--strict : Exit 1 if any pending entries exist (use in release CI)}
+        {--include-plugins : Also aggregate plugins/*/resources/comment-translations/{locale}/}
+        {--include-themes : Also aggregate themes/*/resources/comment-translations/{locale}/}
         {--filter= : Filter entries: untranslated, machine, reviewed, human, or unreviewed}
         {--limit=50 : Max entries to display when filtering}';
 
     /** @var string */
     protected $description = 'Display comment-translation progress; --filter= lists entries by review status';
 
-    public function handle(TranslationFileService $fileService): int
-    {
+    public function handle(
+        TranslationFileService $fileService,
+        ExtensionDictionaryLocator $locator,
+    ): int {
         $locale = $this->option('locale');
         if (is_string($locale) && $locale !== '') {
             $fileService->setLocale($locale);
         }
 
-        $files = $fileService->getAllTranslationFiles();
+        $includePlugins = (bool) $this->option('include-plugins');
+        $includeThemes = (bool) $this->option('include-themes');
 
-        if (empty($files)) {
+        // Aggregate dictionary file paths from every requested extension.
+        // Each entry tracks its dictRoot so we can render dirs relative
+        // to the right anchor when summarising.
+        $entries = $locator->locate($fileService->getLocale(), $includePlugins, $includeThemes);
+        $extFiles = [];
+        foreach ($entries as $entry) {
+            $files = $fileService->getAllTranslationFilesIn($entry['dictRoot']);
+            foreach ($files as $file) {
+                $extFiles[] = ['entry' => $entry, 'file' => $file];
+            }
+        }
+
+        if (empty($extFiles)) {
             $this->components->warn(
-                "No translation files found for locale '{$fileService->getLocale()}'. "
-                .'Run dls:comment:extract first to populate the dictionary.'
+                "No translation files found for locale '{$fileService->getLocale()}'. ".
+                'Run dls:comment:extract first to populate the dictionary.'
             );
 
             return $this->option('strict') ? self::FAILURE : self::SUCCESS;
@@ -82,10 +100,10 @@ class CommentStatusCommand extends Command
         $filter = $this->normalizeFilter($this->option('filter'));
 
         if ($filter !== null) {
-            return $this->renderFilteredEntries($fileService, $files, $filter, (int) $this->option('limit'));
+            return $this->renderFilteredEntries($fileService, $extFiles, $filter, (int) $this->option('limit'));
         }
 
-        return $this->renderSummary($fileService, $files);
+        return $this->renderSummary($fileService, $extFiles);
     }
 
     private function normalizeFilter(?string $option): ?string
@@ -109,12 +127,10 @@ class CommentStatusCommand extends Command
     }
 
     /**
-     * @param  array<int, string>  $files
+     * @param  array<int, array{entry: array{root: string, dictRoot: string, kind: string, name: string}, file: string}>  $extFiles
      */
-    private function renderSummary(TranslationFileService $fileService, array $files): int
+    private function renderSummary(TranslationFileService $fileService, array $extFiles): int
     {
-        $storagePath = $fileService->getStoragePath();
-
         /** @var array<string, array{translated: int, untranslated: int, total: int}> $dirStats */
         $dirStats = [];
         $grandTotal = 0;
@@ -128,7 +144,9 @@ class CommentStatusCommand extends Command
             'unmarked' => 0,
         ];
 
-        foreach ($files as $file) {
+        foreach ($extFiles as $extFile) {
+            $entry = $extFile['entry'];
+            $file = $extFile['file'];
             $translations = $fileService->loadTranslations($file);
             $reviewStatus = $fileService->loadReviewStatus($file);
 
@@ -136,23 +154,26 @@ class CommentStatusCommand extends Command
                 continue;
             }
 
-            $relativePath = str_replace($storagePath.'/', '', $file);
+            $relativePath = ltrim(substr($file, strlen($entry['dictRoot'])), '/');
             $dirName = dirname($relativePath);
+            $dirLabel = $entry['kind'] === 'core'
+                ? $dirName
+                : "{$entry['kind']}/{$entry['name']}: {$dirName}";
 
-            if (! isset($dirStats[$dirName])) {
-                $dirStats[$dirName] = ['translated' => 0, 'untranslated' => 0, 'total' => 0];
+            if (! isset($dirStats[$dirLabel])) {
+                $dirStats[$dirLabel] = ['translated' => 0, 'untranslated' => 0, 'total' => 0];
             }
 
             foreach ($translations as $key => $value) {
-                $dirStats[$dirName]['total']++;
+                $dirStats[$dirLabel]['total']++;
                 $grandTotal++;
 
                 $isTranslated = $value !== '';
                 if ($isTranslated) {
-                    $dirStats[$dirName]['translated']++;
+                    $dirStats[$dirLabel]['translated']++;
                     $grandTranslated++;
                 } else {
-                    $dirStats[$dirName]['untranslated']++;
+                    $dirStats[$dirLabel]['untranslated']++;
                 }
 
                 $status = $reviewStatus[$key] ?? null;
@@ -221,19 +242,20 @@ class CommentStatusCommand extends Command
     }
 
     /**
-     * @param  array<int, string>  $files
+     * @param  array<int, array{entry: array{root: string, dictRoot: string, kind: string, name: string}, file: string}>  $extFiles
      */
     private function renderFilteredEntries(
         TranslationFileService $fileService,
-        array $files,
+        array $extFiles,
         string $filter,
         int $limit
     ): int {
-        $storagePath = $fileService->getStoragePath();
         $shown = 0;
         $totalMatched = 0;
 
-        foreach ($files as $file) {
+        foreach ($extFiles as $extFile) {
+            $entry = $extFile['entry'];
+            $file = $extFile['file'];
             $translations = $fileService->loadTranslations($file);
             $reviewStatus = $fileService->loadReviewStatus($file);
 
@@ -241,7 +263,10 @@ class CommentStatusCommand extends Command
                 continue;
             }
 
-            $relativePath = str_replace($storagePath.'/', '', $file);
+            $relativeFromDict = ltrim(substr($file, strlen($entry['dictRoot'])), '/');
+            $relativePath = $entry['kind'] === 'core'
+                ? $relativeFromDict
+                : "{$entry['kind']}/{$entry['name']}/{$relativeFromDict}";
             $matches = [];
 
             foreach ($translations as $key => $value) {
