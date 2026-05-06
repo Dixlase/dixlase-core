@@ -61,7 +61,6 @@ import '../../admin/settings/plugins/js/online-plugins';
 import '../../admin/settings/themes/js/audit';
 import '../../admin/settings/themes/js/online-themes';
 import '../../admin/js/login-flow';
-import '../../admin/js/dashboard-mode-toggle';
 import '../../admin/js/getting-started-card';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'

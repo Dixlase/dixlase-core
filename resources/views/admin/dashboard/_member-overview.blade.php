@@ -76,8 +76,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    {{-- 詳細モード: ロール分布 + 最近のログイン --}}
-    <div x-show="isDetailed" x-cloak>
+    {{-- ロール分布 + 最近のログイン --}}
+    <div>
         {{-- ロール分布 --}}
         @if(count($memberOverview['by_role']) > 0)
             <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
