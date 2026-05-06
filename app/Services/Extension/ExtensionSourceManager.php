@@ -290,17 +290,120 @@ class ExtensionSourceManager
     /**
      * Check all installed plugins and themes for available updates
      *
-     * @return array{plugins: array<int, array{slug: string, current: string, available: string, source_id: int}>, themes: array<int, array{slug: string, current: string, available: string, source_id: int}>}
+     * @return array{plugins: array<int, array{slug: string, current: string, available: string, source_id: int}>, themes: array<int, array{slug: string, current: string, available: string, source_id: int}>, core: ?array{current: string, available: string, source_id: ?int, release_url: ?string}}
      */
     public function checkUpdates(): array
     {
         $pluginUpdates = $this->checkPluginUpdates();
         $themeUpdates = $this->checkThemeUpdates();
+        $coreUpdate = $this->checkCoreUpdate();
 
         return [
             'plugins' => $pluginUpdates,
             'themes' => $themeUpdates,
+            'core' => $coreUpdate,
         ];
+    }
+
+    /**
+     * Check the Dixlase Core itself for an available update.
+     *
+     * Polls each enabled source in priority order; the first one that returns
+     * a release wins. Persists the discovered metadata onto the singleton
+     * core_releases row regardless of whether an update is available so the
+     * UI can show "last checked: ..." even when the core is current.
+     *
+     * @return ?array{current: string, available: string, source_id: ?int, release_url: ?string}
+     */
+    protected function checkCoreUpdate(): ?array
+    {
+        $coreState = \App\Models\CoreRelease::singleton();
+        $current = (string) (\App\Models\CoreVersionHistory::currentVersion() ?? config('app.version', '0.0.0'));
+
+        $release = null;
+        $sourceId = null;
+        foreach ($this->getEnabledSources() as $source) {
+            try {
+                $candidate = $this->makeProvider($source)->getLatestCoreRelease();
+            } catch (\Throwable) {
+                continue;
+            }
+
+            if ($candidate !== null) {
+                $release = $candidate;
+                $sourceId = $source->id;
+                break;
+            }
+        }
+
+        if ($release === null) {
+            // No source provided a release; just stamp the check timestamp.
+            $coreState->forceFill(['last_version_check' => now()])->save();
+
+            return null;
+        }
+
+        $isNewer = version_compare($release->version, $current, '>');
+        $publishedAt = $release->publishedAt ? \Illuminate\Support\Carbon::parse($release->publishedAt) : null;
+
+        $tagName = $release->metadata['tag_name'] ?? null;
+        $releaseUrl = $tagName !== null
+            ? sprintf(
+                'https://github.com/%s/%s/releases/tag/%s',
+                $this->resolveSourceOwner($sourceId),
+                $this->resolveCoreRepo($sourceId),
+                $tagName
+            )
+            : null;
+
+        $coreState->forceFill([
+            'source_id' => $sourceId,
+            'source_repo' => $this->resolveCoreRepo($sourceId),
+            'available_version' => $isNewer ? $release->version : null,
+            'available_version_published_at' => $isNewer ? $publishedAt : null,
+            'release_url' => $isNewer ? $releaseUrl : null,
+            'last_version_check' => now(),
+        ])->save();
+
+        if (! $isNewer) {
+            return null;
+        }
+
+        return [
+            'current' => $current,
+            'available' => $release->version,
+            'source_id' => $sourceId,
+            'release_url' => $releaseUrl,
+        ];
+    }
+
+    /**
+     * Owner string for the resolved source (used to build release URLs).
+     */
+    protected function resolveSourceOwner(?int $sourceId): string
+    {
+        if ($sourceId === null) {
+            return (string) config('extension-sources.github.default_owner', 'Dixlase');
+        }
+
+        $source = ExtensionSource::query()->find($sourceId);
+
+        return (string) ($source?->owner ?? config('extension-sources.github.default_owner', 'Dixlase'));
+    }
+
+    /**
+     * Core repo name for the resolved source.
+     */
+    protected function resolveCoreRepo(?int $sourceId): string
+    {
+        $defaultRepo = (string) config('extension-sources.github.core_repo', 'dixlase-core');
+        if ($sourceId === null) {
+            return $defaultRepo;
+        }
+
+        $source = ExtensionSource::query()->find($sourceId);
+
+        return (string) ($source?->settings['core_repo'] ?? $defaultRepo);
     }
 
     /**

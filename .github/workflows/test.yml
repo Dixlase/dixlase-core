@@ -434,3 +434,63 @@ jobs:
           DB_DATABASE: dixlase_migration
           DB_USERNAME: root
           DB_PASSWORD: password
+
+  # ============================================
+  # Comment-Translation Coverage (warning mode)
+  # ============================================
+  # Reports comment-translation coverage on every PR / push as a
+  # non-blocking warning. Pending entries surface in the job log so
+  # contributors notice them, but the build is not failed — that gate
+  # is enforced separately by the release workflow (see
+  # laravel-ci.yml -> "Comment translation coverage (strict)").
+  comment-translation-status:
+    name: Comment Translation Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SUBMODULE_PAT }}
+
+      - name: Fetch registered submodules
+        env:
+          SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
+        run: |
+          git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+          if [ -f .gitmodules ]; then
+            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
+              name=$(echo "$key" | sed 's/^submodule\.\(.*\)\.path$/\1/')
+              git submodule init "$path" 2>&1 || true
+            done
+            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
+              git submodule update --depth=1 --force "$path" 2>&1 || echo "WARN: Failed to update $path (continuing)"
+            done
+          fi
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Generate plugin autoload mappings
+        run: php scripts/sync-local-autoload.php
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare minimal environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Report comment-translation coverage (warning mode)
+        run: |
+          echo "::group::dls:comment:status (locale=ja)"
+          php artisan dls:comment:status --include-plugins --include-themes
+          echo "::endgroup::"
+          echo ""
+          echo "Note: this job is informational. Pending entries do not"
+          echo "fail the PR. The release workflow enforces --strict on"
+          echo "v* tags so a release cannot ship with translation gaps."

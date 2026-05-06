@@ -63,6 +63,8 @@ class GitHubSourceProvider implements ExtensionSourceInterface
 
     protected string $themeRepoPrefix;
 
+    protected string $coreRepo;
+
     public function __construct(
         protected ExtensionSource $source,
     ) {
@@ -71,6 +73,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         $this->token = $source->auth_token ?? config('extension-sources.github.default_token');
         $this->repoPrefix = $source->settings['repo_prefix'] ?? config('extension-sources.github.repo_prefix', 'dixlase-');
         $this->themeRepoPrefix = $source->settings['theme_repo_prefix'] ?? config('extension-sources.github.theme_repo_prefix', 'dixlase-theme-');
+        $this->coreRepo = $source->settings['core_repo'] ?? config('extension-sources.github.core_repo', 'dixlase-core');
     }
 
     public function getType(): string
@@ -158,6 +161,21 @@ class GitHubSourceProvider implements ExtensionSourceInterface
 
         // Generate pseudo-release from default branch information if no release exists
         return $this->getDefaultBranchReleaseInfo($slug, $extensionType);
+    }
+
+    public function getLatestCoreRelease(): ?ReleaseInfo
+    {
+        $response = $this->client()
+            ->get("{$this->baseUrl}/repos/{$this->owner}/{$this->coreRepo}/releases/latest");
+
+        if (! $response->successful()) {
+            // No release published yet — leave detection blank rather than
+            // synthesising a pseudo-version from the default branch (the core
+            // version-of-record is config('app.version'), not a branch tag).
+            return null;
+        }
+
+        return ReleaseInfo::fromGitHub($response->json(), 'core', 'core');
     }
 
     public function downloadRelease(string $slug, string $version, string $extensionType = 'plugin'): string
