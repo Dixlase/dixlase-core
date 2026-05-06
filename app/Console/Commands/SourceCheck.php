@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\CoreRelease;
 use App\Models\Plugin;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
@@ -56,11 +57,21 @@ class SourceCheck extends Command
 
         $pluginUpdates = $result['plugins'];
         $themeUpdates = $result['themes'];
+        $coreUpdate = $result['core'] ?? null;
 
-        if (empty($pluginUpdates) && empty($themeUpdates)) {
-            $this->info('All extensions are up to date.');
+        if (empty($pluginUpdates) && empty($themeUpdates) && $coreUpdate === null) {
+            $this->info('All extensions and the core are up to date.');
 
             return self::SUCCESS;
+        }
+
+        if ($coreUpdate !== null) {
+            $this->newLine();
+            $this->info('Core update available:');
+            $this->table(
+                ['Component', 'Current', 'Available'],
+                [['core', $coreUpdate['current'], $coreUpdate['available']]]
+            );
         }
 
         if (! empty($pluginUpdates)) {
@@ -83,7 +94,7 @@ class SourceCheck extends Command
 
         // Suppress re-notification of the same version: only notify when last_notified_version != available_version
         if (! $this->option('no-notify')) {
-            $this->notifyAdmin($pluginUpdates, $themeUpdates);
+            $this->notifyAdmin($pluginUpdates, $themeUpdates, $coreUpdate);
         }
 
         return self::SUCCESS;
@@ -94,21 +105,23 @@ class SourceCheck extends Command
      *
      * @param  array<int, array{slug: string, current: string, available: string, source_id: int|null}>  $pluginUpdates
      * @param  array<int, array{slug: string, current: string, available: string, source_id: int|null}>  $themeUpdates
+     * @param  ?array{current: string, available: string, source_id: ?int, release_url: ?string}  $coreUpdate
      */
-    protected function notifyAdmin(array $pluginUpdates, array $themeUpdates): void
+    protected function notifyAdmin(array $pluginUpdates, array $themeUpdates, ?array $coreUpdate): void
     {
         $newPluginUpdates = $this->filterUnnotified($pluginUpdates, Plugin::class);
         $newThemeUpdates = $this->filterUnnotified($themeUpdates, Theme::class);
+        $newCoreUpdate = $this->filterUnnotifiedCore($coreUpdate);
 
-        if (empty($newPluginUpdates) && empty($newThemeUpdates)) {
+        if (empty($newPluginUpdates) && empty($newThemeUpdates) && $newCoreUpdate === null) {
             $this->line('No new (unnotified) updates. Skipping notification email.');
 
             return;
         }
 
-        $totalCount = count($newPluginUpdates) + count($newThemeUpdates);
+        $totalCount = count($newPluginUpdates) + count($newThemeUpdates) + ($newCoreUpdate !== null ? 1 : 0);
         $subject = __('admin/extensions/notifications.update_available_subject', ['count' => $totalCount]);
-        $body = $this->buildNotificationBody($newPluginUpdates, $newThemeUpdates);
+        $body = $this->buildNotificationBody($newPluginUpdates, $newThemeUpdates, $newCoreUpdate);
 
         $sent = app(SystemNotificationService::class)->sendAdminNotification(
             $subject,
@@ -129,8 +142,31 @@ class SourceCheck extends Command
         foreach ($newThemeUpdates as $update) {
             Theme::query()->where('slug', $update['slug'])->update(['last_notified_version' => $update['available']]);
         }
+        if ($newCoreUpdate !== null) {
+            CoreRelease::singleton()->forceFill(['last_notified_version' => $newCoreUpdate['available']])->save();
+        }
 
         $this->info("Notification email sent ({$totalCount} new update(s)).");
+    }
+
+    /**
+     * Return the core update only if it has not been notified yet.
+     *
+     * @param  ?array{current: string, available: string, source_id: ?int, release_url: ?string}  $coreUpdate
+     * @return ?array{current: string, available: string, source_id: ?int, release_url: ?string}
+     */
+    protected function filterUnnotifiedCore(?array $coreUpdate): ?array
+    {
+        if ($coreUpdate === null) {
+            return null;
+        }
+
+        $state = CoreRelease::singleton();
+        if ($state->last_notified_version === $coreUpdate['available']) {
+            return null;
+        }
+
+        return $coreUpdate;
     }
 
     /**
@@ -160,10 +196,17 @@ class SourceCheck extends Command
     /**
      * @param  array<int, array{slug: string, current: string, available: string, source_id: int|null}>  $pluginUpdates
      * @param  array<int, array{slug: string, current: string, available: string, source_id: int|null}>  $themeUpdates
+     * @param  ?array{current: string, available: string, source_id: ?int, release_url: ?string}  $coreUpdate
      */
-    protected function buildNotificationBody(array $pluginUpdates, array $themeUpdates): string
+    protected function buildNotificationBody(array $pluginUpdates, array $themeUpdates, ?array $coreUpdate): string
     {
         $lines = [];
+
+        if ($coreUpdate !== null) {
+            $lines[] = __('admin/extensions/notifications.core_update_heading');
+            $lines[] = "- core: v{$coreUpdate['current']} → v{$coreUpdate['available']}";
+            $lines[] = '';
+        }
 
         if (! empty($pluginUpdates)) {
             $lines[] = __('admin/extensions/notifications.plugin_updates_heading');

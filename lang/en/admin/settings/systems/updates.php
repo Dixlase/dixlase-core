@@ -36,7 +36,12 @@ return [
     // Section headings
     'core' => [
         'heading' => 'Core',
+        'label' => 'Dixlase Core',
         'current_version' => 'Current version: v:version',
+        'update_available' => 'Update available',
+        'up_to_date' => 'The core is up to date.',
+        'release_notes_link' => 'View release notes on GitHub',
+        'execute_not_implemented' => 'Core update detection is now wired up, but executing core upgrades is still being implemented. Selecting the core checkbox shows this notice for now and does not start an upgrade.',
         'not_implemented' => 'Core update functionality is being prepared in a separate task and will appear here once available.',
     ],
     'plugins' => [

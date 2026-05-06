@@ -36,7 +36,12 @@ return [
     // セクション見出し
     'core' => [
         'heading' => 'コア',
+        'label' => 'Dixlase コア',
         'current_version' => '現在のバージョン: v:version',
+        'update_available' => '更新あり',
+        'up_to_date' => 'コアは最新です。',
+        'release_notes_link' => 'リリースノートを GitHub で見る',
+        'execute_not_implemented' => 'コアの更新検知は有効化されましたが、コアのアップグレード実行は別途実装中です。コアのチェックボックスを選択しても今のところこの通知が出るだけで、アップグレードは開始されません。',
         'not_implemented' => 'コア本体のアップデート機能は別タスクで準備中です。利用可能になり次第、ここに表示されます。',
     ],
     'plugins' => [
