@@ -37,7 +37,4 @@ return [
     // Example: Default stub storage location
     'default_stub_directory' => base_path('vendor/laravel/framework/src/Illuminate/Routing/Console/stubs'),
 
-    // Storage location for Dixlase Core stub files (deploy stubs, etc.)
-    'dixlase_stub_directory' => base_path('stubs/dixlase'),
-
 ];
