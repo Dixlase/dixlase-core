@@ -51,6 +51,12 @@ For larger or design-heavy proposals, starting a thread in [GitHub Discussions](
 
 Plugins and themes that interact with Dixlase's Plugin API (see [PLUGIN-API.md](./PLUGIN-API.md)) are outside the scope of the core repository: their authors retain full copyright and may distribute them under any license of their choice. The current PR deferral applies to the Dixlase core repository only.
 
+## Translations
+
+Dixlase ships with **English source comments as the canonical form**. Each supported locale lives at `resources/comment-translations/{locale}/` (mirrored inside each plugin and theme), and `./convert-comments.sh ja` flips a development checkout to Japanese in-place. See [`docs/development/comment-translation.md`](./docs/development/comment-translation.md) for the full architecture.
+
+If you spot a translation issue, please file an Issue rather than a PR — translation pull requests will reopen alongside code PRs once the CLA legal review is complete. In the meantime, dictionary files (`resources/comment-translations/{locale}/...`) are versioned with the source so any improvement you note in an Issue becomes easy for a maintainer to reproduce and apply.
+
 ## Questions?
 
 If you have questions about contributing, feel free to:
