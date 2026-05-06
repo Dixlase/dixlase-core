@@ -241,7 +241,7 @@ class AdminFrontController extends AdminLoggedInController
      * Display with the same appearance as front page using theme's layouts.app,
      * and update content in real-time via postMessage
      */
-    public function previewFrame(): View
+    public function previewFrame(Request $request): View
     {
         // Override CSP frame-ancestors to 'self' (allow iframe embedding)
         request()->attributes->set('csp_frame_ancestors_self', true);
@@ -252,17 +252,34 @@ class AdminFrontController extends AdminLoggedInController
         // Get and render initial front page content
         $frontPage = FrontPage::findByType('main_content');
         $initialRenderedContent = '';
+        $hasCustomCss = false;
+        $hasCustomJs = false;
+        $customAssetVersion = 0;
 
         if ($frontPage) {
             $rawContent = $this->contentService->getContent($frontPage, $frontPage->lang);
             if ($rawContent) {
                 $initialRenderedContent = $this->previewService->render($rawContent, $frontPage->editor_type);
             }
+
+            // Mirror FrontWelcomeController: HTML editor serves JS/CSS via separate routes.
+            if ($frontPage->editor_type === ContentEditorType::HTML) {
+                $hasCustomJs = ! empty($this->contentService->getJsContent($frontPage, $frontPage->lang));
+                $hasCustomCss = ! empty($this->contentService->getCssContent($frontPage, $frontPage->lang));
+            }
+
+            $customAssetVersion = $frontPage->updated_at?->timestamp ?? 0;
         }
 
         return view('themes::admin.preview-frame', [
             'themeSettings' => $themeSettings,
             'initialRenderedContent' => $initialRenderedContent,
+            'hasCustomCss' => $hasCustomCss,
+            'hasCustomJs' => $hasCustomJs,
+            'customAssetVersion' => $customAssetVersion,
+            // Bare mode: render front content only, omit hero/contact (used when
+            // embedded inside another preview that already mocks those sections).
+            'bareContent' => $request->boolean('bare'),
         ]);
     }
 
