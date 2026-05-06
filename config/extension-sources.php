@@ -56,6 +56,9 @@ return [
         // e.g., plugin.json slug "dixlase-seo" → repo "plugin-dixlase-seo"
         'repo_prefix' => 'plugin-',
         'theme_repo_prefix' => 'theme-',
+        // Core repo (no prefix). Used by getLatestCoreRelease() to poll for
+        // core upgrades.
+        'core_repo' => env('EXTENSION_GITHUB_CORE_REPO', 'dixlase-core'),
     ],
 
     // Key ID used for official source signature verification

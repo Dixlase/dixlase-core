@@ -22,7 +22,8 @@
 
 return [
     'update_available_subject' => ':count extension update(s) available',
+    'core_update_heading' => '[Core]',
     'plugin_updates_heading' => '[Plugins]',
     'theme_updates_heading' => '[Themes]',
-    'review_in_admin' => 'Review the details in the Plugin Master / Theme Master in the admin panel, and apply updates as needed.',
+    'review_in_admin' => 'Review the details on the Updates page in the admin panel, and apply updates as needed.',
 ];
