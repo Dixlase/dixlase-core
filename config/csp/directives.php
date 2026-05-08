@@ -80,9 +80,13 @@ return [
     'object-src' => ["'none'"],
 
     // Frames
-    // CAPTCHA iframe origins are injected dynamically by CaptchaCspProvider
-    // only when captcha is enabled.
-    'frame-src' => ["'self'"],
+    // Default to 'none'. Front pages do not embed iframes by default.
+    // Admin context relaxes this to 'self' via config/csp/admin.php so that
+    // same-origin preview iframes work. CAPTCHA iframe origins are injected
+    // dynamically by CaptchaCspProvider only when captcha is enabled.
+    // Plugins/themes that need to embed external frames declare them via
+    // csp.frames in plugin.json / theme.json.
+    'frame-src' => ["'none'"],
 
     // Frame ancestors (parents that can embed this page)
     // Note: Overridden to 'none' in admin panel (clickjacking protection)
