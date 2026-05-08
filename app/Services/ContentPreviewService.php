@@ -56,10 +56,17 @@ class ContentPreviewService
     ) {}
 
     /**
-     * Render content to HTML for preview
+     * Render content to HTML for preview.
+     *
+     * Security: when $editorType is BLADE, this method invokes Blade::render
+     * on $content, which executes arbitrary PHP. Callers MUST ensure that
+     * the editor type came from a trusted, stored value (e.g. a saved page's
+     * editor_type column) and not from request input. For request-driven
+     * preview endpoints use {@see renderFromSlug()} instead, which downgrades
+     * BLADE to HTML by default.
      *
      * @param  string  $content  Raw content
-     * @param  ContentEditorType  $editorType  Editor type
+     * @param  ContentEditorType  $editorType  Editor type (must come from a trusted source if BLADE)
      */
     public function render(string $content, ContentEditorType $editorType): string
     {
@@ -98,17 +105,37 @@ class ContentPreviewService
     }
 
     /**
-     * Render content to HTML for preview from editor type slug
+     * Render content to HTML for preview from an editor type slug.
+     *
+     * Security: callers of this method typically pass the editor type slug
+     * directly from request input (`request()->input('editor_type')`). Blade
+     * is a server-side templating language — rendering attacker-controlled
+     * Blade source would be a remote code execution vector.
+     *
+     * To prevent that, BLADE is silently downgraded to HTML rendering unless
+     * the caller explicitly opts in via $allowExecutableTemplates. Callers
+     * that opt in MUST first verify that the current actor has the privilege
+     * to author Blade templates (e.g. by matching against the stored
+     * editor_type of a saved page that the actor has permission to edit).
+     *
+     * Use {@see render()} with a typed ContentEditorType enum when the editor
+     * type comes from a trusted, stored value rather than a request slug.
      *
      * @param  string  $content  Raw content
-     * @param  string  $editorTypeSlug  Editor type slug (e.g., 'html', 'markdown')
+     * @param  string  $editorTypeSlug  Editor type slug (e.g., 'html', 'markdown', 'blade')
+     * @param  bool  $allowExecutableTemplates  Opt-in to BLADE rendering. Caller must enforce its own permission check first.
      */
-    public function renderFromSlug(string $content, string $editorTypeSlug): string
+    public function renderFromSlug(string $content, string $editorTypeSlug, bool $allowExecutableTemplates = false): string
     {
         $editorType = ContentEditorType::tryFromSlug($editorTypeSlug);
 
         if ($editorType === null) {
             return '';
+        }
+
+        if ($editorType === ContentEditorType::BLADE && ! $allowExecutableTemplates) {
+            // Treat as HTML to avoid invoking Blade::render on attacker-controlled input.
+            $editorType = ContentEditorType::HTML;
         }
 
         return $this->render($content, $editorType);
