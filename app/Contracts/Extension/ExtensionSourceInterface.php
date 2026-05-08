@@ -111,6 +111,16 @@ interface ExtensionSourceInterface
     public function downloadRelease(string $slug, string $version, string $extensionType = 'plugin'): string;
 
     /**
+     * Download a specific Core release and return the local ZIP file path.
+     *
+     * Targets the core repository (no slug-prefix scheme). Throws on failure.
+     *
+     * @param  string  $version  Semantic version string (no leading "v")
+     * @return string Absolute path to downloaded ZIP file
+     */
+    public function downloadCoreRelease(string $version): string;
+
+    /**
      * Check if the source is available (connectivity + authentication)
      */
     public function isAvailable(): bool;

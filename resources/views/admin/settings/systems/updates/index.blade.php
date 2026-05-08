@@ -71,46 +71,38 @@ file is governed by the AGPL terms below.
             </h2>
 
             @if($core['available'])
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                            <th class="py-2 pr-2 w-8"></th>
-                            <th class="py-2 pr-4">{{ __('admin/settings/systems/updates.table.name') }}</th>
-                            <th class="py-2 pr-4">{{ __('admin/settings/systems/updates.table.current') }}</th>
-                            <th class="py-2 pr-4">{{ __('admin/settings/systems/updates.table.available') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-b border-gray-100 dark:border-gray-700">
-                            <td class="py-2 pr-2">
-                                <input type="checkbox"
-                                       name="core"
-                                       value="1"
-                                       data-update-target="core"
-                                       @checked($core['preselected'])
-                                       class="rounded border-gray-300 dark:border-gray-600"
-                                       id="core-update">
-                            </td>
-                            <td class="py-2 pr-4">
-                                <label for="core-update" class="cursor-pointer text-gray-900 dark:text-gray-100 font-medium">
-                                    {{ __('admin/settings/systems/updates.core.label') }}
-                                </label>
-                                @if($core['release_url'])
-                                    <a href="{{ $core['release_url'] }}" target="_blank" rel="noopener noreferrer" class="block text-xs text-indigo-600 dark:text-indigo-400 hover:underline">
-                                        <i class="fas fa-external-link-alt text-[10px] mr-1"></i>{{ __('admin/settings/systems/updates.core.release_notes_link') }}
-                                    </a>
-                                @endif
-                            </td>
-                            <td class="py-2 pr-4 font-mono text-xs text-gray-600 dark:text-gray-400">v{{ $core['current_version'] }}</td>
-                            <td class="py-2 pr-4 font-mono text-xs text-blue-700 dark:text-blue-300 font-semibold">
-                                <i class="fas fa-arrow-up text-[10px] mr-1"></i>v{{ $core['available_version'] }}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <p class="mt-3 text-xs text-gray-500 dark:text-gray-400 italic">
-                    <i class="fas fa-info-circle mr-1"></i>{{ __('admin/settings/systems/updates.core.execute_not_implemented') }}
-                </p>
+                <div class="text-sm space-y-3">
+                    <div class="flex items-baseline gap-3">
+                        <span class="text-gray-700 dark:text-gray-300 font-medium">{{ __('admin/settings/systems/updates.core.label') }}</span>
+                        <span class="font-mono text-xs text-gray-600 dark:text-gray-400">v{{ $core['current_version'] }}</span>
+                        <i class="fas fa-arrow-right text-[10px] text-gray-400"></i>
+                        <span class="font-mono text-xs text-blue-700 dark:text-blue-300 font-semibold">v{{ $core['available_version'] }}</span>
+                        @if($core['release_url'])
+                            <a href="{{ $core['release_url'] }}" target="_blank" rel="noopener noreferrer" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">
+                                <i class="fas fa-external-link-alt text-[10px] mr-1"></i>{{ __('admin/settings/systems/updates.core.release_notes_link') }}
+                            </a>
+                        @endif
+                    </div>
+
+                    <div class="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-4">
+                        <p class="flex items-start gap-2 text-sm text-amber-800 dark:text-amber-200 mb-3">
+                            <i class="fas fa-terminal mt-0.5"></i>
+                            <span>{{ __('admin/settings/systems/updates.core.cli_required') }}</span>
+                        </p>
+                        <div class="flex items-center gap-2"
+                             x-data="{ copied: false, copy() { navigator.clipboard.writeText(this.$refs.cmd.textContent.trim()).then(() => { this.copied = true; setTimeout(() => this.copied = false, 2000); }); } }">
+                            <code x-ref="cmd" class="flex-1 font-mono text-xs bg-gray-900 text-gray-100 px-3 py-2 rounded select-all">{{ __('admin/settings/systems/updates.core.cli_command') }}</code>
+                            <button type="button" @click="copy()"
+                                    class="inline-flex items-center gap-1 px-2.5 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                                <i class="fas" :class="copied ? 'fa-check text-green-500' : 'fa-copy'"></i>
+                                <span x-text="copied ? '{{ __('common.copied') }}' : '{{ __('common.copy') }}'"></span>
+                            </button>
+                        </div>
+                        <p class="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                            {{ __('admin/settings/systems/updates.core.cli_followups') }}
+                        </p>
+                    </div>
+                </div>
             @else
                 @if(! empty($core['current_version']))
                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">

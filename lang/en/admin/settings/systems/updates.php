@@ -41,7 +41,10 @@ return [
         'update_available' => 'Update available',
         'up_to_date' => 'The core is up to date.',
         'release_notes_link' => 'View release notes on GitHub',
-        'execute_not_implemented' => 'Core update detection is now wired up, but executing core upgrades is still being implemented. Selecting the core checkbox shows this notice for now and does not start an upgrade.',
+        'cli_required' => 'Core upgrades must be run from a terminal so the running app is not replaced mid-request. Copy the command below and execute it on the server.',
+        'cli_command' => 'docker exec -i dixlase-dev-app php artisan dls:core:update',
+        'cli_followups' => 'After the update completes, run `composer install --no-dev` if composer.json changed and `npm install && npm run build` if assets changed, then restart PHP-FPM.',
+        'execute_not_implemented' => 'Core update detection is now wired up, but executing core upgrades from the web UI is still being implemented. Use the CLI command shown above for now.',
         'not_implemented' => 'Core update functionality is being prepared in a separate task and will appear here once available.',
     ],
     'plugins' => [
