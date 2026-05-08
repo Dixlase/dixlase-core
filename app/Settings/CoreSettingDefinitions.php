@@ -129,6 +129,16 @@ class CoreSettingDefinitions
             type: 'string',
         ));
 
+        // Selected GUI editor plugin slug. Empty string = no GUI editor.
+        // Read by EditorManager and AdminBaseEditorController; the value
+        // refers to a plugin slug, so it is global like admin_theme.
+        $registry->register(new SettingDefinition(
+            name: 'preferred_gui_editor',
+            scope: SettingScope::Global,
+            default: '',
+            type: 'string',
+        ));
+
         // ------------------------------------------------------------------
         // Per-site
         // ------------------------------------------------------------------
