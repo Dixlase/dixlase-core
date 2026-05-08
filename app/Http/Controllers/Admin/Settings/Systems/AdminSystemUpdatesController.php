@@ -157,8 +157,10 @@ class AdminSystemUpdatesController extends AdminLoggedInController
      * Form data:
      *   plugins[] = id (selected plugin IDs)
      *   themes[]  = id (selected theme IDs)
-     *   core      = "1" (when the core checkbox is selected; execution
-     *               not yet implemented — surfaces an info flash instead)
+     *
+     * Core update is excluded from web-driven apply: the page renders a
+     * copyable `dls:core:update` CLI command instead, since replacing core
+     * code mid-request would tear down the running app.
      */
     public function apply(Request $request)
     {
@@ -167,23 +169,14 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             'plugins.*' => 'integer',
             'themes' => 'array',
             'themes.*' => 'integer',
-            'core' => 'nullable',
         ]);
 
         $pluginIds = $request->input('plugins', []);
         $themeIds = $request->input('themes', []);
-        $coreSelected = $request->boolean('core');
 
-        if (empty($pluginIds) && empty($themeIds) && ! $coreSelected) {
+        if (empty($pluginIds) && empty($themeIds)) {
             return redirect()->route('admin.settings.systems.updates.index')
                 ->with('info', __('admin/settings/systems/updates.messages.no_selection'));
-        }
-
-        if ($coreSelected) {
-            // Core update execution is being designed in a follow-up phase
-            // (see .backlog/core-update-execution.md). For now, only flash a
-            // notice and proceed to apply plugin / theme selections.
-            session()->flash('info', __('admin/settings/systems/updates.core.execute_not_implemented'));
         }
 
         $succeeded = 0;

@@ -213,6 +213,87 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         return $filePath;
     }
 
+    public function downloadCoreRelease(string $version): string
+    {
+        // Locate the release row matching the requested tag (try v-prefixed
+        // and bare tag formats since GitHub repos vary on this convention).
+        $release = $this->findCoreRelease($version);
+
+        if ($release === null || empty($release['download_url'])) {
+            // Fall back to default-branch zipball so a core repo without
+            // tagged releases can still be exercised in dev.
+            $downloadUrl = $this->getCoreDefaultBranchZipballUrl();
+            if ($downloadUrl === null) {
+                throw new RuntimeException("Core release v{$version} not found and default branch is unavailable.");
+            }
+        } else {
+            $downloadUrl = $release['download_url'];
+        }
+
+        $downloadPath = config('extension-sources.download_path');
+        File::ensureDirectoryExists($downloadPath);
+
+        $filename = "core-{$version}.zip";
+        $filePath = "{$downloadPath}/{$filename}";
+
+        $response = $this->client()->withOptions(['sink' => $filePath])->get($downloadUrl);
+
+        if ($response->failed()) {
+            File::delete($filePath);
+            throw new RuntimeException("Failed to download core v{$version}: HTTP {$response->status()}");
+        }
+
+        return $filePath;
+    }
+
+    /**
+     * Find the GitHub release row matching the requested core tag.
+     *
+     * @return ?array{download_url: ?string, tag_name: string}
+     */
+    protected function findCoreRelease(string $version): ?array
+    {
+        // Try the GitHub Releases /tags/{tag} endpoint with both v-prefixed
+        // and bare tag forms so we accept either naming.
+        foreach (["v{$version}", $version] as $tag) {
+            $response = $this->client()
+                ->get("{$this->baseUrl}/repos/{$this->owner}/{$this->coreRepo}/releases/tags/{$tag}");
+
+            if (! $response->successful()) {
+                continue;
+            }
+
+            $payload = $response->json();
+            $zipAsset = collect($payload['assets'] ?? [])->first(
+                fn (array $asset) => str_ends_with($asset['name'] ?? '', '.zip')
+            );
+
+            return [
+                'download_url' => $zipAsset['browser_download_url'] ?? $payload['zipball_url'] ?? null,
+                'tag_name' => $payload['tag_name'] ?? $tag,
+            ];
+        }
+
+        return null;
+    }
+
+    /**
+     * Fallback: default-branch zipball URL of the core repo.
+     */
+    protected function getCoreDefaultBranchZipballUrl(): ?string
+    {
+        $response = $this->client()
+            ->get("{$this->baseUrl}/repos/{$this->owner}/{$this->coreRepo}");
+
+        if ($response->failed()) {
+            return null;
+        }
+
+        $defaultBranch = $response->json('default_branch') ?? 'main';
+
+        return "{$this->baseUrl}/repos/{$this->owner}/{$this->coreRepo}/zipball/{$defaultBranch}";
+    }
+
     /**
      * Generate pseudo-ReleaseInfo from default branch
      */

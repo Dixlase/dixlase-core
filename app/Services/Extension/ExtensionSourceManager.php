@@ -567,6 +567,56 @@ class ExtensionSourceManager
     }
 
     /**
+     * Download the Dixlase Core release ZIP.
+     *
+     * Tries the source recorded on `core_releases.source_id` first, then
+     * falls back to every enabled source in priority order.
+     *
+     * @param  ?string  $version  Defaults to `core_releases.available_version`
+     * @return string Path to the downloaded ZIP file
+     *
+     * @throws RuntimeException When every source fails
+     */
+    public function downloadCore(?string $version = null): string
+    {
+        $coreState = \App\Models\CoreRelease::singleton();
+        $version ??= $coreState->available_version;
+
+        if ($version === null) {
+            throw new RuntimeException('No core update is currently available.');
+        }
+
+        $errors = [];
+
+        // Try the source remembered on the core_releases row first.
+        if ($coreState->source_id !== null) {
+            $source = ExtensionSource::query()->find($coreState->source_id);
+            if ($source && $source->is_enabled) {
+                try {
+                    return $this->makeProvider($source)->downloadCoreRelease($version);
+                } catch (\Throwable $e) {
+                    $errors[] = "[{$source->name}] {$e->getMessage()}";
+                }
+            }
+        }
+
+        // Fallback: any other enabled source.
+        foreach ($this->getEnabledSources() as $source) {
+            if ($source->id === $coreState->source_id) {
+                continue;
+            }
+            try {
+                return $this->makeProvider($source)->downloadCoreRelease($version);
+            } catch (\Throwable $e) {
+                $errors[] = "[{$source->name}] {$e->getMessage()}";
+            }
+        }
+
+        $detail = implode('; ', $errors) ?: 'no enabled sources';
+        throw new RuntimeException("Failed to download core v{$version} from all sources. Errors: {$detail}");
+    }
+
+    /**
      * Load providers from config
      */
     protected function bootProviders(): void

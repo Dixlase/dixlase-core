@@ -41,7 +41,10 @@ return [
         'update_available' => '更新あり',
         'up_to_date' => 'コアは最新です。',
         'release_notes_link' => 'リリースノートを GitHub で見る',
-        'execute_not_implemented' => 'コアの更新検知は有効化されましたが、コアのアップグレード実行は別途実装中です。コアのチェックボックスを選択しても今のところこの通知が出るだけで、アップグレードは開始されません。',
+        'cli_required' => 'コアのアップグレードは、リクエスト処理中に動作中のアプリを置き換えないようターミナルから実行する必要があります。下記コマンドをコピーしてサーバ上で実行してください。',
+        'cli_command' => 'docker exec -i dixlase-dev-app php artisan dls:core:update',
+        'cli_followups' => '更新完了後、composer.json が変更されていれば `composer install --no-dev`、アセットが変更されていれば `npm install && npm run build` を実行し、PHP-FPM を再起動してください。',
+        'execute_not_implemented' => 'コアの更新検知は有効化されましたが、Web UI からのアップグレード実行は別途実装中です。当面は上記の CLI コマンドを使用してください。',
         'not_implemented' => 'コア本体のアップデート機能は別タスクで準備中です。利用可能になり次第、ここに表示されます。',
     ],
     'plugins' => [
