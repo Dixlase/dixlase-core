@@ -73,7 +73,7 @@ class CommentBuildCommand extends Command
         {--in-place : Rewrite source files directly instead of copying to --output}
         {--reverse : Apply locale → EN direction (revert a previous in-place conversion)}
         {--output= : Output destination when not --in-place (default: dist/{locale})}
-        {--path=app : Source path to scan within each extension (relative to extension root)}
+        {--path=app,resources/views : Comma-separated source paths to scan within each extension (relative to extension root)}
         {--include-plugins : Also walk plugins/*/resources/comment-translations/{locale}/}
         {--include-themes : Also walk themes/*/resources/comment-translations/{locale}/}
         {--dry-run : Compute substitutions but do not write any file}';
@@ -89,7 +89,11 @@ class CommentBuildCommand extends Command
         $locale = $this->resolveLocale($fileService);
         $fileService->setLocale($locale);
 
-        $scanPath = (string) $this->option('path');
+        $rawPaths = (string) $this->option('path');
+        $scanPaths = array_values(array_filter(
+            array_map('trim', explode(',', $rawPaths)),
+            fn ($p) => $p !== '',
+        ));
         $inPlace = (bool) $this->option('in-place');
         $reverse = (bool) $this->option('reverse');
         $dryRun = (bool) $this->option('dry-run');
@@ -113,7 +117,7 @@ class CommentBuildCommand extends Command
         }
 
         $this->components->info("Locale:      {$locale} ({$direction})");
-        $this->components->info("Scan path:   {$scanPath} (within each extension)");
+        $this->components->info('Scan paths:  '.implode(', ', $scanPaths).' (within each extension)');
         $this->components->info('Mode:        '.$modeLabel);
         $this->components->info('Extensions:  '.count($entries).' ('
             .implode(', ', array_map(fn ($e) => $e['kind'].'/'.$e['name'], $entries)).')');
@@ -127,26 +131,32 @@ class CommentBuildCommand extends Command
                 ? null
                 : $this->resolveExtensionOutputRoot($entry, $locale);
 
-            $stats = $builder->applyExtension(
-                $sourceRoot,
-                $dictRoot,
-                $scanPath,
-                $outputRoot,
-                $reverse,
-                $dryRun,
-            );
+            $entryStats = ['files' => 0, 'translated' => 0, 'untranslated' => 0];
+            foreach ($scanPaths as $scanPath) {
+                $stats = $builder->applyExtension(
+                    $sourceRoot,
+                    $dictRoot,
+                    $scanPath,
+                    $outputRoot,
+                    $reverse,
+                    $dryRun,
+                );
+                $entryStats['files'] += $stats['files'];
+                $entryStats['translated'] += $stats['translated'];
+                $entryStats['untranslated'] += $stats['untranslated'];
+            }
 
-            $totals['files'] += $stats['files'];
-            $totals['translated'] += $stats['translated'];
-            $totals['untranslated'] += $stats['untranslated'];
+            $totals['files'] += $entryStats['files'];
+            $totals['translated'] += $entryStats['translated'];
+            $totals['untranslated'] += $entryStats['untranslated'];
 
-            if ($stats['files'] > 0) {
+            if ($entryStats['files'] > 0) {
                 $this->line(sprintf(
                     '  %-25s files=%-4d subs=%-5d pending=%d',
                     $entry['kind'].'/'.$entry['name'],
-                    $stats['files'],
-                    $stats['translated'],
-                    $stats['untranslated'],
+                    $entryStats['files'],
+                    $entryStats['translated'],
+                    $entryStats['untranslated'],
                 ));
             }
         }

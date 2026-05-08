@@ -66,8 +66,8 @@ Options:
                         in the dictionary for <locale>.
   --no-plugins          Do not walk plugins/* dictionaries.
   --no-themes           Do not walk themes/* dictionaries.
-  --path=<rel>          Restrict the source scan to a sub-path within
-                        each extension (default: app).
+  --path=<rel>[,<rel>]  Comma-separated source paths to scan within each
+                        extension (default: app,resources/views).
   --list                Print available locales and exit.
   -h, --help            Print this message.
 
@@ -117,7 +117,7 @@ DRY_RUN=false
 STRICT=false
 INCLUDE_PLUGINS=true
 INCLUDE_THEMES=true
-SCAN_PATH="app"
+SCAN_PATH="app,resources/views"
 
 if [ $# -eq 0 ]; then
     print_usage
