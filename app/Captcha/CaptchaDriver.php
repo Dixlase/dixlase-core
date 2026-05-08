@@ -63,4 +63,14 @@ interface CaptchaDriver
      * Check if the captcha is enabled
      */
     public function isEnabled(): bool;
+
+    /**
+     * Get the CSP directives required to load this captcha driver.
+     *
+     * Returned only when the driver is the active driver and captcha is enabled.
+     * Each driver declares the minimum set of external origins it loads from.
+     *
+     * @return array<string, array<string>> Map of directive name => list of allowed sources
+     */
+    public function cspDirectives(): array;
 }

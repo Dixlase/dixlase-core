@@ -228,4 +228,19 @@ class GoogleRecaptchaV2Driver implements CaptchaDriver
                CaptchaHelper::getDriver() === 'google' &&
                ($version === 'v2_checkbox' || $version === 'v2_invisible');
     }
+
+    /**
+     * reCAPTCHA v2 loads its API script from www.google.com and pulls
+     * static assets (fonts/images/sub-scripts) from www.gstatic.com. The
+     * challenge is rendered inside a www.google.com iframe and verification
+     * traffic is posted back to the same origin.
+     */
+    public function cspDirectives(): array
+    {
+        return [
+            'script-src' => ['https://www.google.com', 'https://www.gstatic.com'],
+            'frame-src' => ['https://www.google.com'],
+            'connect-src' => ['https://www.google.com'],
+        ];
+    }
 }

@@ -209,4 +209,20 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
                CaptchaHelper::getDriver() === 'google' &&
                CaptchaHelper::getGoogleVersion() === 'v3';
     }
+
+    /**
+     * reCAPTCHA v3 loads its API script from www.google.com and additional
+     * runtime assets from www.gstatic.com. v3 is invisible so the iframe is
+     * usually hidden, but the same www.google.com origin must be allowed in
+     * frame-src for the underlying widget. Verification traffic is posted to
+     * www.google.com.
+     */
+    public function cspDirectives(): array
+    {
+        return [
+            'script-src' => ['https://www.google.com', 'https://www.gstatic.com'],
+            'frame-src' => ['https://www.google.com'],
+            'connect-src' => ['https://www.google.com'],
+        ];
+    }
 }
