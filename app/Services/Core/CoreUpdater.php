@@ -37,6 +37,7 @@
 
 namespace App\Services\Core;
 
+use App\Contracts\Backup\BackupServiceInterface;
 use App\Models\CoreRelease;
 use App\Models\CoreVersionHistory;
 use App\Services\Extension\ExtensionSourceManager;
@@ -68,11 +69,12 @@ class CoreUpdater
     public function __construct(
         protected ExtensionSourceManager $sourceManager,
         protected CoreSourceSnapshot $snapshotter,
+        protected BackupServiceInterface $backupService,
     ) {}
 
     /**
      * @param  ?Closure(string): void  $log  Optional sink for progress lines
-     * @return array{from: ?string, to: string, snapshot: string, history_id: int}
+     * @return array{from: ?string, to: string, snapshot: string, history_id: int, backup_record_id: ?int}
      */
     public function update(?string $version = null, ?int $appliedById = null, ?Closure $log = null): array
     {
@@ -96,6 +98,7 @@ class CoreUpdater
         $log("Snapshot captured at {$snapshotPath}");
 
         $stagingPath = storage_path('app/private/core-update/staging/'.now()->format('YmdHis_').uniqid());
+        $backupRecordId = null;
 
         try {
             $log("Downloading core v{$version}...");
@@ -109,6 +112,23 @@ class CoreUpdater
             $log('Validating extracted payload...');
             $payloadRoot = $this->validateStagedPayload($stagingPath);
             $log("Validated payload at {$payloadRoot}");
+
+            // Capture a database backup before mutating the live tree. If
+            // post-extraction migrations fail or the new code fails to boot,
+            // the operator can restore via dls:backup:restore and a manual
+            // file rollback from the snapshot.
+            $log('Capturing database backup before applying core...');
+            $backupResult = $this->backupService->backup(
+                [BackupServiceInterface::TARGET_DATABASE],
+                ['reason' => "core-update v{$current} -> v{$version}"],
+            );
+            if ($backupResult->success) {
+                $backupRecordId = $backupResult->backupRecordId;
+                $log("Database backup captured (record id: {$backupRecordId}, file: {$backupResult->filePath})");
+            } else {
+                $log('WARNING: database backup failed: '.($backupResult->error ?? 'unknown error'));
+                $log('Continuing without backup — manual rollback will not be possible if migrations fail.');
+            }
 
             $log('Applying source over live tree...');
             $this->applyToLiveTree($payloadRoot);
@@ -158,6 +178,7 @@ class CoreUpdater
                 'to' => $version,
                 'snapshot' => $snapshotPath,
                 'history_id' => $history->id,
+                'backup_record_id' => $backupRecordId,
             ];
         } catch (\Throwable $e) {
             $log("Update failed: {$e->getMessage()} — rolling back source from snapshot...");
@@ -168,6 +189,11 @@ class CoreUpdater
             } catch (\Throwable $restoreError) {
                 $log("ROLLBACK FAILED: {$restoreError->getMessage()}");
                 $log("Manual recovery required. Snapshot retained at: {$snapshotPath}");
+            }
+
+            if ($backupRecordId !== null) {
+                $log("Database backup retained for manual restore (record id: {$backupRecordId}).");
+                $log("To restore: php artisan dls:backup:restore {$backupRecordId}");
             }
 
             // Surface the failure on the singleton so the next render shows it.
