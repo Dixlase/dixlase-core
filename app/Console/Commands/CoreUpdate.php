@@ -101,6 +101,9 @@ class CoreUpdate extends Command
             $this->info("✓ Core updated: v{$result['from']} -> v{$result['to']}");
             $this->line("  history id: {$result['history_id']}");
             $this->line("  snapshot:   {$result['snapshot']}");
+            if (! empty($result['backup_record_id'])) {
+                $this->line("  db backup:  record #{$result['backup_record_id']} (kept for manual restore)");
+            }
             $this->newLine();
             $this->warn('Next steps (manual):');
             $this->line('  - composer install --no-dev (if composer.json changed)');

@@ -37,6 +37,7 @@ namespace App\Console\Commands;
 
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
+use App\Services\Extension\ExtensionSourceSnapshot;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use ZipArchive;
@@ -49,7 +50,7 @@ class ThemeUpdate extends Command
 
     protected $description = 'Update a theme to the latest version from its source';
 
-    public function handle(ExtensionSourceManager $manager): int
+    public function handle(ExtensionSourceManager $manager, ExtensionSourceSnapshot $snapshotter): int
     {
         $slug = $this->argument('slug');
 
@@ -67,6 +68,8 @@ class ThemeUpdate extends Command
         }
 
         $this->info("Checking for updates for '{$slug}' (current: v{$theme->version})...");
+
+        $snapshotPath = null;
 
         try {
             $provider = $manager->makeProvider($theme->source);
@@ -95,22 +98,75 @@ class ThemeUpdate extends Command
             $zipPath = $manager->download($slug, 'theme', $release->version, $theme->source_id);
             $this->info("Downloaded v{$release->version}");
 
+            // Capture a snapshot of the live theme tree so we can roll back
+            // a partially-extracted update on failure.
+            $livePath = base_path("themes/{$theme->directory}");
+            if (is_dir($livePath)) {
+                $snapshotPath = $snapshotter->capture(
+                    ExtensionSourceSnapshot::KIND_THEME,
+                    $theme->directory,
+                    $livePath,
+                );
+                $this->info("Snapshot captured at {$snapshotPath}");
+            }
+
             $this->extractUpdate($zipPath, $theme);
 
             $theme->update([
                 'version' => $release->version,
                 'available_version' => null,
                 'last_version_check' => now(),
+                'update_failed_at' => null,
+                'update_failure_reason' => null,
             ]);
+
+            // Successful update — discard the snapshot to free disk space.
+            if ($snapshotPath !== null) {
+                $snapshotter->discard($snapshotPath);
+                $snapshotPath = null;
+            }
 
             $this->info("Theme '{$slug}' updated to v{$release->version} successfully.");
 
             return self::SUCCESS;
         } catch (\Throwable $e) {
+            // Roll back the theme tree from the snapshot so the user is not
+            // stranded on a half-extracted directory.
+            if ($snapshotPath !== null) {
+                try {
+                    $livePath = base_path("themes/{$theme->directory}");
+                    $snapshotter->restore($snapshotPath, $livePath);
+                    $this->warn('Theme source rolled back from snapshot.');
+                    $snapshotter->discard($snapshotPath);
+                } catch (\Throwable $restoreError) {
+                    $this->error("ROLLBACK FAILED: {$restoreError->getMessage()}");
+                    $this->error("Manual recovery required. Snapshot retained at: {$snapshotPath}");
+                }
+            }
+
+            $theme->update([
+                'update_failed_at' => now(),
+                'update_failure_reason' => $this->truncateReason($e->getMessage()),
+            ]);
+
             $this->error("Update failed: {$e->getMessage()}");
 
             return self::FAILURE;
         }
+    }
+
+    /**
+     * Cap stored failure reasons so a verbose stack-trace string does not
+     * bloat the row. Display surfaces will truncate further as needed.
+     */
+    protected function truncateReason(string $message): string
+    {
+        $message = trim($message);
+        if (mb_strlen($message) <= 1000) {
+            return $message;
+        }
+
+        return mb_substr($message, 0, 997).'...';
     }
 
     protected function extractUpdate(string $zipPath, Theme $theme): void
