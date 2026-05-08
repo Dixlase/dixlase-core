@@ -99,6 +99,20 @@ return new class extends Migration
                 ->cascadeOnDelete();
         });
 
+        // members_preferences.member_id -> members.id
+        // members_preferences.site_id -> sites.id
+        Schema::table('members_preferences', function (Blueprint $table) {
+            $table->foreign('member_id')
+                ->references('id')
+                ->on('members')
+                ->cascadeOnDelete();
+
+            $table->foreign('site_id')
+                ->references('id')
+                ->on('sites')
+                ->cascadeOnDelete();
+        });
+
         // security_events.member_id -> members.id
         Schema::table('security_events', function (Blueprint $table) {
             $table->foreign('member_id')
@@ -684,6 +698,12 @@ return new class extends Migration
         // members_trusted_devices
         Schema::table('members_trusted_devices', function (Blueprint $table) {
             $table->dropForeign(['member_id']);
+        });
+
+        // members_preferences
+        Schema::table('members_preferences', function (Blueprint $table) {
+            $table->dropForeign(['member_id']);
+            $table->dropForeign(['site_id']);
         });
 
         // members_two_fa_tokens
