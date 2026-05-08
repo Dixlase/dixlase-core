@@ -95,7 +95,7 @@ enum PluginHealthStatus: string
      */
     public function translationKey(): string
     {
-        return 'admin/settings/plugins.health_status.'.$this->value;
+        return 'admin/settings/plugins/index.health_status.'.$this->value;
     }
 
     /**
