@@ -34,6 +34,14 @@
  */
 
 return [
-    // Admin panel completely prohibits iframe embedding (clickjacking protection)
+    // Block iframe embedding of admin pages (clickjacking protection).
+    // Admin preview routes opt back into 'self' via the request attribute
+    // csp_frame_ancestors_self handled by ContentSecurityPolicy middleware.
     'frame-ancestors' => ["'none'"],
+
+    // Admin pages use same-origin iframes for preview panes (FrontPage edit,
+    // DixlasePages page editor). Relax the front-default 'none' back to 'self'
+    // for the admin context only. External frame origins still need to be
+    // declared explicitly by plugins/themes.
+    'frame-src' => ["'self'"],
 ];
