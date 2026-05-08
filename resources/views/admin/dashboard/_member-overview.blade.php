@@ -36,7 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <i class="fas fa-users mr-2"></i>{{ __('admin/dashboard.member_overview') }}
     </h2>
 
-    {{-- メンバー統計 --}}
+    {{-- Member statistics --}}
     <div class="grid grid-cols-3 gap-4 mb-4">
         <div class="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 text-center">
             <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $memberOverview['total'] }}</p>
@@ -52,7 +52,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    {{-- 2FA有効率 --}}
+    {{-- 2FA enabled rate --}}
     <div class="mb-4">
         <div class="flex items-center justify-between mb-1">
             <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -76,9 +76,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    {{-- ロール分布 + 最近のログイン --}}
+    {{-- Role distribution + Recent logins --}}
     <div>
-        {{-- ロール分布 --}}
+        {{-- Role distribution --}}
         @if(count($memberOverview['by_role']) > 0)
             <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 {{ __('admin/dashboard.role_distribution') }}
@@ -93,7 +93,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </ul>
         @endif
 
-        {{-- 最近のログイン --}}
+        {{-- Recent logins --}}
         <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             {{ __('admin/dashboard.recent_logins') }}
         </h3>
@@ -116,7 +116,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
     </div>
 
-    {{-- メンバー管理リンク --}}
+    {{-- Member management link --}}
     <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
         <a href="{{ route('admin.members.index') }}" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
             {{ __('admin/dashboard.manage_members') }} <i class="fas fa-arrow-right ml-1"></i>

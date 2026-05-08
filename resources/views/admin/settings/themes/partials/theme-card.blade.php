@@ -32,7 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 <div x-data class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all duration-200 flex flex-col group {{ $card['isEnabled'] ? 'ring-2 ring-green-500 ring-offset-2 dark:ring-offset-gray-900' : '' }}">
-    {{-- サムネイル --}}
+    {{-- Thumbnail --}}
     <div class="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
         <img
             src="{{ $card['thumbnailUrl'] }}"
@@ -40,7 +40,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             x-on:error="$el.src='{{ asset('assets/images/theme-default.svg') }}'"
         >
-        {{-- ステータスバッジ（オーバーレイ） --}}
+        {{-- Status badge (overlay) --}}
         <div class="absolute top-3 right-3">
             @if($card['isInstalled'])
                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium shadow-sm {{ $card['isEnabled'] ? 'bg-green-500 text-white' : 'bg-gray-500 text-white' }}">
@@ -54,7 +54,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </span>
             @endif
         </div>
-        {{-- ID表示（インストール済みのみ） --}}
+        {{-- ID display (installed only) --}}
         @if($card['isInstalled'])
         <div class="absolute top-3 left-3">
             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-black/50 text-white">
@@ -64,9 +64,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
     </div>
 
-    {{-- コンテンツ --}}
+    {{-- Content --}}
     <div class="p-4 flex-1 flex flex-col">
-        {{-- タイトルとバージョン --}}
+        {{-- Title and version --}}
         <div class="flex items-start justify-between gap-2 mb-2">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1" title="{{ $card['name'] }}">{{ $card['name'] }}</h3>
             <span class="flex-shrink-0 inline-block font-mono text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded">
@@ -74,7 +74,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </span>
         </div>
 
-        {{-- アップデート通知（クリックで統合アップデート管理ページへ） --}}
+        {{-- Update notification (click to go to integrated update management page) --}}
         @if($card['hasUpdateAvailable'] ?? false)
             <a href="{{ route('admin.settings.systems.updates.index', ['target' => 'theme:' . $card['slug']]) }}"
                class="flex items-center justify-between mb-2 px-2 py-1 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded text-xs text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors">
@@ -86,20 +86,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </a>
         @endif
 
-        {{-- 説明 --}}
+        {{-- Most recent update failure (details in tooltip) --}}
+        @if($card['updateFailedAt'] ?? null)
+            <div class="flex items-start gap-1.5 mb-2 px-2 py-1 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-[11px] text-red-700 dark:text-red-300"
+                 title="{{ $card['updateFailureReason'] }}">
+                <i class="fas fa-exclamation-triangle text-[10px] mt-0.5 flex-shrink-0"></i>
+                <span>{{ __('admin/settings/themes/index.update_failed_at', ['date' => $card['updateFailedAtFormatted']]) }}</span>
+            </div>
+        @endif
+
+        {{-- Description --}}
         @if($card['description'])
             <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">{{ $card['description'] }}</p>
         @else
             <p class="text-sm text-gray-400 dark:text-gray-500 italic mb-3">{{ __('common.no_description') }}</p>
         @endif
 
-        {{-- バッジ類 --}}
+        {{-- Badges --}}
         @if($card['permissionSummary'])
         <div class="mb-3 pt-3 border-t border-gray-100 dark:border-gray-700 space-y-2"
              data-scan-data="{{ json_encode($card['scanData'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) }}"
              data-plugin-name="{{ $card['name'] }}">
 
-            {{-- 健全性 --}}
+            {{-- Health --}}
             <div class="flex items-center gap-2">
                 <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="{{ $card['badgeIcon'] }} mr-1 {{ $card['healthIconColor'] }}"></i>{{ __('admin/settings/themes/index.badge_labels.health') }}</button>
                 <button type="button"
@@ -108,7 +117,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </button>
             </div>
 
-            {{-- 署名ステータス --}}
+            {{-- Signature status --}}
             <div class="flex items-center gap-2">
                 @if(!$card['auditedAt'])
                     <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-file-signature mr-1 text-gray-400"></i>{{ __('admin/settings/themes/index.badge_labels.signature') }}</span>
@@ -136,7 +145,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
 
-            {{-- 権限定義 --}}
+            {{-- Permission definition --}}
             <div class="flex items-center gap-2">
                 @if(!$card['auditedAt'])
                     <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0"><i class="fas fa-key mr-1 text-gray-400"></i>{{ __('admin/settings/themes/index.badge_labels.permission') }}</span>
@@ -167,19 +176,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
 
-            {{-- CSPモード別互換性 --}}
+            {{-- CSP mode compatibility --}}
             <div class="flex items-center gap-2">
                 <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-shield-alt mr-1 {{ $card['cspTierIconColor'] }}"></i>{{ __('admin/settings/themes/index.badge_labels.csp') }}</button>
                 <x-ui-barometer :items="$card['cspBarometerItems']" />
             </div>
 
-            {{-- セキュリティプリセット互換性 --}}
+            {{-- Security preset compatibility --}}
             <div class="flex items-center gap-2">
                 <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-sliders-h mr-1 {{ $card['presetTierIconColor'] }}"></i>{{ __('admin/settings/themes/index.badge_labels.preset') }}</button>
                 <x-ui-barometer :items="$card['presetBarometerItems']" />
             </div>
 
-            {{-- 動作判定（信号機） --}}
+            {{-- Operation status (traffic light) --}}
             <div class="flex items-center gap-2">
                 <button type="button" class="badge-detail-btn text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0 text-left cursor-pointer hover:opacity-70 transition-opacity"><i class="fas fa-power-off mr-1 {{ $card['opIconColor'] }}"></i>{{ __('admin/settings/themes/index.badge_labels.operation') }}</button>
                 <div class="inline-flex items-center gap-1">
@@ -190,7 +199,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
-            {{-- スキャン鮮度バッジ --}}
+            {{-- Scan freshness badge --}}
             @if(! empty($card['scanFreshness']) && in_array($card['scanFreshness']['state'], ['unscanned', 'expired', 'files_changed'], true))
                 @php($freshness = $card['scanFreshness'])
                 <div class="flex justify-center mt-2">
@@ -218,7 +227,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             @endif
 
-            {{-- スキャンボタン --}}
+            {{-- Scan button --}}
             <div class="flex justify-center items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
                 <x-form-button
                     type="button"
@@ -234,7 +243,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         @endif
 
-        {{-- 作者情報 --}}
+        {{-- Author information --}}
         <div class="mt-auto pt-3 border-t border-gray-100 dark:border-gray-700">
             <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
                 <i class="fas fa-user mr-2 text-gray-400"></i>
@@ -253,7 +262,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    {{-- アクションボタン --}}
+    {{-- Action buttons --}}
     <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700">
         <div class="flex flex-wrap gap-2 justify-center">
             @if($card['isInstalled'])
@@ -265,5 +274,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 </div>
 
-{{-- 権限詳細モーダル --}}
+{{-- Permission details modal --}}
 @include('admin.settings.themes.partials.permission-modal', ['card' => $card])

@@ -111,7 +111,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @unless($hideSection)
     @if($showSettings)
-        {{-- 設定可能な場合 --}}
+        {{-- When configurable --}}
         <fieldset>
             <legend>{{ __('components/security/login-notification-selector.label') }}</legend>
             <x-form-radio-card-group
@@ -123,7 +123,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ __('components/security/login-notification-selector.help') }}</p>
         </fieldset>
     @else
-        {{-- 全体設定で固定されている場合：全体設定の値を選択状態で表示し操作不可にする --}}
+        {{-- When fixed by global settings: display the global settings value as selected and disable interaction --}}
         <fieldset>
             <legend>{{ __('components/security/login-notification-selector.label') }}</legend>
             <x-form-radio-card-group

@@ -55,7 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           }">
         @csrf
 
-        {{-- 許可するファイルタイプ --}}
+        {{-- Allowed file types --}}
         <div class="mb-6">
             <h2>{{ __('admin/media/settings.allowed_file_types') }}</h2>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -86,7 +86,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endforeach
             </div>
 
-            {{-- リスクのあるファイルタイプが有効な場合の警告（リアルタイム表示） --}}
+            {{-- Warning when risky file types are enabled (real-time display) --}}
             <div x-show="hasRiskyTypes" x-transition class="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                 <div class="flex items-start">
                     <i class="fas fa-exclamation-triangle text-yellow-500 mt-0.5 mr-3"></i>
@@ -120,13 +120,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
 
-        {{-- ファイルタイプ別サイズ上限 --}}
+        {{-- Size limits per file type --}}
         <div class="mb-6">
             <h2 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">{{ __('admin/media/settings.file_size_limits') }}</h2>
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ __('admin/media/settings.file_size_limits_description') }}</p>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {{-- 画像 --}}
+                {{-- Images --}}
                 <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         <i class="fas fa-image text-green-500 mr-2"></i>{{ __('admin/media/settings.category.image') }}
@@ -147,7 +147,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                 </div>
 
-                {{-- 動画 --}}
+                {{-- Videos --}}
                 <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         <i class="fas fa-video text-purple-500 mr-2"></i>{{ __('admin/media/settings.category.video') }}
@@ -168,7 +168,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                 </div>
 
-                {{-- ドキュメント --}}
+                {{-- Documents --}}
                 <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         <i class="fas fa-file-alt text-blue-500 mr-2"></i>{{ __('admin/media/settings.category.document') }}
@@ -189,7 +189,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                 </div>
 
-                {{-- アーカイブ --}}
+                {{-- Archives --}}
                 <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         <i class="fas fa-file-archive text-orange-500 mr-2"></i>{{ __('admin/media/settings.category.archive') }}
@@ -211,18 +211,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
-            {{-- レガシー互換用（非表示） --}}
+            {{-- For legacy compatibility (hidden) --}}
             <input type="hidden" name="max_file_size" value="{{ round($maxFileSize / 1024, 1) }}">
         </div>
 
-        {{-- セキュリティ設定 --}}
+        {{-- Security settings --}}
         <div class="mb-6">
             <h2 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">
                 <i class="fas fa-shield-alt text-blue-500 mr-2"></i>{{ __('admin/media/settings.security') }}
             </h2>
 
             <div class="space-y-4">
-                {{-- MIME実体検証 --}}
+                {{-- MIME content verification --}}
                 <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                     <div class="flex items-center justify-start">
                         <x-form-toggle
@@ -237,7 +237,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                 </div>
 
-                {{-- SVGサニタイズ --}}
+                {{-- SVG sanitization --}}
                 <div class="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
                     <div class="flex items-center justify-start">
                         <x-form-toggle
@@ -254,7 +254,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                 </div>
 
-                {{-- ZIPセキュリティ --}}
+                {{-- ZIP security --}}
                 <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
                     <div class="flex items-center justify-start">
                         <x-form-toggle
@@ -271,7 +271,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     </div>
 
-                    {{-- ZIP詳細設定 --}}
+                    {{-- ZIP advanced settings --}}
                     <div x-show="showZipSettings" x-transition class="mt-4 pt-4 border-t border-blue-200 dark:border-blue-700">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>

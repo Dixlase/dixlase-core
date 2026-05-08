@@ -63,7 +63,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         $hasRequiredIssues = !$phpAllOk || !$extAllOk || !$permAllOk || !$otherAllOk;
     @endphp
 
-    {{-- 必須チェック --}}
+    {{-- Required checks --}}
     <div class="mb-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
         <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-2">{{ __('install/index.required_section') }}</h2>
 
@@ -98,7 +98,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </ul>
         </div>
 
-        {{-- 拡張機能 --}}
+        {{-- Extensions --}}
         <div x-data="{ open: {{ $extAllOk ? 'false' : 'true' }} }" class="border-b border-gray-200 dark:border-gray-600 last:border-b-0">
             <button type="button" @click="open = !open" class="flex items-center justify-between w-full py-2 text-left">
                 <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -123,7 +123,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </ul>
         </div>
 
-        {{-- パーミッション --}}
+        {{-- Permissions --}}
         <div x-data="{ open: {{ $permAllOk ? 'false' : 'true' }} }" class="border-b border-gray-200 dark:border-gray-600 last:border-b-0">
             <button type="button" @click="open = !open" class="flex items-center justify-between w-full py-2 text-left">
                 <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -148,7 +148,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </ul>
         </div>
 
-        {{-- その他 --}}
+        {{-- Other --}}
         <div x-data="{ open: {{ $otherAllOk ? 'false' : 'true' }} }">
             <button type="button" @click="open = !open" class="flex items-center justify-between w-full py-2 text-left">
                 <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -172,7 +172,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    {{-- 推奨・オプションチェック --}}
+    {{-- Recommended/optional checks --}}
     @php
         $recOptAllOk = !in_array(false, $requirements['recommended_extensions']) && !in_array(false, $requirements['optional_extensions']);
         $recOptTotal = count($requirements['recommended_extensions']) + count($requirements['optional_extensions']);

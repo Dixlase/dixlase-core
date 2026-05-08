@@ -41,7 +41,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </span>
     </div>
 
-    {{-- セキュリティサマリー（警告・失敗がある場合） --}}
+    {{-- Security summary (if warnings or failures exist) --}}
     @if($recentActivity['summary']['failed_count'] > 0 || $recentActivity['summary']['warning_count'] > 0)
         <div class="flex items-center gap-3 mb-4 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700">
             <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400"></i>
@@ -60,12 +60,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    {{-- アクティビティリスト --}}
+    {{-- Activity list --}}
     @if(count($recentActivity['entries']) > 0)
         <ul class="space-y-3">
             @foreach($recentActivity['entries'] as $entry)
                 <li class="flex items-start gap-3 text-sm">
-                    {{-- 結果インジケーター --}}
+                    {{-- Result indicator --}}
                     <span class="inline-flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0 mt-0.5
                         @if($entry['outcome'] === 'success')
                             bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400
@@ -88,7 +88,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @endif
                     </span>
 
-                    {{-- アクション情報 --}}
+                    {{-- Action information --}}
                     <div class="min-w-0 flex-1">
                         <div class="flex items-center gap-2 flex-wrap">
                             <span class="font-medium text-gray-900 dark:text-gray-100">
@@ -107,7 +107,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                     </div>
 
-                    {{-- 重要度バッジ（warning以上のみ表示） --}}
+                    {{-- Severity badge (only display warning or above) --}}
                     @if(in_array($entry['severity'], ['warning', 'error', 'critical', 'alert', 'emergency']))
                         <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium flex-shrink-0 {{ $entry['severity_color'] }}">
                             {{ $entry['severity'] }}
@@ -122,7 +122,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </p>
     @endif
 
-    {{-- ログ管理リンク --}}
+    {{-- Log management link --}}
     <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
         <a href="{{ route('admin.settings.systems.logs.index') }}" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
             {{ __('admin/dashboard.view_logs') }} <i class="fas fa-arrow-right ml-1"></i>

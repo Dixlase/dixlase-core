@@ -32,7 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 {{--
-Safe Theme Head - 最小限のメタタグとコアCSSのみ
+Safe Theme Head - Minimal meta tags and Core CSS only
 --}}
 
 <meta charset="utf-8">
@@ -41,5 +41,5 @@ Safe Theme Head - 最小限のメタタグとコアCSSのみ
 
 <title>{{ config('app.name', 'Dixlase') }}</title>
 
-{{-- コアCSSのみ（テーマCSS/JSなし） --}}
+{{-- Core CSS only (no theme CSS/JS) --}}
 {!! load_core_assets(['scss/style.scss'], 'common') !!}

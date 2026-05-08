@@ -43,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @csrf
 
     <div class="grid grid-cols-2 gap-8">
-        {{-- かんたんモード --}}
+        {{-- Simple mode --}}
         <label class="block cursor-pointer">
             <input type="radio" name="install_mode" value="0" x-model="selectedMode" class="sr-only peer">
             <div class="border-2 rounded-lg p-5 h-full transition-all peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 border-gray-300 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-700">
@@ -73,7 +73,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </label>
 
-        {{-- 詳細モード --}}
+        {{-- Advanced mode --}}
         <label class="block cursor-pointer">
             <input type="radio" name="install_mode" value="1" x-model="selectedMode" class="sr-only peer">
             <div class="border-2 rounded-lg p-5 h-full transition-all peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 border-gray-300 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-700">
@@ -113,7 +113,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{ __('install/mode.can_change_later') }}
     </p>
 
-    {{-- ナビゲーション --}}
+    {{-- Navigation --}}
     <nav aria-label="{{ __('install.form_navigation') }}" class="flex justify-center mt-6">
         <a href="{{ route('install.index') }}"
             class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 mx-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">

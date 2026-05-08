@@ -137,7 +137,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
          @click.stop
          style="transition: opacity 300ms ease-out, transform 300ms ease-out;">
         <div class="modal-content">
-            {{-- アイコンは常に表示 --}}
+            {{-- Icon is always displayed --}}
             <div class="flex items-center justify-center w-16 h-16 mx-auto rounded-full {{ $iconColorClass }}">
                 <i class="{{ $iconClass }} text-3xl" aria-hidden="true"></i>
             </div>
@@ -146,7 +146,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <h2 class="modal-title">{{ $title }}</h2>
 
                 @if(!$hasCustomContent)
-                    {{-- 標準モード：メッセージ + チェックボックス --}}
+                    {{-- Standard mode: message + checkbox --}}
                     <div class="modal-message">
                         <p>{!! $message !!}</p>
                     </div>
@@ -160,7 +160,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                     @endif
                 @else
-                    {{-- カスタムモード：メッセージ（あれば） + slotコンテンツ --}}
+                    {{-- Custom mode: message (if any) + slot content --}}
                     @if(!empty($message))
                         <div class="modal-message">
                             <p>{!! $message !!}</p>
@@ -184,7 +184,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="modal-actions">
             @if(!$hasCustomFooter)
                 @if($closeOnly || $closeLabel)
-                    {{-- 閉じるボタンのみモード --}}
+                    {{-- Close button only mode --}}
                     <x-form-button
                         type="button"
                         variant="secondary"
@@ -193,7 +193,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         class="mx-2"
                     />
                 @else
-                    {{-- 標準フッター（確認・キャンセル） --}}
+                    {{-- Standard footer (confirm/cancel) --}}
                     <x-form-button
                         type="button"
                         variant="secondary"
@@ -229,7 +229,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endif
                 @endif
             @else
-                {{-- カスタムフッター --}}
+                {{-- Custom footer --}}
                 {{ $footer }}
             @endif
         </div>

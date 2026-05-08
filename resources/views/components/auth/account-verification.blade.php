@@ -68,7 +68,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <legend>{{ __($prefix . '.account_verification') }}</legend>
     
     @if(!$isEdit)
-        {{-- 新規作成時 --}}
+        {{-- When creating new --}}
         <x-form-radio-card-group
             name="email_verified"
             :options="$emailVerificationOptionsCreate"
@@ -78,7 +78,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
         <p class="description-text">{{ __($prefix . '.account_verification_help_create') }}</p>
     @else
-        {{-- 編集時 --}}
+        {{-- When editing --}}
         <x-form-radio-card-group
             name="email_verified"
             :options="$emailVerificationOptionsEdit"
@@ -88,7 +88,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
         <p class="description-text">{{ __($prefix . '.account_verification_help_edit') }}</p>
         
-        {{-- 認証メール送信ボタン（編集時のみ） --}}
+        {{-- Send verification email button (only when editing) --}}
         <div class="my-4">
             @if($isMailServerTested)
                 <x-form-button

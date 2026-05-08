@@ -99,7 +99,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div x-show="open" x-collapse>
             <form method="GET" action="{{ route('admin.settings.systems.logs.index') }}" class="p-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {{-- 検索 --}}
+                    {{-- Search --}}
                     <div>
                         <x-form-label
                             for="search"
@@ -116,7 +116,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         />
                     </div>
 
-                    {{-- カテゴリ --}}
+                    {{-- Category --}}
                     <div>
                         <x-form-label
                             for="category"
@@ -132,7 +132,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         />
                     </div>
 
-                    {{-- アクション --}}
+                    {{-- Action --}}
                     <div>
                         <x-form-label
                             for="action"
@@ -149,7 +149,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </select>
                     </div>
 
-                    {{-- 重要度 --}}
+                    {{-- Severity --}}
                     <div>
                         <x-form-label
                             for="severity"
@@ -165,7 +165,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         />
                     </div>
 
-                    {{-- 結果 --}}
+                    {{-- Result --}}
                     <div>
                         <x-form-label
                             for="outcome"
@@ -181,7 +181,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         />
                     </div>
 
-                    {{-- IPアドレス --}}
+                    {{-- IP Address --}}
                     <div>
                         <x-form-label
                             for="ip_address"
@@ -198,7 +198,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         />
                     </div>
 
-                    {{-- 開始日 --}}
+                    {{-- Start Date --}}
                     <div>
                         <x-form-label
                             for="date_from"
@@ -214,7 +214,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         />
                     </div>
 
-                    {{-- 終了日 --}}
+                    {{-- End Date --}}
                     <div>
                         <x-form-label
                             for="date_to"
@@ -285,19 +285,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                     <div class="flex-1">
                         <div class="flex items-center gap-2 flex-wrap">
-                            {{-- カテゴリバッジ --}}
+                            {{-- Category Badge --}}
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                                 {{ __('admin/settings/systems/logs/index.categories.' . $log->category, [], $log->category) }}
                             </span>
-                            {{-- アクション --}}
+                            {{-- Action --}}
                             <span class="text-sm font-medium text-gray-900 dark:text-white">
                                 {{ $log->action }}
                             </span>
-                            {{-- 重要度バッジ --}}
+                            {{-- Severity Badge --}}
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $severityColors[$log->severity] ?? $severityColors['info'] }}">
                                 {{ __('admin/settings/systems/logs/index.severities.' . $log->severity) }}
                             </span>
-                            {{-- 結果バッジ --}}
+                            {{-- Result Badge --}}
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $outcomeColors[$log->outcome] ?? $outcomeColors['unknown'] }}">
                                 {{ __('admin/settings/systems/logs/index.outcomes.' . $log->outcome) }}
                             </span>

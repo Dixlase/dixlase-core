@@ -35,7 +35,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
     @if ($frontPage)
-        {{-- コンテンツ存在時: ステータスカード --}}
+        {{-- When content exists: status card --}}
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 {{ __('admin/front.index.content_exists_title') }}
@@ -81,7 +81,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
     @else
-        {{-- コンテンツ未存在時: 空ステート --}}
+        {{-- When content does not exist: empty state --}}
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
             <div class="mx-auto w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4">
                 <i class="fas fa-file-alt text-2xl text-gray-400 dark:text-gray-500"></i>
@@ -136,7 +136,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 });
             }
         }">
-            {{-- プレビューヘッダー --}}
+            {{-- Preview header --}}
             <div class="flex flex-wrap items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg gap-2">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -193,7 +193,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
-            {{-- プレビューコンテナ --}}
+            {{-- Preview container --}}
             <div x-ref="previewContainer"
                  class="relative overflow-hidden bg-gray-100 dark:bg-gray-900 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg"
                  :style="'height: ' + scaledPreviewHeight + 'px'">

@@ -64,7 +64,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     />
                 @endif
                 
-                {{-- 全体設定用の二段階認証設定コンポーネント --}}
+                {{-- Two-factor authentication settings component for global settings --}}
                 <x-security.two-fa-general-settings
                     twoFaModeName="two_fa_mode"
                     :twoFaModeValue="(string) $twoFaMode"

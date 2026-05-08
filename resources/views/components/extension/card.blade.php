@@ -65,7 +65,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 <div {{ $attributes->merge(['class' => 'bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow duration-200 flex flex-col']) }}>
-    {{-- サムネイル --}}
+    {{-- Thumbnail --}}
     <div class="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
         <img 
             src="{{ $thumbnailUrl }}" 
@@ -73,7 +73,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             class="w-full h-full object-cover"
             onerror="this.src='{{ $defaultThumbnail }}'"
         >
-        {{-- ステータスバッジ（オーバーレイ） --}}
+        {{-- Status badge (overlay) --}}
         <div class="absolute top-2 right-2">
             @if($isInstalled)
                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $isEnabled ? 'bg-green-500 text-white' : 'bg-gray-500 text-white' }}">
@@ -89,9 +89,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    {{-- コンテンツ --}}
+    {{-- Content --}}
     <div class="p-4 flex-1 flex flex-col">
-        {{-- タイトルとバージョン --}}
+        {{-- Title and version --}}
         <div class="flex items-start justify-between gap-2 mb-2">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1">{{ $name }}</h3>
             <span class="flex-shrink-0 inline-block font-mono text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded">
@@ -99,19 +99,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </span>
         </div>
 
-        {{-- 説明 --}}
+        {{-- Description --}}
         @if($description)
             <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">{{ $description }}</p>
         @endif
 
-        {{-- バッジ類 --}}
+        {{-- Badges --}}
         @if(!empty($badges))
             <div class="flex flex-wrap gap-1 mb-3">
                 {{ $badges }}
             </div>
         @endif
 
-        {{-- 作者情報 --}}
+        {{-- Author information --}}
         <div class="mt-auto pt-3 border-t border-gray-100 dark:border-gray-700">
             <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
                 <i class="fas fa-user mr-2"></i>
@@ -130,7 +130,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    {{-- アクション --}}
+    {{-- Actions --}}
     @if($actions)
         <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700">
             {{ $actions }}

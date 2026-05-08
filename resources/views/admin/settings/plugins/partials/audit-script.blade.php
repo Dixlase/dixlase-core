@@ -196,7 +196,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endpush
 
 @push('modals')
-    {{-- スキャン中モーダル --}}
+    {{-- Scanning modal --}}
     <x-ui-modal
         id="pluginAuditScanningModal"
         :title="__('admin/settings/plugins/index.permissions.audit_scanning_title')"
@@ -213,7 +213,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-slot:footer>
     </x-ui-modal>
 
-    {{-- スキャン結果モーダル --}}
+    {{-- Scan results modal --}}
     <x-ui-modal
         id="pluginAuditResultModal"
         :title="__('admin/settings/plugins/index.permissions.audit_result_title')"
@@ -234,7 +234,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-slot:footer>
     </x-ui-modal>
 
-    {{-- 2段階モーダル: Stage 1（スキャン判定/進捗） --}}
+    {{-- Two-stage modal: Stage 1 (scan decision/progress) --}}
     <x-ui-modal
         id="pluginActionStage1Modal"
         :title="__('admin/settings/plugins/index.two_stage.stage1_scan_required_title')"
@@ -276,7 +276,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-slot:footer>
     </x-ui-modal>
 
-    {{-- 2段階モーダル: Stage 2（アクション確認またはブロック） --}}
+    {{-- Two-stage modal: Stage 2 (action confirmation or block) --}}
     <x-ui-modal
         id="pluginActionStage2Modal"
         title=""
@@ -308,7 +308,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-slot:footer>
     </x-ui-modal>
 
-    {{-- 処理中モーダル（インストール/有効化） --}}
+    {{-- Processing modal (install/activate) --}}
     <x-ui-modal
         id="pluginActionProcessingModal"
         title=""

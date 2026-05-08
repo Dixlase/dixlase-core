@@ -46,7 +46,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        {{-- FOUC防止: CSSやAlpine.jsの読み込み前に即座にダークモードクラスを適用 --}}
+        {{-- Prevent FOUC: Apply dark mode class immediately before CSS and Alpine.js load --}}
         <script @cspNonce>
             (function(){
                 var a='{{ $appearance }}';
@@ -54,11 +54,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 document.documentElement.classList.add(d?'dark':'light');
             })();
         </script>
-        {{-- FOUC防止: サイドバー状態に応じてマージンとサイドバー表示を即座に適用 --}}
+        {{-- Prevent FOUC: Apply margin and sidebar display immediately based on sidebar state --}}
         <style @cspNonce id="fouc-sidebar">
             @media(min-width:768px){#admin-main-content{margin-left:16rem}}
         </style>
-        {{-- バナースタックの高さを管理バー・サイドバー・本文のオフセットに伝播させる --}}
+        {{-- Propagate banner stack height to offset of admin bar, sidebar, and main content --}}
         <style @cspNonce>
             :root { --admin-banner-offset: 0px; }
             #admin-bar { top: var(--admin-banner-offset, 0px); }
@@ -87,7 +87,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- アセットを読み込み -->
         {!! load_active_assets() !!}
 
-        {{-- 通知コンポーネント（他のスクリプトより先に読み込み） --}}
+        {{-- Notification component (load before other scripts) --}}
         <x-ui-notification />
 
     </head>
@@ -96,7 +96,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           x-data="adminLayout()"
           x-init="init()">
         <div class="min-h-screen">
-            {{-- 管理画面バナースタック（メンテナンス / セーフモード / システム警告） --}}
+            {{-- Admin panel banner stack (maintenance / safe mode / system warnings) --}}
             <div id="admin-banner-stack"
                  class="fixed top-0 left-0 right-0 z-[9999] flex flex-col"
                  x-data
@@ -250,7 +250,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                     @endif
 
-                {{-- モバイル時の右サイドバーオーバーレイ --}}
+                {{-- Right sidebar overlay on mobile --}}
                 <div x-show="!rightSidebarCollapsed"
                      @click="rightSidebarCollapsed = true"
                      x-cloak
@@ -269,7 +269,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
         @stack('modals')
 
-        {{-- CSRF セッション切れ時の共通モーダル（fetch が 419 を返すと自動で開く） --}}
+        {{-- Common modal for CSRF session expiration (opens automatically when fetch returns 419) --}}
         <script @cspNonce>
             window.csrfErrorTranslations = {
                 title: @json(__('common.csrf.title')),

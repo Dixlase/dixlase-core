@@ -142,7 +142,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </section>
 
-    {{-- プラグインのクリーンアップセクション --}}
+    {{-- Plugin cleanup section --}}
     @if(!empty($pluginCleanupInfo))
     <section>
         <h2>{{ __('admin/settings/systems/database.plugin_cleanup_heading') }}</h2>

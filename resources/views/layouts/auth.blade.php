@@ -39,7 +39,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') | {{ config('app.name') }}</title>
 
-    {{-- FOUC防止：ダークモード + Alpine.js x-cloak（同期的に実行） --}}
+    {{-- Prevent FOUC: Dark mode + Alpine.js x-cloak (executed synchronously) --}}
     <style>[x-cloak]{display:none!important;}</style>
     <script @cspNonce>
         if (window.matchMedia('(prefers-color-scheme: dark)').matches) {

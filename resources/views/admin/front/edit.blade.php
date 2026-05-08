@@ -49,7 +49,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
         @method('PUT')
 
-        {{-- ===== プレビュートグル ===== --}}
+        {{-- ===== Preview Toggle ===== --}}
         <div class="flex flex-wrap items-center gap-3 mb-4 text-xs">
             <button type="button" @click="togglePreview()"
                 class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-colors"
@@ -62,7 +62,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </button>
         </div>
 
-        {{-- ===== スプリットペインコンテナ ===== --}}
+        {{-- ===== Split Pane Container ===== --}}
         <div x-ref="splitContainer"
              class="flex gap-4 overflow-hidden"
              :class="[
@@ -70,19 +70,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                  (isDragging || isResizingPreview) ? 'select-none' : ''
              ]">
 
-            {{-- ===== エディタペイン ===== --}}
+            {{-- ===== Editor Pane ===== --}}
             <div x-ref="editorPane"
                  class="w-full min-w-0"
                  :class="isHorizontal && previewVisible ? 'overflow-y-auto' : ''"
                  :style="isHorizontal && previewVisible ? { width: (splitRatio * 100) + '%', maxHeight: 'calc(100vh - 160px)' } : {}">
 
                 <div class="space-y-4">
-                    {{-- タブナビゲーション（HTML エディタ時のみ） --}}
+                    {{-- Tab navigation (HTML editor only) --}}
                     @if ($isHtmlEditor)
                         <x-content-editor.tabs />
                     @endif
 
-                    {{-- Content タブ (non-GUI editors) --}}
+                    {{-- Content tab (non-GUI editors) --}}
                     @if(!($isGuiEditor ?? false))
                     <div x-show="activeTab === 'content'">
                         <x-form-textarea
@@ -97,7 +97,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                     @endif
 
-                    {{-- GUI エディター --}}
+                    {{-- GUI Editor --}}
                     @if($isGuiEditor ?? false)
                     <div>
                         @if($guiEditorInfo ?? null)
@@ -130,7 +130,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endif
 
                     @if ($isHtmlEditor)
-                        {{-- CSS タブ --}}
+                        {{-- CSS Tab --}}
                         <div x-show="activeTab === 'css'" x-cloak>
                             <x-form-textarea
                                 id="custom_css"
@@ -144,7 +144,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <x-form-error name="custom_css" />
                         </div>
 
-                        {{-- JavaScript タブ --}}
+                        {{-- JavaScript Tab --}}
                         <div x-show="activeTab === 'js'" x-cloak>
                             <x-form-textarea
                                 id="custom_js"
@@ -166,13 +166,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         @include('components.content-editor.scroll-buttons')
 
-        {{-- ===== 右サイドバー ===== --}}
+        {{-- ===== Right Sidebar ===== --}}
         <x-admin.right-sidebar
             :openLabel="__('admin/front.edit.sidebar_open')"
             :closeLabel="__('admin/front.edit.sidebar_close')"
         >
 
-            {{-- メタ情報 --}}
+            {{-- Meta Information --}}
             <div>
                 <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ __('admin/front.edit.meta_section') }}
@@ -195,7 +195,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ __('admin/front.edit.storage_locked_help') }}
                 </p>
 
-                {{-- ファイル保存時のパス表示 --}}
+                {{-- Path display on file save --}}
                 <div x-show="isFileStorage" x-cloak class="mt-3 text-xs space-y-1">
                     <div>
                         <span class="text-gray-500 dark:text-gray-400">{{ __('admin/front.edit.storage_file_path') }}</span>
@@ -212,7 +212,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
-            {{-- リビジョン --}}
+            {{-- Revision --}}
             <div>
                 <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ __('admin/front.edit.revisions_section') }}
@@ -228,7 +228,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </x-form-button>
             </div>
 
-            {{-- リセット --}}
+            {{-- Reset --}}
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-red-300 dark:border-red-700/50 p-6">
                 <h3 class="text-sm font-semibold text-red-600 dark:text-red-400 mb-2">
                     <i class="fas fa-exclamation-triangle mr-1"></i>
@@ -246,7 +246,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-admin.right-sidebar>
     </form>
 
-    {{-- リセット確認モーダル --}}
+    {{-- Reset Confirmation Modal --}}
     <x-ui-modal id="resetFrontPageEditModal"
         :title="__('admin/front.edit.reset_confirm_title')"
         :message="__('admin/front.edit.reset_confirm')"

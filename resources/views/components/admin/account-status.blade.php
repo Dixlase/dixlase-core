@@ -65,7 +65,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
         
         @if($showDescriptions && !empty($descriptions))
-            {{-- ステータスの説明 --}}
+            {{-- Status description --}}
             <div class="my-4 space-y-2 text-sm text-gray-700 dark:text-gray-300">
                 @foreach($descriptions as $description)
                     <div class="flex items-start space-x-2">

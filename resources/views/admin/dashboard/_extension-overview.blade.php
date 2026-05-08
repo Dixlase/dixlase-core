@@ -36,9 +36,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <i class="fas fa-puzzle-piece mr-2"></i>{{ __('admin/dashboard.extension_overview') }}
     </h2>
 
-    {{-- プラグイン / テーマ統計 --}}
+    {{-- Plugin / Theme Statistics --}}
     <div class="grid grid-cols-2 gap-4 mb-4">
-        {{-- プラグイン --}}
+        {{-- Plugin --}}
         <div class="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
                 <i class="fas fa-plug mr-1"></i>{{ __('admin/dashboard.plugins') }}
@@ -51,7 +51,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
 
-        {{-- テーマ --}}
+        {{-- Theme --}}
         <div class="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
                 <i class="fas fa-palette mr-1"></i>{{ __('admin/dashboard.themes') }}
@@ -65,7 +65,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    {{-- アップデート可能件数（クリックで統合アップデート管理ページへ） --}}
+    {{-- Available updates count (click to go to integrated update management page) --}}
     @if(($extensionOverview['updates']['total'] ?? 0) > 0)
         <div class="mb-4 p-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
             <a href="{{ route('admin.settings.systems.updates.index') }}" class="flex items-center justify-between gap-3 text-sm">
@@ -85,7 +85,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    {{-- 健全性サマリー --}}
+    {{-- Health Summary --}}
     <div>
         <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <i class="fas fa-heartbeat mr-1"></i>{{ __('admin/dashboard.health_overview') }}
@@ -117,7 +117,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
     </div>
 
-    {{-- プラグイン管理リンク --}}
+    {{-- Plugin Management Link --}}
     <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
         <a href="{{ route('admin.settings.plugins.index') }}" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
             {{ __('admin/dashboard.manage_plugins') }} <i class="fas fa-arrow-right ml-1"></i>

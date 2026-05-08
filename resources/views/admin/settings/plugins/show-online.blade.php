@@ -36,14 +36,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto max-w-5xl">
 
-    {{-- 戻るボタン（上部） --}}
+    {{-- Back button (top) --}}
     <div class="mb-4">
         <a href="{{ route('admin.settings.plugins.add') }}" class="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
             <i class="fas fa-arrow-left"></i>{{ __('admin/settings/plugins/show.back_to_add') }}
         </a>
     </div>
 
-    {{-- ヘッダー（拡張機能詳細カード共通コンポーネント） --}}
+    {{-- Header (plugin detail card common component) --}}
     <x-admin.extension-detail
         :title="$details['name'] ?? $details['slug']"
         :version="$details['version'] ?? null"
@@ -64,7 +64,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-slot:badges>
 
         <x-slot:metadata>
-            {{-- リポジトリ・最終更新（説明直下、全幅で表示） --}}
+            {{-- Repository and last update (displayed below description, full width) --}}
             @if(! empty($details['repository_url']) || ! empty($details['updated_at']))
                 <dl class="space-y-2 mb-4">
                     @if(! empty($details['repository_url']))
@@ -87,9 +87,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </dl>
             @endif
 
-            {{-- 2カラム：左=人/権利系 / 右=技術識別子系 --}}
+            {{-- 2 columns: left=people/rights / right=technical identifiers --}}
             <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                {{-- 左カラム: 作者 → ライセンス → Email → URL --}}
+                {{-- Left column: Author → License → Email → URL --}}
                 <div class="space-y-2">
                     @if(! empty($details['author']))
                         <div class="flex items-start gap-3">
@@ -126,7 +126,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endif
                 </div>
 
-                {{-- 右カラム: 名前空間 → スラッグ → パッケージ名 --}}
+                {{-- Right column: Namespace → Slug → Package name --}}
                 <div class="space-y-2">
                     @if(! empty($details['namespace']))
                         <div class="flex items-start gap-3">
@@ -151,7 +151,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-slot:metadata>
 
         <x-slot:actions>
-            {{-- ダウンロードボタン（共通モーダルで進行状態を表示） --}}
+            {{-- Download button (displays progress state in common modal) --}}
             <form id="download-form" method="POST" action="{{ route('admin.settings.plugins.download-from-source') }}">
                 @csrf
                 <input type="hidden" name="slug" value="{{ $details['slug'] }}">
@@ -167,7 +167,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-slot:actions>
     </x-admin.extension-detail>
 
-    {{-- 戻るボタン --}}
+    {{-- Back button --}}
     <div class="mt-6">
         <a href="{{ route('admin.settings.plugins.add') }}" class="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
             <i class="fas fa-arrow-left"></i>{{ __('admin/settings/plugins/show.back_to_add') }}
@@ -177,7 +177,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @push('modals')
-    {{-- ダウンロード確認モーダル --}}
+    {{-- Download confirmation modal --}}
     <x-ui-modal
         id="confirmDownloadPluginModal"
         :title="__('admin/settings/plugins/add.online.download_confirm_title')"
@@ -204,7 +204,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-slot:footer>
     </x-ui-modal>
 
-    {{-- ダウンロード中モーダル --}}
+    {{-- Downloading modal --}}
     <x-ui-modal
         id="downloadingPluginModal"
         iconType="loading"

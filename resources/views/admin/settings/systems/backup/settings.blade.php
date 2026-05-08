@@ -32,7 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           class="max-w-2xl">
         @csrf
 
-        {{-- デフォルトのバックアップ対象 --}}
+        {{-- Default backup targets --}}
         <div class="mb-6">
             <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">
                 {{ __('admin/settings/systems/backup/settings.form.default_targets_label') }}
@@ -60,7 +60,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @enderror
         </div>
 
-        {{-- デフォルト保持期間 --}}
+        {{-- Default retention period --}}
         <div class="mb-6">
             <label for="defaultRetentionDays" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">
                 {{ __('admin/settings/systems/backup/settings.form.default_retention_label') }}
@@ -81,7 +81,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @enderror
         </div>
 
-        {{-- 保存ボタン --}}
+        {{-- Save button --}}
         <div class="flex justify-end">
             <x-form-button
                 type="submit"

@@ -63,7 +63,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{ $slot }}
             </main>
 
-            {{-- AGPL §13: 実行中インスタンスのソースコード取得先を公開する --}}
+            {{-- AGPL §13: Make public the source code location for the running instance --}}
             <footer class="py-4 text-center text-xs text-gray-500">
                 <span class="font-semibold">{{ config('app.software_name', 'Dixlase') }}</span>
                 &middot;

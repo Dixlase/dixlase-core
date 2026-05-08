@@ -31,7 +31,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-{{-- 設定画面リンク --}}
+{{-- Settings screen link --}}
 @if ($card['isEnabled'] && $card['settingsUrl'])
     <a href="{{ $card['settingsUrl'] }}" class="inline-block">
         <x-form-button
@@ -46,7 +46,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endif
 
 @if ($card['isEnabled'])
-    {{-- 有効化中：無効化ボタン（確認モーダル付き） --}}
+    {{-- When enabled: disable button (with confirmation modal) --}}
     <form action="{{ route('admin.settings.plugins.disable', $card['id']) }}" method="POST" class="inline-block" id="disableForm-{{ $card['id'] }}">
         @csrf
         <x-form-button
@@ -74,7 +74,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-ui-modal>
     </form>
 @else
-    {{-- 無効化中：有効化とアンインストールボタン --}}
+    {{-- When disabled: enable and uninstall buttons --}}
     <form action="{{ route('admin.settings.plugins.enable', $card['id']) }}" method="POST" class="inline-block" id="enableForm-{{ $card['id'] }}">
         @csrf
         @if($card['hasEnableWarnings'])

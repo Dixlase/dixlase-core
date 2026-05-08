@@ -36,7 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto" x-data="apiSettings()">
 
-    {{-- 生成されたキーの表示（一度だけ） --}}
+    {{-- Display generated key (one time only) --}}
     @if(session('generated_key'))
     <div class="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-600 rounded-lg">
         <div class="flex items-start">
@@ -55,7 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
     @endif
 
-    {{-- API設定フォーム --}}
+    {{-- API settings form --}}
     <form id="api-settings-form" action="{{ route('admin.settings.systems.api.update') }}" method="POST">
         @csrf
 
@@ -100,7 +100,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </section>
     </form>
 
-    {{-- APIキー管理 --}}
+    {{-- API key management --}}
     <section class="mt-8 transition-opacity" :class="{ 'opacity-50 pointer-events-none': apiEnabled !== '1' }">
         <div class="flex items-center justify-between mb-4">
             <h2 class="mb-0">{{ __('admin/settings/systems/api.api_keys') }}</h2>
@@ -209,7 +209,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
     </section>
 
-    {{-- APIキー詳細モーダル --}}
+    {{-- API key details modal --}}
     <x-ui-modal
         id="viewKeyModal"
         :title="__('admin/settings/systems/api.key_details')"
@@ -231,9 +231,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-slot>
     </x-ui-modal>
 
-    {{-- 各APIキーの更新・削除確認モーダル --}}
+    {{-- Update/delete confirmation modal for each API key --}}
     @foreach($apiKeys as $key)
-        {{-- 再生成確認モーダル --}}
+        {{-- Regeneration confirmation modal --}}
         <x-ui-modal
             id="regenerateModal{{ $key->id }}"
             :title="__('admin/settings/systems/api.regenerate')"
@@ -244,7 +244,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             form="regenerate-form-{{ $key->id }}"
         />
 
-        {{-- 削除確認モーダル --}}
+        {{-- Delete confirmation modal --}}
         <x-ui-modal
             id="revokeModal{{ $key->id }}"
             :title="__('common.delete')"
@@ -269,7 +269,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('modals')
-    {{-- 保存確認モーダル --}}
+    {{-- Save confirmation modal --}}
     <x-ui-modal
         id="apiSettingsConfirmationModal"
         :title="__('common.save_confirmation_title')"
@@ -279,7 +279,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         form="api-settings-form"
     />
 
-    {{-- APIキー作成モーダル --}}
+    {{-- API key creation modal --}}
     <x-ui-modal
         id="createKeyModal"
         :title="__('admin/settings/systems/api.create_key')"

@@ -111,7 +111,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 @if($isProfile)
-    {{-- プロフィール画面の場合 --}}
+    {{-- For profile screen --}}
     @if($showSettings)
         <fieldset>
             <legend>{{ __('components/security/two-fa-general-settings.mode_label') }}</legend>
@@ -143,7 +143,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </fieldset>
     @endif
 @elseif($showSettings || $excludeUseProfileSetting)
-    {{-- 全体設定画面の場合 --}}
+    {{-- For general settings screen --}}
     <fieldset>
         <legend>{{ __('components/security/two-fa-general-settings.mode_label') }}</legend>
         <x-form-radio-card-group

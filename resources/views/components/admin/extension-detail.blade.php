@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
-    {{-- サムネイル（16:9 フル幅バナー） --}}
+    {{-- Thumbnail (16:9 full-width banner) --}}
     <div class="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
         <img
             src="{{ $thumbnailUrl ?: $fallbackThumbnailUrl }}"
@@ -54,7 +54,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         >
     </div>
 
-    {{-- 基本情報 --}}
+    {{-- Basic information --}}
     <div class="p-6 flex flex-col">
         <div class="flex items-start justify-between gap-3 mb-3">
             <div class="min-w-0 flex-1">
@@ -73,14 +73,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
 
         @isset($metadata)
-            {{-- メタ情報（構造は各ビューに委ねる） --}}
+            {{-- Meta information (structure delegated to each view) --}}
             <div class="text-sm mb-4">
                 {{ $metadata }}
             </div>
         @endisset
 
         @isset($actions)
-            {{-- アクションボタン --}}
+            {{-- Action buttons --}}
             <div class="mt-auto flex flex-wrap gap-2">
                 {{ $actions }}
             </div>

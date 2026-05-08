@@ -107,6 +107,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('scripts')
-{{-- CSP対応: data属性で設定を渡す --}}
+{{-- CSP support: Pass settings via data attributes --}}
 <div data-mail-settings-config='@json($mailSettingsConfig)' style="display:none;"></div>
 @endsection

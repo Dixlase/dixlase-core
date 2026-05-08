@@ -81,7 +81,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :showCheck="true"
         />
 
-        {{-- かんたんモード注意事項（現在詳細モードの場合のみ表示） --}}
+        {{-- Simple mode notice (only displayed when currently in detailed mode) --}}
         <div x-show="selectedMode === '0' && originalMode === '1'" x-transition x-cloak
              class="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
             <div class="flex items-start gap-2">
@@ -106,7 +106,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
 
-        {{-- 詳細モード注意事項（現在かんたんモードの場合のみ表示） --}}
+        {{-- Detailed mode notice (only displayed when currently in simple mode) --}}
         <div x-show="selectedMode === '1' && originalMode === '0'" x-transition x-cloak
              class="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
             <div class="flex items-start gap-2">
@@ -156,7 +156,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     :dismissible="true"
 >
     <div class="modal-message text-left">
-        {{-- かんたんモードへの切替 --}}
+        {{-- Switch to simple mode --}}
         <template x-if="pendingMode === '0'">
             <div>
                 <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">{{ __('admin/settings/base/mode.switch_to_simple_warning') }}</p>
@@ -179,7 +179,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </p>
             </div>
         </template>
-        {{-- 詳細モードへの切替 --}}
+        {{-- Switch to detailed mode --}}
         <template x-if="pendingMode === '1'">
             <div>
                 <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">{{ __('admin/settings/base/mode.switch_to_advanced_warning') }}</p>

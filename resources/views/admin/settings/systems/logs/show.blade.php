@@ -35,7 +35,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-    {{-- ヘッダー --}}
+    {{-- Header --}}
     <div class="flex items-center justify-between mb-6">
         <div class="flex items-center space-x-4">
             <a href="{{ route('admin.settings.systems.logs.index', ['type' => 'audit', 'view' => 'db']) }}" 
@@ -51,9 +51,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {{-- メイン情報 --}}
+        {{-- Main Information --}}
         <div class="lg:col-span-2 space-y-6">
-            {{-- 基本情報 --}}
+            {{-- Basic Information --}}
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
                     <h2 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -125,7 +125,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
-            {{-- 行為者・対象 --}}
+            {{-- Actor & Subject --}}
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
                     <h2 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -182,7 +182,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
-            {{-- コンテキスト --}}
+            {{-- Context --}}
             @if($auditLog->context)
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
@@ -229,7 +229,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                     @endif
 
-                    {{-- 生のJSON --}}
+                    {{-- Raw JSON --}}
                     <div x-data="{ showRaw: false }">
                         <button @click="showRaw = !showRaw" 
                                 class="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">
@@ -245,9 +245,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
         </div>
 
-        {{-- サイドバー --}}
+        {{-- Sidebar --}}
         <div class="space-y-6">
-            {{-- リクエスト情報 --}}
+            {{-- Request Information --}}
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
                     <h2 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -292,7 +292,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
-            {{-- 関連ログ --}}
+            {{-- Related Logs --}}
             @if($relatedLogs && $relatedLogs->count() > 0)
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
@@ -324,7 +324,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
             @endif
 
-            {{-- メタ情報 --}}
+            {{-- Meta Information --}}
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
                     <h2 class="text-lg font-medium text-gray-900 dark:text-white">

@@ -34,9 +34,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 {{--
-ラベルと説明付きのラジオボタンカードグループコンポーネント
+Radio button card group component with labels and descriptions
 
-使用例:
+Usage example:
 <x-form-radio-card-group
     name="preset"
     :options="[
@@ -52,21 +52,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     :showCheck="true"
 />
 
-オプション配列の各要素:
-- value: (必須) ラジオボタンの値
-- label: (必須) 表示ラベル
-- description: (任意) 説明文
-- icon: (任意) FontAwesomeアイコンクラス
-- color: (任意) 個別オプションの色（グローバル設定を上書き）
-- badge: (任意) バッジテキスト（開発専用など）
-- badgeColor: (任意) バッジの色 (yellow, red, green, blue, gray) デフォルト: yellow
-- disabled: (任意) 無効化フラグ
-- features: (任意) 機能リスト（配列）
+Each element in options array:
+- value: (required) Radio button value
+- label: (required) Display label
+- description: (optional) Description text
+- icon: (optional) FontAwesome icon class
+- color: (optional) Individual option color (overrides global settings)
+- badge: (optional) Badge text (e.g., development only)
+- badgeColor: (optional) Badge color (yellow, red, green, blue, gray) Default: yellow
+- disabled: (optional) Disabled flag
+- features: (optional) Feature list (array)
 
-グローバルプロパティ:
-- color: 選択時の色 (primary, secondary, success, warning, danger, blue, green, yellow, orange, red, purple, gray)
-- variant: スタイル (filled=背景色あり, outlined=ボーダーのみ)
-- showCheck: チェックアイコンを表示するか
+Global properties:
+- color: Color when selected (primary, secondary, success, warning, danger, blue, green, yellow, orange, red, purple, gray)
+- variant: Style (filled=with background color, outlined=border only)
+- showCheck: Whether to display check icon
 --}}
 
 @props([
@@ -280,7 +280,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </span>
             </span>
             
-            {{-- チェックアイコン --}}
+            {{-- Check icon --}}
             @if ($showCheck)
                 <span class="absolute top-1 right-2 flex items-center justify-center"
                       @if ($modelVar)
@@ -299,7 +299,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </span>
             @endif
             
-            {{-- ボーダーオーバーレイ --}}
+            {{-- Border overlay --}}
             <span class="pointer-events-none absolute -inset-px rounded-lg" 
                   @if ($modelVar)
                       :class="{{ $modelVar }} === '{{ $optionValue }}' ? 'border-2 {{ $colors['border'] }}' : 'border border-transparent'"

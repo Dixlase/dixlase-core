@@ -47,7 +47,7 @@ $currentUrl = request()->path();
 @endphp
 
 @if($type === 'dropdown')
-{{-- ドロップダウン方式 --}}
+{{-- Dropdown style --}}
 <div x-data="{ open: false }" class="relative inline-block text-left">
     <div>
         <button type="button" 
@@ -95,7 +95,7 @@ $currentUrl = request()->path();
 </div>
 
 @elseif($type === 'inline')
-{{-- インライン方式 --}}
+{{-- Inline style --}}
 <div class="inline-flex items-center space-x-2">
     @if($showLabel)
         <i class="fas fa-globe text-gray-600 dark:text-gray-400"></i>
@@ -109,7 +109,7 @@ $currentUrl = request()->path();
 </div>
 
 @elseif($type === 'flags')
-{{-- フラグ方式（絵文字） --}}
+{{-- Flag style (emoji) --}}
 <div class="inline-flex items-center space-x-3">
     @if($showLabel)
         <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('common.language') }}:</span>

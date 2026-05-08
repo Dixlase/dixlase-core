@@ -32,7 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 {{--
-Safe Theme Footer - セーフモード用の最小限フッター
+Safe Theme Footer - Minimal footer for safe mode
 --}}
 
 <footer class="bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-auto">

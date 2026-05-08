@@ -144,7 +144,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endpush
 
 @push('modals')
-    {{-- スキャン中モーダル --}}
+    {{-- Scanning modal --}}
     <x-ui-modal
         id="themeAuditScanningModal"
         :title="__('admin/settings/themes/index.permissions.audit_scanning_title')"
@@ -161,7 +161,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-slot:footer>
     </x-ui-modal>
 
-    {{-- スキャン結果モーダル --}}
+    {{-- Scan results modal --}}
     <x-ui-modal
         id="themeAuditResultModal"
         :title="__('admin/settings/themes/index.permissions.audit_result_title')"

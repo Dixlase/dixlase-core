@@ -153,7 +153,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <span class="whitespace-nowrap">{{ __($labelText) }}</span>
                 </span>
             @endforeach
-            {{-- スペーサー（ラベルの高さを確保） --}}
+            {{-- Spacer (reserve label height) --}}
             <span class="invisible">dummy</span>
         </div>
     @endif

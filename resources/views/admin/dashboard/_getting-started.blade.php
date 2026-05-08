@@ -55,7 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {{-- 2段階認証 --}}
+        {{-- Two-factor authentication --}}
         <a href="{{ route('admin.profile.two-fa') }}" @click="visit('two_fa')"
            class="flex items-start gap-3 p-4 rounded-lg border transition"
            :class="isVisited('two_fa')
@@ -70,7 +70,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </a>
 
-        {{-- プラグインを探す --}}
+        {{-- Find plugins --}}
         <a href="{{ route('admin.settings.plugins.add') }}" @click="visit('plugins')"
            class="flex items-start gap-3 p-4 rounded-lg border transition"
            :class="isVisited('plugins')
@@ -85,7 +85,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </a>
 
-        {{-- テーマをカスタマイズ --}}
+        {{-- Customize theme --}}
         <a href="{{ Route::has('admin.settings.themes.settings') ? route('admin.settings.themes.settings') : route('admin.settings.themes.index') }}"
            @click="visit('theme')"
            class="flex items-start gap-3 p-4 rounded-lg border transition"
@@ -101,7 +101,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </a>
 
-        {{-- フロントページを編集 --}}
+        {{-- Edit front page --}}
         <a href="{{ route('admin.front.index') }}" @click="visit('front')"
            class="flex items-start gap-3 p-4 rounded-lg border transition"
            :class="isVisited('front')

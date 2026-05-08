@@ -88,9 +88,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         return this.isPasskeyEditable ? this.passkeyEnabled : {{ $currentPasskeyEnabled ? 'true' : 'false' }};
     }
 }">
-    {{-- 1. 二段階認証モード --}}
+    {{-- 1. Two-factor authentication mode --}}
     @if($isTwoFaEditable)
-        {{-- プロフィール設定に従う場合：編集可能 --}}
+        {{-- When following profile settings: editable --}}
         <x-two-fa.mode-selector
             :name="$twoFaModeName"
             :value="old($twoFaModeName, (string) $twoFaModeValue)"
@@ -102,11 +102,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             xModel="twoFaMode"
         />
     @else
-        {{-- 全体設定で強制されている場合：選択済み・操作不能で表示 --}}
+        {{-- When enforced by global settings: displayed as selected and disabled --}}
         <fieldset>
             <legend>{{ __('components/security/two-fa-general-settings.mode_label') }}</legend>
             
-            {{-- 全体設定により固定されている旨の説明 --}}
+            {{-- Explanation that it is fixed by global settings --}}
             <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
                 <p class="text-sm text-blue-800 dark:text-blue-200">
                     <i class="fas fa-info-circle mr-1"></i>
@@ -114,7 +114,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </p>
             </div>
             
-            {{-- 選択済み・操作不能のラジオカード --}}
+            {{-- Selected and disabled radio card --}}
             <div class="opacity-50 pointer-events-none">
                 @php
                     // 事前計算されたpropsがない場合はフォールバック（プラグインとの後方互換性）
@@ -144,7 +144,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
             </div>
             
-            {{-- 現在の設定値の説明 --}}
+            {{-- Explanation of current settings value --}}
             <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
                 <p class="text-sm text-gray-700 dark:text-gray-300">
                     <strong>{{ __('components/security/two-fa-general-settings.authentication_mode.' . ($twoFaGlobalModeName ?? strtolower(\App\Enums\AuthenticationMode::tryFrom((int) $twoFaGlobalSetting)?->name ?? 'disabled'))) }}</strong>

@@ -31,7 +31,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-{{-- インストールボタン --}}
+{{-- Install button --}}
 <form action="{{ route('admin.settings.plugins.install') }}" method="POST" class="inline-block" id="installForm-{{ $card['directory'] }}">
     @csrf
     <input type="hidden" name="directory" value="{{ $card['directory'] }}">
@@ -135,7 +135,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </x-ui-modal>
 </form>
 
-{{-- 削除ボタン --}}
+{{-- Delete button --}}
 <form action="{{ route('admin.settings.plugins.delete') }}" method="POST" class="inline-block" id="deleteForm-{{ $card['directory'] }}">
     @csrf
     <input type="hidden" name="directory" value="{{ $card['directory'] }}">

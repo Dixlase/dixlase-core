@@ -32,17 +32,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 {{--
-    ログナビゲーションパーシャル
+    Log navigation partial
     
-    @param string $logType - 現在のログタイプ
-    @param string|null $currentView - 監査ログの現在のビュー（'db' or 'file'）
-    @param string $pageType - ページタイプ（'system' or 'audit'）
+    @param string $logType - Current log type
+    @param string|null $currentView - Current view for audit logs ('db' or 'file')
+    @param string $pageType - Page type ('system' or 'audit')
 --}}
 
 <!-- Log Type Selection -->
 <div class="mb-4">
     @if($pageType === 'system')
-        {{-- ファイルログページ用ナビゲーション --}}
+        {{-- Navigation for file log page --}}
         <h2>{{ __('admin/settings/systems/logs/index.log_type_label') }}</h2>
         
         <!-- 大カテゴリボタン -->
@@ -105,12 +105,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :label="__('admin/settings/systems/logs/files.' . $type)"
                         />
                     @endforeach
-                {{-- ブラウザカテゴリは小カテゴリが1つのみなので表示しない --}}
+                {{-- Browser category has only one subcategory so don't display it --}}
                 @endif
             </nav>
         </div>
     @else
-        {{-- 監査ログページ用ナビゲーション --}}
-        {{-- 横のナビゲーションのみ使用するため、ここでは何も表示しない --}}
+        {{-- Navigation for audit log page --}}
+        {{-- Only use horizontal navigation, so display nothing here --}}
     @endif
 </div>

@@ -122,7 +122,7 @@ $hasCustomFooter = isset($footer) && !empty(trim($footer ?? ''));
         <div class="modal-content inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full opacity-0 scale-95">
             <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 @if(!$hasCustomContent)
-                    {{-- 標準モード：既存の確認ダイアログ --}}
+                    {{-- Standard mode: existing confirmation dialog --}}
                     <div class="flex items-center justify-center w-16 h-16 mx-auto rounded-full {{ $iconColorClass }}">
                         <i class="{{ $iconClass }} text-3xl" aria-hidden="true"></i>
                     </div>
@@ -143,7 +143,7 @@ $hasCustomFooter = isset($footer) && !empty(trim($footer ?? ''));
                         @endif
                     </div>
                 @else
-                    {{-- カスタムモード：slotコンテンツを使用 --}}
+                    {{-- Custom mode: use slot content --}}
                     {{ $slot }}
                 @endif
             </div>
@@ -151,7 +151,7 @@ $hasCustomFooter = isset($footer) && !empty(trim($footer ?? ''));
             <div class="modal-actions bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
                 @if(!$hasCustomFooter)
                     @if($closeOnly || $closeLabel)
-                        {{-- 閉じるボタンのみモード --}}
+                        {{-- Close button only mode --}}
                         <x-form-button
                             type="button"
                             variant="secondary"
@@ -159,7 +159,7 @@ $hasCustomFooter = isset($footer) && !empty(trim($footer ?? ''));
                             class="modal-close-btn w-full sm:w-auto"
                         />
                     @else
-                        {{-- 標準フッター（確認・キャンセル） --}}
+                        {{-- Standard footer (confirm/cancel) --}}
                         @if($form)
                             <x-form-button
                                 type="submit"
@@ -184,7 +184,7 @@ $hasCustomFooter = isset($footer) && !empty(trim($footer ?? ''));
                         />
                     @endif
                 @else
-                    {{-- カスタムフッター --}}
+                    {{-- Custom footer --}}
                     {{ $footer }}
                 @endif
             </div>

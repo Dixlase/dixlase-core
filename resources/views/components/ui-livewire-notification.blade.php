@@ -33,8 +33,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-{{-- Livewire Notification Container (Alpine.js不要、CSP厳格モード対応) --}}
-{{-- JavaScriptは resources/src/common/js/livewire-notification.js に外部化 --}}
+{{-- Livewire Notification Container (no Alpine.js required, strict CSP mode compatible) --}}
+{{-- JavaScript externalized to resources/src/common/js/livewire-notification.js --}}
 <div id="livewire-notification-container" style="display: none;" role="alert">
     <div class="flex items-start">
         <div class="flex-shrink-0">

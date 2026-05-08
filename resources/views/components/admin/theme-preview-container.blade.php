@@ -42,20 +42,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 <div class="relative">
-    {{-- プレビューヘッダー --}}
+    {{-- Preview header --}}
     <div class="flex flex-wrap items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg gap-2">
         <div class="flex items-center gap-2">
             <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
                 <i class="fas fa-eye mr-1"></i>{{ $title }}
             </span>
-            {{-- スケール表示（縮小時のみ） --}}
+            {{-- Scale display (only when zoomed out) --}}
             <span x-show="previewScale < 1" x-cloak
                   class="text-[10px] text-gray-400 dark:text-gray-500"
                   x-text="Math.round(previewScale * 100) + '%'"></span>
         </div>
 
         <div class="flex items-center gap-3">
-            {{-- デバイストグルボタン --}}
+            {{-- Device toggle buttons --}}
             <div class="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5">
                 <button type="button" @click="setPreviewDevice('mobile')"
                     :class="previewDevice === 'mobile' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
@@ -83,7 +83,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </button>
             </div>
 
-            {{-- サイズ表示 / フリーサイズ入力 --}}
+            {{-- Size display / free size input --}}
             <div class="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
                 <template x-if="previewDevice === 'free'">
                     <div class="flex items-center gap-1">
@@ -100,7 +100,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    {{-- スケーリングプレビューコンテナ --}}
+    {{-- Scaling preview container --}}
     <div class="rounded-b-lg overflow-hidden relative w-full border border-t-0 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900"
          id="{{ $outerId }}" style="min-height: 300px;">
         <div id="{{ $innerId }}"

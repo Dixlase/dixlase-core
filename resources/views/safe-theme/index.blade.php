@@ -32,7 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 {{--
-Safe Theme Index - セーフモード用の最小限フロントページ
+Safe Theme Index - Minimal front page for safe mode
 --}}
 
 @extends('themes::layouts.app')
