@@ -243,4 +243,18 @@ class TurnstileCaptchaDriver implements CaptchaDriver
         return CaptchaHelper::isEnabled() &&
                $captchaDriver === 'turnstile';
     }
+
+    /**
+     * Cloudflare Turnstile loads its widget script and iframe from
+     * challenges.cloudflare.com and posts verification requests to the same
+     * origin.
+     */
+    public function cspDirectives(): array
+    {
+        return [
+            'script-src' => ['https://challenges.cloudflare.com'],
+            'frame-src' => ['https://challenges.cloudflare.com'],
+            'connect-src' => ['https://challenges.cloudflare.com'],
+        ];
+    }
 }

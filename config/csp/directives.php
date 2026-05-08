@@ -41,9 +41,11 @@ return [
     // 'nonce' is automatically replaced with a per-request nonce value
     // 'strict-dynamic' allows scripts loaded from nonce'd scripts
     // 'unsafe-eval' is added because Alpine.js requires it
-    // For CAPTCHA: Cloudflare Turnstile, Google reCAPTCHA
+    // CAPTCHA origins are NOT listed here. They are injected dynamically by
+    // CaptchaCspProvider only when captcha is enabled and based on the active
+    // driver, so sites that don't use captcha don't carry those allowances.
     // Vite dev server is automatically added by CspBuilder in local environment only
-    'script-src' => ["'self'", "'nonce'", "'strict-dynamic'", "'unsafe-eval'", 'https://challenges.cloudflare.com', 'https://www.google.com', 'https://www.gstatic.com'],
+    'script-src' => ["'self'", "'nonce'", "'strict-dynamic'", "'unsafe-eval'"],
 
     // Script attributes (event handler attributes like onclick)
     // Base value is 'none' (blocked). In dev mode, CspBuilder overwrites to 'unsafe-inline'
@@ -67,8 +69,9 @@ return [
     'font-src' => ["'self'", 'data:', 'blob:', 'https://fonts.bunny.net', 'https://cdnjs.cloudflare.com', 'https://use.fontawesome.com'],
 
     // Connection targets (XHR, fetch, WebSocket, etc.)
-    // For CAPTCHA: Cloudflare Turnstile, Google reCAPTCHA
-    'connect-src' => ["'self'", 'https://challenges.cloudflare.com', 'https://www.google.com'],
+    // CAPTCHA verification origins are injected dynamically by
+    // CaptchaCspProvider only when captcha is enabled.
+    'connect-src' => ["'self'"],
 
     // Media (audio, video)
     'media-src' => ["'self'"],
@@ -77,8 +80,9 @@ return [
     'object-src' => ["'none'"],
 
     // Frames
-    // For CAPTCHA: Cloudflare Turnstile, Google reCAPTCHA
-    'frame-src' => ["'self'", 'https://challenges.cloudflare.com', 'https://www.google.com', 'https://www.gstatic.com'],
+    // CAPTCHA iframe origins are injected dynamically by CaptchaCspProvider
+    // only when captcha is enabled.
+    'frame-src' => ["'self'"],
 
     // Frame ancestors (parents that can embed this page)
     // Note: Overridden to 'none' in admin panel (clickjacking protection)

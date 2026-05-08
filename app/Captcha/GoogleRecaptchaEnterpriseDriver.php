@@ -254,4 +254,19 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
     {
         return CaptchaHelper::isEnabled() && CaptchaHelper::getDriver() === 'google_enterprise';
     }
+
+    /**
+     * reCAPTCHA Enterprise serves the same widget assets as the public
+     * reCAPTCHA service (www.google.com / www.gstatic.com). Server-to-server
+     * assessment requests go to recaptchaenterprise.googleapis.com from the
+     * backend, so they are not part of the browser CSP.
+     */
+    public function cspDirectives(): array
+    {
+        return [
+            'script-src' => ['https://www.google.com', 'https://www.gstatic.com'],
+            'frame-src' => ['https://www.google.com'],
+            'connect-src' => ['https://www.google.com'],
+        ];
+    }
 }

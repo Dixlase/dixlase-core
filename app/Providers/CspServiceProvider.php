@@ -35,6 +35,7 @@
 
 namespace App\Providers;
 
+use App\Services\Captcha\CaptchaCspProvider;
 use App\Services\Csp\CspBuilder;
 use App\Services\Csp\CspNonceGenerator;
 use App\Services\Csp\CspPolicyRegistry;
@@ -79,6 +80,25 @@ class CspServiceProvider extends ServiceProvider
 
         // Register helper functions
         $this->registerHelpers();
+
+        // Register the captcha CSP provider so that captcha origins are only
+        // included in the policy when captcha is administratively enabled.
+        $this->registerCaptchaCspProvider();
+    }
+
+    /**
+     * Register the captcha-driven CSP policy provider.
+     *
+     * The provider itself is lazily evaluated: it runs only when
+     * CspBuilder collects directives, and inspects the active driver and
+     * captcha_enabled setting at that moment.
+     */
+    protected function registerCaptchaCspProvider(): void
+    {
+        $this->app->make(CspPolicyRegistry::class)->registerProvider(
+            'captcha',
+            new CaptchaCspProvider()
+        );
     }
 
     /**
