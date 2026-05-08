@@ -32,7 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 {{--
-Safe Theme Header - セーフモード用の最小限ヘッダー
+Safe Theme Header - Minimal header for safe mode
 --}}
 
 <header class="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">

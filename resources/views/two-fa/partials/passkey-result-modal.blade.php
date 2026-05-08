@@ -31,7 +31,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-{{-- パーシャル用変数のデフォルト値設定 --}}
+{{-- Set default values for partial variables --}}
 @php
     $modalId = $modalId ?? 'passkeyResultModal';
 @endphp

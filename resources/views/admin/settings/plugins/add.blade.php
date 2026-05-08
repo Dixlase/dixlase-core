@@ -36,7 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto">
 
-    {{-- エラー・フラッシュメッセージは管理レイアウトの <x-ui-flash-message /> で表示 --}}
+    {{-- Error and flash messages are displayed in <x-ui-flash-message /> in the admin layout --}}
 
     <!-- タブ切り替え -->
     <div x-data="{ activeTab: '{{ old('_tab', 'online') }}' }">
@@ -164,7 +164,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             <template x-for="plugin in plugins" :key="plugin.slug">
                                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all duration-200 flex flex-col group">
-                                    {{-- サムネイル --}}
+                                    {{-- Thumbnail --}}
                                     <div class="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
                                         <img
                                             :src="plugin.thumbnail_url || '{{ asset('assets/images/plugin-default.svg') }}'"
@@ -172,7 +172,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                             x-on:error="$el.src = '{{ asset('assets/images/plugin-default.svg') }}'; $el.onerror = null;"
                                         >
-                                        {{-- バージョンバッジ --}}
+                                        {{-- Version badge --}}
                                         <div class="absolute top-3 right-3">
                                             <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium shadow-sm bg-blue-500 text-white" x-show="plugin.version">
                                                 <span x-text="'v' + plugin.version"></span>
@@ -180,16 +180,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         </div>
                                     </div>
 
-                                    {{-- コンテンツ --}}
+                                    {{-- Content --}}
                                     <div class="p-4 flex-1 flex flex-col">
-                                        {{-- タイトル --}}
+                                        {{-- Title --}}
                                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1 mb-2" :title="plugin.name || plugin.slug" x-text="plugin.name || plugin.slug"></h3>
 
-                                        {{-- 説明 --}}
+                                        {{-- Description --}}
                                         <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3" x-show="plugin.description" x-text="plugin.description"></p>
                                         <p class="text-sm text-gray-400 dark:text-gray-500 italic mb-3" x-show="!plugin.description">{{ __('common.no_description') }}</p>
 
-                                        {{-- 作者 & ライセンス --}}
+                                        {{-- Author & License --}}
                                         <div class="mt-auto pt-3 border-t border-gray-100 dark:border-gray-700 space-y-1 text-xs text-gray-500 dark:text-gray-400">
                                             <div class="flex items-center gap-1.5" x-show="plugin.author">
                                                 <i class="fas fa-user text-[10px]"></i>
@@ -201,7 +201,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             </div>
                                         </div>
 
-                                        {{-- 詳細ボタン --}}
+                                        {{-- Details button --}}
                                         <div class="mt-3 flex justify-center">
                                             <a
                                                 :href="'{{ route('admin.settings.plugins.show-online', ['slug' => '__SLUG__']) }}'.replace('__SLUG__', plugin.slug)"
@@ -212,7 +212,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             </a>
                                         </div>
 
-                                        {{-- ダウンロードボタン --}}
+                                        {{-- Download button --}}
                                         <div class="mt-3 flex justify-center">
                                             <button
                                                 type="button"
@@ -238,7 +238,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @push('modals')
-    {{-- ダウンロード確認モーダル --}}
+    {{-- Download confirmation modal --}}
     <x-ui-modal
         id="confirmDownloadPluginModal"
         :title="__('admin/settings/plugins/add.online.download_confirm_title')"
@@ -270,7 +270,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-slot:footer>
     </x-ui-modal>
 
-    {{-- ダウンロード中モーダル（onlinePlugins.download() から openModal で呼び出す） --}}
+    {{-- Downloading modal (called via openModal from onlinePlugins.download()) --}}
     <x-ui-modal
         id="downloadingPluginModal"
         iconType="loading"
@@ -285,7 +285,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </x-ui-modal>
 
-    {{-- アップロード中モーダル（ZIP アップロードフォームの @submit から openModal で呼び出す） --}}
+    {{-- Uploading modal (called via openModal from ZIP upload form @submit) --}}
     <x-ui-modal
         id="uploadingPluginModal"
         iconType="loading"

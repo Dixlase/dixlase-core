@@ -38,7 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             console.log('Initialized section: {{ $sectionId }}', openSections);
         }
      ">
-    {{-- アコーディオンヘッダー --}}
+    {{-- Accordion header --}}
     <button 
         type="button"
         class="accordion-header w-full px-6 py-1 text-left flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -47,7 +47,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'border-b border-gray-200 dark:border-gray-600 rounded-t-lg rounded-b-none': openSections['{{ $sectionId }}']
         }"
     >
-        {{-- 左側の開閉アイコン --}}
+        {{-- Toggle icon on the left --}}
         <i class="mb-2 fas fa-chevron-right w-2 h-2 text-gray-500 dark:text-gray-400 transition-transform duration-300 mr-3 flex-shrink-0"
            :class="{ 'rotate-90': openSections['{{ $sectionId }}'] }"
            style="transform-origin: center;"></i>
@@ -57,7 +57,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </h2>
     </button>
     
-    {{-- アコーディオンコンテンツ --}}
+    {{-- Accordion content --}}
     <div 
         class="accordion-content overflow-hidden rounded-b-lg"
         x-show="openSections['{{ $sectionId }}']"

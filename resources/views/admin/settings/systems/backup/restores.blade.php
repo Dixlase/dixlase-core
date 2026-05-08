@@ -130,7 +130,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('modals')
-    {{-- ロールバックフォーム + ロールバック確認モーダル（canRollback() のレコードのみ） --}}
+    {{-- Rollback form + rollback confirmation modal (only for records where canRollback() is true) --}}
     @foreach($records as $record)
         @if($record->canRollback())
             <form id="rollbackRestoreForm{{ $record->id }}"

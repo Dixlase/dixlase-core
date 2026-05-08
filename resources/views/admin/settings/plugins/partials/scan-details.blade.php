@@ -32,7 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 <div class="text-left space-y-4">
-    {{-- 1. 健全性スコア --}}
+    {{-- 1. Health Score --}}
     @if($card['healthScore'] !== null)
         <div class="p-4 rounded-lg {{ $card['healthStatusColors'][$card['healthStatus']] ?? 'bg-gray-100 dark:bg-gray-700' }}">
             <div class="flex items-center gap-3">
@@ -47,7 +47,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    {{-- 2. 健全性の指摘事項（減点理由） --}}
+    {{-- 2. Health Issues (deduction reasons) --}}
     @if(! empty($card['healthIssues']))
         <div>
             <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ __('admin/settings/plugins/show.scan.issues') }}</h4>
@@ -67,7 +67,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    {{-- 3. 監査警告（不一致検出時） --}}
+    {{-- 3. Audit warnings (when discrepancies detected) --}}
     @if($card['hasMismatches'])
         <div class="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
             <h5 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">
@@ -90,7 +90,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    {{-- 4. CSP診断警告（非準拠時） --}}
+    {{-- 4. CSP diagnostic warnings (when non-compliant) --}}
     @if($card['cspDiagnostic'] && !($card['cspDiagnostic']['compliant'] ?? true))
         <div class="p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
             <h5 class="text-sm font-semibold text-orange-800 dark:text-orange-200 mb-2">
@@ -106,7 +106,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    {{-- 5. 署名ステータス --}}
+    {{-- 5. Signature Status --}}
     <div>
         <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin/settings/plugins/index.permissions.signature_status') }}</h4>
         @if(empty($card['auditedAt']))
@@ -164,7 +164,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
     </div>
 
-    {{-- 6. 権限定義の整合性 --}}
+    {{-- 6. Permission definition consistency --}}
     <div>
         <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin/settings/plugins/index.permissions.permission_consistency_title') }}</h4>
         @if($card['hasMismatches'])
@@ -199,7 +199,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
     </div>
 
-    {{-- 7. CSP モード互換性バロメータ --}}
+    {{-- 7. CSP Mode Compatibility Barometer --}}
     @if(! empty($card['cspBarometerItems']))
         <div>
             <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
@@ -210,7 +210,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    {{-- 8. セキュリティプリセット互換性バロメータ --}}
+    {{-- 8. Security Preset Compatibility Barometer --}}
     @if(! empty($card['presetBarometerItems']))
         <div>
             <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
@@ -221,7 +221,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    {{-- 9. データベーステーブル（所有テーブル + 他プラグインへの書き込み先） --}}
+    {{-- 9. Database Tables (owned tables + write destinations to other plugins) --}}
     @if(! empty($card['ownedTablesData']) && ($card['ownedTablesData']['has_migrations'] || ! empty($card['ownedTablesData']['tables']) || ! empty($card['ownedTablesData']['writes_to_other_plugin_tables'])))
         <div>
             <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
@@ -277,7 +277,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    {{-- 10. 提供機能（capabilities 宣言） --}}
+    {{-- 10. Provided Features (capabilities declaration) --}}
     @if(! empty($card['capabilities']))
         <div>
             <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
@@ -295,11 +295,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    {{-- 11. 権限情報（カテゴリ一覧 + 確認理由） --}}
+    {{-- 11. Permission Information (category list + verification reason) --}}
     <div>
         <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin/settings/plugins/index.permissions.permission_info') }}</h4>
         @if($card['hasPermissions'])
-            {{-- 確認が必要な理由 --}}
+            {{-- Reason verification is required --}}
             @if(! empty($card['attentionReasons']))
                 <div class="mb-4 p-3 rounded-lg {{ ($card['healthStatus'] ?? 'not_verified') === 'needs_attention' ? 'bg-orange-50 dark:bg-orange-900/20' : (($card['healthStatus'] ?? 'not_verified') === 'advisory' ? 'bg-yellow-50 dark:bg-yellow-900/20' : 'bg-gray-50 dark:bg-gray-800') }}">
                     <h5 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
@@ -317,7 +317,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             @endif
 
-            {{-- 権限カテゴリ一覧 --}}
+            {{-- Permission category list --}}
             @if(! empty($card['categories']))
                 <div class="space-y-3">
                     @foreach($card['categories'] as $category => $permissions)
@@ -337,7 +337,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/index.permissions.no_special_permissions') }}</p>
             @endif
         @else
-            {{-- 権限未定義 --}}
+            {{-- Permission undefined --}}
             <div class="p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
                 <div class="flex items-start">
                     <i class="fas fa-exclamation-triangle text-orange-500 dark:text-orange-400 mr-2 mt-0.5"></i>

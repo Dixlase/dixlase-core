@@ -39,7 +39,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'panelClass' => '',
 ])
 
-{{-- トグルボタン --}}
+{{-- Toggle button --}}
 <button type="button"
         @click="toggleRightSidebar()"
         class="flex fixed top-14 right-0 z-50 items-center backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-l-lg shadow-md border border-r-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -52,7 +52,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <i class="fas text-sm" :class="rightSidebarCollapsed ? 'fa-chevron-left' : 'fa-chevron-right'"></i>
 </button>
 
-{{-- サイドバーパネル --}}
+{{-- Sidebar panel --}}
 <div class="space-y-5 fixed top-12 right-0 bottom-0 w-80 z-50 overflow-y-auto bg-white/75 dark:bg-gray-900/75 backdrop-blur-sm border-l border-gray-200 dark:border-gray-600 shadow-md px-5 py-5 {{ $panelClass }}"
      :class="{
          'translate-x-80': rightSidebarCollapsed,
@@ -62,6 +62,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     {{ $slot }}
 
-    {{-- セーブボタン用の下部スペース --}}
+    {{-- Bottom space for save button --}}
     <div class="h-20"></div>
 </div>

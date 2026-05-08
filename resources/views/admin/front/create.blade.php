@@ -49,9 +49,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           })">
         @csrf
 
-        {{-- ===== エディタータイプ + プレビュートグル ===== --}}
+        {{-- ===== Editor Type + Preview Toggle ===== --}}
         <div class="mb-4 space-y-3">
-            {{-- エディタータイプ --}}
+            {{-- Editor Type --}}
             <div>
                 <x-form-label :text="__('admin/front.create.editor_type_label')" class="mb-3" />
                 <x-form-radio-card-group
@@ -67,7 +67,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </p>
             </div>
 
-            {{-- プレビュートグル --}}
+            {{-- Preview Toggle --}}
             <div class="flex flex-wrap items-center gap-3 text-xs">
                 <button type="button" @click="togglePreview()"
                     class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-colors"
@@ -81,7 +81,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
 
-        {{-- ===== スプリットペインコンテナ ===== --}}
+        {{-- ===== Split Pane Container ===== --}}
         <div x-ref="splitContainer"
              class="flex gap-4 overflow-hidden"
              :class="[
@@ -89,7 +89,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                  (isDragging || isResizingPreview) ? 'select-none' : ''
              ]">
 
-            {{-- ===== エディタペイン ===== --}}
+            {{-- ===== Editor Pane ===== --}}
             <div x-ref="editorPane"
                  class="w-full min-w-0"
                  :class="isHorizontal && previewVisible ? 'overflow-y-auto' : ''"
@@ -97,12 +97,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <div class="space-y-4">
 
-                    {{-- タブナビゲーション（HTML エディタ時のみ） --}}
+                    {{-- Tab Navigation (HTML Editor only) --}}
                     <div x-show="isHtmlEditor" x-cloak>
                         <x-content-editor.tabs />
                     </div>
 
-                    {{-- Content タブ --}}
+                    {{-- Content Tab --}}
                     <div x-show="(activeTab === 'content' || !isHtmlEditor) && editorType !== 'gui'">
                         <x-form-textarea
                             id="content"
@@ -115,7 +115,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <x-form-error name="content" />
                     </div>
 
-                    {{-- GUI エディター（x-if で DOM から除外し name="content" の重複を防ぐ） --}}
+                    {{-- GUI Editor (excluded from DOM with x-if to prevent name="content" duplication) --}}
                     <template x-if="editorType === 'gui'">
                         <div>
                             @if($guiEditorInfo ?? null)
@@ -135,7 +135,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                     </template>
 
-                    {{-- CSS タブ（HTML エディタ時のみ） --}}
+                    {{-- CSS Tab (HTML Editor only) --}}
                     <div x-show="activeTab === 'css' && isHtmlEditor" x-cloak>
                         <x-form-textarea
                             id="custom_css"
@@ -149,7 +149,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <x-form-error name="custom_css" />
                     </div>
 
-                    {{-- JavaScript タブ（HTML エディタ時のみ） --}}
+                    {{-- JavaScript Tab (HTML Editor only) --}}
                     <div x-show="activeTab === 'js' && isHtmlEditor" x-cloak>
                         <x-form-textarea
                             id="custom_js"
@@ -170,20 +170,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         @include('components.content-editor.scroll-buttons')
 
-        {{-- ===== 右サイドバー ===== --}}
+        {{-- ===== Right Sidebar ===== --}}
         <x-admin.right-sidebar
             :openLabel="__('admin/front.create.sidebar_open')"
             :closeLabel="__('admin/front.create.sidebar_close')"
 >
 
-            {{-- 保存方法 --}}
+            {{-- Save Method --}}
             <x-content-editor.storage-info
                 :storageOptions="$storageOptions"
                 :storageType="old('storage_type', $defaultStorageType)"
                 :showJsCss="true"
             />
 
-            {{-- 言語選択 --}}
+            {{-- Language Selection --}}
             <div>
                 <x-form-label :for="'lang'" :text="__('admin/front.create.lang_label')" class="mb-2" />
                 <x-form-select

@@ -55,7 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div x-data="tooltip()" 
      @click.away="hide()"
      class="tooltip-container relative inline-block">
-    {{-- トリガー要素（slotで指定） --}}
+    {{-- Trigger element (specified by slot) --}}
     <div class="tooltip-trigger cursor-pointer" 
          @if($trigger === 'click')
              @click="toggle()"
@@ -67,7 +67,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{ $trigger_slot ?? $slot }}
     </div>
     
-    {{-- ツールチップ本体 --}}
+    {{-- Tooltip body --}}
     <div x-show="isOpen"
          x-transition
          @if($trigger === 'hover')
@@ -91,7 +91,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         @endif
         
-        {{-- コンテンツ --}}
+        {{-- Content --}}
         <div class="tooltip-body text-sm text-gray-600 dark:text-gray-400">
             {{ $content ?? '' }}
         </div>

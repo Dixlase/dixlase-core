@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 <div class="flex h-full">
-    {{-- サイドバー本体 --}}
+    {{-- Sidebar body --}}
     <div class="flex flex-col w-64 h-full overflow-y-auto bg-white/75 dark:bg-gray-900/75 border-r border-gray-200 dark:border-gray-600 backdrop-blur-sm shadow-md"
          x-ref="sidebarRoot"
          x-data="sidebarEditor('{{ route('admin.profile.sidebar.update') }}', '{{ route('admin.profile.sidebar.reset') }}', {{ json_encode($sidebar_hidden_menus ?? []) }}, {{ json_encode($sidebar_menu_order ?? new \stdClass) }})">
@@ -193,7 +193,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 @endif
                             </a>
                             @if ($key === 'dashboard')
-                                {{-- サイドバー編集ボタン（ダッシュボード行の右端、リンク枠の外） --}}
+                                {{-- Sidebar edit button (right end of dashboard row, outside link frame) --}}
                                 <button x-show="!editMode"
                                         x-cloak
                                         @click="enterEditMode()"
@@ -451,7 +451,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                                 </span>
                                                             </div>
                                                         </div>
-                                                    {{-- 4階層目: 孫項目がさらに子を持つ場合 --}}
+                                                    {{-- 4th level: when grandchild items have further children --}}
                                                     @elseif (isset($grand_child_item['children']) && is_array($grand_child_item['children']) && isset($grand_child_item['icon']) && isset($grand_child_item['text']))
                                                         @php
                                                             $open_grand_child_key = 'open_' . str_replace('-', '_', $grand_child_key);
@@ -512,7 +512,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         @endforeach
 
-        {{-- リセットボタン（編集モード時のみ） --}}
+        {{-- Reset button (only in edit mode) --}}
         <div x-show="editMode" x-cloak class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
             <button @click="confirmReset()"
                     class="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition-colors">
@@ -523,7 +523,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </nav>
     </div>
 
-    {{-- タブボタン（モバイルのみ、サイドバーの右端） --}}
+    {{-- Tab button (mobile only, right end of sidebar) --}}
     <button @click="openSidebar = !openSidebar"
             class="sm:hidden backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-blue-400 px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 transition-colors self-start mt-2"
             aria-label="Toggle sidebar menu">
@@ -531,7 +531,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </button>
 </div>
 
-{{-- リセット確認モーダル（ページ全体レベルに配置） --}}
+{{-- Reset confirmation modal (placed at page-wide level) --}}
 @push('modals')
     <x-ui-modal
         id="sidebarResetModal"

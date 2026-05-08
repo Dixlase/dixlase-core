@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @include('themes::partials.head')
 </head>
 <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col min-h-screen">
-    {{-- 管理バー（管理者ログイン時のみ表示） --}}
+    {{-- Admin bar (displayed only when administrator is logged in) --}}
     <div class="sticky top-0" style="z-index: 9999;">
         <x-ui-maintenance-banner />
         <x-ui-admin-bar />
@@ -51,7 +51,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     @include('themes::partials.footer')
 
-    {{-- コアアセットのみ読み込み --}}
+    {{-- Load Core assets only --}}
     {!! load_front_assets() !!}
 
     @stack('scripts')

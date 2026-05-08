@@ -36,14 +36,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto max-w-5xl">
 
-    {{-- 戻るリンク（上部） --}}
+    {{-- Back link (top) --}}
     <div class="mb-4">
         <a href="{{ route('admin.settings.plugins.index') }}" class="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
             <i class="fas fa-arrow-left"></i>{{ __('admin/settings/plugins/show.back_to_list') }}
         </a>
     </div>
 
-    {{-- ヘッダー（拡張機能詳細カード共通コンポーネント） --}}
+    {{-- Header (extension detail card common component) --}}
     <x-admin.extension-detail
         :title="$card['name']"
         :version="$card['version']"
@@ -79,7 +79,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <x-slot:metadata>
             <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                {{-- 左カラム: 作者 → ライセンス → Email → URL --}}
+                {{-- Left column: Author → License → Email → URL --}}
                 <div class="space-y-2">
                     @if(! empty($card['authorName']))
                         <div class="flex items-start gap-3">
@@ -116,7 +116,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endif
                 </div>
 
-                {{-- 右カラム: 名前空間 → スラッグ → パッケージ名 → ディレクトリ --}}
+                {{-- Right column: Namespace → Slug → Package name → Directory --}}
                 <div class="space-y-2">
                     @if(! empty($rawData['namespace']))
                         <div class="flex items-start gap-3">
@@ -148,9 +148,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-slot:metadata>
 
         <x-slot:actions>
-            {{-- 更新は統合アップデート管理ページに集約（個別ボタンは廃止） --}}
+            {{-- Updates consolidated to unified update management page (individual button deprecated) --}}
 
-            {{-- アクションボタン（一覧ページと同じ2段階モーダルフローを使用） --}}
+            {{-- Action buttons (uses same 2-step modal flow as list page) --}}
             @if($isInstalled)
                 @include('admin.settings.plugins.partials.installed-actions', ['card' => $card])
             @else
@@ -159,12 +159,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </x-slot:actions>
     </x-admin.extension-detail>
 
-    {{-- バッジモーダル（2段階フローでスキャン結果を表示する際に使用） --}}
+    {{-- Badge modal (used to display scan results in 2-step flow) --}}
     @if($card['permissionSummary'])
         @include('admin.settings.plugins.partials.permission-modal', ['card' => $card])
     @endif
 
-    {{-- スキャン結果（常に表示、未スキャン時もスキャンボタンを提供） --}}
+    {{-- Scan results (always display, provide scan button even when not scanned) --}}
     <section class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
             <div class="flex items-center justify-between gap-3 mb-4">
                 <div class="flex items-center gap-3">
@@ -184,7 +184,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
 
-            {{-- 未スキャン時のメッセージ --}}
+            {{-- Message when not scanned --}}
             @if(empty($card['auditedAt']))
                 <div class="mb-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-center">
                     <i class="fas fa-info-circle text-2xl text-gray-400 mb-2"></i>
@@ -192,13 +192,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             @endif
 
-            {{-- スキャン結果（統一順序: 健全性 → 署名 → 権限定義 → CSP → 拡張 → 権限情報） --}}
+            {{-- Scan results (unified order: Health → Signature → Permission definitions → CSP → Extensions → Permission info) --}}
             @if($card['permissionSummary'] || $card['healthScore'] !== null)
                 @include('admin.settings.plugins.partials.scan-details', ['card' => $card])
             @endif
     </section>
 
-    {{-- 戻るボタン --}}
+    {{-- Back button --}}
     <div class="mt-6">
         <a href="{{ route('admin.settings.plugins.index') }}" class="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
             <i class="fas fa-arrow-left"></i>{{ __('admin/settings/plugins/show.back_to_list') }}
@@ -206,6 +206,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 </div>
 
-{{-- スキャン関連のモーダル・設定スクリプト（一覧ページと共有） --}}
+{{-- Scan-related modals and settings scripts (shared with list page) --}}
 @include('admin.settings.plugins.partials.audit-script')
 @endsection

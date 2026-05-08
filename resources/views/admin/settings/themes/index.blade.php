@@ -35,12 +35,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-    {{-- インストール済みテーマ一覧セクション --}}
+    {{-- Installed theme list section --}}
     <section>
         <div class="flex items-center justify-between mb-6">
             <h2 class="mb-0">{{ __('admin/settings/themes/index.installed_heading') }}</h2>
             <div class="flex items-center gap-3">
-                {{-- アップデート管理ページへのリンク（更新があれば件数バッジ付き） --}}
+                {{-- Link to update management page (with count badge if updates available) --}}
                 <a href="{{ route('admin.settings.systems.updates.index') }}"
                    class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
                     <i class="fas fa-cloud-arrow-down"></i>
@@ -50,7 +50,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endif
                 </a>
 
-                {{-- 全テーマ再スキャンボタン --}}
+                {{-- Rescan all themes button --}}
                 <form action="{{ route('admin.settings.themes.audit-all') }}" method="POST" class="inline-block" id="bulkAuditThemesForm">
                     @csrf
                     <x-form-button
@@ -73,7 +73,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     />
                 </form>
 
-                {{-- 更新操作はすべて統合アップデート管理ページに集約 --}}
+                {{-- All update operations are consolidated in the integrated update management page --}}
 
                 <a href="{{ route('admin.settings.themes.add') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
                     <i class="fas fa-plus mr-2"></i>
@@ -105,7 +105,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
     </section>
 
-    {{-- アンインストール済みテーマ一覧セクション --}}
+    {{-- Uninstalled theme list section --}}
     @if(count($uninstalledThemes ?? []) > 0)
     <section class="mt-12">
         <h2>{{ __('admin/settings/themes/index.uninstalled_heading') }}</h2>
@@ -122,5 +122,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @endsection
 
-{{-- 監査スクリプト --}}
+{{-- Audit script --}}
 @include('admin.settings.themes.partials.audit-script')

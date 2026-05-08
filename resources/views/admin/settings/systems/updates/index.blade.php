@@ -24,7 +24,7 @@ file is governed by the AGPL terms below.
 <div class="mx-auto max-w-5xl">
     <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ __('admin/settings/systems/updates.description') }}</p>
 
-    {{-- ヘッダー：最終チェック時刻と再チェックボタン --}}
+    {{-- Header: Last check time and recheck button --}}
     <div class="flex items-center justify-between gap-3 mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
         <div class="text-sm text-gray-600 dark:text-gray-400">
             @if($lastCheckedAtFormatted)
@@ -45,7 +45,7 @@ file is governed by the AGPL terms below.
         </form>
     </div>
 
-    {{-- メインフォーム：選択 + 一括適用 --}}
+    {{-- Main form: Selection + bulk apply --}}
     <form method="POST"
           action="{{ route('admin.settings.systems.updates.apply') }}"
           id="systemUpdatesApplyForm"
@@ -59,7 +59,7 @@ file is governed by the AGPL terms below.
           @change="recompute()">
         @csrf
 
-        {{-- コアセクション --}}
+        {{-- Core section --}}
         <section class="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                 <i class="fas fa-cube mr-2"></i>{{ __('admin/settings/systems/updates.core.heading') }}
@@ -123,7 +123,7 @@ file is governed by the AGPL terms below.
             @endif
         </section>
 
-        {{-- プラグインセクション --}}
+        {{-- plugin section --}}
         <section class="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                 <i class="fas fa-plug mr-2"></i>{{ __('admin/settings/systems/updates.plugins.heading') }}
@@ -168,6 +168,13 @@ file is governed by the AGPL terms below.
                                         {{ $plugin['name'] }}
                                     </label>
                                     <span class="block text-xs text-gray-500 dark:text-gray-400 font-mono">{{ $plugin['slug'] }}</span>
+                                    @if($plugin['updateFailedAt'])
+                                        <span class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 border border-red-200 dark:border-red-800"
+                                              title="{{ $plugin['updateFailureReason'] }}">
+                                            <i class="fas fa-exclamation-triangle text-[10px]"></i>
+                                            {{ __('admin/settings/systems/updates.failure.previous_failure', ['date' => $plugin['updateFailedAtFormatted']]) }}
+                                        </span>
+                                    @endif
                                 </td>
                                 <td class="py-2 pr-4 font-mono text-xs text-gray-600 dark:text-gray-400">v{{ $plugin['currentVersion'] }}</td>
                                 <td class="py-2 pr-4 font-mono text-xs text-blue-700 dark:text-blue-300 font-semibold">
@@ -180,7 +187,7 @@ file is governed by the AGPL terms below.
             @endif
         </section>
 
-        {{-- テーマセクション --}}
+        {{-- theme section --}}
         <section class="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                 <i class="fas fa-palette mr-2"></i>{{ __('admin/settings/systems/updates.themes.heading') }}
@@ -225,6 +232,13 @@ file is governed by the AGPL terms below.
                                         {{ $theme['name'] }}
                                     </label>
                                     <span class="block text-xs text-gray-500 dark:text-gray-400 font-mono">{{ $theme['slug'] }}</span>
+                                    @if($theme['updateFailedAt'])
+                                        <span class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 border border-red-200 dark:border-red-800"
+                                              title="{{ $theme['updateFailureReason'] }}">
+                                            <i class="fas fa-exclamation-triangle text-[10px]"></i>
+                                            {{ __('admin/settings/systems/updates.failure.previous_failure', ['date' => $theme['updateFailedAtFormatted']]) }}
+                                        </span>
+                                    @endif
                                 </td>
                                 <td class="py-2 pr-4 font-mono text-xs text-gray-600 dark:text-gray-400">v{{ $theme['currentVersion'] }}</td>
                                 <td class="py-2 pr-4 font-mono text-xs text-blue-700 dark:text-blue-300 font-semibold">
@@ -237,7 +251,7 @@ file is governed by the AGPL terms below.
             @endif
         </section>
 
-        {{-- 一括適用ボタン（更新可能な対象がある時のみ） --}}
+        {{-- Bulk apply button (only when there are updatable items) --}}
         @if($totalCount > 0)
             <div class="flex justify-end">
                 <x-form-button

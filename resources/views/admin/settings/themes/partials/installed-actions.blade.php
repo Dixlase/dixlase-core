@@ -32,7 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @if($card['isEnabled'])
-    {{-- 有効化中のテーマ：設定ボタンのみ --}}
+    {{-- Active theme: settings button only --}}
     @if($card['hasSettings'] && Route::has('admin.settings.themes.settings'))
         <a href="{{ route('admin.settings.themes.settings') }}" class="inline-block">
             <x-form-button
@@ -46,7 +46,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </a>
     @endif
 @else
-    {{-- 無効化中：有効化とアンインストールボタン --}}
+    {{-- Inactive: activate and uninstall buttons --}}
     <form action="{{ route('admin.settings.themes.switch', $card['id']) }}" method="POST" class="inline-block" id="enableThemeForm-{{ $card['id'] }}">
         @csrf
         @if($card['hasEnableWarnings'])

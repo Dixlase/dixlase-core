@@ -41,9 +41,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'columns' => 4,
 ])
 
-{{-- 全体設定画面用の二段階認証設定コンポーネント --}}
+{{-- Two-factor authentication settings component for general settings screen --}}
 <div>
-    {{-- 1. 二段階認証モード --}}
+    {{-- 1. Two-factor authentication mode --}}
     <x-two-fa.mode-selector
         :name="$twoFaModeName"
         :value="old($twoFaModeName, (string) $twoFaModeValue)"
@@ -53,9 +53,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         xModel="twoFaMode"
     />
 
-    {{-- 2. 二段階認証方法（メール認証・パスキー設定） --}}
+    {{-- 2. Two-factor authentication methods (email authentication and passkey settings) --}}
     <div :class="{ 'opacity-50 pointer-events-none': !twoFaEnabled }">
-        {{-- メール認証は常に有効 --}}
+        {{-- Email authentication is always enabled --}}
         <fieldset>
             <legend>{{ __('components/security/two-fa-general-settings.method_label') }}</legend>
 
@@ -72,7 +72,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </fieldset>
 
-        {{-- パスキー設定（全体設定の場合） --}}
+        {{-- Passkey settings (for general settings) --}}
         <fieldset>
             <legend>{{ __('common.passkey_mode.label') }}</legend>
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">

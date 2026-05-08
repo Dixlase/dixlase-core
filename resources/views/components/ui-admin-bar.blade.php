@@ -34,8 +34,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 {{-- 
-管理者ログイン時のみ表示される管理バー
-@props(['isAdminLayout' => false]) - 管理画面レイアウトモードの場合true
+Admin bar displayed only when administrator is logged in
+@props(['isAdminLayout' => false]) - true when in admin panel layout mode
 --}}
 @php
     // データベースが存在しない場合（アンインストール後など）は何も表示しない
@@ -54,9 +54,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
      id="admin-bar" class="{{ $isAdminLayout ? 'fixed top-0 left-0 right-0' : 'w-full' }} backdrop-blur-sm text-gray-700 dark:text-white bg-white/75 dark:bg-gray-900/75 border-b border-gray-300 dark:border-gray-700 shadow-md" style="z-index: 9900;">
     <div class="w-full mx-auto px-4">
         <div class="flex items-center justify-between h-12">
-            {{-- 左側: サイト名とメニュー --}}
+            {{-- Left side: Site name and menu --}}
             <div class="flex items-center {{ $isAdminLayout ? '' : 'space-x-4' }}">
-                {{-- サイト名/ロゴ --}}
+                {{-- Site name/logo --}}
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-2 hover:opacity-80 transition-opacity {{ $isAdminLayout ? 'mr-4' : '' }}">
                     <x-application-logo
                         class="text-gray-900 dark:text-white"
@@ -66,24 +66,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <span class="font-semibold hidden sm:inline">{{ config('app.name') }}</span>
                 </a>
 
-                {{-- 区切り線 --}}
+                {{-- Divider --}}
                 <div class="h-6 w-px bg-gray-700 hidden sm:block {{ $isAdminLayout ? 'mr-4' : '' }}"></div>
 
-                {{-- メニュー項目（常に表示） --}}
+                {{-- Menu items (always visible) --}}
                 <nav class="flex items-center space-x-1">
-                    {{-- ダッシュボード --}}
+                    {{-- Dashboard --}}
                     <a href="{{ route('admin.dashboard') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm">
                         <i class="fas fa-home mr-1"></i>
                         <span class="hidden md:inline">{{ __('components/ui-admin-bar.dashboard') }}</span>
                     </a>
                     
-                    {{-- フロントページデザイン --}}
+                    {{-- Front page design --}}
                     <a href="{{ route('admin.front.edit') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm">
                         <i class="fas fa-paint-brush mr-1"></i>
                         <span class="hidden md:inline">{{ __('common.design') }}</span>
                     </a>
 
-                    {{-- テーマ設定（ルートが存在する場合のみ表示） --}}
+                    {{-- Theme settings (displayed only when route exists) --}}
                     @if(Route::has('admin.settings.themes.settings'))
                         <a href="{{ route('admin.settings.themes.settings') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm">
                             <i class="fas fa-palette mr-1"></i>
@@ -94,7 +94,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 </nav>
 
-                {{-- 環境・デバッグバッジ --}}
+                {{-- Environment/debug badge --}}
                 @php
                     $currentEnv = app()->environment();
                     $envBadgeClass = match ($currentEnv) {
@@ -150,15 +150,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
-            {{-- 右側: ユーザー情報 --}}
+            {{-- Right side: User info --}}
             <div class="flex items-center space-x-4">
-                {{-- サイトを表示 --}}
+                {{-- View site --}}
                 <a href="{{ url('/') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm flex items-center">
                     <i class="fas fa-external-link-alt mr-1"></i>
                     <span class="hidden lg:inline">{{ __('common.view_site') }}</span>
                 </a>
 
-                {{-- モバイル用ユーザーメニュートグル --}}
+                {{-- Mobile user menu toggle --}}
                 @if($isAdminLayout)
                     <button @click="openUserMenu = true"
                             class="sm:hidden inline-flex items-center justify-center rounded-md hover:text-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none transition"
@@ -173,7 +173,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </a>
                 @endif
 
-                {{-- デスクトップ用ユーザーメニュー --}}
+                {{-- Desktop user menu --}}
                 <div class="hidden sm:block relative">
                     <button @click="userMenuOpen = !userMenuOpen" @click.away="userMenuOpen = false" class="flex items-center space-x-2 px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                         <i class="fas fa-user-circle text-xl"></i>
@@ -189,7 +189,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                          x-transition:leave-start="transform opacity-100 scale-100"
                          x-transition:leave-end="transform opacity-0 scale-95"
                          class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg overflow-hidden z-50">
-                        {{-- ユーザー情報 --}}
+                        {{-- User info --}}
                         <div class="px-4 py-3 flex items-center space-x-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                             <i class="fas fa-user-circle text-3xl text-gray-600 dark:text-gray-400"></i>
                             <div>
@@ -197,7 +197,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 <div class="text-sm text-gray-900 dark:text-gray-400">{{ auth('member')->user()->email }}</div>
                             </div>
                         </div>
-                        {{-- メニュー項目 --}}
+                        {{-- Menu items --}}
                         <div class="bg-white dark:bg-black">
                             <a href="{{ route('admin.profile') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                                 <i class="fas fa-user w-5 text-center mr-2 text-gray-500 dark:text-gray-400"></i>
@@ -222,19 +222,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </div>
 
 @if($isAdminLayout)
-    {{-- モバイルメニューオーバーレイ --}}
+    {{-- Mobile menu overlay --}}
     <div x-show="openSidebar || openUserMenu" 
          @click="openSidebar = false; openUserMenu = false" 
          x-cloak
          class="fixed inset-0 bg-black bg-opacity-50 z-40" 
          aria-hidden="true"></div>
 
-    {{-- 左側スライドインサイドバー（モバイル） --}}
+    {{-- Left slide-in sidebar (mobile) --}}
     <div x-cloak 
          class="sm:hidden fixed h-full inset-y-12 left-0 transform transition-transform duration-300 ease-in-out z-50"
          :class="{ '-translate-x-64': !openSidebar, 'translate-x-0': openSidebar }">
         
-        {{-- スクロール可能なメニュー部分（タブボタン含む） --}}
+        {{-- Scrollable menu section (including tab buttons) --}}
         <div class="flex-1 h-full ">
             @include('admin.partials.sidebar', [
                 'route_name' => Route::currentRouteName()
@@ -242,19 +242,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    {{-- 右側スライドインユーザーメニュー（モバイル） --}}
+    {{-- Right slide-in user menu (mobile) --}}
     <div x-cloak 
          class="fixed right-0 top-0 w-64 h-full shadow-lg transform transition-transform duration-300 ease-in-out z-50 bg-white dark:bg-black border-l border-gray-300 dark:border-gray-700"
          :class="{ 'translate-x-full': !openUserMenu, 'translate-x-0': openUserMenu }">
         
-        {{-- 閉じるボタン --}}
+        {{-- Close button --}}
         <button @click="openUserMenu = false" class="absolute top-4 right-4 p-2 text-gray-700 dark:text-gray-300">
             <i class="fas fa-times text-xl"></i>
         </button>
 
-        {{-- ユーザーメニュー --}}
+        {{-- User menu --}}
         <div class="pt-16 px-4">
-            {{-- ユーザー情報 --}}
+            {{-- User info --}}
             <div class="flex items-center space-x-3 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
                 <i class="fas fa-user-circle text-3xl text-gray-600 dark:text-gray-300"></i>
                 <div>
@@ -263,7 +263,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
-            {{-- メニュー項目 --}}
+            {{-- Menu items --}}
             <div class="space-y-2">
                 <a href="{{ route('admin.profile') }}"
                    class="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition">
@@ -271,7 +271,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <span>{{ __('components/ui-admin-bar.profile') }}</span>
                 </a>
 
-                {{-- ログアウト --}}
+                {{-- Logout --}}
                 <form method="POST" action="{{ route('admin.logout') }}">
                     @csrf
                     <button type="submit"

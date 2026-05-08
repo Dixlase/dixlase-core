@@ -36,7 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto">
 
-    {{-- エラー・フラッシュメッセージは管理レイアウトの <x-ui-flash-message /> で表示 --}}
+    {{-- Error and flash messages are displayed in <x-ui-flash-message /> in the admin layout --}}
 
     <!-- タブ切り替え -->
     <div x-data="{ activeTab: '{{ old('_tab', 'online') }}' }">
@@ -160,7 +160,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             <template x-for="theme in themes" :key="theme.slug">
                                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all duration-200 flex flex-col group">
-                                    {{-- サムネイル --}}
+                                    {{-- Thumbnail --}}
                                     <div class="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
                                         <img
                                             :src="theme.thumbnail_url || '{{ asset('assets/images/theme-default.svg') }}'"
@@ -217,7 +217,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @push('modals')
-    {{-- ダウンロード中モーダル（onlineThemes.download() から openModal で呼び出す） --}}
+    {{-- Downloading modal (called by openModal from onlineThemes.download()) --}}
     <x-ui-modal
         id="downloadingThemeModal"
         iconType="loading"
@@ -232,7 +232,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </x-ui-modal>
 
-    {{-- アップロード中モーダル（ZIP アップロードフォームの @submit から openModal で呼び出す） --}}
+    {{-- Uploading modal (called by openModal from @submit of ZIP upload form) --}}
     <x-ui-modal
         id="uploadingThemeModal"
         iconType="loading"

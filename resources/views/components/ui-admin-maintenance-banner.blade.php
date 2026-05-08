@@ -34,7 +34,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 {{--
-管理画面用のメンテナンスモード中バナー（スティッキー表示）
+Maintenance mode banner for admin panel (sticky display)
 --}}
 @php
     // データベースが存在しない場合は何も表示しない

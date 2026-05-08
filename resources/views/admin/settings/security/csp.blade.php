@@ -342,7 +342,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     />
 @endsection
 
-{{-- CSP設定確認モーダル --}}
+{{-- CSP settings confirmation modal --}}
 @if(session('show_csp_confirmation'))
 <x-ui-modal
     id="cspConfirmationModal"

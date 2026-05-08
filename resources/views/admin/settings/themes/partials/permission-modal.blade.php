@@ -39,7 +39,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     :close_label="__('common.close')"
 >
     <div class="text-left">
-        {{-- 監査警告 --}}
+        {{-- Audit warning --}}
         @if($card['hasMismatches'])
             <div class="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
                 <h5 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">
@@ -62,7 +62,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         @endif
 
-        {{-- CSP診断警告 --}}
+        {{-- CSP diagnostic warning --}}
         @if($card['cspDiagnostic'] && !($card['cspDiagnostic']['compliant'] ?? true))
             <div class="mb-4 p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
                 <h5 class="text-sm font-semibold text-orange-800 dark:text-orange-200 mb-2">
@@ -78,7 +78,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         @endif
 
-        {{-- 署名ステータス --}}
+        {{-- Signature status --}}
         <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
             <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin/settings/themes/index.permissions.signature_status') }}</h4>
             @if($card['signatureStatus'] === 'valid' || $card['signatureStatus'] === 'pending_verification')
@@ -116,7 +116,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
         </div>
 
-        {{-- 権限情報 --}}
+        {{-- Permission information --}}
         <div>
             <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin/settings/themes/index.permissions.permission_info') }}</h4>
             @if($card['hasPermissions'])

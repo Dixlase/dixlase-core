@@ -245,7 +245,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :columns="4"
                 />
                 
-                {{-- ロールの権限範囲説明 --}}
+                {{-- Role permission scope description --}}
                 <div class="mt-4">
                     <x-ui-message type="info">
                         <x-slot name="message">

@@ -297,7 +297,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
 </section>
 
-{{-- モーダル --}}
+{{-- Modal --}}
 <x-ui-modal 
     id="deleteTrustedDeviceModal"
     title="{{ __('components/security/two-fa-management.confirm_delete_trusted_device_title') }}"

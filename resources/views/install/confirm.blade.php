@@ -39,7 +39,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-{{-- エラー表示セクション --}}
+{{-- Error display section --}}
 @if(session('error'))
     <aside class="bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-6" role="alert" aria-labelledby="error-heading">
         <div class="flex">
@@ -235,7 +235,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </form>
 </div>
 
-{{-- インストール中モーダル --}}
+{{-- Installation in progress modal --}}
 <x-ui-modal
     id="installProgressModal"
     :title="__('install/confirm.installing')"

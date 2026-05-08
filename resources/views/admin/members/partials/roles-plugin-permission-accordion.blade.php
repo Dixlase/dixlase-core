@@ -91,7 +91,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <div class="permission-accordion {{ $indentClass }}" x-data="{ open: false }">
     @if ($hasChildren || $hasPermission)
-        {{-- アコーディオンヘッダー --}}
+        {{-- Accordion header --}}
         <div class="flex items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg mb-1">
             <button 
                 type="button"
@@ -106,7 +106,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </button>
         </div>
         
-        {{-- アコーディオンコンテンツ --}}
+        {{-- Accordion content --}}
         <div 
             x-show="open"
             x-collapse

@@ -70,7 +70,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           x-init="init()"
       @endif>
     @if($isAdmin)
-        {{-- 管理画面バナースタック（メンテナンス / セーフモード / システム警告） --}}
+        {{-- Admin panel banner stack (maintenance / safe mode / system warnings) --}}
         <div id="admin-banner-stack"
              class="fixed top-0 left-0 right-0 z-[9999] flex flex-col"
              x-data

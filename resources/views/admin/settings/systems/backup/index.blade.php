@@ -27,7 +27,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{ __('admin/settings/systems/backup/index.description') }}
     </p>
 
-    {{-- 新規作成ボタン --}}
+    {{-- Create new button --}}
     <div class="mb-6">
         <x-form-button
             type="button"
@@ -38,7 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
     </div>
 
-    {{-- バックアップ一覧 --}}
+    {{-- Backup list --}}
     @if($records->isEmpty())
         <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
             <i class="fas fa-archive text-4xl text-gray-400 dark:text-gray-500 mb-3"></i>
@@ -143,7 +143,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('modals')
-    {{-- 新規作成モーダル --}}
+    {{-- Create new modal --}}
     <x-ui-modal
         id="createBackupModal"
         :title="__('admin/settings/systems/backup/index.create_modal.title')"
@@ -199,7 +199,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </form>
     </x-ui-modal>
 
-    {{-- 復元フォーム + 復元確認モーダル（完了済みレコードのみ） --}}
+    {{-- Restore form + restore confirmation modal (completed records only) --}}
     @foreach($records as $record)
         @if($record->status === 'completed')
             <form id="restoreBackupForm{{ $record->id }}"
@@ -222,7 +222,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
     @endforeach
 
-    {{-- 削除フォーム + 削除確認モーダル（レコードごと） --}}
+    {{-- Delete form + delete confirmation modal (per record) --}}
     @foreach($records as $record)
         <form id="deleteBackupForm{{ $record->id }}"
               action="{{ route('admin.settings.systems.backup.destroy', $record) }}"

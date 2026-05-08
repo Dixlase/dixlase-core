@@ -34,10 +34,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 {{--
-オプション配列の形式:
-- シンプル形式: ['value' => 'label', ...]
-- 拡張形式: [
-    ['value' => 'xxx', 'label' => 'Label', 'description' => '説明', 'icon' => 'fas fa-xxx'],
+Option array format:
+- Simple format: ['value' => 'label', ...]
+- Extended format: [
+    ['value' => 'xxx', 'label' => 'Label', 'description' => 'Description', 'icon' => 'fas fa-xxx'],
     ...
   ]
 --}}
@@ -117,7 +117,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endphp
         
         @if($cardStyle)
-            {{-- カード形式 --}}
+            {{-- Card format --}}
             <div class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors {{ $disabled ? 'opacity-50' : '' }}">
                 <label for="{{ $toggleId }}" class="flex items-center gap-3 {{ $disabled ? 'cursor-not-allowed' : 'cursor-pointer' }}">
                     <div class="relative inline-flex items-center flex-shrink-0">
@@ -150,7 +150,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </label>
             </div>
         @else
-            {{-- シンプル形式 --}}
+            {{-- Simple format --}}
             <div class="flex items-center space-x-3">
                 <label for="{{ $toggleId }}" class="relative inline-flex items-center {{ $disabled ? 'cursor-not-allowed' : 'cursor-pointer' }}">
                     <input type="checkbox"

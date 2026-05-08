@@ -145,11 +145,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     />
                     <p>{{ __('admin/settings/security/extensions.security.require_signature_help') }}</p>
 
-                    {{-- 必須にしている場合の追加警告（トグル ON 時のみ表示） --}}
-                    {{-- form-toggle は内部で xModel を文字列 '0'/'1' に切り替えるため、
-                         単純な truthy 判定だと '0' も真になってしまう。
-                         初期値（boolean）と toggle 後（'1'/'0'）の両方に対応するため
-                         数値的等価で比較する。 --}}
+                    {{-- Additional warning when required (shown only when toggle is ON) --}}
+                    {{-- form-toggle internally switches xModel to string '0'/'1', so
+                         a simple truthy check would treat '0' as true.
+                         To handle both initial value (boolean) and post-toggle ('1'/'0'),
+                         we use numeric equality comparison --}}
                     <div
                         x-show="requireSignature == 1"
                         x-cloak
@@ -161,7 +161,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </p>
                     </div>
 
-                    {{-- Authority URL の開示（トグル状態に関わらず常時表示） --}}
+                    {{-- Authority URL disclosure (always shown regardless of toggle state) --}}
                     <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                         <p class="text-sm text-blue-800 dark:text-blue-200">
                             {{ __('admin/settings/security/extensions.security.signature_authority_url_label') }}

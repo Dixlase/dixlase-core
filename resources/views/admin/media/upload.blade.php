@@ -63,7 +63,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
 
-        {{-- アップロード進捗表示 --}}
+        {{-- Upload progress display --}}
         <div x-show="queue.length > 0" x-cloak class="mt-4 space-y-2">
             <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">
                 {{ __('admin/media/upload.upload_progress') }}
@@ -86,7 +86,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </template>
         </div>
 
-        {{-- 完了メッセージ --}}
+        {{-- Completion message --}}
         <div x-show="allDone && successCount > 0" x-cloak class="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
             <p class="text-sm text-green-700 dark:text-green-300">
                 <i class="fas fa-check-circle mr-1"></i>
@@ -111,7 +111,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{ ($isSimpleMode ?? false) ? __('admin/media/upload.settings_heading_auto') : __('admin/media/upload.settings_heading') }}
         </h3>
 
-        {{-- 許可されたファイルタイプ --}}
+        {{-- Allowed file types --}}
         <section class="mb-4">
             <h4 class="text-xs font-medium text-blue-700 dark:text-blue-400 mb-2">{{ __('admin/media/upload.allowed_file_types') }}</h4>
             <div class="flex flex-wrap gap-2">
@@ -126,7 +126,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </section>
 
-        {{-- ファイルタイプ別サイズ上限 --}}
+        {{-- Size limit by file type --}}
         <section class="mb-4">
             <h4 class="text-xs font-medium text-blue-700 dark:text-blue-400 mb-2">{{ __('admin/media/upload.size_limits') }}</h4>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -153,7 +153,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </section>
 
-        {{-- セキュリティ設定 --}}
+        {{-- Security settings --}}
         <section>
             <h4 class="text-xs font-medium text-blue-700 dark:text-blue-400 mb-2">{{ __('admin/media/upload.security_status') }}</h4>
             <ul class="space-y-1">

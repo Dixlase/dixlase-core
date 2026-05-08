@@ -32,13 +32,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 {{--
-    メールサーバー設定フォーム共通コンポーネント
+    Mail server settings form common component
     
-    @param array $settings - メール設定値
-    @param array $mailers - メーラー選択肢 (オプション)
-    @param array $encryptions - 暗号化選択肢 (オプション)
-    @param string $context - 'install' または 'admin' (デフォルト: 'admin')
-    @param string $admin_email - 管理者メールアドレス (インストール時のみ)
+    @param array $settings - Mail settings values
+    @param array $mailers - Mailer options (optional)
+    @param array $encryptions - Encryption options (optional)
+    @param string $context - 'install' or 'admin' (default: 'admin')
+    @param string $admin_email - Administrator email address (install only)
 --}}
 
 @php
@@ -63,7 +63,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 @if($isInstall)
-{{-- CSP対応: data属性で設定を渡す --}}
+{{-- CSP support: Pass settings via data attributes --}}
 @php
 $mailServerFormConfig = [
     'routes' => [

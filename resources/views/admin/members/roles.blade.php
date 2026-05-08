@@ -38,7 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <form method="POST" action="{{ route('admin.members.roles.update') }}" id="member-roles-form" class="permission-management permission-form" novalidate>
     @csrf
     
-    {{-- コア機能の権限設定 --}}
+    {{-- Core feature permission settings --}}
     <div class="permission-section-wrapper mb-8">
         <div class="flex items-center gap-3 mb-4">
             <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
@@ -50,7 +50,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
         
-        {{-- 除外項目の説明 --}}
+        {{-- Explanation of excluded items --}}
         <x-ui-message type="info" :message="__('admin/members/roles.excluded_items_note')" />
         
         <div class="permission-groups mt-6">
@@ -68,7 +68,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
     
-    {{-- プラグインの権限設定 --}}
+    {{-- Plugin permission settings --}}
     @if (!empty($pluginPermissionGroups))
         <div class="permission-section-wrapper">
             <div class="flex items-center gap-3 mb-4">
@@ -84,7 +84,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="permission-groups space-y-2 mb-10">
                 @foreach ($pluginPermissionGroups as $pluginGroup)
                     <div class="plugin-permission-group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm" x-data="{ open: false }">
-                        {{-- プラグインヘッダー --}}
+                        {{-- Plugin header --}}
                         <button 
                             type="button"
                             class="w-full px-6 py-4 text-left flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-lg focus:outline-none"
@@ -110,7 +110,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <span class="text-xs text-gray-500 dark:text-gray-400 font-mono ml-2">({{ $pluginGroup['slug'] }})</span>
                         </button>
                         
-                        {{-- プラグイン権限コンテンツ --}}
+                        {{-- Plugin permission content --}}
                         <div x-show="open" x-collapse class="p-4">
                             <div class="space-y-2">
                                 @foreach ($pluginGroup['permissions'] as $key => $item)

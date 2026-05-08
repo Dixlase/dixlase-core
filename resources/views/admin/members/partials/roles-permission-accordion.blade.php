@@ -85,7 +85,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <div class="permission-accordion {{ $indentClass }}" x-data="{ open: false }">
     @if ($hasChildren || $hasPermission)
-        {{-- アコーディオンヘッダー --}}
+        {{-- Accordion header --}}
         <div class="flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg mb-1 {{ $hasChildren ? '' : 'hover:bg-gray-50 dark:hover:bg-gray-700' }}">
             @if ($hasChildren)
                 <button 
@@ -116,7 +116,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
         </div>
         
-        {{-- アコーディオンコンテンツ --}}
+        {{-- Accordion content --}}
         <div 
             x-show="open"
             x-collapse

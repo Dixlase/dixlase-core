@@ -142,7 +142,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </div>
 
 @if($confirmUploadNavigation)
-{{-- アップロード画面遷移確認モーダル --}}
+{{-- Upload screen transition confirmation modal --}}
 <x-ui-modal id="{{ $id }}_uploadConfirmModal"
     :title="__('components/media-selector.upload_confirm_title')"
     :message="__('components/media-selector.upload_confirm_message')"

@@ -56,12 +56,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     data-trans-passkey-cancelled="{{ __($translationPrefix . '.passkey_cancelled') }}"
     data-old-login="{{ $oldLogin }}"
 >
-    {{-- Alpine.jsエラーメッセージ --}}
+    {{-- Alpine.js error message --}}
     <div x-show="errors.login" x-transition class="mb-6 p-4 font-semibold text-red-800 bg-red-100 border border-red-200 rounded-xl dark:text-red-200 dark:bg-red-900 dark:border-red-700">
         <span x-text="errors.login"></span>
     </div>
 
-    {{-- ステップ1: 識別子入力 --}}
+    {{-- Step 1: Identifier input --}}
     <div x-show="step === 1" x-transition>
         <form @submit.prevent="checkIdentifier">
             @csrf
@@ -131,9 +131,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </form>
     </div>
 
-    {{-- ステップ2: 認証方法選択 --}}
+    {{-- Step 2: Authentication method selection --}}
     <div x-show="step === 2" x-transition>
-        {{-- 識別子表示 --}}
+        {{-- Identifier display --}}
         <div class="mb-6 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
             <div class="flex items-center justify-between">
                 <span class="text-sm text-gray-600 dark:text-gray-400" x-text="identifier"></span>
@@ -147,7 +147,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
 
-        {{-- パスワードログインフォーム --}}
+        {{-- Password login form --}}
         <form method="POST" action="{{ $routeLogin }}">
             @csrf
             <input type="text" name="login" x-model="identifier" autocomplete="username" class="sr-only" tabindex="-1" aria-hidden="true" readonly>
@@ -187,7 +187,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </form>
 
-        {{-- パスキー認証ボタン --}}
+        {{-- Passkey authentication button --}}
         @if($passkeyEnabled)
             <div x-show="hasPasskey" class="mt-6">
                 <!-- 区切り線 -->

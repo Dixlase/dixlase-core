@@ -32,8 +32,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 {{--
-Safe Theme Frontpage Layout - テーマセーフモード用フロントページレイアウト
-app.blade.php と同一構成。テーマがfrontpageレイアウトを使用する場合のフォールバック。
+Safe Theme Frontpage Layout - Frontpage layout for theme safe mode
+Identical structure to app.blade.php. Fallback for when a theme uses the frontpage layout.
 --}}
 
 @extends('themes::layouts.app')
