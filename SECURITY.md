@@ -67,6 +67,47 @@ We practice coordinated disclosure:
 4. We publicly disclose the vulnerability after the patch is available, giving users time to update
 5. We credit the reporter in our security advisory (unless the reporter wishes to remain anonymous)
 
+## Plugin Security Model
+
+Dixlase manages plugin and theme risk through a **defense-in-depth model**, not a runtime sandbox. We are explicit about this distinction so that operators, plugin authors, and security researchers can evaluate the actual security posture without ambiguity.
+
+### What Dixlase provides
+
+The following layers are combined to reduce plugin risk:
+
+1. **Capability declarations** — every plugin must declare its required permissions in `plugin.json` (`database`, `storage`, `settings`, `members`, `mail`, `content`, `system`).
+2. **Static analysis** — at install / scan time, Dixlase compares declared permissions against actual code patterns (e.g. `DangerousApiPattern`, `DatabaseDetectionPattern`) and detects undeclared usage and dangerous-API calls (`exec`, `eval`, etc.).
+3. **Signature verification** — Ed25519-based verification of plugin authenticity through `SignatureVerifierInterface`.
+4. **Health scoring** — every plugin receives a 0–100 score derived from signature, declared-permission consistency, CSP compliance, and dangerous-API detection. Activation policy is gated by score and critical-issue flags (`Allowed` / `Warning` / `Acknowledge` / `Blocked`).
+5. **Distribution-source provenance** — official sources are declared and may be cryptographically signed; plugin downloads pass through `ExtensionSourceManager`.
+6. **Convention-based separation** — namespaces (`Plugins\<Name>\*`) and table prefixes (`dls_plg_{slug}_*`) keep plugin code and data identifiable; core tables are read-only by convention.
+7. **Operational kill switches** — `BlockPluginRoutes` middleware and the per-site activation table allow operators to disable plugins at the edge without uninstalling them.
+
+### What Dixlase does NOT provide
+
+We want to be unambiguous about the gaps so that operators do not over-trust the model:
+
+- **No process-, OS-, VM-, or language-runtime-level isolation.** Plugins execute in-process within the same PHP-FPM worker as the core. A plugin that ignores Dixlase conventions and calls a core class directly will succeed at runtime; the violation is detected by static scanning at install time, not blocked at execution time.
+- **No memory isolation** between plugin code and core code.
+- **Filesystem and network access are not jailed** by default — only declared via `plugin.json` and detected by static analysis.
+- **No CPU / memory quotas** on plugin code execution.
+- **`PluginPermissionService::enforce()` is opt-in by core call sites**, not a global runtime interceptor.
+
+These limitations are inherent to single-process PHP CMSs and apply equally to WordPress, Drupal, and other Laravel-based CMSs. They are not unique gaps in Dixlase.
+
+### Forward direction
+
+We will explore a range of approaches over future releases and progressively strengthen plugin isolation. Candidates under consideration include subprocess-level separation with `disable_functions` / `open_basedir` restrictions, and language-runtime-level isolation via WebAssembly. We are intentionally not pre-committing to a specific implementation path until the relevant ecosystems (e.g. `wasmer-php`, WASI Component Model) reach production readiness.
+
+### Operational guidance
+
+For operators running Dixlase in security-sensitive environments:
+
+- Enable the **"Require signed plugins"** option in **Admin → Settings → Security → Extensions**.
+- Set the plugin / theme **maximum health-level** to the strictest tier acceptable for your deployment.
+- Install plugins only from sources you trust; the static scanner is a safety net, not a guarantee.
+- Subscribe to security advisories for the plugins you install (each plugin maintainer is responsible for their own advisories).
+
 ## Scope
 
 ### In Scope

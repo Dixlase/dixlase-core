@@ -12,7 +12,7 @@ The Dixlase permission settings system adopts a design that **separates declarat
 
 1. **Plugins don't modify the database**: No need to insert records into core DB tables during installation
 2. **Easy uninstallation**: Minimal permission record cleanup when removing a plugin
-3. **Alignment with the sandbox philosophy**: Lowers the barrier for "explicit permission required" decisions
+3. **Alignment with the capability-declaration model**: Lowers the barrier for "explicit permission required" decisions
 4. **Reset to defaults**: Simply delete the override record
 
 ## Architecture
@@ -242,11 +242,11 @@ public function boot(): void
 }
 ```
 
-### 4. Alignment with the Sandbox Philosophy
+### 4. Alignment with the Capability-Declaration Model
 
 With this approach, plugins **only declare default permissions** without modifying the database.
 This means that having a permission settings feature no longer becomes a psychological barrier
-in the sandbox's "explicit permission required" evaluation.
+in the defense-in-depth model's "explicit permission required" evaluation.
 
 ## Database Table
 
