@@ -135,7 +135,7 @@ enum PluginVerificationStatus: string
      */
     public function translationKey(): string
     {
-        return 'admin/settings/plugins.verification.'.$this->value;
+        return 'admin/settings/plugins/index.verification.'.$this->value;
     }
 
     /**

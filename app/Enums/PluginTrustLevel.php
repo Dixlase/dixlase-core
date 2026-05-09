@@ -83,7 +83,7 @@ enum PluginTrustLevel: string
      */
     public function translationKey(): string
     {
-        return 'admin/settings/plugins.trust_level.'.$this->value;
+        return 'admin/settings/plugins/index.trust_level.'.$this->value;
     }
 
     /**
