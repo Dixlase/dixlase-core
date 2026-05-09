@@ -106,3 +106,7 @@ license.txt
 # (see .backlog/README.md for what belongs here)
 /.backlog/
 
+# Sandbox tests: throw-away test files used by Claude Code during coding
+# tasks. Excluded from CI/CD test suites. See CLAUDE.md "Sandbox Tests".
+/tests/Sandbox/
+
