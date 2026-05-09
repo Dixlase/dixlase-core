@@ -43,6 +43,7 @@ use App\Enums\ContentStatus;
 use App\Enums\ContentStorageType;
 use App\Models\Traits\BelongsToSite;
 use App\Traits\HasRevisions;
+use App\Traits\TranslatableTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -54,6 +55,23 @@ class FrontPage extends Model implements Revisionable
     use BelongsToSite;
     use HasFactory;
     use HasRevisions;
+    use TranslatableTrait;
+
+    /**
+     * Translatable fields (consumed by core's TranslatableTrait +
+     * TranslationResolver indirection — DixlaseMultilingual binds the
+     * resolver to read / write per-locale rows in its polymorphic
+     * translations table). When the multilingual plugin is absent the
+     * trait silently falls back to the row's column value (the primary
+     * locale stored on this row), so single-locale installs keep
+     * working.
+     *
+     * @var list<string>
+     */
+    protected array $translatable = [
+        'title',
+        'content',
+    ];
 
     /**
      * Table name

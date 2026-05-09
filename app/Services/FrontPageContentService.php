@@ -87,7 +87,12 @@ class FrontPageContentService extends ContentFileService
             return $this->loadFromFile($frontPage->page_type, $locale, $frontPage->editor_type->slug());
         }
 
-        return $frontPage->content ?? null;
+        // DB storage: route through the TranslatableTrait so a registered
+        // TranslationResolver (DixlaseMultilingual) can serve a per-locale
+        // translation when available; the trait silently falls back to the
+        // row's `content` column when no resolver is bound or no translation
+        // row exists for the requested locale.
+        return $frontPage->getTranslation('content', $locale) ?? $frontPage->content ?? null;
     }
 
     /**
