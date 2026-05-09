@@ -42,7 +42,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Local cache of Authority public keys
  *
- * Stores public keys retrieved from keys.dixlase.com for use in
+ * Stores public keys retrieved from keys.dixlase.net for use in
  * signature verification during plugin installation. The Resolver determines whether to re-fetch keys with old fetched_at values
  */
 class AuthorityPublicKey extends Model
