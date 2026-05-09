@@ -58,7 +58,8 @@ class ThemeServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Skip if .env file does not exist or database connection fails
-        if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
+        // Use config() instead of env() so the guard still works after config:cache.
+        if (! file_exists(base_path('.env')) || ! config('app.installed', false)) {
             return;
         }
 
