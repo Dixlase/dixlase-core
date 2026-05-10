@@ -35,8 +35,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+declare(strict_types=1);
+
 namespace App\Events;
 
+use App\DTO\Audit\AuditLogPayload;
 use App\Models\AuditLog;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -44,13 +47,50 @@ use Illuminate\Queue\SerializesModels;
 
 /**
  * Fired after every audit log record is created.
+ *
  * Designed for SIEM integration, external monitoring, and plugin hooks.
+ *
+ * Subscribers receive an immutable {@see AuditLogPayload} DTO that exposes a
+ * SIEM-relevant subset of the audit_logs row. The DTO shape is frozen under
+ * {@see self::SCHEMA_VERSION}; see docs/development/api-reference/events.md
+ * for the field-by-field schema and the compatibility policy.
+ *
+ * Example:
+ * ```php
+ * Event::listen(AuditLogCreated::class, function (AuditLogCreated $event) {
+ *     if ($event->payload->severity === AuditLog::SEVERITY_CRITICAL) {
+ *         // forward to SIEM
+ *         Http::post($siem, $event->payload->toArray());
+ *     }
+ * });
+ * ```
  */
 class AuditLogCreated
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    /**
+     * Schema version of the {@see AuditLogPayload} DTO carried by this event.
+     *
+     * Subscribers may branch on `$event->payload->version` (which mirrors this
+     * constant at dispatch time) to support multiple major versions in one
+     * listener. See docs/development/api-reference/events.md "AuditLogCreated
+     * payload schema" for the compatibility policy.
+     */
+    public const SCHEMA_VERSION = 1;
+
     public function __construct(
-        public readonly AuditLog $auditLog,
+        public readonly AuditLogPayload $payload,
     ) {}
+
+    /**
+     * Convenience factory: build the event directly from an AuditLog model.
+     *
+     * Core call sites should prefer this over constructing an
+     * {@see AuditLogPayload} by hand.
+     */
+    public static function fromAuditLog(AuditLog $auditLog): self
+    {
+        return new self(AuditLogPayload::fromAuditLog($auditLog));
+    }
 }

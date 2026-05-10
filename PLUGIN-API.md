@@ -604,7 +604,7 @@ the full format reference, tag rules, and worked examples.
 
 ### 9.8 Events
 
-- `App\Events\AuditLogCreated` — Audit log creation event (for SIEM integration and plugin hooks)
+- `App\Events\AuditLogCreated` — Audit log creation event (for SIEM integration and plugin hooks). Delivers a frozen, versioned `App\DTO\Audit\AuditLogPayload` accessible as `$event->payload`. Schema version constant: `AuditLogCreated::SCHEMA_VERSION`. Field-by-field schema and compatibility policy: [`docs/development/api-reference/events.md`](docs/development/api-reference/events.md#29-auditlogcreated-event-frozen-dto-payload).
 - `App\Events\SecurityAlertEvent` — Security alert event
 - `App\Events\DixlaseEvents` — Constants for all core event names that plugins can listen to (see below)
 

@@ -125,7 +125,7 @@ class AuditService
 
             // Fire event for SIEM integration
             if ($auditLog) {
-                event(new AuditLogCreated($auditLog));
+                event(AuditLogCreated::fromAuditLog($auditLog));
             }
 
             return $auditLog;
