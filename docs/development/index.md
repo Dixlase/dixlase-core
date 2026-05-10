@@ -58,5 +58,6 @@ API signatures, backup, and deployment systems.
 
 ## Other
 
+- [Public Identifier Naming Conventions](naming.md) - Naming format for API scopes, permission keys, event names, webhook event types, audit log actions, plugin capabilities, etc.
 - [Cache Key Convention](cache-key-convention.md) - Naming convention and Builder helper for cache keys
 - [SDK Trait Dependencies](sdk-trait-dependencies.md) - SDK trait dependency analysis
