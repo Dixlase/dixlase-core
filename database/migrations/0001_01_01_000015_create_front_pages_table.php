@@ -50,9 +50,9 @@ return new class extends Migration
             $table->string('page_type', 50)->default('main_content');
             $table->string('lang', 10)->default('en');
             $table->string('title')->nullable();
-            $table->text('content')->nullable();
-            $table->text('custom_js')->nullable();
-            $table->text('custom_css')->nullable();
+            $table->mediumText('content')->nullable();
+            $table->mediumText('custom_js')->nullable();
+            $table->mediumText('custom_css')->nullable();
             $table->tinyInteger('storage_type')->default(0);
             $table->tinyInteger('editor_type')->default(3);
             $table->tinyInteger('status')->default(1);
