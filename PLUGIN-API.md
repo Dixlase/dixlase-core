@@ -34,6 +34,12 @@ Additions, deprecations, and breaking changes to the Plugin API are announced th
 
 Plugin and theme authors are encouraged to subscribe to GitHub releases of the core repository.
 
+### Identifier Naming Conventions
+
+Public string identifiers exposed by Dixlase (API scopes, permission keys, event names, webhook event types, audit log actions, plugin capabilities, …) follow the conventions documented in [`docs/development/naming.md`](docs/development/naming.md). Identifier names are part of the public API surface — once shipped, they cannot be safely renamed because plugins, issued API keys, stored audit rows, and external webhook integrations all hard-code them.
+
+When introducing a new identifier of an existing kind, follow the format defined in that document. When introducing a new identifier *kind*, update the document first.
+
 ---
 
 ## Licensing Your Plugin or Theme
@@ -604,6 +610,8 @@ the full format reference, tag rules, and worked examples.
 
 **Event name constants** (`App\Events\DixlaseEvents::*`): plugins may use any of the following constants as `Event::listen()` targets. The class is part of the Plugin API; constant additions are non-breaking. Removing a constant follows the deprecation policy.
 
+> Naming format for event strings is defined in [`docs/development/naming.md`](docs/development/naming.md#event-names).
+
 | Category | Constants |
 |---|---|
 | Backup lifecycle | `BACKUP_STARTED`, `BACKUP_COMPLETED`, `BACKUP_FAILED`, `BACKUP_CLEANUP_STARTED`, `BACKUP_CLEANUP_COMPLETED`, `BACKUP_RESTORE_STARTED`, `BACKUP_RESTORE_COMPLETED`, `BACKUP_RESTORE_FAILED` |
@@ -798,6 +806,8 @@ class PluginNameServiceProvider extends ServiceProvider
 ```
 
 ### 12.4 plugin.json Schema
+
+> Naming formats for `slug`, `capabilities`, and `permissions` keys are defined in [`docs/development/naming.md`](docs/development/naming.md).
 
 ```json
 {

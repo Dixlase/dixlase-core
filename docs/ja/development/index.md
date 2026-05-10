@@ -58,5 +58,6 @@ API署名、バックアップ、デプロイシステムです。
 
 ## その他
 
+- [公開識別子の命名規約](naming.md) - API スコープ、permission キー、イベント名、Webhook event type、監査ログ action、プラグインケイパビリティ等の命名フォーマット
 - [キャッシュキー命名規約](cache-key-convention.md) - キャッシュキーの命名規約と Builder ヘルパー
 - [SDK トレイト依存関係](sdk-trait-dependencies.md) - SDK トレイト依存分析

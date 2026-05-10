@@ -37,3 +37,4 @@
 - [ ] New source files include the standard license header / 新規ソースファイルに標準ライセンスヘッダーが含まれています
 - [ ] Tests have been added or updated / テストを追加・更新しました
 - [ ] Documentation has been updated if needed / 必要に応じてドキュメントを更新しました
+- [ ] If this PR introduces new public identifiers (API scopes, permission keys, event names, webhook event types, audit log actions, plugin capabilities, etc.), they follow [`docs/development/naming.md`](../docs/development/naming.md) / 新規の公開識別子（API スコープ、permission キー、イベント名、Webhook event type、監査ログ action、プラグインケイパビリティ等）を導入する場合、[`docs/development/naming.md`](../docs/development/naming.md) の規約に従っています
