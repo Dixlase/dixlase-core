@@ -64,12 +64,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Recognize HTTPS/IP correctly behind reverse proxies like Traefik
-        $middleware->trustProxies(at: '*');
+        // Trust forwarded headers only from the upstream IPs declared in
+        // config/trustedproxy.php (driven by the TRUSTED_PROXIES env var).
+        // Default is `[]` (no proxies trusted); operators behind CDNs,
+        // reverse proxies, or IAPs must explicitly populate TRUSTED_PROXIES.
+        // See SECURITY.md "Reverse-proxy / IAP deployment".
+        $middleware->trustProxies(
+            at: config('trustedproxy.proxies'),
+            headers: config('trustedproxy.headers'),
+        );
 
         // Register global middlewares
         $middleware->use([
-            \Illuminate\Http\Middleware\TrustProxies::class, // Recognize HTTPS/IP behind reverse proxy
+            \Illuminate\Http\Middleware\TrustProxies::class, // Apply config/trustedproxy.php to incoming forwarded headers
             \App\Http\Middleware\CheckInstallationReady::class, // Check installation readiness + installation status
             \App\Http\Middleware\ResolveSiteContext::class, // Resolve current site for multi-site support (fixed to primary site in v0.1.0)
             \App\Http\Middleware\ForceHttps::class, // Force HTTPS redirect when FORCE_SSL is enabled
