@@ -37,8 +37,10 @@
 
 namespace App\Services;
 
+use App\Contracts\TranslationResolver;
 use App\Enums\ContentStorageType;
 use App\Models\FrontPage;
+use Illuminate\Support\Facades\App;
 
 /**
  * Front page content service
@@ -83,16 +85,27 @@ class FrontPageContentService extends ContentFileService
     {
         $locale = $locale ?? app()->getLocale();
 
+        // Consult a registered TranslationResolver (DixlaseMultilingual) first
+        // regardless of storage_type. The translation editor writes to the
+        // polymorphic translations table even for FILE-backed entities, so a
+        // per-locale override can exist independently of where the primary
+        // content lives. We fall through to the storage-type branch below
+        // when no published translation row exists for this locale.
+        if (App::bound(TranslationResolver::class)) {
+            $translated = App::make(TranslationResolver::class)
+                ->resolve($frontPage, 'content', $locale);
+            if (is_string($translated)) {
+                return $translated;
+            }
+        }
+
         if ($frontPage->storage_type === ContentStorageType::FILE) {
             return $this->loadFromFile($frontPage->page_type, $locale, $frontPage->editor_type->slug());
         }
 
-        // DB storage: route through the TranslatableTrait so a registered
-        // TranslationResolver (DixlaseMultilingual) can serve a per-locale
-        // translation when available; the trait silently falls back to the
-        // row's `content` column when no resolver is bound or no translation
-        // row exists for the requested locale.
-        return $frontPage->getTranslation('content', $locale) ?? $frontPage->content ?? null;
+        // DB storage with no translation override: the row's primary-locale
+        // column value is the canonical content.
+        return $frontPage->content ?? null;
     }
 
     /**
