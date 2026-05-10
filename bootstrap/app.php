@@ -69,9 +69,16 @@ return Application::configure(basePath: dirname(__DIR__))
         // Default is `[]` (no proxies trusted); operators behind CDNs,
         // reverse proxies, or IAPs must explicitly populate TRUSTED_PROXIES.
         // See SECURITY.md "Reverse-proxy / IAP deployment".
+        //
+        // The config file is required directly rather than read via config()
+        // because withMiddleware() runs before the config service is bound
+        // to the container (LoadConfiguration bootstrapper has not run yet).
+        // The file itself only depends on env() and Symfony's Request class,
+        // both of which are already available at this point.
+        $trustedProxyConfig = require __DIR__.'/../config/trustedproxy.php';
         $middleware->trustProxies(
-            at: config('trustedproxy.proxies'),
-            headers: config('trustedproxy.headers'),
+            at: $trustedProxyConfig['proxies'],
+            headers: $trustedProxyConfig['headers'],
         );
 
         // Register global middlewares
