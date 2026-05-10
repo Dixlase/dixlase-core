@@ -61,6 +61,47 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | HTTP Strict Transport Security (HSTS)
+    |--------------------------------------------------------------------------
+    |
+    | Conservative defaults: HSTS is OFF unless the operator explicitly opts in.
+    | This is intentional for the beta period — once a browser receives an HSTS
+    | header it caches the directive for `max_age` seconds and the operator
+    | cannot revoke it from the server side. Mistakes (wrong cert, subdomain
+    | misconfig) cause multi-day recovery windows. The `preload` directive is
+    | worse: removal requires submission to a Chromium-maintained list and
+    | propagation takes weeks.
+    |
+    | Recommended escalation path (see SECURITY.md "HSTS posture"):
+    |   1. Beta:                 max_age=0       (off)
+    |   2. After HTTPS proven:   max_age=300     (5 min — recoverable in minutes)
+    |   3. After ~1 day stable:  max_age=86400   (1 day)
+    |   4. After ~1 week stable: max_age=31536000 (1 year — production posture)
+    |   5. After ~1 month:       + include_subdomains
+    |   6. Last:                 + preload (irreversible without list removal)
+    |
+    | The header is only emitted for requests that are already over HTTPS
+    | (otherwise the directive is pointless and the browser ignores it).
+    |
+    */
+    'hsts' => [
+        // max-age in seconds. 0 disables HSTS entirely (no header sent).
+        'max_age' => (int) env('HSTS_MAX_AGE', 0),
+
+        // Apply HSTS to all subdomains. Only enable after every subdomain is
+        // known-good over HTTPS — a single HTTP-only subdomain becomes
+        // unreachable for visitors whose browser cached this directive.
+        'include_subdomains' => (bool) env('HSTS_INCLUDE_SUBDOMAINS', false),
+
+        // Submit to the browser preload list. Effectively irreversible without
+        // submission to https://hstspreload.org. Only enable in fully-mature
+        // production deployments. Requires max_age >= 31536000 (1 year),
+        // include_subdomains=true, and the `preload` directive itself.
+        'preload' => (bool) env('HSTS_PRELOAD', false),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Password Breach Check Settings
     |--------------------------------------------------------------------------
     |

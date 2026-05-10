@@ -170,6 +170,45 @@ The admin IP allow-list (`Admin → Settings → Security → IP`) is a defense-
 
 A separate `docs/operations/iap.md` operator guide will be published as IAP integration plugins land in v0.2+. Until then the configuration above is sufficient.
 
+## HSTS posture
+
+`Strict-Transport-Security` (HSTS) tells browsers to refuse plain-HTTP connections to the host for `max-age` seconds. The directive is **cached client-side** and cannot be revoked from the server: an HSTS misstep (wrong cert, an HTTP-only subdomain, a CDN-vs-origin mismatch) makes the host unreachable for visitors whose browser cached the directive until the cache expires. The `preload` flavour is worse — removal requires submission to a Chromium-maintained list and propagation takes weeks.
+
+Dixlase therefore ships with HSTS **off** by default and gates every escalation step behind explicit operator opt-in.
+
+### Default (recommended for beta / first deploy)
+
+```
+HSTS_MAX_AGE=0
+HSTS_INCLUDE_SUBDOMAINS=false
+HSTS_PRELOAD=false
+```
+
+The `Strict-Transport-Security` header is not emitted. `FORCE_SSL=true` still redirects HTTP to HTTPS via 301; HSTS is the *additional* commitment that browsers should not even try HTTP for the configured duration.
+
+### Recommended escalation path
+
+Move only one step at a time. Verify on a real browser (not curl) at every step. The cache TTL at the previous step bounds your recovery window if the next step misfires.
+
+| Step | When | `HSTS_MAX_AGE` | `INCLUDE_SUBDOMAINS` | `PRELOAD` | Notes |
+|---|---|---|---|---|---|
+| 1 | Beta / first deploy | `0` | `false` | `false` | HSTS header not sent at all. |
+| 2 | HTTPS confirmed working | `300` (5 min) | `false` | `false` | Mistakes recoverable within minutes. |
+| 3 | ~1 day stable at step 2 | `86400` (1 day) | `false` | `false` | First "real" HSTS commitment. |
+| 4 | ~1 week stable at step 3 | `31536000` (1 year) | `false` | `false` | Standard production posture. |
+| 5 | Every subdomain proven HTTPS | `31536000` | `true` | `false` | Locks every `*.example.com` to HTTPS. |
+| 6 | Mature operations only | `31536000` | `true` | `true` | + submit to <https://hstspreload.org>. **Effectively irreversible.** |
+
+### Things that go wrong without escalation
+
+- **Cert renewal failure on a subdomain.** Visitors whose browser cached HSTS for the parent domain (with `includeSubDomains`) cannot reach the subdomain by HTTPS *or* HTTP until the cert is fixed. Without HSTS, they would have gotten a "click through" warning page.
+- **CDN switch.** New CDN serves a different cert chain. Browsers reject. Recovery time = `max-age`.
+- **Compliance review fails on `preload`.** Once the host is on the preload list, removal is a multi-week submission process. There is no "revert".
+
+### Required when behind a reverse proxy / IAP
+
+HSTS is only emitted on responses Dixlase recognises as HTTPS. When deployed behind a TLS-terminating proxy that forwards HTTP to Dixlase, `TRUSTED_PROXIES` must include the proxy so `X-Forwarded-Proto` is honoured (see "Reverse-proxy / IAP deployment" above). Otherwise Dixlase sees HTTP and skips the header even when the user-facing connection is HTTPS.
+
 ## Scope
 
 ### In Scope
