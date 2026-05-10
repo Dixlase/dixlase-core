@@ -110,6 +110,108 @@
 | 整合性スキャン完了 | `INTEGRITY_SCAN_COMPLETED` | `['scope' => string, 'status' => string, 'changes' => array]` |
 | セキュリティアラート | `SECURITY_ALERT` | `['type' => string, 'details' => array]` |
 
+### 2.9 AuditLogCreated イベント（凍結 DTO ペイロード）
+
+`App\Events\AuditLogCreated` はあらゆる監査ログレコード作成後に発火する。上記のイベント（位置引数の配列を運ぶ）と異なり、本イベントは凍結された型付きペイロードオブジェクト `App\DTO\Audit\AuditLogPayload` を運ぶ。これにより SIEM エクスポーターや外部連携が安定した契約に依存できる。
+
+#### スキーマバージョン
+
+ペイロードスキーマは `AuditLogCreated::SCHEMA_VERSION`（現在 **1**）でバージョン管理される。バージョンはペイロード内にも `version` フィールドとして埋め込まれているため、JSON シリアライズ配信（Webhook、SIEM ストリーム）は定数を参照せずにルーティングできる。
+
+**互換ポリシー**
+
+- 同一メジャー版内ではフィールドの**追加のみ**可能。既存フィールド名・型・nullable 可否は凍結。
+- フィールドの削除・改名・型変更・nullable 可否反転は **`SCHEMA_VERSION` を上げる**。
+- 互換ポリシーは広義の Plugin API stability pledge と同じ — [`PLUGIN-API.md`](../../../../PLUGIN-API.md#stability-pledge) を参照。
+
+#### ペイロードフィールド（v1）
+
+| フィールド | 型 | nullable | 説明 |
+|---|---|---|---|
+| `version` | `int` | × | スキーマバージョン。dispatch 時の `AuditLogCreated::SCHEMA_VERSION` と等しい。 |
+| `id` | `int` | × | `audit_logs` 行の主キー。 |
+| `occurred_at` | `string` | × | ISO 8601 タイムスタンプ（例 `"2026-05-10T12:34:56+00:00"`）。 |
+| `severity` | `string` | × | `AuditLog::SEVERITY_*` のいずれか（`debug`, `info`, `notice`, `warning`, `error`, `critical`, `alert`, `emergency`）。 |
+| `outcome` | `string` | × | `AuditLog::OUTCOME_*` のいずれか（`success`, `failure`, `denied`, `pending`, `unknown`）。 |
+| `category` | `string` | × | `AuditLog::CATEGORY_*` のいずれか（`auth`, `account`, `device`, `security`, `session`, `extension`, `content`, `system`, `plugin`, …）。 |
+| `action` | `string` | × | 監査 action キー。命名フォーマット: [`docs/development/naming.md`](../naming.md#監査ログ-action) を参照。 |
+| `site_id` | `int` | ○ | サイトスコープ。グローバル / クロスサイトイベントは `null`。 |
+| `actor_type` | `string` | ○ | ポリモーフィック actor のクラス名（例 `"App\\Models\\Member"`）。システムアクションは `null`。 |
+| `actor_id` | `int` | ○ | ポリモーフィック actor の主キー。 |
+| `actor_name` | `string` | ○ | イベント時点での actor 表示名のスナップショット。 |
+| `impersonated_by_id` | `int` | ○ | impersonation 中の実オペレーター ID。 |
+| `target_type` | `string` | ○ | ポリモーフィック target のクラス名。 |
+| `target_id` | `int` | ○ | ポリモーフィック target の主キー。 |
+| `target_label` | `string` | ○ | 人間可読の target 識別子（メール、タイトル、slug 等）。 |
+| `ip_address` | `string` | ○ | 送信元 IP（IPv4 または IPv6）。 |
+| `user_agent` | `string` | ○ | HTTP `User-Agent`。 |
+| `request_id` | `string` | ○ | リクエスト相関 ID。 |
+| `session_id` | `string` | ○ | セッション識別子。 |
+| `plugin_name` | `string` | ○ | プラグイン slug。コアアクションは `null`。 |
+| `plugin_version` | `string` | ○ | プラグインバージョン。コアアクションは `null`。 |
+| `actor_source` | `string` | ○ | `AuditLog::ACTOR_SOURCE_*` のいずれか（`web`, `api`, `cli`, `scheduler`, `ai_plugin`, `webhook`, `queue`）。 |
+| `is_ai_generated` | `bool` | × | AI プラグイン由来のアクションなら `true`。 |
+| `context` | `array<string,mixed>` | × | JSON シリアライズ可能な自由形式のコンテキスト。空（`[]`）はあり得るが `null` ではない。 |
+| `record_hash` | `string` | ○ | 改ざん検知チェーン中の本行の SHA-256。 |
+| `chain_sequence` | `int` | ○ | 改ざん検知チェーン内のシーケンス番号。 |
+
+#### 意図的に公開していないもの
+
+`audit_logs` 行の以下の列はペイロードから意図的に除外されている。整合性チェーン実装の内部状態であって、購読者の関心事ではないため:
+
+- `previous_hash`
+- `hash_algorithm`
+- `verification_status`
+- `last_verified_at`
+- `schema_version`（行ごとの列。購読者向けにはペイロードの `version` フィールドが代替）
+
+アプリケーション内部でフォレンジック目的で行全体が必要な場合は `AuditLog::find($payload->id)` を直接クエリする。SIEM 利用者は文書化されたペイロードフィールドのみに依存すべき。
+
+#### イベントのリッスン
+
+```php
+use App\Events\AuditLogCreated;
+use App\Models\AuditLog;
+use Illuminate\Support\Facades\Event;
+
+Event::listen(AuditLogCreated::class, function (AuditLogCreated $event) {
+    // 複数メジャー版をサポートするリスナーはバージョンで分岐
+    if ($event->payload->version !== 1) {
+        return;
+    }
+
+    if ($event->payload->severity === AuditLog::SEVERITY_CRITICAL) {
+        // SIEM へ転送
+        Http::post($siemEndpoint, $event->payload->toArray());
+    }
+});
+```
+
+#### Webhook 配信
+
+`WebhookDispatcher` 経由で配信される際、ペイロードの `toArray()` 形式が JSON ボディとなる。Webhook 利用者は in-process リスナーと同じフィールドセットを受け取る:
+
+```json
+{
+  "event": "dixlase.audit.log.created",
+  "data": {
+    "version": 1,
+    "id": 42,
+    "occurred_at": "2026-05-10T12:34:56+00:00",
+    "severity": "info",
+    "outcome": "success",
+    "category": "auth",
+    "action": "login",
+    ...
+  },
+  "timestamp": 1746880496
+}
+```
+
+#### 命名と識別子規約
+
+`action`、`category`、`actor_source` 等の命名規則は [`docs/development/naming.md`](../naming.md) を参照。
+
 ## 3. 使い方
 
 ### 3.1 イベントのリッスン

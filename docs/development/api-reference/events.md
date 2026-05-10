@@ -110,6 +110,108 @@ This document defines the Events API for Dixlase. Events provide extension point
 | Integrity scan completed | `INTEGRITY_SCAN_COMPLETED` | `['scope' => string, 'status' => string, 'changes' => array]` |
 | Security alert | `SECURITY_ALERT` | `['type' => string, 'details' => array]` |
 
+### 2.9 AuditLogCreated event (frozen DTO payload)
+
+`App\Events\AuditLogCreated` is fired after every audit log record is created. Unlike the events listed above (which carry positional argument arrays), this event delivers a frozen, typed payload object — `App\DTO\Audit\AuditLogPayload` — so SIEM exporters and external integrations can rely on a stable contract.
+
+#### Schema version
+
+The payload schema is versioned through `AuditLogCreated::SCHEMA_VERSION` (currently **1**). The version is also embedded in the payload itself as the `version` field, so JSON-serialised deliveries (webhooks, SIEM streams) can be routed without consulting the constant.
+
+**Compatibility policy**
+
+- Within the same major version, fields may only be **added**. Existing field names, types, and nullability are frozen.
+- Removing a field, renaming a field, changing a field's type, or flipping its nullability **bumps `SCHEMA_VERSION`**.
+- The compatibility policy is the same as the broader Plugin API stability pledge — see [`PLUGIN-API.md`](../../../PLUGIN-API.md#stability-pledge).
+
+#### Payload fields (v1)
+
+| Field | Type | Nullable | Description |
+|---|---|---|---|
+| `version` | `int` | no | Schema version. Equal to `AuditLogCreated::SCHEMA_VERSION` at dispatch time. |
+| `id` | `int` | no | Primary key of the `audit_logs` row. |
+| `occurred_at` | `string` | no | ISO 8601 timestamp (e.g. `"2026-05-10T12:34:56+00:00"`). |
+| `severity` | `string` | no | One of `AuditLog::SEVERITY_*` (`debug`, `info`, `notice`, `warning`, `error`, `critical`, `alert`, `emergency`). |
+| `outcome` | `string` | no | One of `AuditLog::OUTCOME_*` (`success`, `failure`, `denied`, `pending`, `unknown`). |
+| `category` | `string` | no | One of `AuditLog::CATEGORY_*` (`auth`, `account`, `device`, `security`, `session`, `extension`, `content`, `system`, `plugin`, …). |
+| `action` | `string` | no | Audit action key. Naming format: see [`docs/development/naming.md`](../naming.md#audit-log-actions). |
+| `site_id` | `int` | yes | Site scope. `null` for global / cross-site events. |
+| `actor_type` | `string` | yes | Polymorphic actor class name (e.g. `"App\\Models\\Member"`). `null` for system actions. |
+| `actor_id` | `int` | yes | Polymorphic actor primary key. |
+| `actor_name` | `string` | yes | Snapshot of the actor display name at event time. |
+| `impersonated_by_id` | `int` | yes | Real operator ID when impersonation is active. |
+| `target_type` | `string` | yes | Polymorphic target class name. |
+| `target_id` | `int` | yes | Polymorphic target primary key. |
+| `target_label` | `string` | yes | Human-readable target identifier (email, title, slug, …). |
+| `ip_address` | `string` | yes | Source IP (IPv4 or IPv6). |
+| `user_agent` | `string` | yes | HTTP `User-Agent`. |
+| `request_id` | `string` | yes | Request correlation ID. |
+| `session_id` | `string` | yes | Session identifier. |
+| `plugin_name` | `string` | yes | Plugin slug. `null` for core actions. |
+| `plugin_version` | `string` | yes | Plugin version. `null` for core actions. |
+| `actor_source` | `string` | yes | One of `AuditLog::ACTOR_SOURCE_*` (`web`, `api`, `cli`, `scheduler`, `ai_plugin`, `webhook`, `queue`). |
+| `is_ai_generated` | `bool` | no | `true` when the action originated from an AI plugin. |
+| `context` | `array<string,mixed>` | no | Free-form JSON-serialisable context. May be empty (`[]`) but is never `null`. |
+| `record_hash` | `string` | yes | SHA-256 of this row in the tamper-evident chain. |
+| `chain_sequence` | `int` | yes | Sequence number within the tamper-evident chain. |
+
+#### What is intentionally NOT exposed
+
+The following columns of the `audit_logs` row are deliberately omitted from the payload because they belong to the integrity-chain implementation, not to subscribers:
+
+- `previous_hash`
+- `hash_algorithm`
+- `verification_status`
+- `last_verified_at`
+- `schema_version` (the per-row column; the payload's own `version` field replaces it for subscribers)
+
+If you need the full row for forensic purposes inside the application, query `AuditLog::find($payload->id)` directly. SIEM consumers should rely only on the documented payload fields.
+
+#### Listening to the event
+
+```php
+use App\Events\AuditLogCreated;
+use App\Models\AuditLog;
+use Illuminate\Support\Facades\Event;
+
+Event::listen(AuditLogCreated::class, function (AuditLogCreated $event) {
+    // Branch on schema version if your listener supports multiple versions
+    if ($event->payload->version !== 1) {
+        return;
+    }
+
+    if ($event->payload->severity === AuditLog::SEVERITY_CRITICAL) {
+        // Forward to SIEM
+        Http::post($siemEndpoint, $event->payload->toArray());
+    }
+});
+```
+
+#### Webhook delivery
+
+When delivered through `WebhookDispatcher`, the payload's `toArray()` shape becomes the JSON body. Subscribers consuming the webhook see exactly the same field set as in-process listeners:
+
+```json
+{
+  "event": "dixlase.audit.log.created",
+  "data": {
+    "version": 1,
+    "id": 42,
+    "occurred_at": "2026-05-10T12:34:56+00:00",
+    "severity": "info",
+    "outcome": "success",
+    "category": "auth",
+    "action": "login",
+    ...
+  },
+  "timestamp": 1746880496
+}
+```
+
+#### Naming and identifier conventions
+
+For naming rules of `action`, `category`, `actor_source`, etc., see [`docs/development/naming.md`](../naming.md).
+
 ## 3. Usage
 
 ### 3.1 Listening to Events
