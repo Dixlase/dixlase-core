@@ -120,6 +120,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'log.api' => \App\Http\Middleware\LogApiRequest::class, // API request log
             'role' => \App\Http\Middleware\CheckRole::class, // Role check
             'permission' => \App\Http\Middleware\CheckPermission::class, // Permission check
+            // Reserved Zero Trust extension-point aliases. Default
+            // implementations abort(501) to fail fast when a route applies
+            // them without an integration plugin in place. See
+            // docs/development/extension-points.md.
+            'auth.iap' => \App\Http\Middleware\AuthenticateIap::class, // Identity-Aware Proxy auth (reserved hook)
+            'auth.mtls' => \App\Http\Middleware\AuthenticateMtls::class, // Mutual TLS / client cert auth (reserved hook)
         ]);
 
         // For plugin API (API key authentication + rate limit + log)

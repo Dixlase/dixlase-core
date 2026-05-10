@@ -1,0 +1,60 @@
+<?php
+
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * @api Stable API available for plugins/themes
+ *
+ * Dixlase is dual-licensed. You may use this file under either:
+ *
+ *   (a) the GNU Affero General Public License version 3 or later, as
+ *       published by the Free Software Foundation, together with the
+ *       Dixlase Plugin and Theme Exception (see
+ *       LICENSE-EXCEPTIONS for full exception terms); or
+ *
+ *   (b) a commercial license agreement obtained from exc-D inc.
+ *       (see LICENSE.commercial, or contact office@exc-d.com).
+ *
+ * Unless you have entered into a commercial license agreement, this
+ * file is governed by the AGPL terms below.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+declare(strict_types=1);
+
+namespace App\Enums;
+
+/**
+ * Outcome of a {@see \App\Contracts\Security\PolicyEvaluatorInterface} call.
+ *
+ * The three values are deliberately distinct from a boolean so that an
+ * evaluator can express "I have no opinion, fall through to RBAC" without
+ * being conflated with "deny".
+ *
+ * Caller semantics:
+ *  - {@see self::Allow}  — short-circuit allow. Skip RBAC.
+ *  - {@see self::Deny}   — short-circuit deny. Skip RBAC.
+ *  - {@see self::Defer}  — no opinion. Continue to the RBAC check
+ *                           (existing PermissionService behaviour).
+ */
+enum PolicyDecision: string
+{
+    case Allow = 'allow';
+    case Deny = 'deny';
+    case Defer = 'defer';
+}
