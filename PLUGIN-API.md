@@ -539,6 +539,18 @@ The remaining services are accessed via their respective interfaces (see Section
 - `App\Services\TwoFa\TwoFaRecoveryCodeService`
 - `App\Services\EmailAuthenticationService`
 
+**Reserved extension points** (Zero Trust roadmap, Phase 1). Default implementations are no-ops; plugins may rebind to deliver actual behaviour. See [`docs/development/extension-points.md`](docs/development/extension-points.md) for signatures, semantics, and replacement patterns.
+
+| Contract / Alias | Default | Purpose |
+|---|---|---|
+| `App\Contracts\Security\SecretProviderInterface` | `EnvSecretProvider` | Pluggable secret-store backend (Vault / KMS / GCP SM target) |
+| `App\Contracts\Security\RiskEvaluatorInterface` | `LowRiskEvaluator` | Conditional-access risk scoring |
+| `App\Contracts\Security\PolicyEvaluatorInterface` | `NullPolicyEvaluator` | ABAC hook layered on RBAC |
+| `auth.iap` middleware alias | `AuthenticateIap` (501) | Identity-Aware Proxy header verification |
+| `auth.mtls` middleware alias | `AuthenticateMtls` (501) | Client certificate / device trust |
+
+Supporting public types (frozen): `App\DTO\Security\LoginContext`, `App\DTO\Security\RiskScore`, `App\Enums\AccessRiskLevel`, `App\Enums\PolicyDecision`.
+
 ### 9.5 API & CSP Services
 
 - `App\Services\ApiRateLimitService`

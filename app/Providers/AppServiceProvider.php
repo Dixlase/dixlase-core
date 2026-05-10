@@ -44,6 +44,9 @@ use App\Contracts\Logging\LogServiceInterface;
 use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Plugin\PluginPermissionServiceInterface;
 use App\Contracts\Plugin\SignatureVerifierInterface;
+use App\Contracts\Security\PolicyEvaluatorInterface;
+use App\Contracts\Security\RiskEvaluatorInterface;
+use App\Contracts\Security\SecretProviderInterface;
 use App\Contracts\Site\SiteContextInterface;
 use App\Contracts\Theme\ThemePermissionServiceInterface;
 use App\Contracts\TwoFa\TwoFaPasskeyServiceInterface;
@@ -58,6 +61,9 @@ use App\Services\MailService;
 use App\Services\Plugin\CoreSignatureVerifier;
 use App\Services\Plugin\PluginPermissionService;
 use App\Services\RouteSlugRegistry;
+use App\Services\Security\EnvSecretProvider;
+use App\Services\Security\LowRiskEvaluator;
+use App\Services\Security\NullPolicyEvaluator;
 use App\Services\Site\SettingDefinitionRegistry;
 use App\Services\Site\SiteContext;
 use App\Services\Theme\ThemePermissionService;
@@ -143,6 +149,15 @@ class AppServiceProvider extends ServiceProvider
         // Bind SiteContext as singleton so the resolved current site
         // persists across the request lifecycle.
         $this->app->singleton(SiteContextInterface::class, SiteContext::class);
+
+        // Reserved Zero Trust extension points (Phase 1 stubs). Plugins or
+        // operator integrations rebind these to deliver actual managed-secret,
+        // conditional-access, and ABAC behaviour. The default implementations
+        // are all no-ops by design — they preserve current behaviour exactly.
+        // See docs/development/extension-points.md.
+        $this->app->bind(SecretProviderInterface::class, EnvSecretProvider::class);
+        $this->app->bind(RiskEvaluatorInterface::class, LowRiskEvaluator::class);
+        $this->app->bind(PolicyEvaluatorInterface::class, NullPolicyEvaluator::class);
 
         // Default I18n missing-translation policy: 302 redirect to the
         // site's primary locale. Any multilingual plugin (first-party,
