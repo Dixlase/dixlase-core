@@ -108,6 +108,68 @@ For operators running Dixlase in security-sensitive environments:
 - Install plugins only from sources you trust; the static scanner is a safety net, not a guarantee.
 - Subscribe to security advisories for the plugins you install (each plugin maintainer is responsible for their own advisories).
 
+## Reverse-proxy / IAP deployment
+
+Dixlase reads `X-Forwarded-*` headers only from upstream IPs declared in `TRUSTED_PROXIES`. This is security-critical: if an untrusted IP is allowed to set `X-Forwarded-For`, an attacker on the public internet can spoof their source IP and bypass admin IP allow-lists.
+
+### Default posture
+
+Out of the box, `TRUSTED_PROXIES` is **unset** and Dixlase trusts no proxies. `$request->ip()` returns the actual TCP source. Forwarded headers from any upstream are ignored. This is the safe default for operators running Dixlase on a public IP without a reverse proxy.
+
+### Required configuration when running behind a proxy / CDN / IAP
+
+If Dixlase is deployed behind any of:
+
+- A CDN (Cloudflare, Cloudfront, Fastly, …)
+- A reverse proxy (Nginx, Traefik, Envoy, HAProxy, …)
+- An Identity-Aware Proxy (Cloudflare Access, Google IAP, Pomerium, Zscaler, …)
+- A managed load balancer (AWS ALB, GCP HTTPS LB, …)
+
+…you **must** populate `TRUSTED_PROXIES` in `.env` with the upstream IPs or CIDR ranges. Otherwise:
+
+- `$request->ip()` returns the upstream's IP, not the real client IP.
+- HTTPS detection (`FORCE_SSL`, `HSTS`, secure cookies) breaks because `X-Forwarded-Proto` is ignored.
+- Admin IP allow-lists become a no-op (every request looks like it comes from the same upstream).
+- Audit logs lose source-IP fidelity.
+
+### Worked example: Cloudflare
+
+Cloudflare publishes its IP ranges at <https://www.cloudflare.com/ips/>. As of writing the IPv4 list is:
+
+```
+TRUSTED_PROXIES=173.245.48.0/20,103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,141.101.64.0/18,108.162.192.0/18,190.93.240.0/20,188.114.96.0/20,197.234.240.0/22,198.41.128.0/17,162.158.0.0/15,104.16.0.0/13,104.24.0.0/14,172.64.0.0/13,131.0.72.0/22
+```
+
+Operators should source the current list from Cloudflare directly and refresh on a cadence (Cloudflare adds ranges occasionally).
+
+### Worked example: single internal reverse proxy
+
+Single Nginx in front of Dixlase, running on `10.0.0.5`:
+
+```
+TRUSTED_PROXIES=10.0.0.5
+```
+
+Or trust the whole internal subnet:
+
+```
+TRUSTED_PROXIES=10.0.0.0/8
+```
+
+### `*` is for development only
+
+`TRUSTED_PROXIES=*` disables the upstream authenticity check and trusts forwarded headers from any source. This is acceptable in local Docker development where every reachable upstream is the operator's machine, but **never** in a deployment exposed to a network the operator does not control.
+
+### Admin IP allow-list is supplementary
+
+The admin IP allow-list (`Admin → Settings → Security → IP`) is a defense-in-depth layer, not a sole admin protection. Even with `TRUSTED_PROXIES` correctly set, IP allow-listing is brittle (mobile networks, ISP NAT, working from a new location). The recommended deployment pattern is:
+
+1. Identity-Aware Proxy (Cloudflare Access, Google IAP, …) as the primary admin gate.
+2. Strong authentication (WebAuthn / TOTP) inside Dixlase as the second gate.
+3. IP allow-list as an additional optional layer for high-risk environments.
+
+A separate `docs/operations/iap.md` operator guide will be published as IAP integration plugins land in v0.2+. Until then the configuration above is sufficient.
+
 ## Scope
 
 ### In Scope
