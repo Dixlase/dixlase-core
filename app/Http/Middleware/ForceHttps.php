@@ -40,7 +40,13 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Middleware to redirect HTTP requests to HTTPS when FORCE_SSL is enabled
+ * Redirect HTTP to HTTPS when FORCE_SSL is enabled, and emit the
+ * Strict-Transport-Security header when HSTS is configured.
+ *
+ * HSTS is intentionally OFF by default — see config/security.php "hsts"
+ * block for the rationale and the recommended escalation path. The header
+ * is only attached to responses that are themselves served over HTTPS;
+ * sending it on plain HTTP is pointless (the browser ignores it).
  */
 class ForceHttps
 {
@@ -56,6 +62,17 @@ class ForceHttps
 
     public function handle(Request $request, Closure $next): Response
     {
+        $response = $this->handleHttpsRedirect($request, $next);
+
+        return $this->applyHstsHeader($request, $response);
+    }
+
+    /**
+     * Apply the HTTP→HTTPS redirect logic, returning the next response if
+     * the request is already secure or excluded.
+     */
+    protected function handleHttpsRedirect(Request $request, Closure $next): Response
+    {
         if (! config('app.force_ssl')) {
             return $next($request);
         }
@@ -66,12 +83,62 @@ class ForceHttps
         }
 
         // Skip if already HTTPS or HTTPS via reverse proxy
-        if ($request->isSecure() || $request->header('X-Forwarded-Proto') === 'https') {
+        if ($this->requestIsSecure($request)) {
             return $next($request);
         }
 
         // Redirect HTTP request to HTTPS (301 Permanent Redirect)
         return redirect()->secure($request->getRequestUri(), 301);
+    }
+
+    /**
+     * Attach the Strict-Transport-Security header when HSTS is configured
+     * and the request was served over HTTPS. No-op otherwise.
+     */
+    protected function applyHstsHeader(Request $request, Response $response): Response
+    {
+        $maxAge = (int) config('security.hsts.max_age', 0);
+
+        if ($maxAge <= 0) {
+            return $response;
+        }
+
+        // HSTS is meaningful only over HTTPS. We deliberately skip
+        // attaching the header on plain-HTTP responses — browsers ignore
+        // it there, and emitting it would mask misconfigurations.
+        if (! $this->requestIsSecure($request)) {
+            return $response;
+        }
+
+        $directives = ['max-age='.$maxAge];
+
+        if ((bool) config('security.hsts.include_subdomains', false)) {
+            $directives[] = 'includeSubDomains';
+        }
+
+        if ((bool) config('security.hsts.preload', false)) {
+            $directives[] = 'preload';
+        }
+
+        $response->headers->set('Strict-Transport-Security', implode('; ', $directives));
+
+        return $response;
+    }
+
+    /**
+     * Detect HTTPS, including the reverse-proxy / IAP case where
+     * X-Forwarded-Proto carries the original scheme.
+     *
+     * Note: X-Forwarded-Proto is only honoured when the upstream proxy is
+     * declared in TRUSTED_PROXIES. See config/trustedproxy.php.
+     */
+    protected function requestIsSecure(Request $request): bool
+    {
+        if ($request->isSecure()) {
+            return true;
+        }
+
+        return $request->header('X-Forwarded-Proto') === 'https';
     }
 
     protected function isExcludedPath(Request $request): bool
