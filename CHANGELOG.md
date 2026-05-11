@@ -63,12 +63,57 @@ plugins and themes can rely on under the AGPL Plugin and Theme Exception (see `L
 - **Configuration structures** for plugin admin navigation, role permissions,
   database cleanup.
 
+#### Zero-trust extension points (reserved with no-op defaults)
+
+- `App\Contracts\Security\SecretProviderInterface` — pluggable secret-store backend
+  (Vault / AWS KMS / GCP KMS). Default: `App\Services\Security\EnvSecretProvider`.
+- `App\Contracts\Security\RiskEvaluatorInterface` — conditional-access risk scoring
+  hook. Default: `App\Services\Security\LowRiskEvaluator` returns `RiskScore::low()`.
+- `App\Contracts\Security\PolicyEvaluatorInterface` — ABAC hook for
+  `PermissionService`. Default: `App\Services\Security\NullPolicyEvaluator` returns
+  `null` and delegates to RBAC.
+- `App\DTO\Security\LoginContext`, `App\DTO\Security\RiskScore` — support types.
+- `App\Enums\AccessRiskLevel`, `App\Enums\PolicyDecision`.
+- `auth.iap` / `auth.mtls` middleware aliases — reserved namespace; default
+  implementations `abort(501)` until plugins replace them.
+
+#### Audit, multisite, privacy, cache, and i18n foundations
+
+- `App\Events\AuditLogCreated::SCHEMA_VERSION = 1` and `App\DTO\Audit\AuditLogPayload`
+  — frozen audit-event payload shape for SIEM subscribers.
+- `App\Contracts\Site\SiteContextInterface` and `App\Facades\SiteContext` —
+  multisite resolution boundary; the `BelongsToSite` trait scopes models to the
+  active site.
+- `App\Contracts\PluginIntegration\PrivacyDataProviderInterface`,
+  `App\DTO\PluginPrivacy\UserDataExportDTO`,
+  `App\DTO\PluginPrivacy\UserDataDeletionDTO`, and
+  `App\Enums\PluginPrivacy\DeletionMode` — GDPR right-to-access and
+  right-to-be-forgotten contract for plugins that store personal data.
+- `App\Support\Cache\CacheKey` and `App\Support\Cache\SiteScopedCacheKey` —
+  conventionalised cache-key builders that prevent collisions across core /
+  plugins / themes and partition by `site_id`.
+- `App\Contracts\TranslationResolver`,
+  `App\Contracts\I18n\MissingTranslationHandler`, and
+  `App\Traits\TranslatableTrait` — content i18n hooks for plugins that supply
+  translated rows.
+- `App\Helpers\DateTimeHelper` and the `<x-ui-datetime>` Blade component —
+  UTC-stored / `display_timezone`-rendered datetime API.
+- `App\Events\DixlaseEvents::URL_SLUG_CHANGED` and `ADMIN_URL_CHANGED` —
+  reserved hooks for redirect-class plugins; the `web` middleware group prepend
+  slot is reserved exclusively for the same plugin class (see `PLUGIN-API.md` §7.5).
+
 #### Stability infrastructure
 
 - `PLUGIN-API.md` Stability Pledge section documenting the freeze, supported version
   range, deprecation policy, and announcement channels.
 - Service class naming convention table (`*Service` / `*Registry` / `*Manager` /
   `*Resolver`) in `PLUGIN-API.md` §9.
+- Public identifier naming conventions frozen in `docs/development/naming.md`
+  (API scopes, permission keys, event names, webhook event types, audit log
+  actions, plugin capabilities, env / config keys).
+- Migration immutability gate: `php artisan dls:migration:lint` enforced as a
+  Tier 1 CI job against `database/migration-lock.json` (see
+  `docs/operations/upgrading.md` for the lock-regen procedure at release time).
 - `requires.dixlase: ^0.1.0` declared in all in-tree plugin `plugin.json` files.
 
 ### Notes for plugin authors
