@@ -80,6 +80,12 @@ class Theme extends Model
         'last_version_check',
         'update_failed_at',
         'update_failure_reason',
+        // Supply-chain defense columns (mirror Plugin model)
+        'signing_key_id',
+        'author_id',
+        'authority_key_id',
+        'installed_from_url',
+        'installation_method',
     ];
 
     /**

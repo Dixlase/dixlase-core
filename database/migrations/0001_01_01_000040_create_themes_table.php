@@ -70,6 +70,12 @@ return new class extends Migration
             // Update failure tracking
             $table->timestamp('update_failed_at')->nullable();
             $table->text('update_failure_reason')->nullable();
+            // Columns for supply chain attack protection (mirror plugins table)
+            $table->string('signing_key_id')->nullable()->index(); // Signing key ID at initial installation
+            $table->string('author_id')->nullable()->index(); // author_id from theme.json
+            $table->string('authority_key_id')->nullable(); // Authority public key ID
+            $table->string('installed_from_url')->nullable(); // Installation source URL
+            $table->string('installation_method')->nullable(); // upload/marketplace/cli/github
             $table->timestamp('installed_at')->nullable();
             $table->timestamps();
         });

@@ -117,7 +117,25 @@ docker exec dixlase-php php artisan dls:theme:migrate --force
 
 `--force` is required in production (Laravel aborts otherwise). Skip any plugin that is not installed on this site.
 
-### 4.6 Refresh caches
+### 4.6 Backfill supply-chain metadata (first-time only)
+
+If this is the first upgrade onto a release that introduced supply-chain
+columns (`signing_key_id`, `author_id`, `authority_key_id`) — typically v0.1.0
+for environments seeded against a pre-v0.1.0 development branch — populate
+the columns from the on-disk `plugin.json` / `theme.json` files:
+
+```bash
+docker exec dixlase-php php artisan dls:plugin:backfill-supply-chain --dry-run
+docker exec dixlase-php php artisan dls:plugin:backfill-supply-chain
+```
+
+The command is idempotent: it only writes to columns that are currently
+`null`, so it is safe to re-run. On subsequent upgrades this step is a
+no-op. Skip it if every plugin / theme was installed through the v0.1.0+
+admin flow (those rows already have the columns populated). See
+`docs/development/supply-chain.md` for the rationale.
+
+### 4.7 Refresh caches
 
 Caches must be rebuilt **inside the container** so paths match the container's filesystem, not the host's.
 
@@ -128,7 +146,7 @@ docker exec dixlase-php php artisan view:cache
 docker exec dixlase-php php artisan event:cache
 ```
 
-### 4.7 Rebuild frontend assets (if shipped via source)
+### 4.8 Rebuild frontend assets (if shipped via source)
 
 If the release does not include pre-built assets:
 
@@ -137,7 +155,7 @@ docker exec dixlase-vite npm ci
 docker exec dixlase-vite npm run build
 ```
 
-### 4.8 Smoke check before opening traffic
+### 4.9 Smoke check before opening traffic
 
 ```bash
 # Status: should report zero pending migrations
@@ -147,7 +165,7 @@ docker exec dixlase-php php artisan migrate:status | tail -20
 docker exec dixlase-php php artisan dls:health:check || true
 ```
 
-### 4.9 Exit maintenance mode
+### 4.10 Exit maintenance mode
 
 ```bash
 docker exec dixlase-php php artisan up

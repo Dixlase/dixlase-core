@@ -270,6 +270,13 @@ class AuditLog extends Model
 
     public const ACTION_THEME_UPDATED = 'theme_updated';
 
+    // Theme supply-chain attack defense actions (mirror plugin equivalents)
+    public const ACTION_THEME_SIGNING_KEY_CHANGED = 'theme_signing_key_changed';
+
+    public const ACTION_THEME_AUTHOR_ID_CHANGED = 'theme_author_id_changed';
+
+    public const ACTION_THEME_FILE_INTEGRITY_FAILED = 'theme_file_integrity_failed';
+
     // ========================================
     // Action constants - Backup related
     // ========================================
