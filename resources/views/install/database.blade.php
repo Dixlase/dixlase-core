@@ -91,7 +91,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             this.connectionSuccess = false;
         }
     }
-}">
+}" x-init="$watch('driver', () => onDriverChange()); onDriverChange()">
 <form action="{{ route('install.database.store') }}" method="POST" class="space-y-6">
     @csrf
 
