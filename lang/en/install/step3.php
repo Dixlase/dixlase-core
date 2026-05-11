@@ -52,6 +52,7 @@ return [
     'db_username' => 'Database Username',
     'db_password' => 'Database Password',
     'db_password_required' => 'Database password is required.',
+    'db_database_sqlite_help' => 'For SQLite, enter an absolute path. The file is created automatically if it does not exist.',
 
     'preserve_database' => 'Do not reset database',
     'preserve_database_help' => 'If checked, existing data will be preserved and only necessary updates will be applied. If unchecked, all existing data will be deleted during installation.',
