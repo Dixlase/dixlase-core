@@ -166,6 +166,19 @@ Source: `PluginHealthScorer` using `PluginHealthStatus::getDeductionRules()`
 |-------------------------|-----------|------------------------------------------------|
 | `file.outside_scope`    | -20       | File operations outside plugin directory       |
 
+#### Supply-Chain Metadata
+
+| Rule Key                       | Deduction | Description                                                          |
+|--------------------------------|-----------|----------------------------------------------------------------------|
+| `missing_author_id`            | -3        | `author_id` is absent from `plugin.json`                             |
+| `missing_authority_key_id`     | -3        | `authority_key_id` is absent from `plugin.json`                      |
+
+Both fields are required for the supply-chain attack defense flow (see
+[Supply-Chain Metadata for Plugin Authors](supply-chain-metadata.md) and
+[Supply-Chain Defense Data Layer](../supply-chain.md)). Without them the
+version-history change-flag logic cannot detect a hijacked update because
+there is no canonical prior owner to compare against.
+
 ### Critical Issues
 
 The following issues immediately set the health status to `NeedsAttention` regardless of score:

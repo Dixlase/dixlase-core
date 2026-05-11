@@ -117,7 +117,25 @@ docker exec dixlase-php php artisan dls:theme:migrate --force
 
 本番環境では `--force` が必須（付けない場合 Laravel が中断する）。サイトにインストールされていないプラグインはスキップする。
 
-### 4.6 キャッシュを更新
+### 4.6 サプライチェーンメタデータの backfill（初回のみ）
+
+サプライチェーン列（`signing_key_id`、`author_id`、`authority_key_id`）を
+導入したリリース（典型的には v0.1.0、それ以前の開発ブランチで seed された
+環境）への初回アップグレードでは、ディスク上の `plugin.json` / `theme.json`
+から列を埋める:
+
+```bash
+docker exec dixlase-php php artisan dls:plugin:backfill-supply-chain --dry-run
+docker exec dixlase-php php artisan dls:plugin:backfill-supply-chain
+```
+
+コマンドは idempotent — 現在 `null` の列にしか書き込まないため、複数回
+実行しても安全。以降のアップグレードでは no-op。すべてのプラグイン
+/ テーマが v0.1.0+ の管理画面からインストールされた環境では、行に既に列が
+埋まっているのでスキップして良い。背景は `docs/development/supply-chain.md`
+参照。
+
+### 4.7 キャッシュを更新
 
 キャッシュは**必ずコンテナ内**で再生成する。ホスト側で実行するとコンテナ内のパスと不一致になりエラーとなる。
 
@@ -128,7 +146,7 @@ docker exec dixlase-php php artisan view:cache
 docker exec dixlase-php php artisan event:cache
 ```
 
-### 4.7 フロントエンドアセットをビルド（ソース配布の場合）
+### 4.8 フロントエンドアセットをビルド（ソース配布の場合）
 
 リリース物にビルド済みアセットが含まれていない場合:
 
@@ -137,7 +155,7 @@ docker exec dixlase-vite npm ci
 docker exec dixlase-vite npm run build
 ```
 
-### 4.8 トラフィック開放前の動作確認
+### 4.9 トラフィック開放前の動作確認
 
 ```bash
 # マイグレーション状況: 未実行が 0 件であることを確認
@@ -147,7 +165,7 @@ docker exec dixlase-php php artisan migrate:status | tail -20
 docker exec dixlase-php php artisan dls:health:check || true
 ```
 
-### 4.9 メンテナンスモード解除
+### 4.10 メンテナンスモード解除
 
 ```bash
 docker exec dixlase-php php artisan up

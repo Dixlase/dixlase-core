@@ -35,6 +35,7 @@
 
 namespace App\Http\Controllers\Admin\Settings;
 
+use App\Helpers\AdminHelper;
 use App\Helpers\ComposerLocalHelper;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\GitIgnoreHelper;
@@ -42,8 +43,10 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\AdminThemeDeleteRequest;
 use App\Http\Requests\Admin\Settings\AdminThemeInstallRequest;
 use App\Http\Requests\Admin\Settings\AdminThemeUploadRequest;
+use App\Models\AuditLog;
 use App\Models\Theme;
 use App\Models\ThemeAudit;
+use App\Models\ThemeVersionHistory;
 use App\Presenters\Admin\ExtensionCardPresenter;
 use App\Services\ExtensionOperationService;
 use App\Services\Theme\ThemeHealthScorer;
@@ -561,6 +564,18 @@ class AdminThemesSettingsController extends AdminLoggedInController
             // Get installed themes and perform audit and notification
             $theme = Theme::where('directory', $themeDir)->first();
             if ($theme) {
+                // Capture supply-chain metadata from theme.json
+                $this->persistSupplyChainMetadata($theme, 'install');
+
+                // Record version history (install: no old values)
+                $this->recordVersionHistory(
+                    theme: $theme,
+                    oldVersion: null,
+                    oldSigningKeyId: null,
+                    oldAuthorId: null,
+                    installationMethod: ThemeVersionHistory::METHOD_INSTALL,
+                );
+
                 // Run audit after installation
                 $this->runThemeAudit($theme->slug);
 
@@ -1315,6 +1330,11 @@ class AdminThemesSettingsController extends AdminLoggedInController
             // Download new version ZIP
             $zipPath = $manager->download($slug, 'theme', $newVersion);
 
+            // Save metadata before update (for history recording)
+            $oldVersion = $theme->version;
+            $oldSigningKeyId = $theme->signing_key_id;
+            $oldAuthorId = $theme->author_id;
+
             // Backup current directory
             if (File::exists($themePath)) {
                 File::move($themePath, $backupPath);
@@ -1335,6 +1355,18 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 'available_version' => null,
                 'last_version_check' => now(),
             ]);
+
+            // Refresh supply-chain metadata from new theme.json
+            $this->persistSupplyChainMetadata($theme, 'update');
+
+            // Record version history (update)
+            $this->recordVersionHistory(
+                theme: $theme,
+                oldVersion: $oldVersion,
+                oldSigningKeyId: $oldSigningKeyId,
+                oldAuthorId: $oldAuthorId,
+                installationMethod: ThemeVersionHistory::METHOD_UPDATE,
+            );
 
             // Delete backup
             if (File::exists($backupPath)) {
@@ -1366,6 +1398,134 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 File::deleteDirectory($originalPath);
             }
             File::move($backupPath, $originalPath);
+        }
+    }
+
+    /**
+     * Extract supply-chain defense metadata from theme.json and save to Theme.
+     *
+     * Mirror of AdminPluginsSettingsController::persistSupplyChainMetadata().
+     *
+     * @param  string  $installationMethod  "upload" / "marketplace" / "cli" / "github"
+     */
+    protected function persistSupplyChainMetadata(Theme $theme, string $installationMethod, ?string $sourceUrl = null): void
+    {
+        $themeJsonPath = base_path("themes/{$theme->directory}/theme.json");
+        if (! File::exists($themeJsonPath)) {
+            return;
+        }
+
+        try {
+            $data = json_decode(File::get($themeJsonPath), true);
+            if (json_last_error() !== JSON_ERROR_NONE || ! is_array($data)) {
+                return;
+            }
+
+            $theme->update([
+                'author_id' => $data['author_id'] ?? null,
+                'authority_key_id' => $data['authority_key_id'] ?? null,
+                'signing_key_id' => $data['signing']['key_id'] ?? null,
+                'installation_method' => $installationMethod,
+                'installed_from_url' => $sourceUrl,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Failed to persist theme supply-chain metadata', [
+                'theme' => $theme->slug,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Record theme version history and log audit if signing key or owner changes.
+     *
+     * Mirror of AdminPluginsSettingsController::recordVersionHistory(). The
+     * theme_slug column is intentionally a free string (no FK), so the row
+     * survives theme uninstall — see docs/development/supply-chain.md.
+     */
+    protected function recordVersionHistory(
+        Theme $theme,
+        ?string $oldVersion,
+        ?string $oldSigningKeyId,
+        ?string $oldAuthorId,
+        string $installationMethod,
+    ): void {
+        $newSigningKeyId = $theme->signing_key_id;
+        $newAuthorId = $theme->author_id;
+        $signingKeyChanged = $oldSigningKeyId !== null && $oldSigningKeyId !== $newSigningKeyId;
+        $authorIdChanged = $oldAuthorId !== null && $oldAuthorId !== $newAuthorId;
+
+        $member = AdminHelper::getMember();
+
+        try {
+            ThemeVersionHistory::create([
+                'theme_slug' => $theme->slug,
+                'old_version' => $oldVersion,
+                'new_version' => $theme->version,
+                'old_signing_key_id' => $oldSigningKeyId,
+                'new_signing_key_id' => $newSigningKeyId,
+                'old_author_id' => $oldAuthorId,
+                'new_author_id' => $newAuthorId,
+                'files_changed_count' => 0, // Initial release: not calculated
+                'lines_added' => 0,
+                'lines_removed' => 0,
+                'signing_key_changed' => $signingKeyChanged,
+                'author_id_changed' => $authorIdChanged,
+                'installation_method' => $installationMethod,
+                'installed_from_url' => $theme->installed_from_url,
+                'applied_by_id' => $member?->id,
+                'applied_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Failed to record theme version history', [
+                'theme' => $theme->slug,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        if ($signingKeyChanged) {
+            $this->logSupplyChainEvent($theme, AuditLog::ACTION_THEME_SIGNING_KEY_CHANGED, [
+                'old_signing_key_id' => $oldSigningKeyId,
+                'new_signing_key_id' => $newSigningKeyId,
+            ]);
+        }
+
+        if ($authorIdChanged) {
+            $this->logSupplyChainEvent($theme, AuditLog::ACTION_THEME_AUTHOR_ID_CHANGED, [
+                'old_author_id' => $oldAuthorId,
+                'new_author_id' => $newAuthorId,
+            ]);
+        }
+    }
+
+    /**
+     * Log supply-chain defense events to audit log.
+     *
+     * @param  array<string, mixed>  $context
+     */
+    protected function logSupplyChainEvent(Theme $theme, string $action, array $context = []): void
+    {
+        try {
+            $fullContext = array_merge([
+                'theme_slug' => $theme->slug,
+                'theme_name' => $theme->name,
+                'theme_version' => $theme->version,
+            ], $context);
+
+            \App\Facades\Audit::log([
+                'category' => AuditLog::CATEGORY_SYSTEM,
+                'action' => $action,
+                'target' => $theme,
+                'target_label' => $theme->name,
+                'severity' => AuditLog::SEVERITY_WARNING,
+                'context' => $fullContext,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Failed to log theme supply-chain event', [
+                'theme' => $theme->slug,
+                'action' => $action,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 
