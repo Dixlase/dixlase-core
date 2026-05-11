@@ -39,6 +39,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'defaultDevice' => 'desktop',
     'outerId' => 'preview-outer',
     'innerId' => 'preview-inner',
+    // When set (e.g. '16:9'), the outer preview frame is locked to that
+    // aspect ratio of the device width and becomes a vertical scroll
+    // container instead of growing to fit the inner content height.
+    'aspectRatio' => null,
 ])
 
 <div class="relative">
@@ -101,17 +105,36 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 
     {{-- Scaling preview container --}}
-    <div class="rounded-b-lg overflow-hidden relative w-full border border-t-0 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900"
+    @php
+        // aspectRatio="W:H" → numeric ratio for the JS mixin to size the outer.
+        $previewAspectRatio = null;
+        if (is_string($aspectRatio) && str_contains($aspectRatio, ':')) {
+            [$arW, $arH] = array_map('floatval', explode(':', $aspectRatio, 2));
+            if ($arW > 0 && $arH > 0) {
+                $previewAspectRatio = $arH / $arW;
+            }
+        }
+    @endphp
+    <div class="rounded-b-lg {{ $previewAspectRatio ? 'overflow-y-auto' : 'overflow-hidden' }} relative w-full border border-t-0 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900"
+         data-preview-aspect-ratio="{{ $previewAspectRatio ?? '' }}"
          id="{{ $outerId }}" style="min-height: 300px;">
-        <div id="{{ $innerId }}"
-             data-preview-theme="{{ $appearanceMode === '1' ? 'light' : 'dark' }}"
-             @appearance-changed.window="$el.dataset.previewTheme = $event.detail.mode === '1' ? 'light' : 'dark'"
-             :style="'visibility: ' + (_previewReady ? 'visible' : 'hidden') + '; width: ' + previewDeviceWidth + 'px; transform: scale(' + previewScale + '); transform-origin: top left; margin: 0;'"
-             style="visibility: hidden;"
-             class="relative">
+        {{-- Wrapper holds the scaled bounding box of the inner content so the
+             outer scroll range matches the visually-scaled height (rather than
+             the unscaled DOM height that transform: scale leaves behind). --}}
+        <div data-preview-scroll-wrapper
+             :style="previewAspectRatio > 0
+                ? 'overflow: hidden; width: ' + (previewDeviceWidth * previewScale) + 'px; height: ' + (innerScaledHeight) + 'px;'
+                : 'overflow: visible;'">
+            <div id="{{ $innerId }}"
+                 data-preview-theme="{{ $appearanceMode === '1' ? 'light' : 'dark' }}"
+                 @appearance-changed.window="$el.dataset.previewTheme = $event.detail.mode === '1' ? 'light' : 'dark'"
+                 :style="'visibility: ' + (_previewReady ? 'visible' : 'hidden') + '; width: ' + previewDeviceWidth + 'px; transform: scale(' + previewScale + '); transform-origin: top left; margin: 0;'"
+                 style="visibility: hidden;"
+                 class="relative">
 
-            {{ $slot }}
+                {{ $slot }}
 
+            </div>
         </div>
     </div>
 </div>
@@ -131,6 +154,9 @@ window.previewContainerMixin = function(outerId = 'preview-outer', innerId = 'pr
         previewDeviceWidth: {{ $defaultDevice === 'mobile' ? 375 : ($defaultDevice === 'tablet' ? 768 : 1440) }},
         freeWidth: 1440,
         previewScale: 1,
+        innerScaledHeight: 0,
+        // 0 means "no aspect lock"; positive value is height/width ratio.
+        previewAspectRatio: {{ $previewAspectRatio !== null ? (float) $previewAspectRatio : 0 }},
         _previewReady: false,
         _containerWidth: 0,
 
@@ -145,6 +171,7 @@ window.previewContainerMixin = function(outerId = 'preview-outer', innerId = 'pr
 
             this.$nextTick(() => {
                 const outer = document.getElementById(outerId);
+                const inner = document.getElementById(innerId);
                 if (!outer) return;
 
                 const update = () => {
@@ -153,6 +180,13 @@ window.previewContainerMixin = function(outerId = 'preview-outer', innerId = 'pr
                 };
 
                 new ResizeObserver(update).observe(outer);
+                // Also recompute when the inner content height changes (e.g.
+                // user types into an inline-editable hero title, an iframe
+                // child auto-grows). transform: scale doesn't change the
+                // bounding box, so the scaled wrapper height needs syncing.
+                if (inner) {
+                    new ResizeObserver(update).observe(inner);
+                }
                 update();
             });
         },
@@ -184,9 +218,19 @@ window.previewContainerMixin = function(outerId = 'preview-outer', innerId = 'pr
                 this.previewScale = containerW / this.previewDeviceWidth;
             }
 
-            // コンテナ高さをスケーリングに合わせる
-            const scaledH = inner.scrollHeight * this.previewScale;
-            outer.style.height = Math.max(300, scaledH) + 'px';
+            // Aspect-ratio-locked mode: outer height is W*H/W of the device
+            // width (in scaled units); the outer scrolls vertically when the
+            // inner content overflows. Otherwise, outer grows to fit inner.
+            // Cache scaled inner height for the bounding-box wrapper so the
+            // scroll range tracks the *visually*-scaled content height
+            // (transform: scale doesn't change the DOM bounding box).
+            this.innerScaledHeight = inner.scrollHeight * this.previewScale;
+            if (this.previewAspectRatio > 0) {
+                const targetH = this.previewDeviceWidth * this.previewAspectRatio * this.previewScale;
+                outer.style.height = Math.max(300, targetH) + 'px';
+            } else {
+                outer.style.height = Math.max(300, this.innerScaledHeight) + 'px';
+            }
         },
     };
 };
