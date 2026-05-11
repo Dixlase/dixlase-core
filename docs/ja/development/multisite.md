@@ -116,6 +116,36 @@ $resolver->setForSite('myplugin_api_endpoint', 'https://eu.api.example.com', $si
 
 未登録キーは `UnknownSettingException` を発火する。先に登録、その後アクセス。
 
+#### Strict モードポリシー（`^0.1` で凍結）
+
+`SettingResolver::get()` は**設計として strict**: 未登録キーは
+`UnknownSettingException` を投げ、`null` / `$default`
+をサイレントに返さない。これは `^0.1` 内の Plugin API
+契約の一部であり、パッチリリースで緩和されることはない。理由:
+
+- **タイポを呼び出し位置で捕捉。** `site_namr`（`site_name` の typo）はリクエスト全体で
+  古い `null` を返し続けるのではなく、即座に失敗する。
+- **キー名の偶発的衝突を防ぐ。** プラグインがコアキーの近似名を誤って書き込むことは
+  不可能。レジストリが所有を仲介する。
+- **監査しやすい。** 正規の設定キー一覧はレジストリそのものであり、
+  「`site_settings` にたまたま入っていた何か」ではない。
+- **後で緩める方が、後で締めるよりも安全。** strict を前提とした書き方をする
+  プラグイン作者は、後の lenient 化で壊れる側にしかならない。逆方向
+  （lenient → strict）はデータをサイレントに腐らせる遷移なので、v0.1.0
+  から strict をロックインする。
+
+「設定が存在するか」を例外なしで確認したい場合は、
+`SettingDefinitionRegistry::has($key)` を先に呼ぶこと:
+
+```php
+if (app(SettingDefinitionRegistry::class)->has($key)) {
+    $value = $resolver->get($key);
+}
+```
+
+プラグイン・テーマ作者は、読み書きする全ての設定をサービスプロバイダの
+`boot()` で（値に触れる最初のリクエスト前に）必ず登録すること。
+
 ### ファイルストレージ
 
 `App\Services\Site\SiteStorage` がマルチサイト対応の Filesystem インスタンスを返す:
