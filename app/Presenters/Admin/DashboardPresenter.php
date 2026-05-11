@@ -49,6 +49,7 @@ use App\Enums\PluginHealthStatus;
 use App\Helpers\CaptchaHelper;
 use App\Helpers\ConfigHelper;
 use App\Models\AuditLog;
+use App\Models\CoreVersionHistory;
 use App\Models\FileIntegrityAudit;
 use App\Models\Member;
 use App\Models\Plugin;
@@ -484,7 +485,12 @@ class DashboardPresenter
             ],
             [
                 'label' => __('admin/dashboard.dixlase_version'),
-                'value' => config('app.version', '1.0.0'),
+                // Read from the canonical core_version_history table, which
+                // matches what `AdminFooterComposer` already feeds into the
+                // admin footer. Using config('app.version') here historically
+                // displayed the hard-coded '1.0.0' fallback because no
+                // app.version key is defined in config/app.php.
+                'value' => CoreVersionHistory::currentVersion(),
             ],
         ];
     }
