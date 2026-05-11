@@ -39,17 +39,34 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div x-data="{
+    driver: '{{ old('db_connection', session('install_data.db_connection', 'mysql')) }}',
+    sqliteDefaultPath: '{{ database_path('database.sqlite') }}',
+    mysqlDefaultDb: 'dixlase',
     connectionSuccess: false,
     testResult: '{{ __('install/step3.db_test_required') }}',
     testResultClass: 'text-red-600 dark:text-red-400',
+    onDriverChange() {
+        // Swap db_database default when the driver toggles, so the user
+        // sees a sensible starting value for each backend (a name for
+        // MySQL, an absolute path for SQLite).
+        const dbInput = document.getElementById('db_database');
+        if (! dbInput) return;
+        if (this.driver === 'sqlite' && (dbInput.value === '' || dbInput.value === this.mysqlDefaultDb)) {
+            dbInput.value = this.sqliteDefaultPath;
+        } else if (this.driver !== 'sqlite' && dbInput.value === this.sqliteDefaultPath) {
+            dbInput.value = this.mysqlDefaultDb;
+        }
+    },
     async testDatabaseConnection() {
         const formData = new FormData();
         formData.append('db_connection', document.getElementById('db_connection').value);
-        formData.append('db_host', document.getElementById('db_host').value);
-        formData.append('db_port', document.getElementById('db_port').value);
         formData.append('db_database', document.getElementById('db_database').value);
-        formData.append('db_username', document.getElementById('db_username').value);
-        formData.append('db_password', document.getElementById('db_password').value);
+        if (this.driver !== 'sqlite') {
+            formData.append('db_host', document.getElementById('db_host').value);
+            formData.append('db_port', document.getElementById('db_port').value);
+            formData.append('db_username', document.getElementById('db_username').value);
+            formData.append('db_password', document.getElementById('db_password').value);
+        }
         formData.append('_token', document.querySelector('input[name=_token]').value);
 
         try {
@@ -98,36 +115,40 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     name="db_connection"
                     :options="$dbConnectionOptions"
                     :value="old('db_connection', session('install_data.db_connection', 'mysql'))"
+                    xModel="driver"
+                    onchange="this.dispatchEvent(new Event('input'))"
                 />
             </div>
 
             @php
-                // Docker環境判定: ホスト名 'mysql' がDNS解決可能ならDocker内と判断
+                // Detect Docker by DNS-resolving the 'mysql' service hostname; inside the container it resolves, outside it does not.
                 $isDocker = gethostbyname('mysql') !== 'mysql';
                 $defaultDbHost = $isDocker ? 'mysql' : '127.0.0.1';
                 $defaultDbUser = $isDocker ? 'dixlase' : '';
                 $defaultDbPassword = $isDocker ? 'dixlase' : '';
+                $defaultDbName = old('db_database', session('install_data.db_database'))
+                    ?? (old('db_connection', session('install_data.db_connection', 'mysql')) === 'sqlite'
+                        ? database_path('database.sqlite')
+                        : 'dixlase');
             @endphp
 
-            <div>
+            <div x-show="driver !== 'sqlite'" x-cloak>
                 <x-form-label for="db_host" :text="__('install/step3.db_host')" :required="true" />
                 <x-form-text
                     name="db_host"
                     id="db_host"
                     :value="old('db_host', session('install_data.db_host', $defaultDbHost))"
-                    :required="true"
                     class="input-full"
                 />
             </div>
 
-            <div>
+            <div x-show="driver !== 'sqlite'" x-cloak>
                 <x-form-label for="db_port" :text="__('install/step3.db_port')" :required="true" />
                 <x-form-text
                     type="number"
                     name="db_port"
                     id="db_port"
                     :value="old('db_port', session('install_data.db_port', '3306'))"
-                    :required="true"
                     class="input-full"
                 />
             </div>
@@ -137,32 +158,33 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <x-form-text
                     name="db_database"
                     id="db_database"
-                    :value="old('db_database', session('install_data.db_database', 'dixlase'))"
+                    :value="$defaultDbName"
                     :required="true"
                     class="input-full"
                 />
+                <template x-if="driver === 'sqlite'">
+                    <x-form-help-text :text="__('install/step3.db_database_sqlite_help')" />
+                </template>
             </div>
 
-            <div>
+            <div x-show="driver !== 'sqlite'" x-cloak>
                 <x-form-label for="db_username" :text="__('install/step3.db_username')" :required="true" />
                 <x-form-text
                     name="db_username"
                     id="db_username"
                     :value="old('db_username', session('install_data.db_username', $defaultDbUser))"
-                    :required="true"
                     autocomplete="off"
                     class="input-full"
                 />
             </div>
 
-            <div>
+            <div x-show="driver !== 'sqlite'" x-cloak>
                 <x-form-label for="db_password" :text="__('install/step3.db_password')" :required="true" />
                 <x-form-text
                     type="password"
                     name="db_password"
                     id="db_password"
                     :value="old('db_password', $defaultDbPassword)"
-                    :required="true"
                     autocomplete="off"
                     :showPasswordToggle="true"
                     class="input-full"

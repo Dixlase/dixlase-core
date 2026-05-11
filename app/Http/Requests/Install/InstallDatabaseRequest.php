@@ -64,12 +64,18 @@ class InstallDatabaseRequest extends FormRequest
      */
     public function rules(): array
     {
+        // SQLite is a file-based driver: host / port / username / password
+        // are meaningless and Laravel's SQLite connector ignores them.
+        // Keep them optional so the wizard accepts a SQLite install even
+        // when those fields are left blank.
+        $isSqlite = $this->input('db_connection') === 'sqlite';
+
         return [
             'db_connection' => 'required|string',
-            'db_host' => 'required|string',
-            'db_port' => 'required|integer',
+            'db_host' => $isSqlite ? 'nullable|string' : 'required|string',
+            'db_port' => $isSqlite ? 'nullable|integer' : 'required|integer',
             'db_database' => 'required|string',
-            'db_username' => 'required|string',
+            'db_username' => $isSqlite ? 'nullable|string' : 'required|string',
             'db_password' => 'nullable|string',
             'preserve_data' => 'nullable|boolean',
         ];

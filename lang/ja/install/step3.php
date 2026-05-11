@@ -52,6 +52,7 @@ return [
     'db_username' => 'データベースユーザー名',
     'db_password' => 'データベースパスワード',
     'db_password_required' => 'データベースパスワードは必須です。',
+    'db_database_sqlite_help' => 'SQLite の場合は絶対パスを入力してください。ファイルが存在しなければ自動生成されます。',
 
     'preserve_database' => 'データベースをリセットしない',
     'preserve_database_help' => 'チェックを入れると、既存のデータを保持したまま必要な更新のみを適用します。チェックを外すと、インストール時に既存のデータがすべて削除されます。',
