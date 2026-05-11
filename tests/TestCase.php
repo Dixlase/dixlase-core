@@ -22,8 +22,11 @@
 
 namespace Tests;
 
+use App\Contracts\Site\SiteContextInterface;
+use Database\Seeders\SitesSeeder;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Schema;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -48,5 +51,29 @@ abstract class TestCase extends BaseTestCase
 
             return 'Database\\Factories\\'.$basename.'Factory';
         });
+
+        $this->ensurePrimarySiteSeeded();
+    }
+
+    /**
+     * Ensure the primary site exists and SiteContext is primed.
+     *
+     * Multi-site foundation (v0.1.0) adds NOT NULL site_id to most tables and
+     * BelongsToSite auto-fills it from SiteContext. Tests need a primary site
+     * seeded so that model creates do not violate the NOT NULL constraint.
+     */
+    protected function ensurePrimarySiteSeeded(): void
+    {
+        if (! Schema::hasTable('sites')) {
+            return;
+        }
+
+        (new SitesSeeder())->run();
+
+        try {
+            app(SiteContextInterface::class)->setCurrent(1);
+        } catch (\Throwable) {
+            // SiteContext binding may be unavailable in narrow Unit tests; ignore.
+        }
     }
 }

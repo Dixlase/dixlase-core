@@ -52,7 +52,6 @@ class ApiExceptionEnvelopeTest extends TestCase
 
     public function test_unmatched_api_route_returns_404_in_unified_envelope(): void
     {
-        Site::factory()->primary()->create(['id' => 1]);
 
         $response = $this->getJson('/api/v1/this-route-does-not-exist');
 
@@ -71,7 +70,6 @@ class ApiExceptionEnvelopeTest extends TestCase
         // Route::fallback() catches /api/* and 302-redirects to
         // /{locale}/api/... — the API surface must stay opaque to locale
         // routing per docs/development/api-reference/versioning.md §1.2.
-        Site::factory()->primary()->create(['id' => 1]);
 
         $response = $this->getJson('/api/v1/typo');
 
@@ -82,7 +80,6 @@ class ApiExceptionEnvelopeTest extends TestCase
 
     public function test_wrong_http_method_returns_405_in_unified_envelope(): void
     {
-        Site::factory()->primary()->create(['id' => 1]);
 
         $response = $this->postJson('/api/v1/health');
 
@@ -99,7 +96,6 @@ class ApiExceptionEnvelopeTest extends TestCase
         // The exception renderers must NOT swallow web 404s into JSON.
         // Web 404s remain Laravel's default HTML response so the admin
         // UI and front-end keep working.
-        Site::factory()->primary()->create(['id' => 1]);
 
         $response = $this->get('/this-is-not-an-api-route');
 

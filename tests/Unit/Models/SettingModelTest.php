@@ -22,8 +22,11 @@
 
 namespace Tests\Unit\Models;
 
+use App\Enums\SettingScope;
 use App\Models\SecuritySetting;
 use App\Models\SiteSetting;
+use App\Services\Site\SettingDefinition;
+use App\Services\Site\SettingDefinitionRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -35,6 +38,21 @@ use Tests\TestCase;
 class SettingModelTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // SettingResolver は strict mode で動作するため、テスト用キーを登録
+        $registry = app(SettingDefinitionRegistry::class);
+        foreach ([
+            'site_name', 'nonexistent_key', 'test_key', 'feature_enabled',
+            'login_attempt_limit_enabled', 'login_attempt_max_attempts',
+            'test_security_key', 'shared_key',
+        ] as $key) {
+            $registry->register(new SettingDefinition($key, SettingScope::Overridable));
+        }
+    }
 
     // =========================================================================
     // SiteSetting
