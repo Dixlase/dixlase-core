@@ -29,6 +29,7 @@ use App\DTO\Action\ActionResult;
 use App\Enums\Permission;
 use App\Facades\Audit;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class AbstractActionTest extends TestCase
@@ -122,6 +123,119 @@ class AbstractActionTest extends TestCase
         $result = $action->execute(new SystemActor(), []);
 
         $this->assertFalse($result->success);
+    }
+
+    public function test_validate_is_called_between_authorize_and_handle(): void
+    {
+        Audit::shouldReceive('log')->once();
+
+        $log = [];
+
+        $action = new class($log) extends AbstractAction
+        {
+            public function __construct(public array &$log) {}
+
+            protected function authorize(Actor $actor, array $data): void
+            {
+                $this->log[] = 'authorize';
+                parent::authorize($actor, $data);
+            }
+
+            protected function validate(Actor $actor, array $data): void
+            {
+                $this->log[] = 'validate';
+            }
+
+            protected function handle(Actor $actor, array $data): ActionResult
+            {
+                $this->log[] = 'handle';
+
+                return new ActionResult(
+                    success: true,
+                    targetType: 'App\\Models\\Member',
+                    targetId: 1,
+                );
+            }
+
+            protected function requiredPermission(): ?Permission
+            {
+                return null;
+            }
+
+            protected function auditAction(): string
+            {
+                return 'test.lifecycle';
+            }
+        };
+
+        $action->execute(new SystemActor(), []);
+
+        $this->assertSame(['authorize', 'validate', 'handle'], $log);
+    }
+
+    public function test_execute_aborts_when_validate_throws(): void
+    {
+        Audit::shouldReceive('log')->never();
+
+        $action = new class extends AbstractAction
+        {
+            protected function validate(Actor $actor, array $data): void
+            {
+                throw ValidationException::withMessages([
+                    'field' => 'business rule violated',
+                ]);
+            }
+
+            protected function handle(Actor $actor, array $data): ActionResult
+            {
+                return ActionResult::failure('should not reach');
+            }
+
+            protected function requiredPermission(): ?Permission
+            {
+                return null;
+            }
+
+            protected function auditAction(): string
+            {
+                return 'test.validate_fails';
+            }
+        };
+
+        $this->expectException(ValidationException::class);
+
+        $action->execute(new SystemActor(), []);
+    }
+
+    public function test_default_validate_is_noop(): void
+    {
+        Audit::shouldReceive('log')->once();
+
+        $action = new class extends AbstractAction
+        {
+            protected function handle(Actor $actor, array $data): ActionResult
+            {
+                return new ActionResult(
+                    success: true,
+                    targetType: 'App\\Models\\Member',
+                    targetId: 1,
+                );
+            }
+
+            protected function requiredPermission(): ?Permission
+            {
+                return null;
+            }
+
+            protected function auditAction(): string
+            {
+                return 'test.default_validate';
+            }
+        };
+
+        $result = $action->execute(new SystemActor(), []);
+
+        $this->assertTrue($result->success);
     }
 
     public function test_execute_allows_null_permission(): void

@@ -58,6 +58,7 @@ API signatures, backup, and deployment systems.
 
 ## Other
 
+- [Action Layer](action-layer.md) - AbstractAction lifecycle (`authorize → validate → handle → audit → events`), `ActionResult` metadata schema, and the AuditableTrait-vs-Action audit responsibility convention
 - [Public Identifier Naming Conventions](naming.md) - Naming format for API scopes, permission keys, event names, webhook event types, audit log actions, plugin capabilities, etc.
 - [Reserved Extension Points](extension-points.md) - Phase 1 reserved hooks for the Zero Trust roadmap (SecretProvider, RiskEvaluator, PolicyEvaluator, auth.iap, auth.mtls)
 - [Cache Key Convention](cache-key-convention.md) - Naming convention and Builder helper for cache keys
