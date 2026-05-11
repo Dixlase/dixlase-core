@@ -87,27 +87,43 @@ class InstallDatabaseController extends BaseInstallController
     {
         try {
             $connection = $request->input('db_connection', 'mysql');
-            $host = $request->input('db_host');
-            $port = $request->input('db_port');
             $database = $request->input('db_database');
-            $username = $request->input('db_username');
-            $password = $request->input('db_password');
 
-            config([
-                'database.connections.test_connection' => [
-                    'driver' => $connection,
-                    'host' => $host,
-                    'port' => $port,
+            if ($connection === 'sqlite') {
+                // Laravel's SQLite connector requires an absolute path
+                // and an existing file. Fall back to database/database.sqlite
+                // when the field is empty or not absolute, then create the
+                // file if it is missing so the connection test can succeed.
+                if ($database === null || $database === '' || $database[0] !== '/') {
+                    $database = database_path('database.sqlite');
+                }
+                if (! is_file($database)) {
+                    @mkdir(dirname($database), 0775, true);
+                    @touch($database);
+                }
+                $config = [
+                    'driver' => 'sqlite',
                     'database' => $database,
-                    'username' => $username,
-                    'password' => $password,
+                    'prefix' => '',
+                    'foreign_key_constraints' => true,
+                ];
+            } else {
+                $config = [
+                    'driver' => $connection,
+                    'host' => $request->input('db_host'),
+                    'port' => $request->input('db_port'),
+                    'database' => $database,
+                    'username' => $request->input('db_username'),
+                    'password' => $request->input('db_password'),
                     'charset' => 'utf8mb4',
                     'collation' => 'utf8mb4_unicode_ci',
                     'prefix' => '',
                     'strict' => true,
                     'engine' => null,
-                ],
-            ]);
+                ];
+            }
+
+            config(['database.connections.test_connection' => $config]);
 
             DB::connection('test_connection')->getPdo();
             DB::purge('test_connection');
