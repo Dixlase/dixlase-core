@@ -43,6 +43,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Install - Confirmation screen
@@ -229,6 +230,29 @@ class InstallConfirmController extends BaseInstallController
             Artisan::call('config:clear');
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.config_cache_clear_completed'));
 
+            // Artisan::call('config:clear') only deletes the cached config
+            // file on disk — it does NOT refresh $app['config'] in the
+            // current request. Artisan::call sub-kernels (migrate:fresh,
+            // db:seed) re-read .env on their own, but anything that runs
+            // directly in this controller (initializeDatabase below) would
+            // otherwise keep using the boot-time DB_CONNECTION. Force the
+            // in-memory config to match the freshly-written .env so every
+            // subsequent in-request DB call targets the chosen driver.
+            $newDriver = $data['db_connection'];
+            config([
+                'database.default' => $newDriver,
+                "database.connections.{$newDriver}.database" => $data['db_database'],
+            ]);
+            if ($newDriver !== 'sqlite') {
+                config([
+                    "database.connections.{$newDriver}.host" => $data['db_host'],
+                    "database.connections.{$newDriver}.port" => $data['db_port'],
+                    "database.connections.{$newDriver}.username" => $data['db_username'],
+                    "database.connections.{$newDriver}.password" => $dbPassword,
+                ]);
+            }
+            DB::purge();
+
             // Temporarily change session driver to file during migration
             $envPath = base_path('.env');
             $envContent = file_get_contents($envPath);
@@ -269,12 +293,12 @@ class InstallConfirmController extends BaseInstallController
             DB::purge();
             DB::reconnect();
 
-            // Debug: Get current table prefix and all tables list
+            // Debug: Get current table prefix and all tables list.
+            // Use Schema::getTableListing() so this works on every supported
+            // driver (MySQL / PostgreSQL / SQLite). The raw "SHOW TABLES" is
+            // MySQL-only and fails on SQLite with a syntax error.
             $prefix = DB::connection()->getTablePrefix();
-            $tables = DB::select('SHOW TABLES');
-            $tableNames = array_map(function ($table) {
-                return array_values((array) $table)[0];
-            }, $tables);
+            $tableNames = Schema::getTableListing();
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.db_connection_reestablished'), [
                 'prefix' => $prefix,
                 'tables_count' => count($tableNames),
@@ -546,14 +570,14 @@ class InstallConfirmController extends BaseInstallController
 
         // Administrator account processing
         Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_admin_processing'));
-        $admin = DB::connection('mysql')->table('members')->where('email', $data['admin_email'])->first();
+        $admin = DB::table('members')->where('email', $data['admin_email'])->first();
 
         $installLocale = $data['app_locale'] ?? session('install_locale', 'ja');
         Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_language_setting').$installLocale);
 
         if ($admin) {
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_existing_admin_update').$admin->id);
-            DB::connection('mysql')->table('members')
+            DB::table('members')
                 ->where('id', $admin->id)
                 ->update([
                     'account_name' => $data['admin_account_name'],
@@ -569,7 +593,7 @@ class InstallConfirmController extends BaseInstallController
             $adminMemberId = $admin->id;
         } else {
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_new_admin_started'));
-            $memberId = DB::connection('mysql')->table('members')->insertGetId([
+            $memberId = DB::table('members')->insertGetId([
                 'account_name' => $data['admin_account_name'],
                 'display_name' => $data['admin_display_name'] ?? null,
                 'email' => $data['admin_email'],
@@ -585,7 +609,7 @@ class InstallConfirmController extends BaseInstallController
             $adminMemberId = $memberId;
         }
 
-        $memberCount = DB::connection('mysql')->table('members')->count();
+        $memberCount = DB::table('members')->count();
         Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_members_total_count').$memberCount);
 
         $this->seedCoreReleaseState($adminMemberId);
@@ -602,7 +626,7 @@ class InstallConfirmController extends BaseInstallController
     {
         Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.init_db_core_releases_insertion_started'));
 
-        DB::connection('mysql')->table('core_releases')->updateOrInsert(
+        DB::table('core_releases')->updateOrInsert(
             ['id' => \App\Models\CoreRelease::PRIMARY_ID],
             [
                 'installation_method' => \App\Models\CoreVersionHistory::METHOD_INSTALL,
@@ -613,7 +637,7 @@ class InstallConfirmController extends BaseInstallController
         );
 
         $currentVersion = (string) config('app.version', '0.1.0');
-        DB::connection('mysql')->table('core_version_history')->insert([
+        DB::table('core_version_history')->insert([
             'old_version' => null,
             'new_version' => $currentVersion,
             'installation_method' => \App\Models\CoreVersionHistory::METHOD_INSTALL,
