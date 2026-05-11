@@ -40,6 +40,7 @@ namespace App\Services\Plugin;
 use App\Models\AuthorityPublicKey;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Authority public key resolver
@@ -63,7 +64,7 @@ class AuthorityPublicKeyResolver
      */
     public function resolve(string $keyId): ?AuthorityPublicKey
     {
-        $cached = AuthorityPublicKey::where('key_id', $keyId)->first();
+        $cached = $this->readCache($keyId);
 
         // If cache exists and within TTL → return as-is
         if ($cached !== null && ! $cached->isStale($this->cacheTtlHours())) {
@@ -78,6 +79,30 @@ class AuthorityPublicKeyResolver
 
         // Fetch failed → return stale cache if available (offline fallback)
         return $cached;
+    }
+
+    /**
+     * Read cached key from the DB, returning null if the underlying table is missing
+     * or the query fails for any reason.
+     *
+     * Without this guard a missed migration (authority_public_keys) would crash the
+     * entire plugin admin page via PluginHealthScorer → CoreSignatureVerifier →
+     * this resolver. Treating the failure as a cache miss lets the caller fall
+     * through to the HTTPS fetch path, and ultimately surface signatures as
+     * "pending_verification" rather than aborting the request.
+     */
+    protected function readCache(string $keyId): ?AuthorityPublicKey
+    {
+        try {
+            return AuthorityPublicKey::where('key_id', $keyId)->first();
+        } catch (Throwable $e) {
+            Log::warning('AuthorityPublicKeyResolver: cache read failed, falling back to network', [
+                'key_id' => $keyId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 
     /**
