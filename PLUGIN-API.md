@@ -1,7 +1,7 @@
 # Dixlase CMS Plugin API Boundary
 
 **Version:** dev
-**Last Updated:** 2026-05-05
+**Last Updated:** 2026-05-11
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -79,6 +79,9 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\Mail\MailServiceInterface` | Mail service contract |
 | `App\Contracts\Revisionable` | Each plugin/theme has its own revision table and Eloquent model, and by |
 | `App\Contracts\RouteSlugProvider` | Route Slug Provider Interface |
+| `App\Contracts\Security\PolicyEvaluatorInterface` | Attribute-Based Access Control (ABAC) hook for `PermissionService`. |
+| `App\Contracts\Security\RiskEvaluatorInterface` | Conditional-access risk scoring hook. |
+| `App\Contracts\Security\SecretProviderInterface` | Pluggable secret-store backend. |
 | `App\Contracts\Site\SiteContextInterface` | Provides the current site context for the request. |
 | `App\Contracts\Theme\ThemePermissionServiceInterface` | Theme permission management service interface |
 | `App\Contracts\TranslationResolver` | Translation Resolver Contract |
@@ -179,43 +182,47 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\DTO\Api\ApiResourceCollection`
 - `App\DTO\Api\ApiResourceDTO`
 
-### 4.3 Backup DTOs
+### 4.3 Audit DTOs
+
+- `App\DTO\Audit\AuditLogPayload`
+
+### 4.4 Backup DTOs
 
 - `App\DTO\Backup\BackupResultDTO`
 - `App\DTO\Backup\RestoreResultDTO`
 
-### 4.4 Editor DTOs
+### 4.5 Editor DTOs
 
 - `App\DTO\Editor\EditorInfo`
 
-### 4.5 Encryption DTOs
+### 4.6 Encryption DTOs
 
 - `App\DTO\Encryption\EncryptionResultDTO`
 
-### 4.6 Extension DTOs
+### 4.7 Extension DTOs
 
 - `App\DTO\Extension\ReleaseInfo`
 
-### 4.7 File Integrity DTOs
+### 4.8 File Integrity DTOs
 
 - `App\DTO\FileIntegrity\BaselineDTO`
 - `App\DTO\FileIntegrity\FileChangeDTO`
 - `App\DTO\FileIntegrity\ScanResultDTO`
 - `App\DTO\FileIntegrity\ScanTargetDTO`
 
-### 4.8 Logging DTOs
+### 4.9 Logging DTOs
 
 - `App\DTO\Logging\LogContextDTO`
 - `App\DTO\Logging\LogEntryDTO`
 
-### 4.9 Mail DTOs
+### 4.10 Mail DTOs
 
 - `App\DTO\Mail\MailAttachmentDTO`
 - `App\DTO\Mail\MailConfigDTO`
 - `App\DTO\Mail\MailMessageDTO`
 - `App\DTO\Mail\MailResultDTO`
 
-### 4.10 Plugin Integration DTOs
+### 4.11 Plugin Integration DTOs
 
 - `App\DTO\PluginIntegration\BlockContext`
 - `App\DTO\PluginIntegration\BlockDescriptor`
@@ -231,21 +238,26 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\DTO\PluginIntegration\SearchQueryDTO`
 - `App\DTO\PluginIntegration\SeoMetaDTO`
 
-### 4.11 Plugin Privacy DTOs
+### 4.12 Plugin Privacy DTOs
 
 - `App\DTO\PluginPrivacy\UserDataDeletionDTO`
 - `App\DTO\PluginPrivacy\UserDataExportDTO`
 
-### 4.12 Plugin DTOs
+### 4.13 Plugin DTOs
 
 - `App\DTO\Plugin\CapabilityResolutionResult`
 - `App\DTO\Plugin\DeclaresVerificationResult`
 - `App\DTO\Plugin\EnabledPluginRecord`
 - `App\DTO\Plugin\SignatureVerificationResult`
 
-### 4.13 RouteSlug DTOs
+### 4.14 RouteSlug DTOs
 
 - `App\DTO\RouteSlug\RegisteredSlug`
+
+### 4.15 Security DTOs
+
+- `App\DTO\Security\LoginContext`
+- `App\DTO\Security\RiskScore`
 
 ---
 
@@ -253,6 +265,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 ### 5.1 System Enums
 
+- `App\Enums\AccessRiskLevel`
 - `App\Enums\ActorType`
 - `App\Enums\AppearanceMode`
 - `App\Enums\AuthenticationMode`
@@ -263,6 +276,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\Enums\LogLevel`
 - `App\Enums\LoginIdentifierMode`
 - `App\Enums\Permission`
+- `App\Enums\PolicyDecision`
 - `App\Enums\SettingScope`
 
 ### 5.2 User/Role Enums
@@ -539,18 +553,6 @@ The remaining services are accessed via their respective interfaces (see Section
 - `App\Services\TwoFa\TwoFaRecoveryCodeService`
 - `App\Services\EmailAuthenticationService`
 
-**Reserved extension points** (Zero Trust roadmap, Phase 1). Default implementations are no-ops; plugins may rebind to deliver actual behaviour. See [`docs/development/extension-points.md`](docs/development/extension-points.md) for signatures, semantics, and replacement patterns.
-
-| Contract / Alias | Default | Purpose |
-|---|---|---|
-| `App\Contracts\Security\SecretProviderInterface` | `EnvSecretProvider` | Pluggable secret-store backend (Vault / KMS / GCP SM target) |
-| `App\Contracts\Security\RiskEvaluatorInterface` | `LowRiskEvaluator` | Conditional-access risk scoring |
-| `App\Contracts\Security\PolicyEvaluatorInterface` | `NullPolicyEvaluator` | ABAC hook layered on RBAC |
-| `auth.iap` middleware alias | `AuthenticateIap` (501) | Identity-Aware Proxy header verification |
-| `auth.mtls` middleware alias | `AuthenticateMtls` (501) | Client certificate / device trust |
-
-Supporting public types (frozen): `App\DTO\Security\LoginContext`, `App\DTO\Security\RiskScore`, `App\Enums\AccessRiskLevel`, `App\Enums\PolicyDecision`.
-
 ### 9.5 API & CSP Services
 
 - `App\Services\ApiRateLimitService`
@@ -616,13 +618,11 @@ the full format reference, tag rules, and worked examples.
 
 ### 9.8 Events
 
-- `App\Events\AuditLogCreated` — Audit log creation event (for SIEM integration and plugin hooks). Delivers a frozen, versioned `App\DTO\Audit\AuditLogPayload` accessible as `$event->payload`. Schema version constant: `AuditLogCreated::SCHEMA_VERSION`. Field-by-field schema and compatibility policy: [`docs/development/api-reference/events.md`](docs/development/api-reference/events.md#29-auditlogcreated-event-frozen-dto-payload).
+- `App\Events\AuditLogCreated` — Audit log creation event (for SIEM integration and plugin hooks). Delivers a frozen, versioned `App\DTO\Audit\AuditLogPayload` as `$event->payload`. Schema version: `AuditLogCreated::SCHEMA_VERSION`.
 - `App\Events\SecurityAlertEvent` — Security alert event
 - `App\Events\DixlaseEvents` — Constants for all core event names that plugins can listen to (see below)
 
 **Event name constants** (`App\Events\DixlaseEvents::*`): plugins may use any of the following constants as `Event::listen()` targets. The class is part of the Plugin API; constant additions are non-breaking. Removing a constant follows the deprecation policy.
-
-> Naming format for event strings is defined in [`docs/development/naming.md`](docs/development/naming.md#event-names).
 
 | Category | Constants |
 |---|---|
@@ -818,8 +818,6 @@ class PluginNameServiceProvider extends ServiceProvider
 ```
 
 ### 12.4 plugin.json Schema
-
-> Naming formats for `slug`, `capabilities`, and `permissions` keys are defined in [`docs/development/naming.md`](docs/development/naming.md).
 
 ```json
 {
