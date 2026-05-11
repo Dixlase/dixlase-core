@@ -77,6 +77,7 @@ plugins/*
 !plugins/DixlaseInquiry/
 !plugins/DixlaseLegal/
 !plugins/DixlaseMenus/
+!plugins/DixlaseOfficialDocs/
 !plugins/DixlasePages/
 !plugins/DixlaseRedirects/
 !plugins/DixlaseSEO/
