@@ -45,14 +45,8 @@ class PluginActivationSyncTest extends TestCase
     {
         parent::setUp();
 
-        $this->primarySite = Site::create([
-            'slug' => 'main',
-            'name' => 'Main Site',
-            'primary_locale' => 'en',
-            'timezone' => 'UTC',
-            'is_primary' => true,
-            'is_active' => true,
-        ]);
+        // Primary site is auto-seeded by TestCase::ensurePrimarySiteSeeded()
+        $this->primarySite = Site::query()->where('is_primary', true)->firstOrFail();
     }
 
     public function test_enabling_plugin_creates_activation_row(): void

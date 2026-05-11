@@ -231,7 +231,6 @@ class ApiKeyModelTest extends TestCase
 
     public function test_is_network_key_distinguishes_site_and_network(): void
     {
-        Site::factory()->primary()->create(['id' => 1]);
 
         $networkKey = ApiKey::generateNetworkKey('Network')['model'];
         $this->assertTrue($networkKey->isNetworkKey());
@@ -250,7 +249,6 @@ class ApiKeyModelTest extends TestCase
 
     public function test_has_network_scope_requires_network_and_scope(): void
     {
-        Site::factory()->primary()->create(['id' => 1]);
 
         $networkKey = ApiKey::generateNetworkKey('Network', [ApiKey::SCOPE_READ_CONTENT])['model'];
         $this->assertTrue($networkKey->hasNetworkScope(ApiKey::SCOPE_READ_CONTENT));
@@ -286,7 +284,6 @@ class ApiKeyModelTest extends TestCase
 
     public function test_validate_rejects_site_key_for_different_site(): void
     {
-        Site::factory()->primary()->create(['id' => 1]);
 
         // Site key bound to site_id = 1
         $plain = 'dxl_live_'.str_repeat('a', 32);

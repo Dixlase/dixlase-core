@@ -37,7 +37,6 @@ class BaseApiResourceTest extends TestCase
 
     public function test_single_resource_wraps_data_with_meta_and_links(): void
     {
-        Site::factory()->primary()->create(['id' => 1]);
 
         $resource = new FixtureItemResource((object) ['id' => 42, 'label' => 'foo']);
         $request = Request::create('https://example.com/api/v1/items/42', 'GET');
@@ -52,7 +51,6 @@ class BaseApiResourceTest extends TestCase
 
     public function test_resource_collection_omits_pagination_meta_for_plain_arrays(): void
     {
-        Site::factory()->primary()->create(['id' => 1]);
 
         $items = new Collection([
             (object) ['id' => 1, 'label' => 'a'],
@@ -75,7 +73,6 @@ class BaseApiResourceTest extends TestCase
 
     public function test_resource_collection_includes_pagination_block_for_paginators(): void
     {
-        Site::factory()->primary()->create(['id' => 1]);
 
         $items = collect([
             (object) ['id' => 1, 'label' => 'a'],

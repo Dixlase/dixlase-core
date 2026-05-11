@@ -205,7 +205,6 @@ class AuthenticateApiKeyTest extends TestCase
 
     public function test_error_envelope_has_unified_structure_with_meta_block(): void
     {
-        Site::factory()->primary()->create(['id' => 1]);
 
         $request = Request::create('/api/test', 'GET');
 
@@ -227,7 +226,6 @@ class AuthenticateApiKeyTest extends TestCase
 
     public function test_network_key_use_writes_audit_log_entry(): void
     {
-        Site::factory()->primary()->create(['id' => 1]);
 
         $apiKeyData = ApiKey::generateNetworkKey('Network Auth', [ApiKey::SCOPE_READ_CONTENT]);
 
@@ -253,7 +251,6 @@ class AuthenticateApiKeyTest extends TestCase
 
     public function test_site_key_use_does_not_write_network_audit_log_entry(): void
     {
-        Site::factory()->primary()->create(['id' => 1]);
 
         $apiKeyData = ApiKey::generate('Site Auth', ApiKey::ENV_TEST, [ApiKey::SCOPE_READ_CONTENT]);
 

@@ -55,7 +55,6 @@ class HealthTest extends TestCase
 
     public function test_health_endpoint_returns_unified_envelope_with_status_and_version(): void
     {
-        Site::factory()->primary()->create(['id' => 1]);
 
         $response = $this->getJson('/api/v1/health');
 
@@ -71,7 +70,6 @@ class HealthTest extends TestCase
 
     public function test_health_endpoint_is_unauthenticated(): void
     {
-        Site::factory()->primary()->create(['id' => 1]);
 
         // No Authorization header — must still succeed.
         $response = $this->getJson('/api/v1/health');

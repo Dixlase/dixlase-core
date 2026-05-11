@@ -82,14 +82,13 @@ class DashboardTest extends TestCase
      */
     public function test_dashboard_has_security_overview_data(): void
     {
+        // securityOverview は siteHealth に統合された
         $user = Member::factory()->create();
 
         $response = $this->actingAs($user, 'member')->get(route('admin.dashboard'));
 
-        $response->assertViewHas('securityOverview');
-        $securityOverview = $response->viewData('securityOverview');
-        $this->assertIsArray($securityOverview);
-        $this->assertCount(5, $securityOverview);
+        $response->assertViewHas('siteHealth');
+        $this->assertIsArray($response->viewData('siteHealth'));
     }
 
     /**
@@ -101,10 +100,11 @@ class DashboardTest extends TestCase
 
         $response = $this->actingAs($user, 'member')->get(route('admin.dashboard'));
 
-        $response->assertViewHas('mailStatus');
-        $mailStatus = $response->viewData('mailStatus');
-        $this->assertArrayHasKey('status', $mailStatus);
-        $this->assertArrayHasKey('mailer', $mailStatus);
+        // mailStatus は siteHealth 内の 'mail' エントリに統合された
+        $response->assertViewHas('siteHealth');
+        $items = $response->viewData('siteHealth');
+        $mail = collect($items)->firstWhere('key', 'mail');
+        $this->assertNotNull($mail, 'siteHealth に mail エントリが含まれていること');
     }
 
     /**
@@ -116,9 +116,11 @@ class DashboardTest extends TestCase
 
         $response = $this->actingAs($user, 'member')->get(route('admin.dashboard'));
 
-        $response->assertViewHas('captchaStatus');
-        $captchaStatus = $response->viewData('captchaStatus');
-        $this->assertArrayHasKey('status', $captchaStatus);
+        // captchaStatus は siteHealth 内の 'captcha' エントリに統合された
+        $response->assertViewHas('siteHealth');
+        $items = $response->viewData('siteHealth');
+        $captcha = collect($items)->firstWhere('key', 'captcha');
+        $this->assertNotNull($captcha, 'siteHealth に captcha エントリが含まれていること');
     }
 
     /**
