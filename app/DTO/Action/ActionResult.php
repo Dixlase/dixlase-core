@@ -42,10 +42,29 @@ namespace App\DTO\Action;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Standardized result returned by all Actions
+ * Standardized result returned by all Actions.
  *
- * Carries the outcome of an Action execution including
- * the affected model, audit target info, and optional message.
+ * Carries the outcome of an Action execution including the affected model,
+ * audit target info, and optional message.
+ *
+ * ## Reserved `$metadata` keys (Plugin API contract)
+ *
+ * The metadata array is intentionally untyped, but the following keys are
+ * **reserved** and have a fixed shape within `^0.1`. Plugins should write to
+ * them when applicable and may read them from results returned by core actions.
+ *
+ * | Key            | Shape                                                                                | Purpose                                                                       |
+ * |----------------|--------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+ * | `diff`         | `array<string, array{from: mixed, to: mixed}>`                                       | Field-level diff for UPDATE actions.                                          |
+ * | `before`       | `array<string, mixed>`                                                               | Pre-change attribute snapshot.                                                |
+ * | `after`        | `array<string, mixed>`                                                               | Post-change attribute snapshot.                                               |
+ * | `changes`      | `array<string, mixed>`                                                               | Subset of `after` limited to the changed attributes.                          |
+ * | `warnings`     | `array<int, string>`                                                                 | Non-fatal issues raised during `handle()` (e.g. "skipped 2 invalid rows").    |
+ * | `side_effects` | `array<int, array{type: string, target: string, ...}>`                               | Secondary operations performed (cache invalidations, notifications, …).       |
+ *
+ * Additional keys are allowed but should be prefixed with the plugin slug
+ * (for example `dixlase_pages.revision_id`) to avoid future collisions when
+ * core introduces new reserved keys.
  */
 final readonly class ActionResult
 {
@@ -56,7 +75,7 @@ final readonly class ActionResult
      * @param  string|null  $targetType  Audit log target class name
      * @param  int|string|null  $targetId  Audit log target ID
      * @param  string|null  $targetLabel  Audit log target display label
-     * @param  array<string, mixed>  $metadata  Additional data for callers
+     * @param  array<string, mixed>  $metadata  Additional data for callers; see the class docblock for reserved keys
      */
     public function __construct(
         public bool $success,

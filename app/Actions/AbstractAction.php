@@ -50,24 +50,50 @@ use Illuminate\Support\Facades\DB;
 /**
  * Base class for all CMS actions.
  *
- * Provides a template method pattern: authorize → execute → audit → events.
- * Subclasses implement the specific business logic in handle().
- * Plugins/themes may extend this class to define their own auditable actions.
+ * Plugins and themes may extend this class to define their own auditable actions.
+ *
+ * ## Lifecycle (template method)
+ *
+ * Each call to {@see execute()} runs the following steps in order:
+ *
+ *   1. {@see authorize()}   — permission check against the Actor.
+ *   2. {@see validate()}    — business-rule validation that cannot be expressed
+ *                              in a Form Request (cross-field, state-machine,
+ *                              site-scoped uniqueness, etc.). No-op by default.
+ *   3. {@see handle()}      — the action body. Subclasses MUST implement this.
+ *                              Wrapped in a DB transaction unless
+ *                              {@see useTransaction()} returns false.
+ *   4. {@see audit()}       — write an audit log entry on success.
+ *   5. {@see dispatchEvents()} — fire any domain events.
+ *
+ * The lifecycle order is part of the Plugin API contract. New steps will not
+ * be inserted between existing ones within `^0.1`.
+ *
+ * ## Audit responsibility
+ *
+ * Actions are the canonical audit producer for the operations they own.
+ * If a model touched inside {@see handle()} also uses {@see \App\Traits\AuditableTrait},
+ * the trait will fire its own log entry on save, producing a duplicate. Wrap such
+ * saves with `$model->withoutAudit(fn () => $model->save())` so the action's
+ * richer business-level entry is the single source of truth. See
+ * `docs/development/action-layer.md` for the full convention.
  */
 abstract class AbstractAction implements ActionInterface
 {
     /**
-     * Execute the action with authorization, transaction, and audit logging
+     * Execute the action with authorization, validation, transaction, and audit logging
      *
      * @param  Actor  $actor  The entity performing the operation
      * @param  array<string, mixed>  $data  Validated input data
      * @return ActionResult The result of the operation
      *
      * @throws AuthorizationException
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function execute(Actor $actor, array $data): ActionResult
     {
         $this->authorize($actor, $data);
+        $this->validate($actor, $data);
 
         $result = $this->useTransaction()
             ? DB::transaction(fn () => $this->handle($actor, $data))
@@ -119,6 +145,25 @@ abstract class AbstractAction implements ActionInterface
                 "Actor [{$actor->getActorType()}:{$actor->getActorName()}] lacks permission [{$permission->value}]."
             );
         }
+    }
+
+    /**
+     * Validate input data and business rules between authorize() and handle().
+     *
+     * Default implementation is a no-op. Override in subclasses for checks
+     * that cannot be expressed in a Form Request — cross-field consistency,
+     * state-machine transitions, site-scoped uniqueness, etc.
+     *
+     * Throw {@see \Illuminate\Validation\ValidationException} to abort with a
+     * 422-style error. Other exceptions propagate as-is.
+     *
+     * @param  array<string, mixed>  $data
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    protected function validate(Actor $actor, array $data): void
+    {
+        // No-op by default.
     }
 
     /**

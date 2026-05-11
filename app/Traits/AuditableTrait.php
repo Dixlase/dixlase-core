@@ -64,6 +64,14 @@ use App\Models\AuditLog;
  *     protected ?string $auditPluginName = 'my-plugin';
  * }
  * ```
+ *
+ * ## Coexistence with the Action layer
+ *
+ * If a model that uses this trait is also touched inside an `App\Actions\AbstractAction`
+ * subclass, the trait and the action both write `audit_logs` rows, producing a
+ * duplicate. The convention is that the action owns the audit log; suppress the
+ * trait inside the action by wrapping the save with `$model->withoutAudit(...)`.
+ * See `docs/development/action-layer.md` for the full responsibility table.
  */
 trait AuditableTrait
 {

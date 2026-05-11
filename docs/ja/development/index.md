@@ -58,6 +58,7 @@ API署名、バックアップ、デプロイシステムです。
 
 ## その他
 
+- [Action レイヤー](action-layer.md) - AbstractAction のライフサイクル（`authorize → validate → handle → audit → events`）、`ActionResult` メタデータスキーマ、AuditableTrait と Action の監査責務の使い分け
 - [公開識別子の命名規約](naming.md) - API スコープ、permission キー、イベント名、Webhook event type、監査ログ action、プラグインケイパビリティ等の命名フォーマット
 - [予約された拡張ポイント](extension-points.md) - ゼロトラストロードマップ Phase 1 で予約されたフック（SecretProvider、RiskEvaluator、PolicyEvaluator、auth.iap、auth.mtls）
 - [キャッシュキー命名規約](cache-key-convention.md) - キャッシュキーの命名規約と Builder ヘルパー
