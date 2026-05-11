@@ -135,11 +135,16 @@ export default defineConfig(({ command }) => ({
                 '**/storage/framework/cache/**', // キャッシュファイルの監視を無効化（リロードループ防止）
             ],
         },
-        // HMRの設定
+        // HMR settings.
+        // clientPort is the port the BROWSER connects to (host-side mapping).
+        // It is read from VITE_HMR_CLIENT_PORT so each environment (Dev/Brand/
+        // Docs/Demo/Sandbox) can map its own forwarded host port without
+        // touching this file. The container itself still binds on 5173
+        // internally; only the URL announced to the browser changes.
         hmr: {
-            host: 'localhost',    // ブラウザがアクセスするホスト(ホストOSから見た名前)
-            port: 5173,
-            protocol: 'wss',      // HTTPS/WSS を使用
+            host: 'localhost',
+            clientPort: parseInt(process.env.VITE_HMR_CLIENT_PORT || '5173', 10),
+            protocol: 'wss',
         },
     },
     resolve: {

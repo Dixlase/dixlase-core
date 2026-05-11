@@ -63,7 +63,11 @@ class CspReportController extends Controller
         'vite/client',
         '@react-refresh',
         'hot-update',
-        ':5173',            // Default port for Vite dev server
+        ':5173',            // Default Vite port (sandbox / fresh setup)
+        ':41173',           // Dixlase dev environment Vite port
+        ':42173',           // Dixlase brand environment Vite port
+        ':43174',           // Dixlase docs environment Vite port
+        ':44173',           // Dixlase demo environment Vite port
         'node_modules/.vite',
         'node_modules/vite',
         // Other development tools
