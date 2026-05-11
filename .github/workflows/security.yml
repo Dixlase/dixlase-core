@@ -32,15 +32,19 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: Composer Audit
+      - name: Composer Audit (capture report)
         run: composer audit --format=json > composer-audit.json || true
 
       - name: Upload audit results
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: composer-audit
           path: composer-audit.json
           retention-days: 30
+
+      - name: Composer Audit (gate build)
+        run: composer audit --no-dev
 
   npm-audit:
     name: NPM Security Audit
@@ -59,15 +63,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: NPM Audit
+      - name: NPM Audit (capture report)
         run: npm audit --json > npm-audit.json || true
 
       - name: Upload audit results
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: npm-audit
           path: npm-audit.json
           retention-days: 30
+
+      - name: NPM Audit (gate build on high severity)
+        run: npm audit --audit-level=high
 
   # ============================================
   # PHPStan Static Analysis
