@@ -55,8 +55,17 @@ use InvalidArgumentException;
  *                set() with explicit site_id writes to site_settings,
  *                set() without site_id writes to global_settings
  *
+ * ## Strict-mode policy (frozen for `^0.1`)
+ *
  * All keys must be registered in SettingDefinitionRegistry; unregistered
- * keys raise UnknownSettingException.
+ * keys raise UnknownSettingException. This is intentional: strict mode
+ * catches typos at the call site, prevents accidental key shadowing
+ * between plugins and core, and keeps the registry as the canonical
+ * source of truth. The policy will not be loosened within `^0.1`; if
+ * you need to probe existence without raising, call
+ * SettingDefinitionRegistry::has($key) first.
+ *
+ * See docs/development/multisite.md for the full rationale.
  */
 class SettingResolver
 {

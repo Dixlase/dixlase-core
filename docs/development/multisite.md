@@ -116,6 +116,38 @@ $resolver->setForSite('myplugin_api_endpoint', 'https://eu.api.example.com', $si
 
 Unregistered keys raise `UnknownSettingException`. Register first, then access.
 
+#### Strict-mode policy (frozen for `^0.1`)
+
+`SettingResolver::get()` is **strict by design**: an unregistered key raises
+`UnknownSettingException` rather than silently returning `null` / `$default`.
+This is part of the Plugin API contract within `^0.1` and will not be loosened
+in a patch release. The rationale:
+
+- **Catches typos at the call site.** `site_namr` instead of `site_name` fails
+  immediately rather than masking a stale `null` for the lifetime of the
+  request.
+- **Prevents accidental key shadowing.** A plugin can never write to a
+  near-name of a core key by accident; the registry mediates ownership.
+- **Audit-friendly.** The list of canonical setting keys is the registry,
+  not "whatever showed up in `site_settings`".
+- **Easier to loosen later than tighten.** Plugin authors who depend on
+  strict behaviour today would be broken by a later switch to lenient
+  fallback; the reverse migration (lenient → strict) is the one that
+  silently rots data, so we lock in strict from v0.1.0.
+
+If you need to probe whether a setting exists without raising, use
+`SettingDefinitionRegistry::has($key)` first:
+
+```php
+if (app(SettingDefinitionRegistry::class)->has($key)) {
+    $value = $resolver->get($key);
+}
+```
+
+Plugin and theme authors must register every setting they read or write in a
+service provider (typically `boot()`), before the first request that touches
+the value.
+
 ### File storage
 
 `App\Services\Site\SiteStorage` returns Filesystem instances rooted at the multisite-aware tree:
