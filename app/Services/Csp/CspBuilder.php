@@ -143,12 +143,25 @@ class CspBuilder
      */
     protected function addViteDevServerDirectives(array $directives): array
     {
-        if (! file_exists(public_path('hot'))) {
+        $hotFile = public_path('hot');
+        if (! file_exists($hotFile)) {
             return $directives;
         }
 
-        $viteHost = env('VITE_DEV_SERVER_URL', 'https://localhost:5173');
-        $viteWs = 'wss://'.parse_url($viteHost, PHP_URL_HOST).':'.parse_url($viteHost, PHP_URL_PORT);
+        // Prefer the URL Vite announced via the hot file. It already
+        // reflects the host-side port the browser is actually loading
+        // from (e.g. 41173 in dev, 42173 in brand, etc.), so the CSP
+        // automatically tracks per-environment Vite port overrides
+        // without needing a separate config knob. Fall back to env /
+        // default only when the hot file is unreadable or malformed.
+        $viteHost = trim((string) @file_get_contents($hotFile));
+        if ($viteHost === '' || parse_url($viteHost, PHP_URL_HOST) === null) {
+            $viteHost = env('VITE_DEV_SERVER_URL', 'https://localhost:5173');
+        }
+
+        $host = parse_url($viteHost, PHP_URL_HOST);
+        $port = parse_url($viteHost, PHP_URL_PORT);
+        $viteWs = 'wss://'.$host.($port !== null ? ':'.$port : '');
 
         $viteDirectives = [
             'script-src' => [$viteHost],
