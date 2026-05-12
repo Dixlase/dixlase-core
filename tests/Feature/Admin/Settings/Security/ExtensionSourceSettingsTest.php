@@ -105,6 +105,7 @@ class ExtensionSourceSettingsTest extends TestCase
                 'extension_security_preset' => 'balanced',
                 'extension_plugin_max_health_level' => 1,
                 'extension_theme_max_health_level' => 2,
+                'extension_audit_max_age_days' => 30,
                 'extension_permission_mismatch_action' => 'warn',
                 'extension_source_type' => 'github',
                 'extension_update_check_interval' => 43200,
@@ -126,6 +127,7 @@ class ExtensionSourceSettingsTest extends TestCase
                 'extension_security_preset' => 'balanced',
                 'extension_plugin_max_health_level' => 1,
                 'extension_theme_max_health_level' => 2,
+                'extension_audit_max_age_days' => 30,
                 'extension_permission_mismatch_action' => 'warn',
                 'extension_source_type' => 'unknown_source',
                 'extension_update_check_interval' => 86400,
@@ -142,6 +144,7 @@ class ExtensionSourceSettingsTest extends TestCase
                 'extension_security_preset' => 'balanced',
                 'extension_plugin_max_health_level' => 1,
                 'extension_theme_max_health_level' => 2,
+                'extension_audit_max_age_days' => 30,
                 'extension_permission_mismatch_action' => 'warn',
                 'extension_source_type' => 'github',
                 'extension_update_check_interval' => 9999,
@@ -202,7 +205,8 @@ class ExtensionSourceSettingsTest extends TestCase
             ]);
 
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrors('type');
+        $response->assertJsonPath('error.code', 'validation_failed');
+        $response->assertJsonStructure(['error' => ['details' => ['type']]]);
     }
 
     public function test_test_source_uses_config_values(): void

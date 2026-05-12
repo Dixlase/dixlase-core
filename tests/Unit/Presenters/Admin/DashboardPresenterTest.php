@@ -235,6 +235,15 @@ class DashboardPresenterTest extends TestCase
      */
     public function test_system_info_returns_three_items(): void
     {
+        // Seed a CoreVersionHistory row so the dixlase version is non-empty.
+        \App\Models\CoreVersionHistory::query()->create([
+            'old_version' => null,
+            'new_version' => '0.1.0',
+            'installation_method' => \App\Models\CoreVersionHistory::METHOD_INSTALL,
+            'applied_at' => now(),
+        ]);
+        \App\Models\CoreVersionHistory::forgetCurrentVersionCache();
+
         $result = DashboardPresenter::systemInfo();
 
         $this->assertCount(3, $result);

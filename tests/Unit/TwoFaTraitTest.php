@@ -22,11 +22,14 @@
 
 namespace Tests\Unit;
 
-use App\Enums\TwoFaMethod;
 use App\Enums\AuthenticationMode;
+use App\Enums\SettingScope;
+use App\Enums\TwoFaMethod;
 use App\Models\Member;
 use App\Models\MemberTwoFaToken;
 use App\Models\SecuritySetting;
+use App\Services\Site\SettingDefinition;
+use App\Services\Site\SettingDefinitionRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -41,6 +44,15 @@ class TwoFaTraitTest extends TestCase
     {
         parent::setUp();
         $this->service = new TestTwoFactorService();
+
+        // Register 2FA-related setting keys so SettingResolver strict mode
+        // does not throw UnknownSettingException during this trait's reads.
+        $registry = app(SettingDefinitionRegistry::class);
+        foreach (['enabled_two_fa_methods'] as $key) {
+            if (! $registry->has($key)) {
+                $registry->register(new SettingDefinition($key, SettingScope::Overridable));
+            }
+        }
     }
 
     /**

@@ -76,6 +76,7 @@ class AdminIpLockoutTest extends TestCase
 
         SecuritySetting::setValue('login_attempt_limit_enabled', true);
         SecuritySetting::setValue('login_attempt_max_attempts', 3);
+        SecuritySetting::setValue('login_attempt_max_attempts_ip', 6);
         SecuritySetting::setValue('login_attempt_time_window', 15);
         SecuritySetting::setValue('login_attempt_lockout_duration', 30);
     }
