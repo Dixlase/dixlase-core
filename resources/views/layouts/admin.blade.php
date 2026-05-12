@@ -111,6 +111,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                      ro.observe($el);
                      window.addEventListener('resize', update);
                  ">
+                <x-ui-admin-demo-banner />
                 <x-ui-admin-maintenance-banner />
                 <x-security.safe-mode-banner />
                 <x-ui-system-banner />
