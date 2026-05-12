@@ -83,11 +83,13 @@ class CheckInstallationReady
 
         try {
             // If .env file does not exist, copy from .env.example to generate it
+            $freshlyCreated = false;
             if (! file_exists($envPath)) {
                 if (file_exists($envExamplePath)) {
                     $copied = copy($envExamplePath, $envPath);
                     if ($copied) {
                         chmod($envPath, 0664);
+                        $freshlyCreated = true;
                         Log::channel('install')->info('.env file was created from .env.example');
                     } else {
                         Log::error('Failed to copy .env.example to .env');
@@ -97,6 +99,16 @@ class CheckInstallationReady
                     Log::error('.env.example file not found');
                     throw new \RuntimeException('.env.example file not found. Please create one.');
                 }
+            }
+
+            // On first creation, overwrite the placeholder APP_URL with a value
+            // derived from the current request so the installer's asset() / route()
+            // helpers emit URLs that match the scheme the browser is using.
+            // Without this, a site served via HTTPS behind a reverse proxy ends up
+            // with APP_URL=http://localhost from .env.example, which breaks CSP
+            // and causes mixed-content warnings on the install screens.
+            if ($freshlyCreated) {
+                $this->seedAppUrl($request, $envPath);
             }
 
             // Get .env file contents
@@ -218,6 +230,89 @@ class CheckInstallationReady
         }
 
         return $next($request);
+    }
+
+    /**
+     * Overwrite the placeholder APP_URL in a freshly-created .env so the
+     * installer issues correct asset / route URLs from the very first request.
+     *
+     * Scheme detection order:
+     *   1. $request->isSecure() — honours TRUSTED_PROXIES if set
+     *   2. X-Forwarded-Proto header — read raw, since trusted proxies are
+     *      typically not yet configured during the install bootstrap
+     *   3. Cloudflare CF-Visitor JSON
+     *   4. Fallback to $request->getScheme()
+     *
+     * The host is read from $request->getHttpHost() which already respects
+     * X-Forwarded-Host when the proxy is trusted, and falls back to the Host
+     * header otherwise.
+     */
+    private function seedAppUrl(Request $request, string $envPath): void
+    {
+        $scheme = $this->detectRequestScheme($request);
+        $host = $request->getHttpHost();
+        if ($host === '') {
+            return;
+        }
+
+        $appUrl = $scheme.'://'.$host;
+
+        $envContent = file_get_contents($envPath);
+        if ($envContent === false) {
+            return;
+        }
+
+        $updatedContent = preg_replace(
+            '/^APP_URL=.*$/m',
+            'APP_URL='.$appUrl,
+            $envContent,
+            -1,
+            $count
+        );
+
+        if ($count === 0) {
+            $updatedContent .= "\nAPP_URL=".$appUrl."\n";
+        }
+
+        $written = file_put_contents($envPath, $updatedContent, LOCK_EX);
+        if ($written !== false) {
+            config(['app.url' => $appUrl]);
+            if (function_exists('opcache_invalidate')) {
+                opcache_invalidate($envPath, true);
+            }
+            Log::channel('install')->info('APP_URL was seeded from current request', [
+                'app_url' => $appUrl,
+            ]);
+        } else {
+            Log::warning('Failed to seed APP_URL in .env');
+        }
+    }
+
+    /**
+     * Detect the public scheme of the current request, even when the
+     * application is behind a reverse proxy whose IP is not yet listed in
+     * TRUSTED_PROXIES (which is the typical situation during initial install).
+     */
+    private function detectRequestScheme(Request $request): string
+    {
+        if ($request->isSecure()) {
+            return 'https';
+        }
+
+        $forwardedProto = $request->headers->get('X-Forwarded-Proto');
+        if (is_string($forwardedProto) && strtolower(trim(explode(',', $forwardedProto)[0])) === 'https') {
+            return 'https';
+        }
+
+        $cfVisitor = $request->headers->get('CF-Visitor');
+        if (is_string($cfVisitor) && $cfVisitor !== '') {
+            $decoded = json_decode($cfVisitor, true);
+            if (is_array($decoded) && ($decoded['scheme'] ?? null) === 'https') {
+                return 'https';
+            }
+        }
+
+        return $request->getScheme() ?: 'http';
     }
 
     /**
