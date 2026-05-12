@@ -69,4 +69,24 @@ return [
 
     'license_url' => env('DIXLASE_LICENSE_URL', 'https://www.gnu.org/licenses/agpl-3.0.html'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Demo Mode
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, the DemoGuard middleware blocks destructive admin
+    | actions (plugin / theme install / uninstall, mail server config,
+    | maintenance toggle, etc.) and the application forces the default
+    | mail transport to "log" so inquiry forms and notification emails
+    | are written to the log file instead of being delivered.
+    |
+    | Intended for public demo deployments (e.g., demo.dixlase.org) where
+    | many anonymous visitors share the same Dixlase install and must not
+    | be able to mutate state that affects other tenants or send mail
+    | from the host's domain.
+    |
+    */
+
+    'demo_mode' => filter_var(env('DIXLASE_DEMO_MODE', false), FILTER_VALIDATE_BOOLEAN),
+
 ];
