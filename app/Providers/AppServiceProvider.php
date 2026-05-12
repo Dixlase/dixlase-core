@@ -208,6 +208,15 @@ class AppServiceProvider extends ServiceProvider
             return;
         }
 
+        // Demo mode: route every mailer through Laravel's log driver so
+        // inquiry forms, password resets, and other notification flows
+        // remain functional but never deliver real email to the outside
+        // world. The admin's "mail server settings" page is also blocked
+        // by DemoGuard, so this override cannot be undone from the UI.
+        if (config('dixlase.demo_mode')) {
+            config(['mail.default' => 'log']);
+        }
+
         // Disable Vite's CSP nonce feature (use custom implementation)
         // This prevents Vite from generating its own nonce
         config(['vite.csp_nonce' => false]);
