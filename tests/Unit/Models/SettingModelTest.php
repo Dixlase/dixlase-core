@@ -82,7 +82,8 @@ class SettingModelTest extends TestCase
     {
         SiteSetting::setValue('test_key', 'test_value');
 
-        $this->assertDatabaseHas('site_settings', [
+        // Overridable scope without explicit site_id writes globally via SettingResolver.
+        $this->assertDatabaseHas('global_settings', [
             'name' => 'test_key',
             'value' => 'test_value',
         ]);
@@ -123,7 +124,8 @@ class SettingModelTest extends TestCase
     {
         SecuritySetting::setValue('test_security_key', 'secure_value');
 
-        $this->assertDatabaseHas('security_settings', [
+        // Multisite consolidation moved SecuritySetting storage to global_settings.
+        $this->assertDatabaseHas('global_settings', [
             'name' => 'test_security_key',
             'value' => 'secure_value',
         ]);
@@ -133,12 +135,16 @@ class SettingModelTest extends TestCase
     // 設定の分離
     // =========================================================================
 
-    public function test_base_and_security_settings_are_independent(): void
+    public function test_base_and_security_settings_share_storage_after_consolidation(): void
     {
+        // After v0.1.0 multisite consolidation, SiteSetting and SecuritySetting
+        // both delegate to SettingResolver and share the same backing store
+        // (global_settings for Global/Overridable scopes). The historical
+        // "independence" guarantee no longer holds — the last write wins.
         SiteSetting::setValue('shared_key', 'base_value');
         SecuritySetting::setValue('shared_key', 'security_value');
 
-        $this->assertEquals('base_value', SiteSetting::getValue('shared_key'));
+        $this->assertEquals('security_value', SiteSetting::getValue('shared_key'));
         $this->assertEquals('security_value', SecuritySetting::getValue('shared_key'));
     }
 }

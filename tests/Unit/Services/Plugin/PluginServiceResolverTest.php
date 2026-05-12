@@ -39,8 +39,23 @@ class PluginServiceResolverTest extends TestCase
     {
         parent::setUp();
 
+        // Real service providers (AppServiceProvider, plugin providers) may
+        // tag implementations under 'plugin.capabilities'. Clear that tag so
+        // this unit test sees only the explicitly registered mocks.
+        $this->clearCapabilityTag();
+
         $this->permissionService = Mockery::mock(PluginPermissionService::class);
         $this->resolver = new PluginServiceResolver($this->permissionService);
+    }
+
+    private function clearCapabilityTag(): void
+    {
+        $reflection = new \ReflectionClass($this->app);
+        $tagsProp = $reflection->getProperty('tags');
+        $tagsProp->setAccessible(true);
+        $tags = $tagsProp->getValue($this->app);
+        unset($tags[PluginServiceResolver::CAPABILITY_TAG]);
+        $tagsProp->setValue($this->app, $tags);
     }
 
     /**

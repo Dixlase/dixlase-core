@@ -79,10 +79,13 @@ class AdminSecuritySessionUpdateTest extends TestCase
         $this->assertEquals(config('session.lifetime', 120), $lifetime);
     }
 
-    public function test_session_encrypt_falls_back_to_config_when_no_db_value(): void
+    public function test_session_encrypt_falls_back_to_default_when_no_db_value(): void
     {
+        // SecuritySettingDefinitions registers session_encrypt with default=true,
+        // which the resolver returns when no explicit DB row exists. ConfigHelper
+        // treats that as authoritative.
         $encrypt = ConfigHelper::getSessionEncrypt();
-        $this->assertFalse($encrypt);
+        $this->assertTrue($encrypt);
     }
 
     public function test_session_lifetime_update_overwrites_previous_value(): void

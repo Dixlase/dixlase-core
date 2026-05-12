@@ -89,6 +89,14 @@ class AdminTwoFaFlowTest extends TestCase
         SiteSetting::setValue('mail_connection_tested', true);
         SiteSetting::setValue('mail_send_tested', true);
         SiteSetting::setValue('mail_receive_tested', true);
+
+        // TwoFaHelper::isMailConfigured() reads via ConfigHelper, which prefers
+        // SiteSetting DB values over config(). Populate the keys it checks so
+        // the helper recognises mail as configured.
+        SiteSetting::setValue('mail_mailer', 'log');
+        SiteSetting::setValue('mail_host', 'smtp.test');
+        SiteSetting::setValue('mail_port', 587);
+        SiteSetting::setValue('mail_from_address', 'noreply@example.test');
     }
 
     protected function tearDown(): void

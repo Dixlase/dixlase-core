@@ -299,9 +299,9 @@ class TwoFaRecoveryCodeServiceTest extends TestCase
         $member = Member::factory()->create();
         $this->service->generate($member);
 
-        // 生成日時を25時間前に設定
+        // Default regenerate interval is 90 hours; back-date past that.
         MemberTwoFaRecoveryCode::where('member_id', $member->id)
-            ->update(['created_at' => Carbon::now()->subHours(25)]);
+            ->update(['created_at' => Carbon::now()->subHours(91)]);
 
         $result = $this->service->canRegenerate($member);
 
