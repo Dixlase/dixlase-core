@@ -41,6 +41,11 @@ class MissingTranslationHandlerTest extends TestCase
 
         $this->seed(SitesSeeder::class);
         DB::table('sites')->where('is_primary', true)->update(['primary_locale' => 'ja']);
+
+        // TestCase auto-seed primes SiteContext with the seeder's default
+        // primary_locale (config('app.locale'), which is 'en' on CI). Re-prime
+        // it after the update so currentSite() reflects the test's ja value.
+        app(\App\Contracts\Site\SiteContextInterface::class)->setCurrent(1);
     }
 
     public function test_default_handler_is_bound_in_container(): void
