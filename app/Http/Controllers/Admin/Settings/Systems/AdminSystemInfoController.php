@@ -36,6 +36,7 @@
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Models\CoreVersionHistory;
 use Illuminate\Support\Facades\DB;
 
 class AdminSystemInfoController extends AdminLoggedInController
@@ -55,7 +56,12 @@ class AdminSystemInfoController extends AdminLoggedInController
         $info = [
             'software' => [
                 'name' => config('app.name', 'Dixlase'),
-                'version' => config('app.cms_version', '1.0.0'),
+                // Read from the canonical core_version_history table, which
+                // matches what `AdminFooterComposer` already feeds into the
+                // admin footer. Using config('app.cms_version') here previously
+                // displayed the hard-coded '1.0.0' fallback because no
+                // app.cms_version key is defined in config/app.php.
+                'version' => CoreVersionHistory::currentVersion(),
             ],
             'Laravel' => [
                 'version' => app()->version(),
