@@ -200,7 +200,7 @@ class AuditLogDailySeal extends Model
      */
     public static function existsForDate(\Carbon\Carbon $date): bool
     {
-        return self::where('seal_date', $date->format('Y-m-d'))->exists();
+        return self::whereDate('seal_date', $date->format('Y-m-d'))->exists();
     }
 
     /**
@@ -208,7 +208,7 @@ class AuditLogDailySeal extends Model
      */
     public static function forDate(\Carbon\Carbon $date): ?self
     {
-        return self::where('seal_date', $date->format('Y-m-d'))->first();
+        return self::whereDate('seal_date', $date->format('Y-m-d'))->first();
     }
 
     /**

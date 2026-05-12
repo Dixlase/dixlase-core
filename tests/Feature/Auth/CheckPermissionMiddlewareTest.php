@@ -240,7 +240,9 @@ class CheckPermissionMiddlewareTest extends TestCase
 
         $response->assertStatus(403);
         $response->assertJson([
-            'message' => __('common.errors.unauthorized'),
+            'error' => [
+                'message' => __('common.errors.unauthorized'),
+            ],
         ]);
     }
 }

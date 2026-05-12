@@ -70,8 +70,9 @@ class LegalPageServiceTest extends TestCase
     {
         parent::setUp();
 
-        // テスト用のページ種別を明示的にセット（コア config が空のため）
-        config(['admin.legal-pages' => $this->testPageTypes]);
+        // Explicitly set page types because the core admin.legal config is
+        // populated by the DixlaseLegal plugin in production but not in unit tests.
+        config(['admin.legal' => $this->testPageTypes]);
 
         $this->repository = Mockery::mock(SiteSettingRepositoryInterface::class);
         $this->service = new LegalPageService($this->repository);

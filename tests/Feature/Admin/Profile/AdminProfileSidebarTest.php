@@ -167,7 +167,8 @@ class AdminProfileSidebarTest extends TestCase
             ->postJson(route('admin.profile.sidebar.update'), []);
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['hidden']);
+            ->assertJsonPath('error.code', 'validation_failed')
+            ->assertJsonStructure(['error' => ['details' => ['hidden']]]);
     }
 
     /**
@@ -181,7 +182,8 @@ class AdminProfileSidebarTest extends TestCase
             ]);
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['hidden.0', 'hidden.1']);
+            ->assertJsonPath('error.code', 'validation_failed')
+            ->assertJsonStructure(['error' => ['details' => ['hidden.0', 'hidden.1']]]);
     }
 
     /**
@@ -195,7 +197,8 @@ class AdminProfileSidebarTest extends TestCase
             ]);
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['hidden.2']);
+            ->assertJsonPath('error.code', 'validation_failed')
+            ->assertJsonStructure(['error' => ['details' => ['hidden.2']]]);
     }
 
     /**

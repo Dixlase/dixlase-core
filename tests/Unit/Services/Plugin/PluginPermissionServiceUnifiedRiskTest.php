@@ -89,9 +89,11 @@ class PluginPermissionServiceUnifiedRiskTest extends TestCase
 
         $result = $this->service->calculateUnifiedRiskLevel($permissions);
 
-        // storage.public_uploads (+2) + content.write_other_plugins (+2) = 4 → medium
-        $this->assertEquals('medium', $result['level']);
-        $this->assertEquals(4, $result['score']);
+        // storage.public_uploads_own_dir (+2) + content.write_other_plugins (0) = 2 → low.
+        // write_other_plugins is treated as a legitimate cross-plugin integration
+        // pattern, so it surfaces as an attention reason with no numeric weight.
+        $this->assertEquals('low', $result['level']);
+        $this->assertEquals(2, $result['score']);
         $this->assertNotEmpty($result['reasons']);
     }
 
