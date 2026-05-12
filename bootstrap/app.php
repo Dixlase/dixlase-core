@@ -90,6 +90,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\ApplySessionConfig::class, // Apply session settings dynamically
             \App\Http\Middleware\ContentSecurityPolicy::class, // Add CSP headers
             \App\Http\Middleware\AppendSourceCodeHeader::class, // AGPL §13: attach X-Source-Code header
+            \App\Http\Middleware\DemoGuard::class, // Block destructive admin actions when DIXLASE_DEMO_MODE is on
         ]);
 
         // Exclude CSP report endpoint from CSRF verification
