@@ -36,6 +36,13 @@ class CoreSignatureVerifierTest extends TestCase
     {
         parent::setUp();
 
+        // Pin the app locale to ja so the Japanese substrings these tests
+        // assert on (署名ファイル, 解析) match regardless of the CI env's
+        // APP_LOCALE — CI runs with APP_LOCALE=en which would otherwise emit
+        // the English translations of these messages and the substring asserts
+        // would miss.
+        app()->setLocale('ja');
+
         // Resolver をモックし、常に null を返すことで「公開鍵が取得できない」状況を
         // シミュレートする。これにより検証は PENDING で終わり、ネットワーク・DB に
         // 触れずに type/key_id 等の前段ロジックを純粋にテストできる。
