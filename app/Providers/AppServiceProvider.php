@@ -231,6 +231,30 @@ class AppServiceProvider extends ServiceProvider
             return "<?php echo view('components.livewire-scripts-without-navigate')->render(); ?>";
         });
 
+        // Force HTTPS URL generation when the request is served securely
+        // through a reverse proxy. Laravel's asset() / route() helpers default
+        // to $request->getScheme(), which returns 'http' when the proxy IP is
+        // not yet listed in TRUSTED_PROXIES — the typical situation during the
+        // initial installer hit. Honour any of:
+        //   - $request->isSecure() (trusted proxies already configured)
+        //   - APP_URL declared with the https:// scheme
+        //   - X-Forwarded-Proto header present as 'https' on the raw request
+        // so the install screens emit https:// asset / form URLs and pass CSP
+        // 'self' even before TRUSTED_PROXIES is populated in .env.
+        $appUrl = (string) config('app.url', '');
+        $forwardedProto = (string) $this->app['request']->headers->get('X-Forwarded-Proto', '');
+        $isHttpsContext = $this->app['request']->isSecure()
+            || str_starts_with($appUrl, 'https://')
+            || strtolower(trim(explode(',', $forwardedProto)[0] ?? '')) === 'https';
+
+        if ($isHttpsContext) {
+            $this->app['request']->server->set('HTTPS', true);
+            URL::forceScheme('https');
+            if ($appUrl !== '') {
+                URL::forceRootUrl($appUrl);
+            }
+        }
+
         // Check if installed (retrieve via config to support caching)
         // Use config() because env() is not updated when cached in production
         $isInstalled = config('app.installed', false) ?: env('INSTALLED', false);
