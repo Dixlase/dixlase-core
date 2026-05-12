@@ -195,6 +195,8 @@ class AdminLoginLockoutTest extends TestCase
     public function test_ip_based_lockout(): void
     {
         SecuritySetting::setValue('login_attempt_max_attempts', 2);
+        // IP cap is read from its own setting key; align with max_attempts * 2.
+        SecuritySetting::setValue('login_attempt_max_attempts_ip', 4);
 
         // 同一IPから別メールで失敗試行を4回（2 * 2 = IP上限）
         for ($i = 0; $i < 4; $i++) {

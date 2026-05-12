@@ -114,6 +114,7 @@ class SecuritySettingDefinitions
 
             // Two-factor authentication
             'two_fa_mode' => ['type' => 'string'],
+            'two_fa_passkey_enabled' => ['default' => '0', 'type' => 'string'],
             'two_fa_passkey_mode' => ['type' => 'string'],
             'default_two_fa_method' => ['default' => 0, 'type' => 'int'],
             'force_two_fa' => ['default' => false, 'type' => 'bool'],

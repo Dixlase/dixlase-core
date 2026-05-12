@@ -334,7 +334,7 @@ class AuditLogTest extends TestCase
         ]);
 
         \Illuminate\Support\Facades\Event::assertDispatched(\App\Events\AuditLogCreated::class, function ($event) {
-            return $event->auditLog->action === AuditLog::ACTION_LOGIN;
+            return $event->payload->action === AuditLog::ACTION_LOGIN;
         });
     }
 

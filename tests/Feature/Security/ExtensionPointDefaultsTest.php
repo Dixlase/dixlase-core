@@ -75,7 +75,7 @@ class ExtensionPointDefaultsTest extends TestCase
         $resolved = $this->app->make(RiskEvaluatorInterface::class);
         $this->assertInstanceOf(LowRiskEvaluator::class, $resolved);
 
-        $score = $resolved->evaluate(new LoginContext);
+        $score = $resolved->evaluate(new LoginContext());
 
         $this->assertInstanceOf(RiskScore::class, $score);
         $this->assertSame(AccessRiskLevel::Low, $score->level);
@@ -100,22 +100,26 @@ class ExtensionPointDefaultsTest extends TestCase
 
     public function test_auth_iap_middleware_aborts_with_501_by_default(): void
     {
-        $middleware = new AuthenticateIap;
+        $middleware = new AuthenticateIap();
 
-        $this->expectException(HttpException::class);
-        $this->expectExceptionCode(501);
-
-        $middleware->handle(Request::create('/admin'), fn ($request) => $request);
+        try {
+            $middleware->handle(Request::create('/admin'), fn ($request) => $request);
+            $this->fail('Expected HttpException with status 501');
+        } catch (HttpException $e) {
+            $this->assertSame(501, $e->getStatusCode());
+        }
     }
 
     public function test_auth_mtls_middleware_aborts_with_501_by_default(): void
     {
-        $middleware = new AuthenticateMtls;
+        $middleware = new AuthenticateMtls();
 
-        $this->expectException(HttpException::class);
-        $this->expectExceptionCode(501);
-
-        $middleware->handle(Request::create('/admin'), fn ($request) => $request);
+        try {
+            $middleware->handle(Request::create('/admin'), fn ($request) => $request);
+            $this->fail('Expected HttpException with status 501');
+        } catch (HttpException $e) {
+            $this->assertSame(501, $e->getStatusCode());
+        }
     }
 
     public function test_access_risk_level_ordering_is_consistent(): void
