@@ -92,9 +92,14 @@ class DemoGuard
         'admin.settings.base.mail.update',
         'admin.settings.base.maintenance.update',
 
-        // Security settings — login policy, session config, captcha,
-        // IP allowlist, extension sources, CSP, environment vars,
-        // integrity baseline, API keys
+        // Security settings — password policy, login policy, session
+        // config, captcha, IP allowlist, extension sources, CSP,
+        // environment vars, integrity baseline, API keys, error
+        // notifications (the notifications target is operator-supplied,
+        // so unrestricted edits would let a visitor redirect outbound
+        // alerts to an attacker-controlled endpoint).
+        'admin.settings.security.password.update',
+        'admin.settings.security.notifications.update',
         'admin.settings.security.login.update',
         'admin.settings.security.session.update',
         'admin.settings.security.captcha.update',
@@ -115,6 +120,13 @@ class DemoGuard
 
         // Backup / restore touches shared storage
         'admin.settings.systems.backup.*',
+
+        // System database cleanup is a one-click "delete soft-deleted
+        // rows / orphan files" action that can drop tenant data, and
+        // cache clear / rebuild mutates shared bootstrap state.
+        'admin.settings.systems.database.cleanup',
+        'admin.settings.systems.cache.clear',
+        'admin.settings.systems.cache.rebuild',
 
         // Safe-mode toggle — disabling it could unmask plugins the
         // tenant had not noticed were unsafe in the current session
