@@ -236,6 +236,10 @@ class PluginLint extends Command
             'signature_pending_verification' => __('console/commands/plugin_lint.sign_with_dixlase_signer'),
             'csp_inline_js_required' => __('console/commands/plugin_lint.add_csp_nonce_or_separate_js'),
             'csp_inline_css_required' => __('console/commands/plugin_lint.move_inline_styles_to_css'),
+            'missing_license' => 'Add a `license` field in SPDX form (e.g. "GPL-3.0-or-later", "MIT").',
+            'invalid_license_spdx' => 'Replace the license string with an SPDX identifier (see config/licensing.php for accepted values).',
+            'unknown_license' => 'Confirm with maintainers before relying on this license; add it to config/licensing.php `accepted` if it should be supported.',
+            'license_refused' => 'Pick a license listed in config/licensing.php `accepted`; the current value is incompatible with the AGPL-3.0 core.',
             default => null,
         };
     }

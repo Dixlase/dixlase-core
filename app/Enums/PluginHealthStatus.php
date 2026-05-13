@@ -211,6 +211,13 @@ enum PluginHealthStatus: string
             'missing_author_id' => -3,
             'missing_authority_key_id' => -3,
 
+            // License declaration (SPDX whitelist; see config/licensing.php
+            // for per-deployment override of these defaults)
+            'missing_license' => -10,
+            'invalid_license_spdx' => -5,
+            'unknown_license' => -3,
+            'license_refused' => -25,
+
             // Permission related
             'permission_undeclared_minor' => -5,
             'permission_undeclared_major' => -15,
@@ -248,6 +255,7 @@ enum PluginHealthStatus: string
             'signature_mismatch',
             'dangerous_api_exec',
             'permission_undeclared_major',
+            'license_refused',
         ];
 
         return in_array($issueType, $criticalIssues, true);
