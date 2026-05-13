@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "generated_at": "2026-05-13T11:04:21+00:00",
+    "generated_at": "2026-05-13T14:44:37+00:00",
     "description": "Dixlase migration immutability lockfile. Do not edit manually. Regenerate with `php artisan dls:migration:lint --lock`.",
     "files": {
         "database/migrations/0001_01_01_000000_create_site_settings_table.php": "388dd2c4f61d72422504049aa88dde7ec512b8172db33afab770ec3ddfb667c2",
@@ -58,8 +58,6 @@
         "plugins/DixlaseAuthority/database/migrations/0001_01_01_000001_create_plg_dixlase_authority_signing_keys_table.php": "1b6b27d8ad25e0302c715f6f378b1dd73f0f5f34848fbd57f311e981bfaef1b9",
         "plugins/DixlaseAuthority/database/migrations/0001_01_01_000002_create_plg_dixlase_authority_plugin_signatures_table.php": "f3a413170ea3e938ea9a88fd755d34376f0634c3ca52b396fe050e4deef54b37",
         "plugins/DixlaseAuthority/database/migrations/0001_01_01_000003_create_plg_dixlase_authority_settings_table.php": "0afd131032db61665c65ec707e34aeaaa972c86e824269a924a742fdd1e19ef2",
-        "plugins/DixlaseBlog/database/migrations/0001_01_01_000001_create_blog_plugin_posts_table.php": "eb2a546c6970f98cada8b944d30c3f0b168de4fcfe7ade8630dfd6a3d742e808",
-        "plugins/DixlaseBlog/database/migrations/0001_01_01_000002_create_blog_plugin_categoires_table.php": "7fca0fd43e8c293fdecb964534bd4c69cc867254ff25284c7c01a2fa02ba81d8",
         "plugins/DixlaseInquiry/database/migrations/0001_01_01_000001_create_inquiry_settings_table.php": "5daa8ca3a430c26d1b6cea73150d7a52b4316722f158a669a1da52ea00e087a8",
         "plugins/DixlaseInquiry/database/migrations/0001_01_01_000002_create_inquiries_table.php": "e6cf9ff8fb06ed03b84eedd9d9b26fc9df862246bc1b741a301ae77836736f50",
         "plugins/DixlaseInquiry/database/migrations/0001_01_01_000003_add_name_kana_to_inquiries_table.php": "897c200afd826109ad88f176c1e2260e6feeb8c13d0c44f3e32f57bd5b62a25d",
@@ -72,7 +70,6 @@
         "plugins/DixlaseMenus/database/migrations/0001_01_01_000003_create_menu_settings_table.php": "66efebdf18dcc337e7a81b4265aa81edecc8796c2991feb776386910e234f6b0",
         "plugins/DixlaseMenus/database/migrations/0001_01_01_000004_add_placement_type_to_menus_table.php": "afec8997155aa20ac76f63521c3b67f8bfec232c60212d33f73c97f2d42269a5",
         "plugins/DixlaseMenus/database/migrations/0001_01_01_000005_add_title_translations_to_menu_items_table.php": "c16352b5c7e615c8e18a9be68d29ba9c49666a6c969ffba5a25d966f5dcd656d",
-        "plugins/DixlaseMultilingual/database/migrations/0001_01_01_000001_create_multilingual_settings_table.php": "df7457edfc063e1bd78c2b137ddc4c9e5acacccdddfffc73439dc2b2026c58aa",
         "plugins/DixlaseOfficialDocs/database/migrations/0001_01_01_000001_create_plg_dixlase_docs_settings_table.php": "28ea51cfa44ab9bbc8e60fd82336563ee10ae20106fdd3398e5d6d6a23b0b180",
         "plugins/DixlaseOfficialDocs/database/migrations/0001_01_01_000002_create_plg_dixlase_docs_sources_table.php": "a83ef84376af7451732ecd71897a6b3f88b255b3d95eba443204a146314dbbf7",
         "plugins/DixlaseOfficialDocs/database/migrations/0001_01_01_000003_add_hidden_documents_to_plg_dixlase_docs_sources_table.php": "3197212f29088987430136976aebadc3f52591790d9e7c842473bb96e3f2ff66",
@@ -84,7 +81,6 @@
         "plugins/DixlasePages/database/migrations/0001_01_01_000004_remove_seo_columns.php": "20a3bbb0cfd52737be79a544b1f0eef409496b72eea9fd000aff7d8f2f2fba1e",
         "plugins/DixlasePages/database/migrations/0001_01_01_000005_create_dixlase_pages_revisions_table.php": "3d4488218b114e1e61bb3d1c2e675ba2472876a720b2d62915e718038886ad18",
         "plugins/DixlasePages/database/migrations/0001_01_01_000006_widen_pages_content_columns_to_longtext.php": "4b162bdcf11e87ef786d18847c7b77c45e139c7332d43d522c33f8d7eee30655",
-        "plugins/DixlaseRedirects/database/migrations/0001_01_01_000001_create_plg_dixlase_redirects_rules_table.php": "dcb75348b1144957a187be738e62f897230b3b26e28ba5bb63d4b809ee622ec7",
         "plugins/DixlaseSEO/database/migrations/2026_01_01_000000_create_dls_plg_dixlase_seo_settings_table.php": "4b97318c70d83bed6a6c94f92055335ed7059b6c0fc9fb44f6db4151b609e882",
         "plugins/DixlaseSEO/database/migrations/2026_01_02_000000_create_dls_plg_dixlase_seo_meta_table.php": "d3ddf0abc70619a423b29d83eec5074c0e83c505059a66e1ce1d4540bccbb9b0",
         "plugins/DixlaseUsers/database/migrations/0001_01_01_000000_create_dixlase_users_login_attempts_table.php": "0b5aaaf99efd2e41bcca73eeb775eb7dd92f3e49bbd527562bc4e09e62885e20",
