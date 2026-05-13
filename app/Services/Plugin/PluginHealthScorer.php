@@ -42,6 +42,7 @@ use App\Enums\ExtensionSecurityPreset;
 use App\Enums\PluginEnableAction;
 use App\Enums\PluginHealthStatus;
 use App\Models\PluginAudit;
+use App\Services\Licensing\LicenseValidator;
 use App\Services\SecuritySettingsRegistry;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -71,6 +72,7 @@ class PluginHealthScorer
 
     public function __construct(
         protected PluginPermissionService $permissionService,
+        protected LicenseValidator $licenseValidator,
     ) {}
 
     /**
@@ -133,6 +135,9 @@ class PluginHealthScorer
 
         // 7. Supply chain defense metadata evaluation (author_id / authority_key_id)
         $issues = array_merge($issues, $this->evaluateSupplyChainMetadata($pluginSlug, $deductionRules));
+
+        // 8. License declaration evaluation (SPDX whitelist)
+        $issues = array_merge($issues, $this->evaluateLicenseMetadata($pluginSlug, $deductionRules));
 
         // Calculate total score
         $totalDeduction = array_sum(array_map(fn (HealthIssue $i) => $i->deduction, $issues));
@@ -492,6 +497,86 @@ class PluginHealthScorer
         }
 
         return $issues;
+    }
+
+    /**
+     * Evaluate license declaration against the SPDX whitelist
+     *
+     * Emits a HealthIssue per problem found:
+     *   - missing_license       — `license` field is absent or empty
+     *   - invalid_license_spdx  — value does not match SPDX identifier form
+     *   - license_refused       — value is on the explicit refuse list
+     *   - unknown_license       — value looks like SPDX but is not in `accepted`
+     *
+     * Accepted values produce no issue.
+     *
+     * @return array<HealthIssue>
+     */
+    protected function evaluateLicenseMetadata(string $pluginSlug, array $deductionRules): array
+    {
+        $pluginName = \Illuminate\Support\Str::studly(str_replace('-', '_', $pluginSlug));
+        $pluginJsonPath = base_path("plugins/{$pluginName}/plugin.json");
+
+        if (! \Illuminate\Support\Facades\File::exists($pluginJsonPath)) {
+            return [];
+        }
+
+        try {
+            $data = json_decode(\Illuminate\Support\Facades\File::get($pluginJsonPath), true);
+            if (json_last_error() !== JSON_ERROR_NONE || ! is_array($data)) {
+                return [];
+            }
+        } catch (\Throwable) {
+            return [];
+        }
+
+        $license = is_string($data['license'] ?? null) ? $data['license'] : null;
+        $configDeductions = config('licensing.health_deductions', []);
+        $result = $this->licenseValidator->validate($license);
+
+        return match ($result['status']) {
+            LicenseValidator::STATUS_MISSING => [
+                new HealthIssue(
+                    type: 'missing_license',
+                    severity: 'warning',
+                    description: $result['reason'] ?? 'License field missing.',
+                    deduction: $configDeductions['missing_license']
+                        ?? $deductionRules['missing_license']
+                        ?? -10,
+                ),
+            ],
+            LicenseValidator::STATUS_INVALID_SPDX => [
+                new HealthIssue(
+                    type: 'invalid_license_spdx',
+                    severity: 'warning',
+                    description: $result['reason'] ?? 'License is not a valid SPDX identifier.',
+                    deduction: $configDeductions['invalid_license_spdx']
+                        ?? $deductionRules['invalid_license_spdx']
+                        ?? -5,
+                ),
+            ],
+            LicenseValidator::STATUS_REFUSED => [
+                new HealthIssue(
+                    type: 'license_refused',
+                    severity: 'critical',
+                    description: $result['reason'] ?? 'License is on the refused list.',
+                    deduction: $configDeductions['license_refused']
+                        ?? $deductionRules['license_refused']
+                        ?? -25,
+                ),
+            ],
+            LicenseValidator::STATUS_UNKNOWN => [
+                new HealthIssue(
+                    type: 'unknown_license',
+                    severity: 'info',
+                    description: $result['reason'] ?? 'License is not in the accepted-licenses table.',
+                    deduction: $configDeductions['unknown_license']
+                        ?? $deductionRules['unknown_license']
+                        ?? -3,
+                ),
+            ],
+            default => [],
+        };
     }
 
     /**
