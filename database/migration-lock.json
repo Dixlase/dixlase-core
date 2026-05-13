@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "generated_at": "2026-05-13T14:44:37+00:00",
+    "generated_at": "2026-05-13T16:09:47+00:00",
     "description": "Dixlase migration immutability lockfile. Do not edit manually. Regenerate with `php artisan dls:migration:lint --lock`.",
     "files": {
         "database/migrations/0001_01_01_000000_create_site_settings_table.php": "388dd2c4f61d72422504049aa88dde7ec512b8172db33afab770ec3ddfb667c2",
@@ -55,9 +55,6 @@
         "database/migrations/0001_01_01_000049_create_webhook_deliveries_table.php": "aebfa44bdd3fe4f010f4d271c11b8c20df45cd7287b09ebe809a1367adc37eb0",
         "database/migrations/0001_01_01_000050_create_webhooks_table.php": "2e5058505a4075aaae0a9ea69c233abc9185059cf91ec75b35a69840855bfacf",
         "database/migrations/0001_01_01_999999_add_foreign_key_constraints.php": "a59f2ff8babf2bb0d7180deffe945c620473e2f8f11604860b1c6627541940cb",
-        "plugins/DixlaseAuthority/database/migrations/0001_01_01_000001_create_plg_dixlase_authority_signing_keys_table.php": "1b6b27d8ad25e0302c715f6f378b1dd73f0f5f34848fbd57f311e981bfaef1b9",
-        "plugins/DixlaseAuthority/database/migrations/0001_01_01_000002_create_plg_dixlase_authority_plugin_signatures_table.php": "f3a413170ea3e938ea9a88fd755d34376f0634c3ca52b396fe050e4deef54b37",
-        "plugins/DixlaseAuthority/database/migrations/0001_01_01_000003_create_plg_dixlase_authority_settings_table.php": "0afd131032db61665c65ec707e34aeaaa972c86e824269a924a742fdd1e19ef2",
         "plugins/DixlaseInquiry/database/migrations/0001_01_01_000001_create_inquiry_settings_table.php": "5daa8ca3a430c26d1b6cea73150d7a52b4316722f158a669a1da52ea00e087a8",
         "plugins/DixlaseInquiry/database/migrations/0001_01_01_000002_create_inquiries_table.php": "e6cf9ff8fb06ed03b84eedd9d9b26fc9df862246bc1b741a301ae77836736f50",
         "plugins/DixlaseInquiry/database/migrations/0001_01_01_000003_add_name_kana_to_inquiries_table.php": "897c200afd826109ad88f176c1e2260e6feeb8c13d0c44f3e32f57bd5b62a25d",
