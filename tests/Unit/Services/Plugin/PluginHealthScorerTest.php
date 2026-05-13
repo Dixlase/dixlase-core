@@ -26,6 +26,7 @@ use App\DTO\Plugin\HealthScoreResult;
 use App\Enums\ExtensionSecurityLevel;
 use App\Enums\PluginHealthStatus;
 use App\Models\PluginAudit;
+use App\Services\Licensing\LicenseValidator;
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\Plugin\PluginPermissionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -45,7 +46,7 @@ class PluginHealthScorerTest extends TestCase
         parent::setUp();
 
         $this->permissionService = Mockery::mock(PluginPermissionService::class);
-        $this->scorer = new PluginHealthScorer($this->permissionService);
+        $this->scorer = new PluginHealthScorer($this->permissionService, new LicenseValidator());
     }
 
     /**
