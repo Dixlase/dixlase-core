@@ -315,50 +315,74 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::get('/', [Base\AdminBaseIndexController::class, 'index'])->name('index');
 
                 // Site settings
-                Route::get('/site', [Base\AdminBaseSiteController::class, 'index'])->name('site');
+                Route::get('/site', [Base\AdminBaseSiteController::class, 'index'])
+                    ->middleware('check.menu.access:settings.base.site')
+                    ->name('site');
                 Route::post('/site', [Base\AdminBaseSiteController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.site')
                     ->name('site.update');
 
                 // Admin panel settings
-                Route::get('/admin', [Base\AdminBaseAdminController::class, 'index'])->name('admin');
+                Route::get('/admin', [Base\AdminBaseAdminController::class, 'index'])
+                    ->middleware('check.menu.access:settings.base.admin')
+                    ->name('admin');
                 Route::post('/admin', [Base\AdminBaseAdminController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.admin')
                     ->name('admin.update');
 
                 // Email settings
-                Route::get('/mail', [Base\AdminBaseMailController::class, 'index'])->name('mail');
+                Route::get('/mail', [Base\AdminBaseMailController::class, 'index'])
+                    ->middleware('check.menu.access:settings.base.mail')
+                    ->name('mail');
                 Route::post('/mail', [Base\AdminBaseMailController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.mail')
                     ->name('mail.update');
-                Route::post('/mail/test-mail', [Base\AdminBaseMailController::class, 'testMail'])->name('mail.test-mail');
-                Route::post('/mail/test-connection', [Base\AdminBaseMailController::class, 'testConnection'])->name('mail.test-connection');
-                Route::post('/mail/clear-test-session', [Base\AdminBaseMailController::class, 'clearTestSession'])->name('mail.clear-test-session');
-                Route::get('/mail/check-test-session', [Base\AdminBaseMailController::class, 'checkTestSession'])->name('mail.check-test-session');
+                Route::post('/mail/test-mail', [Base\AdminBaseMailController::class, 'testMail'])
+                    ->middleware('check.menu.access:settings.base.mail')
+                    ->name('mail.test-mail');
+                Route::post('/mail/test-connection', [Base\AdminBaseMailController::class, 'testConnection'])
+                    ->middleware('check.menu.access:settings.base.mail')
+                    ->name('mail.test-connection');
+                Route::post('/mail/clear-test-session', [Base\AdminBaseMailController::class, 'clearTestSession'])
+                    ->middleware('check.menu.access:settings.base.mail')
+                    ->name('mail.clear-test-session');
+                Route::get('/mail/check-test-session', [Base\AdminBaseMailController::class, 'checkTestSession'])
+                    ->middleware('check.menu.access:settings.base.mail')
+                    ->name('mail.check-test-session');
                 Route::get('/mail/verify-mail/{token}', [Base\AdminBaseMailController::class, 'verifyMail'])->name('mail.verify-mail');
                 Route::get('/mail/mail-verification-success', [Base\AdminBaseMailController::class, 'mailVerificationSuccess'])->name('mail.mail-verification-success');
 
                 // Maintenance settings
-                Route::get('/maintenance', [Base\AdminBaseMaintenanceController::class, 'index'])->name('maintenance');
-                Route::get('/maintenance/preview', [Base\AdminBaseMaintenanceController::class, 'preview'])->name('maintenance.preview');
+                Route::get('/maintenance', [Base\AdminBaseMaintenanceController::class, 'index'])
+                    ->middleware('check.menu.access:settings.base.maintenance')
+                    ->name('maintenance');
+                Route::get('/maintenance/preview', [Base\AdminBaseMaintenanceController::class, 'preview'])
+                    ->middleware('check.menu.access:settings.base.maintenance')
+                    ->name('maintenance.preview');
                 Route::post('/maintenance', [Base\AdminBaseMaintenanceController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.maintenance')
                     ->name('maintenance.update');
 
                 // Mode settings
-                Route::get('/mode', [Base\AdminBaseModeController::class, 'index'])->name('mode');
+                Route::get('/mode', [Base\AdminBaseModeController::class, 'index'])
+                    ->middleware('check.menu.access:settings.base.mode')
+                    ->name('mode');
                 Route::post('/mode', [Base\AdminBaseModeController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.mode')
                     ->name('mode.update');
 
                 // Content settings (revision retention count, etc., common to all content types)
-                Route::get('/content', [Base\AdminBaseContentController::class, 'index'])->name('content');
+                Route::get('/content', [Base\AdminBaseContentController::class, 'index'])
+                    ->middleware('check.menu.access:settings.base.content')
+                    ->name('content');
                 Route::post('/content', [Base\AdminBaseContentController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.content')
                     ->name('content.update');
 
                 // Content editor settings
-                Route::get('/editor', [Base\AdminBaseEditorController::class, 'index'])->name('editor');
+                Route::get('/editor', [Base\AdminBaseEditorController::class, 'index'])
+                    ->middleware('check.menu.access:settings.base.editor')
+                    ->name('editor');
                 Route::post('/editor', [Base\AdminBaseEditorController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.editor')
                     ->name('editor.update');
