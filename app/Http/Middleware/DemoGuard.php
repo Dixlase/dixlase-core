@@ -57,62 +57,69 @@ class DemoGuard
      * Route names blocked under demo mode. Exact match unless the entry
      * ends with ".*", which makes it a namespace prefix match.
      *
-     * Plugin / theme routes ship with their own ::-namespaced names
-     * (e.g. "dixlase-seo::admin.seo.base.update") and are intentionally
-     * not listed here, so plugin-provided settings stay editable for
-     * visitors exploring the demo.
+     * Names are listed with the full prefix Laravel registers them
+     * under — `admin.settings.<group>.<action>.<verb>` — because
+     * routes/admin.php nests Route::name() group calls and the registered
+     * name has the full chain. Plugin / theme routes ship with their
+     * own ::-namespaced names (e.g. "dixlase-seo::admin.seo.base.update")
+     * and are intentionally not listed here, so plugin-provided settings
+     * stay editable for visitors exploring the demo.
      */
     protected const BLOCKED_ROUTE_NAMES = [
         // Plugin lifecycle on shared plugins/
-        'settings.plugins.upload',
-        'settings.plugins.download-from-source',
-        'settings.plugins.install',
-        'settings.plugins.delete',
-        'settings.plugins.update',
-        'settings.plugins.update-all',
-        'settings.plugins.add',
+        'admin.settings.plugins.upload',
+        'admin.settings.plugins.download-from-source',
+        'admin.settings.plugins.install',
+        'admin.settings.plugins.delete',
+        'admin.settings.plugins.update',
+        'admin.settings.plugins.update-all',
+        'admin.settings.plugins.add',
 
         // Theme lifecycle on shared themes/
-        'settings.themes.upload',
-        'settings.themes.download-from-source',
-        'settings.themes.install',
-        'settings.themes.delete',
-        'settings.themes.update',
-        'settings.themes.update-all',
-        'settings.themes.add',
+        'admin.settings.themes.upload',
+        'admin.settings.themes.download-from-source',
+        'admin.settings.themes.install',
+        'admin.settings.themes.delete',
+        'admin.settings.themes.update',
+        'admin.settings.themes.update-all',
+        'admin.settings.themes.add',
 
-        // Extension source registry (controls where plugins / themes
-        // can be fetched from)
-        'extensions.update',
-        'extensions.test-source',
+        // Base settings — admin URL, mail server, maintenance toggle.
+        // The mail.test-* endpoints stay open so the admin UI can still
+        // report status without exposing the ability to point the
+        // server elsewhere.
+        'admin.settings.base.admin.update',
+        'admin.settings.base.mail.update',
+        'admin.settings.base.maintenance.update',
 
-        // Mail server credentials. The mail.test-* endpoints stay open
-        // so the admin UI can still report status without exposing the
-        // ability to point the server elsewhere.
-        'mail.update',
-
-        // Mode / maintenance / safe-mode — toggling these can lock the
-        // demo session out of its own admin
-        'maintenance.update',
-        'safe-mode.disable',
-        'safe-mode.disable-all',
-
-        // Security boundaries — admin URL, IP allowlist, login policy,
-        // CSP, captcha, environment vars, integrity log
-        'admin.update',
-        'login.update',
-        'ip.update',
-        'csp.update',
-        'captcha.update',
-        'environment.update',
-        'integrity.destroy',
+        // Security settings — login policy, session config, captcha,
+        // IP allowlist, extension sources, CSP, environment vars,
+        // integrity baseline, API keys
+        'admin.settings.security.login.update',
+        'admin.settings.security.session.update',
+        'admin.settings.security.captcha.update',
+        'admin.settings.security.ip.update',
+        'admin.settings.security.extensions.update',
+        'admin.settings.security.extensions.test-source',
+        'admin.settings.security.csp.update',
+        'admin.settings.security.csp.confirm',
+        'admin.settings.security.csp.rollback',
+        'admin.settings.security.environment.update',
+        'admin.settings.security.integrity.destroy',
+        'admin.settings.security.integrity.bulk-delete',
+        'admin.settings.security.integrity.regenerate-baseline',
+        'admin.settings.security.api.update',
+        'admin.settings.security.api.generate-key',
+        'admin.settings.security.api.revoke-key',
+        'admin.settings.security.api.regenerate-key',
 
         // Backup / restore touches shared storage
-        'backup.*',
+        'admin.settings.systems.backup.*',
 
-        // API keys and session config
-        'api.update',
-        'session.update',
+        // Safe-mode toggle — disabling it could unmask plugins the
+        // tenant had not noticed were unsafe in the current session
+        'admin.safe-mode.disable',
+        'admin.safe-mode.disable-all',
     ];
 
     public function handle(Request $request, Closure $next)
