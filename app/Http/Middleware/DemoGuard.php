@@ -35,6 +35,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\MemberRole;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -143,6 +144,19 @@ class DemoGuard
         // Read-only requests always pass; the guard only blocks state
         // mutations.
         if (in_array($request->method(), ['GET', 'HEAD', 'OPTIONS'], true)) {
+            return $next($request);
+        }
+
+        // Super admins (the maintainer running the demo deployment)
+        // bypass the guard so they can still operate the host without
+        // toggling DIXLASE_DEMO_MODE off in .env. Demo visitors get a
+        // lower-privilege role (admin or below) by design, and any
+        // route that could promote them to super_admin is itself blocked
+        // by the role-management entries on the blocklist.
+        $user = $request->user();
+        if ($user !== null
+            && $user->role instanceof MemberRole
+            && $user->role === MemberRole::SUPER_ADMIN) {
             return $next($request);
         }
 
