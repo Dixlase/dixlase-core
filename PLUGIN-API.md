@@ -1,7 +1,7 @@
 # Dixlase CMS Plugin API Boundary
 
 **Version:** dev
-**Last Updated:** 2026-05-11
+**Last Updated:** 2026-05-13
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -89,7 +89,13 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\TwoFa\TwoFaPasskeyServiceInterface` | Contract for Passkey (WebAuthn) authentication service |
 | `App\Contracts\Verification\FileVerificationServiceInterface` | File integrity verification service interface |
 
-### 1.2 Plugin Integration Contracts
+### 1.2 Licensing Contracts
+
+| Contract | Description |
+|---|---|
+| `App\Contracts\Licensing\LicenseVerifierInterface` | License verification contract (reserved for marketplace Phase 2) |
+
+### 1.3 Plugin Integration Contracts
 
 | Contract | Description |
 |---|---|
@@ -105,7 +111,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\PluginIntegration\PrivacyPolicyProviderInterface` | Privacy policy provider contract |
 | `App\Contracts\PluginIntegration\SeoMetaProviderInterface` | Interface to provide read/write access to SEO meta information per content |
 
-### 1.3 Plugin Capability Contracts
+### 1.4 Plugin Capability Contracts
 
 | Contract | Description |
 |---|---|
@@ -117,7 +123,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\Plugin\PluginPermissionServiceInterface` | Contract for plugin permission management service |
 | `App\Contracts\Plugin\SignatureVerifierInterface` | Signature verification contract |
 
-### 1.4 Repository Contracts
+### 1.5 Repository Contracts
 
 | Contract | Description |
 |---|---|
@@ -210,19 +216,23 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\DTO\FileIntegrity\ScanResultDTO`
 - `App\DTO\FileIntegrity\ScanTargetDTO`
 
-### 4.9 Logging DTOs
+### 4.9 Licensing DTOs
+
+- `App\DTO\Licensing\LicenseVerificationResult`
+
+### 4.10 Logging DTOs
 
 - `App\DTO\Logging\LogContextDTO`
 - `App\DTO\Logging\LogEntryDTO`
 
-### 4.10 Mail DTOs
+### 4.11 Mail DTOs
 
 - `App\DTO\Mail\MailAttachmentDTO`
 - `App\DTO\Mail\MailConfigDTO`
 - `App\DTO\Mail\MailMessageDTO`
 - `App\DTO\Mail\MailResultDTO`
 
-### 4.11 Plugin Integration DTOs
+### 4.12 Plugin Integration DTOs
 
 - `App\DTO\PluginIntegration\BlockContext`
 - `App\DTO\PluginIntegration\BlockDescriptor`
@@ -238,23 +248,23 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\DTO\PluginIntegration\SearchQueryDTO`
 - `App\DTO\PluginIntegration\SeoMetaDTO`
 
-### 4.12 Plugin Privacy DTOs
+### 4.13 Plugin Privacy DTOs
 
 - `App\DTO\PluginPrivacy\UserDataDeletionDTO`
 - `App\DTO\PluginPrivacy\UserDataExportDTO`
 
-### 4.13 Plugin DTOs
+### 4.14 Plugin DTOs
 
 - `App\DTO\Plugin\CapabilityResolutionResult`
 - `App\DTO\Plugin\DeclaresVerificationResult`
 - `App\DTO\Plugin\EnabledPluginRecord`
 - `App\DTO\Plugin\SignatureVerificationResult`
 
-### 4.14 RouteSlug DTOs
+### 4.15 RouteSlug DTOs
 
 - `App\DTO\RouteSlug\RegisteredSlug`
 
-### 4.15 Security DTOs
+### 4.16 Security DTOs
 
 - `App\DTO\Security\LoginContext`
 - `App\DTO\Security\RiskScore`
