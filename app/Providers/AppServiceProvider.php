@@ -40,6 +40,7 @@ use App\Contracts\Backup\RestoreServiceInterface;
 use App\Contracts\Encryption\FileEncryptionServiceInterface;
 use App\Contracts\FileIntegrity\FileIntegrityServiceInterface;
 use App\Contracts\LegalPage\LegalPageServiceInterface;
+use App\Contracts\Licensing\LicenseVerifierInterface;
 use App\Contracts\Logging\LogServiceInterface;
 use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Plugin\PluginPermissionServiceInterface;
@@ -56,6 +57,7 @@ use App\Services\Backup\CoreRestoreService;
 use App\Services\Encryption\CoreFileEncryptionService;
 use App\Services\FileIntegrityService;
 use App\Services\LegalPageService;
+use App\Services\Licensing\CoreLicenseVerifier;
 use App\Services\LogService;
 use App\Services\MailService;
 use App\Services\Plugin\CoreSignatureVerifier;
@@ -127,6 +129,11 @@ class AppServiceProvider extends ServiceProvider
 
         // Bind signature verification service (can be overridden by DixlaseDevKit plugin)
         $this->app->bind(SignatureVerifierInterface::class, CoreSignatureVerifier::class);
+
+        // Bind license verification service. Ships as a no-op stub in v0.1.0;
+        // a future official DixlaseLicensing plugin can override this binding
+        // once the marketplace begins selling paid extensions.
+        $this->app->bind(LicenseVerifierInterface::class, CoreLicenseVerifier::class);
 
         // Register route slug registry as singleton
         $this->app->singleton(RouteSlugRegistry::class);
