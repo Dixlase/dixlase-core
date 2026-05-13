@@ -36,6 +36,7 @@
 namespace App\Console\Commands;
 
 use App\Console\Traits\PluginManagementTrait;
+use App\Services\Licensing\LicenseCompatibilityChecker;
 use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -53,7 +54,7 @@ class PluginInstall extends Command
      *
      * @var string
      */
-    protected $signature = 'dls:plugin:install {pluginName : The name of the plugin to install} {--enable : Enable the plugin after installation}';
+    protected $signature = 'dls:plugin:install {pluginName : The name of the plugin to install} {--enable : Enable the plugin after installation} {--force : Skip the license-compatibility guard and install even when the manifest license is refused or missing}';
 
     /**
      * The console command description.
@@ -65,7 +66,7 @@ class PluginInstall extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(LicenseCompatibilityChecker $licenseChecker)
     {
         //
         $pluginName = $this->argument('pluginName');
@@ -137,6 +138,37 @@ class PluginInstall extends Command
             }
 
             $slug = $slug ?? $composerData['extra']['slug'] ?? Str::slug(Str::headline($pluginName), '-');
+        }
+
+        // License compatibility guard
+        // ---------------------------
+        // Evaluate the manifest's `license` field against the SPDX whitelist
+        // in config/licensing.php. The guard:
+        //   - fails when the field is missing, malformed, or explicitly refused
+        //     (use --force to override; the failure reason is logged either way)
+        //   - prints a soft warning on unknown SPDX values and continues
+        //   - is silent on accepted values
+        $licenseVerdict = $licenseChecker->evaluateForInstall($license);
+        $force = (bool) $this->option('force');
+
+        if ($licenseVerdict['verdict'] === LicenseCompatibilityChecker::VERDICT_FAIL) {
+            $this->error(sprintf(
+                "Plugin install refused: %s\n  status: %s\n  license: %s",
+                $licenseVerdict['reason'] ?? 'License is not accepted by this Dixlase install.',
+                $licenseVerdict['status'],
+                $licenseVerdict['spdx'] ?? '(none)',
+            ));
+            if (! $force) {
+                $this->line('  Pass --force to install anyway (the refusal reason is recorded in the audit log).');
+
+                return 1;
+            }
+            $this->warn('Proceeding despite license guard refusal because --force was passed.');
+        } elseif ($licenseVerdict['verdict'] === LicenseCompatibilityChecker::VERDICT_WARN) {
+            $this->warn(sprintf(
+                'License notice: %s',
+                $licenseVerdict['reason'] ?? 'License is not in the accepted-licenses table.',
+            ));
         }
 
         // Register in database

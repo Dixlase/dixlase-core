@@ -1,13 +1,49 @@
 # Manifest Compatibility Fields
 
 This page documents the fields in `plugin.json` / `theme.json` that declare
-**which Core versions** a plugin or theme is built for. The fields are
-read by the plugin scanner and surfaced in the admin UI; the future Dixlase
+**which Core versions** a plugin or theme is built for, and **which
+manifest schema** the file itself follows. The fields are read by the
+plugin scanner and surfaced in the admin UI; the future Dixlase
 marketplace will use them for compatibility filtering when paid and
 sandboxed extensions are listed.
 
 The fields are part of the manifest contract frozen for `^0.1`. See
 [`PLUGIN-API.md`](../../../PLUGIN-API.md) for the stability pledge.
+
+## `manifest_version` (optional in v0.1, defaults to `1`)
+
+Declares which **version of the manifest schema** the JSON file follows.
+This is independent of the plugin's own version: a plugin can ship many
+releases under `manifest_version: 1` and only bump the manifest version
+when the project introduces a schema-breaking change to `plugin.json` /
+`theme.json` itself.
+
+```json
+{
+    "manifest_version": 1,
+    "package_name": "acme/forms",
+    "version": "1.0.0"
+}
+```
+
+Semantics:
+
+- **Optional in v0.1**: when absent, Core treats the manifest as
+  `manifest_version: 1`. Existing plugins do not need to be edited to
+  add the field.
+- **Required from a future schema bump**: the first time the project
+  introduces a backward-incompatible change to the manifest format
+  (e.g. renaming `permissions` keys, restructuring `provides`), the
+  schema bump will publish `manifest_version: 2` and Core will start
+  refusing files that omit the field — at that point the v0.1 default
+  becomes a frozen historical contract.
+- **Forward-only**: bumping the manifest version is a project-wide
+  decision, not a per-plugin one. Plugin authors do not set their own
+  `manifest_version` value; they declare which schema they wrote
+  against.
+- **Reserve the field name now**: the field is documented in v0.1 so
+  that future bumps are non-breaking — the schema can start refusing
+  the absence of the field only after a deprecation period.
 
 ## `requires.dixlase` (required)
 
