@@ -90,7 +90,6 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\ApplySessionConfig::class, // Apply session settings dynamically
             \App\Http\Middleware\ContentSecurityPolicy::class, // Add CSP headers
             \App\Http\Middleware\AppendSourceCodeHeader::class, // AGPL §13: attach X-Source-Code header
-            \App\Http\Middleware\DemoGuard::class, // Block destructive admin actions when DIXLASE_DEMO_MODE is on
         ]);
 
         // Exclude CSP report endpoint from CSRF verification
@@ -111,6 +110,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\BlockPluginRoutes::class, // Route blocking when plugin safe mode is active
             \App\Http\Middleware\SetAdminLocale::class, // Admin locale resolver: member.locale -> Site.primary_locale -> Accept-Language -> fallback
             \App\Http\Middleware\SetMemberLocale::class, // Install-screen locale + member-specific overrides (admin only). Front locale is handled by SetFrontLocale on the locale-prefixed route group.
+            \App\Http\Middleware\DemoGuard::class, // Block destructive admin actions when DIXLASE_DEMO_MODE is on (must run after routing so route name is available)
         ]);
 
         // Register route middleware aliases
