@@ -325,8 +325,11 @@ class PluginHelper
      */
     public static function loadEnabledAdminRoutes(): void
     {
-        // Skip if not yet installed or table does not exist
-        if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
+        // Skip if not yet installed or table does not exist.
+        // config('app.installed') is consulted first because env('INSTALLED')
+        // returns null once Laravel's config cache (bootstrap/cache/config.php)
+        // is built; env() remains as a fallback for the pre-cache window.
+        if (! file_exists(base_path('.env')) || ! (config('app.installed', false) ?: env('INSTALLED', false))) {
             return;
         }
 
@@ -355,8 +358,11 @@ class PluginHelper
      */
     public static function loadEnabledWebRoutes(): void
     {
-        // Skip if not yet installed or table does not exist
-        if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
+        // Skip if not yet installed or table does not exist.
+        // config('app.installed') is consulted first because env('INSTALLED')
+        // returns null once Laravel's config cache (bootstrap/cache/config.php)
+        // is built; env() remains as a fallback for the pre-cache window.
+        if (! file_exists(base_path('.env')) || ! (config('app.installed', false) ?: env('INSTALLED', false))) {
             return;
         }
 
@@ -406,8 +412,11 @@ class PluginHelper
      */
     public static function loadEnabledApiRoutes(): void
     {
-        // Skip if not yet installed or table does not exist
-        if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
+        // Skip if not yet installed or table does not exist.
+        // config('app.installed') is consulted first because env('INSTALLED')
+        // returns null once Laravel's config cache (bootstrap/cache/config.php)
+        // is built; env() remains as a fallback for the pre-cache window.
+        if (! file_exists(base_path('.env')) || ! (config('app.installed', false) ?: env('INSTALLED', false))) {
             return;
         }
 

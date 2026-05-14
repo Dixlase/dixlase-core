@@ -82,8 +82,10 @@ class ConfigHelper
      */
     private static function getFromDatabase(string $key, string $model = 'SecuritySetting')
     {
-        // Returns null before installation or on database connection error
-        if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
+        // Returns null before installation or on database connection error.
+        // config('app.installed') is consulted first because env() returns
+        // null after Laravel's config cache is built.
+        if (! file_exists(base_path('.env')) || ! (config('app.installed', false) ?: env('INSTALLED', false))) {
             return;
         }
 

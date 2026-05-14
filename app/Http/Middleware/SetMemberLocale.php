@@ -53,8 +53,10 @@ class SetMemberLocale
     public function handle(Request $request, Closure $next)
     {
         try {
-            // Process only if .env file exists, installation is complete, and in admin panel
-            if (file_exists(base_path('.env')) && env('INSTALLED', false) && \App\Helpers\AdminHelper::isAdminRequest($request)) {
+            // Process only if .env file exists, installation is complete, and in admin panel.
+            // config('app.installed') is consulted first because env() returns
+            // null after Laravel's config cache is built.
+            if (file_exists(base_path('.env')) && (config('app.installed', false) ?: env('INSTALLED', false)) && \App\Helpers\AdminHelper::isAdminRequest($request)) {
                 // Check authentication state
                 $isAuthenticated = Auth::guard('member')->check();
                 $member = Auth::guard('member')->user();
