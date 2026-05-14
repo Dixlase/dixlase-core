@@ -68,8 +68,14 @@ class PluginServiceProvider extends ServiceProvider
      */
     protected function registerPluginServiceProviders(): void
     {
-        // Skip if .env file does not exist or not installed
-        if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
+        // Skip if .env file does not exist or not installed.
+        // config('app.installed') is read first because env() returns null
+        // once bootstrap/cache/config.php exists (Laravel's config cache
+        // bakes env values into the cache and leaves env() unreachable at
+        // runtime). The env() call remains as a fallback for the
+        // pre-install / no-cache window where config/app.php has not yet
+        // been resolved.
+        if (! file_exists(base_path('.env')) || ! (config('app.installed', false) ?: env('INSTALLED', false))) {
             return;
         }
 
@@ -226,8 +232,10 @@ class PluginServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Skip if .env file does not exist or database connection is not available
-        if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
+        // Skip if .env file does not exist or database connection is not available.
+        // See registerPluginServiceProviders() for why config() is read
+        // before env() — same config-cache invisibility issue applies here.
+        if (! file_exists(base_path('.env')) || ! (config('app.installed', false) ?: env('INSTALLED', false))) {
             return;
         }
 

@@ -61,8 +61,10 @@ class GuestLayout extends Component
     public function render(): View
     {
         try {
-            // Use default values before installation or in case of database connection error
-            if (! file_exists(base_path('.env')) || ! env('INSTALLED', false)) {
+            // Use default values before installation or in case of database connection error.
+            // config('app.installed') is consulted first because env() returns
+            // null after Laravel's config cache is built.
+            if (! file_exists(base_path('.env')) || ! (config('app.installed', false) ?: env('INSTALLED', false))) {
                 $this->site_name = env('APP_NAME', 'Dixlase');
                 $this->theme = Config::get('admin.theme', 'light');
             } elseif (! Schema::hasTable('global_settings') || ! Schema::hasTable('site_settings')) {
