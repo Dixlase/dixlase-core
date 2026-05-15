@@ -62,6 +62,6 @@ If you spot a translation issue, please file an Issue rather than a PR — trans
 If you have questions about contributing, feel free to:
 
 - Open a [discussion](https://github.com/Dixlase/dixlase-core/discussions) on GitHub
-- Email us at office@exc-d.com
+- Email us at info@dixlase.org
 
 Thank you for helping make Dixlase better — even before PRs reopen, your bug reports and feedback are valuable.

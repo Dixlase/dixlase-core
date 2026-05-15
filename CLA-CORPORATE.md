@@ -17,7 +17,7 @@ Thank you for your interest in the Dixlase project, operated by exc-D inc. ("exc
 
 This version of the Agreement allows an entity (the "Corporation") to submit Contributions to exc-D, to authorize Contributions submitted by its designated employees to exc-D, and to grant copyright and patent licenses thereto.
 
-To submit this Agreement, complete the form fields and Schedules below, sign at the bottom, and email a copy to office@exc-d.com.
+To submit this Agreement, complete the form fields and Schedules below, sign at the bottom, and email a copy to info@dixlase.org.
 
 ---
 
@@ -101,7 +101,7 @@ This Section does not apply to good-faith Contributions where You sincerely beli
 
 ### 13. How You Agree to This Agreement
 
-You agree to this Agreement by emailing a completed and signed copy of this document to office@exc-d.com, or by consenting through any subsequent automated mechanism that exc-D may adopt (such as a CLA Assistant integration), provided that such mechanism clearly references this Agreement.
+You agree to this Agreement by emailing a completed and signed copy of this document to info@dixlase.org, or by consenting through any subsequent automated mechanism that exc-D may adopt (such as a CLA Assistant integration), provided that such mechanism clearly references this Agreement.
 
 For the avoidance of doubt, this Agreement governs Contributions made on or after Your acceptance of it. Contributions made under any prior Dixlase contributor agreement remain governed by the agreement that was in effect when they were submitted.
 
@@ -117,7 +117,7 @@ This Agreement is governed by the laws of Japan. Any disputes arising out of or 
 
 For questions about this Agreement, contact exc-D at:
 
-- Email: office@exc-d.com
+- Email: info@dixlase.org
 - Website: https://exc-d.com
 
 ---
@@ -149,7 +149,7 @@ Initial list of designated employees authorized to submit Contributions on behal
  _______________________________   _______________________________
 ```
 
-To update Schedule A after signing, email a written modification to office@exc-d.com.
+To update Schedule A after signing, email a written modification to info@dixlase.org.
 
 ---
 

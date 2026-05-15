@@ -43,7 +43,7 @@ CLA モデルの要点:
 
 1. [`CLA-INDIVIDUAL.md`](./CLA-INDIVIDUAL.md)(該当する場合は [`CLA-CORPORATE.md`](./CLA-CORPORATE.md) も)を全文お読みください
 2. コントリビューター情報欄を埋め、末尾に署名してください
-3. 完成したファイルを、件名 `CLA submission — <氏名または組織名>` にて **office@exc-d.com** までメール送信してください
+3. 完成したファイルを、件名 `CLA submission — <氏名または組織名>` にて **info@dixlase.org** までメール送信してください
 4. 確認の返信を受領してから初回の Pull Request を提出してください
 
 その後の Dixlase リリースでは、GitHub PR と統合された自動 CLA 署名(例: [CLA Assistant](https://cla-assistant.io/) 等)を導入する予定です。それまで PR 受付が再開された後の期間は、上記のメール提出方式を採用します。

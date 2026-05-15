@@ -62,6 +62,6 @@ Dixlase は **英語のソースコメントを正本** として配布されま
 コントリビューションに関するご質問は、以下までお気軽にどうぞ:
 
 - GitHub で [Discussion](https://github.com/Dixlase/dixlase-core/discussions) を開く
-- office@exc-d.com までメール
+- info@dixlase.org までメール
 
 PR 受付再開前であっても、皆様のバグ報告とフィードバックは Dixlase を改善するための貴重な貢献です。

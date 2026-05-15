@@ -12,7 +12,7 @@ Dixlase is dual-licensed. You may use this file under either:
       LICENSE-EXCEPTIONS for full exception terms); or
 
   (b) a commercial license agreement obtained from exc-D inc.
-      (see LICENSE.commercial, or contact office@exc-d.com).
+      (see LICENSE.commercial, or contact info@dixlase.org).
 
 Unless you have entered into a commercial license agreement, this
 file is governed by the AGPL terms below.

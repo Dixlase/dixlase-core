@@ -15,7 +15,7 @@ The Japanese version of this Agreement is published as [CLA-INDIVIDUAL.ja.md](./
 
 Thank you for your interest in the Dixlase project, operated by exc-D inc. ("exc-D"). To clarify the intellectual property license granted with Contributions from any individual person, exc-D must have on file a signed Contributor License Agreement ("CLA") from each Contributor, indicating agreement with the license terms below. This Agreement is for Your protection as a Contributor as well as the protection of exc-D and its users. It does not change Your rights to use Your own Contributions for any other purpose.
 
-To submit this Agreement, complete the form fields below, sign at the bottom, and email a copy to office@exc-d.com.
+To submit this Agreement, complete the form fields below, sign at the bottom, and email a copy to info@dixlase.org.
 
 ---
 
@@ -114,7 +114,7 @@ This Section does not apply to good-faith Contributions where You sincerely beli
 
 ### 13. How You Agree to This Agreement
 
-You agree to this Agreement by emailing a completed and signed copy of this document to office@exc-d.com, or by consenting through any subsequent automated mechanism that exc-D may adopt (such as a CLA Assistant integration), provided that such mechanism clearly references this Agreement.
+You agree to this Agreement by emailing a completed and signed copy of this document to info@dixlase.org, or by consenting through any subsequent automated mechanism that exc-D may adopt (such as a CLA Assistant integration), provided that such mechanism clearly references this Agreement.
 
 For the avoidance of doubt, this Agreement governs Contributions made on or after Your acceptance of it. Contributions made under any prior Dixlase contributor agreement remain governed by the agreement that was in effect when they were submitted.
 
@@ -130,7 +130,7 @@ This Agreement is governed by the laws of Japan. Any disputes arising out of or 
 
 For questions about this Agreement, contact exc-D at:
 
-- Email: office@exc-d.com
+- Email: info@dixlase.org
 - Website: https://exc-d.com
 
 ---

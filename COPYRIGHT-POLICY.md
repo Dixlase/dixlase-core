@@ -30,7 +30,7 @@ The Dixlase core is distributed under two parallel licenses, and recipients choo
 
 Both licenses cover the same software; they differ only in obligations.
 
-> **Note on commercial-license availability.** The commercial-license framework documented in [`LICENSE.commercial`](./LICENSE.commercial) is in place, but commercial terms (pricing and contract format) are still being finalized. Inquiries can be directed to office@exc-d.com.
+> **Note on commercial-license availability.** The commercial-license framework documented in [`LICENSE.commercial`](./LICENSE.commercial) is in place, but commercial terms (pricing and contract format) are still being finalized. Inquiries can be directed to info@dixlase.org.
 
 ## 3. Plugin and Theme Exception
 
@@ -105,7 +105,7 @@ This Policy is governed by the laws of Japan. Any disputes arising out of or in 
 
 For questions about this Policy, contact exc-D at:
 
-- Email: office@exc-d.com
+- Email: info@dixlase.org
 - Website: https://exc-d.com
 
 ---

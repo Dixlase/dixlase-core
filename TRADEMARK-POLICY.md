@@ -25,7 +25,7 @@
 > Until this Policy exits draft status, the rules below describe
 > **exc-D's intended trademark stance** and reasonable-use expectations.
 > Persons relying on this document for substantial commercial purposes
-> are encouraged to contact exc-D directly at office@exc-d.com.
+> are encouraged to contact exc-D directly at info@dixlase.org.
 
 This Trademark Policy ("Policy") describes how the names, logos, and other
 brand indicators of the Dixlase project, operated by exc-D inc. ("exc-D"),
@@ -128,7 +128,7 @@ manifest fields (e.g. `"package_name": "yourvendor/yourplugin"`,
 ## 4. Uses That Require Written Permission
 
 The following uses require **written permission** from exc-D in advance
-(email office@exc-d.com):
+(email info@dixlase.org):
 
 1. Using the Dixlase **logo** in any commercial product, packaging,
    merchandise, or paid service offering.
@@ -204,7 +204,7 @@ WordPress®, etc.) are the property of their respective owners.
 
 If you encounter use of the Dixlase Marks that appears to violate this
 Policy — for example, a product claiming to be "official Dixlase" that is
-not — please report it to exc-D at office@exc-d.com with:
+not — please report it to exc-D at info@dixlase.org with:
 
 - A description of the use
 - A URL or other evidence
@@ -235,7 +235,7 @@ first instance.
 For trademark permission requests, reports of misuse, or questions about
 this Policy, contact exc-D at:
 
-- Email: office@exc-d.com
+- Email: info@dixlase.org
 - Website: https://exc-d.com
 
 ---
