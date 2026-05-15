@@ -71,6 +71,23 @@ jobs:
               # 1. deploy ユーザーが git 操作できるよう所有権を戻す
               docker exec compose-php-1 chown -R 1001:1001 /var/www/apps/$SITE
 
+              # 1-b. 半壊 submodule pointer のクリーンアップ
+              # plugins/*/.git や themes/*/.git の gitfile が残っているのに
+              # 指す先の .git/modules/* が存在しないと、git reset --hard が
+              # gitlink を進めようとして "not a git repository" で死ぬ。
+              # 該当 gitfile を消すことで該当パスは untracked dir 扱いになり
+              # reset が通るようになる (作業ツリーのファイルは保持される)。
+              for gitfile in plugins/*/.git themes/*/.git; do
+                [ -f "$gitfile" ] || continue
+                gitdir=$(sed -n 's/^gitdir: //p' "$gitfile" 2>/dev/null)
+                [ -n "$gitdir" ] || continue
+                parent=$(dirname "$gitfile")
+                if [ ! -d "$parent/$gitdir" ]; then
+                  echo "Removing orphan submodule pointer: $gitfile"
+                  rm -f "$gitfile"
+                fi
+              done
+
               # 2. コードを最新に更新
               git fetch origin
               git reset --hard origin/main
