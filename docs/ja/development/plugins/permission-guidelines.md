@@ -264,7 +264,7 @@ Dixlaseのプラグイン・テーマ権限基盤は、拡張機能の**健全�
     "en": "This plugin provides static page management functionality."
   },
   "author": "exc-D inc.",
-  "email": "office@exc-d.com",
+  "email": "info@dixlase.org",
   "url": "https://exc-d.com",
   "license": "GPL-3.0",
   "namespace": "Plugins\\DixlasePages",

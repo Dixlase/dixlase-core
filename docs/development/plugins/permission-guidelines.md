@@ -264,7 +264,7 @@ Do not confuse these two. Plugin permissions declare "what system resources this
     "en": "This plugin provides static page management functionality."
   },
   "author": "exc-D inc.",
-  "email": "office@exc-d.com",
+  "email": "info@dixlase.org",
   "url": "https://exc-d.com",
   "license": "GPL-3.0",
   "namespace": "Plugins\\DixlasePages",

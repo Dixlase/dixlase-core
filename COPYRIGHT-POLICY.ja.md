@@ -30,7 +30,7 @@ Dixlase コアは、以下の 2 つのライセンスにより並行して配布
 
 両ライセンスは同一のソフトウェアを対象とし、義務の内容のみが異なります。
 
-> **商用ライセンスの提供状況に関する注記**: [`LICENSE.commercial`](./LICENSE.commercial) に記載の商用ライセンスの枠組みは整備済みですが、価格・契約条件は現在準備中です。お問い合わせは office@exc-d.com までお願いします。
+> **商用ライセンスの提供状況に関する注記**: [`LICENSE.commercial`](./LICENSE.commercial) に記載の商用ライセンスの枠組みは整備済みですが、価格・契約条件は現在準備中です。お問い合わせは info@dixlase.org までお願いします。
 
 ## 3. プラグイン・テーマ例外条項
 
@@ -105,7 +105,7 @@ exc-D は、随時本ポリシーを更新することがあります。実質�
 
 本ポリシーに関するご質問は、以下までご連絡ください。
 
-- Email: office@exc-d.com
+- Email: info@dixlase.org
 - Website: https://exc-d.com
 
 ---

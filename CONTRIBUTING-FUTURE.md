@@ -41,7 +41,7 @@ When external PRs reopen, CLA submission will initially be handled by email:
 
 1. Read [`CLA-INDIVIDUAL.md`](./CLA-INDIVIDUAL.md) (and [`CLA-CORPORATE.md`](./CLA-CORPORATE.md) if applicable) in full
 2. Fill in the contributor information fields and sign at the bottom
-3. Email the completed file to **office@exc-d.com** with the subject `CLA submission — <your name or organization>`
+3. Email the completed file to **info@dixlase.org** with the subject `CLA submission — <your name or organization>`
 4. Wait for confirmation before submitting your first pull request
 
 A subsequent Dixlase release will introduce automated CLA signing (e.g. via [CLA Assistant](https://cla-assistant.io/)) integrated with GitHub PRs. Until that automation is in place, the email process above will apply once PRs reopen.
