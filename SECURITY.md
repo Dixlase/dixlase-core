@@ -23,7 +23,7 @@ During the early development phase, only the latest development version is suppo
 You can submit a vulnerability report through either of the following private channels:
 
 - **GitHub Private Vulnerability Reporting (preferred)** — [Open a security advisory](https://github.com/Dixlase/dixlase-core/security/advisories/new). Submissions are protected by HTTPS and visible only to maintainers.
-- **Email:** security@exc-d.com
+- **Email:** security@dixlase.org
 
 Please include as much of the following information as possible:
 
@@ -256,7 +256,7 @@ To stay informed about security updates:
 
 For general security questions (non-vulnerability-related):
 
-- Email: security@exc-d.com
+- Email: security@dixlase.org
 - Website: https://dixlase.com/security *(planned)*
 
 ---

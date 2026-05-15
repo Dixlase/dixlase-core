@@ -15,9 +15,9 @@ contact_links:
     url: https://github.com/Dixlase/dixlase-core/security/advisories/new
     about: >-
       Do NOT report security vulnerabilities in public issues. Use GitHub's
-      private vulnerability reporting or email security@exc-d.com. See
+      private vulnerability reporting or email security@dixlase.org. See
       SECURITY.md for details. / セキュリティ脆弱性は公開 Issue で報告せず、
-      GitHub のプライベート脆弱性報告または security@exc-d.com へメールしてください。
+      GitHub のプライベート脆弱性報告または security@dixlase.org へメールしてください。
       詳細は SECURITY.md を参照。
   - name: Question / 質問・相談
     url: https://github.com/Dixlase/dixlase-core/discussions
