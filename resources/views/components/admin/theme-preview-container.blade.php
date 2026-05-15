@@ -120,11 +120,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
          id="{{ $outerId }}" style="min-height: 300px;">
         {{-- Wrapper holds the scaled bounding box of the inner content so the
              outer scroll range matches the visually-scaled height (rather than
-             the unscaled DOM height that transform: scale leaves behind). --}}
+             the unscaled DOM height that transform: scale leaves behind).
+             `margin: 0 auto` centers the visually-scaled box inside the outer
+             container when the device width (e.g. mobile 375px) is narrower
+             than the available preview area; the unified explicit width also
+             keeps the layout predictable for both aspect-locked and non-aspect
+             modes. --}}
         <div data-preview-scroll-wrapper
-             :style="previewAspectRatio > 0
-                ? 'overflow: hidden; width: ' + (previewDeviceWidth * previewScale) + 'px; height: ' + (innerScaledHeight) + 'px;'
-                : 'overflow: visible;'">
+             :style="'overflow: hidden; width: ' + (previewDeviceWidth * previewScale) + 'px; height: ' + innerScaledHeight + 'px; margin: 0 auto;'">
             <div id="{{ $innerId }}"
                  data-preview-theme="{{ $appearanceMode === '1' ? 'light' : 'dark' }}"
                  @appearance-changed.window="$el.dataset.previewTheme = $event.detail.mode === '1' ? 'light' : 'dark'"
