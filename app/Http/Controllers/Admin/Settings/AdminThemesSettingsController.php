@@ -614,7 +614,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
         $theme = Theme::findOrFail($id);
 
         // Default theme cannot be uninstalled
-        $defaultThemeSlug = config('themes.default_theme_slug', 'dixlase-one-page');
+        $defaultThemeSlug = config('themes.default_theme_slug', 'dixlase-onepage');
         if ($theme->slug === $defaultThemeSlug) {
             return back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.default_theme_cannot_uninstall'));
         }

@@ -102,7 +102,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     /**
      * Check theme permission
      *
-     * @param  string  $themeSlug  Theme slug (e.g., dixlase-one-page)
+     * @param  string  $themeSlug  Theme slug (e.g., dixlase-onepage)
      * @param  string  $permission  Permission key (e.g., assets.custom_js, database.own_tables)
      */
     public function check(string $themeSlug, string $permission): bool
@@ -582,7 +582,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     /**
      * Convert slug to theme name
      *
-     * @param  string  $slug  dixlase-one-page
+     * @param  string  $slug  dixlase-onepage
      * @return string DixlaseOnePage
      */
     protected function slugToName(string $slug): string
@@ -594,7 +594,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
      * Convert theme name to slug
      *
      * @param  string  $name  DixlaseOnePage
-     * @return string dixlase-one-page
+     * @return string dixlase-onepage
      */
     protected function nameToSlug(string $name): string
     {
