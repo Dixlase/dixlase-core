@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\BuildsExtensionAssets;
 use App\Helpers\ComposerLocalHelper;
 use App\Models\Theme;
 use App\Services\ThemeMigrator;
@@ -45,12 +46,14 @@ use Illuminate\Support\Str;
 
 class ThemeInstall extends Command
 {
+    use BuildsExtensionAssets;
+
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'dls:theme:install {themeName : '.'command.theme_install.theme_name_prompt'.'} {--force : Force reinstall even if already registered}';
+    protected $signature = 'dls:theme:install {themeName : '.'command.theme_install.theme_name_prompt'.'} {--force : Force reinstall even if already registered} {--build : Force a front-end asset rebuild even when compiled assets already exist} {--skip-build : Skip the npm install / build step entirely}';
 
     /**
      * The console command description.
@@ -122,6 +125,14 @@ class ThemeInstall extends Command
             } catch (\Exception $e) {
                 $this->warn('Failed to execute theme seeder: '.$e->getMessage());
             }
+
+            // Rebuild assets too so a forced reinstall picks up any source
+            // changes that landed since the last install.
+            $this->buildExtensionAssets($themeDir, $this->resolveAssetBuildMode());
+            $this->call('dls:theme:symlink', [
+                'action' => 'create',
+                'theme' => $themeDirName,
+            ]);
 
             $this->info('Theme migrations and seeders completed.');
 
@@ -256,6 +267,16 @@ class ThemeInstall extends Command
         } catch (\Exception $e) {
             $this->warn('Failed to execute theme seeder: '.$e->getMessage());
         }
+
+        // Build front-end assets and link them into public/ so the rendered
+        // pages can resolve theme JS/CSS. Without this step, freshly
+        // installed themes throw Alpine "is not defined" errors and serve
+        // unstyled pages until the operator runs the build by hand.
+        $this->buildExtensionAssets($themeDir);
+        $this->call('dls:theme:symlink', [
+            'action' => 'create',
+            'theme' => $themeDirName,
+        ]);
 
         $this->info(__('admin/command.theme_install.registered', ['themeName' => $themeName]));
         $this->info(__('admin/command.theme_install.activate_help', ['themeName' => $themeName]));
