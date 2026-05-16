@@ -48,7 +48,7 @@ interface ThemePermissionServiceInterface
     /**
      * Check theme permission
      *
-     * @param  string  $themeSlug  Theme slug (e.g., dixlase-one-page)
+     * @param  string  $themeSlug  Theme slug (e.g., dixlase-onepage)
      * @param  string  $permission  Permission key (e.g., assets.custom_js, database.own_tables)
      */
     public function check(string $themeSlug, string $permission): bool;
