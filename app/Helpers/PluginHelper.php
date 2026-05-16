@@ -181,6 +181,31 @@ class PluginHelper
     }
 
     /**
+     * Get info records for enabled plugins that declare the specified capability
+     *
+     * Returns EnabledPluginRecord DTOs (slug, name, directory, description, version)
+     * instead of Plugin Eloquent models, so plugins can build integration UIs
+     * without depending on \App\Models\Plugin.
+     *
+     * @param  string  $capability  Capability identifier (e.g. 'seo-meta')
+     * @return array<int, \App\DTO\Plugin\EnabledPluginRecord>
+     */
+    public static function getEnabledPluginInfosByCapability(string $capability): array
+    {
+        $targetSlugs = self::getEnabledPluginSlugsByCapability($capability);
+        if (empty($targetSlugs)) {
+            return [];
+        }
+
+        $repository = app(\App\Contracts\Repositories\PluginRepositoryInterface::class);
+
+        return $repository->getEnabled()
+            ->filter(fn (\App\DTO\Plugin\EnabledPluginRecord $record) => in_array($record->slug, $targetSlugs, true))
+            ->values()
+            ->all();
+    }
+
+    /**
      * Get capabilities declared by the plugin/theme in the specified directory
      *
      * Read and return the `capabilities` array from

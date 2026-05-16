@@ -66,6 +66,8 @@ class PluginRepository implements PluginRepositoryInterface
                 name: $plugin->name,
                 directory: $plugin->directory,
                 slug: $plugin->slug,
+                description: (string) ($plugin->description ?? ''),
+                version: (string) ($plugin->version ?? ''),
             ));
     }
 }
