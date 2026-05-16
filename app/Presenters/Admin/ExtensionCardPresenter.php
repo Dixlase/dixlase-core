@@ -624,16 +624,25 @@ class ExtensionCardPresenter
     }
 
     /**
-     * Generate compatibility badge data by CSP mode
+     * Generate compatibility badge data by CSP mode.
+     *
+     * Strict mode badge is intentionally always returned as unknown until
+     * core itself supports CSP strict mode. The current scanner only checks
+     * for inline <script>/<style> tags, which is too narrow a definition —
+     * strict mode also requires Alpine CSP build compatibility (no x-data
+     * literals, no object literals in directives, no x-init with logic),
+     * Trusted Types compliance (no innerHTML / document.write), and SRI on
+     * external scripts. None of these are detected yet, so a green "strict"
+     * badge here would be a false positive. See
+     * .backlog/csp-strict-mode-readiness.md for the full criteria.
      *
      * @param  array<string, mixed>  $cspCompatibility
-     * @return array<string, array{compatible: bool, label: string, icon: string, color: string}>
+     * @return array<string, array{compatible: bool|null, checked: bool}>
      */
     private static function buildCspModeBadges(array $cspCompatibility): array
     {
         $status = $cspCompatibility['status'] ?? 'unknown';
         $requiresInlineJs = $cspCompatibility['requires_inline_js'] ?? false;
-        $requiresInlineCss = $cspCompatibility['requires_inline_css'] ?? false;
         $isChecked = in_array($status, ['csp_ready', 'compatible', 'compliant', 'inline_required', 'inline_css_only'], true);
 
         if (! $isChecked) {
@@ -651,13 +660,12 @@ class ExtensionCardPresenter
         // Standard mode: inline JS is blocked (nonce-less inline)
         $standardCompatible = ! $requiresInlineJs;
 
-        // Strict mode: all inline (JS and CSS) is blocked
-        $strictCompatible = ! $requiresInlineJs && ! $requiresInlineCss;
-
         return [
             'development' => ['compatible' => $devCompatible, 'checked' => true],
             'standard' => ['compatible' => $standardCompatible, 'checked' => true],
-            'strict' => ['compatible' => $strictCompatible, 'checked' => true],
+            // Deliberately not asserting strict-mode compatibility until the
+            // scanner can verify Alpine CSP build / Trusted Types / SRI.
+            'strict' => ['compatible' => null, 'checked' => false],
         ];
     }
 
