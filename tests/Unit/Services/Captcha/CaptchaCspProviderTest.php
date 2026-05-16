@@ -29,6 +29,8 @@ use App\Captcha\TurnstileCaptchaDriver;
 use App\Models\SecuritySetting;
 use App\Services\Captcha\CaptchaCspProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
 use Tests\TestCase;
 
 class CaptchaCspProviderTest extends TestCase
@@ -97,5 +99,40 @@ class CaptchaCspProviderTest extends TestCase
         });
 
         $this->assertSame([], $this->provider->getCspDirectives());
+    }
+
+    public function test_includes_all_driver_origins_on_captcha_settings_page_even_when_disabled(): void
+    {
+        SecuritySetting::set('captcha_enabled', '0');
+        $this->bindCurrentRoute('admin.settings.security.captcha');
+
+        $directives = $this->provider->getCspDirectives();
+
+        // Turnstile widget origin must be reachable for the live-validation test.
+        $this->assertContains('https://challenges.cloudflare.com', $directives['script-src'] ?? []);
+        $this->assertContains('https://challenges.cloudflare.com', $directives['frame-src'] ?? []);
+        $this->assertContains('https://challenges.cloudflare.com', $directives['connect-src'] ?? []);
+
+        // Google reCAPTCHA origins are also allowed so the operator can test either provider.
+        $this->assertContains('https://www.google.com', $directives['script-src'] ?? []);
+        $this->assertContains('https://www.gstatic.com', $directives['script-src'] ?? []);
+    }
+
+    public function test_settings_page_bypass_also_applies_to_validate_widget_subroute(): void
+    {
+        SecuritySetting::set('captcha_enabled', '0');
+        $this->bindCurrentRoute('admin.settings.security.captcha.validate-widget');
+
+        $directives = $this->provider->getCspDirectives();
+
+        $this->assertContains('https://challenges.cloudflare.com', $directives['script-src'] ?? []);
+    }
+
+    private function bindCurrentRoute(string $name): void
+    {
+        $route = (new Route(['GET'], '/dummy', []))->name($name);
+        $request = Request::create('/dummy', 'GET');
+        $request->setRouteResolver(fn () => $route);
+        $this->app->instance('request', $request);
     }
 }
