@@ -51,17 +51,21 @@ final readonly class EnabledPluginRecord implements JsonSerializable
      * @param  string  $name  Plugin name (e.g., DixlasePages)
      * @param  string  $directory  Plugin directory name (e.g., DixlasePages)
      * @param  string  $slug  Plugin slug (e.g., dixlase-pages)
+     * @param  string  $description  Plugin description (e.g., "SEO optimization plugin")
+     * @param  string  $version  Plugin version string (e.g., "0.1.0")
      */
     public function __construct(
         public string $name,
         public string $directory,
         public string $slug,
+        public string $description = '',
+        public string $version = '',
     ) {}
 
     /**
      * Create instance from array
      *
-     * @param  array{name: string, directory: string, slug: string}  $data
+     * @param  array{name: string, directory: string, slug: string, description?: string, version?: string}  $data
      */
     public static function fromArray(array $data): self
     {
@@ -69,11 +73,13 @@ final readonly class EnabledPluginRecord implements JsonSerializable
             name: $data['name'],
             directory: $data['directory'],
             slug: $data['slug'],
+            description: $data['description'] ?? '',
+            version: $data['version'] ?? '',
         );
     }
 
     /**
-     * @return array{name: string, directory: string, slug: string}
+     * @return array{name: string, directory: string, slug: string, description: string, version: string}
      */
     public function jsonSerialize(): array
     {
@@ -81,11 +87,13 @@ final readonly class EnabledPluginRecord implements JsonSerializable
             'name' => $this->name,
             'directory' => $this->directory,
             'slug' => $this->slug,
+            'description' => $this->description,
+            'version' => $this->version,
         ];
     }
 
     /**
-     * @return array{name: string, directory: string, slug: string}
+     * @return array{name: string, directory: string, slug: string, description: string, version: string}
      */
     public function toArray(): array
     {
