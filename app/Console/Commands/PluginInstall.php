@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\BuildsExtensionAssets;
 use App\Console\Traits\PluginManagementTrait;
 use App\Services\Licensing\LicenseCompatibilityChecker;
 use App\Services\PluginMigrator;
@@ -47,6 +48,7 @@ use Illuminate\Support\Str;
 
 class PluginInstall extends Command
 {
+    use BuildsExtensionAssets;
     use PluginManagementTrait;
 
     /**
@@ -54,7 +56,7 @@ class PluginInstall extends Command
      *
      * @var string
      */
-    protected $signature = 'dls:plugin:install {pluginName : The name of the plugin to install} {--enable : Enable the plugin after installation} {--force : Skip the license-compatibility guard and install even when the manifest license is refused or missing}';
+    protected $signature = 'dls:plugin:install {pluginName : The name of the plugin to install} {--enable : Enable the plugin after installation} {--force : Skip the license-compatibility guard and install even when the manifest license is refused or missing} {--build : Force a front-end asset rebuild even when compiled assets already exist} {--skip-build : Skip the npm install / build step entirely}';
 
     /**
      * The console command description.
@@ -210,6 +212,11 @@ class PluginInstall extends Command
 
         // Note: Updating composer.local.json and .git/info/exclude
         // is already done during plugin creation (make:plugin), so not needed here
+
+        // Build front-end assets if the plugin ships its own npm pipeline.
+        // No-op when the plugin has no package.json (most plugins) or when
+        // assets are already compiled (re-install / unchanged sources).
+        $this->buildExtensionAssets($pluginPath, $this->resolveAssetBuildMode());
 
         // Confirm plugin activation (only if --enable option is not specified)
         // When running via web, interactive input is not possible, so judge only by presence of --enable option
