@@ -58,7 +58,7 @@ class ThemesTableSeeder extends Seeder
                 'name' => $themeJson['name'] ?? 'DixlaseOnePage',
                 'package_name' => $themeJson['package_name'] ?? null,
                 'directory' => 'DixlaseOnePage',
-                'slug' => $themeJson['slug'] ?? 'dixlase-one-page',
+                'slug' => $themeJson['slug'] ?? 'dixlase-onepage',
                 'namespace' => $themeJson['namespace'] ?? null,
                 'description' => $description,
                 'license' => $themeJson['license'] ?? null,
@@ -81,7 +81,7 @@ class ThemesTableSeeder extends Seeder
             // Create with minimal information if theme.json does not exist
             Theme::create([
                 'name' => 'DixlaseOnePage',
-                'slug' => 'dixlase-one-page',
+                'slug' => 'dixlase-onepage',
                 'directory' => 'DixlaseOnePage',
                 'version' => '1.0.0',
                 'has_settings' => true,
