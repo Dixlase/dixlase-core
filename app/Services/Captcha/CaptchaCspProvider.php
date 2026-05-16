@@ -36,6 +36,10 @@
 namespace App\Services\Captcha;
 
 use App\Captcha\CaptchaDriver;
+use App\Captcha\GoogleRecaptchaEnterpriseDriver;
+use App\Captcha\GoogleRecaptchaV2Driver;
+use App\Captcha\GoogleRecaptchaV3Driver;
+use App\Captcha\TurnstileCaptchaDriver;
 use App\Models\SecuritySetting;
 
 /**
@@ -46,11 +50,20 @@ use App\Models\SecuritySetting;
  * the CSP. When captcha is disabled, no captcha origins appear in the
  * policy at all — sites that don't use captcha don't pay the broader
  * default-allow tax.
+ *
+ * Exception: on the captcha admin settings page, every driver's origins
+ * are included so the operator can test any provider before flipping the
+ * captcha_enabled switch. Without this, the live-validation widget cannot
+ * load and the test/enable flow deadlocks.
  */
 class CaptchaCspProvider implements \App\Contracts\CspPolicyProvider
 {
     public function getCspDirectives(): array
     {
+        if ($this->isCaptchaSettingsPage()) {
+            return $this->collectAllDriverDirectives();
+        }
+
         if (! $this->isCaptchaEnabled()) {
             return [];
         }
@@ -62,6 +75,66 @@ class CaptchaCspProvider implements \App\Contracts\CspPolicyProvider
         }
 
         return $driver->cspDirectives();
+    }
+
+    /**
+     * Whether the current request targets the captcha admin settings page.
+     *
+     * The settings page lets the operator test any of the supported drivers
+     * before saving, so the CSP must permit every provider's widget origin
+     * regardless of the persisted captcha_enabled flag.
+     */
+    protected function isCaptchaSettingsPage(): bool
+    {
+        try {
+            $route = request()?->route();
+        } catch (\Throwable) {
+            return false;
+        }
+
+        if ($route === null) {
+            return false;
+        }
+
+        $name = $route->getName();
+        if (! is_string($name)) {
+            return false;
+        }
+
+        return str_starts_with($name, 'admin.settings.security.captcha');
+    }
+
+    /**
+     * Merge cspDirectives() from every supported driver.
+     *
+     * @return array<string, array<int, string>>
+     */
+    protected function collectAllDriverDirectives(): array
+    {
+        $merged = [];
+
+        $drivers = [
+            new TurnstileCaptchaDriver(),
+            new GoogleRecaptchaV2Driver(),
+            new GoogleRecaptchaV3Driver(),
+            new GoogleRecaptchaEnterpriseDriver(),
+        ];
+
+        foreach ($drivers as $driver) {
+            foreach ($driver->cspDirectives() as $directive => $values) {
+                if (! isset($merged[$directive])) {
+                    $merged[$directive] = [];
+                }
+
+                foreach ($values as $value) {
+                    if (! in_array($value, $merged[$directive], true)) {
+                        $merged[$directive][] = $value;
+                    }
+                }
+            }
+        }
+
+        return $merged;
     }
 
     /**
