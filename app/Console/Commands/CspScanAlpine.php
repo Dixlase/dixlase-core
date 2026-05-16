@@ -57,11 +57,11 @@ use Symfony\Component\Finder\Finder;
  * be reviewed by hand before bundle switch.
  *
  * Known limitations:
- *   - Single-line attributes only. Multi-line x-data="{ ... \n ... }" blocks
- *     are undercounted. Run `grep -c 'x-data=' resources/views/...` for a
- *     ground-truth count and compare.
  *   - Blade component prop bindings (`<x-foo :bar="$baz">`) are filtered
  *     heuristically (looksLikePhpExpression). Edge cases may slip through.
+ *   - Multi-line directive expressions (other than x-data / x-init) are not
+ *     captured. x-data / x-init use a whole-file regex so multi-line
+ *     attribute values DO count for those two.
  */
 class CspScanAlpine extends Command
 {
@@ -123,15 +123,20 @@ class CspScanAlpine extends Command
         $this->renderTable($findings);
 
         if ($jsonPath = $this->option('json')) {
-            file_put_contents(
-                base_path($jsonPath),
-                json_encode([
-                    'generated_at' => now()->toIso8601String(),
-                    'scope' => $scope,
-                    'total' => count($findings),
-                    'findings' => $findings,
-                ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
-            );
+            $payload = json_encode([
+                'generated_at' => now()->toIso8601String(),
+                'scope' => $scope,
+                'total' => count($findings),
+                'findings' => $findings,
+            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+
+            if ($payload === false) {
+                $this->error('JSON encoding failed: '.json_last_error_msg());
+
+                return self::FAILURE;
+            }
+
+            file_put_contents(base_path($jsonPath), $payload);
             $this->info("JSON ledger written to: {$jsonPath}");
         }
 
@@ -185,38 +190,17 @@ class CspScanAlpine extends Command
     private function scanFile(string $relPath, string $contents, string $sourceLabel): array
     {
         $findings = [];
+
+        // Whole-file scan for x-data / x-init so multi-line attribute values
+        // (`x-data="{\n    foo: bar,\n    ...\n}"`) are caught. Line numbers
+        // are derived from the offset.
+        $this->captureWholeFile($contents, '/x-data\s*=\s*"([^"]*)"/s', 'x-data', $findings, $relPath, $sourceLabel, fn ($expr) => $this->classifyXData($expr));
+        $this->captureWholeFile($contents, '/x-init\s*=\s*"([^"]*)"/s', 'x-init', $findings, $relPath, $sourceLabel, fn ($expr) => $this->classifyExpression($expr));
+
         $lines = explode("\n", $contents);
 
         foreach ($lines as $i => $line) {
             $lineNo = $i + 1;
-
-            // x-data="..."
-            if (preg_match_all('/x-data\s*=\s*"([^"]*)"/', $line, $m)) {
-                foreach ($m[1] as $expr) {
-                    $findings[] = [
-                        'source' => $sourceLabel,
-                        'file' => $relPath,
-                        'line' => $lineNo,
-                        'kind' => 'x-data',
-                        'classification' => $this->classifyXData($expr),
-                        'excerpt' => $this->trimExcerpt($expr),
-                    ];
-                }
-            }
-
-            // x-init="..."
-            if (preg_match_all('/x-init\s*=\s*"([^"]*)"/', $line, $m)) {
-                foreach ($m[1] as $expr) {
-                    $findings[] = [
-                        'source' => $sourceLabel,
-                        'file' => $relPath,
-                        'line' => $lineNo,
-                        'kind' => 'x-init',
-                        'classification' => $this->classifyExpression($expr),
-                        'excerpt' => $this->trimExcerpt($expr),
-                    ];
-                }
-            }
 
             // Skip Blade component prop bindings — `<x-foo :bar="$baz">` looks
             // like an Alpine `:bar` binding to regex but is actually PHP
@@ -267,6 +251,42 @@ class CspScanAlpine extends Command
         }
 
         return $findings;
+    }
+
+    /**
+     * Scan the whole file for a regex pattern, recording each capture group 1
+     * as a finding. Used for x-data / x-init where the value can span multiple
+     * lines.
+     *
+     * @param  callable(string): string  $classify
+     * @param  array<int, array<string, mixed>>  $findings
+     */
+    private function captureWholeFile(
+        string $contents,
+        string $pattern,
+        string $kind,
+        array &$findings,
+        string $relPath,
+        string $sourceLabel,
+        callable $classify,
+    ): void {
+        if (! preg_match_all($pattern, $contents, $matches, PREG_OFFSET_CAPTURE)) {
+            return;
+        }
+
+        foreach ($matches[1] as $match) {
+            [$expr, $offset] = $match;
+            $lineNo = substr_count(substr($contents, 0, $offset), "\n") + 1;
+
+            $findings[] = [
+                'source' => $sourceLabel,
+                'file' => $relPath,
+                'line' => $lineNo,
+                'kind' => $kind,
+                'classification' => $classify($expr),
+                'excerpt' => $this->trimExcerpt($expr),
+            ];
+        }
     }
 
     /**
@@ -401,7 +421,11 @@ class CspScanAlpine extends Command
     {
         $expr = preg_replace('/\s+/', ' ', trim($expr));
 
-        return strlen($expr) > 80 ? substr($expr, 0, 77).'...' : $expr;
+        // Use mb_substr to avoid breaking multi-byte UTF-8 characters mid-byte,
+        // which would produce invalid UTF-8 and crash json_encode.
+        return mb_strlen($expr, 'UTF-8') > 80
+            ? mb_substr($expr, 0, 77, 'UTF-8').'...'
+            : $expr;
     }
 
     /**
