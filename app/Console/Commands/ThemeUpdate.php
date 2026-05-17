@@ -194,18 +194,90 @@ class ThemeUpdate extends Command
         return mb_substr($message, 0, 997).'...';
     }
 
+    /**
+     * Replace the on-disk theme tree with the contents of the freshly
+     * downloaded ZIP.
+     *
+     * Two bugs in the previous implementation:
+     *
+     *   1. Wrong destination — `resource_path("views/themes/...")`
+     *      points at `resources/views/themes/`, but Dixlase themes
+     *      actually live under `base_path("themes/...")` (= the path
+     *      used at install time, by the theme symlink command, by the
+     *      asset build trait, etc). The update therefore wrote files
+     *      to a directory the running app never reads.
+     *
+     *   2. ZIP was extracted with `extractTo($themeDir)` directly,
+     *      leaving every old file in place and dumping the new
+     *      release inside a GitHub-prefixed subdirectory.
+     *
+     * Together those two bugs meant `dls:theme:update` bumped
+     * `themes.version` and rebuilt assets from the *old* source tree,
+     * giving a silent "update" that never touched the live theme.
+     *
+     * The fix stages the ZIP, strips the GitHub `<repo>-<sha>/`
+     * wrapper, and swaps it in at base_path("themes/<directory>")
+     * (the correct location). The upstream snapshot+rollback flow
+     * continues to protect against partial failures here.
+     */
     protected function extractUpdate(string $zipPath, Theme $theme): void
+    {
+        $themeDir = base_path("themes/{$theme->directory}");
+        $this->extractZipReplacingDir($zipPath, $themeDir);
+    }
+
+    /**
+     * Stage the ZIP, strip the GitHub `<repo>-<sha>/` wrapper, and
+     * swap the staged tree in as `$destinationDir`. See
+     * PluginUpdate::extractZipReplacingDir() for the same logic; we
+     * keep a copy here so each console command stays self-contained.
+     */
+    protected function extractZipReplacingDir(string $zipPath, string $destinationDir): void
     {
         $zip = new ZipArchive();
         if ($zip->open($zipPath) !== true) {
             throw new \RuntimeException('Failed to open downloaded ZIP file.');
         }
 
-        // Themes are placed in resource_path("views/themes/{directory}")
-        $themeDir = resource_path("views/themes/{$theme->directory}");
-        File::ensureDirectoryExists($themeDir);
+        $topLevel = null;
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $entry = $zip->getNameIndex($i);
+            if ($entry === false) {
+                continue;
+            }
+            $first = explode('/', $entry, 2)[0];
+            if ($first !== '') {
+                $topLevel = $first;
+                break;
+            }
+        }
 
-        $zip->extractTo($themeDir);
-        $zip->close();
+        if ($topLevel === null) {
+            $zip->close();
+            throw new \RuntimeException('Could not determine top-level directory inside ZIP.');
+        }
+
+        $staging = storage_path('app/private/extension-update/staging/'.uniqid('extract-', true));
+        File::ensureDirectoryExists($staging);
+
+        try {
+            $zip->extractTo($staging);
+            $zip->close();
+
+            $newSource = $staging.'/'.$topLevel;
+            if (! File::isDirectory($newSource)) {
+                throw new \RuntimeException("Extracted top-level directory '{$topLevel}' not found in staging.");
+            }
+
+            if (File::isDirectory($destinationDir)) {
+                File::deleteDirectory($destinationDir);
+            }
+            File::ensureDirectoryExists(dirname($destinationDir));
+            File::move($newSource, $destinationDir);
+        } finally {
+            if (File::isDirectory($staging)) {
+                File::deleteDirectory($staging);
+            }
+        }
     }
 }
