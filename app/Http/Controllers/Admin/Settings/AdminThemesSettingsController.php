@@ -564,8 +564,15 @@ class AdminThemesSettingsController extends AdminLoggedInController
             // Get installed themes and perform audit and notification
             $theme = Theme::where('directory', $themeDir)->first();
             if ($theme) {
+                // If the download came from a registered source (online add
+                // flow), the sidecar tells us which one. Plain ZIP uploads
+                // have no sidecar and stay as 'install'.
+                $linkage = $this->consumeSourceSidecar($themeDir);
+                $installationMethod = $linkage['installation_method'] ?? 'install';
+                $sourceUrl = $linkage['installed_from_url'] ?? null;
+
                 // Capture supply-chain metadata from theme.json
-                $this->persistSupplyChainMetadata($theme, 'install');
+                $this->persistSupplyChainMetadata($theme, $installationMethod, $sourceUrl, $linkage);
 
                 // Record version history (install: no old values)
                 $this->recordVersionHistory(
@@ -1086,17 +1093,27 @@ class AdminThemesSettingsController extends AdminLoggedInController
         $slug = trim((string) $request->input('slug'));
 
         try {
-            // Download ZIP from source
-            $zipPath = $manager->download($slug, 'theme');
+            // Download ZIP from source and capture which source served it
+            $download = $manager->downloadWithSource($slug, 'theme');
 
             // Extract and place ZIP
-            $result = $this->extractAndPlaceTheme($zipPath);
+            $result = $this->extractAndPlaceTheme($download['path']);
 
             if ($result['success']) {
                 $displayName = $result['name'] ?? $slug;
 
                 // Discard past audit results and reset to unscanned state on new download
                 $this->purgeAuditRecordsForSlug($slug, $result['directory'] ?? null);
+
+                // Persist source linkage as a sidecar file inside the
+                // extracted theme directory. install() reads it back
+                // so source_id / source_repo / installation_method are
+                // recorded on the Theme row (otherwise update checks
+                // have no way to find the matching upstream release).
+                $this->writeSourceSidecar(
+                    themeDirectory: $result['directory'],
+                    linkage: $manager->resolveSourceLinkage($download['source'], $slug, 'theme'),
+                );
 
                 return redirect()->route('admin.settings.themes.index')
                     ->with('success', __('admin/settings/themes/add.messages.download_success', ['name' => $displayName]))
@@ -1113,6 +1130,62 @@ class AdminThemesSettingsController extends AdminLoggedInController
 
             return redirect()->route('admin.settings.themes.add')
                 ->with('error', __('admin/settings/themes/add.messages.download_failed', ['error' => $e->getMessage()]));
+        }
+    }
+
+    /**
+     * File name of the sidecar JSON used to remember which source
+     * served a downloaded theme. Mirrors AdminPluginsSettingsController.
+     */
+    private const SOURCE_SIDECAR_FILENAME = '.dixlase-source.json';
+
+    /**
+     * Write the supply-chain linkage produced by ExtensionSourceManager
+     * to a sidecar JSON file next to theme.json. The install controller
+     * reads it back when the user proceeds to install.
+     *
+     * @param  array{source_id: int, source_repo: ?string, installation_method: string, installed_from_url: ?string}  $linkage
+     */
+    protected function writeSourceSidecar(string $themeDirectory, array $linkage): void
+    {
+        $path = base_path("themes/{$themeDirectory}/".self::SOURCE_SIDECAR_FILENAME);
+        try {
+            File::put($path, json_encode($linkage, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        } catch (\Throwable $e) {
+            Log::warning('Failed to write extension source sidecar', [
+                'directory' => $themeDirectory,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Read and remove the source sidecar written by downloadFromSource.
+     * Returns null when no sidecar is present (e.g. plain ZIP upload).
+     *
+     * @return ?array{source_id: int, source_repo: ?string, installation_method: string, installed_from_url: ?string}
+     */
+    protected function consumeSourceSidecar(string $themeDirectory): ?array
+    {
+        $path = base_path("themes/{$themeDirectory}/".self::SOURCE_SIDECAR_FILENAME);
+        if (! File::exists($path)) {
+            return null;
+        }
+        try {
+            $data = json_decode(File::get($path), true);
+            File::delete($path);
+            if (! is_array($data) || ! isset($data['source_id'])) {
+                return null;
+            }
+
+            return $data;
+        } catch (\Throwable $e) {
+            Log::warning('Failed to read extension source sidecar', [
+                'directory' => $themeDirectory,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
         }
     }
 
@@ -1407,8 +1480,9 @@ class AdminThemesSettingsController extends AdminLoggedInController
      * Mirror of AdminPluginsSettingsController::persistSupplyChainMetadata().
      *
      * @param  string  $installationMethod  "upload" / "marketplace" / "cli" / "github"
+     * @param  ?array{source_id: int, source_repo: ?string, installation_method: string, installed_from_url: ?string}  $linkage  Optional source linkage from the install-time sidecar; when present, source_id / source_repo are persisted so update checks know where to look.
      */
-    protected function persistSupplyChainMetadata(Theme $theme, string $installationMethod, ?string $sourceUrl = null): void
+    protected function persistSupplyChainMetadata(Theme $theme, string $installationMethod, ?string $sourceUrl = null, ?array $linkage = null): void
     {
         $themeJsonPath = base_path("themes/{$theme->directory}/theme.json");
         if (! File::exists($themeJsonPath)) {
@@ -1421,13 +1495,20 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 return;
             }
 
-            $theme->update([
+            $payload = [
                 'author_id' => $data['author_id'] ?? null,
                 'authority_key_id' => $data['authority_key_id'] ?? null,
                 'signing_key_id' => $data['signing']['key_id'] ?? null,
                 'installation_method' => $installationMethod,
                 'installed_from_url' => $sourceUrl,
-            ]);
+            ];
+
+            if ($linkage !== null) {
+                $payload['source_id'] = $linkage['source_id'] ?? null;
+                $payload['source_repo'] = $linkage['source_repo'] ?? null;
+            }
+
+            $theme->update($payload);
         } catch (\Throwable $e) {
             Log::warning('Failed to persist theme supply-chain metadata', [
                 'theme' => $theme->slug,
