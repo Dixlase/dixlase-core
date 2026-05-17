@@ -427,7 +427,14 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     /**
      * Build the GitHub repository name from extension slug and type
      */
-    protected function buildRepoName(string $slug, string $extensionType): string
+    /**
+     * Build the GitHub repository name from extension slug and type.
+     *
+     * Public because the admin install controllers need to record the
+     * computed repo name on the Plugin/Theme row at install time so
+     * later update checks know where to look.
+     */
+    public function buildRepoName(string $slug, string $extensionType): string
     {
         $prefix = $extensionType === 'theme' ? $this->themeRepoPrefix : $this->repoPrefix;
 

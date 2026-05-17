@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\BuildsExtensionAssets;
 use App\Models\CoreRelease;
 use App\Models\CoreVersionHistory;
 use App\Services\Core\CoreUpdater;
@@ -49,10 +50,14 @@ use Illuminate\Console\Command;
  */
 class CoreUpdate extends Command
 {
+    use BuildsExtensionAssets;
+
     protected $signature = 'dls:core:update
         {--to= : Target version to install (defaults to core_releases.available_version)}
         {--force : Skip confirmation prompt}
-        {--dry-run : Resolve target version and exit without changes}';
+        {--dry-run : Resolve target version and exit without changes}
+        {--build : Force a front-end asset rebuild even when compiled assets already exist}
+        {--skip-build : Skip the npm install / build step entirely}';
 
     protected $description = 'Update the Dixlase Core to the latest available release';
 
@@ -104,10 +109,21 @@ class CoreUpdate extends Command
             if (! empty($result['backup_record_id'])) {
                 $this->line("  db backup:  record #{$result['backup_record_id']} (kept for manual restore)");
             }
+
+            // Rebuild front-end assets. Default mode is 'force' because a
+            // core update almost always changes resources/ and any
+            // previously built assets are stale; users can pass
+            // --skip-build to opt out.
+            $mode = $this->option('skip-build') ? 'skip' : 'force';
+            if ($this->option('build')) {
+                $mode = 'force';
+            }
+            $this->newLine();
+            $this->buildExtensionAssets(base_path(), $mode);
+
             $this->newLine();
             $this->warn('Next steps (manual):');
             $this->line('  - composer install --no-dev (if composer.json changed)');
-            $this->line('  - npm install && npm run build (if package.json or assets changed)');
             $this->line('  - Restart PHP-FPM / queue workers');
 
             return self::SUCCESS;
