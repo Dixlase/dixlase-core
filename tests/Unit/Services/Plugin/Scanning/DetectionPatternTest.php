@@ -84,6 +84,60 @@ class DetectionPatternTest extends TestCase
     }
 
     /**
+     * DatabaseDetectionPattern: any App\Models\* class is detected,
+     * not just the original hardcoded shortlist. Use case: plugins
+     * accessing core models like CaptchaEnabledForm or
+     * RolePermissionOverride that were missing from the old regex.
+     */
+    public function test_database_core_tables_read_detects_arbitrary_core_model(): void
+    {
+        $pattern = new DatabaseDetectionPattern('core_tables_read');
+        $content = "<?php\n\$row = \\App\\Models\\CaptchaEnabledForm::isFormEnabled('inquiry');\n";
+
+        $results = $pattern->scan($content, 'app/Service.php');
+        $this->assertNotEmpty(
+            $results,
+            'core_tables_read must detect any App\\Models\\* reference, not only the original shortlist.',
+        );
+    }
+
+    /**
+     * DatabaseDetectionPattern: App\Facades\SiteSettings (the recommended
+     * facade entry point for reading core base settings) is detected.
+     * Plugins following the App\Facades\SiteSettings::get(...) idiom
+     * recommended in handoff-plugin-core-access-cleanup.md should not
+     * be penalised for "unused" core_tables_read declarations.
+     */
+    public function test_database_core_tables_read_detects_settings_facade(): void
+    {
+        $pattern = new DatabaseDetectionPattern('core_tables_read');
+        $content = "<?php\n\$mode = \\App\\Facades\\SiteSettings::get('admin_mode', 0);\n";
+
+        $results = $pattern->scan($content, 'app/Controller.php');
+        $this->assertNotEmpty(
+            $results,
+            'core_tables_read must detect App\\Facades\\SiteSettings (and the other core facades) so the recommended idiom does not get penalised.',
+        );
+    }
+
+    /**
+     * DatabaseDetectionPattern: extended core table list. Tables like
+     * members_role_permissions (seeded by plugin role-permission
+     * seeders) are now in the shortlist and detected.
+     */
+    public function test_database_core_tables_write_detects_extended_table_list(): void
+    {
+        $pattern = new DatabaseDetectionPattern('core_tables_write');
+        $content = "<?php\nDB::table('members_role_permissions')->insert(['menu_key' => 'settings.inquiries']);\n";
+
+        $results = $pattern->scan($content, 'database/seeders/Seed.php');
+        $this->assertNotEmpty(
+            $results,
+            'core_tables_write must recognise members_role_permissions and other ancillary core tables, not only the original shortlist.',
+        );
+    }
+
+    /**
      * MailDetectionPattern: use文のインポートのみは除外
      */
     public function test_mail_excludes_use_import(): void
