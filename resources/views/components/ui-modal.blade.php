@@ -60,6 +60,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'close_only' => null,         // 後方互換性
     'dismissible' => true,        // 背景クリックで閉じるかどうか（デフォルト: true）
     'hideActions' => false,       // アクション領域を非表示（ローディング表示等で使用）
+    'centered' => false,          // モーダルをビューポート中央に配置（デフォルトは上寄せ）
 ])
 
 @php
@@ -117,8 +118,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $hasCustomFooter = isset($footer) && !empty(trim($footer ?? ''));
 @endphp
 
-<div id="{{ $id }}" 
-     class="modal"
+<div id="{{ $id }}"
+     class="modal {{ $centered ? 'modal--centered' : '' }}"
      x-data="modal()"
      x-show="show"
      x-cloak

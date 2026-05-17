@@ -243,6 +243,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     iconType="info"
     :dismissible="false"
     :closeOnly="true"
+    :centered="true"
 >
     <p class="text-sm text-gray-700 dark:text-gray-300 text-center">
         {{ __('install/confirm.installing_description_line1') }}<br>
