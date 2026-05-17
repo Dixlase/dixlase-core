@@ -182,17 +182,89 @@ class PluginUpdate extends Command
         return mb_substr($message, 0, 997).'...';
     }
 
+    /**
+     * Replace the on-disk plugin tree with the contents of the freshly
+     * downloaded ZIP.
+     *
+     * The previous implementation called `$zip->extractTo($pluginDir)`
+     * directly, which left every old file in place and dumped the new
+     * release inside a GitHub-prefixed subdirectory (e.g.
+     * `plugins/Foo/Dixlase-plugin-foo-<sha>/...`). The active code
+     * therefore stayed on the *old* version even though
+     * `plugins.version` had been bumped — a silent "update" that did
+     * not actually update.
+     *
+     * We now stage the ZIP under storage/, locate the GitHub-prefixed
+     * top-level directory, replace the live plugin tree with that
+     * directory's contents, and discard the staging area. The
+     * upstream snapshot+rollback flow continues to protect against
+     * partial failures here.
+     */
     protected function extractUpdate(string $zipPath, Plugin $plugin): void
+    {
+        $pluginDir = base_path("plugins/{$plugin->directory}");
+        $this->extractZipReplacingDir($zipPath, $pluginDir);
+    }
+
+    /**
+     * Stage the ZIP, strip the GitHub `<repo>-<sha>/` wrapper, and
+     * swap the staged tree in as `$destinationDir`. Used by both
+     * extractUpdate() above and (for symmetry with the install flow)
+     * may be called by other extension installers.
+     */
+    protected function extractZipReplacingDir(string $zipPath, string $destinationDir): void
     {
         $zip = new ZipArchive();
         if ($zip->open($zipPath) !== true) {
             throw new \RuntimeException('Failed to open downloaded ZIP file.');
         }
 
-        $pluginDir = base_path("plugins/{$plugin->directory}");
-        File::ensureDirectoryExists($pluginDir);
+        // Find the GitHub-style wrapper directory (first entry's first
+        // path segment). GitHub release zipballs always wrap their
+        // payload in <repo>-<commit-or-tag>/ regardless of release vs.
+        // default-branch fallback, so picking the first entry is enough.
+        $topLevel = null;
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $entry = $zip->getNameIndex($i);
+            if ($entry === false) {
+                continue;
+            }
+            $first = explode('/', $entry, 2)[0];
+            if ($first !== '') {
+                $topLevel = $first;
+                break;
+            }
+        }
 
-        $zip->extractTo($pluginDir);
-        $zip->close();
+        if ($topLevel === null) {
+            $zip->close();
+            throw new \RuntimeException('Could not determine top-level directory inside ZIP.');
+        }
+
+        $staging = storage_path('app/private/extension-update/staging/'.uniqid('extract-', true));
+        File::ensureDirectoryExists($staging);
+
+        try {
+            $zip->extractTo($staging);
+            $zip->close();
+
+            $newSource = $staging.'/'.$topLevel;
+            if (! File::isDirectory($newSource)) {
+                throw new \RuntimeException("Extracted top-level directory '{$topLevel}' not found in staging.");
+            }
+
+            // Replace the live tree wholesale. The caller already took a
+            // snapshot, so rollback is handled outside this method.
+            if (File::isDirectory($destinationDir)) {
+                File::deleteDirectory($destinationDir);
+            }
+            File::ensureDirectoryExists(dirname($destinationDir));
+            File::move($newSource, $destinationDir);
+        } finally {
+            // Always clean up the staging area, including on failure.
+            if (File::isDirectory($staging)) {
+                File::deleteDirectory($staging);
+            }
+        }
     }
 }
