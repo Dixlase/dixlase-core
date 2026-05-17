@@ -86,8 +86,34 @@ class DatabaseDetectionPattern extends DetectionPattern
                 '/Schema::(create|table)\s*\(\s*[\'"](\w+)[\'"]/i',
             ],
             'core_tables_read', 'core_tables_write' => [
-                '/\\\\App\\\\Models\\\\(User|Member|Plugin|Media|Setting|SiteSetting|SecuritySetting)/i',
-                '/DB::table\s*\(\s*[\'"](users|members|plugins|media|settings|site_settings|security_settings)[\'"]\)/i',
+                // Any class under App\Models\. The earlier hardcoded
+                // shortlist (User|Member|Plugin|Media|Setting|SiteSetting|
+                // SecuritySetting) missed core models like
+                // CaptchaEnabledForm, RolePermissionOverride, etc., and
+                // every newly-added core model needed a regex update
+                // to be detected. `\w+` is safe here because the `use`
+                // statement exclusion in validateMatch() already
+                // filters out pure-import lines, so only real usages
+                // (constructor calls, static method calls, property
+                // access) actually count toward the score.
+                '/\\\\App\\\\Models\\\\\w+/i',
+                // Core facades that wrap core models (read/write the
+                // underlying tables). The recommended plugin idiom is
+                // `App\Facades\SiteSettings::get(...)` instead of
+                // `App\Models\SiteSetting::getValue(...)`, but the
+                // earlier regex only matched the latter — penalising
+                // plugins that followed the recommendation. Mirror the
+                // current set of core facades under app/Facades/.
+                '/\\\\App\\\\Facades\\\\(SiteSettings|SiteContext|Audit|PluginPermission|Webhook)/i',
+                // Common core tables touched via raw DB::table(). The
+                // earlier shortlist missed members_role_permissions
+                // (role-permission seeders), captcha_enabled_forms
+                // (captcha widget readers), and other ancillary tables.
+                // Plugin authors who need a table not on this list
+                // should fall back to declaring the permission with
+                // _optional in plugin.json — the health scorer already
+                // honors that escape hatch.
+                '/DB::table\s*\(\s*[\'"](users|members|members_role_permissions|plugins|media|settings|site_settings|security_settings|sites|captcha_enabled_forms|role_permission_overrides|audit_logs|webhooks|webhook_deliveries)[\'"]\)/i',
             ],
             default => [],
         };
