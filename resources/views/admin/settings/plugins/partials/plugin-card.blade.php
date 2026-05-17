@@ -77,7 +77,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{-- Update notification (click to go to integrated update management page) --}}
         @if($card['hasUpdateAvailable'] ?? false)
             <a href="{{ route('admin.settings.systems.updates.index', ['target' => 'plugin:' . $card['slug']]) }}"
-               class="flex items-center justify-between mb-2 px-2 py-1 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded text-xs text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+               class="flex items-center justify-between mb-2 px-2 py-1 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded text-xs text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors">
                 <span class="flex items-center gap-1.5">
                     <i class="fas fa-arrow-up"></i>
                     {{ __('admin/settings/plugins/index.update_available', ['version' => $card['availableVersion']]) }}
