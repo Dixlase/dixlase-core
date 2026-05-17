@@ -517,6 +517,58 @@ class ExtensionSourceManager
      */
     public function download(string $slug, string $extensionType = 'plugin', ?string $version = null, ?int $sourceId = null): string
     {
+        return $this->downloadWithSource($slug, $extensionType, $version, $sourceId)['path'];
+    }
+
+    /**
+     * Build the supply-chain linkage array for a freshly downloaded
+     * extension. The admin install controllers persist this verbatim on
+     * the Plugin/Theme record so subsequent update checks know which
+     * source served the install and where to look on GitHub.
+     *
+     * Currently only GitHub-backed sources can supply the
+     * `installed_from_url` and `source_repo` fields; other source types
+     * fall back to leaving those empty rather than guessing.
+     *
+     * @return array{
+     *     source_id: int,
+     *     source_repo: ?string,
+     *     installation_method: string,
+     *     installed_from_url: ?string,
+     * }
+     */
+    public function resolveSourceLinkage(ExtensionSource $source, string $slug, string $extensionType = 'plugin'): array
+    {
+        $provider = $this->makeProvider($source);
+
+        $repo = null;
+        $url = null;
+        if ($provider instanceof GitHubSourceProvider) {
+            $repo = $provider->buildRepoName($slug, $extensionType);
+            $owner = $source->settings['owner'] ?? config('extension-sources.github.default_owner', 'Dixlase');
+            $url = "https://github.com/{$owner}/{$repo}";
+        }
+
+        return [
+            'source_id' => $source->id,
+            'source_repo' => $repo,
+            'installation_method' => $source->type,
+            'installed_from_url' => $url,
+        ];
+    }
+
+    /**
+     * Same as download() but also returns the source that served the
+     * extension. Callers that need to record the source linkage (e.g.
+     * the admin install flow that has to persist source_id /
+     * source_repo on the Plugin/Theme record) should use this instead
+     * of download() so the metadata does not have to be re-discovered
+     * later.
+     *
+     * @return array{path: string, source: ExtensionSource, slug: string, extension_type: string}
+     */
+    public function downloadWithSource(string $slug, string $extensionType = 'plugin', ?string $version = null, ?int $sourceId = null): array
+    {
         $errors = [];
 
         // Try specific source first
@@ -524,7 +576,9 @@ class ExtensionSourceManager
             $source = ExtensionSource::query()->find($sourceId);
             if ($source && $source->is_enabled) {
                 try {
-                    return $this->downloadFromSource($source, $slug, $extensionType, $version);
+                    $path = $this->downloadFromSource($source, $slug, $extensionType, $version);
+
+                    return ['path' => $path, 'source' => $source, 'slug' => $slug, 'extension_type' => $extensionType];
                 } catch (\Throwable $e) {
                     $errors[] = "[{$source->name}] {$e->getMessage()}";
                 }
@@ -538,7 +592,9 @@ class ExtensionSourceManager
             }
 
             try {
-                return $this->downloadFromSource($source, $slug, $extensionType, $version);
+                $path = $this->downloadFromSource($source, $slug, $extensionType, $version);
+
+                return ['path' => $path, 'source' => $source, 'slug' => $slug, 'extension_type' => $extensionType];
             } catch (\Throwable $e) {
                 $errors[] = "[{$source->name}] {$e->getMessage()}";
             }
