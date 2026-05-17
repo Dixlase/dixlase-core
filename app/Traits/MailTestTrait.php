@@ -45,6 +45,45 @@ use Illuminate\Support\Facades\Mail;
 trait MailTestTrait
 {
     /**
+     * Read a complete SMTP reply from a stream socket, draining all
+     * continuation lines before returning.
+     *
+     * Per RFC 5321 §4.2, a multi-line SMTP reply has the format
+     * `XYZ-...` (digit-digit-digit + HYPHEN) on every continuation line
+     * and `XYZ ...` (digit-digit-digit + SPACE) on the final line. The
+     * earlier implementation used a bare `fgets($socket)` which only
+     * read the first line — subsequent reads then picked up the
+     * leftover continuation lines as if they were responses to later
+     * commands, which is what caused the SMTP connection test to throw
+     * a spurious `smtp_auth_login_failed: 250-ENHANCEDSTATUSCODES`
+     * against any server (Sakura, Postfix, Gmail, …) that returns a
+     * multi-line EHLO advertising extensions.
+     *
+     * Single-line replies still terminate on the first iteration
+     * because their only line already matches the `^\d{3} ` pattern,
+     * so callers that previously worked against simpler servers keep
+     * working unchanged.
+     *
+     * @param  resource  $socket
+     * @return string The full reply with continuation lines joined.
+     *                Callers that test only the leading 3-byte status
+     *                code keep working because the first three bytes
+     *                are still the SMTP reply code.
+     */
+    private function readSmtpReply($socket): string
+    {
+        $full = '';
+        while (($line = fgets($socket, 4096)) !== false) {
+            $full .= $line;
+            if (preg_match('/^\d{3} /', $line)) {
+                break;
+            }
+        }
+
+        return $full;
+    }
+
+    /**
      * SMTP connection test
      */
     protected function testSmtpConnection(array $mailSettings)
@@ -80,8 +119,10 @@ trait MailTestTrait
             throw new \Exception($errorMessage);
         }
 
-        // Read SMTP response
-        $response = fgets($socket);
+        // Read SMTP banner. The 220 greeting is typically a single
+        // line but readSmtpReply() handles both single and multi-line
+        // forms safely.
+        $response = $this->readSmtpReply($socket);
 
         if (! $response || ! str_starts_with($response, '220')) {
             fclose($socket);
@@ -91,10 +132,13 @@ trait MailTestTrait
         // If STARTTLS is required
         if ($encryption === 'tls') {
             fwrite($socket, "EHLO localhost\r\n");
-            $response = fgets($socket);
+            // EHLO returns a multi-line reply listing extensions; the
+            // helper drains all of them so the next command's response
+            // is read cleanly.
+            $this->readSmtpReply($socket);
 
             fwrite($socket, "STARTTLS\r\n");
-            $response = fgets($socket);
+            $response = $this->readSmtpReply($socket);
 
             if (! str_starts_with($response, '220')) {
                 fclose($socket);
@@ -111,10 +155,13 @@ trait MailTestTrait
         // Authentication test (if username and password are set)
         if (! empty($username) && ! empty($password)) {
             fwrite($socket, "EHLO localhost\r\n");
-            $response = fgets($socket);
+            // Drain the multi-line EHLO reply before the next command.
+            // Skipping this is what caused the historic
+            // `smtp_auth_login_failed: 250-...` bug.
+            $this->readSmtpReply($socket);
 
             fwrite($socket, "AUTH LOGIN\r\n");
-            $response = fgets($socket);
+            $response = $this->readSmtpReply($socket);
 
             if (! str_starts_with($response, '334')) {
                 fclose($socket);
@@ -123,7 +170,7 @@ trait MailTestTrait
 
             // Send username
             fwrite($socket, base64_encode($username)."\r\n");
-            $response = fgets($socket);
+            $response = $this->readSmtpReply($socket);
 
             if (! str_starts_with($response, '334')) {
                 fclose($socket);
@@ -132,7 +179,7 @@ trait MailTestTrait
 
             // Send password
             fwrite($socket, base64_encode($password)."\r\n");
-            $response = fgets($socket);
+            $response = $this->readSmtpReply($socket);
 
             if (! str_starts_with($response, '235')) {
                 fclose($socket);
@@ -265,7 +312,15 @@ trait MailTestTrait
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('mail-server/test.test_functions.connection_test_failed', ['error' => $e->getMessage()]),
+                // `connection_test_failed` is a bare message with no
+                // `:error` placeholder; `mail_connection_test_failed`
+                // is the variant that actually surfaces the underlying
+                // exception. Without this swap the operator only sees
+                // "メールサーバーへの接続に失敗しました" and never the
+                // protocol-level reason (auth failure, TLS failure,
+                // etc.) — both lang keys already exist in
+                // lang/{ja,en}/mail-server/test.php.
+                'message' => __('mail-server/test.test_functions.mail_connection_test_failed', ['error' => $e->getMessage()]),
             ], 400);
         }
     }
