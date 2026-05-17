@@ -43,6 +43,16 @@
         white-space: normal; // Reset inherited whitespace (e.g. from table cells with whitespace-nowrap)
     }
 
+    // ビューポート中央寄せモード（centered prop）
+    &--centered {
+        @apply flex items-center justify-center;
+
+        .modal-container {
+            @apply top-0;
+            max-height: calc(100vh - 2rem);
+        }
+    }
+
     &-content {
         @apply mt-3 text-center p-4 sm:p-6 pb-0;
         overflow-y: auto;
