@@ -35,18 +35,24 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\BuildsExtensionAssets;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSnapshot;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use ZipArchive;
 
 class ThemeUpdate extends Command
 {
+    use BuildsExtensionAssets;
+
     protected $signature = 'dls:theme:update
         {slug : Theme slug to update}
-        {--force : Skip confirmation}';
+        {--force : Skip confirmation}
+        {--build : Force a front-end asset rebuild even when compiled assets already exist}
+        {--skip-build : Skip the npm install / build step entirely}';
 
     protected $description = 'Update a theme to the latest version from its source';
 
@@ -124,6 +130,25 @@ class ThemeUpdate extends Command
             if ($snapshotPath !== null) {
                 $snapshotter->discard($snapshotPath);
                 $snapshotPath = null;
+            }
+
+            // Rebuild front-end assets that ship with the theme. Default mode
+            // is 'force' because update implies the source tree changed and any
+            // previously built assets are now stale; users can pass
+            // --skip-build to opt out.
+            $mode = $this->option('skip-build') ? 'skip' : 'force';
+            if ($this->option('build')) {
+                $mode = 'force';
+            }
+            if (is_dir($livePath)) {
+                $this->buildExtensionAssets($livePath, $mode);
+                // Refresh the public symlink so the freshly built output is
+                // reachable from the web root (the symlink target is the
+                // resources/assets directory inside the theme).
+                Artisan::call('dls:theme:symlink', [
+                    'action' => 'create',
+                    'theme' => $theme->directory,
+                ]);
             }
 
             $this->info("Theme '{$slug}' updated to v{$release->version} successfully.");

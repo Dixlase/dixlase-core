@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\BuildsExtensionAssets;
 use App\Models\Plugin;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSnapshot;
@@ -44,9 +45,13 @@ use ZipArchive;
 
 class PluginUpdate extends Command
 {
+    use BuildsExtensionAssets;
+
     protected $signature = 'dls:plugin:update
         {slug : Plugin slug to update}
-        {--force : Skip confirmation}';
+        {--force : Skip confirmation}
+        {--build : Force a front-end asset rebuild even when compiled assets already exist}
+        {--skip-build : Skip the npm install / build step entirely}';
 
     protected $description = 'Update a plugin to the latest version from its source';
 
@@ -121,6 +126,18 @@ class PluginUpdate extends Command
             // Successful update — discard the snapshot to free disk space.
             $snapshotter->discard($snapshotPath);
             $snapshotPath = null;
+
+            // Rebuild front-end assets that ship with the plugin. Default mode
+            // is 'force' because update implies the source tree changed and any
+            // previously built assets are now stale; users can pass
+            // --skip-build to opt out.
+            $mode = $this->option('skip-build') ? 'skip' : 'force';
+            if ($this->option('build')) {
+                // Explicit --build is redundant here but kept for symmetry
+                // with install; treat it as the same forced rebuild.
+                $mode = 'force';
+            }
+            $this->buildExtensionAssets($livePath, $mode);
 
             $this->info("Plugin '{$slug}' updated to v{$release->version} successfully.");
 
