@@ -88,7 +88,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         $plugins = Plugin::query()
             ->whereNotNull('available_version')
             ->orderBy('slug')
-            ->get(['id', 'slug', 'name', 'version', 'available_version', 'directory'])
+            ->get(['id', 'slug', 'name', 'version', 'available_version', 'directory', 'update_failed_at', 'update_failure_reason'])
             ->map(fn (Plugin $p) => [
                 'id' => $p->id,
                 'slug' => $p->slug,
@@ -97,6 +97,9 @@ class AdminSystemUpdatesController extends AdminLoggedInController
                 'availableVersion' => $p->available_version,
                 'directory' => $p->directory,
                 'preselected' => $target['type'] === 'plugin' && $target['slug'] === $p->slug,
+                'updateFailedAt' => $p->update_failed_at,
+                'updateFailedAtFormatted' => $p->update_failed_at?->format('Y/m/d H:i'),
+                'updateFailureReason' => $p->update_failure_reason,
             ])
             ->values()
             ->all();
@@ -104,7 +107,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         $themes = Theme::query()
             ->whereNotNull('available_version')
             ->orderBy('slug')
-            ->get(['id', 'slug', 'name', 'version', 'available_version', 'directory'])
+            ->get(['id', 'slug', 'name', 'version', 'available_version', 'directory', 'update_failed_at', 'update_failure_reason'])
             ->map(fn (Theme $t) => [
                 'id' => $t->id,
                 'slug' => $t->slug,
@@ -113,6 +116,9 @@ class AdminSystemUpdatesController extends AdminLoggedInController
                 'availableVersion' => $t->available_version,
                 'directory' => $t->directory,
                 'preselected' => $target['type'] === 'theme' && $target['slug'] === $t->slug,
+                'updateFailedAt' => $t->update_failed_at,
+                'updateFailedAtFormatted' => $t->update_failed_at?->format('Y/m/d H:i'),
+                'updateFailureReason' => $t->update_failure_reason,
             ])
             ->values()
             ->all();
