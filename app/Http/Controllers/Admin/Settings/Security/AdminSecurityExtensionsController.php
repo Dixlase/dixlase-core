@@ -149,7 +149,7 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
     /**
      * Update extension security settings
      */
-    public function update(AdminSecurityExtensionsUpdateRequest $request)
+    public function update(AdminSecurityExtensionsUpdateRequest $request, ExtensionSourceManager $manager)
     {
         $actor = new \App\Actors\MemberActor(\App\Helpers\AdminHelper::getMember());
 
@@ -167,9 +167,24 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
             permission: \App\Enums\Permission::SETTINGS_SECURITY,
         )->execute($actor, $request->validated());
 
-        // Save source token to DB (update only when input exists)
+        // Save source token to DB (update only when input exists).
+        //
+        // On a fresh install extension_sources is empty until something
+        // calls ExtensionSourceManager::getEnabledSources(), which seeds
+        // the default rows from the presets in config. The settings page
+        // itself never triggers that path, so without a deliberate seed
+        // here the row lookup below returned null and the token save
+        // silently no-op'd. The user had to re-submit the form once the
+        // plugin-list page had incidentally seeded the row, which was a
+        // confusing "saved twice and it finally took" experience.
+        //
+        // Calling getEnabledSources() before the lookup guarantees the
+        // row exists, so the very first token save persists as the user
+        // expects.
         $sourceToken = $request->input('extension_source_token');
         if ($sourceToken !== null && $sourceToken !== '') {
+            $manager->getEnabledSources();
+
             $sourceType = $request->validated()['extension_source_type'] ?? 'github';
             $source = ExtensionSource::query()->ofType($sourceType)->enabled()->first();
             if ($source) {
