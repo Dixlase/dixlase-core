@@ -799,8 +799,15 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
             // Perform audit after installation
             if ($plugin) {
+                // If the download came from a registered source (online add
+                // flow), the sidecar tells us which one. Plain ZIP uploads
+                // have no sidecar and stay as 'upload'.
+                $linkage = $this->consumeSourceSidecar($pluginDir);
+                $installationMethod = $linkage['installation_method'] ?? 'upload';
+                $sourceUrl = $linkage['installed_from_url'] ?? null;
+
                 // Retrieve and save supply chain protection metadata from plugin.json
-                $this->persistSupplyChainMetadata($plugin, 'upload');
+                $this->persistSupplyChainMetadata($plugin, $installationMethod, $sourceUrl, $linkage);
 
                 // Record version history (initial installation)
                 $this->recordVersionHistory(
@@ -1422,17 +1429,27 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $slug = trim((string) $request->input('slug'));
 
         try {
-            // Download ZIP from source
-            $zipPath = $manager->download($slug, 'plugin');
+            // Download ZIP from source and capture which source served it
+            $download = $manager->downloadWithSource($slug, 'plugin');
 
             // Extract and place ZIP
-            $result = $this->extractAndPlacePlugin($zipPath);
+            $result = $this->extractAndPlacePlugin($download['path']);
 
             if ($result['success']) {
                 $displayName = $result['name'] ?? $slug;
 
                 // On new download, discard past audit results and return to unscanned state
                 $this->purgeAuditRecordsForSlug($slug, $result['directory'] ?? null);
+
+                // Persist source linkage as a sidecar file inside the
+                // extracted plugin directory. install() reads it back
+                // so source_id / source_repo / installation_method are
+                // recorded on the Plugin row (otherwise update checks
+                // have no way to find the matching upstream release).
+                $this->writeSourceSidecar(
+                    pluginDirectory: $result['directory'],
+                    linkage: $manager->resolveSourceLinkage($download['source'], $slug, 'plugin'),
+                );
 
                 return redirect()->route('admin.settings.plugins.index')
                     ->with('success', __('admin/settings/plugins/add.messages.download_success', ['name' => $displayName]))
@@ -1449,6 +1466,71 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
             return redirect()->route('admin.settings.plugins.add')
                 ->with('error', __('admin/settings/plugins/add.messages.download_failed', ['error' => $e->getMessage()]));
+        }
+    }
+
+    /**
+     * File name of the sidecar JSON used to remember which source
+     * served a downloaded extension. Lives next to plugin.json inside
+     * the plugin directory; deleted again once install() has consumed
+     * its contents so the metadata is not committed back to source
+     * control on accident.
+     */
+    private const SOURCE_SIDECAR_FILENAME = '.dixlase-source.json';
+
+    /**
+     * Write the supply-chain linkage produced by ExtensionSourceManager
+     * to a sidecar JSON file next to plugin.json. The install controller
+     * reads it back when the user proceeds to install.
+     *
+     * @param  array{source_id: int, source_repo: ?string, installation_method: string, installed_from_url: ?string}  $linkage
+     */
+    protected function writeSourceSidecar(string $pluginDirectory, array $linkage): void
+    {
+        $path = base_path("plugins/{$pluginDirectory}/".self::SOURCE_SIDECAR_FILENAME);
+        try {
+            File::put($path, json_encode($linkage, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        } catch (\Throwable $e) {
+            // Loss of the sidecar only degrades update-check linkage; do
+            // not abort the install for it.
+            Log::warning('Failed to write extension source sidecar', [
+                'directory' => $pluginDirectory,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Read and remove the source sidecar written by downloadFromSource.
+     * Returns null when no sidecar is present (e.g. plain ZIP upload).
+     *
+     * The file is deleted after reading so the linkage metadata does
+     * not get committed alongside the plugin source if the operator
+     * later commits plugins/ to version control.
+     *
+     * @return ?array{source_id: int, source_repo: ?string, installation_method: string, installed_from_url: ?string}
+     */
+    protected function consumeSourceSidecar(string $pluginDirectory): ?array
+    {
+        $path = base_path("plugins/{$pluginDirectory}/".self::SOURCE_SIDECAR_FILENAME);
+        if (! File::exists($path)) {
+            return null;
+        }
+        try {
+            $data = json_decode(File::get($path), true);
+            File::delete($path);
+            if (! is_array($data) || ! isset($data['source_id'])) {
+                return null;
+            }
+
+            return $data;
+        } catch (\Throwable $e) {
+            Log::warning('Failed to read extension source sidecar', [
+                'directory' => $pluginDirectory,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
         }
     }
 
@@ -1797,8 +1879,9 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      * Extract supply chain defense metadata from plugin.json and save to Plugin
      *
      * @param  string  $installationMethod  "upload" / "marketplace" / "cli" / "github"
+     * @param  ?array{source_id: int, source_repo: ?string, installation_method: string, installed_from_url: ?string}  $linkage  Optional source linkage from the install-time sidecar; when present, source_id / source_repo are persisted so update checks know where to look.
      */
-    protected function persistSupplyChainMetadata(Plugin $plugin, string $installationMethod, ?string $sourceUrl = null): void
+    protected function persistSupplyChainMetadata(Plugin $plugin, string $installationMethod, ?string $sourceUrl = null, ?array $linkage = null): void
     {
         $pluginJsonPath = base_path("plugins/{$plugin->directory}/plugin.json");
         if (! File::exists($pluginJsonPath)) {
@@ -1811,13 +1894,20 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 return;
             }
 
-            $plugin->update([
+            $payload = [
                 'author_id' => $data['author_id'] ?? null,
                 'authority_key_id' => $data['authority_key_id'] ?? null,
                 'signing_key_id' => $data['signing']['key_id'] ?? null,
                 'installation_method' => $installationMethod,
                 'installed_from_url' => $sourceUrl,
-            ]);
+            ];
+
+            if ($linkage !== null) {
+                $payload['source_id'] = $linkage['source_id'] ?? null;
+                $payload['source_repo'] = $linkage['source_repo'] ?? null;
+            }
+
+            $plugin->update($payload);
         } catch (\Throwable $e) {
             Log::warning('Failed to persist supply-chain metadata', [
                 'plugin' => $plugin->slug,
