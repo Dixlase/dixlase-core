@@ -46,4 +46,7 @@ return [
     'scan_outdated_rescan_recommended' => 'スキャンが古くなっています（:daysSinceScan日前）。再スキャンを推奨します。',
     'undeclared_permission_used' => '未宣言の権限使用: :permission',
     'unused_permission_declaration' => '未使用の権限宣言: ',
+    'api_version_missing' => 'theme.json に requires.dixlase_api が宣言されていません。',
+    'api_version_incompatible' => 'テーマは Extension API :declared を要求していますが、コアは :supported に対応しています。',
+    'api_constraint_malformed' => 'requires.dixlase_api が有効な semver 制約ではありません。',
 ];

@@ -37,11 +37,13 @@ namespace App\Services\Plugin;
 
 use App\DTO\Plugin\HealthIssue;
 use App\DTO\Plugin\HealthScoreResult;
+use App\Enums\ExtensionCompatibilityStatus;
 use App\Enums\ExtensionSecurityLevel;
 use App\Enums\ExtensionSecurityPreset;
 use App\Enums\PluginEnableAction;
 use App\Enums\PluginHealthStatus;
 use App\Models\PluginAudit;
+use App\Services\Extension\ExtensionCompatibilityChecker;
 use App\Services\Licensing\LicenseValidator;
 use App\Services\SecuritySettingsRegistry;
 use Illuminate\Support\Facades\File;
@@ -138,6 +140,9 @@ class PluginHealthScorer
 
         // 8. License declaration evaluation (SPDX whitelist)
         $issues = array_merge($issues, $this->evaluateLicenseMetadata($pluginSlug, $deductionRules));
+
+        // 9. Extension API contract version evaluation (requires.dixlase_api)
+        $issues = array_merge($issues, $this->evaluateApiCompatibility($pluginSlug, $deductionRules));
 
         // Calculate total score
         $totalDeduction = array_sum(array_map(fn (HealthIssue $i) => $i->deduction, $issues));
@@ -458,6 +463,63 @@ class PluginHealthScorer
      *
      * @return array<HealthIssue>
      */
+    /**
+     * Evaluate Extension API contract version declaration
+     *
+     * Reads requires.dixlase_api from plugin.json and runs it through
+     * ExtensionCompatibilityChecker. Emits HealthIssue types:
+     *   - missing_api_version       — field absent
+     *   - incompatible_api_version  — declared range excludes core version
+     *   - malformed_api_constraint  — value is not a valid semver constraint
+     *
+     * @return array<HealthIssue>
+     */
+    protected function evaluateApiCompatibility(string $pluginSlug, array $deductionRules): array
+    {
+        $pluginName = Str::studly(str_replace('-', '_', $pluginSlug));
+        $pluginJsonPath = base_path("plugins/{$pluginName}/plugin.json");
+
+        if (! File::exists($pluginJsonPath)) {
+            return [];
+        }
+
+        try {
+            $data = json_decode(File::get($pluginJsonPath), true);
+            if (json_last_error() !== JSON_ERROR_NONE || ! is_array($data)) {
+                return [];
+            }
+        } catch (\Throwable) {
+            return [];
+        }
+
+        $result = (new ExtensionCompatibilityChecker())->check($data);
+
+        return match ($result->status) {
+            ExtensionCompatibilityStatus::MissingDeclaration => [new HealthIssue(
+                type: 'missing_api_version',
+                severity: 'warning',
+                description: __('services/plugin/plugin_health_scorer.api_version_missing'),
+                deduction: $deductionRules['missing_api_version'] ?? -5,
+            )],
+            ExtensionCompatibilityStatus::Incompatible => [new HealthIssue(
+                type: 'incompatible_api_version',
+                severity: 'warning',
+                description: __('services/plugin/plugin_health_scorer.api_version_incompatible', [
+                    'declared' => $result->declared ?? '',
+                    'supported' => $result->coreVersion,
+                ]),
+                deduction: $deductionRules['incompatible_api_version'] ?? -15,
+            )],
+            ExtensionCompatibilityStatus::MalformedConstraint => [new HealthIssue(
+                type: 'malformed_api_constraint',
+                severity: 'warning',
+                description: __('services/plugin/plugin_health_scorer.api_constraint_malformed'),
+                deduction: $deductionRules['malformed_api_constraint'] ?? -10,
+            )],
+            ExtensionCompatibilityStatus::Compatible => [],
+        };
+    }
+
     protected function evaluateSupplyChainMetadata(string $pluginSlug, array $deductionRules): array
     {
         $issues = [];
