@@ -82,6 +82,10 @@ class PluginDisable extends Command
         // Clear enabled plugins cache
         PluginServiceProvider::clearEnabledPluginsCache();
 
+        // Rebuild the Tailwind plugin-source aggregator so the disabled
+        // plugin's content directories drop out of the next CSS build.
+        app(\App\Services\Tailwind\PluginSourceAggregator::class)->regenerate();
+
         $this->info(__('admin/command.make_plugin.disabled', ['pluginName' => $pluginName]));
 
         return 0;
