@@ -82,6 +82,12 @@ class PluginEnable extends Command
         // Clear enabled plugins cache
         PluginServiceProvider::clearEnabledPluginsCache();
 
+        // Rebuild the Tailwind plugin-source aggregator so themes pick
+        // up the newly enabled plugin's declared content directories on
+        // the next CSS build. Safe no-op when the plugin declares
+        // no `declares.tailwind_content`.
+        app(\App\Services\Tailwind\PluginSourceAggregator::class)->regenerate();
+
         $this->info(__('admin/command.make_plugin.enabled', ['pluginName' => $pluginName]));
 
         return 0;
