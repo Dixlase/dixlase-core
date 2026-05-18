@@ -280,6 +280,11 @@ class InstallConfirmController extends BaseInstallController
                 Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.migration_completed_data_preserved'));
             }
 
+            // Generate the Tailwind plugin-source aggregator so themes' tailwind.css
+            // @import targets exist before the asset build pipeline runs.
+            // Safe to call when no plugins are installed yet — emits an empty stub.
+            Artisan::call('dls:tailwind:regenerate-plugin-sources');
+
             // Restore session driver
             $envContent = file_get_contents($envPath);
             $envContent = preg_replace('/SESSION_DRIVER=.+/', 'SESSION_DRIVER='.$originalSessionDriver, $envContent);
