@@ -24,6 +24,12 @@ env:
   DB_USERNAME: root
   DB_PASSWORD: password
 
+# Cancel older runs on the same ref when a new one starts.
+# Saves Actions minutes on rebases / quick consecutive pushes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ============================================
   # PHPUnit Tests (Core)
