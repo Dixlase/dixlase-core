@@ -373,6 +373,20 @@ class InstallConfirmController extends BaseInstallController
                 Log::channel('install')->warning(__('http/controllers/install/install_confirm_controller.no_active_theme_symlink_not_created'));
             }
 
+            // Generate the Tailwind plugin-source aggregator. The default
+            // theme imports the resulting file during its Vite build, so
+            // it must exist (possibly empty) after the very first install
+            // to keep `npm run build` working before any plugin is
+            // enabled.
+            try {
+                $aggregatorResult = app(\App\Services\Tailwind\PluginSourceAggregator::class)->regenerate();
+                Log::channel('install')->info('Tailwind plugin-source aggregator generated', $aggregatorResult);
+            } catch (\Throwable $e) {
+                Log::channel('install')->error('Failed to generate Tailwind plugin-source aggregator', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
             // Generate file integrity baseline
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.file_integrity_baseline_started'));
             try {
