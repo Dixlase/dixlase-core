@@ -77,6 +77,24 @@ export default defineConfig(({ command }) => ({
         manifest: 'manifest.json', // マニフェストファイルの出力先
         outDir: 'public/assets/build', // 出力先ディレクトリ
         assetsDir: '.', // アセットディレクトリ（outDir相対）
+
+        // CSS の minify は lightningcss を使う。
+        // 共通 SCSS の `:where(.dark, .dark *) &:before { ... }` のような
+        // ルールに対し、Tailwind v4 が出力する CSS では空の `:where()`
+        // が生成され、Vite の CSS minify 既定である esbuild がパース
+        // できず毎ビルドで `Unexpected ")"` の警告を出す
+        // (`@tailwindcss/typography` 0.5.x も同様の空 :where() を出す)。
+        // lightningcss は forgiving-selector-list を素直に受け入れる
+        // (Tailwind v4 公式推奨)。
+        cssMinify: 'lightningcss',
+
+        // lightningcss は明示しないと保守的な browserslist 既定で動き、
+        // Tailwind v4 が前提とするモダン CSS (oklch() / nesting /
+        // `:where()` など) に対して fallback を展開してファイルサイズが
+        // 膨れる。Tailwind v4 自身が想定するモダンブラウザに揃え、
+        // 不要な変換を避ける。
+        cssTarget: ['chrome111', 'edge111', 'safari16.4', 'firefox128'],
+
         rollupOptions: {
             treeshake: {
                 moduleSideEffects: true,
