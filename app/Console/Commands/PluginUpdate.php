@@ -139,6 +139,11 @@ class PluginUpdate extends Command
             }
             $this->buildExtensionAssets($livePath, $mode);
 
+            // Regenerate the Tailwind plugin-source aggregator: the
+            // updated plugin may have added, removed, or moved
+            // `declares.tailwind_content` paths in its new plugin.json.
+            app(\App\Services\Tailwind\PluginSourceAggregator::class)->regenerate();
+
             $this->info("Plugin '{$slug}' updated to v{$release->version} successfully.");
 
             return self::SUCCESS;
