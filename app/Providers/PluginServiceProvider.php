@@ -37,6 +37,7 @@ namespace App\Providers;
 
 use App\Helpers\PluginHelper;
 use App\Models\Plugin;
+use App\Services\Extension\ExtensionCompatibilityChecker;
 use App\Traits\PluginLoaderTrait;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
@@ -111,6 +112,20 @@ class PluginServiceProvider extends ServiceProvider
 
             try {
                 $manifest = json_decode(File::get($manifestPath), true);
+
+                if (is_array($manifest)) {
+                    $compat = (new ExtensionCompatibilityChecker())->check($manifest);
+                    if (! $compat->isCompatible()) {
+                        Log::warning('Plugin API compatibility issue', [
+                            'plugin' => $pluginDirectory,
+                            'status' => $compat->status->value,
+                            'declared' => $compat->declared,
+                            'core_api' => $compat->coreVersion,
+                            'message' => $compat->message,
+                        ]);
+                        // v0.1 advisory: continue registration. v0.2 will return here.
+                    }
+                }
 
                 if (isset($manifest['providers']) && is_array($manifest['providers'])) {
                     foreach ($manifest['providers'] as $provider) {

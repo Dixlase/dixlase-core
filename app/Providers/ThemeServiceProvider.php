@@ -37,6 +37,7 @@ namespace App\Providers;
 
 use App\Contracts\Admin\AdminNavigationManagerInterface;
 use App\Models\Theme;
+use App\Services\Extension\ExtensionCompatibilityChecker;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -156,6 +157,22 @@ class ThemeServiceProvider extends ServiceProvider
         }
 
         $themeJson = json_decode(File::get($themeJsonPath), true);
+
+        if (! is_array($themeJson)) {
+            return;
+        }
+
+        $compat = (new ExtensionCompatibilityChecker())->check($themeJson);
+        if (! $compat->isCompatible()) {
+            Log::warning('Theme API compatibility issue', [
+                'theme' => $theme->directory,
+                'status' => $compat->status->value,
+                'declared' => $compat->declared,
+                'core_api' => $compat->coreVersion,
+                'message' => $compat->message,
+            ]);
+            // v0.1 advisory: continue registration. v0.2 will return here.
+        }
 
         if (! isset($themeJson['providers']) || ! is_array($themeJson['providers'])) {
             return;

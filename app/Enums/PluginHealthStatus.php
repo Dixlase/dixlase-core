@@ -211,6 +211,11 @@ enum PluginHealthStatus: string
             'missing_author_id' => -3,
             'missing_authority_key_id' => -3,
 
+            // Extension API contract version (requires.dixlase_api)
+            'missing_api_version' => -5,
+            'incompatible_api_version' => -15,
+            'malformed_api_constraint' => -10,
+
             // License declaration (SPDX whitelist; see config/licensing.php
             // for per-deployment override of these defaults)
             'missing_license' => -10,

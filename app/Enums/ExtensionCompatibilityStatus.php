@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc.
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * Dixlase is dual-licensed. You may use this file under either:
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
@@ -33,20 +35,28 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-return [
-    'audit_scan_not_executed' => 'Audit scan has not been executed',
-    'audit_scan_not_run' => 'Audit scan has not been run',
-    'csp_violation_detected' => 'CSP violation detected (:cspMode mode)',
-    'dangerous_api_detected' => 'Dangerous API detected: :permission',
-    'inline_css_strict_mode_warning' => 'Inline CSS is required. May not work in strict mode',
-    'inline_js_strict_mode_error' => 'Inline JavaScript is required. Will not work in strict mode',
-    'invalid_signature_tampering' => 'Signature is invalid. Possible tampering detected',
-    'no_signature_recommend_signing' => 'No signature found. Signing is recommended for distribution',
-    'permissions_section_undefined' => 'permissions section is undefined',
-    'scan_outdated_rescan_recommended' => 'Scan is outdated (:daysSinceScan days ago). Re-scan recommended',
-    'undeclared_permission_used' => 'Undeclared permission used: :permission',
-    'unused_permission_declaration' => 'Unused permission declaration: ',
-    'api_version_missing' => 'theme.json does not declare requires.dixlase_api.',
-    'api_version_incompatible' => 'Theme declares Extension API :declared but core supports :supported.',
-    'api_constraint_malformed' => 'requires.dixlase_api is not a valid semver constraint.',
-];
+namespace App\Enums;
+
+/**
+ * Result of checking an extension's declared Plugin API version
+ * against the core's supported range.
+ */
+enum ExtensionCompatibilityStatus: string
+{
+    /** Declared version satisfies core's SUPPORTED_RANGE. */
+    case Compatible = 'compatible';
+
+    /** No requires.dixlase_api declared in the manifest. */
+    case MissingDeclaration = 'missing_declaration';
+
+    /** Declared version is well-formed but does not satisfy SUPPORTED_RANGE. */
+    case Incompatible = 'incompatible';
+
+    /** Declared value is not a valid semver constraint. */
+    case MalformedConstraint = 'malformed_constraint';
+
+    public function isCompatible(): bool
+    {
+        return $this === self::Compatible;
+    }
+}

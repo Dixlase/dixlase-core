@@ -37,8 +37,12 @@ namespace App\Services\Theme;
 
 use App\DTO\Plugin\HealthIssue;
 use App\DTO\Plugin\HealthScoreResult;
+use App\Enums\ExtensionCompatibilityStatus;
 use App\Enums\PluginHealthStatus;
 use App\Models\ThemeAudit;
+use App\Services\Extension\ExtensionCompatibilityChecker;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 /**
  * Calculates theme health score
@@ -115,6 +119,9 @@ class ThemeHealthScorer
 
         // 5. Evaluate scan freshness
         $issues = array_merge($issues, $this->evaluateScanFreshness($themeSlug, $deductionRules));
+
+        // 6. Extension API contract version evaluation (requires.dixlase_api)
+        $issues = array_merge($issues, $this->evaluateApiCompatibility($themeSlug, $deductionRules));
 
         $totalDeduction = array_sum(array_map(fn (HealthIssue $i) => $i->deduction, $issues));
         $score = max(0, self::BASE_SCORE + $totalDeduction);
@@ -324,6 +331,63 @@ class ThemeHealthScorer
         }
 
         return $issues;
+    }
+
+    /**
+     * Evaluate Extension API contract version declaration
+     *
+     * Reads requires.dixlase_api from theme.json and runs it through
+     * ExtensionCompatibilityChecker. Emits HealthIssue types:
+     *   - missing_api_version       — field absent
+     *   - incompatible_api_version  — declared range excludes core version
+     *   - malformed_api_constraint  — value is not a valid semver constraint
+     *
+     * @return array<HealthIssue>
+     */
+    protected function evaluateApiCompatibility(string $themeSlug, array $deductionRules): array
+    {
+        $themeName = Str::studly(str_replace('-', '_', $themeSlug));
+        $themeJsonPath = base_path("themes/{$themeName}/theme.json");
+
+        if (! File::exists($themeJsonPath)) {
+            return [];
+        }
+
+        try {
+            $data = json_decode(File::get($themeJsonPath), true);
+            if (json_last_error() !== JSON_ERROR_NONE || ! is_array($data)) {
+                return [];
+            }
+        } catch (\Throwable) {
+            return [];
+        }
+
+        $result = (new ExtensionCompatibilityChecker())->check($data);
+
+        return match ($result->status) {
+            ExtensionCompatibilityStatus::MissingDeclaration => [new HealthIssue(
+                type: 'missing_api_version',
+                severity: 'warning',
+                description: __('services/theme/theme_health_scorer.api_version_missing'),
+                deduction: $deductionRules['missing_api_version'] ?? -5,
+            )],
+            ExtensionCompatibilityStatus::Incompatible => [new HealthIssue(
+                type: 'incompatible_api_version',
+                severity: 'warning',
+                description: __('services/theme/theme_health_scorer.api_version_incompatible', [
+                    'declared' => $result->declared ?? '',
+                    'supported' => $result->coreVersion,
+                ]),
+                deduction: $deductionRules['incompatible_api_version'] ?? -15,
+            )],
+            ExtensionCompatibilityStatus::MalformedConstraint => [new HealthIssue(
+                type: 'malformed_api_constraint',
+                severity: 'warning',
+                description: __('services/theme/theme_health_scorer.api_constraint_malformed'),
+                deduction: $deductionRules['malformed_api_constraint'] ?? -10,
+            )],
+            ExtensionCompatibilityStatus::Compatible => [],
+        };
     }
 
     /**

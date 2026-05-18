@@ -9,6 +9,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "composer/semver": "^3.4",
         "cweagans/composer-patches": "^2.0",
         "google/cloud-recaptcha-enterprise": "^2.1",
         "laragear/webauthn": "^4.0",
