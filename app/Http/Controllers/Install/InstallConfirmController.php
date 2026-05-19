@@ -703,7 +703,11 @@ class InstallConfirmController extends BaseInstallController
                 $result = json_decode($output, true);
 
                 if (json_last_error() !== JSON_ERROR_NONE || ! is_array($result)) {
-                    Log::channel('install')->warning(__('http/controllers/install/install_confirm_controller.theme_audit_json_parse_failed', ['slug' => $slug]));
+                    Log::channel('install')->warning(__('http/controllers/install/install_confirm_controller.theme_audit_json_parse_failed', ['slug' => $slug]), [
+                        'json_error' => json_last_error_msg(),
+                        'output_length' => strlen($output),
+                        'output_preview' => substr($output, 0, 500),
+                    ]);
 
                     continue;
                 }
