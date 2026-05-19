@@ -689,8 +689,8 @@ class InstallConfirmController extends BaseInstallController
         $themes = DB::table('themes')->select('slug')->get();
 
         foreach ($themes as $theme) {
+            $slug = $theme->slug;
             try {
-                $slug = $theme->slug;
                 Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.theme_audit_started', ['slug' => $slug]));
 
                 // Check permission declaration consistency (theme.json vs actual code)
@@ -698,9 +698,15 @@ class InstallConfirmController extends BaseInstallController
                     'theme' => $slug,
                     '--json' => true,
                 ]);
+                Log::channel('install')->debug("theme audit: artisan call returned for {$slug}");
 
                 $output = trim(Artisan::output());
                 $result = json_decode($output, true);
+                Log::channel('install')->debug("theme audit: json decoded for {$slug}", [
+                    'output_length' => strlen($output),
+                    'json_error' => json_last_error_msg(),
+                    'is_array' => is_array($result),
+                ]);
 
                 if (json_last_error() !== JSON_ERROR_NONE || ! is_array($result)) {
                     Log::channel('install')->warning(__('http/controllers/install/install_confirm_controller.theme_audit_json_parse_failed', ['slug' => $slug]), [
@@ -725,10 +731,16 @@ class InstallConfirmController extends BaseInstallController
                 $permissionService = app(ThemePermissionService::class);
                 $summary = $permissionService->getSummary($slug);
                 $signature = $summary['signature'] ?? [];
+                Log::channel('install')->debug("theme audit: permission summary for {$slug}", [
+                    'has_signature' => ! empty($signature),
+                ]);
 
                 // Verify CSP compliance status with code scan
                 $cspScanner = app(CspComplianceScanner::class);
                 $cspCompatibility = $cspScanner->scanTheme($slug);
+                Log::channel('install')->debug("theme audit: CSP scan for {$slug}", [
+                    'csp_status' => $cspCompatibility['status'] ?? null,
+                ]);
 
                 $auditData = [
                     'has_mismatches' => ! empty($mismatches),
@@ -746,16 +758,23 @@ class InstallConfirmController extends BaseInstallController
                     'csp_summary' => $cspCompatibility['summary'] ?? [],
                 ];
 
-                ThemeAudit::saveAuditResult($slug, $auditData);
+                $saved = ThemeAudit::saveAuditResult($slug, $auditData);
+                Log::channel('install')->debug("theme audit: saved to DB for {$slug}", [
+                    'audit_id' => $saved->id ?? null,
+                ]);
 
                 Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.theme_audit_completed', ['slug' => $slug]), [
                     'risk_level' => $auditData['risk_level'],
                     'csp_status' => $auditData['csp_status'],
                     'has_mismatches' => $auditData['has_mismatches'],
                 ]);
-            } catch (\Exception $e) {
-                Log::channel('install')->warning(__('http/controllers/install/install_confirm_controller.theme_audit_failed_continue_install', ['slug' => $theme->slug]), [
+            } catch (\Throwable $e) {
+                Log::channel('install')->error(__('http/controllers/install/install_confirm_controller.theme_audit_failed_continue_install', ['slug' => $slug]), [
+                    'error_class' => get_class($e),
                     'error' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString(),
                 ]);
             }
         }
