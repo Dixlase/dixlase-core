@@ -143,6 +143,14 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
         // Pass Authority URL for signature verification to display (always shown for transparency)
         $this->viewParams['authorityUrl'] = config('dixlase-authority.url');
 
+        // Scheduler liveness so the operator can tell whether the
+        // configured update check interval will actually fire.
+        // Without an external process invoking `schedule:run` every
+        // minute (cron container in Docker, host cron otherwise),
+        // the interval setting silently does nothing — surface that
+        // here next to the interval dropdown.
+        $this->viewParams['schedulerStatus'] = app(\App\Services\SchedulerHeartbeat::class)->status();
+
         return view('admin.settings.security.extensions', $this->viewParams);
     }
 
