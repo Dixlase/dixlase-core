@@ -35,7 +35,10 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\ExtensionCompatibilityStatus;
+use App\Extension\ExtensionApi;
 use App\Models\PluginAudit as PluginAuditModel;
+use App\Services\Extension\ExtensionCompatibilityChecker;
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\Plugin\PluginPermissionService;
 use App\Services\Plugin\Scanning\PatternRegistry;
@@ -117,6 +120,7 @@ class PluginAudit extends Command
         // Generate comparison results
         $auditResult = $this->comparePermissions($declaredPermissions, $detectedPermissions);
         $auditResult['capabilities'] = $declaredCapabilities;
+        $auditResult['api_compatibility'] = $this->checkApiCompatibility($pluginJsonPath);
 
         // Persist results to DB (skip in JSON mode as controller will save)
         if (! $isJson) {
@@ -364,6 +368,11 @@ class PluginAudit extends Command
      */
     protected function outputReport(array $result): void
     {
+        if (isset($result['api_compatibility'])) {
+            $this->renderApiCompatibilityLine($result['api_compatibility']);
+            $this->newLine();
+        }
+
         $mismatches = $result['mismatches'];
         $matches = $result['matches'];
 
@@ -434,5 +443,72 @@ class PluginAudit extends Command
 
         $this->newLine();
         $this->info("Run 'php artisan dls:plugin:update-json ".basename(dirname($pluginJsonPath))." --all' to add missing sections.");
+    }
+
+    /**
+     * Check the Plugin API contract compatibility for the audited plugin.
+     *
+     * @return array{status: string, declared: ?string, core_version: string, message: string}
+     */
+    protected function checkApiCompatibility(string $pluginJsonPath): array
+    {
+        if (! File::exists($pluginJsonPath)) {
+            return [
+                'status' => ExtensionCompatibilityStatus::MissingDeclaration->value,
+                'declared' => null,
+                'core_version' => ExtensionApi::CURRENT_VERSION,
+                'message' => 'plugin.json not found',
+            ];
+        }
+
+        $manifest = json_decode(File::get($pluginJsonPath), true);
+        if (! is_array($manifest)) {
+            return [
+                'status' => ExtensionCompatibilityStatus::MissingDeclaration->value,
+                'declared' => null,
+                'core_version' => ExtensionApi::CURRENT_VERSION,
+                'message' => 'plugin.json could not be parsed',
+            ];
+        }
+
+        $result = (new ExtensionCompatibilityChecker())->check($manifest);
+
+        return [
+            'status' => $result->status->value,
+            'declared' => $result->declared,
+            'core_version' => $result->coreVersion,
+            'message' => $result->message,
+        ];
+    }
+
+    /**
+     * Render the API compatibility status as a single colored line.
+     */
+    protected function renderApiCompatibilityLine(array $compat): void
+    {
+        [$icon, $color] = match ($compat['status']) {
+            ExtensionCompatibilityStatus::Compatible->value => ['✅', 'green'],
+            ExtensionCompatibilityStatus::MissingDeclaration->value => ['⚠️', 'yellow'],
+            ExtensionCompatibilityStatus::Incompatible->value => ['❌', 'red'],
+            ExtensionCompatibilityStatus::MalformedConstraint->value => ['❌', 'red'],
+            default => ['❓', 'gray'],
+        };
+
+        $declared = $compat['declared'] !== null
+            ? " (declared: <fg={$color}>{$compat['declared']}</>)"
+            : '';
+
+        $this->line(sprintf(
+            'Plugin API: %s <fg=%s>%s</>%s — core %s',
+            $icon,
+            $color,
+            $compat['status'],
+            $declared,
+            $compat['core_version'],
+        ));
+
+        if ($compat['status'] !== ExtensionCompatibilityStatus::Compatible->value) {
+            $this->line("           <fg=gray>{$compat['message']}</>");
+        }
     }
 }
