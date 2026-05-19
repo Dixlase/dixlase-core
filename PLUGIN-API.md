@@ -1,7 +1,7 @@
 # Dixlase CMS Plugin API Boundary
 
 **Version:** dev
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-19
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -39,6 +39,35 @@ Plugin and theme authors are encouraged to subscribe to GitHub releases of the c
 Public string identifiers exposed by Dixlase (API scopes, permission keys, event names, webhook event types, audit log actions, plugin capabilities, …) follow the conventions documented in [`docs/development/naming.md`](docs/development/naming.md). Identifier names are part of the public API surface — once shipped, they cannot be safely renamed because plugins, issued API keys, stored audit rows, and external webhook integrations all hard-code them.
 
 When introducing a new identifier of an existing kind, follow the format defined in that document. When introducing a new identifier *kind*, update the document first.
+
+### Declaring the API Version You Target
+
+Plugins and themes must declare which Plugin API revision they were written against in their manifest:
+
+```json
+"requires": {
+    "dixlase_api": "^0.1"
+}
+```
+
+This is the contract the extension agrees to follow. Core verifies this declaration on every load and (in future releases) refuses to register incompatible extensions.
+
+- **Field:** `requires.dixlase_api` (semver constraint, e.g. `"^0.1"`)
+- **Current core API version:** `0.1.0` (constant `App\Extension\ExtensionApi::CURRENT_VERSION`)
+- **Supported range:** `^0.1` (constant `App\Extension\ExtensionApi::SUPPORTED_RANGE`)
+- **Bump rules:** MINOR bumps (0.1 → 0.2) ship additive, non-breaking changes; MAJOR bumps (0.x → 1.0) ship breaking changes to the surface documented below.
+
+Enforcement schedule:
+
+| Phase | Behavior |
+|---|---|
+| **v0.1.0** (current) | Advisory only — missing or incompatible declarations log a warning and lower the extension's health score, but registration proceeds. |
+| **v0.2.0** | Strict — extensions without a satisfying declaration are refused at load time and shown as `Incompatible` in the admin extension list. |
+| **v1.0.0** | Strict + the field drives WASM PHP interpreter image selection when the in-process boundary is replaced by per-extension WASM sandboxes. |
+
+The existing `requires.dixlase` field tracks the **whole core product** version range and is separate from `requires.dixlase_api`. Bumping core for an unrelated bug fix does not bump the API contract version; only changes to the documented Plugin API surface (this document) bump it.
+
+For new extensions, scaffolding via `dls:make:plugin` / `dls:make:theme` includes the field automatically. For existing extensions, use `dls:plugin:update-json <Name> --add-api-version` or `dls:theme:update-json <Name> --add-api-version` to insert the declaration in place.
 
 ---
 
@@ -207,6 +236,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 ### 4.7 Extension DTOs
 
+- `App\DTO\Extension\CompatibilityResult`
 - `App\DTO\Extension\ReleaseInfo`
 
 ### 4.8 File Integrity DTOs
@@ -282,6 +312,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\Enums\ContentEditorType`
 - `App\Enums\ContentStatus`
 - `App\Enums\ContentStorageType`
+- `App\Enums\ExtensionCompatibilityStatus`
 - `App\Enums\Locale`
 - `App\Enums\LogLevel`
 - `App\Enums\LoginIdentifierMode`
