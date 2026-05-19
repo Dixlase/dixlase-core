@@ -54,9 +54,13 @@ use Illuminate\Support\Facades\Artisan;
 class AdminSystemUpdatesController extends AdminLoggedInController
 {
     /**
-     * Threshold in seconds to trigger auto-check. Rechecks on load if not checked since this threshold
+     * Fallback threshold (seconds) used by isStale() when the security
+     * setting cannot be read. Kept as a class constant — not a config
+     * value — because it is purely a defensive default for the case
+     * where SecuritySettingsRegistry is unavailable; the operator-facing
+     * setting lives at `extension_update_check_interval`.
      */
-    protected const STALE_THRESHOLD_SECONDS = 21600; // 6 hours
+    protected const FALLBACK_STALE_THRESHOLD_SECONDS = 86400; // 24 hours
 
     public function __construct()
     {
@@ -295,15 +299,57 @@ class AdminSystemUpdatesController extends AdminLoggedInController
     }
 
     /**
-     * Determine whether to trigger auto-check (last check is stale or not performed)
+     * Determine whether to trigger auto-check on page load.
+     *
+     * The threshold honours the operator-configured
+     * `extension_update_check_interval` security setting, matching the
+     * cron-side `dls:source:check` schedule in routes/console.php. This
+     * keeps the two trigger paths consistent — previously the cron path
+     * respected the setting while this page-load path used a hardcoded
+     * 6h, so a "manual only" configuration still got automatic checks
+     * here and a "12h" configuration got both 6h and 12h ticks at
+     * once.
+     *
+     * Returns false when the setting is 0 (manual only): the operator
+     * has explicitly opted out of automatic checks and we must not
+     * override that on page load.
      */
     protected function isStale(): bool
     {
+        $interval = $this->resolveCheckInterval();
+
+        // 0 = manual-only. The operator opted out of automatic checks.
+        if ($interval <= 0) {
+            return false;
+        }
+
         $last = $this->getLastCheckedAt();
         if ($last === null) {
             return true;
         }
 
-        return $last->lt(now()->subSeconds(self::STALE_THRESHOLD_SECONDS));
+        return $last->lt(now()->subSeconds($interval));
+    }
+
+    /**
+     * Read the operator-configured update-check interval in seconds.
+     *
+     * Mirrors the lookup in routes/console.php so both auto-check
+     * triggers see the same value. Falls back to
+     * FALLBACK_STALE_THRESHOLD_SECONDS when the settings registry
+     * throws (e.g. table missing during early install).
+     */
+    protected function resolveCheckInterval(): int
+    {
+        try {
+            $value = \App\Services\SecuritySettingsRegistry::get('extension_update_check_interval');
+            if ($value !== null && $value !== '') {
+                return (int) $value;
+            }
+        } catch (\Throwable) {
+            // Fall through to defaults.
+        }
+
+        return (int) config('extension-sources.check_interval', self::FALLBACK_STALE_THRESHOLD_SECONDS);
     }
 }
