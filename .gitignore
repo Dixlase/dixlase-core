@@ -112,3 +112,7 @@ license.txt
 # tasks. Excluded from CI/CD test suites. See CLAUDE.md "Sandbox Tests".
 /tests/Sandbox/
 
+# Test runner leftover: storage_path() resolves to <project>/var/www/html/storage
+# under certain phpunit configurations, leaving an empty var/ tree behind.
+/var/
+
