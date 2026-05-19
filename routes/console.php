@@ -41,6 +41,19 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote')->hourly();
 
+// Scheduler liveness heartbeat. The admin UI reads the recorded
+// timestamp to decide whether to display "scheduler is running" vs
+// "configure cron / start the cron container". Without this tick the
+// operator-facing `extension_update_check_interval` setting silently
+// has no effect, because nothing is invoking `schedule:run` from the
+// outside world.
+Schedule::call(function () {
+    app(\App\Services\SchedulerHeartbeat::class)->touch();
+})
+    ->name('dixlase-scheduler-heartbeat')
+    ->everyMinute()
+    ->withoutOverlapping();
+
 // File integrity scan (runs daily at 3:00 AM)
 Schedule::command('dls:integrity:scan --scheduled')
     ->dailyAt('03:00')
