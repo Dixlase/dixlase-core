@@ -102,6 +102,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <p class="text-sm text-gray-400 dark:text-gray-500 italic mb-3">{{ __('common.no_description') }}</p>
         @endif
 
+        {{-- Details button (mirrors plugin card) --}}
+        <div class="mb-3 flex justify-center">
+            <x-form-button
+                type="link"
+                :href="route('admin.settings.themes.show', $card['slug'])"
+                :label="__('admin/settings/themes/index.view_details')"
+                variant="secondary"
+                size="xs"
+                icon="fas fa-info-circle"
+                class="py-2 px-3"
+            />
+        </div>
+
         {{-- Badges --}}
         @if($card['permissionSummary'])
         <div class="mb-3 pt-3 border-t border-gray-100 dark:border-gray-700 space-y-2"
