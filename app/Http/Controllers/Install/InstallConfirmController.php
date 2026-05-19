@@ -37,12 +37,16 @@ namespace App\Http\Controllers\Install;
 
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\GitIgnoreHelper;
+use App\Models\ThemeAudit;
+use App\Services\Csp\CspComplianceScanner;
 use App\Services\Site\SettingResolver;
+use App\Services\Theme\ThemePermissionService;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Schema;
 
 /**
