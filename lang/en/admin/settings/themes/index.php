@@ -73,6 +73,7 @@ return [
     'no_themes' => 'No themes are installed.',
     'no_themes_description' => 'Add themes to customize your site\'s appearance.',
     'add_theme' => 'Add Theme',
+    'view_details' => 'Details',
     'uninstalled_description' => 'These themes have files present but are not yet installed.',
     'uninstall' => [
         'confirm_title' => 'Uninstall Confirmation',

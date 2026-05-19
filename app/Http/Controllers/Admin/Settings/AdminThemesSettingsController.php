@@ -155,6 +155,97 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
+     * Theme detail page. Mirrors AdminPluginsSettingsController::show().
+     *
+     * Resolves the theme by slug from either the installed list (DB)
+     * or the uninstalled-on-disk list, normalises the metadata into the
+     * same shape ExtensionCardPresenter::forTheme() returns, and hands
+     * everything off to admin/settings/themes/show.blade.php.
+     */
+    public function show(string $slug)
+    {
+        $theme = Theme::where('slug', $slug)->first();
+
+        if (! $theme) {
+            // Fall back to themes that are present on disk but not yet
+            // registered in the database — the list page surfaces them
+            // under the "uninstalled" section and they need a detail
+            // page too.
+            $uninstalledTheme = collect($this->getUninstalledThemes())->firstWhere('slug', $slug);
+
+            if (! $uninstalledTheme) {
+                abort(404);
+            }
+
+            $permissionService = app(ThemePermissionService::class);
+            $summary = $permissionService->getSummary($uninstalledTheme['slug']);
+            $summary['audit'] = $this->getThemeAuditResult($uninstalledTheme['slug']);
+            $uninstalledTheme['permission_summary'] = $summary;
+
+            // CSP compatibility is theme-side, but the presenter expects
+            // these keys to exist. Leave them null when no audit ran yet.
+            $uninstalledTheme['csp_compatibility'] = $this->buildCspCompatibilityFromAudit($summary['audit']);
+            $uninstalledTheme['csp_diagnostic'] = null;
+
+            $card = ExtensionCardPresenter::forTheme($uninstalledTheme);
+            $rawData = $uninstalledTheme;
+            $isInstalled = false;
+        } else {
+            $permissionService = app(ThemePermissionService::class);
+
+            // Match what index() does so the card / scan section behave
+            // identically between the list and the detail page.
+            if ($theme->has_settings === null) {
+                $theme->has_settings = $this->hasThemeSettings($theme);
+            }
+
+            $summary = $permissionService->getSummary($theme->slug);
+            $summary['audit'] = $this->getThemeAuditResult($theme->slug);
+            $theme->permission_summary = $summary;
+            $theme->csp_compatibility = $this->buildCspCompatibilityFromAudit($summary['audit']);
+            $theme->csp_diagnostic = null;
+
+            // Active theme highlight on the card
+            $themeSetting = DB::table('theme_settings')->where('key', 'enabled_theme_id')->first();
+            $activeThemeId = $themeSetting ? (int) $themeSetting->value : null;
+
+            $card = ExtensionCardPresenter::forTheme($theme, $activeThemeId);
+            $rawData = $this->loadThemeJsonForShow($theme->directory);
+            $isInstalled = true;
+        }
+
+        $this->viewParams['card'] = $card;
+        $this->viewParams['rawData'] = $rawData;
+        $this->viewParams['isInstalled'] = $isInstalled;
+        $this->viewParams['heading'] = $card['name'] ?? $slug;
+
+        return view('admin::settings.themes.show', $this->viewParams);
+    }
+
+    /**
+     * Load theme.json from disk for the detail page. Returns an empty
+     * array if the file is missing or unparseable so the view's
+     * `@if(! empty($rawData[...]))` guards work uniformly.
+     *
+     * @return array<string, mixed>
+     */
+    protected function loadThemeJsonForShow(string $directory): array
+    {
+        $path = base_path("themes/{$directory}/theme.json");
+        if (! File::exists($path)) {
+            return [];
+        }
+
+        try {
+            $data = json_decode(File::get($path), true);
+        } catch (\Throwable) {
+            return [];
+        }
+
+        return is_array($data) ? $data : [];
+    }
+
+    /**
      * Get theme audit results from DB
      */
     protected function getThemeAuditResult(string $themeSlug): array

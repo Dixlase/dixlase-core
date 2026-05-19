@@ -35,51 +35,55 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
+    {{-- Page-level action bar: lives above the section so the section
+         header reads as a heading, not a button toolbar. Matches the
+         shape of the plugin index page. --}}
+    <div class="flex flex-wrap items-center justify-end gap-3 mb-6">
+        {{-- Link to update management page (with count badge if updates available) --}}
+        <a href="{{ route('admin.settings.systems.updates.index') }}"
+           class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+            <i class="fas fa-cloud-arrow-down"></i>
+            {{ __('admin/navigation.settings.systems.updates') }}
+            @if(count($updatableExtensions) > 0)
+                <span class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-bold bg-blue-600 text-white rounded-full">{{ count($updatableExtensions) }}</span>
+            @endif
+        </a>
+
+        {{-- Rescan all themes button --}}
+        <form action="{{ route('admin.settings.themes.audit-all') }}" method="POST" class="inline-block" id="bulkAuditThemesForm">
+            @csrf
+            <x-form-button
+                type="button"
+                :label="__('admin/settings/themes/index.audit.audit_all_button')"
+                variant="secondary"
+                icon="fas fa-search"
+                @click="openModal('bulkAuditThemesModal')"
+            />
+
+            <x-ui-modal
+                id="bulkAuditThemesModal"
+                :title="__('admin/settings/themes/index.audit.audit_all_confirm_title')"
+                :message="__('admin/settings/themes/index.audit.audit_all_confirm_message')"
+                icon_type="info"
+                confirm_color="blue"
+                :confirm_label="__('admin/settings/themes/index.audit.audit_all_button')"
+                :cancel_label="__('common.cancel')"
+                form="bulkAuditThemesForm"
+            />
+        </form>
+
+        {{-- All update operations are consolidated in the integrated update management page --}}
+
+        <a href="{{ route('admin.settings.themes.add') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
+            <i class="fas fa-plus mr-2"></i>
+            {{ __('admin/settings/themes/index.add_theme') }}
+        </a>
+    </div>
+
     {{-- Installed theme list section --}}
     <section>
-        <div class="flex items-center justify-between mb-6">
+        <div class="mb-6">
             <h2 class="mb-0">{{ __('admin/settings/themes/index.installed_heading') }}</h2>
-            <div class="flex items-center gap-3">
-                {{-- Link to update management page (with count badge if updates available) --}}
-                <a href="{{ route('admin.settings.systems.updates.index') }}"
-                   class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
-                    <i class="fas fa-cloud-arrow-down"></i>
-                    {{ __('admin/navigation.settings.systems.updates') }}
-                    @if(count($updatableExtensions) > 0)
-                        <span class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-bold bg-blue-600 text-white rounded-full">{{ count($updatableExtensions) }}</span>
-                    @endif
-                </a>
-
-                {{-- Rescan all themes button --}}
-                <form action="{{ route('admin.settings.themes.audit-all') }}" method="POST" class="inline-block" id="bulkAuditThemesForm">
-                    @csrf
-                    <x-form-button
-                        type="button"
-                        :label="__('admin/settings/themes/index.audit.audit_all_button')"
-                        variant="secondary"
-                        icon="fas fa-search"
-                        @click="openModal('bulkAuditThemesModal')"
-                    />
-
-                    <x-ui-modal
-                        id="bulkAuditThemesModal"
-                        :title="__('admin/settings/themes/index.audit.audit_all_confirm_title')"
-                        :message="__('admin/settings/themes/index.audit.audit_all_confirm_message')"
-                        icon_type="info"
-                        confirm_color="blue"
-                        :confirm_label="__('admin/settings/themes/index.audit.audit_all_button')"
-                        :cancel_label="__('common.cancel')"
-                        form="bulkAuditThemesForm"
-                    />
-                </form>
-
-                {{-- All update operations are consolidated in the integrated update management page --}}
-
-                <a href="{{ route('admin.settings.themes.add') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
-                    <i class="fas fa-plus mr-2"></i>
-                    {{ __('admin/settings/themes/index.add_theme') }}
-                </a>
-            </div>
         </div>
 
         @if($themes->count() > 0)
