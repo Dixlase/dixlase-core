@@ -1,0 +1,8 @@
+# Dixlase Security Disclosure Contacts
+# https://securitytxt.org/
+
+Contact: mailto:security@dixlase.org
+Expires: 2027-05-14T00:00:00.000Z
+Preferred-Languages: ja, en
+Canonical: https://dixlase.org/.well-known/security.txt
+Policy: https://dixlase.org/security-policy
