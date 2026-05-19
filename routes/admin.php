@@ -513,6 +513,7 @@ Route::prefix($adminUrl)->name('admin.')
             Route::middleware('check.menu.access:settings.themes')->group(function () {
                 Route::get('/settings/themes', [AdminThemesSettingsController::class, 'index'])->name('settings.themes.index');
                 Route::get('/settings/themes/add', [AdminThemesSettingsController::class, 'add'])->name('settings.themes.add');
+                Route::get('/settings/themes/show/{slug}', [AdminThemesSettingsController::class, 'show'])->name('settings.themes.show');
                 Route::post('/settings/themes/upload', [AdminThemesSettingsController::class, 'upload'])
                     ->middleware('check.menu.edit:settings.themes')
                     ->name('settings.themes.upload');

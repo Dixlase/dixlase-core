@@ -73,6 +73,7 @@ return [
     'no_themes' => 'テーマがインストールされていません。',
     'no_themes_description' => 'テーマを追加して、サイトの外観をカスタマイズしましょう。',
     'add_theme' => 'テーマを追加',
+    'view_details' => '詳細',
     'uninstalled_description' => 'これらのテーマはファイルが存在しますが、まだインストールされていません。',
     'uninstall' => [
         'confirm_title' => 'アンインストールの確認',
