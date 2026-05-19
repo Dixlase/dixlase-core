@@ -629,6 +629,45 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
                 <x-form-error name="extension_update_check_interval" />
                 <p>{{ __('admin/settings/security/extensions.source.update_check_interval_help') }}</p>
+
+                {{-- Scheduler liveness. The interval setting above only
+                     fires if Laravel's `schedule:run` is invoked every
+                     minute by something outside the app (Docker cron
+                     container, host cron, systemd timer, etc). This
+                     block reads the heartbeat the scheduler writes
+                     each tick and surfaces the status so the operator
+                     sees right away when the setting is silently
+                     inert. --}}
+                @php($_sch = $schedulerStatus ?? ['status' => 'stopped', 'last_tick_formatted' => null, 'seconds_since_tick' => null])
+                @php($_schClass = match($_sch['status']) {
+                    'active' => 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-200',
+                    'warning' => 'bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-200',
+                    default => 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200',
+                })
+                @php($_schIcon = match($_sch['status']) {
+                    'active' => 'fas fa-check-circle',
+                    'warning' => 'fas fa-exclamation-circle',
+                    default => 'fas fa-times-circle',
+                })
+                <div class="mt-3 px-3 py-2 rounded border text-sm {{ $_schClass }}">
+                    <div class="flex items-start gap-2">
+                        <i class="{{ $_schIcon }} mt-0.5"></i>
+                        <div class="flex-1">
+                            <strong>{{ __('admin/settings/security/extensions.source.scheduler.label') }}:</strong>
+                            {{ __('admin/settings/security/extensions.source.scheduler.status_'.$_sch['status']) }}
+                            @if($_sch['last_tick_formatted'])
+                                <span class="text-xs opacity-80 ml-1">
+                                    ({{ __('admin/settings/security/extensions.source.scheduler.last_tick', ['datetime' => $_sch['last_tick_formatted']]) }})
+                                </span>
+                            @endif
+                            @if($_sch['status'] !== 'active')
+                                <p class="mt-1 text-xs opacity-90">
+                                    {{ __('admin/settings/security/extensions.source.scheduler.how_to_fix') }}
+                                </p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
             </fieldset>
         </section>
 
