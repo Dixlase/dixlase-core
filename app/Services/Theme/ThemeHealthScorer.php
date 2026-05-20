@@ -38,9 +38,12 @@ namespace App\Services\Theme;
 use App\DTO\Plugin\HealthIssue;
 use App\DTO\Plugin\HealthScoreResult;
 use App\Enums\ExtensionCompatibilityStatus;
+use App\Enums\ExtensionSecurityLevel;
+use App\Enums\PluginEnableAction;
 use App\Enums\PluginHealthStatus;
 use App\Models\ThemeAudit;
 use App\Services\Extension\ExtensionCompatibilityChecker;
+use App\Services\Extension\ExtensionEnableActionResolver;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
@@ -135,6 +138,18 @@ class ThemeHealthScorer
             issues: $issues,
             hasCriticalIssue: $hasCriticalIssue,
         );
+    }
+
+    /**
+     * Determine the activation action for a theme from its health score.
+     *
+     * Mirrors PluginHealthScorer::determineEnableAction(); both delegate to
+     * ExtensionEnableActionResolver, which applies the theme-specific
+     * `extension_theme_max_health_level` gate.
+     */
+    public function determineEnableAction(HealthScoreResult $result, ?ExtensionSecurityLevel $maxAllowedLevel = null): PluginEnableAction
+    {
+        return (new ExtensionEnableActionResolver())->resolve($result, 'theme', $maxAllowedLevel);
     }
 
     /**
