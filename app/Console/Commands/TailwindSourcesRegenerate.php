@@ -39,8 +39,8 @@ use App\Services\Tailwind\PluginSourceAggregator;
 use Illuminate\Console\Command;
 
 /**
- * Regenerate resources/css/dixlase-tailwind-plugin-sources.css from
- * the current set of enabled plugins.
+ * Regenerate resources/src/common/css/dixlase-tailwind-plugin-sources.css
+ * from the current set of enabled plugins.
  *
  * The plugin lifecycle commands (install / enable / disable / update
  * / uninstall) already invoke the aggregator automatically; this
