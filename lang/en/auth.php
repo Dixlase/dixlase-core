@@ -49,6 +49,7 @@ return [
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
     'lockout' => 'Too many login attempts. Please try again in :minutes minutes.',
     'two_fa_locked_out' => 'Too many two-factor authentication attempts. Please try again in :minutes minutes.',
+    'account_inactive' => 'This account is currently inactive. Please contact a site administrator.',
 
     // Password Reset
     'reset' => [

@@ -50,6 +50,18 @@ enum MemberStatus: int
         return trans('admin.status.'.$this->name);
     }
 
+    /**
+     * Determine whether members with this status are permitted to authenticate.
+     *
+     * Fail-closed: every status other than Active is denied, so any future
+     * lifecycle state (for example an invited/pending state) is rejected by
+     * default until it explicitly opts in here.
+     */
+    public function canAuthenticate(): bool
+    {
+        return $this === self::Active;
+    }
+
     public static function options(): array
     {
         return collect(self::cases())->mapWithKeys(fn ($status) => [
