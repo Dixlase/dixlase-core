@@ -164,12 +164,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @include('admin.settings.themes.partials.permission-modal', ['card' => $card])
     @endif
 
-    {{-- Scan summary section. Themes do not have a dedicated
-         scan-details partial yet, so we surface the same badge row
-         the list-page card renders, plus a re-scan button. The list-
-         page card already gives the full breakdown; this section
-         keeps the detail page useful as the single place to view
-         and re-run the audit. --}}
+    {{-- Scan results section. Mirrors the plugin detail page: a
+         header with a (re)scan button, a "not scanned yet" hint when
+         no audit exists, and the full scan-details breakdown (health
+         score, signature, permission consistency, CSP, owned tables,
+         capabilities, etc.) once an audit has run. --}}
     <section class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div class="flex items-center justify-between gap-3 mb-4">
             <div class="flex items-center gap-3">
@@ -180,7 +179,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :variant="empty($card['auditedAt']) ? 'warning' : 'secondary'"
                     size="sm"
                     icon="fas fa-sync-alt"
-                    class="audit-btn"
+                    class="theme-audit-btn"
                     :data-slug="$card['slug']"
                 />
             </div>
@@ -189,19 +188,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
         </div>
 
+        {{-- Message when not scanned --}}
         @if(empty($card['auditedAt']))
-            <div class="mb-2 p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-center">
+            <div class="mb-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-center">
                 <i class="fas fa-info-circle text-2xl text-gray-400 mb-2"></i>
                 <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/settings/themes/show.scan.not_scanned_message') }}</p>
             </div>
-        @else
-            {{-- Summary line: health label + last scanned at --}}
-            <div class="flex items-center gap-3 text-sm">
-                <span class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/themes/index.badge_labels.health') }}:</span>
-                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $card['badgeColor'] }}">
-                    {{ $card['badgeLabel'] }}
-                </span>
-            </div>
+        @endif
+
+        {{-- Full scan breakdown (same component family as the plugin
+             detail page; sections self-hide when their data is empty). --}}
+        @if($card['permissionSummary'] || $card['healthScore'] !== null)
+            @include('admin.settings.themes.partials.scan-details', ['card' => $card])
         @endif
     </section>
 
