@@ -226,6 +226,15 @@ return [
         'unknown' => 'Unverified',
     ],
 
+    // Operation status — detail page section
+    'operation_status_heading' => 'Operation Status',
+    'operation_status_description' => [
+        'ok' => 'This plugin runs without restrictions under the current security settings.',
+        'caution' => 'This plugin runs, but has issues worth reviewing (unverified permissions, missing signature, and so on).',
+        'blocked' => 'This plugin cannot run under the current security settings. Lower the security preset or CSP mode, or resolve the reported issues.',
+        'unknown' => 'Operation status has not been determined yet. Run a scan to evaluate it.',
+    ],
+
     // Simple Mode Display
     'simple' => [
         'health_safe' => 'Safe',
