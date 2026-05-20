@@ -53,11 +53,14 @@ return [
 
     'sections' => [
         'scan_result' => 'Scan result',
+        'csp_compatibility' => 'CSP Mode Compatibility',
+        'preset_compatibility' => 'Security Preset Compatibility',
     ],
 
     'scan' => [
         'scan' => 'Scan',
         'rescan' => 'Rescan',
         'not_scanned_message' => 'Not scanned yet. Press the Scan button to check the theme\'s permissions, signature, and compatibility.',
+        'issues' => 'Detected issues',
     ],
 ];
