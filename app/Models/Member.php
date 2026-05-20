@@ -116,6 +116,19 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
         'remember_token',
     ];
 
+    /**
+     * Determine whether this member is permitted to authenticate.
+     *
+     * Reflects the account lifecycle state only. Credential verification
+     * and email-verification checks are handled separately by the login
+     * flow. Returns false when the status is missing, so the check is
+     * fail-closed.
+     */
+    public function canAuthenticate(): bool
+    {
+        return $this->status?->canAuthenticate() ?? false;
+    }
+
     public function trustedDevices()
     {
         return $this->hasMany(TrustedDevice::class);

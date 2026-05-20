@@ -289,6 +289,13 @@ trait LoginTrait
                 ->withInput($request->except('password'));
         }
 
+        // Reject the login when the account state forbids authentication
+        if (! $this->isAuthenticationAllowed($user)) {
+            return back()
+                ->withErrors(['login' => __('auth.account_inactive')])
+                ->withInput($request->except('password'));
+        }
+
         // Get email address for lockout
         $email = $user->email;
 
@@ -389,6 +396,19 @@ trait LoginTrait
             // Null if account name login is not supported
             return;
         }
+    }
+
+    /**
+     * Determine whether the resolved user is permitted to authenticate.
+     *
+     * Credentials have already been verified when this runs. Override it
+     * to enforce account-state gates (for example, rejecting members whose
+     * status is not active). The default permits any user that presented
+     * valid credentials.
+     */
+    protected function isAuthenticationAllowed(\Illuminate\Contracts\Auth\Authenticatable $user): bool
+    {
+        return true;
     }
 
     /**

@@ -90,6 +90,14 @@ class AdminLoginController extends AdminController
     }
 
     /**
+     * Reject sign-in for members whose account is not in an active state.
+     */
+    protected function isAuthenticationAllowed(\Illuminate\Contracts\Auth\Authenticatable $user): bool
+    {
+        return $user instanceof Member && $user->canAuthenticate();
+    }
+
+    /**
      * Get authentication guard name
      */
     protected function getGuardName(): string

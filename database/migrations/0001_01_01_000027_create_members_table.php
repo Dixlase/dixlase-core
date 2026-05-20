@@ -58,7 +58,7 @@ return new class extends Migration
             $table->integer('role')->default(1);   // 1=admin, 2=super_admin, 3=editor, 4=author, 5=contributor
             $table->unsignedBigInteger('custom_role_id')->nullable(); // Custom role (foreign key constraint added in add_foreign_key_constraints)
             $table->integer('appearance')->default(0); // 0= auto, 1 = light, 2 = dark
-            $table->string('password'); // Hashed
+            $table->string('password')->nullable(); // Hashed; null until the member sets one (e.g. invited members)
             $table->integer('login_notification_mode')->default(2); // 0= Disabled, 1= DifferentDevice, 2= Always
             $table->integer('two_fa_mode')->default(0); // 0= Disabled, 1= DifferentDevice, 2= Always
             $table->boolean('passkey_prompt_dismissed')->default(false)->comment('Whether to hide the passkey registration promotion modal');

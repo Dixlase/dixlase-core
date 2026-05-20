@@ -94,6 +94,13 @@ class FortifyServiceProvider extends ServiceProvider
             }
 
             if ($member && Hash::check($request->password, $member->password)) {
+                // Reject login if the account is not in an active state
+                if (! $member->canAuthenticate()) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        Fortify::username() => [__('auth.account_inactive')],
+                    ]);
+                }
+
                 // Check if email is verified
                 if (! $member->hasVerifiedEmail()) {
                     // Reject login if not verified
