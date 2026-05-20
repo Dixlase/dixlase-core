@@ -122,6 +122,14 @@ class ExtensionCardPresenter
                 array_map(fn ($i) => $i->jsonSerialize(), $healthResult->issues),
                 fn ($i) => ($i['deduction'] ?? 0) !== 0,
             ));
+
+            // Resolve the activation action so the operation status reflects
+            // the theme's health and the security preset. Without this the
+            // operation light stayed hardcoded "ok" for every audited theme
+            // regardless of mismatches (forPlugin() already does this).
+            if ($auditedAt !== null) {
+                $enableAction = $healthScorer->determineEnableAction($healthResult);
+            }
         } catch (\Exception $e) {
             Log::error('ExtensionCardPresenter: theme health calculation failed', [
                 'theme' => $slug,

@@ -39,13 +39,12 @@ use App\DTO\Plugin\HealthIssue;
 use App\DTO\Plugin\HealthScoreResult;
 use App\Enums\ExtensionCompatibilityStatus;
 use App\Enums\ExtensionSecurityLevel;
-use App\Enums\ExtensionSecurityPreset;
 use App\Enums\PluginEnableAction;
 use App\Enums\PluginHealthStatus;
 use App\Models\PluginAudit;
 use App\Services\Extension\ExtensionCompatibilityChecker;
+use App\Services\Extension\ExtensionEnableActionResolver;
 use App\Services\Licensing\LicenseValidator;
-use App\Services\SecuritySettingsRegistry;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use RecursiveDirectoryIterator;
@@ -679,48 +678,15 @@ class PluginHealthScorer
     }
 
     /**
-     * Determine activation action based on health score and security settings
+     * Determine the activation action for a plugin from its health score.
      *
-     * Allowed by security settings (extension_plugin_max_health_level)
-     * If within health level, can be enabled with confirmation even if critical issues exist
-     * Block only if status is outside allowed range
-     *
-     * Exception: when the active extension security preset is Development,
-     * health-based gating is bypassed (max level forced to NotVerified) so
-     * low-scoring plugins can still be installed/enabled with a warning.
+     * Thin wrapper over ExtensionEnableActionResolver, kept so existing
+     * callers retain a stable entry point. The resolver applies the
+     * plugin-specific `extension_plugin_max_health_level` gate.
      */
     public function determineEnableAction(HealthScoreResult $result, ?ExtensionSecurityLevel $maxAllowedLevel = null): PluginEnableAction
     {
-        if ($maxAllowedLevel === null) {
-            $preset = (string) SecuritySettingsRegistry::get(
-                'extension_security_preset',
-                ExtensionSecurityPreset::default()->value,
-            );
-
-            if ($preset === ExtensionSecurityPreset::Development->value) {
-                $maxAllowedLevel = ExtensionSecurityLevel::NotVerified;
-            } else {
-                $maxAllowedLevel = ExtensionSecurityLevel::from(
-                    (int) SecuritySettingsRegistry::get('extension_plugin_max_health_level', ExtensionSecurityLevel::Warning->value)
-                );
-            }
-        }
-
-        // Block status not allowed in security settings
-        if (! $result->status->canActivate($maxAllowedLevel)) {
-            return PluginEnableAction::Blocked;
-        }
-
-        // If allowed in security settings, determine based on score
-        if ($result->hasCriticalIssue || $result->score < 50) {
-            return PluginEnableAction::AcknowledgementRequired;
-        }
-
-        return match (true) {
-            $result->score >= 90 => PluginEnableAction::Allowed,
-            $result->score >= 70 => PluginEnableAction::WarningRequired,
-            default => PluginEnableAction::AcknowledgementRequired,
-        };
+        return (new ExtensionEnableActionResolver())->resolve($result, 'plugin', $maxAllowedLevel);
     }
 
     /**
