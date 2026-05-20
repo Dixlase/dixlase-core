@@ -53,11 +53,14 @@ return [
 
     'sections' => [
         'scan_result' => 'スキャン結果',
+        'csp_compatibility' => 'CSPモード互換性',
+        'preset_compatibility' => 'セキュリティプリセット互換性',
     ],
 
     'scan' => [
         'scan' => 'スキャン',
         'rescan' => '再スキャン',
         'not_scanned_message' => 'まだスキャンされていません。「スキャン」ボタンを押すと、テーマの権限・署名・互換性を確認します。',
+        'issues' => '検出された指摘事項',
     ],
 ];
