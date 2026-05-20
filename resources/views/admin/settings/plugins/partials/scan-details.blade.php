@@ -32,6 +32,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 <div class="text-left space-y-4">
+    {{-- Operation status (overall verdict — mirrors the card's traffic light) --}}
+    @php($opStatus = $card['operationStatus']['status'] ?? 'unknown')
+    <div class="p-4 rounded-lg border {{ [
+        'ok' => 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
+        'caution' => 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800',
+        'blocked' => 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800',
+    ][$opStatus] ?? 'bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-700' }}">
+        <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            <i class="fas fa-power-off mr-1 {{ $card['opIconColor'] }}"></i>
+            {{ __('admin/settings/plugins/index.operation_status_heading') }}
+        </h4>
+        <div class="flex items-center gap-2">
+            <span class="inline-block w-3 h-3 rounded-full {{ $opStatus === 'ok' ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
+            <span class="inline-block w-3 h-3 rounded-full {{ $opStatus === 'caution' ? 'bg-yellow-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
+            <span class="inline-block w-3 h-3 rounded-full {{ $opStatus === 'blocked' ? 'bg-red-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
+            <span class="text-sm font-medium text-gray-900 dark:text-white ml-1">{{ $card['operationStatus']['label'] }}</span>
+        </div>
+        <p class="text-xs text-gray-600 dark:text-gray-400 mt-2">
+            {{ __('admin/settings/plugins/index.operation_status_description.'.$opStatus) }}
+        </p>
+    </div>
+
     {{-- 1. Health Score --}}
     @if($card['healthScore'] !== null)
         <div class="p-4 rounded-lg {{ $card['healthStatusColors'][$card['healthStatus']] ?? 'bg-gray-100 dark:bg-gray-700' }}">
