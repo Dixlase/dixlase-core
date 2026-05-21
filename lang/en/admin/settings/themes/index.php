@@ -177,6 +177,15 @@ return [
         'unknown' => 'Unknown',
     ],
 
+    // Operation status — detail page section
+    'operation_status_heading' => 'Operation Status',
+    'operation_status_description' => [
+        'ok' => 'This theme runs without restrictions under the current security settings.',
+        'caution' => 'This theme runs, but has issues worth reviewing (unverified permissions, missing signature, and so on).',
+        'blocked' => 'This theme cannot run under the current security settings. Lower the security preset or CSP mode, or resolve the reported issues.',
+        'unknown' => 'Operation status has not been determined yet. Run a scan to evaluate it.',
+    ],
+
     // CSP Compliance
     'csp' => [
         'status_label' => 'CSP Compliance',
