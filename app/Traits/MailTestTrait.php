@@ -374,15 +374,17 @@ trait MailTestTrait
                     ], 400);
                 }
             } else {
-                // Email address of currently logged-in account in admin panel
-                $member = \App\Helpers\AdminHelper::getMember();
-                if (! $member) {
+                // Send the test mail to the configured "from" address. This is
+                // the address shown in the form and described in the UI, so the
+                // operator verifies round-trip delivery on the mailbox they are
+                // actually setting up.
+                $testEmail = $mailSettings['mail_from_address'] ?? null;
+                if (empty($testEmail)) {
                     return response()->json([
                         'success' => false,
-                        'message' => __('mail-server/test.test_functions.member_not_found'),
+                        'message' => __('mail-server/test.test_functions.from_address_required'),
                     ], 400);
                 }
-                $testEmail = $member->email;
             }
 
             // Generate authentication token
