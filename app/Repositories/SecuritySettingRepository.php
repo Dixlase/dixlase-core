@@ -40,6 +40,7 @@ namespace App\Repositories;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Models\GlobalSetting;
 use App\Models\SecuritySetting;
+use App\Services\SecuritySettingsRegistry;
 use App\Services\Site\Exceptions\UnknownSettingException;
 use App\Services\Site\SettingDefinitionRegistry;
 use App\Services\Site\SettingResolver;
@@ -90,6 +91,15 @@ class SecuritySettingRepository extends AbstractSettingRepository implements Sec
         $this->resolver->set($name, $value);
         $this->clearCache($name);
 
+        // SecuritySettingsRegistry keeps a separate 300s read cache that
+        // the extension audit / operation-status logic relies on. It is
+        // never written through this repository, so without an explicit
+        // forget the extension cards keep showing the pre-change verdict
+        // for up to five minutes after an admin updates a CSP mode or an
+        // extension security preset. Invalidate it here so security
+        // setting changes take effect immediately.
+        SecuritySettingsRegistry::clearCache($name);
+
         return GlobalSetting::query()->where('name', $name)->first()
             ?? new GlobalSetting(['name' => $name]);
     }
@@ -129,6 +139,7 @@ class SecuritySettingRepository extends AbstractSettingRepository implements Sec
         try {
             $this->resolver->delete($name);
             $this->clearCache($name);
+            SecuritySettingsRegistry::clearCache($name);
 
             return true;
         } catch (UnknownSettingException) {
