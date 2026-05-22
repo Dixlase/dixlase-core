@@ -75,6 +75,12 @@ class ExtensionEnableActionResolver
     ): PluginEnableAction {
         $maxAllowedLevel ??= $this->resolveMaxAllowedLevel($extensionType);
 
+        // A signature-requiring preset (e.g. Strict) blocks any extension that
+        // does not carry a signature, regardless of its health score.
+        if ($this->resolveRequiresSignature() && ! $this->signatureSatisfied($result)) {
+            return PluginEnableAction::Blocked;
+        }
+
         // Block status that the active security settings do not allow.
         if (! $result->status->canActivate($maxAllowedLevel)) {
             return PluginEnableAction::Blocked;
@@ -125,5 +131,59 @@ class ExtensionEnableActionResolver
         return ExtensionSecurityLevel::from(
             (int) SecuritySettingsRegistry::get($settingKey, $default),
         );
+    }
+
+    /**
+     * Whether the active extension security settings require a signature.
+     *
+     * Derived from `extension_require_signature`, falling back to the active
+     * preset's default. The Development preset never requires a signature,
+     * even if a stricter value lingers from a previous preset.
+     */
+    private function resolveRequiresSignature(): bool
+    {
+        $preset = (string) SecuritySettingsRegistry::get(
+            'extension_security_preset',
+            ExtensionSecurityPreset::default()->value,
+        );
+
+        if ($preset === ExtensionSecurityPreset::Development->value) {
+            return false;
+        }
+
+        $presetDefault = (bool) (
+            ExtensionSecurityPreset::tryFrom($preset)?->getDefaultSettings()['require_signature'] ?? false
+        );
+
+        return (bool) SecuritySettingsRegistry::get('extension_require_signature', $presetDefault);
+    }
+
+    /**
+     * Whether the extension carries a signature good enough to satisfy a
+     * `require_signature` preset.
+     *
+     * An extension fails the requirement when the health result contains a
+     * signature issue that means "no usable signature": unsigned, invalid,
+     * expired, signed by an unknown key, or a verification error. A signature
+     * that merely awaits verification (`signature_pending_verification`) still
+     * counts as signed.
+     */
+    private function signatureSatisfied(HealthScoreResult $result): bool
+    {
+        $failingTypes = [
+            'signature_unsigned',
+            'signature_invalid',
+            'signature_expired',
+            'signature_unknown_key',
+            'signature_error',
+        ];
+
+        foreach ($result->issues as $issue) {
+            if (in_array($issue->type, $failingTypes, true)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

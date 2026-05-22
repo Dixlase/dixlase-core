@@ -467,8 +467,9 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         }
 
         $auditedAt = $result['audited_at'] ?? null;
+        $signatureStatus = $summary['signature']['status'] ?? 'unsigned';
         $cspBarometerItems = ExtensionCardPresenter::buildCspBarometerItems($cspCompatibility, $auditedAt);
-        $presetBarometerItems = ExtensionCardPresenter::buildPresetBarometerItems($healthStatus, $auditedAt);
+        $presetBarometerItems = ExtensionCardPresenter::buildPresetBarometerItems($healthStatus, $auditedAt, $signatureStatus);
 
         return response()->json([
             'success' => true,
