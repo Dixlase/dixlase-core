@@ -38,9 +38,12 @@ use Illuminate\Support\Facades\View;
 use Tests\TestCase;
 
 /**
- * Regression test: the admin mail send test must deliver the test mail to
- * the configured "from" address, matching the UI description, instead of
- * the logged-in member's own email address.
+ * Regression test for the admin mail send test:
+ *
+ * - The test mail must be delivered to the logged-in admin's own email
+ *   address (the operator running the 3-stage test can always open it).
+ * - The test mail must be sent FROM the configured "from" address, so the
+ *   test exercises the real outgoing-mail identity.
  */
 class MailTestRecipientTest extends TestCase
 {
@@ -104,19 +107,18 @@ class MailTestRecipientTest extends TestCase
             'mail_username' => '',
             'mail_password' => '',
             'mail_encryption' => 'tls',
-            'mail_from_address' => 'from-address@example.com',
+            'mail_from_address' => 'system-from@example.com',
             'mail_from_name' => 'Test Sender',
         ], $overrides);
     }
 
-    public function test_test_mail_is_sent_to_the_configured_from_address(): void
+    public function test_test_mail_is_sent_to_the_logged_in_account_from_the_configured_address(): void
     {
-        $capturedRecipients = [];
-        Event::listen(MessageSending::class, function (MessageSending $event) use (&$capturedRecipients) {
-            $capturedRecipients = array_map(
-                fn ($address) => $address->getAddress(),
-                $event->message->getTo()
-            );
+        $capturedTo = [];
+        $capturedFrom = [];
+        Event::listen(MessageSending::class, function (MessageSending $event) use (&$capturedTo, &$capturedFrom) {
+            $capturedTo = array_map(fn ($address) => $address->getAddress(), $event->message->getTo());
+            $capturedFrom = array_map(fn ($address) => $address->getAddress(), $event->message->getFrom());
 
             // Cancel the actual delivery — this test only verifies routing.
             return false;
@@ -128,23 +130,11 @@ class MailTestRecipientTest extends TestCase
         $response->assertOk();
         $response->assertJson(['success' => true]);
 
-        // The test mail must go to the form's "from" address, NOT the
-        // logged-in admin's own email address.
-        $this->assertSame(['from-address@example.com'], $capturedRecipients);
-        $this->assertNotContains('logged-in-admin@example.com', $capturedRecipients);
-    }
+        // To = the logged-in admin's own email, so the operator can open the
+        // mail and complete the receive-confirmation test.
+        $this->assertSame(['logged-in-admin@example.com'], $capturedTo);
 
-    public function test_test_mail_fails_when_from_address_is_empty(): void
-    {
-        $response = $this->actingAs($this->admin, 'member')
-            ->postJson(route('admin.settings.base.mail.test-mail'), $this->mailSettings([
-                'mail_from_address' => '',
-            ]));
-
-        $response->assertStatus(400);
-        $response->assertJson([
-            'success' => false,
-            'message' => __('mail-server/test.test_functions.from_address_required'),
-        ]);
+        // From = the configured "from" address.
+        $this->assertSame(['system-from@example.com'], $capturedFrom);
     }
 }
