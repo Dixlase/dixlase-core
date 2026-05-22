@@ -22,6 +22,7 @@
 
 namespace Tests\Unit\Services\Extension;
 
+use App\DTO\Plugin\HealthIssue;
 use App\DTO\Plugin\HealthScoreResult;
 use App\Enums\ExtensionSecurityLevel;
 use App\Enums\PluginEnableAction;
@@ -40,6 +41,10 @@ class ExtensionEnableActionResolverTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // SecuritySettingsRegistry caches resolved values; clear it so each
+        // test starts from the registered defaults rather than a sibling
+        // test's cached setting.
+        SecuritySettingsRegistry::clearCache();
         $this->resolver = new ExtensionEnableActionResolver();
     }
 
@@ -50,6 +55,16 @@ class ExtensionEnableActionResolverTest extends TestCase
             status: $status,
             issues: [],
             hasCriticalIssue: $critical,
+        );
+    }
+
+    private function makeResultWithIssue(int $score, PluginHealthStatus $status, string $issueType): HealthScoreResult
+    {
+        return new HealthScoreResult(
+            score: $score,
+            status: $status,
+            issues: [new HealthIssue(type: $issueType, severity: 'warning', description: '')],
+            hasCriticalIssue: false,
         );
     }
 
@@ -165,5 +180,100 @@ class ExtensionEnableActionResolverTest extends TestCase
 
         $this->assertNotSame(PluginEnableAction::Blocked, $action);
         $this->assertSame(PluginEnableAction::AcknowledgementRequired, $action);
+    }
+
+    /**
+     * The Strict preset requires a signature: an unsigned plugin is blocked
+     * even when its health score would otherwise allow activation.
+     */
+    public function test_resolve_blocks_unsigned_plugin_under_strict_preset(): void
+    {
+        SecuritySettingsRegistry::set('extension_security_preset', 'strict');
+
+        $action = $this->resolver->resolve(
+            $this->makeResultWithIssue(90, PluginHealthStatus::Healthy, 'signature_unsigned'),
+            'plugin',
+        );
+
+        $this->assertSame(PluginEnableAction::Blocked, $action);
+    }
+
+    /**
+     * A validly signed plugin is not blocked by the Strict preset.
+     */
+    public function test_resolve_allows_signed_plugin_under_strict_preset(): void
+    {
+        SecuritySettingsRegistry::set('extension_security_preset', 'strict');
+
+        $action = $this->resolver->resolve(
+            $this->makeResult(95, PluginHealthStatus::Healthy),
+            'plugin',
+        );
+
+        $this->assertSame(PluginEnableAction::Allowed, $action);
+    }
+
+    /**
+     * The Standard (Balanced) preset does not require a signature, so an
+     * unsigned plugin is still installable.
+     */
+    public function test_resolve_allows_unsigned_plugin_under_balanced_preset(): void
+    {
+        SecuritySettingsRegistry::set('extension_security_preset', 'balanced');
+
+        $action = $this->resolver->resolve(
+            $this->makeResultWithIssue(90, PluginHealthStatus::Healthy, 'signature_unsigned'),
+            'plugin',
+        );
+
+        $this->assertNotSame(PluginEnableAction::Blocked, $action);
+    }
+
+    /**
+     * The Custom preset blocks unsigned plugins when require_signature is on.
+     */
+    public function test_resolve_blocks_unsigned_plugin_when_custom_requires_signature(): void
+    {
+        SecuritySettingsRegistry::set('extension_security_preset', 'custom');
+        SecuritySettingsRegistry::set('extension_require_signature', true);
+
+        $action = $this->resolver->resolve(
+            $this->makeResultWithIssue(90, PluginHealthStatus::Healthy, 'signature_unsigned'),
+            'plugin',
+        );
+
+        $this->assertSame(PluginEnableAction::Blocked, $action);
+    }
+
+    /**
+     * The Custom preset allows unsigned plugins when require_signature is off.
+     */
+    public function test_resolve_allows_unsigned_plugin_when_custom_does_not_require_signature(): void
+    {
+        SecuritySettingsRegistry::set('extension_security_preset', 'custom');
+        SecuritySettingsRegistry::set('extension_require_signature', false);
+
+        $action = $this->resolver->resolve(
+            $this->makeResultWithIssue(90, PluginHealthStatus::Healthy, 'signature_unsigned'),
+            'plugin',
+        );
+
+        $this->assertNotSame(PluginEnableAction::Blocked, $action);
+    }
+
+    /**
+     * A signature pending verification still counts as signed: the Strict
+     * preset does not block it.
+     */
+    public function test_resolve_treats_pending_verification_as_signed_under_strict(): void
+    {
+        SecuritySettingsRegistry::set('extension_security_preset', 'strict');
+
+        $action = $this->resolver->resolve(
+            $this->makeResultWithIssue(90, PluginHealthStatus::Healthy, 'signature_pending_verification'),
+            'plugin',
+        );
+
+        $this->assertNotSame(PluginEnableAction::Blocked, $action);
     }
 }
