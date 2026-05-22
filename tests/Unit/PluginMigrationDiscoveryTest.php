@@ -22,37 +22,77 @@
 
 namespace Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
-use Tests\TestCase as DixlaseTestCase;
+use Tests\TestCase;
 
 /**
- * Verifies how the base test case decides which plugin's migrations to
- * register when a plugin's PHPUnit suite runs against core.
+ * Verifies how the base test case decides which plugins' migrations to
+ * apply when a plugin's PHPUnit suite runs against core.
  *
- * @see \Tests\TestCase::pluginUnderTest()
+ * @see \Tests\TestCase::pluginsUnderTest()
+ * @see \Tests\TestCase::requestedTestsuites()
  */
 class PluginMigrationDiscoveryTest extends TestCase
 {
-    public function test_extracts_plugin_directory_from_a_plugin_test_class(): void
+    /**
+     * The PHPUnit invocation arguments, restored after each test so that
+     * argv manipulation does not leak into the rest of the run.
+     *
+     * @var array<int, string>
+     */
+    private array $originalArgv;
+
+    protected function setUp(): void
     {
-        $this->assertSame(
-            'DixlaseInquiry',
-            DixlaseTestCase::pluginUnderTest(
-                'Plugins\\DixlaseInquiry\\Tests\\Unit\\TranslatableSettingsAggregateTest'
-            ),
-        );
+        parent::setUp();
+
+        $this->originalArgv = $_SERVER['argv'] ?? [];
     }
 
-    public function test_returns_null_for_a_core_test_class(): void
+    protected function tearDown(): void
     {
-        $this->assertNull(
-            DixlaseTestCase::pluginUnderTest('Tests\\Unit\\PluginMigrationDiscoveryTest'),
-        );
+        $_SERVER['argv'] = $this->originalArgv;
+
+        parent::tearDown();
     }
 
-    public function test_returns_null_for_a_class_outside_any_known_namespace(): void
+    public function test_requested_testsuites_parses_the_comma_separated_form(): void
     {
-        $this->assertNull(DixlaseTestCase::pluginUnderTest('SomeVendor\\Package\\Thing'));
-        $this->assertNull(DixlaseTestCase::pluginUnderTest('Plugins'));
+        $_SERVER['argv'] = ['phpunit', '--testsuite=DixlaseLegal,DixlaseInquiry'];
+
+        $this->assertSame(['DixlaseLegal', 'DixlaseInquiry'], static::requestedTestsuites());
+    }
+
+    public function test_requested_testsuites_parses_the_space_separated_form(): void
+    {
+        $_SERVER['argv'] = ['phpunit', '--testsuite', 'DixlaseSEO'];
+
+        $this->assertSame(['DixlaseSEO'], static::requestedTestsuites());
+    }
+
+    public function test_requested_testsuites_is_null_without_the_option(): void
+    {
+        $_SERVER['argv'] = ['phpunit', '--filter=SomeTest'];
+
+        $this->assertNull(static::requestedTestsuites());
+    }
+
+    public function test_plugins_under_test_drops_non_plugin_testsuites(): void
+    {
+        $_SERVER['argv'] = ['phpunit', '--testsuite=Unit,Feature,__not_a_plugin__'];
+
+        $this->assertSame([], static::pluginsUnderTest());
+    }
+
+    public function test_plugins_under_test_returns_only_real_plugin_migration_directories(): void
+    {
+        // With no --testsuite the whole run is covered, so every plugin
+        // that ships migrations is returned — and only those.
+        $_SERVER['argv'] = ['phpunit'];
+
+        $plugins = static::pluginsUnderTest();
+
+        foreach ($plugins as $plugin) {
+            $this->assertDirectoryExists(base_path("plugins/{$plugin}/database/migrations"));
+        }
     }
 }
