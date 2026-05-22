@@ -374,17 +374,19 @@ trait MailTestTrait
                     ], 400);
                 }
             } else {
-                // Send the test mail to the configured "from" address. This is
-                // the address shown in the form and described in the UI, so the
-                // operator verifies round-trip delivery on the mailbox they are
-                // actually setting up.
-                $testEmail = $mailSettings['mail_from_address'] ?? null;
-                if (empty($testEmail)) {
+                // Send the test mail to the logged-in admin's own email address.
+                // The operator running the 3-stage test must open the mail and
+                // click the verification link, and they can always access their
+                // own account's mailbox (unlike the system admin address, which
+                // a given operator may not be able to read).
+                $member = \App\Helpers\AdminHelper::getMember();
+                if (! $member) {
                     return response()->json([
                         'success' => false,
-                        'message' => __('mail-server/test.test_functions.from_address_required'),
+                        'message' => __('mail-server/test.test_functions.member_not_found'),
                     ], 400);
                 }
+                $testEmail = $member->email;
             }
 
             // Generate authentication token

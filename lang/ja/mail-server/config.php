@@ -72,7 +72,7 @@ return [
         'mail_encryption' => '暗号化方式',
         'mail_from_address' => '送信元メールアドレス',
         'mail_test' => 'メール送信テスト',
-        'mail_test_description' => '現在の設定でテストメールを送信します。送信元メールアドレス宛にテストメールが送信されます。',
+        'mail_test_description' => '現在の設定でテストメールを送信します。',
         'mail_test_description_2' => 'メール送信機能を有効するには、必ず接続テストとメール送信テストを実行してください。',
         'test_connection_button' => '接続テスト',
         'test_mail_button' => 'テストメール送信',
