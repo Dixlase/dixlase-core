@@ -38,6 +38,7 @@ namespace App\Http\Middleware;
 use App\Models\SiteSetting;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -88,6 +89,7 @@ class FrontIpFilter
                 ->filter();
 
             if ($allowedIps->isNotEmpty() && ! $allowedIps->contains($userIp)) {
+                $this->logDenial($request, $userIp, 'allowlist', $allowedIps->values()->all());
                 abort(403);
             }
         }
@@ -99,10 +101,30 @@ class FrontIpFilter
                 ->filter();
 
             if ($blockedIps->isNotEmpty() && $blockedIps->contains($userIp)) {
+                $this->logDenial($request, $userIp, 'blocklist', $blockedIps->values()->all());
                 abort(403);
             }
         }
 
         return $next($request);
+    }
+
+    /**
+     * Record a rejected front-end request so operators can diagnose IP-filter issues.
+     *
+     * The client IP logged here is the address the application actually
+     * observed; comparing it against the configured list quickly reveals
+     * trusted-proxy misconfiguration or IPv4/IPv6 mismatches.
+     *
+     * @param  array<int, string>  $configuredIps
+     */
+    private function logDenial(Request $request, ?string $clientIp, string $reason, array $configuredIps): void
+    {
+        Log::warning('Front IP filter denied access', [
+            'reason' => $reason,
+            'client_ip' => $clientIp,
+            'path' => $request->path(),
+            'configured_ips' => $configuredIps,
+        ]);
     }
 }

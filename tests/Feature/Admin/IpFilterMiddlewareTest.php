@@ -26,6 +26,7 @@ use App\Http\Middleware\CheckInstallationReady;
 use App\Models\Member;
 use App\Models\SecuritySetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class IpFilterMiddlewareTest extends TestCase
@@ -187,18 +188,59 @@ class IpFilterMiddlewareTest extends TestCase
     }
 
     /**
-     * IPアドレスの前後の空白が正しく処理される
+     * Whitespace around comma-separated allowlist IPs is trimmed before matching.
+     *
+     * The request IP (127.0.0.1) is the second entry with surrounding spaces;
+     * it must still match after trimming.
      */
-    public function test_whitespace_in_ip_list_handled(): void
+    public function test_whitespace_in_allowlist_handled(): void
     {
         SecuritySetting::set('enable_allowed_admin_ips', '1');
-        SecuritySetting::set('allowed_admin_ips', ' 127.0.0.1 , 192.168.1.1 ');
+        SecuritySetting::set('allowed_admin_ips', ' 192.168.1.1 , 127.0.0.1 ');
 
-        // 注: 現在の実装では空白は除去されないため、このテストは失敗する可能性がある
-        // 実装の改善が必要な場合はこのテストで検出できる
         $response = $this->get(route('admin.login'));
 
-        // 現在の実装では空白付きIPは一致しないため403になる可能性
-        $this->assertTrue(in_array($response->status(), [200, 403]));
+        $response->assertStatus(200);
+    }
+
+    /**
+     * Whitespace around comma-separated blocklist IPs is trimmed before matching.
+     *
+     * The request IP (127.0.0.1) is the second entry with a leading space;
+     * it must still be blocked after trimming.
+     */
+    public function test_whitespace_in_blocklist_handled(): void
+    {
+        SecuritySetting::set('enable_blocked_admin_ips', '1');
+        SecuritySetting::set('blocked_admin_ips', '10.0.0.1, 127.0.0.1');
+
+        $response = $this->get(route('admin.login'));
+
+        $response->assertStatus(403);
+    }
+
+    /**
+     * A denied request is logged with the client IP the application observed.
+     *
+     * This is the diagnostic signal operators rely on to distinguish a
+     * trusted-proxy misconfiguration from a genuine allowlist mismatch.
+     */
+    public function test_denied_request_is_logged_with_client_ip(): void
+    {
+        SecuritySetting::set('enable_allowed_admin_ips', '1');
+        SecuritySetting::set('allowed_admin_ips', '192.168.1.100');
+
+        Log::spy();
+
+        $response = $this->get(route('admin.login'));
+
+        $response->assertStatus(403);
+
+        Log::shouldHaveReceived('warning')
+            ->withArgs(function (string $message, array $context): bool {
+                return $message === 'Admin IP filter denied access'
+                    && $context['reason'] === 'allowlist'
+                    && $context['client_ip'] === '127.0.0.1';
+            });
     }
 }
