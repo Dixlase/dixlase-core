@@ -75,6 +75,11 @@ return [
         'AGPL-3.0-only' => ['compatibility' => 'gpl_compatible', 'tier' => 'strong_copyleft'],
         'GPL-3.0-or-later' => ['compatibility' => 'gpl_compatible', 'tier' => 'strong_copyleft'],
         'GPL-3.0-only' => ['compatibility' => 'gpl_compatible', 'tier' => 'strong_copyleft'],
+        // "GPL-3.0" is the deprecated SPDX short form. It is accepted here and
+        // treated as version-pinned (GPL-3.0-only semantics) on purpose: unlike
+        // "-or-later", it does not auto-accept a future GPL-4.0, so any later
+        // GPL version is evaluated on its own merits before being added.
+        'GPL-3.0' => ['compatibility' => 'gpl_compatible', 'tier' => 'strong_copyleft'],
 
         // GPL-2.0-or-later upgrades cleanly to GPL-3, so it is GPL-compatible.
         // GPL-2.0-only is intentionally NOT accepted because it cannot be
@@ -104,6 +109,15 @@ return [
         // alias so it does not trip the unknown_license warning.
         'LicenseRef-Dixlase-Commercial' => ['compatibility' => 'commercial_escape', 'tier' => 'commercial'],
 
+        // ---- Proprietary / closed-source ----
+        // Plain "proprietary" is accepted for closed-source extensions
+        // (first-party internal tools and third-party paid/closed plugins
+        // alike). It is non-GPL and relies on the Dixlase Plugin and Theme
+        // Exception for distribution. Publishers are still encouraged to
+        // ship a LICENSE file documenting their terms; using a specific
+        // LicenseRef-* identifier remains the more precise option.
+        'proprietary' => ['compatibility' => 'compatible_via_exception', 'tier' => 'commercial'],
+
     ],
 
     /*
@@ -124,7 +138,6 @@ return [
         'Apache-1.1' => 'Apache-1.1 is incompatible with the GPL family; use Apache-2.0 instead.',
         'SSPL-1.0' => 'SSPL is not OSI-approved and is incompatible with the AGPL-3.0 core; use AGPL-3.0-or-later if you want a copyleft network license.',
         'BUSL-1.1' => 'BUSL is a source-available license, not an OSI-approved open-source license; it cannot be combined with the AGPL-3.0 core.',
-        'proprietary' => 'Plain "proprietary" is too vague. If you ship a paid extension, use LicenseRef-Dixlase-Commercial (or your own LicenseRef-*) and document the terms in a LICENSE file shipped with the plugin.',
     ],
 
     /*

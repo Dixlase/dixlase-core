@@ -180,8 +180,11 @@ class SecuritySettingDefinitions
 
             // Extension (plugin/theme) install policy
             'extension_security_preset' => ['type' => 'string'],
-            'extension_require_signature' => ['default' => true, 'type' => 'bool'],
-            'extension_require_permission_definition' => ['default' => true, 'type' => 'bool'],
+            // No registry default: the effective value is derived from the
+            // active security preset (see ExtensionEnableActionResolver),
+            // mirroring extension_security_preset / *_max_health_level.
+            'extension_require_signature' => ['type' => 'bool'],
+            'extension_require_permission_definition' => ['default' => false, 'type' => 'bool'],
             'extension_allow_undefined_permissions' => ['default' => false, 'type' => 'bool'],
             'extension_plugin_max_health_level' => ['type' => 'string'],
             'extension_theme_max_health_level' => ['type' => 'string'],

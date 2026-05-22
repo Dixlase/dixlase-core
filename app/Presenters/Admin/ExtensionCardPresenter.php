@@ -203,10 +203,10 @@ class ExtensionCardPresenter
             'scanData' => $scanData,
             'capabilities' => \App\Helpers\PluginHelper::getCapabilitiesForDirectory($directory),
             'cspBarometerItems' => self::buildCspBarometerItems($cspCompatibility, $auditedAt),
-            'presetBarometerItems' => self::buildPresetBarometerItems($healthStatus, $auditedAt),
+            'presetBarometerItems' => self::buildPresetBarometerItems($healthStatus, $auditedAt, $badge['signatureStatus']),
             'operationStatus' => $operationStatus,
             'cspMaxTier' => $cspMaxTier = self::computeMaxCompatibleTier(self::buildCspModeBadges($cspCompatibility), $auditedAt),
-            'presetMaxTier' => $presetMaxTier = self::computeMaxCompatibleTier(self::buildPresetCompatibilityBadges($healthStatus), $auditedAt),
+            'presetMaxTier' => $presetMaxTier = self::computeMaxCompatibleTier(self::buildPresetCompatibilityBadges($healthStatus, $badge['signatureStatus']), $auditedAt),
             'healthIconColor' => ($healthStatus ?? 'not_verified') === 'healthy' ? 'text-green-500' : 'text-red-500',
             'opIconColor' => match ($operationStatus['status'] ?? 'unknown') {
                 'ok' => 'text-green-500',
@@ -390,12 +390,12 @@ class ExtensionCardPresenter
             'scanData' => $scanData,
             'capabilities' => \App\Helpers\PluginHelper::getCapabilitiesForDirectory($directory),
             'cspModeBadges' => self::buildCspModeBadges($cspCompatibility),
-            'presetBadges' => self::buildPresetCompatibilityBadges($healthStatus),
+            'presetBadges' => self::buildPresetCompatibilityBadges($healthStatus, $badge['signatureStatus']),
             'cspBarometerItems' => self::buildCspBarometerItems($cspCompatibility, $auditedAt),
-            'presetBarometerItems' => self::buildPresetBarometerItems($healthStatus, $auditedAt),
+            'presetBarometerItems' => self::buildPresetBarometerItems($healthStatus, $auditedAt, $badge['signatureStatus']),
             'operationStatus' => $operationStatus = self::computeOperationStatus($cspCompatibility, $healthStatus, $auditedAt, $enableAction),
             'cspMaxTier' => $cspMaxTier = self::computeMaxCompatibleTier(self::buildCspModeBadges($cspCompatibility), $auditedAt),
-            'presetMaxTier' => $presetMaxTier = self::computeMaxCompatibleTier(self::buildPresetCompatibilityBadges($healthStatus), $auditedAt),
+            'presetMaxTier' => $presetMaxTier = self::computeMaxCompatibleTier(self::buildPresetCompatibilityBadges($healthStatus, $badge['signatureStatus']), $auditedAt),
             // Icon colors for template (moved from @php block)
             'healthIconColor' => ($healthStatus ?? 'not_verified') === 'healthy' ? 'text-green-500' : 'text-red-500',
             'opIconColor' => match ($operationStatus['status'] ?? 'unknown') {
@@ -682,7 +682,7 @@ class ExtensionCardPresenter
      *
      * @return array<string, array{compatible: bool}>
      */
-    private static function buildPresetCompatibilityBadges(?string $healthStatus): array
+    private static function buildPresetCompatibilityBadges(?string $healthStatus, ?string $signatureStatus = null): array
     {
         if ($healthStatus === null) {
             return [
@@ -694,6 +694,7 @@ class ExtensionCardPresenter
         }
 
         $status = PluginHealthStatus::from($healthStatus);
+        $signatureSatisfied = self::signatureSatisfiesRequirement($signatureStatus);
 
         $presets = [
             'development' => ExtensionSecurityPreset::Development,
@@ -705,7 +706,11 @@ class ExtensionCardPresenter
         foreach ($presets as $key => $preset) {
             $settings = $preset->getDefaultSettings();
             $maxLevel = ExtensionSecurityLevel::from($settings['plugin_max_health_level']);
-            $badges[$key] = ['compatible' => $status->canActivate($maxLevel)];
+            $healthOk = $status->canActivate($maxLevel);
+            // A preset that requires a signature is only compatible when the
+            // extension actually carries one (e.g. the Strict preset).
+            $signatureOk = ! ($settings['require_signature'] ?? false) || $signatureSatisfied;
+            $badges[$key] = ['compatible' => $healthOk && $signatureOk];
         }
 
         // Custom mode: use actual current settings
@@ -713,12 +718,30 @@ class ExtensionCardPresenter
             $customMaxLevel = ExtensionSecurityLevel::from(
                 (int) SecuritySettingsRegistry::get('extension_plugin_max_health_level', ExtensionSecurityLevel::Warning->value)
             );
-            $badges['custom'] = ['compatible' => $status->canActivate($customMaxLevel)];
+            $customRequireSignature = (bool) SecuritySettingsRegistry::get('extension_require_signature', false);
+            $healthOk = $status->canActivate($customMaxLevel);
+            $signatureOk = ! $customRequireSignature || $signatureSatisfied;
+            $badges['custom'] = ['compatible' => $healthOk && $signatureOk];
         } catch (\Exception $e) {
             $badges['custom'] = ['compatible' => null];
         }
 
         return $badges;
+    }
+
+    /**
+     * Whether the extension's signature status satisfies a preset's
+     * `require_signature` flag.
+     *
+     * An extension counts as signed when it carries a verified signature
+     * (`valid`) or a signature that is present but pending verification
+     * (`pending_verification`, e.g. when the verification module is not
+     * installed). All other states — unsigned, invalid, expired, etc. —
+     * fail the requirement.
+     */
+    private static function signatureSatisfiesRequirement(?string $signatureStatus): bool
+    {
+        return in_array($signatureStatus, ['valid', 'pending_verification'], true);
     }
 
     /**
@@ -764,7 +787,7 @@ class ExtensionCardPresenter
      *
      * @return array<int, array{label: string, status: string, tier: string}>
      */
-    public static function buildPresetBarometerItems(?string $healthStatus, ?string $auditedAt): array
+    public static function buildPresetBarometerItems(?string $healthStatus, ?string $auditedAt, ?string $signatureStatus = null): array
     {
         $tierMap = [
             'development' => 'development',
@@ -781,7 +804,7 @@ class ExtensionCardPresenter
             ], $presets);
         }
 
-        $badges = self::buildPresetCompatibilityBadges($healthStatus);
+        $badges = self::buildPresetCompatibilityBadges($healthStatus, $signatureStatus);
         $items = [];
 
         foreach ($presets as $preset) {
