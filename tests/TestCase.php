@@ -34,11 +34,13 @@ use Illuminate\Support\Facades\Schema;
 abstract class TestCase extends BaseTestCase
 {
     /**
-     * Whether the plugin-under-test migration pass has already run in
-     * this process. Guards against re-running it (the pass is triggered
-     * by a `MigrationsEnded` event, and itself emits more of them).
+     * Whether a plugin migration pass is currently executing. Guards
+     * against unbounded recursion: the pass runs `migrate`, which emits
+     * its own `MigrationsEnded` events that would otherwise re-trigger
+     * the pass. It is intentionally NOT a once-per-process flag — see
+     * migratePluginsUnderTest().
      */
-    protected static bool $pluginMigrationsApplied = false;
+    protected static bool $migratingPlugins = false;
 
     protected function setUp(): void
     {
@@ -111,6 +113,14 @@ abstract class TestCase extends BaseTestCase
      * before the migrated PDO is cached — so the plugin tables land on
      * the same connection every test will use.
      *
+     * The pass re-runs on *every* `migrate:fresh`, not once per process:
+     * RefreshDatabase re-runs `migrate:fresh` whenever a test leaves its
+     * connection without an open transaction (RefreshDatabase.php sets
+     * `RefreshDatabaseState::$migrated = false`), which happens on MySQL
+     * after any test that runs DDL — MySQL implicitly commits on DDL.
+     * Each such `migrate:fresh` wipes the plugin tables, so they must be
+     * re-applied alongside it.
+     *
      * The `CommandFinished` console event is unusable here: it is only
      * emitted once `Kernel::rerouteSymfonyCommandEvents()` has run, which
      * does not happen for the programmatic `call()` RefreshDatabase uses.
@@ -126,29 +136,37 @@ abstract class TestCase extends BaseTestCase
 
     /**
      * Run a `migrate` pass for every plugin whose suite is part of the
-     * current run. Runs exactly once per process: the guard is set before
-     * the pass so the `MigrationsEnded` events emitted by the plugin
-     * migrations themselves re-enter this method as a no-op.
+     * current run.
+     *
+     * Runs on every core `migrate:fresh` (see refreshApplication()). The
+     * `$migratingPlugins` guard is a recursion guard, not a once-only
+     * flag: it absorbs the `MigrationsEnded` events that the plugin
+     * `migrate` calls below emit themselves, while still letting a later
+     * core `migrate:fresh` re-apply the plugin tables it wiped.
      */
     protected static function migratePluginsUnderTest(): void
     {
-        if (static::$pluginMigrationsApplied) {
+        if (static::$migratingPlugins) {
             return;
         }
-        static::$pluginMigrationsApplied = true;
+        static::$migratingPlugins = true;
 
-        foreach (static::pluginsUnderTest() as $plugin) {
-            $path = base_path("plugins/{$plugin}/database/migrations");
+        try {
+            foreach (static::pluginsUnderTest() as $plugin) {
+                $path = base_path("plugins/{$plugin}/database/migrations");
 
-            if (! is_dir($path)) {
-                continue;
+                if (! is_dir($path)) {
+                    continue;
+                }
+
+                Artisan::call('migrate', [
+                    '--path' => $path,
+                    '--realpath' => true,
+                    '--force' => true,
+                ]);
             }
-
-            Artisan::call('migrate', [
-                '--path' => $path,
-                '--realpath' => true,
-                '--force' => true,
-            ]);
+        } finally {
+            static::$migratingPlugins = false;
         }
     }
 
