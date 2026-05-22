@@ -38,6 +38,7 @@ namespace App\Http\Middleware;
 use App\Models\SecuritySetting;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -64,25 +65,61 @@ class AdminIpFilter
         // After multisite consolidation, security settings are also integrated into global_settings
         if (Schema::hasTable('global_settings')) {
             $enableAllowedIps = (bool) SecuritySetting::get('enable_allowed_admin_ips', 0);
-            $allowedIps = array_filter(explode(',', (string) SecuritySetting::get('allowed_admin_ips', '')));
+            $allowedIps = $this->parseIpList((string) SecuritySetting::get('allowed_admin_ips', ''));
 
             $enableBlockedIps = (bool) SecuritySetting::get('enable_blocked_admin_ips', 0);
-            $blockedIps = array_filter(explode(',', (string) SecuritySetting::get('blocked_admin_ips', '')));
+            $blockedIps = $this->parseIpList((string) SecuritySetting::get('blocked_admin_ips', ''));
         }
 
-        // Skip IP restriction if allow list is not enabled
+        // Skip IP restriction if neither list is enabled
         if (! $enableAllowedIps && ! $enableBlockedIps) {
             return $next($request);
         }
 
-        if ($enableBlockedIps && in_array($request->ip(), $blockedIps)) {
+        $clientIp = $request->ip();
+
+        if ($enableBlockedIps && in_array($clientIp, $blockedIps, true)) {
+            $this->logDenial($request, $clientIp, 'blocklist', $blockedIps);
             abort(403, 'Access Denied.');
         }
 
-        if ($enableAllowedIps && ! in_array($request->ip(), $allowedIps)) {
+        if ($enableAllowedIps && ! in_array($clientIp, $allowedIps, true)) {
+            $this->logDenial($request, $clientIp, 'allowlist', $allowedIps);
             abort(403, 'Unauthorized Access.');
         }
 
         return $next($request);
+    }
+
+    /**
+     * Split a comma-separated IP setting into a trimmed, non-empty list.
+     *
+     * Whitespace around each entry is removed so that values such as
+     * "1.2.3.4, 5.6.7.8" match correctly.
+     *
+     * @return array<int, string>
+     */
+    private function parseIpList(string $raw): array
+    {
+        return array_values(array_filter(array_map('trim', explode(',', $raw))));
+    }
+
+    /**
+     * Record a rejected admin request so operators can diagnose IP-filter issues.
+     *
+     * The client IP logged here is the address the application actually
+     * observed; comparing it against the configured list quickly reveals
+     * trusted-proxy misconfiguration or IPv4/IPv6 mismatches.
+     *
+     * @param  array<int, string>  $configuredIps
+     */
+    private function logDenial(Request $request, ?string $clientIp, string $reason, array $configuredIps): void
+    {
+        Log::warning('Admin IP filter denied access', [
+            'reason' => $reason,
+            'client_ip' => $clientIp,
+            'path' => $request->path(),
+            'configured_ips' => $configuredIps,
+        ]);
     }
 }
