@@ -24,12 +24,25 @@ namespace Tests;
 
 use App\Contracts\Site\SiteContextInterface;
 use Database\Seeders\SitesSeeder;
+use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 
 abstract class TestCase extends BaseTestCase
 {
+    /**
+     * Plugin directory names whose migrations have already been applied
+     * in this process. Guards against re-running a plugin's migration
+     * pass when several of its test classes execute in one run.
+     *
+     * @var array<int, string>
+     */
+    protected static array $appliedPluginMigrations = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -78,33 +91,67 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Refresh the application, then make the plugin-under-test's own
-     * migrations discoverable.
+     * Refresh the application, then arrange for the plugin-under-test's
+     * own migrations to be applied.
      *
      * Plugins are normally discovered from the `plugins` table (or the
      * enabled-plugins cache), neither of which exists in the freshly
      * migrated test database. A plugin's service provider therefore never
      * boots under test, and the `loadMigrationsFrom()` it would call is
      * never reached — so DB-backed plugin tests fail with "no such table".
-     * Registering the path here, before RefreshDatabase runs
-     * `migrate:fresh`, lets the plugin's own tables be created.
+     *
+     * The plugin's migrations cannot simply be folded into core's
+     * `migrate:fresh` run: a plugin's create-table migration is named
+     * `0001_01_01_000NNN_*` and would sort *before* core's
+     * `0001_01_01_000027_create_members_table`, so an inline foreign key
+     * to `dls_members` fails with "referenced table does not exist".
+     *
+     * Instead the plugin's migrations run as a separate `migrate` pass
+     * *after* all core tables exist:
+     *  - first test in the process: deferred until `migrate:fresh` emits
+     *    `CommandFinished` (fired before the per-test transaction begins);
+     *  - later tests (a different plugin in the same process): core is
+     *    already migrated, so the pass runs immediately here — still
+     *    before this test's transaction starts.
      */
     protected function refreshApplication()
     {
         parent::refreshApplication();
 
-        $this->registerPluginUnderTestMigrations();
-    }
-
-    /**
-     * Register the migration directory of the plugin that owns the
-     * currently running test, if any. No-op for core tests.
-     */
-    protected function registerPluginUnderTestMigrations(): void
-    {
         $plugin = static::pluginUnderTest(static::class);
 
         if ($plugin === null) {
+            return;
+        }
+
+        if (RefreshDatabaseState::$migrated) {
+            // Core schema already exists; migrate this plugin now, before
+            // RefreshDatabase opens this test's transaction.
+            static::ensurePluginMigrated($plugin);
+
+            return;
+        }
+
+        // Core's migrate:fresh has not run yet. Defer the plugin pass
+        // until it finishes so inline foreign keys to core tables resolve.
+        Event::listen(CommandFinished::class, function (CommandFinished $event) use ($plugin): void {
+            if ($event->command === 'migrate:fresh') {
+                static::ensurePluginMigrated($plugin);
+            }
+        });
+    }
+
+    /**
+     * Run a plugin's migrations as a standalone pass, once per process.
+     *
+     * Safe to call outside a transaction only: it is invoked either from
+     * the `migrate:fresh` CommandFinished hook (before the first
+     * transaction opens) or from refreshApplication() (after the previous
+     * test's transaction has rolled back).
+     */
+    protected static function ensurePluginMigrated(string $plugin): void
+    {
+        if (in_array($plugin, static::$appliedPluginMigrations, true)) {
             return;
         }
 
@@ -114,11 +161,13 @@ abstract class TestCase extends BaseTestCase
             return;
         }
 
-        // Mirrors ServiceProvider::loadMigrationsFrom(): the migrator is
-        // resolved later, when RefreshDatabase runs migrate:fresh.
-        $this->app->afterResolving('migrator', function ($migrator) use ($path) {
-            $migrator->path($path);
-        });
+        static::$appliedPluginMigrations[] = $plugin;
+
+        Artisan::call('migrate', [
+            '--path' => $path,
+            '--realpath' => true,
+            '--force' => true,
+        ]);
     }
 
     /**
