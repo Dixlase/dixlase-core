@@ -76,4 +76,62 @@ abstract class TestCase extends BaseTestCase
             // SiteContext binding may be unavailable in narrow Unit tests; ignore.
         }
     }
+
+    /**
+     * Refresh the application, then make the plugin-under-test's own
+     * migrations discoverable.
+     *
+     * Plugins are normally discovered from the `plugins` table (or the
+     * enabled-plugins cache), neither of which exists in the freshly
+     * migrated test database. A plugin's service provider therefore never
+     * boots under test, and the `loadMigrationsFrom()` it would call is
+     * never reached — so DB-backed plugin tests fail with "no such table".
+     * Registering the path here, before RefreshDatabase runs
+     * `migrate:fresh`, lets the plugin's own tables be created.
+     */
+    protected function refreshApplication()
+    {
+        parent::refreshApplication();
+
+        $this->registerPluginUnderTestMigrations();
+    }
+
+    /**
+     * Register the migration directory of the plugin that owns the
+     * currently running test, if any. No-op for core tests.
+     */
+    protected function registerPluginUnderTestMigrations(): void
+    {
+        $plugin = static::pluginUnderTest(static::class);
+
+        if ($plugin === null) {
+            return;
+        }
+
+        $path = base_path("plugins/{$plugin}/database/migrations");
+
+        if (! is_dir($path)) {
+            return;
+        }
+
+        // Mirrors ServiceProvider::loadMigrationsFrom(): the migrator is
+        // resolved later, when RefreshDatabase runs migrate:fresh.
+        $this->app->afterResolving('migrator', function ($migrator) use ($path) {
+            $migrator->path($path);
+        });
+    }
+
+    /**
+     * Derive the plugin directory name from a test class living in the
+     * `Plugins\<Name>\Tests\…` namespace. Returns null for core tests
+     * (namespace `Tests\…`).
+     */
+    public static function pluginUnderTest(string $testClass): ?string
+    {
+        $segments = explode('\\', $testClass);
+
+        return ($segments[0] ?? null) === 'Plugins' && isset($segments[1])
+            ? $segments[1]
+            : null;
+    }
 }
