@@ -131,12 +131,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{ __('mail-server/test.title') }}
     </h3>
     <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        {{ __('mail-server/config.settings.mail_test_description') }}<br>
+        {{ __('mail-server/config.settings.mail_test_description') }}
         @if($isInstall)
             {{ __('mail-server/test.description_admin_email') }}
         @else
-            {{ __('mail-server/config.settings.mail_test_description_2') }}
+            {{ __('mail-server/test.description_logged_in_account') }}
         @endif
+        <br>
+        {{ __('mail-server/config.settings.mail_test_description_2') }}
     </p>
     <div class="flex flex-wrap gap-3">
         <button type="button" id="test-connection-btn" 

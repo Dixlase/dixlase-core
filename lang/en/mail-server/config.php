@@ -72,7 +72,7 @@ return [
         'mail_encryption' => 'Encryption Method',
         'mail_from_address' => 'From Email Address',
         'mail_test' => 'Mail Send Test',
-        'mail_test_description' => 'Send a test email with current settings. Test email will be sent to the from address.',
+        'mail_test_description' => 'Send a test email with the current settings.',
         'mail_test_description_2' => 'To enable mail sending functionality, you must complete both connection test and mail send test.',
         'test_connection_button' => 'Test Connection',
         'test_mail_button' => 'Send Test Email',
