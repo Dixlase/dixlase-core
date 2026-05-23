@@ -58,4 +58,11 @@ return [
 192.168.1.0/24
 10.0.0.0/8',
     'settings_updated' => 'IP access control settings have been updated.',
+
+    'detected_ip_label' => 'Your IP address as seen by the application',
+    'detected_ip_hint' => 'To keep your own access, make sure this address is in the allow list before you enable it.',
+    'proxy_warning_heading' => 'Reverse proxy detected, but TRUSTED_PROXIES is not configured',
+    'proxy_warning_body' => 'The application sees every visitor as :proxy, so the IP allow/block lists cannot match real client addresses. Set the environment variable shown below, rebuild the config cache, then reload this page. Do not add :proxy itself to the allow list — that would allow everyone.',
+    'lockout_allowlist' => 'Your current IP address (:ip) is not in the allow list. Saving this would lock you out of the admin panel — add :ip to the list first.',
+    'lockout_blocklist' => 'Your current IP address (:ip) is in the block list. Saving this would lock you out of the admin panel.',
 ];

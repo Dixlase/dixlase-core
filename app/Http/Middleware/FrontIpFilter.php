@@ -35,6 +35,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Helpers\IpAccessControlHelper;
 use App\Models\SiteSetting;
 use Closure;
 use Illuminate\Http\Request;
@@ -76,32 +77,28 @@ class FrontIpFilter
         }
 
         $enableAllowedFrontIps = SiteSetting::getValue('enable_allowed_front_ips', false);
-        $allowedFrontIps = SiteSetting::getValue('allowed_front_ips', '');
+        $allowedFrontIps = (string) SiteSetting::getValue('allowed_front_ips', '');
         $enableBlockedFrontIps = SiteSetting::getValue('enable_blocked_front_ips', false);
-        $blockedFrontIps = SiteSetting::getValue('blocked_front_ips', '');
+        $blockedFrontIps = (string) SiteSetting::getValue('blocked_front_ips', '');
 
         $userIp = $request->ip();
 
         // Allowed IPs check
         if (! empty($enableAllowedFrontIps)) {
-            $allowedIps = collect(explode(',', $allowedFrontIps ?? ''))
-                ->map(fn ($ip) => trim($ip))
-                ->filter();
+            $allowedIps = IpAccessControlHelper::parseList($allowedFrontIps);
 
-            if ($allowedIps->isNotEmpty() && ! $allowedIps->contains($userIp)) {
-                $this->logDenial($request, $userIp, 'allowlist', $allowedIps->values()->all());
+            if ($allowedIps !== [] && ! in_array($userIp, $allowedIps, true)) {
+                $this->logDenial($request, $userIp, 'allowlist', $allowedIps);
                 abort(403);
             }
         }
 
         // Blocked IPs check
         if (! empty($enableBlockedFrontIps)) {
-            $blockedIps = collect(explode(',', $blockedFrontIps ?? ''))
-                ->map(fn ($ip) => trim($ip))
-                ->filter();
+            $blockedIps = IpAccessControlHelper::parseList($blockedFrontIps);
 
-            if ($blockedIps->isNotEmpty() && $blockedIps->contains($userIp)) {
-                $this->logDenial($request, $userIp, 'blocklist', $blockedIps->values()->all());
+            if (in_array($userIp, $blockedIps, true)) {
+                $this->logDenial($request, $userIp, 'blocklist', $blockedIps);
                 abort(403);
             }
         }

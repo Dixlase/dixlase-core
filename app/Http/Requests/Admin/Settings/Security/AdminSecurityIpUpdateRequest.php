@@ -35,7 +35,9 @@
 
 namespace App\Http\Requests\Admin\Settings\Security;
 
+use App\Helpers\IpAccessControlHelper;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class AdminSecurityIpUpdateRequest extends FormRequest
 {
@@ -64,5 +66,39 @@ class AdminSecurityIpUpdateRequest extends FormRequest
             'enable_blocked_front_ips' => 'boolean',
             'blocked_front_ips' => 'nullable|string',
         ];
+    }
+
+    /**
+     * Guard the admin from locking itself out of the admin panel.
+     *
+     * The IP this check uses is the same `$request->ip()` that AdminIpFilter
+     * enforces, so it accurately predicts whether saving the submitted lists
+     * would deny the current admin on its next request.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            $currentIp = $this->ip();
+
+            if ($currentIp === null) {
+                return;
+            }
+
+            if ($this->boolean('enable_allowed_admin_ips')
+                && ! IpAccessControlHelper::listContainsIp($currentIp, (string) $this->input('allowed_admin_ips', ''))) {
+                $validator->errors()->add(
+                    'allowed_admin_ips',
+                    __('admin/settings/security/ip.lockout_allowlist', ['ip' => $currentIp]),
+                );
+            }
+
+            if ($this->boolean('enable_blocked_admin_ips')
+                && IpAccessControlHelper::listContainsIp($currentIp, (string) $this->input('blocked_admin_ips', ''))) {
+                $validator->errors()->add(
+                    'blocked_admin_ips',
+                    __('admin/settings/security/ip.lockout_blocklist', ['ip' => $currentIp]),
+                );
+            }
+        });
     }
 }
