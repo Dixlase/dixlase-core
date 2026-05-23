@@ -62,6 +62,8 @@ return [
     'detected_ip_label' => 'Your IP address as seen by the application',
     'detected_ip_hint' => 'To keep your own access, make sure this address is in the allow list before you enable it.',
     'proxy_warning_heading' => 'Reverse proxy detected, but TRUSTED_PROXIES is not configured',
+    'proxy_warning_heading_misconfigured' => 'Reverse proxy detected, but the configured TRUSTED_PROXIES does not cover the actual proxy',
+    'proxy_warning_current_value' => 'Current TRUSTED_PROXIES: :value',
     'proxy_warning_body' => 'The application sees every visitor as :proxy, so the IP allow/block lists cannot match real client addresses. Do not add :proxy itself to either list — adding it to the allow list would allow everyone, and adding it to the block list would block everyone.',
     'proxy_warning_howto' => 'Add the line above as an environment variable. Common locations: the Laravel `.env` file, the docker-compose `environment:` (or `env_file:`) section, the systemd unit `Environment=` directive, or Apache `SetEnv` — whichever your deployment uses. After saving, run `php artisan config:cache` (inside the application container if you use Docker), then reload this page.',
     'lockout_allowlist' => 'Your current IP address (:ip) is not in the allow list. Saving this would lock you out of the admin panel — add :ip to the list first.',
