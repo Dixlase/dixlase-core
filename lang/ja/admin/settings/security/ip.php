@@ -45,7 +45,7 @@ return [
     'enable_blocked_admin_ips' => '特定のIPアドレスをブロック',
     'blocked_admin_ips' => 'ブロックIPアドレス',
     'blocked_admin_ips_list' => 'ブロックIPアドレスリスト',
-    'admin_ip_help' => 'IPアドレスまたはCIDR記法で入力してください。1行に1つずつ記入してください。例: 192.168.1.1 または 192.168.1.0/24',
+    'admin_ip_help' => 'IPv4 / IPv6 アドレスまたは CIDR 記法で入力してください。1行に1つずつ記入してください。例: 192.168.1.1, 192.168.1.0/24, 2001:db8::/32',
     'front_access_control' => 'フロントIPアクセス制御設定',
     'enable_allowed_front_ips' => '特定のIPアドレスのみアクセスを許可',
     'allowed_front_ips' => '許可IPアドレス',
@@ -53,7 +53,7 @@ return [
     'enable_blocked_front_ips' => '特定のIPアドレスをブロック',
     'blocked_front_ips' => 'ブロックIPアドレス',
     'blocked_front_ips_list' => 'ブロックIPアドレスリスト',
-    'front_ip_help' => 'IPアドレスまたはCIDR記法で入力してください。1行に1つずつ記入してください。例: 192.168.1.1 または 192.168.1.0/24',
+    'front_ip_help' => 'IPv4 / IPv6 アドレスまたは CIDR 記法で入力してください。1行に1つずつ記入してください。例: 192.168.1.1, 192.168.1.0/24, 2001:db8::/32',
     'ip_list_placeholder' => '192.168.1.1
 192.168.1.0/24
 10.0.0.0/8',
@@ -68,4 +68,6 @@ return [
     'lockout_blocklist' => '現在のあなたのIPアドレス（:ip）がブロックリストに含まれています。このまま保存すると管理画面にアクセスできなくなります。',
 
     'static_ip_recommendation' => '許可リストを有効化する場合、固定IP、または既知のオフィスやVPNの範囲（CIDR表記）の利用を強くおすすめします。動的IPは予告なく変わるとアクセスできなくなる可能性があります。',
+
+    'invalid_entries' => '次のエントリは有効な IPv4 / IPv6 アドレスまたは CIDR 範囲ではありません: :entries',
 ];

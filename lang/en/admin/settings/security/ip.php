@@ -45,7 +45,7 @@ return [
     'enable_blocked_admin_ips' => 'Block specific IP addresses',
     'blocked_admin_ips' => 'Blocked IP Addresses',
     'blocked_admin_ips_list' => 'Blocked IP Address List',
-    'admin_ip_help' => 'Enter IP addresses or CIDR notation. One per line. Example: 192.168.1.1 or 192.168.1.0/24',
+    'admin_ip_help' => 'Enter IPv4 / IPv6 addresses or CIDR notation. One per line. Examples: 192.168.1.1, 192.168.1.0/24, 2001:db8::/32',
     'front_access_control' => 'Front Page IP Access Control Settings',
     'enable_allowed_front_ips' => 'Allow access only from specific IP addresses',
     'allowed_front_ips' => 'Allowed IP Addresses',
@@ -53,7 +53,7 @@ return [
     'enable_blocked_front_ips' => 'Block specific IP addresses',
     'blocked_front_ips' => 'Blocked IP Addresses',
     'blocked_front_ips_list' => 'Blocked IP Address List',
-    'front_ip_help' => 'Enter IP addresses or CIDR notation. One per line. Example: 192.168.1.1 or 192.168.1.0/24',
+    'front_ip_help' => 'Enter IPv4 / IPv6 addresses or CIDR notation. One per line. Examples: 192.168.1.1, 192.168.1.0/24, 2001:db8::/32',
     'ip_list_placeholder' => '192.168.1.1
 192.168.1.0/24
 10.0.0.0/8',
@@ -68,4 +68,6 @@ return [
     'lockout_blocklist' => 'Your current IP address (:ip) is in the block list. Saving this would lock you out of the admin panel.',
 
     'static_ip_recommendation' => 'If you plan to enable an allow list (admin or front), a static (fixed) IP — or a known office or VPN range entered with CIDR notation — is strongly recommended. A dynamic IP can change without notice and lock you out.',
+
+    'invalid_entries' => 'The following entries are not valid IPv4 / IPv6 addresses or CIDR ranges: :entries',
 ];

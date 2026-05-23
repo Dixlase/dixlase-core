@@ -36,13 +36,16 @@
 namespace App\Helpers;
 
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\IpUtils;
 
 /**
  * Shared logic for the admin / front-end IP access-control feature.
  *
- * Centralises how raw IP-list settings are parsed so that the enforcing
- * middleware and the settings-screen lockout check always agree, and exposes
- * a reverse-proxy diagnosis used to guide operators on the settings screen.
+ * Centralises how raw IP-list settings are parsed and how an IP is matched
+ * against them, so that the enforcing middleware and the settings-screen
+ * lockout / format checks always agree. Matching delegates to Symfony's
+ * IpUtils::checkIp() so both plain IPv4/IPv6 addresses and CIDR ranges
+ * (`192.168.1.0/24`, `2001:db8::/32`) are honoured.
  */
 final class IpAccessControlHelper
 {
@@ -69,15 +72,84 @@ final class IpAccessControlHelper
     }
 
     /**
-     * Whether the given client IP is present in the raw IP-list setting.
+     * Whether the given client IP matches any entry in the raw IP-list setting.
+     *
+     * Each entry may be a plain IPv4/IPv6 address or CIDR notation
+     * (e.g. `192.168.1.0/24`, `2001:db8::/32`). Matching is delegated to
+     * Symfony's IpUtils::checkIp() so the IPv4/IPv6 distinction and subnet
+     * arithmetic are handled correctly. Invalid entries in the list are
+     * silently skipped (IpUtils returns false for them without throwing).
      */
     public static function listContainsIp(?string $clientIp, ?string $raw): bool
     {
-        if ($clientIp === null) {
+        return self::ipMatchesAny($clientIp, self::parseList($raw));
+    }
+
+    /**
+     * Whether the given client IP matches any entry in the already-parsed list.
+     *
+     * @param  array<int, string>  $list
+     */
+    public static function ipMatchesAny(?string $clientIp, array $list): bool
+    {
+        if ($clientIp === null || $list === []) {
             return false;
         }
 
-        return in_array($clientIp, self::parseList($raw), true);
+        return IpUtils::checkIp($clientIp, $list);
+    }
+
+    /**
+     * Whether an entry is a valid plain IP address or CIDR range.
+     *
+     * Accepts:
+     *   - IPv4 / IPv6 plain addresses
+     *   - IPv4 with /0 to /32
+     *   - IPv6 with /0 to /128
+     */
+    public static function isValidIpOrCidr(string $entry): bool
+    {
+        $entry = trim($entry);
+        if ($entry === '') {
+            return false;
+        }
+
+        if (str_contains($entry, '/')) {
+            [$ip, $mask] = explode('/', $entry, 2);
+            if (! ctype_digit($mask)) {
+                return false;
+            }
+            $maskInt = (int) $mask;
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
+                return $maskInt >= 0 && $maskInt <= 32;
+            }
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
+                return $maskInt >= 0 && $maskInt <= 128;
+            }
+
+            return false;
+        }
+
+        return filter_var($entry, FILTER_VALIDATE_IP) !== false;
+    }
+
+    /**
+     * Return any entries from the raw list that are not a valid IP or CIDR.
+     *
+     * Empty / null input returns an empty array.
+     *
+     * @return array<int, string>
+     */
+    public static function invalidEntries(?string $raw): array
+    {
+        if ($raw === null || trim($raw) === '') {
+            return [];
+        }
+
+        return array_values(array_filter(
+            self::parseList($raw),
+            static fn (string $entry): bool => ! self::isValidIpOrCidr($entry),
+        ));
     }
 
     /**

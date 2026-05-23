@@ -243,4 +243,43 @@ class IpFilterMiddlewareTest extends TestCase
                     && $context['client_ip'] === '127.0.0.1';
             });
     }
+
+    /**
+     * A CIDR range that covers the client IP matches the allowlist.
+     */
+    public function test_access_allowed_when_ip_in_cidr_allowlist(): void
+    {
+        SecuritySetting::set('enable_allowed_admin_ips', '1');
+        SecuritySetting::set('allowed_admin_ips', '127.0.0.0/24');
+
+        $response = $this->get(route('admin.login'));
+
+        $response->assertStatus(200);
+    }
+
+    /**
+     * A CIDR allowlist that does not cover the client IP correctly rejects.
+     */
+    public function test_access_denied_when_cidr_allowlist_excludes_ip(): void
+    {
+        SecuritySetting::set('enable_allowed_admin_ips', '1');
+        SecuritySetting::set('allowed_admin_ips', '10.0.0.0/8');
+
+        $response = $this->get(route('admin.login'));
+
+        $response->assertStatus(403);
+    }
+
+    /**
+     * A CIDR range that covers the client IP matches the blocklist.
+     */
+    public function test_access_denied_when_ip_in_cidr_blocklist(): void
+    {
+        SecuritySetting::set('enable_blocked_admin_ips', '1');
+        SecuritySetting::set('blocked_admin_ips', '127.0.0.0/24');
+
+        $response = $this->get(route('admin.login'));
+
+        $response->assertStatus(403);
+    }
 }
