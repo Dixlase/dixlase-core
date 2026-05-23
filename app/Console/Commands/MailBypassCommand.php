@@ -35,7 +35,6 @@
 
 namespace App\Console\Commands;
 
-use App\Services\AuditService;
 use App\Services\MailBypassService;
 use Illuminate\Console\Command;
 
@@ -134,19 +133,17 @@ class MailBypassCommand extends Command
             ]));
 
             // Log to audit
-            AuditService::log(
-                action: 'mail_bypass_enabled',
-                category: 'security',
-                severity: 'critical',
-                outcome: 'success',
-                context: [
+            \App\Facades\Audit::logSecurity('mail_bypass_enabled', [
+                'severity' => 'critical',
+                'outcome' => 'success',
+                'context' => [
                     'minutes' => $minutes,
                     'scope' => $scope,
                     'reason' => $reason,
                     'expires_at' => $expiresAt->toIso8601String(),
                     'triggered_by' => 'cli',
-                ]
-            );
+                ],
+            ]);
 
             $this->warn(__('admin/command.mail_bypass.security_notice'));
 
@@ -174,16 +171,14 @@ class MailBypassCommand extends Command
         $this->info(__('admin/command.mail_bypass.disabled'));
 
         // Log to audit
-        AuditService::log(
-            action: 'mail_bypass_disabled',
-            category: 'security',
-            severity: 'warning',
-            outcome: 'success',
-            context: [
+        \App\Facades\Audit::logSecurity('mail_bypass_disabled', [
+            'severity' => 'warning',
+            'outcome' => 'success',
+            'context' => [
                 'triggered_by' => 'cli',
                 'manual_disable' => true,
-            ]
-        );
+            ],
+        ]);
 
         return self::SUCCESS;
     }

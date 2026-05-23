@@ -37,7 +37,6 @@ namespace App\Console\Commands;
 
 use App\Enums\AuthenticationMode;
 use App\Models\Member;
-use App\Services\AuditService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 
@@ -128,20 +127,17 @@ class TwoFaRecoveryCommand extends Command
         $this->info(__('admin/command.two_fa_recovery.disabled_success', ['name' => ($member->display_name ?? $member->account_name)]));
 
         // Log to audit
-        AuditService::log(
-            action: 'two_factor_emergency_disabled',
-            category: 'security',
-            severity: 'critical',
-            outcome: 'success',
-            actorId: null, // CLI operation
-            context: [
+        \App\Facades\Audit::logSecurity('two_factor_emergency_disabled', [
+            'severity' => 'critical',
+            'outcome' => 'success',
+            'context' => [
                 'member_id' => $member->id,
                 'member_email' => $member->email,
                 'previous_mode' => $previousMode?->value ?? 'unknown',
                 'reason' => $reason,
                 'triggered_by' => 'cli',
-            ]
-        );
+            ],
+        ]);
 
         $this->warn(__('admin/command.two_fa_recovery.security_notice'));
 
@@ -203,20 +199,17 @@ class TwoFaRecoveryCommand extends Command
         $this->warn(__('admin/command.two_fa_recovery.codes_save_warning'));
 
         // Log to audit
-        AuditService::log(
-            action: 'two_fa_recovery_codes_reset',
-            category: 'security',
-            severity: 'critical',
-            outcome: 'success',
-            actorId: null,
-            context: [
+        \App\Facades\Audit::logSecurity('two_fa_recovery_codes_reset', [
+            'severity' => 'critical',
+            'outcome' => 'success',
+            'context' => [
                 'member_id' => $member->id,
                 'member_email' => $member->email,
                 'codes_count' => count($codes),
                 'reason' => $reason,
                 'triggered_by' => 'cli',
-            ]
-        );
+            ],
+        ]);
 
         return self::SUCCESS;
     }

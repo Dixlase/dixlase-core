@@ -35,8 +35,8 @@
 
 namespace App\Console\Commands;
 
+use App\Facades\Audit;
 use App\Models\SecuritySetting;
-use App\Services\AuditService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
 
@@ -52,7 +52,7 @@ class SecurityResetIpCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'security:reset-ip 
+    protected $signature = 'security:reset-ip
                             {--disable-all : Disable all IP restrictions}
                             {--add-ip= : Add IP to allow list}
                             {--remove-blocked= : Remove IP from block list}
@@ -272,18 +272,24 @@ class SecurityResetIpCommand extends Command
     }
 
     /**
-     * Record to audit log
+     * Record to audit log.
+     *
+     * Uses the Audit facade — the Audit::logSecurity() helper takes the
+     * action name plus a data array. The previous implementation tried to
+     * call AuditService::log() statically with named arguments, which is
+     * invalid on both counts (the method is non-static and accepts a single
+     * array). The facade swallows any logging failure internally so a
+     * broken audit channel never blocks the recovery flow this command is
+     * meant to provide.
+     *
+     * @param  array<string, mixed>  $context
      */
     protected function logAudit(string $action, array $context = []): void
     {
-        if (class_exists(AuditService::class)) {
-            AuditService::log(
-                action: $action,
-                category: 'security',
-                severity: 'warning',
-                outcome: 'success',
-                context: $context
-            );
-        }
+        Audit::logSecurity($action, [
+            'severity' => 'warning',
+            'outcome' => 'success',
+            'context' => $context,
+        ]);
     }
 }

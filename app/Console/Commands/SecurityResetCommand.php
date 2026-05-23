@@ -36,7 +36,6 @@
 namespace App\Console\Commands;
 
 use App\Models\SecuritySetting;
-use App\Services\AuditService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 
@@ -124,19 +123,16 @@ class SecurityResetCommand extends Command
         $this->info(__('admin/command.security_reset.minimal_success'));
 
         // Log to audit
-        AuditService::log(
-            action: 'security_emergency_reset_minimal',
-            category: 'security',
-            severity: 'critical',
-            outcome: 'success',
-            actorId: null,
-            context: [
+        \App\Facades\Audit::logSecurity('security_emergency_reset_minimal', [
+            'severity' => 'critical',
+            'outcome' => 'success',
+            'context' => [
                 'previous_settings_count' => count($previousSettings),
                 'applied_settings' => array_keys($minimalSettings),
                 'reason' => $reason,
                 'triggered_by' => 'cli',
-            ]
-        );
+            ],
+        ]);
 
         $this->warn(__('admin/command.security_reset.security_notice'));
         $this->line(__('admin/command.security_reset.restore_hint'));
@@ -191,20 +187,17 @@ class SecurityResetCommand extends Command
         ]));
 
         // Log to audit
-        AuditService::log(
-            action: 'security_emergency_reset_full',
-            category: 'security',
-            severity: 'critical',
-            outcome: 'success',
-            actorId: null,
-            context: [
+        \App\Facades\Audit::logSecurity('security_emergency_reset_full', [
+            'severity' => 'critical',
+            'outcome' => 'success',
+            'context' => [
                 'category' => $category ?? 'all',
                 'previous_settings_count' => count($previousSettings),
                 'applied_settings_count' => count($defaultSettings),
                 'reason' => $reason,
                 'triggered_by' => 'cli',
-            ]
-        );
+            ],
+        ]);
 
         return self::SUCCESS;
     }
