@@ -34,19 +34,8 @@ class RbacRecoveryCommandTest extends TestCase
      * Regression: grant-super-admin used to crash on the audit log call because
      * AuditService::log() was being invoked statically with named arguments.
      */
-    public function test_grant_super_admin_runs_without_audit_dispatch_error(): void
+    public function test_grant_super_admin_promotes_member_to_super_admin(): void
     {
-        $this->markTestSkipped(
-            'Pre-existing unrelated bug: RbacRecoveryCommand::showMemberPermissionStatus() '
-            .'calls $member->roles->pluck(...) but $member->roles is null in fresh '
-            .'fixtures (Member model lacks a roles relation, or the relation returns '
-            .'null instead of an empty Collection) — throws Error before the audit log '
-            .'call is reached. The audit dispatch fix in this commit is still '
-            .'mechanically identical to the one covered by SecurityResetIpCommandTest. '
-            .'Track the missing roles relation separately and unskip this test once '
-            .'it is resolved.'
-        );
-
         $member = Member::factory()->create();
 
         $this->artisan('security:rbac-recovery', [
@@ -55,5 +44,8 @@ class RbacRecoveryCommandTest extends TestCase
             '--reason' => 'test',
             '--force' => true,
         ])->assertExitCode(0);
+
+        $member->refresh();
+        $this->assertSame(\App\Enums\MemberRole::SUPER_ADMIN, $member->role);
     }
 }
