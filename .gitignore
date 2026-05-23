@@ -2,6 +2,9 @@
 /node_modules
 /dixlase
 
+# Composer-managed theme (installed via composer/installers, see composer.json)
+/themes/DixlaseOnePage/
+
 # --- ビルド成果物（Vite出力）を除外 ---
 /public/assets/build
 /public/assets/plugins
