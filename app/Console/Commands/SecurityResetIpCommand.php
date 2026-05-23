@@ -36,6 +36,7 @@
 namespace App\Console\Commands;
 
 use App\Facades\Audit;
+use App\Helpers\IpAccessControlHelper;
 use App\Models\SecuritySetting;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
@@ -192,7 +193,7 @@ class SecurityResetIpCommand extends Command
      */
     protected function addToAllowedList(string $ip): int
     {
-        if (! filter_var($ip, FILTER_VALIDATE_IP)) {
+        if (! IpAccessControlHelper::isValidIpOrCidr($ip)) {
             $this->error(__('admin/command.security_reset_ip.invalid_ip', ['ip' => $ip]));
 
             return Command::FAILURE;
@@ -206,17 +207,16 @@ class SecurityResetIpCommand extends Command
             }
         }
 
-        $currentIps = SecuritySetting::get('allowed_admin_ips', '');
-        $ipList = array_filter(explode(',', $currentIps));
+        $ipList = IpAccessControlHelper::parseList((string) SecuritySetting::get('allowed_admin_ips', ''));
 
-        if (in_array($ip, $ipList)) {
+        if (in_array($ip, $ipList, true)) {
             $this->warn(__('admin/command.security_reset_ip.ip_already_exists', ['ip' => $ip]));
 
             return Command::SUCCESS;
         }
 
         $ipList[] = $ip;
-        SecuritySetting::set('allowed_admin_ips', implode(',', $ipList));
+        SecuritySetting::set('allowed_admin_ips', implode("\n", $ipList));
 
         // Record to audit log
         $this->logAudit('ip_added_to_allowlist', [
@@ -234,7 +234,7 @@ class SecurityResetIpCommand extends Command
      */
     protected function removeFromBlockedList(string $ip): int
     {
-        if (! filter_var($ip, FILTER_VALIDATE_IP)) {
+        if (! IpAccessControlHelper::isValidIpOrCidr($ip)) {
             $this->error(__('admin/command.security_reset_ip.invalid_ip', ['ip' => $ip]));
 
             return Command::FAILURE;
@@ -248,17 +248,16 @@ class SecurityResetIpCommand extends Command
             }
         }
 
-        $currentIps = SecuritySetting::get('blocked_admin_ips', '');
-        $ipList = array_filter(explode(',', $currentIps));
+        $ipList = IpAccessControlHelper::parseList((string) SecuritySetting::get('blocked_admin_ips', ''));
 
-        if (! in_array($ip, $ipList)) {
+        if (! in_array($ip, $ipList, true)) {
             $this->warn(__('admin/command.security_reset_ip.ip_not_in_blocklist', ['ip' => $ip]));
 
             return Command::SUCCESS;
         }
 
-        $ipList = array_diff($ipList, [$ip]);
-        SecuritySetting::set('blocked_admin_ips', implode(',', $ipList));
+        $ipList = array_values(array_diff($ipList, [$ip]));
+        SecuritySetting::set('blocked_admin_ips', implode("\n", $ipList));
 
         // Record to audit log
         $this->logAudit('ip_removed_from_blocklist', [

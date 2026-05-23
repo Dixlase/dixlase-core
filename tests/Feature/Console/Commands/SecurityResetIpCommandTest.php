@@ -55,4 +55,54 @@ class SecurityResetIpCommandTest extends TestCase
         $this->assertFalse((bool) SecuritySetting::get('enable_allowed_front_ips'));
         $this->assertFalse((bool) SecuritySetting::get('enable_blocked_front_ips'));
     }
+
+    public function test_add_ip_accepts_cidr_range(): void
+    {
+        SecuritySetting::set('allowed_admin_ips', '');
+
+        $this->artisan('security:reset-ip', [
+            '--add-ip' => '192.168.1.0/24',
+            '--force' => true,
+        ])->assertExitCode(0);
+
+        $this->assertSame('192.168.1.0/24', (string) SecuritySetting::get('allowed_admin_ips'));
+    }
+
+    public function test_add_ip_appends_to_existing_newline_separated_list(): void
+    {
+        SecuritySetting::set('allowed_admin_ips', "10.0.0.1\n10.0.0.2");
+
+        $this->artisan('security:reset-ip', [
+            '--add-ip' => '10.0.0.3',
+            '--force' => true,
+        ])->assertExitCode(0);
+
+        $this->assertSame(
+            "10.0.0.1\n10.0.0.2\n10.0.0.3",
+            (string) SecuritySetting::get('allowed_admin_ips'),
+        );
+    }
+
+    public function test_add_ip_rejects_invalid_value(): void
+    {
+        $this->artisan('security:reset-ip', [
+            '--add-ip' => 'not_an_ip',
+            '--force' => true,
+        ])->assertExitCode(1);
+    }
+
+    public function test_remove_blocked_handles_newline_separated_list(): void
+    {
+        SecuritySetting::set('blocked_admin_ips', "10.0.0.1\n10.0.0.2\n10.0.0.3");
+
+        $this->artisan('security:reset-ip', [
+            '--remove-blocked' => '10.0.0.2',
+            '--force' => true,
+        ])->assertExitCode(0);
+
+        $this->assertSame(
+            "10.0.0.1\n10.0.0.3",
+            (string) SecuritySetting::get('blocked_admin_ips'),
+        );
+    }
 }

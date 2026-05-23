@@ -61,7 +61,7 @@ return [
     'cancelled' => 'Operation cancelled.',
     'disabled_all' => '✅ All IP restrictions have been disabled.',
     'security_warning' => '⚠️ For security reasons, please reconfigure appropriate IP restrictions after recovery.',
-    'invalid_ip' => 'Invalid IP address: :ip',
+    'invalid_ip' => 'Invalid IP address or CIDR range: :ip',
     'ip_already_exists' => 'IP :ip already exists in the allowed list.',
     'ip_added' => '✅ IP :ip has been added to the allowed list.',
     'ip_not_in_blocklist' => 'IP :ip is not in the blocked list.',

@@ -61,7 +61,7 @@ return [
     'cancelled' => '操作がキャンセルされました。',
     'disabled_all' => '✅ 全てのIP制限が無効化されました。',
     'security_warning' => '⚠️ セキュリティ上の理由から、復旧後は適切なIP制限を再設定してください。',
-    'invalid_ip' => '無効なIPアドレス: :ip',
+    'invalid_ip' => '無効なIPアドレスまたはCIDR範囲: :ip',
     'ip_already_exists' => 'IP :ip は既に許可リストに存在します。',
     'ip_added' => '✅ IP :ip を許可リストに追加しました。',
     'ip_not_in_blocklist' => 'IP :ip はブロックリストに存在しません。',
