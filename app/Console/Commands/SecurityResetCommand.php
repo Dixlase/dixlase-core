@@ -42,10 +42,12 @@ use Illuminate\Support\Facades\Cache;
 /**
  * Security settings emergency reset command (break glass)
  *
- * Reset to safe default values when security settings are corrupted or malfunctioning
- * - Unable to login due to invalid settings values
- * - Non-existent CAPTCHA driver specified
- * - Circular reference in settings
+ * Reset to safe default values when security settings are corrupted or
+ * malfunctioning (login impossible due to invalid setting values, non-existent
+ * CAPTCHA driver specified, circular references, etc).
+ *
+ * Scope: keys registered in the security settings registry. Lockdown is a
+ * separate subsystem (see `php artisan lockdown ...`) and is not touched here.
  */
 class SecurityResetCommand extends Command
 {
@@ -56,7 +58,7 @@ class SecurityResetCommand extends Command
      */
     protected $signature = 'security:reset
                             {action=status : Action to perform (minimal, full, status, export)}
-                            {--category= : Reset specific category only (auth, captcha, ip, lockdown)}
+                            {--category= : Reset specific category only (auth, captcha, ip, login)}
                             {--reason= : Reason for reset (required)}
                             {--force : Skip confirmation}
                             {--export-path= : Path to export current settings before reset}';
@@ -85,8 +87,8 @@ class SecurityResetCommand extends Command
     }
 
     /**
-     * Reset to minimal safe configuration
-     * Disables all security features to allow login
+     * Reset to minimal safe configuration. Disables all gating security features
+     * so an operator can log back in.
      */
     protected function resetMinimal(): int
     {
@@ -95,10 +97,8 @@ class SecurityResetCommand extends Command
             return self::FAILURE;
         }
 
-        // Export current settings first
         $this->exportCurrentSettings();
 
-        // Confirm action
         $this->warn(__('admin/command.security_reset.warning_minimal'));
         $this->newLine();
         $this->line(__('admin/command.security_reset.minimal_description'));
@@ -110,19 +110,15 @@ class SecurityResetCommand extends Command
             return self::SUCCESS;
         }
 
-        // Store current settings for audit
         $previousSettings = $this->getCurrentSecuritySettings();
 
-        // Apply minimal safe settings
         $minimalSettings = $this->getMinimalSafeSettings();
         $this->applySettings($minimalSettings);
 
-        // Clear all security-related caches
         $this->clearSecurityCaches();
 
         $this->info(__('admin/command.security_reset.minimal_success'));
 
-        // Log to audit
         \App\Facades\Audit::logSecurity('security_emergency_reset_minimal', [
             'severity' => 'critical',
             'outcome' => 'success',
@@ -141,7 +137,7 @@ class SecurityResetCommand extends Command
     }
 
     /**
-     * Reset to full default configuration
+     * Reset to full default configuration (optionally limited to one category).
      */
     protected function resetFull(): int
     {
@@ -152,10 +148,8 @@ class SecurityResetCommand extends Command
 
         $category = $this->option('category');
 
-        // Export current settings first
         $this->exportCurrentSettings();
 
-        // Confirm action
         if ($category) {
             $this->warn(__('admin/command.security_reset.warning_category', ['category' => $category]));
         } else {
@@ -169,24 +163,20 @@ class SecurityResetCommand extends Command
             return self::SUCCESS;
         }
 
-        // Store current settings for audit
         $previousSettings = $this->getCurrentSecuritySettings();
 
-        // Apply default settings
         $defaultSettings = $category
             ? $this->getDefaultSettingsForCategory($category)
             : $this->getFullDefaultSettings();
 
         $this->applySettings($defaultSettings);
 
-        // Clear all security-related caches
         $this->clearSecurityCaches();
 
         $this->info(__('admin/command.security_reset.full_success', [
             'count' => count($defaultSettings),
         ]));
 
-        // Log to audit
         \App\Facades\Audit::logSecurity('security_emergency_reset_full', [
             'severity' => 'critical',
             'outcome' => 'success',
@@ -203,7 +193,7 @@ class SecurityResetCommand extends Command
     }
 
     /**
-     * Show current security settings status
+     * Show current security settings status grouped by category.
      */
     protected function showStatus(): int
     {
@@ -212,13 +202,16 @@ class SecurityResetCommand extends Command
 
         $settings = $this->getCurrentSecuritySettings();
 
-        // Group by category
         $categories = [
-            'auth' => ['two_fa_enabled', 'two_fa_mode', 'password_reset_enabled'],
+            'auth' => ['two_fa_mode', 'password_reset_enabled'],
             'captcha' => ['captcha_enabled', 'captcha_driver', 'captcha_authentication_result'],
-            'ip' => ['ip_whitelist_enabled', 'ip_blacklist_enabled'],
-            'lockdown' => ['lockdown_active', 'lockdown_type'],
-            'login' => ['login_lockout_enabled', 'login_max_attempts'],
+            'ip' => [
+                'enable_allowed_admin_ips',
+                'enable_blocked_admin_ips',
+                'enable_allowed_front_ips',
+                'enable_blocked_front_ips',
+            ],
+            'login' => ['login_attempt_limit_enabled', 'login_attempt_max_attempts'],
         ];
 
         foreach ($categories as $category => $keys) {
@@ -248,7 +241,7 @@ class SecurityResetCommand extends Command
     }
 
     /**
-     * Export current settings to file
+     * Export current settings to file.
      */
     protected function exportSettings(): int
     {
@@ -269,18 +262,20 @@ class SecurityResetCommand extends Command
     }
 
     /**
-     * Get current security settings
+     * Get current security settings.
+     *
+     * @return array<string, mixed>
      */
     protected function getCurrentSecuritySettings(): array
     {
         $settings = [];
 
         $keys = [
-            'two_fa_enabled', 'two_fa_mode',
+            'two_fa_mode',
             'captcha_enabled', 'captcha_driver', 'captcha_site_key', 'captcha_authentication_result',
-            'ip_whitelist_enabled', 'ip_blacklist_enabled',
-            'lockdown_active', 'lockdown_type',
-            'login_lockout_enabled', 'login_max_attempts', 'login_lockout_duration',
+            'enable_allowed_admin_ips', 'enable_blocked_admin_ips',
+            'enable_allowed_front_ips', 'enable_blocked_front_ips',
+            'login_attempt_limit_enabled', 'login_attempt_max_attempts', 'login_attempt_lockout_duration',
             'password_reset_enabled',
         ];
 
@@ -292,50 +287,56 @@ class SecurityResetCommand extends Command
     }
 
     /**
-     * Get minimal safe settings (disable everything)
+     * Get minimal safe settings (disable all gating security features so an
+     * operator can recover access).
+     *
+     * @return array<string, mixed>
      */
     protected function getMinimalSafeSettings(): array
     {
         return [
             'captcha_enabled' => false,
             'captcha_authentication_result' => false,
-            'ip_whitelist_enabled' => false,
-            'ip_blacklist_enabled' => false,
-            'lockdown_active' => false,
-            'login_lockout_enabled' => false,
+            'enable_allowed_admin_ips' => false,
+            'enable_blocked_admin_ips' => false,
+            'enable_allowed_front_ips' => false,
+            'enable_blocked_front_ips' => false,
+            'login_attempt_limit_enabled' => false,
         ];
     }
 
     /**
-     * Get full default settings
+     * Get full default settings.
+     *
+     * @return array<string, mixed>
      */
     protected function getFullDefaultSettings(): array
     {
         return [
-            'two_fa_enabled' => false,
             'two_fa_mode' => 'disabled',
             'captcha_enabled' => false,
             'captcha_driver' => 'google',
             'captcha_authentication_result' => false,
-            'ip_whitelist_enabled' => false,
-            'ip_blacklist_enabled' => false,
-            'lockdown_active' => false,
-            'lockdown_type' => null,
-            'login_lockout_enabled' => true,
-            'login_max_attempts' => 5,
-            'login_lockout_duration' => 15,
+            'enable_allowed_admin_ips' => false,
+            'enable_blocked_admin_ips' => false,
+            'enable_allowed_front_ips' => false,
+            'enable_blocked_front_ips' => false,
+            'login_attempt_limit_enabled' => true,
+            'login_attempt_max_attempts' => 5,
+            'login_attempt_lockout_duration' => 15,
             'password_reset_enabled' => true,
         ];
     }
 
     /**
-     * Get default settings for a specific category
+     * Get default settings for a specific category.
+     *
+     * @return array<string, mixed>
      */
     protected function getDefaultSettingsForCategory(string $category): array
     {
         return match ($category) {
             'auth' => [
-                'two_fa_enabled' => false,
                 'two_fa_mode' => 'disabled',
             ],
             'captcha' => [
@@ -344,24 +345,24 @@ class SecurityResetCommand extends Command
                 'captcha_authentication_result' => false,
             ],
             'ip' => [
-                'ip_whitelist_enabled' => false,
-                'ip_blacklist_enabled' => false,
-            ],
-            'lockdown' => [
-                'lockdown_active' => false,
-                'lockdown_type' => null,
+                'enable_allowed_admin_ips' => false,
+                'enable_blocked_admin_ips' => false,
+                'enable_allowed_front_ips' => false,
+                'enable_blocked_front_ips' => false,
             ],
             'login' => [
-                'login_lockout_enabled' => true,
-                'login_max_attempts' => 5,
-                'login_lockout_duration' => 15,
+                'login_attempt_limit_enabled' => true,
+                'login_attempt_max_attempts' => 5,
+                'login_attempt_lockout_duration' => 15,
             ],
             default => [],
         };
     }
 
     /**
-     * Apply settings
+     * Apply settings.
+     *
+     * @param  array<string, mixed>  $settings
      */
     protected function applySettings(array $settings): void
     {
@@ -371,7 +372,7 @@ class SecurityResetCommand extends Command
     }
 
     /**
-     * Clear security-related caches
+     * Clear security-related caches.
      */
     protected function clearSecurityCaches(): void
     {
@@ -382,14 +383,9 @@ class SecurityResetCommand extends Command
             'mail_bypass_data',
             'captcha_failure_count',
             'captcha_active_provider',
-            'security_settings_*',
         ];
 
         foreach ($cacheKeys as $key) {
-            if (str_contains($key, '*')) {
-                // Pattern-based cache clear would need custom implementation
-                continue;
-            }
             Cache::forget($key);
         }
 
@@ -397,7 +393,7 @@ class SecurityResetCommand extends Command
     }
 
     /**
-     * Export current settings before reset
+     * Export current settings to a timestamped backup file before reset.
      */
     protected function exportCurrentSettings(): void
     {
@@ -417,7 +413,7 @@ class SecurityResetCommand extends Command
     }
 
     /**
-     * Get required reason
+     * Get required reason for the recovery action.
      */
     protected function getRequiredReason(): ?string
     {
@@ -437,7 +433,7 @@ class SecurityResetCommand extends Command
     }
 
     /**
-     * Handle invalid action
+     * Handle invalid action.
      */
     protected function invalidAction(string $action): int
     {

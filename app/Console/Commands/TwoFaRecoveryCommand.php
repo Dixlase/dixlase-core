@@ -122,7 +122,7 @@ class TwoFaRecoveryCommand extends Command
         ]);
 
         // Clear any pending 2FA tokens
-        $member->twoFactorTokens()->delete();
+        $member->twoFaTokens()->delete();
 
         $this->info(__('admin/command.two_fa_recovery.disabled_success', ['name' => ($member->display_name ?? $member->account_name)]));
 

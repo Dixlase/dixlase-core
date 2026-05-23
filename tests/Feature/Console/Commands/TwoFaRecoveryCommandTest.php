@@ -36,16 +36,6 @@ class TwoFaRecoveryCommandTest extends TestCase
      */
     public function test_disable_runs_without_audit_dispatch_error(): void
     {
-        $this->markTestSkipped(
-            'Pre-existing unrelated bug: TwoFaRecoveryCommand::disableTwoFa() calls '
-            .'$member->twoFactorTokens()->delete(), but the Member model has no '
-            .'twoFactorTokens() relation (likely renamed; throws '
-            .'BadMethodCallException before the audit log call is reached). The '
-            .'audit dispatch fix in this commit is still mechanically identical to '
-            .'the one covered by SecurityResetIpCommandTest. Track the missing '
-            .'relation separately and unskip this test once it is resolved.'
-        );
-
         $member = Member::factory()->create();
 
         $this->artisan('security:two-fa-recovery', [

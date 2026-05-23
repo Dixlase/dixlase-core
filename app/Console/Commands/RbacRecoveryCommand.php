@@ -35,17 +35,20 @@
 
 namespace App\Console\Commands;
 
-use App\Enums\Permission;
+use App\Enums\MemberRole;
 use App\Models\Member;
-use App\Models\Role;
 use Illuminate\Console\Command;
 
 /**
- * RBAC permission emergency recovery command (break glass)
+ * RBAC emergency recovery command (break glass)
  *
- * Emergency recovery function for when the admin panel becomes inaccessible due to permission settings misconfiguration
- * - Admin permission was removed from all roles
- * - Even SUPER_ADMIN cannot access the admin panel
+ * Emergency recovery for when nobody can access the admin panel because no
+ * member currently holds an admin-tier role. Roles in Dixlase are an integer
+ * enum (MemberRole) stored on the members table; this command can promote a
+ * named member to SUPER_ADMIN and report on the current distribution.
+ *
+ * Per-role permission editing is not supported because permissions are tied
+ * to the MemberRole enum and are not individually mutable at runtime.
  */
 class RbacRecoveryCommand extends Command
 {
@@ -55,9 +58,8 @@ class RbacRecoveryCommand extends Command
      * @var string
      */
     protected $signature = 'security:rbac-recovery
-                            {action=status : Action to perform (grant-super-admin, reset-role, status, list)}
-                            {--member= : Member ID or email to grant super admin}
-                            {--role= : Role ID or name to reset}
+                            {action=status : Action to perform (grant-super-admin, status, list)}
+                            {--member= : Member ID or email to promote to SUPER_ADMIN}
                             {--reason= : Reason for recovery (required)}
                             {--force : Skip confirmation}';
 
@@ -66,7 +68,7 @@ class RbacRecoveryCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Emergency RBAC permission recovery (break-glass)';
+    protected $description = 'Emergency RBAC recovery — promote a member to SUPER_ADMIN when admin access is lost (break-glass)';
 
     /**
      * Execute the console command.
@@ -77,15 +79,14 @@ class RbacRecoveryCommand extends Command
 
         return match ($action) {
             'grant-super-admin' => $this->grantSuperAdmin(),
-            'reset-role' => $this->resetRole(),
             'status' => $this->showStatus(),
-            'list' => $this->listMembersAndRoles(),
+            'list' => $this->listMembers(),
             default => $this->invalidAction($action),
         };
     }
 
     /**
-     * Grant super admin permission to a member
+     * Promote a member to SUPER_ADMIN.
      */
     protected function grantSuperAdmin(): int
     {
@@ -99,10 +100,8 @@ class RbacRecoveryCommand extends Command
             return self::FAILURE;
         }
 
-        // Show current status
-        $this->showMemberPermissionStatus($member);
+        $this->showMemberStatus($member);
 
-        // Confirm action
         $this->warn(__('admin/command.rbac_recovery.warning_grant'));
         $this->newLine();
 
@@ -112,39 +111,22 @@ class RbacRecoveryCommand extends Command
             return self::SUCCESS;
         }
 
-        // Find or create super admin role
-        $superAdminRole = Role::where('name', 'super_admin')->first();
+        $previousRole = $member->role;
 
-        if (! $superAdminRole) {
-            // Create super admin role with all permissions
-            $superAdminRole = Role::create([
-                'name' => 'super_admin',
-                'display_name' => 'Super Administrator',
-                'description' => 'Full system access',
-                'permissions' => array_column(Permission::cases(), 'value'),
-                'is_system' => true,
-            ]);
-            $this->info(__('admin/command.rbac_recovery.role_created'));
-        }
-
-        // Assign role to member
-        $previousRoles = $member->roles->pluck('name')->toArray();
-
-        if (! $member->roles->contains($superAdminRole->id)) {
-            $member->roles()->attach($superAdminRole->id);
-        }
+        $member->update([
+            'role' => MemberRole::SUPER_ADMIN,
+        ]);
 
         $this->info(__('admin/command.rbac_recovery.grant_success', ['name' => ($member->display_name ?? $member->account_name)]));
 
-        // Log to audit
         \App\Facades\Audit::logSecurity('rbac_emergency_grant_super_admin', [
             'severity' => 'critical',
             'outcome' => 'success',
             'context' => [
                 'member_id' => $member->id,
                 'member_email' => $member->email,
-                'previous_roles' => $previousRoles,
-                'granted_role' => 'super_admin',
+                'previous_role' => $previousRole?->name ?? 'unknown',
+                'granted_role' => MemberRole::SUPER_ADMIN->name,
                 'reason' => $reason,
                 'triggered_by' => 'cli',
             ],
@@ -156,94 +138,26 @@ class RbacRecoveryCommand extends Command
     }
 
     /**
-     * Reset a role to default permissions
-     */
-    protected function resetRole(): int
-    {
-        $role = $this->findRole();
-        if (! $role) {
-            return self::FAILURE;
-        }
-
-        $reason = $this->getRequiredReason();
-        if (! $reason) {
-            return self::FAILURE;
-        }
-
-        // Show current status
-        $this->info(__('admin/command.rbac_recovery.role_status_title', ['name' => $role->display_name]));
-        $this->line(__('admin/command.rbac_recovery.current_permissions', ['count' => count($role->permissions ?? [])]));
-        $this->newLine();
-
-        // Confirm action
-        $this->warn(__('admin/command.rbac_recovery.warning_reset'));
-        $this->newLine();
-
-        if (! $this->option('force') && ! $this->confirm(__('admin/command.rbac_recovery.confirm_reset', ['name' => $role->display_name]))) {
-            $this->info(__('admin/command.rbac_recovery.cancelled'));
-
-            return self::SUCCESS;
-        }
-
-        $previousPermissions = $role->permissions ?? [];
-
-        // Reset to default based on role name
-        $defaultPermissions = $this->getDefaultPermissionsForRole($role->name);
-
-        $role->update([
-            'permissions' => $defaultPermissions,
-        ]);
-
-        $this->info(__('admin/command.rbac_recovery.reset_success', [
-            'name' => $role->display_name,
-            'count' => count($defaultPermissions),
-        ]));
-
-        // Log to audit
-        \App\Facades\Audit::logSecurity('rbac_emergency_reset_role', [
-            'severity' => 'critical',
-            'outcome' => 'success',
-            'context' => [
-                'role_id' => $role->id,
-                'role_name' => $role->name,
-                'previous_permissions_count' => count($previousPermissions),
-                'new_permissions_count' => count($defaultPermissions),
-                'reason' => $reason,
-                'triggered_by' => 'cli',
-            ],
-        ]);
-
-        return self::SUCCESS;
-    }
-
-    /**
-     * Show RBAC status
+     * Show the role distribution across all members.
      */
     protected function showStatus(): int
     {
         $this->info(__('admin/command.rbac_recovery.system_status_title'));
         $this->newLine();
 
-        // Count members with super admin
-        $superAdminRole = Role::where('name', 'super_admin')->first();
-        $superAdminCount = $superAdminRole ? $superAdminRole->members()->count() : 0;
-
-        // Count total roles and members
-        $totalRoles = Role::count();
         $totalMembers = Member::count();
-        $membersWithRoles = Member::has('roles')->count();
+        $superAdminCount = Member::where('role', MemberRole::SUPER_ADMIN)->count();
+        $adminCount = Member::where('role', MemberRole::ADMIN)->count();
 
         $this->table(
             [__('admin/command.rbac_recovery.metric'), __('admin/command.rbac_recovery.value')],
             [
-                [__('admin/command.rbac_recovery.total_roles'), $totalRoles],
                 [__('admin/command.rbac_recovery.total_members'), $totalMembers],
-                [__('admin/command.rbac_recovery.members_with_roles'), $membersWithRoles],
                 [__('admin/command.rbac_recovery.super_admins'), $superAdminCount],
+                [__('admin/command.rbac_recovery.admins'), $adminCount],
             ]
         );
 
-        // Warning if no super admins
         if ($superAdminCount === 0) {
             $this->newLine();
             $this->error(__('admin/command.rbac_recovery.warning_no_super_admin'));
@@ -253,79 +167,46 @@ class RbacRecoveryCommand extends Command
     }
 
     /**
-     * List members and roles
+     * List members with their current role.
      */
-    protected function listMembersAndRoles(): int
+    protected function listMembers(): int
     {
-        // List roles
-        $this->info(__('admin/command.rbac_recovery.roles_title'));
-        $this->newLine();
-
-        $roles = Role::withCount('members')->get();
-
-        if ($roles->isEmpty()) {
-            $this->warn(__('admin/command.rbac_recovery.no_roles'));
-        } else {
-            $rows = [];
-            foreach ($roles as $role) {
-                $rows[] = [
-                    $role->id,
-                    $role->name,
-                    $role->display_name,
-                    count($role->permissions ?? []),
-                    $role->members_count,
-                ];
-            }
-
-            $this->table(
-                [
-                    __('admin/command.rbac_recovery.col_id'),
-                    __('admin/command.rbac_recovery.col_name'),
-                    __('admin/command.rbac_recovery.col_display_name'),
-                    __('admin/command.rbac_recovery.col_permissions'),
-                    __('admin/command.rbac_recovery.col_members'),
-                ],
-                $rows
-            );
-        }
-
-        // List members with their roles
-        $this->newLine();
         $this->info(__('admin/command.rbac_recovery.members_title'));
         $this->newLine();
 
-        $members = Member::with('roles')->get();
+        $members = Member::all();
 
         if ($members->isEmpty()) {
             $this->warn(__('admin/command.rbac_recovery.no_members'));
-        } else {
-            $rows = [];
-            foreach ($members as $member) {
-                $roleNames = $member->roles->pluck('display_name')->join(', ') ?: '-';
-                $rows[] = [
-                    $member->id,
-                    ($member->display_name ?? $member->account_name),
-                    $member->email,
-                    $roleNames,
-                ];
-            }
 
-            $this->table(
-                [
-                    __('admin/command.rbac_recovery.col_id'),
-                    __('admin/command.rbac_recovery.col_name'),
-                    __('admin/command.rbac_recovery.col_email'),
-                    __('admin/command.rbac_recovery.col_roles'),
-                ],
-                $rows
-            );
+            return self::SUCCESS;
         }
+
+        $rows = [];
+        foreach ($members as $member) {
+            $rows[] = [
+                $member->id,
+                ($member->display_name ?? $member->account_name),
+                $member->email,
+                $member->role?->label() ?? '-',
+            ];
+        }
+
+        $this->table(
+            [
+                __('admin/command.rbac_recovery.col_id'),
+                __('admin/command.rbac_recovery.col_name'),
+                __('admin/command.rbac_recovery.col_email'),
+                __('admin/command.rbac_recovery.col_roles'),
+            ],
+            $rows
+        );
 
         return self::SUCCESS;
     }
 
     /**
-     * Find member by ID or email
+     * Find member by ID or email.
      */
     protected function findMember(): ?Member
     {
@@ -355,37 +236,7 @@ class RbacRecoveryCommand extends Command
     }
 
     /**
-     * Find role by ID or name
-     */
-    protected function findRole(): ?Role
-    {
-        $identifier = $this->option('role');
-
-        if (! $identifier) {
-            $identifier = $this->ask(__('admin/command.rbac_recovery.role_prompt'));
-        }
-
-        if (! $identifier) {
-            $this->error(__('admin/command.rbac_recovery.role_required'));
-
-            return null;
-        }
-
-        $role = is_numeric($identifier)
-            ? Role::find($identifier)
-            : Role::where('name', $identifier)->first();
-
-        if (! $role) {
-            $this->error(__('admin/command.rbac_recovery.role_not_found', ['identifier' => $identifier]));
-
-            return null;
-        }
-
-        return $role;
-    }
-
-    /**
-     * Get required reason
+     * Get the required justification for the recovery action.
      */
     protected function getRequiredReason(): ?string
     {
@@ -405,56 +256,31 @@ class RbacRecoveryCommand extends Command
     }
 
     /**
-     * Show member's permission status
+     * Show the member's current role.
      */
-    protected function showMemberPermissionStatus(Member $member): void
+    protected function showMemberStatus(Member $member): void
     {
         $this->info(__('admin/command.rbac_recovery.member_status_title', ['name' => ($member->display_name ?? $member->account_name)]));
         $this->newLine();
-
-        $roles = $member->roles->pluck('display_name')->join(', ') ?: __('admin/command.rbac_recovery.none');
 
         $this->table(
             [__('admin/command.rbac_recovery.field'), __('admin/command.rbac_recovery.value')],
             [
                 [__('admin/command.rbac_recovery.member_id'), $member->id],
                 [__('admin/command.rbac_recovery.email'), $member->email],
-                [__('admin/command.rbac_recovery.current_roles'), $roles],
+                [__('admin/command.rbac_recovery.current_roles'), $member->role?->label() ?? __('admin/command.rbac_recovery.none')],
             ]
         );
     }
 
     /**
-     * Get default permissions for a role
-     */
-    protected function getDefaultPermissionsForRole(string $roleName): array
-    {
-        return match ($roleName) {
-            'super_admin' => array_column(Permission::cases(), 'value'),
-            'admin' => [
-                Permission::DASHBOARD_VIEW->value,
-                Permission::MEMBERS_VIEW->value,
-                Permission::MEMBERS_CREATE->value,
-                Permission::MEMBERS_EDIT->value,
-                Permission::SETTINGS_VIEW->value,
-                Permission::SETTINGS_EDIT->value,
-            ],
-            'editor' => [
-                Permission::DASHBOARD_VIEW->value,
-            ],
-            default => [Permission::DASHBOARD_VIEW->value],
-        };
-    }
-
-    /**
-     * Handle invalid action
+     * Handle invalid action.
      */
     protected function invalidAction(string $action): int
     {
         $this->error(__('admin/command.rbac_recovery.invalid_action', ['action' => $action]));
         $this->line(__('admin/command.rbac_recovery.valid_actions'));
         $this->line('  - grant-super-admin : '.__('admin/command.rbac_recovery.action_grant'));
-        $this->line('  - reset-role        : '.__('admin/command.rbac_recovery.action_reset'));
         $this->line('  - status            : '.__('admin/command.rbac_recovery.action_status'));
         $this->line('  - list              : '.__('admin/command.rbac_recovery.action_list'));
 
