@@ -65,4 +65,6 @@ return [
     'proxy_warning_body' => 'The application sees every visitor as :proxy, so the IP allow/block lists cannot match real client addresses. Set the environment variable shown below, rebuild the config cache, then reload this page. Do not add :proxy itself to the allow list — that would allow everyone.',
     'lockout_allowlist' => 'Your current IP address (:ip) is not in the allow list. Saving this would lock you out of the admin panel — add :ip to the list first.',
     'lockout_blocklist' => 'Your current IP address (:ip) is in the block list. Saving this would lock you out of the admin panel.',
+
+    'static_ip_recommendation' => 'If you plan to enable an allow list (admin or front), a static (fixed) IP — or a known office or VPN range entered with CIDR notation — is strongly recommended. A dynamic IP can change without notice and lock you out.',
 ];

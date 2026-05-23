@@ -48,6 +48,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <section>
             <h2>{{ __('admin/settings/security/ip.title') }}</h2>
             <p class="mb-2">{{ __('admin/settings/security/ip.description') }}</p>
+
+            <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                <i class="fas fa-info-circle mr-1"></i>
+                {{ __('admin/settings/security/ip.static_ip_recommendation') }}
+            </p>
             
             <!-- 管理画面IP制御 -->
             <section>

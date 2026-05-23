@@ -70,6 +70,7 @@ class AdminSecurityIpPageTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee(__('admin/settings/security/ip.detected_ip_label'));
+        $response->assertSeeText(__('admin/settings/security/ip.static_ip_recommendation'));
     }
 
     /**
