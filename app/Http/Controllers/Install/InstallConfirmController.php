@@ -44,9 +44,11 @@ use App\Services\Theme\ThemePermissionService;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 /**
  * Install - Confirmation screen
@@ -187,6 +189,27 @@ class InstallConfirmController extends BaseInstallController
             // Get language settings from session
             $locale = session('install_locale', 'en');
 
+            // SESSION_COOKIE: generate a unique cookie name per install so multiple
+            // Dixlase environments sharing a hostname (e.g. localhost:8080 and
+            // localhost:8081) do not overwrite each other's session, which would
+            // otherwise cause CSRF 419 errors. Preserve any non-empty existing
+            // value to keep active sessions alive on re-install.
+            $envPath = base_path('.env');
+            $existingSessionCookie = '';
+            if (File::exists($envPath)) {
+                $existingEnv = File::get($envPath);
+                if (preg_match('/^SESSION_COOKIE=(.*)$/m', $existingEnv, $cookieMatches)) {
+                    $existingSessionCookie = trim(trim($cookieMatches[1]), "\"'");
+                }
+            }
+
+            if ($existingSessionCookie !== '') {
+                $sessionCookie = $existingSessionCookie;
+            } else {
+                $cookieSlug = Str::slug($data['site_name'] ?? '') ?: 'dixlase';
+                $sessionCookie = strtolower($cookieSlug.'_'.Str::random(4).'_session');
+            }
+
             $envData = [
                 'APP_NAME' => $data['site_name'],
                 'APP_ENV' => $data['app_env'],
@@ -203,6 +226,7 @@ class InstallConfirmController extends BaseInstallController
                 'SESSION_DRIVER' => 'database',
                 'SESSION_LIFETIME' => '120',
                 'SESSION_ENCRYPT' => 'false',
+                'SESSION_COOKIE' => $sessionCookie,
 
                 // Email settings
                 'MAIL_MAILER' => $data['mail_mailer'] ?? 'smtp',
@@ -257,7 +281,6 @@ class InstallConfirmController extends BaseInstallController
             DB::purge();
 
             // Temporarily change session driver to file during migration
-            $envPath = base_path('.env');
             $envContent = file_get_contents($envPath);
 
             // Save original SESSION_DRIVER

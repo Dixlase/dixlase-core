@@ -160,10 +160,12 @@ return [
     |
     */
 
-    'cookie' => env(
-        'SESSION_COOKIE',
-        'dixlase_session'
-    ),
+    // env('SESSION_COOKIE') returns '' when the .env entry exists but is
+    // blank, which would otherwise become an invalid empty cookie name.
+    // Using ?: falls back to the default for both unset and blank values,
+    // so an installer-managed `SESSION_COOKIE=` placeholder stays safe
+    // until the installer fills it.
+    'cookie' => env('SESSION_COOKIE') ?: 'dixlase_session',
 
     /*
     |--------------------------------------------------------------------------
