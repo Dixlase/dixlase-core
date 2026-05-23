@@ -51,6 +51,19 @@ class PluginMigrationRepository extends DatabaseMigrationRepository
     }
 
     /**
+     * Bind this repository to a specific plugin slug.
+     *
+     * PluginMigrator uses this to point the repository at the plugin
+     * whose migrations are about to be run / rolled back, so that
+     * getRan() returns the correct set of already-applied migrations
+     * for Laravel's Migrator to diff against.
+     */
+    public function setPlugin(?string $plugin): void
+    {
+        $this->plugin = $plugin;
+    }
+
+    /**
      * Get executed migrations based on plugin name
      */
     public function getRan($plugin = null)
