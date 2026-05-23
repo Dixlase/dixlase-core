@@ -1,16 +1,25 @@
 {
-    "name": "laravel/laravel",
+    "name": "dixlase/dixlase-core",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Dixlase — plugin-driven Laravel CMS.",
     "keywords": [
-        "laravel",
-        "framework"
+        "dixlase",
+        "cms",
+        "laravel"
     ],
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/Dixlase/theme-dixlase-onepage"
+        }
+    ],
     "require": {
         "php": "^8.2",
+        "composer/installers": "^2.0",
         "composer/semver": "^3.4",
         "cweagans/composer-patches": "^2.0",
+        "dixlase/dixlase-onepage": "dev-main@dev",
         "google/cloud-recaptcha-enterprise": "^2.1",
         "laragear/webauthn": "^4.0",
         "laravel/fortify": "^1.25",
@@ -92,6 +101,9 @@
         "laravel": {
             "dont-discover": []
         },
+        "installer-paths": {
+            "themes/DixlaseOnePage/": ["dixlase/dixlase-onepage"]
+        },
         "patches": {
             "laragear/webauthn": [
                 "patches/laragear-webauthn-disable-public-key-encryption.patch"
@@ -103,6 +115,7 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {
+            "composer/installers": true,
             "pestphp/pest-plugin": true,
             "php-http/discovery": true,
             "wikimedia/composer-merge-plugin": true,
