@@ -39,7 +39,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div x-data="{
-    driver: '{{ old('db_connection', session('install_data.db_connection', 'mysql')) }}',
+    driver: '{{ old('db_connection', $defaultDriver) }}',
     sqliteDefaultPath: '{{ database_path('database.sqlite') }}',
     mysqlDefaultDb: 'dixlase',
     connectionSuccess: false,
@@ -104,17 +104,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             <div>
                 <x-form-label for="db_connection" :text="__('install/step3.db_connection')" :required="true" />
-                @php
-                    $dbConnectionOptions = [
-                        'mysql' => 'MySQL',
-                        'sqlite' => 'SQLite',
-                    ];
-                @endphp
                 <x-form-select
                     id="db_connection"
                     name="db_connection"
-                    :options="$dbConnectionOptions"
-                    :value="old('db_connection', session('install_data.db_connection', 'mysql'))"
+                    :options="$availableDrivers"
+                    :value="old('db_connection', $defaultDriver)"
                     xModel="driver"
                     onchange="this.dispatchEvent(new Event('input'))"
                 />
