@@ -36,16 +36,6 @@ class SecurityResetCommandTest extends TestCase
      */
     public function test_minimal_runs_without_audit_dispatch_error(): void
     {
-        $this->markTestSkipped(
-            'Pre-existing unrelated bug: SecurityResetCommand::resetMinimal() calls '
-            .'SecuritySetting::set() on legacy keys (e.g. ip_whitelist_enabled) that '
-            .'are no longer registered in the security settings definitions, throwing '
-            .'UnknownSettingException before the audit log call is reached. The audit '
-            .'dispatch fix in this commit is still mechanically identical to the one '
-            .'covered by SecurityResetIpCommandTest. Track the setting-registration '
-            .'bug separately and unskip this test once it is resolved.'
-        );
-
         $this->artisan('security:reset', [
             'action' => 'minimal',
             '--reason' => 'test',
