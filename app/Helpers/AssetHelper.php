@@ -600,7 +600,7 @@ if (! function_exists('load_core_assets')) {
         } else {
             // Load built Core CSS
             $coreCssFiles = [
-                'assets/build/css/common_css.css',
+                'assets/build/css/common.css',
             ];
             foreach ($coreCssFiles as $cssFile) {
                 if (file_exists(public_path($cssFile))) {
@@ -639,7 +639,7 @@ if (! function_exists('load_front_assets')) {
         } else {
             // Load Tailwind even if coreFiles is empty
             if (! is_vite_dev_server()) {
-                $coreCssFile = 'assets/build/css/common_css.css';
+                $coreCssFile = 'assets/build/css/common.css';
                 if (file_exists(public_path($coreCssFile))) {
                     $output .= render_css_link(asset($coreCssFile));
                 }
