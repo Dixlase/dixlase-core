@@ -35,6 +35,7 @@
 
 namespace App\Console\Traits;
 
+use App\Models\Plugin;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
@@ -88,19 +89,34 @@ trait PluginManagementTrait
 
     /**
      * Activate plugin
+     *
+     * Enabled state lives in the `plugins.enabled_at` timestamp (non-null
+     * = enabled). The update goes through the Plugin model so its saved()
+     * hook keeps `site_plugin_activations` in sync, matching the
+     * dls:plugin:enable command.
      */
     protected function enablePlugin(string $pluginName): void
     {
-        DB::table('plugins')->where('name', $pluginName)->update(['status' => 1]);
+        $plugin = Plugin::where('name', $pluginName)->first();
+        if ($plugin !== null) {
+            $plugin->update(['enabled_at' => now()]);
+        }
         $this->info(__('console/traits/plugin_management_trait.plugin_enabled', ['pluginName' => $pluginName]));
     }
 
     /**
      * Deactivate plugin
+     *
+     * Clears `plugins.enabled_at`. The update goes through the Plugin
+     * model so its saved() hook keeps `site_plugin_activations` in sync,
+     * matching the dls:plugin:disable command.
      */
     protected function disablePlugin(string $pluginName): void
     {
-        DB::table('plugins')->where('name', $pluginName)->update(['status' => 0]);
+        $plugin = Plugin::where('name', $pluginName)->first();
+        if ($plugin !== null) {
+            $plugin->update(['enabled_at' => null]);
+        }
         $this->info(__('console/traits/plugin_management_trait.plugin_disabled', ['pluginName' => $pluginName]));
     }
 
