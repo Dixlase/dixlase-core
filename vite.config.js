@@ -114,16 +114,23 @@ export default defineConfig(({ command }) => ({
                 'mail-server-verification-error': path.resolve(__dirname, 'resources/src/components/mail-server/js/verification-error.js'),
             },
             output: {
-                // JavaScriptファイルの名前を指定
-                entryFileNames: 'js/[name].js',  // [name]は元のファイル名に対応
-                chunkFileNames: 'js/[name].js',  // 他のチャンクファイルも指定
-                // CSSファイルの名前を指定
+                // JavaScript ファイル名。入力キーの末尾 `_js` は出力時に剥がす
+                // (例: `admin_js` → `js/admin.js`)。
+                entryFileNames: ({ name }) => {
+                    const cleaned = (name ?? '').replace(/_js$/, '');
+                    return `js/${cleaned}.js`;
+                },
+                chunkFileNames: 'js/[name].js',  // 動的 import 等のチャンクファイル
+                // CSS / その他アセットのファイル名。CSS は末尾 `_css` を剥がして出力
+                // (例: `admin_css.css` → `css/admin.css`)。
                 assetFileNames: ({ name }) => {
-                    const extension = (name?.split('.').pop() ?? '').toLowerCase(); // 拡張子を取得して小文字化
-                    if (/\.css$/.test(name ?? '')) {
-                        return 'css/[name][extname]';  // CSSは特定のフォルダに保存
+                    const safeName = name ?? '';
+                    if (/\.css$/.test(safeName)) {
+                        const cleaned = safeName.replace(/_css\.css$/, '.css');
+                        return `css/${cleaned}`;
                     }
-                    return `${extension}/[name][extname]`; // その他のアセットはassetsフォルダに
+                    const extension = (safeName.split('.').pop() ?? '').toLowerCase();
+                    return `${extension}/${safeName}`;
                 },
             },
         },
