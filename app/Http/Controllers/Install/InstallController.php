@@ -118,7 +118,7 @@ class InstallController extends Controller
             'OpenSSL' => extension_loaded('openssl'),
             'PCRE' => extension_loaded('pcre'),
             'PDO' => extension_loaded('pdo'),
-            'PDO MySQL' => extension_loaded('pdo_mysql'),
+            'PDO MySQL or SQLite' => extension_loaded('pdo_mysql') || extension_loaded('pdo_sqlite'),
             'Tokenizer' => extension_loaded('tokenizer'),
             'XML' => extension_loaded('xml'),
             'GD' => extension_loaded('gd'),

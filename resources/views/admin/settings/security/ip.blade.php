@@ -75,6 +75,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </p>
                         <p class="mt-1">{{ __('admin/settings/security/ip.proxy_warning_body', ['proxy' => $ipDiagnostics['suggested_trusted_proxies'] ?? '-']) }}</p>
                         <pre class="mt-2 overflow-x-auto rounded bg-amber-100 p-2 font-mono text-xs dark:bg-amber-900/40">TRUSTED_PROXIES={{ $ipDiagnostics['suggested_trusted_proxies'] }}</pre>
+                        <p class="mt-2 text-xs">{{ __('admin/settings/security/ip.proxy_warning_howto') }}</p>
                     </div>
                 @endif
                 
