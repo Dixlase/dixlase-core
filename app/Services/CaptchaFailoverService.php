@@ -280,18 +280,14 @@ class CaptchaFailoverService
         ]);
 
         // Record in audit log
-        if (class_exists(AuditService::class)) {
-            AuditService::log(
-                action: 'captcha_auto_failover',
-                category: 'security',
-                severity: 'warning',
-                outcome: 'success',
-                context: [
-                    'from_provider' => $failedProvider,
-                    'to_provider' => $failoverProvider,
-                ]
-            );
-        }
+        \App\Facades\Audit::logSecurity('captcha_auto_failover', [
+            'severity' => 'warning',
+            'outcome' => 'success',
+            'context' => [
+                'from_provider' => $failedProvider,
+                'to_provider' => $failoverProvider,
+            ],
+        ]);
 
         // Notify administrator
         self::notifyAdminOfFailover($failedProvider, $failoverProvider);
@@ -346,18 +342,14 @@ class CaptchaFailoverService
         ]);
 
         // Record in audit log
-        if (class_exists(AuditService::class)) {
-            AuditService::log(
-                action: 'captcha_provider_switched',
-                category: 'security',
-                severity: 'info',
-                outcome: 'success',
-                context: [
-                    'to_provider' => $provider,
-                    'permanent' => $permanent,
-                ]
-            );
-        }
+        \App\Facades\Audit::logSecurity('captcha_provider_switched', [
+            'severity' => 'info',
+            'outcome' => 'success',
+            'context' => [
+                'to_provider' => $provider,
+                'permanent' => $permanent,
+            ],
+        ]);
 
         return true;
     }

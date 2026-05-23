@@ -38,7 +38,6 @@ namespace App\Console\Commands;
 use App\Enums\Permission;
 use App\Models\Member;
 use App\Models\Role;
-use App\Services\AuditService;
 use Illuminate\Console\Command;
 
 /**
@@ -138,21 +137,18 @@ class RbacRecoveryCommand extends Command
         $this->info(__('admin/command.rbac_recovery.grant_success', ['name' => ($member->display_name ?? $member->account_name)]));
 
         // Log to audit
-        AuditService::log(
-            action: 'rbac_emergency_grant_super_admin',
-            category: 'security',
-            severity: 'critical',
-            outcome: 'success',
-            actorId: null,
-            context: [
+        \App\Facades\Audit::logSecurity('rbac_emergency_grant_super_admin', [
+            'severity' => 'critical',
+            'outcome' => 'success',
+            'context' => [
                 'member_id' => $member->id,
                 'member_email' => $member->email,
                 'previous_roles' => $previousRoles,
                 'granted_role' => 'super_admin',
                 'reason' => $reason,
                 'triggered_by' => 'cli',
-            ]
-        );
+            ],
+        ]);
 
         $this->warn(__('admin/command.rbac_recovery.security_notice'));
 
@@ -204,21 +200,18 @@ class RbacRecoveryCommand extends Command
         ]));
 
         // Log to audit
-        AuditService::log(
-            action: 'rbac_emergency_reset_role',
-            category: 'security',
-            severity: 'critical',
-            outcome: 'success',
-            actorId: null,
-            context: [
+        \App\Facades\Audit::logSecurity('rbac_emergency_reset_role', [
+            'severity' => 'critical',
+            'outcome' => 'success',
+            'context' => [
                 'role_id' => $role->id,
                 'role_name' => $role->name,
                 'previous_permissions_count' => count($previousPermissions),
                 'new_permissions_count' => count($defaultPermissions),
                 'reason' => $reason,
                 'triggered_by' => 'cli',
-            ]
-        );
+            ],
+        ]);
 
         return self::SUCCESS;
     }
