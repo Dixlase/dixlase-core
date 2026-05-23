@@ -78,6 +78,20 @@ class AdminSecurityIpUpdateRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
+            // Format validation: reject any entry that is not a valid IPv4 / IPv6
+            // address or CIDR range. Empty lists are fine (no entries means no
+            // invalid entries).
+            foreach (['allowed_admin_ips', 'blocked_admin_ips', 'allowed_front_ips', 'blocked_front_ips'] as $field) {
+                $invalid = IpAccessControlHelper::invalidEntries((string) $this->input($field, ''));
+                if ($invalid !== []) {
+                    $validator->errors()->add(
+                        $field,
+                        __('admin/settings/security/ip.invalid_entries', ['entries' => implode(', ', $invalid)]),
+                    );
+                }
+            }
+
+            // Self-lockout guard for admin lists.
             $currentIp = $this->ip();
 
             if ($currentIp === null) {

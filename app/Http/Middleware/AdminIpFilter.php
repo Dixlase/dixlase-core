@@ -79,12 +79,12 @@ class AdminIpFilter
 
         $clientIp = $request->ip();
 
-        if ($enableBlockedIps && in_array($clientIp, $blockedIps, true)) {
+        if ($enableBlockedIps && IpAccessControlHelper::ipMatchesAny($clientIp, $blockedIps)) {
             $this->logDenial($request, $clientIp, 'blocklist', $blockedIps);
             abort(403, 'Access Denied.');
         }
 
-        if ($enableAllowedIps && ! in_array($clientIp, $allowedIps, true)) {
+        if ($enableAllowedIps && ! IpAccessControlHelper::ipMatchesAny($clientIp, $allowedIps)) {
             $this->logDenial($request, $clientIp, 'allowlist', $allowedIps);
             abort(403, 'Unauthorized Access.');
         }

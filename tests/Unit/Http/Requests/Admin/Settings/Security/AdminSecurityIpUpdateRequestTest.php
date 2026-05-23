@@ -106,4 +106,47 @@ class AdminSecurityIpUpdateRequestTest extends TestCase
 
         $this->assertFalse($validator->fails());
     }
+
+    public function test_cidr_allowlist_save_is_allowed_when_current_ip_in_range(): void
+    {
+        $validator = $this->validateWith([
+            'enable_allowed_admin_ips' => '1',
+            'allowed_admin_ips' => '198.51.100.0/24',
+        ], '198.51.100.10');
+
+        $this->assertFalse($validator->fails());
+    }
+
+    public function test_cidr_allowlist_save_is_blocked_when_current_ip_outside_range(): void
+    {
+        $validator = $this->validateWith([
+            'enable_allowed_admin_ips' => '1',
+            'allowed_admin_ips' => '203.0.113.0/24',
+        ], '198.51.100.10');
+
+        $this->assertTrue($validator->fails());
+        $this->assertArrayHasKey('allowed_admin_ips', $validator->errors()->toArray());
+    }
+
+    public function test_save_fails_when_list_contains_invalid_entry(): void
+    {
+        $validator = $this->validateWith([
+            'allowed_admin_ips' => "198.51.100.10\nnot_an_ip",
+        ], '198.51.100.10');
+
+        $this->assertTrue($validator->fails());
+        $errors = $validator->errors()->toArray();
+        $this->assertArrayHasKey('allowed_admin_ips', $errors);
+        $this->assertStringContainsString('not_an_ip', $errors['allowed_admin_ips'][0]);
+    }
+
+    public function test_save_fails_when_blocklist_contains_invalid_cidr(): void
+    {
+        $validator = $this->validateWith([
+            'blocked_front_ips' => '10.0.0.0/99',
+        ], '198.51.100.10');
+
+        $this->assertTrue($validator->fails());
+        $this->assertArrayHasKey('blocked_front_ips', $validator->errors()->toArray());
+    }
 }

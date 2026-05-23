@@ -105,4 +105,64 @@ class IpAccessControlHelperTest extends TestCase
         $this->assertFalse($result['proxy_issue']);
         $this->assertNull($result['suggested_trusted_proxies']);
     }
+
+    public function test_list_contains_ip_matches_cidr_range(): void
+    {
+        $this->assertTrue(IpAccessControlHelper::listContainsIp('192.168.1.50', '192.168.1.0/24'));
+        $this->assertTrue(IpAccessControlHelper::listContainsIp('10.0.0.1', '10.0.0.0/8'));
+        $this->assertFalse(IpAccessControlHelper::listContainsIp('192.168.2.1', '192.168.1.0/24'));
+    }
+
+    public function test_list_contains_ip_matches_ipv6(): void
+    {
+        $this->assertTrue(IpAccessControlHelper::listContainsIp('2001:db8::1', '2001:db8::/32'));
+        $this->assertFalse(IpAccessControlHelper::listContainsIp('fe80::1', '2001:db8::/32'));
+    }
+
+    public function test_list_contains_ip_handles_mixed_list(): void
+    {
+        $list = "192.168.1.1\n10.0.0.0/8\n2001:db8::/32";
+
+        $this->assertTrue(IpAccessControlHelper::listContainsIp('192.168.1.1', $list));
+        $this->assertTrue(IpAccessControlHelper::listContainsIp('10.5.5.5', $list));
+        $this->assertTrue(IpAccessControlHelper::listContainsIp('2001:db8::ffff', $list));
+        $this->assertFalse(IpAccessControlHelper::listContainsIp('1.2.3.4', $list));
+    }
+
+    public function test_ip_matches_any_returns_false_for_empty_list_or_null_ip(): void
+    {
+        $this->assertFalse(IpAccessControlHelper::ipMatchesAny('1.2.3.4', []));
+        $this->assertFalse(IpAccessControlHelper::ipMatchesAny(null, ['1.2.3.4']));
+    }
+
+    public function test_is_valid_ip_or_cidr_accepts_valid(): void
+    {
+        $this->assertTrue(IpAccessControlHelper::isValidIpOrCidr('1.2.3.4'));
+        $this->assertTrue(IpAccessControlHelper::isValidIpOrCidr('192.168.1.0/24'));
+        $this->assertTrue(IpAccessControlHelper::isValidIpOrCidr('2001:db8::1'));
+        $this->assertTrue(IpAccessControlHelper::isValidIpOrCidr('2001:db8::/32'));
+        $this->assertTrue(IpAccessControlHelper::isValidIpOrCidr('0.0.0.0/0'));
+        $this->assertTrue(IpAccessControlHelper::isValidIpOrCidr('::/0'));
+    }
+
+    public function test_is_valid_ip_or_cidr_rejects_invalid(): void
+    {
+        $this->assertFalse(IpAccessControlHelper::isValidIpOrCidr('not_an_ip'));
+        $this->assertFalse(IpAccessControlHelper::isValidIpOrCidr('1.2.3.4/33'));
+        $this->assertFalse(IpAccessControlHelper::isValidIpOrCidr('2001:db8::/129'));
+        $this->assertFalse(IpAccessControlHelper::isValidIpOrCidr(''));
+        $this->assertFalse(IpAccessControlHelper::isValidIpOrCidr('1.2.3'));
+        $this->assertFalse(IpAccessControlHelper::isValidIpOrCidr('1.2.3.4/abc'));
+    }
+
+    public function test_invalid_entries_returns_only_bad_values(): void
+    {
+        $this->assertSame([], IpAccessControlHelper::invalidEntries(null));
+        $this->assertSame([], IpAccessControlHelper::invalidEntries(''));
+        $this->assertSame([], IpAccessControlHelper::invalidEntries('1.2.3.4, 5.6.7.0/24, 2001:db8::/32'));
+        $this->assertSame(
+            ['foo', '1.2.3.4/99'],
+            IpAccessControlHelper::invalidEntries("1.2.3.4\nfoo\n5.6.7.0/24\n1.2.3.4/99"),
+        );
+    }
 }

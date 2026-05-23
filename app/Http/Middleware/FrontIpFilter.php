@@ -87,7 +87,7 @@ class FrontIpFilter
         if (! empty($enableAllowedFrontIps)) {
             $allowedIps = IpAccessControlHelper::parseList($allowedFrontIps);
 
-            if ($allowedIps !== [] && ! in_array($userIp, $allowedIps, true)) {
+            if ($allowedIps !== [] && ! IpAccessControlHelper::ipMatchesAny($userIp, $allowedIps)) {
                 $this->logDenial($request, $userIp, 'allowlist', $allowedIps);
                 abort(403);
             }
@@ -97,7 +97,7 @@ class FrontIpFilter
         if (! empty($enableBlockedFrontIps)) {
             $blockedIps = IpAccessControlHelper::parseList($blockedFrontIps);
 
-            if (in_array($userIp, $blockedIps, true)) {
+            if (IpAccessControlHelper::ipMatchesAny($userIp, $blockedIps)) {
                 $this->logDenial($request, $userIp, 'blocklist', $blockedIps);
                 abort(403);
             }
