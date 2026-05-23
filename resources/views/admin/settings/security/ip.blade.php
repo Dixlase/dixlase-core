@@ -71,9 +71,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="mb-4 rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-600/50 dark:bg-amber-900/20 dark:text-amber-300">
                         <p class="font-semibold">
                             <i class="fas fa-exclamation-triangle mr-1"></i>
-                            {{ __('admin/settings/security/ip.proxy_warning_heading') }}
+                            @if ($ipDiagnostics['trusted_proxies_configured'])
+                                {{ __('admin/settings/security/ip.proxy_warning_heading_misconfigured') }}
+                            @else
+                                {{ __('admin/settings/security/ip.proxy_warning_heading') }}
+                            @endif
                         </p>
                         <p class="mt-1">{{ __('admin/settings/security/ip.proxy_warning_body', ['proxy' => $ipDiagnostics['suggested_trusted_proxies'] ?? '-']) }}</p>
+                        @if ($ipDiagnostics['trusted_proxies_configured'] && $ipDiagnostics['trusted_proxies_value'])
+                            <p class="mt-2 text-xs">{{ __('admin/settings/security/ip.proxy_warning_current_value', ['value' => $ipDiagnostics['trusted_proxies_value']]) }}</p>
+                        @endif
                         <pre class="mt-2 overflow-x-auto rounded bg-amber-100 p-2 font-mono text-xs dark:bg-amber-900/40">TRUSTED_PROXIES={{ $ipDiagnostics['suggested_trusted_proxies'] }}</pre>
                         <p class="mt-2 text-xs">{{ __('admin/settings/security/ip.proxy_warning_howto') }}</p>
                     </div>

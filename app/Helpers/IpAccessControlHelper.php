@@ -155,36 +155,80 @@ final class IpAccessControlHelper
     /**
      * Inspect the current connection for reverse-proxy / TRUSTED_PROXIES issues.
      *
-     * `proxy_issue` is true when a forwarded header is present but no trusted
-     * proxies are configured — meaning the application cannot see real client
-     * IPs and the IP allow/block lists will not behave as expected.
+     * `proxy_issue` is true when a forwarded header is present AND either:
+     *   - no trusted proxies are configured at all, OR
+     *   - the resolved client IP is still a private / loopback address (i.e.
+     *     trust is configured but does not actually cover the proxy in front
+     *     of the application, so $request->ip() never escapes the proxy
+     *     range).
+     *
+     * The misconfigured-trust case matters because the first case alone misses
+     * a common operator mistake: TRUSTED_PROXIES is set but to the wrong
+     * subnet, so the IP allow/block lists silently see every visitor as the
+     * proxy.
+     *
+     * `trusted_proxies_value` is a printable form of the current configured
+     * value (`null` if unconfigured, `*` for the trust-anything sentinel, or
+     * a comma-joined string for an array of IPs / CIDR ranges) so the view
+     * can show the operator what they have versus what is needed.
      *
      * @return array{
      *     client_ip: string|null,
      *     remote_addr: string|null,
      *     trusted_proxies_configured: bool,
+     *     trusted_proxies_value: string|null,
      *     proxy_issue: bool,
      *     suggested_trusted_proxies: string|null
      * }
      */
     public static function inspectConnection(Request $request): array
     {
-        $trustedProxiesConfigured = ! empty(config('trustedproxy.proxies'));
+        $proxies = config('trustedproxy.proxies');
+        $trustedProxiesConfigured = ! empty($proxies);
+        $trustedProxiesValue = self::formatTrustedProxiesValue($proxies);
 
         $hasForwardedHeader = $request->headers->has('X-Forwarded-For')
             || $request->headers->has('Forwarded');
 
-        $proxyIssue = $hasForwardedHeader && ! $trustedProxiesConfigured;
+        $clientIp = $request->ip();
+        $clientIpIsPrivate = $clientIp !== null && IpUtils::isPrivateIp($clientIp);
+
+        $proxyIssue = $hasForwardedHeader && (! $trustedProxiesConfigured || $clientIpIsPrivate);
 
         $remoteAddr = $request->server->get('REMOTE_ADDR');
         $remoteAddr = is_string($remoteAddr) ? $remoteAddr : null;
 
         return [
-            'client_ip' => $request->ip(),
+            'client_ip' => $clientIp,
             'remote_addr' => $remoteAddr,
             'trusted_proxies_configured' => $trustedProxiesConfigured,
+            'trusted_proxies_value' => $trustedProxiesValue,
             'proxy_issue' => $proxyIssue,
             'suggested_trusted_proxies' => $proxyIssue ? $remoteAddr : null,
         ];
+    }
+
+    /**
+     * Render the current TRUSTED_PROXIES setting as a single string for display.
+     */
+    private static function formatTrustedProxiesValue(mixed $proxies): ?string
+    {
+        if (empty($proxies)) {
+            return null;
+        }
+
+        if ($proxies === '*') {
+            return '*';
+        }
+
+        if (is_array($proxies)) {
+            return implode(', ', array_filter(array_map(static fn ($p) => is_string($p) ? $p : null, $proxies)));
+        }
+
+        if (is_string($proxies)) {
+            return $proxies;
+        }
+
+        return null;
     }
 }

@@ -28,6 +28,15 @@ use Tests\TestCase;
 
 class IpAccessControlHelperTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        // Reset Symfony's static trusted-proxy state so configuration made by
+        // one test does not bleed into the next (and so the rest of the suite
+        // stays at its default of trusting nothing).
+        Request::setTrustedProxies([], Request::HEADER_X_FORWARDED_FOR);
+        parent::tearDown();
+    }
+
     public function test_parse_list_splits_on_commas(): void
     {
         $this->assertSame(['1.2.3.4', '5.6.7.8'], IpAccessControlHelper::parseList('1.2.3.4,5.6.7.8'));
@@ -82,7 +91,11 @@ class IpAccessControlHelperTest extends TestCase
 
     public function test_inspect_connection_reports_no_issue_when_trusted_proxies_configured(): void
     {
+        // Trust covers the actual proxy (172.19.0.10 is inside 172.19.0.0/16),
+        // so Symfony resolves X-Forwarded-For and $request->ip() returns the
+        // real public client IP. proxy_issue must stay false.
         config(['trustedproxy.proxies' => ['172.19.0.0/16']]);
+        Request::setTrustedProxies(['172.19.0.0/16'], Request::HEADER_X_FORWARDED_FOR);
 
         $request = Request::create('/', 'GET', server: ['REMOTE_ADDR' => '172.19.0.10']);
         $request->headers->set('X-Forwarded-For', '203.0.113.7');
@@ -91,7 +104,28 @@ class IpAccessControlHelperTest extends TestCase
 
         $this->assertFalse($result['proxy_issue']);
         $this->assertTrue($result['trusted_proxies_configured']);
+        $this->assertSame('172.19.0.0/16', $result['trusted_proxies_value']);
         $this->assertNull($result['suggested_trusted_proxies']);
+    }
+
+    public function test_inspect_connection_flags_proxy_issue_when_trusted_proxies_misconfigured(): void
+    {
+        // TRUSTED_PROXIES is set, but to a subnet that does NOT include the
+        // actual proxy IP (172.19.0.10). The XFF header therefore goes ignored
+        // by Symfony and $request->ip() stays at the private proxy address —
+        // the operator has trust configured, but to the wrong value.
+        config(['trustedproxy.proxies' => ['10.0.0.0/8']]);
+        Request::setTrustedProxies(['10.0.0.0/8'], Request::HEADER_X_FORWARDED_FOR);
+
+        $request = Request::create('/', 'GET', server: ['REMOTE_ADDR' => '172.19.0.10']);
+        $request->headers->set('X-Forwarded-For', '203.0.113.7');
+
+        $result = IpAccessControlHelper::inspectConnection($request);
+
+        $this->assertTrue($result['proxy_issue']);
+        $this->assertTrue($result['trusted_proxies_configured']);
+        $this->assertSame('10.0.0.0/8', $result['trusted_proxies_value']);
+        $this->assertSame('172.19.0.10', $result['suggested_trusted_proxies']);
     }
 
     public function test_inspect_connection_reports_no_issue_for_direct_request(): void
