@@ -37,8 +37,10 @@ namespace App\Http\Controllers\Admin\Settings\Security;
 
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Helpers\AdminModeHelper;
+use App\Helpers\IpAccessControlHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Security\AdminSecurityIpUpdateRequest;
+use Illuminate\Http\Request;
 
 class AdminSecurityIpController extends AdminLoggedInController
 {
@@ -64,7 +66,7 @@ class AdminSecurityIpController extends AdminLoggedInController
     /**
      * IP access control settings page
      */
-    public function index()
+    public function index(Request $request)
     {
         $settings = [
             'enable_allowed_admin_ips' => filter_var($this->securitySettingRepository->get('enable_allowed_admin_ips', false), FILTER_VALIDATE_BOOLEAN),
@@ -78,6 +80,7 @@ class AdminSecurityIpController extends AdminLoggedInController
         ];
 
         $this->viewParams['settings'] = $settings;
+        $this->viewParams['ipDiagnostics'] = IpAccessControlHelper::inspectConnection($request);
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.ip');
 
         return view('admin.settings.security.ip', $this->viewParams);

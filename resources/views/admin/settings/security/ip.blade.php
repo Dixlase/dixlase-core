@@ -52,6 +52,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- 管理画面IP制御 -->
             <section>
                 <h3>{{ __('admin/settings/security/ip.admin_access_control') }}</h3>
+
+                <div class="mb-4 rounded-md border border-gray-200 bg-gray-50 p-4 text-sm dark:border-gray-700 dark:bg-gray-800/50">
+                    <p>
+                        <i class="fas fa-info-circle mr-1 text-gray-400"></i>
+                        {{ __('admin/settings/security/ip.detected_ip_label') }}:
+                        <code class="ml-1 font-mono font-semibold">{{ $ipDiagnostics['client_ip'] ?? '-' }}</code>
+                    </p>
+                    <p class="mt-1 text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/ip.detected_ip_hint') }}</p>
+                </div>
+
+                @if ($ipDiagnostics['proxy_issue'])
+                    <div class="mb-4 rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-600/50 dark:bg-amber-900/20 dark:text-amber-300">
+                        <p class="font-semibold">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                            {{ __('admin/settings/security/ip.proxy_warning_heading') }}
+                        </p>
+                        <p class="mt-1">{{ __('admin/settings/security/ip.proxy_warning_body', ['proxy' => $ipDiagnostics['suggested_trusted_proxies'] ?? '-']) }}</p>
+                        <pre class="mt-2 overflow-x-auto rounded bg-amber-100 p-2 font-mono text-xs dark:bg-amber-900/40">TRUSTED_PROXIES={{ $ipDiagnostics['suggested_trusted_proxies'] }}</pre>
+                    </div>
+                @endif
                 
                 <!-- 許可IP設定 -->
                 <fieldset>
@@ -73,13 +93,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <x-form-textarea
                             id="allowed_admin_ips"
                             name="allowed_admin_ips"
-                            :value="$settings['allowed_admin_ips']"
+                            :value="old('allowed_admin_ips', $settings['allowed_admin_ips'])"
                             :rows="8"
                             :placeholder="__('admin/settings/security/ip.ip_list_placeholder')"
                             class="input-xl"
                             x-bind:disabled="!enableAllowedIPs"
                         />
                         
+                        @error('allowed_admin_ips')
+                            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+
                         <p class="mb-3">{{ __('admin/settings/security/ip.admin_ip_help') }}</p>
                     </div>
                 </fieldset>
@@ -104,13 +128,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <x-form-textarea
                             id="blocked_admin_ips"
                             name="blocked_admin_ips"
-                            :value="$settings['blocked_admin_ips']"
+                            :value="old('blocked_admin_ips', $settings['blocked_admin_ips'])"
                             :rows="8"
                             :placeholder="__('admin/settings/security/ip.ip_list_placeholder')"
                             class="input-xl"
                             x-bind:disabled="!blockedAdminIps"
                         />
                         
+                        @error('blocked_admin_ips')
+                            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+
                         <p>{{ __('admin/settings/security/ip.admin_ip_help') }}</p>
                     </div>
                 </fieldset>
@@ -140,7 +168,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <x-form-textarea
                             id="allowed_front_ips"
                             name="allowed_front_ips"
-                            :value="$settings['allowed_front_ips']"
+                            :value="old('allowed_front_ips', $settings['allowed_front_ips'])"
                             :rows="8"
                             :placeholder="__('admin/settings/security/ip.ip_list_placeholder')"
                             class="input-xl"
@@ -171,7 +199,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <x-form-textarea
                             id="blocked_front_ips"
                             name="blocked_front_ips"
-                            :value="$settings['blocked_front_ips']"
+                            :value="old('blocked_front_ips', $settings['blocked_front_ips'])"
                             :rows="8"
                             :placeholder="__('admin/settings/security/ip.ip_list_placeholder')"
                             class="input-xl"

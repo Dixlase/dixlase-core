@@ -35,6 +35,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Helpers\IpAccessControlHelper;
 use App\Models\SecuritySetting;
 use Closure;
 use Illuminate\Http\Request;
@@ -65,10 +66,10 @@ class AdminIpFilter
         // After multisite consolidation, security settings are also integrated into global_settings
         if (Schema::hasTable('global_settings')) {
             $enableAllowedIps = (bool) SecuritySetting::get('enable_allowed_admin_ips', 0);
-            $allowedIps = $this->parseIpList((string) SecuritySetting::get('allowed_admin_ips', ''));
+            $allowedIps = IpAccessControlHelper::parseList((string) SecuritySetting::get('allowed_admin_ips', ''));
 
             $enableBlockedIps = (bool) SecuritySetting::get('enable_blocked_admin_ips', 0);
-            $blockedIps = $this->parseIpList((string) SecuritySetting::get('blocked_admin_ips', ''));
+            $blockedIps = IpAccessControlHelper::parseList((string) SecuritySetting::get('blocked_admin_ips', ''));
         }
 
         // Skip IP restriction if neither list is enabled
@@ -89,19 +90,6 @@ class AdminIpFilter
         }
 
         return $next($request);
-    }
-
-    /**
-     * Split a comma-separated IP setting into a trimmed, non-empty list.
-     *
-     * Whitespace around each entry is removed so that values such as
-     * "1.2.3.4, 5.6.7.8" match correctly.
-     *
-     * @return array<int, string>
-     */
-    private function parseIpList(string $raw): array
-    {
-        return array_values(array_filter(array_map('trim', explode(',', $raw))));
     }
 
     /**
