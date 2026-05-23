@@ -37,11 +37,13 @@
 
 namespace App\Services;
 
+use App\Models\Plugin;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Migrations\MigrationRepositoryInterface;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class PluginMigrator
@@ -81,6 +83,34 @@ class PluginMigrator
     }
 
     /**
+     * Bind the migration repository to a specific plugin.
+     *
+     * The repository filters `plugin_migrations` rows by plugin slug.
+     * Without this binding `getRan()` returns nothing (it queries
+     * `where plugin = null`), so Laravel's Migrator treats every file
+     * as pending and re-runs already-applied migrations.
+     *
+     * Calling this at the entry point of every operation lets the
+     * service be DI-resolved once (with a null slug) and still target
+     * the right plugin per call.
+     */
+    protected function bindPlugin(string $pluginName): void
+    {
+        $slug = null;
+        if (Schema::hasTable('plugins')) {
+            $slug = Plugin::where('name', $pluginName)->value('slug');
+        }
+        if ($slug === null) {
+            $slug = Str::slug(Str::headline($pluginName), '-');
+        }
+
+        $this->pluginSlug = $slug;
+        if (method_exists($this->repository, 'setPlugin')) {
+            $this->repository->setPlugin($slug);
+        }
+    }
+
+    /**
      * Run migrations for the specified plugin
      *
      * @param  string  $plugin  Plugin name
@@ -92,6 +122,8 @@ class PluginMigrator
      */
     public function migrate(string $plugin, ?string $path = null, array $options = []): array
     {
+        $this->bindPlugin($plugin);
+
         $migrationPath = $path ?? base_path("plugins/{$plugin}/database/migrations");
 
         Log::info('PluginMigrator: Starting migration', [
@@ -147,6 +179,8 @@ class PluginMigrator
      */
     public function rollback(string $plugin, array $options = []): array
     {
+        $this->bindPlugin($plugin);
+
         $migrationPath = base_path("plugins/{$plugin}/database/migrations");
 
         Log::info('PluginMigrator: Starting rollback', [
