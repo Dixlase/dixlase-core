@@ -88,5 +88,6 @@ class AdminSecurityIpPageTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee(__('admin/settings/security/ip.proxy_warning_heading'));
+        $response->assertSeeText(__('admin/settings/security/ip.proxy_warning_howto'));
     }
 }
