@@ -70,8 +70,19 @@ class InstallDatabaseRequest extends FormRequest
         // when those fields are left blank.
         $isSqlite = $this->input('db_connection') === 'sqlite';
 
+        // Restrict the allowed drivers to those whose PDO extension is
+        // actually loaded on this host so a forged form value cannot
+        // bypass the dynamically filtered select on the UI.
+        $allowedDrivers = [];
+        if (extension_loaded('pdo_mysql')) {
+            $allowedDrivers[] = 'mysql';
+        }
+        if (extension_loaded('pdo_sqlite')) {
+            $allowedDrivers[] = 'sqlite';
+        }
+
         return [
-            'db_connection' => 'required|string',
+            'db_connection' => ['required', 'string', \Illuminate\Validation\Rule::in($allowedDrivers)],
             'db_host' => $isSqlite ? 'nullable|string' : 'required|string',
             'db_port' => $isSqlite ? 'nullable|integer' : 'required|integer',
             'db_database' => 'required|string',

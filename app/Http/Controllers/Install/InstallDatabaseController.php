@@ -50,7 +50,31 @@ class InstallDatabaseController extends BaseInstallController
      */
     public function create()
     {
-        return view('install.database', $this->getViewData(4));
+        // Build the driver option list from the actually loaded PDO extensions
+        // so users cannot pick a driver that the host PHP cannot connect with.
+        $availableDrivers = [];
+        if (extension_loaded('pdo_mysql')) {
+            $availableDrivers['mysql'] = 'MySQL';
+        }
+        if (extension_loaded('pdo_sqlite')) {
+            $availableDrivers['sqlite'] = 'SQLite';
+        }
+
+        // Default to the first available driver if the previously stored
+        // choice is no longer installable on this host.
+        $sessionDriver = session('install_data.db_connection');
+        if ($sessionDriver !== null && ! isset($availableDrivers[$sessionDriver])) {
+            $sessionDriver = null;
+        }
+        $defaultDriver = $sessionDriver ?? array_key_first($availableDrivers);
+
+        return view('install.database', array_merge(
+            $this->getViewData(4),
+            [
+                'availableDrivers' => $availableDrivers,
+                'defaultDriver' => $defaultDriver,
+            ]
+        ));
     }
 
     /**
