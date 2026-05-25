@@ -104,6 +104,19 @@ return [
         // alias so it does not trip the unknown_license warning.
         'LicenseRef-Dixlase-Commercial' => ['compatibility' => 'commercial_escape', 'tier' => 'commercial'],
 
+        // ---- Proprietary (terms in plugin/theme's LICENSE file) ----
+        // Accepted for third-party commercial plugins and themes that ship
+        // their own LICENSE file describing the actual terms. Distribution
+        // under non-GPL terms relies on the Dixlase Plugin and Theme
+        // Exception (see LICENSE-EXCEPTIONS).
+        //
+        // "proprietary" is not a public SPDX identifier, so external SBOM
+        // and license-scanning tools will treat it as "Unknown". Authors
+        // are therefore *encouraged* (not required) to declare a more
+        // specific LicenseRef-* identifier such as `LicenseRef-MyCompany-EULA`
+        // so downstream tooling and end users can identify the terms.
+        'proprietary' => ['compatibility' => 'compatible_via_exception', 'tier' => 'commercial'],
+
     ],
 
     /*
@@ -124,7 +137,6 @@ return [
         'Apache-1.1' => 'Apache-1.1 is incompatible with the GPL family; use Apache-2.0 instead.',
         'SSPL-1.0' => 'SSPL is not OSI-approved and is incompatible with the AGPL-3.0 core; use AGPL-3.0-or-later if you want a copyleft network license.',
         'BUSL-1.1' => 'BUSL is a source-available license, not an OSI-approved open-source license; it cannot be combined with the AGPL-3.0 core.',
-        'proprietary' => 'Plain "proprietary" is too vague. If you ship a paid extension, use LicenseRef-Dixlase-Commercial (or your own LicenseRef-*) and document the terms in a LICENSE file shipped with the plugin.',
     ],
 
     /*

@@ -80,11 +80,12 @@ class LicenseValidatorTest extends TestCase
         $this->assertStringContainsString('GPL-2.0-only', $result['reason']);
     }
 
-    public function test_plain_proprietary_is_refused(): void
+    public function test_plain_proprietary_is_accepted_via_exception(): void
     {
         $result = $this->validator->validate('proprietary');
-        $this->assertSame(LicenseValidator::STATUS_REFUSED, $result['status']);
-        $this->assertStringContainsString('LicenseRef-', $result['reason']);
+        $this->assertSame(LicenseValidator::STATUS_ACCEPTED, $result['status']);
+        $this->assertSame('compatible_via_exception', $result['compatibility']);
+        $this->assertSame('commercial', $result['tier']);
     }
 
     public function test_non_spdx_form_is_reported_as_invalid(): void

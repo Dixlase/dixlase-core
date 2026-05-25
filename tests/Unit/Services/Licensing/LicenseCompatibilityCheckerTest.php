@@ -92,11 +92,15 @@ class LicenseCompatibilityCheckerTest extends TestCase
     public function test_is_compatible_with_core_returns_false_for_refused(): void
     {
         $this->assertFalse($this->checker->isCompatibleWithCore('GPL-2.0-only'));
-        $this->assertFalse($this->checker->isCompatibleWithCore('proprietary'));
     }
 
     public function test_commercial_escape_is_compatible_with_core(): void
     {
         $this->assertTrue($this->checker->isCompatibleWithCore('LicenseRef-Dixlase-Commercial'));
+    }
+
+    public function test_plain_proprietary_is_compatible_with_core_via_exception(): void
+    {
+        $this->assertTrue($this->checker->isCompatibleWithCore('proprietary'));
     }
 }
