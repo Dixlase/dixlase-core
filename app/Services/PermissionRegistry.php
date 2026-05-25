@@ -47,7 +47,8 @@ use Illuminate\Support\Facades\Cache;
 /**
  * Permission Registry Service
  *
- * Merges default permissions (config/roles.php) and overrides (DB)
+ * Merges default permissions (plugin roles.php — see resolvePluginRolesPath())
+ * and overrides (DB)
  * Service that provides effective permissions
  */
 class PermissionRegistry
@@ -222,22 +223,34 @@ class PermissionRegistry
     }
 
     /**
+     * Resolve a plugin's roles.php path.
+     *
+     * The canonical location matches `plugins/CLAUDE.md`, `PLUGIN-API.md`,
+     * and the `declares.configs.roles` declaration verified by
+     * `DeclaresVerifier` / `PluginManifestSyncService`. Returns null when
+     * the file does not exist.
+     */
+    public static function resolvePluginRolesPath(string $pluginSlug): ?string
+    {
+        $path = base_path("plugins/{$pluginSlug}/config/admin/roles.php");
+
+        return file_exists($path) ? $path : null;
+    }
+
+    /**
      * Get plugin default permission (supports nested structure)
      */
     protected static function getPluginDefault(string $pluginSlug, string $menuKey): ?array
     {
-        // Get from in-memory registration
         if (isset(self::$pluginPermissions[$pluginSlug][$menuKey])) {
             return self::$pluginPermissions[$pluginSlug][$menuKey];
         }
 
-        // Attempt to get from plugin's config/roles.php
-        $pluginRolesPath = base_path("plugins/{$pluginSlug}/config/roles.php");
-        if (file_exists($pluginRolesPath)) {
+        $pluginRolesPath = self::resolvePluginRolesPath($pluginSlug);
+        if ($pluginRolesPath !== null) {
             $pluginRoles = require $pluginRolesPath;
             $permissions = $pluginRoles['permissions'] ?? [];
 
-            // Get from nested structure
             return self::getDefaultFromNestedArray($permissions, $menuKey);
         }
 
@@ -410,9 +423,8 @@ class PermissionRegistry
             // Get default permissions for plugin
             $defaults = self::$pluginPermissions[$pluginSlug] ?? [];
 
-            // Also retrieved from config/roles.php
-            $pluginRolesPath = base_path("plugins/{$pluginSlug}/config/roles.php");
-            if (file_exists($pluginRolesPath)) {
+            $pluginRolesPath = self::resolvePluginRolesPath($pluginSlug);
+            if ($pluginRolesPath !== null) {
                 $pluginRoles = require $pluginRolesPath;
                 $defaults = array_merge_recursive($defaults, $pluginRoles['permissions'] ?? []);
             }
@@ -435,9 +447,8 @@ class PermissionRegistry
             // Get default permissions for plugin
             $defaults = self::$pluginPermissions[$pluginSlug] ?? [];
 
-            // Also retrieved from config/roles.php
-            $pluginRolesPath = base_path("plugins/{$pluginSlug}/config/roles.php");
-            if (file_exists($pluginRolesPath)) {
+            $pluginRolesPath = self::resolvePluginRolesPath($pluginSlug);
+            if ($pluginRolesPath !== null) {
                 $pluginRoles = require $pluginRolesPath;
                 $defaults = array_merge_recursive($defaults, $pluginRoles['permissions'] ?? []);
             }
@@ -476,12 +487,14 @@ class PermissionRegistry
             $result[$pluginSlug] = self::getAllPluginPermissions($pluginSlug);
         }
 
-        // Also retrieved from plugins directory
         $pluginsPath = base_path('plugins');
         if (is_dir($pluginsPath)) {
-            foreach (glob($pluginsPath.'/*/config/roles.php') as $rolesFile) {
-                $pluginSlug = basename(dirname(dirname($rolesFile)));
-                if (! isset($result[$pluginSlug])) {
+            foreach (glob($pluginsPath.'/*', GLOB_ONLYDIR) ?: [] as $pluginDir) {
+                $pluginSlug = basename($pluginDir);
+                if (isset($result[$pluginSlug])) {
+                    continue;
+                }
+                if (self::resolvePluginRolesPath($pluginSlug) !== null) {
                     $result[$pluginSlug] = self::getAllPluginPermissions($pluginSlug);
                 }
             }
