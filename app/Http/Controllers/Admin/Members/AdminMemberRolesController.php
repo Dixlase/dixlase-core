@@ -248,9 +248,7 @@ class AdminMemberRolesController extends AdminLoggedInController
             $pluginSlug = basename($pluginDir);
             $pluginName = $pluginInfo['name'] ?? $pluginSlug;
 
-            // Only target plugins that have roles.php
-            $rolesConfigPath = $pluginDir.'/config/roles.php';
-            if (! file_exists($rolesConfigPath)) {
+            if (PermissionRegistry::resolvePluginRolesPath($pluginSlug) === null) {
                 continue;
             }
 
