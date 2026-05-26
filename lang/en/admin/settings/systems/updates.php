@@ -45,6 +45,7 @@ return [
         'update_started' => 'Core upgrade to v:version started. This takes roughly one to two minutes. Reload this page to see the result.',
         'no_update_to_apply' => 'No core update is currently available.',
         'exec_disabled' => 'PHP exec() is disabled on this server, so the core upgrade cannot be started from the web UI. Use the CLI command below instead.',
+        'php_cli_not_found' => 'No CLI php binary could be located on this server, so the core upgrade cannot be started from the web UI. Use the CLI command below instead.',
         'update_failed_heading' => 'The previous core upgrade failed',
         'cli_alternative_heading' => 'Or run from a terminal',
         'cli_alternative_intro' => 'You can also run the upgrade yourself from a terminal — useful if PHP exec() is disabled, or if you want to keep the long-running output in view.',
