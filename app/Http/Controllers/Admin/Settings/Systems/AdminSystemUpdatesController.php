@@ -168,9 +168,10 @@ class AdminSystemUpdatesController extends AdminLoggedInController
      *   plugins[] = id (selected plugin IDs)
      *   themes[]  = id (selected theme IDs)
      *
-     * Core update is excluded from web-driven apply: the page renders a
-     * copyable `dls:core:update` CLI command instead, since replacing core
-     * code mid-request would tear down the running app.
+     * Core update is excluded from this handler: web-triggered core
+     * upgrades go through applyCore(), which spawns dls:core:update as a
+     * detached subprocess so file replacement does not tear down the
+     * PHP-FPM worker that initiated the request.
      */
     public function apply(Request $request)
     {
@@ -230,6 +231,59 @@ class AdminSystemUpdatesController extends AdminLoggedInController
     }
 
     /**
+     * Trigger a core upgrade from the admin UI.
+     *
+     * Core update replaces files under app/, config/, routes/, lang/,
+     * etc. on disk. Running dls:core:update inline in the request would
+     * tear down the PHP-FPM worker (and the response it is trying to
+     * write) the moment the live tree is overwritten. We instead spawn
+     * the command as a detached subprocess so the request returns
+     * immediately and the long-running update continues in the
+     * background, reparented to PID 1 by SIGHUP detachment.
+     *
+     * The CLI alternative remains visible in the UI (collapsed under
+     * "Or run from a terminal") so operators on hosts where PHP exec()
+     * is disabled, or who prefer manual control, still have a path.
+     */
+    public function applyCore(Request $request)
+    {
+        $state = \App\Models\CoreRelease::singleton();
+        $current = (string) (\App\Models\CoreVersionHistory::currentVersion() ?? config('app.version', '0.0.0'));
+        $hasUpdate = $state->available_version !== null
+            && version_compare($state->available_version, $current, '>');
+
+        if (! $hasUpdate) {
+            return redirect()->route('admin.settings.systems.updates.index')
+                ->with('warning', __('admin/settings/systems/updates.core.no_update_to_apply'));
+        }
+
+        if (! function_exists('exec')) {
+            return redirect()->route('admin.settings.systems.updates.index')
+                ->with('error', __('admin/settings/systems/updates.core.exec_disabled'));
+        }
+
+        // Clear any prior failure marker so the UI does not show a stale
+        // error banner while the new run is in flight.
+        $state->forceFill([
+            'update_failed_at' => null,
+            'update_failure_reason' => null,
+        ])->save();
+
+        $command = sprintf(
+            'nohup %s %s dls:core:update --force --no-interaction > %s 2>&1 &',
+            escapeshellarg(PHP_BINARY),
+            escapeshellarg(base_path('artisan')),
+            escapeshellarg(storage_path('logs/core-update.log'))
+        );
+        exec($command);
+
+        return redirect()->route('admin.settings.systems.updates.index')
+            ->with('success', __('admin/settings/systems/updates.core.update_started', [
+                'version' => $state->available_version,
+            ]));
+    }
+
+    /**
      * Parse query in `?target=plugin:slug` format. The literal value `core`
      * (no slug) selects the core row.
      *
@@ -277,6 +331,9 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             'available_version_published_at' => $available ? $state->available_version_published_at : null,
             'release_url' => $available ? $state->release_url : null,
             'preselected' => $available && $target['type'] === 'core',
+            'update_failed_at' => $state->update_failed_at,
+            'update_failed_at_formatted' => $state->update_failed_at?->format('Y/m/d H:i'),
+            'update_failure_reason' => $state->update_failure_reason,
         ];
     }
 
