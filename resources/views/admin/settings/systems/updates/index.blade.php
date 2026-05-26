@@ -84,24 +84,44 @@ file is governed by the AGPL terms below.
                         @endif
                     </div>
 
-                    <div class="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-4">
-                        <p class="flex items-start gap-2 text-sm text-amber-800 dark:text-amber-200 mb-3">
-                            <i class="fas fa-terminal mt-0.5"></i>
-                            <span>{{ __('admin/settings/systems/updates.core.cli_required') }}</span>
-                        </p>
-                        <div class="flex items-center gap-2"
-                             x-data="{ copied: false, copy() { navigator.clipboard.writeText(this.$refs.cmd.textContent.trim()).then(() => { this.copied = true; setTimeout(() => this.copied = false, 2000); }); } }">
-                            <code x-ref="cmd" class="flex-1 font-mono text-xs bg-gray-900 text-gray-100 px-3 py-2 rounded select-all">{{ __('admin/settings/systems/updates.core.cli_command') }}</code>
-                            <button type="button" @click="copy()"
-                                    class="inline-flex items-center gap-1 px-2.5 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
-                                <i class="fas" :class="copied ? 'fa-check text-green-500' : 'fa-copy'"></i>
-                                <span x-text="copied ? '{{ __('common.copied') }}' : '{{ __('common.copy') }}'"></span>
-                            </button>
+                    @if(! empty($core['update_failure_reason']))
+                        <div class="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-3">
+                            <p class="font-semibold text-sm text-red-800 dark:text-red-200 mb-1">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>{{ __('admin/settings/systems/updates.core.update_failed_heading') }}
+                                @if(! empty($core['update_failed_at_formatted']))
+                                    <span class="text-xs font-normal text-red-700 dark:text-red-300 ml-1">({{ $core['update_failed_at_formatted'] }})</span>
+                                @endif
+                            </p>
+                            <p class="font-mono text-xs text-red-700 dark:text-red-300 break-words">{{ $core['update_failure_reason'] }}</p>
                         </div>
-                        <p class="mt-2 text-xs text-amber-700 dark:text-amber-300">
-                            {{ __('admin/settings/systems/updates.core.cli_followups') }}
-                        </p>
-                    </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('admin.settings.systems.updates.apply-core') }}" class="flex">
+                        @csrf
+                        <x-form-button type="submit"
+                            :label="__('admin/settings/systems/updates.core.update_button')"
+                            variant="primary"
+                            icon="fas fa-cloud-download-alt" />
+                    </form>
+
+                    <details class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30 p-3">
+                        <summary class="cursor-pointer text-sm text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
+                            <i class="fas fa-terminal"></i>{{ __('admin/settings/systems/updates.core.cli_alternative_heading') }}
+                        </summary>
+                        <div class="mt-3 space-y-2">
+                            <p class="text-xs text-gray-600 dark:text-gray-400">{{ __('admin/settings/systems/updates.core.cli_alternative_intro') }}</p>
+                            <div class="flex items-center gap-2"
+                                 x-data="{ copied: false, copy() { navigator.clipboard.writeText(this.$refs.cmd.textContent.trim()).then(() => { this.copied = true; setTimeout(() => this.copied = false, 2000); }); } }">
+                                <code x-ref="cmd" class="flex-1 font-mono text-xs bg-gray-900 text-gray-100 px-3 py-2 rounded select-all">{{ __('admin/settings/systems/updates.core.cli_command') }}</code>
+                                <button type="button" @click="copy()"
+                                        class="inline-flex items-center gap-1 px-2.5 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                                    <i class="fas" :class="copied ? 'fa-check text-green-500' : 'fa-copy'"></i>
+                                    <span x-text="copied ? '{{ __('common.copied') }}' : '{{ __('common.copy') }}'"></span>
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/updates.core.cli_followups') }}</p>
+                        </div>
+                    </details>
                 </div>
             @else
                 @if(! empty($core['current_version']))

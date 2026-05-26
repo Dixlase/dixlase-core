@@ -627,6 +627,9 @@ Route::prefix($adminUrl)->name('admin.')
                     Route::post('/apply', [Systems\AdminSystemUpdatesController::class, 'apply'])
                         ->middleware('check.menu.edit:settings.systems.updates')
                         ->name('apply');
+                    Route::post('/apply-core', [Systems\AdminSystemUpdatesController::class, 'applyCore'])
+                        ->middleware('check.menu.edit:settings.systems.updates')
+                        ->name('apply-core');
                 });
 
                 // Cache management (Easy mode: Full)
