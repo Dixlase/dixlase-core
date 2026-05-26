@@ -23,6 +23,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# GitHub OAuth token for composer to clone private dependencies
+# (currently: dixlase/dixlase-onepage). Fine-grained PAT with
+# Contents:Read on Dixlase/theme-dixlase-onepage only — see secret
+# COMPOSER_AUTH in repo or organization settings.
+env:
+  COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
+
 jobs:
   # ============================================
   # Plugin API Boundary Check (@api)
