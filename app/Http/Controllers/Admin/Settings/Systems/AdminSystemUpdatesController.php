@@ -42,6 +42,7 @@ use App\Services\Extension\ExtensionSourceManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
+use Symfony\Component\Process\PhpExecutableFinder;
 
 /**
  * Unified update management page
@@ -262,6 +263,19 @@ class AdminSystemUpdatesController extends AdminLoggedInController
                 ->with('error', __('admin/settings/systems/updates.core.exec_disabled'));
         }
 
+        // Under PHP-FPM the PHP_BINARY constant points at the FPM binary
+        // (e.g. /usr/local/sbin/php-fpm), not the CLI php. Spawning the
+        // artisan command with FPM as the interpreter just prints its
+        // usage banner and exits, leaving the update silently un-run.
+        // PhpExecutableFinder checks PHP_SAPI and walks the standard
+        // PATH fallbacks, so it returns the CLI php even from an FPM
+        // request.
+        $phpBinary = (new PhpExecutableFinder())->find(false);
+        if (! $phpBinary) {
+            return redirect()->route('admin.settings.systems.updates.index')
+                ->with('error', __('admin/settings/systems/updates.core.php_cli_not_found'));
+        }
+
         // Clear any prior failure marker so the UI does not show a stale
         // error banner while the new run is in flight.
         $state->forceFill([
@@ -271,7 +285,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
 
         $command = sprintf(
             'nohup %s %s dls:core:update --force --no-interaction > %s 2>&1 &',
-            escapeshellarg(PHP_BINARY),
+            escapeshellarg($phpBinary),
             escapeshellarg(base_path('artisan')),
             escapeshellarg(storage_path('logs/core-update.log'))
         );
