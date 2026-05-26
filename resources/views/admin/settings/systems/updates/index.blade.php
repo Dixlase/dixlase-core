@@ -45,6 +45,19 @@ file is governed by the AGPL terms below.
         </form>
     </div>
 
+    {{-- Standalone core update form. Lives outside the bulk-apply form
+         below because nesting <form> elements is invalid HTML — the
+         browser silently auto-closes the outer form at the inner <form>
+         tag, which would break the bulk form's x-data scope and the
+         selectedCount disable binding on its submit button. The Core
+         section's button references this form by HTML5 form="..." id. --}}
+    <form id="coreUpdateForm"
+          method="POST"
+          action="{{ route('admin.settings.systems.updates.apply-core') }}"
+          class="hidden">
+        @csrf
+    </form>
+
     {{-- Main form: Selection + bulk apply --}}
     <form method="POST"
           action="{{ route('admin.settings.systems.updates.apply') }}"
@@ -96,17 +109,21 @@ file is governed by the AGPL terms below.
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('admin.settings.systems.updates.apply-core') }}" class="flex">
-                        @csrf
+                    {{-- Submits the standalone #coreUpdateForm declared
+                         above this view's bulk-apply form, via HTML5's
+                         form="..." attribute. This keeps the button
+                         visually here without nesting <form> tags. --}}
+                    <div class="flex">
                         <x-form-button type="submit"
+                            form="coreUpdateForm"
                             :label="__('admin/settings/systems/updates.core.update_button')"
                             variant="primary"
                             icon="fas fa-cloud-download-alt" />
-                    </form>
+                    </div>
 
-                    <details class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30 p-3">
-                        <summary class="cursor-pointer text-sm text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
-                            <i class="fas fa-terminal"></i>{{ __('admin/settings/systems/updates.core.cli_alternative_heading') }}
+                    <details class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3">
+                        <summary class="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-100 flex items-center gap-2 hover:text-gray-900 dark:hover:text-white transition-colors">
+                            <i class="fas fa-terminal text-gray-500 dark:text-gray-400"></i>{{ __('admin/settings/systems/updates.core.cli_alternative_heading') }}
                         </summary>
                         <div class="mt-3 space-y-2">
                             <p class="text-xs text-gray-600 dark:text-gray-400">{{ __('admin/settings/systems/updates.core.cli_alternative_intro') }}</p>
