@@ -205,7 +205,30 @@ class CoreUpdater
             $this->cleanupStaging($stagingPath);
 
             throw $e;
+        } finally {
+            // Lift the in-progress flag that the admin UI's applyCore()
+            // may have raised, so the next page render shows the
+            // post-update state (success or failure) instead of the
+            // placeholder. CLI invocations never set the flag, so this
+            // is a no-op for them.
+            @unlink(self::inProgressFlagPath());
         }
+    }
+
+    /**
+     * Path to the on-disk flag the admin UI writes while a web-triggered
+     * core update is in progress.
+     *
+     * Lives under storage/ — a protected path that the update process
+     * never touches — so the flag survives the cache:clear that runs
+     * mid-update. A Cache::put() flag would be wiped midway through and
+     * unblock the admin UI back into the index view at the worst
+     * possible moment, when resources/ is in the middle of being
+     * replaced.
+     */
+    public static function inProgressFlagPath(): string
+    {
+        return storage_path('app/private/core-update/.in-progress');
     }
 
     /**
