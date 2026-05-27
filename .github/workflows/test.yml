@@ -23,6 +23,11 @@ env:
   DB_PORT: 3306
   DB_USERNAME: root
   DB_PASSWORD: password
+  # GitHub OAuth token for composer to clone private dependencies
+  # (currently: dixlase/dixlase-onepage). Fine-grained PAT with
+  # Contents:Read on Dixlase/theme-dixlase-onepage only — see secret
+  # COMPOSER_AUTH in repo or organization settings.
+  COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
 
 # Cancel older runs on the same ref when a new one starts.
 # Saves Actions minutes on rebases / quick consecutive pushes.
