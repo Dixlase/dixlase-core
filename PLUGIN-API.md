@@ -1,7 +1,7 @@
 # Dixlase CMS Plugin API Boundary
 
 **Version:** dev
-**Last Updated:** 2026-05-22
+**Last Updated:** 2026-05-27
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -106,6 +106,8 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\LegalPage\LegalPageServiceInterface` | Contract for legal page registry service |
 | `App\Contracts\Logging\LogServiceInterface` | Log service contract |
 | `App\Contracts\Mail\MailServiceInterface` | Mail service contract |
+| `App\Contracts\Multilingual\SingletonTranslationResolver` | Storage operations for **singleton** translatable content. |
+| `App\Contracts\Multilingual\TranslatableContentProvider` | Primary-locale value source for **singleton** translatable content. |
 | `App\Contracts\Revisionable` | Each plugin/theme has its own revision table and Eloquent model, and by |
 | `App\Contracts\RouteSlugProvider` | Route Slug Provider Interface |
 | `App\Contracts\Security\PolicyEvaluatorInterface` | Attribute-Based Access Control (ABAC) hook for `PermissionService`. |
