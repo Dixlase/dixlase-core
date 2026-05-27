@@ -26,6 +26,7 @@
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^4.1",
+        "oomphinc/composer-installers-extender": "^2.0",
         "wikimedia/composer-merge-plugin": "^2.1"
     },
     "require-dev": {
@@ -101,6 +102,9 @@
         "laravel": {
             "dont-discover": []
         },
+        "installer-types": [
+            "dixlase-theme"
+        ],
         "installer-paths": {
             "themes/DixlaseOnePage/": ["dixlase/dixlase-onepage"]
         },
@@ -114,12 +118,19 @@
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true,
+        "platform": {
+            "php": "8.2"
+        },
+        "audit": {
+            "abandoned": "report"
+        },
         "allow-plugins": {
             "composer/installers": true,
+            "cweagans/composer-patches": true,
+            "oomphinc/composer-installers-extender": true,
             "pestphp/pest-plugin": true,
             "php-http/discovery": true,
-            "wikimedia/composer-merge-plugin": true,
-            "cweagans/composer-patches": true
+            "wikimedia/composer-merge-plugin": true
         }
     },
     "minimum-stability": "stable",
