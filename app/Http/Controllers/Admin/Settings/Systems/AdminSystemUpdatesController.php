@@ -63,6 +63,17 @@ class AdminSystemUpdatesController extends AdminLoggedInController
      */
     protected const FALLBACK_STALE_THRESHOLD_SECONDS = 86400; // 24 hours
 
+    /**
+     * After this many seconds with no mtime update on the in-progress
+     * flag file, assume the dls:core:update subprocess crashed without
+     * cleaning up. The placeholder page is dismissed and the admin UI
+     * returns to the normal index. 15 minutes is long enough to cover
+     * the slowest observed update (npm install + vite build over a slow
+     * link) but short enough that a true crash does not leave the UI
+     * unusable.
+     */
+    protected const IN_PROGRESS_STALE_THRESHOLD_SECONDS = 900; // 15 minutes
+
     public function __construct()
     {
         parent::__construct();
@@ -77,6 +88,15 @@ class AdminSystemUpdatesController extends AdminLoggedInController
      */
     public function index(Request $request, ExtensionSourceManager $manager)
     {
+        // Short-circuit while a web-triggered core update is in flight:
+        // the live tree under resources/ may be mid-replacement and the
+        // normal index view cannot be rendered safely. Serve a minimal
+        // hardcoded HTML placeholder with an auto-refresh until the
+        // subprocess clears the flag.
+        if (($inProgress = $this->readCoreUpdateInProgressFlag()) !== null) {
+            return $this->coreUpdateInProgressResponse($inProgress);
+        }
+
         $forceCheck = $request->boolean('check');
         $target = $this->parseTarget((string) $request->query('target', ''));
 
@@ -283,10 +303,30 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             'update_failure_reason' => null,
         ])->save();
 
+        // Attribute the version history row to the admin who clicked
+        // the button. CLI invocations of dls:core:update without
+        // --applied-by leave the column null, as before.
+        $appliedById = \App\Helpers\AdminHelper::getMember()?->id;
+        $appliedByArg = $appliedById !== null
+            ? ' --applied-by='.escapeshellarg((string) $appliedById)
+            : '';
+
+        // Raise the in-progress flag *before* spawning. The next admin
+        // request lands on the placeholder instead of trying to render
+        // the index view while resources/ is being replaced. The
+        // subprocess clears the flag in CoreUpdater::update()'s finally
+        // block, regardless of success or failure.
+        $this->writeCoreUpdateInProgressFlag([
+            'started_at' => now()->timestamp,
+            'target_version' => $state->available_version,
+            'started_by_id' => $appliedById,
+        ]);
+
         $command = sprintf(
-            'nohup %s %s dls:core:update --force --no-interaction > %s 2>&1 &',
+            'nohup %s %s dls:core:update --force --no-interaction%s > %s 2>&1 &',
             escapeshellarg($phpBinary),
             escapeshellarg(base_path('artisan')),
+            $appliedByArg,
             escapeshellarg(storage_path('logs/core-update.log'))
         );
         exec($command);
@@ -295,6 +335,107 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             ->with('success', __('admin/settings/systems/updates.core.update_started', [
                 'version' => $state->available_version,
             ]));
+    }
+
+    /**
+     * If a web-triggered core update is in progress, return its metadata
+     * (`started_at`, `target_version`, `started_by_id`) for the
+     * placeholder page. Returns null when no flag is present, or when
+     * the flag is older than IN_PROGRESS_STALE_THRESHOLD_SECONDS — in
+     * which case the subprocess almost certainly crashed without
+     * cleaning up, and we delete the stale flag so the admin UI does
+     * not stay stuck on the placeholder forever.
+     *
+     * @return array{started_at: int, target_version: ?string, started_by_id: ?int}|null
+     */
+    protected function readCoreUpdateInProgressFlag(): ?array
+    {
+        $path = \App\Services\Core\CoreUpdater::inProgressFlagPath();
+        if (! is_file($path)) {
+            return null;
+        }
+
+        if (time() - filemtime($path) > self::IN_PROGRESS_STALE_THRESHOLD_SECONDS) {
+            @unlink($path);
+
+            return null;
+        }
+
+        $payload = json_decode((string) @file_get_contents($path), true);
+
+        return is_array($payload) ? $payload : null;
+    }
+
+    protected function writeCoreUpdateInProgressFlag(array $info): void
+    {
+        $path = \App\Services\Core\CoreUpdater::inProgressFlagPath();
+        @mkdir(dirname($path), 0775, true);
+        @file_put_contents($path, json_encode($info, JSON_UNESCAPED_UNICODE));
+    }
+
+    /**
+     * Render a minimal hardcoded HTML placeholder while a core update is
+     * running. We deliberately do not go through Blade or the admin
+     * layout here: the live tree under resources/views/ may be in the
+     * middle of being replaced by the update process, and a view-not-
+     * found exception during the swap window would surface a 500 to
+     * the operator. A self-contained response sidesteps that entirely.
+     */
+    protected function coreUpdateInProgressResponse(array $info): \Illuminate\Http\Response
+    {
+        $startedAt = (int) ($info['started_at'] ?? time());
+        $targetVersion = (string) ($info['target_version'] ?? '');
+        $elapsedSec = max(0, time() - $startedAt);
+        $elapsedMin = (int) floor($elapsedSec / 60);
+        $elapsedRem = $elapsedSec % 60;
+
+        $title = e(__('admin/settings/systems/updates.core.in_progress_title'));
+        $message = e(__('admin/settings/systems/updates.core.in_progress_message', [
+            'version' => $targetVersion !== '' ? $targetVersion : '—',
+        ]));
+        $elapsedLabel = e(__('admin/settings/systems/updates.core.in_progress_elapsed', [
+            'min' => $elapsedMin,
+            'sec' => $elapsedRem,
+        ]));
+        $refreshNote = e(__('admin/settings/systems/updates.core.in_progress_refresh_note'));
+
+        $html = <<<HTML
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="15">
+<title>{$title}</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0f172a;color:#f1f5f9;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.card{max-width:480px;width:100%;padding:2rem;background:#1e293b;border:1px solid #334155;border-radius:0.75rem;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.3)}
+.spinner{display:inline-block;width:40px;height:40px;border:3px solid #475569;border-top-color:#60a5fa;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:1.25rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+h1{font-size:1.125rem;font-weight:600;margin:0 0 0.75rem;color:#f8fafc}
+p{margin:0.5rem 0;color:#cbd5e1;font-size:0.875rem;line-height:1.5}
+.elapsed{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.8125rem;color:#94a3b8;margin-top:1rem}
+.refresh{font-size:0.75rem;color:#64748b;margin-top:1.5rem}
+</style>
+</head>
+<body>
+<div class="card" role="status" aria-live="polite">
+<div class="spinner" aria-hidden="true"></div>
+<h1>{$title}</h1>
+<p>{$message}</p>
+<p class="elapsed">{$elapsedLabel}</p>
+<p class="refresh">{$refreshNote}</p>
+</div>
+</body>
+</html>
+HTML;
+
+        return response($html, 200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+        ]);
     }
 
     /**

@@ -57,7 +57,8 @@ class CoreUpdate extends Command
         {--force : Skip confirmation prompt}
         {--dry-run : Resolve target version and exit without changes}
         {--build : Force a front-end asset rebuild even when compiled assets already exist}
-        {--skip-build : Skip the npm install / build step entirely}';
+        {--skip-build : Skip the npm install / build step entirely}
+        {--applied-by= : Member id to record on core_version_history.applied_by_id (defaults to null for direct CLI runs)}';
 
     protected $description = 'Update the Dixlase Core to the latest available release';
 
@@ -95,10 +96,17 @@ class CoreUpdate extends Command
             return self::SUCCESS;
         }
 
+        // Direct CLI runs leave applied_by_id null (no authenticated session
+        // to attribute to). The admin UI's applyCore() handler passes the
+        // signed-in member id via --applied-by so web-triggered upgrades
+        // are still attributable on the version history row.
+        $appliedBy = $this->option('applied-by');
+        $appliedById = ($appliedBy !== null && $appliedBy !== '') ? (int) $appliedBy : null;
+
         try {
             $result = $updater->update(
                 version: $target,
-                appliedById: null, // CLI executions are unattributed for now
+                appliedById: $appliedById,
                 log: fn (string $line) => $this->line('[core-update] '.$line),
             );
 
