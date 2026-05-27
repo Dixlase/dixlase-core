@@ -121,6 +121,9 @@
         "platform": {
             "php": "8.2"
         },
+        "audit": {
+            "abandoned": "report"
+        },
         "allow-plugins": {
             "composer/installers": true,
             "cweagans/composer-patches": true,
