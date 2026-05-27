@@ -283,10 +283,19 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             'update_failure_reason' => null,
         ])->save();
 
+        // Attribute the version history row to the admin who clicked
+        // the button. CLI invocations of dls:core:update without
+        // --applied-by leave the column null, as before.
+        $appliedById = \App\Helpers\AdminHelper::getMember()?->id;
+        $appliedByArg = $appliedById !== null
+            ? ' --applied-by='.escapeshellarg((string) $appliedById)
+            : '';
+
         $command = sprintf(
-            'nohup %s %s dls:core:update --force --no-interaction > %s 2>&1 &',
+            'nohup %s %s dls:core:update --force --no-interaction%s > %s 2>&1 &',
             escapeshellarg($phpBinary),
             escapeshellarg(base_path('artisan')),
+            $appliedByArg,
             escapeshellarg(storage_path('logs/core-update.log'))
         );
         exec($command);
