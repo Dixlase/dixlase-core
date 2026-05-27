@@ -118,6 +118,9 @@
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true,
+        "platform": {
+            "php": "8.2"
+        },
         "allow-plugins": {
             "composer/installers": true,
             "cweagans/composer-patches": true,
