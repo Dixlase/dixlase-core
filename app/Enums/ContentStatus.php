@@ -93,15 +93,39 @@ enum ContentStatus: int
     }
 
     /**
+     * Get translation key
+     *
+     * Mirrors the contract on ContentEditorType / ContentStorageType so
+     * callers can do `__($status->translationKey())` uniformly across
+     * content enums.
+     */
+    public function translationKey(): string
+    {
+        return match ($this) {
+            self::DRAFT => 'components/ui-status-badge.draft',
+            self::PUBLISHED => 'components/ui-status-badge.published',
+            self::SCHEDULED => 'components/ui-status-badge.scheduled',
+        };
+    }
+
+    /**
+     * Get description translation key
+     */
+    public function descriptionKey(): string
+    {
+        return match ($this) {
+            self::DRAFT => 'components/ui-status-badge.draft_description',
+            self::PUBLISHED => 'components/ui-status-badge.published_description',
+            self::SCHEDULED => 'components/ui-status-badge.scheduled_description',
+        };
+    }
+
+    /**
      * Get display name of status
      */
     public function label(): string
     {
-        return match ($this) {
-            self::DRAFT => __('components/ui-status-badge.draft'),
-            self::PUBLISHED => __('components/ui-status-badge.published'),
-            self::SCHEDULED => __('components/ui-status-badge.scheduled'),
-        };
+        return __($this->translationKey());
     }
 
     /**
@@ -109,11 +133,7 @@ enum ContentStatus: int
      */
     public function description(): string
     {
-        return match ($this) {
-            self::DRAFT => __('components/ui-status-badge.draft_description'),
-            self::PUBLISHED => __('components/ui-status-badge.published_description'),
-            self::SCHEDULED => __('components/ui-status-badge.scheduled_description'),
-        };
+        return __($this->descriptionKey());
     }
 
     /**
