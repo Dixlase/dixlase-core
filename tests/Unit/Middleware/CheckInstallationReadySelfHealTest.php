@@ -44,13 +44,57 @@ class CheckInstallationReadySelfHealTest extends TestCase
 
     private ReflectionMethod $selfHeal;
 
+    /**
+     * Snapshot of the INSTALLED env state at setUp(), so tearDown() can
+     * restore it. selfHealInstalledFlag() permanently mutates getenv()
+     * / $_ENV / $_SERVER, and a leaked INSTALLED=true breaks sibling
+     * test classes (e.g. DashboardPresenterTest) because
+     * ConfigHelper::getFromDatabase() guards on env('INSTALLED') and
+     * starts reading from the DB once the flag is set, overriding the
+     * config() values those tests rely on.
+     *
+     * @var array{env: string|false, env_array_set: bool, env_array: ?string, server_set: bool, server: ?string}
+     */
+    private array $envSnapshot;
+
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->envSnapshot = [
+            'env' => getenv('INSTALLED'),
+            'env_array_set' => array_key_exists('INSTALLED', $_ENV),
+            'env_array' => array_key_exists('INSTALLED', $_ENV) ? (string) $_ENV['INSTALLED'] : null,
+            'server_set' => array_key_exists('INSTALLED', $_SERVER),
+            'server' => array_key_exists('INSTALLED', $_SERVER) ? (string) $_SERVER['INSTALLED'] : null,
+        ];
+
         $this->middleware = new CheckInstallationReady();
         $this->selfHeal = new ReflectionMethod($this->middleware, 'selfHealInstalledFlag');
         $this->selfHeal->setAccessible(true);
+    }
+
+    protected function tearDown(): void
+    {
+        if ($this->envSnapshot['env'] === false) {
+            putenv('INSTALLED');
+        } else {
+            putenv('INSTALLED='.$this->envSnapshot['env']);
+        }
+
+        if ($this->envSnapshot['env_array_set']) {
+            $_ENV['INSTALLED'] = $this->envSnapshot['env_array'];
+        } else {
+            unset($_ENV['INSTALLED']);
+        }
+
+        if ($this->envSnapshot['server_set']) {
+            $_SERVER['INSTALLED'] = $this->envSnapshot['server'];
+        } else {
+            unset($_SERVER['INSTALLED']);
+        }
+
+        parent::tearDown();
     }
 
     public function test_replaces_existing_installed_false_line_in_place(): void
