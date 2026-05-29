@@ -733,15 +733,15 @@ class ExtensionCardPresenter
      * Whether the extension's signature status satisfies a preset's
      * `require_signature` flag.
      *
-     * An extension counts as signed when it carries a verified signature
-     * (`valid`) or a signature that is present but pending verification
-     * (`pending_verification`, e.g. when the verification module is not
-     * installed). All other states — unsigned, invalid, expired, etc. —
-     * fail the requirement.
+     * Only a verified signature (`valid`) counts. Other states — unsigned,
+     * invalid, expired, and notably `pending_verification` (signature
+     * declared but unverifiable because the verification module is not
+     * installed) — fail the requirement. The strict preset is meant to
+     * mean "actually verified", not merely "signature present".
      */
     private static function signatureSatisfiesRequirement(?string $signatureStatus): bool
     {
-        return in_array($signatureStatus, ['valid', 'pending_verification'], true);
+        return $signatureStatus === 'valid';
     }
 
     /**
