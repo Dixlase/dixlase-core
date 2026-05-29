@@ -168,6 +168,20 @@ class CheckInstallationReady
         $debugInfo = [];
         $isMigrated = $this->checkMigrationCompleted($debugInfo, ! $isInstalled);
 
+        // Self-heal: when the DB clearly shows a completed install
+        // (migrations populated, core tables present, admin user
+        // role >= 9, site_settings.site_name set) but the INSTALLED
+        // env flag is missing/false, the flag is the unreliable signal
+        // here, not the database. The mismatch is almost always
+        // external (.env deleted, swapped with .env.example for CI
+        // reproduction, edited by a misbehaving deploy script).
+        // Persist INSTALLED=true so admins are not bounced to
+        // /install/complete on every fresh session.
+        if (! $isInstalled && $isMigrated) {
+            $this->selfHealInstalledFlag($envPath);
+            $isInstalled = true;
+        }
+
         // Do not output logs after installation is complete
 
         if (! $isInstalled) {
@@ -230,6 +244,46 @@ class CheckInstallationReady
         }
 
         return $next($request);
+    }
+
+    /**
+     * Persist INSTALLED=true to .env and propagate to the current PHP
+     * process. Called when the database confirms a completed install
+     * (see checkMigrationCompleted()) but the env flag disagrees — a
+     * state that in practice always means .env was lost or overwritten
+     * externally, never that the application became uninstalled.
+     *
+     * The .env write is idempotent: an existing `INSTALLED=` line is
+     * rewritten in place; a missing one is appended. Failure to write
+     * .env is non-fatal — putenv() / $_ENV / $_SERVER are still updated
+     * so the current request can finish, and the next request will
+     * retry the persist.
+     */
+    private function selfHealInstalledFlag(string $envPath): void
+    {
+        if (file_exists($envPath)) {
+            $content = @file_get_contents($envPath);
+            if (is_string($content)) {
+                $count = 0;
+                $updated = preg_replace('/^INSTALLED=.*$/m', 'INSTALLED=true', $content, -1, $count);
+                if ($count === 0) {
+                    $updated = rtrim($content, "\n")."\nINSTALLED=true\n";
+                }
+                @file_put_contents($envPath, $updated, LOCK_EX);
+            }
+        }
+
+        putenv('INSTALLED=true');
+        $_ENV['INSTALLED'] = 'true';
+        $_SERVER['INSTALLED'] = 'true';
+
+        Log::channel('install')->warning(
+            'CheckInstallationReady: database shows an installed application '
+            .'but the INSTALLED env flag was false. .env has been auto-restored '
+            .'to INSTALLED=true. Investigate why the flag was lost — usual '
+            .'causes are an externally-deleted .env or one overwritten from '
+            .'.env.example (e.g. CI-reproduction scripts).'
+        );
     }
 
     /**
