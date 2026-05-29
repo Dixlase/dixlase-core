@@ -63,6 +63,14 @@
         <testsuite name="Plugins">
             <directory>plugins/*/tests</directory>
         </testsuite>
+        <!-- ============================================ -->
+        <!-- テーマテストスイート(一括・glob で展開)         -->
+        <!-- Glob: empty when no theme has tests/, so it    -->
+        <!-- never errors in environments that lack themes. -->
+        <!-- ============================================ -->
+        <testsuite name="Themes">
+            <directory>themes/*/tests</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>
@@ -70,18 +78,24 @@
         </include>
     </source>
     <php>
-        <env name="APP_ENV" value="testing"/>
-        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
-        <env name="BCRYPT_ROUNDS" value="4"/>
-        <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
-        <env name="MAIL_MAILER" value="array"/>
-        <env name="PULSE_ENABLED" value="false"/>
-        <env name="QUEUE_CONNECTION" value="sync"/>
-        <env name="SESSION_DRIVER" value="array"/>
-        <env name="TELESCOPE_ENABLED" value="false"/>
-        <env name="FORCE_SSL" value="false"/>
-        <env name="INSTALLED" value="false"/>
+        <!-- force="true" makes phpunit OVERWRITE values already present in   -->
+        <!-- the process env (i.e. .env / docker compose env_file). Without   -->
+        <!-- it, a stray DB_CONNECTION=mysql in .env would survive into the   -->
+        <!-- test run and RefreshDatabase would migrate:fresh the real DB.    -->
+        <!-- The TestCase MySQL guard is a second-line defence — both must   -->
+        <!-- be present to fail safe.                                        -->
+        <env name="APP_ENV" value="testing" force="true"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file" force="true"/>
+        <env name="BCRYPT_ROUNDS" value="4" force="true"/>
+        <env name="CACHE_STORE" value="array" force="true"/>
+        <env name="DB_CONNECTION" value="sqlite" force="true"/>
+        <env name="DB_DATABASE" value=":memory:" force="true"/>
+        <env name="MAIL_MAILER" value="array" force="true"/>
+        <env name="PULSE_ENABLED" value="false" force="true"/>
+        <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <env name="SESSION_DRIVER" value="array" force="true"/>
+        <env name="TELESCOPE_ENABLED" value="false" force="true"/>
+        <env name="FORCE_SSL" value="false" force="true"/>
+        <env name="INSTALLED" value="false" force="true"/>
     </php>
 </phpunit>

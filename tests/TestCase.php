@@ -42,8 +42,26 @@ abstract class TestCase extends BaseTestCase
      */
     protected static bool $migratingPlugins = false;
 
+    /**
+     * Drivers that hold real data and must never be migrate:fresh'd by a
+     * test run. RefreshDatabase (used by the vast majority of suites)
+     * runs `migrate:fresh` on the active connection — if a test process
+     * inherits DB_CONNECTION pointing at one of these, every test would
+     * drop and recreate the live database.
+     *
+     * The guard runs BEFORE parent::setUp() so RefreshDatabase's
+     * setUpTraits()-driven migration call never fires.
+     *
+     * Escape hatch: set DLS_TESTS_ALLOW_NON_SQLITE=1 when you really do
+     * want to run against a non-sqlite driver (e.g. a dedicated
+     * disposable MySQL test container). Use sparingly.
+     */
+    private const FORBIDDEN_TEST_DRIVERS = ['mysql', 'mariadb', 'pgsql', 'sqlsrv', 'oci'];
+
     protected function setUp(): void
     {
+        self::guardAgainstNonSqliteConnection();
+
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(function (string $modelName) {
@@ -221,6 +239,81 @@ abstract class TestCase extends BaseTestCase
 
             if ($arg === '--testsuite' && isset($argv[$index + 1])) {
                 return explode(',', (string) $argv[$index + 1]);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Refuse to bring up a test that points the active connection at a
+     * non-sqlite driver, unless the operator explicitly opts in.
+     *
+     * Rationale: RefreshDatabase (and a few sibling traits) run
+     * `migrate:fresh` against the active connection in setUp(). If a
+     * developer or AI session invokes `php artisan test` inside a
+     * container whose `.env` carries `DB_CONNECTION=mysql` (and
+     * phpunit.xml's `<env>` override fails to apply), every test would
+     * DROP TABLE the live database. This guard fires before
+     * `parent::setUp()` so the destructive migration call is never
+     * reached.
+     *
+     * The check reads the env directly (getenv() / $_SERVER / $_ENV)
+     * instead of `config('database.default')` because the Laravel app
+     * is not yet booted at this point — that's precisely the order we
+     * want, since `parent::setUp()` is what boots it AND triggers
+     * RefreshDatabase.
+     *
+     * Escape hatch: `DLS_TESTS_ALLOW_NON_SQLITE=1`. Intended for a
+     * dedicated disposable test database — never for shared/production
+     * data.
+     */
+    private static function guardAgainstNonSqliteConnection(): void
+    {
+        if (self::readEnv('DLS_TESTS_ALLOW_NON_SQLITE') === '1') {
+            return;
+        }
+
+        $connection = self::readEnv('DB_CONNECTION');
+        if ($connection === null || $connection === '') {
+            return;
+        }
+
+        $driver = strtolower($connection);
+        if (! in_array($driver, self::FORBIDDEN_TEST_DRIVERS, true)) {
+            return;
+        }
+
+        throw new \RuntimeException(sprintf(
+            "Refusing to run tests with DB_CONNECTION=%s.\n\n".
+            "Tests use RefreshDatabase, which runs `migrate:fresh` against the active\n".
+            "connection — running against %s would DROP TABLE the live database.\n\n".
+            "Fixes:\n".
+            "  • Run tests inside a container whose .env points at sqlite, or\n".
+            "  • Ensure phpunit.xml's <env name=\"DB_CONNECTION\" value=\"sqlite\" force=\"true\"/>\n".
+            "    actually applies (the `force=\"true\"` attribute is required to override .env), or\n".
+            "  • Use a dedicated disposable test container with a non-production database.\n\n".
+            "Escape hatch (use sparingly, NEVER against shared/production data):\n".
+            '  DLS_TESTS_ALLOW_NON_SQLITE=1 php artisan test …',
+            $connection,
+            $driver,
+        ));
+    }
+
+    /**
+     * Read an env var from the same sources Laravel's env() helper uses,
+     * without requiring the Laravel app to be booted.
+     */
+    private static function readEnv(string $key): ?string
+    {
+        $value = getenv($key);
+        if ($value !== false && $value !== '') {
+            return $value;
+        }
+
+        foreach ([$_SERVER ?? [], $_ENV ?? []] as $bag) {
+            if (array_key_exists($key, $bag) && $bag[$key] !== '') {
+                return (string) $bag[$key];
             }
         }
 
