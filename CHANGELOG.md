@@ -111,9 +111,13 @@ plugins and themes can rely on under the AGPL Plugin and Theme Exception (see `L
 - Public identifier naming conventions frozen in `docs/development/naming.md`
   (API scopes, permission keys, event names, webhook event types, audit log
   actions, plugin capabilities, env / config keys).
-- Migration immutability gate: `php artisan dls:migration:lint` enforced as a
-  Tier 1 CI job against `database/migration-lock.json` (see
-  `docs/operations/upgrading.md` for the lock-regen procedure at release time).
+- Migration immutability gate scaffolding: `php artisan dls:migration:lint`
+  wired as a Tier 1 CI job. The lock file (`database/migration-lock.json`)
+  is intentionally **not** committed during the Beta 1 → GA beta series so
+  schema churn stays unblocked; the command exits 0 when no lock is
+  present. The lock will be generated and committed just before the GA
+  release tag (see `docs/operations/upgrading.md` and CLAUDE.md
+  "Migration Editing Policy").
 - `requires.dixlase: ^0.1.0` declared in all in-tree plugin `plugin.json` files.
 
 ### Notes for plugin authors

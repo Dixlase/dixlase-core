@@ -447,11 +447,14 @@ jobs:
           DB_PASSWORD: password
 
   # ============================================
-  # Migration Immutability Lint (Tier 1 blocking)
+  # Migration Immutability Lint (Tier 1 blocking, GA onward)
   # ============================================
-  # Enforces the v0.1.0 migration immutability policy: once
-  # database/migration-lock.json is committed, any edit, deletion, or
-  # post-lock 0001_01_01_* addition to a locked migration file fails CI.
+  # Enforces the GA migration immutability policy: once
+  # database/migration-lock.json is committed (just before the GA
+  # release tag, after the Beta 1 → GA beta series), any edit,
+  # deletion, or post-lock 0001_01_01_* addition to a locked migration
+  # file fails CI. During the beta series no lock file exists and
+  # `dls:migration:lint` exits 0, so schema churn is unblocked.
   # Locks across core + registered plugins + registered themes.
   # See: docs/operations/upgrading.md and CLAUDE.md "Migration Editing Policy".
   migration-lint:
