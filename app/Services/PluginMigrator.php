@@ -133,8 +133,9 @@ class PluginMigrator
         ]);
 
         if (! $this->files->isDirectory($migrationPath)) {
-            Log::error('PluginMigrator: Migration path does not exist', ['path' => $migrationPath]);
-            throw new \Exception("Migration path does not exist: {$migrationPath}");
+            Log::info('PluginMigrator: Migration path does not exist, skipping', ['path' => $migrationPath]);
+
+            return [];
         }
 
         // Get list of migration files
@@ -191,8 +192,9 @@ class PluginMigrator
         ]);
 
         if (! $this->files->isDirectory($migrationPath)) {
-            Log::error('PluginMigrator: Migration path does not exist', ['path' => $migrationPath]);
-            throw new \Exception("Migration path does not exist: {$migrationPath}");
+            Log::info('PluginMigrator: Migration path does not exist, skipping rollback', ['path' => $migrationPath]);
+
+            return [];
         }
 
         // Get list of migration files
@@ -264,7 +266,7 @@ class PluginMigrator
         $migrationPath = base_path("plugins/{$plugin}/database/migrations");
 
         if (! $this->files->isDirectory($migrationPath)) {
-            throw new \Exception("Migration path does not exist: {$migrationPath}");
+            return [];
         }
 
         $migrations = $this->migrator->getMigrationFiles($migrationPath);
