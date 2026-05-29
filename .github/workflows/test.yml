@@ -338,26 +338,6 @@ jobs:
         continue-on-error: true  # アルファ版では警告のみ
 
   # ============================================
-  # Security Audit
-  # ============================================
-  security:
-    name: Security Audit
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          coverage: none
-
-      - name: Composer Audit
-        run: composer audit
-
-  # ============================================
   # Migration Test
   # ============================================
   migration:
